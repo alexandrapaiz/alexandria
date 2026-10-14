@@ -1,0 +1,99 @@
+trigger test — engine lexical/2.1, floor 0.05, 8 decoys (policy pre-registered)
+library: 8 skills, 57 cases
+
+## agent-containment  (skills/agent-containment/triggers.json)
+  [PASS] ac-pos-1     positive  expect agent-containment -> agent-containment
+  [PASS] ac-pos-2     positive  expect agent-containment -> agent-containment
+  [PASS] ac-pos-3     positive  expect agent-containment -> agent-containment
+  [PASS] ac-neg-1     negative  expect (silence) -> (silence, best fit decoy-cluster-capacity)
+  [PASS] ac-neg-2     negative  expect (silence) -> (silence, best fit decoy-incident-response)
+  [PASS] ac-conf-1    confusion expect agent-security-measurement -> agent-security-measurement
+  [PASS] ac-conf-2    confusion expect harness-engineering -> harness-engineering
+  7/7 passed (positives 3/3, negatives 2/2, confusion 2/2, narrow 0); 95% CI [0.59, 1.00]
+
+## agent-security-measurement  (skills/agent-security-measurement/triggers.json)
+  [PASS] asm-pos-1    positive  expect agent-security-measurement -> agent-security-measurement
+  [PASS] asm-pos-2    positive  expect agent-security-measurement -> agent-security-measurement
+  [PASS] asm-pos-3    positive  expect agent-security-measurement -> agent-security-measurement
+  [PASS] asm-neg-1    negative  expect (silence) -> (silence, best fit decoy-api-integration)
+  [FAIL] asm-neg-2    negative  expect (silence) -> agent-security-measurement
+         prompt: Our agent gateway started returning 500s and the monitoring dashboard is showing a spike in refusals from the upstream model provider. Is this an outage on their side and should I page anyone?
+         top: agent-security-measurement 0.0992, harness-engineering 0.0992, self-improving-post-training-loops 0.0992, decoy-frontend-layout 0.0646
+         library 0.099 vs null decoy-frontend-layout 0.065 (margin +0.035)
+  [PASS] asm-conf-1   confusion expect agent-containment -> agent-containment
+  [PASS] asm-conf-2   confusion expect evaluation-integrity -> evaluation-integrity
+  6/7 passed (positives 3/3, negatives 1/2, confusion 2/2, narrow 0); 95% CI [0.42, 1.00]
+
+## context-window-engineering  (skills/context-window-engineering/triggers.json)
+  [PASS] cwe-pos-1    positive  expect context-window-engineering -> context-window-engineering
+  [PASS] cwe-pos-2    positive  expect context-window-engineering -> context-window-engineering
+  [PASS] cwe-pos-3    positive  expect context-window-engineering -> context-window-engineering
+  [FAIL] cwe-neg-1    negative  expect (silence) -> self-improving-post-training-loops
+         prompt: We serve a 70B model and GPU memory is our bottleneck at peak. Should we quantize the weights to 4-bit or add two more GPUs and shard across them?
+         top: self-improving-post-training-loops 0.133, recursive-harness-self-improvement 0.1264, decoy-frontend-layout 0.0806, decoy-postgres-tuning 0.0806
+         library 0.133 vs null decoy-frontend-layout 0.081 (margin +0.052)
+  [PASS] cwe-neg-2    negative  expect (silence) -> (silence, best fit decoy-postgres-tuning)  [narrow, margin -0.014]
+  [FAIL] cwe-conf-1   confusion expect harness-engineering -> evaluation-integrity
+         prompt: Our five-agent research pipeline gets about a third of its tasks wrong and we cannot localise which agent is responsible. How should we go about finding the culprit?
+         top: evaluation-integrity 0.2349, harness-engineering 0.1657, recursive-harness-self-improvement 0.1401, skill-library-engineering 0.0829
+         library 0.235 vs null decoy-data-pipeline-ops 0.083 (margin +0.152)
+  [PASS] cwe-conf-2   confusion expect harness-engineering -> harness-engineering
+  5/7 passed (positives 3/3, negatives 1/2, confusion 1/2, narrow 1); 95% CI [0.29, 0.96]
+
+## evaluation-integrity  (skills/evaluation-integrity/triggers.json)
+  [PASS] ei-pos-1     positive  expect evaluation-integrity -> evaluation-integrity
+  [PASS] ei-pos-2     positive  expect evaluation-integrity -> evaluation-integrity
+  [PASS] ei-pos-3     positive  expect evaluation-integrity -> evaluation-integrity
+  [PASS] ei-neg-1     negative  expect (silence) -> (silence, best fit decoy-dependency-management)
+  [PASS] ei-neg-2     negative  expect (silence) -> (silence, best fit decoy-frontend-layout)
+  [PASS] ei-conf-1    confusion expect harness-engineering -> harness-engineering
+  [PASS] ei-conf-2    confusion expect self-improving-post-training-loops -> self-improving-post-training-loops
+  [PASS] ei-conf-3    confusion expect recursive-harness-self-improvement -> recursive-harness-self-improvement
+  8/8 passed (positives 3/3, negatives 2/2, confusion 3/3, narrow 0); 95% CI [0.63, 1.00]
+
+## harness-engineering  (skills/harness-engineering/triggers.json)
+  [PASS] he-pos-1     positive  expect harness-engineering -> harness-engineering
+  [PASS] he-pos-2     positive  expect harness-engineering -> harness-engineering
+  [PASS] he-pos-3     positive  expect harness-engineering -> harness-engineering
+  [PASS] he-neg-1     negative  expect (silence) -> (silence, best fit decoy-cluster-capacity)
+  [PASS] he-neg-2     negative  expect (silence) -> (silence, best fit decoy-product-copy)
+  [PASS] he-conf-1    confusion expect harness-engineering -> harness-engineering
+  6/6 passed (positives 3/3, negatives 2/2, confusion 1/1, narrow 0); 95% CI [0.54, 1.00]
+
+## recursive-harness-self-improvement  (skills/recursive-harness-self-improvement/triggers.json)
+  [PASS] rhsi-pos-1   positive  expect recursive-harness-self-improvement -> recursive-harness-self-improvement
+  [PASS] rhsi-pos-2   positive  expect recursive-harness-self-improvement -> recursive-harness-self-improvement
+  [PASS] rhsi-pos-3   positive  expect recursive-harness-self-improvement -> recursive-harness-self-improvement
+  [PASS] rhsi-neg-1   negative  expect (silence) -> (silence, best fit decoy-incident-response)
+  [PASS] rhsi-neg-2   negative  expect (silence) -> (silence, best fit decoy-api-integration)
+  [PASS] rhsi-conf-1  confusion expect harness-engineering -> harness-engineering
+  [PASS] rhsi-conf-2  confusion expect self-improving-post-training-loops -> self-improving-post-training-loops
+  7/7 passed (positives 3/3, negatives 2/2, confusion 2/2, narrow 0); 95% CI [0.59, 1.00]
+
+## self-improving-post-training-loops  (skills/self-improving-post-training-loops/triggers.json)
+  [PASS] pt-pos-1     positive  expect self-improving-post-training-loops -> self-improving-post-training-loops
+  [PASS] pt-pos-2     positive  expect self-improving-post-training-loops -> self-improving-post-training-loops
+  [PASS] pt-pos-3     positive  expect self-improving-post-training-loops -> self-improving-post-training-loops
+  [PASS] pt-neg-1     negative  expect (silence) -> (silence, best fit decoy-api-integration)  [narrow, margin +0.000]
+  [PASS] pt-neg-2     negative  expect (silence) -> (silence, best fit decoy-data-pipeline-ops)
+  [PASS] pt-conf-1    confusion expect self-improving-post-training-loops -> self-improving-post-training-loops
+  6/6 passed (positives 3/3, negatives 2/2, confusion 1/1, narrow 1); 95% CI [0.54, 1.00]
+
+## skill-library-engineering  (skills/skill-library-engineering/triggers.json)
+  [PASS] sle-pos-1    positive  expect skill-library-engineering -> skill-library-engineering
+  [PASS] sle-pos-2    positive  expect skill-library-engineering -> skill-library-engineering
+  [PASS] sle-pos-3    positive  expect skill-library-engineering -> skill-library-engineering
+  [PASS] sle-neg-1    negative  expect (silence) -> (silence, best fit decoy-data-pipeline-ops)  [narrow, margin +0.000]
+  [FAIL] sle-neg-2    negative  expect (silence) -> skill-library-engineering
+         prompt: We have about thirty tools registered on our MCP server and the model picks the wrong one on maybe a fifth of calls. Should we cut the tool count, rename them, or add a selection step before the call?
+         top: skill-library-engineering 0.1575, harness-engineering 0.1484, self-improving-post-training-loops 0.1466, decoy-postgres-tuning 0.1242
+         library 0.158 vs null decoy-postgres-tuning 0.124 (margin +0.033)
+  [PASS] sle-conf-1   confusion expect harness-engineering -> harness-engineering
+  [PASS] sle-conf-2   confusion expect recursive-harness-self-improvement -> recursive-harness-self-improvement
+  [PASS] sle-conf-3   confusion expect evaluation-integrity -> evaluation-integrity
+  [PASS] sle-conf-4   confusion expect self-improving-post-training-loops -> self-improving-post-training-loops
+  8/9 passed (positives 3/3, negatives 1/2, confusion 4/4, narrow 1); 95% CI [0.52, 1.00]
+
+TOTAL 53/57 — reliability 0.93, 95% CI [0.83, 0.98]
+
+wrote skills/_validation/results/2026-09-30-lexical-2.1-8skills.json

@@ -38,9 +38,14 @@ flowchart LR
   `debian_slim` Python 3.11 images; scale-to-zero, per-second billing inside the
   free monthly credits. One persistent **Modal Volume** (`hf-cache`) holds
   embedding-model weights across runs.
-- Schedules (UTC daily): ingest 11:00 → distill 11:30 → triage 12:00 →
-  interpret 14:00. Distill runs before triage on purpose: they share Groq's
-  daily token budget and distill is the higher-value spend.
+- Schedules (UTC daily): ingest 11:00 → triage 12:00 → interpret 14:00 →
+  distill 15:00. The order and the gaps are load-bearing rather than
+  incidental: Moonshot's organization concurrency is 1, so every job that
+  calls Kimi owns a window nothing else may enter, and 13:00-14:00 stays
+  unclaimed as the margin. `pipeline/llm.py` KIMI_WINDOWS is the table and
+  `python3 pipeline/budget.py` fails on an overlap. Distill moved from 11:30
+  to 15:00 on 2026-09-30 when it joined Kimi (ADR-39); it had run before
+  triage while both shared Groq's daily token budget.
 - Database: **Neon** serverless Postgres (project `alexandria`, AWS us-east-2)
   with **pgvector**; HNSW indexes, cosine distance. 5 tables (`papers`,
   `triage_log`, `claims`, `claim_links`, `promotions`), 4 views (`triage_queue`,

@@ -1,4 +1,4 @@
-import { marked } from "marked";
+import { renderMarkdown } from "../../lib/markdown.js";
 import { currentAccount } from "../../lib/account";
 
 // The desk reads the signed-in account, and reading a session means reading
@@ -10,6 +10,14 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Desk — library of alexandr.ia" };
 
 const REPO = "alexandrapaiz/alexandria";
+// A branch prefix arrives in two shapes for the same seat: the short lane a
+// local run writes (`fe/...`) and the seat's own name from a cloud run
+// (`alexandria-frontend/...`). Only the first shape was ever looked up, so
+// every cloud run's row wore the "other" badge. On 2026-09-30 that was 15 of
+// the 30 rows on this page, which is the owner's daily surface: a column of
+// identical badges that sorts nothing and says nothing. The prefix is
+// normalised before the lookup, and both spellings of a seat resolve to one
+// lane. A seat that is genuinely new still falls through to "other".
 const LANES = {
   engineer: "engineer",
   pm: "pm",
@@ -17,15 +25,21 @@ const LANES = {
   okr: "okr",
   exo: "exo",
   sec: "sec",
+  security: "sec",
   skill: "skill",
   weekly: "weekly",
   research: "research",
   fe: "fe",
+  frontend: "fe",
   fin: "fin",
+  finance: "fin",
   sales: "sales",
+  writer: "writer",
+  chair: "chair",
 };
 
-const lane = (branch) => LANES[branch.split("/")[0]] || "other";
+const lane = (branch) =>
+  LANES[branch.split("/")[0].replace(/^alexandria-/, "")] || "other";
 
 // The repo is private (owner's call, 2026-09-17), so the desk needs a
 // read token: put GITHUB_TOKEN=<fine-grained read token> in site/.env.local
@@ -187,7 +201,7 @@ export default async function Desk() {
         {sprint?.text ? (
           <div
             className="prose desk-doc"
-            dangerouslySetInnerHTML={{ __html: marked.parse(sprint.text) }}
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(sprint.text) }}
           />
         ) : (
           <p className="desk-empty">

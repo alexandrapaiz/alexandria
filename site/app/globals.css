@@ -4,6 +4,47 @@
   --gray: #86868b;
   --line: #e8e8e8;
   --radius: 10px;
+
+  /* The one semantic red, and the only colour on this site. The owner
+     approved it by name in her dispatch of 2026-09-25 for `contradicts` edges
+     in the claim graph: a contradiction is the one relation a reader must not
+     misread as agreement, and four monochrome line treatments do not separate
+     far enough at a 1px hairline. It is used on exactly two things, the edge
+     and its legend swatch, and it enters nothing else. The colour law stands
+     otherwise. Ledger 2026-09-26. */
+  --contra: #c8102e;
+
+  /* The micro-interaction system, from this run's benchmark. Read off the
+     live sites rather than remembered: Linear runs its ENTIRE surface on one
+     curve, cubic-bezier(0.25, 0.46, 0.45, 0.94), with two clocks — 100ms for
+     a text link's colour and 160ms for a button that also moves. Consensus
+     runs one clock, 100ms. Ours had grown to four curves and seven clocks,
+     which is the opposite of that discipline and reads as drift rather than
+     as a system. One curve, two clocks:
+
+       --fast  colour and opacity only, on high-frequency targets
+       --slow  anything that also moves
+
+     The owner's approved bounce, cubic-bezier(0.34, 1.56, 0.64, 1) at 190ms
+     on .pill and .issue, is NOT part of this and is not touched. Neither is
+     the 90ms press. The page-level fade that used to be carved out here now
+     has tokens of its own, below. */
+  --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --fast: 0.1s;
+  --slow: 0.16s;
+
+  /* The page-level pair, for the choreographed moment a page is allowed at
+     most one of. Both numbers are canon.md's own, written down here because
+     the stylesheet never had them: animation rule 3 says page-level moments
+     run 300 to 500ms on cubic-bezier(0.4, 0, 0.6, 1), Apple's curve. Until
+     this run the two page-level moments on the site (@rise and .lib-art)
+     ran on the browser's `ease`, which is a default rather than a decision,
+     and @rise's 0.7s sat outside the canon's window entirely. Measured
+     across all ten pages at two viewports, `ease` was the only curve we
+     shipped that no register names. Ban list entry 26 is the general case
+     and entry 25 is why one more curve is not free. */
+  --page: 0.5s;
+  --ease-page: cubic-bezier(0.4, 0, 0.6, 1);
 }
 
 * {
@@ -112,7 +153,29 @@ a {
 .nav-links a {
   color: var(--ink);
   opacity: 0.85;
-  transition: opacity 0.15s ease;
+  transition: opacity var(--fast) var(--ease);
+}
+
+/* The canon's touch rule is 44 by 44, and the skill rows already carry
+   Freiberg's Fitts note ("a 44px target that accepts 52px of finger is
+   craft"). These are the controls that never got it, measured on the phone
+   this run: the wordmark is a 146x20 link inside an 83px bar, the nav links
+   are about 20px tall, and the footer's Privacy and Terms are 43x15 and
+   35x15. A finger that lands a few pixels above or below the words hits
+   nothing at all, on a bar that has the room to accept it.
+   The hit area is grown with padding and the growth is taken straight back
+   out with a negative margin, so every one of these sits exactly where it
+   sat: verified by measuring the nav's height and each link's box before
+   and after. The footer's links are inline, where vertical margin does not
+   affect layout at all, so the padding alone is already neutral. */
+.nav-logo,
+.nav-links a {
+  padding-block: 12px;
+  margin-block: -12px;
+}
+
+.footer a {
+  padding-block: 15px;
 }
 
 .nav-links a:hover {
@@ -138,6 +201,7 @@ a {
 .mobile-nav-toggle {
   width: 32px;
   height: 32px;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -149,12 +213,24 @@ a {
   cursor: pointer;
 }
 
+/* The drawn control is 32px, which is what the bar wants optically, but the
+   canon's touch law is 44 and this is the only way into the site's navigation
+   on a phone. The hit area is extended past the glyph instead of the glyph
+   being grown, so nothing moves on the page: 32 + 6 on every side is 44.
+   Freiberg's Fitts note is the argument, and .skill-line already does the
+   same thing with a negative margin. */
+.mobile-nav-toggle::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+
 .mobile-nav-toggle span {
   display: block;
   width: 20px;
   height: 1.5px;
   background: var(--ink);
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition: transform var(--slow) var(--ease), opacity var(--slow) var(--ease);
 }
 
 .mobile-nav-toggle span.open:first-child {
@@ -239,7 +315,16 @@ a {
   padding: 10px 22px;
   font-size: 14px;
   font-weight: 500;
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* The house spring. The curve is the one the owner approved when she asked
+     for Elicit's bouncy hover; only the clock changed, on this run's
+     benchmark. Measured on the live sites: Elicit's primary CTA finishes in
+     167ms, Linear runs every button at 160ms on one curve, Consensus at
+     100ms. Ours took 220ms just to reach the top of its overshoot and 400ms
+     to settle, which is slower than all three and outside both the canon's
+     micro window (120 to 200ms) and Kowalski's under-300ms rule. At 190ms
+     the overshoot is intact and lands while the cursor is still arriving.
+     Refinement 1 of two, 2026-09-20. */
+  transition: transform 0.19s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .pill:hover {
@@ -255,6 +340,56 @@ a {
   background: transparent;
   color: var(--ink);
   border: 1px solid var(--ink);
+}
+
+/* The canon's touch law is 44 by 44 and the pill is the site's primary
+   control, but 10px of padding on a 14px label draws a 39px button, and the
+   ghost pill's border takes it to 41. Measured on the phone: the nav's
+   Pricing at 75x39, See pricing at 114x41, All issues at 105x43. None of
+   them reaches the minimum, on the one pointer that cannot aim.
+   The glyph is what the bar wants optically, so the hit area is extended
+   past it rather than the pill being grown, which is already how
+   .mobile-nav-toggle and .skill-line solve this and means no page moves.
+   Pointer-only, so a mouse is unaffected and nothing overlaps on desktop. */
+@media (hover: none) {
+  .pill {
+    position: relative;
+  }
+
+  .pill::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 44px;
+    transform: translateY(-50%);
+  }
+}
+
+/* ---------- focus, house-wide ---------- */
+/* Keyboard focus was the one state nobody had systematised. Three elements
+   carried a designed ring (the pill's double ring, the waitlist field, a
+   skill row) and everything else fell back to the browser's own 1px auto
+   outline: the wordmark, all three nav links, the footer links, /llms.txt
+   and every row in the archive. Tabbing the site put the UA's cramped
+   rectangle next to the house's own ring on the very next stop. Ban list
+   entry 25 was written about motion, and this is that defect one layer over.
+   The ring is the house hairline. The one thing that varies is its offset,
+   with the size of what it wraps: 2px on a field, 3px on inline text, 4px on
+   a full-width row band. That is a scale rather than drift, and the
+   per-component rules below it still win on purpose.
+   It fades in rather than snapping, which is Consensus's measured practice
+   (it moves outline-color on the same 100ms clock as its other states) and
+   the reason the ring needs a transparent value at rest to move from. */
+:where(a, button, summary, input, select, textarea, [tabindex]) {
+  outline: 1px solid transparent;
+  outline-offset: 3px;
+  transition: outline-color var(--fast) var(--ease);
+}
+
+:where(a, button, summary, input, select, textarea, [tabindex]):focus-visible {
+  outline-color: var(--ink);
 }
 
 /* the pill's own color (black bg or white bg) matches the browser's
@@ -325,7 +460,7 @@ a {
 }
 
 .hero-follow > * {
-  animation: rise 0.7s ease both;
+  animation: rise var(--page) var(--ease-page) both;
   animation-timeline: view();
   animation-range: entry 65% entry 98%;
 }
@@ -448,7 +583,7 @@ a {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 13px 20px;
-  transition: border-color 0.2s ease;
+  transition: border-color var(--fast) var(--ease);
 }
 
 .waitlist-field::placeholder {
@@ -471,11 +606,19 @@ a {
   outline-offset: 2px;
 }
 
-.waitlist-go {
-  flex: none;
+/* `.pill` was written for links and the two buttons that wear it both carried
+   their own reset. A third one (the unsubscribe confirm, 2026-10-06) is the
+   point at which the reset belongs to the class rather than to each caller,
+   because a button with no `font-family: inherit` renders in the browser's own
+   UI font and reads as a different control to the same reader. */
+button.pill {
   border: none;
   cursor: pointer;
   font-family: inherit;
+}
+
+.waitlist-go {
+  flex: none;
   padding: 13px 22px;
   white-space: nowrap;
 }
@@ -630,19 +773,29 @@ a {
 
 /* ---------- library ---------- */
 
-/* scene one: the shelf large, with the archive's kicker and title
-   visible right beneath it in the first view. The glide carries that
-   same header to the top of the page; the intro and the list stay
-   white until it lands */
+/* Scene one is the whole first view: the shelf, and nothing else.
+   Owner's ruling 2026-09-19, from her screenshot — the archive's intro
+   was sliced in half at the bottom edge of the viewport, and she wants
+   it hidden until she scrolls, the way the home page's second scene
+   already resolves it.
+
+   The resolution is the home page's, and it is layout, not opacity.
+   .hero-follow already gives scene two its own full-viewport box, so
+   the only thing keeping scene two in the first view was this rule
+   overriding .hero's height down to its content. Restored to .hero's
+   own height, scene one ends exactly at the fold and scene two begins
+   one pixel below it, at every viewport, with nothing staged at
+   opacity 0 and nothing waiting on a script (ban list 23, canon
+   rule 6). The glide still carries the header to the top from there. */
 .lib-hero {
-  min-height: 0;
-  padding: 16px 24px 44px;
+  min-height: calc(100svh - 96px);
+  padding: 16px 24px 48px;
 }
 
 /* the shelf fades away as the landing approaches, so nothing smears
    behind the nav at scene two */
 .lib-art {
-  transition: opacity 0.5s ease;
+  transition: opacity var(--page) var(--ease-page);
 }
 
 .lib-art.passed {
@@ -686,6 +839,18 @@ a {
   margin-top: 48px;
 }
 
+/* The archive's empty state stands where the archive stands. It arrived
+   here borrowing the desk's .desk-empty, which put it 10px under the intro
+   in #888, so it read as a fourth line of the paragraph rather than as the
+   state of the shelf. It now takes the list's own top margin and the house
+   grey, so an empty archive is answered in the place a reader is already
+   looking. The words are the writer's and are untouched. */
+.lib-scene2 .desk-empty {
+  margin-top: 48px;
+  color: var(--gray);
+  font-size: 14px;
+}
+
 .issue-list {
   margin-top: 64px;
   border-top: 1px solid var(--line);
@@ -721,8 +886,10 @@ a {
    pointer on the same spring the pills use. The contents move and the rule
    under the row does not, which keeps the left edge of the divider straight
    while the row travels. Touch has no hover, so it gets the press instead. */
+/* Same house spring, same clock: an archive row and a pill must not settle
+   at different speeds, or the page has two springs instead of one. */
 .issue > * {
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.19s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @media (hover: hover) {
@@ -746,7 +913,14 @@ a {
 
 .digest {
   margin-top: 56px;
-  font-size: 16.5px;
+  /* The canon's body size is 17, and the digest is the site's primary
+     reading surface. 16.5 was off the type scale entirely. The measure
+     holds at 73 characters on the lead paragraph, inside the 75 ceiling,
+     so the column does not need to move with it. Line height stays at
+     1.65 rather than dropping to Apple's 1.47: her density ruling says
+     add air when in doubt, and this is running text people read for
+     minutes. */
+  font-size: 17px;
   line-height: 1.65;
 }
 
@@ -799,6 +973,75 @@ a {
   border: none;
   border-top: 1px solid var(--line);
   margin: 36px 0;
+}
+
+/* ---------- tables in rendered markdown ---------- */
+/* Nothing styled these until now, so the browser's defaults collapsed every
+   column against its neighbour. The desk's own sprint table read
+   "1Remove the digest teaser gate" and "engineernot started" at 1440, on the
+   owner's daily surface, and any issue the press writes with a table would
+   have printed the same way. The canon names Stripe for tables treated as a
+   first-class design object; the house version is the hairline, the 8-point
+   gutter, and the same uppercase meta register the rest of the site already
+   uses for column labels. No zebra striping and no cell borders: the rule
+   under the head and the row hairlines carry the structure on their own. */
+.digest table,
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 32px 0;
+  text-align: left;
+}
+
+.digest th,
+.prose th {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gray);
+  padding: 0 24px 8px 0;
+  border-bottom: 1px solid var(--ink);
+  vertical-align: bottom;
+}
+
+.digest td,
+.prose td {
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.022em;
+  padding: 12px 24px 12px 0;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.digest th:last-child,
+.digest td:last-child,
+.prose th:last-child,
+.prose td:last-child {
+  padding-right: 0;
+}
+
+/* At 390px the cells wrap hard rather than the type shrinking, because a
+   smaller size here would be a value the canon's scale does not contain. The
+   trade is a tall table over a clipped one, and nothing is hidden: verified
+   at 390 with the desk's own seven-row sprint table, page scrollWidth equal
+   to clientWidth. overflow-x is the safety net under that, for a row that
+   genuinely cannot shrink any further, such as one carrying a long URL. */
+@media (max-width: 560px) {
+  .digest table,
+  .prose table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .digest th,
+  .prose th,
+  .digest td,
+  .prose td {
+    padding-right: 16px;
+  }
 }
 
 /* The lock on a spine route. It used to fade out of a truncated digest
@@ -885,7 +1128,7 @@ a {
   text-decoration: none;
   border-bottom: 1px solid var(--line);
   padding-bottom: 1px;
-  transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color var(--fast) var(--ease);
 }
 
 .agent-note a:hover,
@@ -917,7 +1160,7 @@ a {
   border-radius: var(--radius);
   padding: 11px 14px;
   outline: none;
-  transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color var(--fast) var(--ease);
   -webkit-appearance: none;
   appearance: none;
 }
@@ -933,6 +1176,16 @@ a {
 .lib-filter input:focus {
   border-color: var(--ink);
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+/* The field sets outline: none at a specificity the house rule cannot reach,
+   so it was the one control left with no ring at all: a keyboard user got a
+   border that darkens and nothing else. That is the case the waitlist field
+   already argues against in its own comment, and this is the same field in a
+   different place, so it gets the same field offset. */
+.lib-filter input:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: 2px;
 }
 
 /* Chromium draws its own clear button inside a search field and draws it in
@@ -1061,7 +1314,7 @@ a {
   cursor: pointer;
   list-style: none;
   -webkit-tap-highlight-color: transparent;
-  transition: background-color 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: background-color var(--fast) var(--ease);
 }
 
 /* Refinement, from this run's benchmark. Read off the live pages rather than
@@ -1090,8 +1343,18 @@ a {
   word-break: break-word;
 }
 
+/* Three fixed tracks rather than a flex row, so version, status and source
+   count each hold one column down the whole list. As a flex row the cluster
+   was right-anchored and every field floated against the width of its own
+   text: measured across 53 rows the version alone started at 14 different x
+   positions spanning 105px, which at this length reads as a ragged edge
+   rather than as a table. The widths are the longest string each field can
+   hold, measured on the page (18, 94 and 89px for V1, DEPRECATED and
+   10 SOURCES), rounded up onto the spacing scale with room for a two-digit
+   version and a three-digit count. */
 .skill-line-meta {
-  display: flex;
+  display: grid;
+  grid-template-columns: 24px 96px 96px;
   gap: 12px;
   font-size: 12px;
   text-transform: uppercase;
@@ -1108,17 +1371,25 @@ a {
   content: "";
   position: absolute;
   right: 14px;
-  top: 50%;
+  /* Anchored to the first line, not to the middle of the row. top: 50% is the
+     same thing only while the name fits on one line; the moment it wraps, the
+     metadata stays on the first baseline and the marker slides down to the
+     row's centre, so the right-hand cluster comes apart. Measured at 390px:
+     meta at 26px from the row's top, marker at 38px on a two-line row. Most
+     kebab-case skill names wrap on a phone, so at the fifty rows this library
+     is built for it was the common case rather than the edge one.
+     12px is the row's own padding-top and 14px is half the first line box. */
+  top: 26px;
   width: 11px;
   height: 1px;
   background: var(--gray);
-  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color var(--fast) var(--ease);
 }
 
 .skill-line::after {
   transform: rotate(90deg);
-  transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform var(--slow) var(--ease),
+    background-color var(--fast) var(--ease);
 }
 
 .skill-row[open] > .skill-line::after {
@@ -1148,15 +1419,25 @@ a {
 /* The panel's height change is not animated at all, because the canon bans
    animating layout properties and because the library is a high-frequency
    surface that should feel instant. What is animated is the contents rising
-   into place: 180ms, ease-out, transform and opacity only, on the
-   compositor, and interruptible because a CSS animation restarts cleanly
-   when the row is closed and reopened mid-flight. */
+   into place: transform and opacity only, on the compositor, and
+   interruptible because a CSS animation restarts cleanly when the row is
+   closed and reopened mid-flight.
+
+   It now runs on the house clock and the house curve. It used to carry
+   0.18s and cubic-bezier(0.4, 0, 0.2, 1), which were the only instance of
+   either value in this stylesheet, and the comment above them claimed
+   "ease-out" while that curve is Material's standard one: it eases IN and
+   out, so the contents left the gate slowly, which is precisely the
+   "sluggish" motion.md names in rule 1. var(--ease) is easeOutQuad and
+   actually starts fast. Benchmarked again on this run: Linear runs its whole
+   marketing site on one curve and two clocks, Elicit on one duration,
+   Consensus on one. Ban list entry 25 is the tell this removes. */
 .skill-panel {
   padding-bottom: 24px;
 }
 
 .skill-row[open] > .skill-panel > .skill-panel-in {
-  animation: skill-panel-in 0.18s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: skill-panel-in var(--slow) var(--ease) both;
 }
 
 @keyframes skill-panel-in {
@@ -1205,6 +1486,112 @@ a {
   line-height: 1.6;
   color: var(--gray);
   max-width: 600px;
+}
+
+/* The receipts, inside the open row. A definition list because that is what
+   it is: a label and the fact behind it. The labels carry the same uppercase
+   treatment as the section heads above them, one step smaller, so the block
+   reads as a table of evidence rather than as more prose.
+
+   A stale receipt, one measured against a revision of the file the visitor is
+   not reading, is the only state here that could mislead anyone, so it is the
+   only state that is marked. It is marked with a hairline rule in ink and with
+   the sentence saying so, and NOT with --contra: the :root comment reserves
+   that red for `contradicts` edges and their legend swatch on the owner's
+   dispatch of 2026-09-25, and says in its own words that it enters nothing
+   else. The colour law holds on this page too. */
+.skill-receipts {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--gray);
+  max-width: 600px;
+  display: grid;
+  gap: 10px;
+}
+
+.skill-receipts > div {
+  display: grid;
+  grid-template-columns: 148px 1fr;
+  gap: 4px 16px;
+  align-items: baseline;
+}
+
+.skill-receipts dt {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gray);
+  padding-top: 2px;
+}
+
+.skill-receipts dd {
+  margin: 0;
+  color: var(--ink);
+}
+
+.skill-receipts dd span {
+  display: block;
+}
+
+/* Every sentence after the first is a qualifier on the one above it, so it is
+   set back in grey rather than given the same weight as the result. */
+.skill-receipts dd span + span {
+  color: var(--gray);
+}
+
+.skill-receipts dd.is-stale {
+  border-left: 1px solid var(--ink);
+  padding-left: 10px;
+  margin-left: -11px;
+}
+
+/* The ids themselves are tabular so a long row of them scans as numbers, and
+   the sentence under them is the one ban list entry 14 requires: a reader who
+   has never seen the codebase can find out what 199 refers to. */
+.skill-claims > span:first-child {
+  font-variant-numeric: tabular-nums;
+  word-spacing: 0.08em;
+}
+
+.skill-claims-note {
+  margin-top: 4px;
+}
+
+.skill-claims-note a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  .skill-receipts > div {
+    grid-template-columns: 1fr;
+  }
+
+  /* On a phone the row's two halves compete for 342px and the metadata wins,
+     because it is `nowrap` and the name is not. Measured at 390px across the
+     library at volume: the meta cluster took 109 to 205px, leaving the name
+     89 to 136px, so a kebab-case name broke to three, four and in one case
+     seven lines with the hyphen leading the line, and rows ran 101 to 177px
+     tall against 50 for a row that fits. The identifier is the one thing the
+     row exists to carry, so it gets the width and the metadata goes beneath
+     it. The marker stays anchored to the first line, which is already how
+     .skill-line::before is written. */
+  .skill-line {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  /* Natural widths once it has a line of its own: the three fields together
+     need about 225px of the 310 available, so the tracks are not needed and
+     fixing them here would only strand whitespace. */
+  .skill-line-meta {
+    display: flex;
+    gap: 12px;
+  }
 }
 
 /* The entitlement is stated in words inside the open row. The button that
@@ -1320,6 +1707,49 @@ a {
   color: var(--ink);
 }
 
+/* Three offers, not two (ADR-31: the trial, the month, the lifetime). The
+   two-column rule above stays the default, because every other page that
+   borrows .tiers has two of them, and 2+1 on a three-up grid reads as one
+   plan that did not fit. */
+.tiers.three {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* The trial lives inside the monthly card rather than in a fourth column,
+   because it is the same plan with its first three days free. It sits above
+   the card's action, so `margin-top: auto` on the pill still pins the
+   button to the bottom of every card and the three buttons line up. */
+.tier-note {
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--gray);
+}
+
+.tier-note + .pill {
+  margin-top: 18px;
+}
+
+.tier.featured .tier-note {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.tier.featured .tier-note a {
+  color: var(--paper);
+  text-decoration: underline;
+}
+
+@media (max-width: 980px) {
+  /* A third column at this width leaves the price and the bullets fighting
+     for the same 180 pixels, so the three stack into one before the
+     640px breakpoint below ever applies. */
+  .tiers.three {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+}
+
 @media (max-width: 640px) {
   /* stacked, these are two large bordered blocks rather than two columns,
      so they need more air between them than a grid gutter */
@@ -1353,62 +1783,425 @@ a {
 
 /* ---------- graph ---------- */
 
+/* The claim graph explorer. Built 2026-09-26 on the owner's dispatch, against
+   the site's own tokens: --ink, --paper, --gray, --line, radius 10, hairline
+   borders, Helvetica Neue from body, one curve and two clocks from :root.
+   The single exception to the colour law is --contra, the one semantic red she
+   approved for `contradicts` in that dispatch, and it is used on exactly one
+   thing. Ledger entry filed the same day. */
+
 .graph-page {
-  max-width: 1040px;
+  /* wider than the 680px reading column, because this page is a workspace and
+     not an article: a canvas and a panel side by side need the room */
+  max-width: 1280px;
 }
 
-.graph-stage {
-  position: relative;
-  margin-top: 56px;
+.graph-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 48px;
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.graph-counts dt {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gray);
+}
+
+.graph-counts dd {
+  /* real numbers, read off the database, so they live in monospace: the
+     canon's positive test asks for data to look like data */
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  margin-top: 4px;
+}
+
+.graph-unavailable {
+  margin-top: 48px;
+  padding: 24px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.graph-canvas {
-  width: 100%;
-  height: 64vh;
-  min-height: 420px;
-  display: block;
+  font-size: 17px;
+  color: var(--gray);
+  max-width: 540px;
 }
 
 .graph-gate {
-  position: absolute;
-  left: 50%;
-  bottom: 28px;
-  transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  margin-top: 48px;
   border: 1px solid var(--ink);
   border-radius: var(--radius);
-  padding: 26px 30px;
-  text-align: center;
-  max-width: 420px;
-  width: calc(100% - 48px);
+  padding: 32px;
+  max-width: 480px;
 }
 
-.graph-gate h3 {
-  font-size: 19px;
+.graph-gate h2 {
+  font-size: 21px;
   font-weight: 600;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
 }
 
 .graph-gate p {
+  font-size: 17px;
+  color: var(--gray);
+  margin: 12px 0 24px;
+}
+
+/* ---------- graph explorer ---------- */
+
+.gx {
+  margin-top: 32px;
+}
+
+.gx-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.gx-input,
+.gx-select {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0 12px;
+  height: 44px;
+  transition: border-color var(--fast) var(--ease);
+}
+
+.gx-input {
+  width: 260px;
+  max-width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.gx-input::placeholder {
+  color: var(--gray);
+}
+
+.gx-input:hover,
+.gx-select:hover {
+  border-color: var(--gray);
+}
+
+.gx-select {
+  /* the UA select on a hairline page is ban-list entry 26 exactly: a browser
+     default standing where the house has a rule for everything around it */
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 34px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink) 50%),
+    linear-gradient(135deg, var(--ink) 50%, transparent 50%);
+  background-position: right 16px center, right 11px center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.gx-count {
   font-size: 14px;
   color: var(--gray);
-  margin: 8px 0 18px;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.gx-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.gx-stage {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  height: 620px;
+}
+
+.gx-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: manipulation;
+}
+
+.gx-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--gray);
+  pointer-events: none;
+}
+
+.gx-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px;
+  height: 620px;
+  overflow-y: auto;
+}
+
+.gx-hint {
+  font-size: 14px;
+  color: var(--gray);
+}
+
+.gx-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gx-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--gray);
+}
+
+.gx-close {
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--gray);
+  background: none;
+  border: none;
+  padding: 4px;
+  margin: -4px;
+  cursor: pointer;
+  transition: color var(--fast) var(--ease);
+}
+
+.gx-close:hover {
+  color: var(--ink);
+}
+
+.gx-claim {
+  margin-top: 12px;
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.022em;
+}
+
+.gx-meta {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 8px 12px;
+  font-size: 14px;
+}
+
+.gx-meta dt {
+  color: var(--gray);
+}
+
+.gx-meta dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.gx-paper {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--line);
+  transition: text-decoration-color var(--fast) var(--ease);
+}
+
+.gx-paper:hover {
+  text-decoration-color: var(--ink);
+}
+
+.gx-sub {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gray);
+}
+
+.gx-neighbours {
+  list-style: none;
+  margin-top: 12px;
+}
+
+.gx-neighbours button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 0 -8px;
+  cursor: pointer;
+  transition: background-color var(--fast) var(--ease);
+}
+
+.gx-neighbours button:hover {
+  background: #f5f5f5;
+}
+
+.gx-rel {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--gray);
+  margin-bottom: 2px;
+}
+
+.gx-rel-contradicts {
+  color: var(--contra);
+}
+
+.gx-neighbour-text {
+  display: block;
+  font-size: 14px;
   line-height: 1.5;
 }
 
-.graph-legend {
+/* ---------- graph legend, which is also the edge filter ---------- */
+
+.gx-legend {
+  list-style: none;
   display: flex;
-  gap: 26px;
-  justify-content: center;
-  margin-top: 18px;
-  font-size: 13px;
-  color: var(--gray);
   flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.gx-legend-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0 14px;
+  height: 44px;
+  cursor: pointer;
+  transition: border-color var(--fast) var(--ease), opacity var(--fast) var(--ease);
+}
+
+.gx-legend-btn:hover {
+  border-color: var(--gray);
+}
+
+/* Refinement 2, 2026-09-26. The off state was a blanket opacity of 0.4, which
+   put the label at roughly 2.9:1 against paper and the count near 1.5:1, so
+   the control that says which edges are hidden was the least readable thing on
+   the page. Opacity on a control dims its text along with everything else. The
+   off state is designed instead: the swatch drops to the hairline, the label
+   drops to grey, and both stay legible. Benchmarked against Consensus, which
+   moves colour and nothing else, on one clock. */
+.gx-legend-btn.is-off .gx-legend-label {
+  color: var(--gray);
+}
+
+/* two classes deep, so this beats .gx-swatch-contradicts on specificity
+   without reaching for !important */
+.gx-legend-btn.is-off .gx-swatch {
+  border-top-color: var(--line);
+}
+
+.gx-legend-label {
+  transition: color var(--fast) var(--ease);
+}
+
+.gx-legend-n {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--gray);
+  font-variant-numeric: tabular-nums;
+}
+
+/* the swatch draws the line the canvas draws, so the legend is a key and not
+   a set of labels that have to be trusted */
+.gx-swatch {
+  width: 22px;
+  height: 0;
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: var(--ink);
+  transition: border-top-color var(--fast) var(--ease);
+}
+
+.gx-swatch-supports {
+  border-top-style: solid;
+  border-top-color: var(--ink);
+}
+
+.gx-swatch-refines {
+  border-top-style: dashed;
+  border-top-color: var(--gray);
+}
+
+.gx-swatch-contradicts {
+  border-top-width: 2px;
+  border-top-style: solid;
+  border-top-color: var(--contra);
+}
+
+.gx-swatch-duplicates {
+  border-top-style: dotted;
+  border-top-width: 2px;
+  border-top-color: var(--gray);
+}
+
+@media (max-width: 900px) {
+  .gx-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .gx-stage {
+    /* the canvas keeps a usable square on a phone rather than a letterbox */
+    height: 58svh;
+    min-height: 360px;
+  }
+
+  .gx-panel {
+    height: auto;
+    min-height: 140px;
+    max-height: none;
+  }
+
+  .gx-count {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .graph-counts {
+    gap: 24px 32px;
+    margin-top: 32px;
+  }
+
+  .graph-counts dd {
+    font-size: 24px;
+  }
 }
 
 /* ---------- mission / coming soon ---------- */
@@ -1465,6 +2258,16 @@ a {
   margin: 0 auto;
 }
 .desk .page-kicker, .desk .page-title, .desk .page-intro { text-align: left; margin-left: 0; }
+/* .hero-follow's rise animation comes with the class and was landing on the
+   desk's lists too. Its view() range never opens for a block taller than the
+   viewport that starts near the fold, so at 390px the first list sat at
+   opacity 0 with all seven rows in it: a header reading "AWAITING YOUR MERGE
+   7" over empty white, at rest, with no way to scroll it into view because
+   the page had nothing else to scroll. Caught in the pixels, then confirmed
+   by reading the computed opacity back out (0 at 390, 1 at 820 and 1440).
+   The desk is the owner's daily surface, so it gets no entrance
+   choreography at all (motion.md, high-frequency surfaces). */
+.desk > * { animation: none; }
 .desk-h {
   margin: 56px 0 6px;
   font-size: 13px;
@@ -1489,8 +2292,13 @@ a {
 }
 .desk-row.done { color: #888; }
 .desk-lane {
-  flex: 0 0 76px;
-  font-size: 11px;
+  /* 96px is the next step up the spacing scale from the old off-grid 76,
+     and it is the first one that holds the longest seat label (RESEARCH)
+     without min-width: auto pushing the lane wider than its own basis. */
+  flex: 0 0 96px;
+  /* 12px, not 11: the canon's type scale stops at 12 for small print and
+     says never 11. At 76px the longest seat label (RESEARCH) still fits. */
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   border: 1px solid currentColor;
@@ -1510,8 +2318,8 @@ a {
   white-space: nowrap;
   opacity: 0;
   transform: translateX(-4px);
-  transition: opacity 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    transform 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: opacity var(--slow) var(--ease),
+    transform var(--slow) var(--ease);
 }
 .desk-row:hover .desk-go { opacity: 1; transform: none; }
 @media (hover: none) {
@@ -1528,8 +2336,26 @@ a {
 .desk-foot { margin-top: 64px; font-size: 12px; color: #888; }
 .desk-foot a { color: #000; }
 @media (max-width: 560px) {
-  .desk-row { flex-wrap: wrap; }
-  .desk-lane { flex-basis: 64px; }
+  /* The 64px basis that used to live here was narrower than the longest
+     seat labels, and a flex item's min-width: auto floors it at its own
+     content, so ENGINEER and RESEARCH pushed their lanes out to 70px while
+     FE and SKILL stayed at 64. Every title then began at a different x and
+     the list read ragged down its left edge, at 390px only.
+     Holding one lane width instead fixed the alignment but left the title
+     164px wide, wrapping four deep on a phone, which is the clutter her
+     iPhone review named. So on a phone the lane keeps the first line to
+     itself with the row's action, and the title takes the full measure
+     underneath: no lane column to align, half the wraps, more air. */
+  .desk-row {
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .desk-lane { flex: 0 0 auto; }
+  .desk-go { margin-left: auto; }
+  .desk-main {
+    order: 1;
+    flex: 1 0 100%;
+  }
 }
 
 /* ---------- reduced motion ----------
@@ -1541,7 +2367,18 @@ a {
   .pill,
   .desk-go,
   .waitlist-field,
-  .lib-art {
+  .lib-art,
+  /* Both of these were missing. The toggle's bars actually rotate, which is
+     the kind of motion this query exists to stop, and the nav link's fade
+     belongs with the other colour transitions the house already mutes. */
+  .nav-links a,
+  .mobile-nav-toggle span {
+    transition: none;
+  }
+
+  /* The focus ring fades on the colour clock, so it is muted with the other
+     colour transitions rather than left as the one thing still moving. */
+  :where(a, button, summary, input, select, textarea, [tabindex]) {
     transition: none;
   }
 

@@ -47,6 +47,41 @@ input, and she wants that input to be the human input of the past
 never the model's priors. What she least wants is the vibe-coded
 look; alexandria differentiates as an engineering product.
 
+## You set the words, you do not write them (added 2026-09-21, incident 25)
+
+`site/` is your surface, so you are the seat that can change the site's
+words, and you are not the seat that chooses them. The owner ruled the
+division on 2026-09-19: "The writer drafts, the frontend seat sets."
+
+Concretely. Reader-facing copy reaches you as approved lines in a file
+under `docs/voice/`, and you transcribe them. You never invent a
+headline, a page intro or a call to action at the keyboard, however
+obvious the gap looks while you are staring at the layout. When a
+surface plainly needs words that no approved line covers, the move is a
+ledger note naming the surface, not a sentence you wrote yourself.
+
+The reason is in docs/agents/copy-pipeline.md and it is worth one
+sentence here. Copy that arrives without a verdict has never been ruled
+on, and setting it means the owner reviews prose inside a visual PR,
+which is how she ended up drafting eight rounds by hand. Layout bugs and
+prose bugs cost different things to fix, so they do not travel together.
+
+And one check before you set an approved line, which is new on
+2026-09-30. If the line makes a claim about the quality of what we ship,
+find it in docs/agents/quality-claims.md. A line whose row is `held` goes
+up. A line whose row says `not built`, `queued` or `contradicted`, or a
+line with no row at all, stops here and goes back as a ledger note naming
+the claim and the surface. Approval is about the words and this check is
+about the machine, so approval does not answer it: the copy that said a
+skill is revised when the research moves was approved and there was
+nothing in the organization that revised a skill. You are the last hand
+before a claim is public, which is why the check sits here as well as in
+the writer's copy round.
+
+One thing that stays yours. If an approved line breaks the layout, that
+is a real finding and it is yours to report with the screenshot. Say so
+in the PR and leave the words alone.
+
 ## The run
 
 1. **Build and see.** npm install and start the site (site/). Your run
@@ -95,7 +130,8 @@ look; alexandria differentiates as an engineering product.
 
 - Writable surface: site/, docs/design/, and ledger entries plus board
   cards in your lane. Never pipeline code, charters, sprints, OKRs,
-  market docs, skills/, or vision.
+  market docs, skills/, or vision. Inside site/ you set approved copy
+  and you do not author it, per the section above.
 - Never touch secrets or anything under digests/. Never commit
   node_modules or build output; screenshots stay small (compress,
   1x scale) so the repo stays light.
@@ -144,11 +180,40 @@ one you chose at the top of your PR description.
 
 - **Build on it.** Merge that branch into yours early, in your first
   few turns, before you write anything. Your PR then supersedes it, and
-  you say so plainly so the owner can close the older one instead of
-  reviewing two.
+  you say so plainly at the top of your description. **Then close the
+  older one yourself**, once your own pull request is open and pushed.
+
+  ```bash
+  git log --oneline origin/<the-older-branch> ^HEAD   # must print nothing
+  gh pr close <n> --comment "Superseded by #<yours>. Branch kept."
+  ```
+
+  The first line is the proof and it comes first: if it prints anything,
+  your branch does not contain their work and you must not close it. Do
+  not delete the branch. Closing is reversible with `gh pr reopen` and
+  deleting a ref is not.
+
+  This clause used to say the owner would close it. On 2026-09-30 ten
+  pull requests were superseded in a single day and every one was left
+  open, so a review queue of 27 items held 17 live ones and 10 that their
+  own authors already knew were dead
+  (`INC-2026-09-30-superseded-prs-are-left-for-the-owner-to-close`).
+  Closing your own superseded pull request is not merging your own work,
+  it moves no authority, and the ExO seat probed the token and confirmed
+  it works.
 - **Branch from main anyway**, when your work genuinely does not touch
   the same files. Then name the older PR and the merge order you expect,
   the same way the ledger-collision rule already requires.
+
+**Say how deep the chain is.** If the PR you are superseding was itself a
+superseding PR, count the links and put the number in your description:
+"third in a chain, #141 to #153 to this one." A chain is not a problem at
+depth two. At **depth three or more, say in bold that your seat is
+blocked on merges**, because by then your diff carries three runs of work
+for one run of review, which makes it slower to review, which deepens the
+chain again. The skill seat reached depth five on 2026-09-30. That is the
+number to report rather than to route around, and it is evidence for the
+owner about merge throughput rather than a fact about you.
 
 What you never do is start from main, write into the same files, and say
 nothing. The evidence that this is real: incident 6 (two ledger appends
@@ -161,6 +226,55 @@ Two absolutes that fall out of it. Never `git push --force` a shared
 branch; `--force-with-lease` or nothing. And never reuse a branch name
 whose PR already merged, because the next reader cannot tell your new
 commits from the old ones.
+
+**And that second absolute needs one command, because five seats have
+broken it.** Looking for your own OPEN pull request finds an open collision
+and never a merged one, and six branch names in this repository carry more
+than one PR (INC-2026-09-30-branch-name-reuse-is-systemic). So before you
+create the branch, ask whether the name has ever been used:
+
+```bash
+gh pr list --state all --limit 200 --json number,state,headRefName \
+  --jq '.[] | select(.headRefName=="<the name you are about to use>") | .number'
+```
+
+Any output at all means pick a different name. Add a short suffix that says
+what this run is, not `-b` or `-2`: `skill/2026-09-30-containment` rather
+than `skill/2026-09-30-b`. The convention itself is what collides, because a
+monthly seat writing `okr/YYYY-MM` and a weekly ceremony writing
+`pm/sprint-YYYY-MM-DD` produce the same name on a second run in the same
+period, so a seat that follows its naming rule exactly will eventually reuse
+a name. The suffix is how you follow the rule and stay unique.
+
+## Survey the pull requests before you build (company standard L-E10, synced 2026-09-30)
+
+`docs/standards/lessons.md` L-E10: an open card is not evidence that nobody
+built it, so a builder surveys the pull requests before it writes code. Every
+run of this seat starts from `main` with no memory, and `main` is the one
+place where work that is built but unmerged is invisible. A backlog card says
+only that the work has not landed. It says nothing about whether it has been
+done.
+
+So before you write a line of code, two commands, and the results go in the
+PR description as named numbers.
+
+```bash
+gh pr list --state open --json number,title,headRefName
+gh pr list --state closed --limit 50 --search '<the feature in your own words>'
+```
+
+Read every hit whose scope overlaps yours, then pick one of three moves in
+the open: extend the existing branch, propose closing it with a reason, or
+land the stack. Writing another implementation of something that already has
+a branch is never one of the three. A survey nobody can see is
+indistinguishable from a survey nobody ran, which is why the numbers go in
+the description rather than in your reasoning.
+
+This clause exists because the standard arrived here on 2026-09-30 and no
+charter in this repository named it, so nothing made it fire at the moment it
+applies. The generic instruction to read your role's section of the lessons
+file is real and it is not a gate: it tells a seat to read a page, not to run
+a command before a specific act.
 
 ## Check the register before you ship (org rule, 2026-09-19, all seats)
 
@@ -187,6 +301,11 @@ So before you call `gh pr ready`, two checks.
   which no charter named until this run.
 - `docs/agents/runtime-changes.md` before touching the Playwright pin,
   the container or anything else the run executes inside.
+- `docs/voice/preferences/`, newest file, whenever this run changed a
+  word a reader sees. Every line you set must appear there as
+  `approved`, or in an approved file under `docs/voice/`. A line you
+  cannot point at is a line you wrote, and writing is not this seat's
+  lane.
 
 **2. Repeats go in the incident register.** If anything in this run
 failed the same way something has failed before, append it to
@@ -194,7 +313,23 @@ docs/agents/incidents.md in this PR. The standing rule at the top of
 that file says any issue occurring more than once is always recorded at
 the moment it repeats, with no exceptions, and that rule binds you, not
 only the ExO seat that reads the file weekly. A repeat that goes
-unrecorded is itself an incident.
+unrecorded is itself an incident. Number the entry the way the top of
+that file says, which is `INC-YYYY-MM-DD-slug` and never the next
+sequential number: you write on a branch, so the highest number you can
+see is not the highest number that exists, and that allocator has
+collided four times (incident 29).
+
+**3. The company standards bind you too.** `docs/standards/lessons.md`
+is the owner's corrections generalized into law across every Alexandra
+Systems product, and it says in its own words that every seat reads its
+role's section before working. Read the `any` section and your seat's
+section, and treat a rule there exactly as you treat one from this
+charter. It is a vendored copy, so never edit it here: a correction to a
+company standard goes to the chair through the ExO seat's relay,
+docs/agents/hq-relay.md. Where a standard and a local register disagree,
+the rule is docs/agents/cross-repo-law.md. The parent governs, and the
+disagreement itself is a finding worth reporting, because a parent
+overriding a local safety clause by silence is incident 23.
 
 One note on the House voice rules quoted in this charter. They are a
 snapshot of docs/voice/ban-list.md, taken when this charter was written.

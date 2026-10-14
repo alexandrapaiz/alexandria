@@ -1,65 +1,85 @@
 # LinkedIn — launch post (2026-10-13)
 
-Venue read: LinkedIn's version of this audience is segment 2 from
-docs/market/report-2026-09.md — technical leaders and staff+ engineers
-who already pay for judgment (Pragmatic Engineer's 1M+ readers is the
-comp). Register is more professional than X, but this crowd still
-smells corporate-speak instantly; keep the same honesty and specificity,
-just slower and less meme-shaped. No thread mechanic — one post, or a
-short "see comments" continuation.
+Rewritten 2026-09-30 against `../claim-ledger.md`. The 2026-09-18 version
+stated one skill and had no measurement to point at.
 
----
+## Venue read
 
-**Post:**
+LinkedIn's reader is a technical decision-maker who is skimming, and the post
+has to survive being read at half attention by someone who will not click. So
+the first two lines carry the whole claim, and the register is plain and
+serious throughout. No emoji, no hook-and-cliffhanger opening, no line breaks
+used as punctuation.
+
+This is the one venue where the company standard on public copy and the venue's
+own culture agree completely: sell the outcome, keep the mechanism short.
+
+## Post
 
 ```
-We launched alexandria today, and I want to be upfront about what it
-is and isn't, because I think that's rarer in a launch post than it
-should be.
+Alexandria opens today. It reads AI research, keeps a record of which findings
+later get supported and which get contradicted, and turns the ones that hold up
+into skill files that an agent loads and acts on.
 
-What it is: a research pipeline that reads AI papers and lab
-publications daily, tracks which technical claims about agent
-architecture and orchestration hold up over time versus get
-contradicted, and turns the surviving ones into Claude Agent Skills —
-loadable procedure files an agent can use, each one citing its sources.
+The problem it exists for is one every engineering team building with agents
+already has. The techniques that work are changing faster than anyone can keep
+up with by reading, and the expensive failure is not missing a new method. It
+is continuing to rely on one that quietly stopped being the right answer six
+months ago.
 
-What it isn't: another AI news roundup. There's no shortage of those,
-and they're free for a structural reason — news is a commodity. We're
-not competing there. What we sell is judgment with a paper trail: a
-skill that says exactly which 12 claims and 5 papers back it, plus a
-recorded before/after test of whether loading it actually changed a
-model's behavior.
+Six skills are live today. Each one lists the papers it was taken out of, with
+links to the full text, so an engineer can follow any recommendation back to the
+work behind it and argue with it on the evidence rather than on authority. A
+retrieval test run on 2026-09-29 scored 40 of 43 cases against eight decoys,
+and the three failures are published with it. One of the six also carries a
+recorded trial where loading it changed what the model recommended, and the
+other five do not carry that result yet.
 
-The other thing I'll say plainly: most of the people running this
-project day to day are autonomous agents, not employees. Each one has
-a written charter and opens its own pull requests against a public
-repo. I review and merge, or I don't. Every decision the project has
-made — including the ones that didn't work — is logged in the open,
-not cleaned up after the fact.
+The weekly digest is free and arrives in full. The library is $20 a month, and
+a subscription can be set to stop at the end of each month until a reminder
+arrives and you decide to continue, because a business that depends on being
+forgotten is a business with a bad product.
 
-The digest is free, full issues, always. The operational layer —
-the skills, a queryable claim graph, automations — is $20/month,
-live today. One skill shipped so far, with more in the pipeline
-weekly; I'd rather tell you that honestly than round it up.
-
-If you build or manage systems that use AI agents and you're tired of
-"trust me" where a citation should be, I think you'll like this.
+Most of the organisation that built this is autonomous agents with written
+charters, each opening its own pull requests against a public repository, and
+every decision the project has made is a dated public entry including the ones
+that did not work.
 
 [SITE_URL]
+github.com/alexandrapaiz/alexandria
 ```
 
-**Comment (owner posts as first reply, to pre-empt the obvious
-question without cluttering the main post):**
+## If the Obsolescence Report runs
+
+The first paragraph is replaced and the rest stands.
 
 ```
-Answering the question I expect first: no, this doesn't run without
-me. Agents draft, research, and propose. I'm the only one who decides
-what actually ships or gets said. The automation is in the boring,
-checkable middle — not the judgment calls.
+Alexandria opens today, and the first thing it published is a list of the
+claims it got wrong. The library keeps a record of which research findings
+later got contradicted, and a record like that is worth nothing if it never
+returns a verdict against the people who built it, so we ran it against our own
+issues and our own skills before we ran it against anything else.
 ```
 
-**What not to say:** no "disrupting" language, no team/headcount
-framing that implies more staff than exists, no client logos (there
-are none yet) — LinkedIn's professional register makes an overclaim
-here look worse, not better, because it reads as a credibility test
-this audience is used to running.
+## Never in this post
+
+No subscriber count and nothing that implies one. No "excited to announce",
+which is enthusiasm claimed rather than demonstrated. No paper count with the
+verb "read" attached unless it is the full-read count beside the arriving
+count. Nothing about a roadmap stated as if it had already shipped.
+
+## If the checkout has not landed by 2026-10-12 (Shape B)
+
+Checked against `../launch-gate.md` §1. Two lines in this post become false:
+"Alexandria opens today" and "The library is $20 a month", read together by a
+reader who then clicks. The replacement post is
+`../campaigns/merge-day/linkedin.md`.
+
+If she wants this post, the two repairs are "Alexandria is public as of today"
+in place of "opens today", and this sentence in place of the pricing line:
+
+```
+The library is $20 a month and it is not open yet, because the payment
+integration is not built. I would rather launch the record on the date I named
+than open a checkout I have to apologise for next week.
+```

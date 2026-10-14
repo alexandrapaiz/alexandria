@@ -1,0 +1,60 @@
+trigger test — engine lexical/2.1, floor 0.05, 8 decoys (policy pre-registered)
+library: 5 skills, 36 cases
+
+## evaluation-integrity  (skills/evaluation-integrity/triggers.json)
+  [PASS] ei-pos-1     positive  expect evaluation-integrity -> evaluation-integrity
+  [PASS] ei-pos-2     positive  expect evaluation-integrity -> evaluation-integrity
+  [PASS] ei-pos-3     positive  expect evaluation-integrity -> evaluation-integrity
+  [PASS] ei-neg-1     negative  expect (silence) -> (silence, best fit decoy-dependency-management)
+  [PASS] ei-neg-2     negative  expect (silence) -> (silence, best fit decoy-frontend-layout)
+  [PASS] ei-conf-1    confusion expect harness-engineering -> harness-engineering
+  [PASS] ei-conf-2    confusion expect self-improving-post-training-loops -> self-improving-post-training-loops
+  [PASS] ei-conf-3    confusion expect recursive-harness-self-improvement -> recursive-harness-self-improvement
+  8/8 passed (positives 3/3, negatives 2/2, confusion 3/3, narrow 0); 95% CI [0.63, 1.00]
+
+## harness-engineering  (skills/harness-engineering/triggers.json)
+  [PASS] he-pos-1     positive  expect harness-engineering -> harness-engineering
+  [PASS] he-pos-2     positive  expect harness-engineering -> harness-engineering
+  [PASS] he-pos-3     positive  expect harness-engineering -> harness-engineering
+  [PASS] he-neg-1     negative  expect (silence) -> (silence, best fit decoy-cluster-capacity)
+  [PASS] he-neg-2     negative  expect (silence) -> (silence, best fit decoy-product-copy)
+  [PASS] he-conf-1    confusion expect harness-engineering -> harness-engineering
+  6/6 passed (positives 3/3, negatives 2/2, confusion 1/1, narrow 0); 95% CI [0.54, 1.00]
+
+## recursive-harness-self-improvement  (skills/recursive-harness-self-improvement/triggers.json)
+  [PASS] rhsi-pos-1   positive  expect recursive-harness-self-improvement -> recursive-harness-self-improvement
+  [PASS] rhsi-pos-2   positive  expect recursive-harness-self-improvement -> recursive-harness-self-improvement
+  [PASS] rhsi-pos-3   positive  expect recursive-harness-self-improvement -> recursive-harness-self-improvement
+  [PASS] rhsi-neg-1   negative  expect (silence) -> (silence, best fit decoy-incident-response)
+  [PASS] rhsi-neg-2   negative  expect (silence) -> (silence, best fit decoy-api-integration)
+  [PASS] rhsi-conf-1  confusion expect harness-engineering -> harness-engineering
+  [PASS] rhsi-conf-2  confusion expect self-improving-post-training-loops -> self-improving-post-training-loops
+  7/7 passed (positives 3/3, negatives 2/2, confusion 2/2, narrow 0); 95% CI [0.59, 1.00]
+
+## self-improving-post-training-loops  (skills/self-improving-post-training-loops/triggers.json)
+  [PASS] pt-pos-1     positive  expect self-improving-post-training-loops -> self-improving-post-training-loops
+  [PASS] pt-pos-2     positive  expect self-improving-post-training-loops -> self-improving-post-training-loops
+  [PASS] pt-pos-3     positive  expect self-improving-post-training-loops -> self-improving-post-training-loops
+  [PASS] pt-neg-1     negative  expect (silence) -> (silence, best fit decoy-api-integration)  [narrow, margin +0.000]
+  [PASS] pt-neg-2     negative  expect (silence) -> (silence, best fit decoy-data-pipeline-ops)
+  [PASS] pt-conf-1    confusion expect self-improving-post-training-loops -> self-improving-post-training-loops
+  6/6 passed (positives 3/3, negatives 2/2, confusion 1/1, narrow 1); 95% CI [0.54, 1.00]
+
+## skill-library-engineering  (skills/skill-library-engineering/triggers.json)
+  [PASS] sle-pos-1    positive  expect skill-library-engineering -> skill-library-engineering
+  [PASS] sle-pos-2    positive  expect skill-library-engineering -> skill-library-engineering
+  [PASS] sle-pos-3    positive  expect skill-library-engineering -> skill-library-engineering
+  [PASS] sle-neg-1    negative  expect (silence) -> (silence, best fit decoy-data-pipeline-ops)  [narrow, margin +0.000]
+  [FAIL] sle-neg-2    negative  expect (silence) -> harness-engineering
+         prompt: We have about thirty tools registered on our MCP server and the model picks the wrong one on maybe a fifth of calls. Should we cut the tool count, rename them, or add a selection step before the call?
+         top: harness-engineering 0.1638, skill-library-engineering 0.1572, self-improving-post-training-loops 0.1521, decoy-postgres-tuning 0.1263
+         library 0.164 vs null decoy-postgres-tuning 0.126 (margin +0.037)
+  [PASS] sle-conf-1   confusion expect harness-engineering -> harness-engineering
+  [PASS] sle-conf-2   confusion expect recursive-harness-self-improvement -> recursive-harness-self-improvement
+  [PASS] sle-conf-3   confusion expect evaluation-integrity -> evaluation-integrity
+  [PASS] sle-conf-4   confusion expect self-improving-post-training-loops -> self-improving-post-training-loops
+  8/9 passed (positives 3/3, negatives 1/2, confusion 4/4, narrow 1); 95% CI [0.52, 1.00]
+
+TOTAL 35/36 — reliability 0.97, 95% CI [0.85, 1.00]
+
+wrote skills/_validation/results/2026-09-26-lexical-2.1.json

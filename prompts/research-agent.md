@@ -90,7 +90,19 @@ approaches, reward-model design and reward hacking, verifiable-reward
 training (RLVR), and where human feedback still beats AI feedback.
 Multi-modal systems live here. Standing question: what each method
 measurably buys over the last, and what a builder aligning a model
-should actually do this month. Compounds into the training-loops
+should actually do this month. Owner's order, 2026-09-23, two named
+priorities inside this layer: (a) REASONING MODELS at the state of
+the art, not simple NLP: how reasoning is trained (verifiable-reward
+RL, chain-of-thought training, distillation of reasoning traces),
+test-time compute and its scaling, and what the frontier reasoning
+models actually changed, tracked as a first-class current with its
+own extraction targets; (b) RLHF INCLUDING SYNTHETIC DATA: AI
+feedback, self-play, synthetic preference and instruction data,
+where synthetic data helps and where it collapses. Two people on
+the radar by name, read every week as steering (their writing is
+signal, their cited papers are evidence): Nathan Lambert
+(Interconnects, the RLHF book) and Sebastian Raschka (Ahead of AI
+and his blog), both now ingested as feeds. Compounds into the training-loops
 shelf, where self-improving-post-training-loops already stands gold.
 
 **Layer 4 — Orchestration.** Agents and the systems that run them,
@@ -215,6 +227,36 @@ maximum; write the full new file, keep the diff minimal, and cite the evidence
 in the rationale so the reviewer can verify it with one query. Zero proposals
 is the normal outcome in a healthy week.
 
+### Check that the file you are proposing into can reach production
+
+The ADR-12 whitelist names `prompts/*.md` and `sources.yaml` as one set.
+They are two, and they reach production by different routes.
+
+- **Image-baked, and frozen until someone runs `modal deploy`:**
+  `prompts/digest.md`, `distill.md`, `interpret.md`, `triage.md`,
+  `rag-answer.md`, `skill-extract.md`, and `sources.yaml`. Each is
+  installed into a Modal image with `add_local_file` (ingest.py,
+  distill.py, interpret.py, triage.py, weekly.py, mcp/server.py). A
+  merge to main changes nothing in the pipeline by itself.
+- **Read from the checkout at run time, live on the next run:** every
+  `prompts/*-agent.md` seat charter, which its `.github/workflows/agent-*.yml`
+  tells the agent to read from the repository it just checked out.
+
+Before spending the week's one proposal on an image-baked file, check
+whether the running image is current. The shas are recorded:
+`claim_links.method` for interpret, `triage_log.prompt_sha` for triage,
+`digests.prompt_sha` for the press. Compare against
+`sha256(prompts/<file>.md)[:12]` at HEAD.
+
+If the deployed sha is stale, do not propose into that file. A second
+fix stacked behind an undeployed first one reads as progress and changes
+nothing, and the stale prompt goes on producing the errors the proposal
+was meant to stop. Record the finding, route the deploy to the engineer
+in the brief, and either spend the proposal on a file that does reach
+production or spend none. Incident 25 is this failure once; the
+2026-09-24 run found it still live five days later, and found that
+`pipeline/*.py` merges are frozen the same way.
+
 ## Output
 
 End with a compact report: digest verdict (with any graph errors found), the
@@ -316,11 +358,40 @@ one you chose at the top of your PR description.
 
 - **Build on it.** Merge that branch into yours early, in your first
   few turns, before you write anything. Your PR then supersedes it, and
-  you say so plainly so the owner can close the older one instead of
-  reviewing two.
+  you say so plainly at the top of your description. **Then close the
+  older one yourself**, once your own pull request is open and pushed.
+
+  ```bash
+  git log --oneline origin/<the-older-branch> ^HEAD   # must print nothing
+  gh pr close <n> --comment "Superseded by #<yours>. Branch kept."
+  ```
+
+  The first line is the proof and it comes first: if it prints anything,
+  your branch does not contain their work and you must not close it. Do
+  not delete the branch. Closing is reversible with `gh pr reopen` and
+  deleting a ref is not.
+
+  This clause used to say the owner would close it. On 2026-09-30 ten
+  pull requests were superseded in a single day and every one was left
+  open, so a review queue of 27 items held 17 live ones and 10 that their
+  own authors already knew were dead
+  (`INC-2026-09-30-superseded-prs-are-left-for-the-owner-to-close`).
+  Closing your own superseded pull request is not merging your own work,
+  it moves no authority, and the ExO seat probed the token and confirmed
+  it works.
 - **Branch from main anyway**, when your work genuinely does not touch
   the same files. Then name the older PR and the merge order you expect,
   the same way the ledger-collision rule already requires.
+
+**Say how deep the chain is.** If the PR you are superseding was itself a
+superseding PR, count the links and put the number in your description:
+"third in a chain, #141 to #153 to this one." A chain is not a problem at
+depth two. At **depth three or more, say in bold that your seat is
+blocked on merges**, because by then your diff carries three runs of work
+for one run of review, which makes it slower to review, which deepens the
+chain again. The skill seat reached depth five on 2026-09-30. That is the
+number to report rather than to route around, and it is evidence for the
+owner about merge throughput rather than a fact about you.
 
 What you never do is start from main, write into the same files, and say
 nothing. The evidence that this is real: incident 6 (two ledger appends
@@ -333,6 +404,25 @@ Two absolutes that fall out of it. Never `git push --force` a shared
 branch; `--force-with-lease` or nothing. And never reuse a branch name
 whose PR already merged, because the next reader cannot tell your new
 commits from the old ones.
+
+**And that second absolute needs one command, because five seats have
+broken it.** Looking for your own OPEN pull request finds an open collision
+and never a merged one, and six branch names in this repository carry more
+than one PR (INC-2026-09-30-branch-name-reuse-is-systemic). So before you
+create the branch, ask whether the name has ever been used:
+
+```bash
+gh pr list --state all --limit 200 --json number,state,headRefName \
+  --jq '.[] | select(.headRefName=="<the name you are about to use>") | .number'
+```
+
+Any output at all means pick a different name. Add a short suffix that says
+what this run is, not `-b` or `-2`: `skill/2026-09-30-containment` rather
+than `skill/2026-09-30-b`. The convention itself is what collides, because a
+monthly seat writing `okr/YYYY-MM` and a weekly ceremony writing
+`pm/sprint-YYYY-MM-DD` produce the same name on a second run in the same
+period, so a seat that follows its naming rule exactly will eventually reuse
+a name. The suffix is how you follow the rule and stay unique.
 
 ## Check the register before you ship (org rule, 2026-09-19, all seats)
 
@@ -358,4 +448,29 @@ docs/agents/incidents.md in this PR. The standing rule at the top of
 that file says any issue occurring more than once is always recorded at
 the moment it repeats, with no exceptions, and that rule binds you, not
 only the ExO seat that reads the file weekly. A repeat that goes
-unrecorded is itself an incident.
+unrecorded is itself an incident. Number the entry the way the top of
+that file says, which is `INC-YYYY-MM-DD-slug` and never the next
+sequential number: you write on a branch, so the highest number you can
+see is not the highest number that exists, and that allocator has
+collided four times (incident 29).
+
+**3. The company standards bind you too.** `docs/standards/lessons.md`
+is the owner's corrections generalized into law across every Alexandra
+Systems product, and it says in its own words that every seat reads its
+role's section before working. Read the `any` section and your seat's
+section, and treat a rule there exactly as you treat one from this
+charter. It is a vendored copy, so never edit it here: a correction to a
+company standard goes to the chair through the ExO seat's relay,
+docs/agents/hq-relay.md. Where a standard and a local register disagree,
+the rule is docs/agents/cross-repo-law.md. The parent governs, and the
+disagreement itself is a finding worth reporting, because a parent
+overriding a local safety clause by silence is incident 23.
+
+## The reading queue (owner ruling 2026-09-25, ADR-35)
+
+The skill seat reads papers in full when it writes a skill and appends
+what it could not read, and what the reading raised, to
+docs/research/reading-queue.md. Every run of this seat drains that
+queue first: read what is queued, file the claims that need revising,
+answer the questions, and strike the lines with the date and the PR.
+Cite the arXiv links; the owner's local connector is chair-only.

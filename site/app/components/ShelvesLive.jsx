@@ -24,6 +24,15 @@ const ROWS = [
   [["v", 14], ["lean", 16], ["gap", 10], ["fallen", 220], ["v", 29]],
 ];
 const HEIGHT = ROWS.length * (BOOK + ROWGAP) - ROWGAP;
+// The viewBox was 1240 wide against rows that lay ink out to 1250, so the
+// last spine of row 5 rendered as a half-width sliver and row 1's was
+// shaved: an SVG clips whatever falls outside its viewBox. Caught in the
+// screenshots at all three viewports, then confirmed by walking the row
+// table and measuring the rightmost stroke edge (row 1: 1241.3, row 5:
+// 1250.0). The shapes are untouched; the frame around them now holds them,
+// with the same 6 units of air on each side.
+const VBX = -6;
+const VBW = 1262;
 
 // p = 0 shelf at rest, p = 1 the rack (upright, flat, lit)
 function shapes(p) {
@@ -180,7 +189,14 @@ export default function ShelvesLive(props) {
       gliding = true;
       const fromY = window.scrollY;
       const t0 = performance.now();
-      const ms = Math.max(320, Math.min(950, Math.abs(toY - fromY) * 1.2));
+      // Refinement 2 of two, 2026-09-20. Scene one now fills the first view
+      // (the owner's reveal ruling), which roughly doubled the distance this
+      // flight covers, and at 1.2ms per pixel it pinned itself to the old
+      // 950ms ceiling at every viewport: measured at 801ms before, against a
+      // canon that puts page-level moments at 300 to 500ms and a benchmark
+      // where nothing on Linear or Elicit runs past 170ms. The curve and the
+      // choreography are untouched; the flight just stops dawdling.
+      const ms = Math.max(320, Math.min(500, Math.abs(toY - fromY) * 0.55));
       const ease = (x) =>
         x < 0.5 ? 16 * x * x * x * x * x : 1 - Math.pow(-2 * x + 2, 5) / 2;
       const step = (now) => {
@@ -320,7 +336,7 @@ export default function ShelvesLive(props) {
   return (
     <svg
       ref={ref}
-      viewBox={`0 0 1240 ${HEIGHT}`}
+      viewBox={`${VBX} 0 ${VBW} ${HEIGHT}`}
       xmlns="http://www.w3.org/2000/svg"
       preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"

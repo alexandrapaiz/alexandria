@@ -226,7 +226,14 @@ claim graph contain contradicting or refining claims the draft ignored?
 date, so the page can say when the evidence was last checked rather than only
 what it said.
 
-*Built.* No. Designed in ADR-13, zero engineer PRs so far.
+*Built.* The provenance reviewer, 2026-10-02: `tools/panel_provenance.py`,
+filing `panel_verdicts` rows, with the claim-existence question running daily
+in `pipeline/skill_revision.py`. Two of this section's four questions are
+answered, the claim-graph sweep belongs to the adversary reviewer and is not
+built, and "does the cited claim support the sentence citing it" is not
+decidable against today's format, which carries one claim id list per document
+rather than per section. Build note and the remaining slices:
+docs/product/reviewer-panel.md.
 
 ### V3. Behavioral delta on a held-out suite
 
@@ -256,6 +263,21 @@ into a verified badge, carrying the rubric delta, the n, and the interval.
 *Built.* No. This is the upgrade of the existing A/B, and the natural second
 slice.
 
+*Coverage, added 2026-10-05.* "Does the delta cover the skill" is a different
+question from "is the delta real", and until now nothing asked it. Every task
+in every suite carries `sections`, the `## ` headings of its skill that the task
+exercises, and both checks the suite contract asks of that field now run with no
+model and no key: a `sections` entry naming no heading of the file is a
+`conformance` problem, since the coverage claim is false, and a heading no task
+exercises is a `section-coverage` note on ADR-13's validator and a `finding:`
+line in `--check`, since the contract calls it a finding rather than an error.
+The number that comes out, `N of M sections exercised`, is what a per-section
+`Validation:` tag under ADR-38 has to be able to print, including when the
+honest value is nothing. Pointing it at the three open skill-seat branches is
+also how `INC-2026-10-05-the-rewrite-staled-every-coverage-claim` was found:
+a delta rewrite renamed the headings six suites point at, and 60 of 76 coverage
+claims had been false for five days.
+
 ### V4. Regression on revision
 
 *Question.* When the skill is edited or one of its claims changes status,
@@ -275,8 +297,24 @@ interval. A regression blocks the edit, it does not merely annotate it.
 
 *Receipt field.* `last_revalidated`, plus the version the numbers belong to.
 
-*Built.* No. Cheap once V1 and V3 exist, since it is those two plus a
-comparison against the stored bundle.
+*Where the stored bundle is, as of 2026-10-04.* This rule's instrument is "a
+comparison against the stored bundle", and until this date there was no stored
+bundle to compare against: `skills/<slug>/evals/results.json` was one slot that
+each run overwrote, so the previous version's numbers were gone by the time the
+new ones existed. The file is now append-only. Every run appends one entry to
+`history` carrying the version, the date, the sha of the text it measured, the
+subject model, the repetitions, the delta and its interval, and the top level
+stays the newest summary so the page's contract does not move. Three readers
+make the comparison this rule asks for: `tools/skill_eval.py --gate` against the
+last entry, `tools/panel_validator.py`'s `trial-direction` finding, and ADR-37's
+fourth trigger, which until now compared the newest result against itself
+because the reader had to synthesise a one-entry history out of the only
+document that existed.
+
+*Built.* Half. The record and the V3 comparison over it exist. What is still
+missing is V1 over the same record, since the trigger-test receipts live in
+`skills/_validation/results/` as library-level files rather than per skill, and
+the blocking half of the pass rule, which is a workflow nobody has written.
 
 ### V5. Statistical honesty
 
@@ -297,7 +335,82 @@ check first when reading any number this system produces.
 *Receipt field.* Every numeric field carries its n and its interval, or it
 does not render.
 
+*Enforced at.* Rule 1 has two gates as of 2026-10-04, and until that date it
+had one and a half. `tools/skill_eval.py`'s `conformance` refuses to run a
+suite that pre-registers no repetitions, and prints the `policy` block the file
+needs; before that date the same check could not fail for any input, because
+`normalize` supplied a default three lines earlier
+(INC-2026-10-04-two-checks-that-could-not-fail). `tools/panel_validator.py`'s
+`trial-pre-registered` check reads the raw suite against the result's own
+policy, and separates a key nobody registered from a key that was edited after
+the numbers came in. Neither gate may supply a threshold, which is the one
+number this rule exists to keep out of the harness's hands.
+
 *Built.* Slice 1, in this PR, for V1 only.
+
+### V6. Instrument integrity, added 2026-10-05 (ADR-40)
+
+*Question.* Before anybody reads the delta, is the thing that produced it
+measuring the skill, or measuring itself?
+
+*Instrument.* Five checks, every one of them cheap, and four of them need no
+model at all.
+
+1. **The ablation is matched and it says what it could not pin.** The arms
+   differ in the skill body and nothing else: same model, same tools, same
+   retrieval, same temperature, and the same seed where the provider honours
+   one (C362, C1090). Groq does; Moonshot documents k2.6's temperature as fixed
+   and documents no seed, so a run on the default subject records in words that
+   it is matched and not replayable call for call. A harness that printed a seed
+   next to a provider that ignores it would be claiming a replayability it does
+   not have, which is the failure this whole page exists to catch.
+2. **Only differential tasks count.** The bare subject answers every task
+   before the skill exists in any prompt. A task it already passes becomes a
+   control (C412's contrastive pairing). This is arithmetic rather than taste:
+   a task both arms pass every time contributes a delta of exactly zero, so
+   leaving it in the graded set is a denominator and not a neutral observation.
+3. **Every rubric criterion is tied to a certificate, and ships an answer that
+   games it.** A test, a number or a named artifact. Rubrics with no such tie
+   were exploited 8 to 26 percent of the time and up to 36 percent under
+   stress; certificate-faithful ones 0 percent (C476, C479). So the exploit
+   answer must score zero, and a rubric that scores it is a finding about the
+   rubric rather than about the skill.
+4. **Each task is audited once, and the judge is checked for a length
+   preference.** Ambiguity, gameability and realism, by a model that is not the
+   subject, written to `evals/audit.json` and never re-paid for (PACT, C561).
+   The length check scores the same content at two lengths, so a judge that
+   rewards volume is visible rather than inferred (C934).
+5. **Credit lands on a section.** The per-criterion scores were always
+   computed and then averaged away. They are now recorded against the skill
+   section each criterion is evidence about (DRACO's per-step credit, C40; the
+   role-level credit read from traces, C1442), which is what makes a
+   per-section validation status a measurement instead of a label.
+
+*Pass rule.* Like V5, this gate does not pass or fail a skill. It governs
+whether the other gates' numbers mean anything. One clause of it does have
+teeth, because it has to: an exploited rubric fails ADR-37's gate ahead of the
+delta, since a delta computed by a rubric that scores an answer written to game
+it is a number about the rubric.
+
+*Receipt field.* `ablation`, `differential`, `exploit_test`, `length_bias` and
+`section_deltas` in `results.json`, contract 2. The contract is
+site/app/skills/README.md and `survival` is reserved there for ADR-39's axis,
+null until Ursa writes it, because "nobody measured this" and "nobody acted on
+this" must never render as the same thing.
+
+*Enforced at.* `tools/skill_eval.py`: the manifest, the bare-first pass, the
+exploit run, the audit, the length check and the section credit, with 13 smoke
+checks and 21 cases in `tests/test_skill_eval.py`. Items 3 and 4 are reported
+by `--check` as findings rather than errors, because the eight suites in the
+library were written before these rules existed and a gate that failed every
+one of them is a gate somebody turns off. A suite opts in with
+`policy.require_certificates` and then they are errors.
+
+*Built.* 2026-10-05, all five, on the owner's directive. What is not built is
+the instrument ADR-40 asked for in refinement item 3: the corrections are
+clustered lexically rather than by embedding, which is a funding constraint
+stated in docs/agents/skill-eval-program.md and reported by the tool itself
+whenever the clustering finds nothing.
 
 ## 4. From a validation run to the receipts and the badge
 

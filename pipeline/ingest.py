@@ -7,6 +7,7 @@ Runs daily on Modal. Requires the `neon` secret (DATABASE_URL).
 """
 
 import hashlib
+import pathlib
 
 import modal
 
@@ -21,6 +22,10 @@ image = (
         "httpx==0.28.1",
     )
     .add_local_file("sources.yaml", "/root/sources.yaml")
+    # The drift guard, so this job can say which deploy it is. Added 2026-10-09:
+    # ingest was one of the two scheduled apps the guard never watched, and it
+    # is the stage that fills `papers`.
+    .add_local_file("pipeline/runtime_sha.py", "/root/runtime_sha.py")
 )
 
 app = modal.App("alexandria-ingest", image=image)
@@ -128,6 +133,24 @@ def fetch_hf_daily(cfg: dict) -> list[dict]:
     return rows
 
 
+def runtime_guard():
+    """pipeline/runtime_sha.py, from the image or from a checkout.
+
+    The two-path trick every job in this pipeline uses: the module is a sibling
+    in a checkout and sits at /root inside the image, and deciding which from
+    an environment variable goes stale the first time the image changes.
+    """
+    import sys
+
+    here = str(pathlib.Path(__file__).resolve().parent)
+    for path in ("/root", here):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    import runtime_sha as module
+
+    return module
+
+
 def upsert_papers(rows: list[dict]) -> int:
     import os
 
@@ -139,6 +162,10 @@ def upsert_papers(rows: list[dict]) -> int:
     """
     inserted = 0
     with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        # Say which deploy this is before anything else happens, the way
+        # triage, interpret and weekly have since 2026-09-28. It cannot raise
+        # and cannot abort this transaction; pipeline/runtime_sha.py says how.
+        print(runtime_guard().record_runtime(conn, "ingest", __file__)[1])
         with conn.cursor() as cur:
             for r in rows:
                 if r["tier"] == "b":

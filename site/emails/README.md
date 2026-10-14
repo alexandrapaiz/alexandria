@@ -4,7 +4,11 @@
 
 1. Fill by string replacement, no template engine: `{{slot}}` values, plus `<!-- BEGIN:X -->…<!-- END:X -->` regions the filler repeats, fills once, or deletes whole.
 2. Issue slots: `{{title}}` (the finding, and the subject line), `{{preheader}}` (one plain sentence for the inbox preview, never the title again), `{{edition}}` ("Daily dispatch · September 19, 2026"), `{{edition_short}}`, `{{opening}}`, `{{close}}`, and the optional `STATS` and `MASTHEAD` regions.
-3. Link slots: `{{web_url}}`, `{{archive_url}}`, `{{unsubscribe_url}}` (a `mailto:` is a valid value until a real endpoint exists) and `{{recipient_email}}`.
+3. Link slots: `{{web_url}}`, `{{archive_url}}`, `{{unsubscribe_url}}` and `{{recipient_email}}`.
+   `{{unsubscribe_url}}` is normally `/unsubscribe?t=<token>` on the site, one opaque
+   token per subscriber. A `mailto:` is still a valid value and is what the press sends
+   to a subscriber whose row has no token yet, so the slot's contract has not narrowed.
+   `pipeline/weekly.py`'s `unsubscribe_link()` is the only thing that chooses between them.
 4. `SECTION` repeats once per H2 and carries `{{section_title}}`: Compounding, New and unproven, Left behind.
 5. `ITEM` repeats inside a section; only `{{item_title}}` or `{{item_body}}` is required, and every other region inside it is optional.
 6. `ITEM_KIND` is a group label above the item (Contradicted, Replaced) and prints only when it changes, so identical labels never stack.

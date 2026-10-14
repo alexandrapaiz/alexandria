@@ -9,6 +9,12 @@ plus user payload plus `max_completion_tokens`. Reserve 6,000 tokens of
 output and you have spent 6,000 tokens of budget before the model writes a
 word.
 
+Since ADR-32 the press writes on Moonshot's Kimi and keeps Groq's free tier
+as its last resort, so the guard is now a two-provider guard. The ceiling
+that binds is not the same kind of number on each: Groq refuses on
+tokens-per-minute, Moonshot on the model's context window. `binding_limit`
+takes the smaller of the two and every printed line says which one it was.
+
 The arithmetic that must hold, every run:
 
     prompt + payload + max_completion_tokens + envelope  <=  TPM * (1 - MARGIN)
@@ -17,7 +23,7 @@ This module owns that arithmetic and nothing else. Three callers share it so
 the number can never drift between them:
 
 * `pipeline/weekly.py` sizes the payload against it (`fit_payload`) and
-  refuses to call Groq when the request cannot fit (`check_request`).
+  refuses to call the provider when the request cannot fit (`check_request`).
 * CI runs `python3 pipeline/budget.py` on every pull request that touches a
   generator prompt or the pipeline, and fails the build with the arithmetic
   printed, so an editorial merge cannot break the press again.
@@ -33,6 +39,7 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 import re
 import sys
 from dataclasses import dataclass, field
@@ -43,46 +50,360 @@ ROOT = Path(__file__).resolve().parent.parent
 
 # ---------------- what the model will accept ----------------
 
-# Groq's published free-tier limits, read 2026-09-19 from
-# https://console.groq.com/docs/rate-limits. TPM is the number that bites: a
-# single request larger than it is rejected 413 before any generation starts,
-# and the window is rolling, so it is both a per-request and a per-minute cap.
+# The press talks to two providers now (ADR-32, 2026-09-24), and the number
+# that binds a single request is not the same kind of number on each of them.
 #
-# Only four free-tier entries carry a TPM above 8K, and three of them are
-# classifiers or speech models. `groq/compound` is the one usable writer with
-# room, at 70K. Keep this table honest: every run of weekly.py logs Groq's own
-# `x-ratelimit-limit-tokens` header, which is the authority. If a logged value
-# ever disagrees with a number here, the logged value wins and this table is
-# the thing to fix.
+# * **Moonshot** (Kimi K2) is a prepaid account, so the per-minute ceilings are
+#   enormous and the CONTEXT WINDOW is what a request has to fit inside.
+# * **Groq**'s free tier is the opposite: the context window is generous and
+#   the TOKENS-PER-MINUTE ceiling is what refuses the request, because incident
+#   22 established that a single request larger than TPM is rejected 413 before
+#   generation starts.
+#
+# `limit_for` therefore takes the smaller of the two on every model, and
+# `Report.summary` says which one bit. Getting this wrong in either direction
+# is a press that either 413s in production or refuses a request that would
+# have been fine.
+PROVIDERS = {
+    "moonshot": {
+        "base_url": "https://api.moonshot.ai/v1",
+        "key_env": "MOONSHOT_API_KEY",
+        "secret": "moonshot",          # the Modal secret name, never its value
+        "docs": "https://platform.kimi.ai/docs/models",
+        "limits_docs": "https://platform.kimi.ai/docs/pricing/limits",
+    },
+    "groq": {
+        "base_url": "https://api.groq.com/openai/v1",
+        "key_env": "GROQ_API_KEY",
+        "secret": "groq",
+        "docs": "https://console.groq.com/docs/models",
+        "limits_docs": "https://console.groq.com/docs/rate-limits",
+    },
+}
+
+PRIMARY_PROVIDER = "moonshot"
+
+#: The Kimi id every job reaches for first. Named once so the daily-allowance
+#: guard below does not have to guess which model's `tpd` is the shared one.
+PRIMARY_MODEL = "kimi-k2.6"
+
+
+def provider_of(model: str) -> str:
+    """Which provider serves `model`. Raises rather than guessing from the id."""
+    if model in DECOMMISSIONED:
+        raise KeyError(
+            f"{model!r} was withdrawn by its provider: {DECOMMISSIONED[model]} "
+            "There is nowhere to send this request."
+        )
+    if model not in MODELS:
+        raise KeyError(
+            f"{model!r} has no entry in budget.MODELS, so there is no provider "
+            "to send it to. Add it with the numbers from its provider's docs "
+            "before pointing a press at it."
+        )
+    return MODELS[model]["provider"]
+
+
+def endpoint(provider: str, path: str) -> str:
+    return f"{PROVIDERS[provider]['base_url']}{path}"
+
+
+# Every number here is read from the provider's live documentation, and the
+# date it was read is in the comment above its block. Nothing in this table is
+# remembered or inferred.
+#
+# Keep it honest: weekly.py logs whatever rate-limit headers the provider
+# returns, and a logged value always outranks a value written here.
+#
+# `price_in` / `price_out` are USD per million tokens, cache-miss input. They
+# are not a guard input; they exist so `python3 pipeline/budget.py` can print
+# what an issue costs, which is the number finance books (ADR-32).
 MODELS = {
-    "openai/gpt-oss-120b": {"tpm": 8_000, "context": 131_072, "max_output": 65_536},
-    "openai/gpt-oss-20b": {"tpm": 8_000, "context": 131_072, "max_output": 65_536},
-    "qwen/qwen3.8-27b": {"tpm": 8_000, "context": 131_072, "max_output": 32_768},
-    "groq/compound": {"tpm": 70_000, "context": 131_072, "max_output": 8_192},
-    "groq/compound-mini": {"tpm": 70_000, "context": 131_072, "max_output": 8_192},
+    # Moonshot, read from https://platform.kimi.ai/docs/models,
+    # https://platform.kimi.ai/docs/pricing/chat and
+    # https://platform.kimi.ai/docs/pricing/limits on 2026-09-24.
+    #
+    # THE MODEL ID IS NOT `kimi-k2`. The dispatch and ADR-32 both say "Kimi
+    # K2", and the bare `kimi-k2` series was discontinued on 2026-05-25: a
+    # request to it would 404, which is incident 24 all over again on a new
+    # provider. The current 256K-class general Kimi is `kimi-k2.6`. The other
+    # two K2 ids in the catalog are `kimi-k2.7-code` and its high-speed
+    # variant, which are coding models, and the press writes prose.
+    #
+    # TPM is the tier-0 number, the floor of what a funded account gets ($1
+    # minimum recharge). Every higher tier has more. Even the floor is 500,000
+    # TPM against a 262,144-token context, so the context is what binds and the
+    # press's ~36,000-token request has room to spare at any tier.
+    "kimi-k2.6": {
+        "provider": "moonshot",
+        "tpm": 500_000, "rpm": 3, "rpd": None, "tpd": 1_500_000,
+        "context": 262_144, "max_output": 32_768, "status": "production",
+        "price_in": 0.95, "price_out": 4.00,
+    },
+
+    # Groq's free tier, re-read from the live docs on 2026-09-24 (incident 24)
+    # at https://console.groq.com/docs/rate-limits and cross-checked against
+    # https://console.groq.com/docs/models.
+    #
+    # All three general text writers sit at 8,000 TPM and there is no free-tier
+    # model above it that can write prose. At today's prompt size that ceiling
+    # is below the prompt plus the output reservation, so these three cannot
+    # print the weekly issue at all. They stay in the fallback list on purpose:
+    # they are the last resort for the day the prompt gets shorter or the
+    # ceiling moves, and the guard prints their arithmetic every run so nobody
+    # has to guess whether that day has arrived.
+    "openai/gpt-oss-120b": {
+        "provider": "groq",
+        "tpm": 8_000, "rpm": 30, "rpd": 1_000, "tpd": 200_000,
+        "context": 131_072, "max_output": 65_536, "status": "production",
+        "price_in": 0.0, "price_out": 0.0,
+    },
+    "qwen/qwen3.8-27b": {
+        "provider": "groq",
+        "tpm": 8_000, "rpm": 30, "rpd": 1_000, "tpd": 200_000,
+        "context": 131_072, "max_output": 32_768, "status": "preview",
+        "price_in": 0.0, "price_out": 0.0,
+    },
+    "openai/gpt-oss-20b": {
+        "provider": "groq",
+        "tpm": 8_000, "rpm": 30, "rpd": 1_000, "tpd": 200_000,
+        "context": 131_072, "max_output": 65_536, "status": "production",
+        "price_in": 0.0, "price_out": 0.0,
+    },
+}
+
+# Models the press has pointed at, or that a reader might reasonably reach for,
+# and that the provider has since withdrawn. Kept so a 404 is explained rather
+# than raising a bare KeyError, and so nobody proposes a return to one of them
+# without reading why it went.
+#
+# This is the failure class incident 24 named: PROVIDER MODEL DEPRECATION. It
+# is not a Groq problem. Moonshot has run three deprecation waves of its own,
+# and `kimi-k2` is in one of them, so the same discipline applies on both
+# providers: the id in the code is the id in today's catalog, checked by
+# `GET /models` before every deploy and at the start of every run.
+DECOMMISSIONED = {
+    "groq/compound": "404 Not Found as of 2026-09-23; absent from Groq's "
+                     "model catalog and rate-limit table on 2026-09-24. Was "
+                     "70,000 TPM, which is why the press was moved to it.",
+    "groq/compound-mini": "withdrawn with groq/compound; same catalog absence.",
+    "kimi-k2": "the bare kimi-k2 series was discontinued by Moonshot on "
+               "2026-05-25. ADR-32 names 'Kimi K2' as the press's model and "
+               "this is the id that sounds right and 404s; the live 256K "
+               "general model is kimi-k2.6.",
+    "kimi-k2.5": "discontinued by Moonshot on 2026-08-31, with kimi-k2.6 and "
+                 "kimi-k3 as the migration path.",
+    "moonshot-v1-128k": "the moonshot-v1 series was discontinued on "
+                        "2026-08-31; use kimi-k2.6.",
 }
 
 # Headroom held back from the published ceiling. Three things live in it: the
-# tokenizer estimate below is close but not Groq's own, the rolling window may
-# still hold tokens from the citation pass or a retried call, and an editorial
-# merge lands between one run and the next. Fifteen percent of 70K is 10,500
-# tokens, which is more than the whole prompt.
+# tokenizer estimate below is close but not the provider's own, the rolling
+# window may still hold tokens from the citation pass or a retried call, and an
+# editorial merge lands between one run and the next.
 MARGIN = 0.15
 
-# Chat framing Groq adds around the two messages. Measured generously; it is
-# tens of tokens against a budget of thousands.
+# Chat framing the provider adds around the two messages. Measured generously;
+# it is tens of tokens against a budget of thousands.
 ENVELOPE_TOKENS = 32
+
+
+def binding_limit(model: str) -> tuple[int, str]:
+    """The ceiling a single request must fit inside, and which one it is.
+
+    Two different ceilings can bind, on the same arithmetic: a per-minute token
+    budget applied to one request (Groq's 413, incident 22) and the model's own
+    context window (everywhere). Whichever is smaller is the real limit.
+    """
+    spec = MODELS[model]
+    tpm, context = spec["tpm"], spec["context"]
+    if tpm <= context:
+        return tpm, f"{tpm} TPM"
+    return context, f"{context}-token context"
 
 
 def limit_for(model: str) -> int:
     """Usable tokens per request for `model`, margin already deducted."""
+    if model in DECOMMISSIONED:
+        raise KeyError(
+            f"{model!r} was withdrawn by its provider: {DECOMMISSIONED[model]} "
+            "A press cannot be pointed at it. Pick from budget.MODELS."
+        )
     if model not in MODELS:
         raise KeyError(
             f"{model!r} has no published limits in budget.MODELS. Add it with "
-            "the numbers from https://console.groq.com/docs/rate-limits before "
-            "pointing a press at it."
+            "the numbers from its provider's docs before pointing a press at it."
         )
-    return int(MODELS[model]["tpm"] * (1 - MARGIN))
+    ceiling, _ = binding_limit(model)
+    return int(ceiling * (1 - MARGIN))
+
+
+def cost_usd(prompt_tokens: int, completion_tokens: int, model: str) -> float:
+    """What one request costs at list price, worst case (no cache hit)."""
+    spec = MODELS[model]
+    return (prompt_tokens * spec["price_in"]
+            + completion_tokens * spec["price_out"]) / 1_000_000
+
+
+# ---------------- does the model still exist? ----------------
+
+# Incident 24: the budget guard checked that the request fits and nothing
+# checked that the model exists, so the press was pointed at a model Groq had
+# withdrawn and the failure surfaced three days later as the owner noticing an
+# empty inbox. `GET /models` is the cheapest possible answer to "can we print at
+# all", it costs no tokens against any ceiling, and it runs twice: once at
+# deploy and once at the start of every run.
+#
+# Both providers serve it at the same OpenAI-compatible path, so one function
+# covers both: Groq at https://api.groq.com/openai/v1/models and Moonshot at
+# https://api.moonshot.ai/v1/models, each with its own bearer key.
+
+
+def models_url(provider: str) -> str:
+    return endpoint(provider, "/models")
+
+
+class AvailabilityError(RuntimeError):
+    """The provider could not be asked which models it has."""
+
+
+class NoUsableModel(RuntimeError):
+    """Every candidate is either missing from the provider or over budget."""
+
+
+def available_models(api_key: str, provider: str, timeout: float = 30.0) -> set[str]:
+    """The set of model ids `provider` reports as active for this key.
+
+    Raises rather than returning an empty set on any failure. An empty set and
+    a failed request are the same value and very different facts, and treating
+    a network blip as "every model is gone" would walk the whole fallback list
+    for nothing.
+    """
+    if provider not in PROVIDERS:
+        raise AvailabilityError(f"unknown provider {provider!r}")
+    spec = PROVIDERS[provider]
+    url = models_url(provider)
+
+    # the cheap check first: no key is a configuration fact, not a network one
+    if not api_key:
+        raise AvailabilityError(
+            f"no {provider} API key, so model availability cannot be checked. "
+            f"Set the {spec['key_env']} that the `{spec['secret']}` Modal "
+            "secret provides."
+        )
+
+    import httpx
+    try:
+        resp = httpx.get(
+            url,
+            headers={"Authorization": f"Bearer {api_key.strip()}"},
+            timeout=timeout,
+        )
+    except Exception as exc:
+        raise AvailabilityError(f"GET {url} failed: {exc}") from exc
+    if resp.status_code >= 400:
+        raise AvailabilityError(
+            f"GET {url} answered {resp.status_code}: {resp.text[:500]}"
+        )
+    try:
+        data = resp.json()["data"]
+    except Exception as exc:
+        raise AvailabilityError(
+            f"GET {url} returned no usable model list: {resp.text[:500]}"
+        ) from exc
+    # `active` is Groq's own flag and a listed but inactive model still 404s.
+    # Moonshot does not send one, so absent means listed means usable.
+    return {m["id"] for m in data if m.get("active", True)}
+
+
+def providers_for(models: list[str]) -> list[str]:
+    """The providers a candidate list actually needs, primary first."""
+    seen = [MODELS[m]["provider"] for m in models if m in MODELS]
+    ordered = [p for p in PROVIDERS if p in seen]
+    return ordered
+
+
+def available_everywhere(models: list[str], env) -> tuple[set[str], list[str]]:
+    """Ask every provider the candidate list touches. Returns (ids, notes).
+
+    One provider being unreachable must not hide the models another provider
+    still has, so a failure here is a note rather than an exception. The caller
+    decides whether what survived is enough to print with, because that is a
+    judgment about the press and not about HTTP.
+    """
+    found: set[str] = set()
+    notes: list[str] = []
+    for provider in providers_for(models):
+        spec = PROVIDERS[provider]
+        key = env.get(spec["key_env"], "")
+        try:
+            ids = available_models(key, provider)
+        except AvailabilityError as exc:
+            notes.append(f"{provider}: NOT REACHED. {exc}")
+            continue
+        found |= ids
+        mine = [m for m in models if MODELS.get(m, {}).get("provider") == provider]
+        missing = [m for m in mine if m not in ids]
+        notes.append(
+            f"{provider}: {len(ids)} models listed for this key; "
+            + (f"MISSING {', '.join(missing)}" if missing
+               else f"all {len(mine)} fallback(s) present"))
+    return found, notes
+
+
+@dataclass
+class Choice:
+    """Which model the press will use, and why every rejected one was rejected."""
+
+    model: str | None
+    report: Report | None
+    rejected: list[tuple[str, str]] = field(default_factory=list)
+
+    def summary(self) -> str:
+        lines = []
+        for name, why in self.rejected:
+            lines.append(f"  rejected {name}: {why}")
+        if self.model:
+            lines.append(f"  CHOSEN {self.model}: {self.report.summary()}")
+        else:
+            lines.append("  NO USABLE MODEL: the press cannot print.")
+        return "\n".join(lines)
+
+
+def choose_model(candidates: list[str], available: set[str] | None,
+                 prompt: str, payload_json: str, max_completion: int) -> Choice:
+    """First candidate that both exists at the provider and fits the budget.
+
+    Two gates, in this order, because they fail for different reasons and the
+    operator needs to know which one bit. `available=None` skips the existence
+    gate, for the offline CI run that has no key.
+    """
+    choice = Choice(model=None, report=None)
+    for name in candidates:
+        if name in DECOMMISSIONED:
+            choice.rejected.append(
+                (name, f"withdrawn by its provider. {DECOMMISSIONED[name]}"))
+            continue
+        if name not in MODELS:
+            choice.rejected.append(
+                (name, "no published limits in budget.MODELS, so no budget can "
+                       "be checked for it"))
+            continue
+        if available is not None and name not in available:
+            choice.rejected.append(
+                (name, f"not in the {len(available)} models "
+                       f"{MODELS[name]['provider']} reports for this key; a "
+                       "request would 404"))
+            continue
+        report = check_request(prompt, payload_json, max_completion, name)
+        if not report.fits:
+            choice.rejected.append(
+                (name, f"over budget by {-report.headroom} tokens. "
+                       f"{report.summary()}"))
+            continue
+        choice.model, choice.report = name, report
+        return choice
+    return choice
 
 
 # ---------------- counting tokens ----------------
@@ -115,9 +436,21 @@ def _encoder():
 
 
 def count_tokens(text: str) -> int:
+    """Tokens in `text`, counting a special-token spelling as ordinary text.
+
+    `disallowed_special=()` is load-bearing and was added on 2026-09-30. By
+    default tiktoken RAISES on any text containing `<|endoftext|>`, and a
+    cleaned arXiv paper contains it often enough to matter: a paper about
+    tokenizers prints the string, and so does any paper quoting a prompt
+    template. At a 12,000-character window the guard never reached one, so the
+    crash was invisible for the life of this module; the first measurement at a
+    larger window hit it on the first paper. A token counter that throws is a
+    guard that fails closed on exactly the papers the corpus most wants to read,
+    and the provider counts those characters as ordinary text anyway.
+    """
     enc = _encoder()
     if enc is not None:
-        return len(enc.encode(text))
+        return len(enc.encode(text, disallowed_special=()))
     return int(len(text) / FALLBACK_CHARS_PER_TOKEN) + 1
 
 
@@ -185,9 +518,82 @@ _FILLER = (
 
 def _filler(n: int) -> str:
     """Realistic English of length n. Not 'x' * n, which tokenizes far too
-    cheaply and would make every estimate here look better than it is."""
+    cheaply and would make every estimate here look better than it is.
+
+    Read `FULLTEXT_CHARS_PER_TOKEN` below before using this for a payload that
+    is not editorial prose. This string is prose and runs 6.17 chars/token; a
+    cleaned arXiv paper runs 3.65. Sizing a paper with this filler is the same
+    mistake as `'x' * n`, one order of magnitude smaller, and the org made it.
+    """
     reps = -(-n // len(_FILLER))
     return (_FILLER * reps)[:n]
+
+
+# What a cleaned arXiv full text actually costs, measured rather than assumed:
+# the worst of 14 real papers fetched through `distill.fetch_fulltext`'s own
+# cleaning and counted with o200k_base. The receipt is
+# docs/evals/2026-09-27-fulltext-token-density.json and
+# `python3 tools/fulltext_density.py` reproduces it against the live papers.
+#
+# It is here because `_filler` is not, and that cost the org a wrong number in
+# five places (INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper). Sized with
+# prose filler, distill's full-text request missed Groq's free tier by 109
+# tokens; sized with real papers it missed by about 1,900, and the free fix the
+# ledger proposed off the first number would not have worked.
+#
+# 2.53 is arxiv:2501.19393, the s1 paper, over its whole 198,125 characters. It
+# is the densest of the 14 and not an average of them, because the request this
+# number sizes either fits or is refused, and an average request does not exist.
+#
+# Measured AT THE WINDOW THE JOB SENDS, which is `FULLTEXT_CHARS`. Density is
+# not a property of papers, it is a property of the window: the same 14 papers
+# run 3.65 chars/token over their first 24,000 characters, 3.35 over their
+# first 12,000, and 2.53 over their whole bodies, because a paper opens with a
+# title block, authors, an abstract and a contents list and only later reaches
+# its equations. Measuring the wrong window is how the first version of this
+# constant was still wrong after the bug it exists to fix was found — at 13,000
+# characters the guard said fits and a real paper missed by 5 tokens.
+#
+# It was 3.35 until 2026-09-30, measured at a 12,000-character window, and the
+# move of distill to Kimi widened that window to 250,000. Re-measuring found the
+# constant 32% too loose for the new window, which would have under-sized every
+# distill request. Receipt: docs/evals/2026-09-30-fulltext-token-density.json,
+# reproduced by `python3 tools/fulltext_density.py --window 250000
+# --model kimi-k2.6`. The lesson generalises past this number: a density
+# constant is only valid for the window it was measured at, so changing
+# FULLTEXT_CHARS always means re-running the tool.
+#
+# Lower it when a measurement says lower. Never raise it to make a request fit.
+FULLTEXT_CHARS_PER_TOKEN = 2.53
+
+
+def _filler_tokens(n: int) -> str:
+    """Realistic English of exactly n TOKENS, for payloads measured in tokens.
+
+    `_filler` takes a character count, which is the right unit when the job's
+    own cap is in characters. It is the wrong unit when what was measured is a
+    density, because then the char count is a derived quantity and rounding it
+    twice loses the thing that was measured.
+    """
+    enc = _encoder()
+    if enc is None:
+        return _filler(int(n * FALLBACK_CHARS_PER_TOKEN))
+    # Grow until it is long enough, then cut. Not `n // count_tokens(_FILLER)`
+    # repetitions: repeated text merges at the seams, so 104 copies of a
+    # 35-token string is 3,537 tokens and not 3,640, and a filler that silently
+    # comes up 45 tokens short is the whole failure this module is recovering
+    # from, one order of magnitude smaller.
+    reps = max(1, -(-n // count_tokens(_FILLER)))
+    tokens = enc.encode(_FILLER * reps)
+    while len(tokens) < n:
+        reps += max(1, (n - len(tokens)) // count_tokens(_FILLER))
+        tokens = enc.encode(_FILLER * reps)
+    # Decoding a cut token list can re-encode to a different length when the cut
+    # lands mid-word, so the cut is verified rather than trusted.
+    text = enc.decode(tokens[:n])
+    while count_tokens(text) > n:
+        text = text[:-1]
+    return text
 
 
 def worst_case_payload() -> dict:
@@ -204,7 +610,10 @@ def worst_case_payload() -> dict:
         ]
 
     return {
-        "stats": {"papers_ingested": 9999, "claims_distilled": 9999, "edges_drawn": 9999},
+        # five counts since 2026-09-26, one per pipeline step; see gather()
+        "stats": {"papers_ingested": 9999, "papers_triaged": 9999,
+                  "papers_read_in_full": 9999, "claims_distilled": 9999,
+                  "links_drawn": 9999},
         "new_claims": rows("new_claims"),
         "superseded": rows("superseded"),
         "traction": {
@@ -246,15 +655,21 @@ class Report:
         return self.limit - self.total
 
     def summary(self) -> str:
-        tpm = MODELS[self.model]["tpm"]
+        _, ceiling = binding_limit(self.model)
         verdict = "fits" if self.fits else "DOES NOT FIT"
         return (
             f"{self.model}: prompt {self.prompt_tokens} + payload "
             f"{self.payload_tokens} + output reservation {self.completion_tokens} "
             f"+ envelope {ENVELOPE_TOKENS} = {self.total} tokens against "
-            f"{self.limit} usable ({tpm} TPM less {MARGIN:.0%} margin); "
+            f"{self.limit} usable ({ceiling} less {MARGIN:.0%} margin); "
             f"{verdict}, headroom {self.headroom}"
         )
+
+    @property
+    def cost(self) -> float:
+        """List-price cost of this request, output reservation spent in full."""
+        return cost_usd(self.prompt_tokens + self.payload_tokens
+                        + ENVELOPE_TOKENS, self.completion_tokens, self.model)
 
 
 def check_request(prompt: str, payload_json: str, max_completion: int,
@@ -331,9 +746,1021 @@ def fit_payload(payload: dict, prompt: str, max_completion: int,
 class Press:
     name: str
     prompt: str
-    model: str
+    models: list[str]
     max_completion: int
     optional: bool = False
+
+
+def fallback_models() -> list[str]:
+    """The press's ordered fallback list, read out of weekly.py.
+
+    Incident 24 added the list; this guard reads it from production rather than
+    keeping a copy, for the same reason it already reads the model name and the
+    output reservation from there. A guard with its own copy of the fallback
+    order is a guard that verifies a list nothing uses.
+    """
+    source = _weekly_source()
+    match = re.search(r"^FALLBACK_MODELS = (\[[^\]]*\])", source, re.M)
+    if match:
+        models = ast.literal_eval(match.group(1))
+        if not isinstance(models, list) or len(models) < 3:
+            raise LookupError(
+                "weekly.FALLBACK_MODELS must be a list of at least three "
+                f"models; found {models!r}. One model is a single point of "
+                "failure, and incident 24 is what that costs."
+            )
+        return models
+    # a press that predates the fallback list still has to be checkable
+    return [_literal(source, r'^MODEL = "([^"]+)"', "MODEL")]
+
+
+def synthesis_models() -> list[str]:
+    """rag_answer's ordered fallback list, read out of mcp/synthesis.py.
+
+    Same discipline as `fallback_models`: read the production list rather than
+    keeping a copy, because a guard with its own copy is a guard that verifies a
+    list nothing uses. The MCP server is a runtime under
+    docs/agents/runtime-changes.md, and until this ran, nothing checked that the
+    model it calls still exists.
+    """
+    source = (ROOT / "mcp" / "synthesis.py").read_text()
+    match = re.search(r"^FALLBACK_MODELS = (\[[^\]]*\])", source, re.M)
+    if not match:
+        raise LookupError(
+            "mcp/synthesis.py no longer defines FALLBACK_MODELS where this "
+            "guard looks for it. Fix the pattern in budget.synthesis_models(); "
+            "a guard that cannot read the settings it checks is worse than no "
+            "guard."
+        )
+    models = ast.literal_eval(match.group(1))
+    if not isinstance(models, list) or len(models) < 2:
+        raise LookupError(
+            "mcp/synthesis.py FALLBACK_MODELS must be a list of at least two "
+            f"models; found {models!r}. One model is a single point of failure, "
+            "and incident 24 is what that costs."
+        )
+    return models
+
+
+def model_problems(where: str, model: str,
+                   available: set[str] | None = None) -> list[str]:
+    """The three questions any caller of a model has to be able to answer.
+
+    Does the id have a row here, has its provider withdrawn it, and does that
+    provider still list it for this key. The press asks a fourth one, whether the
+    request fits, and that needs a payload to measure. These three need nothing
+    but the id, which is why every runtime that calls a model can be checked by
+    the same command whether or not it has a payload.
+    """
+    if model in DECOMMISSIONED:
+        return [f"{where} is {model}, withdrawn by its provider: "
+                f"{DECOMMISSIONED[model]}"]
+    if model not in MODELS:
+        return [f"{where} ({model}) has no entry in budget.MODELS, so there is "
+                "no provider to send it to"]
+    if available is not None and model not in available:
+        return [f"{where} ({model}) is not listed by {MODELS[model]['provider']} "
+                "for this key; a request to it would 404"]
+    return []
+
+
+def check_synthesis(available: set[str] | None = None) -> list[str]:
+    """Every model rag_answer can reach for has published limits and still exists.
+
+    Returns problems, the way `check_drift` does. The MCP server does not size a
+    payload against a ceiling, because a synthesis request is a short answer over
+    retrieved context rather than a whole issue.
+    """
+    problems = []
+    for rank, model in enumerate(synthesis_models(), start=1):
+        problems += model_problems(f"rag_answer fallback {rank}", model, available)
+    return problems
+
+
+#: The scheduled corpus jobs that call a chat model. Both are Modal crons, both
+#: are runtimes under docs/agents/runtime-changes.md, and until 2026-09-25
+#: nothing checked the ids either of them calls. A withdrawal takes the corpus
+#: down quietly: triage stops judging papers and interpret stops drawing edges,
+#: and the only symptom is a red run nobody is watching.
+#:
+#: On 2026-09-26 both of them gained a fallback list and moved to Moonshot as
+#: primary, so this reads a list rather than one id. The guard reads it out of
+#: the job, never from a copy here, for the reason `fallback_models` gives.
+CRON_MODELS = {
+    "triage (pipeline/triage.py)": "pipeline/triage.py",
+    "interpret (pipeline/interpret.py)": "pipeline/interpret.py",
+    # Distill joined on 2026-09-30. Until then it was the one corpus job with a
+    # PROVIDERS dict instead of a MODELS list, and that difference is the whole
+    # reason `distill_models` existed as a special case: a guard that cannot
+    # read a job's settings does not guard it.
+    "distill (pipeline/distill.py)": "pipeline/distill.py",
+}
+
+#: What one run of each corpus job may spend, read out of the job. The cap is a
+#: runtime number under docs/agents/runtime-changes.md in exactly the way a
+#: token reservation is, and `check_cron_spend` is what stops it drifting into a
+#: monthly bill nobody projected.
+CRON_CAPS = {
+    "triage (pipeline/triage.py)": ("pipeline/triage.py", "CAP_USD"),
+    "interpret (pipeline/interpret.py)": ("pipeline/interpret.py", "CAP_USD"),
+    "distill (pipeline/distill.py)": ("pipeline/distill.py", "CAP_USD"),
+}
+
+#: Together the three corpus caps plus the press. The ceiling finance books is
+#: the sum of every cap firing every day, which is the worst case and not the
+#: expectation; docs/finance/opex.md carries both numbers and the difference
+#: between them. Raise this only with that file in the same commit.
+#:
+#: $30 until 2026-09-30, when distill moved to Kimi on the owner's directive of
+#: 2026-09-29 and brought a $1.50 cap with it. Reading a paper in full is
+#: twenty times the tokens of judging one, so this is the number that moved
+#: most, and it moved because the owner asked for the thing it buys. The
+#: expectation behind it is ~$28/month, not $75; docs/finance/opex.md has the
+#: gap and the reasoning.
+MONTHLY_CAP_CEILING_USD = 75.0
+
+
+def cron_model_lists() -> dict[str, list[str]]:
+    """Each corpus cron's ordered model list, read out of the cron itself."""
+    found: dict[str, list[str]] = {}
+    for label, path in CRON_MODELS.items():
+        source = (ROOT / path).read_text()
+        match = re.search(r"^MODELS = (\[[^\]]*\])", source, re.M)
+        if not match:
+            raise LookupError(
+                f"{path} no longer defines MODELS where this guard looks for "
+                "it. Fix the pattern in budget.cron_model_lists(); a guard "
+                "that cannot read the settings it checks is worse than no "
+                "guard."
+            )
+        models = ast.literal_eval(match.group(1))
+        if not isinstance(models, list) or len(models) < 2:
+            raise LookupError(
+                f"{path} MODELS must be a list of at least two models; found "
+                f"{models!r}. One model is a single point of failure, and "
+                "incident 24 is what that costs."
+            )
+        found[label] = models
+    return found
+
+
+def cron_models() -> dict[str, str]:
+    """Each corpus cron's PRIMARY model, which is the head of its list.
+
+    Kept as its own function because the head is the id that matters most: it
+    is the one tomorrow's cron actually calls, and the one a rehearsal receipt
+    has to name.
+    """
+    return {label: models[0] for label, models in cron_model_lists().items()}
+
+
+def distill_models() -> list[str]:
+    """Distill's models, production first.
+
+    A special case until 2026-09-30, when distill had a PROVIDERS dict rather
+    than a MODELS list and `cron_model_lists` could not read it. That
+    difference is why it went unchecked for as long as it did. It reads the
+    same table as every other corpus cron now, and this function stays only
+    because `CRON_REQUESTS` has two distill entries against one model list and
+    the indirection has to point somewhere.
+    """
+    return cron_model_lists()["distill (pipeline/distill.py)"]
+
+
+def cron_caps() -> dict[str, float]:
+    """Each corpus cron's per-run spend cap, read out of the cron."""
+    found: dict[str, float] = {}
+    for label, (path, name) in CRON_CAPS.items():
+        source = (ROOT / path).read_text()
+        match = re.search(rf"^{name} = ([\d.]+)", source, re.M)
+        if not match:
+            raise LookupError(
+                f"{path} no longer defines {name} where this guard looks for "
+                "it. A spend cap this guard cannot read is a spend cap nobody "
+                "is projecting."
+            )
+        found[label] = float(match.group(1))
+    return found
+
+
+def check_crons(available: set[str] | None = None) -> list[str]:
+    """Every model every corpus cron can reach for exists and has limits.
+
+    The same three questions `model_problems` asks of everything else, now asked
+    of the whole list rather than only the head, because a fallback that has
+    never been checked is a fallback that fails at 3am.
+    """
+    problems = []
+    for label, models in cron_model_lists().items():
+        for rank, model in enumerate(models, start=1):
+            problems += model_problems(f"{label} fallback {rank}", model,
+                                       available)
+    return problems
+
+
+#: The worst request each corpus cron sends, so the guard can ask the press's
+#: fourth question of them too: does it fit. The press cannot fit its request on
+#: Groq's free tier at all, and its Groq entries are therefore a last resort that
+#: has never printed. These two jobs are the opposite case and it is worth
+#: proving rather than assuming: a triage batch is a few thousand tokens, so
+#: Groq's 6,800 usable really can answer, and the fallback is a working fallback
+#: instead of a comforting list.
+#:
+#: `prompt` is the file. `payload` is the largest user message the job builds,
+#: measured rather than guessed: BATCH papers at title plus abstract[:1500] for
+#: triage, one claim plus NEIGHBORS candidates for interpret. `reservation` is
+#: read out of the job, so it cannot drift from what the job actually sends.
+CRON_REQUESTS = {
+    "triage (pipeline/triage.py)": {
+        "path": "pipeline/triage.py",
+        "prompt": "prompts/triage.md",
+        "reservation": "MAX_COMPLETION_TOKENS",
+        # BATCH * (title + abstract[:1500]); the filler is realistic English
+        # because 'x' * n tokenizes far too cheaply.
+        "payload_chars": 10 * 1_700,
+    },
+    "interpret (pipeline/interpret.py)": {
+        "path": "pipeline/interpret.py",
+        "prompt": "prompts/interpret.md",
+        "reservation": "MAX_COMPLETION_TOKENS",
+        # one claim plus five candidate claims, each capped by the distiller at
+        # a few hundred characters; 400 each is generous.
+        "payload_chars": 6 * 400,
+    },
+    # Distill was missing from this table until 2026-09-26 and it is the job
+    # with the largest request in the pipeline by an order of magnitude: the
+    # skills are the product and abstracts do not contain procedures, so every
+    # arXiv paper in a run gets its HTML full text, FULLTEXT_CHARS of it.
+    # L-E6 in docs/standards/lessons.md is why it is here now. Two prompts grew
+    # on 2026-09-26 with the reasoning rubric, and a quality law that inflates a
+    # runtime input is measured against the runtime budget rather than assumed
+    # to fit.
+    "distill (pipeline/distill.py)": {
+        "path": "pipeline/distill.py",
+        "prompt": "prompts/distill.md",
+        # Declared by the job as of 2026-09-27. It used to send no reservation at
+        # all and this entry carried `reservation_assumed: 2000`, a guess. The
+        # guess was the right size and the wrong kind of fact: a request sized
+        # against an assumption is not sized.
+        "reservation": "MAX_COMPLETION_TOKENS",
+        "payload_chars": "FULLTEXT_CHARS",
+        # A paper is not prose. Measured, not assumed: see
+        # FULLTEXT_CHARS_PER_TOKEN above and the receipt it names. This one key
+        # is the difference between "misses by 109" and "misses by 1,900", and
+        # the org spent a day acting on the first number.
+        "chars_per_token": FULLTEXT_CHARS_PER_TOKEN,
+        # What the job does when the provider refuses the full text: retries the
+        # same call with abstract[:6000]. So the full-text request failing to fit
+        # is a degradation rather than an outage, and the request that MUST fit is
+        # this one. The abstract is sized at the same measured density: an
+        # abstract is academic prose too, and over-sizing the request the job
+        # falls back to errs toward calling the fallback too big, which is the
+        # safe direction for a number whose whole job is to be conservative.
+        "degrades_to_chars": 6_000,
+        "models": "distill",
+    },
+    # The practices variant, added 2026-09-30 with the field-report split. Its
+    # own entry rather than a second key on the entry above, because the two
+    # requests differ in both halves and sizing one of them would have measured a
+    # request the job never sends. The prompt is larger, because a field report
+    # has to be told what NOT to extract, and a prompt that grows is exactly what
+    # L-E6 put this table here to catch. The payload is smaller and fixed:
+    # `tools/read_paper.py::fetch_fulltext` returns None for every `blog:` id
+    # without a fetch, so a field report is read at `abstract[:6000]`, which for
+    # a feed row is the item summary. There is no degradation below that, so no
+    # `degrades_to_chars`: this request is the one that must fit.
+    "distill practices (pipeline/distill.py)": {
+        "path": "pipeline/distill.py",
+        "prompt": "prompts/distill-practices.md",
+        "reservation": "MAX_COMPLETION_TOKENS",
+        "payload_chars": 6_000,
+        # The paper density, deliberately, and it is not a measurement of blog
+        # prose. 3.35 chars/token is the densest thing the org has measured, so
+        # it over-counts a blog post's tokens rather than under-counting them,
+        # which is the safe direction for a guard. A measured field-report
+        # density would be a better number and nobody has one yet.
+        "chars_per_token": FULLTEXT_CHARS_PER_TOKEN,
+        "models": "distill",
+    },
+}
+
+
+def request_models(label: str, spec: dict) -> list[str]:
+    """The ordered model list for one CRON_REQUESTS entry."""
+    return distill_models() if spec.get("models") == "distill" \
+        else cron_model_lists()[label]
+
+
+def request_reservation(spec) -> tuple[int, str]:
+    """(tokens, how we know). Read out of the job, or the documented assumption."""
+    if "reservation" in spec:
+        source = (ROOT / spec["path"]).read_text()
+        literal = _literal(source, rf"^{spec['reservation']} = ([\d_]+)",
+                           f"{spec['path']} {spec['reservation']}")
+        return int(literal.replace("_", "")), ""
+    return spec["reservation_assumed"], " (assumed: the job sends none)"
+
+
+def request_payload_chars(spec) -> int:
+    """The largest user message the job builds, as a number or a name to read."""
+    chars = spec["payload_chars"]
+    if isinstance(chars, int):
+        return chars
+    source = (ROOT / spec["path"]).read_text()
+    return int(_literal(source, rf"^{chars} = ([\d_]+)",
+                        f"{spec['path']} {chars}").replace("_", ""))
+
+
+def request_text(spec, chars: int) -> str:
+    """Filler standing in for `chars` characters of this job's real payload.
+
+    One function instead of three call sites, because the three call sites
+    disagreed once and nobody noticed for a day. The `chars_per_token` key is
+    what makes them agree: without it every payload is sized as editorial prose
+    at 6.17 chars/token, which is right for a batch of claims and wrong by 69%
+    for a paper. A job that declares a measured density gets filler built to
+    that density instead.
+    """
+    density = spec.get("chars_per_token")
+    if density is None:
+        return _filler(chars)
+    return _filler_tokens(round(chars / density))
+
+
+def _taxonomy():
+    """pipeline/topics.py, from whichever of the two layouts this is running in.
+
+    The same two-path trick `pipeline/distill.py` uses for the same reason: the
+    module is a sibling in a checkout and a sibling at /root inside the image,
+    and deciding which from an environment variable goes stale the first time
+    the image changes.
+    """
+    for path in ("/root", str(ROOT / "pipeline")):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    import topics
+
+    return topics
+
+
+def prompt_text(spec: dict) -> str:
+    """A cron's system prompt as the job actually sends it.
+
+    Read through here rather than off the path, because the distill prompts
+    carry a marker where the topic vocabulary goes and the vocabulary is about
+    a quarter of the file. Sizing the request against the unrendered file would
+    under-count the largest request in the pipeline by roughly 300 tokens, and
+    a budget guard that under-counts is the one direction that matters: it
+    would say a request fits on the day it stops fitting. A prompt with no
+    marker in it comes back unchanged.
+    """
+    return _taxonomy().render((ROOT / spec["prompt"]).read_text())
+
+
+def check_cron_requests() -> list[str]:
+    """Every model a corpus cron can reach for can actually take its request.
+
+    The press's own guard asks this of the press. Nothing asked it of the corpus
+    jobs, which is how "Groq as fallback" could have been a list of three models
+    that 413 on the first batch.
+    """
+    problems = []
+    for label, spec in CRON_REQUESTS.items():
+        prompt_path = ROOT / spec["prompt"]
+        if not prompt_path.exists():
+            problems.append(f"{label}: {spec['prompt']} is missing, so no "
+                            "request can be sized for it")
+            continue
+        prompt = prompt_text(spec)
+        reservation, _ = request_reservation(spec)
+        user = request_text(spec, request_payload_chars(spec))
+        degraded = (request_text(spec, spec["degrades_to_chars"])
+                    if "degrades_to_chars" in spec else None)
+        for rank, model in enumerate(request_models(label, spec), start=1):
+            if model not in MODELS:
+                continue        # check_crons already reports this
+            report = check_request(prompt, user, reservation, model)
+            if report.fits:
+                continue
+            if degraded is not None:
+                # The job has a measured smaller request it retries with, so the
+                # big one not fitting costs quality rather than the run. What
+                # must fit is the retry, and if that does not fit either then the
+                # job has nowhere left to go and this is a real problem.
+                fallback = check_request(prompt, degraded, reservation,
+                                         model)
+                if fallback.fits:
+                    continue
+            problems.append(
+                f"{label} fallback {rank} ({model}) cannot take the job's "
+                f"own request. {report.summary()}. A fallback that does not "
+                "fit is not a fallback: either lower the reservation, "
+                "shrink the batch, or take the model off the list so the "
+                "run stops pretending it has somewhere to go.")
+    return problems
+
+
+def cron_degradations() -> list[str]:
+    """Jobs whose big request does not fit, and that quietly send a smaller one.
+
+    This is not a failure and it is not nothing. Distill fetches a paper's full
+    text because the procedure is the product and an abstract has no procedure in
+    it, then retries with the abstract when the provider refuses. The run
+    succeeds, the claim is written, and the library read a summary. 164 of 8,956
+    papers had ever been read in full, and this was the arithmetic behind that
+    number rather than a theory about it.
+
+    **Empty as of 2026-09-27**, and `tests/test_corpus_drain.py` fails if it
+    stops being empty. `FULLTEXT_CHARS` came down to a size that fits, so
+    distill sends one request and it is accepted. This function stays because
+    the condition returns the moment a prompt grows or a provider limit moves,
+    and it returned once already without anyone noticing for the life of the
+    pipeline.
+    """
+    notes = []
+    for label, spec in CRON_REQUESTS.items():
+        if "degrades_to_chars" not in spec:
+            continue
+        prompt_path = ROOT / spec["prompt"]
+        if not prompt_path.exists():
+            continue
+        prompt = prompt_text(spec)
+        reservation, _ = request_reservation(spec)
+        big = request_text(spec, request_payload_chars(spec))
+        small = request_text(spec, spec["degrades_to_chars"])
+        for rank, model in enumerate(request_models(label, spec), start=1):
+            if model not in MODELS:
+                continue
+            full = check_request(prompt, big, reservation, model)
+            if full.fits:
+                continue
+            short = check_request(prompt, small, reservation, model)
+            notes.append(
+                f"{label} rank {rank} ({model}) cannot take a full paper: "
+                f"{full.summary()}. It falls back to abstract[:"
+                f"{spec['degrades_to_chars']}], which "
+                + ("fits, so the run succeeds and the paper is read from its "
+                   "abstract instead of in full."
+                   if short.fits else
+                   "does NOT fit either, so the run cannot write a claim at all."))
+    return notes
+
+
+def cron_request_report() -> list[str]:
+    """The same arithmetic, printed. One block per corpus cron."""
+    lines = []
+    for label, spec in CRON_REQUESTS.items():
+        prompt_path = ROOT / spec["prompt"]
+        if not prompt_path.exists():
+            lines.append(f"  {label}: {spec['prompt']} missing")
+            continue
+        prompt = prompt_text(spec)
+        reservation, how = request_reservation(spec)
+        user = request_text(spec, request_payload_chars(spec))
+        lines.append(f"  {label}, worst request, reservation {reservation}{how}")
+        for rank, model in enumerate(request_models(label, spec), start=1):
+            if model not in MODELS:
+                continue
+            report = check_request(prompt, user, reservation, model)
+            lines.append(f"    {rank}. [{MODELS[model]['provider']}] "
+                         f"{report.summary()}")
+            if rank == 1:
+                lines.append(f"       ${report.cost:.5f} a call at list price")
+    return lines
+
+
+def monthly_projection() -> tuple[float, list[str]]:
+    """The worst-case monthly spend if every corpus cap fires every day.
+
+    Returns (usd, lines). This is the number finance books as a ceiling. It is
+    not the expectation: a cap is only reached while a backlog exists, and the
+    backlogs are finite. docs/finance/opex.md carries both.
+    """
+    caps = cron_caps()
+    daily = sum(caps.values())
+    lines = [f"  {label}: ${cap:.2f} a run, ${cap * 30:.2f} a month at 30 runs"
+             for label, cap in sorted(caps.items())]
+    return daily * 30, lines
+
+
+def check_cron_spend() -> list[str]:
+    """The corpus caps still add up to less than the ceiling finance was given."""
+    projected, _ = monthly_projection()
+    if projected > MONTHLY_CAP_CEILING_USD:
+        return [
+            f"the corpus crons' spend caps now project ${projected:.2f} a month "
+            f"in the worst case, over the ${MONTHLY_CAP_CEILING_USD:.2f} "
+            "ceiling in budget.MONTHLY_CAP_CEILING_USD. Raising a cap is a "
+            "change to what the org spends, so it goes to the owner with "
+            "docs/finance/opex.md updated in the same commit, never as a "
+            "one-line edit to a job."
+        ]
+    return []
+
+
+#: What each Kimi job draws from the account's day, in tokens, at the size it
+#: is capped to run. These are EXPECTED draws at measured request sizes, not
+#: worst cases, and that is the right basis here: a daily token allowance is
+#: consumed by what is actually sent, and a worst case that assumes every paper
+#: is the longest paper would condemn a schedule that works every day.
+#:
+#: Each entry is (calls a run, tokens a call, how we know).
+KIMI_DAILY_DRAW = {
+    "triage (pipeline/triage.py)": (
+        70, 4_713,
+        "70 calls is the $0.60 cap at the measured ceiling price; 3,513 prompt "
+        "+ 1,200 reply measured in docs/finance/opex.md"),
+    "interpret (pipeline/interpret.py)": (
+        60, 1_000,
+        "one claim and five candidates a call, measured small"),
+    "distill (pipeline/distill.py)": (
+        ("pipeline/distill.py", "MAX_PAPERS_PER_RUN"), 40_259,
+        "the paper count read out of the job, at the mean payload of the "
+        "fourteen papers in "
+        "docs/evals/2026-09-30-fulltext-token-density.json, plus the prompt "
+        "and a measured reply"),
+}
+
+
+def _calls(spec) -> int:
+    """A call count, either a literal or `(path, constant)` read out of the job.
+
+    Distill's is read rather than copied, for the reason `cron_caps` gives
+    about spend caps and `cron_model_lists` gives about model ids: it is the
+    number that will move, it dominates this table by an order of magnitude,
+    and a guard holding its own copy of a number is a guard that stops
+    guarding the moment somebody edits the job. Triage's and interpret's are
+    still literals because neither is a constant in its job; triage's 70 is
+    its cap divided by its worst-case call price, and derivation belongs in
+    the comment beside it rather than in a regex.
+    """
+    if isinstance(spec, int):
+        return spec
+    path, name = spec
+    source = (ROOT / path).read_text()
+    match = re.search(rf"^{name} = ([\d_]+)", source, re.M)
+    if not match:
+        raise LookupError(
+            f"{path} no longer defines {name} where this guard looks for it, "
+            "so the daily token draw this guard checks is not the draw the job "
+            "will make.")
+    return int(match.group(1).replace("_", ""))
+
+
+def kimi_daily_draw() -> tuple[int, list[str]]:
+    """Expected tokens per day across every Kimi job, and the lines behind it."""
+    total, lines = 0, []
+    for label, (spec, per_call, how) in sorted(KIMI_DAILY_DRAW.items()):
+        calls = _calls(spec)
+        draw = calls * per_call
+        total += draw
+        lines.append(f"  {label}: {calls} x {per_call:,} = {draw:,} tokens "
+                     f"({how})")
+    return total, lines
+
+
+def check_kimi_tpd() -> list[str]:
+    """The Kimi jobs together stay inside the account's daily token allowance.
+
+    New on 2026-09-30, and it is the ceiling nobody was watching. Until distill
+    moved to Kimi, every request this org sent was a few thousand tokens and
+    `tpd` in the table below was decoration. One paper at `FULLTEXT_CHARS` is
+    about 40,000 tokens, so twenty-five papers is most of a tier-0 day on their
+    own, and the money cap would not have noticed: $1.50 buys far more tokens
+    than 1,500,000.
+
+    A daily allowance is not a per-request limit, so busting it is not a 413.
+    It is every Kimi call in the org failing for the rest of the UTC day, which
+    would take the press down with distill. That asymmetry is why this is a
+    guard and not a comment.
+
+    Held against `MARGIN`, the same headroom the request guard keeps, because
+    a retry, a rehearsal run by hand, or a manual `modal run` all spend out of
+    the same day.
+    """
+    spec = MODELS.get(PRIMARY_MODEL)
+    if not spec or not spec.get("tpd"):
+        return []
+    allowance = spec["tpd"]
+    budgeted = int(allowance * (1 - MARGIN))
+    total, lines = kimi_daily_draw()
+    if total <= budgeted:
+        return []
+    return [
+        f"the Kimi jobs together expect to draw {total:,} tokens a day against "
+        f"{PRIMARY_MODEL}'s {allowance:,} daily allowance, of which "
+        f"{budgeted:,} is budgeted after the {MARGIN:.0%} margin. Over the "
+        "allowance is not a 413 on one request, it is every Kimi call in the "
+        "org failing for the rest of the UTC day, press included. Lower a "
+        "job's per-run cap, or raise the Moonshot tier, which is money and "
+        "therefore the owner's call.\n" + "\n".join(lines)
+    ]
+
+
+#: Every file in the pipeline that paces its own calls to a model. The pause a
+#: drain takes between calls is a runtime number in exactly the way a timeout
+#: is, and until 2026-10-11 nothing checked it: `llm.pace` read requests a
+#: minute and ignored tokens a minute, which is the right limit on Moonshot and
+#: the wrong one on every free-tier model in MODELS above.
+PACED_CALLERS = [
+    "pipeline/triage.py",
+    "pipeline/interpret.py",
+    "pipeline/distill.py",
+    "pipeline/retag_threads.py",
+]
+
+
+def check_fallback_pacing() -> list[str]:
+    """Every paced caller tells `pace` how big its call was, and the pause fits.
+
+    Two questions, because the defect of 2026-10-11 needed both to be answered
+    wrongly before it could happen.
+
+    **Does the caller pass a size.** `llm.pace(model)` returns a pause computed
+    from requests a minute alone, which is correct on Moonshot and wrong by a
+    factor of fifteen on Groq's free tier. A one-argument call is therefore a
+    job that will pace itself into a 429 the moment the fallback walk steps off
+    the primary. The source is the only place to ask: the pause is taken inside
+    a Modal container nothing here can reach.
+
+    **Does the pause the job will take fit the model's minute.** Having passed
+    a size, the job gets `max(60/rpm, 60*tokens/tpm)`, so the arithmetic can
+    only fail if `pace` stops reading one of the two limits. Checked anyway,
+    at every job's measured per-call draw against every model it can reach,
+    because this is the check that would have failed on 2026-10-07 and the
+    reason it did not exist is that nobody had written it.
+
+    `KIMI_DAILY_DRAW` supplies the per-call sizes. They are measured numbers
+    from docs/finance/opex.md and the token-density receipt rather than
+    tokenizer estimates, so this guard holds whether or not tiktoken is
+    installed, which is the difference between a check that gates a deploy and
+    a check that is skipped on the machine where the deploy happens.
+    """
+    problems = []
+    for path in PACED_CALLERS:
+        source = (ROOT / path).read_text()
+        bare = re.findall(r"\.pace\(\s*([A-Za-z_][\w.\[\]\"\']*)\s*\)", source)
+        for call in bare:
+            problems.append(
+                f"{path} calls pace({call}) with no token count, so it paces "
+                "from requests a minute alone. That is Moonshot's binding "
+                "limit and not the fallback's: on a free-tier model it asks "
+                "for about fifteen times the tokens a minute the provider "
+                "publishes, and what comes back is a 429 this caller caused. "
+                "Pass the size of the call just made, which is "
+                "`cap.last_tokens`.")
+        if ".pace(" not in source:
+            problems.append(
+                f"{path} is in budget.PACED_CALLERS but no longer calls pace() "
+                "at all, so either it stopped pacing or this list is stale. An "
+                "unpaced drain against a published rate limit is a run that "
+                "stops rather than slows.")
+
+    try:
+        client = _llm()
+    except Exception as exc:                     # noqa: BLE001
+        return problems + [f"pipeline/llm.py could not be read, so the pause "
+                           f"each corpus job takes is unchecked: {exc}"]
+    for label, (spec, per_call, how) in sorted(KIMI_DAILY_DRAW.items()):
+        for model in cron_model_lists().get(label, []):
+            limits = MODELS.get(model)
+            if not limits or not limits.get("tpm"):
+                continue
+            pause = client.pace(model, per_call)
+            # The pause the model's own minute requires, compared as a pause
+            # rather than as the rate it implies: an exact fit divides back to
+            # the published ceiling and a float would put it a hair over.
+            needs = 60.0 * per_call / limits["tpm"]
+            if pause + 1e-6 < needs:
+                problems.append(
+                    f"{label} on {model} would pause {pause:.1f}s between "
+                    f"{per_call:,}-token calls where {model}'s "
+                    f"{limits['tpm']:,}-token minute needs {needs:.1f}s, so it "
+                    f"asks for {per_call * 60.0 / pause:,.0f} tokens a minute "
+                    f"and gets a 429 it caused. llm.pace has stopped reading "
+                    f"one of the two limits. ({how})")
+    return problems
+
+
+def fallback_daily_draw() -> tuple[dict[str, int], list[str]]:
+    """What the corpus day asks of the FALLBACK when the primary is absent.
+
+    The day Moonshot stops answering, every corpus job walks to the same free
+    tier, and nothing in this file had ever added that day up. `check_kimi_tpd`
+    sizes the primary's day and stops at the primary, which is the provider
+    that is working on the day you read the number.
+
+    Two things make the fallback's day different from the primary's rather than
+    simply smaller, and both of them push the draw up at the moment the
+    allowance drops:
+
+    - **The spend cap cannot bind.** Every Groq model here is priced at $0.00 a
+      million, so `CAP_USD` buys infinite calls and the only remaining bound on
+      a run is its own call ceiling: `MAX_CALLS_PER_RUN`, not the cap the
+      finance projection is built from. Triage's day is 70 calls at Moonshot's
+      prices and 90 on the free tier.
+    - **The allowance is a fifth of the size.** 200,000 tokens a day per model
+      against Moonshot's 1,500,000.
+
+    Returns ({model: tokens asked of it}, lines). The model each job lands on
+    is the first one in its own list that is not on the primary's provider,
+    which is where the walk in `llm.ask_json` stops.
+    """
+    per_model: dict[str, int] = {}
+    lines = []
+    for label, (spec, per_call, how) in sorted(KIMI_DAILY_DRAW.items()):
+        landing = fallback_landing(label)
+        if not landing:
+            lines.append(f"  {label}: no model outside "
+                         f"{MODELS[PRIMARY_MODEL]['provider']} in its list, so "
+                         "a primary outage stops it outright")
+            continue
+        size, basis = fallback_call_tokens(label, landing, per_call)
+        calls = fallback_calls(label)
+        draw = calls * size
+        # Which of the two ceilings the run will actually meet. The call
+        # ceiling was sized against a paid account's minute and the money cap
+        # cannot bind at $0.00 a million, so on the free tier it is the token
+        # share that stops the run first. Reporting the call ceiling's draw
+        # here was what made this surface read 642,650 tokens against a
+        # 200,000-token day: a number the jobs could not spend even if they
+        # tried, which hid the one they could.
+        bound = f"{calls} calls"
+        try:
+            ceiling = fallback_ceiling(label)
+        except LookupError as exc:
+            lines.append(f"  {label}: {exc}")
+            per_model[landing] = per_model.get(landing, 0) + draw
+            continue
+        if ceiling < draw:
+            draw, bound = ceiling, f"{ceiling:,}-token share"
+        per_model[landing] = per_model.get(landing, 0) + draw
+        lines.append(f"  {label}: {draw:,} tokens of {landing}'s day, held "
+                     f"by its {bound} at {size:,} a call ({basis})")
+    return per_model, lines
+
+
+def fallback_landing(label: str) -> str | None:
+    """The model `label` lands on when the primary's provider stops answering.
+
+    The first entry in the job's own list that is not on the primary's
+    provider, which is where the walk in `llm.ask_json` stops. None means the
+    job has no model outside that provider at all, so a primary outage stops it
+    outright rather than degrading it.
+    """
+    models = [m for m in cron_model_lists().get(label, [])
+              if m in MODELS
+              and MODELS[m]["provider"] != MODELS[PRIMARY_MODEL]["provider"]]
+    return models[0] if models else None
+
+
+def fallback_share(label: str) -> tuple[int, str]:
+    """Tokens `label` may draw on the fallback in one run, and the derivation.
+
+    Derived, never chosen. The free tier publishes a day (`tpd`), the request
+    guard already holds back `MARGIN` of it, and the jobs that land on that
+    model share what is left in equal parts. Equal is the whole point: the
+    day the primary is absent, the corpus is consumed in schedule order, so
+    any split that is not even is a split where the job that runs first
+    decides how much of the day the job that runs last gets. Distill runs
+    last (`llm.KIMI_WINDOWS`), and four days of no claims is what the
+    uneven version costs.
+
+    An equal share also moves on its own. A job whose model list changes so
+    that it lands somewhere else stops sharing this model's day, and the two
+    that remain get half each with no number here to edit.
+    """
+    landing = fallback_landing(label)
+    if not landing:
+        raise LookupError(
+            f"{label} has no model outside {MODELS[PRIMARY_MODEL]['provider']} "
+            "in its list, so it has no fallback day to be given a share of.")
+    allowance = MODELS[landing].get("tpd")
+    if not allowance:
+        raise LookupError(
+            f"{landing} publishes no daily token allowance in budget.MODELS, "
+            f"so {label}'s share of it cannot be derived. A share chosen "
+            "without the published number is a number somebody remembered.")
+    sharers = sorted(l for l in KIMI_DAILY_DRAW
+                     if fallback_landing(l) == landing)
+    budgeted = int(allowance * (1 - MARGIN))
+    return budgeted // len(sharers), (
+        f"{landing}'s {allowance:,}-token day, {budgeted:,} after the "
+        f"{MARGIN:.0%} margin, split {len(sharers)} ways between "
+        f"{', '.join(s.split(' (')[0] for s in sharers)}")
+
+
+def fallback_ceiling(label: str) -> int:
+    """The per-run fallback ceiling `label`'s own source publishes.
+
+    Read out of the job rather than held here, the same discipline as
+    `fallback_calls` and `cron_caps`: the job is what runs, so the job holds
+    the number and this file holds the arithmetic that the number has to
+    satisfy. `check_fallback_shares` is where the two meet.
+    """
+    path = CRON_MODELS[label]
+    source = (ROOT / path).read_text()
+    match = re.search(r"^FALLBACK_TOKENS_PER_RUN = ([\d_]+)", source, re.M)
+    if not match:
+        raise LookupError(
+            f"{path} publishes no FALLBACK_TOKENS_PER_RUN where this guard "
+            "looks for one. On the day the primary is absent that job's only "
+            "remaining bound is its call ceiling, which was sized for a paid "
+            "account: it will spend the free tier's whole day and the job "
+            "scheduled after it writes nothing. That is the shape of the "
+            "2026-10-08 stall.")
+    return int(match.group(1).replace("_", ""))
+
+
+def check_fallback_shares() -> list[str]:
+    """Each corpus job's fallback ceiling fits its share of the free day.
+
+    A failure rather than a note, unlike `check_fallback_tpd`. That one
+    reports a ceiling on how much degradation the corpus can absorb, which is
+    a fact about the world. This one reports a job and this file disagreeing
+    about arithmetic, which is the `check_kimi_tpd` class of defect and the
+    only kind of red this file raises.
+
+    Three ways to fail, and the third is the one the stall needed: a job with
+    no ceiling at all, a job whose ceiling is bigger than its own share, and
+    ceilings that are each fine and together ask for more day than the
+    provider allows.
+    """
+    problems = []
+    totals: dict[str, int] = {}
+    for label in sorted(KIMI_DAILY_DRAW):
+        landing = fallback_landing(label)
+        if not landing:
+            continue
+        try:
+            share, basis = fallback_share(label)
+            ceiling = fallback_ceiling(label)
+        except LookupError as exc:
+            problems.append(str(exc))
+            continue
+        totals[landing] = totals.get(landing, 0) + ceiling
+        if ceiling > share:
+            problems.append(
+                f"{label} may draw {ceiling:,} tokens a run on {landing} "
+                f"against the {share:,} that is its share ({basis}). The jobs "
+                "run in schedule order, so a share overrun is not this job "
+                "spending a little too much, it is the job after it in "
+                "llm.KIMI_WINDOWS meeting 429s for the rest of the UTC day.")
+    for landing, asked in sorted(totals.items()):
+        allowance = MODELS[landing].get("tpd")
+        if not allowance:
+            continue
+        budgeted = int(allowance * (1 - MARGIN))
+        if asked > budgeted:
+            problems.append(
+                f"the corpus jobs' fallback ceilings add up to {asked:,} "
+                f"tokens of {landing}'s {allowance:,}-token day, {budgeted:,} "
+                f"after the {MARGIN:.0%} margin. Every ceiling can fit its own "
+                "share and still bust the day if a share was derived against "
+                "a different set of sharers than the set that exists.")
+    return problems
+
+
+def fallback_call_tokens(label: str, model: str,
+                         measured: int) -> tuple[int, str]:
+    """Tokens one call draws on `model`, and where the number comes from.
+
+    The measured per-call draw in `KIMI_DAILY_DRAW` is the size of the request
+    the job sends to the PRIMARY, and for distill that is a whole paper, which
+    no fallback here can take. A day on the free tier sized at 40,259 tokens a
+    paper would be a day the job cannot have: what it actually sends there is
+    the documented degradation, `abstract[:degrades_to_chars]`.
+
+    So: the measured number where the job's real request fits the model, and
+    this guard's own arithmetic on the degraded payload where it does not. The
+    second is a token count rather than a measurement, exact with tiktoken and
+    deliberately high without it, which is the safe direction for a ceiling.
+    """
+    spec = CRON_REQUESTS.get(label)
+    if not spec or "degrades_to_chars" not in spec:
+        return measured, "measured"
+    prompt = prompt_text(spec)
+    reservation, _ = request_reservation(spec)
+    big = check_request(prompt, request_text(spec, request_payload_chars(spec)),
+                        reservation, model)
+    if big.fits:
+        return measured, "measured"
+    small = check_request(prompt, request_text(spec, spec["degrades_to_chars"]),
+                          reservation, model)
+    return small.total, (f"counted, at the abstract[:{spec['degrades_to_chars']}] "
+                         "it degrades to here")
+
+
+def fallback_calls(label: str) -> int:
+    """A job's call budget on a provider whose prices are zero.
+
+    `CRON_CAPS` is denominated in money and the fallback is free, so the cap
+    that bounds a run on Moonshot bounds nothing here and the job's own call
+    ceiling is what is left. Read out of the job, for the reason `cron_caps`
+    gives: a guard holding its own copy of a number stops guarding the moment
+    somebody edits the job.
+    """
+    source = (ROOT / CRON_MODELS[label]).read_text()
+    for name in ("MAX_CALLS_PER_RUN", "MAX_PAPERS_PER_RUN", "MAX_CLAIMS_PER_RUN"):
+        match = re.search(rf"^{name} = ([\d_]+)", source, re.M)
+        if match:
+            return int(match.group(1).replace("_", ""))
+    raise LookupError(
+        f"{CRON_MODELS[label]} publishes no per-run call ceiling where this "
+        "guard looks for one, so on a provider whose prices are zero nothing "
+        "bounds the run: the spend cap cannot bind and neither can this.")
+
+
+def check_fallback_tpd() -> list[str]:
+    """The fallback's day, named rather than failed.
+
+    Deliberately not a deploy-blocking failure, and the distinction matters.
+    The primary's day busting is a plan that cannot work; the fallback's day
+    busting is a plan that works until a provider has a bad morning, which is
+    a ceiling on how much degradation the corpus can absorb rather than a
+    reason to refuse to deploy a working primary. `main` prints these beside
+    `cron_degradations` for the same reason.
+
+    What makes it worth printing is that this is the shape of 2026-10-08. The
+    corpus wrote no claims for four days while triage and interpret kept
+    writing rows, both of them on the Groq fallback, and no surface in the org
+    could say how much of the free tier's day the corpus had already spent by
+    the time distill's window opened at 15:00 UTC.
+    """
+    notes = []
+    per_model, _ = fallback_daily_draw()
+    for model, draw in sorted(per_model.items()):
+        allowance = MODELS[model].get("tpd")
+        if not allowance:
+            continue
+        budgeted = int(allowance * (1 - MARGIN))
+        if draw <= budgeted:
+            continue
+        fits = [f"{label}" for label, (spec, per_call, _) in KIMI_DAILY_DRAW.items()]
+        notes.append(
+            f"a day on {model} asks {draw:,} tokens against the "
+            f"{allowance:,} it allows, {budgeted:,} after the {MARGIN:.0%} "
+            f"margin. So a primary outage lasting one day does not degrade the "
+            f"corpus evenly: the jobs that run earliest spend the allowance "
+            f"and the jobs that run latest meet 429s. The order is the "
+            f"schedule in llm.KIMI_WINDOWS, which puts distill last. Lowering "
+            f"a per-run call ceiling is the lever ({', '.join(fits)}), and it "
+            f"costs nothing because the fallback is free.")
+    return notes
+
+
+def check_kimi_windows() -> list[str]:
+    """No two jobs that call Kimi can be running at the same time.
+
+    Moonshot's organization concurrency is 1 on this account, which means a
+    second Kimi call anywhere in the org gets a 429 and the run that meets it
+    loses its slot. That was failure 2 of
+    INC-2026-09-24-press-provider-migration, the press against a rehearsal.
+    Nothing in code can serialize two Modal apps, so the schedule is the
+    enforcement, and this is the check that the schedule still holds.
+
+    `pipeline/llm.py` KIMI_WINDOWS is the table. This reads it and also reads
+    each job's real cron minute out of its own source, so a schedule edit that
+    forgets the table fails here rather than in production.
+    """
+    problems = []
+    try:
+        client = _llm()
+    except Exception as exc:                     # noqa: BLE001
+        return [f"pipeline/llm.py could not be read, so the Kimi concurrency "
+                f"windows are unchecked: {exc}"]
+    problems += client.window_overlaps()
+    for label, path in {**CRON_MODELS,
+                        "press (pipeline/weekly.py)": "pipeline/weekly.py"}.items():
+        window = client.KIMI_WINDOWS.get(label)
+        if window is None:
+            problems.append(
+                f"{label} calls a model on a schedule but has no entry in "
+                "llm.KIMI_WINDOWS, so nothing checks it against the others.")
+            continue
+        source = (ROOT / path).read_text()
+        for match in re.finditer(r'modal\.Cron\("(\d+)\s+(\d+)([^"]*)"\)', source):
+            minute, hour = int(match.group(1)), int(match.group(2))
+            start = hour * 60 + minute
+            if not window[0] <= start < window[1]:
+                problems.append(
+                    f"{label} is scheduled at {hour:02d}:{minute:02d} UTC but "
+                    f"llm.KIMI_WINDOWS gives it {window[0] // 60:02d}:"
+                    f"{window[0] % 60:02d}-{window[1] // 60:02d}:"
+                    f"{window[1] % 60:02d}. One of the two is wrong, and the "
+                    "table is what the overlap check trusts.")
+    return problems
+
+
+def _llm():
+    """pipeline/llm.py, imported without making budget.py depend on it at import."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "_alexandria_llm", ROOT / "pipeline" / "llm.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def presses() -> list[Press]:
@@ -343,7 +1770,7 @@ def presses() -> list[Press]:
     reservation is a guard that passes while production fails.
     """
     source = _weekly_source()
-    model = _literal(source, r'^MODEL = "([^"]+)"', "MODEL")
+    models = fallback_models()
     # one reservation today; PR #35 replaces it with a MAX_TOKENS dict keyed by
     # kind, and this reads either shape
     table = re.search(r"^MAX_TOKENS = (\{[^}]*\})", source, re.M)
@@ -353,8 +1780,8 @@ def presses() -> list[Press]:
         tokens = {"weekly": int(_literal(
             source, r"^MAX_COMPLETION_TOKENS = (\d+)", "MAX_COMPLETION_TOKENS"))}
     return [
-        Press("weekly digest", "prompts/digest.md", model, tokens["weekly"]),
-        Press("daily issue", "prompts/daily.md", model,
+        Press("weekly digest", "prompts/digest.md", models, tokens["weekly"]),
+        Press("daily issue", "prompts/daily.md", models,
               tokens.get("daily", tokens["weekly"]), optional=True),
     ]
 
@@ -375,23 +1802,15 @@ def _weekly_source() -> str:
 
 
 def sql_limits(source: str) -> dict[str, int]:
-    """The `limit N` on each evidence stream's query in weekly.py.
-
-    The largest one per stream, not the last one. Since the daily cadence
-    landed there are two gather functions in that file selecting streams of
-    the same names, and the daily's limits are smaller. Reading the last match
-    made the guard measure the daily's payload and report the weekly's real
-    caps as drift, which is a guard failing on correct code. The worst case is
-    what this guard exists to measure, so the worst case is what it takes.
-    """
-    out: dict[str, int] = {}
+    """The `limit N` on each evidence stream's query in weekly.py."""
+    out = {}
     pattern = re.compile(r"^\s{4}(\w+) = conn\.execute\(\s*\n\s*\"\"\"(.*?)\"\"\"",
                          re.S | re.M)
     for match in pattern.finditer(source):
         name, body = match.group(1), match.group(2)
         found = re.findall(r"\blimit\s+(\d+)\b", body, re.I)
         if found:
-            out[name] = max(int(found[-1]), out.get(name, 0))
+            out[name] = int(found[-1])
     return out
 
 
@@ -421,6 +1840,304 @@ def check_drift() -> list[str]:
                 f"weekly.py gather()'s {sql_name} query has no `limit` clause, so "
                 f"the {key} stream is unbounded and no worst case exists for it."
             )
+    return problems
+
+
+# ---------------- gate 3, and the day the head is what is broken ----------------
+
+
+def head_receipt(model: str, models: list[str], allow_fallback: bool,
+                 *, gate: str) -> tuple[str | None, str]:
+    """Is a receipt from `model` a receipt for the job the deploy installs.
+
+    Returns (refusal, note). The refusal is the text the caller raises with,
+    None when there is nothing to refuse. The note is the line the caller
+    prints, empty when there is nothing to forgive. The caller raises, because
+    the four gates that ask this question raise four different exceptions and
+    this file imports none of them.
+
+    Gate 3 of `docs/agents/runtime-changes.md` exists to stop a deploy whose
+    rehearsal was answered by something other than what will run, and that is
+    the right question on nearly every day. It has one failure mode and
+    2026-10-12 is it: when the HEAD of the list is the thing that is broken, and
+    the change waiting in the image is the degraded path the outage needs, the
+    gate refuses to deploy the fix for the outage because of the outage.
+
+    What that cost, in one morning. Two merged pull requests, #270 and #275,
+    sized the fallback's minute and the fallback's day so the corpus could carry
+    itself with the primary absent. Both were inert, because a Modal app is
+    deployed by a command. The command is
+    `budget.py && preflight && rehearse && modal deploy`, and `rehearse` ends
+    with this comparison. The primary was not answering, so every corpus
+    rehearsal was answered by a Groq model, so every chain stopped at the third
+    `&&`, so the stall entered its sixth day with its cure sitting in `main`.
+
+    So the hatch, modelled exactly on distill's `--allow-abstract-only`, which
+    has carried this shape since 2026-09-27: refuse by default, forgive when
+    asked in so many words, and print what is being forgiven so the receipt says
+    which of the two things was proved. An escape hatch that is silent about
+    what it let through is how a degraded deploy becomes the new normal without
+    anybody deciding that it should.
+    """
+    head = models[0]
+    if model == head:
+        return None, ""
+    if not allow_fallback:
+        return (
+            f"the rehearsal was answered by {model}, not by {head}, which is "
+            "what the deploy installs. A receipt from a fallback is not a "
+            "receipt: fix the head of the list before deploying, because "
+            "tomorrow's cron meets it first.\n"
+            f"    modal run {gate} --allow-fallback\n"
+            "is the hatch for the one day that reasoning inverts: when the "
+            "head is itself what is broken and the change in this image is the "
+            "degraded path the outage needs, refusing the deploy keeps the "
+            "outage. The hatch prints what it forgives and the receipt says "
+            "the fallback was what answered. Nothing was deployed.",
+            "")
+    return None, (
+        f"  FORGIVEN: {head} did not answer and {model} did. This receipt "
+        f"proves the degraded path, not the path a healthy day runs, so {head} "
+        "is still broken after this deploy and the next rehearsal has to be "
+        "run without the hatch to find out when it is not.")
+
+
+# ---------------- the short edition ----------------
+#
+# INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue.
+# `prompts/digest.md` is 1,919 lines, which is tens of thousands of tokens
+# before a single claim is attached, so on a free-tier model at 8,000 tokens a
+# minute the press's request is over budget by more than a factor of ten and
+# `fit_payload` says so in its own words: no payload selection can rescue this.
+# The press's three Groq entries have therefore never been able to print, and
+# the file that holds them says as much in a comment. On 2026-10-12 the primary
+# stopped answering, `write_digest` walked the whole list, every entry was
+# refused by this file's arithmetic, and the week got no issue at all.
+#
+# So the degraded path gets its own prompt, sized to the minute the free tier
+# actually publishes. This file sizes it. What it SAYS is
+# prompts/digest-short.md, which is the writer seat's surface and not this
+# one's: 103 entries of docs/voice/ban-list.md do not fit in a request this
+# size, and choosing which of them survive is an editorial judgment rather
+# than an arithmetic one.
+
+#: The degraded edition's generator prompt, read out of the repo the way every
+#: other press prompt is.
+SHORT_ISSUE_PROMPT = "prompts/digest-short.md"
+
+#: Where that prompt states the ceiling it writes to. The number lives in the
+#: prompt because the prompt is what the model obeys, and this guard reads it
+#: rather than keeping a copy, for the reason `cron_caps` gives about spend
+#: caps: a guard with its own copy of a number stops guarding the moment
+#: somebody edits the thing that runs.
+SHORT_ISSUE_CEILING = re.compile(r"^WORD CEILING: (\d+)\s*$", re.M)
+
+#: Tokens an English word costs, pessimistically. `FALLBACK_CHARS_PER_TOKEN`
+#: above is 3.0 against a measured 4.32 for editorial prose, and this is the
+#: same direction on the same reasoning: 1.5 tokens a word where prose measures
+#: nearer 1.3. A reservation derived from it is a reservation that is slightly
+#: too big, and too big ends a sentence where too small truncates one.
+TOKENS_PER_WORD = 1.5
+
+#: The output reservation has to cover the issue's words twice over. On
+#: 2026-09-24 a 24,000-token reservation came back empty with finish_reason
+#: 'length', because the model's hidden reasoning had spent all of it before it
+#: wrote a word (`weekly.call_model` carries that note and disables thinking on
+#: Moonshot, verified by probe). No such probe exists for the Groq models this
+#: edition runs on and this seat holds no key to run one, so the arithmetic
+#: assumes the thinking happens and pays for it rather than sending a parameter
+#: nobody has tested.
+REASONING_MULTIPLE = 2
+
+
+def short_issue_text() -> str:
+    """prompts/digest-short.md, read out of the repository."""
+    path = ROOT / SHORT_ISSUE_PROMPT
+    if not path.exists():
+        raise LookupError(
+            f"{SHORT_ISSUE_PROMPT} does not exist, so the press has no "
+            "degraded edition. The full issue's prompt cannot fit a free-tier "
+            "request by more than a factor of ten, so a day the primary stops "
+            "answering is a week with no issue. 2026-10-12 is that day.")
+    return path.read_text()
+
+
+def short_issue_words(prompt: str | None = None) -> int:
+    """The word ceiling the short prompt sets for itself.
+
+    `prompt` is the text, so the container can pass the copy it is actually
+    running and CI can read the one in the tree. Same two-path discipline as
+    `weekly.budget()`.
+    """
+    source = short_issue_text() if prompt is None else prompt
+    match = SHORT_ISSUE_CEILING.search(source)
+    if not match:
+        raise LookupError(
+            f"{SHORT_ISSUE_PROMPT} states no `WORD CEILING: <n>` line where "
+            "this guard looks for one. The output reservation is derived from "
+            "that number, so without it the press would send a reservation "
+            "nobody sized and find out on a Monday whether the issue fits.")
+    return int(match.group(1))
+
+
+def smallest_payload() -> dict:
+    """The worst payload trimmed to one row in every stream.
+
+    This is what `fit_payload` produces on its last pass before it gives up, so
+    it is the floor a request has to leave room for. Built from
+    `worst_case_payload` rather than written out, so a new stream is in it the
+    day it is in the payload.
+    """
+    payload = worst_case_payload()
+    for name in ("new_claims", "superseded", "deprecated", "deep_reads"):
+        if isinstance(payload.get(name), list):
+            payload[name] = payload[name][:1]
+    traction = payload.get("traction") or {}
+    for name in ("supported_claims", "citation_movers"):
+        if isinstance(traction.get(name), list):
+            traction[name] = traction[name][:1]
+    return payload
+
+
+@dataclass
+class ShortRoom:
+    """What the short edition has to work with on one model, and whether it is enough."""
+
+    model: str
+    prompt_tokens: int
+    limit: int
+    words: int
+    floor: int
+
+    @property
+    def room(self) -> int:
+        """Tokens left for the payload and the reply together."""
+        return self.limit - self.prompt_tokens - ENVELOPE_TOKENS
+
+    @property
+    def reservation(self) -> int:
+        """Half the room, for the reply.
+
+        Even, and derived. The two halves pay for different things and neither
+        is worth more than the other: a reservation too small truncates the
+        issue mid-sentence, and a payload allowance too small is an issue with
+        nothing in it. An even split is also the one split that needs no number
+        in this file to maintain it.
+        """
+        return self.room // 2
+
+    @property
+    def payload_tokens(self) -> int:
+        return self.room - self.reservation
+
+    @property
+    def needed(self) -> int:
+        """The reservation the prompt's own word ceiling requires."""
+        return int(self.words * TOKENS_PER_WORD * REASONING_MULTIPLE)
+
+    @property
+    def fits(self) -> bool:
+        return (self.reservation >= self.needed
+                and self.payload_tokens >= self.floor)
+
+    def summary(self) -> str:
+        _, ceiling = binding_limit(self.model)
+        verdict = "can print the short edition" if self.fits else "CANNOT"
+        return (
+            f"{self.model}: prompt {self.prompt_tokens} + envelope "
+            f"{ENVELOPE_TOKENS} leaves {self.room} of {self.limit} usable "
+            f"({ceiling} less {MARGIN:.0%} margin), split into a "
+            f"{self.reservation}-token reply and a {self.payload_tokens}-token "
+            f"payload; {verdict} ({self.words} words needs {self.needed} "
+            f"reply tokens, one row per stream needs {self.floor})"
+        )
+
+
+def short_issue_room(model: str, prompt: str | None = None) -> ShortRoom:
+    """What the short edition has on `model`, derived from the published minute.
+
+    Nothing here is chosen. The provider publishes the ceiling, `MARGIN` is the
+    headroom the request guard already holds back everywhere else, the prompt
+    costs what it costs, and what is left is split in two. Change the prompt and
+    every number below moves with it, which is the property that makes this a
+    guard rather than a note somebody has to remember to update.
+    """
+    source = short_issue_text() if prompt is None else prompt
+    return ShortRoom(
+        model=model,
+        prompt_tokens=count_tokens(source),
+        limit=limit_for(model),
+        words=short_issue_words(source),
+        floor=count_tokens(encode(smallest_payload())),
+    )
+
+
+def short_issue_offprimary() -> list[str]:
+    """The press's fallback entries that are not on the primary's provider.
+
+    The only list the degraded edition is about. The primary can print both
+    editions on any day it answers, so a check that counts it has answered a
+    question no Monday ever asks.
+    """
+    primary = MODELS[PRIMARY_MODEL]["provider"]
+    return [m for m in fallback_models()
+            if m in MODELS and m not in DECOMMISSIONED
+            and MODELS[m]["provider"] != primary]
+
+
+def short_issue_printers(prompt: str | None = None) -> list[str]:
+    """Which of those can actually print it."""
+    return [m for m in short_issue_offprimary()
+            if short_issue_room(m, prompt).fits]
+
+
+def check_short_issue() -> list[str]:
+    """The press can still print on the day its primary stops answering.
+
+    A failure rather than a note, which is the opposite call from
+    `check_fallback_tpd` one screen up, and the difference is what the two
+    degradations cost. A corpus day on the free tier is a slow corpus: triage
+    and interpret kept writing rows through the whole of this week's outage. A
+    press Monday on the free tier was silence, because the press's only output
+    is the issue and there is no smaller version of an issue that did not get
+    written. Guardrail 4 of docs/agents/delivery-health.md reads the artifact
+    rather than the scheduler for exactly this reason, and on 2026-10-12 the
+    artifact was a 404 at /library/2026-W41.
+
+    What it asks is not "can the press print", because on a healthy day the
+    primary answers and that question is always yes. It asks whether anything
+    OFF the primary's provider can print, which is the question a Monday
+    answers.
+    """
+    problems = []
+    try:
+        prompt = short_issue_text()
+        words = short_issue_words(prompt)
+    except LookupError as exc:
+        return [str(exc)]
+    if words <= 0:
+        return [f"{SHORT_ISSUE_PROMPT} sets a word ceiling of {words}."]
+
+    primary = MODELS[PRIMARY_MODEL]["provider"]
+    offprimary = short_issue_offprimary()
+    if not offprimary:
+        return [
+            "the press's fallback list is entirely on "
+            f"{primary}, so there is no degraded path to size: a day that "
+            "provider does not answer is a week with no issue, whatever this "
+            "prompt says."
+        ]
+    if not short_issue_printers(prompt):
+        problems.append(
+            "no model off " + primary + " can print even the short edition, "
+            "so the press has no degraded path and a primary outage on a "
+            "Monday is a week with no issue. That is "
+            "INC-2026-10-12 exactly. Either "
+            f"{SHORT_ISSUE_PROMPT} gets shorter, or its word ceiling comes "
+            "down, or the list gains a model with a larger per-request "
+            "budget.\n"
+            + "\n".join(f"  {short_issue_room(m, prompt).summary()}"
+                        for m in offprimary))
     return problems
 
 
@@ -466,6 +2183,21 @@ def selftest() -> list[str]:
         failures.append("selftest: a prompt far over the model's ceiling was "
                         "accepted; the press would 413 in production")
 
+    # 3. the head of the fallback list must take the real request at full
+    #    PAYLOAD_CAPS and the real reservation, untrimmed. This is the check
+    #    that makes the whole guard mean something: a press whose primary only
+    #    fits after trimming is a press that quietly prints a thinner issue
+    #    every week. ADR-32 moved the press to Kimi precisely so this holds.
+    real = ROOT / "prompts" / "digest.md"
+    if real.exists():
+        head = fallback_models()[0]
+        report = check_request(real.read_text(), encode(worst_case_payload()),
+                               6_000, head)
+        if not report.fits:
+            failures.append(
+                f"selftest: the primary model {head} cannot take the worst-case "
+                f"request untrimmed. {report.summary()}")
+
     return failures
 
 
@@ -475,13 +2207,56 @@ def main() -> int:
           f"{count_tokens(payload_json)} tokens "
           f"({'exact' if exact() else 'estimated'})\n")
 
+    # Arithmetic run on estimates is not arithmetic. `count_tokens` falls back
+    # to a chars-per-token ratio when tiktoken is missing, and that ratio is
+    # deliberately pessimistic, so a request that fits can be reported as one
+    # that does not. Everything measured below therefore carries the confidence
+    # it was measured at, and the verdict at the bottom says which it was. Before
+    # 2026-09-25 it did not: on a machine without tiktoken this command printed
+    # `budget check FAILED (1 problem)` and advised shortening a generator prompt
+    # that fits with room to spare. See INC-2026-09-25-budget-guard-estimates.
+    measured = exact()
+
     failures = check_drift()
     for problem in failures:
         print(f"DRIFT: {problem}\n")
 
+    # Only the token arithmetic is affected by the tokenizer. Drift, the model
+    # tables and availability are exact either way, so they stay failures.
+    unconfirmed = []
     for problem in selftest():
-        failures.append(problem)
-        print(f"SELFTEST: {problem}\n")
+        if measured:
+            failures.append(problem)
+            print(f"SELFTEST: {problem}\n")
+        else:
+            unconfirmed.append(problem)
+            print(f"SELFTEST (estimated counts, unconfirmed): {problem}\n")
+
+    # Availability, for whichever providers have a key here. CI has none, and
+    # that is fine: the deploy-time and run-time checks in weekly.py are the
+    # ones that gate a real send. Here it is a bonus, never a requirement, so
+    # the guard stays runnable offline.
+    available = None
+    candidates = fallback_models()
+    if any(os.environ.get(PROVIDERS[p]["key_env"]) for p in providers_for(candidates)):
+        available, notes = available_everywhere(candidates, os.environ)
+        for note in notes:
+            print(f"  {note}")
+        for name in MODELS:
+            provider = MODELS[name]["provider"]
+            if not os.environ.get(PROVIDERS[provider]["key_env"]):
+                continue
+            if name not in available:
+                failures.append(
+                    f"{name} is in budget.MODELS but {provider} does not list "
+                    "it; a press pointed at it would 404")
+                print(f"  MISSING AT PROVIDER: {name}")
+        print()
+    else:
+        missing = ", ".join(
+            PROVIDERS[p]["key_env"] for p in providers_for(candidates))
+        print(f"no provider key here ({missing}), so model existence is not "
+              "checked. weekly.py checks it at deploy and at run start.\n")
 
     for press in presses():
         path = ROOT / press.prompt
@@ -493,26 +2268,263 @@ def main() -> int:
             print(f"MISSING: {press.prompt}\n")
             continue
         prompt = path.read_text()
-        report = check_request(prompt, payload_json, press.max_completion, press.model)
-        print(f"{press.name} ({press.prompt}, {len(prompt)} chars)")
-        print(f"  {report.summary()}")
-        if not report.fits:
-            over = -report.headroom
-            failures.append(
-                f"{press.name} is {over} tokens over budget on {press.model}"
-            )
-            print(f"  FAIL: {over} tokens over. Groq answers 413 and no issue "
-                  "is written.")
+        print(f"{press.name} ({press.prompt}, {len(prompt)} chars, "
+              f"{count_tokens(prompt)} tokens)")
+        print(f"  output reservation: {press.max_completion} tokens")
+        print(f"  fallback list, in order, every entry checked:")
+
+        # Requirement from the 2026-09-24 dispatch: the guard verifies that
+        # EVERY fallback fits, not just the one in use. A fallback that has
+        # never been measured is a fallback that fails at 3am.
+        fits_any = False
+        for rank, model in enumerate(press.models, start=1):
+            if model in DECOMMISSIONED:
+                failures.append(
+                    f"{press.name} fallback {rank} is {model}, withdrawn by Groq")
+                print(f"  {rank}. {model}: WITHDRAWN. {DECOMMISSIONED[model]}")
+                continue
+            if model not in MODELS:
+                failures.append(
+                    f"{press.name} fallback {rank} ({model}) has no published "
+                    "limits in budget.MODELS")
+                print(f"  {rank}. {model}: no limits published here; cannot be "
+                      "checked")
+                continue
+            report = check_request(prompt, payload_json, press.max_completion,
+                                   model)
+            flag = "" if available is None else (
+                " [at provider]" if model in available else " [ABSENT AT PROVIDER]")
+            provider = MODELS[model]["provider"]
+            print(f"  {rank}. [{provider}] {report.summary()}{flag}")
+            if report.fits:
+                if not fits_any:
+                    # the first model that fits is the one that will write, so
+                    # its cost is the issue's cost. ADR-32 budgeted ~$0.05.
+                    print(f"     cost at list price, worst case: "
+                          f"${report.cost:.4f} an issue "
+                          f"(${MODELS[model]['price_in']:.2f}/M in, "
+                          f"${MODELS[model]['price_out']:.2f}/M out)")
+                fits_any = True
+
+        if not fits_any:
+            best = min(
+                (check_request(prompt, payload_json, press.max_completion, m)
+                 for m in press.models if m in MODELS),
+                key=lambda r: -r.headroom, default=None)
+            over = -best.headroom if best else 0
+            complaint = (
+                f"{press.name} does not fit ANY model in its fallback list; the "
+                f"closest is {over} tokens over")
+            (failures if measured else unconfirmed).append(complaint)
+            print(f"  {'FAIL' if measured else 'UNCONFIRMED (estimated counts)'}: "
+                  f"no model in the fallback list can take this "
+                  f"request. Closest miss is {over} tokens.")
             print("  Fix one of: shorten the generator prompt, lower the output "
                   "reservation, tighten pipeline/budget.py PAYLOAD_CAPS (and the "
-                  "matching `limit` in gather()), or move the press to a model "
-                  "with a larger per-request budget.")
+                  "matching `limit` in gather()), split the issue across several "
+                  "requests, or add a model with a larger per-request budget to "
+                  "budget.MODELS.")
+            print(f"  Note the arithmetic: the prompt ({count_tokens(prompt)}) "
+                  f"plus the reservation ({press.max_completion}) alone is "
+                  f"{count_tokens(prompt) + press.max_completion} tokens, "
+                  "before a single row of payload.")
         print()
+
+    # The degraded edition, which is the answer to the `fits_any` branch above
+    # rather than a second press. A model that cannot take the full issue is not
+    # a model that can take nothing, and until 2026-10-12 the press behaved as
+    # though it were: it walked a list of three Groq entries that its own guard
+    # had always reported as over budget, and wrote nothing.
+    try:
+        short = short_issue_text()
+        words = short_issue_words(short)
+        print(f"the short edition ({SHORT_ISSUE_PROMPT}, {len(short)} chars, "
+              f"{count_tokens(short)} tokens, {words}-word ceiling)")
+        for model in fallback_models():
+            if model in MODELS:
+                print(f"  {short_issue_room(model, short).summary()}")
+        printers = short_issue_printers(short)
+        print(f"  off the primary's provider, {len(printers)} model(s) can "
+              f"print it: {', '.join(printers) or 'NONE'}")
+    except LookupError as exc:
+        print(f"the short edition: {exc}")
+    for problem in check_short_issue():
+        failures.append(problem)
+        print(f"  SHORT EDITION: {problem}")
+    print()
+
+    # The MCP server's synthesis list. It is not a press and has no payload to
+    # size, but it is a runtime that calls a model, and nothing checked it until
+    # 2026-09-25. Same command, so the same `&&` covers it.
+    try:
+        models = synthesis_models()
+        print(f"rag_answer (mcp/synthesis.py, {len(models)} models in order)")
+        for rank, model in enumerate(models, start=1):
+            provider = MODELS.get(model, {}).get("provider", "?")
+            flag = "" if available is None else (
+                " [at provider]" if model in available else " [ABSENT AT PROVIDER]")
+            print(f"  {rank}. [{provider}] {model}{flag}")
+        for problem in check_synthesis(available):
+            failures.append(problem)
+            print(f"  SYNTHESIS: {problem}")
+    except LookupError as exc:
+        failures.append(str(exc))
+        print(f"SYNTHESIS: {exc}")
+    print()
+
+    # The daily corpus crons. Since 2026-09-26 each has a fallback list with
+    # Moonshot at the head, a per-run spend cap, and a scheduled window it has
+    # to keep to, because Moonshot's organization concurrency is 1.
+    try:
+        print("daily corpus crons, in order, every entry checked")
+        for label, models in cron_model_lists().items():
+            print(f"  {label}")
+            for rank, model in enumerate(models, start=1):
+                provider = MODELS.get(model, {}).get("provider", "?")
+                flag = "" if available is None else (
+                    " [at provider]" if model in available
+                    else " [ABSENT AT PROVIDER]")
+                print(f"    {rank}. [{provider}] {model}{flag}")
+        for problem in check_crons(available):
+            failures.append(problem)
+            print(f"  CRON: {problem}")
+    except LookupError as exc:
+        failures.append(str(exc))
+        print(f"CRON: {exc}")
+    print()
+
+    # And the fourth question, the one only a payload can answer: does each
+    # corpus job's own request fit every model it can reach for.
+    try:
+        print("\n".join(cron_request_report()))
+        for problem in check_cron_requests():
+            (failures if measured else unconfirmed).append(problem)
+            print(f"  {'CRON REQUEST' if measured else 'UNCONFIRMED (estimated)'}"
+                  f": {problem}")
+    except LookupError as exc:
+        failures.append(str(exc))
+        print(f"CRON REQUEST: {exc}")
+
+    # A job that shrinks its own request rather than failing is not a failure and
+    # must not be silence either. This is where "read in full" quietly becomes
+    # "read the abstract", and it is printed under its own heading so nobody has
+    # to notice it inside a table of fits and headrooms.
+    try:
+        degraded = cron_degradations()
+        if degraded:
+            print("\n  reads less than it asked for (not a failure, a quality "
+                  "ceiling):")
+            for note in degraded:
+                print(f"    {note}")
+    except LookupError as exc:
+        failures.append(str(exc))
+        print(f"CRON DEGRADATION: {exc}")
+    print()
+
+    # What the corpus costs, at the caps the jobs actually carry. This is the
+    # number docs/finance/opex.md books, printed by the same command that gates
+    # the deploy, so the projection cannot drift away from the caps.
+    try:
+        projected, lines = monthly_projection()
+        print("corpus spend, worst case (every cap reached every day)")
+        print("\n".join(lines))
+        print(f"  total: ${projected:.2f} a month against a "
+              f"${MONTHLY_CAP_CEILING_USD:.2f} ceiling")
+        print("  This is a ceiling, not an expectation: a cap is only reached "
+              "while a backlog exists, and both backlogs are finite. See "
+              "docs/finance/opex.md.")
+        for problem in check_cron_spend():
+            failures.append(problem)
+            print(f"  SPEND: {problem}")
+    except LookupError as exc:
+        failures.append(str(exc))
+        print(f"SPEND: {exc}")
+    print()
+
+    # Moonshot's organization concurrency is 1, so two Kimi jobs overlapping is
+    # a 429 and a lost slot. The schedule is the only enforcement there is, and
+    # this is the check that it still holds. A rule enforced by a link in a
+    # command is enforced at the reliability of a shell.
+    print("Kimi windows (organization concurrency is 1)")
+    try:
+        client = _llm()
+        for label, (start, end) in sorted(client.KIMI_WINDOWS.items(),
+                                          key=lambda kv: kv[1]):
+            print(f"  {start // 60:02d}:{start % 60:02d}-{end // 60:02d}:"
+                  f"{end % 60:02d} UTC  {label}")
+    except Exception as exc:                     # noqa: BLE001
+        print(f"  could not read the table: {exc}")
+    for problem in check_kimi_windows():
+        failures.append(problem)
+        print(f"  CONCURRENCY: {problem}")
+    print()
+
+    # And the other shared Moonshot ceiling, which is the account's DAY rather
+    # than its minute. Nothing checked it until distill started sending whole
+    # papers, because until then no request was big enough for it to matter.
+    print(f"Kimi daily tokens ({PRIMARY_MODEL} allowance "
+          f"{MODELS[PRIMARY_MODEL]['tpd']:,} a day, shared by every job)")
+    total, lines = kimi_daily_draw()
+    print("\n".join(lines))
+    print(f"  total expected: {total:,} tokens a day, "
+          f"{total / MODELS[PRIMARY_MODEL]['tpd']:.0%} of the allowance")
+    for problem in check_kimi_tpd():
+        failures.append(problem)
+        print(f"  DAILY TOKENS: {problem}")
+    print()
+
+    # And the day the primary does not answer at all, which is the one no
+    # number in this file described until 2026-10-11. Two halves: the pause
+    # each job takes on the fallback, which is a defect when it is wrong, and
+    # the fallback's own day, which is a ceiling rather than a defect.
+    print("the fallback's day (every corpus job on the free tier at once)")
+    try:
+        for label in sorted(KIMI_DAILY_DRAW):
+            if fallback_landing(label):
+                share, basis = fallback_share(label)
+                print(f"  {label}: {share:,} tokens a run is its share "
+                      f"({basis})")
+        _, lines = fallback_daily_draw()
+        print("\n".join(lines))
+        for problem in check_fallback_pacing():
+            failures.append(problem)
+            print(f"  PACING: {problem}")
+        for problem in check_fallback_shares():
+            failures.append(problem)
+            print(f"  FALLBACK SHARE: {problem}")
+        notes = check_fallback_tpd()
+        if notes:
+            print("\n  more than the free tier's day (not a failure, a "
+                  "ceiling on how long an outage the corpus survives):")
+            for note in notes:
+                print(f"    {note}")
+        else:
+            print("  the whole corpus day fits the fallback's allowance")
+    except LookupError as exc:
+        failures.append(str(exc))
+        print(f"FALLBACK: {exc}")
+    print()
 
     if failures:
         print(f"budget check FAILED ({len(failures)} problem"
               f"{'s' if len(failures) > 1 else ''})")
         return 1
+    if not measured:
+        # Non-zero on purpose. This command is the first link in two deploy
+        # chains, and a chain that proceeds on estimated numbers has not been
+        # checked. The exit code says stop; the message says the press is not
+        # known to be broken, which is the part the old verdict got wrong.
+        print(f"budget check INCONCLUSIVE: token counts are estimated at "
+              f"{FALLBACK_CHARS_PER_TOKEN} chars/token because tiktoken is not "
+              f"installed here, and that estimate runs high. "
+              f"{len(unconfirmed)} arithmetic check"
+              f"{'s' if len(unconfirmed) != 1 else ''} could not be confirmed"
+              + (f": {unconfirmed[0]}" if unconfirmed else "") +
+              "\nEverything that does not depend on a token count passed: "
+              "drift, the model tables, the fallback lists and availability.\n"
+              "Run `pip install tiktoken && python3 pipeline/budget.py` for the "
+              "real numbers.")
+        return 2
     print("budget check passed")
     return 0
 

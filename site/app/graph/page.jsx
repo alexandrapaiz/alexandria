@@ -1,0 +1,85 @@
+import Link from "next/link";
+import GraphExplorer from "./GraphExplorer";
+import { hasSpine } from "../../lib/entitlement";
+import { loadGraph } from "../../lib/graph-live";
+
+// The claim graph, live. Owner's ruling of 2026-09-19 put this route back as a
+// PAID page, and her dispatch of 2026-09-25 ordered it built from the database
+// rather than from the structural fixture the parked `_graph/` folder drew.
+// That folder and lib/graph-data.js are gone with this commit.
+//
+// The gate is the whole page, not an overlay on a rendered graph. An unpaid
+// visitor gets the heading and the offer and no claim data of any kind: the
+// query below only runs once hasSpine() has returned true, so nothing about
+// the graph is serialised into a response they receive. Her words on the
+// ruling were "no preview, no teaser rendering".
+export const dynamic = "force-dynamic";
+export const metadata = { title: "Claim graph — library of alexandr.ia" };
+
+export default async function Graph() {
+  const entitled = await hasSpine();
+  const graph = entitled ? await loadGraph() : null;
+
+  // The wide shell is for the workspace, so it arrives with the workspace.
+  // `.graph-page` caps at 1280 because a canvas and its panel need the room,
+  // but a visitor who is not entitled never receives either: they get a
+  // masthead and a 480px offer card, stranded at the left of an 800px void,
+  // with the page title sitting 300px left of where every other page puts
+  // it. Measured at 1440 this run: the h1 started at x=104 here against
+  // x=404 on pricing, mission, routines, the issue and the 404, so moving
+  // between them slid the masthead across the screen. The gate is an
+  // article, so it gets the article shell, and the workspace keeps its width
+  // for the reader who actually has a graph to explore.
+  return (
+    <main className={entitled ? "page graph-page" : "page"}>
+      <p className="page-kicker">Graph</p>
+      <h1 className="page-title">Claim graph</h1>
+      <p className="page-intro">
+          Most of the cost of building on research is finding out too late that a result did not hold. The graph shows you how solid a finding is before you commit to it: what confirmed it, what narrowed it, and what has contradicted it, with the evidence behind each. A few minutes here can save the weeks that go into building on something the field has already moved past.
+        </p>
+
+      {!entitled ? (
+        <div className="graph-gate">
+          <h2>Open any node with the paid plan.</h2>
+          <p>
+            The paid plan opens every node, with its evidence, its procedure, and the paper it came from.
+          </p>
+          <Link href="/pricing" className="pill">
+            See pricing
+          </Link>
+        </div>
+      ) : graph === null ? (
+        <p className="graph-unavailable">
+          The graph is unavailable right now. Try again in a minute.
+        </p>
+      ) : (
+        <>
+          <dl className="graph-counts">
+            <div>
+              <dt>Claims</dt>
+              <dd>{graph.counts.claims.toLocaleString()}</dd>
+            </div>
+            <div>
+              <dt>Linked</dt>
+              <dd>{graph.counts.linked.toLocaleString()}</dd>
+            </div>
+            <div>
+              <dt>Edges</dt>
+              <dd>{graph.counts.edges.toLocaleString()}</dd>
+            </div>
+            <div>
+              <dt>Papers</dt>
+              <dd>{graph.counts.papers.toLocaleString()}</dd>
+            </div>
+          </dl>
+          <GraphExplorer
+            claims={graph.claims}
+            edges={graph.edges}
+            topics={graph.topics}
+            counts={graph.counts}
+          />
+        </>
+      )}
+    </main>
+  );
+}

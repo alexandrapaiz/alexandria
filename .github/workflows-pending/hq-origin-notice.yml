@@ -1,0 +1,55 @@
+name: hq-origin-notice
+# A smoke alarm, not a gate. Alexandra Systems decides things that change
+# alexandria, and until 2026-09-24 no seat here held a duty to read a parent
+# decision against a local law (docs/agents/cross-repo-law.md). That duty is
+# now prompts/exo-agent.md section 3f, and it runs weekly, while the trigger
+# for it is a merge. HQ ADR-015 landed on a Friday evening and was first read
+# on a Sunday, after it had already failed two PM runs.
+#
+# This job makes an HQ-origin change visible at the moment it lands. It reads
+# nothing, blocks nothing, and dispatches nobody. It cannot tell a real
+# override from a commit that merely mentions an ADR number, which is why the
+# judgment stays with the weekly audit.
+#
+# Queued 2026-09-24 as item 5 of docs/agents/pending-workflow-changes.md and
+# moved into this directory on 2026-09-27, when the ExO seat worked out that a
+# new workflow file can be pushed here and applied with one `git mv`.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  notice:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Flag HQ-origin commits
+        shell: bash
+        run: |
+          # `shell: bash` on purpose. This job does not run in a container, so
+          # bash is already the default, but INC-2026-09-26-run-report-dash-echo
+          # is what an unstated shell cost the org: the same step text ran under
+          # dash in the two containerised workflows, dash's echo expanded the
+          # backslash escapes inside a JSON string, and five finished runs were
+          # marked as crashes. State the shell in every run step.
+          range="${{ github.event.before }}..${{ github.sha }}"
+          hits=$(git log --pretty='%h %s' "$range" \
+            | grep -iE 'ADR-0[0-9]{2}|HQ |company standard|vendored|centralizer' || true)
+          if [ -n "$hits" ]; then
+            {
+              echo "### HQ-origin commits in this push"
+              echo ""
+              printf '%s\n' "$hits" | sed 's/^/- /'
+              echo ""
+              echo "Read these against local law before they take effect:"
+              echo "docs/agents/cross-repo-law.md. The three questions are"
+              echo "in prompts/exo-agent.md section 3f."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi

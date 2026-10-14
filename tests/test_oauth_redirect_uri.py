@@ -190,3 +190,54 @@ def test_loopback_keeps_its_ephemeral_port(client):
 def test_a_client_id_signed_with_another_secret_is_not_ours(client):
     assert oauth.registered_redirect_uris(
         oauth.issue_client_id([HONEST], "a different secret"), SECRET) is None
+
+
+# ---------------- the redirect's own query string ----------------
+
+@pytest.mark.parametrize("state, absent", [
+    ("a&scope=admin", "scope"),        # an extra parameter on the callback
+    ("a&code=forged", None),           # a second `code` the client would read
+    ("a#anchor", "anchor"),            # the query truncated into a fragment
+])
+def test_state_cannot_add_parameters_to_the_callback(client, state, absent):
+    """`state` is the client's opaque value, and it arrives from a form field.
+
+    Pasted into the redirect raw it stops being one parameter: "a&scope=admin"
+    lands on the callback as a `scope` the client never asked for, and a "#"
+    turns the rest of the query into a fragment the client's server never sees.
+    Encoded, it round-trips as exactly the string the client sent.
+    """
+    client_id = register(client)
+    params = {**authorize_params(client_id, HONEST), "state": state}
+    resp = client.post("/authorize", data={**params, "passphrase": PASSPHRASE},
+                       follow_redirects=False)
+    assert resp.status_code == 302
+    location = resp.headers["location"]
+
+    assert "#" not in location.replace(HONEST, ""), location
+    query = parse_qs(urlsplit(location).query)
+    assert query["state"] == [state]           # round-trips intact
+    assert set(query) == {"code", "state"}     # and smuggles nothing in
+    assert len(query["code"]) == 1             # exactly one code, ours
+    if absent:
+        assert absent not in query
+
+
+def test_a_legitimate_code_survives_the_encoding(client):
+    """The JWT alphabet is URL-safe, so encoding must not change `code`."""
+    client_id = register(client)
+    params = authorize_params(client_id, HONEST)
+    resp = client.post("/authorize", data={**params, "passphrase": PASSPHRASE},
+                       follow_redirects=False)
+    code = parse_qs(urlsplit(resp.headers["location"]).query)["code"][0]
+    assert "%" not in code and code.count(".") == 2
+    tokens = client.post("/token", data={"grant_type": "authorization_code", "code": code,
+                                         "redirect_uri": HONEST, "client_id": client_id,
+                                         "code_verifier": VERIFIER})
+    assert tokens.status_code == 200, tokens.text
+
+
+def test_a_request_with_no_host_header_is_not_a_server_error(client):
+    """Indexing `headers['host']` turned a malformed request into a 500."""
+    resp = client.get("/.well-known/oauth-protected-resource", headers={"host": ""})
+    assert resp.status_code == 200

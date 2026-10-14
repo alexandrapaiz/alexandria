@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
-import { saveWaitlistEmail } from "../../../lib/waitlist";
+import { subscribe } from "../../../lib/waitlist";
+import { normalizeEmail } from "../../../lib/waitlist-core";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-// Deliberately loose: the only thing worth rejecting here is a typo the
-// person can see for themselves. Anything stricter turns a valid address
-// into a dead end.
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export async function POST(request) {
   let body = null;
@@ -17,26 +13,35 @@ export async function POST(request) {
     body = null;
   }
 
-  const email = String(body?.email ?? "").trim().toLowerCase();
-  const source = String(body?.source ?? "").slice(0, 32);
-
-  if (!EMAIL.test(email) || email.length > 254) {
+  // Validated here as well as inside `subscribe`, because the two answers are
+  // different answers. A bad address is the person's own typo and it gets a
+  // 400 with something they can act on. Anything after this point is ours.
+  if (!normalizeEmail(body?.email)) {
     return NextResponse.json(
       { ok: false, error: "That does not look like an email address." },
       { status: 400 }
     );
   }
 
-  try {
-    await saveWaitlistEmail(email, source);
-  } catch {
+  const result = await subscribe(body?.email, body?.source).catch(() => ({
+    ok: false,
+    retryable: true,
+    reason: "the insert threw",
+  }));
+
+  if (!result.ok) {
+    // 503 rather than 500 when the database is simply not reachable yet: the
+    // request was fine, the list was not, and the difference is the one thing
+    // a log would need to tell those two apart later.
     return NextResponse.json(
       { ok: false, error: "Something went wrong. Please try again." },
-      { status: 500 }
+      { status: result.retryable ? 503 : 400 }
     );
   }
 
-  // A duplicate is a success: the person is on the list either way, and
-  // telling them otherwise would only make them wonder.
-  return NextResponse.json({ ok: true });
+  // All three outcomes are a success to the person who submitted the form:
+  // they are on the list either way, and telling them which one they were
+  // would only make them wonder. `outcome` rides along for the owner's counts
+  // and the browser ignores it.
+  return NextResponse.json({ ok: true, outcome: result.outcome });
 }

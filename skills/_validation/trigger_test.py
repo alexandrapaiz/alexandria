@@ -39,7 +39,18 @@ not a test:
     mass-normalised score below any fixed cutoff. The recorded run is in this
     PR. The finding was the instrument's, not the library's.
   lexical/2 (2026-09-18): replaces the absolute cutoff with the decoy panel.
-  lexical/2.1 (current): same scores, conservative tie handling. The
+  lexical/3 (2026-09-24, implemented but NOT the default): adds candidate-side
+    normalisation, the fix the 2026-09-22 ledger entry proposed. lexical/2.1
+    divides only by the prompt's own idf mass, so a longer description wins
+    strictly more prompts and the engine rewards verbosity, which is the
+    opposite of what a router wants. lexical/3 scores the harmonic mean of
+    that coverage and a precision term, the share of the description's own
+    idf mass the prompt accounts for. Select it with --engine lexical/3. It
+    is not the default because the run that implemented it also added a skill
+    the engine judges, and a seat does not get to change the instrument and
+    the artifact in one commit and call the result a pass. Adoption is a
+    separate decision with the two recorded bundles side by side.
+  lexical/2.1 (current default): same scores, conservative tie handling. The
     pre-registered lexical/2 run produced an exact score tie between a library
     skill and a decoy, which argmax resolved alphabetically; a coin flip is
     not a verdict. A skill must now strictly outrank every decoy to fire. No
@@ -73,6 +84,18 @@ NARROW_MARGIN = 0.02    # lead under which a win is reported as narrow, not fail
 USE_WHEN_BOOST = 1.25   # activation-condition terms outweigh framing prose
 ENGINE_VERSION = "lexical/2.1"
 ALPHA = 0.05            # 95% intervals
+
+# Description length is part of the decision policy, not a style preference.
+# LexicalEngine.score divides by the idf mass of the prompt's terms and never
+# by the candidate's own, so a longer description strictly dominates a terser
+# one on any prompt both cover. Incident 31 records two skills taking a
+# neighbour's trigger case that way, and the rule that would have caught it
+# (prompts/skill-extract.md: treat anything past 150 words as a defect) failed
+# twice because it lived in a prompt a run reads before it writes the field.
+# The runner is the one thing every skill run executes before shipping, so the
+# rule lives here as well.
+DESCRIPTION_WORD_MAX = 150   # past this, a description is a defect
+PANEL_LENGTH_TOLERANCE = 1.35  # library:decoy mean-length ratio a fair null allows
 
 STOPWORDS = {
     "a", "about", "actually", "after", "all", "already", "also", "an", "and",
@@ -143,6 +166,13 @@ def activation_clause(description: str) -> str:
     finding describes, so the runner warns about it."""
     idx = description.lower().find("use when")
     return description[idx:] if idx != -1 else ""
+
+
+def word_count(text: str) -> int:
+    """Whitespace words, counted the way the 150-word budget in
+    prompts/skill-extract.md was measured, so the number here is the number
+    that rule talks about."""
+    return len(text.split())
 
 
 def load_skills(skills_dir: str) -> dict:
@@ -224,6 +254,10 @@ class LexicalEngine:
                 matched += w * (USE_WHEN_BOOST if t in act else 1.0)
         return matched / total if total else 0.0
 
+    def _description_mass(self, key: str) -> float:
+        body, _ = self.sets[key]
+        return sum(self.idf.get(t, self.default_idf) for t in body)
+
     def route(self, prompt: str) -> dict:
         """Fire the best library skill only when it strictly outranks the whole
         null panel. Silence is the default; firing is what has to be earned."""
@@ -249,6 +283,43 @@ class LexicalEngine:
             "narrow": abs(null_margin) < NARROW_MARGIN,
             "scores": scores,
         }
+
+
+class NormalisedLexicalEngine(LexicalEngine):
+    """lexical/3: coverage and precision, harmonic mean, no length bonus.
+
+    Coverage is lexical/2.1's score, the share of the prompt's idf mass the
+    description matches. Precision is the share of the description's own idf
+    mass the prompt accounts for. A description that lists everything scores
+    high on the first and low on the second, which is the behaviour the
+    2026-09-22 finding asked for: a skill wins a prompt by being about it, not
+    by being long. Decoys are short and therefore precise, so this engine
+    makes silence easier to earn as well.
+    """
+
+    name = "lexical/3"
+
+    def score(self, prompt: str, key: str) -> float:
+        coverage = super().score(prompt, key)
+        if coverage <= 0:
+            return 0.0
+        body, _ = self.sets[key]
+        prompt_terms = set(tokens(prompt))
+        mass = self._description_mass(key)
+        if mass <= 0:
+            return 0.0
+        matched = sum(self.idf.get(t, self.default_idf)
+                      for t in body if t in prompt_terms)
+        precision = matched / mass
+        if precision <= 0:
+            return 0.0
+        return 2 * coverage * precision / (coverage + precision)
+
+
+ENGINES = {
+    ENGINE_VERSION: LexicalEngine,
+    NormalisedLexicalEngine.name: NormalisedLexicalEngine,
+}
 
 
 # ---------------------------------------------------------------------------
@@ -292,7 +363,8 @@ def clopper_pearson(k: int, n: int, alpha: float = ALPHA) -> tuple[float, float]
 # Runner
 # ---------------------------------------------------------------------------
 
-def run(skills_dir: str, decoys_path: str) -> dict:
+def run(skills_dir: str, decoys_path: str,
+        engine_version: str = ENGINE_VERSION) -> dict:
     skills = load_skills(skills_dir)
     if not skills:
         raise SystemExit(f"no skills found under {skills_dir}")
@@ -300,10 +372,31 @@ def run(skills_dir: str, decoys_path: str) -> dict:
     clash = set(skills) & set(decoys)
     if clash:
         raise SystemExit(f"decoy name collides with a real skill: {clash}")
-    engine = LexicalEngine({**skills, **decoys})
+    engine = ENGINES[engine_version]({**skills, **decoys})
 
     warnings = [f"{sk['path']}: description states no 'Use when' activation "
                 f"conditions" for sk in skills.values() if not sk["activation"]]
+
+    # Incident 31's fix: measure the length at the moment anything ships.
+    warnings += [f"{sk['path']}: description is {word_count(sk['description'])} "
+                 f"words, past the {DESCRIPTION_WORD_MAX}-word budget; a longer "
+                 f"description outranks a terser one on any prompt both cover"
+                 for sk in skills.values()
+                 if word_count(sk["description"]) > DESCRIPTION_WORD_MAX]
+
+    # The same defect at panel scale. A null model systematically shorter than
+    # the library it nulls decides negative cases by length, not by topic.
+    lib_lens = [word_count(sk["description"]) for sk in skills.values()]
+    dec_lens = [word_count(d["description"]) for d in decoys.values()]
+    lib_mean = sum(lib_lens) / len(lib_lens)
+    dec_mean = sum(dec_lens) / len(dec_lens)
+    ratio = lib_mean / dec_mean if dec_mean else float("inf")
+    if ratio > PANEL_LENGTH_TOLERANCE or ratio < 1 / PANEL_LENGTH_TOLERANCE:
+        warnings.append(
+            f"{os.path.relpath(decoys_path)}: decoy panel averages "
+            f"{dec_mean:.0f} words against the library's {lib_mean:.0f}, a "
+            f"{ratio:.2f}x gap past the {PANEL_LENGTH_TOLERANCE}x tolerance; "
+            f"negative cases are partly decided by length rather than topic")
 
     case_files = sorted(glob.glob(os.path.join(skills_dir, "*", "triggers.json")))
     if not case_files:
@@ -370,10 +463,20 @@ def run(skills_dir: str, decoys_path: str) -> dict:
             "alpha": ALPHA,
             "decoy_panel": os.path.relpath(decoys_path),
             "decoy_count": len(decoys),
-            "pre_registered": True,
+            "pre_registered": engine.name == ENGINE_VERSION,
         },
         "library": {k: {"path": v["path"], "sha256": v["sha256"]}
                     for k, v in skills.items()},
+        "length_audit": {
+            "budget_words": DESCRIPTION_WORD_MAX,
+            "panel_tolerance": PANEL_LENGTH_TOLERANCE,
+            "library_mean_words": round(lib_mean, 1),
+            "decoy_mean_words": round(dec_mean, 1),
+            "ratio": round(ratio, 3),
+            "over_budget": sorted(sk["name"] for sk in skills.values()
+                                  if word_count(sk["description"])
+                                  > DESCRIPTION_WORD_MAX),
+        },
         "warnings": warnings,
         "suites": suites,
         "passed": total_pass,
@@ -392,8 +495,10 @@ def _rate(results: list[dict], kind: str) -> str:
 
 def report(res: dict, verbose: bool) -> None:
     p = res["policy"]
+    stance = ("policy pre-registered" if p["pre_registered"]
+              else "EXPERIMENT, not the pre-registered policy")
     print(f"trigger test — engine {res['engine']}, floor {p['floor']}, "
-          f"{p['decoy_count']} decoys (policy pre-registered)")
+          f"{p['decoy_count']} decoys ({stance})")
     print(f"library: {len(res['library'])} skills, {res['total']} cases\n")
     for w in res["warnings"]:
         print(f"  warning: {w}")
@@ -440,10 +545,13 @@ def main() -> int:
     ap.add_argument("--decoys", default=os.path.join(here, "decoys.json"))
     ap.add_argument("--json", metavar="PATH",
                     help="write the full result bundle for the panel to record")
+    ap.add_argument("--engine", default=ENGINE_VERSION, choices=sorted(ENGINES),
+                    help="scoring engine; the default is the pre-registered "
+                         "policy and anything else is an experiment")
     ap.add_argument("-v", "--verbose", action="store_true")
     args = ap.parse_args()
 
-    res = run(args.skills_dir, args.decoys)
+    res = run(args.skills_dir, args.decoys, args.engine)
     report(res, args.verbose)
     if args.json:
         with open(args.json, "w", encoding="utf-8") as fh:

@@ -1,5 +1,8 @@
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+
+import { latestValidation, readProvenance } from "./skill-provenance.js";
 
 // The digest is free in full (docs/vision.md §0, amended 2026-09-17), so an
 // issue has no teaser split and no entitlement check: the whole body is
@@ -10,25 +13,42 @@ const ISSUE_DIR = path.join(process.cwd(), "content", "issues");
 const SKILLS_DIR = path.join(process.cwd(), "..", "skills");
 const WEEK = /^\d{4}-W\d{2}$/;
 
+// Weeks the public site does not publish. This hides an issue from the
+// listing and from its own route; it deletes nothing. The markdown file
+// stays on disk and the row stays in the database, so removing a week from
+// this list is all it takes to publish it again.
+//
+// 2026-W37 is retired here on the owner's order (2026-09-19) so that
+// Monday's issue is the pilot the public reads first.
+export const HIDDEN_WEEKS = new Set(["2026-W37"]);
+
 export function listIssues() {
   if (!fs.existsSync(ISSUE_DIR)) return [];
   return fs
     .readdirSync(ISSUE_DIR)
     .filter((f) => f.endsWith(".md") && WEEK.test(f.replace(/\.md$/, "")))
-    .map((f) => {
-      const week = f.replace(/\.md$/, "");
-      return parseIssue(week, fs.readFileSync(path.join(ISSUE_DIR, f), "utf8"));
-    })
+    .map((f) => f.replace(/\.md$/, ""))
+    .filter((week) => !HIDDEN_WEEKS.has(week))
+    .map((week) =>
+      parseIssue(week, fs.readFileSync(path.join(ISSUE_DIR, `${week}.md`), "utf8"))
+    )
     .sort((a, b) => (a.week < b.week ? 1 : -1));
 }
 
 export function getIssue(week) {
   const file = path.join(ISSUE_DIR, `${week}.md`);
-  if (!WEEK.test(week) || !fs.existsSync(file)) return null;
+  if (!WEEK.test(week) || HIDDEN_WEEKS.has(week) || !fs.existsSync(file)) {
+    return null;
+  }
   return parseIssue(week, fs.readFileSync(file, "utf8"));
 }
 
-function parseIssue(week, body) {
+// Exported so site/lib/issues-live.js parses a body out of the `digests`
+// record with this function and not a second copy of it. The issue's title,
+// dates and excerpt are derived from the markdown by rules that have already
+// been corrected once (the first editions carried no dates in their H1), and
+// two copies of a derivation rule can only agree by luck.
+export function parseIssue(week, body) {
   // The issue's editorial title lives in its own H1. Newer issues carry their
   // dates with it ("Title [Month D–D, YYYY]"); the first editions did not, so
   // the week's own Monday-to-Sunday range stands in.
@@ -69,36 +89,63 @@ export function weekRange(week) {
   return `${month(monday)} ${monday.getUTCDate()}–${tail}, ${sunday.getUTCFullYear()}`;
 }
 
+const VALIDATION_DIR = path.join(SKILLS_DIR, "_validation", "results");
+
 export function listSkills() {
   if (!fs.existsSync(SKILLS_DIR)) return [];
+  const bundles = listValidations();
   return fs
     .readdirSync(SKILLS_DIR, { withFileTypes: true })
     .filter((d) => d.isDirectory())
     .map((d) => {
       const file = path.join(SKILLS_DIR, d.name, "SKILL.md");
       if (!fs.existsSync(file)) return null;
-      return parseSkill(fs.readFileSync(file, "utf8"));
+      return parseSkill(fs.readFileSync(file, "utf8"), bundles);
     })
     .filter(Boolean);
 }
 
-function parseSkill(raw) {
-  const m = raw.match(/^---\n([\s\S]*?)\n---/);
-  const fm = m ? m[1] : "";
-  const get = (key) => {
-    const line = fm.match(new RegExp(`^${key}:\\s*(.+)$`, "m"));
-    return line ? line[1].trim().replace(/^"|"$/g, "") : "";
-  };
-  const papers = [...fm.matchAll(/^\s+- "(.+?)"$/gm)].map((x) => x[1]);
+// Every recorded trigger-test run. A bundle that will not parse is skipped
+// rather than thrown: one corrupt receipt must not take the catalogue down
+// with it, and a skill with no readable receipt already renders as unmeasured.
+export function listValidations() {
+  if (!fs.existsSync(VALIDATION_DIR)) return [];
+  return fs
+    .readdirSync(VALIDATION_DIR)
+    .filter((f) => f.endsWith(".json"))
+    .map((f) => {
+      try {
+        return JSON.parse(fs.readFileSync(path.join(VALIDATION_DIR, f), "utf8"));
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean);
+}
+
+// The same digest skills/_validation/trigger_test.py records per suite:
+// sha256 of the file's bytes, first 16 hex characters. Computed here so the
+// page can say whether the receipt describes the text it is showing.
+export function skillSha(raw) {
+  return crypto.createHash("sha256").update(raw, "utf8").digest("hex").slice(0, 16);
+}
+
+function parseSkill(raw, bundles = []) {
+  // Provenance is nested under `provenance:` in the frontmatter, so it is read
+  // structurally by site/lib/skill-provenance.js rather than by key regex.
+  const p = readProvenance(raw);
   return {
-    name: get("name"),
-    description: get("description"),
-    version: get("version"),
-    status: get("status"),
-    validated: get("validated"),
-    papers,
+    name: p.name,
+    description: p.description,
+    version: p.version,
+    status: p.status,
+    extracted: p.extracted,
+    validated: p.validated,
+    claims: p.claims,
+    papers: p.papers,
+    validation: latestValidation(bundles, p.name, skillSha(raw)),
     // The skill file itself is the spine's product, so the body is read here
     // but only ever handed to an entitled visitor (site/lib/entitlement.js).
-    body: m ? raw.slice(m[0].length).trim() : raw.trim(),
+    body: p.body,
   };
 }

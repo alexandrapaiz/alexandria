@@ -638,7 +638,7 @@ tier setting it permanently and the trial setting it with an expiry
 the webhook later confirms or revokes. The pricing page copy follows
 the writer seat's site-copy rules; the site's current "Opens
 October 13" pills become the three offers.
-## ADR-32: Accounts via Clerk, Neon as system of record, door-closed launch
+## ADR-34: Accounts via Clerk, Neon as system of record, door-closed launch
 
 **Status.** Accepted 2026-09-19, owner-directed. Chair-authored in parallel
 with ADR-30 and ADR-31, which settled the payments half (Polar as MoR,
@@ -686,3 +686,968 @@ email, and a gating helper are engineer work. Per-user MCP identity (the
 server is single-passphrase today, ADR-11) is the immediate follow-on:
 it is what makes the paid tier reachable from inside Claude. Third-party
 machine principals (Clerk M2M tokens) are a ledger idea, not launch work.
+
+## ADR-32: The press writes on Kimi K2; sovereign hosting is the destination
+
+Owner's decision (2026-09-24). Groq's free tier can no longer carry
+the press (incident 24: every remaining free model has an 8K
+per-request ceiling and the generator prompt alone is 9,865 tokens).
+The press's single writing call moves to Kimi K2 through the
+Moonshot API the owner funded on 2026-09-20: open weights, 256K
+context, no per-request wall on a prepaid account, roughly $0.05 an
+issue. The corpus crons (triage, distill, interpret) stay on Groq's
+free tier, where their small prompts fit. The PM's failures on Kimi
+(incident 23) do not bear on this: those were 30-turn agent loops
+under a harness, and the press is one prompt in, one issue out, no
+tools, graded by the writer seat the next morning. Finance books
+Moonshot usage as a direct alexandria cost. The destination, on the
+post-launch roadmap next to the router evaluation: SOVEREIGN HOSTING,
+the model served by alexandria itself (vLLM on Modal, an open-weight
+writer such as gpt-oss-120b or Qwen3), so no provider can withdraw
+the press's model again. Groq's role stays as it was: the corpus's
+brain, not the company's.
+
+## ADR-33: Seats may start runs with the runner's own token
+
+**Status.** Accepted 2026-09-24, owner-directed. Recorded here after the
+fact: PR #76 shipped it and prompts/pm-agent.md §5 cites it as
+"ADR-033", but no record existed in this file until 2026-09-24.
+
+**Decision.** A seat may dispatch another seat's workflow with the plain
+`GITHUB_TOKEN`, given `permissions: actions: write` on the calling
+workflow. `workflow_dispatch` and `repository_dispatch` are GitHub's two
+exceptions to the rule that runner-token events start no runs, and HQ's
+`dispatch-probe` proved it on 2026-09-24. No GitHub App key is needed
+for dispatch. The PM's dispatch authority (prompts/pm-agent.md §5) is
+active on this basis.
+
+**What it does not decide.** A seat's own token still cannot push to
+`.github/workflows/*`. That half of ADR-27 (the shared App) stays open,
+and `docs/agents/pending-workflow-changes.md` remains the channel.
+
+**Numbering note.** Two decisions were recorded as ADR-32 on 2026-09-19
+and 2026-09-24. The press decision keeps 32 because pipeline code,
+tests, README and the sprint files cite it. The accounts decision is
+now ADR-34, which nothing outside this file cited. Sequential ids have
+now collided twice (ADR-30 before, ADR-32 now); ExO's standing
+recommendation to move to dated ids stays on the chair's list.
+
+## ADR-35: Skill creation requires reading
+
+**Status.** Accepted 2026-09-25, owner-directed. "Skill creation
+actually requires reading. The agent can survey the graph, read the
+papers, and also queue further readings/research."
+
+**Decision.** A skill is written from the papers, not from claim rows.
+The skill seat's run is now: survey the claim graph including the
+cluster's refines and contradicts neighborhood; fetch and read the
+cited papers in full from arXiv; write the skill from what was read,
+with the paper overriding a claim row where they disagree; append what
+it could not read and what the reading raised to
+docs/research/reading-queue.md. The research seat drains that queue
+every run. The engineer feeds queued arXiv ids to distill ahead of the
+daily intake, so a skill's reading debt is paid by the pipeline, not
+carried.
+
+**Why.** Tonight's numbers: 8,956 papers ingested, 164 read in full,
+746 claims. A skill written from claim rows alone inherits distill's
+reading, which is two percent of the library. Reading at skill time
+puts the deepest reading where the product is.
+
+**Consequences.** Skill runs take longer and read more; the cap is
+measured on the next run. Seats cite arXiv links only; the owner's
+local reading connector is chair-only. Engineer work: a reading_queue
+table or file reader in the distill priority, and the charter's cap
+re-measured.
+
+## ADR-2026-09-26: Triage and interpret write on Kimi; ADR-32's corpus clause is superseded
+
+**A dated id, not ADR-35.** Sequential ids have collided twice in this
+file (ADR-30, ADR-32), the numbering note above records the second one,
+and the ExO's standing recommendation is to move to dated ids. A seat
+writing on a branch cannot see the highest number that exists, only the
+highest number on its branch, which is exactly the condition that
+produced both collisions. So this entry takes the date. If the owner
+prefers a sequential id, renumbering one heading is a smaller edit than
+untangling a third collision.
+
+**Owner's decision, 2026-09-25, directed to the engineer seat.** ADR-32
+said "the corpus crons (triage, distill, interpret) stay on Groq's free
+tier, where their small prompts fit". The prompts do fit. The free tier
+still could not carry the work, and this is what that cost, counted in
+Neon on 2026-09-25:
+
+- 8,956 papers ingested, 4,973 of them never triaged
+- 164 papers read in full, out of 8,956
+- 746 claims, 693 of them with no evidence grade
+- 487 claims waiting to be linked, and interpret drawing 11 to 14 edges
+  a day against that queue
+
+"The prompt fits" was the wrong question. A triage batch fits inside
+Groq's 8,000 tokens per minute with room to spare, and a run still makes
+two calls before the per-minute ceiling refuses the third, then resumes
+tomorrow and does it again. The resume query made that look like patience.
+The library was not reading.
+
+**Decision.** Triage and interpret move to Moonshot's Kimi as PRIMARY,
+the same funded account ADR-32 bought for the press, with Groq's free
+tier kept behind them as a fallback list. Three things make that
+affordable and safe to leave unattended:
+
+1. **A per-run spend cap**, computed from measured token counts and
+   checked before each call, so a run stops at its allowance rather than
+   one call past it. $0.60 a run for triage, $0.30 for interpret, which
+   projects $27 a month if every cap fires every day and far less once
+   the backlogs are gone. `python3 pipeline/budget.py` prints the
+   projection and fails if the caps are raised past the ceiling
+   docs/finance/opex.md carries.
+2. **A schedule that respects organization concurrency 1.** Moonshot
+   allows this account one call at a time, so the press's band
+   (09:00-11:00 UTC, which includes the chair's manual rehearsal), triage
+   (12:00-13:00) and interpret (14:00-15:00) are declared in
+   `pipeline/llm.py` KIMI_WINDOWS and checked in CI. No cron moved; what
+   changed is that the existing slots are now load-bearing and enforced.
+3. **A rehearsal each, before the deploy.** Per
+   docs/agents/runtime-changes.md, a provider change gets three gates and
+   the third is a real call. Both jobs now have `preflight` and
+   `rehearse` functions, and both rehearsals can fail: triage's refuses a
+   model that answers for part of a batch, interpret's refuses one that
+   relates everything or nothing.
+
+**What does not move.** Distill stays on Groq, exactly as ADR-32 put it,
+because the owner's directive named triage and interpret and no more.
+Distill is the step that reads papers in full and it is the obvious next
+candidate; that is a ledger proposal (docs/ideas.md, 2026-09-26) and not
+an action taken here. The Groq fallback lists are real rather than
+decorative for these two jobs, which is the difference from the press:
+`budget.check_cron_requests` proves every Groq entry can take the job's
+own request, with 2,087 tokens of headroom on a triage batch. The press
+cannot say that and its Groq entries remain a last resort.
+
+**What ADR-32 keeps.** Everything else. The press writes on Kimi, Groq
+stays the corpus's cheap brain wherever the free tier can actually
+finish the work, and sovereign hosting is still the destination.
+
+**Status: DORMANT as of 2026-09-26. Written, tested, not in effect.**
+
+Recorded this way because L-A16 in docs/standards/lessons.md requires it:
+configured is not in effect, and a well-built fallback makes the gap
+silent. Nothing below has run against a provider. The engineer runner has
+no Modal CLI and no credentials (`modal: command not found`, verified this
+run), and docs/agents/runtime-changes.md puts the deploy in the chair's
+hands anyway, so this seat could not have activated it even with a token.
+
+Two things are therefore true at once and neither should be read as the
+other. The arithmetic is measured: `python3 pipeline/budget.py` passes and
+prints every number in this entry, and 277 Python tests and 66 Node tests
+pass. No Kimi call has been made by either job.
+
+**What turns it on**, in this order, and the chain stops at the first `&&`
+that fails:
+
+```bash
+# the schema, once: papers.fulltext_chars and nothing else is new
+modal run pipeline/db_setup.py::apply_schema
+
+# triage
+python3 pipeline/budget.py \
+  && modal run pipeline/triage.py::preflight \
+  && modal run pipeline/triage.py::drain \
+  && modal run pipeline/triage.py::rehearse \
+  && modal run pipeline/triage.py --max-calls 2 \
+  && modal deploy pipeline/triage.py
+
+# interpret
+python3 pipeline/budget.py \
+  && modal run pipeline/interpret.py::preflight \
+  && modal run pipeline/interpret.py::drain \
+  && modal run pipeline/interpret.py::rehearse \
+  && modal run pipeline/interpret.py --max-claims 2 \
+  && modal deploy pipeline/interpret.py
+
+# the grading backfill, one time, dry run first. Costs $0: no model call.
+modal run pipeline/backfill_grades.py::count
+modal run pipeline/backfill_grades.py::backfill
+
+# distill, redeployed so it starts writing papers.fulltext_chars
+modal deploy pipeline/distill.py
+
+# the press, redeployed so the issue carries the five counts
+python3 pipeline/budget.py \
+  && modal run pipeline/weekly.py::preflight \
+  && modal run pipeline/weekly.py::rehearse \
+  && modal deploy pipeline/weekly.py
+```
+
+`drain` is the dry run the owner's directive asked for: it holds no model
+secret, so it cannot call anything, and it prints the queue depth, the
+runs the cap allows and the total cost before a cent is spent. `rehearse`
+is the third gate of the ladder: one real call, no database credential in
+the container, and it raises rather than passing if a fallback answered
+instead of the head of the list.
+
+**Do the Kimi steps outside 11:00-15:00 UTC.** Organization concurrency is
+1 and the corpus crons own that band once deployed. A rehearsal inside it
+collides with a live run, which is
+INC-2026-09-24-kimi-org-concurrency exactly.
+
+**Rollback** is `git revert` of the pull request and `modal deploy` of
+`pipeline/triage.py`, `pipeline/interpret.py`, `pipeline/distill.py` and
+`pipeline/weekly.py`. The schema column and the backfilled grades are
+additive and need no undo: `fulltext_chars` goes unread and the grades
+stay correct, since they were computed by the same rules the live grader
+uses.
+
+## ADR-2026-09-26b: Triage is a log with a history, and the claim taxonomy is closed
+
+**A dated id again, with a letter.** The entry above explains why this file
+moved to dated ids. Two entries on one day need one character to separate
+them, which is still cheaper than a third sequential collision.
+
+**Owner's directive, 2026-09-25, to the engineer seat.** Research on
+reasoning models has to reach the corpus. 209 papers in the corpus have
+"reasoning" in the title, 147 were never triaged, and of the 62 that were,
+47 went to `index` against 14 to `distill`, because `prompts/triage.md`
+rewarded a "construction technique" and a reasoning paper's contribution is
+usually a training recipe. The research seat wrote the rubric and the
+`reasoning` topic (PR #109). Three decisions were needed to apply them.
+
+**1. A revised rubric re-judges the papers it was written for, and the
+re-judgment is an append.** A paper may now hold more than one row in
+`triage_log`. `latest_triage`, a new view, is the newest decision per paper
+and the only row anything downstream reads.
+
+Alternatives weighed. *UPDATE the existing row*: the smallest diff, and it
+destroys the thing the table is for. `db/schema.sql` says the log doubles
+as the eval set for the recursive loop, and two rubrics disagreeing about
+one paper is the most valuable row in that set. *Delete the row and let the
+paper fall back into `triage_queue`*: the resume query would then be
+telling the truth about a queue and lying about history, and the count of
+papers ever judged would go down over time. *A separate `retriage_log`
+table*: every consumer would have to know about both, and the one that
+forgot would be wrong silently.
+
+The cost of appending is that a consumer joining `triage_log` for "this
+paper's decision" gets one row per decision the paper has ever had. That is
+not theoretical and it is why this change touches five files that have
+nothing to do with reasoning: a claim would have entered the digest payload
+twice, a paper would have been read in full twice in one distill run, an
+author's paper count in the MCP server would have inflated without them
+writing anything, and the weekly issue would have said it triaged 47 papers
+it triaged in September.
+
+**2. The claim taxonomy is closed and enforced where claims are written.**
+`prompts/distill.md` has always called its topic list closed and nothing
+checked, so 3.9% of tag applications were off it: 18 claims carry a
+non-breaking-hyphen twin of a real topic and are invisible to every query
+the product runs, and 22 tags were invented outright. `pipeline/topics.py`
+is now the only place that decides what a topic is.
+
+It folds spelling and refuses to fold meaning. `Post-Training` spelled with a
+U+2011 becomes plain `post-training`, because that is typography. `training` is dropped rather
+than promoted to `post-training`, because a fold that guesses would write
+tags the distiller never chose and the column would stop being evidence.
+Dropped tags are counted and printed, which turns a silent 3.9% into a
+number in the run log and a proposal for the seat that owns the prompt.
+
+Alternatives weighed. *A CHECK constraint or an enum on `claims.topics`*:
+the database would reject the whole insert over one bad tag, so a good
+claim would be lost to a typo, and the list lives in a prompt the research
+seat owns under ADR-12, which must be able to change without a migration.
+*Accept everything and clean up in a query later*: that is the status quo,
+and the cleanup never came. *Normalize at read time in each consumer*:
+three consumers, three copies, one of them wrong.
+
+**3. The reasoning priority sorts inside each tier, never ahead of the
+tiers.** Reasoning papers are drained first within every tier, and the
+interleaved tier quota that fixed the firehose starvation (`TIER_WEIGHTS`,
+2,445 unread papers) is untouched. A priority implemented as a global sort
+would have re-created that bug with a different favourite. Matching is on
+the title alone: half the corpus mentions reasoning in an abstract, and a
+priority that covers everything is not a priority.
+
+**Status: DORMANT as of 2026-09-26. Written, tested, not in effect.** Same
+reason as the entry above, and L-A16 requires it said plainly: this runner
+has no Modal CLI (`modal: command not found`, verified again this run) and
+no credentials, and the deploy is the chair's under
+docs/agents/runtime-changes.md. 307 Python tests pass and
+`python3 pipeline/budget.py` passes with real tiktoken counts. The rubric
+has judged no paper.
+
+**What turns it on**, in this order, and the chain stops at the first `&&`
+that fails. Do the Kimi steps outside 11:00-15:00 UTC, or inside the
+13:00-14:00 margin `pipeline/llm.py` keeps empty: organization concurrency
+is 1.
+
+```bash
+# the schema: claims.prompt_sha, triage_log.method, the latest_triage view
+modal run pipeline/db_setup.py::apply_schema
+
+# ingest, redeployed because sources.yaml is bundled into the image and two
+# reasoning feeds were added to it (ai2, lilianweng)
+modal deploy pipeline/ingest.py
+
+# triage, on the new rubric. The reasoning-first drain comes with it.
+python3 pipeline/budget.py \
+  && modal run pipeline/triage.py::preflight \
+  && modal run pipeline/triage.py::rehearse \
+  && modal run pipeline/triage.py::drain \
+  && modal deploy pipeline/triage.py
+
+# the 47 reasoning papers at index, judged again. Dry run first.
+modal run pipeline/triage.py::retriage_plan
+modal run pipeline/triage.py::retriage
+
+# distill, which now enforces the taxonomy and stamps claims.prompt_sha
+modal deploy pipeline/distill.py
+
+# the 18 invisible claims, repaired. Costs $0: no model, no provider secret.
+modal run pipeline/backfill_topics.py::count
+modal run pipeline/backfill_topics.py::backfill
+
+# the press, redeployed for the latest_triage joins and the honest triaged count
+python3 pipeline/budget.py \
+  && modal run pipeline/weekly.py::preflight \
+  && modal run pipeline/weekly.py::rehearse \
+  && modal deploy pipeline/weekly.py
+```
+
+**What it costs.** The rubric makes the triage prompt 1133 tokens instead
+of 728, so a call is $0.00852 at the ceiling instead of $0.00814 and the
+$0.60 cap buys 70 calls instead of 73. The re-triage is about $0.04 once,
+under a $0.10 cap of its own. The two new feeds add 78 items to the triage
+queue on their first run and a handful a month after that. Nothing here
+changes the $27.00 monthly ceiling in docs/finance/opex.md.
+
+**Rollback.** `git revert` of the pull request, then `modal deploy` of
+`pipeline/triage.py`, `pipeline/distill.py`, `pipeline/weekly.py` and
+`pipeline/ingest.py`. The schema is additive and needs no undo: a dropped
+`latest_triage` view leaves `triage_log` exactly as it was, and
+`claims.prompt_sha` and `triage_log.method` go unread. The one thing a
+revert does not undo is the re-triage rows, and it should not: they are a
+record of a judgment that was made. Reverting the rubric without reverting
+them leaves papers in `distill_queue` that the old rubric would not have
+sent there, which is a deliberate outcome rather than a leak.
+## ADR-2026-09-26-board: The board is a ref in this repository, not a table and not a vendor
+
+**SUPERSEDED 2026-09-28 by ADR-2026-09-28-board-client.** The constraint this
+decision was built on ended two days after it was written: the owner put
+`BOARD_RUNTIME_TOKEN` into all twelve seat workflows and stood the board up at
+board.libraryofalexandria.dev. Everything below is kept because the reasoning
+is still the reasoning, and because a decision that vanishes when it is
+overturned teaches the next reader nothing. The ref, `board/views.json` and the
+`ALX-<n>` allocator are gone from the tree.
+
+**A dated id with a slug, not ADR-36.** Sequential ids have collided twice in
+this file, and this branch already carries `ADR-2026-09-26` for the corpus
+decision, so a bare date can collide too. The slug settles it.
+
+**Status.** Accepted 2026-09-26, owner-directed. HQ ADR-037 item 1, relayed
+live through the PM's sync session (PR #113): "the task manager/board that
+replaces Linear: own store, seats cannot create views, run reports live on the
+board."
+
+**Decision.** The board's state is an append-only log of JSON events on a
+dedicated ref named `board`, one file per event under `board/events/`, written
+only by `tools/board.py`. Its views are a separate file, `board/views.json`, on
+`main`. The current board is a fold over the log, and `python3 tools/board.py
+show` is the read path.
+
+**Why not Neon, which is the database of record.** The only database credential
+a seat's run holds is `NEON_RO_URL`, read-only on purpose. A Postgres board
+means minting a writable URL and handing it to all twelve seats, so the price
+of a board would be that every agent run can write the corpus. That is an
+authority change rather than a storage choice, and it belongs with the
+`workflow`-scoped token question on
+docs/agents/pending-workflow-changes.md rather than inside a storage decision.
+
+**Why not `main`.** A seat may not push to main, so a report would travel by
+pull request and land only after a merge, which is the moment a board stops
+being worth reading. And since 2026-09-25 a push to main runs
+`deploy-main.yml`; twelve seats reporting twice a day would spend 24 production
+deploys a day against the 100-a-day limit that HQ incident 5 already cost a day
+of production builds.
+
+**What the ref buys.** Conflicts are impossible rather than handled, because a
+run report's path carries the run id and the attempt and an item patch's path
+carries a hash of itself, so two writers never address one path. A second post
+of the same run attempt writes nothing, which is what an `if: always()` step
+firing twice should cost. The history is the audit, since nothing is
+overwritten. And it is free.
+
+**The cost, stated.** Reading the board folds every event, so the read grows
+with the log. Twelve seats reporting twice a day is about 9,000 files a year,
+which `git archive` hands over in one subprocess, and the whole board today is
+one 1,029-byte request. When that stops being true the fix is a rolled-up
+snapshot on the same ref, which is in the ledger as an idea rather than in the
+code.
+
+**How "seats cannot create views" is enforced.** The views are on main, so a
+seat can edit them on its own branch and see the result inside its own run, and
+cannot show that view to anyone else. `tools/board.py` has no command that
+writes a view, and an item whose status is not one of the declared columns is
+refused before it is written, with the refusal naming the file. Items
+themselves stay open to every seat, with `by` recorded on each event. That last
+part is a reading of the ruling rather than a quotation of it, and it is one
+check away from the stricter reading if the owner meant items too.
+
+**Consequences.** ADR-9's blackboard now has a second instance: the pipeline's
+workers coordinate through the schema, and the seats coordinate through this
+ref. The board is a window and not a gate, so `tools/board.py report` exits 0
+when it cannot write and no seat's run goes red over a report. The frontend
+seat's read-only view is the next slice and reads the ref directly, with both
+unauthenticated paths written out in docs/board.md. The workflow step that
+posts the report is queued in pending-workflow-changes.md item 5, because no
+seat can push `.github/workflows/`, so until a hand applies it the board holds
+only what a seat writes by hand.
+
+**Rollback.** `git revert` the pull request and `git push origin --delete
+board`. Nothing reads the ref except the tool, nothing deploys from it, and
+nothing on main depends on it.
+
+**Amended 2026-09-27 (engineer, run 6), two clauses.** Both are the same
+decision carried one step further rather than reversed, and both are recorded
+here because a reader of this ADR would otherwise be wrong about the store.
+
+*The rolled-up snapshot landed now, not "when that stops being true."* This
+ADR put it in the ledger against the day the log gets big. The reason it was
+built at 4 events instead is the consumer rather than the size: the frontend
+seat's read-only view is the next slice, and the honest instruction in
+docs/board.md was "fetch a tarball of the ref and fold it in your render
+path." Shipping that instruction and then replacing it would mean building the
+UI twice. `board/state.json` is written after every event, read in one
+unauthenticated request, and still derived, so the log stays the audit and the
+truth.
+
+*"Conflicts are impossible rather than handled" now has exactly one exception,
+and it is handled.* Every event path still carries a run id or a payload hash,
+so no two writers ever address one event path. The snapshot is the store's
+only mutable path, so it is the only place two writers can lose each other's
+work, and it is written with a compare-and-swap on the blob's sha plus a
+re-fold of the log when that sha is stale. A writer working from a stale read
+is refused rather than allowed to drop another writer's event, and it answers
+the refusal by reading the log again. A snapshot that cannot be written is not
+an error, because the log is the source of truth and the next writer repairs
+the file.
+
+*One thing this ADR did not decide, now decided in code.* Item ids came from
+whoever typed the command, and an id collision is silent here: item events are
+patches folded by id, so two seats naming one id write two valid events and the
+fold merges two pieces of work into one card. The board now issues `ALX-<n>`
+itself, reserving one file per id under `board/ids/` whose path is the id and
+nothing else, written with a create that fails when the path exists. That is a
+check rather than a convention, which is the difference between this allocator
+and the incident register's numbering that incident 29 records four collisions
+for. `--id` still takes any name, so the two hand-named items keep theirs and
+moving a card still means naming it.
+
+
+## ADR-2026-09-28-board-client: The board is the owner's server, and this repository holds a client
+
+**Status.** Accepted 2026-09-28, owner-directed. Supersedes
+ADR-2026-09-26-board two days after it was written.
+
+**What changed, and it was not an argument.** `docs/standards/pm.md` §14
+(owner, 2026-09-27) says the board at board.libraryofalexandria.dev is the
+state of the work, that every seat reads it at the start of a run and writes to
+it as it works, and that runs on GitHub runners reach it over HTTP with
+`BOARD_API_URL` and `BOARD_RUNTIME_TOKEN` in the environment. Commit 6820ac1
+put both variables into all twelve seat workflows the same day. The board was
+seeded at 19:19 UTC on 2026-09-27 and already holds this company's columns, its
+sprint and sixteen items.
+
+**Decision.** The board is not ours to store. `tools/board.py` is a client of
+the owner's HTTP API and holds no state of its own. The ref-based store
+ADR-2026-09-26-board built is deleted rather than deprecated: `board/` is gone,
+and so are the event log, the snapshot and the `ALX-<n>` allocator.
+
+**Why deleting it beat keeping it as a fallback.** Two boards means every seat
+has to know which one the PM's ceremony reads, and the first time the two
+disagree the answer is whichever one the reader happened to open. The
+fallback's own value was never storage, it was that a seat could write
+somewhere without a credential, and that is exactly the thing that stopped
+being true.
+
+**What survives from the old store.** The part that was never about storage:
+filling a run report in from the Actions environment so twelve workflow files
+can each call one line, and taking the report's one line from the pull
+request's first bullet, which is the owner's correction of 2026-09-26.
+
+**The permission line is checked at both ends.** pm.md §14 gives a seat
+create, move, comment and read, and withholds create-or-rename on a company, a
+sprint, a column and a view. The client has no command for any of those four,
+so the line holds on this side of the wire as well as on the server's. A rule
+only one end checks is incident 20's shape, and this is the cheap half of
+avoiding it.
+
+**Run reports are append-only, which is a design constraint and not a
+detail.** The board's server implements GET and POST; PATCH, PUT and DELETE
+answer 501. A posted report cannot be edited or withdrawn. So `report` is
+called once, in a run's last step, with the run's real outcome, and every write
+command takes `--dry-run` because the other way to learn what a report contains
+is to spend it. Two blank rows this run created while mapping the endpoint are
+on the live board permanently, and only the owner can remove them from the
+store.
+
+**Two places the documented API and the live API disagree.** A move needs
+`seat` in its body, which pm.md §14's example omits, and it takes `column_id`
+as a uuid and refuses a column name, so every mover has to read the board
+first. The client does both for the caller. Reported to the owner in the pull
+request rather than patched into the vendored standard, per
+docs/agents/cross-repo-law.md.
+
+## ADR-36: Skills are proven, not asserted: with-versus-without evals, and revision that actually fires
+
+**Status.** Accepted 2026-09-29, owner-directed. "Can we make sure skills
+are good? Can we run unit tests and evals on them, comparing projects and
+prompts with and without the skills? Furthermore those results can serve
+in marketing our page."
+
+**Finding that forced it.** Skills do not self-update today. The
+`skills_needing_revision` view joins promoted skills' cited claims against
+`deprecated_claims`, but the skill seat writes skills straight into the
+repo without a `promotions` row, so the view has nothing to join, and no
+job reads it. Seven claims are deprecated and no skill knows. "Revised when
+the research moves" is a promise on the site with no machinery under it.
+
+**Decision, three parts.**
+
+1. **Every skill is registered.** A merged skill gets a `promotions` row
+   built from its SKILL.md provenance (claim ids, path, kind=skill,
+   status=approved), backfilled for the skills on main today and kept in
+   step by a check that fails when a skill on main has no row. A daily job
+   reads `skills_needing_revision` and, when it is non-empty, writes the
+   skill and the deprecating claim to the reading queue and dispatches the
+   skill seat. The skill seat's run begins with revisions before new skills.
+
+2. **Every skill carries an eval.** `skills/<slug>/evals/` holds tasks the
+   skill is meant to change: prompts and small projects with a hard check
+   where one exists (tests pass, output parses, a number lands in range)
+   and a rubric judged by a model where it does not. The harness runs each
+   task with and without the skill loaded, same model, same seed where the
+   provider allows, several repetitions, and reports the delta with its
+   spread. A skill with no eval is `status: draft`, never `active`. A skill
+   whose eval shows no gain is a finding, not a failure: it is retired with
+   the numbers, which is also what the site promised.
+
+3. **Results are published.** Each skill's page on the site shows its
+   with-versus-without result, the task count, the model, and the date.
+   The numbers are the market seat's material for the site and the
+   writer's for the issue, and they are never rounded up: the eval prints
+   what it measured.
+
+**Subject model.** Evals run on the funded open model (Kimi, ADR-32) by
+default so they are cheap enough to run on every skill change; a Claude
+run is the benchmark the OKR seat reports monthly. The judge is a
+different model from the subject.
+
+**Consequences.** Engineer builds the registration, the daily revision
+check, and the harness; the skill seat writes evals for the existing
+skills and every new one; frontend renders results on the skill page;
+market and writer use only what the harness printed. ADR-13's panel
+(provenance, adversary, validator) becomes the harness's three checks.
+
+## ADR-37: Skills maintain themselves
+
+**Status.** Accepted 2026-09-29, owner-directed: "i want skills to
+self-maintain."
+
+**Decision.** A skill's life after merge runs without the owner. Four
+triggers, one loop, one gate that is a harness rather than a person.
+
+**Triggers**, all read from the corpus by a daily job:
+1. A claim the skill cites is deprecated (`skills_needing_revision`).
+2. A claim the skill cites gains a `refines` neighbor with confidence, so
+   the procedure the skill teaches has a newer, narrower form.
+3. A cited paper's citation trajectory moves sharply, up or down, over the
+   slow loop's window, so the skill's weight in the library is stale.
+4. The skill's eval regresses on the current subject model, or a new
+   model version is set as the subject.
+
+**Loop.** The job appends the trigger to `docs/research/reading-queue.md`
+and dispatches the skill seat with the skill and the trigger. The skill
+seat reads the new papers in full (ADR-35), revises the skill or retires
+it with the reason, bumps `version`, and re-runs the skill's eval
+(ADR-36). The PR carries the before and after eval result.
+
+**Gate.** A revision merges on its own when every check passes: the
+provenance block resolves to claims that exist and are not deprecated, the
+eval's with-versus-without delta is not worse than the previous version's
+within its spread, the control tasks are unchanged, the ban list and the
+trigger test pass, and the diff touches `skills/<slug>/` only. Anything
+else stays a draft PR for the owner. This is the one class of change in
+the repository that merges without her, and it is bounded to skill files
+that a harness has measured.
+
+**Publish.** The skill's page shows the new version, its eval, and the
+trigger that caused the revision. Retired skills stay on the page with
+their reason. The issue's "what the library changed" line draws from the
+same record.
+
+**Why.** The site says a skill is revised when the research moves and
+retired with an explanation when it is overturned. ADR-36 found that
+sentence had no machinery under it. A skill that waits for a human to
+notice is not maintained, it is abandoned slowly.
+
+**Consequences.** Engineer: the trigger job, the gate as a checks
+workflow with auto-merge on the skill path, the version bump and results
+history. Skill seat: revisions before new skills, always with the eval.
+Frontend: version, trigger, and result on the skill page. Security: the
+auto-merge path is reviewed at the 1st-of-month run for what a poisoned
+paper could push through it.
+
+### ADR-37, amended 2026-09-29: owner confirmed no human in the loop, with guardrails
+
+**Owner, verbatim.** "i want self mantaining without human in the loop.
+we might want to set guardrails though."
+
+**What merges on its own.** A revision or retirement of an existing skill,
+touching only `skills/<slug>/` (SKILL.md, evals/, results.json), when the
+gate passes. A skill's first version still comes to the owner: the loop
+maintains, it does not originate.
+
+**The gate** (all must pass): provenance resolves to claims that exist and
+are not deprecated; the eval's with-versus-without delta is not worse than
+the previous version's within its spread, on the same subject model; the
+control tasks are unchanged; ban list and trigger test pass; the diff
+carries no code, no workflow, no prompt, and no file outside the skill's
+folder; the skill's page still renders.
+
+**Guardrails around the gate:**
+1. **Rate.** At most three automatic merges a day across the library; the
+   rest wait a day. A burst is a signal, not a queue.
+2. **Kill switch.** A file `skills/MAINTENANCE_PAUSED` on main pauses
+   automatic merges; any seat may create it with a reason and only the
+   owner or chair removes it.
+3. **Rollback.** The day after an automatic merge the eval re-runs; a
+   regression beyond the spread reverts the merge automatically and
+   files an incident.
+4. **Notice.** Every automatic merge emails the owner the skill, the
+   trigger, the before and after eval, and the diff link. Silence is
+   never the record.
+5. **Poison check.** A revision citing a paper first seen by the library
+   within the last seven days, or a paper whose source is a single feed,
+   waits for the security seat's pass before it can auto-merge.
+6. **Audit.** The security seat reviews the month's automatic merges at
+   its 1st-of-month run; ExO reviews the gate's misses.
+
+**Rollback of the decision.** Create the kill-switch file. Nothing else
+needs to change.
+
+## ADR-38: Skills close the loop with their consumers
+
+**Date 2026-09-29. Owner's instruction, from the first consumer report: "let's make these improvements apply to all skills."**
+
+**Context.** The Ursa chair session loaded `harness-engineering` while
+planning a build, used it, and filed a detailed review: one section
+changed a design decision, one changed a stated procedure, two only
+confirmed existing choices. The review found the skill's content good
+and its measurement lacking: validation recorded at whole-skill
+granularity when only one section's advice was ever trialed, no
+compressed applied form, a caveat naming a requirement without its
+floor, and no structured place for the report itself to land. A skill
+library whose product is "skills with receipts" was collecting receipts
+for authorship and none for use.
+
+**Decision.** Four additions, binding on every skill in the library.
+
+1. **Per-section validation tags.** One italic *Validation:* line under
+   each section heading naming the trial that exercised it, the
+   consumer report that adopted it, or "none yet; claim provenance
+   only". Adoption is stated as adoption, never as validation. The
+   frontmatter `validated` field stays the ADR-13 panel's.
+2. **An "Apply" checklist** in every skill, before the caveats: the
+   procedures compressed to five or fewer checkable lines.
+3. **Caveats name floors.** A requirement stated in a caveat names the
+   cheapest sufficient thing ("MiniLM-class is sufficient").
+4. **A `reviews/` lane per skill** for consumer reports
+   (`reviews/YYYY-MM-DD-<consumer>.md`), read first on every skill-agent
+   run per ADR-37. Decision-change findings feed the tags; repeated
+   zero-decision-change reports are a deprecation signal.
+
+**Mechanics.** The format contract (prompts/skill-extract.md §2) and the
+skill agent's maintenance section carry the rules. The gold specimen,
+`harness-engineering`, is retrofitted in this change (version 2) so the
+specimen and the contract agree; its trigger bundle is re-recorded since
+bundles hash the file text. The remaining skills are retrofitted by the
+skill agent on their next maintenance pass, queued in the ledger, and
+never in bulk by one run, because each retrofit requires judgment about
+what its sections' honest tags and checklist are.
+
+**Rejected.** Whole-skill validation as sufficient (it overstates by
+construction); a central reviews file (reports belong beside the skill
+they judge, where its maintenance run cannot miss them); counting
+confirmations as value equal to decision changes (a skill that only
+confirms is a candidate for deletion, and the metric must be able to
+say so).
+
+## ADR-38: The skill quality bar. A skill is its deltas, proven on tasks the bare model fails
+
+**Status.** Accepted 2026-09-30, owner-directed: "the skill evidence is
+worrying. we need to improve the skills a lot."
+
+**What the first measurement said** (skills/harness-engineering, subject
+qwen 27B, judge gpt-oss-120b, 4 target tasks, 2 reps): mean 5.4 without
+the skill, 5.3 with it. The bare model already gave most of the advice.
+The one section carrying a non-obvious delta (parallel sample-and-select)
+moved its task from 4 to 6 and is the same section that changed a design
+decision in the first consumer report. The longest procedural section made
+its task worse, 6 to 4. Two readings follow: a skill that restates what the
+model knows is worth nothing, and an essay in the system prompt is not a
+procedure.
+
+**Decision.**
+
+1. **A skill is its deltas.** Every section states the counterintuitive or
+   not-yet-common finding, the number behind it, and the decision rule it
+   changes. Anything a strong model says unprompted is cut. The "this adds
+   to standard practice" framing the consumer report praised becomes the
+   form of the whole file, not its preface.
+2. **Procedures, not prose.** Each delta ends in a numbered procedure or a
+   checklist line an agent can execute, with the thresholds named (how many
+   samples, which floor, what to pin). The builder's checklist from the
+   consumer report is mandatory and sits first, the reasoning under it.
+3. **Length is a cost.** A skill is under 120 lines. What does not fit is a
+   second skill or a link to the paper.
+4. **Tasks are differential.** An eval task counts only if the bare subject
+   model fails it or scores partial on it, measured before the with-arm
+   runs. Tasks the bare model already passes are dropped from the score
+   and kept as controls. The delta is computed on differential tasks only.
+5. **Hard checks over rubrics wherever possible.** A coding or
+   configuration task with a test that passes or fails outranks a judged
+   answer. Rubric judging stays for advice tasks, with the judge a
+   different model from the subject.
+6. **Two subjects.** The cheap open model runs on every change; the model
+   the product is used with (Claude) is the benchmark that decides
+   `status: active`. A skill is active only when it moves a differential
+   task on the benchmark subject.
+7. **Retire what does not move.** A skill with no positive differential
+   delta on the benchmark after its evals exist is retired with its
+   numbers on the page. The library is smaller and true.
+
+**Consequences.** The skill seat rewrites the six skills to this bar
+before writing new ones, in the order of the threads the owner named.
+The engineer's harness (ADR-36) gains the bare-first differential pass
+and the two-subject run. The evidence page shows deltas on differential
+tasks only, with the task count that qualified. ExO folds the finding into
+the learning log: measuring first would have found this on 2026-09-12.
+
+## ADR-39: Distill reads the whole paper, on Kimi, under three ceilings
+
+**Status.** Accepted 2026-09-30, owner-directed: "the fact that we have
+so many papers, only ~1 was read, and no skill was created is the issue
+to fix. Reading is the bottleneck."
+
+**Context.** ADR-32 bought the Moonshot account for the press.
+ADR-2026-09-26 moved triage and interpret to it. Distill stayed on
+Groq's free tier, which is 8,000 tokens a minute, which is less than one
+paper. Everything downstream is shaped by that one fact:
+`FULLTEXT_CHARS` was 12,000 characters because 12,000 was what fit,
+`FULLTEXT_MAX_PER_RUN` was 15 because fifteen was what the budget
+allowed, and the product's masthead said "read in full" above a corpus
+where that was true of 164 papers out of 8,956. ADR-35 made reading a
+precondition of skill creation and ADR-38 made a skill's deltas the
+measure of it, so a reading stage that reads the first thirteen per cent
+of a paper is now the constraint on the product's central claim.
+
+**Decision.**
+
+1. **Distill calls Kimi through `pipeline/llm.py`,** the same client
+   triage and interpret use, with the same fallback walk to Groq's free
+   tier, the same spend cap measured from the provider's usage block,
+   and the same pacing. It was the last corpus job calling a provider by
+   hand.
+2. **The window is 250,000 characters,** chosen by measuring rather than
+   dividing. Thirteen of the fourteen papers in
+   `docs/evals/2026-09-30-fulltext-token-density.json` arrive complete;
+   at 12,000 it was none of them. Expected cost stops moving past this
+   size because most papers are shorter than it, and only the ceiling
+   keeps climbing.
+3. **Full text is the default and the abstract is the documented
+   fallback.** The per-run fetch budget is gone. `papers.fulltext_chars`
+   records exactly how much was sent per paper, the run prints how many
+   arrived complete as well as how many were read from full text at all,
+   and a paper that fell back to its abstract is recorded as NULL rather
+   than counted generously.
+4. **Three ceilings, each named when it binds.** `CAP_USD` is money.
+   `TOKENS_PER_RUN` is this job's share of Moonshot's tier-0 daily token
+   allowance. `MAX_PAPERS_PER_RUN` is the clock. Each is checked before
+   a call, so the run stops at its limit rather than one call past it,
+   and each prints which one stopped it, because "raise the cap", "raise
+   the Moonshot tier" and "raise the paper count" are three different
+   fixes and the wrong one is expensive.
+5. **The reading queue first, then the four standing threads, then the
+   intake.** `pipeline/priority.py` is the one term list, shared with
+   triage. A standing thread outranks triage's `deep_read`, because
+   `deep_read` is triage's opinion about one paper and a thread is the
+   owner's standing instruction about a subject.
+6. **The slot is 15:00-16:30 UTC.** Moonshot's organization concurrency
+   is 1 and the schedule is the only enforcement there is, so distill
+   takes the band after interpret rather than the 13:00 gap, which stays
+   unclaimed as the margin. `llm.KIMI_WINDOWS` is the table and
+   `budget.check_kimi_windows()` fails CI on an overlap.
+
+**What it costs.** $0.042 a paper expected, $0.103 at the ceiling; $1.50
+a run capped, ~$25/month expected, $45/month at the cap.
+`budget.MONTHLY_CAP_CEILING_USD` moves from $30 to $75 with
+docs/finance/opex.md in the same commit, which is the mechanism the
+2026-09-26 ADR put there working as intended.
+
+**The limit this does not lift.** Twenty full papers a day is 140 a
+week, and that is what a tier-0 Moonshot account can read, not what a
+drained triage queue will produce. The binding constraint is the
+1,500,000-token daily allowance rather than the money: the three Kimi
+jobs together expect 1,195,090 tokens a day, 80% of it.
+`budget.check_kimi_tpd()` is new and holds that arithmetic; `modal run
+pipeline/distill.py::drain` compares 140 a week against the live queue
+and says plainly when the queue has outgrown it. Lifting it is a tier
+upgrade, which is money, which is the owner's call.
+
+**Two defects found in the measuring, both older than this change.**
+`budget.count_tokens` raised on any text containing `<|endoftext|>`,
+which a cleaned arXiv paper contains whenever it quotes a prompt
+template; a 12,000-character window never reached one and the first
+measurement at 250,000 hit it on the first paper. And
+`FULLTEXT_CHARS_PER_TOKEN` was 3.35, measured over a paper's first
+12,000 characters, where a whole paper runs 2.53, because a paper opens
+with a title block and an abstract and only later reaches its equations.
+A density constant is only valid for the window it was measured at, and
+that generalises past this number: changing `FULLTEXT_CHARS` always
+means re-running `tools/fulltext_density.py`.
+
+**Rejected.** A 400,000-character window that takes every measured paper
+whole: it raises the ceiling by half and the expectation by 6%, and what
+it buys is the appendices of the longest three. Keeping the Groq
+fallbacks off the list because they cannot read a paper: they can still
+keep a run alive on an abstract with `fulltext_chars` null, which is
+worth having as long as nothing downstream calls it a full read.
+Claiming the 13:00-14:00 gap to get a same-day triage-to-interpret flow:
+one day of latency is cheaper than a boundary two Kimi jobs can contend
+over.
+
+**Gates.** A provider change, so the three gates of
+docs/agents/runtime-changes.md apply and the chair runs them:
+`python3 pipeline/budget.py`, `modal run pipeline/distill.py::preflight`,
+`modal run pipeline/distill.py::rehearse`, then `modal deploy`. Triage
+is redeployed in the same chain, because its priority terms moved into
+the shared module.
+
+## ADR-39: Ursa evaluates and refines the skills
+
+**Status.** Accepted 2026-10-05, owner-directed: "id love to use Ursa to
+evaluate and refine the skills." Cross-company; Ursa is managed by
+Alexandra Systems Company, so the Ursa side is theirs and this record is
+alexandria's half of the interface.
+
+**Decision.** A skill load is an outcome in Ursa's sense: a consumer keeps
+some of the file, edits some, ignores the rest, and can declare
+satisfaction. Alexandria exposes to Ursa what it already keeps, and
+accepts back two things.
+
+*Exposed:* every skill with its provenance block; each skill's eval
+results (`skills/<slug>/evals/results.json`, the with-versus-without
+delta on differential tasks, ADR-36 and ADR-38); each skill's consumer
+reports lane (`skills/<slug>/reviews/`); and the version history the
+maintenance loop keeps (ADR-37).
+
+*Accepted back:* a survival signal per skill section, which parts
+consumers acted on and which they discarded, written into the skill's
+`evals/results.json` beside the measured delta as a second axis; and
+revision proposals distilled from the accepted parts, which enter the
+maintenance gate like any revision and merge on their own when the eval
+does not regress.
+
+**First trial.** The one that already happened: Ursa's pipeline over the
+Ursa repo's own use of the harness-engineering skill, declared by the
+Ursa chair in the first consumer report, and over alexandria's skills
+history. What survived is the first revealed-preference reading of a
+skill.
+
+**Why.** The quality bar (ADR-38) measures a skill against tasks the bare
+model fails. That is necessary and it is still a judged number. What a
+consumer kept of a skill under real work is the signal the harness
+cannot produce, and it is the signal Ursa exists to collect.
+
+**Consequences.** The skill seat reads Ursa's survival signal as an input
+to every revision; the engineer adds the second axis to the results
+contract and the evidence page; the market seat may use a survival
+number on the skill page only when it came from Ursa's record. The
+handoff to Ursa's PM is on the company board.
+
+## ADR-40: Skill testing and refinement follow the RL feedback and evaluation research the library holds
+
+**Status.** Accepted 2026-10-05, owner-directed: "look at all the RL
+feedback / evaluation / refinement methods and use that research to
+develop testing and refinements for the skills." Drawn from the corpus
+on the day (claims cited by id; 507 claims under evals, 480 under
+post-training, 134 under skills), to be deepened by the research seat
+and built by the engineer.
+
+**Testing a skill: the eval harness (extends ADR-36 and ADR-38).**
+1. *Matched ablation.* The with and without arms differ in the skill file
+   and nothing else: same model, same tools, same retrieval, same seed
+   where the provider allows (C362, C1090).
+2. *Differential tasks.* Only tasks the bare subject fails or scores
+   partial on count; tasks it already passes are controls (C412's
+   contrastive pairing of failed and succeeded trajectories of the same
+   task makes the effect observable).
+3. *Repetitions and spread.* No conclusion from one sample; the delta is
+   reported with its spread over repetitions, and pass@k alongside
+   pass@1 where the task has a hard check (C248 on misreading small
+   measurements).
+4. *Executable tasks in a sandbox.* Where a task can run, it runs: real
+   files, a Docker sandbox, the trajectory logged, scored by a check that
+   passes or fails (Skill-Use, C858; the sandbox is also the containment
+   practice the library sells).
+5. *Rubrics that cannot be gamed.* Every rubric criterion is tied to a
+   verifiable certificate in the task (a test, a number, a named
+   artifact); generated rubrics without that tie were exploited 8 to 26
+   percent of the time and up to 36 percent under stress, certificate-
+   faithful ones 0 percent (C476, C479). Each rubric ships with an
+   exploit test: an answer that games the rubric must not score.
+6. *Judge separate from subject, and audited.* The judge is a different
+   model from the subject; each task is audited once for ambiguity,
+   gameability and realism before it counts (PACT, C561); length and
+   style effects are checked by scoring the same content at two lengths
+   (C934).
+7. *Credit to the section.* The harness records which skill section the
+   judged criterion maps to, so a delta is attributed to a section and
+   not to the file (DRACO's per-step credit, C40; role-level credit read
+   from traces, C1442). This is what makes section-level validation
+   status (the consumer report's ask) measurable.
+
+**Refining a skill: the maintenance loop (extends ADR-37).**
+1. *One intervention at a time, pinned inputs.* A revision changes one
+   section; the eval reruns with everything else pinned; the change is
+   attributed before the next one (AgentGrad, C244).
+2. *Bounded edits with held-out gating and a rejected-edit buffer.* A
+   proposed edit must raise the held-out differential score, not the
+   score on the tasks it was written against; rejected edits are kept so
+   the same mistake is not proposed twice (SkillOpt, C865; ScienceBuddy
+   accepts only edits that raise mean normalized rubric score, C392).
+3. *Cluster corrections before applying them.* Consumer reports, Ursa's
+   survival signal and failed-task notes are embedded and clustered;
+   each cluster becomes one generalized edit; the raw pile is never
+   applied (C244).
+4. *Compact over exhaustive.* A skill stays at most three modules;
+   compact skills outperform exhaustive bundles and let a small model
+   match a larger one without skills (SkillsBench, C848). Self-generated
+   skills underperform curated ones (C850), so the loop curates: it
+   edits what a consumer kept and retires what nobody acted on.
+5. *Revealed preference as the second axis.* Ursa's per-section survival
+   signal (ADR-39) sits beside the measured delta; a section no consumer
+   ever acts on is a retirement candidate even when its eval holds.
+6. *Known trap.* Self-refinement by small models consolidates on what
+   they can already reach rather than finding new solutions (C965), so
+   refinement proposals come from the benchmark subject or from
+   consumers, and the cheap subject only verifies.
+
+**Consequences.** The research seat writes the full brief with the
+papers read in full (ADR-35) and names what the corpus lacks (process
+versus outcome rewards for long-horizon tasks, and preference
+optimization on usage data, both absent today). The engineer builds
+items 1 to 7 into the harness and 1 to 3 into the gate. The skill seat
+rewrites evals to the differential, certificate-faithful form and caps
+skills at three modules. The evidence page shows deltas per section with
+their spread, the exploit test's result, and the survival axis when Ursa
+supplies it.

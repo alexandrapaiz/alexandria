@@ -1,4 +1,7 @@
 import { neon } from "@neondatabase/serverless";
+import { currentUser } from "@clerk/nextjs/server";
+import { primaryEmail } from "./account-core";
+import { spineFromMetadata } from "./polar-core";
 
 // The paid spine (docs/vision.md §0, priced 2026-09-17) is the operational
 // layer: the skill library, the claim graph, and automations. It costs $20 a
@@ -9,19 +12,48 @@ import { neon } from "@neondatabase/serverless";
 // db/schema.sql. 'full' is the $20 tier.
 export const SPINE_TIER = "full";
 
-// Clerk is not wired yet: its keys are the owner's action, due 2026-09-19.
-// Until then there is no session to read and every visitor is signed out.
-// When Clerk lands this is the only function that changes, and it returns the
-// signed-in user's primary email address.
+// The signed-in person's primary address, or null when nobody is signed in.
+//
+// This was the pre-Clerk stub until 2026-10-13 and it returned null for
+// everyone, which meant `hasSpine()` below could never return true for
+// anybody, paying or not. The whole $20 spine was shut. It failed closed,
+// which was the only good thing about it.
 export async function currentEmail() {
-  return null;
+  const user = await currentUser().catch(() => null);
+  return primaryEmail(user);
 }
 
-// Fails closed by design. No session, no connection string, or a query that
-// throws all resolve to "not entitled", because a check that opens when the
-// database is unreachable is not a check.
+// Two ways to hold the spine, and they are read in that order.
+//
+// 1. A Polar payment (ADR-30, ADR-31). /api/polar-webhook writes the flag
+//    onto the Clerk user's metadata, so this read is the session token and
+//    costs no round trip. The flag carries its own expiry, which is what
+//    makes it safe: Polar's revoke event can be late or can go missing,
+//    and an entitlement that expires by itself cannot outlive what was
+//    paid for.
+// 2. A `tier = 'full'` subscribers row, which is how the owner's friends
+//    have it and predates payments entirely.
+//
+// What is deliberately NOT a second way is `subscribers.comp`, and the
+// reason is worth the four lines. The column reads as "free access
+// (friends)" in db/schema.sql, and `site/lib/account-core.js`'s
+// `isEntitled` treats it as entitling. But `site/lib/waitlist-core.js`
+// sets `comp: true` on every signup the site takes, because the
+// friends-and-family phase charges nobody for the digest. So a gate that
+// opened on `comp` would hand the skill library and the claim graph to the
+// whole free list. The tier is what says which product somebody has. The
+// comp flag only says nobody billed them for it.
+//
+// Fails closed at every step. No session, no flag, an unreadable expiry, no
+// connection string, or a query that throws all resolve to "not entitled",
+// because a check that opens when something is unreachable is not a check.
 export async function hasSpine() {
-  const email = await currentEmail();
+  const user = await currentUser().catch(() => null);
+  if (!user) return false;
+
+  if (spineFromMetadata(user.publicMetadata, Date.now())) return true;
+
+  const email = primaryEmail(user);
   if (!email) return false;
 
   const url = process.env.DATABASE_URL;

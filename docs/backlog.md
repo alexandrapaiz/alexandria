@@ -437,3 +437,14 @@ Seat-side counterparts, engineer unless noted:
 - Polar wiring, after POLAR_* secrets land: three products' checkout
   links on the pricing page (ADR-31), webhook writing paid state into
   Clerk metadata with trial expiry semantics, hasSpine reads Clerk.
+
+## Sovereign press: host the writing model ourselves (ADR-32, owner 2026-09-24)
+
+Post-launch. Serve an open-weight writer (gpt-oss-120b or Qwen3-class)
+with vLLM on Modal for the press's single call, inside Modal's free
+credits (roughly thirty runs a month at H100 minutes per issue), so
+no provider can withdraw the model under the press again. Engineer
+proposes with cold-start, cost-per-issue, and quality-versus-Kimi
+numbers; the writer seat grades the first ten issues blind against
+Kimi's before any switch. Sits with the router and durable-execution
+evaluations as one post-launch runtime decision.

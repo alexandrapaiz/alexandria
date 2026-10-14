@@ -68,3 +68,121 @@ a page looks clean but says nothing true, it is not done.
     already forbids it; it earns its own entry here because the failure
     is invisible in a normal browser and total without JavaScript, so
     it survives review. (Spotted 2026-09-18: the whole issue archive.)
+
+24. The same failure as 23, with the script removed. Content held at
+    opacity 0 by a scroll-driven CSS animation (`animation-timeline:
+    view()`) whose range never opens, because the element is taller
+    than the viewport or starts too near the fold. It passes every
+    check aimed at entry 23: there is no script, nothing is waiting
+    for an observer, and the rule reads as progressive enhancement.
+    It fails anyway, and it fails at one viewport while looking
+    correct at the other two, which is how it reaches production.
+    The test is not "is a script involved", it is "read the computed
+    opacity at rest, at every viewport you ship".
+    (Spotted 2026-09-20: the desk's lists at 390px, seven rows at
+    opacity 0 under a header that counted them.)
+
+25. A motion system that is a pile of values rather than a system: several
+    easing curves and a different duration per component, each one
+    defensible on its own and none of them agreeing. It is the hardest
+    tell on this list to see, because every individual transition looks
+    fine in isolation and nothing is ever *wrong* in a screenshot. It
+    shows up as a page that feels slightly incoherent to use without the
+    reader being able to name why, and it is what a surface built one
+    component at a time always drifts into. The benchmark is the test:
+    Linear runs its entire marketing site on ONE curve and two durations,
+    Consensus on one duration. The house rule that follows: one micro
+    curve, two clocks, plus whatever the owner has specifically approved,
+    and a new value needs the same justification a new colour would.
+    (Spotted 2026-09-23 at four curves and seven clocks in one stylesheet.)
+
+26. A browser default left standing where the house has a rule for everything
+    around it. It is not a style anyone chose, which is exactly why it
+    survives review: there is no line in the stylesheet to read and object to,
+    so the check has nothing to catch. It shows up wherever an element is
+    styled for its resting state and forgotten for its other states, or where
+    a tag arrives from rendered markdown rather than from a component someone
+    designed. The two found together on 2026-09-24 share one cause: the UA's
+    `1px auto` focus ring standing in for the house ring on the wordmark, the
+    nav, the footer and every archive row, and `marked`'s unstyled `<table>`
+    collapsing its columns against each other on the owner's own daily page.
+    The test is not "does this look designed" but "did anyone write a rule for
+    it": tab the whole page, and render one of every element the markdown can
+    emit. This is entry 25's sibling. There, a system existed and had drifted
+    into a pile of values; here, no system was ever written and the browser
+    supplied one.
+    (Spotted 2026-09-24 at four focus treatments plus the UA's on most of the
+    surface, and zero table rules in 1600 lines of stylesheet.)
+
+27. Blanket `opacity` standing in for a control's off, disabled or inactive
+    state. It is the reflexive way to say "not active" and it costs nothing
+    to write, which is exactly why it arrives without anyone deciding
+    anything: it dims the decoration and the label and the number together,
+    so the control that reports the state becomes the least readable thing
+    on the surface at the moment the reader most needs to read it. It
+    survives review because it looks deliberate in a mockup, where nobody
+    measures the text it fades. The test is contrast, not appearance:
+    compute the effective ratio of every string inside the faded element,
+    not just the element's look. A designed off state moves colour on the
+    parts that carry meaning and leaves the text legible.
+    (Spotted 2026-09-26 on this seat's own graph legend at `opacity: 0.4`:
+    the label at roughly 2.9:1 against paper and its count near 1.5:1.)
+
+28. A generated layout judged at a demo's data instead of the real
+    distribution's shape. Entry 22 is this failure for list rows and counts
+    the rows; this is the same failure for anything computed, and volume is
+    not the variable. A force layout, a packing, a treemap or a chart can be
+    correct at fifty evenly-sized items and degenerate into a pattern at the
+    real data, because real data is lumpy: one large cluster, a shoulder,
+    and a long tail of pairs. The tail is what breaks it, and the tail is
+    what a demo fixture never has. It ships because the screenshot at
+    demo data is genuinely fine and nothing in the code reads as wrong.
+    The test is to render the real distribution's SHAPE, not just its row
+    count, and to look at the picture rather than the numbers.
+    (Spotted 2026-09-26: the claim graph's first layout packed component
+    slots into rows, so roughly thirty two- and three-node components
+    landed at one y and smeared into each other. At demo data it was a
+    graph. At the real shape the top and bottom of the canvas read as
+    dotted rules.)
+
+29. A page shell sized for a state most visitors never reach. The width is
+    chosen while building the rich state, it is correct for that state, and
+    the default state is then never looked at at full width. It survives
+    review because nothing in the CSS is wrong and because the builder's own
+    screenshots are all of the state they were building. What the visitor
+    gets is a masthead and a small card stranded at the left of a void, with
+    the page title sitting hundreds of pixels from where every other page
+    puts it, so moving between pages slides the masthead across the screen.
+    This is entry 28's sibling: there a layout was judged at a demo's data
+    instead of the real distribution, here a layout is judged in the state
+    the builder occupies instead of the state the reader arrives in. The test
+    is to measure one constant across pages rather than to look at each page
+    on its own, because each page is individually fine. Measure the h1's left
+    edge on every route at the widest viewport and read the numbers side by
+    side.
+    (Spotted 2026-09-30: `/graph` capped at 1280 for a canvas and panel that
+    only an entitled visitor receives. Every other visitor got a 480px offer
+    card in an 800px void, with the h1 at x=104 against x=404 on pricing,
+    mission, routines, the issue and the 404.)
+
+30. A table whose columns were never declared, so each field floats against
+    the width of its own text. It is the default shape of a row built as a
+    flex line with the identifier at one end and the metadata at the other,
+    which is the obvious way to write one row and the wrong way to write
+    fifty. Nothing in the CSS reads as wrong and every individual row is
+    correctly laid out; what fails is the relationship between rows, which is
+    the one thing a row-at-a-time review never looks at. It has two faces and
+    one cause. Wide, the fields wander: measured across 53 skill rows the
+    version alone started at 14 different x positions spanning 105px, so the
+    list read as a ragged edge rather than as a table. Narrow, the secondary
+    field wins, because metadata is usually `nowrap` and an identifier is not:
+    at 390px the metadata took up to 205px of a 342px row and left the name
+    89px, which broke kebab-case names to seven lines with the hyphen leading
+    the line and ran rows to 177px tall against 50 for a row that fits. The
+    tell is that the thing the row exists to identify is the thing that gets
+    compressed, because it is the only part that can be.
+    The test is to measure one field's left edge down the whole list and read
+    the numbers, the same way entry 29 measures one constant across pages. A
+    single screenshot of a few rows cannot show it and neither can a mockup.
+    (Spotted 2026-10-07 on this seat's own skills library, at both ends at
+    once, judged at 53 entries and invisible at the nine the repo holds.)

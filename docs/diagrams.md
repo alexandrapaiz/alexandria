@@ -36,7 +36,7 @@ flowchart TB
     SRC["Sources — 22 feeds · 6 arXiv categories · HF daily papers"]:::live
     ING["Ingest 11:00 UTC — 2,312 papers in bronze"]:::live
     TRI["Triage 12:00 UTC — 1,446 routed four ways"]:::live
-    DIS["Distill 11:30 UTC — 80 claims, all embedded"]:::live
+    DIS["Distill 15:00 UTC — whole papers, claims embedded"]:::live
     INT["Interpret 14:00 UTC — 22 edges · 1 deprecated"]:::live
     DIG["Weekly digest Mon 15:00 UTC — live, first edition 2026-W37"]:::live
     SLOW["Slow loop — citations via Semantic Scholar, in the weekly cron"]:::live

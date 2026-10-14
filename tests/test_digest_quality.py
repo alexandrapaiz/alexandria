@@ -160,12 +160,22 @@ def test_a_number_with_nothing_beside_it_warns():
 
 # ---------------- the daily's own floor ----------------
 
-def test_the_honest_empty_issue_passes_the_gate():
-    """pipeline.weekly.empty_issue() has to survive its own gate, or a quiet
-    day would block the send instead of reporting itself."""
-    from pipeline.weekly import empty_issue
+# The honest one-line issue for a quiet day used to be checked here, against
+# `pipeline.weekly.empty_issue()`. That function belongs to the daily cadence,
+# which this branch no longer carries, so the floor is asserted against the
+# wording itself rather than against a function that is not in the pipeline:
+# the gate must pass an honest short issue, or a quiet day would block the send
+# instead of reporting itself.
+HONEST_EMPTY = (
+    "# Nothing worth your time today\n\n"
+    "September 20, 2026: today's papers were routine, so there is no issue. "
+    "The next one comes tomorrow, and Monday's weekly synthesis covers the "
+    "whole week."
+)
 
-    assert blocking(empty_issue("September 20, 2026"), kind="daily") == []
+
+def test_the_honest_empty_issue_passes_the_gate():
+    assert blocking(HONEST_EMPTY, kind="daily") == []
 
 
 def test_a_daily_that_is_neither_an_issue_nor_the_empty_line_blocks():
@@ -210,56 +220,89 @@ def test_the_report_groups_by_rule_rather_than_printing_every_hit():
 
 
 # ---------------- the gate inside the send path ----------------
+#
+# `hold_for_quality` is the policy: which draft is kept and whether it may be
+# sent. It takes the second draft as a closure rather than calling the
+# generator itself, because finishing a draft means the same title and masthead
+# work the first one got and only `weekly()` holds the arguments for that.
 
-def test_a_clean_issue_goes_out_without_a_second_call(monkeypatch):
+
+def test_a_clean_issue_goes_out_without_a_second_call():
     from pipeline import weekly
 
-    monkeypatch.setattr(weekly, "write_digest", _never_called)
-    body, cleared = weekly.hold_for_quality(GOOD, {}, "prompt", "weekly", weekly.MODEL)
+    body, model, cleared = weekly.hold_for_quality(
+        GOOD, "kimi", "2026-W37 issue", rewrite=_never_called)
     assert cleared is True
     assert body == GOOD
+    assert model == "kimi"
 
 
-def test_a_blocked_issue_is_regenerated_once_and_then_sent(monkeypatch):
+def test_a_blocked_issue_is_regenerated_once_and_then_sent():
     from pipeline import weekly
 
     calls = []
 
-    def fake_write(payload, prompt, kind="weekly", corrections=""):
-        calls.append(corrections)
-        return GOOD
+    def rewrite(instructions):
+        calls.append(instructions)
+        return GOOD, "kimi-second"
 
-    monkeypatch.setattr(weekly, "write_digest", fake_write)
-    monkeypatch.setattr(weekly, "add_masthead", lambda body, kind="weekly": body)
-    blocked = GOOD.replace("## Counting partial credit turns out to be the whole trick",
-                           "## Trailblazing")
-    body, cleared = weekly.hold_for_quality(blocked, {}, "prompt", "weekly", weekly.MODEL)
+    body, model, cleared = weekly.hold_for_quality(
+        _blocked(), "kimi", "2026-W37 issue", rewrite=rewrite)
     assert len(calls) == 1
     assert "skeleton-heading" in calls[0]
     assert cleared is True
     assert body == GOOD
+    assert model == "kimi-second", "the row has to name whoever actually wrote it"
 
 
-def test_an_issue_that_fails_twice_is_held_and_still_stored(monkeypatch):
+def test_an_issue_that_fails_twice_is_held_and_still_returned():
     from pipeline import weekly
 
-    blocked = GOOD.replace("## Counting partial credit turns out to be the whole trick",
-                           "## Trailblazing")
-    monkeypatch.setattr(weekly, "write_digest",
-                        lambda *a, **k: blocked.replace("## Last week's", "## Left behind\n\n## Last week's"))
-    monkeypatch.setattr(weekly, "add_masthead", lambda body, kind="weekly": body)
-    body, cleared = weekly.hold_for_quality(blocked, {}, "prompt", "weekly", weekly.MODEL)
+    blocked = _blocked()
+    worse = blocked.replace("## Last week's", "## Left behind\n\n## Last week's")
+    body, model, cleared = weekly.hold_for_quality(
+        blocked, "kimi", "2026-W37 issue", rewrite=lambda _: (worse, "kimi-second"))
     assert cleared is False
-    assert body == blocked   # the second draft was worse, so the first is kept
+    assert body == blocked, "the second draft was worse, so the first is kept"
+    assert model == "kimi"
 
 
-def test_the_empty_issue_is_never_regenerated(monkeypatch):
-    """model is None on the empty-day path: there is no generation to redo."""
+def test_a_better_but_still_blocked_rewrite_is_kept_and_still_held():
+    """Fewer blocking findings is the better issue to store, and still not one
+    to send. The owner reads the stored body, so it should be the best draft
+    the run produced."""
     from pipeline import weekly
 
-    monkeypatch.setattr(weekly, "write_digest", _never_called)
-    blocked = "# Trailblazing\n\nnot an issue\n"
-    body, cleared = weekly.hold_for_quality(blocked, {}, "prompt", "daily", None)
+    blocked = _blocked().replace("## Last week's", "## Trailblazing\n\n## Last week's")
+    better = _blocked()
+    body, model, cleared = weekly.hold_for_quality(
+        blocked, "kimi", "2026-W37 issue", rewrite=lambda _: (better, "kimi-second"))
+    assert cleared is False
+    assert body == better
+    assert model == "kimi-second"
+
+
+def test_an_issue_with_no_second_try_is_held_rather_than_sent():
+    """The short edition reaches the gate with no rewrite: it is already the
+    degraded print, and asking the same model list again costs the run."""
+    from pipeline import weekly
+
+    blocked = _blocked()
+    body, model, cleared = weekly.hold_for_quality(
+        blocked, "kimi", "2026-W37 issue", rewrite=None)
+    assert cleared is False
+    assert body == blocked
+
+
+def test_a_rewrite_that_raises_keeps_the_first_draft_and_holds():
+    from pipeline import weekly
+
+    def explode(_instructions):
+        raise RuntimeError("every model in the press's fallback list failed")
+
+    blocked = _blocked()
+    body, model, cleared = weekly.hold_for_quality(
+        blocked, "kimi", "2026-W37 issue", rewrite=explode)
     assert cleared is False
     assert body == blocked
 
@@ -272,9 +315,39 @@ def test_a_broken_gate_never_costs_the_issue(monkeypatch):
         raise RuntimeError("no module named check_digest_quality")
 
     monkeypatch.setattr(weekly, "quality", explode)
-    body, cleared = weekly.hold_for_quality("# anything\n", {}, "prompt", "weekly", weekly.MODEL)
+    body, model, cleared = weekly.hold_for_quality(
+        "# anything\n", "kimi", "2026-W37 issue", rewrite=_never_called)
     assert cleared is True
     assert body == "# anything\n"
+
+
+def test_the_gate_travels_with_the_job():
+    """A checker that is not in the image is a checker the scheduled run cannot
+    open, which is the whole failure docs/agents/registers.md describes."""
+    source = (REPO / "pipeline" / "weekly.py").read_text(encoding="utf-8")
+    assert 'add_local_file("tools/check_digest_quality.py"' in source
+
+
+def test_the_corrections_are_counted_against_the_request():
+    """They ride in the system prompt, so every size check in write_digest has
+    to see them. Incident 22 is an unbudgeted prompt growing past the ceiling."""
+    import inspect
+
+    from pipeline import weekly
+
+    source = inspect.getsource(weekly.write_digest)
+    assert "system = prompt + corrections" in source
+    assert "guard.check_request(system" in source
+    assert "call_model(model, system" in source
+    assert "fit_payload(copy.deepcopy(payload), system" in source
+
+
+def _blocked():
+    """A tier-four issue with one slot label put back into a heading, which is
+    the gate's clearest blocking rule."""
+    return GOOD.replace(
+        "## Counting partial credit turns out to be the whole trick",
+        "## Trailblazing")
 
 
 def _never_called(*args, **kwargs):

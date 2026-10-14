@@ -136,3 +136,141 @@ the chair and the PM record her rulings.
 - 2026-09-19 — The pilot issue: the current archived issue (2026-W37)
   is to be removed from the site and Monday's issue becomes the pilot,
   the first the public reads.
+- 2026-09-20 — Site copy, round one verdicts (line by line, hers):
+  APPROVED: "What changed in AI research today, written for people
+  who build things." / "A new issue every day." / "Your agents can
+  read this catalogue on their own, at /llms.txt."
+  REJECTED with reasons that are now rules for all site copy:
+  (1) "avoid sentence structures with lots of commas"; she prefers
+  PLAIN SHORT SENTENCES. Rejected specimen: "Your agents get the same
+  findings, as files they can load." (also "unneeded").
+  (2) "sounds millenial/condescending/unserious/vibecoded", rejected
+  specimen: "An issue takes a few minutes. It says what is new and
+  what turned out to be wrong, in words you do not need a PhD to
+  follow. The same findings become skills: small files your agents
+  load to do the work, each one corrected when the research is."
+  Cute asides ("do not need a PhD"), diminutives ("small files"),
+  and colon-led constructions read as unserious. The site register
+  is SERIOUS.
+  (3) "no more technical. we want to sell." The skills intro that
+  explained what a skill is was rejected; site copy sells the
+  outcome, it does not explain the mechanism.
+  (4) "One library, two readers." is now REJECTED as the skills
+  heading (reverses the 2026-09-19 approval).
+  (5) The writer's mission page draft was rejected whole, including
+  the standing close "You read to decide. Your agents load to act."
+  on that page: too long, essayistic, explanatory. Shorter, plainer,
+  selling.
+  Every line reaches her in chat before anything is set on the site.
+- 2026-09-20 — Site copy rounds two to eight, all rejected. The
+  full verbatim record with her reasons is
+  docs/voice/preferences/site-copy-2026-09-20.md (preference data for
+  Ursa's taste loop). The rulings that fall out: copy describes
+  VALUE TO A BUILDER, never mechanism; "it" as the subject of
+  mechanism sentences is rejected; the GROWING, SELF-MAINTAINING
+  CORPUS is the value and must be present; no marketing tone, no ad
+  rhythm, no cute, no defensive; plain short sentences, serious. The
+  chair stops drafting copy live; the writer seat drafts, ExO
+  corrects the process, Ursa learns the taste.
+- 2026-09-24 — "dont name it [alexandria] 2026-W39. give it a proper
+  title." Every subject line a human reads, including the owner's own
+  alarm emails, carries a proper title. ISO week ids and bracketed
+  system tags never appear in a subject; the diagnostics inside the
+  body may keep them.
+- 2026-09-24 — On the W39 opening "You spent last week watching
+  agents get faster by doing less at test time": "dont assume readers
+  read each issue." EVERY ISSUE STANDS ALONE. The opening never leans
+  on a previous issue, on "last week", or on anything the reader is
+  presumed to have seen. A first-time reader loses nothing. When a
+  thread continues across issues, the sentence restates the thread in
+  full instead of pointing back at it. Applies to the weekly and the
+  daily alike, and to the digest prompt as a rule, not a preference.
+- 2026-09-24 — On W39 after the stands-alone fix: "so much better,
+  but feels dense and like a hassle to read. not really enjoyable."
+  The issue must be ENJOYABLE TO READ, not only correct. Density is
+  now a failing grade on its own: long paragraphs that pack four
+  results each, numbers in every sentence, no air between ideas. A
+  reader should be carried through, not made to work. Shorter
+  paragraphs, one result per paragraph, the number only where it
+  changes the reader's decision, and a line of plain meaning after
+  every result. The market seat ranks the issue against the
+  newsletters builders actually enjoy; the PM decides from that rank.
+  Her proposal, same night: "some sections with bullets and playing
+  with formatting beyond dense paragraphs." Formatting is now a tool
+  of the issue, not a violation of it: bullets where results are
+  parallel, a short bold lead per item, a one-line pull for the
+  number that matters, white space between sections. Prose stays
+  for the argument; lists carry the inventory.
+- 2026-09-27 — Codes are never owner-facing. Her words: "i dont want
+  to see adrs, for me its just random codes. id rather have good
+  descriptions." Ruling, relayed the same day in full: in everything
+  she reads — Slack bullets, PR opening bullets, the board — a
+  decision is named by what it decides, never by its number. No
+  "ADR-", no "L-", no "Incident N" inside an owner-facing line. The
+  codes stay inside the repo (docs/decisions.md, docs/agents/
+  incidents.md, docs/standards/lessons.md), where a seat still cites
+  one to prove a judgment already exists rather than invent it; only
+  the sentence that reaches her translates the code into the decision
+  it recorded. Scope widens past the newsletter the same way site copy
+  did on 2026-09-19: this binds every seat's owner-facing prose, not
+  only the digest. NOT YET GATED as of the day it was recorded: no
+  charter's shipping step checks a PR description or a Slack line
+  against it before that line reaches her, and a live contradiction
+  already exists on this same day — prompts/pm-agent.md section 4's
+  own example prints "**Trigger.** ADR-29 class 3" inside the
+  dispatch-queue entry that charter copies into the PM's PR
+  description in full. Fixing that charter line is the ExO's edit to
+  make, filed in docs/sprints/pending.md the same day this was
+  recorded.
+- 2026-09-25 — Graph page copy. "A graph that never forgets." (the
+  parked graph page's title) and its intro ("...only ever appended to")
+  are REJECTED as cheesy. Ruling applied on the chair's graph page and
+  binding on the site's /graph: heading is the bare noun "Claim graph";
+  intro is one plain sentence ("Each claim the library distilled, and
+  the claims that support, refine, or contradict it."); hints are
+  instructions, not invitations ("Click a claim to read it."). No
+  personification of the graph, no slogans on tool pages.
+- 2026-09-29 — SITE COPY, the rounds that landed (owner: "good. i like
+  this."). The rulings that produced them, binding on the writer and on
+  every site line:
+  (1) LONGER, UNDECORATED SENTENCES. "all the subtitles are too choppy.
+  prefer longer undecorated sentences." No fragments, no staccato, no
+  colon-led devices, no bold inside body copy, no "For you, ..." rhythm.
+  A paragraph is two to four long plain sentences.
+  (2) SELL THE VALUE, FROM SCRATCH WHEN ASKED. Definitional copy ("A skill
+  is a file that...") was rejected twice for the skills page. What sold:
+  the builder's situation first (knowing which techniques work, noticing
+  when that changes), then what the library does about it, then what the
+  builder keeps.
+  (3) THE FRONTIER ANGLE, WITH TRACTION. "keeping your agents at the
+  frontier. they direct themselves at the pace of the research that gains
+  the most traction." The word "frontier" is allowed again when it names
+  the builder's position, not as marketing ("the frontier your agents can
+  load" stays rejected).
+  (4) COMPOUNDING. "id like you to include some self-recursive or
+  exponential aspect. moores law, s curves..." Landed as: the gap
+  compounds; the record gets more valuable with each paper rather than
+  merely longer; "the only pace that keeps up with an exponential".
+  Moore and S-curves are NOT named; the compounding is stated, not
+  borrowed.
+  (5) HEADINGS ARE BARE NOUNS: "Every issue", "Skill library", "Claim
+  graph"; the mission keeps its statement heading.
+  (6) NEVER "read" FOR INGESTED, on the site as in the issue.
+  The approved texts are on the site (commit of 2026-09-29/30, home,
+  library, skills, graph, mission) and are the positive examples for the
+  writer's site-copy work from here on.
+
+- 2026-09-30 — THE CLOSE. "change each of these: You read to decide. Your
+  agents load to act. to these: Accelerate every builder [and agent] to
+  frontier speed." The standing close of every issue and the email is now
+  "Accelerate every builder and agent to frontier speed." The mission
+  heading on the site keeps its own form. Historical reviews and the
+  preference record keep the old line as what was said then.
+- 2026-10-04 — TITLES. "two issues should never have the same title.
+  thats a big and quite obvious issue." The Monday 2026-09-28 issue
+  printed under the title of the two sends before it and read as a
+  repeat. Law: a title the library has already used is not a title. The
+  press now hands the generator the titles already used and refuses a
+  reused one (asks the model for a new title; dated title as the last
+  resort). The writer carries this into the digest prompt as a rule, not
+  a hint.

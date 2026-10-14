@@ -1,0 +1,61 @@
+{
+  "skill": "recursive-harness-self-improvement",
+  "suite_version": 1,
+  "written": "2026-09-22",
+  "author": "skill agent (ADR-22)",
+  "note": "The five-prompt trigger test prompts/skill-agent.md requires, plus one confusion case per neighbouring skill in the library. Run with skills/_validation/trigger_test.py.",
+  "cases": [
+    {
+      "id": "rhsi-pos-1",
+      "kind": "positive",
+      "expect": "recursive-harness-self-improvement",
+      "prompt": "We built a nightly job where the agent reads its own failed runs, writes a patch to its own prompts and tool code, and applies it. Four rounds in, the score on the task set it evolves against keeps climbing and real customer tickets are no better. What is going wrong?",
+      "anchor": "when self-edits raise the benchmark score but real tasks do not improve",
+      "rationale": "This is section 6 exactly, the contaminated evolution set, and section 5's missing diff-review gate behind it. Two activation clauses match and the failure named is the one the skill's evidence explains."
+    },
+    {
+      "id": "rhsi-pos-2",
+      "kind": "positive",
+      "expect": "recursive-harness-self-improvement",
+      "prompt": "Our agent rewrites parts of its own scaffold between runs. What should decide whether a proposed edit is kept or rolled back, and how much should one edit be allowed to change at once?",
+      "anchor": "when choosing the gate that accepts or rolls back a proposed edit",
+      "rationale": "Sections 4 and 5 are the whole answer, and the wrong default (accept if the diagnosis that motivated the edit looks sound) is what a builder reaches for unaided."
+    },
+    {
+      "id": "rhsi-pos-3",
+      "kind": "positive",
+      "expect": "recursive-harness-self-improvement",
+      "prompt": "Thirteen coding agents are committing to one shared repository trying to push the same metric, and for five days every one of them has been building on the same idea. How do we get the exploration spread out again?",
+      "anchor": "when several agents rewrite one shared codebase and converge on the same idea",
+      "rationale": "The Agora monoculture finding is the only evidence in the library that speaks to a population of self-editing agents collapsing, and the diversity-signal answer is not obvious."
+    },
+    {
+      "id": "rhsi-neg-1",
+      "kind": "negative",
+      "expect": null,
+      "prompt": "Our release pipeline should automatically roll back a deploy when the error rate climbs after a push. What thresholds and bake time should we set, and who gets paged when it trips?",
+      "rationale": "Hard negative: roll back, automatic, gate, threshold, measure and improve are all this skill's own vocabulary, and the sentence is about a system changing itself without a human. But the artifact is a release, nothing is diagnosing or rewriting a scaffold, and the real need is incident practice. A description matching on rollback alone would fire here."
+    },
+    {
+      "id": "rhsi-neg-2",
+      "kind": "negative",
+      "expect": null,
+      "prompt": "Our nightly job regenerates the API client from the vendor's OpenAPI spec, and the diffs it produces keep failing code review. How should we structure the regeneration and the review step so this stops?",
+      "rationale": "Hard negative: an automated process that writes code, produces diffs, and has a review gate that rejects them, which is the shape of section 5. But the generator is a deterministic codegen tool with no diagnosis loop and nothing it learns from the rejection, so none of this skill's evidence applies. The nearest honest match is ordinary integration work."
+    },
+    {
+      "id": "rhsi-conf-1",
+      "kind": "confusion",
+      "expect": "harness-engineering",
+      "prompt": "We are going to evolve our agent's harness rather than train the model, and our own engineers will write each change by hand this sprint. Which parts of the scaffold give the most back, and how do we tell which sub-agent is at fault when the pipeline fails?",
+      "rationale": "Belongs to the neighbour. It borrows this skill's headline vocabulary (evolve the harness, not the weights) but a person writes every change, so the answer is harness-engineering's order-of-operations and sequential-intervention sections, not this skill's gates and freeze lists. Routing it here would hand the reader machinery for an automation that does not exist."
+    },
+    {
+      "id": "rhsi-conf-2",
+      "kind": "confusion",
+      "expect": "self-improving-post-training-loops",
+      "prompt": "We want the agent's own successful rollouts to become the training data for the next fine-tune of the model itself. How do we decide which rollouts are good enough to train on, and how do we keep the run from collapsing?",
+      "rationale": "Belongs to the other neighbour. Self-referential improvement again, and the words loop, own rollouts and improve itself all appear, but the thing being updated is the weights, which is the boundary this skill's description draws explicitly. Routing it here would give scaffold-edit gates to a question about teacher gating and collapse."
+    }
+  ]
+}

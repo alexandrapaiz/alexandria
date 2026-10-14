@@ -7,37 +7,33 @@ export default function Mission() {
       <h1 className="page-title">Accelerate every builder to frontier speed.</h1>
       <div className="prose">
         <p>
-          AI research moves faster than any person can read. Thousands of
-          papers appear every week, and keeping an honest record of what they
-          add up to is more work than a person has hours for. alexandria keeps
-          that record instead, and it does so without a person in the loop.
+          The field moves faster than the people building on it, and the gap
+          compounds. Every month you spend on a technique the research has
+          already moved past is a month your competitors spend on the one that
+          replaced it, and by the time the difference shows in your product the
+          curve has turned again. alexandria exists so that you and your agents
+          ride the curve instead of finding it late.
         </p>
         <p>
-          The library reads the field&rsquo;s output and breaks each paper
-          down into <b>claims</b>, which are single findings kept with their
-          evidence and the procedures behind them. Those claims are linked to
-          each other, so support, refinement, and contradiction collect in one
-          place instead of scattering across the literature.
+          The library follows the research at the pace of what is actually
+          gaining traction, keeps an honest record of what has held up and what
+          has not, and corrects that record on its own as new work lands.
+          Because every finding is linked to the findings that support, refine,
+          or contradict it, the record gets more valuable with each paper it
+          adds rather than merely longer, and the answer to where the field
+          stands on something is there with its evidence, current after you
+          have moved on.
         </p>
         <p>
-          Once a week the library writes the digest from that record. Because
-          it is drawn from the claims rather than from headlines, it reads as
-          a current statement of where the field stands rather than as a feed
-          of what was loud.
-        </p>
-        <p>
-          The same record turns into work your agents can do. You read the
-          digest to decide what matters, and your agents load the skills to
-          act on it, from the same claims either way. Procedures that hold up
-          become <b>agent skills</b>, each one tied to the claims that justify
-          it. That link stays live, so a skill is revised when its research
-          sharpens and retired with an explanation when the research is
-          overturned.
-        </p>
-        <p>
-          The library also reads itself. It proposes improvements to its own
-          prompts and to the pipeline that runs them, which is how a system
-          that studies a moving field manages to move with it.
+          Your agents get the same frontier as working files, and the loop
+          closes without you. Each skill is a way of doing one job that the
+          research has shown to work, proven against the same tasks with and
+          without it, revised when the research sharpens it, and retired with
+          the reason when the research overturns it. An agent that improves at
+          the pace of the research improves at the pace of the field, which is
+          the only pace that keeps up with an exponential. You read the issue
+          once a week to decide what matters. Your agents load the skills and
+          stay at the frontier every day.
         </p>
       </div>
     </main>

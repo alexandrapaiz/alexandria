@@ -150,11 +150,40 @@ one you chose at the top of your PR description.
 
 - **Build on it.** Merge that branch into yours early, in your first
   few turns, before you write anything. Your PR then supersedes it, and
-  you say so plainly so the owner can close the older one instead of
-  reviewing two.
+  you say so plainly at the top of your description. **Then close the
+  older one yourself**, once your own pull request is open and pushed.
+
+  ```bash
+  git log --oneline origin/<the-older-branch> ^HEAD   # must print nothing
+  gh pr close <n> --comment "Superseded by #<yours>. Branch kept."
+  ```
+
+  The first line is the proof and it comes first: if it prints anything,
+  your branch does not contain their work and you must not close it. Do
+  not delete the branch. Closing is reversible with `gh pr reopen` and
+  deleting a ref is not.
+
+  This clause used to say the owner would close it. On 2026-09-30 ten
+  pull requests were superseded in a single day and every one was left
+  open, so a review queue of 27 items held 17 live ones and 10 that their
+  own authors already knew were dead
+  (`INC-2026-09-30-superseded-prs-are-left-for-the-owner-to-close`).
+  Closing your own superseded pull request is not merging your own work,
+  it moves no authority, and the ExO seat probed the token and confirmed
+  it works.
 - **Branch from main anyway**, when your work genuinely does not touch
   the same files. Then name the older PR and the merge order you expect,
   the same way the ledger-collision rule already requires.
+
+**Say how deep the chain is.** If the PR you are superseding was itself a
+superseding PR, count the links and put the number in your description:
+"third in a chain, #141 to #153 to this one." A chain is not a problem at
+depth two. At **depth three or more, say in bold that your seat is
+blocked on merges**, because by then your diff carries three runs of work
+for one run of review, which makes it slower to review, which deepens the
+chain again. The skill seat reached depth five on 2026-09-30. That is the
+number to report rather than to route around, and it is evidence for the
+owner about merge throughput rather than a fact about you.
 
 What you never do is start from main, write into the same files, and say
 nothing. The evidence that this is real: incident 6 (two ledger appends
@@ -167,6 +196,55 @@ Two absolutes that fall out of it. Never `git push --force` a shared
 branch; `--force-with-lease` or nothing. And never reuse a branch name
 whose PR already merged, because the next reader cannot tell your new
 commits from the old ones.
+
+**And that second absolute needs one command, because five seats have
+broken it.** Looking for your own OPEN pull request finds an open collision
+and never a merged one, and six branch names in this repository carry more
+than one PR (INC-2026-09-30-branch-name-reuse-is-systemic). So before you
+create the branch, ask whether the name has ever been used:
+
+```bash
+gh pr list --state all --limit 200 --json number,state,headRefName \
+  --jq '.[] | select(.headRefName=="<the name you are about to use>") | .number'
+```
+
+Any output at all means pick a different name. Add a short suffix that says
+what this run is, not `-b` or `-2`: `skill/2026-09-30-containment` rather
+than `skill/2026-09-30-b`. The convention itself is what collides, because a
+monthly seat writing `okr/YYYY-MM` and a weekly ceremony writing
+`pm/sprint-YYYY-MM-DD` produce the same name on a second run in the same
+period, so a seat that follows its naming rule exactly will eventually reuse
+a name. The suffix is how you follow the rule and stay unique.
+
+## Survey the pull requests before you build (company standard L-E10, synced 2026-09-30)
+
+`docs/standards/lessons.md` L-E10: an open card is not evidence that nobody
+built it, so a builder surveys the pull requests before it writes code. Every
+run of this seat starts from `main` with no memory, and `main` is the one
+place where work that is built but unmerged is invisible. A backlog card says
+only that the work has not landed. It says nothing about whether it has been
+done.
+
+So before you write a line of code, two commands, and the results go in the
+PR description as named numbers.
+
+```bash
+gh pr list --state open --json number,title,headRefName
+gh pr list --state closed --limit 50 --search '<the feature in your own words>'
+```
+
+Read every hit whose scope overlaps yours, then pick one of three moves in
+the open: extend the existing branch, propose closing it with a reason, or
+land the stack. Writing another implementation of something that already has
+a branch is never one of the three. A survey nobody can see is
+indistinguishable from a survey nobody ran, which is why the numbers go in
+the description rather than in your reasoning.
+
+This clause exists because the standard arrived here on 2026-09-30 and no
+charter in this repository named it, so nothing made it fire at the moment it
+applies. The generic instruction to read your role's section of the lessons
+file is real and it is not a gate: it tells a seat to read a page, not to run
+a command before a specific act.
 
 ## Check the register before you ship (org rule, 2026-09-19, all seats)
 
@@ -182,12 +260,80 @@ register has which gate is docs/agents/registers.md.
 
 So before you call `gh pr ready`, two checks.
 
+**0. The machinery diff, before anything else** (ExO assignment,
+2026-09-20, incident 23). You are the only seat that runs every day, so
+you are the only seat that can catch a runtime change inside a day.
+
+```bash
+git log --since="36 hours ago" --format='%h %ci %an %s' -- .github/ pipeline/
+```
+
+The `pipeline/` half was added 2026-09-24 and it is not decoration. A
+provider change lands there and nowhere else, so scoping this command to
+`.github/` made the largest runtime change the org makes invisible to
+the only check that catches runtime changes. That cost four production
+failures in one evening (INC-2026-09-24-press-provider-migration).
+
+For every commit it returns, ask the two questions
+docs/agents/runtime-changes.md exists to ask. Did a merged pull request
+explain it, and was there a smoke run behind it in `gh run list`. A
+change to the image, to `claude_args`, to a cap, a timeout, a cron, a
+secret a run reads, or to a `container:` block is a runtime change even
+when it is two lines and obviously correct. **So is a change to a model
+id, a provider, an API base URL, a token reservation or a client
+timeout in `pipeline/`**, and for those the question is not whether
+there was a smoke run but whether there was a rehearsal. When you find one with no
+smoke run, write it into docs/agents/incidents.md in your own PR and say
+so in one line in the PR description, addressed to the owner. Do not
+try to fix it, because you cannot push a workflow file either.
+
+**Then one more command, and run it before the log** (ExO assignment,
+2026-09-30, `INC-2026-09-30-the-guard-went-red-and-nobody-read-it`).
+
+```bash
+gh run list --workflow=checks.yml --branch=main --limit 5 \
+  --json conclusion,headSha,createdAt
+```
+
+The three questions above are all about the day a change landed, and all
+three can be answered correctly while the thing the change broke is still
+broken. This one asks whether the guard is green now. Two commits the law
+already covers, a token reservation and a retry policy, left the press
+guards asserting the behaviour they had just replaced; both changes were
+correct, and both guards stayed red for six days, including the cost
+check that was saying $0.1628 an issue against a budgeted $0.05 the whole
+time. Neither was reachable by the first three questions: both were
+direct pushes to main, so there was no pull request to explain them, and
+`checks.yml` had no push-on-main trigger until 2026-09-29.
+
+A red main is the one finding here you fix rather than only file, because
+`tests/` and `pipeline/` are your surface. Fix it first, ahead of the
+sprint item, and say in the PR that you did. The reason it outranks the
+sprint is not the bug. It is that every open pull request inherits a red
+main through its own merge check, so every other seat's run ends with a
+red tick it did not cause and cannot tell from its own.
+
+This duty was the ExO's alone until now and the ExO runs on Sundays.
+Incident 23 is what that cost: open routing landed on a Friday evening
+with no smoke run, and the first seat to meet it failed completely
+fourteen hours before the weekly audit that would have caught it. A
+daily check by the daily seat is the fix, and it costs you one command.
+
 **1. The registers your output is bound by.**
 
 - `docs/decisions.md`, the ADRs your change implements or contradicts.
 - `docs/agents/runtime-changes.md`, before any edit to a workflow, the
-  image, a secret, a turn cap or a timeout. That law binds every seat
-  and it was named in one charter until this run.
+  image, a secret, a turn cap or a timeout, and before any edit to the
+  model, provider, reservation or timeout a scheduled job uses. That law
+  binds every seat and it was named in one charter until this run.
+- `docs/agents/press-rehearsal.md`, which is a specification addressed
+  to you. It is the third gate in that law's ladder for a provider
+  change, it does not exist as code yet, and until it does the ladder
+  has two working links and a paragraph. Building it is a break-fix
+  sized piece of work: one Modal function, one scratch table, one more
+  `&&` in the deploy command. Take it when the sprint has room, and if
+  you decline it, say why in your PR so the next run does not
+  rediscover the decision.
 - `docs/voice/ban-list.md` for anything the owner will read.
 
 **2. Repeats go in the incident register.** If anything in this run
@@ -196,4 +342,20 @@ docs/agents/incidents.md in this PR. The standing rule at the top of
 that file says any issue occurring more than once is always recorded at
 the moment it repeats, with no exceptions, and that rule binds you, not
 only the ExO seat that reads the file weekly. A repeat that goes
-unrecorded is itself an incident.
+unrecorded is itself an incident. Number the entry the way the top of
+that file says, which is `INC-YYYY-MM-DD-slug` and never the next
+sequential number: you write on a branch, so the highest number you can
+see is not the highest number that exists, and that allocator has
+collided four times (incident 29).
+
+**3. The company standards bind you too.** `docs/standards/lessons.md`
+is the owner's corrections generalized into law across every Alexandra
+Systems product, and it says in its own words that every seat reads its
+role's section before working. Read the `any` section and your seat's
+section, and treat a rule there exactly as you treat one from this
+charter. It is a vendored copy, so never edit it here: a correction to a
+company standard goes to the chair through the ExO seat's relay,
+docs/agents/hq-relay.md. Where a standard and a local register disagree,
+the rule is docs/agents/cross-repo-law.md. The parent governs, and the
+disagreement itself is a finding worth reporting, because a parent
+overriding a local safety clause by silence is incident 23.

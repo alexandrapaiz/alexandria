@@ -1,0 +1,75 @@
+{
+  "skill": "skill-library-engineering",
+  "suite_version": 1,
+  "written": "2026-09-26",
+  "author": "skill agent (ADR-22)",
+  "note": "The five-prompt trigger test prompts/skill-agent.md requires, plus one confusion case per neighbouring skill in the library. Run with skills/_validation/trigger_test.py.",
+  "cases": [
+    {
+      "id": "sle-pos-1",
+      "kind": "positive",
+      "expect": "skill-library-engineering",
+      "prompt": "We published eight skill files to our internal library three weeks ago and telemetry says two of them have never once been loaded by an agent. The files are well written. What do we change so they get picked up?",
+      "anchor": "when a written skill sits in a library and is never picked up",
+      "rationale": "This is the routing-surface section. The unaided answer is to improve the body of the file, which is exactly the text a progressive-disclosure router never sees; the skill redirects the work to the description and gives the 1.1 percent trigger measurement as the reason."
+    },
+    {
+      "id": "sle-pos-2",
+      "kind": "positive",
+      "expect": "skill-library-engineering",
+      "prompt": "I am about to write a SKILL.md for our deployment procedure from our runbook and my own head. Before I do, is there evidence about what actually has to go into one for it to beat just letting the model work with an empty context?",
+      "anchor": "what a SKILL.md has to contain to beat loading nothing",
+      "rationale": "The grounding section and its baseline table. The question names the exact comparison the evidence makes, and the honest answer contradicts the asker's plan: a skill written from a runbook averaged below no skill at all, and the input should be recorded runs instead."
+    },
+    {
+      "id": "sle-pos-3",
+      "kind": "positive",
+      "expect": "skill-library-engineering",
+      "prompt": "Our agent keeps reusing a stored procedure file on requests it only loosely matches, and those runs go worse than the ones where it reuses nothing. Where should we set the match score for reuse, and how do we turn the bad runs into an edit?",
+      "anchor": "when setting the match score above which a stored skill is reused",
+      "rationale": "Two sections at once: the threshold sweep (0.4 costs far more than 0.8) and the revision loop that maps a failure to one named section. The prompt states the wrong-load symptom in the skill's own terms without using any of its section titles."
+    },
+    {
+      "id": "sle-neg-1",
+      "kind": "negative",
+      "expect": null,
+      "prompt": "Our documentation site has forty how-to pages and search analytics show users never reach eight of them. How should we rewrite the titles and add internal links so those pages actually get found?",
+      "rationale": "Hard negative: library, never found, rewrite the description, retrieval. Every structural word matches. But the reader is a person using a search box on a documentation site, nothing is loaded into an agent's context, and the need is ordinary information architecture. A description that matched on 'thing in a library nobody finds' alone would fire here."
+    },
+    {
+      "id": "sle-neg-2",
+      "kind": "negative",
+      "expect": null,
+      "prompt": "We have about thirty tools registered on our MCP server and the model picks the wrong one on maybe a fifth of calls. Should we cut the tool count, rename them, or add a selection step before the call?",
+      "rationale": "Hard negative: selection from a registry, a wrong pick, names and descriptions as the deciding surface. The mechanism rhymes, and the papers behind this skill explicitly leave tool routing as an open question rather than covering it. The artifact is a tool schema, not a loadable procedure file, and none of this skill's evidence measured tools."
+    },
+    {
+      "id": "sle-conf-1",
+      "kind": "confusion",
+      "expect": "harness-engineering",
+      "prompt": "Our coding agent is underperforming and we cannot tell whether the problem is the tools we gave it, the way each turn is framed, or the loop structure. Where should we start, and should we be considering fine-tuning instead?",
+      "rationale": "Belongs to harness-engineering: the scaffold around the model, the harness-before-weights ordering, and the fine-tuning warning. Nothing here concerns a skill file or which of several skills gets loaded."
+    },
+    {
+      "id": "sle-conf-2",
+      "kind": "confusion",
+      "expect": "recursive-harness-self-improvement",
+      "prompt": "We have an unattended loop that reads its own failed runs, rewrites its own prompts and tool code, and keeps or reverts each edit on measured evidence. How do we bound how much one edit may touch, and how do we trust a win it reports?",
+      "rationale": "Belongs to recursive-harness-self-improvement: the editor is the agent, the surface is its own scaffold, and the question is the accept-or-revert gate. The nearest neighbour to this skill, since both involve a file being rewritten from failed runs, and the boundary is that this prompt has no library, no selection, and no loadable artifact."
+    },
+    {
+      "id": "sle-conf-3",
+      "kind": "confusion",
+      "expect": "evaluation-integrity",
+      "prompt": "The held-out set we score our agent on was assembled by a pipeline, and some items look ambiguous or plain wrong. How many independent judgments should an accept require before we trust the number?",
+      "rationale": "Belongs to evaluation-integrity: the instrument is the subject, not the thing it scores. This skill also talks about measuring on a held-out set, which is the overlap, but it takes the measurement for granted rather than auditing it."
+    },
+    {
+      "id": "sle-conf-4",
+      "kind": "confusion",
+      "expect": "self-improving-post-training-loops",
+      "prompt": "We want to turn our agent's own successful rollouts into training data and fine-tune the model on them. How do we decide whether the teacher's outputs are trustworthy before we distill, and what stops the run from collapsing?",
+      "rationale": "Belongs to self-improving-post-training-loops: the weights are updated and the rollouts are supervision. Shares the vocabulary of rollouts becoming the next input, which is the overlap, but this skill never trains anything and its artifact stays outside the model."
+    }
+  ]
+}

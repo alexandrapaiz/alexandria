@@ -1,0 +1,84 @@
+name: adr-numbers
+# Two decisions cannot share a number, and nothing checked.
+#
+# On 2026-09-29 the owner wrote ADR-38 twice, eight minutes apart, in two
+# consecutive direct commits to main: "Skills close the loop with their
+# consumers" and "The skill quality bar". Both are real decisions, both are
+# still in docs/decisions.md, and ADR-39 does not exist. The string "ADR-38"
+# then appeared 35 times across prompts/, docs/ and skills/, and every one of
+# those references became ambiguous.
+#
+# The incident register hit this same defect four times with its own sequential
+# numbers and fixed it by convention, moving to INC-YYYY-MM-DD-slug. The
+# decision log never did. A convention is a recording, and this org's own
+# registers.md names the failure mode: recording is not enforcing. So this is
+# the enforcing half, and it is nine lines of Python.
+#
+# Note what the collision was NOT. It was not two seats on two branches reading
+# two snapshots, which is the story the incident register tells about its own
+# numbers. It was one author, one branch, eight minutes. The allocator is "read
+# the file, add one", and the file was read once. That is why the fix here is a
+# check rather than another convention: a convention would not have helped.
+#
+# Filed by the ExO seat 2026-09-30 in the new-file lane, per the two-lane rule
+# in prompts/exo-agent.md section 5. Apply with:
+#   git mv .github/workflows-pending/adr-numbers.yml .github/workflows/
+#
+# It will fail on the first run, on purpose. ADR-38 is still doubled on main
+# and renumbering the second one to ADR-39 is the chair's edit, because
+# docs/decisions.md is not the ExO seat's surface.
+
+on:
+  pull_request:
+    paths:
+      - "docs/decisions.md"
+      - ".github/workflows/adr-numbers.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docs/decisions.md"
+      - ".github/workflows/adr-numbers.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  unique:
+    name: every ADR number names one decision
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: no two headings share a number
+        run: |
+          python3 - <<'PY'
+          import collections, pathlib, re, sys
+
+          path = pathlib.Path("docs/decisions.md")
+          seen = collections.defaultdict(list)
+          for lineno, line in enumerate(path.read_text().splitlines(), 1):
+              m = re.match(r"^##\s+ADR-(\d+)\s*:\s*(.*)$", line)
+              if m:
+                  seen[int(m.group(1))].append((lineno, m.group(2).strip()))
+
+          if not seen:
+              print("::error::no `## ADR-N:` headings found in docs/decisions.md; "
+                    "the heading format changed and this check is now blind")
+              sys.exit(1)
+
+          dupes = {n: v for n, v in seen.items() if len(v) > 1}
+          for n, entries in sorted(dupes.items()):
+              for lineno, title in entries:
+                  print(f"::error file=docs/decisions.md,line={lineno}::"
+                        f"ADR-{n} is used more than once: {title}")
+
+          if dupes:
+              free = max(seen) + 1
+              print(f"::error::{len(dupes)} duplicated ADR number(s). "
+                    f"Renumber the later heading and every reference to it. "
+                    f"The next free number is ADR-{free}.")
+              sys.exit(1)
+
+          print(f"{len(seen)} ADRs, every number unique, "
+                f"highest is ADR-{max(seen)}.")
+          PY

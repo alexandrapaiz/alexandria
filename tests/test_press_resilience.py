@@ -1,0 +1,990 @@
+"""The press's failure modes, as tests. Incident 24.
+
+Three press failures in five days (413, 429, 404) said the same thing three
+ways: the press runs on a provider whose free tier changes under it. These
+tests encode what the press must do when it does change, because every one of
+these paths only ever runs on a bad day and a path that only runs on a bad day
+is a path nothing has ever exercised.
+
+ADR-32 moved the press to Moonshot's Kimi and kept Groq as the last resort, so
+the same tests now have to hold across two providers. The two-provider cases
+are the ones at the bottom: the right base URL per model, no Groq-only
+parameters on the Kimi path, and a missing key that names its Modal secret
+instead of dying on a KeyError.
+
+Run with `python3 tests/test_press_resilience.py`.
+"""
+
+import sys
+import types
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+# Stub modal so the press's logic can be tested without the Modal SDK or any
+# credentials. Everything under test is pure or takes its transport by
+# injection; only the decorators need modal to exist.
+if "modal" not in sys.modules:
+    modal = types.ModuleType("modal")
+    modal.Cron = lambda *a, **k: None
+    modal.Secret = types.SimpleNamespace(from_name=lambda *a, **k: None)
+
+    class _Image:
+        def __getattr__(self, name):
+            return lambda *a, **k: self
+
+    modal.Image = types.SimpleNamespace(debian_slim=lambda *a, **k: _Image())
+    modal.App = lambda *a, **k: types.SimpleNamespace(
+        function=lambda *a, **k: (lambda f: f),
+        local_entrypoint=lambda *a, **k: (lambda f: f),
+    )
+    sys.modules["modal"] = modal
+
+from pipeline import budget  # noqa: E402
+from pipeline import weekly  # noqa: E402
+
+# ADR-32 told finance to expect roughly $0.05 an issue, and the ceiling below is
+# the "far from that" this file has always used. Both are named rather than
+# inlined so that a reader who finds the check red can see which number moved.
+# Raising the ceiling is a finance decision and belongs to the owner: a ceiling
+# quietly raised to fit the current number is a ceiling that has stopped being
+# one.
+ADR_32_BUDGETED_USD = 0.05
+COST_CEILING_USD = 0.15
+
+FAILURES = []
+
+
+def check(name, condition, detail=""):
+    if condition:
+        print(f"  ok   {name}")
+    else:
+        FAILURES.append(f"{name}: {detail}")
+        print(f"  FAIL {name}: {detail}")
+
+
+# ---------------- the fallback list itself ----------------
+
+def test_fallback_list():
+    print("the fallback list")
+    models = weekly.FALLBACK_MODELS
+    check("at least three fallbacks", len(models) >= 3,
+          f"only {len(models)}; one model is a single point of failure")
+    check("no duplicates", len(set(models)) == len(models), f"{models}")
+    check("every fallback has published limits",
+          all(m in budget.MODELS for m in models),
+          f"missing from budget.MODELS: {[m for m in models if m not in budget.MODELS]}")
+    check("no withdrawn model in the list",
+          not any(m in budget.DECOMMISSIONED for m in models),
+          f"withdrawn: {[m for m in models if m in budget.DECOMMISSIONED]}")
+    check("MODEL is the head of the list", weekly.MODEL == models[0],
+          f"MODEL={weekly.MODEL}, head={models[0]}")
+    # the whole point of rank two: a family withdrawal must not take the list
+    vendors = {m.split("/")[0] for m in models}
+    check("more than one vendor in the list", len(vendors) > 1,
+          f"all of {models} come from {vendors}, so one withdrawal takes all")
+    # and since ADR-32, more than one PROVIDER, which is the stronger property:
+    # a vendor can be withdrawn from a catalog, a provider can lose its account
+    providers = {budget.provider_of(m) for m in models}
+    check("more than one provider in the list", len(providers) > 1,
+          f"all of {models} are served by {providers}")
+    check("the head of the list is on the primary provider",
+          budget.provider_of(models[0]) == budget.PRIMARY_PROVIDER,
+          f"{models[0]} is on {budget.provider_of(models[0])}, not "
+          f"{budget.PRIMARY_PROVIDER}")
+    check("the guard reads the list out of production",
+          budget.fallback_models() == models,
+          f"budget.fallback_models()={budget.fallback_models()}")
+
+
+# ---------------- incident 24's 404 ----------------
+
+def test_withdrawn_model_is_explained():
+    print("a withdrawn model")
+    # one per provider, because model deprecation is not a Groq problem
+    for name in ("groq/compound", "kimi-k2"):
+        check(f"{name} is recorded as withdrawn", name in budget.DECOMMISSIONED)
+        try:
+            budget.limit_for(name)
+        except KeyError as exc:
+            check(f"limit_for explains {name} rather than raising a bare KeyError",
+                  "withdrawn" in str(exc) or "discontinued" in str(exc), str(exc))
+        else:
+            check(f"limit_for refuses {name}", False, "it returned a limit")
+
+    # The trap ADR-32 set without meaning to: the decision says "Kimi K2", the
+    # obvious id is `kimi-k2`, and that id 404s. Nothing may point a press at
+    # it, and the explanation must name the id that does work.
+    check("kimi-k2 is not in the fallback list",
+          "kimi-k2" not in weekly.FALLBACK_MODELS)
+    check("and the record says which id replaced it",
+          "kimi-k2.6" in budget.DECOMMISSIONED["kimi-k2"],
+          budget.DECOMMISSIONED["kimi-k2"])
+
+
+def test_choose_model_skips_absent_models():
+    print("choose_model against a provider that has lost a model")
+    prompt = "you are an editor. " * 20
+    payload = budget.encode({"new_claims": []})
+    # the primary is gone at the provider; the next present model must be taken
+    available = {weekly.FALLBACK_MODELS[1], weekly.FALLBACK_MODELS[2]}
+    choice = budget.choose_model(weekly.FALLBACK_MODELS, available, prompt,
+                                 payload, 1_000)
+    check("falls through to the first model the provider still has",
+          choice.model == weekly.FALLBACK_MODELS[1], f"chose {choice.model}")
+    check("says why the primary was rejected",
+          any(weekly.FALLBACK_MODELS[0] == name and "404" in why
+              for name, why in choice.rejected),
+          f"{choice.rejected}")
+
+    choice = budget.choose_model(weekly.FALLBACK_MODELS, set(), prompt,
+                                 payload, 1_000)
+    check("no model chosen when the provider has none of them",
+          choice.model is None, f"chose {choice.model}")
+    check("and every rejection is accounted for",
+          len(choice.rejected) == len(weekly.FALLBACK_MODELS),
+          f"{choice.rejected}")
+
+
+def test_availability_failure_is_not_an_empty_set():
+    print("availability under a network failure")
+
+    class Boom:
+        def get(self, *a, **k):
+            raise OSError("connection reset")
+
+    saved = sys.modules.get("httpx")
+    sys.modules["httpx"] = Boom()
+    try:
+        budget.available_models("key-shaped-string", "moonshot")
+    except budget.AvailabilityError as exc:
+        check("a failed request raises rather than reporting zero models",
+              "connection reset" in str(exc), str(exc))
+    else:
+        check("a failed request raises", False, "it returned a set")
+    finally:
+        if saved is None:
+            del sys.modules["httpx"]
+        else:
+            sys.modules["httpx"] = saved
+
+    for provider in budget.PROVIDERS:
+        try:
+            budget.available_models("", provider)
+        except budget.AvailabilityError as exc:
+            check(f"a missing {provider} key names its Modal secret",
+                  budget.PROVIDERS[provider]["secret"] in str(exc), str(exc))
+        else:
+            check(f"a missing {provider} key raises", False, "it returned a set")
+
+
+# ---------------- incident 22's 413, still guarded ----------------
+
+def test_budget_still_refuses_an_oversized_request():
+    print("the budget guard, on every fallback")
+    # Sized against the roomiest model in the list rather than a fixed number,
+    # so this test cannot quietly stop testing anything the day the press moves
+    # to a larger context. Kimi's 222,822 usable tokens would swallow the old
+    # 400,000-character prompt whole.
+    widest = max(budget.limit_for(m) for m in weekly.FALLBACK_MODELS)
+    sample = budget._filler(10_000)
+    chars_per_token = len(sample) / budget.count_tokens(sample)
+    prompt = budget._filler(int(widest * chars_per_token * 1.2))
+    check("the test prompt really is past every ceiling",
+          budget.count_tokens(prompt) > widest,
+          f"{budget.count_tokens(prompt)} tokens against {widest}")
+    payload = budget.worst_case_payload()
+    choice = budget.choose_model(weekly.FALLBACK_MODELS, None, prompt,
+                                 budget.encode(payload), 6_000)
+    check("no model is chosen for a request nothing can take",
+          choice.model is None, f"chose {choice.model}")
+    check("every rejection states the overage",
+          all("over budget by" in why for _, why in choice.rejected),
+          f"{choice.rejected}")
+
+
+def test_each_model_gets_an_untrimmed_payload():
+    """fit_payload trims in place, so write_digest must copy per attempt.
+
+    Without the copy the second model inherits the first model's trimming and
+    writes a thinner issue than it had room for, which is a silent quality
+    regression rather than a crash.
+    """
+    print("payload isolation across fallbacks")
+    payload = budget.worst_case_payload()
+    before = len(payload["new_claims"])
+    import copy
+    # A 20,000-token filler no longer fits openai/gpt-oss-20b at all, so this
+    # call raises before it can trim anything. The property under test is that
+    # the caller's payload survives either outcome, which is exactly what
+    # write_digest depends on when it moves down the fallback list.
+    try:
+        budget.fit_payload(copy.deepcopy(payload), budget._filler(20_000), 1_000,
+                           "openai/gpt-oss-20b")
+    except budget.BudgetExceeded:
+        pass
+    check("trimming a copy leaves the original intact",
+          len(payload["new_claims"]) == before,
+          f"{before} -> {len(payload['new_claims'])}")
+
+
+# ---------------- incident 24's silence ----------------
+
+def test_notify_owner_never_raises():
+    print("the owner alarm")
+    import os
+    saved = {k: os.environ.get(k) for k in
+             ("GMAIL_ADDRESS", "GMAIL_APP_PASSWORD", "PRESS_ALERT_TO")}
+    try:
+        for k in saved:
+            os.environ.pop(k, None)
+        out = weekly.notify_owner("W38 could not be printed", "404 on everything")
+        check("with no secret it reports that nobody was told",
+              out.startswith("NOT NOTIFIED"), out)
+
+        os.environ["GMAIL_ADDRESS"] = "press@example.com"
+        os.environ["GMAIL_APP_PASSWORD"] = "not-a-real-password"
+        import smtplib
+        real = smtplib.SMTP_SSL
+
+        def explode(*a, **k):
+            raise smtplib.SMTPException("refused")
+
+        smtplib.SMTP_SSL = explode
+        try:
+            out = weekly.notify_owner("subject", "detail")
+        finally:
+            smtplib.SMTP_SSL = real
+        check("an SMTP failure is reported, not raised",
+              out.startswith("NOT NOTIFIED") and "refused" in out, out)
+    finally:
+        for k, v in saved.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+
+def test_press_cannot_print_names_every_attempt():
+    print("write_digest with nothing available")
+    payload = {"new_claims": [], "superseded": [], "deprecated": [],
+               "deep_reads": [], "traction": {"supported_claims": [],
+                                              "citation_movers": []}}
+    try:
+        weekly.write_digest(payload, "prompt", available=set())
+    except weekly.PressCannotPrint as exc:
+        for model in weekly.FALLBACK_MODELS:
+            check(f"the error names {model}", model in str(exc), str(exc)[:200])
+    else:
+        check("an empty provider raises PressCannotPrint", False, "it returned")
+
+
+def test_call_model_walks_and_backs_off():
+    print("429 backoff and the 404 hand-off")
+    import os
+    sent = []
+    slept = []
+
+    class Resp:
+        def __init__(self, status, body="{}", headers=None, payload=None):
+            self.status_code = status
+            self.text = body
+            self.headers = headers or {}
+            self._payload = payload
+
+        def json(self):
+            return self._payload
+
+    scripted = [
+        Resp(429, "slow down", {"retry-after": "1"}),
+        Resp(429, "slow down", {"retry-after": "1"}),
+        Resp(200, payload={"choices": [{"finish_reason": "stop", "message":
+                                        {"content": "# An issue\n\nbody"}}]}),
+    ]
+
+    class Fake:
+        def post(self, url, **kw):
+            sent.append(kw["json"]["model"])
+            return scripted.pop(0)
+
+    saved_httpx = sys.modules.get("httpx")
+    saved_sleep = weekly.time.sleep
+    saved_key = os.environ.get("GROQ_API_KEY")
+    sys.modules["httpx"] = Fake()
+    weekly.time.sleep = lambda s: slept.append(s)
+    os.environ["GROQ_API_KEY"] = "test"
+    try:
+        body = weekly.call_model("openai/gpt-oss-120b", "prompt", "user")
+        check("two 429s are retried and the third attempt wins",
+              body.startswith("# An issue"), body[:60])
+        # This asserted `slept == [1.0, 1.0]` until 2026-09-30, which is the
+        # behaviour the press was fixed for on 2026-09-24: it honoured a
+        # `retry-after: 1` three times in four seconds and gave up while
+        # another seat's Kimi call still held the single concurrency slot. A
+        # concurrency limit is not a rate limit, so the wait is the job's own
+        # schedule and the header may only lengthen it. The test kept asserting
+        # the pre-incident contract and had been failing on main since.
+        expected = [weekly.BACKOFF_SECONDS * (2 ** i) for i in range(2)]
+        check("a short retry-after does not shorten the job's own backoff",
+              slept == expected, f"{slept} against {expected}")
+        check("all three attempts went to the same model",
+              sent == ["openai/gpt-oss-120b"] * 3, f"{sent}")
+
+        # a 404 must not be retried: waiting does not bring a model back.
+        # Incident 24's shape exactly: a model the table still believes in,
+        # answering 404 because the provider dropped it overnight.
+        scripted.append(Resp(404, "model_not_found"))
+        sent.clear()
+        slept.clear()
+        try:
+            weekly.call_model("openai/gpt-oss-120b", "prompt", "user")
+        except weekly.ModelGone as exc:
+            check("404 raises ModelGone immediately", "404" in str(exc), str(exc))
+            check("and is not retried", len(sent) == 1 and slept == [], f"{sent} {slept}")
+        else:
+            check("404 raises ModelGone", False, "it returned")
+
+        # a model already known to be withdrawn never reaches the network
+        sent.clear()
+        try:
+            weekly.call_model("groq/compound", "prompt", "user")
+        except KeyError as exc:
+            check("a withdrawn model is refused before any request is sent",
+                  not sent and "withdrawn" in str(exc), f"{sent} {exc}")
+        else:
+            check("a withdrawn model is refused", False, "it sent a request")
+
+        # backoff is capped, so a hostile retry-after cannot park the run
+        scripted.extend([Resp(429, "no", {"retry-after": "99999"})
+                         for _ in range(weekly.RETRIES_PER_MODEL)])
+        slept.clear()
+        try:
+            weekly.call_model("openai/gpt-oss-120b", "prompt", "user")
+        except weekly.RateLimited:
+            check("every sleep is capped at BACKOFF_CEILING",
+                  all(s <= weekly.BACKOFF_CEILING for s in slept), f"{slept}")
+            check("it gives up after RETRIES_PER_MODEL attempts",
+                  len(slept) == weekly.RETRIES_PER_MODEL - 1, f"{slept}")
+        else:
+            check("a permanent 429 raises RateLimited", False, "it returned")
+    finally:
+        if saved_httpx is None:
+            sys.modules.pop("httpx", None)
+        else:
+            sys.modules["httpx"] = saved_httpx
+        weekly.time.sleep = saved_sleep
+        if saved_key is None:
+            os.environ.pop("GROQ_API_KEY", None)
+        else:
+            os.environ["GROQ_API_KEY"] = saved_key
+
+
+# ---------------- ADR-32: two providers, one press ----------------
+
+def test_the_request_goes_to_the_right_provider():
+    """Every model must be called at its own base URL, with its own key.
+
+    The cheapest possible way to reproduce incident 24 on a new provider would
+    be to send a Kimi model id to Groq's endpoint: a 404, from a model that
+    exists, because the request went to the wrong company.
+    """
+    print("provider routing")
+    import os
+
+    class Resp:
+        status_code = 200
+        text = "{}"
+        headers = {}
+
+        def json(self):
+            return {"choices": [{"finish_reason": "stop",
+                                 "message": {"content": "# Issue\n\nbody"}}]}
+
+    seen = []
+
+    class Fake:
+        def post(self, url, **kw):
+            seen.append((url, kw["headers"]["Authorization"], kw["json"]))
+            return Resp()
+
+    saved_httpx = sys.modules.get("httpx")
+    saved = {k: os.environ.get(k) for k in ("MOONSHOT_API_KEY", "GROQ_API_KEY")}
+    sys.modules["httpx"] = Fake()
+    os.environ["MOONSHOT_API_KEY"] = "moonshot-test-key"
+    os.environ["GROQ_API_KEY"] = "groq-test-key"
+    try:
+        for model in weekly.FALLBACK_MODELS:
+            seen.clear()
+            weekly.call_model(model, "prompt", "user")
+            url, auth, body = seen[0]
+            provider = budget.provider_of(model)
+            base = budget.PROVIDERS[provider]["base_url"]
+            check(f"{model} is called at {provider}",
+                  url == f"{base}/chat/completions", url)
+            check(f"{model} carries {provider}'s own key",
+                  auth.endswith(os.environ[budget.PROVIDERS[provider]["key_env"]]),
+                  "the wrong provider's key was sent")
+            check(f"{model} asks for the model it says it does",
+                  body["model"] == model, body["model"])
+    finally:
+        if saved_httpx is None:
+            sys.modules.pop("httpx", None)
+        else:
+            sys.modules["httpx"] = saved_httpx
+        for k, v in saved.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+
+def test_no_groq_only_parameters_on_the_kimi_path():
+    """ADR-6 and the dispatch: one prompt in, one issue out, no tools.
+
+    compound_custom was a Groq-only block for an agentic system that no longer
+    exists. Temperature is not Groq-only but it is fixed by k2.6, so sending it
+    is a knob that does nothing, which is worse than no knob at all.
+    """
+    print("the Kimi request body")
+    import os
+
+    class Resp:
+        status_code = 200
+        text = "{}"
+        headers = {}
+
+        def json(self):
+            return {"choices": [{"finish_reason": "stop",
+                                 "message": {"content": "# Issue\n\nbody"}}]}
+
+    bodies = []
+
+    class Fake:
+        def post(self, url, **kw):
+            bodies.append(kw["json"])
+            return Resp()
+
+    saved_httpx = sys.modules.get("httpx")
+    saved_key = os.environ.get("MOONSHOT_API_KEY")
+    sys.modules["httpx"] = Fake()
+    os.environ["MOONSHOT_API_KEY"] = "moonshot-test-key"
+    try:
+        weekly.call_model(weekly.MODEL, "prompt", "user")
+        body = bodies[0]
+        check("no compound_custom anywhere in the body",
+              "compound_custom" not in body, f"{sorted(body)}")
+        check("no tools are offered to the press",
+              not any(k in body for k in ("tools", "tool_choice",
+                                          "search_settings")),
+              f"{sorted(body)}")
+        check("no temperature on the Kimi path, which fixes it anyway",
+              "temperature" not in body, f"{sorted(body)}")
+        check("the output reservation is sent as max_completion_tokens",
+              body.get("max_completion_tokens") == weekly.MAX_COMPLETION_TOKENS,
+              f"{sorted(body)}")
+        check("exactly the system prompt and the payload, nothing else",
+              [m["role"] for m in body["messages"]] == ["system", "user"],
+              f"{body['messages']}")
+    finally:
+        if saved_httpx is None:
+            sys.modules.pop("httpx", None)
+        else:
+            sys.modules["httpx"] = saved_httpx
+        if saved_key is None:
+            os.environ.pop("MOONSHOT_API_KEY", None)
+        else:
+            os.environ["MOONSHOT_API_KEY"] = saved_key
+
+
+def test_a_missing_key_names_its_secret():
+    """The owner has to be able to fix it, which means knowing what to type."""
+    print("a missing provider key")
+    import os
+
+    saved = {k: os.environ.get(k) for k in ("MOONSHOT_API_KEY", "GROQ_API_KEY")}
+    try:
+        for k in saved:
+            os.environ.pop(k, None)
+        for provider, spec in budget.PROVIDERS.items():
+            try:
+                weekly.api_key_for(provider)
+            except weekly.MissingKey as exc:
+                check(f"{provider}: the environment variable is named",
+                      spec["key_env"] in str(exc), str(exc))
+                check(f"{provider}: the Modal secret is named",
+                      f"`{spec['secret']}`" in str(exc), str(exc))
+                check(f"{provider}: the command to fix it is spelled out",
+                      "modal secret create" in str(exc), str(exc))
+            else:
+                check(f"{provider}: a missing key raises", False, "it returned")
+
+        # and no secret VALUE is ever printed, only names. This seat may
+        # reference a secret's name and must never read or echo its contents.
+        os.environ["MOONSHOT_API_KEY"] = "sk-this-must-never-be-printed"
+        key = weekly.api_key_for("moonshot")
+        check("a present key is returned to the caller and not logged",
+              key == "sk-this-must-never-be-printed")
+    finally:
+        for k, v in saved.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+
+def test_the_press_fits_its_primary_at_full_caps():
+    """The requirement ADR-32 exists to satisfy, asserted rather than hoped.
+
+    Not "it fits after trimming". The worst payload gather() can produce, the
+    full `weekly.MAX_COMPLETION_TOKENS` reservation, the real generator prompt,
+    untrimmed. A press whose primary only fits after trimming prints a thinner
+    issue every week and never says so.
+
+    The docstring said "the full 6,000-token reservation" until 2026-09-30. It
+    has been 24,000 since 2026-09-24, when kimi-k2.6 was found to spend the
+    reservation on hidden thinking before writing anything. That is a 4x raise
+    in the single largest term in the cost below, and this file described the
+    old number for six days.
+    """
+    print("the primary model at full PAYLOAD_CAPS")
+    prompt_path = Path(__file__).resolve().parents[1] / "prompts" / "digest.md"
+    if not prompt_path.exists():
+        check("prompts/digest.md is present", False, str(prompt_path))
+        return
+    report = budget.check_request(
+        prompt_path.read_text(), budget.encode(budget.worst_case_payload()),
+        weekly.MAX_COMPLETION_TOKENS, weekly.MODEL)
+    check("the worst-case request fits the primary untrimmed", report.fits,
+          report.summary())
+    check("with real headroom, not a rounding error", report.headroom > 50_000,
+          report.summary())
+    # ADR-32 told finance to expect roughly $0.05 an issue. If the real number
+    # ever drifts far from that, finance's books are wrong and this is where it
+    # should surface.
+    #
+    # The split, printed whether or not the check passes, because "the cost is
+    # too high" is not actionable and "the reservation is 70% of the cost" is.
+    # At kimi-k2.6's $0.95/M in and $4.00/M out, the 24,000-token output
+    # reservation alone is $0.096 of it, and the whole prompt plus the whole
+    # worst-case payload is $0.042. So the number below is mostly a cap on what
+    # the model is allowed to write, not a measure of what the press sends.
+    reservation_cost = budget.cost_usd(0, weekly.MAX_COMPLETION_TOKENS, weekly.MODEL)
+    print(f"       ${report.cost:.4f} an issue = "
+          f"${report.cost - reservation_cost:.4f} in "
+          f"+ ${reservation_cost:.4f} reservation "
+          f"({reservation_cost / report.cost:.0%} of it), "
+          f"{'exact' if budget.exact() else 'ESTIMATED'} tokenizer")
+
+    # Arithmetic run on estimates is not arithmetic, which is
+    # INC-2026-09-25-budget-guard-estimates and the reason `pipeline/budget.py`
+    # separates its estimated findings from its exact ones. `count_tokens`
+    # falls back to a deliberately pessimistic chars-per-token ratio when
+    # tiktoken is missing, so without it this same request reads $0.1628 and
+    # with it $0.1376. One of those breaches the ceiling and the other does not,
+    # and only one of them is a cost. This check made that distinction nowhere,
+    # so it reported a $0.16 overrun on any machine without tiktoken: the exact
+    # mistake that was fixed in budget.py on 2026-09-25 and never carried here.
+    #
+    # checks.yml installs tiktoken, so CI takes the failing branch below and the
+    # ceiling keeps its teeth where it counts.
+    if budget.exact():
+        check(f"the cost is under the ${COST_CEILING_USD:.2f} ceiling ADR-32 implies",
+              report.cost < COST_CEILING_USD,
+              f"${report.cost:.4f} an issue against ${COST_CEILING_USD:.2f}")
+    else:
+        print(f"  note the ${COST_CEILING_USD:.2f} ceiling is not checked: "
+              f"${report.cost:.4f} is an estimate from a pessimistic "
+              f"chars/token ratio, not a cost. "
+              f"Run `pip install tiktoken` to check it.")
+
+    # And the drift ADR-32's own number has already taken, stated rather than
+    # left for a reader to compute. This is a finance finding, not a bug: the
+    # press costs what it costs. It is printed every run so that the gap between
+    # the booked figure and the real one cannot go another six days unsaid.
+    if budget.exact() and report.cost > ADR_32_BUDGETED_USD * 1.5:
+        print(f"  note ADR-32 books ~${ADR_32_BUDGETED_USD:.2f} an issue and the "
+              f"real figure is ${report.cost:.4f}, "
+              f"{report.cost / ADR_32_BUDGETED_USD:.1f}x it. "
+              f"Most of the gap is the 2026-09-24 reservation raise "
+              f"(6,000 -> {weekly.MAX_COMPLETION_TOKENS:,} tokens, "
+              f"${budget.cost_usd(0, 6000, weekly.MODEL):.3f} -> "
+              f"${reservation_cost:.3f}). Finance's books, not this test.")
+
+
+def test_availability_survives_one_provider_being_down():
+    """The fallback list crosses providers, so one outage must not end the run."""
+    print("one provider unreachable")
+
+    class Resp:
+        status_code = 200
+        text = "{}"
+
+        def json(self):
+            return {"data": [{"id": m} for m in weekly.FALLBACK_MODELS
+                             if budget.provider_of(m) == "moonshot"]}
+
+    class Half:
+        def get(self, url, **kw):
+            if url.startswith(budget.PROVIDERS["moonshot"]["base_url"]):
+                return Resp()
+            raise OSError("groq is down")
+
+    saved = sys.modules.get("httpx")
+    sys.modules["httpx"] = Half()
+    try:
+        found, notes = budget.available_everywhere(
+            weekly.FALLBACK_MODELS,
+            {"MOONSHOT_API_KEY": "k", "GROQ_API_KEY": "k"})
+        check("the reachable provider's models are still found",
+              weekly.MODEL in found, f"{found}")
+        check("and the unreachable one is reported rather than silently empty",
+              any("NOT REACHED" in n for n in notes), f"{notes}")
+    finally:
+        if saved is None:
+            sys.modules.pop("httpx", None)
+        else:
+            sys.modules["httpx"] = saved
+
+
+def test_the_schedule_is_outside_the_cron_band():
+    """The press must not run while the daily crons hold the shared TPM budget.
+
+    Groq applies rate limits at the organization level, so every cron on this
+    key draws from one 8,000 TPM bucket. The daily crons run 11:00 to 14:00
+    with one-hour timeouts, so 11:00 through 15:00 is contested.
+    """
+    print("the schedule")
+    source = (Path(__file__).resolve().parents[1] / "pipeline" / "weekly.py").read_text()
+    import re
+    hours = [int(m) for m in re.findall(r'modal\.Cron\("0 (\d+) \* \* 1"\)', source)]
+    check("the weekly cron is found", len(hours) == 1, f"{hours}")
+    if hours:
+        check("it does not run in the daily crons' band (11:00-15:00)",
+              not (11 <= hours[0] <= 15), f"runs at {hours[0]}:00 UTC")
+
+
+def test_a_used_title_is_replaced_and_a_fresh_one_kept():
+    body = "# Harness distillation without the harness at runtime\n\nopening\n\n## A\n\ntext"
+    kept = weekly.ensure_fresh_title(body, ["Some other title"], "no-model", "September 28-October 4, 2026")
+    check("a fresh title is kept", kept == body, kept[:60])
+    out = weekly.ensure_fresh_title(body, ["harness distillation without the harness at runtime"], "no-such-model", "September 28-October 4, 2026")
+    check("a used title is replaced", not weekly.same_title(weekly.title_of(out), weekly.title_of(body)), out.split("\n")[0])
+    check("the dated fallback carries the dates", "September 28-October 4, 2026" in out.split("\n")[0], out.split("\n")[0])
+    check("the body below the title is untouched", out.split("\n", 1)[1] == body.split("\n", 1)[1], "")
+
+
+# ---------------- the recipient query, against a column that may not exist --
+#
+# Sprint 2026-10-05 item 3. `subscribers.unsubscribe_token` arrives in its own
+# migration and `pipeline/db_setup.py` applies db/schema.sql on a deploy the
+# press does not wait for, so there is a window where this code is live and
+# the column is not. In that window the choice is between an issue whose
+# footer carries the old mailto and no issue at all.
+#
+# The rollback is the half that is not cosmetic. This connection is not in
+# autocommit, so a failed statement leaves the transaction aborted and every
+# query after it fails too, including the one that reads the previous issue's
+# title for the duplicate-subject rule. Probing for a column and not rolling
+# back would turn a missing footer link into a missed send.
+
+
+class _UndefinedColumn(Exception):
+    sqlstate = "42703"
+
+
+class _QueryCanceled(Exception):
+    sqlstate = "57014"
+
+
+class _FakeConn:
+    """Records every statement and every rollback, in the order they happen."""
+
+    def __init__(self, error=None):
+        self.error = error
+        self.log = []
+
+    def execute(self, sql, params=None):
+        self.log.append(sql)
+        if self.error is not None and "unsubscribe_token" in sql:
+            raise self.error
+        rows = ([("a@x.com", "A", "tok")] if "unsubscribe_token" in sql
+                else [("a@x.com", "A")])
+        return types.SimpleNamespace(fetchall=lambda: rows)
+
+    def rollback(self):
+        self.log.append("ROLLBACK")
+
+
+def test_the_recipient_query_prefers_the_token_column():
+    print("the recipient query")
+    conn = _FakeConn()
+    rows = weekly.active_recipients(conn)
+    check("the token comes back with the address", rows == [("a@x.com", "A", "tok")], rows)
+    check("one statement, no retry", len(conn.log) == 1, conn.log)
+    check("nothing failed, so nothing was rolled back",
+          "ROLLBACK" not in conn.log, conn.log)
+
+
+def test_a_missing_token_column_rolls_back_then_retries():
+    print("the column that is not there yet")
+    conn = _FakeConn(error=_UndefinedColumn("column does not exist"))
+    rows = weekly.active_recipients(conn)
+    check("the send still has its recipients", rows == [("a@x.com", "A")], rows)
+    check("the rollback sits between the failed probe and the retry",
+          len(conn.log) == 3 and conn.log[1] == "ROLLBACK", conn.log)
+    check("the retry does not name the column",
+          "unsubscribe_token" not in conn.log[2], conn.log[2])
+
+
+def test_only_a_missing_column_is_retried():
+    print("every other database error")
+    for error, label in ((_QueryCanceled("canceled"), "a cancelled query"),
+                         (RuntimeError("socket closed"), "an error with no sqlstate")):
+        conn = _FakeConn(error=error)
+        try:
+            weekly.active_recipients(conn)
+            raised = False
+        except type(error):
+            raised = True
+        check(f"{label} reaches send_newsletter's own handler", raised)
+        check(f"{label} is not rolled back and retried",
+              "ROLLBACK" not in conn.log, conn.log)
+
+
+def test_send_newsletter_has_no_recipient_query_of_its_own():
+    print("the seam")
+    source = (ROOT / "pipeline" / "weekly.py").read_text()
+    body = source.split("def send_newsletter")[1].split("\ndef ")[0]
+    check("the send goes through active_recipients",
+          "active_recipients(conn)" in body)
+    check("and holds no subscribers query that would bypass the fallback",
+          "from subscribers" not in body)
+
+
+# ---------------- 2026-10-12: the week that got no issue ----------------
+#
+# INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue. The
+# primary stopped answering, the three Groq entries in the list cannot take the
+# full issue by more than a factor of ten, and /library/2026-W41 is a 404. These
+# tests hold the degraded edition's two halves: it can actually print on the
+# models that are left, and it never runs on a day the full issue can.
+
+
+def test_the_short_edition_fits_the_free_tier():
+    """The arithmetic that makes the degraded path real rather than comforting.
+
+    The failure this replaces is not a crash. It is a list of three models that
+    the guard had always reported as over budget, kept in production for "the
+    day the prompt gets shorter or a ceiling moves", which never came.
+    """
+    print("the short edition on the models that are left")
+    offprimary = budget.short_issue_offprimary()
+    check("the press has fallbacks off the primary's provider",
+          bool(offprimary), f"{weekly.FALLBACK_MODELS}")
+    printers = budget.short_issue_printers()
+    check("every one of them can print the short edition",
+          set(printers) == set(offprimary),
+          "cannot: " + ", ".join(
+              budget.short_issue_room(m).summary()
+              for m in offprimary if m not in printers))
+    check("and the guard that gates the deploy is green",
+          budget.check_short_issue() == [],
+          f"{budget.check_short_issue()}")
+    # The property that makes the arithmetic a guard and not a note.
+    room = budget.short_issue_room(offprimary[0])
+    check("the reservation covers the prompt's own word ceiling twice",
+          room.reservation >= room.needed,
+          f"{room.summary()}")
+    check("and the payload allowance holds one row of every stream",
+          room.payload_tokens >= room.floor, f"{room.summary()}")
+
+
+def test_the_short_edition_is_derived_and_not_chosen():
+    """Grow the prompt and every number moves. That is what makes it a guard.
+
+    A reservation written down beside the prompt is a reservation that is right
+    on the day it is written and wrong on the day somebody edits the prompt.
+    """
+    print("the short edition's numbers follow the prompt")
+    model = budget.short_issue_offprimary()[0]
+    small = budget.short_issue_text()
+    big = small + ("\nAn extra paragraph of editorial instruction. " * 60)
+    before = budget.short_issue_room(model, small)
+    after = budget.short_issue_room(model, big)
+    check("a longer prompt leaves a smaller reply",
+          after.reservation < before.reservation,
+          f"{before.reservation} -> {after.reservation}")
+    check("the split is even, to the token",
+          before.reservation + before.payload_tokens == before.room
+          and abs(before.reservation - before.payload_tokens) <= 1,
+          f"{before.summary()}")
+    check("a prompt that eats the whole minute cannot print",
+          not budget.short_issue_room(
+              model, small + ("filler. " * 4_000)).fits)
+    check("the word ceiling is read out of the prompt, not held here",
+          budget.short_issue_words("WORD CEILING: 123\n") == 123)
+
+
+def test_the_short_edition_only_runs_when_the_full_one_cannot():
+    """The order, asserted. The short edition is the lesser issue by design.
+
+    The full prompt carries 103 entries of docs/voice/ban-list.md and the short
+    one carries the few that fit the request, so a press that reached for the
+    short edition on a day the primary was answering would be a quality
+    regression nobody asked for.
+    """
+    print("the full edition first, always")
+    calls = []
+
+    def fake_call(model, prompt, user, trace=None,
+                  max_completion=weekly.MAX_COMPLETION_TOKENS):
+        calls.append((model, len(prompt), max_completion))
+        return "# A title\n\nThe issue."
+
+    saved = weekly.call_model
+    weekly.call_model = fake_call
+    try:
+        payload = budget.worst_case_payload()
+        prompt = (ROOT / "prompts" / "digest.md").read_text()
+        short = budget.short_issue_text()
+        body, model, edition = weekly.print_issue(payload, prompt, short)
+        check("the primary writes the full edition",
+              edition == weekly.EDITION_FULL and model == weekly.FALLBACK_MODELS[0],
+              f"{edition} by {model}")
+        check("at the full issue's own reservation",
+              calls[0][2] == weekly.MAX_COMPLETION_TOKENS, f"{calls}")
+        check("and the short prompt was never sent",
+              all(n != len(short) for _, n, _ in calls), f"{calls}")
+
+        # Now the Monday that happened: nothing on the primary's provider is
+        # available, which is what check_availability returns when the key is
+        # refused, and the full issue fits nothing that is left.
+        calls.clear()
+        groq = [m for m in weekly.FALLBACK_MODELS
+                if budget.provider_of(m) != budget.PRIMARY_PROVIDER]
+        body, model, edition = weekly.print_issue(payload, prompt, short,
+                                                  available=set(groq))
+        check("the press prints the short edition rather than nothing",
+              edition == weekly.EDITION_SHORT, f"{edition}")
+        check("on a model that is actually available", model in groq, model)
+        check("at the derived reservation, not the full issue's",
+              calls[-1][2] == budget.short_issue_room(model, short).reservation,
+              f"{calls}")
+        check("and it sent the short prompt",
+              calls[-1][1] == len(short), f"{calls}")
+    finally:
+        weekly.call_model = saved
+
+
+def test_the_reader_is_told_it_is_a_short_edition():
+    """The label is the press's, not the generator's.
+
+    A label the model can forget is a label that goes missing on the only week
+    it is ever printed.
+    """
+    print("the short edition says so")
+    body = "# A title\n\nThe issue."
+    full = weekly.add_masthead(body)
+    short = weekly.add_masthead(body, weekly.EDITION_SHORT)
+    check("the full edition is unchanged", weekly.MASTHEAD in full
+          and weekly.SHORT_EDITION_NOTE not in full, full)
+    check("the short edition carries the note",
+          weekly.SHORT_EDITION_NOTE in short, short)
+    check("under the title, not above it",
+          short.index("# A title") < short.index(weekly.SHORT_EDITION_NOTE),
+          short)
+    check("the note sells no recipe: no model, no provider, no outage",
+          not any(word in weekly.SHORT_EDITION_NOTE.lower()
+                  for word in ("model", "provider", "groq", "moonshot",
+                               "kimi", "fail", "error")),
+          weekly.SHORT_EDITION_NOTE)
+
+
+def test_the_short_edition_skips_a_model_that_just_errored():
+    """It does not spend the full edition's retries over again.
+
+    Both walks share one 1800-second Modal timeout, and a model that answered
+    with an error four times in a row will answer with an error a fifth.
+    """
+    print("the second walk skips what the first one called")
+    exc = weekly.PressCannotPrint("every model failed", {"openai/gpt-oss-120b"})
+    tried = []
+
+    def fake_call(model, prompt, user, trace=None,
+                  max_completion=weekly.MAX_COMPLETION_TOKENS):
+        tried.append(model)
+        return "# A title\n\nThe issue."
+
+    saved = weekly.call_model
+    weekly.call_model = fake_call
+    try:
+        groq = [m for m in weekly.FALLBACK_MODELS
+                if budget.provider_of(m) != budget.PRIMARY_PROVIDER]
+        body, model = weekly.write_short_issue(
+            budget.worst_case_payload(), budget.short_issue_text(),
+            available=set(groq), skip=exc.called)
+        check("the model that errored is not asked again",
+              "openai/gpt-oss-120b" not in tried, f"{tried}")
+        check("and the next one writes the issue", model in groq, model)
+    finally:
+        weekly.call_model = saved
+    check("the exception carries what was called",
+          weekly.PressCannotPrint("x").called == set())
+
+
+def test_gate_two_lets_the_degraded_path_deploy():
+    """preflight's refusal, read out of its own source.
+
+    Before 2026-10-12 `preflight` raised whenever the full issue fit nothing,
+    which on a primary outage is the gate refusing to deploy the degraded path
+    on the exact day the degraded path is what runs. It now raises only when
+    neither edition can print, and `budget.check_short_issue` is what makes
+    that a real distinction rather than a softened gate.
+    """
+    print("preflight and the degraded path")
+    source = (ROOT / "pipeline" / "weekly.py").read_text()
+    body = source.split("def preflight()")[1].split("@app.function")[0]
+    check("it asks the short edition before it raises",
+          body.index("short_issue_room") < body.index("raise PressCannotPrint"),
+          body[-900:])
+    check("it still raises when neither edition can print",
+          "raise PressCannotPrint" in body, body[-400:])
+    check("and it says which path it passed on",
+          "preflight ok on the degraded path" in body, body[-900:])
+
+
+if __name__ == "__main__":
+    for fn in [test_fallback_list, test_withdrawn_model_is_explained,
+               test_choose_model_skips_absent_models,
+               test_availability_failure_is_not_an_empty_set,
+               test_budget_still_refuses_an_oversized_request,
+               test_each_model_gets_an_untrimmed_payload,
+               test_notify_owner_never_raises,
+               test_press_cannot_print_names_every_attempt,
+               test_call_model_walks_and_backs_off,
+               test_the_request_goes_to_the_right_provider,
+               test_no_groq_only_parameters_on_the_kimi_path,
+               test_a_missing_key_names_its_secret,
+               test_the_press_fits_its_primary_at_full_caps,
+               test_availability_survives_one_provider_being_down,
+               test_the_schedule_is_outside_the_cron_band,
+               test_a_used_title_is_replaced_and_a_fresh_one_kept,
+               test_the_recipient_query_prefers_the_token_column,
+               test_a_missing_token_column_rolls_back_then_retries,
+               test_only_a_missing_column_is_retried,
+               test_send_newsletter_has_no_recipient_query_of_its_own,
+               test_the_short_edition_fits_the_free_tier,
+               test_the_short_edition_is_derived_and_not_chosen,
+               test_the_short_edition_only_runs_when_the_full_one_cannot,
+               test_the_reader_is_told_it_is_a_short_edition,
+               test_the_short_edition_skips_a_model_that_just_errored,
+               test_gate_two_lets_the_degraded_path_deploy]:
+        fn()
+    print()
+    if FAILURES:
+        print(f"{len(FAILURES)} failure(s)")
+        for f in FAILURES:
+            print(f"  - {f}")
+        sys.exit(1)
+    print("all press-resilience checks passed")

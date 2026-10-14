@@ -1,59 +1,106 @@
-"""The digest loop: one scheduled function, running every day at 15:00 UTC.
+"""Weekly loop: refresh citation trajectories, then write and publish the digest.
 
-Two kinds of issue come out of it, and they are deliberately different reads
-(owner's order, 2026-09-19):
+One scheduled function doing two jobs, in order:
 
-- **Daily**, Tuesday through Sunday. What changed in the last 24 hours, short,
-  150 to 400 words. Dispatch, not synthesis. A day whose papers were routine
-  produces a one-line honest issue instead of a padded one; the emptiness check
-  lives in code (`daily_is_empty`) so a genuinely empty day never reaches the
-  model at all.
-- **Weekly**, Monday. The deeper synthesis this file has always written, plus
-  the citation slow loop that feeds it. Unchanged in scope.
+1. **Slow loop** — batch-check citation counts on aged papers via Semantic
+   Scholar's free API into the append-only citation_log. Trajectory (count now
+   vs. last check) is the "gaining traction" evidence: the claim graph shows
+   what our corpus thinks, citations show what the field thinks.
+2. **Digest** — fixed SQL gathers five evidence streams (new claims, claims
+   with 2+ supports edges, citation movers, fresh deprecations, deep-read
+   flags); the generator model writes the three-section digest; it lands in the
+   `digests` table (database of record) and goes to subscribers by email via
+   the owner's Gmail over authenticated SMTP. The issue itself is free in
+   full (docs/vision.md §0, amended 2026-09-17): it is the acquisition
+   engine, and it is also published on the site at /library/<week>. The
+   paid product is the spine, the skills and the graph, not the issue.
 
-Either kind is free in full (docs/vision.md §0, amended 2026-09-17): the issue
-is the acquisition engine, and the weekly is also published on the site at
-/library/<week>. The paid product is the spine, the skills and the graph.
+They share one function deliberately: Modal's free plan caps scheduled
+functions at 5, and the citations exist for the digest — running them in the
+same Monday process makes the trajectories maximally fresh and costs no slot.
+The digest is a workflow, not an agent (ADR-6): every query is known in
+advance, so the model only writes.
 
-The daily jobs, in order on a Monday:
+Needs secrets: `neon`, `moonshot`, `groq`, and the Gmail secrets
+(GMAIL_ADDRESS + GMAIL_APP_PASSWORD) once the newsletter is live; until then
+the run succeeds and only skips the email.
 
-1. **Slow loop** (Monday only) — batch-check citation counts on aged papers via
-   Semantic Scholar's free API into the append-only citation_log. Trajectory
-   (count now vs. last check) is the "gaining traction" evidence: the claim
-   graph shows what our corpus thinks, citations show what the field thinks.
-2. **Issue** — fixed SQL gathers the evidence streams for the day or the week;
-   gpt-oss-120b writes it; it lands in the `digests` table (database of record,
-   `kind` = 'daily' or 'weekly') and goes to subscribers by email via the
-   owner's Gmail over authenticated SMTP. Issues are deliberately NOT published
-   to the public repo (docs/vision.md §4).
+**The one command the chair runs before the first deploy** (ADR-32). The press
+writes on Moonshot's Kimi now, and the key lives in a Modal secret named
+`moonshot`. Only the owner holds the key. Paste it at the prompt rather than
+putting it on the command line, so it never lands in a shell history or a
+transcript:
 
-Everything shares one scheduled function deliberately: Modal's free plan caps
-scheduled functions at 5 and all five are taken (ingest, distill, triage,
-interpret, and this one), so a daily issue could not have its own slot. Running
-the citations inside the Monday branch also keeps the trajectories maximally
-fresh. Either issue is a workflow, not an agent (ADR-6): every query is known
-in advance, so the model only writes.
+    modal secret create moonshot MOONSHOT_API_KEY=<paste>
 
-Needs secrets: `neon`, `groq`, and the Gmail secret(s) (GMAIL_ADDRESS +
-GMAIL_APP_PASSWORD) once the newsletter is live; until then the run succeeds
-and only skips the email.
+No agent creates this, no agent reads it, and the value appears nowhere in this
+repository. The name does, and the name is all the code needs.
 
-    python3 pipeline/budget.py                   # does the request fit?
-    python3 tools/check_digest_quality.py --help  # the pre-send gate (ADR-28)
-    modal run pipeline/weekly.py                 # one-off, today's kind
-    modal run pipeline/weekly.py --kind daily    # force a daily issue
-    modal run pipeline/weekly.py --kind weekly   # force the weekly (+ citations)
-    modal deploy pipeline/weekly.py              # install the daily schedule
+**Then the deploy**, unchanged in shape and with one more thing checked:
 
-NOTE: editing the schedule below changes nothing until `modal deploy` runs.
-Merging a pull request does not deploy anything; there is no CI deploy job.
+    python3 pipeline/budget.py                    # does the request fit?
+    python3 tools/check_digest_quality.py --help  # the pre-send gate's rules
+    python3 tools/rehearse_email.py               # does the email still render?
+    modal run pipeline/weekly.py::preflight        # does the model still exist?
+    modal run pipeline/weekly.py::rehearse         # does one real call work?
+    modal run pipeline/weekly.py                  # one-off manual run (both, then print)
+    modal deploy pipeline/weekly.py               # install the Monday schedule
 
-The budget check is not optional ceremony. Incident 22: an editorial merge
-grew the generator prompt past the model's per-request token ceiling, Groq
-answered 413, and no issue was written. The same check runs in CI on every
-change to a generator prompt or this pipeline (once someone moves
-.github/workflows-pending/checks.yml into place; agent tokens cannot write
-workflows), and the run below refuses to call Groq when the sums do not work.
+As one line, which is what the chair runs after a merge that touches this file
+or prompts/digest.md:
+
+    python3 pipeline/budget.py \
+      && python3 tools/rehearse_email.py --quiet \
+      && modal run pipeline/weekly.py::preflight \
+      && modal run pipeline/weekly.py::rehearse \
+      && modal deploy pipeline/weekly.py
+
+No guard in that chain is optional ceremony, and each checks a different
+thing.
+
+**Does the email still render?** The owner's ruling of 2026-09-24: the
+emails had no UI and only the site did. The designed template had been in
+the repo since 2026-09-19 and the press had never opened it, because the
+only code path that rendered an email ran inside a container, at the
+moment of sending, to real subscribers. Nobody could look at one without
+mailing it. `tools/rehearse_email.py` fills the template through the
+press's own `build_messages()` and prints the result, sends nothing, costs
+nothing, and exits non-zero if any slot is left unfilled. It is the email
+half of docs/agents/press-rehearsal.md. The model-call half, `rehearse()`,
+is still unbuilt and still the third gate that document specifies.
+
+**Does one real call work?** INC-2026-09-24-press-provider-migration: the
+press moved to a new provider and failed four times in one evening, and every
+one of the four was an integration property that only a real call reveals. The
+reservation a reasoning model spends on hidden thinking, the client timeout
+that has to be measured in minutes, the database transaction that must not
+stay open across the call, and the alarm subject that only a bad day renders.
+None of the four is in any provider's documentation and all four are in one
+print. `rehearse` makes that print against the real payload, writes it to
+`press_rehearsals` instead of `digests`, mails nobody, and refuses to report
+success unless the row it just wrote names the model and the prompt about to
+be deployed. It is the third gate in docs/agents/runtime-changes.md's ladder,
+specified in docs/agents/press-rehearsal.md, and it costs about a nickel.
+
+**Does the request fit?** Incident 22: an editorial merge grew the generator
+prompt past the model's per-request token ceiling, the provider answered 413,
+and no issue was written. `pipeline/budget.py` owns that arithmetic and runs in
+CI on every change to a generator prompt or this pipeline, before deploy, and
+again inside the container before the writing call.
+
+**Does the model still exist?** Incident 24: Groq withdrew `groq/compound`, the
+press answered 404 for three days, and the discovery was the owner noticing that
+Monday's issue never arrived. The budget guard had been perfectly happy: it
+checks that a request fits, not that there is anything to send it to. So
+`preflight` asks `GET /models` before the deploy, `check_availability` asks
+again at the start of every run, `FALLBACK_MODELS` gives the run somewhere to
+go when the answer is no, and `notify_owner` mails the owner the moment the
+press cannot print. That last one is the important one. A press that fails
+silently has no failure mode the org can respond to.
+
+Both questions are now asked of both providers, because the fallback list
+crosses providers on purpose and a check that only covers one of them is a
+check with a hole in it exactly where the press lives.
 """
 
 import hashlib
@@ -61,25 +108,71 @@ import pathlib
 import re
 import time
 from datetime import date, timedelta
+from urllib.parse import quote
 
 import modal
 
-GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+# ADR-32 (2026-09-24): the press's single writing call runs on Moonshot's Kimi.
+# Groq stays as the corpus's brain and as the press's last resort.
+#
+# Neither URL is written out here. `pipeline/budget.py` owns the provider table
+# (base URL, key environment variable, Modal secret name, docs) so that one
+# file answers "where does this model live and what will it accept", and the
+# guard cannot be checking a different endpoint from the one the press calls.
 
-# Incident 22: `openai/gpt-oss-120b` is capped at 8,000 tokens per request on
-# Groq's free tier, and the generator prompt alone is 8,651. No payload
-# selection can rescue that, so the press moved to the one free-tier model with
-# room to print: `groq/compound`, at 70,000. It is an agentic system, which the
-# digest must not be (ADR-6: every query is known in advance, the model only
-# writes), so every request disables its built-in tools and every response is
-# checked for a tool that fired anyway. Rollback is this one line, and
-# pipeline/budget.py will then say precisely how far over the old model is.
-MODEL = "groq/compound"
+# Incident 24, 2026-09-23: Groq withdrew `groq/compound` and the press answered
+# 404 for three days without telling anyone. The press had been moved to it on
+# 2026-09-19 (PR #51) for one reason, its 70,000 TPM, and a capacity number
+# turned out to be the worst possible reason to pick a model: compound was an
+# agentic *preview* system, and previews are withdrawn without the deprecation
+# notice production models get.
+#
+# Then the whole free tier turned out to be too small: every remaining Groq
+# free model caps a single request at 8,000 tokens and the generator prompt
+# alone is 9,865. ADR-32 is the owner's answer. The press writes on Kimi, which
+# she funded, and the list below is what happens when Kimi is not there.
+#
+# 1. **`kimi-k2.6`, on Moonshot, is the press.** 256K of context against a
+#    ~36,000-token worst case, a prepaid account rather than a free tier, and
+#    open weights, which is what makes the destination in ADR-32 reachable:
+#    the same class of model served by alexandria itself, so no provider can
+#    withdraw the press's model a third time.
+#
+#    The id is `kimi-k2.6` and not `kimi-k2`. The bare series was discontinued
+#    on 2026-05-25, so the obvious id is the one that 404s. That is incident 24
+#    exactly, and the only reason it did not happen again here is that
+#    `check_availability` asks the provider before the run trusts the name.
+#
+# 2. **Then Groq, in the order incident 24 argued for**: production before
+#    preview, and a second vendor at rank two so a family withdrawal cannot
+#    take the whole list. Be honest about what these three are worth today:
+#    at 8,000 TPM they cannot print the issue at the current prompt size, and
+#    the budget guard prints that arithmetic on every run. They are here for
+#    the day the prompt gets shorter or a ceiling moves, and if they ever do
+#    write, they will write a short issue. A last resort that prints something
+#    small beats a last resort that does not exist.
+#
+# Every entry is verified by pipeline/budget.py, which reads this list out of
+# this file rather than keeping a copy, and refuses the deploy if any entry has
+# no published limits or has been withdrawn.
+FALLBACK_MODELS = [
+    "kimi-k2.6",
+    "openai/gpt-oss-120b",
+    "qwen/qwen3.8-27b",
+    "openai/gpt-oss-20b",
+]
 
-# Built-in tools off. An issue's whole claim is that it was written from our
-# corpus, and a writer that can quietly search the web is a writer that can
-# quietly source from somewhere else.
-COMPOUND_CUSTOM = {"tools": {"enabled_tools": []}}
+# The default. `write_digest` walks the list from here and may end up further
+# down it; whichever model actually wrote the issue is what lands in the
+# `digests.model` column, never this constant.
+MODEL = FALLBACK_MODELS[0]
+
+# Retries per model before the press gives up on it and tries the next one.
+# 429 is the case this exists for: a per-model rate limit means moving down the
+# list is itself a rate-limit remedy and not only a deprecation remedy.
+RETRIES_PER_MODEL = 4
+BACKOFF_SECONDS = 30      # doubled each attempt, capped below
+BACKOFF_CEILING = 180
 
 S2_BATCH_URL = "https://api.semanticscholar.org/graph/v1/paper/batch"
 S2_BATCH_SIZE = 100       # ids per API call (S2 allows up to 500; be gentle)
@@ -92,13 +185,29 @@ image = (
     .pip_install("psycopg[binary]==3.2.4", "httpx==0.28.1", "markdown==3.7",
                  "tiktoken==0.8.0")
     .add_local_file("prompts/digest.md", "/root/prompts/digest.md")
-    .add_local_file("prompts/daily.md", "/root/prompts/daily.md")
+    # The degraded edition. A free-tier model cannot take the full
+    # issue by more than a factor of ten, and on 2026-10-12 that meant
+    # a week with no issue at all. This prompt is what the press writes
+    # from instead of nothing; pipeline/budget.py sizes it.
+    .add_local_file("prompts/digest-short.md",
+                    "/root/prompts/digest-short.md")
     # the budget guard runs in the container too, so a request that cannot fit
     # is refused here with the arithmetic rather than 413'd by Groq
     .add_local_file("pipeline/budget.py", "/root/budget.py")
-    # and the quality gate, so the checklist is opened by the run that sends
-    # rather than by a person who remembers to (docs/agents/registers.md)
-    .add_local_file("tools/check_digest_quality.py", "/root/check_digest_quality.py")
+    # The designed email (site/emails/digest.html) and the renderer that
+    # fills it. Owner's ruling 2026-09-24: the emails get the UI, not just
+    # the site. Both are data-and-stdlib, so the press gains no dependency.
+    .add_local_file("site/emails/digest.html", "/root/emails/digest.html")
+    .add_local_file("pipeline/email_render.py", "/root/email_render.py")
+    # The drift guard travels with the job, so the job can say what it is
+    # actually running. db/schema.sql deploy_runtime carries the argument.
+    .add_local_file("pipeline/runtime_sha.py", "/root/runtime_sha.py")
+    # And the pre-send quality gate, so the checklist is opened by the run
+    # that sends rather than by a person who remembers to. A register with a
+    # write gate and no read gate is incident 20's shape, and
+    # docs/agents/registers.md says the read gate is the one the org forgets.
+    .add_local_file("tools/check_digest_quality.py",
+                    "/root/check_digest_quality.py")
 )
 
 app = modal.App("alexandria-weekly", image=image)
@@ -121,7 +230,9 @@ def check_citations(conn, max_papers: int = MAX_PAPERS_PER_RUN) -> int:
         """
         select p.id
         from papers p
-        join triage_log t on t.paper_id = p.id
+        -- latest_triage, not triage_log: a re-triaged paper has two rows there
+        -- and would be checked for citations twice in one run.
+        join latest_triage t on t.paper_id = p.id
             and t.decision in ('index', 'distill', 'deep_read')
         left join lateral (
             select max(checked_at) as last_check
@@ -170,12 +281,50 @@ def check_citations(conn, max_papers: int = MAX_PAPERS_PER_RUN) -> int:
 
 def gather(conn) -> dict:
     """Fixed queries; the model never chooses what to retrieve."""
+    # The five numbers the pipeline can honestly account for, one per step.
+    #
+    # Owner's directive 2026-09-25: "the stats line in the issue says 'read N
+    # papers'; make the press's stats say what happened: ingested, triaged, read
+    # in full, claims, links". Three numbers could not do that. `papers_ingested`
+    # was being read as "papers read", which flattered the pipeline by a factor
+    # of fifty: 8,956 papers had been ingested and 164 had been read in full.
+    # Ingesting a title is not reading a paper, and an issue that says otherwise
+    # is making a claim about the product that the database contradicts.
+    #
+    # `read_in_full` counts papers.fulltext_chars, which distill writes when it
+    # actually used arXiv's HTML and leaves NULL when it fell back to the
+    # abstract. Rows distilled before that column existed are NULL, so the number
+    # undercounts for the first week after this ships and is exact afterwards.
+    # Undercounting what was read is the right direction for a number the issue
+    # prints.
+    #
+    # `papers_triaged` excludes rule:backfill, because a paper auto-indexed by
+    # date rule was never judged by anything and counting it as triaged would be
+    # the same flattery one step along.
     stats = conn.execute(
         """
         select
-          (select count(*) from papers where fetched_at > now() - interval '7 days'),
-          (select count(*) from claims where created_at > now() - interval '7 days'),
-          (select count(*) from claim_links where created_at > now() - interval '7 days')
+          (select count(*) from papers
+            where fetched_at > now() - interval '7 days'),
+          -- Papers judged for the FIRST time this week, not decisions written.
+          -- Re-triage under a revised rubric appends a second row per paper, and
+          -- counting rows would let the issue say it triaged 47 papers it had
+          -- already triaged in September. The issue never claims work it did not
+          -- do (writer's law 13).
+          (select count(*) from triage_log t
+            where t.created_at > now() - interval '7 days'
+              and t.model != 'rule:backfill'
+              and not exists (select 1 from triage_log e
+                               where e.paper_id = t.paper_id
+                                 and (e.created_at < t.created_at
+                                      or (e.created_at = t.created_at and e.id < t.id)))),
+          (select count(*) from papers
+            where distilled_at > now() - interval '7 days'
+              and fulltext_chars is not null),
+          (select count(*) from claims
+            where created_at > now() - interval '7 days'),
+          (select count(*) from claim_links
+            where created_at > now() - interval '7 days')
         """
     ).fetchone()
 
@@ -188,7 +337,10 @@ def gather(conn) -> dict:
                c.evidence, c.procedure, p.authors[1:3], p.institutions
         from claims c
         join papers p on p.id = c.paper_id
-        left join triage_log t on t.paper_id = c.paper_id
+        -- latest_triage: joining triage_log here would return a claim once per
+        -- decision its paper has ever had, so one re-triaged paper would put the
+        -- same claim in the digest payload twice.
+        left join latest_triage t on t.paper_id = c.paper_id
         left join claim_links l on l.from_claim = c.id
         where c.created_at > now() - interval '7 days'
         group by c.id, c.claim, c.topics, p.title, p.url, p.tier, t.decision, t.score,
@@ -274,7 +426,13 @@ def gather(conn) -> dict:
     ).fetchall()
 
     return {
-        "stats": {"papers_ingested": stats[0], "claims_distilled": stats[1], "edges_drawn": stats[2]},
+        "stats": {
+            "papers_ingested": stats[0],
+            "papers_triaged": stats[1],
+            "papers_read_in_full": stats[2],
+            "claims_distilled": stats[3],
+            "links_drawn": stats[4],
+        },
         "new_claims": [
             {
                 "claim_id": r[0], "claim": r[1][:280], "topics": r[2],
@@ -346,182 +504,57 @@ def quality():
     return module
 
 
-# ---------------- daily issue ----------------
+def runtime_guard():
+    """pipeline/runtime_sha.py, wherever this is running from.
 
-# How many claims the daily issue may see. The weekly takes 22 because it is
-# synthesising a week; a daily that considered twenty findings would be a
-# weekly with the wrong date on it.
-DAILY_CLAIM_LIMIT = 10
-
-# The window, in hours. The daily crons run 11:00 (ingest), 11:30 (distill),
-# 12:00 (triage) and 14:00 (interpret) UTC, and this function runs at 15:00, so
-# a 24-hour lookback from here covers exactly one complete pipeline day and
-# nothing twice.
-#
-# It goes through make_interval() rather than straight into the SQL, because
-# Postgres reads INTERVAL as a type name expecting a literal after it and will
-# not accept a placeholder there. check_citations() above solves the same
-# problem the same way.
-DAILY_WINDOW_HOURS = 24
-
-
-def gather_daily(conn) -> dict:
-    """The last 24 hours only. Same discipline as gather(): fixed queries.
-
-    Deliberately narrower than the weekly's payload. No traction streams
-    (supported claims, citation movers), because acceptance accumulates over
-    weeks and reporting it daily would be noise dressed as news, and because
-    the citation loop only refreshes on Mondays anyway.
+    Same shape as the accessor above, and for the same reason: `/root` inside
+    the image, this directory in a checkout.
     """
-    stats = conn.execute(
-        """
-        select
-          (select count(*) from papers where fetched_at > now() - make_interval(hours => %s)),
-          (select count(*) from claims where created_at > now() - make_interval(hours => %s)),
-          (select count(*) from claim_links where created_at > now() - make_interval(hours => %s))
-        """,
-        (DAILY_WINDOW_HOURS, DAILY_WINDOW_HOURS, DAILY_WINDOW_HOURS),
-    ).fetchone()
+    import sys
 
-    new_claims = conn.execute(
-        """
-        select c.id, c.claim, c.topics, p.title, p.url, p.tier,
-               t.decision, t.score,
-               coalesce(array_agg(l.relation || ' -> claim ' || l.to_claim)
-                        filter (where l.from_claim is not null), '{}'),
-               c.evidence, c.procedure, p.authors[1:3], p.institutions
-        from claims c
-        join papers p on p.id = c.paper_id
-        left join triage_log t on t.paper_id = c.paper_id
-        left join claim_links l on l.from_claim = c.id
-        where c.created_at > now() - make_interval(hours => %s)
-        group by c.id, c.claim, c.topics, p.title, p.url, p.tier, t.decision, t.score,
-                 c.evidence, c.procedure, p.authors, p.institutions
-        order by case t.decision when 'deep_read' then 0 else 1 end,
-                 t.score desc nulls last
-        limit %s
-        """,
-        (DAILY_WINDOW_HOURS, DAILY_CLAIM_LIMIT),
-    ).fetchall()
+    here = str(pathlib.Path(__file__).resolve().parent)
+    for path in ("/root", here):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    import runtime_sha as module
 
-    superseded = conn.execute(
-        """
-        select old.claim, new.claim, l.confidence,
-               po.title, po.url, pn.title, pn.url
-        from claim_links l
-        join claims old on old.id = l.to_claim
-        join claims new on new.id = l.from_claim
-        join papers po on po.id = old.paper_id
-        join papers pn on pn.id = new.paper_id
-        where l.relation = 'refines'
-          and coalesce(l.confidence, 0) >= 0.75
-          and l.created_at > now() - make_interval(hours => %s)
-          and old.paper_id != new.paper_id  -- a paper refining itself is not a supersession
-        order by l.confidence desc
-        limit 5
-        """,
-        (DAILY_WINDOW_HOURS,),
-    ).fetchall()
-
-    deprecated = conn.execute(
-        """
-        select old.claim, new.claim, l.confidence, p.title, p.url
-        from claim_links l
-        join claims old on old.id = l.to_claim
-        join claims new on new.id = l.from_claim
-        join papers p on p.id = old.paper_id
-        where l.relation = 'contradicts'
-          and coalesce(l.confidence, 0) >= 0.7
-          and l.created_at > now() - make_interval(hours => %s)
-        limit 5
-        """,
-        (DAILY_WINDOW_HOURS,),
-    ).fetchall()
-
-    deep_reads = conn.execute(
-        """
-        select p.title, p.url, t.reasoning
-        from triage_log t
-        join papers p on p.id = t.paper_id
-        where t.decision = 'deep_read'
-          and t.created_at > now() - make_interval(hours => %s)
-        limit 5
-        """,
-        (DAILY_WINDOW_HOURS,),
-    ).fetchall()
-
-    return {
-        "stats": {"papers_ingested": stats[0], "claims_distilled": stats[1], "edges_drawn": stats[2]},
-        "new_claims": [
-            {
-                "claim_id": r[0], "claim": r[1][:280], "topics": r[2],
-                "paper": r[3], "url": r[4], "tier": r[5],
-                "triage": r[6], "score": r[7], "edges": r[8],
-                "evidence": (r[9] or "")[:350] or None,
-                "procedure": (r[10] or "")[:600] or None,
-                "authors": r[11] or None,
-                "institutions": r[12] or None,
-            }
-            for r in new_claims
-        ],
-        "superseded": [
-            {"old_claim": r[0][:280], "new_claim": r[1][:280], "confidence": r[2],
-             "old_paper": r[3], "old_url": r[4], "new_paper": r[5], "new_url": r[6]}
-            for r in superseded
-        ],
-        "deprecated": [
-            {"old_claim": r[0][:400], "contradicted_by": r[1][:400], "confidence": r[2],
-             "paper": r[3], "url": r[4]}
-            for r in deprecated
-        ],
-        "deep_reads": [{"paper": r[0], "url": r[1], "why": (r[2] or "")[:200]} for r in deep_reads],
-    }
+    return module
 
 
-def daily_is_empty(payload: dict) -> bool:
-    """True when the day produced nothing an issue could honestly be about.
+class ModelGone(RuntimeError):
+    """The provider does not have this model any more. Incident 24's 404."""
 
-    This is the hard floor under the owner's quality bar, and it is in code on
-    purpose. The prompt also tells the model to write the one-line issue when
-    the day is merely routine, but a model asked to write about an empty
-    payload will find something to say, every time. When all four evidence
-    streams are empty there is nothing to find, so the model is never asked.
+
+class RateLimited(RuntimeError):
+    """429 survived every retry on this model."""
+
+
+class MissingKey(RuntimeError):
+    """A provider's API key is not in this environment.
+
+    Its own class rather than a bare KeyError, so the fallback walk can treat
+    "we cannot reach this provider" the same way it treats a withdrawn model:
+    record it, say which Modal secret is missing, and try the next one.
     """
-    return not any(
-        payload.get(key) for key in ("new_claims", "deprecated", "superseded", "deep_reads")
-    )
 
 
-def empty_issue(dates: str) -> str:
-    """The honest one-line issue. Same wording the prompt uses for a routine
-    day, so a reader cannot tell which path produced it, because the message is
-    the same either way: we looked, and there was nothing worth your time.
+class PressCannotPrint(RuntimeError):
+    """No model in the fallback list could write the issue.
 
-    The date used to sit in the headline. The pre-send gate blocked it on its
-    first run against this function (ban list 22: the subject line is the only
-    sentence most readers ever see, and the email header already carries the
-    date), so the headline is the finding alone and `dates` opens the prose.
+    This is the exception the owner gets an email about. It carries the whole
+    trail, one line per model, because the point of the email is that she
+    should not have to open Modal's logs to know what happened.
+
+    `called` is the subset that was actually sent a request and answered with
+    an error. The short edition skips those rather than spending four more
+    retries and up to three minutes of backoff on a provider that just refused
+    four times, which matters because the press's Modal timeout is 1800
+    seconds and the two walks share it.
     """
-    return (
-        "# Nothing worth your time today\n\n"
-        f"{dates}: today's papers were routine, so there is no issue. The next "
-        "one comes tomorrow, and Monday's weekly synthesis covers the whole week."
-    )
 
-
-
-
-
-def shrink(payload: dict, prompt: str, max_completion: int) -> str:
-    """Trim the payload until the whole request fits the model's budget.
-
-    The old version counted characters against a fixed 17,000 cap and only
-    ever trimmed new_claims, so a run with many deprecations could exhaust
-    new_claims and still return a body over the cap. This one counts tokens
-    against the model's actual per-request ceiling, trims every stream in a
-    stated order, and raises rather than returning something that will 413.
-    """
-    return budget().fit_payload(payload, prompt, max_completion, MODEL)
+    def __init__(self, message: str, called: set[str] | None = None):
+        super().__init__(message)
+        self.called = called or set()
 
 
 # Depth sections got truncated at the default cap, so the issue asks for room.
@@ -529,158 +562,565 @@ def shrink(payload: dict, prompt: str, max_completion: int) -> str:
 # not the model writes them: Groq's per-request ceiling counts the reservation,
 # not the output. The one issue the press has actually written came to 1,103
 # tokens, so 6,000 is generous rather than tight.
-MAX_COMPLETION_TOKENS = 6000
+MAX_COMPLETION_TOKENS = 24000  # kimi-k2.6 reasons before it writes; 6000 was consumed by hidden thinking (finish_reason length, empty content, 2026-09-24)
+
+# The two editions. The full one is what every healthy Monday prints. The short
+# one exists because of INC-2026-10-12: the primary stopped answering, the three
+# Groq entries below cannot take the full issue by more than a factor of ten,
+# `write_digest` walked the whole list, and 2026-W41 was never written. A short
+# issue that reaches a reader beats a missing one, and the issue says which it
+# is rather than letting a reader wonder why it got thin.
+EDITION_FULL = "full"
+EDITION_SHORT = "short"
+
+#: What the reader is told, by the press and not by the model. Put here rather
+#: than left to the generator because a label the model can forget is a label
+#: that goes missing on the week it matters.
+SHORT_EDITION_NOTE = "*A short edition. This week's issue is the week in brief.*"
+
+# Failure 2 of INC-2026-09-24-press-provider-migration: httpx defaults to a
+# 5-second read timeout and kimi-k2.6 was still reasoning. This was a literal
+# inside `call_model` until the rehearsal needed to print it. A rehearsal that
+# quotes a number typed twice proves nothing about the number the press uses,
+# so the press and its rehearsal now read the same name. The value is
+# unchanged, and it sits inside the 1800s Modal function timeout on purpose.
+CLIENT_TIMEOUT_SECONDS = 1500
+
+# The two subjects on the alarm path, as names rather than literals at the
+# call sites. Failure 4 of the same incident was an alarm subject that read
+# `[alexandria] 2026-W39`, and it survived because an alarm subject is prose
+# only a bad day renders. Naming them here is what lets `rehearse` print the
+# real strings, rather than a copy of them that can drift.
+ALARM_SUBJECT_CANNOT_PRINT = "The press could not print this week's issue"
+ALARM_SUBJECT_NOT_SENT = "This week's issue was written but not sent"
+ALARM_SUBJECT_SHORT_EDITION = "This week's issue went out as the short edition"
+ALARM_SUBJECT_HELD = "This week's issue was held by the pre-send quality gate"
 
 
-def log_limits(resp) -> None:
-    """Groq's own account of the budget, which outranks anything we assume."""
+def log_limits(resp, model: str) -> None:
+    """The provider's own account of the budget, which outranks what we assume.
+
+    Groq sends these headers on every response. Moonshot does not always, and
+    silence is not a problem: the header is a cross-check on budget.MODELS, not
+    an input to any decision.
+    """
     limit = resp.headers.get("x-ratelimit-limit-tokens")
     remaining = resp.headers.get("x-ratelimit-remaining-tokens")
     if limit:
-        print(f"groq says: limit {limit} tokens, {remaining} remaining. If that "
-              f"disagrees with budget.MODELS[{MODEL!r}], the header is right.")
+        print(f"provider says: limit {limit} tokens, {remaining} remaining. If "
+              f"that disagrees with budget.MODELS[{model!r}], the header is "
+              "right and the table is the thing to fix.")
 
 
-# The weekly's depth sections got truncated at the default cap, so it asks for
-# room. The daily is 150-400 words by design, and a generous cap on a short
-# issue is an invitation to pad; 1200 is comfortably above a 400-word issue and
-# well below a weekly one.
-# Literal numbers on purpose: pipeline/budget.py reads this dict out of this
-# file's source with ast.literal_eval, so a name here (even the right name)
-# makes the guard raise instead of check. The weekly entry must stay equal to
-# MAX_COMPLETION_TOKENS above, and the assert below is what says so.
-MAX_TOKENS = {"weekly": 6000, "daily": 1200}
-assert MAX_TOKENS["weekly"] == MAX_COMPLETION_TOKENS
+def api_key_for(provider: str) -> str:
+    """The key for `provider`, or a loud failure naming the Modal secret.
 
-
-def write_digest(payload: dict, prompt: str, kind: str = "weekly",
-                 corrections: str = "") -> str:
-    """One request to the generator. `corrections` is the gate's second try:
-    the blocking findings from the first draft, appended to the system prompt
-    as instructions."""
+    ADR-32 gave the press a funded account, and the chair creates the secret
+    from the owner's key. This seat never sees the value and must never print
+    it; what it can do, when the value is not there, is say exactly which
+    secret is missing and what command creates it. A press that dies on a
+    KeyError for `MOONSHOT_API_KEY` tells the owner nothing.
+    """
     import os
 
+    spec = budget().PROVIDERS[provider]
+    key = os.environ.get(spec["key_env"], "").strip()
+    if not key:
+        raise MissingKey(
+            f"{spec['key_env']} is not in this environment, so the press "
+            f"cannot reach {provider}. It comes from the Modal secret named "
+            f"`{spec['secret']}`, which the chair creates with:\n"
+            f"    modal secret create {spec['secret']} {spec['key_env']}=<paste>\n"
+            f"Then redeploy: modal deploy pipeline/weekly.py"
+        )
+    return key
+
+
+def check_availability() -> set[str]:
+    """Which models the press's providers actually have, right now, for our keys.
+
+    Incident 24's standing fix. The budget guard checks that the request fits;
+    this checks that there is something to send it to. It costs no tokens
+    against any ceiling, so it runs at deploy and again at the start of every
+    run, and it raises loudly rather than guessing.
+
+    One provider being unreachable is a note, not the end of the run, because
+    the fallback list crosses providers on purpose. What ends the run is no
+    usable model anywhere, and the missing primary key, which is a
+    configuration fact the owner can fix in one command.
+    """
+    import os
+
+    guard = budget()
+    primary = guard.PRIMARY_PROVIDER
+    # fail here rather than three functions later, and name the secret
+    try:
+        api_key_for(primary)
+    except MissingKey as exc:
+        raise PressCannotPrint(str(exc)) from exc
+
+    available, notes = guard.available_everywhere(FALLBACK_MODELS, os.environ)
+    for note in notes:
+        print(f"availability: {note}")
+    usable = [m for m in FALLBACK_MODELS if m in available]
+    for name in FALLBACK_MODELS:
+        if name in available:
+            continue
+        provider = guard.MODELS.get(name, {}).get("provider", "?")
+        print(f"AVAILABILITY: {name} is in FALLBACK_MODELS but {provider} does "
+              "not list it. A request to it would 404, as it did in incident 24.")
+    print(f"fallbacks present: {usable or 'NONE'}")
+    if not usable:
+        docs = ", ".join(
+            guard.PROVIDERS[p]["docs"] for p in guard.providers_for(FALLBACK_MODELS))
+        raise PressCannotPrint(
+            "no provider lists any of the press's fallback models "
+            f"({', '.join(FALLBACK_MODELS)}). The press cannot print until "
+            "pipeline/weekly.py FALLBACK_MODELS and pipeline/budget.py MODELS "
+            f"are updated from {docs}."
+        )
+    return available
+
+
+def call_model(model: str, prompt: str, user: str,
+               trace: dict | None = None,
+               max_completion: int = MAX_COMPLETION_TOKENS) -> str:
+    """One model, with backoff on 429. Raises so the caller can move down the list.
+
+    `trace`, when given, is filled with what the provider said about the call
+    that succeeded: `finish_reason`, `elapsed_seconds`, `usage` and the model
+    that answered. The scheduled run passes nothing and behaves exactly as it
+    did; `rehearse` passes a dict, because `finish_reason` is the difference
+    between failure 1 of INC-2026-09-24-press-provider-migration being a
+    silent empty response and being a legible one. It is an out-parameter and
+    not a return value so that the press's own path keeps one return type.
+
+    The request body is the OpenAI-compatible minimum and nothing else. Both
+    providers speak that dialect, so there is one code path and no provider
+    branch to get wrong. Two deliberate absences:
+
+    * **No `compound_custom`.** It was a Groq-only block for the agentic
+      compound system, and compound is gone. ADR-6 holds regardless: the press
+      is a workflow, one prompt in, one issue out, no tools.
+    * **No `temperature` on Kimi.** Moonshot documents temperature, top_p, n
+      and both penalties as fixed values on k2.6, so sending 0.3 would be a
+      parameter the model overrides. Sending settings that do nothing is how a
+      reader comes to believe a knob exists.
+    """
     import httpx
 
     guard = budget()
-    # the reservation is per kind: a daily asks for 1,200 completion tokens, so
-    # the budget guard and shrink() must both size the request against that
-    # number rather than against the weekly's 6,000
-    limit = MAX_TOKENS[kind]
-    user = shrink(payload, prompt, limit)
-    # the corrections ride in the system prompt, so they count against the
-    # same per-request ceiling and the budget guard must see them
-    report = guard.check_request(prompt + corrections, user, limit, MODEL)
-    print(f"payload: {len(user)} chars, {len(payload['new_claims'])} new claims kept")
-    print(f"budget: {report.summary()}")
-    if not report.fits:
-        # shrink() should have made this impossible; if it did not, say so here
-        # rather than letting Groq say it with a 413 and no issue
-        raise guard.BudgetExceeded(report.summary())
+    provider = guard.provider_of(model)
+    url = guard.endpoint(provider, "/chat/completions")
+    key = api_key_for(provider)
 
-    for attempt in range(4):
+    body = {
+        "model": model,
+        # The short edition sends a smaller one, derived from the model's own
+        # published minute in `budget.short_issue_room`. The default is the full
+        # issue's, so every existing caller is unchanged.
+        "max_completion_tokens": max_completion,
+        "messages": [
+            {"role": "system", "content": prompt},
+            {"role": "user", "content": user},
+        ],
+    }
+    if provider != "moonshot":
+        body["temperature"] = 0.3
+    else:
+        # kimi-k2.6 and kimi-k3 are thinking models. On the 10K-token
+        # editorial instruction the hidden reasoning consumed a 24,000-token
+        # output reservation twice (finish_reason 'length', no content,
+        # 2026-09-24). The instruction is the thinking, so it is off here;
+        # verified by probe: thinking disabled returns full content with zero
+        # reasoning tokens on both models.
+        body["thinking"] = {"type": "disabled"}
+
+    for attempt in range(RETRIES_PER_MODEL):
+        started = time.monotonic()
         resp = httpx.post(
-            GROQ_URL,
-            headers={"Authorization": f"Bearer {os.environ['GROQ_API_KEY'].strip()}"},
-            json={
-                "model": MODEL,
-                "temperature": 0.3,
-                "max_completion_tokens": limit,
-                "messages": [
-                    {"role": "system", "content": prompt + corrections},
-                    {"role": "user", "content": user},
-                ],
-                # compound-only parameter: rolling MODEL back to a plain model
-                # must not fail for a second, unrelated reason
-                **({"compound_custom": COMPOUND_CUSTOM}
-                   if MODEL.startswith("groq/compound") else {}),
-            },
-            timeout=300,
+            url,
+            headers={"Authorization": f"Bearer {key}"},
+            json=body,
+            timeout=CLIENT_TIMEOUT_SECONDS,  # kimi-k2.6 reasons for minutes before writing; 300s timed out on 2026-09-24
         )
-        log_limits(resp)
-        if resp.status_code == 429 and attempt < 3:
-            wait = float(resp.headers.get("retry-after") or 30 * (attempt + 1))
-            print(f"rate limited; backing off {wait:.0f}s")
-            time.sleep(min(wait, 180))
-            continue
+        elapsed = time.monotonic() - started
+        log_limits(resp, model)
+
+        # 404 is a withdrawn or misspelled model, and no amount of waiting fixes
+        # it. Going straight to the next model is the whole point of the list.
+        if resp.status_code == 404:
+            raise ModelGone(f"404 Not Found: {resp.text[:400]}")
+
+        if resp.status_code == 429:
+            # Moonshot's 429 for "max organization concurrency: 1" says
+            # retry-after 1s, and on 2026-09-24 the press honored that three
+            # times in four seconds and gave up while another seat's single
+            # Kimi call (the engineer's rehearsal print) was still running.
+            # A concurrency limit is not a rate limit: the other call takes
+            # minutes, so the wait must be our own schedule, and the header
+            # only ever lengthens it.
+            wait = max(float(resp.headers.get("retry-after") or 0),
+                       BACKOFF_SECONDS * (2 ** attempt))
+            wait = min(wait, BACKOFF_CEILING)
+            if attempt < RETRIES_PER_MODEL - 1:
+                print(f"{model}: rate limited (attempt {attempt + 1} of "
+                      f"{RETRIES_PER_MODEL}); backing off {wait:.0f}s")
+                time.sleep(wait)
+                continue
+            raise RateLimited(
+                f"429 after {RETRIES_PER_MODEL} attempts: {resp.text[:400]}")
+
         if resp.status_code >= 400:
             # incident 22 cost a day partly because raise_for_status() prints
-            # the status and throws the body away. The body is where Groq
-            # states the actual limit and the actual request size.
-            print(f"groq {resp.status_code}: {resp.text[:1000]}")
-        resp.raise_for_status()
-        message = resp.json()["choices"][0]["message"]
+            # the status and throws the body away. The body is where the
+            # provider states the actual limit and the actual request size.
+            print(f"{provider} {resp.status_code} on {model}: {resp.text[:1000]}")
+            # 400 on a model that exists is usually an unsupported parameter,
+            # which the next model may well accept
+            raise ModelGone(f"{resp.status_code}: {resp.text[:400]}")
+
+        payload_back = resp.json()
+        choice = payload_back["choices"][0]
+        message = choice["message"]
+        if trace is not None:
+            trace.update({
+                "model": model,
+                "finish_reason": choice.get("finish_reason"),
+                "elapsed_seconds": round(elapsed, 1),
+                "usage": payload_back.get("usage") or {},
+            })
         fired = message.get("executed_tools") or []
         if fired:
-            # tools are disabled per request; if one ran anyway, the issue may
-            # contain something that did not come from our corpus
+            # No model in FALLBACK_MODELS is agentic today, and ADR-6 says the
+            # press never gets tools. If one ever fires anyway, the issue may
+            # contain something that did not come from our corpus, and that is
+            # a fact about the issue, not a warning about the call.
             names = ", ".join(sorted({t.get("type", "?") for t in fired}))
-            print(f"WARNING: {MODEL} executed built-in tools ({names}) despite "
-                  "compound_custom disabling them. Treat this issue as "
-                  "unverified and check it against the payload before sending.")
+            print(f"WARNING: {model} executed built-in tools ({names}). Treat "
+                  "this issue as unverified and check it against the payload "
+                  "before sending.")
         content = message.get("content")
         if not content:
-            # an agentic model can answer with tool calls and no prose; there is
-            # no issue in that, and the empty string must not reach the database
-            raise RuntimeError(
-                f"{MODEL} returned no content (finish_reason "
-                f"{resp.json()['choices'][0].get('finish_reason')!r}); no issue "
-                "was written"
-            )
+            raise ModelGone(
+                f"{model} returned no content (finish_reason "
+                f"{choice.get('finish_reason')!r}); no issue was written")
         return content.strip()
-    raise RuntimeError("groq: exhausted retries")
+    raise RateLimited(f"{model}: exhausted retries")
+
+
+def write_digest(payload: dict, prompt: str,
+                 available: set[str] | None = None,
+                 trace: dict | None = None,
+                 corrections: str = "") -> tuple[str, str]:
+    """Write the issue, walking the fallback list. Returns (body, model used).
+
+    Each model gets its own copy of the payload, because `fit_payload` trims in
+    place: sharing one payload would mean the second model inherits the first
+    model's trimming and writes a thinner issue than it had room for.
+
+    `corrections` is the pre-send gate's second try: the blocking findings from
+    the first draft, appended to the system prompt as instructions. It rides in
+    the system prompt rather than the payload, so it counts against the same
+    per-request ceiling and every size check below has to see it. That is why
+    `system` is computed once here and used everywhere `prompt` used to be.
+    """
+    import copy
+
+    guard = budget()
+    system = prompt + corrections
+    tried: list[str] = []
+    #: Models that answered with an error, as opposed to the ones that were
+    #: refused by the arithmetic before a request went out. The short edition
+    #: below is told, so it does not spend its retries on them again.
+    called: set[str] = set()
+
+    for model in FALLBACK_MODELS:
+        if available is not None and model not in available:
+            provider = guard.MODELS.get(model, {}).get("provider", "?")
+            tried.append(f"{model}: not listed by {provider} for this key; "
+                         "skipped without a request (incident 24's 404)")
+            continue
+        try:
+            user = guard.fit_payload(copy.deepcopy(payload), system,
+                                     MAX_COMPLETION_TOKENS, model)
+        except (guard.BudgetExceeded, KeyError) as exc:
+            tried.append(f"{model}: does not fit. {exc}")
+            print(f"{model}: over budget, trying the next fallback. {exc}")
+            continue
+
+        report = guard.check_request(system, user, MAX_COMPLETION_TOKENS, model)
+        print(f"{model}: payload {len(user)} chars; budget: {report.summary()}")
+        if not report.fits:
+            # fit_payload should have made this impossible; if it did not, say
+            # so here rather than letting Groq say it with a 413
+            tried.append(f"{model}: {report.summary()}")
+            continue
+
+        try:
+            body = call_model(model, system, user, trace)
+        except (ModelGone, RateLimited, MissingKey) as exc:
+            called.add(model)
+            tried.append(f"{model}: {exc}")
+            print(f"{model} failed ({exc}); trying the next fallback")
+            continue
+        print(f"issue written by {model}")
+        return body, model
+
+    raise PressCannotPrint(
+        "every model in the press's fallback list failed:\n  "
+        + "\n  ".join(tried),
+        called,
+    )
+
+
+def write_short_issue(payload: dict, short_prompt: str,
+                      available: set[str] | None = None,
+                      trace: dict | None = None,
+                      skip: set[str] | None = None) -> tuple[str, str]:
+    """The degraded edition. Returns (body, model used).
+
+    The same walk down the same list, with three differences and no others: the
+    short prompt, a reservation derived from the model's own published minute
+    rather than the full issue's 24,000, and a payload trimmed against that
+    reservation. `budget.short_issue_room` holds the arithmetic and
+    `budget.check_short_issue` fails the deploy when the prompt grows past what
+    the free tier can take.
+
+    Why this exists at all, in one paragraph, because the reason is a date.
+    `prompts/digest.md` is 1,919 lines, so the press's request on a free-tier
+    model is over budget by more than a factor of ten, and the comment beside
+    FALLBACK_MODELS has said so since incident 24: the Groq entries "cannot
+    print the issue at the current prompt size", kept "for the day the prompt
+    gets shorter or a ceiling moves". Neither ever happened. On 2026-10-12 the
+    primary stopped answering, the walk above rejected all three without
+    sending a request, and /library/2026-W41 is a 404. A list of models that
+    can never answer is not a fallback, it is a comforting list, and this is
+    the function that makes it a real one.
+    """
+    import copy
+
+    guard = budget()
+    tried: list[str] = []
+    skip = skip or set()
+
+    for model in FALLBACK_MODELS:
+        if model in skip:
+            tried.append(f"{model}: already answered with an error on the full "
+                         "edition; not asked twice")
+            continue
+        if available is not None and model not in available:
+            provider = guard.MODELS.get(model, {}).get("provider", "?")
+            tried.append(f"{model}: not listed by {provider} for this key; "
+                         "skipped without a request")
+            continue
+        try:
+            room = guard.short_issue_room(model, short_prompt)
+        except (KeyError, LookupError) as exc:
+            tried.append(f"{model}: cannot be sized. {exc}")
+            continue
+        if not room.fits:
+            tried.append(f"{model}: {room.summary()}")
+            continue
+        try:
+            user = guard.fit_payload(copy.deepcopy(payload), short_prompt,
+                                     room.reservation, model)
+        except (guard.BudgetExceeded, KeyError) as exc:
+            tried.append(f"{model}: the short payload does not fit. {exc}")
+            continue
+        print(f"{model}: short edition, payload {len(user)} chars, "
+              f"{room.reservation}-token reply")
+        try:
+            body = call_model(model, short_prompt, user, trace,
+                              max_completion=room.reservation)
+        except (ModelGone, RateLimited, MissingKey) as exc:
+            tried.append(f"{model}: {exc}")
+            print(f"{model} failed ({exc}); trying the next fallback")
+            continue
+        print(f"short edition written by {model}")
+        return body, model
+
+    raise PressCannotPrint(
+        "no model could write even the short edition:\n  " + "\n  ".join(tried)
+    )
+
+
+def print_issue(payload: dict, prompt: str, short_prompt: str,
+                available: set[str] | None = None,
+                trace: dict | None = None) -> tuple[str, str, str]:
+    """The full issue if anything can take it, the short edition if not.
+
+    Returns (body, model, edition). The order is not negotiable and the reason
+    is the ban list rather than the budget: the full prompt carries 103 entries
+    of docs/voice/ban-list.md and the short one carries the few that fit, so the
+    short edition is strictly the lesser issue and is only ever reached when the
+    alternative is no issue.
+    """
+    try:
+        body, model = write_digest(payload, prompt, available, trace)
+        return body, model, EDITION_FULL
+    except PressCannotPrint as exc:
+        print(f"the full issue could not be written:\n{exc}")
+        print("falling through to the short edition")
+        body, model = write_short_issue(payload, short_prompt, available,
+                                        trace, skip=exc.called)
+        return body, model, EDITION_SHORT
 
 
 # The standing introduction under the title. Fixed in code, not written by the
-# model, so the brand line never drifts issue to issue. One per kind, because
-# the two issues promise the reader different things and each line should say
-# which one they are holding.
-MASTHEAD = {
-    "weekly": (
-        "*The latest in AI research, read in full: the week in synthesis. "
-        "What's new, what's gaining acceptance, and what newer evidence has "
-        "overturned.*"
-    ),
-    "daily": (
-        "*The latest in AI research, read in full: what changed in the last "
-        "24 hours. The week in synthesis arrives every Monday.*"
-    ),
-}
+# model, so the brand line never drifts issue to issue.
+#
+# It said "read in full and distilled weekly" until 2026-09-26. Every paper in
+# the corpus arrives as a title and an abstract, and 166 of 8,956 have ever had
+# their full text read. A line fixed in code prints on every issue and is graded
+# by nothing, so the claim outlived every pass that would have caught it in the
+# prose. Canon law 15: the library never claims to have read what it only
+# ingested, and the repair is to drop the claim rather than qualify it. Reader
+# facing wording here is the writer seat's custody (owner's order 2026-09-25).
+MASTHEAD = (
+    "*What's new in AI research, what's gaining acceptance, and what newer "
+    "evidence has overturned.*"
+)
 
 
-def add_masthead(body: str, kind: str = "weekly") -> str:
-    masthead = MASTHEAD[kind]
+def title_of(body: str) -> str:
+    return body.split("\n", 1)[0][2:].strip() if body.startswith("# ") else ""
+
+
+def same_title(a: str, b: str) -> bool:
+    norm = lambda s: " ".join(s.lower().replace("\u2019", "'").split())
+    return bool(a) and norm(a) == norm(b)
+
+
+def ensure_fresh_title(body: str, prior_titles: list[str], model: str, dates: str) -> str:
+    """Two issues never carry the same title (owner, 2026-10-04).
+
+    On 2026-09-28 the Monday issue printed under the title of the two sends
+    before it, and the owner read a new issue as a repeat of the last one. A
+    title is how a reader tells issues apart, so a title the library has
+    already used is not a title. If the generator reuses one, the press asks
+    the same model once for a new title that is not on the list, and if that
+    answer is still used or empty, it falls back to the title with the
+    week's dates, which is at least distinct. The body below the title is
+    never touched.
+    """
+    title = title_of(body)
+    if not title or not any(same_title(title, p) for p in prior_titles):
+        return body
+    print(f"title already used ({title!r}); asking {model} for a new one")
+    fresh = ""
+    try:
+        used = "\n".join(f"- {p}" for p in prior_titles[:12])
+        fresh = call_model(
+            model,
+            "You retitle a newsletter issue. Reply with the new title only: one "
+            "line, no quotes, no markdown, under 80 characters. It must state "
+            "the issue's main finding in plain words and must not repeat or "
+            "lightly reword any title in the used list.",
+            f"Used titles, never to be reused:\n{used}\n\nThe issue:\n\n{body[:6000]}",
+        ).strip().strip("#*\"' ").split("\n")[0].strip()
+    except Exception as exc:
+        print(f"retitle call failed ({exc}); falling back to the dated title")
+    if not fresh or len(fresh) > 120 or any(same_title(fresh, p) for p in prior_titles):
+        fresh = f"{title} ({dates})"
+    print(f"retitled: {fresh!r}")
+    rest = body.split("\n", 1)[1] if "\n" in body else ""
+    return "# " + fresh + ("\n" + rest if rest else "")
+
+
+def add_masthead(body: str, edition: str = EDITION_FULL) -> str:
+    """The standing line under the title, plus the edition when it is not the full one.
+
+    The note is added here rather than asked of the generator because a label
+    the model can forget is a label that goes missing on the week it matters,
+    and the week it matters is the only week it is ever printed.
+    """
+    block = MASTHEAD
+    if edition == EDITION_SHORT:
+        block = f"{MASTHEAD}\n\n{SHORT_EDITION_NOTE}"
     lines = body.split("\n")
     if lines and lines[0].startswith("#"):
-        return "\n".join([lines[0], "", masthead, ""] + lines[1:])
-    return f"{masthead}\n\n{body}"
+        return "\n".join([lines[0], "", block, ""] + lines[1:])
+    return f"{block}\n\n{body}"
 
 
-def send_newsletter(conn, key: str, body: str) -> str:
-    """Email the issue to active subscribers (friends-and-family phase).
+def email_render():
+    """pipeline/email_render.py, wherever this is running from.
 
-    Sends through the owner's Gmail via authenticated SMTP: at this scale
-    (<20 recipients) Gmail's own sender reputation is the deliverability
-    strategy, and no domain or email service is needed. Past ~20 subscribers
-    this graduates to SES + a purchased domain + a real unsubscribe endpoint
-    (docs/vision.md §4). No-op until the `gmail` secret exists
-    (GMAIL_ADDRESS + GMAIL_APP_PASSWORD)."""
-    import os
-    import smtplib
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.text import MIMEText
+    Same two-path trick as budget(): Modal drops it at /root/email_render.py
+    and a local run finds it beside this file. The template it fills travels
+    the same way, bundled at /root/emails/digest.html.
+    """
+    import sys
 
-    addr = os.environ.get("GMAIL_ADDRESS", "").strip()
-    pw = os.environ.get("GMAIL_APP_PASSWORD", "").strip()
-    if not addr or not pw:
-        return "no gmail secret; email send skipped (digest is in the database)"
-    rows = conn.execute(
-        "select email, name from subscribers where status = 'active'"
-    ).fetchall()
-    if not rows:
-        return "no active subscribers; nothing to send"
+    here = str(pathlib.Path(__file__).resolve().parent)
+    for path in ("/root", here):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    import email_render as module
 
-    import markdown as md
+    return module
+
+
+def escape_raw_html(text: str) -> str:
+    """Neutralise raw HTML in an issue body without disturbing its markdown.
+
+    `html.escape` would also escape `>`, and `>` at the start of a line is
+    markdown's blockquote, so escaping it would cost the fallback email every
+    quotation an issue carries. A tag needs `<`, so `<` and a bare `&` are the
+    whole job. An `&` that already opens an entity is left alone, so a body
+    saying `&amp;` still renders as one ampersand.
+    """
+    text = re.sub(r"&(?!#?\w+;)", "&amp;", text)
+    return text.replace("<", "&lt;")
+
+
+def neutralise_hrefs(html_text: str, allowed) -> str:
+    """Blank any href or src whose scheme `allowed` refuses.
+
+    Raw HTML is already gone by the time this runs, so the only URLs left are
+    the ones markdown itself built out of `[label](url)`. `allowed` is
+    `email_render.url_allowed`, which is the same list of schemes the designed
+    template uses: one rule, both emails.
+    """
+    def repl(match):
+        return match.group(0) if allowed(match.group(2)) else f'{match.group(1)}=""'
+
+    return re.sub(r'\b(href|src)="([^"]*)"', repl, html_text, flags=re.I)
+
+
+def legacy_html(body: str) -> str:
+    """The pre-2026-09-24 email: markdown in an inline Georgia div.
+
+    Kept only as the fallback under a rendering failure. An issue that reaches
+    its readers plain is a bad day; an issue that reaches nobody because the
+    template moved a comment marker is an outage.
+
+    It is also the surface the 2026-09-22 ledger entry was written about. The
+    `markdown` library has not escaped raw HTML since v8, and this path runs it
+    over a body a model wrote out of arXiv text, which is why the escaping and
+    the scheme check below are not optional on the quiet path either. This is
+    the render that only ships when the designed one failed, which is the exact
+    moment nobody is reading the output.
+    """
+    try:
+        import markdown as md
+
+        allowed = email_render().url_allowed
+    except Exception:
+        # The image pins markdown==3.7, so this is not the production path.
+        # It exists because this function is the last thing standing between
+        # a rendering failure and an issue nobody receives, and a last resort
+        # that can itself raise is not one. It escapes everything, so it is
+        # also the safest of the three renders rather than the loosest.
+        import html as _html
+
+        return (
+            "<div style='max-width:640px;margin:0 auto;font-family:Georgia,serif;"
+            "font-size:16px;line-height:1.6;color:#222'>"
+            f"<pre style='white-space:pre-wrap;font-family:Georgia,serif'>"
+            f"{_html.escape(body)}</pre></div>"
+        )
 
     def is_list_line(line: str) -> bool:
         return bool(re.match(r"^\s*([-*] |\d+[.)] )", line))
@@ -693,216 +1133,893 @@ def send_newsletter(conn, key: str, body: str) -> str:
             spaced.append("")
         spaced.append(line)
 
-    html_body = md.markdown("\n".join(spaced), extensions=["extra"])
-    html = (
+    html_body = md.markdown(escape_raw_html("\n".join(spaced)), extensions=["extra"])
+    html_body = neutralise_hrefs(html_body, allowed)
+    return (
         "<div style='max-width:640px;margin:0 auto;font-family:Georgia,serif;"
         "font-size:16px;line-height:1.6;color:#222'>"
         f"{html_body}"
         "<hr><p style='font-size:12px;color:#888'>You're receiving this as a "
         "friend of alexandria. Reply to this email to unsubscribe.</p></div>"
     )
+
+
+def unsubscribe_link(token, addr: str) -> str:
+    """The foot of the email: a one-click link when we have a token, the old
+    mailto when we do not.
+
+    Two reasons this degrades rather than raises. The `subscribers`
+    .unsubscribe_token column arrives in its own migration, so there is a
+    window where the press runs against a table that has no such column and
+    every row arrives with `token = None`. And a subscriber row written before
+    that migration backfills to a token, but a row written by an older code
+    path might not, and one missing token must cost that reader the old reply
+    rather than cost every reader the issue.
+
+    The token is opaque and per subscriber. It is never the address: an
+    unsubscribe link lives in a mail client forever, and a link with an
+    address in it lets anybody who knows an address remove that person.
+    """
+    if not token:
+        # The slot contract (site/emails/README.md) accepts a mailto, which is
+        # what every issue carried until this column existed.
+        return f"mailto:{addr}?subject=Unsubscribe"
+    return f"{email_render().site_base()}/unsubscribe?t={quote(str(token), safe='')}"
+
+
+def build_messages(key: str, body: str, rows, addr: str,
+                   prior_subject: str = "") -> list[tuple[str, str, str, str]]:
+    """(email, subject, plain_text, html) per recipient, and nothing sent.
+
+    Split out from the SMTP loop so a rehearsal can print exactly what the
+    press would send without opening a connection to Gmail. That is the whole
+    reason this function exists: docs/agents/press-rehearsal.md's rule is that
+    a rehearsal renders the real thing, and a renderer only a live send can
+    reach is a renderer nobody checks before it goes out.
+
+    `rows` is (email, name) or (email, name, unsubscribe_token). The short
+    shape is still accepted because `only=` resends and the rehearsal both
+    build rows of their own, and because the column is newer than this
+    function.
+    """
+    render = email_render()
+    subject = render.disambiguate_subject(render.subject_for(body), prior_subject, key)
+
+    try:
+        issue = render.parse_issue(body)
+        messages = []
+        for row in rows:
+            email, token = row[0], (row[2] if len(row) > 2 else None)
+            meta = render.build_meta(key, issue, email, unsubscribe_link(token, addr))
+            messages.append((email, subject, body, render.render(issue, meta)))
+        return messages
+    except Exception as exc:
+        print(f"designed template failed to render ({exc}); falling back to "
+              "the plain email. The issue still goes out.")
+        fallback = legacy_html(body)
+        return [(row[0], subject, body, fallback) for row in rows]
+
+
+UNDEFINED_COLUMN = "42703"
+
+
+def active_recipients(conn):
+    """(email, name, unsubscribe_token) for everybody the press sends to.
+
+    One query, and a second one behind it that drops the token column. The
+    `subscribers.unsubscribe_token` column lands in its own migration
+    (db/schema.sql), and `pipeline/db_setup.py` applies that file on a deploy
+    the press does not wait for, so there is a window where this code is live
+    and the column is not. In that window the choice is between an issue that
+    goes out with the old mailto in its footer and no issue at all. It goes
+    out.
+
+    The rollback is the part that is not optional. This connection is not in
+    autocommit, so a failed statement leaves the transaction aborted, and
+    every query after it — including the one that reads the previous issue's
+    title — would fail with `InFailedSqlTransaction`. Probing for a column by
+    selecting it and then not rolling back would turn a missing footer link
+    into a missed send.
+    """
+    sql = "select email, name, unsubscribe_token from subscribers where status = 'active'"
+    try:
+        return conn.execute(sql).fetchall()
+    except Exception as exc:
+        if getattr(exc, "sqlstate", None) != UNDEFINED_COLUMN:
+            raise
+        conn.rollback()
+        print("subscribers.unsubscribe_token does not exist yet, so this "
+              "issue's footer carries the reply-to-unsubscribe mailto. Run "
+              "`modal run pipeline/db_setup.py` to apply db/schema.sql.")
+        return conn.execute(
+            "select email, name from subscribers where status = 'active'"
+        ).fetchall()
+
+
+def send_newsletter(conn, week: str, body: str, only: list[str] | None = None) -> str:
+    """Email the digest to active subscribers (friends-and-family phase).
+
+    Sends through the owner's Gmail via authenticated SMTP: at this scale
+    (<20 recipients) Gmail's own sender reputation is the deliverability
+    strategy, and no domain or email service is needed. Past ~20 subscribers
+    this graduates to SES + a purchased domain (docs/vision.md §4). The
+    unsubscribe endpoint that section also lists is no longer part of that
+    graduation: it exists on the site now, and every issue links to it. No-op until the `gmail` secret exists
+    (GMAIL_ADDRESS + GMAIL_APP_PASSWORD)."""
+    import os
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
+    addr = os.environ.get("GMAIL_ADDRESS", "").strip()
+    pw = os.environ.get("GMAIL_APP_PASSWORD", "").strip()
+    if not addr or not pw:
+        return "no gmail secret; email send skipped (digest is in the database)"
+    rows = active_recipients(conn)
+    if only:
+        # a resend to named subscribers only (a new signup, a bounced address);
+        # they must still be active rows, so the roll stays the one gate
+        wanted = {e.strip().lower() for e in only}
+        rows = [r for r in rows if r[0].lower() in wanted]
+    if not rows:
+        return "no active subscribers; nothing to send"
+
+    # The designed email, one render per recipient because the footer names
+    # the address it was sent to. Subject stays the issue's own editorial
+    # title, and the plain-text part stays the markdown body: a multipart
+    # alternative without a real text part is what filters read as spam.
+    # The previous issue's title, so a repeated title goes out with its dates
+    # on the subject line rather than as what looks like a duplicate send.
+    prior = conn.execute(
+        "select body from digests where week <> %s order by created_at desc limit 1",
+        (week,),
+    ).fetchone()
+    prior_subject = ""
+    if prior and prior[0].startswith("# "):
+        prior_subject = prior[0].split("\n", 1)[0][2:].strip()
+    messages = build_messages(week, body, rows, addr, prior_subject=prior_subject)
+
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
         smtp.login(addr, pw)
-        for email, name in rows:
+        for email, subject, text, html in messages:
             msg = MIMEMultipart("alternative")
-            # subject = the issue's editorial title (the digest's own H1);
-            # the W code is an internal id and never reader-facing
-            subject = f"alexandria digest — {key}"
-            if body.startswith("# "):
-                subject = body.split("\n", 1)[0][2:].strip()
             msg["Subject"] = subject
             msg["From"] = f"alexandria <{addr}>"
             msg["To"] = email
-            msg.attach(MIMEText(body, "plain"))
+            msg.attach(MIMEText(text, "plain"))
             msg.attach(MIMEText(html, "html"))
             smtp.sendmail(addr, [email], msg.as_string())
-    return f"sent {key} to {len(rows)} subscribers via Gmail"
+    return f"sent {week} to {len(rows)} subscribers via Gmail"
 
 
-# ---------------- issue keys ----------------
+def notify_owner(subject: str, detail: str) -> str:
+    """Tell the owner the press could not print, by email, immediately.
 
-# Both kinds share the digests table and its one unique key, so their key
-# formats must never collide. '2026-W38' and '2026-09-19' cannot, and the
-# `kind` column carries the distinction explicitly rather than leaving it to
-# whoever next reads a key and guesses.
+    Incident 24's real cost was not the 404. It was that the 404 was discovered
+    three days later, by the owner noticing her inbox was empty. A press that
+    fails silently has no failure mode the org can respond to, so every path
+    out of this run that ends without an issue goes through here first.
 
-def weekly_key(today: date) -> tuple[str, str]:
-    """Monday's run labels the ISO week that just ended (yesterday = Sunday)."""
-    y = today - timedelta(days=1)
-    key = f"{y.isocalendar().year}-W{y.isocalendar().week:02d}"
+    Same SMTP path the newsletter already uses, so it needs no new secret and
+    no new service. The alert goes to the owner's own Gmail address, the one
+    the `Gmail` secret provides, unless `PRESS_ALERT_TO` names another; a
+    self-addressed mail is the cheapest reliable channel we have.
+
+    Never raises. A failure to deliver the alarm must not replace the original
+    error with a different one, so this returns a status string and the caller
+    prints it.
+    """
+    import os
+    import smtplib
+    from email.mime.text import MIMEText
+
+    addr = os.environ.get("GMAIL_ADDRESS", "").strip()
+    pw = os.environ.get("GMAIL_APP_PASSWORD", "").strip()
+    to = os.environ.get("PRESS_ALERT_TO", "").strip() or addr
+    if not addr or not pw:
+        return ("NOT NOTIFIED: no gmail secret in this environment, so the "
+                "owner was not told. This is the incident 24 failure mode and "
+                "it is still open here.")
+    body = (
+        f"{detail}\n\n"
+        "-- \n"
+        "This is an automated alarm from alexandria's weekly press "
+        "(pipeline/weekly.py). It means no issue was written and nothing was "
+        "sent to subscribers.\n\n"
+        "What to check, in order:\n"
+        "  1. modal app logs alexandria-weekly\n"
+        "  2. https://platform.kimi.ai/docs/models and "
+        "https://console.groq.com/docs/models, against "
+        "pipeline/weekly.py FALLBACK_MODELS\n"
+        "  3. python3 pipeline/budget.py, which prints the arithmetic for "
+        "every fallback\n"
+    )
+    try:
+        msg = MIMEText(body, "plain")
+        msg["Subject"] = subject
+        msg["From"] = f"alexandria press <{addr}>"
+        msg["To"] = to
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+            smtp.login(addr, pw)
+            smtp.sendmail(addr, [to], msg.as_string())
+    except Exception as exc:
+        return f"NOT NOTIFIED: the alarm email itself failed ({exc})"
+    return f"owner notified at {to}: {subject}"
+
+
+# ---------------- the pre-send quality gate ----------------
+
+def gate_issue(body: str, label: str) -> tuple[int | None, str]:
+    """Read the issue against the quality tier before any reader does.
+
+    Returns the number of blocking findings and the instructions that would
+    correct them. `None` for the count means the gate itself could not run, and
+    the caller sends unchecked: an unsent newsletter is worse than an unchecked
+    one, and the standard this enforces (docs/product/digest-quality.md) says
+    so in its own words. The database keeps the body either way.
+
+    The finished body is what gets checked, masthead and all, because the
+    masthead ships with the issue and is part of what the reader gets.
+    """
+    try:
+        gate = quality()
+    except Exception as exc:
+        print(f"quality gate unavailable ({exc}); sending unchecked")
+        return None, ""
+
+    try:
+        findings = gate.check(body, "weekly")
+        print(gate.report(findings, label))
+        blocking = [f for f in findings if f.level == gate.BLOCK]
+        return len(blocking), gate.corrections(findings)
+    except Exception as exc:
+        print(f"quality gate failed to run ({exc}); sending unchecked")
+        return None, ""
+
+
+def hold_for_quality(body: str, model: str, label: str,
+                     rewrite=None) -> tuple[str, str, bool]:
+    """The gate's policy: which draft to keep, and whether it may be sent.
+
+    Returns the body to store, who wrote it, and whether the send goes ahead.
+    The order is deliberate:
+
+    1. Check the finished body, masthead and all.
+    2. On blocking findings, give the generator exactly one more try with the
+       findings as instructions. A model told what it broke usually fixes it,
+       and one extra call is cheap next to an issue that should not send.
+       `rewrite(instructions)` is the caller's closure over that call, because
+       finishing a draft means the same title and masthead work the first one
+       got and only the caller holds the arguments for it. `None` means no
+       second try is available, and then the first draft is the only draft.
+    3. Check the rewrite. Keep whichever draft has fewer blocking findings,
+       rather than whichever is newer: a rewrite that fixed nothing and broke
+       something else is the worse issue of the two.
+
+    A gate failure never costs the issue. An unwritten newsletter is worse
+    than an unchecked one, so every path where the gate cannot answer sends,
+    and the database keeps the body either way.
+    """
+    blocking, instructions = gate_issue(body, label)
+    if not blocking:
+        return body, model, True
+    if rewrite is None or not instructions:
+        return body, model, False
+
+    print("regenerating once with the gate's findings as instructions")
+    try:
+        second, second_model = rewrite(instructions)
+    except Exception as exc:
+        print(f"the gate's rewrite could not be written ({exc}); "
+              "keeping the first draft")
+        return body, model, False
+
+    again, _ = gate_issue(second, f"{label}, second draft")
+    if again is None:
+        # the gate answered the first draft and not the second. It has already
+        # said the first draft is wrong, so the one it could not read is the
+        # one with a chance of being right.
+        return second, second_model, True
+    if again == 0:
+        return second, second_model, True
+    if again <= blocking:
+        return second, second_model, False
+    return body, model, False
+
+
+def last_sunday(today: date) -> date:
+    """The most recent Sunday strictly before `today`.
+
+    One anchor for both halves of `week_just_ended`, which is the whole point.
+    The old code took two: yesterday for the week label and yesterday-minus-six
+    for the date range. On the Monday the cron runs those agree, because
+    yesterday is Sunday. On any other day they disagree, and the issue then
+    carries a week label and a date range describing different weeks.
+    """
+    # isoweekday(): Monday 1 ... Sunday 7. Monday is 1 day back, Tuesday 2,
+    # and Sunday is 7 rather than 0, because a Sunday run is reporting on the
+    # week that ended the Sunday before, not on the day it is standing in.
+    return today - timedelta(days=today.isoweekday())
+
+
+def week_just_ended(today: date | None = None) -> tuple[str, str]:
+    """The ISO week label and the reader-facing date range, as one answer.
+
+    Shared by `weekly` and `rehearse` rather than computed twice. The
+    rehearsal's whole claim is that it runs the real thing against the real
+    payload, and the week label is an input to that payload: a rehearsal that
+    labels its own week differently is rehearsing a different issue.
+
+    The week this returns is always a week that has finished. That used to be
+    true only on Mondays, and 2026-W38 is what the difference cost. The cron
+    did not fire on Monday 2026-09-21 (incident 24), the recovery run went out
+    on Wednesday 2026-09-23, and it labelled its issue 2026-W39 because
+    "yesterday" that day was a Tuesday inside the in-progress week. So the run
+    that existed to recover the missing week wrote under the *next* week's
+    label, W38 was skipped for good, and the following Monday's scheduled run
+    upserted over what the recovery had written. A press whose week label
+    depends on the day someone happens to run it cannot be backfilled.
+
+    `today` is injectable so the tests can stand on a Wednesday.
+    """
+    y = last_sunday(today or date.today())
+    week = f"{y.isocalendar().year}-W{y.isocalendar().week:02d}"
     monday = y - timedelta(days=6)
     if monday.month == y.month:
         dates = f"{monday.strftime('%B')} {monday.day}–{y.day}, {y.year}"
     else:
         dates = (f"{monday.strftime('%B')} {monday.day} – "
                  f"{y.strftime('%B')} {y.day}, {y.year}")
-    return key, dates
+    return week, dates
 
 
-def daily_key(today: date) -> tuple[str, str]:
-    """The daily covers the 24 hours ending at this 15:00 UTC run, which is
-    overwhelmingly today, so it is dated today."""
-    return today.isoformat(), f"{today.strftime('%B')} {today.day}, {today.year}"
+def payload_line(week: str, payload: dict) -> str:
+    """The one line the press prints about what it is writing from.
 
-
-def kind_for(today: date) -> str:
-    """Monday is the weekly synthesis. Every other day is the daily dispatch."""
-    return "weekly" if today.weekday() == 0 else "daily"
-
-
-# ---------------- the scheduled run ----------------
-
-def hold_for_quality(body: str, payload: dict, prompt: str, kind: str,
-                     model: str | None) -> tuple[str, bool]:
-    """Read the issue against the quality tier before anyone else reads it.
-
-    Returns the body to store and whether the send may go ahead. The order is
-    deliberate:
-
-    1. Check the finished body, masthead and all, because the masthead ships
-       with the issue and is part of what the reader gets.
-    2. On blocking findings, give the generator exactly one more try with the
-       findings as instructions. A model told what it broke usually fixes it,
-       and one extra call is cheap next to an issue that should not send.
-    3. Check again. If the rewrite is clean it goes out. If it is not, or if
-       the rewrite failed outright, the better of the two bodies is stored and
-       the send is held.
-
-    The empty issue and any body the model did not write skip the retry: there
-    is nothing to regenerate from.
-
-    A gate failure must never cost the issue. Every exception here is caught,
-    because an unwritten newsletter is worse than an unchecked one, and the
-    database keeps the body either way.
+    One function so the rehearsal's stats line and the scheduled run's stats
+    line cannot diverge. Comparing a rehearsal's output against Monday's logs
+    is the point of printing it at all, and two format strings would make that
+    comparison a reading exercise.
     """
-    try:
-        gate = quality()
-    except Exception as exc:
-        print(f"quality gate unavailable ({exc}); sending unchecked")
-        return body, True
+    return (f"{week}: {payload['stats']} | "
+            f"new_claims={len(payload['new_claims'])} "
+            f"deprecated={len(payload['deprecated'])}")
 
-    try:
-        findings = gate.check(body, kind)
-        print(gate.report(findings, f"{kind} issue"))
-        if not any(f.level == gate.BLOCK for f in findings):
-            return body, True
 
-        instructions = gate.corrections(findings)
-        if model is None or not instructions:
-            return body, False
+def payload_counts(payload: dict) -> dict:
+    """What went into the issue, as numbers, for the rehearsal's scratch row.
 
-        print("regenerating once with the gate's findings as instructions")
-        second = add_masthead(
-            write_digest(payload, prompt, kind, corrections="\n\n" + instructions), kind)
-        again = gate.check(second, kind)
-        print(gate.report(again, f"{kind} issue, second draft"))
-        if not any(f.level == gate.BLOCK for f in again):
-            return second, True
-        # both drafts are blocked; keep the one with fewer blocking findings
-        worse = sum(1 for f in findings if f.level == gate.BLOCK)
-        better = sum(1 for f in again if f.level == gate.BLOCK)
-        return (second, False) if better <= worse else (body, False)
-    except Exception as exc:
-        print(f"quality gate failed to run ({exc}); sending unchecked")
-        return body, True
+    The body alone does not say whether a thin issue was a thin week or a
+    trimmed payload. These counts do, and they are what a second rehearsal is
+    compared against when a prompt change makes the issue shorter.
+    """
+    traction = payload.get("traction") or {}
+    return {
+        "stats": payload.get("stats"),
+        "new_claims": len(payload.get("new_claims") or []),
+        "superseded": len(payload.get("superseded") or []),
+        "deprecated": len(payload.get("deprecated") or []),
+        "deep_reads": len(payload.get("deep_reads") or []),
+        "supported_claims": len(traction.get("supported_claims") or []),
+        "citation_movers": len(traction.get("citation_movers") or []),
+    }
+
+
+def word_count(body: str) -> int:
+    """Words a reader would count, not tokens a splitter would.
+
+    `len(body.split())` counts every `#`, `-` and `**` as a word, which
+    inflates a markdown issue by the size of its own formatting. The rehearsal
+    prints this number next to the model that wrote it, and a number that
+    moves when the formatting changes is a number nobody can compare across
+    two rehearsals.
+    """
+    return sum(1 for token in body.split() if any(c.isalnum() for c in token))
+
+
+def _gate_line(blocking: int | None) -> str:
+    """One phrase for the rehearsal report, in words rather than a number."""
+    if blocking is None:
+        return "not read (the gate could not run, so the press would send unchecked)"
+    if blocking == 0:
+        return "clean, so this issue would send"
+    return (f"{blocking} blocking finding(s), so this issue would be held and "
+            "not emailed")
+
+
+def rehearsal_report(*, model: str, body: str, prompt_sha: str,
+                     stats_line: str, finish_reason, elapsed_seconds,
+                     row_id, success_subject: str,
+                     blocking: int | None = None) -> str:
+    """The verbatim block a rehearsal prints. Pure, so a test can read it.
+
+    Incident 8 is the standing reason this is verbatim output and not a
+    summary: judge a run by its artifacts, never by its conclusion. Every line
+    here is one of the four failures of
+    INC-2026-09-24-press-provider-migration made visible before a deploy
+    rather than after one.
+    """
+    elapsed = "unknown" if elapsed_seconds is None else f"{elapsed_seconds}s"
+    return "\n".join([
+        f"rehearsal: {model} wrote {word_count(body)} words in {elapsed}",
+        f"  prompt_sha: {prompt_sha}   reservation: {MAX_COMPLETION_TOKENS}"
+        f"   timeout: {CLIENT_TIMEOUT_SECONDS}s",
+        f"  payload: {stats_line}",
+        f"  finish_reason: {finish_reason!r}",
+        f"  saved to press_rehearsals id {row_id}",
+        # The pre-send gate's verdict on the rehearsal's own body. A rehearsal
+        # exists to make the next print's behaviour visible before it reaches a
+        # reader, and from now on that behaviour includes being held: an issue
+        # with blocking findings does not send, so a rehearsal that did not say
+        # so would be a rehearsal of a different run.
+        f"  quality gate: {_gate_line(blocking)}",
+        f"  subject it would have sent:      {success_subject}",
+        f"  subject if it could not print:   {ALARM_SUBJECT_CANNOT_PRINT}",
+        f"  subject if the send then failed: {ALARM_SUBJECT_NOT_SENT}",
+        "  first 400 characters of the body:",
+        "\n".join("  " + line for line in body[:400].split("\n")),
+    ])
 
 
 @app.function(
-    # Every day at 15:00 UTC, after the four daily crons (ingest 11:00,
-    # distill 11:30, triage 12:00, interpret 14:00) have finished the day's
-    # pipeline. Monday's run is the weekly; the rest are dailies.
-    schedule=modal.Cron("0 15 * * *"),
-    secrets=[modal.Secret.from_name("neon"), modal.Secret.from_name("groq"),
+    # Both providers, because preflight's whole job is to ask each of them
+    # whether the models named in FALLBACK_MODELS still exist. Values are never
+    # read by this seat; only the names appear in the repository.
+    secrets=[modal.Secret.from_name("moonshot"), modal.Secret.from_name("groq")],
+    timeout=300,
+)
+def preflight() -> str:
+    """Can the press print at all? Run this before every deploy.
+
+    `modal deploy` does not run a local entrypoint, so without this function
+    nothing checks the provider between one Monday and the next. It needs the
+    real key, which only exists inside Modal, which is why it is a deployed
+    function rather than a local script.
+
+    Loud on purpose: it raises, so a failed preflight stops the chair's deploy
+    command at the `&&`. No email here, because a human is watching a deploy;
+    the emailing path is the scheduled run, where nobody is.
+    """
+    guard = budget()
+    available = check_availability()
+    prompt = open("/root/prompts/digest.md").read()
+    short_prompt = open("/root/prompts/digest-short.md").read()
+    payload_json = guard.encode(guard.worst_case_payload())
+    choice = guard.choose_model(FALLBACK_MODELS, available, prompt,
+                                payload_json, MAX_COMPLETION_TOKENS)
+    print("preflight, worst-case payload:")
+    print(choice.summary())
+    if choice.model:
+        print(f"  cost at list price, worst case: ${choice.report.cost:.4f} "
+              "an issue")
+        return f"preflight ok: {choice.model} would write the issue"
+
+    # The full issue has nowhere to go. Before 2026-10-12 this raised, and
+    # raising was the whole answer: the chain stopped at the second `&&` and the
+    # press was not deployed. That is right when the press has nothing to print
+    # and wrong the moment it does, because the gate was then refusing to deploy
+    # the degraded path on the exact day the degraded path is what runs.
+    print("no model can take the FULL issue. Asking the short edition:")
+    short = [m for m in FALLBACK_MODELS
+             if (available is None or m in available)
+             and m in guard.MODELS
+             and guard.short_issue_room(m, short_prompt).fits]
+    for model in FALLBACK_MODELS:
+        if model in guard.MODELS:
+            print(f"  {guard.short_issue_room(model, short_prompt).summary()}")
+    if not short:
+        raise PressCannotPrint(
+            "preflight: no model in the fallback list can write this issue, "
+            "and none can write the short edition either, so a deploy today "
+            "installs a press that prints nothing.\n" + choice.summary()
+        )
+    return (f"preflight ok on the degraded path: no model can take the full "
+            f"issue, and {short[0]} would write the short edition. The reader "
+            f"gets an issue and it says it is short. Fix the head of the list.")
+
+
+@app.function(
+    # Monday 09:00 UTC. Moved from 15:00 on 2026-09-24, and it stays at 09:00
+    # now that the press writes on Moonshot, for a different and better reason.
+    #
+    # The original reason was contention: the press shared one Groq key, and
+    # therefore one 8,000-token-per-minute budget, with four daily crons, and
+    # Groq applies rate limits "at the organization level, not individual
+    # users". ADR-32 ends that argument. The press has its own provider and its
+    # own prepaid account, so it no longer competes with triage, distill or
+    # interpret for anything. The Groq fallbacks still would, which is one more
+    # reason for the press to keep out of the 11:00-to-16:30 band the daily
+    # crons occupy (11:00 ingest, 12:00 triage, 14:00 interpret, 15:00 distill
+    # with a 90-minute timeout, the rest with an hour).
+    #
+    # The reason to keep 09:00 is editorial. The issue covers the week that
+    # ended Sunday, so Monday's own ingest is not in it, and 09:00 UTC is 5am
+    # in New York, which puts the issue in a reader's inbox before the working
+    # day rather than in the middle of it.
+    #
+    # Runtime change under docs/agents/runtime-changes.md. Its smoke test is
+    # the deploy command in this module's docstring: preflight, then one manual
+    # `modal run`, then the deploy that installs this schedule. The next cron
+    # is not the first execution of this machinery.
+    schedule=modal.Cron("0 9 * * 1"),
+    secrets=[modal.Secret.from_name("neon"),
+             # ADR-32: the press writes on Kimi. `moonshot` holds
+             # MOONSHOT_API_KEY and the chair creates it from the owner's key.
+             modal.Secret.from_name("moonshot"), modal.Secret.from_name("groq"),
              modal.Secret.from_name("Gmail"), modal.Secret.from_name("gmail_pass")],
     timeout=1800,
 )
-def digest(kind: str = "") -> str:
+def weekly() -> str:
     import os
 
     import psycopg
 
-    today = date.today()
-    kind = kind or kind_for(today)
-    if kind not in MASTHEAD:
-        # a typo in a manual --kind would otherwise fall through to the daily
-        # branch and quietly write the wrong issue under the wrong key
-        raise ValueError(f"kind must be 'weekly' or 'daily', got {kind!r}")
-    if kind == "weekly":
-        key, dates = weekly_key(today)
-        prompt_path = "/root/prompts/digest.md"
-    else:
-        key, dates = daily_key(today)
-        prompt_path = "/root/prompts/daily.md"
-    prompt = open(prompt_path).read()
-    sha = hashlib.sha256(prompt.encode()).hexdigest()[:12]
+    week, dates = week_just_ended()
+    prompt = open("/root/prompts/digest.md").read()
+    short_prompt = open("/root/prompts/digest-short.md").read()
+    # Which prompt wrote the issue is not known until the walk is over, so the
+    # sha is taken from whichever one did. A row that says `digest.md` for an
+    # issue the short edition wrote would be a record of record that is wrong
+    # about the one fact it exists to hold.
+    shas = {EDITION_FULL: hashlib.sha256(prompt.encode()).hexdigest()[:12],
+            EDITION_SHORT: hashlib.sha256(
+                short_prompt.encode()).hexdigest()[:12]}
+    sha = shas[EDITION_FULL]
 
-    with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
-        if kind == "weekly":
-            # the slow loop feeds the weekly's traction section, so it runs
-            # with it and only with it
+    try:
+        # Run-start availability check, before a single token is spent and
+        # before the citation pass burns twenty minutes writing nothing.
+        # Incident 24: the budget guard proved the request fit a model that no
+        # longer existed.
+        available = check_availability()
+
+        with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+            # Guardrail, sprint 2026-09-28 item 2: say what this container is
+            # actually running before anything else happens. It cannot raise and
+            # cannot abort this transaction; pipeline/runtime_sha.py says how.
+            print(runtime_guard().record_runtime(conn, "weekly", __file__)[1])
             try:
                 check_citations(conn)
             except Exception as exc:
-                print(f"citation check failed ({exc}); digest proceeds without fresh citations")
+                print(f"citation check failed ({exc}); digest proceeds without "
+                      "fresh citations")
             payload = gather(conn)
-        else:
-            payload = gather_daily(conn)
-        payload["dates"] = dates
-        payload["week" if kind == "weekly" else "date"] = key
-        print(f"{kind} {key}: {payload['stats']} | new_claims={len(payload['new_claims'])} "
-              f"deprecated={len(payload['deprecated'])}")
+            payload["week"] = week
+            payload["dates"] = dates
+            # Titles already used, so the generator and the guard below can
+            # keep this issue's title new. Owner, 2026-10-04: two issues
+            # should never have the same title.
+            prior_titles = [
+                r[0].split("\n", 1)[0][2:].strip()
+                for r in conn.execute(
+                    "select body from digests where week <> %s "
+                    "order by created_at desc limit 24", (week,)
+                ).fetchall()
+                if r[0].startswith("# ")
+            ]
+            payload["prior_titles"] = prior_titles
+            print(payload_line(week, payload))
+        # The read connection closes here, on purpose. Kimi reasons for
+        # minutes before it writes, and Neon terminates a connection left
+        # idle inside a transaction (IdleInTransactionSessionTimeout,
+        # 2026-09-24: the issue was written and could not be saved). The
+        # model call runs with no connection open; a fresh one saves and sends.
+        body, model, edition = print_issue(payload, prompt, short_prompt,
+                                           available)
+        sha = shas[edition]
+        body = ensure_fresh_title(body, prior_titles, model, dates)
+        body = add_masthead(body, edition)
 
-        if kind == "daily" and daily_is_empty(payload):
-            # nothing to write about, so nothing is written about it
-            print("no new evidence in the last 24 hours; sending the one-line issue")
-            body = empty_issue(dates)
-            model = None
-        else:
-            body = write_digest(payload, prompt, kind)
-            model = MODEL
-        body = add_masthead(body, kind)
-        body, cleared = hold_for_quality(body, payload, prompt, kind, model)
+        # The pre-send gate. ADR-28 carded it to this seat and deferred it
+        # once; docs/product/digest-quality.md is the tier it reads against.
+        def rewrite(instructions: str) -> tuple[str, str]:
+            """The second draft, finished exactly as the first one was."""
+            second, second_model = write_digest(
+                payload, prompt, available,
+                corrections="\n\n" + instructions)
+            second = ensure_fresh_title(second, prior_titles, second_model,
+                                        dates)
+            return add_masthead(second, edition), second_model
 
-        conn.execute(
-            """
-            insert into digests (week, kind, body, model, prompt_sha)
-            values (%s, %s, %s, %s, %s)
-            on conflict (week) do update
-                set kind = excluded.kind, body = excluded.body,
-                    model = excluded.model, prompt_sha = excluded.prompt_sha,
-                    created_at = now()
-            """,
-            (key, kind, body, model, sha),
-        )
-        conn.commit()
-        if not cleared:
-            # the issue is in the database, where the owner and the writer seat
-            # can read it, and it is not in anyone's inbox
-            print(f"{kind} {key} held: the pre-send gate has blocking findings "
-                  "and the email was not sent. The body is in the digests table.")
-            return body
-        try:
-            print(send_newsletter(conn, key, body))
-        except Exception as exc:
-            # the digests table is the record of record; a send failure must
-            # never fail the run
-            print(f"newsletter send failed ({exc}); digest is safe in the database")
+        # The short edition is not offered the retry. It is already the
+        # degraded print, the owner is already being told so below, and asking
+        # the same list again is how incident 24 spent twenty minutes.
+        body, model, cleared = hold_for_quality(
+            body, model, f"{week} issue",
+            rewrite=rewrite if edition == EDITION_FULL else None)
+        held = not cleared
+
+        with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+            conn.execute(
+                """
+                insert into digests (week, body, model, prompt_sha)
+                values (%s, %s, %s, %s)
+                on conflict (week) do update
+                    set body = excluded.body, model = excluded.model,
+                        prompt_sha = excluded.prompt_sha, created_at = now()
+                """,
+                (week, body, model, sha),
+            )
+            conn.commit()
+            if edition == EDITION_SHORT:
+                # Not a failure, so it does not raise, and not a success worth
+                # passing over either. DoD clause 4 of sprint 2026-10-05 wants a
+                # failed step to reach somebody, and a degraded print is the
+                # case between the two: the reader got an issue and the press is
+                # still running on the wrong engine.
+                print(notify_owner(
+                    ALARM_SUBJECT_SHORT_EDITION,
+                    f"The {week} issue went out as the short edition, written "
+                    f"by {model} at prompt {sha}.\n\n"
+                    "That means no model in the press's list could take the "
+                    "full issue, which in practice means the primary did not "
+                    "answer. The reader got an issue and it says it is short. "
+                    "What needs fixing is the head of the list, and "
+                    "`python3 pipeline/budget.py` prints the arithmetic."))
+            if held:
+                # The issue is in the database, where the owner and the writer
+                # seat can read it, and it is in nobody's inbox. It is still on
+                # the site, because the site reads this table and nothing in it
+                # says "held" yet; that half of the hold is carded in
+                # docs/ideas.md and named in docs/product/digest-quality.md.
+                print(f"{week} held: the pre-send gate found blocking "
+                      "problems it could not get fixed, and the email was not "
+                      "sent. The body is in the digests table.")
+                print(notify_owner(
+                    ALARM_SUBJECT_HELD,
+                    f"The {week} issue was written by {model} and then held by "
+                    "the pre-send quality gate, which found blocking problems "
+                    "in it and could not get them fixed in one rewrite.\n\n"
+                    "Nobody has been emailed. The issue is in the digests "
+                    "table and readable on the site, so nothing is lost, and "
+                    "the run's log prints every finding with the line it came "
+                    "from.\n\n"
+                    "What needs a decision is the issue itself: send it as it "
+                    "is with `resend`, or let the prompt take the correction "
+                    "and let next week's print be the fix."))
+                return body
+            try:
+                print(send_newsletter(conn, week, body))
+            except Exception as exc:
+                # the digests table is the record of record, so a send failure
+                # must never fail the run. It must still be loud: an issue
+                # written and never delivered is the same silence to a reader
+                # as an issue never written.
+                print(f"newsletter send failed ({exc}); digest is safe in the "
+                      "database")
+                print(notify_owner(
+                    ALARM_SUBJECT_NOT_SENT,
+                    f"The {week} issue is in the digests table and on the site, "
+                    f"but the email send failed:\n\n{exc}\n\n"
+                    f"It was written by {model}, so nothing needs rewriting. "
+                    "The send is the part that needs retrying."))
+    except Exception as exc:
+        # Every path out of this run that ends without an issue comes through
+        # here. This is incident 24's standing fix: the discovery must never
+        # again be the owner's inbox being empty.
+        print(f"PRESS FAILED: {exc}")
+        print(notify_owner(
+            ALARM_SUBJECT_CANNOT_PRINT,
+            f"The weekly press failed and no issue was written for {week}.\n\n"
+            f"{type(exc).__name__}: {exc}"))
+        raise
     return body
 
 
+@app.function(
+    # Neon and both model providers, and deliberately no Gmail secret. A
+    # rehearsal must not be able to mail anybody, and the strongest form of
+    # that promise is not a missing function call but a missing credential:
+    # `send_newsletter` in this container would find no address and no
+    # password and return "email send skipped" even if some future edit
+    # called it by mistake. The guarantee then holds at the reliability of
+    # Modal's secret mounting rather than at the reliability of code review.
+    secrets=[modal.Secret.from_name("neon"),
+             modal.Secret.from_name("moonshot"), modal.Secret.from_name("groq")],
+    timeout=1800,
+)
+def rehearse(allow_fallback: bool = False) -> str:
+    """One real print, to a scratch row, to nobody. The third gate.
+
+    `docs/agents/runtime-changes.md` gives a provider or model change three
+    gates before `modal deploy`, and this is the third. The first asks whether
+    the request fits and the second asks whether the model exists. Both are
+    questions about the request. This one is the only one that exercises the
+    provider, and every one of the four failures of
+    INC-2026-09-24-press-provider-migration was on this question.
+
+        modal run pipeline/weekly.py::rehearse
+        modal run pipeline/weekly.py::rehearse --allow-fallback
+
+    It is `weekly()` with two differences and no others. It writes to
+    `press_rehearsals` rather than `digests`, so it cannot overwrite a
+    published week even by accident, and it sends nothing, printing instead
+    every subject line the run would have produced on the success path and on
+    the alarm path both. Failure 4 was an alarm subject, and an alarm subject
+    is only visible to a rehearsal that renders it.
+
+    Everything else is the real thing, and that is the part worth being
+    stubborn about: the real prompt, the real payload from `gather()` against
+    the real database, the real provider and key, the real reservation, the
+    real client timeout, and the real open-and-close sequence around the model
+    call. Three of the four failures were in that list. A rehearsal that mocks
+    the provider tests the mock.
+
+    It raises on any failure, the way `preflight` does, so the chair's `&&`
+    chain stops before the deploy. No email: a human is watching a rehearsal
+    by definition, and the emailing path belongs to the scheduled run where
+    nobody is.
+
+    `--allow-fallback` is the hatch for the day the head of the list is itself
+    what is broken and the change in the image is the degraded path the outage
+    needs. `budget.head_receipt` holds the argument and the morning that proved
+    it. With the hatch open the rehearsal prints whatever edition the press
+    would actually print, which on that day is the short one, and the receipt
+    row carries the short prompt's sha so it is a receipt for what ran rather
+    than for what was hoped.
+    """
+    import json
+    import os
+
+    import psycopg
+
+    week, dates = week_just_ended()
+    prompt = open("/root/prompts/digest.md").read()
+    short_prompt = open("/root/prompts/digest-short.md").read()
+    shas = {EDITION_FULL: hashlib.sha256(prompt.encode()).hexdigest()[:12],
+            EDITION_SHORT: hashlib.sha256(
+                short_prompt.encode()).hexdigest()[:12]}
+    sha = shas[EDITION_FULL]
+
+    available = check_availability()
+
+    with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        # Before anything is spent. A rehearsal that writes no receipt is not
+        # a rehearsal, and finding that out after the model call means paying
+        # for an issue with nowhere to put it. The table is in db/schema.sql
+        # and `create table if not exists` makes applying it safe at any time,
+        # so the remedy is one idempotent command and this says which one.
+        if conn.execute("select to_regclass('public.press_rehearsals')"
+                        ).fetchone()[0] is None:
+            raise PressCannotPrint(
+                "there is no press_rehearsals table in this database, so a "
+                "rehearsal has nowhere to write its receipt. It is in "
+                "db/schema.sql, and this command applies it:\n"
+                "    modal run pipeline/db_setup.py::apply_schema\n"
+                "Nothing was spent."
+            )
+        payload = gather(conn)
+        payload["week"] = week
+        payload["dates"] = dates
+        stats_line = payload_line(week, payload)
+        print(stats_line)
+    # The read connection closes before the model call, exactly as `weekly`
+    # closes it. Failure 3 was a transaction held open across a multi-minute
+    # call, and a rehearsal that simplifies the connection handling away
+    # cannot find failure 3 again.
+
+    trace: dict = {}
+    body, model, edition = print_issue(payload, prompt, short_prompt,
+                                       available, trace)
+    sha = shas[edition]
+    body = add_masthead(body, edition)
+
+    with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        row_id = conn.execute(
+            """
+            insert into press_rehearsals
+                (week, body, model, prompt_sha, elapsed_seconds,
+                 finish_reason, payload_stats)
+            values (%s, %s, %s, %s, %s, %s, %s::jsonb)
+            returning id
+            """,
+            (week, body, model, sha, trace.get("elapsed_seconds"),
+             trace.get("finish_reason"), json.dumps(payload_counts(payload))),
+        ).fetchone()[0]
+        conn.commit()
+        receipt = conn.execute(
+            "select model, prompt_sha from press_rehearsals where id = %s",
+            (row_id,),
+        ).fetchone()
+
+    # Read the rehearsal's own body against the tier. This prints every
+    # finding, and it neither sends nor alarms, which is what a rehearsal is
+    # allowed to do.
+    rehearsal_blocking, _ = gate_issue(body, f"{week} rehearsal")
+
+    print(rehearsal_report(
+        model=model, body=body, prompt_sha=sha, stats_line=stats_line,
+        finish_reason=trace.get("finish_reason"),
+        elapsed_seconds=trace.get("elapsed_seconds"), row_id=row_id,
+        success_subject=email_render().subject_for(body),
+        blocking=rehearsal_blocking,
+    ))
+    if trace.get("usage"):
+        print(f"  usage as the provider reported it: {trace['usage']}")
+
+    # The receipt, which is what makes this a gate rather than advice. The row
+    # is written first and unconditionally, because a rehearsal that printed
+    # the wrong thing is still evidence and deleting it would be deleting the
+    # finding. What is conditional is calling the run a success.
+    # The head, and the hatch, AFTER the row. The row is written first and
+    # unconditionally for the reason the comment above gives, and that ordering
+    # is held by tests/test_press_rehearsal.py: a rehearsal that printed the
+    # wrong thing is still evidence, so the refusal must never be what stops the
+    # evidence from existing.
+    if edition == EDITION_SHORT:
+        print(f"  EDITION: short, at prompt {sha}. The full issue fits no "
+              "model in this list today, so this is what Monday would print.")
+    refusal, forgiven = budget().head_receipt(
+        model, FALLBACK_MODELS, allow_fallback,
+        gate="pipeline/weekly.py::rehearse")
+    if refusal:
+        raise PressCannotPrint(refusal)
+    if forgiven:
+        print(forgiven)
+
+    # And then that the ROW holds the pair the print actually produced, because
+    # a receipt is only evidence if it is a receipt for the print that happened.
+    expected = (model, sha)
+    got = tuple(receipt) if receipt else (None, None)
+    if got != expected:
+        raise PressCannotPrint(
+            "the rehearsal wrote a row, but not a receipt for the print it "
+            "just made.\n"
+            f"  row {row_id}: model {got[0]!r}, prompt_sha {got[1]!r}\n"
+            f"  printed by:  model {expected[0]!r}, prompt_sha {expected[1]!r}\n"
+            "A row that disagrees with the run that wrote it is not evidence "
+            "of anything. The write itself is what to look at."
+        )
+    return (f"rehearsal ok: {model} printed {word_count(body)} words of the "
+            f"{edition} edition for {week} at prompt {sha}, saved to "
+            f"press_rehearsals {row_id}, sent to nobody")
+
+
+@app.function(
+    image=image,
+    secrets=[modal.Secret.from_name("neon"),
+             modal.Secret.from_name("Gmail"), modal.Secret.from_name("gmail_pass")],
+    timeout=600,
+)
+def resend(week: str, only: str = "") -> str:
+    """Send an issue that is already in the digests table, to active subscribers.
+
+    No model call, no new row. This exists for two cases the press meets in
+    practice: a send that failed after the issue was written (the alarm
+    "written but not sent"), and a change to the email itself (the template,
+    2026-09-24) that the owner wants to see on an issue that already went out.
+
+        modal run pipeline/weekly.py::resend --week 2026-W39
+        modal run pipeline/weekly.py::resend --week 2026-W39 --only a@x.com,b@y.org
+    """
+    import os
+    import psycopg
+
+    with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        row = conn.execute(
+            "select body from digests where week = %s", (week,)
+        ).fetchone()
+        if row is None:
+            return f"no issue in the digests table for {week}; nothing sent"
+        return send_newsletter(conn, week, row[0],
+                               only=[e for e in only.split(",") if e.strip()])
+
+
 @app.local_entrypoint()
-def main(kind: str = ""):
-    """`modal run pipeline/weekly.py` writes today's kind; pass --kind daily or
-    --kind weekly to force one."""
-    # The budget check runs here, before anything is spent, because `modal run`
-    # is how a human starts this press by hand and how the chair will start it
-    # after an editorial merge. It is the same check CI runs
-    # (.github/workflows-pending/checks.yml) and the same one the container
-    # runs before it calls Groq. Incident 22 is the reason it runs three times.
+def main():
+    # Two checks before anything is spent, in this order, because they fail for
+    # different reasons and the operator needs to know which one bit.
+    #
+    # 1. The budget: does the request fit? Incident 22. Runs locally, needs no
+    #    key, and is the same check CI runs
+    #    (.github/workflows-pending/checks.yml).
+    # 2. Availability: does the model exist? Incident 24. Needs the real key,
+    #    so it runs inside Modal via preflight.
     if budget().main() != 0:
         raise SystemExit(
-            "budget check failed; the request would not fit the model and no "
-            "issue would be written. Nothing was run."
+            "budget check failed; the request would not fit any model in the "
+            "fallback list and no issue would be written. Nothing was run."
         )
-    body = digest.remote(kind)
+    print(preflight.remote())
+    body = weekly.remote()
     print("\n" + body)

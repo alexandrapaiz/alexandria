@@ -1,104 +1,143 @@
 # Reddit — subreddit drafts (launch day, 2026-10-13)
 
-Venue read: subreddit self-promotion tolerance is sub-specific and
-changes without notice — sales can't verify current moderator rules or
-flair requirements same-day. **Check each sub's current self-promo
-rule and required flair immediately before posting**, not from this
-file's assumptions. Post a day apart rather than all at once so one
-takedown doesn't cost the whole run.
+Rewritten 2026-09-30. The 2026-09-18 version said one skill was live, and it
+used em dashes and a middle-dot separator inside the post bodies, which are
+banned characters in reader-facing copy. Numbers verified against
+`../claim-ledger.md`.
 
-Three subs chosen for genuine audience fit, not reach:
+## Venue read, and the one thing this file cannot do for her
+
+Self-promotion tolerance is specific to each subreddit and changes without
+notice, and this seat cannot verify a current rule or a required flair. **Read
+each subreddit's current self-promotion rule and flair requirement immediately
+before posting.** Do not take it from this file.
+
+Post a day apart rather than all at once, so that one removal does not cost the
+whole set. Three subreddits, chosen for audience fit rather than size.
+
+A Reddit post that reads as a press release gets removed by a human moderator
+who has seen a thousand of them. Every draft below is written as a builder
+describing what they measured, because that is the only register this venue
+does not reject on sight, and it also happens to be the truth.
 
 ## r/ClaudeAI
 
-Fit: audience already uses Claude Agent Skills directly — the exact
-buyer for "skills with receipts."
+Fit: this audience already writes and loads skill files, so the trigger
+reliability number is a problem they have personally had.
 
 ```
-Title: Built a skill-authoring pipeline that attaches evidence to
-every Claude skill (claims, papers, a dated A/B test)
+Title: I measured whether my six Claude skills actually get picked, and
+published the three that failed
 
-Every Claude skill I've seen ships as instructions with no way to
-check if they're any good — a recent audit of 216 public skills found
-69% "won't reliably trigger." I got tired of guessing, so I built a
-pipeline that reads AI research daily and only promotes a skill to
-"done" once it has a provenance block: the specific claims it rests
-on, the papers behind them, and a recorded before/after test (did
-loading the skill actually change what the model recommended).
+An audit of 216 public Claude Code skills reported last month that 69 percent
+of them would not reliably trigger, and that matched my own experience of
+writing skills and then watching the model ignore them.
 
-One skill live so far — skills/harness-engineering in the repo below,
-frontmatter has all of it. More coming out of the pipeline weekly.
-Repo's public, pipeline's public, feedback welcome, especially "this
-provenance format is still not enough because ___."
+So I built a trigger test for my own library. Six skills, 43 cases, eight decoy
+skills to catch false positives, and the scoring rule written down before the
+run rather than after it. Positives are cases where a skill should fire,
+negatives are cases where every skill should stay quiet, and confusion cases are
+where two skills are plausible and only one is right.
+
+Result was 40 of 43, reliability 0.93 with a 95 percent interval from 0.81 to
+0.99. The three failures are in the output with their prompts and their scores,
+which is the part I actually want feedback on. Two were negatives where a skill
+fired on a question about serving and GPU memory that no skill should have
+touched, and one was a confusion case where the wrong one of two related skills
+won.
+
+The test and the results are in the repo under skills/_validation/. I am not
+claiming my number beats the 69 percent audit, because the two were not
+measured with the same instrument and pretending otherwise would be the kind of
+thing this whole exercise is against.
 
 github.com/alexandrapaiz/alexandria
 ```
 
 ## r/AI_Agents
 
-Fit: agent builders who evaluate orchestration technique claims
-directly — the exact audience the claim graph and harness-engineering
-skill serve.
+Fit: people who evaluate orchestration claims for a living and are the audience
+for the record of what stopped being true.
 
 ```
-Title: A claim graph for agent-orchestration research (supports/
-contradicts edges, not just a link dump)
+Title: A record of which agent-research claims later got contradicted, rather
+than another list of new papers
 
-If you build multi-agent systems you've probably run into the same
-problem I did: research on harness design, orchestration patterns,
-context engineering moves fast, contradicts itself constantly, and
-there's no maintained record of what's actually held up versus what
-got walked back.
+The thing that has cost me the most time building agents is not missing a new
+technique. It is continuing to rely on one that quietly stopped being the right
+answer several months ago, because the post that recommended it is still the
+top result and nothing ever goes back to correct it.
 
-I built a pipeline that ingests arXiv + lab blogs daily, distills
-claims, and tracks supports/contradicts edges between them over time,
-plus a weekly digest of what's trailblazing, what's matured, and
-what's been left behind. The claims that hold up long enough turn into
-Claude skills with the evidence attached — the harness-engineering one
-in the repo is the first example (12 claims, 5 papers, a dated A/B
-result in the frontmatter).
+So the project I have been running keeps the correction instead of the summary.
+Findings from papers get recorded as individual claims, and when later work
+supports or contradicts one, that becomes an edge rather than a new post. What
+it is for is answering how solid a finding is before you build on it.
 
-Digest is free. The skills/claim-graph/automation layer is $20/mo,
-launched today. Repo's open if you just want to see the pipeline:
+Six skill files come out of it so far, one per subject area, and each one lists
+the papers behind it with links to the full text. A trigger test on 2026-09-29
+scored 40 of 43 on whether the right file gets picked and the wrong ones stay
+quiet, with the failures published.
+
+Happy to be told the record is too thin to be useful yet. It reads a lot of
+research and has read a much smaller amount of it in full, and I would rather
+hear that objection than have it politely not raised.
 
 github.com/alexandrapaiz/alexandria
 ```
 
 ## r/SideProject
 
-Fit: this sub explicitly welcomes launch posts and rewards an
-authentic build story over a polished pitch — the "an agent org chart
-runs this" angle is exactly the kind of unusual build story that does
-well here.
+Fit: builders who will find the agent-run organisation interesting on its own
+terms, and who are the most forgiving audience for a thin product honestly
+described.
 
 ```
-Title: Launched today: a research pipeline where most of the "team" is
-autonomous agents, each one's decisions logged in public
+Title: My side project is run by about a dozen AI agents with written job
+descriptions, and every one of their failures is public
 
-Wanted to share something a little unusual. alexandria reads AI
-research daily and turns findings that hold up into free digests and
-paid Claude skills (each one citing its sources). Nothing novel about
-that shape on its own.
+Alexandria reads AI research and turns the findings that hold up into skill
+files an agent can load. That is the product. The part people usually ask about
+is how it is built.
 
-What's a little different: most of the day-to-day running of the
-project — research, drafting, proposing changes — is done by
-autonomous agents, each with a written charter, each opening pull
-requests against a public repo. I (the actual human) review and merge,
-or don't. Every decision the project's made, including the ones that
-didn't work, is logged in the open as a dated ADR, not cleaned up
-after the fact.
+There are around a dozen agents, each with a written charter in the repository
+that says what it owns and what it is not allowed to do. Each one opens pull
+requests and I merge them or I do not. On one morning last week there were
+sixteen open at the same time.
 
-This launch post itself was drafted by the "sales agent," under a
-charter that says, verbatim, "you prepare, I send." I'm sending it.
+The part I did not expect to be the most interesting is the failure register.
+When one of them breaks something, the fix includes writing down what happened,
+numbered and dated, and that file is now the longest document in the project. It
+is public. This post was drafted by the agent whose charter says it prepares and
+I send, and it has never posted anything anywhere.
 
-Free digest, $20/mo for the operational layer (skills + claim graph +
-automations), one skill live so far with more shipping weekly. Happy
-to answer anything about how the agent org actually works day to day.
+Where it actually is: six skills live, one issue in the archive, and
+subscriptions opening today. The digest is free and the library is $20 a month.
 
-github.com/alexandrapaiz/alexandria · [SITE_URL]
+github.com/alexandrapaiz/alexandria
 ```
 
-**Common instruction across all three:** no crossposting the identical
-text to all subs same-hour — reddit's spam detection and several
-communities' cultures both penalize that. Space by at least a day and
-let the copy above be the message, not a mechanical duplicate.
+## Never in any of these
+
+No subscriber count and nothing that implies one. No claim that our trigger
+number beats the published audit's number. No paper count with the verb "read"
+attached unless it is the full-read count beside the arriving count. No cropped
+screenshot of a result with the failures cut out of it. Plain ASCII throughout,
+including the separator between two links, which is a comma or a new line and
+never a middle dot.
+
+## If the checkout has not landed by 2026-10-12 (Shape B)
+
+Checked against `../launch-gate.md` §1. "Subscriptions opening today" is the
+line that fails, and on these subs a dead-end click is also a rule problem,
+because several of them forbid promotion of a thing that is not available.
+
+The repair, in the where-it-actually-is paragraph:
+
+```
+Where it actually is: six skills live, one issue in the archive, and no
+checkout yet. The digest is free and arrives in full. The library is $20 a
+month and is not open, so there is nothing to buy today.
+```
+
+A post that says there is nothing to buy is the most self-promotion-rule-safe
+version of this post that exists, which is an accident worth taking.

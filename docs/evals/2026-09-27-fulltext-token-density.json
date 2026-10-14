@@ -1,0 +1,154 @@
+{
+  "measured_on": "2026-09-27",
+  "tokenizer": "o200k_base (tiktoken)",
+  "model": "openai/gpt-oss-120b",
+  "window_chars": 12000,
+  "worst_chars_per_token": 3.3501,
+  "worst_headroom_tokens": 196,
+  "all_fit": true,
+  "budget_filler_chars_per_token": 6.1728,
+  "guard_constant": 3.35,
+  "papers": [
+    {
+      "paper": "arxiv:2501.12948",
+      "cleaned_chars": 233306,
+      "measured_chars": 12000,
+      "tokens": 2937,
+      "chars_per_token": 4.0858,
+      "request_tokens": 5959,
+      "headroom": 841,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2412.19437",
+      "cleaned_chars": 144799,
+      "measured_chars": 12000,
+      "tokens": 2885,
+      "chars_per_token": 4.1594,
+      "request_tokens": 5907,
+      "headroom": 893,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2407.21783",
+      "cleaned_chars": 367520,
+      "measured_chars": 12000,
+      "tokens": 3582,
+      "chars_per_token": 3.3501,
+      "request_tokens": 6604,
+      "headroom": 196,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2310.06825",
+      "cleaned_chars": 26796,
+      "measured_chars": 12000,
+      "tokens": 3218,
+      "chars_per_token": 3.729,
+      "request_tokens": 6240,
+      "headroom": 560,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2402.03300",
+      "cleaned_chars": 95059,
+      "measured_chars": 12000,
+      "tokens": 2758,
+      "chars_per_token": 4.351,
+      "request_tokens": 5780,
+      "headroom": 1020,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2305.18290",
+      "cleaned_chars": 110400,
+      "measured_chars": 12000,
+      "tokens": 2477,
+      "chars_per_token": 4.8446,
+      "request_tokens": 5499,
+      "headroom": 1301,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2201.11903",
+      "cleaned_chars": 135076,
+      "measured_chars": 12000,
+      "tokens": 2591,
+      "chars_per_token": 4.6314,
+      "request_tokens": 5613,
+      "headroom": 1187,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2203.02155",
+      "cleaned_chars": 187176,
+      "measured_chars": 12000,
+      "tokens": 2651,
+      "chars_per_token": 4.5266,
+      "request_tokens": 5673,
+      "headroom": 1127,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2302.13971",
+      "cleaned_chars": 92207,
+      "measured_chars": 12000,
+      "tokens": 3018,
+      "chars_per_token": 3.9761,
+      "request_tokens": 6040,
+      "headroom": 760,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2404.19737",
+      "cleaned_chars": 94768,
+      "measured_chars": 12000,
+      "tokens": 2950,
+      "chars_per_token": 4.0678,
+      "request_tokens": 5972,
+      "headroom": 828,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2408.03314",
+      "cleaned_chars": 89871,
+      "measured_chars": 12000,
+      "tokens": 2435,
+      "chars_per_token": 4.9281,
+      "request_tokens": 5457,
+      "headroom": 1343,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2312.11805",
+      "cleaned_chars": 225299,
+      "measured_chars": 12000,
+      "tokens": 2683,
+      "chars_per_token": 4.4726,
+      "request_tokens": 5705,
+      "headroom": 1095,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2501.19393",
+      "cleaned_chars": 198125,
+      "measured_chars": 12000,
+      "tokens": 2616,
+      "chars_per_token": 4.5872,
+      "request_tokens": 5638,
+      "headroom": 1162,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2410.05229",
+      "cleaned_chars": 83981,
+      "measured_chars": 12000,
+      "tokens": 2520,
+      "chars_per_token": 4.7619,
+      "request_tokens": 5542,
+      "headroom": 1258,
+      "fits": true
+    }
+  ],
+  "failures": []
+}

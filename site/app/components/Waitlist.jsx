@@ -4,6 +4,14 @@ import { useId, useState } from "react";
 
 // One field, one button, three states. No hover is required to use it, so it
 // works the same under a thumb as under a cursor.
+//
+// The copy changed on 2026-10-06, when the form stopped being a waitlist. It
+// used to promise "We will write on the day subscriptions open", and the
+// submit now creates an active subscriber that pipeline/weekly.py sends to on
+// Monday, so the old sentence had become a promise the system breaks. The
+// component and its CSS class names are left alone until the writer and
+// frontend seats rename the surface, because a truthful sentence under an old
+// file name beats the reverse.
 export default function Waitlist({ source, note }) {
   const id = useId();
   const [email, setEmail] = useState("");
@@ -37,7 +45,7 @@ export default function Waitlist({ source, note }) {
   if (state === "done") {
     return (
       <p className="waitlist-done" role="status">
-        You are on the list. We will write on the day subscriptions open.
+        You are subscribed. The next issue arrives on Monday.
       </p>
     );
   }
@@ -61,7 +69,7 @@ export default function Waitlist({ source, note }) {
           required
         />
         <button className="pill waitlist-go" type="submit" disabled={state === "sending"}>
-          {state === "sending" ? "Sending" : "Join the waitlist"}
+          {state === "sending" ? "Sending" : "Subscribe"}
         </button>
       </form>
       <p className={`waitlist-note${state === "error" ? " is-error" : ""}`} role={state === "error" ? "alert" : undefined}>

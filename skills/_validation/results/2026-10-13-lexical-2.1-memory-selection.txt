@@ -1,0 +1,136 @@
+trigger test — engine lexical/2.1, floor 0.05, 8 decoys (policy pre-registered)
+library: 9 skills, 67 cases
+
+## agent-containment  (skills/agent-containment/triggers.json)
+  [PASS] ac-pos-1     positive  expect agent-containment -> agent-containment
+  [PASS] ac-pos-2     positive  expect agent-containment -> agent-containment  [narrow, margin +0.005]
+  [PASS] ac-pos-3     positive  expect agent-containment -> agent-containment
+  [PASS] ac-pos-4     positive  expect agent-containment -> agent-containment
+  [PASS] ac-neg-1     negative  expect (silence) -> (silence, best fit decoy-cluster-capacity)
+  [PASS] ac-neg-2     negative  expect (silence) -> (silence, best fit decoy-incident-response)
+  [PASS] ac-conf-1    confusion expect agent-security-measurement -> agent-security-measurement
+  [FAIL] ac-conf-2    confusion expect harness-engineering -> (silence, best fit decoy-product-copy)
+         prompt: Our five-agent support pipeline fails about a third of its tickets and we cannot tell which sub-agent is responsible. Where should we start?
+         top: decoy-product-copy 0.2496, decoy-cluster-capacity 0.089, decoy-data-pipeline-ops 0.089, decoy-dependency-management 0.089
+         library 0.071 vs null decoy-product-copy 0.250 (margin -0.178)
+  7/8 passed (positives 4/4, negatives 2/2, confusion 1/2, narrow 1); 95% CI [0.47, 1.00]
+
+## agent-memory-selection  (skills/agent-memory-selection/triggers.json)
+  [PASS] ams-pos-1    positive  expect agent-memory-selection -> agent-memory-selection
+  [PASS] ams-pos-2    positive  expect agent-memory-selection -> agent-memory-selection
+  [PASS] ams-pos-3    positive  expect agent-memory-selection -> agent-memory-selection
+  [FAIL] ams-neg-1    negative  expect (silence) -> recursive-harness-self-improvement
+         prompt: Our training run keeps running out of GPU memory during the long-context phase and we are looking at offloading optimizer state or sharding the KV cache differently. How should we decide?
+         top: recursive-harness-self-improvement 0.1637, context-window-engineering 0.133, decoy-frontend-layout 0.1235, self-improving-post-training-loops 0.1183
+         library 0.164 vs null decoy-frontend-layout 0.123 (margin +0.040)
+  [PASS] ams-neg-2    negative  expect (silence) -> (silence, best fit decoy-product-copy)
+  [PASS] ams-conf-1   confusion expect context-window-engineering -> context-window-engineering
+  [PASS] ams-conf-2   confusion expect evaluation-integrity -> evaluation-integrity
+  6/7 passed (positives 3/3, negatives 1/2, confusion 2/2, narrow 0); 95% CI [0.42, 1.00]
+
+## agent-security-measurement  (skills/agent-security-measurement/triggers.json)
+  [PASS] asm-pos-1    positive  expect agent-security-measurement -> agent-security-measurement
+  [PASS] asm-pos-2    positive  expect agent-security-measurement -> agent-security-measurement
+  [PASS] asm-pos-3    positive  expect agent-security-measurement -> agent-security-measurement
+  [PASS] asm-neg-1    negative  expect (silence) -> (silence, best fit decoy-postgres-tuning)
+  [PASS] asm-neg-2    negative  expect (silence) -> (silence, best fit decoy-data-pipeline-ops)
+  [PASS] asm-conf-1   confusion expect agent-containment -> agent-containment
+  [PASS] asm-conf-2   confusion expect evaluation-integrity -> evaluation-integrity
+  7/7 passed (positives 3/3, negatives 2/2, confusion 2/2, narrow 0); 95% CI [0.59, 1.00]
+
+## context-window-engineering  (skills/context-window-engineering/triggers.json)
+  [FAIL] cwe-pos-1    positive  expect context-window-engineering -> skill-library-engineering  [narrow, margin +0.015]
+         prompt: Our serving stack caps the key-value cache at a fifth of a full reasoning trace, and we are about to build an attention-score ranker to decide which cached entries survive each eviction round. Is that ranker worth the engineering, and what should we be pinning unconditionally instead?
+         top: skill-library-engineering 0.1427, context-window-engineering 0.1382, decoy-frontend-layout 0.1274, decoy-cluster-capacity 0.0885
+         library 0.143 vs null decoy-frontend-layout 0.127 (margin +0.015)
+  [FAIL] cwe-pos-2    positive  expect context-window-engineering -> recursive-harness-self-improvement  [narrow, margin +0.012]
+         prompt: Our coding agent gets noticeably worse after roughly forty tool calls, and the summarizer we bolted on to shrink the transcript keeps dropping things the agent later needs. Should we compress harder, or change what the acting loop is handed in the first place?
+         top: recursive-harness-self-improvement 0.1083, decoy-api-integration 0.0962, agent-memory-selection 0.0746, self-improving-post-training-loops 0.0739
+         library 0.108 vs null decoy-api-integration 0.096 (margin +0.012)
+  [PASS] cwe-pos-3    positive  expect context-window-engineering -> context-window-engineering
+  [PASS] cwe-neg-1    negative  expect (silence) -> (silence, best fit decoy-frontend-layout)  [narrow, margin -0.011]
+  [PASS] cwe-neg-2    negative  expect (silence) -> (silence, best fit decoy-postgres-tuning)
+  [FAIL] cwe-conf-1   confusion expect harness-engineering -> evaluation-integrity
+         prompt: Our five-agent research pipeline gets about a third of its tasks wrong and we cannot localise which agent is responsible. How should we go about finding the culprit?
+         top: evaluation-integrity 0.2367, recursive-harness-self-improvement 0.1412, decoy-dependency-management 0.1065, skill-library-engineering 0.0834
+         library 0.237 vs null decoy-dependency-management 0.106 (margin +0.130)
+  [PASS] cwe-conf-2   confusion expect harness-engineering -> harness-engineering
+  4/7 passed (positives 1/3, negatives 2/2, confusion 1/2, narrow 3); 95% CI [0.18, 0.90]
+
+## evaluation-integrity  (skills/evaluation-integrity/triggers.json)
+  [PASS] ei-pos-1     positive  expect evaluation-integrity -> evaluation-integrity
+  [PASS] ei-pos-2     positive  expect evaluation-integrity -> evaluation-integrity
+  [PASS] ei-pos-3     positive  expect evaluation-integrity -> evaluation-integrity
+  [PASS] ei-neg-1     negative  expect (silence) -> (silence, best fit decoy-dependency-management)
+  [FAIL] ei-neg-2     negative  expect (silence) -> agent-memory-selection  [narrow, margin +0.006]
+         prompt: We are running an A/B test on the pricing page. What sample size do we need to detect a 2 percent lift in signups, and how do we stop the team from peeking at the result and calling it early?
+         top: agent-memory-selection 0.1323, decoy-product-copy 0.126, context-window-engineering 0.0706, harness-engineering 0.0617
+         library 0.132 vs null decoy-product-copy 0.126 (margin +0.006)
+  [PASS] ei-conf-1    confusion expect harness-engineering -> harness-engineering
+  [PASS] ei-conf-2    confusion expect self-improving-post-training-loops -> self-improving-post-training-loops
+  [PASS] ei-conf-3    confusion expect recursive-harness-self-improvement -> recursive-harness-self-improvement
+  7/8 passed (positives 3/3, negatives 1/2, confusion 3/3, narrow 1); 95% CI [0.47, 1.00]
+
+## harness-engineering  (skills/harness-engineering/triggers.json)
+  [FAIL] he-pos-1     positive  expect harness-engineering -> agent-security-measurement
+         prompt: We have collected about forty one-line prompt fixes from failed runs over the last month and I was going to paste all of them onto the end of the agent's system prompt. Is that the right way to apply them?
+         top: agent-security-measurement 0.1759, recursive-harness-self-improvement 0.1561, decoy-postgres-tuning 0.1353, harness-engineering 0.1277
+         library 0.176 vs null decoy-postgres-tuning 0.135 (margin +0.041)
+  [PASS] he-pos-2     positive  expect harness-engineering -> harness-engineering
+  [PASS] he-pos-3     positive  expect harness-engineering -> harness-engineering
+  [PASS] he-neg-1     negative  expect (silence) -> (silence, best fit decoy-cluster-capacity)
+  [PASS] he-neg-2     negative  expect (silence) -> (silence, best fit decoy-product-copy)
+  [PASS] he-conf-1    confusion expect harness-engineering -> harness-engineering
+  [PASS] he-pos-4     positive  expect harness-engineering -> harness-engineering
+  [PASS] he-conf-2    confusion expect recursive-harness-self-improvement -> recursive-harness-self-improvement  [narrow, margin +0.003]
+  7/8 passed (positives 3/4, negatives 2/2, confusion 2/2, narrow 1); 95% CI [0.47, 1.00]
+
+## recursive-harness-self-improvement  (skills/recursive-harness-self-improvement/triggers.json)
+  [PASS] rhsi-pos-1   positive  expect recursive-harness-self-improvement -> recursive-harness-self-improvement
+  [PASS] rhsi-pos-2   positive  expect recursive-harness-self-improvement -> recursive-harness-self-improvement
+  [PASS] rhsi-pos-3   positive  expect recursive-harness-self-improvement -> recursive-harness-self-improvement
+  [PASS] rhsi-neg-1   negative  expect (silence) -> (silence, best fit decoy-incident-response)
+  [PASS] rhsi-neg-2   negative  expect (silence) -> (silence, best fit decoy-api-integration)
+  [FAIL] rhsi-conf-1  confusion expect harness-engineering -> agent-memory-selection
+         prompt: We are going to evolve our agent's harness rather than train the model, and our own engineers will write each change by hand this sprint. Which parts of the scaffold give the most back, and how do we tell which sub-agent is at fault when the pipeline fails?
+         top: agent-memory-selection 0.2171, recursive-harness-self-improvement 0.1939, harness-engineering 0.1845, self-improving-post-training-loops 0.1845
+         library 0.217 vs null decoy-incident-response 0.122 (margin +0.095)
+  [PASS] rhsi-conf-2  confusion expect self-improving-post-training-loops -> self-improving-post-training-loops
+  6/7 passed (positives 3/3, negatives 2/2, confusion 1/2, narrow 0); 95% CI [0.42, 1.00]
+
+## self-improving-post-training-loops  (skills/self-improving-post-training-loops/triggers.json)
+  [PASS] pt-pos-1     positive  expect self-improving-post-training-loops -> self-improving-post-training-loops
+  [FAIL] pt-pos-2     positive  expect self-improving-post-training-loops -> context-window-engineering
+         prompt: Before we distil from our large teacher model, how do we know its answers are actually right on the prompts we care about?
+         top: context-window-engineering 0.3658, self-improving-post-training-loops 0.2592, agent-memory-selection 0.2243, agent-security-measurement 0.213
+         library 0.366 vs null decoy-incident-response 0.126 (margin +0.240)
+  [PASS] pt-pos-3     positive  expect self-improving-post-training-loops -> self-improving-post-training-loops
+  [FAIL] pt-neg-1     negative  expect (silence) -> harness-engineering
+         prompt: What learning rate and batch size should we use to fine-tune Qwen3-8B on fifty thousand labelled support tickets?
+         top: harness-engineering 0.2902, decoy-product-copy 0.1057, decoy-api-integration 0.1057, agent-memory-selection 0.0923
+         library 0.290 vs null decoy-api-integration 0.106 (margin +0.184)
+  [PASS] pt-neg-2     negative  expect (silence) -> (silence, best fit decoy-data-pipeline-ops)
+  [PASS] pt-conf-1    confusion expect self-improving-post-training-loops -> self-improving-post-training-loops
+  4/6 passed (positives 2/3, negatives 1/2, confusion 1/1, narrow 0); 95% CI [0.22, 0.96]
+
+## skill-library-engineering  (skills/skill-library-engineering/triggers.json)
+  [PASS] sle-pos-1    positive  expect skill-library-engineering -> skill-library-engineering
+  [PASS] sle-pos-2    positive  expect skill-library-engineering -> skill-library-engineering
+  [PASS] sle-pos-3    positive  expect skill-library-engineering -> skill-library-engineering
+  [PASS] sle-neg-1    negative  expect (silence) -> (silence, best fit decoy-product-copy)
+  [FAIL] sle-neg-2    negative  expect (silence) -> skill-library-engineering
+         prompt: We have about thirty tools registered on our MCP server and the model picks the wrong one on maybe a fifth of calls. Should we cut the tool count, rename them, or add a selection step before the call?
+         top: skill-library-engineering 0.1612, self-improving-post-training-loops 0.1376, decoy-postgres-tuning 0.1269, agent-memory-selection 0.1144
+         library 0.161 vs null decoy-postgres-tuning 0.127 (margin +0.034)
+  [FAIL] sle-conf-1   confusion expect harness-engineering -> recursive-harness-self-improvement
+         prompt: Our coding agent is underperforming and we cannot tell whether the problem is the tools we gave it, the way each turn is framed, or the loop structure. Where should we start, and should we be considering fine-tuning instead?
+         top: recursive-harness-self-improvement 0.2097, self-improving-post-training-loops 0.1704, agent-containment 0.1515, evaluation-integrity 0.1201
+         library 0.210 vs null decoy-postgres-tuning 0.077 (margin +0.133)
+  [PASS] sle-conf-2   confusion expect recursive-harness-self-improvement -> recursive-harness-self-improvement
+  [PASS] sle-conf-3   confusion expect evaluation-integrity -> evaluation-integrity
+  [PASS] sle-conf-4   confusion expect self-improving-post-training-loops -> self-improving-post-training-loops
+  7/9 passed (positives 3/3, negatives 1/2, confusion 3/4, narrow 0); 95% CI [0.40, 0.97]
+
+TOTAL 55/67 — reliability 0.82, 95% CI [0.71, 0.90]
+
+wrote skills/_validation/results/2026-10-13-lexical-2.1-memory-selection.json

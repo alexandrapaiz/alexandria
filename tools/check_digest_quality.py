@@ -4,7 +4,7 @@
 Sprint 2026-09-21 item 4 asked for a quality tier for digest content and for
 Monday's issue to be held to it before it sends. This file is the half of that
 checklist a machine can settle. The other half, the judgment half, is
-docs/standards/digest-quality.md, which names a reader for every line this
+docs/product/digest-quality.md, which names a reader for every line this
 script cannot decide.
 
 The reason it is code and not a paragraph is incident 20 and the register map
@@ -167,7 +167,7 @@ def parse_items(body: str) -> list[Item]:
 
 
 def check(body: str, kind: str = "weekly") -> list[Finding]:
-    """Every machine-decidable line of docs/standards/digest-quality.md."""
+    """Every machine-decidable line of docs/product/digest-quality.md."""
     findings: list[Finding] = []
     lines = _lines(body)
     lowered = body.lower()

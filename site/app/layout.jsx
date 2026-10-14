@@ -7,7 +7,7 @@ import Whisper from "./components/Whisper";
 export const metadata = {
   title: "library of alexandr.ia",
   description:
-    "Every week the library reads new AI research and tells you what changed. Your agents load the same answers you do.",
+    "What changed in AI research this week, written for people who build things. Your agents load the same findings as skills.",
   // the site is for a person and for that person's agents, so it says so to
   // both. An agent that follows this link gets the catalogue in plain text.
   alternates: { types: { "text/plain": "/llms.txt" } },

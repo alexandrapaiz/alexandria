@@ -31,6 +31,85 @@ performance shift is `index` (or `distill` if the notes describe a technique
 worth extracting); routine patch/bugfix/dependency releases are `discard`.
 Release notes never warrant `deep_read`.
 
+Some items are **engineering practice reports**: a company or a practitioner
+writing up something they built and ran in production. Route them by mechanism,
+not by prestige. A post that says what they did, what it cost, and what broke,
+in enough detail that someone could do it, is `distill`; a post that describes
+an architecture with no numbers and no failure is `index`; a launch or product
+announcement with no mechanism in it is `discard`. Production experience is
+evidence of a different kind from a paper's, not a lesser kind, and the pipeline
+records which kind it was. Never route one `deep_read`.
+
+Some items are **reasoning-model research**, a standing priority of this
+pipeline (the owner's order of 2026-09-23). Reasoning work is judged on the same
+criterion as everything else — could this change how we build agents — but that
+criterion is easy to misapply here, because a reasoning paper's contribution is
+usually a training recipe rather than an architecture, and a recipe is a
+construction technique.
+
+Route to `distill` when the item carries any of these:
+
+- a **training recipe for reasoning**: what data, what reward, what curriculum,
+  and what the ablations removed. Reasoning-trace supervision, chain-of-thought
+  training, and process rewards all belong here.
+- a **verifiable-reward setup** — RLVR, GRPO and its variants, or any reward
+  grounded in an executor or checker: how the verifier is built, what it scores,
+  and where it gets gamed.
+- a **test-time compute tradeoff with numbers**: accuracy against tokens,
+  latency or dollars; where thinking longer stops paying; how the budget is
+  allocated, capped, or learned.
+- **distillation of reasoning into a smaller model**: what transfers from the
+  larger reasoner, what is lost, and at what size the transfer breaks.
+- a **synthetic-data pipeline** for reasoning traces or preference data: how
+  samples are generated, filtered and verified, and where the loop degrades.
+
+Route to `index` when the item is a **benchmark, leaderboard, or evaluation of
+reasoning with no recipe attached**: it measures how well models reason and
+offers no method for making them reason better. A mechanistic analysis of
+reasoning is `index` unless it ends in an intervention someone could apply. So
+is a domain application of an existing recipe — the same method pointed at
+medicine, telecom, or recommendation — unless the adaptation itself is the
+contribution.
+
+Four more threads are standing priorities of this pipeline, by the owner's
+order of 2026-09-29, and the construction-technique criterion is misapplied
+to all of them in the same way it was to reasoning: their contribution is a
+mechanism with a measured effect, not a building block, and indexing them is
+how the library came to hold hundreds of their papers while reading almost
+none. Route to `distill` when the item carries any of these:
+
+- **agent standards and protocols**: a protocol or spec change (MCP, A2A,
+  agent identity, tool-calling conventions, interoperability) with a
+  measured effect on agent behavior, cost, or failure rate, or a deployment
+  that measures what the protocol bought.
+- **agent containerization and sandboxing**: an isolation design (sandbox,
+  microVM, wasm, capability-based permission, runtime isolation) with a
+  measured escape, a measured cost, or a measured preconditions-for-escape,
+  and any agent-state or agent-runtime design that is evaluated. The measured
+  cost of a boundary counts here even when the workload behind it is not an
+  agent: an isolate-versus-microVM or wasm-versus-container comparison with
+  numbers answers the question an agent deployment has to answer, and "wrong
+  domain" is not a reason to index it. What makes it `index` is the absence of
+  the number, not the absence of the word "agent".
+- **agent safety and cybersecurity**: an attack (prompt injection, tool
+  poisoning, jailbreak, exfiltration, sabotage) with a measured success
+  rate, or a defense (guardrail, containment, permission model) with a
+  measured attack-success reduction and its cost.
+- **self-improving and recursive systems**: an agent or harness that
+  improves itself (self-evolution, recursive self-improvement, self-play,
+  self-refinement, autonomous research) with the loop described and its
+  gain measured against a fixed baseline.
+
+What stays `index` in these threads is the same as for reasoning: a
+benchmark or survey with no mechanism and no measured intervention. One
+exception, in the containment and safety threads only: a harness, toolkit or
+benchmark built to **test** whether an agent can reach what it must not is
+itself the mechanism, because containment evaluation is part of what this
+pipeline is reading for. Route it `distill` and say in the reasoning what it
+measures. A capability benchmark that happens to include a safety split is not
+this, and stays `index`.
+
+
 Each paper carries a source tier, a prior on its worth: `b` (human-curated daily
 picks) and `c` (frontier- and open-lab channels) warrant leaning one step more
 generous at the margin; `a-low` (a noisy firehose category) warrants extra

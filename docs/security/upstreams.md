@@ -33,6 +33,8 @@ column is a finding, not a blank.
 | Clerk | Auth SDK and hosted auth | Code plus a hosted service | **Yes**, in the browser | `package-lock.json` integrity hashes |
 | Vercel | Hosting and build | Runs our code | Not an input we pull | Not applicable, it is a runtime |
 | Modal | Pipeline and MCP runtime | Runs our code | Not an input we pull | Not applicable, it is a runtime |
+| The company board (`board.libraryofalexandria.dev`) | Sprint, columns and items, read back by `tools/board.py` | JSON data that becomes text in an agent's context | No, but it steers agents that execute | **None. Bearer token over TLS, and no row here until 2026-10-01** |
+| The open-routing endpoint (`OPENROUTE_BASE_URL`) | Model completions for four seats, as a drop-in `ANTHROPIC_BASE_URL` | JSON text that **is** those agents' next action | **Effectively yes** | **None, and it needs none today: the step is skipped on every run** |
 
 Two things fall out of that table immediately. First, the great majority of
 what we pull is inert data that is read, never run, so the worst a tampered
@@ -218,6 +220,44 @@ question about the vendor, and it is out of this file's scope.
 **Vercel and Modal.** Neither is an upstream in this sense. They run our
 code rather than supplying us artifacts. They belong in a hosting threat
 model, not this one.
+
+**The company board** (added to this file 2026-10-01, wired 2026-09-27 in
+6820ac1). `BOARD_API_URL` and `BOARD_RUNTIME_TOKEN` are in the job environment
+of all twelve seat workflows, and `tools/board.py` both POSTs a run report and
+GETs board state, whose `render()` prints the sprint, the columns and every
+item's seat, horizon and title. That printed text lands in the agent's context.
+So this is an upstream in the strict sense of this file: content that somebody
+else's server controls, flowing into a process that then writes to the
+repository. The server is the owner's own, which is why the trust assumption is
+reasonable, and it is still a trust assumption rather than a verified fact.
+Blast radius if it answered dishonestly: text of its choosing reaches twelve
+agents that hold `contents: write`, `pull-requests: write`, a classic PAT, and
+in two cases `actions: write`. The owner's merge gate is what stands between
+that and `main`, and it is the only thing that does. Detection today is none:
+nothing signs the response and no seat compares it against a previous read.
+
+**The open-routing endpoint** (added to this file 2026-10-01; the charter has
+named it since 2026-09-20 and it had no row). Four workflows, which are market,
+finance, okr and pm, run a first attempt with `ANTHROPIC_BASE_URL` pointed at
+`secrets.OPENROUTE_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` at
+`secrets.OPENROUTE_API_KEY`, `continue-on-error: true`, falling back to the
+Anthropic subscription. This is the largest blast radius in the table, because
+a model endpoint does not hand an agent data to read, it hands the agent its
+next action. A dishonest endpoint for those four seats would see every prompt
+they send, which is their charter plus whatever repository and board content
+they gathered, and would dictate every response, under
+`--permission-mode bypassPermissions`.
+
+The measured answer for this window is that it has not run. The step is gated on
+`env.OPENROUTE != ''`, which resolves from `secrets.OPENROUTE_API_KEY`, and in
+every recent okr-agent and pm-agent run the step `Seat run (open-routed)`
+records `skipped` while `Seat run (Claude)` records `success`. So the capability
+is configured and dormant: no seat has sent a prompt to a third-party model
+endpoint since the last sweep. That is the honest answer and it is also a fragile
+one, because the thing standing between dormant and live is one repository
+secret being set, with no pull request and no smoke run, which
+`docs/agents/runtime-changes.md` classifies as a provider change and therefore a
+runtime change. The sweep records the state rather than the comfort.
 
 ## The standing rule
 
