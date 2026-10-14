@@ -14107,3 +14107,18 @@ that triggered it, per the charter.
   hitting it.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-14 — Distill has produced nothing for seven days and the press cannot print without it
+- Trigger: `/api/delivery` at 2026-10-14T01:49Z reads `claims_newest` and
+  `distilled_newest` both frozen at 2026-10-07T15:15:25Z, with
+  `distill_pending` at 2,223 and `papers_newest` at 2026-10-13. Triage and
+  interpret both ran yesterday. The press printed no issue on 2026-10-12 and
+  none on launch day, 2026-10-13, and it had nothing new to print either day.
+- What: the daily 15:00 UTC distill job is the only stage that has stopped,
+  and this is the fifth engineer run in a row to meet it (#263, #265, #268,
+  #270, #275). The pacing fix merged on 2026-10-12 did not restore it. This
+  run's job is the cause, not another pacing constant.
+- First step: read the Modal log for the 15:00 UTC runs since 2026-10-07 and
+  say which line stopped them.
+- Cost: $0.
+- Status: urgent
