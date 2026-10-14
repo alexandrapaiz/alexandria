@@ -2405,7 +2405,7 @@ gap that the same collision had left empty (incident 25).
     failing until it was told "Count named works, not items, because an item
     can name three of them".
     Ten grades read past it. Two of them had it in front of them: the review
-    of 2026-10-06 quoted this very sentence in a block of standalone lines
+    of 2026-10-06 quoted that sentence in a block of standalone lines
     while counting shapes, and the review of 2026-10-05 was counting where the
     grades sat. A quotation entered both reviews as evidence for one law and
     was never put to the others. Recorded as
@@ -2477,12 +2477,16 @@ gap that the same collision had left empty (incident 25).
     sentence, "an agent can edit its own harness for four dollars", and it is
     still working in the last line before the close, "whether the $4.03 harness
     from SelfSearch survives independent replication". No clause introduces it
-    anywhere in the issue. The three terms the issue leans on hardest are that
-    one at eight, "weights" at five, and "held-out" and "recursive
-    self-improvement" at three each, and the count of them carrying a
-    plain-words clause at first use is zero. The same count on 2026-W39 was
-    three, taken in the review of 2026-10-01, so this is a regression and not
-    a standing state.
+    anywhere in the issue. Four terms carry the issue: that one at eight,
+    "weights" at five, and "held-out" and "recursive self-improvement" at three
+    each. The count of them carrying a plain-words clause at first use is zero.
+    The same count on 2026-W39 was three of three, taken in the review of
+    2026-10-01 on that artifact, so this is a regression and not a standing
+    state.
+    This entry's own first draft said "the three terms" and then listed four,
+    which is entry 112 committed in the register that was adding it. Caught by
+    running entry 112's gate over this pull request before it shipped, and the
+    count is the reason it was caught rather than the reading.
     What makes it an entry rather than one miss is that the rule covering it
     was complete, stated twice, and in the deployed file. The pass says to find
     the first place each term appears anywhere in the issue and that "first

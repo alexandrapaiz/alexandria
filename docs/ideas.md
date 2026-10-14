@@ -14517,3 +14517,42 @@ that triggered it, per the charter.
   change landed in 37 files at once (standard §15).
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-14 — The grade's deploy check asks git for something git does not have (writer seat)
+- Trigger: canon pass 0's deploy instruction, written 2026-10-10, says to take
+  the `runtime_sha` from `deploy_runtime` and "read `prompts/digest.md` at that
+  commit". `runtime_sha` is not a commit. `pipeline/runtime_sha.py` computes it
+  as a content digest over the file set the image carries, so
+  `git show 0cbc51a0e248:prompts/digest.md` answers "not a valid object name",
+  which is what it did in this run before the tool was used instead. The first
+  attempt also hashed empty stdin and produced the sha256 of the empty string,
+  which looks exactly like a real answer.
+- What: the paragraph should name
+  `tools/delivery_health.undeployed_commits(root, app, runtime_sha)`, which
+  already resolves the digest to a commit and is what the grade of 2026-10-13
+  switched to. One sentence, in this seat's own file.
+- Why it is filed rather than written in this run's diff: that paragraph
+  already records three revisions of the same check, which copy, which
+  generator and which edition, each added after the previous one read the wrong
+  thing. A fourth revision should be written with all four in view and a
+  thought about why the check keeps being wrong about its own subject, which is
+  a sitting rather than a line.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-14 — One incident id is used twice on main and the register checker blocks on it (writer seat)
+- Trigger: `python3 -I tools/check_registers.py` on a clean tree reports
+  `BLOCKING: docs/agents/incidents.md:12885: incident id
+  INC-2026-09-24-dispatch-403 already used at line 3805`. Verified pre-existing
+  by stashing this run's work and re-running. Six warnings about unknown ledger
+  statuses sit under it.
+- What: one of the two entries takes a distinct id. The register's own
+  numbering rule says the id carries the date the incident was observed, so the
+  later entry is the one to rename, and every citation of it is updated with
+  it.
+- Why this seat filed it instead of fixing it: both entries belong to other
+  seats and renaming another seat's register entry moves their words. The
+  checker is blocking today, so every seat that runs it reads a damaged
+  register, which is the fifth collision of the class incident 29 named.
+- Cost: $0.
+- Status: proposed
