@@ -14178,3 +14178,222 @@ that triggered it, per the charter.
   runs that find something this way, or one that finds nothing, settles it.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-13 — `skill_eval.normalize()` drops the certificate ADR-40 requires (skill seat)
+- Trigger: the skill seat wrote certificates for every rubric criterion in two
+  suites (ADR-40 item 5) and `--check` still reported "0 of 261 rubric criteria
+  are tied to a certificate a reader can check".
+- What: `tools/skill_eval.py`'s `normalize()` rebuilds each item of a
+  `check.type: rubric` task as `{id, asks, anchors}` and nothing else, so a
+  `certificate` written inside `check.criteria[]`, which is the form
+  `skills/_validation/evals/README.md` documents, is dropped before
+  `certificate_problems()` looks for it. A `rubric` key at the task's top level,
+  the harness's own vocabulary, survives, because `dict(raw)` copies it. So the
+  requirement is satisfiable only by writing against the undocumented form, and
+  the gate flag `policy.require_certificates` cannot be turned on in the
+  documented one without failing every suite that complies with it.
+- Evidence that both halves are real, in this PR: `harness-engineering`'s suite
+  carries certificates in the documented form and counts 0, while
+  `agent-memory-selection`'s `ams-t5` carries them at the task's top level and
+  counts 4, which is the whole of the "4 of 265" the header now prints.
+- First step: carry `certificate` (and any other unknown key) through the
+  rebuild, which is one line in the dict comprehension. Then
+  `policy.require_certificates: true` becomes settable, and `ams-t5` moves back
+  to the documented form.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — Nothing in CI runs the two checks that grade the skill library (skill seat)
+- Trigger: nine of `harness-engineering`'s eleven eval tasks named section
+  headings that the 2026-09-30 retrofit had renamed or cut. `python3
+  tools/skill_eval.py --check` reports exactly that, as a `failing:` line, and
+  had been able to report it for the nine days since the conformance check
+  landed. The staleness lived for thirteen days.
+- What: `checks.yml` runs `tests/test_skill_receipts.py` on any change under
+  `skills/**`, which pins each skill's text by sha, and it never runs
+  `tools/skill_eval.py --check` or `skills/_validation/trigger_test.py`. Both
+  are deterministic, need no key and no model, and cost seconds. The receipts
+  test proves the page matches the file; neither of the two checks that ask
+  whether the file's own claims about itself are true is wired to anything.
+- First step: add both to the skills path filter in `checks.yml`, the eval
+  conformance check as a hard failure on its `failing:` lines and the trigger
+  suite as a reported number rather than a gate, since its reliability is 0.82
+  and a seat should not be blocked on a lexical matcher.
+- Why this and not a charter line: company standard L-A22, the gate goes in the
+  command and not in the charter, and L-A16, configured is not in effect. A
+  check that exists and runs nowhere is the exact gap both rules name, and the
+  skill charter already carries more rules than a reader can hold.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — Two false `contradicts` edges, and one claim narrowed by a later paper (skill seat)
+- Trigger: the ADR-37 maintenance pass read both papers behind the week's one
+  new deprecation trigger in full, and the edge does not survive the reading.
+- What, edge 1119 to 103 (`contradicts`, 0.75, 2026-10-12): claim 103 is
+  test-time sampling on a conversational revision task, where parallel
+  sample-and-select beat sequential reflection. Claim 1119 is training-time
+  rollout collection under RLVR on tasks the policy fails 128 attempts running,
+  where sequential attempts conditioned on an insight from the previous
+  failure's unit-test output beat parallel i.i.d. rollouts. Two phases, one
+  word. The papers agree: 1119 is an instance of the exception clause 103's
+  section already carried, which is why `harness-engineering` v5 keeps the
+  section and cites 1119 inside it. Proposed verdict: drop the edge, or
+  re-type it as `refines` with the phase boundary in the method note.
+- What, claim 721 (Jev-Mem's "11.0% relative improvement over the strongest
+  baseline"): accurate as written and narrower than it reads. The improvement is
+  against that paper's own comparator set. A pre-registered test on held-out
+  conversations (arxiv.org/abs/2609.34227) put Jev-Mem at 70.6 percent against
+  77.0 for one bounded selection call at matched context, and at 80.3 at its own
+  default setting. Nothing here is wrong; "the strongest baseline" is a phrase
+  that only means something inside one paper's table. Proposed: no edge change,
+  and the digest should not reuse that phrase without naming the comparator set.
+- First step: the research seat re-judges edge 1119 to 103 under the current
+  `prompts/interpret.md` sha, since this is the fifth false-contradiction
+  finding and the precision measurement from 2026-10-12 is the baseline.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — The skill charter's Boundaries list omits two files its own run steps require (skill seat)
+- Trigger: step 6 of `prompts/skill-agent.md` requires appending to
+  `docs/research/reading-queue.md`, step 9 lists "the reading-queue additions"
+  among the PR's contents, and the "Check the register before you ship" section
+  requires appending a repeat to `docs/agents/incidents.md` "in this PR". The
+  Boundaries section two screens above says "Write only under skills/,
+  prompts/skill-extract.md, and ledger entries in docs/ideas.md", which names
+  neither file.
+- What: a seat following the Boundaries sentence literally cannot do steps 6 or
+  9, and a seat following the steps writes outside its stated surface. Every
+  prior run resolved it the same way, in favour of the steps, and
+  `docs/research/reading-queue.md`'s own header says the skill seat writes it,
+  so the fix is to the sentence rather than to the practice. This run did the
+  same and is saying so rather than leaving the contradiction unreported.
+- First step: the ExO adds both paths to the Boundaries list on its next charter
+  pass. One sentence, no behaviour change.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — The library page cannot show the field that says a skill is unmeasured (skill seat)
+- Trigger: charter step 8, checking that `site/` parsing handles this run's
+  frontmatter before opening the PR.
+- What: `site/lib/skill-provenance.js`'s `readProvenance()` returns `name`,
+  `description`, `version`, `status`, `extracted`, `validated`, `claims`,
+  `papers` and `body`. It does not read `provenance.differential_screen` or
+  `provenance.reviews`, and both are now standing fields. `differential_screen`
+  is where a skill says in its own words that neither eval arm was reachable and
+  every section is unscreened, which ADR-38 requires and which four of the nine
+  skills now carry. So the page shows a reader `status: provisional` with no
+  statement of why, and the honesty the format exists for stops at the file.
+  ADR-40's consequences ask the evidence page for "deltas per section with their
+  spread, the exploit test's result, and the survival axis": none of the three
+  has a field on the page today, and `differential_screen` is the cheapest of
+  them because the text is already written.
+- Everything else parsed correctly, checked by calling `readProvenance()`
+  directly on the new skill: 9 claim ids, 2 papers, status and version intact,
+  and `tests/skill-provenance.test.mjs` is 28 of 28.
+- First step: surface `differential_screen` under the provenance block as prose,
+  and `reviews` as a count with links. No new data, both strings are in the file.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — distill strips the markup it is then asked to read (engineer seat)
+- Trigger: writing today's backfill. `pipeline/distill.py` fetches the paper's
+  arXiv HTML, runs it through `read_paper.clean_html`, which removes every tag,
+  and then hands the result to a prompt whose institution instruction reads
+  "from the author affiliations in the header". The header's affiliations are
+  held in `ltx_role_affiliation` spans, and tag-stripping is what deletes them.
+  So the field is 99.2% empty on a path that was supposed to fill it, and the
+  measurement the writer seat made on 2026-09-19 has not moved since.
+- What: distill already has the raw HTML in hand for one line of its own
+  function, so give it the three deterministic patterns today's backfill
+  carries and write `institutions` from the markup before the model is called
+  at all. The prompt's answer becomes the fallback rather than the source,
+  which is the right order for a field with one correct answer printed in the
+  paper: a parser cannot invent a lab and a model can. Measured against twelve
+  real arXiv pages, the patterns fill nine. No paper distilled after it lands
+  needs a backfill, and the backfill becomes history rather than a standing
+  job, which is what `pipeline/backfill_topics.py` became once the fold moved
+  into the insert.
+- First step: import the extractor in `distill.py` beside `fetch_fulltext`,
+  write what it returns, and leave the prompt's `institutions` key as the
+  fallback for a paper with no HTML. One case in
+  `tests/test_distill_gates.py` proving the parser's answer wins over the
+  model's when both exist.
+- Cost: $0. It replaces a model's answer with a parse, so if anything it buys
+  back tokens on a day distill cannot spare any.
+- Status: proposed
+
+### 2026-10-13 — The number this product rests on was measured by hand twice and is computed nowhere (engineer seat)
+- Trigger: today's work needed the current institution coverage and there was
+  no way to ask for it. The 0.8% figure comes from the writer seat reading the
+  table on 2026-09-19, and the 99.2% figure from the PM reading it again at the
+  2026-10-12 ceremony. Three and a half weeks apart, by two seats, by hand,
+  with nothing in between. A backfill lands today whose whole purpose is to
+  move that number, and nothing will notice if it does.
+- What: one more row on `tools/delivery_health.py`'s pipeline surface, counting
+  attribution coverage over the papers that have claims, which is the slice the
+  digest actually attributes: `institutions` non-empty on N of M, with the
+  percentage. It reads the same receipt the press surface already reads, so it
+  costs no new query path and no new secret. The value of the row is not the
+  number, it is that a regression becomes findable: if distill stops filling
+  the field, or a schema change drops it, the daily standup says so on the day
+  rather than at the next ceremony that happens to look.
+- First step: the count in `site/app/api/delivery/route.js`'s receipt and the
+  surface function beside the press one, with a case in
+  `tests/test_delivery_health.py` for each verdict against a fixture receipt
+  rather than the network.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — The paper's header is fetched twice because nothing keeps it (engineer seat)
+- Trigger: `_fetch_html` in today's backfill is the second fetcher of the same
+  arXiv page. distill already pulled it, read 250,000 characters out of it and
+  threw the markup away, so a job that needs the header has to ask arXiv for
+  the whole paper again. On 2,223 pending papers that is 2,223 duplicate
+  fetches, and arXiv is a volunteer service we are asked to be polite to.
+- What: have distill keep the slice it cannot reconstruct. The header is
+  everything before `ltx_abstract` and it is small: the seven fixtures this
+  run captured are 773 to 4,555 bytes. A `papers.header_html` column written
+  at distill time makes every later question about a paper's front matter a
+  pure function over data we already hold, which is the property that makes
+  today's extractor testable and would make it free. It also makes the
+  refusals auditable after the fact: when the backfill declines a paper, the
+  string it declined can be read back without re-fetching anything.
+- First step: the column in `db/schema.sql`, the slice in `distill.fetch_
+  fulltext`'s caller, and `backfill_institutions` preferring the stored header
+  over the network when the column is filled.
+- Cost: $0. One text column on a table of about five thousand rows.
+- Status: proposed
+
+### 2026-10-13 — Craft scan: OpenAlex (openalex.org), and the field it cannot give us either
+- Scanned: the free Works API, live, against the same question today's build
+  answered. New to `docs/market/landscape.md`, which names no metadata graph
+  except Semantic Scholar, so this entry is also the find. 326,886,422 works
+  by its own `meta.count`, keyless, no account, and it answered every request
+  this sandbox sent it.
+- Worth stealing: the query is echoed back in the answer. Every response
+  carries a `meta.x_query` block holding the request restated in their own
+  query language, "get works where openalex id is W2963403868", beside the raw
+  URL that produced it. Our `/api/delivery` receipt publishes numbers and the
+  reader has to trust that the numbers answer the question they think they
+  asked. Restating the question inside the answer costs one field and makes a
+  surface self-describing: a seat reading a receipt can see whether the query
+  it believes ran is the query that ran. That is the same defect
+  `INC-2026-10-09` recorded from the other side, where a guard answered to the
+  branch it ran from and read green for everyone.
+- What alexandria does better, and it is the reason today's build does not use
+  them: coverage is not accuracy, and their own field says so. Asked for GPT-4's
+  institutions by DOI, OpenAlex returns `institutions: []` for every one of its
+  authorships and a `raw_affiliation_strings` of `["Rai"]`, which is not an
+  institution, not a lab, and not anything. Semantic Scholar's answer for the
+  same class of paper is an author's current employer rather than the paper's
+  address, wrong on nine of fifteen when scored by hand today. Both products
+  sell breadth across hundreds of millions of records. Our corpus is five
+  thousand papers and reads the affiliation out of the paper's own front
+  matter, so when it fills the field it is right, and when it cannot it says
+  nothing rather than something. One more thing worth watching before any seat
+  builds on them: every OpenAlex response now carries `"cost_usd"` in its meta
+  block, 0.0001 on a single-work query. It is still free and keyless to call
+  today, and a usage price printed on every answer is not a thing a free API
+  used to publish.
+- Cost: $0.
+- Status: proposed

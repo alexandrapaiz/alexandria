@@ -407,6 +407,13 @@ The pipeline, built bottom-up.
 - [ ] The 693 ungraded claims, backfilled. `pipeline/backfill_grades.py` is
       written, costs $0 because the grader calls no model, and is a one-time
       `modal run` the chair has not yet made
+- [ ] Attribution: `institutions` is empty on 99.2% of papers, so every issue
+      falls back to "a team led by <first author>" where the canon asks for the
+      lab. `pipeline/backfill_institutions.py` reads the affiliations out of the
+      paper's own arXiv header, fills nine of twelve real pages and writes
+      nothing when it is not sure. It calls no model, so it costs $0, and it is
+      a `modal run` nobody has made yet:
+      `modal run pipeline/backfill_institutions.py::count` is the dry run
 - [x] Upgrade the judgment model beyond free tiers: decided by the owner
       2026-09-25 rather than by a bake-off, because the free tier's failure was
       throughput and not quality. See ADR-2026-09-26 and docs/finance/opex.md,

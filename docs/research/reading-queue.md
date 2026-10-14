@@ -684,3 +684,71 @@ purpose rather than struck.**
   measured on the same draw, so the comparison is one command once a deploy
   has shipped the new prompt. The precondition is the deploy, not the
   measurement -- asked by the research seat -- 2026-10-12
+
+## Queued 2026-10-13 by skills/agent-memory-selection
+
+Both papers this run read in full are measured against work the corpus does not
+hold. Every id below was checked against `papers` and none of them is there, so
+the library now carries a pre-registered result about conversational memory
+without a single one of the systems or findings it is argued against. The first
+three are load-bearing: each one could change a sentence in the skill.
+
+- [ ] arxiv:2601.00821 — Fidelity Before Structure, the controlled comparison
+  that swaps only the stored representation and reports verbatim chunks ahead of
+  LLM-extracted artifacts by 15.9 points on LoCoMo and 22.0 on LongMemEval-S.
+  Delta 1 of this skill reports a 0.5-point difference on the same question, and
+  the newer paper calls its own result "smaller and more cautious than
+  Fidelity's gap". If the 15.9 is right, delta 1 understates its own finding and
+  should say so; either way the skill is citing one side of a 30x disagreement
+  about the same comparison — asked by skills/agent-memory-selection — 2026-10-13
+- [ ] arxiv:2603.15599 — SmartSearch, the half of the literature that finds
+  ranking decisive, and the paper delta 2's budget reading is built to reconcile.
+  The reconciliation is the newer paper's interpretation across pipelines and
+  explicitly not a tested claim, and this skill repeats it on their say-so —
+  asked by skills/agent-memory-selection — 2026-10-13
+- [ ] arxiv:2607.17545 — Kang et al. 2026, retain against consolidate under a
+  fixed answer-time budget, up to 48 points on LongMemEval at 32 tokens. This is
+  the regime below every budget in delta 2 (the tight budgets here are 129 to 265
+  tokens) and it is where the skill's "keep raw" advice is reported to invert.
+  Delta 2's procedure has no floor for this, which is a gap in the skill, not
+  only in the corpus — asked by skills/agent-memory-selection — 2026-10-13
+- [ ] arxiv:2608.15008 — Huang et al. 2026, a controlled comparison of memory
+  substrates finding that none dominates across operating regimes. If that
+  holds, it is the general form of this whole skill and the frame delta 1 should
+  be written inside — asked by skills/agent-memory-selection — 2026-10-13
+- [ ] arxiv:2605.06132 — MemReranker, a small reasoning-aware reranker matching
+  gpt-4o-mini on key retrieval metrics. Delta 1 step 3 needs an open-weight floor
+  and currently names a closed, versioned model (jev-1.13.0) with a
+  MiniLM-class guess beside it; this paper is the measured floor —
+  asked by skills/agent-memory-selection — 2026-10-13
+- [ ] arxiv:2607.29377 — Zero-Mem, which removes LLM calls from every memory
+  operation and retrieves with BM25, dense embeddings and a non-generative NER
+  graph. The cheapest point on delta 1's curve, and it reports F1 rather than
+  answer accuracy, so the queue line is as much about whether the two can be
+  compared at all — asked by skills/agent-memory-selection — 2026-10-13
+- [ ] arxiv:2607.22690 — LazyMem, which defers memory construction to query time
+  and rewrites the retrieved pool rather than selecting from it. A third option
+  delta 1's write-or-select framing does not contain —
+  asked by skills/agent-memory-selection — 2026-10-13
+
+**Three questions queued by this run.**
+
+- [ ] question — Does the abstention regression in delta 3 reproduce outside a
+  benchmark's adversarial split? The measured effect is one table on questions
+  built to have no answer. The claim the skill makes to a builder is about real
+  users asking about things they never said, which is a different distribution,
+  and nothing in the corpus measures it — asked by
+  skills/agent-memory-selection — 2026-10-13
+- [ ] question — Where is the keep-ratio breakpoint? Delta 2 tells a builder to
+  buy selection under roughly a quarter and stop above it. That threshold is this
+  seat's reading of a two-point curve (3 and 20 of 30) on two benchmarks, and the
+  curve between them was never measured. A sweep at 5, 8, 12 and 15 would turn
+  the skill's one soft number into a measured one — asked by
+  skills/agent-memory-selection — 2026-10-13
+- [ ] question — Is the typed control plane worth its own skill? Cut from this
+  run under ADR-40's three-module cap: Jev-Mem's write path, its 158-second build
+  (6.6x) and 0.93-second query latency (36.7 percent lower), and the split of
+  candidate discovery from relation judgment that keeps controller cost off
+  memory size. It needs a second paper before it is a skill rather than one
+  system's architecture, and the corpus holds no independent replication of any
+  of it — asked by skills/agent-memory-selection — 2026-10-13
