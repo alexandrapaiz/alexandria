@@ -707,6 +707,32 @@ asked whether that thing was the thing it was supposed to be reading.
    entry generalises, run its tell over `prompts/digest.md`, print the
    count in the review, and fix every hit in this pull request or say
    why one stays. A count of one is a result too: it closes the entry.
+   **The sweep is per entry the run adds, and the count is printed per
+   entry** (added 2026-10-13,
+   `INC-2026-10-13-a-ban-list-entry-shipped-without-the-sweep-entry-90-requires`).
+   The run of 2026-10-12 added two entries, swept one of them, and reported
+   the sweep it ran rather than the sweep it owed. The unswept entry had three
+   supplies, one of them in the opening slot, which is the slot its defect
+   printed from. Whether an entry generalises is a judgment a tired run makes
+   about its own prose, and the entry whose tell a grep can hold is the entry
+   that gets swept, so the rule holds for the convenient half. Every entry the
+   run adds gets a sweep line in the review, and an entry whose tell is a word
+   class rather than a phrase gets one too, by hand if no command can hold it.
+   **Then ask the generalisation question, which a sweep cannot** (added
+   2026-10-13,
+   `INC-2026-10-13-a-generator-gate-read-the-main-clause-and-the-defect-moved-right`).
+   A sweep searches the generator for the same words. It cannot find the same
+   defect wearing a different grammar, and four entries on this register are
+   now that: the turn sentence that moved into the first sentence of a group,
+   the grade whose words were fixed and whose position was not, the period word
+   written hundreds of words after the rule, and the attributive subject that
+   moved into a relative clause while the gate kept reading sentences. Each gate
+   inherited the syntax of the one specimen it was written from.
+   So before a gate is called finished, restate its defect in a subordinate
+   clause, in a different position in the item, and in a different part of
+   speech, and ask whether the gate as worded still catches it. Where it does
+   not, the gate names the unit it reads, which is usually the clause rather
+   than the sentence.
 5. **The claims pass**, added 2026-09-24 after the fourth grade of
    2026-W39 found a false comparison that the four passes above had
    no way to see. Those four all ask how the issue is written. This
@@ -896,6 +922,29 @@ the only rule in this seat's registers that a command can check. A grade is
 allowed to decide not to patch, and the grade of 2026-10-08 decided that for a
 stated reason that was sound. What it is not allowed to do is leave the finding
 somewhere nothing will read again.
+
+## The run's own prose is measured, not read (added 2026-10-13)
+
+Five times this seat's own review has broken canon law 1 while enforcing it, and
+the fifth time the review asserted a check it had run by eye
+(`INC-2026-10-12-the-editors-own-prose-broke-canon-law-one-a-fifth-time`). The
+four earlier diagnoses are all about where the mark hides. A count does not care
+where it hides, so the count is the gate:
+
+```
+python3 -I docs/voice/check_voice.py selfcheck origin/main
+```
+
+It reads every line the run adds, against the working tree rather than the
+commits, because the draft that broke the law five times was uncommitted when it
+was measured. A semicolon inside a quotation of the artifact or of a surface's
+output is excused in code, because striking it falsifies the quote, and so is
+one inside a shell line, where it is the literal character. An em dash is
+excused on a heading line, which is the date separator every entry in
+docs/agents/incidents.md and docs/ideas.md carries. Everything else is a finding,
+and it exits non-zero, so the run either strikes the mark or the review says in
+one line why it stands. Run it before `gh pr ready`, in the same step as the
+sixth question's grep.
 
 ## Maintenance
 

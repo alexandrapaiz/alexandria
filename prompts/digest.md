@@ -584,10 +584,13 @@ term of art, and never two clauses of scene-setting before the verb.
 
 Then say what is in here, in one line, before any interpreting starts. Two or
 three of the issue's items, named in plain words the way a person lists what
-they are about to say: "Today, a dense reward that moved terminal agents
-fifteen points. Two groups landed on the same answer for context management.
-And a benchmark ceiling turned out to be wrong." Every newsletter worth
-learning from makes this promise inside the first screen. Keep it to a line, never number
+they are about to say: "A dense reward that moved terminal agents fifteen
+points. Two groups landed on the same answer for context management. And a
+benchmark ceiling turned out to be wrong." No period word stands in that
+specimen, because the cadence was settled off `dates` hundreds of words ago
+and a word like "today" sitting at the position where this line gets written
+is the daily's answer handed to whichever cadence is reading. Every newsletter
+worth learning from makes this promise inside the first screen. Keep it to a line, never number
 it, never restate the title, and name only items that actually appear below.
 **"Only items that appear below" is a count, so count it.** This line is a
 promise, and the reader who keeps reading is collecting on it. Before you leave
@@ -829,7 +832,7 @@ left. If nothing is left that a builder could act on, you have no item, and the
 right move is to drop it rather than to shorten it. "No citation movers were recorded this week"
 names one of alexandria's own tables at a reader who has never heard of it,
 so either say nothing or say the absence as a fact about the field in the
-reader's words ("nothing older moved enough to be worth reporting today").
+reader's words ("nothing older moved enough to be worth reporting").
 That holds anywhere a query comes back empty.
 
 `supported_claims` returns claims and never papers, so two rows can be one
@@ -1069,7 +1072,7 @@ twice, once as the overturner and once as the overturned.
 If one kind is empty, the default is to say nothing and let the other kind
 carry the section. Print the absence only where it changes what the reader
 should believe today, and then say it about the field and never about the
-stream: "nothing the field held last month lost ground today" is information a
+stream: "nothing the field held last month lost ground" is information a
 reader can use, and naming an internal source that returned no rows is the
 pipeline talking. If BOTH kinds are empty, the section does not run and its
 heading does not print, per the length rule above.}
@@ -1946,6 +1949,28 @@ the rule's question to the thing in front of you.
   all, so "83.3% is the current best on that benchmark" rather than "X now
   reports 83.3%". The print that made this a gate carried two of them in one
   sentence and the rule above was in the file, correctly, the whole time.
+  **Read it clause by clause, because that is where the next print put it.**
+  This gate was in the file in full when the print of 2026-10-05 carried six of
+  these, and five of the six hung off a relative clause whose sentence had a
+  perfectly good subject: "Movement Trend Guidance, which improves mixed-training
+  performance from 56.1% to 62.8%", "Dynin-Robotics, which attains 78.4%",
+  "policies that reported 86.20%". Asked what the SENTENCE's subject is, you
+  answer with the main clause and never reach the clause doing the attributing.
+  So put the question to every clause, including the ones hanging off which,
+  that and whose. The subject list is wider than the one above too: a study, a
+  paper, an ablation and a claim are things rather than people, so "new paired
+  feedback studies show", "the same paper documents" and "Ablation shows" are
+  this defect in nouns that list never named.
+  **Then count the attributions, because the worst case is not a sentence you
+  can find.** Everything above finds a sentence that hands the work to a thing.
+  An item that hands it to nobody prints no such sentence, so this gate reads
+  clean over it. Take the same list of named works the links and the grades are
+  counted against, and count the ones whose work is attributed to an institution
+  or, where the payload has no institution, to a named author. The two numbers
+  are the same number or the issue is not finished. In the print of 2026-10-05
+  they were 5 and 12, and all four items in the fell-behind section sat on the
+  wrong side of it, which is the slot whose own rule in this file says
+  "attributed by institution".
 - **Then read the issue for this file's own words.** Every name for a piece of
   the pipeline, and every name for a check in this file, is internal. A print on
   2026-09-28 told a subscriber that two results "fail the kind test", which is

@@ -45,6 +45,7 @@ The stronger form of check 4 needs the corpus and is filed with it.
 Usage:  python3 docs/voice/check_voice.py
           [enforcements|stale|measure|links|delivery|sweep|all] [path...]
         python3 docs/voice/check_voice.py enforcements <git-ref>
+        python3 docs/voice/check_voice.py selfcheck <git-ref-or-range>
 Exit:   1 if any check reports a finding, 0 if clean.
 """
 import collections
@@ -567,6 +568,127 @@ def delivery(paths=None):
     return rc
 
 
+EM = chr(8212)
+FENCE = re.compile(r"^\s*(```|~~~)")
+
+
+def added_lines(ref):
+    """Every line this diff adds, as (path, line number in the new file, text).
+
+    `git diff -U0` so no context line is read as the run's own prose, and the
+    hunk header carries the new file's line numbers, which is what makes a hit
+    something a run can open rather than something it has to search for.
+    """
+    # A bare ref diffs that commit against the WORKING TREE, which is the
+    # state a run is about to ask the owner to merge. `ref..HEAD` would read
+    # the commits and miss every line the run has not committed yet, and the
+    # draft that broke canon law 1 five times was uncommitted when it was
+    # measured. A range is passed through, for a grade re-taken after a fix.
+    out = subprocess.run(["git", "diff", "-U0", ref], cwd=ROOT,
+                         capture_output=True, text=True)
+    path, n = None, 0
+    for line in out.stdout.splitlines():
+        if line.startswith("+++ b/"):
+            path, n = line[6:], 0
+        elif line.startswith("@@"):
+            m = re.search(r"\+(\d+)", line)
+            n = int(m.group(1)) if m else 0
+        elif line.startswith("+") and not line.startswith("+++"):
+            yield path, n, line[1:]
+            n += 1
+
+
+def fenced(path):
+    """Which line numbers of a file sit inside a ``` block.
+
+    Read off the working tree rather than guessed from the diff, because a
+    fence opens on a line the diff may not have touched. A fenced line is the
+    output of a command or the body of an artifact, quoted, so a mark in it is
+    not this seat's prose. The first run of this check found two hits and one
+    was the press surface's own FAILING line, pasted inside a fence.
+    """
+    f = ROOT / path
+    if not f.exists():
+        return set()
+    out, inside = set(), False
+    for n, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
+        if FENCE.match(line):
+            inside = not inside
+            out.add(n)
+        elif inside:
+            out.add(n)
+    return out
+
+
+def quoting(text):
+    """Is the mark inside something quoted, or inside a command?
+
+    The two exceptions are the whole difficulty and both were settled in prose
+    by the grades of 2026-10-10 and 2026-10-12. A semicolon inside a quotation
+    of the artifact or of a surface's output cannot be struck without
+    falsifying the quote, and a semicolon inside a shell line is the literal
+    character. Everything else is a finding.
+    """
+    stripped = text.lstrip()
+    if text.startswith(("    ", "\t")) or stripped.startswith((">", "$", "#!")):
+        return True
+    if stripped.startswith("|") and stripped.endswith("|"):
+        return True
+    # The tail of a quotation that opened on an earlier line: one quote mark,
+    # at the end, with the mark before it. Every register in docs/voice wraps
+    # its prose, so a quoted specimen longer than a line is the normal case
+    # and the first run of this check reported one as a finding.
+    if stripped.count('"') == 1 and stripped.endswith('"'):
+        return True
+    for span in re.findall(r'"[^"]*"|`[^`]*`|\([^)]*\)', text):
+        if ";" in span or EM in span:
+            return True
+    return False
+
+
+def selfcheck(ref=None):
+    """Canon law 1 over the run's own added lines, which was the last
+    measurement this seat took by reading.
+
+    The ledger entry of 2026-10-12 and
+    `INC-2026-10-12-the-editors-own-prose-broke-canon-law-one-a-fifth-time`:
+    a review reported no semicolon join in any added line, and the per-file
+    command then found eleven semicolons, eight of them violations, one inside
+    the sentence asserting the check. Five occurrences of this class share one
+    diagnosis, which is where the mark hides, and a count does not care.
+    An em dash is allowed on a heading line, because every entry in
+    docs/agents/incidents.md and docs/ideas.md carries one as its own date
+    separator. Nowhere else.
+    """
+    ref = ref or "origin/main"
+    hits, counts, fences = [], collections.Counter(), {}
+    for path, n, text in added_lines(ref):
+        for mark, name in ((";", "semicolon"), (EM, "em dash")):
+            if mark not in text:
+                continue
+            counts[(path, name)] += text.count(mark)
+            if path not in fences:
+                fences[path] = fenced(path)
+            if n in fences[path] or quoting(text):
+                continue
+            if mark == EM and text.lstrip().startswith("#"):
+                continue
+            hits.append((path, n, name, text.strip()))
+    print(f"added lines read from   {ref}")
+    for (path, name), k in sorted(counts.items()):
+        print(f"  {path:<40} {name} {k}")
+    if not counts:
+        print("  no semicolon and no em dash in any added line")
+    for path, n, name, text in hits:
+        print(f"  FINDING {path}:{n}  {name}")
+        print(f"    {text[:96]}")
+    print()
+    print(f"{len(hits)} line(s) carry a mark this file cannot excuse. A quotation and a")
+    print("shell line are excused in code. Everything else is canon law 1 until the")
+    print("run strikes it or the review says in one line why it stands.")
+    return 1 if hits else 0
+
+
 def plain_md(line):
     """Markdown stripped the way the renderer strips it, for comparison only."""
     line = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", line)
@@ -586,12 +708,14 @@ def main():
     # `enforcements` takes a git ref rather than a path, because ban list 105
     # is about the file the press runs and that file is only reachable through
     # the commit the deploy was built from.
+    # `selfcheck` is not in `all`, because `all` is run over the artifact and
+    # this one is run over the run's own diff. It takes a git ref or a range.
     for name, fn in (("enforcements", enforcements), ("sweep", sweep),
                      ("stale", stale), ("measure", measure), ("links", links),
-                     ("delivery", delivery)):
-        if which in (name, "all"):
+                     ("delivery", delivery), ("selfcheck", selfcheck)):
+        if which == name or (which == "all" and name != "selfcheck"):
             print(f"==== {name} ====")
-            if name == "enforcements":
+            if name in ("enforcements", "selfcheck"):
                 rc |= fn(paths[0]) if (which == name and paths) else fn()
             else:
                 rc |= fn(paths) if (name in takes_paths and paths) else fn()
