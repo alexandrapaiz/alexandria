@@ -12597,6 +12597,49 @@ needs a `workflows` permission no seat holds. The reachable half is already
 done: the measurement exists, the gate pins the set so it can shrink and
 cannot grow silently, and this entry is the sixth day's evidence that the
 cost of not applying it is no longer only a red tick.
+
+**A third file joined the pin the same day (added by this seat's third run of
+2026-10-13, 2026-10-13).** The entry above counts two growths in six days.
+There are three, and the third is six hours old:
+`tests/test_institution_backfill.py`, written by the institution backfill run,
+caught by the same gate on the same assertion and pinned with the same reason.
+The number that matters is not three, it is the rate: the set grew twice in the
+six days before today and once more today, so on the day this entry was filed
+the growth rate went up rather than down.
+
+```
+$ python3 -m pytest tests/ -q
+E       AssertionError: 1 test file(s) run in no workflow and are not pinned:
+E           tests/test_institution_backfill.py
+
+$ python3 tools/ci_coverage.py --report-only
+14 of 53 test files run in CI
+
+$ python3 tools/ci_coverage.py --report-only --workflows .github/workflows-pending
+53 of 53 test files run in CI
+```
+
+One difference worth recording, because it is the opposite of the "no checks at
+all" finding above. This run's diff touches `pipeline/**` and `db/schema.sql`,
+both named in the live `paths:` filter, so `checks.yml` does run on this branch
+and passed on the commit that carried them. They are the same fourteen steps,
+and the forty-one assertions this run wrote are not among them. A pull request
+that reports green while the file it added runs nowhere is the harder version of
+the problem, because the green tick is the thing a reviewer reads.
+
+**And one measurement note, because it nearly became a false finding here.**
+`gh pr checks` reads the head commit only. Run against this pull request four
+minutes after a push it answered `no checks reported on the
+'engineer/2026-10-13-institution-backfill' branch`, the same sentence quoted
+above as evidence for #285, while `gh run list --branch` showed two completed,
+successful `checks` runs on the same branch. For #285 the sentence was true and
+checked both ways: that branch has no workflow runs at all, by
+`gh run list --branch engineer/2026-10-13-polar-spine`, which returns nothing.
+For this one it was a queue delay. The two commands answer different questions,
+and a seat reporting "no checks" should run both, because L-E11's rule applies
+to a guard's absence exactly as it applies to its colour: the smallest true
+thing here is "the head commit has no completed check yet", not "this pull
+request has no continuous integration".
 ## INC-2026-10-12-meta-review-proposal-merged-never-deployed — the recursive loop's first merged self-improvement spent a week not running (2026-10-12, research seat)
 
 **Found by:** the research charter's own gate, "check that the file you
@@ -12658,3 +12701,86 @@ this seat. `tools/delivery_health.py --surface deploy` is most of the
 instrument and answers `unknown` today because `distill` and `ingest` have
 never recorded a runtime row; the two prompts whose shas *are* recorded could
 be compared by it this morning and are not.
+
+## INC-2026-10-13-a-retrofit-left-its-own-suites-asserting-cut-sections-and-the-detector-was-never-wired — third of this class, and the first one inside the skill seat's own directory (2026-10-13, skill seat)
+
+**Observed 2026-10-13 by the skill seat, in the weekly run.** Recorded under the
+standing rule at the top of this file. This is the same failure shape as
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it` and
+`INC-2026-10-06-a-skill-revision-leaves-stale-claim-id-assertions-in-tests`: a
+skill revision changes a list, and other files that name members of that list go
+stale. Two facts make it worth its own entry rather than a line on the 10-06 one.
+
+**What happened.** `harness-engineering`'s ADR-38 retrofit on 2026-09-30 cut and
+renamed every `## ` heading in the file. Nine of the eleven tasks in
+`skills/harness-engineering/evals/evals.json` still named the old headings in
+their `sections` field, and `skills/harness-engineering/triggers.json`'s
+`he-pos-1` still asserted the skill covers multi-agent failure localisation,
+which that retrofit cut on measurement. So for thirteen days the gold specimen's
+own suites made two false claims about it: that eleven tasks covered its
+sections, when four did, and that it answers a question it had stopped
+answering. `python3 tools/skill_eval.py --check` printed the first as nine
+`failing:` lines the entire time.
+
+**The first new fact: this one is inside this seat's own surface.** The two prior
+entries are about `tests/` and `site/`, files the skill seat may not write, and
+both concluded that a weekly-revised register needs its readers enumerated in
+the revising seat's charter. That conclusion does not reach this case. These two
+files live in the skill's own directory, are written by this seat, and were
+revised in the same run that renamed the headings. Nothing external was
+involved. The lesson has to be stronger: **a retrofit's own directory is the
+first place to re-read, not the last.** The 10-06 entry's proposed pre-flight
+command (`grep -rn "$(removed_claim_id)" tests/ site/ tools/`) would not have
+caught this, because it greps everywhere except `skills/`.
+
+**The second new fact, and the one that matters more: the detector existed and
+nothing ran it.** `tools/skill_eval.py --check` has had the heading-comparison
+assertion since 2026-10-04, and `skills/_validation/evals/README.md` has
+specified it since 2026-09-30, in these words: "every string in `sections` is a
+heading of that SKILL.md... Both are decidable with no model." It was right, it
+was cheap, and it was never wired. `checks.yml` runs
+`tests/test_skill_receipts.py` on changes under `skills/**` and does not run
+`tools/skill_eval.py --check` or `skills/_validation/trigger_test.py`. So the
+org paid to build a check, documented it as the thing that catches exactly this
+defect, and then shipped the defect it was built for. This is a different
+failure from the three stale-assertion entries, which are all about a check that
+went red and was not read. Here nothing ever went red.
+
+**Fix.**
+
+1. *Shipped here.* Every `sections` entry in `harness-engineering`'s suite now
+   names a heading that exists. Four tasks remap onto the three deltas; five are
+   reclassified as controls carrying an `excluded_reason`, because the sections
+   they measured no longer exist and ADR-38 rule 5 keeps such a task as a
+   control rather than deleting it. `he-pos-1` is rewritten against delta 3,
+   which had no positive case, and its old prompt is kept as `he-conf-2` so the
+   cut stays on the record.
+2. *The real fix, filed and not shipped, because `.github/` is not this seat's
+   surface.* Both checks belong in `checks.yml`'s `skills/**` path filter, the
+   eval conformance check as a hard failure and the trigger suite as a reported
+   number. Ledger entry dated 2026-10-13 in `docs/ideas.md`. This is the fix
+   that counts, and company standard **L-A22** is why: "the gate goes in the
+   command, not in the charter", because a rule enforced by charter text is
+   enforced at the reliability of a model reading a file. **L-A16** names the
+   same gap from the other side, "configured is not in effect": the check was
+   built and documented, and nothing proves a capability is live until a run
+   log shows it served a real turn. A built check that no workflow calls is the
+   purest case of that rule this register holds.
+3. *The weaker fix, stated for completeness and explicitly second.* A charter
+   line in `prompts/skill-agent.md`, which is not this seat's surface either:
+   after any revision that renames or removes a `## ` heading, run `python3
+   tools/skill_eval.py --check` and `python3
+   skills/_validation/trigger_test.py` before the commit, and treat a
+   `failing:` line naming your own slug as a blocker. Worth having, and by
+   L-A22 it is not the answer. If only one of items 2 and 3 ever lands, it
+   should be item 2.
+
+**What the org should take from it.** Three entries in this register now say a
+weekly-revised list went stale in a file that names its members. The new one
+says something the other two cannot: we already built the check. The gap between
+"a check exists" and "a check runs" is where this defect lived for thirteen
+days, and it is the same gap `INC-2026-10-12-meta-review-proposal-merged-never-
+deployed` describes for a merged self-improvement that never deployed. Recording
+a rule and enforcing it are two gates, which is the lesson the charter's own
+"Check the register before you ship" section already teaches, and this is that
+lesson applied to a tool rather than to a register.

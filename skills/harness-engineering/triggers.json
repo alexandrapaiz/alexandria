@@ -1,54 +1,69 @@
 {
-  "skill": "harness-engineering",
-  "suite_version": 1,
-  "written": "2026-09-18",
-  "author": "skill agent (ADR-22)",
-  "note": "Machine-readable form of the five-prompt trigger test prompts/skill-agent.md requires, plus one confusion case the executable form makes possible. Run with skills/_validation/trigger_test.py.",
-  "cases": [
-    {
-      "id": "he-pos-1",
-      "kind": "positive",
-      "expect": "harness-engineering",
-      "prompt": "Our customer-support agent fails about a third of its multi-step tickets and we cannot tell which of the five sub-agents is at fault. Where should we start debugging?",
-      "anchor": "when debugging a multi-agent pipeline",
-      "rationale": "A multi-agent pipeline failing with the cause unlocalised is the skill's sequential-intervention section exactly. Two activation phrases match at once."
-    },
-    {
-      "id": "he-pos-2",
-      "kind": "positive",
-      "expect": "harness-engineering",
-      "prompt": "We have budget for extra inference compute on one hard planning step. Should the agent reflect on and revise its own answer, or should we sample three candidates in parallel and select one?",
-      "anchor": "when allocating test-time compute",
-      "rationale": "The sample-then-select finding answers this directly, and the wrong default (sequential reflection) is the one a competent engineer reaches for unaided."
-    },
-    {
-      "id": "he-pos-3",
-      "kind": "positive",
-      "expect": "harness-engineering",
-      "prompt": "We are deciding whether to spend the quarter fine-tuning our 8B model or rebuilding the tool interface it calls. Which buys more?",
-      "anchor": "when deciding between improving the harness and training the model",
-      "rationale": "The order-of-operations section is the whole answer, and the skill's evidence contradicts the intuitive choice."
-    },
-    {
-      "id": "he-neg-1",
-      "kind": "negative",
-      "expect": null,
-      "prompt": "The Kubernetes pods serving our agent keep getting OOM-killed under load. How should we size the inference deployment and set memory limits?",
-      "rationale": "Hard negative: it says agent, serving, and inference, the skill's own vocabulary. But the need is capacity planning for infrastructure, and nothing in this skill's evidence speaks to pod sizing. Firing here would be the context-bloat failure mode the market audit flags."
-    },
-    {
-      "id": "he-neg-2",
-      "kind": "negative",
-      "expect": null,
-      "prompt": "Write me a system prompt for a support chatbot that always ends its reply by offering to escalate to a human.",
-      "rationale": "Hard negative: prompt, agent, and tool vocabulary again, and the word prompt is central to the skill's subject. But this is a copywriting request with no underperformance to diagnose and no design decision to make. A lazy description that matched on prompt alone would fire here."
-    },
-    {
-      "id": "he-conf-1",
-      "kind": "confusion",
-      "expect": "harness-engineering",
-      "prompt": "We want to fine-tune our smaller model by imitating a stronger model's trajectories, inside the scaffold we already tuned around the smaller one. Any reason not to?",
-      "rationale": "The hardest case in the library: it is a distillation question, which is the neighbouring skill's territory, but this exact setup is the negative result harness-engineering owns (imitation under an evolved harness, 4 to 30 points worse). Routing it to the post-training skill would lose the warning."
-    }
-  ]
+ "skill": "harness-engineering",
+ "suite_version": 1,
+ "written": "2026-09-18",
+ "author": "skill agent (ADR-22)",
+ "note": "Machine-readable form of the five-prompt trigger test prompts/skill-agent.md requires, plus one confusion case the executable form makes possible. Run with skills/_validation/trigger_test.py.",
+ "cases": [
+  {
+   "id": "he-pos-1",
+   "kind": "positive",
+   "expect": "harness-engineering",
+   "prompt": "We have collected about forty one-line prompt fixes from failed runs over the last month and I was going to paste all of them onto the end of the agent's system prompt. Is that the right way to apply them?",
+   "anchor": "when a backlog of accumulated prompt corrections is about to be appended to an agent's system prompt",
+   "rationale": "Delta 3 is the whole answer and the description names this activation condition verbatim. Rewritten 2026-10-13: the previous prompt asked which of five sub-agents was at fault, whose anchor phrase (\"when debugging a multi-agent pipeline\") left the description on 2026-09-30 when the localisation content was cut on measurement. A positive case for content a skill no longer carries is a false coverage claim, so it moved to he-conf-2 rather than being kept green. Delta 3 had no positive case before this."
+  },
+  {
+   "id": "he-pos-2",
+   "kind": "positive",
+   "expect": "harness-engineering",
+   "prompt": "We have budget for extra inference compute on one hard planning step. Should the agent reflect on and revise its own answer, or should we sample three candidates in parallel and select one?",
+   "anchor": "when allocating test-time compute",
+   "rationale": "The sample-then-select finding answers this directly, and the wrong default (sequential reflection) is the one a competent engineer reaches for unaided."
+  },
+  {
+   "id": "he-pos-3",
+   "kind": "positive",
+   "expect": "harness-engineering",
+   "prompt": "We are deciding whether to spend the quarter fine-tuning our 8B model or rebuilding the tool interface it calls. Which buys more?",
+   "anchor": "when deciding between improving the harness and training the model",
+   "rationale": "The order-of-operations section is the whole answer, and the skill's evidence contradicts the intuitive choice."
+  },
+  {
+   "id": "he-neg-1",
+   "kind": "negative",
+   "expect": null,
+   "prompt": "The Kubernetes pods serving our agent keep getting OOM-killed under load. How should we size the inference deployment and set memory limits?",
+   "rationale": "Hard negative: it says agent, serving, and inference, the skill's own vocabulary. But the need is capacity planning for infrastructure, and nothing in this skill's evidence speaks to pod sizing. Firing here would be the context-bloat failure mode the market audit flags."
+  },
+  {
+   "id": "he-neg-2",
+   "kind": "negative",
+   "expect": null,
+   "prompt": "Write me a system prompt for a support chatbot that always ends its reply by offering to escalate to a human.",
+   "rationale": "Hard negative: prompt, agent, and tool vocabulary again, and the word prompt is central to the skill's subject. But this is a copywriting request with no underperformance to diagnose and no design decision to make. A lazy description that matched on prompt alone would fire here."
+  },
+  {
+   "id": "he-conf-1",
+   "kind": "confusion",
+   "expect": "harness-engineering",
+   "prompt": "We want to fine-tune our smaller model by imitating a stronger model's trajectories, inside the scaffold we already tuned around the smaller one. Any reason not to?",
+   "rationale": "The hardest case in the library: it is a distillation question, which is the neighbouring skill's territory, but this exact setup is the negative result harness-engineering owns (imitation under an evolved harness, 4 to 30 points worse). Routing it to the post-training skill would lose the warning."
+  },
+  {
+   "id": "he-pos-4",
+   "kind": "positive",
+   "expect": "harness-engineering",
+   "prompt": "Our GRPO run on the hard task split has been flat at zero reward for two days. We sample eight rollouts per task in parallel and every group comes back all-zero, so there is no advantage to learn from. Should we raise the group size to thirty-two, or is there something better to do with the same budget?",
+   "anchor": "when deciding how to spend extra inference compute on one hard step",
+   "rationale": "New 2026-10-13 with delta 2's exception clause. This is the one situation where the skill's own headline rule inverts, so if the skill fires anywhere it must fire here; a reader who gets the default without the exception gets the wrong answer on exactly this prompt. Recorded as a real test of the revision rather than a sure win: the lexical runner may route a GRPO-shaped prompt to the post-training skills, and the result is reported either way."
+  },
+  {
+   "id": "he-conf-2",
+   "kind": "confusion",
+   "expect": "recursive-harness-self-improvement",
+   "prompt": "Our customer-support agent fails about a third of its multi-step tickets and we cannot tell which of the five sub-agents is at fault. Where should we start debugging?",
+   "rationale": "he-pos-1's prompt until 2026-10-13, kept rather than deleted so the cut is on the record. Localising a failure across sub-agents is now recursive-harness-self-improvement's subject (\"attributing a failure to one function inside a long execution log\"), not this skill's. The runner already routes it there, at a narrow +0.005 margin over the nearest decoy, which is itself the finding: nothing in the library answers this prompt with confidence."
+  }
+ ]
 }

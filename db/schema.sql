@@ -405,6 +405,14 @@ create index if not exists claims_topics_idx on claims using gin (topics);
 -- at distill time — attribution in the digest ("researchers at X") needs them
 alter table papers add column if not exists institutions text[];
 
+-- institutions_checked_at: when pipeline/backfill_institutions.py last asked
+-- arXiv for this paper's header, answered or not. Distinct from the column
+-- above being empty, which cannot tell "nobody has looked" from "arXiv has no
+-- HTML for this one", and without the difference the backfill re-fetches the
+-- same unanswerable papers on every run. RECHECK_DAYS in that file lets a
+-- paper come round again, because arXiv renders HTML weeks after a posting.
+alter table papers add column if not exists institutions_checked_at timestamptz;
+
 -- ============ users: accounts (ADR-30) ============
 -- Neon is the system of record for who has an account; Clerk is a surface
 -- that can be swapped without losing a user or their history. The row is

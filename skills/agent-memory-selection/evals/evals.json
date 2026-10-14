@@ -1,0 +1,344 @@
+{
+ "skill": "agent-memory-selection",
+ "suite_version": 2,
+ "written": "2026-10-13",
+ "author": "skill agent (ADR-22)",
+ "adr": "ADR-36, ADR-38, ADR-40",
+ "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
+ "judge": "a model other than the subject; rubric tasks only",
+ "policy": {
+  "repetitions": 3,
+  "subject": "kimi-k2.6",
+  "judge": "openai/gpt-oss-120b",
+  "min_delta": 0.2,
+  "pre_registered": "2026-10-13, written with the skill and before either arm ran. Neither arm has run: no GROQ_API_KEY in agent-skill.yml and no benchmark provider in pipeline/budget.py, both queued in docs/agents/pending-workflow-changes.md. These numbers are therefore chosen ahead of a measurement, which is rule 1's whole point.",
+  "certificates_note": "Every rubric criterion here carries a `certificate` (ADR-40 item 5), and `require_certificates` is deliberately not set, because the harness can only see some of them. tools/skill_eval.py `normalize()` rebuilds each item of a `check.type: rubric` task as id, asks and anchors only, so a certificate written in the contract's documented vocabulary is dropped before `certificate_problems()` looks for it. A `rubric` key at the task's top level, the harness's own vocabulary, survives untouched. ams-t5 is written that way on purpose, as the library's one worked example of a certificate the checker can actually read (it is the whole of the \"4 of 265\" in `--check`'s header). The one-line normalize fix is filed for the engineer in docs/ideas.md; turn this flag on in that same change, and move ams-t5 back to the documented form then."
+ },
+ "note": "Five treatment tasks and two controls, each reproducing a situation one of the two cited papers actually ran (ADR-35). Written against the one decision each section changes, not against the topic: ams-t1 and ams-t4 against delta 1, ams-t2 and ams-t3 against delta 2, ams-t5 against delta 3. Three of the five carry hard `parses` checks rather than rubrics (ADR-40 item 6), because each answer is a design decision that can be stated as a structured object. Not audited: ADR-40 item 6's per-task audit needs a judge model this seat cannot reach. Contract: skills/_validation/evals/README.md.",
+ "tasks": [
+  {
+   "id": "ams-t1",
+   "kind": "treatment",
+   "sections": [
+    "Delta 1: write raw, select at read, and know what the premium costs"
+   ],
+   "form": "prompt",
+   "situation": "H1's setup: a tight context budget on held-out conversations, where raw turns plus one selection call were non-inferior to an LLM-extraction memory at 3,061 times less write cost.",
+   "source": {
+    "paper": "When Does Selection Replace Extraction?",
+    "arxiv": "arxiv.org/abs/2609.34227",
+    "claims": [
+     982,
+     983,
+     985
+    ]
+   },
+   "prompt": "We are adding long-term memory to a support assistant. Every inbound message will go through an LLM extraction pass that pulls out durable facts and writes them to a store, which is what the popular memory libraries do, and at query time we retrieve the top 3 facts into a roughly 250-token memory block. Volume is about 40,000 turns a day and the extraction pass is the single largest line in our projected inference bill. Before I sign off on the spend: is the extraction pass buying us accuracy, and how would I know? Answer as JSON with keys \"store\", \"write_path\", \"read_path\", \"expected_accuracy_delta_points\", \"write_cost_direction\", and \"how_to_verify\".",
+   "without_skill": "Endorses write-time extraction as the standard architecture and justifies it on retrieval precision and token efficiency, with no figure for what the extraction pass buys and no comparison protocol, because every deployed memory library it has read about extracts at write time.",
+   "with_skill": "Says the premium is bounded and small at this budget, under 3 points by a pre-registered test, prices the write path against storing raw turns with their dates, moves the selection to one bounded call at read time, and gives a matched-token comparison as the verification.",
+   "check": {
+    "type": "parses",
+    "format": "json",
+    "assertions": [
+     {
+      "id": "store",
+      "statement": "answer.store denotes raw or verbatim turns, retained with their dates or timestamps, rather than only LLM-extracted facts."
+     },
+     {
+      "id": "write_path",
+      "statement": "answer.write_path removes the per-message LLM extraction pass, leaving embeddings or other non-generative indexing."
+     },
+     {
+      "id": "read_path",
+      "statement": "answer.read_path names a selection or rerank step over a retrieved shortlist, performed at query time."
+     },
+     {
+      "id": "delta_bounded",
+      "statement": "answer.expected_accuracy_delta_points states a small bounded cost for dropping extraction at this budget, consistent with at most about 3 points, and does not claim raw turns are more accurate."
+     },
+     {
+      "id": "cost",
+      "statement": "answer.write_cost_direction states that dropping extraction reduces write cost by orders of magnitude, not by a marginal amount."
+     },
+     {
+      "id": "verify",
+      "statement": "answer.how_to_verify requires the two arms to be compared at matched context tokens rather than at each system's default k."
+     }
+    ],
+    "pass_condition": "all six assertions hold"
+   }
+  },
+  {
+   "id": "ams-t2",
+   "kind": "treatment",
+   "sections": [
+    "Delta 2: whether ranking matters is a property of the budget, not of your pipeline"
+   ],
+   "form": "prompt",
+   "situation": "The budget-dependence result, at the tight end: 3 of 30 candidates kept, where the rerank was worth +17.4 points on LoCoMo and +9.1 on LongMemEval.",
+   "source": {
+    "paper": "When Does Selection Replace Extraction?",
+    "arxiv": "arxiv.org/abs/2609.34227",
+    "claims": [
+     984
+    ]
+   },
+   "prompt": "Our retrieval returns 30 candidate turns per question and we pass the top 3 by cosine similarity into the prompt, which is all the context budget allows. Someone on the team wants to add a reranking call between retrieval and the prompt. I am sceptical, because we already sort by similarity and a reranker is another call on every query. Two separate papers I read disagree about whether reranking even helps. Should we add it, and what should I expect? Answer as JSON with keys \"add_reranker\", \"expected_gain_points\", \"the_deciding_quantity\", and \"when_this_answer_flips\".",
+   "without_skill": "Answers from general retrieval-engineering intuition, usually that a reranker gives a modest single-digit gain worth trying, and attributes the published disagreement to differences in models, datasets or reranker quality rather than to the keep ratio.",
+   "with_skill": "Says yes decisively at this ratio with a double-digit expected gain, names the keep ratio as the quantity that decides it, and states that the answer flips toward compactness and extraction once the budget keeps most of the candidates.",
+   "check": {
+    "type": "parses",
+    "format": "json",
+    "assertions": [
+     {
+      "id": "yes",
+      "statement": "answer.add_reranker is true."
+     },
+     {
+      "id": "magnitude",
+      "statement": "answer.expected_gain_points is a double-digit figure or a range whose midpoint is double-digit, consistent with roughly +9 to +17 points, rather than a low single-digit estimate."
+     },
+     {
+      "id": "quantity",
+      "statement": "answer.the_deciding_quantity names the keep ratio, the fraction of retrieved candidates the answer model actually reads, and not reranker quality, model choice or dataset."
+     },
+     {
+      "id": "flip",
+      "statement": "answer.when_this_answer_flips states that the gain shrinks as the budget keeps more candidates, and that extraction or compactness becomes the better spend there."
+     }
+    ],
+    "pass_condition": "all four assertions hold"
+   }
+  },
+  {
+   "id": "ams-t3",
+   "kind": "treatment",
+   "sections": [
+    "Delta 2: whether ranking matters is a property of the budget, not of your pipeline"
+   ],
+   "form": "prompt",
+   "situation": "The same result at the generous end, the half that inverts: 20 of 30 candidates kept, where the rerank was worth +1.5 and +1.1 points and the extraction system was the most accurate measured.",
+   "source": {
+    "paper": "When Does Selection Replace Extraction?",
+    "arxiv": "arxiv.org/abs/2609.34227",
+    "claims": [
+     984,
+     982
+    ]
+   },
+   "prompt": "Follow-up on our memory stack. We moved to a much larger context window, so we now pass 20 of our 30 retrieved candidates into the prompt instead of 3. The reranking call we added last quarter is still in the path and it costs us a call per query. Keep it or cut it, and if we have budget to spend on memory quality this quarter, where should it go? Answer as JSON with keys \"keep_reranker\", \"expected_gain_points\", \"where_to_spend\", and \"why\".",
+   "without_skill": "Keeps the reranker, because reranking is established good practice and the arm with a reranker scored higher in the team's own earlier test, and recommends tuning the reranker or the embedding model as the next investment.",
+   "with_skill": "Cuts or deprioritises the reranker at this ratio on a stated expectation of roughly 1 point, and moves the spend to compactness of what is stored, which is where extraction earns its write cost at a generous budget.",
+   "check": {
+    "type": "parses",
+    "format": "json",
+    "assertions": [
+     {
+      "id": "cut",
+      "statement": "answer.keep_reranker is false, or is true only with an explicit statement that its expected gain no longer justifies a per-query call."
+     },
+     {
+      "id": "magnitude",
+      "statement": "answer.expected_gain_points is about one point or a low single-digit figure, consistent with roughly +1.1 to +1.5, and is not double-digit."
+     },
+     {
+      "id": "spend",
+      "statement": "answer.where_to_spend names compactness of the stored representation, extraction or consolidation, rather than more reranking or a better reranker."
+     },
+     {
+      "id": "why",
+      "statement": "answer.why attributes the change to the keep ratio having risen, and does not attribute it to the reranker having become worse."
+     }
+    ],
+    "pass_condition": "all four assertions hold"
+   }
+  },
+  {
+   "id": "ams-t4",
+   "kind": "treatment",
+   "sections": [
+    "Delta 1: write raw, select at read, and know what the premium costs"
+   ],
+   "form": "prompt",
+   "situation": "S2 and S4: at matched context a single bounded selection call was non-inferior to a generative listwise reranker at about a third of the latency, and more accurate than a multi-call graph traversal.",
+   "source": {
+    "paper": "When Does Selection Replace Extraction?",
+    "arxiv": "arxiv.org/abs/2609.34227",
+    "claims": [
+     985,
+     721,
+     723
+    ]
+   },
+   "prompt": "Our memory service is too slow at p90 and reads are the problem. Today each query walks our memory graph with several LLM calls: one to route the query, one per hop to judge which edges to follow, and one to decide whether we have enough evidence. The graph itself tests well on offline retrieval metrics. I want to keep the quality and cut the latency. Give me the read path as JSON with keys \"calls_per_query\", \"call_type\", \"graph_traversal\", \"expected_quality_change\", and \"the_comparison_that_proves_it\".",
+   "without_skill": "Optimises the existing design: caches hops, batches the edge judgements, swaps a smaller model in for the routing call, or parallelises traversal, keeping a multi-call generative walk because the graph's offline retrieval metrics look good.",
+   "with_skill": "Collapses the read path to one bounded, non-generative call that returns a score over fixed options, drops or demotes the multi-call walk, states that answer-level quality held at matched context, and insists the comparison be at matched tokens rather than offline retrieval metrics.",
+   "check": {
+    "type": "parses",
+    "format": "json",
+    "assertions": [
+     {
+      "id": "one_call",
+      "statement": "answer.calls_per_query is 1, or denotes a single selection request, excluding the final answer call."
+     },
+     {
+      "id": "bounded",
+      "statement": "answer.call_type denotes a bounded or structured decision returning a score, probability or fixed-option choice, rather than free-form generation parsed afterwards."
+     },
+     {
+      "id": "traversal",
+      "statement": "answer.graph_traversal removes or demotes the multi-call graph walk from the per-query read path."
+     },
+     {
+      "id": "quality",
+      "statement": "answer.expected_quality_change states that answer-level quality is expected to hold rather than to improve, and does not promise an accuracy gain from the change."
+     },
+     {
+      "id": "matched",
+      "statement": "answer.the_comparison_that_proves_it is an answer-level comparison at matched context tokens, not a retrieval metric such as recall@k or hit rate alone."
+     }
+    ],
+    "pass_condition": "all five assertions hold"
+   }
+  },
+  {
+   "id": "ams-t5",
+   "kind": "treatment",
+   "sections": [
+    "Delta 3: the arm that scores better abstains worse"
+   ],
+   "form": "prompt",
+   "situation": "The abstention table: on adversarial questions whose correct answer is that nothing was discussed, similarity search abstained correctly 63.6 percent of the time against 54.1 with a typed selector and 48.8 with a generative reranker.",
+   "source": {
+    "paper": "When Does Selection Replace Extraction?",
+    "arxiv": "arxiv.org/abs/2609.34227",
+    "claims": [
+     984,
+     986
+    ]
+   },
+   "prompt": "We shipped a reranker into our assistant's memory read path and our answer accuracy went up about 15 points on our eval set, which is a clear win. Since then support has flagged a new complaint: the assistant confidently answers questions about things the user never actually told it, inventing an answer from whatever got retrieved. Nobody can see why a reranker would cause that, so the current theory is an unrelated prompt regression. What is going on, and what do we do before the next release?",
+   "without_skill": "Treats the two observations as unrelated and diagnoses hallucination in general: tighten the system prompt, add a grounding instruction, raise the retrieval similarity threshold, or add a verification pass, without connecting the regression to the reranker that produced the accuracy gain.",
+   "with_skill": "Names the reranker as the cause, explains that relevant-looking context lowers the model's willingness to say nothing relevant exists, quantifies it as a measured trade of roughly 9 points of correct abstention for the accuracy gain, and gates the release on a separately scored abstention set.",
+   "rubric": [
+    {
+     "id": "names_cause",
+     "asks": "Identifies the reranker itself as the likely cause of the new behaviour, rather than treating the accuracy gain and the abstention regression as unrelated events.",
+     "anchors": {
+      "0": "Diagnoses generic hallucination and never connects it to the reranker.",
+      "1": "Mentions the reranker as one possibility among several without committing.",
+      "2": "States that the reranker is the probable cause and explains the mechanism, that relevant-looking context makes the answer model less willing to say nothing was discussed."
+     },
+     "certificate": {
+      "kind": "number",
+      "names": "the measured drop in correct abstention when a selector is added to the same pipeline, 63.6 percent to 54.1 with a typed selector and 48.8 with a generative reranker; an answer that names the cause without this direction is scoring 1 at most"
+     }
+    },
+    {
+     "id": "trade_not_bug",
+     "asks": "Frames it as a trade the reranker makes rather than a defect to be patched out, so the accuracy gain and the abstention loss are two sides of one change.",
+     "anchors": {
+      "0": "Frames it purely as a bug to fix.",
+      "1": "Acknowledges a tension but still treats abstention as recoverable at no cost.",
+      "2": "States the trade explicitly: recall of the right evidence against confidence in the wrong kind."
+     },
+     "certificate": {
+      "kind": "number",
+      "names": "the same pipeline's +17.4 point accuracy gain beside its roughly 9 point abstention loss, both from the task's own situation; an answer that names only one of the two scores 1 at most"
+     }
+    },
+    {
+     "id": "gate",
+     "asks": "Prescribes measuring correct abstention separately from accuracy, on a held-out set of questions whose right answer is that the memory holds nothing, before the next release.",
+     "anchors": {
+      "0": "Proposes no abstention measurement.",
+      "1": "Says to watch for it or add it to the general eval without separating the metric.",
+      "2": "Names a separate abstention set and a separately reported number, as a release gate rather than a dashboard."
+     },
+     "certificate": {
+      "kind": "artifact",
+      "names": "a held-out question set whose correct answer is that nothing was discussed, with its own reported score; the benchmark's adversarial split is the named instance"
+     }
+    },
+    {
+     "id": "keeps_the_gain",
+     "asks": "Does not simply revert the reranker, since the accuracy gain is real at this budget.",
+     "anchors": {
+      "0": "Reverts the reranker as the fix.",
+      "1": "Leaves the choice open with no way to keep both.",
+      "2": "Keeps the selector and addresses abstention directly, for instance by giving the answer model an explicit nothing-relevant option alongside the retrieved turns."
+     },
+     "certificate": {
+      "kind": "number",
+      "names": "the +17.4 point accuracy gain the revert would give back, stated in the task; an answer that reverts without pricing that loss scores 0"
+     }
+    }
+   ],
+   "exploit": {
+    "answer": "This is almost certainly the reranker. Relevant-looking context makes the answer model less willing to say that nothing relevant exists, so correct abstention falls. It is a trade rather than a bug: you are trading recall of the right evidence for confidence in the wrong kind. Before the next release you should measure correct abstention separately from accuracy on a held-out set of questions whose right answer is that nothing was discussed, and treat it as a release gate. Do not revert the reranker, because the accuracy gain is real. Give the answer model an explicit nothing-relevant option instead.",
+    "why": "Every criterion's words are here, in the right order, and not one number is: no abstention figures, no accuracy gain to weigh the revert against, nothing a reader could check. A judge reading for vocabulary scores this near the ceiling; a judge reading for the certificates scores it zero, which is the ceiling ADR-40 item 5 sets.",
+    "ceiling": 0.0
+   }
+  },
+  {
+   "id": "ams-c1",
+   "kind": "control",
+   "sections": [],
+   "form": "prompt",
+   "situation": "Ordinary search-relevance engineering. It borrows this skill's vocabulary (retrieval, candidates, rerank, top-k, embedding) and needs none of its content, because nothing here is a conversational memory and there is no write-path choice to make.",
+   "source": {
+    "paper": "none; control",
+    "arxiv": "",
+    "claims": []
+   },
+   "prompt": "Our e-commerce product search returns 30 candidate SKUs per query and we show the top 10 on the first page. Click-through on positions 4 through 10 is poor and merchandising thinks the ordering is wrong. We have clicks, add-to-carts and returns per query-SKU pair going back two years. How should we approach improving the ranking, and how do we know if it worked?",
+   "without_skill": "A sound search-relevance answer: offline relevance labels from the click logs, a learning-to-rank model with the business signals as features, position-bias correction, an interleaving or A/B test online with click-through and conversion as the metrics.",
+   "with_skill": "The same answer. The skill must not intrude: no conversational-memory vocabulary, no keep-ratio rule imported from a 30-candidate memory shortlist, no advice about storing raw turns or extracting facts, and no abstention gate on a product search.",
+   "check": {
+    "type": "parses",
+    "format": "json",
+    "assertions": [
+     {
+      "id": "on_subject",
+      "statement": "The answer is about product search ranking, using the click, cart and return logs, and proposes an online test such as A/B or interleaving."
+     },
+     {
+      "id": "no_intrusion",
+      "statement": "The answer imports nothing from conversational memory: no raw turns, no write-time fact extraction, no memory store, and no correct-abstention gate."
+     }
+    ],
+    "pass_condition": "both assertions hold; the answer may be prose, in which case the judge decides each assertion"
+   }
+  },
+  {
+   "id": "ams-c2",
+   "kind": "control",
+   "sections": [],
+   "form": "prompt",
+   "situation": "The hardest control in this suite: a real conversational-memory question whose answer this skill's evidence does not touch, because it is about retention policy and deletion rather than about what to store and what to select.",
+   "source": {
+    "paper": "none; control",
+    "arxiv": "",
+    "claims": []
+   },
+   "prompt": "Our assistant keeps a memory of every user conversation. Legal now wants a retention policy: users must be able to delete their history, deletion has to propagate within 30 days, and we need to prove it propagated. We also have a backup system with 90-day snapshots. How should we design this, and what do we need to be able to show an auditor?",
+   "without_skill": "A competent data-governance answer: a deletion request queue, tombstones, propagation through derived stores and indexes, backup handling and the restore path, an audit log of deletion events with timestamps, and a verification query.",
+   "with_skill": "The same answer. A skill that fires on the word memory will start advising on raw turns against extracted facts, keep ratios or selection calls, none of which is what is being asked, and the right behaviour is to answer the governance question or stay silent.",
+   "check": {
+    "type": "parses",
+    "format": "json",
+    "assertions": [
+     {
+      "id": "on_subject",
+      "statement": "The answer addresses deletion propagation, derived stores and indexes, backups, and an audit trail a third party could check."
+     },
+     {
+      "id": "no_intrusion",
+      "statement": "The answer does not recommend a memory representation (raw turns against extracted facts), a keep ratio, a reranker, or an abstention metric, none of which the question asks for."
+     }
+    ],
+    "pass_condition": "both assertions hold; the answer may be prose, in which case the judge decides each assertion"
+   }
+  }
+ ]
+}
