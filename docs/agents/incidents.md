@@ -12691,6 +12691,16 @@ lower bound on the age of the image. It is drift, and it is datable.
 Every fix to the thing that was broken landed inside the window where the one
 surface that grades deploys was saying `unknown` about the broken stage.
 
+**And it was quieter than `unknown`, which is the detail worth keeping.** The
+unknowns were reported only when nothing else alarmed. The old `judge_deploy`
+returned on its `alarms` branch before it reached them, so measured against
+the live rows and the real history, the surface read `failing` with the
+headline "triage is 1.2 days behind" and said nothing whatsoever about the two
+apps that had never recorded. The `unknown` that three seats saw and wrote
+down was the quiet day. The loud day was louder about the wrong app. Both
+readings leave a reader with no instruction to deploy `distill`, and the new
+code names the never-recorded apps in the same headline as the drifted ones.
+
 **The cost.** Two issues. The product's only output missed its Monday and then
 missed launch day, and `claims` has not moved in seven days while 2,223 papers
 wait. `INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue`
