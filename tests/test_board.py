@@ -454,3 +454,55 @@ def test_the_options_go_after_the_subcommand_the_way_the_docs_show(live_board, c
     out = capsys.readouterr().out
     assert "Drain the reading queue" in out
     assert "Ship the pricing page" not in out
+
+
+# --------------------------------------------------------------------------
+# The shape rule the board enforces on its own side
+# --------------------------------------------------------------------------
+
+
+def blocks(text):
+    return text.split("\n\n")
+
+
+def test_prose_already_short_enough_passes_through_unchanged():
+    """A seat that wrote short paragraphs must not have them rearranged."""
+    written = "The press is late.\n\nI am saying so because nobody else did."
+    assert board.scannable(written) == written
+
+
+def test_a_block_over_the_limit_is_split_at_a_sentence():
+    one = "The press owes an issue and no row exists for it. " * 20
+    out = board.scannable(one)
+    assert len(blocks(out)) > 1
+    assert all(len(b) <= board.BODY_BLOCK_LIMIT for b in blocks(out))
+    # Split at the sentence, so no block starts mid-thought.
+    assert all(b.startswith("The press") for b in blocks(out))
+
+
+def test_a_sentence_over_the_limit_is_split_at_a_clause():
+    clauses = ", ".join(["the press owes an issue for this week"] * 20) + "."
+    out = board.scannable(clauses)
+    assert all(len(b) <= board.BODY_BLOCK_LIMIT for b in blocks(out))
+    assert all(b.startswith("the press") for b in blocks(out))
+
+
+def test_prose_with_no_boundary_at_all_is_still_brought_under_the_limit():
+    """The last resort, and the reason it exists.
+
+    A refused alarm says nothing at all, so a block with no sentence and no
+    clause to cut at is wrapped at a space rather than left to bounce.
+    """
+    out = board.scannable("word " * 200)
+    assert all(len(b) <= board.BODY_BLOCK_LIMIT for b in blocks(out))
+    assert "word word" in out
+
+
+def test_nothing_is_lost_in_the_splitting():
+    one = "The press owes an issue and no row exists for it. " * 20
+    assert board.scannable(one).split() == one.split()
+
+
+def test_empty_prose_stays_empty():
+    assert board.scannable("") == ""
+    assert board.scannable(None) == ""

@@ -477,3 +477,40 @@ def test_the_staged_workflow_needs_no_dependency_install():
     for third_party in ("import requests", "import httpx", "import yaml",
                         "import psycopg", "import modal"):
         assert third_party not in source
+
+
+def test_no_block_of_the_card_is_longer_than_the_board_accepts():
+    """The board refuses a block over 420 characters, and refuses the alarm with it.
+
+    This is not arithmetic that happens to hold today. One block quotes the
+    press surface's headline, which this function does not control and which
+    is over 500 characters on the pipeline surface already, so the card is
+    formatted through `board.scannable` rather than measured once by hand.
+    """
+    body = pw.card_body(press(W40, AFTER), AFTER)
+    assert all(len(block) <= board.BODY_BLOCK_LIMIT
+               for block in body.split("\n\n")), (
+        [len(b) for b in body.split("\n\n")]
+    )
+
+
+def test_a_long_headline_cannot_bounce_the_card():
+    """The failure this guards: the week the press surface has most to say."""
+    surface = dh.Surface("press", dh.FAILING,
+                         "the newest issue is 2026-W40 and 2026-W41 has "
+                         "ended, " + "and here is a great deal more "
+                         "diagnosis of the same gap, " * 12,
+                         {"due": "2026-W41", "newest_week": "2026-W40",
+                          "read_via": dh.RECEIPT_URL, "model": "kimi-k2.6",
+                          "created_at": "2026-10-05T09:01:04Z"})
+    body = pw.card_body(surface, AFTER)
+    assert all(len(block) <= board.BODY_BLOCK_LIMIT
+               for block in body.split("\n\n"))
+    assert "2026-W41" in body
+
+
+def test_the_nudge_is_formatted_the_same_way():
+    nudge = pw.nudge_body(press(W40, AFTER + timedelta(hours=25)),
+                          AFTER + timedelta(hours=25))
+    assert all(len(block) <= board.BODY_BLOCK_LIMIT
+               for block in nudge.split("\n\n"))

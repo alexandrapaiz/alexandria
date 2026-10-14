@@ -188,6 +188,12 @@ def card_body(press, now: datetime) -> str:
     of this function was refused for exactly that, which is the right outcome
     and is recorded in `tools/board.py`.
 
+    It is also passed through `board.scannable`, because the board refuses a
+    block over 420 characters and one of these blocks quotes a headline this
+    function does not control. The pipeline surface's headline is already over
+    500 characters on a bad day, so the arithmetic that holds today is not a
+    property worth relying on at the moment the alarm matters.
+
     The headline is the surface's own, so the card and the command cannot
     disagree about what is wrong. The rest is what a card can carry and an
     exit code cannot: when the deadline was, how late this is, which reader
@@ -209,7 +215,7 @@ def card_body(press, now: datetime) -> str:
            if newest else
            "There is no issue on record at all, because the digests table is "
            "empty, so a reader opening /library finds nothing to read.")
-    return "\n\n".join([
+    return board.scannable("\n\n".join([
         f"The press owes an issue for {week} and no row exists for it, so "
         f"{press.headline}. The deadline was {deadline:%Y-%m-%d %H:%M} UTC, "
         f"which is the {dh.PRESS_CRON} cron plus the "
@@ -233,7 +239,7 @@ def card_body(press, now: datetime) -> str:
         "somebody writes down why the press correctly held and what the "
         "right next trigger is, because a held send is a legitimate answer "
         "and a silent one is not.",
-    ])
+    ]))
 
 
 def find_card(payload: dict, week: str) -> dict | None:
@@ -285,9 +291,10 @@ def needs_nudge(card: dict, now: datetime, after: timedelta = NUDGE_AFTER) -> bo
 def nudge_body(press, now: datetime) -> str:
     week = due_week(press) or dh.week_label(now.date())
     late_for = lateness(now - due_deadline(week, now))
-    return (f"Still missing {late_for} after the deadline, because nothing "
-            f"has sent it yet: {press.headline}, read again just now from "
-            f"{(press.evidence or {}).get('read_via')}.")
+    return board.scannable(
+        f"Still missing {late_for} after the deadline, because nothing "
+        f"has sent it yet: {press.headline}, read again just now from "
+        f"{(press.evidence or {}).get('read_via')}.")
 
 
 # ------------------------------------------------------------------- the run

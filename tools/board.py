@@ -43,30 +43,37 @@ line is enforced on this side of the wire. The server enforces it on its own
 side too, and both halves should stay true: a rule that only one end checks is
 the shape incident 20 is on record for.
 
-## The board refuses a body that reads as a list of labels
+## Three things the board refuses, found on 2026-10-14 by being refused
 
-Found on 2026-10-14 by the engineer seat, by being refused. `POST /api/items`
-with a body of four lines, two of them `Field: value`, comes back as
+The server validates the prose a seat writes, which is the owner's house voice
+enforced at the one point that cannot be skipped. Nothing in this repository
+said so until a card was refused three times in a row, so the rules are here,
+in the file every seat writes through, quoted from the refusals themselves.
 
-    board said 400 to POST /api/items: item refused: the prose must carry its
-    reason in words (so that, because, otherwise): what you are doing and why,
-    as a conversation, not a list of labels
+**A body of labelled lines.**
 
-That is the owner's house voice enforced at the write, and it is the right
-place for it, because a card is prose a person reads rather than a record a
-machine parses. Nothing in this repository said so until now, so the finding
-is here rather than in a register: this file is the door, and a seat that is
-about to write is the only reader who needs it at the moment it applies.
+    item refused: the prose must carry its reason in words (so that, because,
+    otherwise): what you are doing and why, as a conversation, not a list of
+    labels
 
-What it means in practice. Write the card the way you would say it out loud:
-what is wrong, why you are saying it, and what closes it. Keep the facts in
-sentences rather than in a field list, and give the reason in words. The
-refusal names three of them and there may be more, which is why this is a
-note and not a local check: a second copy of a rule whose exact shape you are
-guessing at can only ever agree with the server by luck, and this file already
-makes that argument about permissions one section down. `--dry-run` prints
-the body without spending the request, and reading it back as a sentence is
-the cheapest way to find out.
+**A code or a pull request number in the prose.**
+
+    comment refused: prose must not carry codes or PR numbers ('PR #294'); say
+    what happened in words and put ids in the data field
+
+A command in backticks passed, and `PR #294` did not, so this is about
+referring to work by its number instead of saying what it was.
+
+**A block longer than `BODY_BLOCK_LIMIT` characters.**
+
+    comment refused: prose must be scannable: one thought per line, a blank
+    line between thoughts; a block over 420 characters is not
+
+`scannable()` below is the shape half of that, and it is a formatter rather
+than a validator on purpose. It cannot know the first two rules, which are
+about what a sentence says, and the third is arithmetic. A write that is
+refused anyway is still refused by the server, which is where the authority
+belongs: this only means a seat does not lose an alarm to a line length.
 
 ## Run reports are append-only, so `report` runs once
 
@@ -93,6 +100,10 @@ import urllib.request
 #: Seconds to wait on the board. Long enough for a cold container on the host,
 #: short enough that a seat's last step cannot hang a run past its timeout.
 TIMEOUT = 20
+
+#: The longest block the board accepts in a body or a comment. Quoted from
+#: its own refusal: "a block over 420 characters is not" scannable.
+BODY_BLOCK_LIMIT = 420
 
 #: The companies the board keeps, which pm.md §14 says are the repository
 #: names. Used only to turn `GITHUB_REPOSITORY` into a company and to give a
@@ -129,6 +140,55 @@ class BoardError(RuntimeError):
 
 def plural(count, noun):
     return f"{count} {noun}" if count == 1 else f"{count} {noun}s"
+
+
+def scannable(text, limit=BODY_BLOCK_LIMIT):
+    """Prose the board will accept on the shape rule: one thought per block.
+
+    Three passes, widest boundary first, because each one cuts in a worse
+    place than the one before. Sentences are where a thought actually ends.
+    Clause marks are where it bends. A hard split at a space is a wrapped
+    line, and it is here only because a refused alarm says nothing at all and
+    a badly wrapped one still says the week is missing.
+
+    Blocks already under the limit are returned untouched, so prose a seat
+    wrote in short paragraphs passes through this unchanged.
+    """
+    def cut(block, marks):
+        pieces, current = [], ""
+        for piece in marks:
+            piece = piece.strip()
+            if not piece:
+                continue
+            if current and len(current) + 1 + len(piece) > limit:
+                pieces.append(current)
+                current = piece
+            else:
+                current = f"{current} {piece}".strip()
+        if current:
+            pieces.append(current)
+        return pieces
+
+    out = []
+    for block in re.split(r"\n\s*\n", (text or "").strip()):
+        block = " ".join(block.split())
+        if not block:
+            continue
+        if len(block) <= limit:
+            out.append(block)
+            continue
+        for sentence in cut(block, re.findall(r"[^.!?]+(?:[.!?]+|\Z)", block)):
+            if len(sentence) <= limit:
+                out.append(sentence)
+                continue
+            for clause in cut(sentence, re.split(r"(?<=[,:;]) ", sentence)):
+                while len(clause) > limit:
+                    head = clause[:limit].rsplit(" ", 1)[0] or clause[:limit]
+                    out.append(head)
+                    clause = clause[len(head):].strip()
+                if clause:
+                    out.append(clause)
+    return "\n\n".join(out)
 
 
 def result_line(pr_body, pr_title, limit=200):
