@@ -12658,3 +12658,94 @@ this seat. `tools/delivery_health.py --surface deploy` is most of the
 instrument and answers `unknown` today because `distill` and `ingest` have
 never recorded a runtime row; the two prompts whose shas *are* recorded could
 be compared by it this morning and are not.
+
+## INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see — "never recorded" read as unmeasured for five days, so three merged fixes never reached the stage they repair and the press printed nothing twice (2026-10-14, engineer seat)
+
+**Observed by:** the engineer seat's scheduled run of 2026-10-14, reading the
+public receipt at 01:49 UTC as the first step of its own observation.
+
+**What was wrong.** `tools/delivery_health.py`'s deploy surface had three
+states for an app and used two of them. An app with a recorded digest matching
+the trunk was `ok`; one with a stale digest was drift, dated and alarmed; and
+one with no row at all was `unknown (never recorded)`, on the reasoning that
+dating an unmeasured app from its last commit would cry wolf. That reasoning
+is right about the number and wrong about the state, and the distinction it
+missed is one line of code wide: an app whose module calls `record_runtime`
+writes its row on the first run of any deploy built from that commit, so no
+row means the running image predates that commit. The age of the commit is a
+lower bound on the age of the image. It is drift, and it is datable.
+
+**The sequence, with the dates, because the shape is only visible in order.**
+
+| when | what |
+|---|---|
+| 2026-10-07 15:15 UTC | the last claim distill ever wrote |
+| 2026-10-08 | the primary provider stops answering; distill's fallback path, paced for a day it does not have, produces nothing |
+| 2026-10-09 18:02 | `807d403` adds `distill` and `ingest` to the guard and asks them to record. Its own incident entry says plainly that both read `unknown` until the owner runs `modal deploy` |
+| 2026-10-11 16:47 | `e289242`, the fallback paced by the minute it actually has |
+| 2026-10-12 02:22 | `c005e9e` and `66f7e87`, the fallback's day shared three ways |
+| 2026-10-12 09:00 | the Monday press cron fires and has no new claims to print |
+| 2026-10-13 | launch day. Still `2026-W40` on the site, created 2026-10-05 |
+| 2026-10-14 01:49 | the receipt: `claims_newest` 2026-10-07, `distill_pending` 2,223, and a `deploy` block listing three apps where the guard watches five |
+
+Every fix to the thing that was broken landed inside the window where the one
+surface that grades deploys was saying `unknown` about the broken stage.
+
+**The cost.** Two issues. The product's only output missed its Monday and then
+missed launch day, and `claims` has not moved in seven days while 2,223 papers
+wait. `INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue`
+is the same morning read from the press's end; this is the cause at the other
+end of it.
+
+**Why it is recorded as a repeat.** Fifth sighting of one shape, which is that
+a merge is not a deploy and nothing in this repository closes that gap on its
+own: incident 24, PR #110 (merged 2026-09-26, inert for days, three documents
+calling it live), `INC-2026-10-10-four-editorial-grades-named-the-merge-as-the-
+gate-when-the-gate-is-the-deploy`, and
+`INC-2026-10-12-meta-review-proposal-merged-never-deployed`.
+
+It is also the second half of
+`INC-2026-10-09-the-drift-guard-watched-three-of-five-scheduled-jobs`, and
+that is the part worth reading twice. That entry closes with a section titled
+"The part that is still open", which says both new apps read `unknown` until
+somebody runs two commands. It was correct, it was specific, it named the
+commands, and it was filed by the right seat in the right register. Then five
+days passed, because `unknown` is not a state anything escalates. **A pending
+action parked in a non-escalating state is indistinguishable from a pending
+action nobody took.** The research seat met the same `unknown` on 2026-10-12
+and read it the same way, as a limitation of the instrument rather than as the
+alarm it was.
+
+And it is L-A9's shape once more, recording is not enforcing, with a new
+detail: the test that asserted the wrong reading
+(`test_an_app_that_never_recorded_is_unmeasured_while_the_others_are_judged`)
+was defined below its own file's `__main__` block, so `main()`'s walk over
+`globals()` never reached it and `python3 tests/test_deploy_drift.py` printed
+"all checks passed" without running it. Four tests in two files were in that
+position, in two files that `test_ci_coverage.py` pins as run by no workflow
+at all, which means a direct run was the only run they were ever going to get.
+A wrong assertion nothing executes and a right assertion nothing executes are
+the same artifact.
+
+**What was built this run.** `recording_asked_at` dates the commit that asks
+an app for a row, by pickaxe over the app's own module at the trunk.
+`undeployed_since` names the commits an image older than that commit cannot
+contain, since the usual recovery-by-replay has no reported digest to replay
+against. An app that has never recorded while its code asks it to is now
+`failing` with the deploy command in its evidence; an app whose code does not
+ask is still `unknown`, which keeps the cry-wolf case the old reasoning was
+right about; and an app added within the grace window is still a pending
+deploy. The mail is withheld for these, with the reason in the evidence,
+because the alarm's cooldown is a column on the row they do not have. The
+runner block in both affected test files moved to the end of the file, and
+`test_ci_coverage.py` now fails if any test file strands a test below its
+`__main__` block.
+
+**What is still open and belongs to the owner.** The guard can only say it.
+`grep -rln "modal deploy" .github/workflows/` still returns nothing, so no
+merged change to `pipeline/` has ever reached production without somebody
+remembering a command. `.github/workflows-pending/modal-deploy.yml` has been
+written and waiting since 2026-10-08, and it needs `MODAL_TOKEN_ID` and
+`MODAL_TOKEN_SECRET` plus a `git mv`. Six days of rent on that item bought the
+two missing issues above. Until it is applied, the two commands are
+`modal deploy pipeline/distill.py` and `modal deploy pipeline/ingest.py`.
