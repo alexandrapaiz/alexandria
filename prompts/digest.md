@@ -1574,6 +1574,24 @@ the rule's question to the thing in front of you.
   share one idea, the smaller count is the one to delete, all of it, including
   the gloss that was attached to it. One idea, one word, one clause that
   introduces it, and the word the TITLE uses is the word that gets the clause.
+  **The list is built by frequency, not by what looks like jargon, and that is
+  the whole of this pass.** Everything above says which words need a clause and
+  says it twice. Nothing above produces the list, and the class this pass names
+  as the one it exists to catch is defined by not looking like jargon, so a
+  writer assembling the list by eye leaves out exactly the words the pass was
+  written for. The print of 2026-10-05 leans on one such word eight times, from
+  the opening's third sentence to the last line before the close, and nothing
+  in the issue introduces it. Three terms carry that issue and none of them is
+  glossed. The two earlier prints this pass was written from failed on that
+  same word, so it has now gone unintroduced three times under a rule that
+  covers it in full.
+  So build the list mechanically before you judge anything. Take every word and
+  short phrase in the finished issue that appears three times or more and is
+  not ordinary English doing an ordinary job. Write it down with its count and
+  with the sentence where it first appears. Then the clause requirement above
+  runs down that list, entry by entry, and an entry whose first sentence has no
+  clause in it is not finished. A word you would not have thought to list is
+  the one this step is for.
   If this pass turns up more than about five terms needing a definition in
   one issue, the issue is carrying too much, not too little explaining. Cut
   an item and run it again.
@@ -1919,6 +1937,10 @@ the rule's question to the thing in front of you.
   carrying its own piece of work, whatever noun your sentence happened to use.
   The sentence's number is that count. Then the noun goes to every block you
   just counted, which is the next paragraph.
+  A heading is one of those places and so is a bold lead, so read this
+  paragraph with the word "sentence" meaning whichever of them said the
+  number. The 2026-09-28 failure above was a heading and a first sentence
+  disagreeing with the same two items.
   **The noun is counted too, and it is the half of this gate that has never
   been read.** Every count above is a number and a noun, and the check as first
   written is arithmetic on the number alone, so a count can be exactly right
@@ -1969,11 +1991,15 @@ the rule's question to the thing in front of you.
   prototype". Eight grades stood on three frames, and all three requirements
   above were in the file that wrote them.
   So write them out rather than weighing them. Every grade in the issue, one
-  per line, in print order, the reading list included. Read the first three
-  words of each line, and no two of them are the same string. Read each line's
-  sequence of parts, and no two of those are the same sequence either. Rewrite
-  the later of any pair, because a frame is a sentence the first time and
-  furniture the second.
+  per line, in print order, the reading list included. Where a grade is folded
+  into a sentence doing other work, which is what the rule above asks for, the
+  line you write out is the grade itself and not the sentence around it.
+  Then three string comparisons over that list. The first three words of each
+  line, and no two are the same string. The last three words, because a shared
+  ending is the same furniture arriving from the other direction and that is
+  where a negative replication clause collects. Then each line's sequence of
+  parts, and no two are the same sequence. Rewrite the later of any pair,
+  because a frame is a sentence the first time and furniture the second.
 - **Then check who the issue says did the research. A hard gate, and it is
   grammar rather than judgment.** The attribution rule above allows two forms,
   the institution and the named author, and says there is no third. The third

@@ -12942,3 +12942,68 @@ that the PM might ever dispatch needs `allowed_bots: '*'` (or
 half of this fix is dead code that only ever produces this second error.
 No rerun; the same actor fails the same way every time until the
 workflow changes.
+
+## INC-2026-10-14-two-generator-gates-asked-for-a-reading-and-never-failed — one gate said count and named no unit, one gate said no two alike and counted nothing, and ten grades read past both (2026-10-14, writer seat)
+
+**What happened.** The tenth grade of 2026-W40 found two defects in plain
+arithmetic, both forbidden by hard gates that were in the deployed file on the
+day the issue printed.
+
+The new-work slot opened "Three papers this week test what happens when you
+push the agent stack in directions no benchmark yet covers" and put four items
+under it. The gate against that calls itself "arithmetic rather than judgment",
+says to count what appears under the sentence, and never says what to count.
+Its four examples are all nouns for the issue's own contents rather than units
+a reader can see, so the writer picks the unit, and a writer who picks the unit
+can always rescue the count. The fourth item there names no paper, which is how
+this one was rescued.
+
+The issue carried eight evidence grades standing on three frames. Four opened
+on the identical three words. Two more were the same frame as each other about
+the same paper, one in the body and one in the reading list. The gate against
+that says "No two grades in the issue begin the same way, none begins on the
+word 'evidence', and no two are built on the same frame", and asks for no count
+at all. The step it does ask for is a judgment the writer makes about its own
+prose.
+
+**Why it is a repeat and not a discovery.** The class is already written down
+twice in this seat's own registers, in both directions, and neither recording
+reached the generator's gates.
+
+`docs/voice/canon.md` has said since 2026-09-29 that a law asserting coverage
+is graded by a count and never by a reading, and since 2026-10-13 that whether
+something generalises is "a judgment a tired run makes about its own prose".
+Both sentences were written about the grade's verdicts. Neither was ever turned
+on the generator's gates, which are the same instrument pointed the other way,
+and every gate in that file which holds was converted to a count after a print
+walked past it.
+
+**The sharper half, and it is about where the evidence was sitting.** Both
+defects were quoted verbatim in this seat's own earlier reviews of the same
+artifact, in blocks pasted as evidence for a different law.
+`docs/voice/reviews/2026-10-06.md` quotes "Three papers this week test what
+happens when you push [...]" inside a list of standalone lines, while counting
+shapes. `docs/voice/reviews/2026-10-05.md` prints all four "The authors' own"
+grades in a numbered block, while finding that grades sat in the position the
+meaning line needed. Each run quoted the string, graded the one law it had come
+for, and moved on. Nine and eight grades followed, each re-reading the reviews
+and never re-reading the quotations in them.
+
+Canon pass 5's fifth question already covers the half-graded SENTENCE and the
+sixth covers the forgiven half of a VERDICT. Neither covers a block of the
+artifact quoted inside a review, which is a third place a half-read thing can
+hide, and the cheapest one to check because the text is already extracted and
+sitting in the file.
+
+**The fix.** Both gates are patched in the writer pull request of 2026-10-14,
+each as a count rather than a reading, and five supplied specimens are struck
+from the two composition rules that were handing the shapes over. Ban list 112
+and 113 carry the entries and the sweeps. The grading procedure gains a step
+that puts the remaining laws to every block a review quotes, which is the only
+part of this that would have found either defect nine days earlier.
+
+**What it says about the seat.** This is not a reading failure that more care
+fixes. Ten careful grades read past both, which is the evidence that the
+procedure and not the attention was short. The pattern across all of it is one
+sentence: an instruction that asks somebody to look is satisfied by looking,
+and only an instruction that asks for a number can come back wrong.

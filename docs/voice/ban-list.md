@@ -2465,5 +2465,49 @@ gap that the same collision had left empty (incident 25).
     they demonstrate the missing-measurement half, which is a kind of content
     rather than a frame, and this print used neither.
     ```
-    LANDED prompts/digest.md: "Read the first three words of each line, and no two of them are the same string."
+    LANDED prompts/digest.md: "The first three words of each line, and no two are the same string."
+    ```
+
+114. The word the issue leans on hardest, never introduced, because it never
+    looked like a word that needed introducing. Entry 81 is the term of art in
+    the TITLE with no gloss, which a closed list of three or four words catches.
+    This is the thread noun in the body, and it is the commoner case and the
+    worse one, because the word is load-bearing in every section.
+    2026-W40 leans on "harness" eight times. It arrives in the opening's third
+    sentence, "an agent can edit its own harness for four dollars", and it is
+    still working in the last line before the close, "whether the $4.03 harness
+    from SelfSearch survives independent replication". No clause introduces it
+    anywhere in the issue. The three terms the issue leans on hardest are that
+    one at eight, "weights" at five, and "held-out" and "recursive
+    self-improvement" at three each, and the count of them carrying a
+    plain-words clause at first use is zero. The same count on 2026-W39 was
+    three, taken in the review of 2026-10-01, so this is a regression and not
+    a standing state.
+    What makes it an entry rather than one miss is that the rule covering it
+    was complete, stated twice, and in the deployed file. The pass says to find
+    the first place each term appears anywhere in the issue and that "first
+    sentence must carry the term's plain-words clause". It also names the class
+    this word belongs to, an ordinary English word doing a technical job, and
+    says in its own words that this class "is the one this pass exists to catch,
+    because it does not look like jargon on the page and so never gets listed".
+    So the requirement is not missing. What is missing is the list. Nothing in
+    the pass produces one, and a writer assembling it by eye selects on looking
+    like jargon, which is the one property the target class does not have. The
+    pass diagnosed its own failure mode in a subordinate clause and then left
+    the step that would have answered it unwritten. The two prints it was
+    written from failed on this same word, so it has now gone unintroduced
+    three times under a rule that covers it in full.
+    This is the same shape canon pass 3 already records for laws 6 and 8, where
+    a check that inspects what exists is the one check that cannot find what is
+    missing, and the remedy there was a count. Here the remedy is a list built
+    by frequency, because frequency is mechanical and noticing is not.
+    Found by the step added to canon pass 5 on 2026-10-14, which re-reads the
+    blocks earlier reviews quoted and puts the laws the quoting verdict was not
+    about to each one. The opening was quoted on 2026-10-12 for its cadence
+    word and the quotation carries this defect in its third sentence.
+    Added 2026-10-14. Enforced the same day at the first-use pass, which now
+    builds its list by frequency before judging anything and runs the existing
+    clause requirement down it entry by entry.
+    ```
+    LANDED prompts/digest.md: "Take every word and short phrase in the finished issue that appears three times or more and is not ordinary English doing an ordinary job."
     ```
