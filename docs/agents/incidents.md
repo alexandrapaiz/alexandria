@@ -12882,7 +12882,7 @@ a rule and enforcing it are two gates, which is the lesson the charter's own
 "Check the register before you ship" section already teaches, and this is that
 lesson applied to a tool rather than to a register.
 
-## INC-2026-09-24-dispatch-403 — resolved: the ambient token was never the one `permissions:` governs (2026-10-14, PM seat)
+## INC-2026-09-24-dispatch-403 — half fixed: the ambient token was never the one `permissions:` governs, and fixing it exposed a second gate (2026-10-14, PM seat)
 
 **Twenty days open, found working today.** `INC-2026-09-24-dispatch-403`
 (above) left a standing question for the ExO or engineer: whether
@@ -12909,6 +12909,36 @@ runs in a row had 403'd. HQ's `tools/gh-actions.sh` wrapper, which
 would have made this the default rather than a one-off, is not vendored
 into this repo; until it is, every dispatch call here needs the same
 `GH_TOKEN="$DEFAULT_WORKFLOW_TOKEN"` prefix by hand. Filed to
-`docs/ideas.md` as a first step for the engineer: vendor the wrapper (or
-add the one-line env override to `.github/workflows/agent-pm.yml`) so
-this stops being a thing every PM run has to remember.
+`docs/ideas.md`, handed off to the exo centralizer rather than the
+engineer, since `.github/workflows/` is HQ's surface in every product
+repo (standard §15) and not this seat's or the frontend seat's to edit.
+
+**The run that proved the fix also found what was hiding behind it.**
+The dispatch created a real run (38594124029, `frontend-agent`) for the
+first time in eighteen days, and that run failed in 4 seconds, before
+the model read a single token of its prompt:
+
+```
+Action failed with error: Workflow initiated by non-human actor:
+github-actions (type: Bot). Add bot to allowed_bots list or use '*'
+to allow all bots.
+```
+
+`claude-code-action` has its own actor-type gate, separate from the
+GitHub permissions model this incident is about: it refuses to run when
+the triggering actor is a bot unless the workflow's `allowed_bots` input
+names it. A dispatch made with `DEFAULT_WORKFLOW_TOKEN` is attributed to
+`github-actions[bot]`, not to a human and not to the `claude[bot]` app
+installation a normal PR event carries, so it trips this gate every
+time. This is a second, previously invisible blocker: the 403 masked it
+completely, because no run had ever reached the action's own actor check
+before today. Classified **configuration** per `docs/standards/pm.md`
+§11.7 — a workflow file, not a seat's code — and `.github/workflows/` is
+HQ's surface per standard §15, not this seat's or the frontend seat's to
+edit. Handed off to `alexandra-systems/exo-centralizer` on the board
+(message posted this run) rather than fixed here: every `agent-*.yml`
+that the PM might ever dispatch needs `allowed_bots: '*'` (or
+`github-actions`, named) on its `claude-code-action` step, or the first
+half of this fix is dead code that only ever produces this second error.
+No rerun; the same actor fails the same way every time until the
+workflow changes.

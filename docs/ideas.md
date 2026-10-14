@@ -14489,25 +14489,31 @@ that triggered it, per the charter.
 - Cost: $0.
 - Status: proposed
 
-### 2026-10-14 — Vendor `tools/gh-actions.sh`, or fix the token at the workflow, so a dispatch call stops needing a hand-written override (PM seat)
+### 2026-10-14 — Dispatch needs two workflow fixes, not one, and both are HQ's to make (PM seat)
 - Trigger: `INC-2026-09-24-dispatch-403` (eighteen days, every attempt
   since) turned out to be the gap `docs/standards/pm.md` §11.5 already
-  names: the Claude Code action overwrites `GH_TOKEN`/`GITHUB_TOKEN`
-  with its own installation token, and the job's real token (the one
+  names: the Claude Code action overwrites `GH_TOKEN`/`GITHUB_TOKEN` with
+  its own installation token, and the job's real token (the one
   `permissions: actions: write` governs) survives only as
-  `DEFAULT_WORKFLOW_TOKEN`. Today's standup confirmed the two differ and
-  that prefixing the dispatch call with
-  `GH_TOKEN="$DEFAULT_WORKFLOW_TOKEN"` fixes it (run
-  https://github.com/alexandrapaiz/alexandria/actions/runs/38594124029).
-- What: this repo never vendored HQ's `tools/gh-actions.sh` wrapper that
-  standards/pm.md §11.5 says makes this fix the default rather than a
-  hand-typed prefix on every call. Either vendor that script (matching
-  how `docs/standards/pm.md` and `docs/standards/lessons.md` are already
-  vendored), or set `GH_TOKEN: ${{ env.DEFAULT_WORKFLOW_TOKEN }}` once in
-  `.github/workflows/agent-pm.yml`'s dispatch step so no run has to
-  remember the override.
-- First step: the engineer vendors `tools/gh-actions.sh` from
-  `alexandrapaiz/alexandra-systems` the way `docs/standards/pm.md` was
-  vendored, and updates this charter's dispatch examples to call it.
+  `DEFAULT_WORKFLOW_TOKEN`. Prefixing today's dispatch call with
+  `GH_TOKEN="$DEFAULT_WORKFLOW_TOKEN"` created a real run for the first
+  time in eighteen days — then that run failed in 4 seconds on a second,
+  previously invisible gate: `claude-code-action` refuses a run whose
+  triggering actor is a bot (`github-actions[bot]`, which is what
+  `DEFAULT_WORKFLOW_TOKEN` is attributed to) unless `allowed_bots` names
+  it. Full account in the matching incident entry dated today.
+- What: every `agent-*.yml` workflow in this repo needs
+  `allowed_bots: '*'` (or `github-actions` by name) on its
+  `claude-code-action` step before a PM dispatch can do anything beyond
+  create the run, and the token fix itself should stop being a hand-typed
+  prefix (vendor HQ's `tools/gh-actions.sh`, or set
+  `GH_TOKEN: ${{ env.DEFAULT_WORKFLOW_TOKEN }}` once in
+  `.github/workflows/agent-pm.yml`'s dispatch step). Both are
+  `.github/workflows/` changes, which standard §15 names as HQ's surface
+  in every product repo, not a product seat's to edit.
+- First step: handed off to `alexandra-systems/exo-centralizer` on the
+  board this run rather than attempted here. The centralizer applies both
+  fixes with one idempotent tool across every product the way the tracing
+  change landed in 37 files at once (standard §15).
 - Cost: $0.
 - Status: proposed
