@@ -1343,9 +1343,10 @@ the rule's question to the thing in front of you.
   forbids reusing was the stem the rule handed over. They are held in the gate
   that reads the finished grades, where a specimen is read rather than copied.
   Draw the grade from the payload's `evidence`, source tier and support
-  counts, and never claim a stronger one than the payload supports. The grade is product, not hedging. It is the difference
-  between this and a press release, and a reader deciding what to build has to
-  know how much weight a number carries.
+  counts, and never claim a stronger one than the payload supports. The grade
+  is product, not hedging. It is the difference between this and a press
+  release, and a reader deciding what to build has to know how much weight a
+  number carries.
   The grade has two halves. Say how strong the number is, and, where the
   payload supports it, say what the work did not measure ("nothing here tests
   whether it holds past a 200-step run", "no result outside the one benchmark
@@ -1438,8 +1439,8 @@ the rule's question to the thing in front of you.
   day's own. The slot below says why in its own words, about a heading, and it
   is as true of a sentence, because a phrase quoted where the work happens is
   not a rule, it is the nearest available draft.
-  When a headline number leans on a flattering or
-  obsolete baseline, say so in that item's grade. When a stream came back
+  When a headline number leans on a flattering or obsolete baseline, say so in
+  that item's grade. When a stream came back
   empty or an edge was judged wrong, that is pipeline information for the
   ledger and not reader-facing copy, unless it materially changes what the
   reader should believe today, in which case one sentence at the affected
@@ -1581,8 +1582,8 @@ the rule's question to the thing in front of you.
   writer assembling the list by eye leaves out exactly the words the pass was
   written for. The print of 2026-10-05 leans on one such word eight times, from
   the opening's third sentence to the last line before the close, and nothing
-  in the issue introduces it. Three terms carry that issue and none of them is
-  glossed. The two earlier prints this pass was written from failed on that
+  in the issue introduces it. Four terms carry that issue and none of the four
+  is glossed. The two earlier prints this pass was written from failed on that
   same word, so it has now gone unintroduced three times under a rule that
   covers it in full.
   So build the list mechanically before you judge anything. Take every word and
@@ -1930,8 +1931,8 @@ the rule's question to the thing in front of you.
   was in the file that wrote it, and it failed on the arithmetic half, which is
   the half it calls easy. A writer told to count what appears under a sentence
   chooses the unit first, so the count can always be rescued by ruling the
-  fourth item out of it, and the fourth item there named no paper, which is
-  how.
+  fourth item out of it, and the fourth item there named no paper, which is how
+  it was rescued.
   So the unit is fixed here and it is not yours to pick. Count the blocks a
   reader sees under the sentence, one for every bold lead, bullet or paragraph
   carrying its own piece of work, whatever noun your sentence happened to use.
@@ -1984,7 +1985,7 @@ the rule's question to the thing in front of you.
   **Three requirements above and no count under them, which is why this gate
   has never failed.** Every gate in this list that holds was turned into a
   count after a print walked past it, and this one was left as a reading of
-  your own prose. The print of 2026-10-05 carried eight grades. Four
+  your own prose. The print of 2026-10-05 carried eight grades. Four of them
   opened on the same three words, "The authors' own". Two more were the same
   frame as each other about the same paper, "One benchmark, one incident
   autopsy, one prototype" and "One incident autopsy, one formal model, one
