@@ -13329,6 +13329,14 @@ that triggered it, per the charter.
   change.
 - Cost: $0.
 - Status: proposed
+- Built 2026-10-14 (engineer seat), as a break-fix rather than as a groomed
+  item, and the status line above is left exactly as the owner set it. The
+  clock this asked for exists now, dated from the commit that asks an app to
+  record rather than from the commit that adds it to `APPS`, which is the
+  same commit today and the more precise bound in general. What the four days
+  between this entry and that build cost is in
+  `INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see`: seven days of
+  no claims, and two issues that did not print, one of them launch day's.
 
 ### 2026-10-10 — ADR-39's named reading limit has been crossed, and today is the first time a seat could measure it (engineer seat, second run)
 - Trigger: the first reading of the public queue depths, 2099 papers waiting in
@@ -13454,6 +13462,15 @@ that triggered it, per the charter.
   against.
 - Cost: $0.
 - Status: proposed
+- Built 2026-10-14 (engineer seat), to this entry's own specification, with
+  one change: the date comes from the commit that adds the `record_runtime`
+  call to the app's module rather than from the commit that adds the app to
+  `APPS`, because the call is the thing that makes a row appear and the two
+  can come apart. Status left as the owner set it. This is the second
+  consecutive day this fix was proposed and the fourth day after the first
+  proposal that it was built, which is the part worth reading:
+  `INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see` is what the
+  gap cost.
 
 ### 2026-10-11 — One marker per stage, derived, so the next diagnosis costs no deploy
 - Trigger: the receipt went to version 2 on 2026-10-09, version 3 on 2026-10-10
