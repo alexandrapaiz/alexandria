@@ -2244,6 +2244,27 @@ gap that the same collision had left empty (incident 25).
     ```
     LANDED prompts/digest.md: "Each one is either the cadence you settled or it is wrong, and the repair is the one word."
     ```
+    **Swept 2026-10-13, which entry 90 required on the day this was written and
+    the run that wrote it did for entry 109 only.** The sweep found the supply,
+    the same way 109's did:
+    `grep -nE "\b(Today|today|this week|yesterday)\b" prompts/digest.md`
+    matched 49 lines. Most are this file talking to the writer, and the top of
+    the file settles those in its own words: where it says "this week", a daily
+    reads it as "today". Note the direction, because it is what sorts the rest.
+    The convention translates "this week" for a daily and says nothing about
+    "today" for a weekly, so a specimen carrying "this week" is covered and a
+    specimen carrying "today" is a cadence handed to both.
+    Three such specimens stood at positions where the model writes rather than
+    at positions where it is instructed. The contents-line example opened on
+    "Today, a dense reward that moved terminal agents fifteen points", in the
+    opening slot, which is where "Today they are the same conversation" printed.
+    The two absence specimens, at the citation-movers rule and in the
+    fell-behind slot, both ended on "today" where the sentence needs no period
+    word at all. All three are struck in the pull request of 2026-10-13.
+    One specimen with a period word stays and the reason is custody: "Context
+    beats architecture this week" is the owner's own example of a craft heading,
+    quoted from her ruling in docs/voice/taste.md, and this seat does not strike
+    her specimens.
 
 109. The count that is right about how many and wrong about what they are. A
     collective noun covering a group none of whose members it is true of, under
@@ -2290,4 +2311,71 @@ gap that the same collision had left empty (incident 25).
     the arithmetic.
     ```
     LANDED prompts/digest.md: "A collective noun is a claim about every member, the same way a heading is a claim about every item under it."
+    ```
+
+110. The thing that did the research, hiding in a relative clause. The
+    attributive subject entry 82 named, moved one clause to the right, where
+    the gate written against it cannot see it.
+    The specimens are the fell-behind section of 2026-W40, and every one of
+    them sits in a sentence whose own subject the gate would clear:
+
+    > Task-adapted low-level VLA policies **that reported** 86.20% on RoboTwin
+    > 2.0 and 97.40% on LIBERO are now outperformed by two separate approaches:
+    > Latent Interface Training, **which improves** LIBERO-Plus success by
+    > 3.87-10.70 points, and Dynin-Robotics, **which attains** 78.4% on a
+    > Franka Research 3 robot.
+
+    The gate for this was in the generator in full, and in the deployed file,
+    on the day that printed. It reads "find every sentence whose subject is a
+    benchmark, a method, a pipeline, a system, a dataset or a paper title". A
+    writer asking what that sentence's subject is answers "policies", moves on,
+    and never reaches the three clauses doing the attributing. Six of these
+    printed and five were subordinate.
+    Two nouns compound it, and neither is on the gate's list. A study and an
+    analysis are things rather than people, so "New paired feedback studies
+    show 30 truthful recoveries" and "Ablation shows the combination beats
+    either alone" are the same defect in words the list never named.
+    This is the fourth entry on this register whose defect moved position
+    rather than form: entry 93 was the turn sentence, entry 94 was the grade's
+    position after its words were fixed, entry 108 was the period word written
+    hundreds of words after the rule, and this one is a clause. Recorded as
+    `INC-2026-10-13-a-generator-gate-read-the-main-clause-and-the-defect-moved-right`.
+    Added 2026-10-13. Enforced the same day at the attribution gate, which now
+    puts its question to every clause and names a study, a paper, an ablation
+    and a claim among the subjects that are not people.
+    ```
+    LANDED prompts/digest.md: "So put the question to every clause, including the ones hanging off which, that and whose."
+    ```
+
+111. The item that says nobody did the work. Not a thing in the subject slot,
+    which is entry 82 and entry 110. No agent in the item at all.
+    The specimen is the whole fell-behind section of 2026-W40, four items, and
+    its opening is the clearest:
+
+    > Start with the number that turned out to be wrong. A prior claim held
+    > that zero recoveries in 96 challenger episodes yielded a finite-sample
+    > upper bound of 0.0468 on recovery probability. New paired feedback studies
+    > show 30 truthful recoveries and zero neutral ones.
+
+    A claim held and studies show. No institution, no author, no link, no
+    grade, and nothing for a reader to weigh the reversal against. The two
+    sections above it attribute every item they carry, so this is a slot
+    failure rather than a habit: the counts are 5 of 12 named works across the
+    issue and 0 of 4 in that section, and the slot's own rule in the generator
+    says "attributed by institution" in those words.
+    Why no gate caught it: every attribution gate on this register finds a
+    SENTENCE that attributes the work wrongly, and an absence prints no
+    sentence. The canon already has this shape written down for law 8 and law
+    6, where a grade that inspects the links and grades that exist is the one
+    check that cannot find a missing one, and the remedy there was two
+    integers. This is the same remedy one register over.
+    The repair is the institution from the `institutions` field of the claim's
+    own paper, or the named author where the payload has none, and where the
+    payload genuinely carries neither, the sentence is written with no
+    attributive subject at all rather than with a thing in it.
+    Added 2026-10-13. Enforced the same day at the attribution gate, as a count
+    of named works against named works attributed to people, which is the form
+    the coverage laws already use.
+    ```
+    LANDED prompts/digest.md: "The two numbers are the same number or the issue is not finished."
     ```
