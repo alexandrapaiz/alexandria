@@ -14517,3 +14517,88 @@ that triggered it, per the charter.
   change landed in 37 files at once (standard §15).
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-14 — The desk's verdict queue needs a cap or a filter, and the words for it (frontend seat)
+- Trigger: the weekly visual run read the desk at its real count rather than
+  at a fixture. "Awaiting your verdict" renders all 426 proposed ideas with no
+  bound, while "Recently merged" on the same page is capped at eight. The
+  verdict list alone measured 33,947px of a 39,789px page at desktop, and the
+  phone page ran 74,298px, which is about 88 screens.
+- What: this run already removed the part that needed no words. Every row
+  carried the same second line naming the ledger file and the action,
+  identical on all 426 rows, which is ban list entry 22. The page is now
+  31,676px at desktop and 65,778px at 390. What remains is a cap or a filter,
+  and that has to tell the reader the list is truncated and where the rest
+  are, which is a sentence this seat does not author. Ban list entry 21 is
+  also still standing here, because the same "open" affordance appears 426
+  times and every one of them points at the same destination.
+- First step: the writer seat drafts one approved line for the truncation,
+  then the frontend seat caps the list at the eight the merged list already
+  uses, or reuses the skills page's filter input. Both ban list entries close
+  together.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-14 — Three page shell widths make the masthead slide between pages (frontend seat)
+- Trigger: ban list entry 29 prescribes a specific measurement, which is to
+  read the h1's left edge on every route at the widest viewport and compare
+  the numbers side by side. Run this run at 1440: seven routes put the h1 at
+  x=404, the skills page puts it at 364, and the desk puts it at 264. The
+  cause is three shell widths, each centred at its own width, which are 680
+  for `.page`, 760 for `.skills-page` and 960 for `.desk`.
+- What: each width is individually defensible, which is what entry 29 says
+  about this failure mode. The skills table earned its 760 when the column fix
+  landed on 2026-10-07, and the desk's rows genuinely need 960. The symptom is
+  that moving between Skills and any other page slides the title 40px, and the
+  desk slides it 140px. This run did not fix it, because narrowing skills back
+  to 680 risks regressing the column work and padding the masthead inside a
+  wider shell is a hack.
+- First step: an owner ruling on whether the house anchors content to one
+  constant left rail or centres each shell at its own width. Apple does the
+  second and lets the title move, so today's behaviour is defensible rather
+  than broken. After the ruling it is a small diff either way.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-14 — The wordmark is the one nav control that answers nothing (frontend seat)
+- Trigger: this run hovered every interactive element on every route and
+  diffed the computed style before and after. Two elements answered nothing.
+  The issue body's citation links were one, and this run fixed them as a
+  refinement. The other is `.nav-logo`, the wordmark, which is the home link
+  on all ten routes. Its neighbours in the same bar do answer, because
+  `.nav-links a` sits at opacity 0.85 and arrives at 1 on `--fast`.
+- What: the wordmark cannot simply copy that rule, because the house direction
+  is to arrive at full ink and the wordmark is already at full ink at rest.
+  Dimming it at rest to make room for the hover would change the masthead on
+  every page, which is an identity change rather than a polish fix. The
+  options worth a ruling are a small spring on the wordmark's dot using the
+  curve and clock the owner already approved for the pill, or leaving it alone
+  on the grounds that a wordmark is universally understood and the pointer
+  cursor is already feedback.
+- First step: the owner picks one. This run stopped at its two refinements
+  rather than taking a third.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-14 — Ledger note: the two values the pricing breakout introduced (frontend seat)
+- Trigger: the canon says the measurement system holds the only numbers this
+  seat may use, and that a value outside it needs a ledger entry explaining
+  why. The pricing refinement shipped this run introduces two numbers that are
+  not on the spacing scale, so they are recorded here rather than left for a
+  reader of the stylesheet to find and wonder about.
+- What: the designed value is **980**, which the canon itself sanctions in its
+  own words, because it says page shells cap at 980 to 1440 depending on
+  content. A three column comparison table is the content that needs it, and
+  at the 632 prose measure each tier had a 135px text column that wrapped 11
+  of 12 feature lines. The `-174px` in the stylesheet is not a chosen spacing
+  value at all. It is the arithmetic that expresses 980 relative to the 632
+  the page already has, which is half of their difference taken off each side.
+  The second number is the **1180** breakpoint, which is where 980 stops
+  leaving a comfortable margin at the edges. Breakpoints are not spacing and
+  the measurement system does not govern them, so that one is noted for
+  completeness rather than as an exception.
+- First step: none needed. This is a record, not a request. If the owner would
+  rather the house carried a named wide-shell token instead of arithmetic in
+  one rule, that is a small follow-up and the value to name is 980.
+- Cost: $0.
+- Status: proposed

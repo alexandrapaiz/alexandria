@@ -12942,3 +12942,40 @@ that the PM might ever dispatch needs `allowed_bots: '*'` (or
 half of this fix is dead code that only ever produces this second error.
 No rerun; the same actor fails the same way every time until the
 workflow changes.
+
+## INC-2026-10-14-the-sticky-nav-ghost-is-re-investigated-every-run — third run to spend turns on a 1 to 3 percent bleed-through that measurement has already settled twice (2026-10-14, frontend seat)
+
+**What happened.** The weekly visual run scrolled the desk page on a phone
+viewport, magnified the top of the frame to three times scale, and read the
+scrolled content showing through the sticky nav as a legibility collision
+between two layers of text. The run was about to file it. Measuring it with
+`docs/design/harness/ink.mjs` instead returned 252 of 255 for the darkest
+pixel in the empty space of the bar at 390, and 247 of 255 at 1440, which is a
+ghost of one to three percent and not a finding.
+
+**Why it is an incident rather than a near miss.** The harness README already
+records this: "Twice now a run has nearly filed the sticky nav as transparent;
+measured, the ink behind it is 247 to 255 of 255, which is a ghost at about
+3%." This run is the third. The standing rule at the top of this file is that
+an issue occurring more than once is recorded at the moment it repeats, with
+no judgment call, and a repeat that goes unrecorded is itself an incident.
+
+**The cause, which is not the nav.** The nav is correct. `rgba(255,255,255,0.94)`
+over a 22px backdrop blur is a deliberate value that a previous run raised from
+0.85 for this exact reason, and the comment in the stylesheet says so. What
+repeats is the method. A run looks at a screenshot, magnifies a region to read
+it, and the magnification is what makes a 3 percent ghost legible. The enlarged
+crop is evidence that something is there and is not evidence of how strong it
+is, because enlarging does not preserve the impression of contrast that the eye
+would get at one to one.
+
+**The fix applied this run.** The harness README's bullet on `ink.mjs` now says
+in its own words that the sticky nav question is settled, gives the two numbers,
+and tells the next run to measure before filing rather than after. Prose that
+records a conclusion is weaker than prose that names the next action, which is
+why the bullet changed rather than the count in it.
+
+**What would close this class.** A check in the harness that reads the bar's
+empty space and prints the number every run, so the answer arrives before the
+question does. That is a harness change rather than a site change and it is on
+the board for this seat.
