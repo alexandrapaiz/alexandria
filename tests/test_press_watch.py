@@ -120,7 +120,7 @@ def test_the_card_body_carries_the_deadline_the_lateness_and_the_way_out():
     body = pw.card_body(press(W40, AFTER), AFTER)
     assert "2026-W41" in body
     assert "2026-10-12 11:00 UTC" in body
-    assert "1 minutes ago" in body
+    assert "1 minutes late" in body
     # The command and the ladder it has to go behind, because the issue is
     # editorial and the rehearsal is not optional.
     assert "resend --week 2026-W41" in body
@@ -140,7 +140,44 @@ def test_lateness_reads_in_the_unit_a_reader_would_use(late_for, expected):
 
 def test_the_card_body_does_not_claim_a_row_that_does_not_exist():
     body = pw.card_body(press(None, AFTER), AFTER)
-    assert "none at all" in body
+    assert "no issue on record at all" in body
+    assert "The newest issue on record" not in body, (
+        "an empty table was described as having a row"
+    )
+
+
+#: The three connectives the board's own validator looks for. Its refusal
+#: message names them, and the message is the only published statement of the
+#: rule that exists: `400 item refused: the prose must carry its reason in
+#: words (so that, because, otherwise): what you are doing and why, as a
+#: conversation, not a list of labels`.
+CONNECTIVES = ("so that", "because", "otherwise", " so ")
+
+
+def test_the_card_reads_as_prose_the_board_will_accept():
+    """The first draft of the card was refused by the board, correctly.
+
+    It was four labelled lines, two of them `Field: value`, and the board
+    answered 400. Asserting the shape here rather than finding out at the
+    POST is the difference between a guardrail that fires and a guardrail
+    whose own alarm bounces. See the note in `tools/board.py`.
+    """
+    body = pw.card_body(press(W40, AFTER), AFTER)
+    assert any(word in body for word in CONNECTIVES), (
+        "the card carries no reason in words, which the board refuses"
+    )
+    for line in body.splitlines():
+        head = line.split(":")[0]
+        assert not (line and ":" in line and len(head.split()) < 4
+                    and not head.startswith("http")), (
+            f"{line!r} reads as a label rather than a sentence"
+        )
+
+
+def test_the_nudge_reads_as_prose_too():
+    body = pw.nudge_body(press(W40, AFTER + timedelta(hours=25)),
+                         AFTER + timedelta(hours=25))
+    assert any(word in body for word in CONNECTIVES)
 
 
 # ------------------------------------------------- one card a week, not seven

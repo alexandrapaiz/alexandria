@@ -43,6 +43,31 @@ line is enforced on this side of the wire. The server enforces it on its own
 side too, and both halves should stay true: a rule that only one end checks is
 the shape incident 20 is on record for.
 
+## The board refuses a body that reads as a list of labels
+
+Found on 2026-10-14 by the engineer seat, by being refused. `POST /api/items`
+with a body of four lines, two of them `Field: value`, comes back as
+
+    board said 400 to POST /api/items: item refused: the prose must carry its
+    reason in words (so that, because, otherwise): what you are doing and why,
+    as a conversation, not a list of labels
+
+That is the owner's house voice enforced at the write, and it is the right
+place for it, because a card is prose a person reads rather than a record a
+machine parses. Nothing in this repository said so until now, so the finding
+is here rather than in a register: this file is the door, and a seat that is
+about to write is the only reader who needs it at the moment it applies.
+
+What it means in practice. Write the card the way you would say it out loud:
+what is wrong, why you are saying it, and what closes it. Keep the facts in
+sentences rather than in a field list, and give the reason in words. The
+refusal names three of them and there may be more, which is why this is a
+note and not a local check: a second copy of a rule whose exact shape you are
+guessing at can only ever agree with the server by luck, and this file already
+makes that argument about permissions one section down. `--dry-run` prints
+the body without spending the request, and reading it back as a sentence is
+the cheapest way to find out.
+
 ## Run reports are append-only, so `report` runs once
 
 The board's HTTP server implements GET and POST and answers PATCH, PUT and

@@ -181,41 +181,59 @@ def due_deadline(week: str, now: datetime) -> datetime:
 def card_body(press, now: datetime) -> str:
     """What the card says, written for the person who has to fix it.
 
+    Prose and not a field list, because the board enforces that on its own
+    side: a body of labelled lines comes back as `400 item refused: the prose
+    must carry its reason in words (so that, because, otherwise): what you are
+    doing and why, as a conversation, not a list of labels`. The first draft
+    of this function was refused for exactly that, which is the right outcome
+    and is recorded in `tools/board.py`.
+
     The headline is the surface's own, so the card and the command cannot
-    disagree about what is wrong. Everything after it is the part a card can
-    carry and a command's exit code cannot: when the deadline was, how late
-    this is, and the two things that would close it.
+    disagree about what is wrong. The rest is what a card can carry and an
+    exit code cannot: when the deadline was, how late this is, which reader
+    answered, and the two things that would close it.
     """
     evidence = press.evidence or {}
     week = due_week(press) or dh.week_label(now.date())
     deadline = due_deadline(week, now)
     late_for = lateness(now - deadline)
-    lines = [
-        press.headline + ".",
-        "",
-        f"The issue for {week} was due at {deadline:%Y-%m-%d %H:%M} UTC, which "
-        f"is the {dh.PRESS_CRON} cron plus the "
+    newest = evidence.get("newest_week")
+    # The receipt's timestamp arrives with microseconds on it, which is six
+    # digits of precision nobody reading a card about a missing week needs.
+    written = dh._parse_iso(str(evidence.get("created_at")))
+    written = f"{written:%Y-%m-%d %H:%M} UTC" if written else evidence.get("created_at")
+    had = (f"The newest issue on record is {newest}, written "
+           f"{written} by {evidence.get('model')}, so "
+           f"anyone opening /library today reads {newest} as the latest thing "
+           "this product has published."
+           if newest else
+           "There is no issue on record at all, because the digests table is "
+           "empty, so a reader opening /library finds nothing to read.")
+    return "\n\n".join([
+        f"The press owes an issue for {week} and no row exists for it, so "
+        f"{press.headline}. The deadline was {deadline:%Y-%m-%d %H:%M} UTC, "
+        f"which is the {dh.PRESS_CRON} cron plus the "
         f"{int(dh.PRESS_GRACE.total_seconds() // 3600)} hour grace window in "
-        f"docs/agents/delivery-health.md. That was {late_for} ago.",
-        "",
-        f"Newest issue on record: {evidence.get('newest_week') or 'none at all'}"
-        + (f", written {evidence.get('created_at')} by "
-           f"{evidence.get('model')}" if evidence.get("newest_week") else "")
-        + ".",
-        f"Read from: {evidence.get('read_via')}.",
-        "",
-        "Two things close this, and both are a hand on a Modal token. Either "
-        f"the issue is written late, which is `modal run "
-        f"pipeline/weekly.py::resend --week {week}` behind the rehearsal "
-        "ladder in docs/agents/press-rehearsal.md, or somebody writes down "
-        "why the press correctly held and what the right next trigger is. A "
-        "held send is a legitimate answer and a silent one is not.",
-        "",
-        "Posted by tools/press_watch.py, which is the outside observer "
-        "guardrail 4 asks for. It reads the artifact rather than the "
-        "scheduler, so it fires whether or not the cron started.",
-    ]
-    return "\n".join(lines)
+        f"docs/agents/delivery-health.md, so this is {late_for} late.",
+
+        had + f" I am reading that from {evidence.get('read_via')} rather "
+        "than from the database, because no agent seat holds a database "
+        "credential and the site publishes the same rows without one.",
+
+        "I am posting this because nothing read the press on the hour it "
+        "went quiet. The check that answers this question has been correct "
+        "since 2026-10-08, and its only scheduled reader is the daily "
+        "standup, which on a Monday runs the weekly ceremony instead, so the "
+        "one day the press can fail is the one day nobody was asking.",
+
+        "This closes one of two ways, and both of them need a hand on a "
+        f"Modal token, so neither is mine. Either the issue is written late, "
+        f"which is `modal run pipeline/weekly.py::resend --week {week}` "
+        "behind the rehearsal ladder in docs/agents/press-rehearsal.md, or "
+        "somebody writes down why the press correctly held and what the "
+        "right next trigger is, because a held send is a legitimate answer "
+        "and a silent one is not.",
+    ])
 
 
 def find_card(payload: dict, week: str) -> dict | None:
@@ -267,8 +285,8 @@ def needs_nudge(card: dict, now: datetime, after: timedelta = NUDGE_AFTER) -> bo
 def nudge_body(press, now: datetime) -> str:
     week = due_week(press) or dh.week_label(now.date())
     late_for = lateness(now - due_deadline(week, now))
-    return (f"Still missing {late_for} after the deadline. "
-            f"{press.headline}. Read from "
+    return (f"Still missing {late_for} after the deadline, because nothing "
+            f"has sent it yet: {press.headline}, read again just now from "
             f"{(press.evidence or {}).get('read_via')}.")
 
 
