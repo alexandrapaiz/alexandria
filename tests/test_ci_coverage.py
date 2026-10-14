@@ -207,6 +207,13 @@ UNCOVERED = {
     # cost money rather than a red run.
     "tests/polar.test.mjs",
     "tests/test_polar.py",
+    # Added 2026-10-14 with the quiet-send guardrail, and pinned for the same
+    # structural reason as every line above. This one is pointed: the file it
+    # guards is itself a scheduled reader that exists because a correct check
+    # ran at the wrong hour, so a test of it that fires on no pull request is
+    # the same defect one level down. The staged replacement runs it, measured
+    # at `53 of 53`.
+    "tests/test_press_watch.py",
     "tests/delivery.test.mjs",
     "tests/issues.test.mjs",
     "tests/markdown.test.mjs",

@@ -359,3 +359,84 @@ def test_the_newest_comment_is_the_cooldown(comments, expected):
     if comments is not None:
         card["comments"] = comments
     assert pw.needs_nudge(card, AFTER + timedelta(hours=25)) is expected
+
+
+# -------------------------------------------- the schedule, which is the point
+
+STAGED = ROOT / ".github" / "workflows-pending" / "press-watch.yml"
+
+
+def staged_workflow() -> str:
+    """The staged workflow with its commentary stripped.
+
+    The prose in that file argues about `pull_request` at length, so a
+    substring test against the whole text would read its own explanation as
+    the trigger it rules out.
+    """
+    return "\n".join(line for line in STAGED.read_text().splitlines()
+                     if not line.lstrip().startswith("#"))
+
+
+def test_the_staged_workflow_exists():
+    """A reader that is not scheduled anywhere is the defect, not the fix.
+
+    This file's whole subject is a correct check that nothing ran at the hour
+    it mattered. Shipping the tool without the schedule would be that again,
+    so the schedule is asserted here and its remaining hand step is item 21 of
+    docs/agents/pending-workflow-changes.md.
+    """
+    assert STAGED.exists(), f"{STAGED} is the schedule for tools/press_watch.py"
+
+
+def test_the_staged_workflow_runs_two_hours_after_the_press_cron():
+    text = staged_workflow()
+    minute, hour = dh.PRESS_CRON.split()[:2]
+    grace = int(dh.PRESS_GRACE.total_seconds() // 3600)
+    expected = f'cron: "{minute} {int(hour) + grace} * * *"'
+    assert expected in text, (
+        f"the staged workflow does not run at {dh.PRESS_CRON} plus "
+        f"{grace} hours, which is the deadline tools/delivery_health.py "
+        f"judges by. It should contain {expected!r}."
+    )
+
+
+def test_the_staged_workflow_runs_daily_and_not_only_on_mondays():
+    """The dedupe is what buys this, and the skipped Monday is what needs it."""
+    text = staged_workflow()
+    assert "* * 1" not in text, (
+        "a Monday-only schedule has one firing opportunity a week, in the "
+        "hour GitHub is most likely to skip under load"
+    )
+
+
+def test_the_staged_workflow_never_fires_from_a_branch():
+    """A workflow that writes to the board must not run on a pull request."""
+    text = staged_workflow()
+    for trigger in ("pull_request:", "push:"):
+        assert trigger not in text, (
+            f"the staged workflow carries a {trigger} trigger, so every branch "
+            "touching the tool would post a card to the company board"
+        )
+    assert "workflow_dispatch:" in text, "there is no way to run it by hand"
+
+
+def test_the_staged_workflow_actually_runs_the_tool():
+    text = staged_workflow()
+    assert "python3 tools/press_watch.py" in text
+    # Without a token the tool cannot post the card, which is the one thing
+    # the schedule exists to do.
+    assert "BOARD_RUNTIME_TOKEN" in text and "BOARD_API_URL" in text
+
+
+def test_the_staged_workflow_needs_no_dependency_install():
+    """Cheap is in the sprint item's own words, and this is what cheap means.
+
+    The tool is standard library only. A `pip install` step would be thirty
+    seconds a day for nothing, and a requirements file that drifts is one more
+    way a guardrail stops running.
+    """
+    assert "pip install" not in staged_workflow()
+    source = (ROOT / "tools" / "press_watch.py").read_text()
+    for third_party in ("import requests", "import httpx", "import yaml",
+                        "import psycopg", "import modal"):
+        assert third_party not in source
