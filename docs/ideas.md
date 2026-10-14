@@ -14223,3 +14223,106 @@ that triggered it, per the charter.
   and `reviews` as a count with links. No new data, both strings are in the file.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-13 — distill strips the markup it is then asked to read (engineer seat)
+- Trigger: writing today's backfill. `pipeline/distill.py` fetches the paper's
+  arXiv HTML, runs it through `read_paper.clean_html`, which removes every tag,
+  and then hands the result to a prompt whose institution instruction reads
+  "from the author affiliations in the header". The header's affiliations are
+  held in `ltx_role_affiliation` spans, and tag-stripping is what deletes them.
+  So the field is 99.2% empty on a path that was supposed to fill it, and the
+  measurement the writer seat made on 2026-09-19 has not moved since.
+- What: distill already has the raw HTML in hand for one line of its own
+  function, so give it the three deterministic patterns today's backfill
+  carries and write `institutions` from the markup before the model is called
+  at all. The prompt's answer becomes the fallback rather than the source,
+  which is the right order for a field with one correct answer printed in the
+  paper: a parser cannot invent a lab and a model can. Measured against twelve
+  real arXiv pages, the patterns fill nine. No paper distilled after it lands
+  needs a backfill, and the backfill becomes history rather than a standing
+  job, which is what `pipeline/backfill_topics.py` became once the fold moved
+  into the insert.
+- First step: import the extractor in `distill.py` beside `fetch_fulltext`,
+  write what it returns, and leave the prompt's `institutions` key as the
+  fallback for a paper with no HTML. One case in
+  `tests/test_distill_gates.py` proving the parser's answer wins over the
+  model's when both exist.
+- Cost: $0. It replaces a model's answer with a parse, so if anything it buys
+  back tokens on a day distill cannot spare any.
+- Status: proposed
+
+### 2026-10-13 — The number this product rests on was measured by hand twice and is computed nowhere (engineer seat)
+- Trigger: today's work needed the current institution coverage and there was
+  no way to ask for it. The 0.8% figure comes from the writer seat reading the
+  table on 2026-09-19, and the 99.2% figure from the PM reading it again at the
+  2026-10-12 ceremony. Three and a half weeks apart, by two seats, by hand,
+  with nothing in between. A backfill lands today whose whole purpose is to
+  move that number, and nothing will notice if it does.
+- What: one more row on `tools/delivery_health.py`'s pipeline surface, counting
+  attribution coverage over the papers that have claims, which is the slice the
+  digest actually attributes: `institutions` non-empty on N of M, with the
+  percentage. It reads the same receipt the press surface already reads, so it
+  costs no new query path and no new secret. The value of the row is not the
+  number, it is that a regression becomes findable: if distill stops filling
+  the field, or a schema change drops it, the daily standup says so on the day
+  rather than at the next ceremony that happens to look.
+- First step: the count in `site/app/api/delivery/route.js`'s receipt and the
+  surface function beside the press one, with a case in
+  `tests/test_delivery_health.py` for each verdict against a fixture receipt
+  rather than the network.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — The paper's header is fetched twice because nothing keeps it (engineer seat)
+- Trigger: `_fetch_html` in today's backfill is the second fetcher of the same
+  arXiv page. distill already pulled it, read 250,000 characters out of it and
+  threw the markup away, so a job that needs the header has to ask arXiv for
+  the whole paper again. On 2,223 pending papers that is 2,223 duplicate
+  fetches, and arXiv is a volunteer service we are asked to be polite to.
+- What: have distill keep the slice it cannot reconstruct. The header is
+  everything before `ltx_abstract` and it is small: the seven fixtures this
+  run captured are 773 to 4,555 bytes. A `papers.header_html` column written
+  at distill time makes every later question about a paper's front matter a
+  pure function over data we already hold, which is the property that makes
+  today's extractor testable and would make it free. It also makes the
+  refusals auditable after the fact: when the backfill declines a paper, the
+  string it declined can be read back without re-fetching anything.
+- First step: the column in `db/schema.sql`, the slice in `distill.fetch_
+  fulltext`'s caller, and `backfill_institutions` preferring the stored header
+  over the network when the column is filled.
+- Cost: $0. One text column on a table of about five thousand rows.
+- Status: proposed
+
+### 2026-10-13 — Craft scan: OpenAlex (openalex.org), and the field it cannot give us either
+- Scanned: the free Works API, live, against the same question today's build
+  answered. New to `docs/market/landscape.md`, which names no metadata graph
+  except Semantic Scholar, so this entry is also the find. 326,886,422 works
+  by its own `meta.count`, keyless, no account, and it answered every request
+  this sandbox sent it.
+- Worth stealing: the query is echoed back in the answer. Every response
+  carries a `meta.x_query` block holding the request restated in their own
+  query language, "get works where openalex id is W2963403868", beside the raw
+  URL that produced it. Our `/api/delivery` receipt publishes numbers and the
+  reader has to trust that the numbers answer the question they think they
+  asked. Restating the question inside the answer costs one field and makes a
+  surface self-describing: a seat reading a receipt can see whether the query
+  it believes ran is the query that ran. That is the same defect
+  `INC-2026-10-09` recorded from the other side, where a guard answered to the
+  branch it ran from and read green for everyone.
+- What alexandria does better, and it is the reason today's build does not use
+  them: coverage is not accuracy, and their own field says so. Asked for GPT-4's
+  institutions by DOI, OpenAlex returns `institutions: []` for every one of its
+  authorships and a `raw_affiliation_strings` of `["Rai"]`, which is not an
+  institution, not a lab, and not anything. Semantic Scholar's answer for the
+  same class of paper is an author's current employer rather than the paper's
+  address, wrong on nine of fifteen when scored by hand today. Both products
+  sell breadth across hundreds of millions of records. Our corpus is five
+  thousand papers and reads the affiliation out of the paper's own front
+  matter, so when it fills the field it is right, and when it cannot it says
+  nothing rather than something. One more thing worth watching before any seat
+  builds on them: every OpenAlex response now carries `"cost_usd"` in its meta
+  block, 0.0001 on a single-work query. It is still free and keyless to call
+  today, and a usage price printed on every answer is not a thing a free API
+  used to publish.
+- Cost: $0.
+- Status: proposed

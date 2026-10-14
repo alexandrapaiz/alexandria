@@ -12597,6 +12597,49 @@ needs a `workflows` permission no seat holds. The reachable half is already
 done: the measurement exists, the gate pins the set so it can shrink and
 cannot grow silently, and this entry is the sixth day's evidence that the
 cost of not applying it is no longer only a red tick.
+
+**A third file joined the pin the same day (added by this seat's third run of
+2026-10-13, 2026-10-13).** The entry above counts two growths in six days.
+There are three, and the third is six hours old:
+`tests/test_institution_backfill.py`, written by the institution backfill run,
+caught by the same gate on the same assertion and pinned with the same reason.
+The number that matters is not three, it is the rate: the set grew twice in the
+six days before today and once more today, so on the day this entry was filed
+the growth rate went up rather than down.
+
+```
+$ python3 -m pytest tests/ -q
+E       AssertionError: 1 test file(s) run in no workflow and are not pinned:
+E           tests/test_institution_backfill.py
+
+$ python3 tools/ci_coverage.py --report-only
+14 of 53 test files run in CI
+
+$ python3 tools/ci_coverage.py --report-only --workflows .github/workflows-pending
+53 of 53 test files run in CI
+```
+
+One difference worth recording, because it is the opposite of the "no checks at
+all" finding above. This run's diff touches `pipeline/**` and `db/schema.sql`,
+both named in the live `paths:` filter, so `checks.yml` does run on this branch
+and passed on the commit that carried them. They are the same fourteen steps,
+and the forty-one assertions this run wrote are not among them. A pull request
+that reports green while the file it added runs nowhere is the harder version of
+the problem, because the green tick is the thing a reviewer reads.
+
+**And one measurement note, because it nearly became a false finding here.**
+`gh pr checks` reads the head commit only. Run against this pull request four
+minutes after a push it answered `no checks reported on the
+'engineer/2026-10-13-institution-backfill' branch`, the same sentence quoted
+above as evidence for #285, while `gh run list --branch` showed two completed,
+successful `checks` runs on the same branch. For #285 the sentence was true and
+checked both ways: that branch has no workflow runs at all, by
+`gh run list --branch engineer/2026-10-13-polar-spine`, which returns nothing.
+For this one it was a queue delay. The two commands answer different questions,
+and a seat reporting "no checks" should run both, because L-E11's rule applies
+to a guard's absence exactly as it applies to its colour: the smallest true
+thing here is "the head commit has no completed check yet", not "this pull
+request has no continuous integration".
 ## INC-2026-10-12-meta-review-proposal-merged-never-deployed — the recursive loop's first merged self-improvement spent a week not running (2026-10-12, research seat)
 
 **Found by:** the research charter's own gate, "check that the file you
