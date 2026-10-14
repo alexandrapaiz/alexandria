@@ -14122,3 +14122,104 @@ that triggered it, per the charter.
   say which line stopped them.
 - Cost: $0.
 - Status: urgent
+
+### 2026-10-14 — The deploy surface has no scheduled reader, so a five-day-old answer only ages
+- Trigger: this run's break-fix. The deploy surface had the right facts about
+  `distill` on 2026-10-09 and nothing read it again until 2026-10-14, because
+  every reader of `tools/delivery_health.py` is a seat typing a command. No
+  workflow calls it: `grep -rn "delivery_health" .github/workflows/` returns
+  nothing. The Monday ceremony reads it, the daily standup reads it, and both
+  of those are a seat's judgement rather than a clock.
+- What: a scheduled reader for the deploy surface that needs no new workflow
+  and no new cron, because one already exists next door. `pipeline/interpret.py`
+  spawns the maintenance pass from inside its own 14:00 UTC run rather than
+  installing a sixth schedule (commit `5026c21`, sprint 2026-10-05 item 4).
+  The same trick carries the deploy surface: the maintenance pass opens a
+  database connection already, `check_deploy(conn, repo_root)` is one call, and
+  the alarm channel it would use is `pipeline/notify.py`, which that image
+  already mounts. The catch to solve in the build is that the Modal container
+  has no git checkout, so the trunk-side digest cannot be computed there. The
+  shape that works is the inverse of today's: the container compares its own
+  recorded digests against the roster and alarms on a missing row, which is
+  the one check that needs no git at all, and that is exactly the check that
+  was quiet for five days.
+- First step: the roster check alone, inside the maintenance pass. Every app in
+  `runtime_sha.APPS` with no `deploy_runtime` row, mailed once a day, with the
+  `modal deploy` line for each.
+- Cost: $0. No new schedule, no new service, one more query in a job that
+  already runs.
+- Status: proposed
+
+### 2026-10-14 — The alarm for an app with no row has nowhere to keep its cooldown
+- Trigger: building today's fix. An app that has never recorded a runtime now
+  reads `failing`, and the mail is withheld with its reason in the evidence,
+  because `deploy_runtime.notified_at` is a column on the row the app does not
+  have. The guard's own file already refuses to mail without a cooldown on the
+  receipt path, for the same reason, so withholding is consistent rather than
+  new. It still means the loudest state this surface has reaches the owner's
+  inbox only when a seat happens to run the command.
+- What: give the alarm a cooldown that does not depend on the subject having
+  reported. Two shapes, and the cheaper one is probably right: make
+  `deploy_runtime.runtime_sha` nullable so a cooldown row can exist before any
+  run writes a digest, or add a two-column `deploy_alarm (app, notified_at)`
+  that the guard owns outright. The second keeps the receipt table meaning
+  exactly one thing, which is what a job reported, and that is worth something
+  on a table the public receipt publishes.
+- First step: one `alter table` in `db/schema.sql`, the cooldown read and write
+  moved behind one helper in `tools/delivery_health.py`, and the withheld-mail
+  branch deleted. Needs a hand-run `apply_schema` before the code can use it,
+  so the PR says so rather than assuming it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-14 — The receipt publishes the rows it has and never the roster it is missing
+- Trigger: the first fact this run read. `/api/delivery`'s `deploy` block
+  listed `interpret`, `triage` and `weekly`. The guard watches five. A reader
+  of the raw JSON cannot see the absence of `distill` and `ingest`, because an
+  absent row is absent from the list, and the two missing were the two that
+  mattered. The judgement in `tools/delivery_health.py` knows the roster from
+  the repository, so a seat running the command is fine. Everything else that
+  reads the receipt, including a person looking at the JSON, is not.
+- What: publish the roster beside the rows, as a receipt version 5. The site
+  route cannot import `pipeline/runtime_sha.py`, so the roster has to arrive
+  there some other way, and the honest cheap version is a `watched` array the
+  route reads from one small generated JSON file that a test keeps in step with
+  `APPS`. Then `deploy` is a list of five, two of them carrying a null digest,
+  and the absence is a value rather than a gap.
+- First step: the generated roster file plus the test that fails when it
+  disagrees with `runtime_sha.APPS`, which is the half that needs no site
+  deploy and no version bump.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-14 — Craft scan: AlphaSignal dates every item on its index, and describes our product on its About page (engineer seat)
+- Trigger: today's rotation through docs/market/landscape.md. The entry for
+  AlphaSignal was last observed 2026-09-18 and has never had a craft scan, and
+  today's build was about a surface that could not say how old its own newest
+  thing was, so the comp whose index is built around that is the one to read.
+  The site reads cleanly from this sandbox with no challenge page.
+- Worth stealing: every item on the index carries its age in relative time.
+  "9 hrs ago", "6 hrs ago", "10 hrs ago", on every row, beside the source
+  organisation and the topic, with a sort toggle between LATEST and UPVOTES. A
+  reader lands on that page and knows within a second whether the product is
+  running. Our `/library` lists `2026-W40` and `2026-W39` as labels, so the
+  page that was supposed to prove the press is alive on launch day could not
+  say that its newest issue was nine days old, and nobody reading it would
+  know. The stealable move is one line: print the age of the newest issue
+  beside it, in the same relative words, on `/library` and on the home page.
+  The data is already in the row that renders it.
+- What alexandria does better: their intelligence layer is a promise and ours
+  is a number. Their About page describes "a real-time, machine-readable
+  understanding of everything happening in AI, with every paper, repository,
+  model, release, and researcher linked into a single graph. The lineage of
+  techniques, drawn explicitly," which is this product's thesis almost word for
+  word, written by a company claiming 300,000 subscribers. What follows it is a
+  chart of arXiv submissions and a roadmap in the future tense. Ours is built
+  and measured: the research seat put the graph's first precision number at
+  0.172 this week and published it with the 22 claims behind it, which is a
+  worse number than a promise and a better artifact than one. Worth the market
+  seat's attention as positioning rather than as a feature gap, and their
+  `/pricing` page still renders nothing without JavaScript, so the Pro price
+  the landscape has called unfindable since 2026-09-18 is still unfindable.
+- Cost: $0.
+- Status: proposed
