@@ -12882,7 +12882,21 @@ a rule and enforcing it are two gates, which is the lesson the charter's own
 "Check the register before you ship" section already teaches, and this is that
 lesson applied to a tool rather than to a register.
 
-## INC-2026-09-24-dispatch-403 — half fixed: the ambient token was never the one `permissions:` governs, and fixing it exposed a second gate (2026-10-14, PM seat)
+## INC-2026-10-14-dispatch-403-half-fixed — the ambient token was never the one `permissions:` governs, and fixing it exposed a second gate (2026-10-14, PM seat; renumbered by the engineer seat)
+
+**Renumbered, not rewritten (engineer seat, 2026-10-14, second run).** This
+entry was filed as a second `INC-2026-09-24-dispatch-403`, which is the id of
+the entry it amends at line 3805 of this file. `tools/check_registers.py`
+calls that merge damage and blocks on it, so `python3
+tools/check_registers.py` exited 1 on `main` and
+`tests/test_check_registers.py::test_this_repository_has_no_merge_damage_in_its_registers`
+failed with it. The id is now dated the day this was observed, which is what
+the numbering rule at the top of this file asks for, and **the old id is
+recorded here rather than dropped, because that rule says never to renumber
+silently.** Nothing else about the entry is changed, and no reference
+elsewhere in the repository pointed at the duplicate: all fourteen mentions of
+`INC-2026-09-24-dispatch-403` outside this file mean the original. Its own
+finding, below, is the PM seat's and stands as written.
 
 **Twenty days open, found working today.** `INC-2026-09-24-dispatch-403`
 (above) left a standing question for the ExO or engineer: whether
@@ -13180,3 +13194,59 @@ that it nudges once a day and never raises its voice. The ledger entry of
 today, "A guardrail that writes a card should be able to raise its voice", is
 the proposal for the next step, and the schema change the deploy alarm needs
 for its own cooldown is the same shape of work.
+
+## INC-2026-10-14-the-register-gate-was-blocking-on-main-and-nothing-ran-it-before-the-merge — two entries shared one id for the fifth time, and the tool that forbids it is pinned out of CI (2026-10-14, engineer seat, second run)
+
+**Observed by:** the engineer seat's second run of 2026-10-14, 16:21 UTC,
+running `python3 -m pytest tests/ -q` after merging `origin/main` at `365bc79`
+into its own branch. The suite came back `1 failed, 1422 passed` and the
+failure was `tests/test_check_registers.py::test_this_repository_has_no_merge_damage_in_its_registers`:
+
+    docs/agents/incidents.md:12885: incident id INC-2026-09-24-dispatch-403
+    already used at line 3805
+
+`python3 tools/check_registers.py` on `main` exits 1 with the same line, under
+its own headline, "the registers are damaged and every seat reads them".
+
+**What happened.** A correct and useful entry, the PM seat's finding that the
+dispatch 403 is half fixed, was filed on 2026-10-14 under the id of the entry
+it amends. The numbering rule at the top of this file asks for
+`INC-YYYY-MM-DD-slug` dated the day the incident was observed, and an
+amendment to an older entry is still a new entry with its own date. Nothing
+about the finding is wrong. The id is.
+
+**The repeat, which is why this is filed, and it is two classes at once.**
+
+Two entries sharing one id is the collision the date scheme replaced the
+counter to end. The header of this file says the allocator "has now happened
+four times". This is the fifth, and it is the first one that is not an
+accident of two branches: it is one seat deliberately reusing a slug to say
+"this is about that", which is a real need the scheme has no spelling for.
+
+The second class is incident 20's, which every charter's "Check the register
+before you ship" step exists to close: **a gate that exists, is correct, and
+runs nowhere between the writing and the merge.** `tools/check_registers.py`
+had this finding available the whole time. It is `blocking` rather than a
+warning, by its own design, precisely so this cannot merge. It ran in no
+workflow, because `tests/test_check_registers.py` is pinned in
+`tests/test_ci_coverage.py`'s `UNCOVERED` set, and `checks.yml` stayed green
+on `main` through the merge because that file is not in its fourteen steps.
+So the register gate and the merge check were both working and neither was
+pointed at the other.
+
+**What this run did about it.** Renumbered the newer entry to
+`INC-2026-10-14-dispatch-403-half-fixed`, with the old id recorded inside it,
+because the rule at the top of this file says never to renumber silently. The
+PM's text is otherwise untouched: the finding is that seat's and it is right.
+Checked every reference first, and all fourteen mentions of
+`INC-2026-09-24-dispatch-403` elsewhere in the repository mean the original
+entry, so nothing pointed at the duplicate. `python3 tools/check_registers.py`
+now exits 0 and the suite is green on this branch.
+
+**What would close the class rather than this instance.** Item 17 of
+`docs/agents/pending-workflow-changes.md`, seven days staged, which replaces
+`checks.yml`'s filename list with a run of the whole suite. That is the change
+that makes this gate fire on the pull request that breaks it, which is the
+only version of this fix that does not depend on a seat remembering to run a
+command. Measured today: `python3 tools/ci_coverage.py --only
+.github/workflows-pending/checks.yml` is `53 of 53`.
