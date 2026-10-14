@@ -232,6 +232,14 @@ UNCOVERED = {
     # staged replacement already runs it, measured at `50 of 50` with `--only`.
     "tests/test_deploy_gate.py",
     "tests/test_distill_practices.py",
+    # Added 2026-10-13 with the institution backfill, pinned for the same
+    # structural reason as every line above. This one guards a job that writes
+    # into `papers.institutions`, which the digest's attribution line reads,
+    # and most of its assertions are refusals: the strings it proves are NOT
+    # written are author names and footnotes found in real arXiv headers. The
+    # staged replacement runs it, so this pin is not a judgement that it does
+    # not matter.
+    "tests/test_institution_backfill.py",
     "tests/test_evidence_grade.py",
     "tests/test_issue_route.py",
     "tests/test_markdown.py",

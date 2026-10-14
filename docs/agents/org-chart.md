@@ -69,7 +69,9 @@ defect (INC-2026-09-24-dispatch-403, repeated 2026-09-26 and
 2026-09-27) has 403'd every dispatch attempted from this seat's own
 scheduled run so far; the one dispatch that has actually fired
 (PR #113, 2026-09-26) went through a chair-directed synchronous session
-instead. Unresolved as of this run; see the incident register.
+instead. Unresolved as of this run; see the incident register. Repeated
+again 2026-10-12 (Monday ceremony), same `HTTP 403`, now 18 days old
+with zero successful self-fired dispatches in this seat's history.
 
 ## The board (company standard pm.md §14, since 2026-09-27)
 
