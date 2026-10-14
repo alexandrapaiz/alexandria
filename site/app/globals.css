@@ -951,6 +951,27 @@ button.pill {
 .digest a {
   text-decoration: underline;
   text-underline-offset: 3px;
+  /* Refinement 1 of two, 2026-10-14. These are the only links on the site
+     that answered nothing when pointed at, measured by hovering every
+     interactive element on every route and diffing the computed style. They
+     are also the links that matter most, because they are the evidence under
+     a claim, and they arrive from rendered markdown rather than from a
+     component, which is the blind spot ban list entry 26 names.
+
+     The treatment is the house's existing answer for "this target is live",
+     the same hairline wash .skill-line already uses, on the same clock and
+     curve. No new value enters the motion system: the benchmark this run
+     measured on the live sites is that Linear runs colour feedback at 0.1s
+     and Consensus runs its whole site at 0.1s, which is what --fast already
+     is. No lift, no shadow and no colour, so the ban list holds. The wash
+     costs no layout, so a paragraph never reflows under the pointer. */
+  transition: background-color var(--fast) var(--ease);
+}
+
+/* :active carries the same feedback where there is no pointer to hover. */
+.digest a:hover,
+.digest a:active {
+  background-color: var(--line);
 }
 
 .digest ol,
@@ -1715,6 +1736,24 @@ button.pill {
   grid-template-columns: repeat(3, 1fr);
 }
 
+/* Refinement 2 of two, 2026-10-14, measured rather than eyeballed. Three
+   columns inside the 632px prose shell gave each tier a 135px text column,
+   and at 1440 that wrapped 11 of the 12 feature lines: "The complete archive"
+   is 20 characters and took two lines, "No renewal to remember" is 22 and
+   took two. Meanwhile 808px of the viewport either side of the block was
+   empty. The owner's density ruling of 2026-09-18 is to add air when a space
+   reads dense, and the canon allows a page shell of 980 where the content
+   needs it, so the comparison block alone widens to 980 on the same centre
+   axis the masthead already uses. The prose above it keeps the 632 article
+   measure; only the table breaks out. Below 1180 nothing changes, because
+   that is where 980 stops leaving a comfortable margin. */
+@media (min-width: 1180px) {
+  .tiers.three {
+    /* 632 to 980, half the difference off each side */
+    margin-inline: -174px;
+  }
+}
+
 /* The trial lives inside the monthly card rather than in a fourth column,
    because it is the same plan with its first three days free. It sits above
    the card's action, so `margin-top: auto` on the pill still pins the
@@ -2368,6 +2407,10 @@ button.pill {
   .desk-go,
   .waitlist-field,
   .lib-art,
+  /* The citation wash added 2026-10-14 belongs with the other colour
+     transitions the house mutes. The wash still appears, it just stops
+     fading in to get there. */
+  .digest a,
   /* Both of these were missing. The toggle's bars actually rotate, which is
      the kind of motion this query exists to stop, and the nav link's fade
      belongs with the other colour transitions the house already mutes. */
