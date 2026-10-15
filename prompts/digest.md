@@ -1113,14 +1113,24 @@ Printing everything `deep_reads` returned is the opposite of judgment, and
 judgment is what the reader pays for.
 A paper this issue has already covered at length is not a pick. The reader
 just read it here, so the line would send them to what they were handed.
-Check each pick against the ISSUE you have just written, section by section,
-and never against a payload stream. Naming one stream is how this failed: the
-rule used to say the overlap is with `new_claims`, one pick had been covered
-in the traction section instead, and it went out with a line recommending the
-paper the issue's own lead item was about. A paper covered anywhere above is
-covered. Drop the overlap and print what remains, even when what remains is
-one paper or none. When nothing remains, the section does not run and its
-heading does not print, the same as any other empty slot.
+**The check is a comparison against a list and never a reading of the
+sections.** The list already exists, because it is the named works the link
+rule, the grade rule and the attribution rule are all counted against. Write
+each candidate pick beside that list and strike every pick that appears on it,
+matching on the payload's url where you have one and on the paper's own title
+where you do not. Match on those rather than on the prose, because the sections
+above name a paper by a written lead and this slot names it by its full title,
+so one piece of work carries two different strings and recognising them as one
+piece of work is the step that does not happen. The print of 2026-10-05 is what
+that looks like from a reader's chair: three picks, all three described at
+length in the section directly above, and seven candidates in `deep_reads` the
+issue had not covered left unprinted. Naming one stream is how this failed the
+first time: the rule used to say the overlap is with `new_claims`, one pick had
+been covered in the traction section instead, and it went out with a line
+recommending the paper the issue's own lead item was about. A paper covered
+anywhere above is covered. Drop the overlap and print what remains, even when
+what remains is one paper or none. When nothing remains, the section does not
+run and its heading does not print, the same as any other empty slot.
 Drop it silently. A dropped paper leaves no trace in the issue. A sentence
 explaining why a paper is not on the list spends the shortest section in the
 newsletter on this file's own bookkeeping, and the reader did not come for the

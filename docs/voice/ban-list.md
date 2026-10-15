@@ -2515,3 +2515,68 @@ gap that the same collision had left empty (incident 25).
     ```
     LANDED prompts/digest.md: "Take every word and short phrase in the finished issue that appears three times or more and is not ordinary English doing an ordinary job."
     ```
+
+115. The reading list recommends the papers the issue just finished
+    describing, because the gate against it asks the writer to recognise a
+    piece of work the issue never names. Entry 112 is the count whose unit was
+    never fixed and entry 113 is the shape no count was ever taken of. This is
+    the third of that family and the most expensive, because the section it
+    ruins is the one asking the reader for an hour.
+    2026-W40's reading list carries three picks. All three were described at
+    length in the section directly above it, by bold leads that are written
+    phrases rather than titles: "Kernel-level preemption in five microseconds"
+    against *Hard Stop: Kernel-Level Preemption and Containment for Rogue
+    Agentic Execution*, "Not all experience belongs in the weights" against
+    *Not All Experience Belongs in the Weights: Component Routing for
+    Self-Improving GUI Agents*, and "Procedural memory from real user traffic"
+    against *Designer-RSI: Evolving Procedural Memory from User Traffic for
+    Agentic Graphic Design*. The fourth item in that section is the one paper
+    the reading list does not carry.
+    The rule against it was complete, unconditional, and in the deployed file
+    at `prompts/digest.md:949` of `3bbf430`: "A paper this issue has already
+    covered at length is not a pick. [...] A paper covered anywhere above is
+    covered. Drop the overlap and print what remains, even when what remains
+    is one paper or none." It even carries the history of its own earlier
+    failure, because a previous version named a single payload stream and was
+    broadened after one pick slipped through from the traction section.
+    What is missing is not the requirement. It is the comparison. The step the
+    rule asks for is to check each pick "against the ISSUE you have just
+    written, section by section", which is a reading, and a reading for an
+    identity the artifact does not print. The body never prints a paper's
+    title, so item one is a paragraph about an independent researcher who
+    "formalized a containment architecture" and the pick is a full italic
+    title, and deciding those are one piece of work is recognition rather than
+    comparison. The two slots sit under two different format rules of this same
+    file, one asking for a short written lead and the other for the paper's own
+    title, so one piece of work carries two strings by design.
+    The generator turns on the identity of a piece of work in four places and
+    three of them already do it right, on the payload and before anything is
+    chosen: `:839` counts the distinct papers in the rows handed over, `:914`
+    groups the rows by paper before choosing, and `:1334` builds the one
+    written list of named works that the link, grade and attribution gates are
+    counted against. This was the fourth, it needed exactly that list, and it
+    was the one pointed at the finished prose.
+    What it cost is three laws rather than one. Law 11, because seven
+    uncovered candidates in `deep_reads` went unprinted while every slot went
+    to a paper the issue had already spent a paragraph on. Law 8, because the
+    reading list is the only section in this print carrying a link, so the
+    three links the issue has sit on three works it had already described
+    without one. Law 6, because three papers carry six grades in two
+    vocabularies, and the pair on the lead pick is close to verbatim.
+    **The comparator is why this is an entry about a gate and not about a
+    print.** `press_rehearsals` id 4 is the same model and the same
+    `prompt_sha`, five and a half hours earlier, and its reading list carries
+    GAVEL, Magenta and Just-In-Time Agent Memory, each appearing exactly once
+    in the whole document and none of them covered above. One file, two runs,
+    one obeying the rule and one breaking it in every slot. That is what a gate
+    asking for a reading is, and it is L-A9 in the position where the standard
+    costs most.
+    Added 2026-10-15. Enforced the same day at the overlap check, which now
+    compares each candidate against the named-works list the link, grade and
+    attribution gates already build, matching on the payload's url where there
+    is one and on the paper's own title where there is not. The sweep entry 90
+    requires found four gates of this class and three were already correct, so
+    the count is one and the entry closes.
+    ```
+    LANDED prompts/digest.md: "The check is a comparison against a list and never a reading of the sections."
+    ```

@@ -587,6 +587,35 @@ the second was which generator, forwards (2026-10-10), and this is which
 edition. Each one was a check that read the thing in front of it and never
 asked whether that thing was the thing it was supposed to be reading.
 
+**And one question after the three shas, because every check above reads one
+print and a gate's compliance is not a property of one print (added
+2026-10-15,
+`INC-2026-10-15-the-generator-was-graded-on-one-sample-while-a-second-sat-in-the-database`).**
+`rehearse()` writes a full body to `press_rehearsals` on the deploy ladder's
+third gate, from the same prompt and the same model as the send. Where a row
+there carries the graded week and the artifact's own `prompt_sha`, it is a
+second sample of the identical generator and the grade measures both.
+
+```
+psql "$NEON_RO_URL" -c "select id, week, model, prompt_sha, created_at
+    from press_rehearsals order by created_at desc limit 5"
+python3 -I docs/voice/check_voice.py measure <each body>
+awk '/^## /{sec=$0} /\[full text\]/{print sec}' <each body> | sort | uniq -c
+```
+
+This is not a second artifact to grade. A reader received one of them and the
+verdicts belong to that one. It is the only evidence this seat can obtain about
+whether a gate's WORDING is what is failing, and the answer on 2026-10-05 was
+that it is not: the two bodies of 2026-W40 share a `prompt_sha` to the
+character, were written five and a half hours apart, and carry 13 links against
+3, with 10 in the three body sections against 0. Three merged patches to the
+link-coverage rule had been aimed at a gap narrower than the spread between two
+runs of one wording. So where the comparator exists, the grade prints both
+measurements, and a verdict that recommends a fourth wording of a gate says
+what the comparator showed first. Where no such row exists the grade says so in
+one line, because an absent comparator is a fact about the deploy ladder rather
+than a step skipped.
+
 1. **The outsider read.** Read the issue once, start to finish, at
    reading speed, as a builder from another team who has read none
    of the papers. Grade nothing yet. Record four things: where a
