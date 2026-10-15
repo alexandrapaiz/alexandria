@@ -106,7 +106,12 @@ function Finding({ finding: f }) {
               explanatory subtitles to a heading, and a number is a
               clarification. The blocks below it carry their own count by
               being there. */}
-          <h2 className="lb-detail-head">Contradicted by</h2>
+          {/* h4 rather than h2, matching SkillLibrary.jsx's panel heading
+              exactly. Fifty rows each carrying an h2 would put fifty
+              same-named headings into the document outline one level under
+              the page title, which is a worse thing to hand a screen reader
+              than a skipped level inside a disclosure. */}
+          <h4 className="lb-detail-head">Contradicted by</h4>
           {f.contradictions.map((c) => (
             <dl className="lb-against" key={`${f.id}-${c.id}`}>
               <div>
