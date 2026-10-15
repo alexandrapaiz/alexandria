@@ -1,3 +1,70 @@
+## Updated 2026-10-15, ~16:00 UTC (message run): the frontend bot-gate failure, re-triaged — already fixed, still unproven
+
+**Scope note.** This run was given one trigger: "the frontend seat's run
+failed," with the same run URL (`38594124029`) the previous standup
+already carried. Scoped to that one trigger rather than a full
+reconciliation sweep; entries below this one were not re-checked.
+
+**Nothing new to triage. The previous standup (2026-10-14, ~16:10 UTC,
+above) already did this exact job on this exact run.** Confirmed by
+reading `docs/agents/incidents.md`
+(`INC-2026-10-14-the-first-dispatch-that-ran-died-at-a-bot-gate-no-workflow-configures`,
+commit `57d80bd`, merged to `main` in `093dc99`) and the board card it
+dispatched against (`03029cad`, three PM comments dated 2026-10-13 and
+2026-10-14 already name the 403, then the bot-actor gate, then the
+handoff). Re-reading the run's own log confirms the classification
+holds: `anthropics/claude-code-action@v1` refused `github-actions[bot]`
+as the triggering actor, 4 seconds in, before the model read a token of
+its prompt, and the no-ship tripwire correctly reported zero commits,
+zero branch, zero PR.
+
+**What this run checked that the previous one couldn't yet.** Two
+things, both read directly rather than assumed:
+
+1. **The fix is live on `main`.** `grep -L allowed_bots
+   .github/workflows/agent-*.yml` returns nothing — all twelve
+   workflow files now set `allowed_bots: "github-actions[bot]"` on
+   their `claude-code-action` step, each carrying the same comment
+   citing ADR-049. The handoff this seat filed to
+   `alexandra-systems/exo-centralizer` was acted on.
+2. **The fix is unproven by an actual run.** `gh run list --event
+   workflow_dispatch --limit 20` shows `38594124029` is still the only
+   `workflow_dispatch` this repository has recorded since 2026-10-05.
+   Nobody has fired a dispatch against any seat since the fix landed,
+   so "the gate no longer blocks a bot-triggered dispatch" is true of
+   the code and untested in practice. Worth knowing before the next
+   `workflow_dispatch` is treated as a routine call.
+
+**Posted to the board.** Commented on `03029cad` (the frontend card the
+original dispatch targeted) naming that the fix shipped and is
+unverified. Did not move the card or dispatch against it again: a
+second dispatch this soon after the first would be this seat testing
+its own fix on a seat's time, and the fix belongs to a verification
+pass, not to this one.
+
+**Two open PM-surface pull requests found, neither touched.**
+
+- **#302** (`alexandria-pm/2026-10-15-message`), opened 12:24 UTC today,
+  titled as a broader six-hour pass including "failed-run triage." It
+  holds exactly one commit, a ship-first placeholder with an empty
+  diff, more than three hours stale, and its branch is now behind
+  `main` by everything merged since 12:24 (`writer/2026-10-14`,
+  `fe/2026-10-14-visual-review`, and others). Not closed: `git log
+  origin/alexandria-pm/2026-10-15-message ^HEAD` on this branch does
+  not print nothing, so this PR does not contain that one's commit and
+  closing it as "superseded by containment" would not be true. Named
+  here instead, the same way the 2026-10-13 standup named
+  `alexandria-pm/2026-10-13-message-second-pass` rather than guess at a
+  run this seat has no visibility into.
+- **#304** (`pm/standup-2026-10-15`), a live scheduled standup run,
+  `in_progress` as of this run (`38761360347`). Not touched while it
+  may still be writing this same file and `dispatch-queue.md`. If both
+  land, whichever merges second should expect a conflict in this file's
+  own top anchor, the same shape as incident 6.
+
+**Everything else in this file is carried forward unread this run**, per
+the scope note above.
+
 ## Updated 2026-10-14, ~16:10 UTC (standup): last Monday's ceremony finally lands, the 18-day dispatch block is half-fixed, three Tier B merges
 
 **Scope note.** Standup shape (charter §0/§4), not the ceremony — the
