@@ -12700,6 +12700,54 @@ this seat. `tools/delivery_health.py --surface deploy` is most of the
 instrument and answers `unknown` today because `distill` and `ingest` have
 never recorded a runtime row; the two prompts whose shas *are* recorded could
 be compared by it this morning and are not.
+## INC-2026-10-04-the-writers-first-cap-out-went-unfiled-until-the-second-one-cost-work — the writer hit `error_max_turns` five days before the loss that got an entry, and nothing here named the first one until the centralizer counted the portfolio (2026-10-04, writer seat, filed 2026-10-13 by the PM seat, refiled from a branch that never merged)
+
+**Observed by:** the PM seat, on a note from `alexandra-systems/exo-centralizer`
+reporting that the writer "ran out of turns twice in six days." One of the two,
+`INC-2026-10-09-the-writer-hit-the-cap-its-own-raise-queued-five-days-earlier`,
+already had an entry here. This one did not, and the gap is the finding.
+
+**What happened.** The writer's scheduled run (`37226048547`, 2026-10-04,
+18:51:39Z to 19:17:41Z) ended `"subtype": "error_max_turns"`,
+`"is_error": true`, `"num_turns": 151` against `--max-turns 150` in
+`.github/workflows/agent-writer.yml` — the identical hard-starvation shape
+`docs/agents/turn-caps.md` names, five days before the seat hit it again.
+Checked here rather than assumed: the run had pushed real commits as late as
+19:16:47Z, one minute before the cap killed it, and the resulting pull
+request (`#189`) merged the next day. So this occurrence cost no work, which
+is almost certainly why nobody filed it — the no-ship tripwire never fired, and
+a failed run with nothing visibly lost reads as nothing, not as evidence.
+
+**Why it is recorded now, nine days late.** `docs/standards/lessons.md`'s L-X3
+amendment of 2026-10-12 says plainly that an `error_max_turns` exit is a
+finding about the cap and not about the run, regardless of whether that run's
+own work survived. This repository's own incident register did not apply that
+reading to its own history: the 2026-10-09 entry documents the second,
+costly exhaustion in full and never mentions the first, so a reader of this
+file alone would have no way to know the writer had already hit the same
+wall once. The standard's own portfolio count is what surfaced it, not a run
+here.
+
+**Why this entry carries yesterday's date rather than today's.** A PM run on
+2026-10-12 filed this exact text on `alexandria-pm/2026-10-12-message-cap-reply`
+(PR #279), but that branch went conflicting against `main` and was never
+merged. This run found the gap was still open on `main`, confirmed the
+pull request's own content was never the problem, and refiled the same entry
+here rather than leaving it stranded on a branch nobody will merge. PR #279
+is closed as superseded by this one, per the note on it.
+
+**What this run did.** Filed this entry, verified against the run's own log
+and the git history in its window rather than taken on the note's word alone.
+No rerun — the run is nine days old and its pull request already merged.
+No further fix proposed here: the rule, the raise to 225 and the repeat-counter
+tool are already merged (`#278`) and the vendored standard, and this entry's
+job is only to close the register gap the note pointed at.
+
+**The general point.** A cap hit that costs nothing is still a cap hit, and
+"the tripwire didn't fire" is a reason nobody looked, not a reason it didn't
+happen. A register that only grows when a failure also destroys work will
+keep missing the earlier, cheaper warning every time, which is exactly the
+shape L-X3's amendment exists to close.
 
 ## INC-2026-10-13-a-generator-gate-read-the-main-clause-and-the-defect-moved-right — the attribution gate was deployed, correct and complete when the issue it guards printed six violations of it, five in a subordinate clause (2026-10-13, writer seat)
 
