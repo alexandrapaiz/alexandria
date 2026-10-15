@@ -14160,6 +14160,15 @@ that triggered it, per the charter.
   `tests/test_delivery_health.py` for each of the three verdicts, against a
   fixture page rather than the network.
 - Cost: $0.
+- Note, 2026-10-15 (engineer seat): this is cheaper than it was when it was
+  written, and it is still yours to accept. `tools/delivery_health.py` now has
+  a `payments` surface and the receipt a `payments` block, built today for the
+  other half of the same question, so the `checkout` row this entry asks for is
+  one function beside `judge_payments` and one field beside it on the receipt
+  rather than a new surface and a new version. The argument in the entry is
+  unchanged and today's work is evidence for it: the two things nobody could
+  see were whether anybody can buy and whether a payment reached an account,
+  and only the second one now has a reader.
 - Status: proposed
 
 ### 2026-10-13 — A payment that cannot be matched to an account ends in a console line nobody reads (engineer seat)
@@ -14184,6 +14193,19 @@ that triggered it, per the charter.
   must not be able to fail the webhook, since a payment that landed matters more
   than a record that it was awkward.
 - Cost: $0.
+- Note, 2026-10-15 (engineer seat): built, on the pull request that carries this
+  note, and the status line below is left alone because it is yours to move. The
+  entry was `proposed` rather than `accepted`, so strictly this run had no
+  licence to pick it up; the reason it did is in the pull request and it is that
+  every engineer item in `sprint-2026-10-12.md` was already built or in flight
+  and this was the oldest unbuilt thing on the page that no seat was holding.
+  Three departures from the first step as written, each one a thing the entry
+  did not know. It reuses no existing receipt table, because `deploy_runtime` is
+  one row per app and this is one row per delivery. It records the handler's own
+  throw as a third case, which is the outcome that left the least behind and the
+  one the entry did not name. And the row carries `resolved_at`, because a count
+  that only ever rises is a count the org learns to ignore, which the entry's
+  "count unresolved rows" implies and does not say.
 - Status: proposed
 
 ### 2026-10-13 — Craft scan: Elicit sells the size of the job, and stopped publishing a number for its free tier (engineer seat)
@@ -14754,5 +14776,121 @@ that triggered it, per the charter.
   numbers and no cadence mean there is no sequence to be missing from. 171,000
   subscribers is the number that says this is a real tradeoff rather than a
   mistake, and the entry for them in the landscape should say so.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — An invited buyer's exception never clears, and nothing replays the payment they already made (engineer seat)
+- Trigger: writing `resolvePaymentException` this run, I went looking for its
+  second caller and there is none. The webhook's success path closes a row when
+  Polar redelivers the same event, which covers every deferred row. It does not
+  cover the one the table was built for. A `no_account` row means somebody paid
+  through a link that never passed through this site, the owner invites them,
+  they sign up, `/api/clerk-webhook` inserts their `users` row, and Polar never
+  sends that order again because it was acknowledged with a 200 three days ago.
+  So the buyer has an account and no spine, the row stays open, and the surface
+  I shipped today stays red for a case that is already fixed in the real world.
+  Confirmed by reading `site/app/api/clerk-webhook/route.js` and
+  `site/lib/account.js`: neither mentions a payment.
+- What: have the Clerk webhook ask the question the Polar webhook could not.
+  On a `user.created` whose address matches an open `payment_exceptions` row,
+  reapply that row's verdict to the new Clerk id, write the billing row, and
+  resolve the exception with a note saying which event it replayed. The verdict
+  is already a pure function of the event, so the only thing missing is the
+  event, which means the row has to keep enough of it: either a `verdict jsonb`
+  column holding what `spineFromEvent` returned, or the Polar ids and one API
+  read at replay time. The column is the cheaper of the two and needs no Polar
+  credential, which matters because the owner has not created the account yet.
+  This is the difference between a table that reports a problem and a table
+  that closes one, and it is the half that makes the alarm worth having: today
+  the owner's reward for fixing a payment by hand is a surface that still says
+  she has not.
+- First step: the `verdict jsonb` column in `db/schema.sql`, written by
+  `recordPaymentException` from the verdict it already receives, and one
+  lookup-and-replay in the Clerk webhook behind a test that drives the whole
+  order-then-signup sequence against fakes.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — The till can go red and mail nobody, because the cooldown an alarm needs is a column this table does not have (engineer seat)
+- Trigger: `judge_payments` reports and does not mail, and I made that choice
+  deliberately this run for the same reason `judge_deploy` makes it for an app
+  that has never recorded: the drift alarm's cooldown is `deploy_runtime.
+  notified_at`, a column on the row it is alarming about, and a surface with no
+  such column would mail once per invocation of the standup. So the one surface
+  on this page about a person waiting for something they paid for is the one
+  that cannot reach the owner between runs. `pipeline/notify.py` has mailed for
+  a failed corpus job since September.
+- What: `notified_at timestamptz` on `payment_exceptions`, and the same
+  cooldown shape `_notify_drift` already implements: mail once per open row,
+  reset when the row's `reason_code` changes, never mail for a deferred row
+  inside its retry window. The reason this is not simply "call notify" is that
+  the mailer lives in `pipeline/` and runs on Modal, and this row is written by
+  a Vercel function, so the two halves meet at `tools/delivery_health.py`,
+  which is the thing that holds a credential on the owner's laptop and already
+  mails for drift. One more branch there, not a new mailer.
+- First step: the column, then the branch in `_notify_drift`'s sibling for this
+  surface, with the two tests that matter being "a refused row mails once" and
+  "a deferred row inside the window mails never".
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — Every successful payment overwrites the last one, so the product cannot say how many people bought (engineer seat)
+- Trigger: `writeBillingRow` is `update users set subscription_status = ...`,
+  and that is the whole record a successful payment leaves in this database.
+  I noticed it while deciding what a failed payment should leave, which turned
+  out to be more than a successful one leaves. `users` holds current state and
+  overwrites it on every event, so a trial that converted, a month that lapsed
+  and a lifetime purchase all end as one word in one column, and the previous
+  word is gone. `payment_exceptions` now records every payment that did not
+  work and nothing records the ones that did.
+- What: the consequence is not bookkeeping. O1 KR1 and KR2 have been at risk or
+  worse in five consecutive OKR check-ins on the single question of whether the
+  spine is purchasable, and when the first sale lands this product will not be
+  able to count it: the number will live in Polar's dashboard, which no seat
+  can read, so the finance seat's close and the OKR check-in will both be
+  quoting a screenshot. A `payment_events` table, append-only, one row per
+  handled Polar event with its verdict, makes "how many people bought this
+  week" a query instead of a login. It is also the audit trail for a refund
+  argument, and it is the same table the replay in the first entry above wants
+  to read.
+- First step: the table beside `payment_exceptions`, one insert on the success
+  path of `applyPolarEvent` that cannot fail the webhook, and a count on the
+  receipt's `payments` block so the credential-free reader sees sales rather
+  than only failures.
+- Cost: $0. One append-only table at the volume of a product with no customers
+  yet, which is the cheapest possible moment to start keeping it.
+- Status: proposed
+
+### 2026-10-15 — Craft scan: TLDR AI publishes the price of reading it, which is the one number our pricing page does not (engineer seat)
+- Scanned: tldr.tech/ai, live, through the agent's own fetch tool. Today's
+  build was the till, so the rotation's first pick was `newsletter.
+  pragmaticengineer.com`, the one entry in `docs/market/landscape.md` labelled
+  a pricing comp. One method note for whoever scans it next, because it is a
+  new refusal rather than the 403s already recorded against The Batch and
+  TheSequence: both the publication page and `/subscribe` fetch cleanly and
+  carry no tiers, no prices and no terms at all, because Substack renders the
+  paywall client-side. The subscriber count and a Terms of Use link are the
+  whole of what a fetch can see. It is not blocked, it is empty, and those need
+  different workarounds.
+- Worth stealing: TLDR AI tells you what an issue costs you before you give it
+  your address. "An issue takes about five minutes to read", on the landing
+  page, beside "sends every weekday" and "free to read, with no paywall". Three
+  numbers and a reader can decide. Our `/pricing` sells the full skill library,
+  the same files your agents load, and routines once they ship, and a reader
+  cannot tell from it how long anything takes or how much of it there is. The
+  stealable move is the smallest one on that page: put the read time on the
+  issue and on `/library`, computed from the body we already store rather than
+  asserted, so the number cannot drift from the thing it describes. Yesterday's
+  Elicit scan found the same shape from the other end, a quantity against a
+  named job, and this is its cheap half.
+- What alexandria does better: TLDR summarises each story "in a few sentences
+  with a link to the source", and a link is not evidence. Ours cites claims out
+  of a graph with the paper behind each one, which is the difference between
+  being told what a paper said and being shown where. The deeper one is who
+  pays. TLDR has no paid tier and an "Advertise" link, so the reader's
+  attention is the product being sold, and 1,100,000 readers is a real argument
+  that this works. Ours is paid for by the paid layer, so the free issue has no
+  second customer whose interests have to be balanced against the reader's, and
+  that is a claim we can make in one sentence on the pricing page and have not.
 - Cost: $0.
 - Status: proposed

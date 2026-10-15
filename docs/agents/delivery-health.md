@@ -558,3 +558,53 @@ a week's card to Done once the issue lands. It does not today, because the
 first version of a guardrail that writes should do one thing and the thing
 worth doing first is saying so out loud. Until then the card is closed by the
 hand that sends the issue.
+
+## 2026-10-15 (engineer seat): a seventh surface, and it is the only one about a reader reaching the product
+
+Every surface on this page until today asked whether the product reached a
+reader. `payments` asks the other direction, whether a reader who paid reached
+the product, and it belongs here rather than on a page of its own because it
+fails in exactly the shape everything above it fails in. Something is
+configured somewhere else, nobody checks it, and it stays broken for days
+because the only reader of the artifact is a person who happens to look.
+
+**What it reads.** Open rows in `payment_exceptions`, through the same two
+readers as the other database surfaces: a direct connection where one exists,
+and the published receipt's `payments` block otherwise. Polar is the Merchant
+of Record (ADR-30), so `/api/polar-webhook` is the only place this product ever
+learns that anybody paid, and both of its unrecoverable outcomes used to end in
+a `console.error` in a Vercel function log that nothing in this org reads.
+
+**The distinction the verdict turns on, because it is not the obvious one.**
+A row Polar will retry is usually the system working: the commonest cause is
+this product's own Clerk webhook not having landed yet, which is a race
+measured in seconds, and alarming on it would make every signup-then-buy inside
+one second a red report. A row nothing will retry never clears by itself, so it
+is `failing` from the first row with no grace window at all, because a grace
+window for a person waiting on the owner is the wrong idea.
+
+**And the third case, which is the one nothing else on this page would catch.**
+A deferred row still open after `PAYMENT_DEFER_GRACE_HOURS` has stopped being a
+race. It is retryable, so the refusal count stays at zero, so without that
+clause the surface reads green with a paid customer locked out indefinitely.
+Six hours is many retries later and well inside Polar's own retry window; the
+failure being guarded is a payment that stays stuck until the buyer writes in,
+and a day-long grace is a day of that.
+
+**Two things it does not do, named here so they are written down rather than
+discovered.**
+
+It does not mail. The drift alarm's cooldown is `deploy_runtime.notified_at`,
+a column on the row it alarms about, and this table has no such column, so a
+mail here would be one mail per invocation of the standup. That is the same
+reason the never-recorded deploy case withholds its mail, and it is filed in
+`docs/ideas.md` (2026-10-15) with the column it needs.
+
+It does not close a row the owner fixed by hand. An invited buyer who then
+signs up gets an account and no spine, because Polar never redelivers an event
+it got a 200 for, so the row stays open for a case that is already resolved in
+the real world. That is the larger of the two gaps and it is in the ledger the
+same day, as the first entry of 2026-10-15. **A surface that reports a problem
+and cannot be closed by fixing the problem will teach its reader to stop
+reading it**, which is this file's own recurring lesson pointed at the newest
+row on it.

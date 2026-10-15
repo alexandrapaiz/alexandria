@@ -456,7 +456,14 @@ export function spineFromMetadata(metadata, nowMs) {
 // The code is the grouping key the daily standup counts by, so it is a
 // closed set checked by db/schema.sql rather than free text: a typo in a
 // free-text reason becomes a new category and splits the count that was
-// supposed to add up. Each one's sentence is what a reader sees.
+// supposed to add up.
+//
+// The sentence beside each one is the row's `detail` when the outcome
+// carried no reason of its own, which is the case for anything that fails
+// before it has words for why. Whether a given code is one Polar will
+// retry is not written here: that answer is on the row, as the webhook's
+// own `retryable`, because the row should agree with the response Polar
+// actually saw rather than with a second table that could drift from it.
 export const EXCEPTION_CODES = {
   no_account: "nobody holds this address at Clerk, so there is no account to grant",
   ambiguous_email: "two accounts share this address, so neither can be the buyer",
@@ -465,17 +472,6 @@ export const EXCEPTION_CODES = {
   no_database: "the site cannot reach its database, so the billing row is unwritten",
   handler_threw: "the handler threw before it could finish granting access",
 };
-
-// Which of those will clear by itself. Polar retries a delivery this
-// endpoint answered with a 503, so a deferred row may resolve on its own
-// and a refused one never will. The distinction is the difference between
-// a row to watch and a row to act on, and `judge_payments` in
-// tools/delivery_health.py reads it to decide which one is the alarm.
-export const RETRYABLE_CODES = ["no_users_row", "no_database", "handler_threw"];
-
-export function exceptionMeaning(code) {
-  return EXCEPTION_CODES[code] ?? null;
-}
 
 // The row, or null when there is nothing to record.
 //

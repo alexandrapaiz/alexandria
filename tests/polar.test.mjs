@@ -743,13 +743,19 @@ test("retryable is the result's own word, not a re-derivation from the code", ()
   assert.equal(refused.retryable, false);
 });
 
-test("every code has a sentence, and the retryable ones are a subset", () => {
+test("every code has a sentence, and it is what an unexplained row says", () => {
+  // The sentences are the row's `detail` when the outcome carried no reason
+  // of its own, so an empty one would write a row that records a category
+  // and explains nothing. That is the only thing they are for, which is why
+  // this asserts their use rather than their presence.
   for (const code of Object.keys(core.EXCEPTION_CODES)) {
-    assert.equal(typeof core.exceptionMeaning(code), "string");
-    assert.ok(core.exceptionMeaning(code).length > 10, code);
+    const row = core.paymentExceptionOf({
+      event: paidOrder(),
+      eventId: "msg_abc",
+      result: { ok: false, code, reason: null },
+    });
+    assert.equal(row.reason_code, code);
+    assert.equal(row.detail, core.EXCEPTION_CODES[code]);
+    assert.ok(row.detail.length > 10, code);
   }
-  for (const code of core.RETRYABLE_CODES) {
-    assert.ok(code in core.EXCEPTION_CODES, code);
-  }
-  assert.equal(core.exceptionMeaning("not_a_code"), null);
 });
