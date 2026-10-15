@@ -14411,6 +14411,20 @@ that triggered it, per the charter.
   model's when both exist.
 - Cost: $0. It replaces a model's answer with a parse, so if anything it buys
   back tokens on a day distill cannot spare any.
+- Built 2026-10-15 (engineer seat, second run), on the branch
+  `engineer/2026-10-15-distill-institutions`. The status line is left as the
+  owner set it, because `proposed` is hers to move and this entry was never
+  `accepted`. Three departures from the first step as written, each worth
+  knowing: the extractor could not be imported from
+  `pipeline/backfill_institutions.py` because that is a Modal app file, so it
+  moved to a new `pipeline/institutions.py` verbatim and the backfill's 41
+  tests drive it from there unchanged; distill had no raw HTML to give it,
+  because `tools/read_paper.py` cleaned the markup away inside the fetch, so
+  the reader grew `fetch_paper`, one fetch handing back both the cleaned text
+  a model reads and the markup a parser reads; and the gate went into
+  `rehearse` rather than only into `tests/`, running the parser against a
+  carried header, because the model's answer is the fallback and a deploy with
+  a broken extractor would still write something and still look ordinary.
 - Status: proposed
 
 ### 2026-10-13 — The number this product rests on was measured by hand twice and is computed nowhere (engineer seat)
@@ -14453,6 +14467,18 @@ that triggered it, per the charter.
   fulltext`'s caller, and `backfill_institutions` preferring the stored header
   over the network when the column is filled.
 - Cost: $0. One text column on a table of about five thousand rows.
+- Half of this is no longer needed, 2026-10-15 (engineer seat, second run).
+  The duplicate fetch this entry is named for is gone for every paper distill
+  reads from now on: `tools/read_paper.py:fetch_paper` makes one request and
+  returns the cleaned text and the raw markup together, so the parse happens
+  in-process while distill still holds the page and no second fetch is made.
+  What a `papers.header_html` column would still buy is the other half, which
+  is the part about rows already read: the backfill cannot reconstruct a
+  header it never kept, so the 2,173 papers distilled before today still cost
+  one fetch each, and a refusal still cannot be read back and audited without
+  asking arXiv again. The entry is worth keeping for that, and it is worth
+  less than it was. Note added rather than status changed, which is the
+  owner's to move.
 - Status: proposed
 
 ### 2026-10-13 — Craft scan: OpenAlex (openalex.org), and the field it cannot give us either
@@ -14515,5 +14541,128 @@ that triggered it, per the charter.
   board this run rather than attempted here. The centralizer applies both
   fixes with one idempotent tool across every product the way the tracing
   change landed in 37 files at once (standard §15).
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — A two-name affiliation span is read as a lab, and the threshold that fixes it refuses "Google DeepMind, London" (engineer seat, second run)
+- Trigger: writing today's refusal test. The case I reached for first was
+  `arxiv:2310.06825`'s, the Mistral 7B paper that puts author names in its
+  affiliation field, and the parser accepted my two-name version of it:
+  `institutions_from_html` returns
+  `['Devendra Singh Chaplot, Diego de las Casas']` for a span holding exactly
+  that, and refuses it only once a third name is added. `looks_like_a_person
+  _list` is the rule, and it is "two commas and no organisation word", so one
+  comma and two people is under the bar. The test in the tree uses the
+  three-name string, which passes and is faithful to the real paper, so this
+  gap is not covered by a failing test today.
+- What: the stakes changed this run. The extractor used to feed a backfill
+  whose every refusal was printed for a person to read, and as of today it
+  feeds the live insert in `pipeline/distill.py`, where nobody reads the log
+  and the row goes into an issue's attribution line. Two author names in the
+  institution field is the visible defect the whole precision argument in
+  `pipeline/backfill_institutions.py` is written against.
+- First step: the one-character change is `>= 2` to `>= 1` in
+  `pipeline/institutions.py:looks_like_a_person_list`, and it is not
+  obviously right, which is why this is a proposal and not a commit. Measured
+  by hand against the twelve fixtures in `tests/fixtures/arxiv-html/`, the
+  strings it would newly refuse include real answers of the form "Google
+  DeepMind, London" and "Mila, Montreal": a lab plus a city, one comma, no
+  word on `INSTITUTION_WORDS`. So the honest first step is a measurement
+  rather than an edit. Run both thresholds over the fixtures, count what each
+  gains and loses, and put the two lists in front of the owner, because
+  trading a correct answer for a refusal is her call on a field the digest
+  prints.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — distill parses a paper's header and the backfill fetches the same page again, because nothing records the attempt (engineer seat, second run)
+- Trigger: reading `backfill_institutions.DUE` while wiring today's parse into
+  the live insert. That query selects papers with an empty `institutions` and
+  a null or expired `institutions_checked_at`, and distill writes neither
+  marker. So every paper distill reads, parses and legitimately finds no lab
+  in is still due, and the backfill will fetch the whole paper from arXiv a
+  second time to run the identical extractor over the identical markup and
+  reach the identical refusal.
+- What: distill should set `institutions_checked_at = now()` whenever it ran
+  the parser, answered or not, which is exactly the semantics the column's own
+  comment in `db/schema.sql` gives it. The saving is one arXiv fetch per paper
+  distill reads and does not fill, on a volunteer service we are asked to be
+  polite to, and it is the difference between the backfill ending as history
+  and the backfill re-walking the corpus forever. It also makes the backfill's
+  own queue honest: today it reports work that is not work.
+- First step: one `update` beside the existing institutions write, behind a
+  column-existence guard in the shape of `_has_evidence_grade`, because the
+  column is created by `backfill_institutions.ensure_column` rather than by a
+  schema run and distill must not fail an insert on a database that has not
+  met the backfill yet. One case in `tests/test_corpus_drain.py` for each of
+  "parsed and wrote" and "parsed and found nothing", both asserting the marker
+  is set, and one for the database that does not have the column.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — The attribution line has an author count sitting beside it and spends none of it (engineer seat, second run)
+- Trigger: today's craft scan, below, against a page our own ingest already
+  reads. Hugging Face Papers renders "8 authors" next to an organisation name,
+  and our digest's documented fallback when `institutions` is empty is "a team
+  led by <first author>", which is the same sentence every time and reads as
+  furniture by its third use (canon law 9, and the backfill's own docstring
+  says so).
+- What: `papers.authors` is a populated `text[]` on rows the metadata fetch
+  reached, so `cardinality(authors)` is free, needs no schema change, no model
+  call and no second fetch. "A 47-author paper led by <first author>" is a
+  different sentence from "a team led by <first author>", and the number is
+  itself a signal a reader uses: a 400-author system card and a three-author
+  theory paper are not the same kind of claim. Where the institution IS filled,
+  the two compose into the line the scan found: eight authors at Zhejiang
+  University.
+- First step: this is the writer seat's sentence and the engineer seat's
+  field, so the engineer half is the smaller one: put the count on the payload
+  the generator reads, beside `institutions`, and say in the handoff that
+  nothing in `prompts/digest.md` is obliged to use it. One line in the
+  generator's query, one key on the payload, one case in the payload test.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — Craft scan: Hugging Face Papers renders the lab as a field, and renders its absence as absence (engineer seat, second run)
+- Trigger: the daily rotation through docs/market/landscape.md, picked for
+  today's build rather than for the next name on the list. Today's work was
+  institution attribution, so the comp worth reading is one that attributes.
+  **Two method notes first, because both affect what this is worth.** The
+  rotation's own next unscanned entry was The Batch (deeplearning.ai), and it
+  could not be observed: both `curl` and the fetch tool got HTTP 403 behind a
+  Cloudflare challenge, so its landscape entry still says "last observed
+  2026-09-18" and this scan is not it. And Hugging Face Papers is not in
+  `docs/market/landscape.md` at all, which is itself the finding underneath
+  the finding: `pipeline/distill.py`'s own source comment names "a Hugging
+  Face daily pick" as one of the two things it reads, so the product has been
+  ingesting this page for weeks while the landscape file has never held a line
+  about it. Observed live at huggingface.co/papers, 2026-10-15, the "Oct 15"
+  list.
+- What: **the thing worth stealing is that the organisation is a rendered
+  field with its own slot, and an empty one renders as nothing at all.** An
+  entry carrying a lab shows the lab, with its logo, as the most prominent
+  thing after the title: "Zhejiang University", "ARC Lab, Tencent". An entry
+  with no lab shows a submitter avatar and "7 authors" instead, and prints no
+  guess, no placeholder and no apology. That is the same decision today's
+  build made for the same reason, arrived at from the rendering end rather
+  than the parsing end: a field whose wrong value is worse than its empty
+  value gets a parser and a blank, never a model and a fallback. The second
+  half, the author count, is this run's third ledger entry above, because it
+  is the part we could have and do not.
+  **What alexandria does better is that this page cannot say what it left
+  out, or why anything is on it.** The byline is "by AK and the research
+  community", the list appears ordered by upvotes and never says so, no entry
+  carries its own date, and nothing anywhere states how many papers were
+  submitted on 15 October or how the day's set was chosen from them. So a
+  reader cannot tell a quiet day from a filtered one, which is the exact
+  property `docs/agents/delivery-health.md` and the delivery receipt exist to
+  give us, and which three prior craft scans in this ledger (Consensus,
+  OpenAlex, Last Week in AI) each found missing somewhere else. Upvotes are a
+  measure of attention and our ordering is a measure of evidence, and that is
+  the difference the product is for.
+- First step: add Hugging Face Papers to `docs/market/landscape.md` as the
+  ingest source it already is, with the two observations above and today's
+  date. That file is the market seat's surface rather than this seat's, so
+  this entry is the handoff and not the edit.
 - Cost: $0.
 - Status: proposed
