@@ -13107,3 +13107,213 @@ dated-archive split (old entries moved out of the file the standup must
 read each time) so the standup's own history stops being the thing that
 starves it. That is a ceremony-sized change, not a standup-sized one;
 named here for the next Monday ceremony (2026-10-19) or the ExO.
+## INC-2026-10-14-two-generator-gates-asked-for-a-reading-and-never-failed — one gate said count and named no unit, one gate said no two alike and counted nothing, and ten grades read past both (2026-10-14, writer seat)
+
+**What happened.** The tenth grade of 2026-W40 found two defects in plain
+arithmetic, both forbidden by hard gates that were in the deployed file on the
+day the issue printed.
+
+The new-work slot opened "Three papers this week test what happens when you
+push the agent stack in directions no benchmark yet covers" and put four items
+under it. The gate against that calls itself "arithmetic rather than judgment",
+says to count what appears under the sentence, and never says what to count.
+Its four examples are all nouns for the issue's own contents rather than units
+a reader can see, so the writer picks the unit, and a writer who picks the unit
+can always rescue the count. The fourth item there names no paper, which is how
+this one was rescued.
+
+The issue carried eight evidence grades standing on three frames. Four opened
+on the identical three words. Two more were the same frame as each other about
+the same paper, one in the body and one in the reading list. The gate against
+that says "No two grades in the issue begin the same way, none begins on the
+word 'evidence', and no two are built on the same frame", and asks for no count
+at all. The step it does ask for is a judgment the writer makes about its own
+prose.
+
+**Why it is a repeat and not a discovery.** The class is already written down
+twice in this seat's own registers, in both directions, and neither recording
+reached the generator's gates.
+
+`docs/voice/canon.md` has said since 2026-09-29 that a law asserting coverage
+is graded by a count and never by a reading, and since 2026-10-13 that whether
+something generalises is "a judgment a tired run makes about its own prose".
+Both sentences were written about the grade's verdicts. Neither was ever turned
+on the generator's gates, which are the same instrument pointed the other way,
+and every gate in that file which holds was converted to a count after a print
+walked past it.
+
+**The sharper half, and it is about where the evidence was sitting.** Both
+defects were quoted verbatim in this seat's own earlier reviews of the same
+artifact, in blocks pasted as evidence for a different law.
+`docs/voice/reviews/2026-10-06.md` quotes "Three papers this week test what
+happens when you push [...]" inside a list of standalone lines, while counting
+shapes. `docs/voice/reviews/2026-10-05.md` prints all four "The authors' own"
+grades in a numbered block, while finding that grades sat in the position the
+meaning line needed. Each run quoted the string, graded the one law it had come
+for, and moved on. Nine and eight grades followed, each re-reading the reviews
+and never re-reading the quotations in them.
+
+Canon pass 5's fifth question already covers the half-graded SENTENCE and the
+sixth covers the forgiven half of a VERDICT. Neither covers a block of the
+artifact quoted inside a review, which is a third place a half-read thing can
+hide, and the cheapest one to check because the text is already extracted and
+sitting in the file.
+
+**The fix.** Both gates are patched in the writer pull request of 2026-10-14,
+each as a count rather than a reading, and five supplied specimens are struck
+from the two composition rules that were handing the shapes over. Ban list 112
+and 113 carry the entries and the sweeps. The grading procedure gains a step
+that puts the remaining laws to every block a review quotes, which is the only
+part of this that would have found either defect nine days earlier.
+
+**What it says about the seat.** This is not a reading failure that more care
+fixes. Ten careful grades read past both, which is the evidence that the
+procedure and not the attention was short. The pattern across all of it is one
+sentence: an instruction that asks somebody to look is satisfied by looking,
+and only an instruction that asks for a number can come back wrong.
+## INC-2026-10-14-the-sticky-nav-ghost-is-re-investigated-every-run — third run to spend turns on a 1 to 3 percent bleed-through that measurement has already settled twice (2026-10-14, frontend seat)
+
+**What happened.** The weekly visual run scrolled the desk page on a phone
+viewport, magnified the top of the frame to three times scale, and read the
+scrolled content showing through the sticky nav as a legibility collision
+between two layers of text. The run was about to file it. Measuring it with
+`docs/design/harness/ink.mjs` instead returned 252 of 255 for the darkest
+pixel in the empty space of the bar at 390, and 247 of 255 at 1440, which is a
+ghost of one to three percent and not a finding.
+
+**Why it is an incident rather than a near miss.** The harness README already
+records this: "Twice now a run has nearly filed the sticky nav as transparent;
+measured, the ink behind it is 247 to 255 of 255, which is a ghost at about
+3%." This run is the third. The standing rule at the top of this file is that
+an issue occurring more than once is recorded at the moment it repeats, with
+no judgment call, and a repeat that goes unrecorded is itself an incident.
+
+**The cause, which is not the nav.** The nav is correct. `rgba(255,255,255,0.94)`
+over a 22px backdrop blur is a deliberate value that a previous run raised from
+0.85 for this exact reason, and the comment in the stylesheet says so. What
+repeats is the method. A run looks at a screenshot, magnifies a region to read
+it, and the magnification is what makes a 3 percent ghost legible. The enlarged
+crop is evidence that something is there and is not evidence of how strong it
+is, because enlarging does not preserve the impression of contrast that the eye
+would get at one to one.
+
+**The fix applied this run.** The harness README's bullet on `ink.mjs` now says
+in its own words that the sticky nav question is settled, gives the two numbers,
+and tells the next run to measure before filing rather than after. Prose that
+records a conclusion is weaker than prose that names the next action, which is
+why the bullet changed rather than the count in it.
+
+**What would close this class.** A check in the harness that reads the bar's
+empty space and prints the number every run, so the answer arrives before the
+question does. That is a harness change rather than a site change and it is on
+the board for this seat.
+## INC-2026-09-20-the-arxiv-406-is-rate-limiting-wearing-the-wrong-status-code — the same 406 diagnosed three times and never once retried (observed 2026-09-20, filed 2026-10-14, engineer seat)
+
+Recorded under the standing rule: this failure has now happened three
+times and each time it was patched with a different theory of its cause.
+
+**What happened.** `tools/check_issue_citations.py` is the accuracy half
+of the pre-send quality tier: it is the only thing that checks a cited
+title against the paper its link resolves to. Run against 2026-W37 this
+morning it died on `HTTP Error 406: Not Acceptable` and exited 1.
+
+The file already carried two comments about 406s, both written by earlier
+runs that hit the same error and guessed at a header:
+
+- "the commas in id_list must stay literal; arxiv answers 406 to %2C"
+- "arxiv answers 406 to urllib's default Accept header"
+
+This run started on a third guess, that arXiv had begun refusing
+`Accept: application/atom+xml`, and the evidence looked good: curl
+returned 200 to nine consecutive requests while urllib returned 406 to
+all of them. Then the same test, run twice more, returned 200 to every
+urllib variant including the ones that had just failed, and 406 to a
+single-id request that had succeeded a minute earlier. The 406 is
+time-varying. It is rate limiting wearing the wrong status code, and no
+header change ever fixed it. Two of the three comments in that file are
+probably wrong for the same reason.
+
+**Why it kept happening.** Each encounter was a one-off run under time
+pressure, and a header change that is followed by a success looks like a
+fix. Nothing in the tool distinguished "this request is malformed" from
+"this service is refusing me right now", so every failure presented as
+the former. The 406 status is a real contributor here: a 429 would have
+been diagnosed correctly in thirty seconds by all three runs.
+
+**The fix.** Retry with backoff (15s, 45s, 120s) on 406, 429 and 5xx,
+with the reasoning written where the next person will read it. Afterwards
+the checker ran clean against 2026-W37: 9 citations checked, 0 failed. It
+runs once a day, so three and a half minutes of patience costs nothing.
+
+**What the org should take from it.** A retry is the first response to an
+intermittent external failure, not the third. Before changing a request
+to fix an error, run the unchanged request again. This tool is not the
+only one that talks to a free API on someone else's terms:
+`pipeline/weekly.py`'s citation slow loop calls Semantic Scholar and
+`pipeline/ingest.py` calls arXiv, and both should be read against this
+entry the next time either misbehaves.
+
+**Filed late, and the delay is part of the record.** This entry was
+written on 2026-09-20 on the branch that carries the fix, and that branch
+stayed open for twenty-four days, so the register never held it. It is
+being filed now by the run that cleared the branch's conflict. An
+incident that exists only on an unmerged branch is an incident the org
+does not have, which is the same lesson L-E10 teaches about code: `main`
+is the one place where work that is built but unmerged is invisible.
+
+**It also arrived carrying the wrong id.** The original took the number
+23, with a note reasoning about which sequential number was free. Main
+issued 23 to a different event five days later, and the collision was
+invisible until this merge. That is incident 29's class and it is
+recorded again today as
+`INC-2026-10-14-an-open-branch-held-two-ids-main-had-since-issued`.
+
+## INC-2026-10-14-an-open-branch-held-two-ids-main-had-since-issued — the sequential allocator collides across time, and only a merge conflict reveals it (2026-10-14, engineer seat)
+
+Recorded under the standing rule. This is incident 29's class, which is a
+sequential id allocated on a branch by a run that cannot see the whole
+register, and it has now happened again with a detail incident 29 does not
+cover: the collision was latent for twenty-four days.
+
+**What happened.** The pre-send quality gate's branch was opened on
+2026-09-20 and stayed open. On it, two ids were allocated by reading the
+highest number then visible: incident 23, for the arXiv 406 entry, and
+ADR-28, named in `pipeline/weekly.py`'s docstring for the gate itself. In
+the twenty-four days that followed, main issued incident 23 to the Kimi
+routing rollout and ADR-28 to the writer seat. Neither collision was
+detectable from the branch, because both numbers were free when they were
+taken and nothing on the branch changes when main issues one.
+
+**Why the existing fix did not catch it.** Incident 29's remedy is the
+date-scoped id, `INC-YYYY-MM-DD-slug`, and it works: a date-scoped id
+cannot collide. What it does not do is reach a branch that was written
+before the remedy, or an ADR, which still carries a sequential number by
+its own convention. So the remedy holds for new entries written by runs
+that have read the rule, and the exposure is every long-open branch that
+predates it plus every ADR number ever reserved on a branch.
+
+**The repair in this run.** The 406 entry is filed under
+`INC-2026-09-20-the-arxiv-406-is-rate-limiting-wearing-the-wrong-status-code`,
+with its observation date kept and its filing date named. The docstring's
+ADR-28 reference is now a reference to the decision that actually carded
+this work, which is the writer seat's ADR-28, and that is the right
+citation rather than a repaired wrong one: ADR-28 is where the owner
+deferred the pre-send gate and carded it to this seat.
+
+**What the org should take from it.** A merge conflict in a register file
+is not only a text conflict. It is the only detector the org has for an id
+that two branches both believe they own, and resolving one by taking
+either side wholesale destroys the evidence. `.github/workflows-pending/`
+holds an `adr-numbers.yml` that would catch the ADR half on a pull
+request. It is one of the staged workflows no seat can apply, which is the
+sixth day this register has recorded a staged fix nobody holds the
+permission to install.
+
+**Second finding from the same cause, recorded here rather than
+separately.** The branch was 1,239 commits behind main when it was
+reopened. In that time the press was rebuilt around a weekly-only cadence
+on a different provider, which is the exact assumption the branch's other
+half contradicts, so clearing the conflict meant deciding a product
+question rather than resolving text. A branch does not merely go stale. It
+goes wrong, and the longer it stays open the more of its own reasoning it
+loses the right to assert.
