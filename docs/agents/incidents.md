@@ -13342,3 +13342,50 @@ only half of a fix: the other half is that the next run finds it without
 knowing it exists, which means the entry point goes where someone looking at
 the directory will trip over it, not where someone who already knows the
 filename will.
+
+## INC-2026-10-15-the-visual-harness-had-three-traps-and-one-of-them-faked-evidence (2026-10-15, frontend run)
+
+**Observed by:** the frontend seat, 2026-10-15. Filed under L-A17, which owes
+an entry for any failure whose diagnosis took more than a minute, whether or
+not it repeats and whether or not it is already fixed in the tree.
+
+Three traps cost this run turns. They are filed together because they share a
+cause: each one is a contract between a committed harness and the run using
+it, and none of the three was written down where the run would meet it.
+
+**1. `zoom.mjs` silently photographed the state it was told to change.**
+`page.evaluate` given a string evaluates it as an expression, so a spec
+passing `"() => { row.open = true }"` evaluated to a function object, which
+Playwright serialises as `undefined`. Nothing threw. The row never opened, the
+frame was captured closed, and the probe printed `undefined` instead of a
+count. This is the worst failure of the three, because the output of a visual
+run IS its screenshots: the run came within one glance of filing three frames
+of closed rows as evidence of an open-row state. It was caught only because
+the probe's `undefined` did not match what a count should look like.
+FIXED IN CODE: `zoom.mjs` now wraps every `eval` and `probe` string so an
+expression, an arrow function and an IIFE all do the obvious thing.
+
+**2. The Playwright pin in `site/package.json` has drifted off the container.**
+It reads `^1.63.0` and resolves to 1.63.0, which looks for
+`chromium_headless_shell-1243`. The container bakes `chromium-1148`, which is
+1.49.x, the version the charter names. So the harness cannot launch from
+`site/node_modules` at all. Reported in the ledger rather than fixed, because
+moving a pin is a Dockerfile change and because this seat cannot see whether
+CI installs its own browsers.
+
+**3. A `pk_test` Clerk key turns every frame into a Clerk error document.**
+`clerkMiddleware` issues a dev-browser handshake, every navigation redirects
+off localhost, and `shoot.mjs`'s guard correctly fails the whole run. The
+guard works; what was missing was the answer. A production-shaped publishable
+key skips that path, and the harness's own route blocking still stops anything
+from leaving localhost. The harness header documented the FAILURE in detail
+and never the FIX, so the run that meets it has to derive it.
+
+**The shape.** `INC-2026-10-07-stale-server-third-occurrence` established that
+the fix for a missing check is committed code. These three add the next layer:
+committed code has contracts, and a contract that lives in the author's head
+is rediscovered by every future run at full price. Two of these are now in
+`docs/design/harness/README.md`, which is new this run, and the third is fixed
+in the script itself. The README exists because this run also proved that a
+committed check nobody finds is not a check
+(`INC-2026-10-15-stale-server-survives-restart-fourth-occurrence`).

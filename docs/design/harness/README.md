@@ -45,6 +45,16 @@ LEFT_BEHIND_FIXTURE=/tmp/lb.json docs/design/harness/serve.sh
 | `make-fixtures.mjs <repo-root>` | 45 DUMMY FIXTURE skills under `skills/fixture-*` (gitignored) |
 | `make-left-behind-fixture.mjs <out.json>` | 50 DUMMY FIXTURE findings for the Left-Behind Index |
 
+## The one contract that will bite you
+
+`zoom.mjs` takes `eval` and `probe` as strings. Pass whatever form you like,
+an expression, an arrow function or an IIFE, and the script calls it. Before
+2026-10-15 it did not: a bare arrow function evaluated to a function object,
+Playwright serialised it as `undefined`, nothing threw, and the run
+photographed the state it had asked to change. Read a probe's output before
+trusting a frame that was supposed to show an injected state
+(`INC-2026-10-15-the-visual-harness-had-three-traps`).
+
 ## Two things the scripts cannot know
 
 **Playwright.** The container bakes the browsers for the pin the charter
