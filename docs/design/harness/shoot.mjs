@@ -105,7 +105,7 @@ for (const vp of VIEWPORTS) {
     const audit = await page.evaluate(() => {
       const docW = document.documentElement.scrollWidth;
       const vw = window.innerWidth;
-      const out = { docW, vw, overflowX: docW > vw + 1, offenders: [], small: [], faded: [], h1x: null };
+      const out = { docW, vw, overflowX: docW > vw + 1, offenders: [], small: [], faded: [], proseLinks: 0, h1x: null };
       const h1 = document.querySelector("h1");
       if (h1) out.h1x = Math.round(h1.getBoundingClientRect().left);
       for (const el of document.querySelectorAll("body *")) {
@@ -119,9 +119,22 @@ for (const vp of VIEWPORTS) {
             text: (el.textContent || "").trim().slice(0, 40),
           });
         }
+        // The canon's 44 by 44 is the HIG's rule for CONTROLS. An inline link
+        // inside running prose cannot satisfy it without a line-height that
+        // would wreck the type scale, and Apple's own body copy does not try.
+        // So inline links in prose are counted separately rather than filed as
+        // violations, and anything inside a collapsed disclosure is skipped
+        // outright: it still reports a box, because the panel animates on
+        // grid-template-rows and clips rather than unmounting, but nothing
+        // there is reachable until the row is opened.
         const tappable = el.matches("a,button,input,select,summary,[role=button]");
-        if (tappable && r.width > 0 && r.height > 0 && (r.width < 44 || r.height < 44)) {
+        const inClosedPanel = !!el.closest("details:not([open])");
+        const isProseLink = cs.display === "inline" && !!el.closest("p,li,.prose,.digest,.skill-receipts");
+        if (tappable && isProseLink && !inClosedPanel) out.proseLinks++;
+        if (tappable && !isProseLink && !inClosedPanel &&
+            r.width > 0 && r.height > 0 && (r.width < 44 || r.height < 44)) {
           out.small.push({
+            el,
             tag: el.tagName, cls: el.className?.toString?.().slice(0, 40) || "",
             w: Math.round(r.width), h: Math.round(r.height),
             text: (el.textContent || "").trim().slice(0, 34),
@@ -134,6 +147,36 @@ for (const vp of VIEWPORTS) {
           });
         }
       }
+      // A bounding box is not a hit area. The house extends several controls
+      // past their drawn size with a positioned ::after, which is Freiberg's
+      // Fitts note and is exactly what the canon's 44px rule is asking for:
+      // the mobile nav toggle draws at 32 and accepts 44, and .pill does the
+      // same under `@media (hover: none)`. Reading getBoundingClientRect alone
+      // reports every one of those as a violation, so the 2026-10-14 run spent
+      // turns chasing twelve "small" targets on two pages and found that all
+      // of them already pass. So each flagged element is now probed where it
+      // actually matters: the four edges of the 44 by 44 box the canon
+      // requires, through elementFromPoint, which sees pseudo-elements. Only
+      // the ones that genuinely miss are reported.
+      const scrollY = window.scrollY;
+      const realSmall = [];
+      for (const s of out.small) {
+        const el = s.el;
+        el.scrollIntoView({ block: "center" });
+        const b = el.getBoundingClientRect();
+        const cx = b.left + b.width / 2, cy = b.top + b.height / 2;
+        const miss = [["top", cx, cy - 21.5], ["bottom", cx, cy + 21.5],
+                      ["left", cx - 21.5, cy], ["right", cx + 21.5, cy]]
+          .filter(([, x, y]) => {
+            const t = document.elementFromPoint(x, y);
+            return !(t && (t === el || el.contains(t) || t.contains(el)));
+          })
+          .map(([name]) => name);
+        if (miss.length) realSmall.push({ ...s, el: undefined, miss });
+      }
+      window.scrollTo(0, scrollY);
+      out.small = realSmall;
+
       // Only the first few of each; the point is to look, not to drown.
       out.offenders = out.offenders.slice(0, 12);
       out.small = out.small.slice(0, 12);
@@ -171,6 +214,7 @@ for (const r of report) {
     r.overflowX ? `OVERFLOW doc=${r.docW}>vw=${r.vw}` : "",
     r.offenders.length ? `outside=${r.offenders.length}` : "",
     r.small.length ? `small=${r.small.length}` : "",
+    r.proseLinks ? `proseLinks=${r.proseLinks}` : "",
     r.faded.length ? `opacity0=${r.faded.length}` : "",
   ].filter(Boolean).join(" ");
   console.log(`${r.page.padEnd(10)} ${r.vp.padEnd(8)} h1x=${String(r.h1x).padStart(4)} ${flags}`);
