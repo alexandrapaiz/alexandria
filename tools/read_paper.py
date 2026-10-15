@@ -17,7 +17,9 @@ text with the same two regexes `pipeline/distill.py` has always used, and falls
 back to the abstract from the arXiv API when arXiv serves no HTML — which is
 the fallback distill already makes, hoisted out of the pipeline so that the job
 and the seats read a paper the same way. `pipeline/distill.py` imports
-`fetch_fulltext` from this file, so there is one reader and not two.
+`fetch_paper` from this file, so there is one reader and not two: the same
+fetch hands back the cleaned text a model reads and the raw markup a parser
+reads, rather than two jobs asking arXiv for one page twice.
 
 **Exit code is the answer to "did you actually read it".** 0 means full text, 3
 means the abstract only, 4 means neither. A run that gets 3 has found exactly
@@ -113,14 +115,17 @@ def clean_html(raw_html: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
-def fetch_fulltext(paper_id: str, *, max_chars: int | None = None,
-                   timeout: float = 30) -> str | None:
-    """arXiv's HTML rendering as plain text, or None so the caller falls back.
+def fetch_html(paper_id: str, *, timeout: float = 30) -> str | None:
+    """arXiv's HTML for one paper, raw, tags and all, or None.
 
-    `pipeline/distill.py` calls this with its own `FULLTEXT_CHARS`; the seats
-    call it through this file's CLI with no cap at all. None means arXiv has no
-    HTML for this paper, which for anything before roughly 2024 is the common
-    case and is not an error.
+    The markup rather than the text, because `clean_html` deletes the one
+    thing the paper's header is worth reading for: the author affiliations
+    live in `ltx_role_affiliation` spans and tag-stripping removes them.
+    `pipeline/institutions.py` is the reader of this.
+
+    None covers all three of "arXiv has no HTML for this id", "the id is not
+    an arXiv id" and "the fetch failed", because every caller treats them the
+    same way: there is no header to parse, so the field stays empty.
     """
     if paper_id.startswith("blog:"):
         return None  # blog posts: the feed summary already is the content
@@ -130,15 +135,61 @@ def fetch_fulltext(paper_id: str, *, max_chars: int | None = None,
         return None
     try:
         status, body = _get(ARXIV_HTML.format(id=arxiv_id), timeout)
-        if status != 200 or len(body) < MIN_HTML_BYTES:
-            return None
-        text = clean_html(body)
-        if len(text) < MIN_TEXT_CHARS:
-            return None
-        return text[:max_chars] if max_chars else text
     except Exception as exc:
-        print(f"  fulltext fetch failed for {paper_id}: {exc}", file=sys.stderr)
+        print(f"  html fetch failed for {paper_id}: {exc}", file=sys.stderr)
         return None
+    if status != 200 or len(body) < MIN_HTML_BYTES:
+        return None
+    return body
+
+
+def fetch_paper(paper_id: str, *, max_chars: int | None = None,
+                timeout: float = 30) -> dict | None:
+    """One fetch of arXiv's HTML, both of the things a caller wants from it.
+
+        {"text": <cleaned, cut to max_chars>, "html": <the raw markup>}
+
+    `text` is what a model reads and `html` is what a parser reads, and until
+    2026-10-15 getting both meant fetching the page twice: distill pulled it,
+    cleaned it, threw the markup away, and the institution backfill asked
+    arXiv for the whole paper again to read a header distill had already held.
+    On 2,223 pending papers that is 2,223 duplicate fetches of a volunteer
+    service we are asked to be polite to.
+
+    `text` is None when arXiv's page is a stub or cleans down to a landing
+    page, which is the case `fetch_fulltext` has always reported as None.
+    `html` is NOT None in that case, and the asymmetry is deliberate: a page
+    too thin to read can still carry a parseable author block, so the caller
+    can fill `institutions` for a paper it reads from the abstract. The whole
+    return is None only when there is no page at all.
+    """
+    body = fetch_html(paper_id, timeout=timeout)
+    if body is None:
+        return None
+    try:
+        text = clean_html(body)
+    except Exception as exc:
+        print(f"  cleaning failed for {paper_id}: {exc}", file=sys.stderr)
+        text = ""
+    if len(text) < MIN_TEXT_CHARS:
+        return {"text": None, "html": body}
+    return {"text": text[:max_chars] if max_chars else text, "html": body}
+
+
+def fetch_fulltext(paper_id: str, *, max_chars: int | None = None,
+                   timeout: float = 30) -> str | None:
+    """arXiv's HTML rendering as plain text, or None so the caller falls back.
+
+    The seats call this through this file's CLI with no cap at all. None means
+    arXiv has no HTML for this paper, which for anything before roughly 2024
+    is the common case and is not an error.
+
+    `fetch_paper` is the same fetch keeping the markup as well, which is what
+    `pipeline/distill.py` calls now. This stays because the CLI and the cache
+    want the text alone and nothing else.
+    """
+    got = fetch_paper(paper_id, max_chars=max_chars, timeout=timeout)
+    return got["text"] if got else None
 
 
 def _meta_from_atom(body: str, arxiv_id: str) -> dict | None:
