@@ -1,3 +1,112 @@
+## Updated 2026-10-15, ~15:50 UTC (standup): the dispatch mechanism is actually fixed, PR #60 merges after 25 days, delivery is still the headline
+
+**Scope note.** Standup shape (charter §0/§4), not the ceremony — the
+next one is Monday 2026-10-19. This seat's own prior PR from today's
+earlier six-hour pass (`alexandria-pm/2026-10-15-message`, #302) is
+still open, draft, placeholder-only; not touched this run while it may
+still be live, same as every standup before it has treated a live
+message-session PR. Full account of everything below is in
+`docs/sprints/dispatch-queue.md`.
+
+**Reconciliation, per charter §1d.** `docs/decisions.md` still stops at
+ADR-40 (2026-10-05) and `docs/allhands/` still has nothing newer than
+2026-09-18-close. Nothing to strike on that evidence.
+
+**The headline: the dispatch actor-gate is fixed, and PR #60 is finally
+merged.** `#298` (exo-centralizer) landed `allowed_bots:
+"github-actions[bot]"` on every seat workflow, which is the fix
+`INC-2026-09-24-dispatch-403`'s amended entry has been waiting on since
+2026-10-14. Merged it first, then the once-blocked `#60` (the pre-send
+quality checklist, open since 2026-09-20, 25 days) merged clean right
+behind it — the engineer's rebase yesterday removed the `prompts/`
+file that made every prior standup call it Tier C, and nothing else
+about it was ever actually blocked. Full account, including the one
+citation gap found (ADR-049, cited in #298's own comment, not yet
+vendored into this repo's `docs/decisions.md`), in the dispatch-queue
+file.
+
+**Owed to you, three lines, in order of urgency (unchanged in kind,
+delivery got worse not better):**
+
+1. **The press has now missed two consecutive weeks.** 2026-W40 is
+   still the newest issue and 2026-W41 has already ended.
+   `claims` hasn't moved in 8 days, 2,308 papers are waiting in
+   `distill_queue`, and this run found a sharper cause than prior
+   standups had: the account actually driving distill right now is the
+   Groq fallback, not Moonshot, and ADR-39's own 250,000-character
+   window is the one thing that fallback's 8,000-token-a-minute limit
+   cannot carry. The reachable half of every past fix is in `main`; the
+   unreachable half is still a `modal deploy` only you or the chair can
+   run — `interpret` is 1.9 days and `triage` 2.8 days behind `main`
+   right now (14 and 16 undeployed commits). Dated 2026-09-21, carried
+   every standup since.
+2. **The Polar Merchant-of-Record account (ADR-30)** — overdue since
+   2026-09-26, now **20 days**. The engineer has a second PR in flight
+   against this today (#301, currently conflicting against product
+   code, not this seat's to text-resolve); the account itself is still
+   the one step no seat can take for you.
+3. **The launch PR/FAQ (`docs/prfaq/launch-2026-10-13.md`) — status
+   unclear, worth your eyes rather than this seat's guess.** `#289`
+   shows `MERGED` (2026-10-14T16:13:35Z), but the file is not present on
+   `main` now (`docs/prfaq/` holds only `README.md`), and this run did
+   not trace why — a later commit may have moved or removed it, or the
+   merge may not have carried it the way the PR's own history suggests.
+   Launch was dated 2026-10-13, two days ago; if the go/no-go already
+   happened by another route, say so next pass and this line strikes.
+
+**Merged this run (Tier B, `docs/standards/pm.md` §10), four:** `#298`,
+`#60`, `#299`, `#300`. `#301` (engineer, product code) stays open and
+conflicting — not this seat's to text-resolve. Full account, including
+the two docs-only conflicts resolved by keeping both sides, in
+`docs/sprints/dispatch-queue.md`.
+
+**Failed runs, both triaged, per charter §11.7/§1f:** this seat's own
+2026-10-14 standup (`38592352927`) finished 205 turns clean and shipped
+nothing at all — new incident filed,
+`INC-2026-10-14-the-standup-ran-205-turns-and-shipped-nothing`, with
+this file's own growing length named as a likely contributing cause and
+a dated-archive split proposed for the next ceremony. The frontend
+dispatch that died at the actor gate (`38594124029`) was reran once now
+that `#298` fixed the gate; attempt 2 was in flight when this PR was
+written, outcome not yet known.
+
+**Cap ratio:** engineer run `38592441554`, 157/200 turns (78.5%), above
+the 70% line, not a cap-out. Named for the ExO's weekly re-derivation,
+not acted on here.
+
+**Queue gauge, four numbers (new standing line per the 2026-10-04
+ruling):** `main` effectively current (this run's own merges), checks
+green; 8 open PRs, 0 opened since the last merge; 7-day conversion
+27/56 (0.48); deepest open chain 3 (`#292`→`#294`→`#301`, engineer).
+No 48-hour stall, so this is not the standup's headline today.
+
+**Dispatch: queue empty, correctly.** The one live candidate (frontend,
+sprint item 4, the Left-Behind Index) already has a run in flight (the
+rerun above), so firing a second one at the same seat on the same item
+would itself violate the hard stop. No other seat has an observed
+trigger. 0 of 3 ceilings used.
+
+**Still open, named rather than acted on:** `#303` (engineer, draft, a
+second run in progress as this standup was written), `#302` (this
+seat's own six-hour-pass PR, live or abandoned, not touched), `#297`
+(engineer, draft, a message-triggered rebase of the quality gate that
+`#60` already landed by a different path — likely redundant now, named
+for the engineer's own next run to confirm and close rather than closed
+here on a guess), `#272` (exo, Tier C, touches three charters,
+conflicting), `#205` (finance, draft, dormant seat), `#203` (okr,
+draft).
+
+**Board.** Inbox clean for `pm`/`alexandria` (two broadcast notes from
+a sibling company's PM, not addressed here). Sprint object still reads
+`sprint-2026-10-05`, the same ceremony-sized gap named since
+2026-10-10, now five ceremonies running. Two items from frontend's
+2026-10-14 visual run sit in Backlog untouched (masthead-width
+inconsistency, verdict-queue density) — design-system calls for the
+owner, not this standup's to move.
+
+**Linear trial (charter §1e2): not re-checked this run.** No evidence
+either way surfaced; carried from the last confirmed sighting.
+
 ## Updated 2026-10-14, ~16:10 UTC (standup): last Monday's ceremony finally lands, the 18-day dispatch block is half-fixed, three Tier B merges
 
 **Scope note.** Standup shape (charter §0/§4), not the ceremony — the
