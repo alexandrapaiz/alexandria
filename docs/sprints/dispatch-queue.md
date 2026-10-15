@@ -3,233 +3,182 @@
 Maintained by the PM agent's daily standup (charter §4). Replaced in full
 each run, because it is a queue rather than a log.
 
-## 2026-10-10, standup (~16:10 UTC)
+## 2026-10-14, standup (~16:10 UTC)
 
-**Run mode.** Saturday, not Monday, so this is the standup alone
-(charter §0/§4). The current ceremony is still
-`docs/sprints/sprint-2026-10-05.md`; Monday's ceremony (retro, grooming,
-new sprint) is 2026-10-12, not today.
+**The headline is the dispatch mechanism itself, not a single pull
+request.** Eighteen days of `INC-2026-09-24-dispatch-403` ended today:
+`GH_TOKEN="$DEFAULT_WORKFLOW_TOKEN" gh workflow run agent-frontend.yml
+-f owner_instructions='...'` created a real run
+(https://github.com/alexandrapaiz/alexandria/actions/runs/38594124029)
+for the first time, because `DEFAULT_WORKFLOW_TOKEN` is the job's own
+token — the one `permissions: actions: write` actually governs — and
+the ambient `GH_TOKEN`/`GITHUB_TOKEN` was always the Claude Code
+action's own installation token instead (`docs/standards/pm.md` §11.5
+names this exactly; it was vendored into this repo 2026-10-12, after
+the incident was filed, and nobody had re-read it against the incident
+since).
 
-**This seat's own open pull request.** `alexandria-pm/2026-10-10-message-pass2`
-(#264) was already open when this run started, a draft left mid-triage
-by a six-hour-pass session about 3h45m earlier. Rather than stack a
-sixth pull request onto an already five-deep same-day chain, this run
-checked out that exact branch and finished the pass on it; this is the
-pull request this standup ships as. No new branch, no new supersession
-link.
+That run then died in 4 seconds, before the model read its prompt:
+`claude-code-action` refuses to run when the triggering actor is a bot
+unless the workflow's `allowed_bots` input names it, and a dispatch
+made with `DEFAULT_WORKFLOW_TOKEN` is attributed to `github-actions`
+the bot, not a human and not the `claude[bot]` app installation a
+normal PR event carries. **So dispatch is still broken today, in a new
+and more specific way** — the 403 is fixed, the actor gate is not, and
+every `agent-*.yml` in this repo needs `allowed_bots` set before a PM
+dispatch can do anything past creating the run. `.github/workflows/`
+is HQ's surface in every product repo (standard §15), not this seat's
+or the frontend seat's to edit, so this is a handoff
+(`alexandra-systems/exo-centralizer`, posted on the board this run),
+not a fix landed here. Full account in the amended
+`INC-2026-09-24-dispatch-403` entry, `docs/agents/incidents.md`.
 
-**The headline is two merges, not a dispatch.** Both open PRs that were
-not drafts and were not conflicting checked out clean against Tier B
-(`docs/standards/pm.md` §10/§21):
+### Also landed this run: last Monday's ceremony, four days late
 
-1. **#263** (engineer, "the stalled stage names its own cause") — no
-   checks at all on its branch, and its own body explains why and files
-   it as `INC-2026-10-10-a-whole-pull-request-fired-no-merge-check`:
-   `checks.yml`'s `paths` filter (`prompts/digest.md`, `prompts/daily.md`,
-   `pipeline/**`) does not cover this diff (`site/`, `tools/`, `tests/`),
-   confirmed directly against the workflow file rather than taken on the
-   PR's word. Verified locally in place of CI before merging:
-   `tests/test_delivery_receipt.py` (24 passed, 1 skipped) and
-   `tests/delivery.test.mjs` (13/13 passed). Merged 16:14:43 UTC.
-2. **#237** (skill, the agent-containment ADR-38 retrofit, open since
-   2026-10-06) — clean, green, not a draft, but `CONFLICTING` against
-   `main`. The only conflict was a docs-only append collision at the end
-   of `docs/agents/incidents.md` and `docs/ideas.md` (both sides added
-   new entries at the same anchor — the exact shape this seat's own
-   `INC-2026-10-09-same-anchor-conflict-on-a-rebase-and-a-resolver-that-staged-its-own-markers`
-   already named), which §10 condition 5 lets the PM resolve directly.
-   Kept `main`'s appended entries first, then the branch's own appended
-   entries, verified `python3 tools/check_registers.py` after (0
-   blocking, the same 5 pre-existing warnings #263 already named), and
-   waited for the branch's own `checks` run to go green post-push before
-   merging. Merged 16:19:12 UTC. `main`'s own next `checks.yml` run came
-   back green afterward too, confirmed directly rather than assumed.
-
-**Two abandoned ship-first placeholders, closed rather than left to
-rot.** Per the queue-moving duty in `docs/standards/pm.md` §18 line 4
-(every open PR is merged, closed with a reason, or named as waiting on
-the owner):
-
-- **#258** (engineer, "the PM's note answered") — held nothing but its
-  placeholder file for 23 hours, body still said "more to follow," none
-  followed, and no live run is building on the branch. Closed.
-- **#255** (market, weekly ceremony) — held nothing but a 5-line stub
-  ("draft in progress") for 23 hours, none of the four promised
-  ceremonies landed, no live run is building on the branch. Closed.
-
-Both closes are reversible and said so in the closing comment.
-
-**Left open, each named rather than acted on:**
-
-- **#260** (writer, editorial run 30) — not a placeholder, checks green,
-  clean, but still a draft; the writer's own call when it's ready, not
-  this seat's to force ready.
-- **#203** (okr, fifth cadence check-in, 5 days old) — a real, 1223-line
-  check-in, still a draft. Reads as substantively complete, not a stub,
-  but marking another seat's own work ready is outside what a merge
-  mechanic should decide; named as waiting on either the owner's answer
-  to its own two questions or the okr seat calling `gh pr ready` itself.
-- **#205** (finance, September close, 5 days old, conflicting) — real
-  partial content (107 lines) but the close's own core numbers were
-  never filled in ("filling in below as the run proceeds," then
-  nothing). Under the 7-day idle-close threshold, finance is dormant
-  (no seat to dispatch to finish it), so this is named as waiting rather
-  than closed today.
-- **#60** (engineer, the pre-send quality checklist) — unchanged, 20
-  days open, Tier C (`prompts/daily.md`), conflicting. Still the oldest
-  open PR in the repository, still waiting only on the owner.
-- **#265** (engineer, "the receipt has no distill row at all") — opened
-  by a live, in-progress, schedule-triggered engineer-agent run during
-  this standup (not a human dispatch: `gh run list --event
-  workflow_dispatch` shows nothing newer than 2026-10-05, so the org is
-  not in synchronous mode). Its own body says it supersedes #263, which
-  this run merged minutes before #265 opened; the live session will find
-  that for itself when it finishes. Not this seat's to touch mid-run.
-
-## The queue gauge (four numbers, charter §4)
-
-1. **`main`'s age and check state.** Newest merge: this run's own #237,
-   2026-10-10 16:19:12 UTC, about 10 minutes old at this snapshot. The
-   next `checks.yml` run on `main` after that merge came back `success`
-   (confirmed by polling `gh run list --branch main --workflow=checks.yml`
-   directly, not read stale).
-2. **Open pull requests: 6 total** (#60, #203, #205, #260, #264, #265),
-   **1 opened since the last merge** (#265, opened 16:15:08, four minutes
-   before #237 merged at 16:19:12 — so technically before this run's own
-   last merge, but after #263's 16:14:43 merge; either reading leaves the
-   count at 0-1, not a backlog).
-3. **Conversion, trailing 7 days: 64 merged / 82 opened** (≈0.78).
-   Healthy, and this run added two more merges to the numerator without
-   adding to the denominator.
-4. **Deepest open supersession chain: this seat's own**, continuing
-   count from the 2026-10-09 pass4 entry (fifth stacked pass since then,
-   itself fourth in its own prior chain) — unchanged in kind by
-   continuing the same branch rather than opening a sixth link. #265's
-   chain (supersedes #263) is depth one once #263's merge is accounted
-   for, since #263 itself was not a superseding PR.
-
-**Threshold check.** 10 minutes since the last merge, far under the
-48-hour line. Not the headline.
-
-## The cap ratio
-
-Only one agent-seat run completed between this run and the last standup
-pass (2026-10-09 ~20:55 UTC): engineer-agent at 2026-10-10T02:14:53Z,
-**117/200 turns (58.5%)** — under the 70% line, nothing to report. The
-writer's cap hit (151/150, the prior pass's own finding) is unchanged
-and already filed; not re-reported as new. The two runs in progress as
-this is written (this pm-agent run, and engineer-agent's #265) have not
-completed and cannot be measured yet.
-
-Ceilings, for reference (`grep -HoE '\-\-max-turns [0-9]+'
-.github/workflows/agent-*.yml`): engineer 200, exo 200, frontend 600,
-market/okr 160, finance 120, sales 160, research 180, pm 300, writer
-150, security 250, skill 180.
-
-## Failures, last 24h (charter §11.7)
-
-`gh run list --status failure --created ">=2026-10-09T16:13Z"` returns
-exactly one: the writer-agent cap hit at 2026-10-09T20:22:56Z, already
-triaged in full by the prior pass on this branch
-(`INC-2026-10-09-the-writer-hit-the-cap-its-own-raise-queued-five-days-earlier`),
-real defect, no rerun (the same input would hit the same cap), handed to
-the writer which already produced the follow-up push (checks green on
-`writer/2026-10-09` since 2026-10-09T20:40:36Z). Nothing new to do here
-this pass.
-
-## Tier B merge check (`docs/standards/pm.md` §10/§21)
-
-Every pull request open at the start of this run, checked:
-
-- **#263** (engineer) — qualified, merged. Account above.
-- **#237** (skill) — qualified after a docs-only conflict resolution,
-  merged. Account above.
-- **#258** (engineer) — disqualified (draft) and abandoned; closed
-  rather than left open.
-- **#255** (market) — disqualified (draft) and abandoned; closed rather
-  than left open.
-- **#260** (writer) — disqualified on condition 2 (draft).
-- **#205** (finance) — disqualified on conditions 2 and 5 (draft,
-  conflicting).
-- **#203** (okr) — disqualified on condition 2 (draft).
-- **#60** (engineer, 20 days old) — disqualified on conditions 4 and 5
-  (Tier C path `prompts/daily.md`, conflicting).
-- **#265** (engineer) — opened mid-run by a live session; not evaluated,
-  per the rule against touching a run still in flight.
+`sprint-2026-10-12.md` (the 2026-10-12 ceremony's retro on
+sprint-2026-10-05, the groomed ledger, the new sprint) had been sitting
+on an open, unmerged pull request since Monday (#281, superseded by
+#289) because the chain also carried `docs/prfaq/launch-2026-10-13.md`,
+the one Tier C file in it, and Tier A's self-merge rule holds the
+*whole* pull request for the owner when any file in it is not a
+knowledge surface. Split the PR/FAQ into its own pull request (#289,
+now just that one file, unchanged scope, still waiting on the owner's
+go/no-go per standard §2c) and self-merged everything else as #295
+under Tier A — every remaining file was `docs/sprints/`,
+`docs/agents/org-chart.md`, or grooming in `docs/ideas.md`.
 
 ## Run health
 
-**Fleet.** One failure in the last 24h (the writer's cap hit, already
-triaged above). Two schedule-triggered runs are in progress as this is
-written (this pm-agent run, and an engineer-agent run that has already
-opened #265): expected, not a finding. Every other run since the last
-standup pass was green.
+**Fleet.** Two failed runs in the last 24 hours, both triaged:
 
-**Delivery health** (green on what evidence, and did anything reach a
-reader).
+- `checks` on the skill PR branch (38449699087, 2026-10-13 18:48) — a
+  SKILL.md revision mid-PR left a stale validation receipt for one
+  commit; the next push on the same branch (and the eventual merge,
+  #290) came back green. **Tripwire false alarm**, no rerun.
+- `frontend-agent` (38594124029, 2026-10-14 15:59) — the dispatch
+  described above. **Configuration**, handed off to HQ, no rerun (the
+  same actor fails the same way every time until the workflow changes).
 
-- **The press.** Not re-checked this run beyond what #263 already
-  measured: `claims_newest` frozen at 2026-10-07T15:15:25Z while
-  `papers_newest` is current — the live engineer run (#265) is actively
-  investigating this right now, which is the reason not to duplicate the
-  check mid-investigation. The last confirmed send (`/library` listing
-  `2026-W40`) is unchanged and not stale by the weekly-issue measure.
-- **The site.** `deploy-main` ran successfully at 2026-10-10T16:14:46Z,
-  right after #263 merged, confirming the deploy pipeline is still firing
-  on every `main` push.
-- **The MCP server.** Not probed fresh this run; no signal since the
-  last standup that it changed state.
+**Cap ratio** (turn-caps.md rule 5, 70% of `--max-turns`), over every
+run since the last standup:
 
-## Pending items past their date
+| Seat | Run | `num_turns` | Cap | Ratio |
+|---|---|---|---|---|
+| **skill** | 38447963152 (2026-10-13 18:35) | **174** | 180 | **96.7%** |
+| engineer | 38444399510 (2026-10-13 18:09) | 141 | 200 | 70.5% |
+| writer | 38466198428 (2026-10-13 20:52) | 117 | 225 | 52.0% |
+| engineer | 38497590824 (2026-10-14 01:47) | 115 | 200 | 57.5% |
 
-1. **The `sql_query` scope decision** — confirmed still unfixed this
-   run by reading `mcp/server.py` directly: no table allowlist, only a
-   single-statement/SELECT-only check. Open since 2026-10-01, now 9
-   days, needs the owner's call on the fix shape.
-2. **PR #60**, the pre-send quality checklist — **20 days** open, Tier
-   C, conflicting, waiting only on the owner.
-3. **The Polar Merchant-of-Record account (ADR-30)** — overdue since
-   2026-09-26, not checked fresh for live keys this run (no new signal
-   since the last pass that found none).
+Two seats clear the 70% line, skill by a wide margin. Not a cap
+proposal, per the standing rule that this duty reports the ratio and
+names the seat; the ExO's monthly re-derivation is where a number would
+come from.
 
-## The board
+**Delivery health**, read live against the database this standup, not
+proxied from a scheduler:
 
-Read via `BOARD_API_URL` before `gh pr list`, per `docs/standards/pm.md`
-§15. Exactly one message addressed to `alexandria`/`pm` since the last
-pass: a `done` note from the writer (2026-10-09T17:48:12Z, "rebased onto
-the new main and re-pushed"), already acted on before this run started.
-No unanswered ask or handoff.
+```
+FAILING  press     newest issue is 2026-W40, 2026-W41 has ended; 1 issue missing
+FAILING  pipeline  claims stalled 7 days, 2264 papers waiting in distill_queue
+FAILING  deploy    live site is 1.8 days / 16 commits behind main
+FAILING  site      newest readable issue is 2026-W40
+ok       archive   record and archive both end at 2026-W40
+ok       mcp       up, refusing unauthenticated calls
+```
 
-**Found, not fixed this run: the board is materially stale.** Its sprint
-record still reads "The press runs itself," `starts_on 2026-09-21,
-ends_on 2026-09-27` — three weeks behind `docs/sprints/sprint-2026-10-05.md`,
-the file this repo's PM ceremony actually maintains. Its 20 items are
-almost entirely 2026-09-27/09-30-dated owner and Linear-sourced cards;
-none mentions the claims-stall work, the waitlist/unsubscribe work
-(both already shipped, confirmed by #263's own survey), or either merge
-this run made. Full reconciliation (closing shipped items to Done,
-opening cards for current work, fixing the sprint record) is a ceremony-
-sized lift, not a standup one; flagging it here so Monday's ceremony
-inherits it as a named item rather than a surprise. Posted a short note
-to the board this run instead of attempting the full resync (see commit
-history / board Messages).
+Unchanged in kind from the last three standups. The reachable half of
+the press fix is already in `main`; the unreachable half is a `modal
+deploy` only the owner or chair can run
+(`INC-2026-10-12-the-deploy-ladder-refuses-the-fix-for-the-outage-it-
+is-in`). Named at the top of `docs/sprints/pending.md`, not buried here.
 
-## Linear trial
+## The queue gauge, four numbers
 
-Not checked this run; no new signal since the last pass noted it was
-still on.
+1. **`main`'s age and checks.** Newest commit `61e3913`, this run's own
+   third Tier B merge, **under 15 minutes old at last check.** Newest
+   `checks.yml` run on `main`: **success.**
+2. **Open pull requests: 9 total, 1 opened since the last merge to
+   `main`** (this standup's own PR, #295).
+3. **Conversion, trailing 7 days: 20 merged / 53 opened ≈ 0.38.**
+4. **Deepest open supersession chain: 2** (#294 over #292; #60 over
+   #35). No chain past depth 2 right now.
+
+`main` is fresh and green, so this is not the deadlocked state
+`INC-2026-10-04-four-days-of-output-and-no-delivery` describes.
+
+## Merged this run (Tier B, `docs/standards/pm.md` §10)
+
+- **#288** (engineer, institution backfill, sprint-2026-10-12 item 3) —
+  clean, checks green, no Tier C path.
+- **#290** (skill, harness-engineering v5 + agent-memory-selection) —
+  `CONFLICTING` against #288 in `docs/agents/incidents.md` and
+  `docs/ideas.md` (both append-only, same anchor). Docs-only, §10 rule
+  5: merged `main` into the branch, kept both sides, pushed, merged
+  clean.
+- **#291** (writer, the attribution-gate grammar fix + two ban-list
+  entries) — touches `prompts/digest.md`. Re-examined this run against
+  standard §16's own vocabulary rather than against a label a prior
+  standup gave a different file: a charter is `prompts/<role>-
+  agent.md`, and `digest.md` isn't one, so this is not Tier C.
+  `CONFLICTING` against the two merges above, same two append-only
+  files, same resolution.
+
+**Also landed under Tier A, this run's own PR (#295):** the split-off
+2026-10-12 ceremony content — see the headline above.
+
+**Not merged, each named rather than acted on:** #272 (exo, Tier C —
+`prompts/exo-agent.md`, `prompts/market-agent.md`, this seat's own
+`prompts/pm-agent.md` — and `CONFLICTING` besides). #205 (finance,
+draft, dormant seat). #203 (okr, draft). #294 (engineer, draft, sprint
+item 5, a run in progress). #293 (a different PM-surface pull request,
+the owner's own window session, open since 12:27 UTC with only a
+placeholder body at last check — not touched). #289 (the launch PR/FAQ,
+now trimmed to that one file, waiting on the owner).
+
+**One correction, filed to `docs/sprints/pending.md` and to the
+engineer on the board:** #60 has been reported as Tier C for four
+standups running because it touches `prompts/daily.md`. That file is a
+content prompt, not a seat charter, same as `digest.md` above — the
+tier was never what blocked it. It is `CONFLICTING` in product code
+(`db/schema.sql`, `mcp/server.py`, `pipeline/budget.py`,
+`pipeline/weekly.py`), which this seat cannot resolve itself (§10 rule
+5 is docs-only), so it is handed to the engineer to rebase. 25 days
+open.
+
+## Proposed dispatches
+
+**None proposed.** Today's one dispatch (frontend, below) already used
+the day's evidence-backed candidate, and it surfaced a structural
+blocker rather than a result: every seat this charter may dispatch is
+now unreachable by the same `allowed_bots` gate until HQ applies the
+fix handed off above. Proposing a second dispatch to a different seat
+today would just produce a second identical 4-second failure. The right
+next move is to wait for the handoff to close, not to retry.
 
 ## Dispatched by the PM
 
-None fired this run. No candidate in `docs/standards/pm.md` §11.3's
-criteria table had an observed trigger: the one live defect (the claims
-stall) already has a run in flight against it (#265, schedule-triggered,
-not a dispatch); engineer's own open PR (#265) is a hard stop on
-dispatching that seat regardless; no new ADR or ruling since 2026-10-05
-names a seat with no run following; no draft PR has failing CI; finance
-and okr's stale drafts are incompleteness, not failure, and neither fits
-the criteria table's rows. `PM_DISPATCH_ENABLED` is confirmed `true`
-(read directly from this job's own environment), and the org is not in
-synchronous mode (no `workflow_dispatch` in the last two hours), so
-nothing here is being held back by the switch or by the two-hour guard —
-there is simply nothing to propose today.
+**2026-10-14, frontend.** Sprint item 4 (`sprint-2026-10-12.md`, the
+Left-Behind Index, carried three sprints), board item `03029cad`. No
+open frontend pull request existed. Fired under
+`PM_DISPATCH_ENABLED=true`:
+
+```bash
+GH_TOKEN="$DEFAULT_WORKFLOW_TOKEN" gh workflow run agent-frontend.yml \
+  -f owner_instructions='Board item 03029cad-e613-41ea-9295-3e3e15342f22
+("Ship the Left-Behind Index as a public page"): build the public page
+over the deprecated_claims view. This has carried unbuilt across
+sprint-2026-09-28, sprint-2026-10-05 and the still-unmerged
+sprint-2026-10-12 draft (PR #289). No open frontend pull request exists
+right now (survey: last frontend PR was #244, merged 2026-10-07). Build
+it and open a PR; move the board item to In progress when you start and
+comment the PR link on it when you ship.'
+```
+
+Run: https://github.com/alexandrapaiz/alexandria/actions/runs/38594124029
+(created). **Result: failed in 4 seconds**, `allowed_bots` gate — see
+the headline above. Nothing shipped; the board item stays in Backlog.
+
+## The Linear trial
+
+Not checked this run; no new signal since the last pass noted it was
+still on.
