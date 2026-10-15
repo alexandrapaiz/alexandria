@@ -559,3 +559,197 @@ test("an unknown plan has no checkout target", () => {
   assert.equal(core.checkoutTarget(env, "annual", { clerkId: "user_1" }), null);
   assert.equal(core.offerById("annual"), null);
 });
+
+// ------------------------------------- money that did not become access
+//
+// `paymentExceptionOf` is the decision behind `payment_exceptions`: whether
+// an outcome is worth a row, and what that row says. It is pure, so these
+// call it rather than reading it as source, and the cases below are the ways
+// the table could lie about the till rather than the ways it works.
+
+const outcome = (fields = {}) => ({
+  ok: false,
+  retryable: false,
+  code: "no_account",
+  reason: "no Clerk account for this buyer (no match)",
+  ...fields,
+});
+
+const paidOrder = () =>
+  order({
+    id: "ord_55",
+    paid: true,
+    status: "paid",
+    customer: { id: "cus_9", email: "Buyer@Example.com" },
+    customer_id: "cus_9",
+  });
+
+test("a refusal becomes a row carrying what the owner needs to act", () => {
+  const event = paidOrder();
+  const row = core.paymentExceptionOf({
+    event,
+    eventId: "msg_abc",
+    result: outcome({ verdict: core.spineFromEvent(event) }),
+  });
+  assert.equal(row.event_id, "msg_abc");
+  assert.equal(row.event_type, "order.paid");
+  assert.equal(row.reason_code, "no_account");
+  assert.equal(row.retryable, false);
+  assert.equal(row.detail, "no Clerk account for this buyer (no match)");
+  // The two things that find the charge in Polar and the person behind it.
+  assert.equal(row.polar_customer_id, "cus_9");
+  assert.equal(row.email, "buyer@example.com");
+});
+
+test("the address is folded, because the users index is", () => {
+  const event = paidOrder();
+  const row = core.paymentExceptionOf({
+    event,
+    eventId: "msg_abc",
+    result: outcome({ verdict: core.spineFromEvent(event) }),
+  });
+  // `users_email_lower_idx` is on lower(email), so a row the owner has to
+  // join by hand is worth no more than the folding it was stored with.
+  assert.equal(row.email, row.email.toLowerCase());
+});
+
+test("a granted payment is no exception, and resolves rather than records", () => {
+  assert.equal(
+    core.paymentExceptionOf({
+      event: paidOrder(),
+      eventId: "msg_abc",
+      result: { ok: true, entitled: true, tier: "lifetime" },
+    }),
+    null,
+  );
+});
+
+test("an event that says nothing about access is no exception either", () => {
+  // `applyPolarEvent` returns `{ok: true, ignored}` for these, so the ok
+  // branch already covers it. Asserted anyway, because a subscription's own
+  // renewal order is the commonest event this endpoint sees and a row per
+  // one of those would bury every real exception.
+  const renewal = order({ subscription_id: "sub_1", paid: true });
+  assert.equal(core.spineFromEvent(renewal), null);
+  assert.equal(
+    core.paymentExceptionOf({
+      event: renewal,
+      eventId: "msg_abc",
+      result: { ok: true, ignored: "order.paid" },
+    }),
+    null,
+  );
+});
+
+test("a delivery with no id is left to the log rather than written unkeyed", () => {
+  // The row is keyed on Polar's delivery id so a retry updates instead of
+  // inserting. A row with no id cannot keep that promise, so it is not
+  // written at all. A verified delivery always has one, because the id comes
+  // out of the `webhook-id` header the signature covers.
+  for (const eventId of [undefined, null, "", "   "]) {
+    assert.equal(
+      core.paymentExceptionOf({ event: paidOrder(), eventId, result: outcome() }),
+      null,
+      String(eventId),
+    );
+  }
+});
+
+test("an outcome code the vocabulary does not know is recorded anyway", () => {
+  const row = core.paymentExceptionOf({
+    event: paidOrder(),
+    eventId: "msg_abc",
+    result: { ok: false, code: "something_new", reason: "a later refactor" },
+  });
+  // Not null. A new failure path that silently writes nothing is the hole
+  // this table exists to close, so the default is one puzzling row.
+  assert.equal(row.reason_code, "handler_threw");
+  assert.match(row.detail, /unrecognised outcome code "something_new"/);
+  assert.match(row.detail, /a later refactor/);
+});
+
+test("a throw before any verdict still names the customer it was about", () => {
+  // The handler's own 500: no verdict exists, because the throw happened
+  // inside the Clerk write. The customer id is still on the event, and it is
+  // the only way to find the charge in Polar, so it is read off the event
+  // rather than given up on.
+  const row = core.paymentExceptionOf({
+    event: paidOrder(),
+    eventId: "msg_abc",
+    result: { ok: false, retryable: true, code: "handler_threw",
+              reason: "the handler threw: TypeError" },
+  });
+  assert.equal(row.reason_code, "handler_threw");
+  assert.equal(row.retryable, true);
+  assert.equal(row.polar_customer_id, "cus_9");
+  assert.equal(row.email, "buyer@example.com");
+  assert.equal(row.polar_subscription_id, null);
+});
+
+test("an event with no data at all still produces a row", () => {
+  const row = core.paymentExceptionOf({
+    event: { type: "subscription.active" },
+    eventId: "msg_abc",
+    result: { ok: false, retryable: true, code: "handler_threw", reason: "x" },
+  });
+  assert.equal(row.event_type, "subscription.active");
+  assert.equal(row.polar_customer_id, null);
+  assert.equal(row.email, null);
+});
+
+test("a subscription exception carries the subscription id as well", () => {
+  const event = subscription({
+    id: "sub_77",
+    status: "active",
+    customer: { id: "cus_9", email: "buyer@example.com" },
+    customer_id: "cus_9",
+  });
+  const row = core.paymentExceptionOf({
+    event,
+    eventId: "msg_abc",
+    result: outcome({ code: "ambiguous_email",
+                      reason: "no Clerk account for this buyer (email is ambiguous)",
+                      verdict: core.spineFromEvent(event) }),
+  });
+  assert.equal(row.reason_code, "ambiguous_email");
+  assert.equal(row.polar_subscription_id, "sub_77");
+});
+
+test("the detail is bounded, so one event cannot write an unbounded row", () => {
+  const row = core.paymentExceptionOf({
+    event: paidOrder(),
+    eventId: "msg_abc",
+    result: outcome({ reason: "x".repeat(5000) }),
+  });
+  assert.equal(row.detail.length, 500);
+});
+
+test("retryable is the result's own word, not a re-derivation from the code", () => {
+  // The row should agree with the response Polar actually saw. A table that
+  // decided this for itself could say "we will retry" about a delivery that
+  // got a 200, and then the unresolved count would wait forever for a retry
+  // that was never coming.
+  const deferred = core.paymentExceptionOf({
+    event: paidOrder(),
+    eventId: "msg_abc",
+    result: outcome({ code: "no_users_row", retryable: true }),
+  });
+  assert.equal(deferred.retryable, true);
+  const refused = core.paymentExceptionOf({
+    event: paidOrder(),
+    eventId: "msg_abc",
+    result: outcome({ code: "no_users_row", retryable: false }),
+  });
+  assert.equal(refused.retryable, false);
+});
+
+test("every code has a sentence, and the retryable ones are a subset", () => {
+  for (const code of Object.keys(core.EXCEPTION_CODES)) {
+    assert.equal(typeof core.exceptionMeaning(code), "string");
+    assert.ok(core.exceptionMeaning(code).length > 10, code);
+  }
+  for (const code of core.RETRYABLE_CODES) {
+    assert.ok(code in core.EXCEPTION_CODES, code);
+  }
+  assert.equal(core.exceptionMeaning("not_a_code"), null);
+});

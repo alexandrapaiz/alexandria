@@ -1715,10 +1715,19 @@ def payment_facts(conn) -> dict | None:
     reads and `apply_schema` is a hand step, so a database without it is a
     state this really meets. A count of zero is the good news this surface
     exists to confirm, and it is only good news when somebody looked.
+
+    Both reads run inside one `conn.transaction()`, which is a savepoint when
+    the caller is already in a transaction, and that is load-bearing rather
+    than tidy. A failed statement in psycopg aborts the whole transaction, and
+    `check_deploy` runs after this on the same connection, so without the
+    savepoint a missing `payment_exceptions` would take the deploy surface down
+    with it and the drift alarm would fire on a schema step. `queue_facts`
+    carries the same comment because it met the same thing first.
     """
     try:
-        total = conn.execute(PAYMENT_TOTALS).fetchone()
-        codes = conn.execute(PAYMENT_CODES).fetchall()
+        with conn.transaction():
+            total = conn.execute(PAYMENT_TOTALS).fetchone()
+            codes = conn.execute(PAYMENT_CODES).fetchall()
     except Exception:
         return None
     if total is None:

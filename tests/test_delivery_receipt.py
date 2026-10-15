@@ -250,6 +250,27 @@ WEEK_FORMAT = "%Y-%m-%dT%H:%M:%S+00:00"
 
 QUEUES = {"triage_pending": 41, "distill_pending": 212, "interpret_pending": 7}
 
+# A till with nothing open, which is the state the product is in whenever it is
+# working. The default on purpose: a fixture whose till was broken would make
+# every other test on this page read `failing` for a reason it is not about.
+CLEAR_TILL = {"unresolved": 0, "needs_a_hand": 0, "oldest_unresolved_at": None,
+              "newest_unresolved_at": None, "codes": []}
+
+
+def TILL(unresolved, needs_a_hand, oldest, codes):
+    """An open-exception block, with `oldest` as hours ago rather than a date.
+
+    Hours, because the verdict measures the oldest row against a six-hour
+    window and against the real clock. A fixture pinned to a date would age
+    past that window and turn this file red with nothing in the code changed,
+    which is the mistake the `receipt` docstring below records.
+    """
+    at = (datetime.now(timezone.utc) - timedelta(hours=oldest)).replace(microsecond=0)
+    return {"unresolved": unresolved, "needs_a_hand": needs_a_hand,
+            "oldest_unresolved_at": at.strftime(WEEK_FORMAT),
+            "newest_unresolved_at": at.strftime(WEEK_FORMAT),
+            "codes": codes}
+
 
 def SIBLINGS(when, model="kimi-k2.6"):
     """A sibling block where both stages wrote at `when`, on a Moonshot model.
@@ -266,7 +287,7 @@ def SIBLINGS(when, model="kimi-k2.6"):
 def receipt(week="2026-W39", created="2026-09-28T09:03:00+00:00",
             papers=None, claims=None, deploy=None, version=None,
             press_present=True, queues="default", distilled="default",
-            siblings="default"):
+            siblings="default", payments="default"):
     """A receipt whose corpus moved last night, whatever night it is.
 
     The press surface is judged against the `today` these tests pass in, so the
@@ -293,6 +314,7 @@ def receipt(week="2026-W39", created="2026-09-28T09:03:00+00:00",
                      "distilled_newest": fresh if distilled == "default" else distilled},
         "siblings": (SIBLINGS(fresh) if siblings == "default" else siblings),
         "queues": QUEUES if queues == "default" else queues,
+        "payments": (CLEAR_TILL if payments == "default" else payments),
         "deploy": deploy if deploy is not None else [],
     }
 
@@ -741,6 +763,196 @@ def test_a_missing_view_costs_the_depth_and_nothing_else():
     check("and the headline says the cause is unavailable",
           "no queue depth is published here" in surface.headline, surface.headline)
 
+
+# ------------------------------------------------------------- the till
+
+def test_a_till_with_nothing_open_is_green_and_an_unreadable_one_is_unknown():
+    """Zero is the good news, and it is only good news when somebody looked.
+
+    `payment_exceptions` is newer than every other table this receipt reads
+    and `apply_schema` is a hand step, so a site deployed before the table is
+    applied publishes null here. A reader that collapsed null onto zero would
+    report a till nobody can see as a till with nothing wrong, which is the
+    half of L-A21 this org keeps rediscovering: a gate that saw nothing
+    reading as a quiet pass.
+    """
+    with served(body=receipt()):
+        clear = surfaces(today=dh.date(2026, 10, 1))["payments"]
+    check("an empty till is ok", clear.state == dh.OK, clear.headline)
+    check("and it says so plainly",
+          "every verified payment reached an account" == clear.headline)
+
+    for absent in (None, "not a block", 7):
+        with served(body=receipt(payments=absent)):
+            blind = surfaces(today=dh.date(2026, 10, 1))["payments"]
+        check(f"a till published as {absent!r} is unknown, not ok",
+              blind.state == dh.UNKNOWN, blind.headline)
+
+    # And an older receipt, which carries no `payments` key at all. The four
+    # versions before this one stay readable, so the press and the pipeline
+    # still answer through a deploy window, and the till reads unknown rather
+    # than clear for exactly the reason above.
+    old = receipt(version=4)
+    del old["payments"]
+    with served(body=old):
+        was = surfaces(today=dh.date(2026, 10, 1))
+    check("version 4 is still readable", was["press"].state == dh.OK)
+    check("and its silence about the till is unknown",
+          was["payments"].state == dh.UNKNOWN, was["payments"].headline)
+
+
+def test_a_refusal_is_an_alarm_from_the_first_row_and_a_retry_is_not():
+    """The distinction the whole surface turns on.
+
+    A deferred row is this product's own Clerk webhook not having landed yet,
+    which is a race measured in seconds, and alarming on it would make every
+    signup-then-buy inside one second a red report. A refused row is somebody
+    who paid and will never be let in without the owner doing something: no
+    account holds that address, or two accounts do. The grace window for a
+    person waiting on the owner is the wrong idea, so there is none.
+    """
+    today = dh.date(2026, 10, 1)
+
+    refused = TILL(1, 1, 2, [{"code": "no_account", "n": 1}])
+    with served(body=receipt(payments=refused)):
+        s = surfaces(today=today)["payments"]
+    check("one refusal is failing with no grace at all",
+          s.state == dh.FAILING, s.headline)
+    check("and the headline names the job rather than only the number",
+          "no_account" in s.headline and "will not retry" in s.headline,
+          s.headline)
+
+    deferred = TILL(2, 0, 1, [{"code": "no_users_row", "n": 2}])
+    with served(body=receipt(payments=deferred)):
+        s = surfaces(today=today)["payments"]
+    check("two fresh deferrals are ok", s.state == dh.OK, s.headline)
+    check("and the count is still reported rather than hidden",
+          "2 payment(s) deferred" in s.headline, s.headline)
+
+
+def test_a_retry_that_never_lands_stops_being_a_retry():
+    """The case that would otherwise be invisible forever.
+
+    A deferred row is excused because Polar will bring the event back. Six
+    hours and many retries later it is not waiting on a race, it is waiting on
+    somebody, and nothing else on this page would ever say so: the row is
+    retryable, so the refusal count stays zero and the surface would read
+    green while a paid customer sat locked out.
+    """
+    today = dh.date(2026, 10, 1)
+    codes = [{"code": "no_users_row", "n": 1}]
+
+    inside = TILL(1, 0, dh.PAYMENT_DEFER_GRACE_HOURS - 1, codes)
+    with served(body=receipt(payments=inside)):
+        s = surfaces(today=today)["payments"]
+    check("an hour inside the window is still the schedule",
+          s.state == dh.OK, s.headline)
+
+    outside = TILL(1, 0, dh.PAYMENT_DEFER_GRACE_HOURS + 1, codes)
+    with served(body=receipt(payments=outside)):
+        s = surfaces(today=today)["payments"]
+    check("an hour outside it is an alarm",
+          s.state == dh.FAILING, s.headline)
+    check("and it says what window was crossed",
+          f"{dh.PAYMENT_DEFER_GRACE_HOURS}-hour" in s.headline, s.headline)
+
+
+def test_the_till_fails_the_command_rather_than_only_colouring_a_line():
+    """A surface that cannot change the exit code is a surface nothing reads.
+
+    `exit_code` is what the standup and any future workflow branch on, so a
+    red till has to reach it. This is the gate half of the two the register
+    rule names: recording the finding and acting on it are different gates and
+    the second is the one this org keeps forgetting.
+    """
+    red = dh.judge_payments({"unresolved": 1, "needs_a_hand": 1,
+                             "oldest": datetime.now(timezone.utc),
+                             "newest": datetime.now(timezone.utc),
+                             "codes": [{"code": "no_account", "n": 1}]})
+    check("a refused payment is a non-zero exit", dh.exit_code([red]) == 1)
+    check("and the surface is in the default run",
+          "payments" in dh.ORDER)
+    # Rendered, because a surface missing from `render`'s mark table would
+    # raise a KeyError on the one day it was not green.
+    check("and it renders", "payments" in dh.render([red]))
+
+
+def test_a_connection_and_a_receipt_reach_the_same_verdict_about_the_till():
+    """The same property the press and the pipeline hold, for the till.
+
+    Two readers of one question is the shape that grows two answers. The
+    credentialled reader is the owner's laptop and the Modal jobs; the
+    credential-free one is every agent seat. If they disagreed, the standup
+    would report a till the owner could not reproduce.
+    """
+    at = datetime.now(timezone.utc).replace(microsecond=0) - timedelta(hours=9)
+    cases = ((0, 0, [], dh.OK),
+             (1, 1, [("no_account", 1)], dh.FAILING),
+             (3, 1, [("no_users_row", 2), ("ambiguous_email", 1)], dh.FAILING),
+             (2, 0, [("no_users_row", 2)], dh.FAILING))
+
+    for unresolved, stuck, codes, expect in cases:
+        conn = FakeConn({
+            # Keyed on the two statements `payment_facts` runs, in the order it
+            # runs them: the aggregate first, then the grouping.
+            "filter (where not retryable)":
+                (unresolved, stuck, at if unresolved else None,
+                 at if unresolved else None),
+            "group by reason_code": [(code, n) for code, n in codes],
+        })
+        direct = dh.judge_payments(dh.payment_facts(conn))
+
+        published = {"unresolved": unresolved, "needs_a_hand": stuck,
+                     "oldest_unresolved_at": at.strftime(WEEK_FORMAT) if unresolved else None,
+                     "newest_unresolved_at": at.strftime(WEEK_FORMAT) if unresolved else None,
+                     "codes": [{"code": code, "n": n} for code, n in codes]}
+        _, _, _, till = dh.receipt_facts(receipt(payments=published))
+        via_receipt = dh.judge_payments(till, source=dh.RECEIPT_URL)
+
+        label = f"{unresolved} open / {stuck} stuck"
+        check(f"{label}: the direct read is {expect}",
+              direct.state == expect, direct.headline)
+        check(f"{label}: the receipt agrees on the state",
+              via_receipt.state == direct.state,
+              f"{direct.state} vs {via_receipt.state}")
+        check(f"{label}: and on the headline, word for word",
+              via_receipt.headline == direct.headline,
+              f"{direct.headline!r} vs {via_receipt.headline!r}")
+        check(f"{label}: only `read_via` differs",
+              direct.evidence["read_via"] == dh.DIRECT
+              and via_receipt.evidence["read_via"] == dh.RECEIPT_URL)
+
+
+def test_a_missing_payments_table_costs_the_till_and_nothing_else():
+    """The savepoint, which is load-bearing rather than tidy.
+
+    A failed statement in psycopg aborts the whole transaction, and
+    `check_deploy` runs after this on the same connection. Without the
+    savepoint a database one migration behind would lose the deploy surface
+    too, and the drift alarm would fire on a schema step. `queue_facts` met
+    this first and this read is inside the same guard for the same reason.
+    """
+    class Aborting(FakeConn):
+        def __init__(self):
+            super().__init__({})
+            self.inside = False
+
+        def execute(self, sql, params=None):
+            if "payment_exceptions" in sql:
+                raise RuntimeError('relation "payment_exceptions" does not exist')
+            return _Result(("2026-W39", datetime.now(timezone.utc), "kimi-k2"))
+
+        def transaction(self):
+            self.inside = True
+            return contextlib.nullcontext()
+
+    conn = Aborting()
+    check("an absent table is unknown, not failing",
+          dh.payment_facts(conn) is None
+          and dh.judge_payments(None).state == dh.UNKNOWN)
+    check("and the read was inside a savepoint", conn.inside)
+    check("so the next surface on the same connection still answers",
+          dh.judge_press(dh.press_facts(conn), dh.date(2026, 10, 1)).state == dh.OK)
 
 def test_the_direct_reader_is_still_the_one_that_mails():
     """`check_deploy(conn, notify=True)` is unchanged, so the Modal jobs and the
