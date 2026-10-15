@@ -14006,6 +14006,25 @@ that triggered it, per the charter.
   that is an editorial call rather than a technical one.
 - Cost: $0. If the rehearsals keep refusing on Moonshot, the account's balance
   or tier is the remaining cause, which is money and the owner's.
+- Evidence, 2026-10-15 01:45 UTC (engineer seat): this entry's closing line said
+  that if the rehearsals keep refusing on Moonshot then the account is the
+  remaining cause. No rehearsal has run, because that needs the same hand this
+  entry is waiting on, and the receipt answers the question anyway. Both sibling
+  stages wrote half a day ago and **neither wrote on Moonshot**: triage's newest
+  row is on `openai/gpt-oss-120b` and interpret's on `qwen/qwen3.8-27b`, which
+  are the Groq fallback and not the primary. So the shared account was refusing
+  everybody yesterday, and the two stages that survived it are the two the free
+  tier can carry. `tools/delivery_health.py` reaches that sentence by itself now
+  and names the arithmetic: distill's window is 250,000 characters against a
+  free tier of 8,000 tokens a minute, so **distill is the one stage the fallback
+  cannot carry**, which means the deploy this entry asks for is necessary and
+  may not be sufficient. The numbers behind it: `claims_newest` and
+  `distilled_newest` both still `2026-10-07T15:15:25Z`, now 7.4 days, against
+  `papers_newest` 2026-10-14, with `distill_pending` at 2,264, up from 2,223 on
+  2026-10-14 and 2,132 on 2026-10-12. The queue is filling at roughly 40 papers
+  a day and draining at none. Status left at `urgent` and unchanged, because the
+  first step is still the owner's command and this only adds what to expect when
+  she runs it.
 - Status: urgent
 
 ### 2026-10-12 — A degraded deploy leaves no mark, so nothing can say the press is running on the wrong engine (engineer seat, second run)
