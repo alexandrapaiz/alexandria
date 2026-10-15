@@ -382,3 +382,62 @@ def test_the_dry_run_cannot_call_a_model_even_by_mistake():
     assert 'Secret.from_name("neon")' in block
     assert 'Secret.from_name("moonshot")' not in block
     assert 'Secret.from_name("groq")' not in block
+
+
+# ---------------- the gate added 2026-10-15 ----------------
+
+def test_the_rehearsal_runs_the_institution_parser_and_says_what_it_read(
+        monkeypatch, capsys):
+    """Gate 3 proves the parser is in the image, by using it.
+
+    `pipeline/institutions.py` is a new `add_local_file` as of 2026-10-15 and
+    distill writes `papers.institutions` from it, with the model's answer
+    demoted to the fallback. An image missing it fails at the import, one
+    paper at a time, after the model has already been paid for the call. The
+    practices prompt is loaded here for exactly this reason; this is the same
+    move for a module, and running it rather than importing it is the stronger
+    statement, because a parser that is present and reads nothing empties the
+    field precisely as well as one that is absent.
+    """
+    catalog(monkeypatch, *distill.MODELS)
+    post_returning(monkeypatch, chat(claims=[GOOD_CLAIM]))
+    distill.rehearse()
+    out = capsys.readouterr().out
+    assert "institution parser loaded and run: ['Example Lab']" in out
+    assert "(affiliation-spans)" in out
+
+
+def test_a_broken_institution_parser_stops_the_deploy(monkeypatch):
+    """The gate fires, rather than printing a line nobody reads.
+
+    Incident 20's shape is a check that records and does not enforce, so the
+    parser's answer is asserted and not merely printed. A deploy that installs
+    an extractor reading nothing would empty the field the digest attributes
+    every issue with, and it would do it silently: the model's answer is the
+    fallback, so the run would still write something and still look ordinary.
+    """
+    catalog(monkeypatch, *distill.MODELS)
+    post_returning(monkeypatch, chat(claims=[GOOD_CLAIM]))
+    monkeypatch.setattr(distill, "parse_institutions",
+                        lambda header: ([], [], "nothing"))
+    with pytest.raises(RuntimeError) as exc:
+        distill.rehearse()
+    assert "institution parser" in str(exc.value)
+    assert "Nothing was deployed" in str(exc.value)
+
+
+def test_the_parser_and_the_backfill_are_the_same_extractor():
+    """One file, so a pattern added for a paper the backfill refused is a
+    pattern the live insert gains as well.
+
+    The extractor was inside `pipeline/backfill_institutions.py` until
+    2026-10-15, which is a Modal app file, so the job that fetches the markup
+    could not import it without pulling `modal` into its image for three
+    regexes. Two copies of a parser is how one of them goes stale, and the
+    backfill's own 41 tests drive the moved module through re-exported names.
+    """
+    import backfill_institutions as bi
+
+    header = ('<span class="ltx_role_affiliation">Google DeepMind</span>')
+    assert distill.parse_institutions(header) == bi.institutions_from_html(header)
+    assert distill.institutions() is bi._extractor
