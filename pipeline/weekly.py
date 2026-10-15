@@ -39,6 +39,7 @@ repository. The name does, and the name is all the code needs.
 **Then the deploy**, unchanged in shape and with one more thing checked:
 
     python3 pipeline/budget.py                    # does the request fit?
+    python3 tools/check_digest_quality.py --help  # the pre-send gate's rules
     python3 tools/rehearse_email.py               # does the email still render?
     modal run pipeline/weekly.py::preflight        # does the model still exist?
     modal run pipeline/weekly.py::rehearse         # does one real call work?
@@ -201,6 +202,12 @@ image = (
     # The drift guard travels with the job, so the job can say what it is
     # actually running. db/schema.sql deploy_runtime carries the argument.
     .add_local_file("pipeline/runtime_sha.py", "/root/runtime_sha.py")
+    # And the pre-send quality gate, so the checklist is opened by the run
+    # that sends rather than by a person who remembers to. A register with a
+    # write gate and no read gate is incident 20's shape, and
+    # docs/agents/registers.md says the read gate is the one the org forgets.
+    .add_local_file("tools/check_digest_quality.py",
+                    "/root/check_digest_quality.py")
 )
 
 app = modal.App("alexandria-weekly", image=image)
@@ -480,6 +487,23 @@ def budget():
     return module
 
 
+def quality():
+    """tools/check_digest_quality.py, wherever this is running from.
+
+    Same trick as budget() above: Modal drops it at /root, a local run finds
+    it in tools/ beside this file.
+    """
+    import sys
+
+    here = pathlib.Path(__file__).resolve().parent
+    for path in ("/root", str(here.parent / "tools")):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    import check_digest_quality as module
+
+    return module
+
+
 def runtime_guard():
     """pipeline/runtime_sha.py, wherever this is running from.
 
@@ -570,6 +594,7 @@ CLIENT_TIMEOUT_SECONDS = 1500
 ALARM_SUBJECT_CANNOT_PRINT = "The press could not print this week's issue"
 ALARM_SUBJECT_NOT_SENT = "This week's issue was written but not sent"
 ALARM_SUBJECT_SHORT_EDITION = "This week's issue went out as the short edition"
+ALARM_SUBJECT_HELD = "This week's issue was held by the pre-send quality gate"
 
 
 def log_limits(resp, model: str) -> None:
@@ -786,16 +811,24 @@ def call_model(model: str, prompt: str, user: str,
 
 def write_digest(payload: dict, prompt: str,
                  available: set[str] | None = None,
-                 trace: dict | None = None) -> tuple[str, str]:
+                 trace: dict | None = None,
+                 corrections: str = "") -> tuple[str, str]:
     """Write the issue, walking the fallback list. Returns (body, model used).
 
     Each model gets its own copy of the payload, because `fit_payload` trims in
     place: sharing one payload would mean the second model inherits the first
     model's trimming and writes a thinner issue than it had room for.
+
+    `corrections` is the pre-send gate's second try: the blocking findings from
+    the first draft, appended to the system prompt as instructions. It rides in
+    the system prompt rather than the payload, so it counts against the same
+    per-request ceiling and every size check below has to see it. That is why
+    `system` is computed once here and used everywhere `prompt` used to be.
     """
     import copy
 
     guard = budget()
+    system = prompt + corrections
     tried: list[str] = []
     #: Models that answered with an error, as opposed to the ones that were
     #: refused by the arithmetic before a request went out. The short edition
@@ -809,14 +842,14 @@ def write_digest(payload: dict, prompt: str,
                          "skipped without a request (incident 24's 404)")
             continue
         try:
-            user = guard.fit_payload(copy.deepcopy(payload), prompt,
+            user = guard.fit_payload(copy.deepcopy(payload), system,
                                      MAX_COMPLETION_TOKENS, model)
         except (guard.BudgetExceeded, KeyError) as exc:
             tried.append(f"{model}: does not fit. {exc}")
             print(f"{model}: over budget, trying the next fallback. {exc}")
             continue
 
-        report = guard.check_request(prompt, user, MAX_COMPLETION_TOKENS, model)
+        report = guard.check_request(system, user, MAX_COMPLETION_TOKENS, model)
         print(f"{model}: payload {len(user)} chars; budget: {report.summary()}")
         if not report.fits:
             # fit_payload should have made this impossible; if it did not, say
@@ -825,7 +858,7 @@ def write_digest(payload: dict, prompt: str,
             continue
 
         try:
-            body = call_model(model, prompt, user, trace)
+            body = call_model(model, system, user, trace)
         except (ModelGone, RateLimited, MissingKey) as exc:
             called.add(model)
             tried.append(f"{model}: {exc}")
@@ -1314,6 +1347,86 @@ def notify_owner(subject: str, detail: str) -> str:
     return f"owner notified at {to}: {subject}"
 
 
+# ---------------- the pre-send quality gate ----------------
+
+def gate_issue(body: str, label: str) -> tuple[int | None, str]:
+    """Read the issue against the quality tier before any reader does.
+
+    Returns the number of blocking findings and the instructions that would
+    correct them. `None` for the count means the gate itself could not run, and
+    the caller sends unchecked: an unsent newsletter is worse than an unchecked
+    one, and the standard this enforces (docs/product/digest-quality.md) says
+    so in its own words. The database keeps the body either way.
+
+    The finished body is what gets checked, masthead and all, because the
+    masthead ships with the issue and is part of what the reader gets.
+    """
+    try:
+        gate = quality()
+    except Exception as exc:
+        print(f"quality gate unavailable ({exc}); sending unchecked")
+        return None, ""
+
+    try:
+        findings = gate.check(body, "weekly")
+        print(gate.report(findings, label))
+        blocking = [f for f in findings if f.level == gate.BLOCK]
+        return len(blocking), gate.corrections(findings)
+    except Exception as exc:
+        print(f"quality gate failed to run ({exc}); sending unchecked")
+        return None, ""
+
+
+def hold_for_quality(body: str, model: str, label: str,
+                     rewrite=None) -> tuple[str, str, bool]:
+    """The gate's policy: which draft to keep, and whether it may be sent.
+
+    Returns the body to store, who wrote it, and whether the send goes ahead.
+    The order is deliberate:
+
+    1. Check the finished body, masthead and all.
+    2. On blocking findings, give the generator exactly one more try with the
+       findings as instructions. A model told what it broke usually fixes it,
+       and one extra call is cheap next to an issue that should not send.
+       `rewrite(instructions)` is the caller's closure over that call, because
+       finishing a draft means the same title and masthead work the first one
+       got and only the caller holds the arguments for it. `None` means no
+       second try is available, and then the first draft is the only draft.
+    3. Check the rewrite. Keep whichever draft has fewer blocking findings,
+       rather than whichever is newer: a rewrite that fixed nothing and broke
+       something else is the worse issue of the two.
+
+    A gate failure never costs the issue. An unwritten newsletter is worse
+    than an unchecked one, so every path where the gate cannot answer sends,
+    and the database keeps the body either way.
+    """
+    blocking, instructions = gate_issue(body, label)
+    if not blocking:
+        return body, model, True
+    if rewrite is None or not instructions:
+        return body, model, False
+
+    print("regenerating once with the gate's findings as instructions")
+    try:
+        second, second_model = rewrite(instructions)
+    except Exception as exc:
+        print(f"the gate's rewrite could not be written ({exc}); "
+              "keeping the first draft")
+        return body, model, False
+
+    again, _ = gate_issue(second, f"{label}, second draft")
+    if again is None:
+        # the gate answered the first draft and not the second. It has already
+        # said the first draft is wrong, so the one it could not read is the
+        # one with a chance of being right.
+        return second, second_model, True
+    if again == 0:
+        return second, second_model, True
+    if again <= blocking:
+        return second, second_model, False
+    return body, model, False
+
+
 def last_sunday(today: date) -> date:
     """The most recent Sunday strictly before `today`.
 
@@ -1404,9 +1517,20 @@ def word_count(body: str) -> int:
     return sum(1 for token in body.split() if any(c.isalnum() for c in token))
 
 
+def _gate_line(blocking: int | None) -> str:
+    """One phrase for the rehearsal report, in words rather than a number."""
+    if blocking is None:
+        return "not read (the gate could not run, so the press would send unchecked)"
+    if blocking == 0:
+        return "clean, so this issue would send"
+    return (f"{blocking} blocking finding(s), so this issue would be held and "
+            "not emailed")
+
+
 def rehearsal_report(*, model: str, body: str, prompt_sha: str,
                      stats_line: str, finish_reason, elapsed_seconds,
-                     row_id, success_subject: str) -> str:
+                     row_id, success_subject: str,
+                     blocking: int | None = None) -> str:
     """The verbatim block a rehearsal prints. Pure, so a test can read it.
 
     Incident 8 is the standing reason this is verbatim output and not a
@@ -1423,6 +1547,12 @@ def rehearsal_report(*, model: str, body: str, prompt_sha: str,
         f"  payload: {stats_line}",
         f"  finish_reason: {finish_reason!r}",
         f"  saved to press_rehearsals id {row_id}",
+        # The pre-send gate's verdict on the rehearsal's own body. A rehearsal
+        # exists to make the next print's behaviour visible before it reaches a
+        # reader, and from now on that behaviour includes being held: an issue
+        # with blocking findings does not send, so a rehearsal that did not say
+        # so would be a rehearsal of a different run.
+        f"  quality gate: {_gate_line(blocking)}",
         f"  subject it would have sent:      {success_subject}",
         f"  subject if it could not print:   {ALARM_SUBJECT_CANNOT_PRINT}",
         f"  subject if the send then failed: {ALARM_SUBJECT_NOT_SENT}",
@@ -1579,6 +1709,26 @@ def weekly() -> str:
         sha = shas[edition]
         body = ensure_fresh_title(body, prior_titles, model, dates)
         body = add_masthead(body, edition)
+
+        # The pre-send gate. ADR-28 carded it to this seat and deferred it
+        # once; docs/product/digest-quality.md is the tier it reads against.
+        def rewrite(instructions: str) -> tuple[str, str]:
+            """The second draft, finished exactly as the first one was."""
+            second, second_model = write_digest(
+                payload, prompt, available,
+                corrections="\n\n" + instructions)
+            second = ensure_fresh_title(second, prior_titles, second_model,
+                                        dates)
+            return add_masthead(second, edition), second_model
+
+        # The short edition is not offered the retry. It is already the
+        # degraded print, the owner is already being told so below, and asking
+        # the same list again is how incident 24 spent twenty minutes.
+        body, model, cleared = hold_for_quality(
+            body, model, f"{week} issue",
+            rewrite=rewrite if edition == EDITION_FULL else None)
+        held = not cleared
+
         with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
             conn.execute(
                 """
@@ -1606,6 +1756,28 @@ def weekly() -> str:
                     "answer. The reader got an issue and it says it is short. "
                     "What needs fixing is the head of the list, and "
                     "`python3 pipeline/budget.py` prints the arithmetic."))
+            if held:
+                # The issue is in the database, where the owner and the writer
+                # seat can read it, and it is in nobody's inbox. It is still on
+                # the site, because the site reads this table and nothing in it
+                # says "held" yet; that half of the hold is carded in
+                # docs/ideas.md and named in docs/product/digest-quality.md.
+                print(f"{week} held: the pre-send gate found blocking "
+                      "problems it could not get fixed, and the email was not "
+                      "sent. The body is in the digests table.")
+                print(notify_owner(
+                    ALARM_SUBJECT_HELD,
+                    f"The {week} issue was written by {model} and then held by "
+                    "the pre-send quality gate, which found blocking problems "
+                    "in it and could not get them fixed in one rewrite.\n\n"
+                    "Nobody has been emailed. The issue is in the digests "
+                    "table and readable on the site, so nothing is lost, and "
+                    "the run's log prints every finding with the line it came "
+                    "from.\n\n"
+                    "What needs a decision is the issue itself: send it as it "
+                    "is with `resend`, or let the prompt take the correction "
+                    "and let next week's print be the fix."))
+                return body
             try:
                 print(send_newsletter(conn, week, body))
             except Exception as exc:
@@ -1750,11 +1922,17 @@ def rehearse(allow_fallback: bool = False) -> str:
             (row_id,),
         ).fetchone()
 
+    # Read the rehearsal's own body against the tier. This prints every
+    # finding, and it neither sends nor alarms, which is what a rehearsal is
+    # allowed to do.
+    rehearsal_blocking, _ = gate_issue(body, f"{week} rehearsal")
+
     print(rehearsal_report(
         model=model, body=body, prompt_sha=sha, stats_line=stats_line,
         finish_reason=trace.get("finish_reason"),
         elapsed_seconds=trace.get("elapsed_seconds"), row_id=row_id,
         success_subject=email_render().subject_for(body),
+        blocking=rehearsal_blocking,
     ))
     if trace.get("usage"):
         print(f"  usage as the provider reported it: {trace['usage']}")

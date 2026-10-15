@@ -923,6 +923,38 @@ allowed to decide not to patch, and the grade of 2026-10-08 decided that for a
 stated reason that was sound. What it is not allowed to do is leave the finding
 somewhere nothing will read again.
 
+## The blocks a review quotes are graded, not just cited (added 2026-10-14)
+
+Pass 3 requires every verdict to carry a quoted line, so a review accumulates
+extracted artifact text. Pass 5's fifth question covers the half of a SENTENCE
+a verdict never reached and its sixth covers the half a verdict reached and
+forgave. Neither covers the third place, which is a block of the artifact
+pasted into a review as evidence for one law and never put to the others. That
+block is the cheapest text in the org to check, because somebody has already
+done the extracting.
+
+The evidence is both findings of 2026-10-14, nine and eight grades late, and
+both were sitting in this seat's own files the whole time.
+`docs/voice/reviews/2026-10-06.md` quotes "Three papers this week test what
+happens when you push [...]" in a list of standalone lines, while counting
+shapes under law 14. Four items follow that sentence in the artifact and the
+counting gate is arithmetic, so law 2 and the claims pass both had a verdict
+waiting in the quotation. `docs/voice/reviews/2026-10-05.md` prints all four of
+the issue's "The authors' own" grades in one numbered block, while finding that
+the grades sat in the position law 14's meaning line needed. Law 6's own gate
+forbids two grades beginning alike, and the proof was the block.
+
+So: **after the six passes, re-read every block this review quotes and every
+block the two previous reviews of the same artifact quote, and put the laws the
+quoting verdict was not about to each one.** It is a short list by construction.
+A quotation that survives this says so in one line, because the point of the
+step is that a clean result closes it rather than that it always finds
+something.
+
+This is pointed at a grade re-reading one artifact, which is the case the seat
+has been in since 2026-10-05. Where an issue is new the two previous reviews
+are about a different artifact and only this review's own blocks are in scope.
+
 ## The run's own prose is measured, not read (added 2026-10-13)
 
 Five times this seat's own review has broken canon law 1 while enforcing it, and

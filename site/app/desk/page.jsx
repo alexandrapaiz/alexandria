@@ -178,6 +178,15 @@ export default async function Desk() {
         {verdictQueue.length === 0 && (
           <p className="desk-empty">No proposed ideas in the ledger.</p>
         )}
+        {/* The row carries the identifier and the one fact you sort by, which
+            is the status already in the lane badge. It used to carry a second
+            line reading "docs/ideas.md · mark accepted or rejected" as well,
+            identical on every row, which is ban list entry 22: a list whose
+            every row renders its full description at rest reads fine at two
+            rows and is unusable at the real count. The real count here is 426,
+            and that one repeated line was 20px of each row. Capping or
+            filtering this queue is the larger fix and it needs words this seat
+            does not author, so it is a proposal rather than a diff. */}
         <div className="desk-list">
           {verdictQueue.map((i) => (
             <a
@@ -190,7 +199,6 @@ export default async function Desk() {
               <span className="desk-lane">{i.status}</span>
               <span className="desk-main">
                 <b>{i.head}</b>
-                <i>docs/ideas.md · mark accepted or rejected</i>
               </span>
               <span className="desk-go">open →</span>
             </a>

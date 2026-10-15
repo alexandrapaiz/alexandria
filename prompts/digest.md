@@ -1334,14 +1334,19 @@ the rule's question to the thing in front of you.
   all, and the grade of that issue also recorded a pass, because what this
   rule forbids is an absence and an absence cannot be quoted.
 - **Grade the evidence in-line, on every item that carries a number.** A short
-  clause inside the item's own prose, not a footnote and not a separate line:
-  "the authors' own experiments, not yet replicated", "three independent
-  groups report the same effect", "one benchmark, one seed", "measured against
-  a baseline the authors chose". Draw the grade from the payload's `evidence`,
-  source tier and support counts, and never claim a stronger one than the
-  payload supports. The grade is product, not hedging. It is the difference
-  between this and a press release, and a reader deciding what to build has to
-  know how much weight a number carries.
+  clause inside the item's own prose, not a footnote and not a separate line.
+  **Four model grades stood in this sentence and all four are deleted, and none
+  of them is repeated here.** The print of 2026-10-05 opened four of its eight
+  grades on the first three words of one of them, and carried another of them
+  twice. A run had already struck a fifth from this rule for this reason and
+  left these four standing four lines above it, which is how the stem the rule
+  forbids reusing was the stem the rule handed over. They are held in the gate
+  that reads the finished grades, where a specimen is read rather than copied.
+  Draw the grade from the payload's `evidence`, source tier and support
+  counts, and never claim a stronger one than the payload supports. The grade
+  is product, not hedging. It is the difference between this and a press
+  release, and a reader deciding what to build has to know how much weight a
+  number carries.
   The grade has two halves. Say how strong the number is, and, where the
   payload supports it, say what the work did not measure ("nothing here tests
   whether it holds past a 200-step run", "no result outside the one benchmark
@@ -1425,10 +1430,17 @@ the rule's question to the thing in front of you.
   logic, or virtues. Two rejected examples are recorded verbatim in
   docs/voice/taste.md, so produce nothing shaped like them, including section
   intros that justify the section. Honesty still binds, but it serves items,
-  in place, in one plain sentence. When two papers carry the week's new work,
-  say "two papers carry this week's new work" where the items appear and
-  never "several teams". When a headline number leans on a flattering or
-  obsolete baseline, say so in that item's grade. When a stream came back
+  in place, in one plain sentence. Where a slot rests on fewer pieces of work
+  than a reader would expect, say the number where the items appear rather than
+  reaching for a collective that hides it. The model sentence that stood here
+  is deleted. It was a counted noun, a verb and the week, quoted at a rule
+  that tells you what to write, and the print of 2026-10-05 opened its
+  new-work slot on that frame with the count and the verb swapped for the
+  day's own. The slot below says why in its own words, about a heading, and it
+  is as true of a sentence, because a phrase quoted where the work happens is
+  not a rule, it is the nearest available draft.
+  When a headline number leans on a flattering or obsolete baseline, say so in
+  that item's grade. When a stream came back
   empty or an edge was judged wrong, that is pipeline information for the
   ledger and not reader-facing copy, unless it materially changes what the
   reader should believe today, in which case one sentence at the affected
@@ -1563,6 +1575,24 @@ the rule's question to the thing in front of you.
   share one idea, the smaller count is the one to delete, all of it, including
   the gloss that was attached to it. One idea, one word, one clause that
   introduces it, and the word the TITLE uses is the word that gets the clause.
+  **The list is built by frequency, not by what looks like jargon, and that is
+  the whole of this pass.** Everything above says which words need a clause and
+  says it twice. Nothing above produces the list, and the class this pass names
+  as the one it exists to catch is defined by not looking like jargon, so a
+  writer assembling the list by eye leaves out exactly the words the pass was
+  written for. The print of 2026-10-05 leans on one such word eight times, from
+  the opening's third sentence to the last line before the close, and nothing
+  in the issue introduces it. Four terms carry that issue and none of the four
+  is glossed. The two earlier prints this pass was written from failed on that
+  same word, so it has now gone unintroduced three times under a rule that
+  covers it in full.
+  So build the list mechanically before you judge anything. Take every word and
+  short phrase in the finished issue that appears three times or more and is
+  not ordinary English doing an ordinary job. Write it down with its count and
+  with the sentence where it first appears. Then the clause requirement above
+  runs down that list, entry by entry, and an entry whose first sentence has no
+  clause in it is not finished. A word you would not have thought to list is
+  the one this step is for.
   If this pass turns up more than about five terms needing a definition in
   one issue, the issue is carrying too much, not too little explaining. Cut
   an item and run it again.
@@ -1894,6 +1924,24 @@ the rule's question to the thing in front of you.
   A reader who counts two where three were promised goes back to find what they
   missed, and there is nothing to find, which costs more than a wrong number
   would have.
+  **Name the unit before you count, because this gate says count and never
+  said count what.** The print of 2026-10-05 opened its new-work slot on "Three
+  papers this week test what happens when you push the agent stack in
+  directions no benchmark yet covers" and put four items under it. This gate
+  was in the file that wrote it, and it failed on the arithmetic half, which is
+  the half it calls easy. A writer told to count what appears under a sentence
+  chooses the unit first, so the count can always be rescued by ruling the
+  fourth item out of it, and the fourth item there named no paper, which is how
+  it was rescued.
+  So the unit is fixed here and it is not yours to pick. Count the blocks a
+  reader sees under the sentence, one for every bold lead, bullet or paragraph
+  carrying its own piece of work, whatever noun your sentence happened to use.
+  The sentence's number is that count. Then the noun goes to every block you
+  just counted, which is the next paragraph.
+  A heading is one of those places and so is a bold lead, so read this
+  paragraph with the word "sentence" meaning whichever of them said the
+  number. The 2026-09-28 failure above was a heading and a first sentence
+  disagreeing with the same two items.
   **The noun is counted too, and it is the half of this gate that has never
   been read.** Every count above is a number and a noun, and the check as first
   written is arithmetic on the number alone, so a count can be exactly right
@@ -1934,6 +1982,25 @@ the rule's question to the thing in front of you.
   lift all of them out of the issue and line them up as a matching set, they
   have stopped being grades. Say what this particular work cannot establish. A
   grade that could be pasted onto another item is a stamp.
+  **Three requirements above and no count under them, which is why this gate
+  has never failed.** Every gate in this list that holds was turned into a
+  count after a print walked past it, and this one was left as a reading of
+  your own prose. The print of 2026-10-05 carried eight grades. Four of them
+  opened on the same three words, "The authors' own". Two more were the same
+  frame as each other about the same paper, "One benchmark, one incident
+  autopsy, one prototype" and "One incident autopsy, one formal model, one
+  prototype". Eight grades stood on three frames, and all three requirements
+  above were in the file that wrote them.
+  So write them out rather than weighing them. Every grade in the issue, one
+  per line, in print order, the reading list included. Where a grade is folded
+  into a sentence doing other work, which is what the rule above asks for, the
+  line you write out is the grade itself and not the sentence around it.
+  Then three string comparisons over that list. The first three words of each
+  line, and no two are the same string. The last three words, because a shared
+  ending is the same furniture arriving from the other direction and that is
+  where a negative replication clause collects. Then each line's sequence of
+  parts, and no two are the same sequence. Rewrite the later of any pair,
+  because a frame is a sentence the first time and furniture the second.
 - **Then check who the issue says did the research. A hard gate, and it is
   grammar rather than judgment.** The attribution rule above allows two forms,
   the institution and the named author, and says there is no third. The third
