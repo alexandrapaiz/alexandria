@@ -32,6 +32,7 @@ npm run build
 
 echo "== start =="
 npx next start -p 3000 > /tmp/next-serve.log 2>&1 &
+STARTED=$!
 for _ in $(seq 1 40); do
   sleep 1
   curl -sf -o /dev/null http://127.0.0.1:3000/ && break
@@ -42,6 +43,33 @@ done
 if grep -q EADDRINUSE /tmp/next-serve.log; then
   echo "FAIL: the server did not bind; an older one is still on 3000." >&2
   exit 1
+fi
+
+# Added 2026-10-15, after the fourth occurrence
+# (INC-2026-10-15-stale-server-survives-restart-fourth-occurrence). Property 3
+# below compares the served stylesheet to the one on disk, which proves the
+# server is this BUILD. It cannot prove the server is this PROCESS, and those
+# came apart today: a stale server from the same build, started with a
+# different environment, serves a byte-identical stylesheet and passes every
+# check in this file. It answered 200 on every route while rendering an empty
+# state, because the fixture variable this run started it with belonged to a
+# process that had already died on EADDRINUSE.
+#
+# `next start` forks a worker, so the listener is the PID started above or a
+# descendant of it. Anything else holding the port is a process this script did
+# not start, which is the stale server by definition.
+if command -v ss >/dev/null 2>&1; then
+  listener=$(ss -lptnH "sport = :3000" 2>/dev/null | grep -o 'pid=[0-9]*' | head -1 | cut -d= -f2 || true)
+  owner="$listener"
+  while [ -n "$owner" ] && [ "$owner" != "1" ] && [ "$owner" != "$STARTED" ]; do
+    owner=$(ps -o ppid= -p "$owner" 2>/dev/null | tr -d ' ' || true)
+  done
+  if [ -n "$listener" ] && [ "$owner" != "$STARTED" ]; then
+    echo "FAIL: port 3000 is held by pid $listener, which did not come from" >&2
+    echo "      this script's pid $STARTED. That is a stale server." >&2
+    exit 1
+  fi
+  echo "PID MATCH: port 3000 is held by $listener, under $STARTED"
 fi
 
 echo "== proving the server is THIS build =="

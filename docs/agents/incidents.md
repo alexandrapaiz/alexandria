@@ -13277,3 +13277,68 @@ half contradicts, so clearing the conflict meant deciding a product
 question rather than resolving text. A branch does not merely go stale. It
 goes wrong, and the longer it stays open the more of its own reasoning it
 loses the right to assert.
+
+## INC-2026-10-15-stale-server-survives-restart-fourth-occurrence — the committed check was in the directory the whole time, and the run listed that directory with a glob that hid it (2026-10-15, frontend run)
+
+**Observed by:** the frontend seat, 2026-10-15, during the Left-Behind Index
+run, while running the charter's "check the register before you ship" step.
+
+**The repeat, and it is the fourth.** `INC-2026-09-23-phantom-production-bug`,
+`INC-2026-09-24-stale-server-kill-noop` and
+`INC-2026-10-07-stale-server-third-occurrence` are the first three. The shape
+is identical every time: a new `next start` loses the port to the server
+already on it, dies into a log file with `EADDRINUSE`, and the subshell that
+launched it returns success, so the shell reports nothing and the old process
+keeps answering.
+
+**The third entry's fix was real, and it was sitting right there.** That entry
+ends on the rule that the fix for a missing check is committed code, and it
+committed the code: `docs/design/harness/serve.sh`, whose second property is
+reading the log for `EADDRINUSE` rather than trusting a backgrounded exit
+code. That check would have caught today's failure at the moment it happened.
+
+This run never ran it. It started the server by hand.
+
+**Why, and this is the whole entry.** The run inventoried the harness with
+`find docs/design -name "*.mjs" -o -name "*.js"`, because every tool it had
+seen referenced was a `.mjs`. `serve.sh` is a `.sh`. It never appeared in the
+listing, so the run rebuilt the start step from scratch and rebuilt it without
+the guard, which is precisely the failure mode the third entry describes
+happening to a register: the run that most needs the check is the one that has
+not found it yet. The third entry moved the check from prose into code and
+assumed discovery was solved by committing. It was not. A committed check that
+a run does not know to look for is not meaningfully different from a check
+that was never committed.
+
+**A second instance of the same root cause, in the same run.** Clearing a test
+process with `pkill -f "http.server 3001"` killed the shell running the
+command, because that shell's own argv contained the pattern. That is
+`INC-2026-09-24-stale-server-kill-noop`'s "kill that cannot match its own
+argv", fired by the seat that was at that moment editing the script which
+exists to avoid it. The rule was known, read, and quoted in this run's own
+writing, and it still did not reach the keyboard, because what reached the
+keyboard was a one-off command rather than the committed script.
+
+**What this run changed.**
+
+1. `docs/design/harness/README.md` is new, so listing the directory finds the
+   order of operations. It says to never start the server by hand, names each
+   script, and records the two environment traps (the Playwright pin, and the
+   `pk_test` key that turns every frame into a Clerk error document).
+2. `serve.sh` gains one check it did not have. Its existing proof compares the
+   served stylesheet to the one on disk, which proves the server is this
+   BUILD. Today those came apart: the stale server was the SAME build started
+   with a different environment, so it served a byte-identical stylesheet,
+   answered 200 on every route, and rendered an empty state while the run
+   believed it was photographing fifty fixture rows. The script now also
+   proves the process listening on the port descends from the PID it started,
+   which is the only check that separates those two.
+
+**The general shape, extending the third entry's.** That entry says the fix
+for a missing check is committed code. This one adds two things. A guard that
+validates the RESPONSE cannot detect a wrong SERVER, because a stale server's
+responses are valid, so identity has to be checked at the process. And code is
+only half of a fix: the other half is that the next run finds it without
+knowing it exists, which means the entry point goes where someone looking at
+the directory will trip over it, not where someone who already knows the
+filename will.
