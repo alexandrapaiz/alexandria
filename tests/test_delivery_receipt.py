@@ -74,7 +74,20 @@ def test_the_endpoint_never_selects_the_product():
     check("the only tables read are the ones this answers for",
           read == ["claim_links", "claims", "deploy_runtime", "digests",
                    "distill_queue", "interpret_queue", "latest_triage",
-                   "papers", "triage_log"], str(read))
+                   "papers", "payment_exceptions", "triage_log"], str(read))
+    # The table version 5 added is the first one on this endpoint whose rows
+    # are about a person rather than about a paper. `payment_exceptions` holds
+    # the buyer's address and the Polar customer and subscription ids, because
+    # the owner needs them to invite the person or find the charge, and this
+    # endpoint is public and unauthenticated. So the reader counts and groups
+    # and never selects one: a count of waiting payments names no payer.
+    check("the till is counted and grouped, never selected from",
+          re.findall(r"from\s+(payment_exceptions)", sql_only)
+          == ["payment_exceptions", "payment_exceptions"]
+          and "email" not in sql_only
+          and "polar_customer_id" not in sql_only
+          and "polar_subscription_id" not in sql_only
+          and "detail" not in sql_only, sql_only)
     # The two tables version 4 added, asked for a timestamp and nothing else.
     # `triage_log.reasoning` is a model's prose about a paper and
     # `claim_links.relation` is an edge of the graph the subscription buys, so
@@ -421,7 +434,7 @@ def test_the_previous_version_is_still_readable_through_the_deploy_window():
     with served(status=200, body=payload):
         got, why = dh.read_receipt()
     check("a version 1 receipt is accepted", got is not None, why)
-    _, pipeline_row, _ = dh.receipt_facts(payload)
+    _, pipeline_row, _, _ = dh.receipt_facts(payload)
     check("and its absent queue depth reads as unknown, not as zero",
           pipeline_row["queues"] is None, str(pipeline_row))
     check("and its absent distill marker reads as unknown too",
@@ -435,7 +448,7 @@ def test_the_previous_version_is_still_readable_through_the_deploy_window():
     with served(status=200, body=live):
         got, why = dh.read_receipt()
     check("a version 2 receipt is accepted", got is not None, why)
-    _, row2, _ = dh.receipt_facts(live)
+    _, row2, _, _ = dh.receipt_facts(live)
     check("it keeps its queue depths", row2["queues"] == QUEUES, str(row2))
     check("and its absent marker is still not a stage that never ran",
           row2["distilled"] is None, str(row2))
@@ -452,7 +465,7 @@ def test_the_version_three_window_is_the_one_this_change_opens():
     with served(status=200, body=live):
         got, why = dh.read_receipt()
     check("a version 3 receipt is accepted", got is not None, why)
-    _, row, _ = dh.receipt_facts(live)
+    _, row, _, _ = dh.receipt_facts(live)
     check("it keeps its distill marker", row["distilled"] is not None, str(row))
     check("and its absent sibling block reads as cannot say",
           row["siblings"] is None, str(row))
@@ -520,7 +533,7 @@ def test_a_drift_read_from_the_receipt_is_reported_and_not_mailed():
              "file_count": 3, "recorded_at": ran.strftime(WEEK_FORMAT),
              "first_seen_at": ran.strftime(WEEK_FORMAT), "notified_at": None}
             for app, module in sorted(drift.rs.APPS.items())])
-        _, _, deploy_rows = dh.receipt_facts(payload)
+        _, _, deploy_rows, _ = dh.receipt_facts(payload)
 
         from_receipt = dh.judge_deploy(deploy_rows, repo, source=dh.RECEIPT_URL)
         from_direct = dh.judge_deploy(deploy_rows, repo, notify_conn=None)
@@ -603,7 +616,7 @@ def test_a_connection_and_a_receipt_reach_the_same_verdict():
         payload = receipt(week=week, created=created.strftime(WEEK_FORMAT),
                           papers=moved.strftime(WEEK_FORMAT),
                           claims=moved.strftime(WEEK_FORMAT))
-        press_row, pipeline_row, _ = dh.receipt_facts(payload)
+        press_row, pipeline_row, _, _ = dh.receipt_facts(payload)
         via_receipt_press = dh.judge_press(press_row, today, dh.RECEIPT_URL)
         via_receipt_pipeline = dh.judge_pipeline(pipeline_row, source=dh.RECEIPT_URL)
 
@@ -679,7 +692,7 @@ def test_both_readers_name_the_same_cause_for_a_stalled_stage():
                           queues=published,
                           distilled=marker.strftime(WEEK_FORMAT) if marker else None,
                           siblings=None)
-        _, pipeline_row, _ = dh.receipt_facts(payload)
+        _, pipeline_row, _, _ = dh.receipt_facts(payload)
         via_receipt = dh.judge_pipeline(pipeline_row, source=dh.RECEIPT_URL)
 
         check(f"{name}: both readers say failing",
@@ -809,7 +822,7 @@ def test_the_sibling_stages_split_the_provider_from_this_one_cron():
                           distilled=stalled.strftime(WEEK_FORMAT),
                           siblings={"triage": published(triage),
                                     "interpret": published(interpret)})
-        _, pipeline_row, _ = dh.receipt_facts(payload)
+        _, pipeline_row, _, _ = dh.receipt_facts(payload)
         via_receipt = dh.judge_pipeline(pipeline_row, source=dh.RECEIPT_URL)
 
         check(f"{name}: both readers say failing",

@@ -142,7 +142,7 @@ MCP_URL = "https://ap4509--alexandria-mcp-serve.modal.run"
 # publishes the rows this command judges and no seat needs a credential to read
 # them. Facts only: the judgement below is the single copy.
 RECEIPT_URL = f"{SITE_URL}/api/delivery"
-RECEIPT_VERSION = 4  # must match site/lib/delivery-core.js RECEIPT_VERSION
+RECEIPT_VERSION = 5  # must match site/lib/delivery-core.js RECEIPT_VERSION
 
 # And the versions this reader can still read. Exact-match was the rule until
 # 2026-10-10 and it made every additive field an outage: the site deploys on a
@@ -156,9 +156,11 @@ RECEIPT_VERSION = 4  # must match site/lib/delivery-core.js RECEIPT_VERSION
 # have, never a queue of zero), so version 1 stays readable. Version 3 added
 # `pipeline.distilled_newest` on the same terms, so versions 1 and 2 stay
 # readable too, and version 4 added the two sibling-stage markers on the same
-# terms again. A version that removed or renamed a field would not be added to
-# this tuple.
-READABLE_VERSIONS = (1, 2, 3, 4)
+# terms again, and version 5 added the `payments` block on the same terms once
+# more: an absent block is a till this reader cannot see, which is `unknown`,
+# and never a till with nothing wrong. A version that removed or renamed a
+# field would not be added to this tuple.
+READABLE_VERSIONS = (1, 2, 3, 4, 5)
 
 # Which reader answered. It goes in every surface's evidence as `read_via`,
 # because "the press printed" and "a second-hand record says the press printed"
@@ -181,6 +183,16 @@ PIPELINE_STALE_DAYS = 2
 # reason this is not tightened further, since its own drift is caught here long
 # before Monday comes round again.
 DEPLOY_GRACE_HOURS = 24
+
+# How long a deferred payment may stay deferred before it is an alarm rather
+# than a retry in flight. Polar answers a 503 by bringing the event back on its
+# own schedule, and the usual cause is this product's own Clerk webhook not
+# having landed yet, which is seconds. Six hours is many retries later: by then
+# the row is not waiting on a race, it is waiting on somebody. The number is
+# deliberately well inside Polar's own retry window, because the failure to
+# catch is a payment that stays stuck until the buyer writes in, and a day-long
+# grace is a day of a paid customer with no access.
+PAYMENT_DEFER_GRACE_HOURS = 6
 
 # One mail a day per app while a drift lasts, not one per check. The standup
 # runs this command every morning and a week of stale deploy must not be a week
@@ -1667,6 +1679,140 @@ def _notify_drift(conn, alarms: list[tuple], repo_root: Path,
     return sent
 
 
+# ------------------------------------------------------------- the till
+#
+# Whether a verified payment turned into access. This is the one surface here
+# that is not about the product reaching a reader; it is about a reader
+# reaching the product, and it fails in the same shape as everything else on
+# this page. Polar is the Merchant of Record (ADR-30), so /api/polar-webhook is
+# the only place this product learns anybody paid, and its two unrecoverable
+# outcomes used to end in a Vercel function log that nothing in this org reads.
+# `payment_exceptions` gives them a row and this reads the open ones.
+
+PAYMENT_TOTALS = """
+    select count(*),
+           count(*) filter (where not retryable),
+           min(occurred_at),
+           max(last_seen_at)
+    from payment_exceptions
+    where resolved_at is null
+"""
+
+PAYMENT_CODES = """
+    select reason_code, count(*)
+    from payment_exceptions
+    where resolved_at is null
+    group by reason_code
+    order by count(*) desc, reason_code
+"""
+
+
+def payment_facts(conn) -> dict | None:
+    """The open exceptions, or None when the table cannot be read.
+
+    None rather than zeroes, the same contract `queue_facts` keeps and for the
+    same reason: `payment_exceptions` is newer than every other table this file
+    reads and `apply_schema` is a hand step, so a database without it is a
+    state this really meets. A count of zero is the good news this surface
+    exists to confirm, and it is only good news when somebody looked.
+    """
+    try:
+        total = conn.execute(PAYMENT_TOTALS).fetchone()
+        codes = conn.execute(PAYMENT_CODES).fetchall()
+    except Exception:
+        return None
+    if total is None:
+        return None
+    return {"unresolved": total[0], "needs_a_hand": total[1],
+            "oldest": total[2], "newest": total[3],
+            "codes": [{"code": row[0], "n": row[1]} for row in codes]}
+
+
+def _name_codes(codes: list | None) -> str:
+    """The reason codes as a clause, so the headline names the job.
+
+    "3 payments unmatched" tells the owner a number. "2 no_account, 1
+    ambiguous_email" tells her that two people need inviting and one duplicate
+    needs merging, which are different half-hours of her afternoon. L-E11's
+    rule that a guard reports the smallest true thing applies to what it
+    reports as well as to how loud it is.
+    """
+    named = [f"{row['n']} {row['code']}" for row in (codes or [])
+             if row.get("code") and row.get("n")]
+    return ", ".join(named)
+
+
+def judge_payments(facts: dict | None, now: datetime | None = None,
+                   source: str = DIRECT) -> Surface:
+    """Open payment exceptions, against what will clear itself.
+
+    Three states and the middle one is the one worth being careful about.
+
+    A row Polar will retry is the system working. The usual cause of one is
+    this product's own Clerk webhook not having landed yet, which is a race
+    measured in seconds, and alarming on it would make every signup-then-buy
+    inside one second a red report. So a deferred row inside the grace window
+    is `ok` and says so with its count.
+
+    A row nothing will retry is somebody's money with no access, and it never
+    clears on its own: nobody holds that address at Clerk, or two accounts do.
+    That is `failing` from the first row, with no grace window, because the
+    grace window for a person waiting on the owner is the wrong idea.
+
+    And a deferred row still open after the grace window has stopped being a
+    race. Those two cases produce the same alarm on purpose: from the buyer's
+    side there is no difference between a refusal and a retry that will never
+    land, and the evidence below says which one it was.
+    """
+    now = now or datetime.now(timezone.utc)
+    read = {"read_via": source}
+    if facts is None:
+        return Surface("payments", UNKNOWN,
+                       "payment_exceptions could not be read, so whether a "
+                       "verified payment reached an account is unknown here",
+                       read)
+
+    open_rows = int(facts.get("unresolved") or 0)
+    stuck = int(facts.get("needs_a_hand") or 0)
+    oldest = facts.get("oldest")
+    age = _age_days(oldest, now)
+    evidence = {"unresolved": open_rows, "needs_a_hand": stuck,
+                "codes": _name_codes(facts.get("codes")) or "none",
+                "oldest_unresolved_at": str(oldest) if oldest else None,
+                "newest_unresolved_at": (str(facts.get("newest"))
+                                         if facts.get("newest") else None),
+                "defer_grace_hours": PAYMENT_DEFER_GRACE_HOURS, **read}
+
+    if open_rows == 0:
+        return Surface("payments", OK,
+                       "every verified payment reached an account", evidence)
+
+    named = _name_codes(facts.get("codes"))
+    aged = f", oldest {age:.1f} days" if age is not None else ""
+
+    if stuck:
+        return Surface("payments", FAILING,
+                       f"{stuck} verified payment(s) cannot reach an account "
+                       f"and will not retry ({named}{aged}); "
+                       f"{open_rows} open in total", evidence)
+
+    if age is not None and age * 24 > PAYMENT_DEFER_GRACE_HOURS:
+        return Surface("payments", FAILING,
+                       f"{open_rows} payment(s) have been waiting on a retry "
+                       f"for {age:.1f} days, past the "
+                       f"{PAYMENT_DEFER_GRACE_HOURS}-hour window a retry "
+                       f"lands in ({named})", evidence)
+
+    return Surface("payments", OK,
+                   f"{open_rows} payment(s) deferred and inside the "
+                   f"{PAYMENT_DEFER_GRACE_HOURS}-hour retry window "
+                   f"({named}){aged}", evidence)
+
+
+def check_payments(conn) -> Surface:
+    return judge_payments(payment_facts(conn))
+
+
 def _weeks_between(have: str, want: str) -> int:
     """How many issues are missing between the newest row and the week that ended."""
     def monday(label: str) -> date:
@@ -1729,12 +1875,13 @@ def read_receipt(url: str | None = None) -> tuple[dict | None, str]:
     return payload, ""
 
 
-def receipt_facts(payload: dict) -> tuple[dict | None, dict, dict | str]:
-    """The receipt's JSON, in the same three shapes the database reader returns.
+def receipt_facts(payload: dict) -> tuple[dict | None, dict, dict | str, dict | None]:
+    """The receipt's JSON, in the same four shapes the database reader returns.
 
     This is the whole of the translation. The judgement is `judge_press`,
-    `judge_pipeline` and `judge_deploy`, unchanged and shared, so a receipt and
-    a connection cannot reach different conclusions about the same week.
+    `judge_pipeline`, `judge_deploy` and `judge_payments`, unchanged and shared,
+    so a receipt and a connection cannot reach different conclusions about the
+    same week.
     """
     press = payload.get("press")
     press_row = None
@@ -1782,21 +1929,40 @@ def receipt_facts(payload: dict) -> tuple[dict | None, dict, dict | str]:
                                     "first_seen_at": _parse_iso(row.get("first_seen_at")),
                                     "notified_at": _parse_iso(row.get("notified_at"))}
                        for row in deploy if isinstance(row, dict) and row.get("app")}
-    return press_row, pipeline_row, deploy_rows
+
+    # The till. Absent on versions 1 to 4 and null on a version 5 receipt whose
+    # site could not read the table, and both arrive here as None, which is the
+    # shape `payment_facts` returns for an unreadable table. So the two readers
+    # hand the judgement the same thing and neither can call the till clear on
+    # evidence the other would call unknown.
+    published = payload.get("payments")
+    payments = None
+    if isinstance(published, dict):
+        codes = published.get("codes")
+        payments = {
+            "unresolved": published.get("unresolved"),
+            "needs_a_hand": published.get("needs_a_hand"),
+            "oldest": _parse_iso(published.get("oldest_unresolved_at")),
+            "newest": _parse_iso(published.get("newest_unresolved_at")),
+            "codes": [row for row in codes if isinstance(row, dict)]
+                     if isinstance(codes, list) else [],
+        }
+
+    return press_row, pipeline_row, deploy_rows, payments
 
 
 # ------------------------------------------------------------------ driver
 
 def database_surfaces(today: date | None = None, repo_root: Path | None = None,
                       notify: bool = True) -> list[Surface]:
-    """`press`, `pipeline` and `deploy`, by the best reader available.
+    """`press`, `pipeline`, `payments` and `deploy`, by the best reader available.
 
     Two readers, in order. A direct connection when this environment holds
     `DATABASE_URL`, which is the Modal jobs and the owner's laptop. Otherwise
     the receipt the site publishes, which needs no credential and is what every
     agent seat actually has. Both are judged by the same three functions.
 
-    When neither answers, all three surfaces are `unknown` and the message names
+    When neither answers, all four surfaces are `unknown` and the message names
     both paths, because the whole reason guardrail 4 went unenforced for four
     days is that nobody could see which reader was missing what.
     """
@@ -1809,23 +1975,25 @@ def database_surfaces(today: date | None = None, repo_root: Path | None = None,
 
     payload, receipt_why = read_receipt()
     if payload is not None:
-        press, pipeline, deploy = receipt_facts(payload)
+        press, pipeline, deploy, payments = receipt_facts(payload)
         return [judge_press(press, today, RECEIPT_URL),
                 judge_pipeline(pipeline, source=RECEIPT_URL),
+                judge_payments(payments, source=RECEIPT_URL),
                 judge_deploy(deploy, repo_root, source=RECEIPT_URL)]
 
     why = (f"the artifact guardrail 4 names cannot be read here: {direct_why}, "
            f"and the published receipt did not answer either ({receipt_why})")
     return [Surface("press", UNKNOWN, why, {"expected": week_label(today)}),
             Surface("pipeline", UNKNOWN, why),
+            Surface("payments", UNKNOWN, why),
             Surface("deploy", UNKNOWN, why)]
 
 
 def _from_database(url: str, today: date | None, repo_root: Path | None,
                    notify: bool) -> tuple[list[Surface] | None, str]:
-    """The three surfaces over a real connection, or None and why not.
+    """The four surfaces over a real connection, or None and why not.
 
-    None rather than three `unknown` surfaces, so the caller can fall through to
+    None rather than four `unknown` surfaces, so the caller can fall through to
     the receipt. A connection that fails is not a healthy press and not a broken
     one, and neither is a missing driver.
     """
@@ -1836,12 +2004,13 @@ def _from_database(url: str, today: date | None, repo_root: Path | None,
     try:
         with psycopg.connect(url, connect_timeout=15) as conn:
             return [check_press(conn, today), check_pipeline(conn),
+                    check_payments(conn),
                     check_deploy(conn, repo_root, notify=notify)], ""
     except Exception as exc:
         return None, f"DATABASE_URL is set but the connection failed: {exc}"
 
 
-ORDER = ["press", "pipeline", "deploy", "site", "archive", "mcp"]
+ORDER = ["press", "pipeline", "payments", "deploy", "site", "archive", "mcp"]
 
 
 def run(surfaces: list[str], today: date | None = None,
@@ -1856,7 +2025,7 @@ def run(surfaces: list[str], today: date | None = None,
     needed = asked | ({"press", "site"} if "archive" in asked else set())
 
     out: list[Surface] = []
-    if {"press", "pipeline", "deploy"} & needed:
+    if {"press", "pipeline", "payments", "deploy"} & needed:
         out += [s for s in database_surfaces(today, repo_root, notify)
                 if s.name in needed]
     if "site" in needed:
@@ -1919,7 +2088,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--surface", action="append", dest="surfaces",
                         choices=ORDER,
-                        help="check one surface; repeatable, default is all six")
+                        help="check one surface; repeatable, default is all seven")
     parser.add_argument("--no-notify", action="store_true",
                         help="find a stale deploy and do not mail the owner about it")
     parser.add_argument("--json", action="store_true",
