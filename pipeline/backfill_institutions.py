@@ -9,7 +9,17 @@ own fine-tuning both ask for institution-first attribution, because a reader
 knows DeepMind and does not know the fourth author, so every issue falls back to
 "a team led by <first author>" instead. That fallback is the weaker line and it
 is the same line every time, which is why it reads as furniture by its third
-use. This job is the fill.
+use. This job is the repair.
+
+**It is the repair and no longer the fill, as of 2026-10-15.** The reason the
+field was empty on a path meant to fill it is that `pipeline/distill.py`
+fetched each paper's HTML, cleaned every tag out of it, and then asked a model
+for "the author affiliations in the header" of a payload with no header left
+in it. distill runs this extractor itself now, at the moment it still holds
+the markup, with the model's answer demoted to the fallback. So no paper read
+after that date needs a backfill, this job's queue is the rows read before it,
+and it ends the way `pipeline/backfill_topics.py` ended once the fold moved
+into the insert: as history rather than as a standing job.
 
 ## Why it reads the paper and not a metadata API
 
@@ -35,15 +45,18 @@ So this job reads the only source that is right by construction: the
 affiliations the authors themselves printed in the paper's header, from the same
 arXiv HTML `pipeline/distill.py` already reads through `tools/read_paper.py`.
 Coverage is lower and precision is the point. Measured against twelve real
-arXiv pages on 2026-10-13, the three patterns below fill nine, and every one of
+arXiv pages on 2026-10-13, the three patterns fill nine, and every one of
 the nine is the paper's actual lab. The three it leaves empty it leaves empty on
 purpose: two print only an author list in the header and one renders no author
 block at all.
 
 ## What it writes, and what it refuses
 
-Three patterns, in order, each tried only when the one before it found
-nothing.
+The patterns are `pipeline/institutions.py` as of 2026-10-15, moved there
+verbatim so the live insert and this repair cannot disagree about what an
+affiliation is. They are summarised here because the measurement below was
+taken for this job, and three patterns are tried in order, each only when the
+one before it found nothing.
 
 **A. `ltx_role_affiliation`**, LaTeXML's structured affiliation field. When a
 paper has it, it is the author's own answer to this question.
@@ -81,7 +94,9 @@ ever repairs is a repair nobody has to review twice.
 
 It calls no model and is given no provider secret, so it cannot acquire a cost
 by a later edit, and it cannot take a minute of the free tier away from distill,
-which has 2,223 papers waiting for one. It writes only where `institutions` is
+which has 2,223 papers waiting for one. It is cheaper than it was, too: the
+fetch is `read_paper.fetch_html` rather than three of that module's privates
+copied into this one. It writes only where `institutions` is
 empty, so it can never overwrite what distill extracted. `papers
 .institutions_checked_at` records every attempt, answered or not, so the second
 run does not re-fetch the papers arXiv has no HTML for; `RECHECK_DAYS` lets them

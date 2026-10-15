@@ -834,6 +834,7 @@ class FakeConn:
         self.queue_depth = queue_depth
         self.inserts = []
         self.fulltext_writes = {}
+        self.institution_writes = {}
         self.statements = []
 
     def execute(self, sql, params=()):
@@ -851,6 +852,9 @@ class FakeConn:
         if "fulltext_chars = %s" in low:
             self.fulltext_writes[params[1]] = params[0]
             return FakeCursor([])
+        if "set institutions = %s" in low:
+            self.institution_writes[params[1]] = params[0]
+            return FakeCursor([])
         if "where embedding is null" in low:
             return FakeCursor([])              # nothing left to embed
         return FakeCursor([])
@@ -865,10 +869,11 @@ class FakeConn:
         return False
 
 
-def paper_reply(status=200, claims=None, prompt_tokens=40_000):
+def paper_reply(status=200, claims=None, prompt_tokens=40_000,
+                institutions=None):
     body = {
         "choices": [{"message": {"content": json.dumps(
-            {"claims": claims or [], "institutions": []})},
+            {"claims": claims or [], "institutions": institutions or []})},
             "finish_reason": "stop"}],
         "usage": {"prompt_tokens": prompt_tokens, "completion_tokens": 900},
     }
@@ -957,7 +962,7 @@ class _NoQueue:
 class _NoFetch:
     """arXiv serves no HTML, so the run takes the documented fallback."""
 
-    def fetch_fulltext(self, pid, max_chars=None):
+    def fetch_paper(self, pid, max_chars=None):
         return None
 
     def fetch_metadata(self, pid):
@@ -965,12 +970,24 @@ class _NoFetch:
 
 
 class _WholePaper(_NoFetch):
-    def __init__(self, length):
-        self.length = length
+    """A paper with full text and no parseable header.
 
-    def fetch_fulltext(self, pid, max_chars=None):
+    `html` is a page rather than None, because that is the ordinary case: arXiv
+    renders the paper, and whether its author block carries affiliations is a
+    separate question from whether the page exists. A run against this reader
+    therefore takes the model's answer for `institutions`, which is the
+    fallback and not the source.
+    """
+
+    def __init__(self, length, header=""):
+        self.length = length
+        self.header = header
+
+    def fetch_paper(self, pid, max_chars=None):
         body = "x" * self.length
-        return body[:max_chars] if max_chars else body
+        return {"text": body[:max_chars] if max_chars else body,
+                "html": f'<html><div class="ltx_authors">{self.header}'
+                        f'</div>{body[:200]}</html>'}
 
 
 def _fake_sentence_transformers():
@@ -1503,3 +1520,94 @@ def test_the_corpus_rehearsals_forgive_only_the_head():
             f"{path} mentions its hatch {body.count('allow_fallback')} times "
             "inside rehearse(), so it reaches something other than "
             "head_receipt")
+
+
+# ---------------- who answers "who did this work" ----------------
+#
+# `papers.institutions` was empty on 99.2% of rows, measured by the writer seat
+# on 2026-09-19 and unchanged at the 2026-10-12 ceremony, on a path that was
+# meant to fill it: distill fetched the paper's HTML, ran every tag out of it
+# with `clean_html`, and then asked the model for "the author affiliations in
+# the header" of a payload with no header left in it. These four cases are the
+# order that fixes it, and the first one is the whole fix.
+
+AFFILIATION = ('<span class="ltx_personname">A Person</span>'
+               '<span class="ltx_role_affiliation">Google DeepMind</span>')
+
+
+def test_the_paper_s_own_header_beats_the_model_s_answer(
+        loop_env, monkeypatch, capsys):
+    """Both sources answer, and the one printed in the paper wins.
+
+    An affiliation has one correct answer and the paper prints it, so this is
+    not a preference between two guesses: a parser cannot invent a lab and a
+    model can. The model here returns a plausible wrong answer, which is the
+    failure mode that matters, because a digest that says "a team at Oxford"
+    about an OpenAI system card is a worse artifact than one that says nothing.
+    """
+    conn = drive(monkeypatch, PAPERS[:1],
+                 [paper_reply(claims=[CLAIM], institutions=["Oxford"])],
+                 reader=_WholePaper(40_000, header=AFFILIATION))
+    assert conn.institution_writes == {"arxiv:1": ["Google DeepMind"]}
+    assert "institutions (affiliation-spans): ['Google DeepMind']" \
+        in capsys.readouterr().out
+
+
+def test_the_model_answers_for_a_paper_whose_header_names_no_lab(
+        loop_env, monkeypatch, capsys):
+    """The fallback, which is the model, and the log says it was the fallback.
+
+    Two patterns of three found nothing and the third is only tried on a header
+    that names no person, so a paper with an author list and no affiliations
+    reaches the model's answer. Keeping that answer is deliberate: it is the
+    behaviour this job has always had, and the change is its rank.
+    """
+    conn = drive(monkeypatch, PAPERS[:1],
+                 [paper_reply(claims=[CLAIM], institutions=["DeepMind"])],
+                 reader=_WholePaper(40_000, header=AFFILIATION.split("<span c"
+                                                                    "lass=\"ltx_role")[0]))
+    assert conn.institution_writes == {"arxiv:1": ["DeepMind"]}
+    out = capsys.readouterr().out
+    assert "institutions (the model, nothing found nothing): ['DeepMind']" in out
+
+
+def test_a_paper_arxiv_serves_no_html_for_reaches_the_model_too(
+        loop_env, monkeypatch, capsys):
+    """No page at all, which before roughly 2024 is the common case.
+
+    `no-html` rather than `nothing` in the log, because the two are different
+    findings: one says arXiv has no rendering of this paper and the other says
+    it has one whose header named no institution. Only the second is a reason
+    to add a pattern.
+    """
+    conn = drive(monkeypatch, PAPERS[:1],
+                 [paper_reply(claims=[CLAIM], institutions=["Meta AI"])],
+                 reader=_NoFetch())
+    assert conn.institution_writes == {"arxiv:1": ["Meta AI"]}
+    assert "institutions (the model, no-html found nothing)" \
+        in capsys.readouterr().out
+
+
+def test_a_refused_affiliation_is_printed_and_never_written(
+        loop_env, monkeypatch, capsys):
+    """The filter stays reviewable by reading the run's output.
+
+    `arxiv:2310.06825` (Mistral 7B) puts twenty author names in the
+    affiliation field, and a row reading "institutions: Devendra Singh
+    Chaplot" is a visible defect in the issue. The backfill's dry run prints
+    every refusal for this reason and the live insert now does too, so the
+    patterns are reviewed from a log rather than from the code.
+    """
+    # Three names, two commas and no organisation word, which is what
+    # `looks_like_a_person_list` is measuring. Two names and one comma are
+    # accepted today and should not be: filed to docs/ideas.md this run with
+    # the string, because the threshold that fixes it also refuses
+    # "Google DeepMind, London" and that trade is the owner's to make.
+    people = ('<span class="ltx_role_affiliation">Devendra Singh Chaplot, '
+              'Diego de las Casas, Florian Bressand</span>')
+    conn = drive(monkeypatch, PAPERS[:1],
+                 [paper_reply(claims=[CLAIM])],
+                 reader=_WholePaper(40_000, header=people))
+    assert conn.institution_writes == {}, "neither source had an answer"
+    out = capsys.readouterr().out
+    assert "refused:" in out and "Devendra" in out

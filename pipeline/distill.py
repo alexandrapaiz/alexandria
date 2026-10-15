@@ -282,6 +282,12 @@ image = (
     # skill seat writes (ADR-35).
     .add_local_file("tools/read_paper.py", "/root/read_paper.py")
     .add_local_file("pipeline/reading_queue.py", "/root/reading_queue.py")
+    # The institution parser, shared with pipeline/backfill_institutions.py.
+    # Added 2026-10-15: this job fetches the markup the affiliations live in
+    # and then cleaned them out of the payload before asking a model for them,
+    # which is why the field is empty on 99.2% of rows. One file, so a pattern
+    # added for a paper the backfill refused is one the live insert gains too.
+    .add_local_file("pipeline/institutions.py", "/root/institutions.py")
     # The queue's CONTENT is baked at deploy time, which is the one thing to
     # know about it: a line appended today reaches the cron on the next
     # `modal deploy`. A manual `modal run` sends the working copy instead, so
@@ -387,6 +393,11 @@ def read_paper():
 def runtime_guard():
     """pipeline/runtime_sha.py — the deploy's own fingerprint, written per run."""
     return _sibling("runtime_sha")
+
+
+def institutions():
+    """pipeline/institutions.py — the paper's own answer to who did the work."""
+    return _sibling("institutions")
 
 
 def reading_queue():
@@ -504,17 +515,41 @@ def has_evidence_grade(conn) -> bool:
     ).fetchone() is not None
 
 
-def fetch_fulltext(paper_id: str) -> str | None:
-    """arXiv's HTML full text, cut to FULLTEXT_CHARS, or None for the abstract.
+def fetch_paper(paper_id: str) -> dict | None:
+    """One arXiv fetch: the text cut to FULLTEXT_CHARS, and the raw markup.
 
-    The fetching and the cleaning live in `tools/read_paper.py` now, so that
-    the job and the seats read a paper the same way and there is one place to
-    fix when arXiv changes. What stays here is the only part that is distill's
+        {"text": <str or None>, "html": <str>}   or None for no page at all
+
+    The fetching and the cleaning live in `tools/read_paper.py`, so that the
+    job and the seats read a paper the same way and there is one place to fix
+    when arXiv changes. What stays here is the only part that is distill's
     own: the cut to FULLTEXT_CHARS, which is a provider limit and not a fact
-    about the paper. A seat running `python3 tools/read_paper.py <id>` gets the
-    whole thing.
+    about the paper. A seat running `python3 tools/read_paper.py <id>` gets
+    the whole thing.
+
+    `html` is the half this job used to throw away, and throwing it away is
+    what emptied `papers.institutions`: the affiliations are printed in the
+    header, in markup, and `clean_html` deletes every tag. `text` is None, with
+    `html` still set, for a page too thin to read — the affiliations can still
+    be parsed out of it, and the claims then come from the abstract.
     """
-    return read_paper().fetch_fulltext(paper_id, max_chars=FULLTEXT_CHARS)
+    return read_paper().fetch_paper(paper_id, max_chars=FULLTEXT_CHARS)
+
+
+def parse_institutions(header_html: str | None
+                       ) -> tuple[list[str], list[str], str]:
+    """(institutions, refusals, which pattern answered) from a paper's markup.
+
+    `pipeline/institutions.py` does the reading; this is the one line that
+    decides what "no markup" means, so the drain below has no branch for it.
+    A paper arXiv serves no HTML for is the common case before roughly 2024
+    and is not an error, and `no-html` is the pattern name it reports, which
+    is distinguishable in a log from `nothing`, meaning there was a header and
+    it named no institution.
+    """
+    if not header_html:
+        return [], [], "no-html"
+    return institutions().institutions_from_html(header_html)
 
 
 def extract_claims(title: str, body: str, kind: str = "paper", *, env,
@@ -602,6 +637,17 @@ REHEARSAL_SAMPLE = (REHEARSAL_PROSE * 2 + REHEARSAL_TABLE
                     + REHEARSAL_MATH * 2)
 
 REHEARSAL_TITLE = "A two-stage procedure for distilling reward models into policies"
+
+#: A paper header in the shape LaTeXML renders, for the rehearsal's parser
+#: check. Not a real paper's: a fixture that names a real lab would make the
+#: gate's own output ambiguous, and `tests/` is where the parser is measured
+#: against the twelve real arXiv pages under tests/fixtures/arxiv-html/.
+REHEARSAL_HEADER = (
+    '<html><div class="ltx_authors">'
+    '<span class="ltx_personname">A N Author</span>'
+    '<span class="ltx_role_affiliation">Example Lab</span>'
+    '</div><div class="ltx_abstract">An abstract.</div></html>'
+)
 
 
 @app.function(
@@ -792,13 +838,29 @@ def rehearse(allow_abstract_only: bool = False) -> str:
     # well, and the first field report of the next run is where that shows.
     practices, practices_sha = load_prompt("practices")
     taxonomy = topics()
+    # The institution parser, loaded and RUN, against markup carried here
+    # rather than fetched. Same reason the practices prompt is loaded above: a
+    # deploy whose image is missing `pipeline/institutions.py` would fail at
+    # the import, one paper at a time, after the model has already been paid
+    # for the call. Running it rather than importing it costs nothing and is
+    # the stronger statement, because an extractor that is present and
+    # answers nothing fills the field exactly as well as one that is absent.
+    parsed, _refused, pattern = parse_institutions(REHEARSAL_HEADER)
+    if parsed != ["Example Lab"]:
+        raise RuntimeError(
+            f"the institution parser in this image read {parsed!r} from a "
+            f"header it should read ['Example Lab'] from (pattern: {pattern}). "
+            "pipeline/institutions.py is what distill writes papers."
+            "institutions from, and the model's answer is only its fallback, "
+            "so a broken parser here empties the field the digest attributes "
+            "every issue with. Nothing was deployed.")
     cap = client.Cap(CAP_USD, label="distill rehearsal")
     available, notes = client.usable_models(MODELS, os.environ)
     for note in notes:
         print(f"  {note}")
 
     # The worst case by construction: exactly what the daily run sends when
-    # fetch_fulltext succeeds, which is the request that must fit. Its density
+    # fetch_paper succeeds, which is the request that must fit. Its density
     # is slightly worse than the worst real paper measured, so a provider that
     # accepts this accepts them.
     body = (REHEARSAL_SAMPLE * (FULLTEXT_CHARS // len(REHEARSAL_SAMPLE) + 1))[:FULLTEXT_CHARS]
@@ -808,6 +870,7 @@ def rehearse(allow_abstract_only: bool = False) -> str:
           f"payload: {len(body)} chars (FULLTEXT_CHARS)")
     print(f"  practices prompt loaded, not called: {practices_sha} "
           f"({len(practices)} chars)")
+    print(f"  institution parser loaded and run: {parsed} ({pattern})")
 
     read_in_full = True
     started = time.monotonic()
@@ -1234,7 +1297,12 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
             # here existed because Groq could not afford more than fifteen, and
             # the owner's directive of 2026-09-29 is explicit that full text is
             # the default and the abstract is the documented fallback.
-            body = fetch_fulltext(pid)
+            got = fetch_paper(pid)
+            body = got["text"] if got else None
+            # The markup, kept for the parse below. A page too thin to read
+            # still has a header, so this is set on papers whose claims come
+            # from the abstract.
+            header_html = got["html"] if got else None
             whole = None
             if body is not None:
                 # Strictly less than, so a paper that is exactly the window
@@ -1298,7 +1366,28 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
             # and it is also the only signal that says a feed is being routed
             # here when it should be discarded at triage, so it is printed.
             skipped_why = _text_or_none(out.get("skipped")) if not claims else None
-            institutions = [i for i in (out.get("institutions") or []) if i][:3]
+            # The paper's own header first, the model's answer second. The
+            # order is the whole point and it is not a preference: an
+            # affiliation is printed in the paper, so it has one correct
+            # answer, and a parser cannot invent a lab while a model can. The
+            # field was empty on 99.2% of rows up to 2026-10-15 because this
+            # job asked only the model, from a payload it had already stripped
+            # every tag out of, so the instruction "from the author
+            # affiliations in the header" was addressed to text with no header
+            # left in it.
+            institutions, refused, pattern = parse_institutions(header_html)
+            if institutions:
+                print(f"  institutions ({pattern}): {institutions}")
+            else:
+                institutions = [i for i in (out.get("institutions") or []) if i][:3]
+                if institutions:
+                    print(f"  institutions (the model, {pattern} found "
+                          f"nothing): {institutions}")
+            # Printed whether or not the parse answered, because the refusals
+            # are how the filter stays reviewable by reading its output rather
+            # than its code, which is the rule the backfill's dry run follows.
+            for line in refused[:3]:
+                print(f"    refused: {line}")
             if institutions:
                 conn.execute(
                     "update papers set institutions = %s where id = %s",
