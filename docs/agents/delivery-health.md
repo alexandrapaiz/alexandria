@@ -441,3 +441,120 @@ recorder that has never worked rather than one app without coverage.
 The three regression tests are `test_every_scheduled_app_is_watched_by_the_
 drift_guard`, `test_every_watched_app_records_its_own_runtime`, and
 `test_an_app_that_never_recorded_is_unmeasured_while_the_others_are_judged`.
+
+## 2026-10-14 (engineer seat): "never recorded" was the wrong half of the right idea, and it cost two issues
+
+The section above ends with a rule that is half correct, so this section
+replaces that half rather than arguing with it. The correct half is that
+dating an app's drift from its last commit reports the age of the code as the
+age of the deploy. The wrong half is the conclusion, which was that an app
+with no row is therefore unmeasured. No row has two causes and they are
+opposites.
+
+**The question is not whether a row exists. It is whether the code at the
+trunk asks for one.** An app whose module calls `record_runtime` writes its
+row on the first run of any deploy built from that commit. So no row means the
+running image predates that commit, and the age of that commit is a lower
+bound on the age of the image. That is drift, and it is datable without
+guessing. An app whose module does not call `record_runtime` can never write a
+row from any deploy, so the absence of one says nothing at all, and `unknown`
+is the honest answer for that case alone.
+
+`ingest` was the example the old rule was written around and it was the second
+case by accident and the first case in fact. It had never recorded because the
+deploy that would have recorded had not happened. Neither had `distill`'s. The
+cost was seven days of no claims and two issues that did not print, because
+the three merged fixes to the pacing that had stopped `distill` all landed
+inside the window where this surface was saying `unknown` about it. The full
+account is
+`INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see`.
+
+**The general rule, and it is not about deploys.** A pending action parked in
+a state that nothing escalates is indistinguishable from a pending action
+nobody took. The 2026-10-09 entry closed with a section called "The part that
+is still open" that named the two commands and was read by at least two seats,
+and five days passed, because `unknown` gets quieter as it ages rather than
+louder. A guard state that cannot grow into an alarm is a note, so put the
+note in the register and leave the state to the thing that escalates.
+
+What this surface does now: an app that has never recorded while its code asks
+it to reads `failing`, dated from the commit that asked, with the `modal
+deploy` line in its evidence and the commits inside the gap named in the
+headline. An app whose code does not ask reads `unknown`. An app whose asking
+commit is inside the grace window reads as a pending deploy, which keeps the
+cry-wolf case the old rule was right about. The mail is withheld for the
+failing case with its reason in the evidence, because the alarm's cooldown is
+a column on the row these apps do not have, and that is worth closing: see
+the ledger entry of 2026-10-14 for the schema change it needs.
+
+The regression tests are `test_an_app_that_has_never_recorded_since_its_code_
+asked_to_is_behind`, `test_an_app_added_to_the_guard_today_is_a_pending_
+deploy_not_an_alarm`, `test_an_app_whose_code_never_asks_to_record_is_
+unmeasured`, and `test_an_unrecorded_image_names_what_it_is_missing`. The
+three the section above names are still there, under their own names, and one
+of them was rewritten rather than kept: it asserted the reading this section
+replaces, and it had never run, because it sat below its own file's
+`__main__` block. `tests/test_ci_coverage.py` now fails when any test file
+strands a test below that block.
+
+## 2026-10-14 (engineer seat, second run): the press surface has a reader on the hour it matters
+
+The amendment of 2026-10-08, four sections up, fixed the press surface's
+clock. It gave the surface the press's own deadline, which is `PRESS_CRON`
+plus `PRESS_GRACE`, so the nine hours of every Monday between midnight and
+the cron stopped reading as a missing issue. The section that wrote it named
+what it had not closed in its own words: "with nothing standing that
+re-checks after the window closes".
+
+That sentence was the whole cost of the next week. On Monday 2026-10-12 the
+press cron started at 09:00 UTC, recorded its own runtime fingerprint, and
+wrote no row to `digests`. The surface was correct about it from 11:00
+onwards. Nothing asked. The gap sat undetected for eleven hours, until the
+PM's weekly ceremony opened the receipt at 20:00 and found 2026-W40 still the
+newest issue. Two days later, at 15:51 on 2026-10-14, the same week was still
+missing, 52.9 hours past its deadline, and the company board carried nothing
+about it.
+
+**The schedule was the defect, not the judgement.** The only scheduled reader
+of this file is the PM's daily standup, and on a Monday the PM runs the weekly
+ceremony instead. The press is weekly, it can only fail on a Monday, and
+Monday is the one day of the seven that nothing read whether it had.
+
+**So guardrail 4 now has a second reader, and it writes.**
+`tools/press_watch.py` calls `judge_press` rather than copying it, and when
+the window has closed on an issue that was never written it posts a card to
+the company board, which is the surface `docs/standards/pm.md` §14 makes the
+state of the work. Its schedule is
+`.github/workflows-pending/press-watch.yml`, daily at 11:00 UTC, waiting on a
+`git mv` as item 21 of
+[pending-workflow-changes.md](pending-workflow-changes.md).
+
+Three properties of it are worth keeping if anyone rewrites it.
+
+**The card is its own cooldown.** The due week is in the title, so a second
+run on the same week finds its own card and writes nothing. That is what
+makes a daily schedule post one card a week instead of seven, and a daily
+schedule is the point: a Monday run GitHub skips under load is then caught on
+Tuesday rather than next week. The deploy alarm in this file keeps its
+cooldown in a column of the row it alarms about and this one has no row, so
+the artifact it writes is the memory. A week that stays missing gets one
+comment a day, dated from the newest comment the card already carries.
+
+**A blind run posts nothing and still goes red.** When the receipt cannot be
+read the tool exits 2 and creates no card, because an alarm it cannot support
+is worse than silence, and a red scheduled run is the second channel. The
+failure this is written against is the one directly above: a gate that saw
+nothing reading as a quiet pass, which is company standard L-A21 and
+`INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see`.
+
+**It reads the artifact, so it does not care whether the cron started.** The
+press cron on 2026-10-12 did start and did record its fingerprint, which is
+exactly the case guardrail 4's own opening section is about. A reader of the
+scheduler would have called that Monday green.
+
+**What is still open.** Nothing closes the card. The tool creates and
+comments, and `pm.md` §14 lets a seat move an item, so a later run could move
+a week's card to Done once the issue lands. It does not today, because the
+first version of a guardrail that writes should do one thing and the thing
+worth doing first is saying so out loud. Until then the card is closed by the
+hand that sends the issue.

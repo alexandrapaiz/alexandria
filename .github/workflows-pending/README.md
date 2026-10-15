@@ -418,3 +418,41 @@ confirmed red before filing: adding a `push:` trigger, pasting a
 list.
 
     git mv .github/workflows-pending/modal-deploy.yml .github/workflows/
+
+## press-watch.yml — a NEW workflow, filed 2026-10-14
+
+Sprint 2026-10-12 item 5, and item 21 of
+`../../docs/agents/pending-workflow-changes.md`.
+
+    git mv .github/workflows-pending/press-watch.yml .github/workflows/
+
+**The press can only fail on a Monday, and Monday is the one day nothing
+reads whether it did.** On 2026-10-12 the 09:00 UTC press cron started,
+recorded its own runtime fingerprint, and wrote no row to `digests`. Eleven
+hours later the PM's weekly ceremony opened the delivery receipt and found
+the week before still the newest issue. Two days after that the week was
+still missing and the board still said nothing.
+
+The judgement was never the defect. `tools/delivery_health.py` already knows
+the press's deadline and already refuses to call a missing issue a fault
+before the grace window closes. The defect is that its only scheduled reader
+is the PM's daily standup, which on a Monday runs the ceremony instead.
+
+This workflow is that reader. It runs `tools/press_watch.py`, which calls
+`delivery_health.judge_press` rather than copying it, and posts the finding to
+the company board. One card a week, deduped on the due week in its own title.
+
+**Daily, not Monday-only.** The dedupe is what buys that, and a Monday run
+GitHub skips under load is what needs it. Seven runs in a week post one card.
+
+**No `pull_request` trigger, which breaks this directory's usual rule.** The
+README above says a guard scoped to pull requests is not a guard here, and
+that is true of a guard that reads. This one writes to the board, so firing
+from a branch would post a card about a week that may already be closed.
+`tests/test_press_watch.py` is what runs on a pull request instead, and six of
+its tests read this file: the cron against `PRESS_CRON` plus `PRESS_GRACE`, the
+absence of a branch trigger, the secrets, and that no `pip install` crept in.
+
+**What it needs:** `BOARD_API_URL` and `BOARD_RUNTIME_TOKEN`, the pair already
+set in twelve seat workflows. Nothing else, and no dependency install, because
+the tool is standard library only.

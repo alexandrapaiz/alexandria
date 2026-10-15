@@ -207,6 +207,13 @@ UNCOVERED = {
     # cost money rather than a red run.
     "tests/polar.test.mjs",
     "tests/test_polar.py",
+    # Added 2026-10-14 with the quiet-send guardrail, and pinned for the same
+    # structural reason as every line above. This one is pointed: the file it
+    # guards is itself a scheduled reader that exists because a correct check
+    # ran at the wrong hour, so a test of it that fires on no pull request is
+    # the same defect one level down. The staged replacement runs it, measured
+    # at `53 of 53`.
+    "tests/test_press_watch.py",
     "tests/delivery.test.mjs",
     "tests/issues.test.mjs",
     "tests/markdown.test.mjs",
@@ -284,6 +291,51 @@ def test_the_uncovered_set_has_not_grown():
         f"{len(shrank)} pinned file(s) now run in CI. That is the good "
         "direction. Delete them from UNCOVERED in tests/test_ci_coverage.py:\n"
         + "\n".join(f"  {name}" for name in shrank)
+    )
+
+
+def test_no_test_file_strands_a_test_below_its_runner():
+    """A test defined under the `__main__` block is a test nothing runs.
+
+    The files here report in two ways. Some assert, and pytest collects them
+    by importing the module, so where in the file they sit does not matter.
+    Several also carry a `main()` that walks `globals()` and an
+    `if __name__ == "__main__"` block, which is how a seat runs one file by
+    hand and how `checks.yml` runs the press guards. That walk happens at the
+    moment the block executes, so a function defined below it does not exist
+    yet and is skipped in silence, and the run still prints "all checks
+    passed".
+
+    Four tests were in that position on 2026-10-14, in `test_deploy_drift.py`
+    and `test_delivery_receipt.py`, both of which are in `UNCOVERED` above and
+    therefore get no run but the direct one. One of the four asserted that an
+    app which has never recorded a runtime is unmeasured rather than behind,
+    which is the reading that kept the drift guard quiet while `distill` ran a
+    five-day-old image and the press printed nothing twice
+    (`INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see`). The gate
+    this file already holds is that a test file no workflow runs is not a
+    test. This is the same sentence one level down: a test the file's own
+    runner cannot reach is not a test either.
+    """
+    import ast
+
+    stranded = {}
+    for path in sorted((ROOT / "tests").glob("test_*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        blocks = [n for n in tree.body
+                  if isinstance(n, ast.If) and "__main__" in ast.dump(n.test)]
+        if not blocks:
+            continue
+        below = sorted(n.name for n in tree.body
+                       if isinstance(n, ast.FunctionDef)
+                       and n.name.startswith("test_")
+                       and n.lineno > blocks[0].lineno)
+        if below:
+            stranded[path.relative_to(ROOT).as_posix()] = below
+    assert not stranded, (
+        "these tests are defined below their file's `__main__` block, so a "
+        f"direct run of the file never reaches them: {stranded}. Move the "
+        "runner block to the end of the file."
     )
 
 

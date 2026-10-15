@@ -753,21 +753,6 @@ def test_delivery_core_logic():
           proc.stdout[-2000:] + proc.stderr[-2000:])
 
 
-def main() -> int:
-    for name, fn in sorted(globals().items()):
-        if name.startswith("test_") and callable(fn):
-            print(name)
-            fn()
-    print()
-    if FAILURES:
-        print(f"{len(FAILURES)} failed: {', '.join(FAILURES)}")
-        return 1
-    print("every check passed")
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
 def test_the_sibling_stages_split_the_provider_from_this_one_cron():
     """The property version 4 was added for, held across both readers.
 
@@ -871,3 +856,20 @@ def test_the_sibling_stages_split_the_provider_from_this_one_cron():
     check("and the prompt sha in claim_links.method never reaches the evidence",
           healthy.evidence["siblings"]["interpret"]["model"] == "kimi-k2.6",
           str(healthy.evidence["siblings"]))
+
+
+def main() -> int:
+    for name, fn in sorted(globals().items()):
+        if name.startswith("test_") and callable(fn):
+            print(name)
+            fn()
+    print()
+    if FAILURES:
+        print(f"{len(FAILURES)} failed: {', '.join(FAILURES)}")
+        return 1
+    print("every check passed")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
