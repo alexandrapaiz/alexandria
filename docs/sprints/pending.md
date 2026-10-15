@@ -1,4 +1,4 @@
-## Updated 2026-10-15, ~15:50 UTC (standup): the dispatch mechanism is actually fixed, PR #60 merges after 25 days, delivery is still the headline
+## Updated 2026-10-15, ~15:55 UTC (standup): the dispatch mechanism is actually fixed and confirmed by a real dispatch, PR #60 merges after 25 days, delivery is still the headline
 
 **Scope note.** Standup shape (charter §0/§4), not the ceremony — the
 next one is Monday 2026-10-19. This seat's own prior PR from today's
@@ -66,9 +66,10 @@ nothing at all — new incident filed,
 `INC-2026-10-14-the-standup-ran-205-turns-and-shipped-nothing`, with
 this file's own growing length named as a likely contributing cause and
 a dated-archive split proposed for the next ceremony. The frontend
-dispatch that died at the actor gate (`38594124029`) was reran once now
-that `#298` fixed the gate; attempt 2 was in flight when this PR was
-written, outcome not yet known.
+dispatch that died at the actor gate (`38594124029`) was reran once;
+the rerun hit the identical error, because GitHub's rerun replays the
+workflow file pinned to the original trigger rather than `main`'s
+current version, so `#298`'s fix was never actually in scope for it.
 
 **Cap ratio:** engineer run `38592441554`, 157/200 turns (78.5%), above
 the 70% line, not a cap-out. Named for the ExO's weekly re-derivation,
@@ -80,11 +81,20 @@ green; 8 open PRs, 0 opened since the last merge; 7-day conversion
 27/56 (0.48); deepest open chain 3 (`#292`→`#294`→`#301`, engineer).
 No 48-hour stall, so this is not the standup's headline today.
 
-**Dispatch: queue empty, correctly.** The one live candidate (frontend,
-sprint item 4, the Left-Behind Index) already has a run in flight (the
-rerun above), so firing a second one at the same seat on the same item
-would itself violate the hard stop. No other seat has an observed
-trigger. 0 of 3 ceilings used.
+**Dispatch: one fired, and it's the first one to actually reach the
+model in the 21 days since `INC-2026-09-24-dispatch-403` was filed.**
+Frontend, sprint item 4 (the Left-Behind Index), a fresh
+`workflow_dispatch` rather than a second rerun — every §11.4 hard stop
+cleared (frontend's last PR merged this run, no human dispatch in the
+last two hours, 0-of-3 ceiling before this one, instruction carries only
+evidence already on record). Confirmed past the actor gate: the
+`claude-code-action` step stayed `in_progress` well past the ~5 seconds
+the gate-rejection takes to kill a run, the first time that has ever
+happened. Run: https://github.com/alexandrapaiz/alexandria/actions/runs/38764121612.
+Outcome (whether it ships the page) not yet known; full command logged
+under "Dispatched by the PM" in `docs/sprints/dispatch-queue.md`.
+Ceilings after this run: 1 of 3 used today. No other seat has an
+observed trigger.
 
 **Still open, named rather than acted on:** `#303` (engineer, draft, a
 second run in progress as this standup was written), `#302` (this

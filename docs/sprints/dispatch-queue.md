@@ -3,22 +3,26 @@
 Maintained by the PM agent's daily standup (charter §4). Replaced in full
 each run, because it is a queue rather than a log.
 
-## 2026-10-15, standup (~15:50 UTC)
+## 2026-10-15, standup (~15:55 UTC)
 
-**Queue: empty, and that's accurate rather than a dead gate this time.**
-The one live candidate (frontend, sprint-2026-10-12 item 4, the
-Left-Behind Index — carried three sprints, no frontend PR has ever
-attempted it) already has a run in flight: see "Failures" below, its
-failed dispatch from yesterday was rerun this pass once the actor-gate
-fix landed, and firing a second dispatch at a seat with a run already
-live on the same item would violate the hard stop against dispatching a
-seat whose last run is still open. No other seat has an observed
-trigger under `docs/standards/pm.md` §11.3: no new ADR or all-hands
-since the last reconciliation (`docs/decisions.md` still stops at
-ADR-40, `docs/allhands/` still nothing newer than 2026-09-18-close), no
-sprint item owned by research/market/skill/security/writer sits
-unattempted, and no dispatchable seat carries two open PRs on one scope.
-Ceilings: 0 of 3 PM-initiated dispatches used today, 0 fired this run.
+**One dispatch fired this run: frontend, sprint-2026-10-12 item 4, the
+Left-Behind Index.** The rerun of yesterday's failed dispatch
+(`38594124029`, see Failures) turned out not to test anything: GitHub
+reruns replay the workflow file as it existed at the original trigger,
+not the current one on `main`, so it hit the exact same actor-gate error
+a second time even though `#298` had already fixed it. A fresh
+`workflow_dispatch` was the only way to actually exercise the fix, and
+every hard stop in `docs/standards/pm.md` §11.4 cleared: frontend's last
+PR (`#299`) merged this run rather than sitting open, no human dispatch
+in the last two hours, 0-of-3 daily ceiling before this one, and the
+instruction carries only evidence already on record (the sprint item
+verbatim, the board item id, and the PR survey showing no frontend PR
+has ever attempted it). No other seat has an observed trigger: no new
+ADR or all-hands since the last reconciliation (`docs/decisions.md`
+still stops at ADR-40, `docs/allhands/` still nothing newer than
+2026-09-18-close), no sprint item owned by research/market/skill/
+security/writer sits unattempted, and no dispatchable seat carries two
+open PRs on one scope. Ceilings after this run: 1 of 3 used today.
 
 ## Tier B merges this run (`docs/standards/pm.md` §10), four
 
@@ -67,16 +71,17 @@ Ceilings: 0 of 3 PM-initiated dispatches used today, 0 fired this run.
   full each time. No rerun — the trigger was a schedule, not a transient
   fault, and the same context would reproduce the same risk.
 - **Run `38594124029` (frontend-agent, 2026-10-14 15:59:02 UTC) —
-  configuration, already filed, now reran.** This is the dispatch that
+  configuration, already filed, rerun also failed, same cause, not a
+  repeat worth a second incident entry.** This is the dispatch that
   first cleared the 403 and then died at the `claude-code-action`
   actor-gate (`INC-2026-09-24-dispatch-403`'s amended entry). The fix
   (`#298`, above) merged this run, so this run reran it once with
-  `GH_TOKEN="$DEFAULT_WORKFLOW_TOKEN" gh run rerun --failed 38594124029`
-  (the ambient `gh` token is the Claude Code action's own installation
-  token per §11.5, not the job's `actions: write` grant — same fix that
-  unblocks dispatch applies to reruns). Attempt 2 is in flight as of this
-  PR; its outcome is not yet known and will be the first real test of
-  whether the actor gate is actually cleared.
+  `GH_TOKEN="$DEFAULT_WORKFLOW_TOKEN" gh run rerun --failed 38594124029` —
+  attempt 2 hit the identical `Workflow initiated by non-human actor`
+  error, because GitHub's rerun replays the workflow YAML pinned to the
+  original trigger, not `main`'s current version, so the fix was never
+  in scope for it. A fresh dispatch was fired instead; see "Dispatched by
+  the PM" below for the run that actually tests the fix.
 
 ## Run health
 
@@ -127,5 +132,19 @@ design-system calls for the owner, not a standup's to move.
 
 ## Dispatched by the PM
 
-None fired this run (the one live candidate was a rerun of an existing
-failed run, not a new dispatch; see Failures above).
+**2026-10-15, frontend.** Run:
+https://github.com/alexandrapaiz/alexandria/actions/runs/38764121612
+
+```
+GH_TOKEN="$DEFAULT_WORKFLOW_TOKEN" gh workflow run agent-frontend.yml \
+  -f owner_instructions='Sprint-2026-10-12 item 4: ship the Left-Behind Index as a public page over the deprecated_claims view (serves O2 and the sales seats two gated outreach notes). Carried unbuilt across sprint-2026-09-28, sprint-2026-10-05 and sprint-2026-10-12; board item 03029cad-e613-41ea-9295-3e3e15342f22. PR survey: no open frontend PR exists (the last one, #299, merged this run); no frontend PR has ever attempted this item. Decide public-vs-paywalled against vision.md section 4 before writing the route. Build it and open a PR; move the board item to In progress when you start and comment the PR link when you ship. This is a fresh dispatch, not a rerun: the prior attempt (run 38594124029, 2026-10-14) died at a claude-code-action actor-gate that PR #298 just fixed on main; a rerun of that old run failed again because GitHub reruns do not pick up a workflow-file change, so this is a new workflow_dispatch to actually exercise the fix.'
+```
+
+**Confirmed: the actor gate is actually cleared.** The `claude-code-
+action` step started at 15:53:10 UTC and stayed `in_progress` well past
+the few seconds the gate-rejection error takes to surface (it killed
+both the original dispatch and its rerun in under 5 seconds each). This
+is the first dispatch in the 21 days since `INC-2026-09-24-dispatch-403`
+was first filed to actually reach the model. Full outcome (whether it
+ships the Left-Behind Index) is not yet known at the time this PR was
+opened; frontend runs carry a 600-turn cap and typically run long.
