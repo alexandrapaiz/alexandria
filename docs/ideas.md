@@ -15078,3 +15078,81 @@ nobody has to re-derive it:
   what this entry asks for permission to do.
 - Cost: $0. GitHub Actions minutes on a public repository.
 - Status: proposed
+
+### 2026-10-15 — URGENT, carried and now wider: sql_query also reaches every subscriber's unsubscribe token (security seat, run 9)
+- Trigger: this run's audit, `docs/security/audit-2026-10-15.md`. This is not
+  a new finding. It is the 2026-10-01 `urgent` entry above, "sql_query can read
+  `subscribers` and `users`", re-measured after two weeks and found to reach
+  more than it did when it was written. Nothing about `sql_query` changed. The
+  table it can read did.
+- What changed: `subscribers` gained `unsubscribe_token uuid` with a unique
+  index, added since the last sweep and shipped with the unsubscribe path. That
+  column is a bearer capability by design, and `site/lib/unsubscribe-core.js`
+  says so in its own header: the link carries a token rather than an address
+  precisely so that knowing somebody's email grants nothing. The flip side is
+  that holding the token grants everything it was built to grant. A `POST` to
+  `/api/unsubscribe` with a token unsubscribes that row, with no session and no
+  second factor, which is correct for a link in an email and is the whole point.
+- Why that matters here: on 2026-10-01 the exposure behind one compromised MCP
+  token was disclosure, meaning the list's names and addresses. It now also
+  includes a capability, meaning the ability to unsubscribe the entire list in
+  one pass with no account, no password, and nothing in the product's own logs
+  to distinguish it from readers leaving. Disclosure is bad and reversible.
+  Mass unsubscription destroys the asset the company is built on.
+- What has not changed, stated so this is not read as worse than it is:
+  reaching any of it still needs a bearer token on `/mcp`, which still needs
+  the owner's throttled passphrase, and the write boundary is still sound. The
+  severity of the door is the same. What is behind it grew.
+- First step: unchanged and still the cheap one. A Neon role for the MCP server
+  with no `select` on `subscribers` and `users`. It needs no code, no new
+  dependency and no deploy of ours, and it now also closes this. The code
+  alternative in the 2026-10-01 entry is unchanged and still engineer-sized.
+- Cost: $0
+- Status: urgent
+
+### 2026-10-15 — checks.yml filters on a prompt that has never existed (security seat, run 9)
+- Trigger: this run's doc and reference sweep. `prompts/daily.md` is named in
+  both of `.github/workflows/checks.yml`'s path filter lists, in
+  `pipeline/budget.py`'s press table, and in nine documents. It has never
+  existed on any ref in this repository. The pull request that would have
+  created it, #35, closed without merging on 2026-09-24.
+- What: two dead lines in `checks.yml`'s `paths:` blocks. They cost nothing at
+  runtime, which is exactly why they are worth filing rather than fixing in
+  place: a path filter that names a file nobody will ever add is indistinguishable
+  from one that guards something, and the next seat reading that list to work out
+  what trips CI has to check the filesystem to find out which lines are real.
+- Also in the same list and not dead: the filters are narrow, and that narrowness
+  is this sweep's headline finding. `docs/agents/incidents.md` is not in them, so
+  the register guard ran on no pull request and no push for the merge that broke
+  it. The staged replacement in `.github/workflows-pending/checks.yml` drops the
+  path filters entirely and runs the whole suite, so it would have caught that
+  merge. This entry is a second, much smaller argument for the same item 17.
+- First step: the owner or headquarters deletes the two `prompts/daily.md` lines
+  when `checks.yml` is next opened, which is most likely the same edit that
+  applies item 17. `.github/workflows/` is headquarters' surface under standard
+  §15 and no seat's token may write it, so this seat reports rather than fixes.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-15 — six ledger entries carry a status the ledger's own vocabulary rejects (security seat, run 9)
+- Trigger: `python3 tools/check_registers.py` this run, which prints
+  `1 blocking, 6 warning(s)`. The six warnings are all this file, at lines 1777,
+  5152, 5431, 7053, 9869 and 14226, carrying `mostly`, `closed`, `observation`,
+  `observation`, `evidence` and `done` against a vocabulary of `proposed`,
+  `accepted`, `rejected`, `built` and `urgent`.
+- What: the cost is not cosmetic. Any triage that filters this file by status
+  silently skips those six, so an entry marked `evidence` or `observation` is
+  invisible to the sweep that would otherwise pick it up, which is the same
+  failure mode as a register nobody opens.
+- Why this seat did not just fix them: only `done` maps onto the vocabulary
+  without a judgement, as `built`. `mostly`, `closed`, `observation` and
+  `evidence` each need a decision about what the entry's author meant, and
+  making five of those silently inside a security pull request would be this
+  seat rewriting other seats' triage state. This file is also the highest
+  collision surface in the repository, which incident 6 is made of, so a
+  scattered six-line edit across 15,000 lines is the wrong shape for this run.
+- First step: whoever next does a ledger pass maps the six, or the vocabulary
+  grows to admit `observation` and `evidence`, which may be the honest answer
+  given two entries reached for `observation` independently.
+- Cost: $0
+- Status: proposed

@@ -13317,3 +13317,64 @@ half contradicts, so clearing the conflict meant deciding a product
 question rather than resolving text. A branch does not merely go stale. It
 goes wrong, and the longer it stays open the more of its own reasoning it
 loses the right to assert.
+
+## INC-2026-10-15-the-register-gates-fix-sat-in-an-unmerged-pr-while-main-stayed-red (security seat, run 9)
+
+**Filed as a repeat, and the half that is new is the second day.** The debug
+and security charter asks one question that is about the present rather than
+the past, which is whether the guard covering a change is green right now.
+It was not. `python3 -m pytest tests/ -q` on `main` at c1ddd58 is
+`1 failed, 1404 passed`, and the single failure is
+`test_check_registers.py::test_this_repository_has_no_merge_damage_in_its_registers`
+reporting that two entries in this file share the id
+`INC-2026-09-24-dispatch-403`.
+
+**The duplicate itself is already filed and is not what this entry adds.**
+The engineer seat found it on 2026-10-14, wrote
+`INC-2026-10-14-the-register-gate-was-blocking-on-main-and-nothing-ran-it-before-the-merge`
+for the pre-merge half, and fixed it in commit 98d670b by dating the newer
+entry and recording the old id inside it, which is what the numbering rule at
+the top of this file asks for. That work is correct and this seat did not
+redo it.
+
+**What is new is where that fix is.** It is not on `main`. Commit 98d670b
+lives on `engineer/2026-10-14-quiet-send-guardrail`, whose pull request #294
+was closed as superseded, and it was carried forward to
+`engineer/2026-10-15-undeployed-pipeline`, which is open as #301. So the
+breakage merged and the fix did not. The duplicate landed on `main` at
+16:13 on 2026-10-14 by way of #295, and it was still there 25 hours later
+when this run measured it. For that whole period the repository's own
+answer to "are the registers intact" was no, the incident entry recording
+that was also unmerged and therefore unreadable by anyone working from
+`main`, and every seat that read `main` saw a clean register and a red suite
+with no explanation in the register.
+
+**Why this is a repeat and not a new class.**
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it` is the same shape, and
+the clause it added to `docs/agents/runtime-changes.md` is the clause that
+caught this. That clause says a `failure` is a finding before you have read a
+single commit, and it says the auditor owns reporting it even when fixing it
+belongs to another seat. It does not say what to do when the fix already
+exists and is waiting on a merge, which is this case and is the gap worth
+naming. A fix in an open pull request protects nobody. Measured against the
+state of `main`, an unmerged fix and no fix are the same fix.
+
+**This seat deliberately did not fix it a second time.** Renaming the heading
+here would put the same rename in two branches at one anchor, which is
+incident 6 exactly, and #301 also inserts 71 lines immediately below that
+heading. So the correct action was to leave the rename to #301, report the red
+state, and append this entry at the end of the file where it cannot collide.
+The owner's action is to merge #301, after which the suite goes green with no
+further edit. This entry costs nothing if that merge happens today and is the
+only record of the window if it does not.
+
+**One smaller thing found in the same place and fixed nowhere.** The entry at
+the centre of all this quotes six and five literal characters of two live
+GitHub App installation tokens, as evidence that two environment variables held
+different values. Those tokens expired with the run that held them, so nothing
+needs rotating and the fragments are far too short to be material. It is
+recorded because the practice is the thing to correct rather than the string:
+"two different values, confirmed by direct comparison" carries the entire
+finding, and a public register is not the place to paste any part of a
+credential. Not edited here for the collision reason above. The owner or the
+engineer can drop the two fragments whenever #301 lands.
