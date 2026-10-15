@@ -13066,3 +13066,114 @@ that the PM might ever dispatch needs `allowed_bots: '*'` (or
 half of this fix is dead code that only ever produces this second error.
 No rerun; the same actor fails the same way every time until the
 workflow changes.
+
+## INC-2026-09-20-the-arxiv-406-is-rate-limiting-wearing-the-wrong-status-code — the same 406 diagnosed three times and never once retried (observed 2026-09-20, filed 2026-10-14, engineer seat)
+
+Recorded under the standing rule: this failure has now happened three
+times and each time it was patched with a different theory of its cause.
+
+**What happened.** `tools/check_issue_citations.py` is the accuracy half
+of the pre-send quality tier: it is the only thing that checks a cited
+title against the paper its link resolves to. Run against 2026-W37 this
+morning it died on `HTTP Error 406: Not Acceptable` and exited 1.
+
+The file already carried two comments about 406s, both written by earlier
+runs that hit the same error and guessed at a header:
+
+- "the commas in id_list must stay literal; arxiv answers 406 to %2C"
+- "arxiv answers 406 to urllib's default Accept header"
+
+This run started on a third guess, that arXiv had begun refusing
+`Accept: application/atom+xml`, and the evidence looked good: curl
+returned 200 to nine consecutive requests while urllib returned 406 to
+all of them. Then the same test, run twice more, returned 200 to every
+urllib variant including the ones that had just failed, and 406 to a
+single-id request that had succeeded a minute earlier. The 406 is
+time-varying. It is rate limiting wearing the wrong status code, and no
+header change ever fixed it. Two of the three comments in that file are
+probably wrong for the same reason.
+
+**Why it kept happening.** Each encounter was a one-off run under time
+pressure, and a header change that is followed by a success looks like a
+fix. Nothing in the tool distinguished "this request is malformed" from
+"this service is refusing me right now", so every failure presented as
+the former. The 406 status is a real contributor here: a 429 would have
+been diagnosed correctly in thirty seconds by all three runs.
+
+**The fix.** Retry with backoff (15s, 45s, 120s) on 406, 429 and 5xx,
+with the reasoning written where the next person will read it. Afterwards
+the checker ran clean against 2026-W37: 9 citations checked, 0 failed. It
+runs once a day, so three and a half minutes of patience costs nothing.
+
+**What the org should take from it.** A retry is the first response to an
+intermittent external failure, not the third. Before changing a request
+to fix an error, run the unchanged request again. This tool is not the
+only one that talks to a free API on someone else's terms:
+`pipeline/weekly.py`'s citation slow loop calls Semantic Scholar and
+`pipeline/ingest.py` calls arXiv, and both should be read against this
+entry the next time either misbehaves.
+
+**Filed late, and the delay is part of the record.** This entry was
+written on 2026-09-20 on the branch that carries the fix, and that branch
+stayed open for twenty-four days, so the register never held it. It is
+being filed now by the run that cleared the branch's conflict. An
+incident that exists only on an unmerged branch is an incident the org
+does not have, which is the same lesson L-E10 teaches about code: `main`
+is the one place where work that is built but unmerged is invisible.
+
+**It also arrived carrying the wrong id.** The original took the number
+23, with a note reasoning about which sequential number was free. Main
+issued 23 to a different event five days later, and the collision was
+invisible until this merge. That is incident 29's class and it is
+recorded again today as
+`INC-2026-10-14-an-open-branch-held-two-ids-main-had-since-issued`.
+
+## INC-2026-10-14-an-open-branch-held-two-ids-main-had-since-issued — the sequential allocator collides across time, and only a merge conflict reveals it (2026-10-14, engineer seat)
+
+Recorded under the standing rule. This is incident 29's class, which is a
+sequential id allocated on a branch by a run that cannot see the whole
+register, and it has now happened again with a detail incident 29 does not
+cover: the collision was latent for twenty-four days.
+
+**What happened.** The pre-send quality gate's branch was opened on
+2026-09-20 and stayed open. On it, two ids were allocated by reading the
+highest number then visible: incident 23, for the arXiv 406 entry, and
+ADR-28, named in `pipeline/weekly.py`'s docstring for the gate itself. In
+the twenty-four days that followed, main issued incident 23 to the Kimi
+routing rollout and ADR-28 to the writer seat. Neither collision was
+detectable from the branch, because both numbers were free when they were
+taken and nothing on the branch changes when main issues one.
+
+**Why the existing fix did not catch it.** Incident 29's remedy is the
+date-scoped id, `INC-YYYY-MM-DD-slug`, and it works: a date-scoped id
+cannot collide. What it does not do is reach a branch that was written
+before the remedy, or an ADR, which still carries a sequential number by
+its own convention. So the remedy holds for new entries written by runs
+that have read the rule, and the exposure is every long-open branch that
+predates it plus every ADR number ever reserved on a branch.
+
+**The repair in this run.** The 406 entry is filed under
+`INC-2026-09-20-the-arxiv-406-is-rate-limiting-wearing-the-wrong-status-code`,
+with its observation date kept and its filing date named. The docstring's
+ADR-28 reference is now a reference to the decision that actually carded
+this work, which is the writer seat's ADR-28, and that is the right
+citation rather than a repaired wrong one: ADR-28 is where the owner
+deferred the pre-send gate and carded it to this seat.
+
+**What the org should take from it.** A merge conflict in a register file
+is not only a text conflict. It is the only detector the org has for an id
+that two branches both believe they own, and resolving one by taking
+either side wholesale destroys the evidence. `.github/workflows-pending/`
+holds an `adr-numbers.yml` that would catch the ADR half on a pull
+request. It is one of the staged workflows no seat can apply, which is the
+sixth day this register has recorded a staged fix nobody holds the
+permission to install.
+
+**Second finding from the same cause, recorded here rather than
+separately.** The branch was 1,239 commits behind main when it was
+reopened. In that time the press was rebuilt around a weekly-only cadence
+on a different provider, which is the exact assumption the branch's other
+half contradicts, so clearing the conflict meant deciding a product
+question rather than resolving text. A branch does not merely go stale. It
+goes wrong, and the longer it stays open the more of its own reasoning it
+loses the right to assert.
