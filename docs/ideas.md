@@ -34,6 +34,14 @@ defines. Statuses below are untouched; only the owner moves them.
   regardless on the owner minting a PR-merge-scoped token
   (docs/sprints/pending.md item 7). (1) and (2) do not need that token
   and can ship independently of it.
+- Groomed 2026-10-12 (PM, Monday ceremony): pieces (1) and (2) read as
+  built against the tree — `tools/panel_provenance.py`,
+  `tools/panel_adversary.py`, and `tools/panel_validator.py` all exist
+  and run in the maintenance job. Named here for the owner or the
+  building seat to confirm and flip; this seat does not set `built`
+  itself. Piece (3), the unanimous-merge automation, is still the only
+  genuinely open part, still blocked on the PR-merge-scoped token
+  (pending.md, now 25+ days overdue).
 
 ### 2026-09-17 — Institution backfill, then regenerate and resend digest
 - Trigger: known gap; scratchpad script `backfill_institutions.py` exists
@@ -42,6 +50,13 @@ defines. Statuses below are untouched; only the owner moves them.
 - First step: run the backfill inside the daily budget window
 - Cost: $0
 - Status: accepted
+- Groomed 2026-10-12 (PM, Monday ceremony): the oldest unresolved accepted
+  entry in the ledger, 25 days. No `backfill_institutions.py` exists
+  anywhere in the tree (only `backfill_topics.py`, `backfill_grades.py`),
+  and the 2026-09-19 finding that 99.2% of papers show empty
+  `institutions` (line ~1831) is unchanged as of this ceremony. Ranked
+  #1 by leverage against the accepted backlog below; day-sized as
+  written, no split needed. Pulled into sprint-2026-10-12 as item 4.
 
 ### 2026-09-17 — Member site auth and deploy
 - Trigger: Sprint 2 plan in vision.md
@@ -58,6 +73,10 @@ defines. Statuses below are untouched; only the owner moves them.
   stand as written. This week's sprint (docs/sprints/sprint-2026-09-21.md)
   carries the first two engineer items that redesign this entry's gate
   before the rest of it is built.
+- Groomed 2026-10-12 (PM, Monday ceremony): reads as built against the
+  tree — `@clerk/nextjs` is a live site dependency, `site/middleware.js`,
+  `site/vercel.json`, and the sign-in/sign-up routes all exist. Named
+  for the owner or the building seat to confirm and flip to `built`.
 
 ### 2026-09-17 — Skill-extract prompt
 - Trigger: gold layer needs its authoring prompt
@@ -79,6 +98,10 @@ defines. Statuses below are untouched; only the owner moves them.
   frontmatter for the provenance reviewer to check against the database.
   Inline numeric ids would make the prose unreadable without making it any
   more checkable, since the reviewer needs the stable id either way.
+- Groomed 2026-10-12 (PM, Monday ceremony): reads as built — the file
+  exists and is cited throughout later skill-seat ledger entries as the
+  live extraction method. Named for the owner or the building seat to
+  confirm and flip to `built`.
 - Done this run (skill agent, 2026-09-18, PR skill/2026-09-18-b-self-improving-post-training-loops):
   the "first step" above is now done. `prompts/skill-extract.md` itself is
   still only on the still-open PR #12 branch
@@ -339,6 +362,12 @@ below.
   a home-page card
 - Cost: $0
 - Status: accepted
+- Groomed 2026-10-12 (PM, Monday ceremony): same accepted idea as "The
+  Left-Behind Index as a public page" below (both 2026-09-18); not
+  built under either name. No `left-behind`/`leftbehind` route exists
+  under `site/app` as of this ceremony. Ranked #2 by leverage, right
+  behind the institution backfill, because it gates drafted
+  sales-outreach notes. Treat as one item, satisfied once either ships.
 - Groomed 2026-09-18 (PM, closing all-hands triage): accepted. Sales'
   redispatched plan (PR #22, merged) independently proposes a
   "Left-Behind Index" public page (see that entry under "Sales agent
@@ -977,6 +1006,12 @@ build.
   (edges have stopped forming at all since 2026-09-12, a supply
   problem the graph-quality audit would just measure more precisely),
   so carried rather than scheduled this sprint.
+- Groomed 2026-10-12 (PM, Monday ceremony): first step shipped
+  2026-09-29 as "Slice 1" — `docs/product/graph-quality.md`,
+  `tools/graph_audit.py`, `tests/test_graph_audit.py` all exist. The
+  rest of the upgrade (slices 2+) is legitimately still open and stays
+  `accepted`, correctly scoped by the prior grooming note; no further
+  split needed now that slice 1 is done.
 
 ### 2026-09-18 — Digest issue permalinks with real share meta tags (sales agent)
 - Trigger: building the launch campaign (docs/sales/, ADR-24) surfaced
@@ -997,6 +1032,13 @@ build.
   than a separate sprint item.
 - Cost: $0
 - Status: proposed
+- Groomed 2026-10-12 (PM, Monday ceremony): the stated precondition has
+  resolved — the archive now renders real content
+  (`site/lib/issues-live.js`, live Neon query, confirmed against two
+  issues in `/library`) — so this is unblocked and ready for a verdict
+  on its own terms rather than "once the archive renders," which already
+  happened.
+
 ### 2026-09-18 — Corpus expansion scoping spike (Q4) and Q1 objective
 - Trigger: owner's directive to cover everything related to building in
   the AI age, adopted with the three seats' guardrails (all-hands
@@ -1012,6 +1054,14 @@ build.
 - First step: the evidence_grade migration and one blog feed, engineer
 - Cost: $0
 - Status: accepted
+- Groomed 2026-10-12 (PM, Monday ceremony): first step built — the
+  `evidence_grade` column exists and is in active use
+  (`pipeline/backfill_grades.py`), and the engineering-blog feeds are in
+  `sources.yaml`, well beyond the five named (cloudflare-engineering,
+  stanford-sail, mit-news-ai, mit-csail, simonwillison, interconnects,
+  raschka, langchain, lilianweng among others). Correctly split already
+  (Q4 spike vs. Q1 2027 objective); the Q1 full expansion stays
+  `accepted` as legitimately future work.
 
 ### 2026-09-18 — A public, read-only, cited claims endpoint (sales agent)
 - Trigger: the GEO plan (docs/sales/geo-plan.md, Game 2) and the board's
@@ -1117,6 +1167,11 @@ build.
   is a five-line diff either way.
 - Cost: $0
 - Status: proposed
+- Groomed 2026-10-12 (PM, Monday ceremony): reads as resolved by
+  default — `site/app/pricing/page.jsx` still reads "Full access" as of
+  this ceremony, weeks after this run's own rename, with no reversal
+  requested. Worth a one-line verdict confirming the choice rather than
+  leaving it open on a question nobody is still asking.
 
 ### 2026-09-18 — The digest's own text says "ingested" where the site now says "read" (frontend agent)
 - Trigger: the home page's metric line was changed this run from "papers
@@ -1145,6 +1200,10 @@ build.
   says needs a ledger proposal first, and Neon's HTTP query path is not a
   documented public endpoint, so writing a fetch against it would be a
   guess this run could not verify.
+- Groomed 2026-10-12 (PM, Monday ceremony): reads as built —
+  `site/lib/metrics.js` exists with exactly the two-wiring design this
+  entry proposed. Named for the owner or the building seat to confirm
+  and flip to `built`.
 - What: decide between two wirings, both $0. Either the site gains a Neon
   client and reads `DATABASE_URL` at revalidate time, or the pipeline
   publishes the number it already computes and the site reads that. The
@@ -1213,6 +1272,10 @@ build.
   regression gate not existing yet is a reason to record the before/after
   bundle carefully, per this entry's own first step, not a reason to
   leave a known, cheap, one-clause fix red through launch.
+- Groomed 2026-10-12 (PM, Monday ceremony): reads as built — the live
+  `description:` field in `skills/harness-engineering/SKILL.md` now
+  carries almost verbatim the suggested replacement clause. Named for
+  the owner or the building seat to confirm and flip to `built`.
 
 ### 2026-09-18 — trigger_reliability is now computable, and option (b) is the one to build (skill agent)
 - Trigger: the verification-badge schema entry filed earlier on
@@ -1474,6 +1537,13 @@ owning seat rather than assumed. Arguments in docs/sales/.
   treat the other entry as satisfied rather than build both. Greenlit as
   a product/backlog call within PM authority (all-hands decision 4), not
   money, a secret, or purpose, per the owner's dispatch for this triage.
+- Groomed 2026-10-12 (PM, Monday ceremony): still not built under
+  either name. No `left-behind`/`leftbehind` route exists under
+  `site/app` as of this ceremony (routes present: api, desk, graph,
+  library, mission, pricing, privacy, routines, sign-in, sign-up,
+  skills, terms, unsubscribe). Ranked #2 by leverage in this week's
+  accepted-backlog order, right behind the institution backfill.
+  Pulled into sprint-2026-10-12 as item 5.
 
 ### 2026-09-18 — The Receipt Standard: publish the provenance spec plus a conformance linter
 - Trigger: 69% of 216 audited public Claude Code skills won't reliably
@@ -1676,6 +1746,18 @@ owning seat rather than assumed. Arguments in docs/sales/.
   one covers `add_masthead`.
 - Whose call: the owner's on the words, the engineer's on the code.
 - Status: proposed
+- Groomed 2026-10-12 (PM, Monday ceremony): this is the first of six
+  filings on the masthead (2026-09-19, -20, -24, -27, -30, -10-03), each
+  superseding the last one's diagnosis without a cross-reference, so a
+  reader hits all six independently. Verified directly against
+  `pipeline/weekly.py`: the text itself was rewritten on 2026-09-26
+  (citing "Canon law 15"), so the original defect this entry names is
+  fixed in code. What the later filings (09-27 onward) actually track is
+  a regression-test gap, not the original text — nothing tripwires the
+  masthead against drifting again. One ruling ("add the tripwire test,
+  close the thread") would close all six rather than inviting a seventh
+  filing; flagged in this week's PR description under "Awaiting your
+  verdict."
 
 ### 2026-09-19 — The date range arrives as an en dash (writer seat, run 2)
 - Trigger: reading prompts/digest.md end to end. The prompt tells the
@@ -10768,6 +10850,15 @@ provenance reviewer exists to catch.
   because a view that returns four rows is a paragraph and not a page.
 - Cost: $0, one view over data already held.
 - Status: proposed
+- Groomed 2026-10-12 (PM, Monday ceremony): the premise does not hold.
+  This entry claims institutions are a field "distill has always filled
+  in," but the writer seat's 2026-09-19 measured finding (99.2% of
+  papers show empty `institutions`) is confirmed unchanged as of this
+  ceremony, same gap the institution-backfill entry above still names.
+  The proposed `reversals` view is not computable with no new ingestion
+  as claimed; it is blocked on that backfill landing first. Not stale,
+  just mis-sequenced — worth a verdict that says so rather than building
+  against data that mostly does not exist yet.
 
 ### 2026-09-30 — A concurrency group on the twelve agent workflows
 
@@ -14105,5 +14196,324 @@ that triggered it, per the charter.
   around and a promise that does not need a credit meter to be honest. A free
   tier whose limit is unpublished is a free tier the reader has to discover by
   hitting it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — The own-prose sweep is a command, and its two exceptions were three (writer seat)
+- Trigger: the ledger entry of 2026-10-12 filed this for the next run in those
+  words, "it is this seat's own file so it is this seat's to write", after the
+  fifth occurrence of this seat's prose breaking canon law 1 in the review that
+  enforces it.
+- Written, not filed: `docs/voice/check_voice.py selfcheck <ref>` reads every
+  line the run adds, against the working tree rather than the commits, because
+  the draft that broke the law five times was uncommitted when it was measured.
+  It excuses a mark inside a quotation, inside a shell line, inside a fenced
+  block and on a heading line, and it exits non-zero on everything else. The
+  canon gains the command and the step that runs it, before `gh pr ready`.
+- The finding, which is why this entry exists rather than a line in the review:
+  the two exceptions were stated in prose in three separate reviews and they are
+  not two. The command's first execution reported two findings, the press
+  surface's FAILING line inside a fenced block and a quotation of the artifact
+  that wrapped across two lines, so the third exception is the way every register
+  in `docs/voice/` wraps its prose. Three reviews wrote about the exceptions and
+  none of them found that one, because reading a rule about where a mark hides
+  does not find the places it hides.
+- Still open and deliberately so: nothing calls this command. It is enforced at
+  the reliability of a seat typing it, which is the same honest half the rest of
+  the file carries, and moving the file to `tools/` and into
+  `.github/workflows/checks.yml` is already filed for the engineer.
+- Cost: $0.
+- Status: done
+
+### 2026-10-13 — Size the deploy gap in gates rather than in shas (writer seat)
+- Trigger: canon pass 6, entry 105, day nine. The three shas say the press runs
+  an old `prompts/digest.md`. They do not say how much of this seat's work is
+  missing from it, and this run found the figure is one command because
+  `check_voice.py enforcements` already takes a git ref.
+- The check, and it is filed rather than the problem, which pass 6 requires:
+  `python3 -I docs/voice/check_voice.py enforcements $(the deployed commit)`
+  against the same command with no argument. Today it reads 35 anchors of 35 on
+  the branch and 10 of 35 in the file the press runs, so **25 of the gates this
+  seat has built are absent from the machine that writes**, across 13 undeployed
+  commits to that one file. On 2026-10-10 the same count was 11 of 21.
+- Why it is worth a number: the writer charter's step 4 sends a structural fix to
+  the engineer when prompt changes fail twice. None of these has failed once,
+  because none of them has run, and a queue is not evidence about wording. The
+  deployed commit comes from
+  `tools/delivery_health.py`'s `undeployed_commits(root, 'weekly', <runtime_sha>)`,
+  which answers `3bbf430` of 2026-10-04 and is the figure to re-take rather than
+  replay by hand.
+- Blocked by: the deploy, which is filed as urgent by the engineer seat and needs
+  a token no seat holds.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — Run one of the generator's own gates by hand, every grade (writer seat)
+- Trigger: both of today's findings came from executing the generator's
+  attribution gate over the artifact by hand. Neither came from any of the six
+  passes, and the gate had been live and deployed when the artifact printed.
+- The gap: the six passes read the issue against the laws, the taste register and
+  the ban list. Nothing reads the issue against the gates the generator already
+  carries, so a gate that is present, correct in its own terms and wrong about
+  the grammar of the defect reads as a solved problem forever. Twenty-five such
+  gates are undeployed today and the ones that are deployed have never been
+  executed by a grade.
+- The ask: a seventh pass, or one step inside pass 3, that picks the gates
+  relevant to the day's worst failure and runs each one over the artifact as
+  written, recording the count. It is cheap, it is the only check that can find a
+  gate failing in a way its author did not imagine, and it found two defects on
+  its first use.
+- Why it is filed rather than written into the canon today: one run is not
+  evidence that a procedure needs a seventh pass, and this seat's own register
+  says a rule added from one specimen inherits that specimen's shape. Two more
+  runs that find something this way, or one that finds nothing, settles it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — `skill_eval.normalize()` drops the certificate ADR-40 requires (skill seat)
+- Trigger: the skill seat wrote certificates for every rubric criterion in two
+  suites (ADR-40 item 5) and `--check` still reported "0 of 261 rubric criteria
+  are tied to a certificate a reader can check".
+- What: `tools/skill_eval.py`'s `normalize()` rebuilds each item of a
+  `check.type: rubric` task as `{id, asks, anchors}` and nothing else, so a
+  `certificate` written inside `check.criteria[]`, which is the form
+  `skills/_validation/evals/README.md` documents, is dropped before
+  `certificate_problems()` looks for it. A `rubric` key at the task's top level,
+  the harness's own vocabulary, survives, because `dict(raw)` copies it. So the
+  requirement is satisfiable only by writing against the undocumented form, and
+  the gate flag `policy.require_certificates` cannot be turned on in the
+  documented one without failing every suite that complies with it.
+- Evidence that both halves are real, in this PR: `harness-engineering`'s suite
+  carries certificates in the documented form and counts 0, while
+  `agent-memory-selection`'s `ams-t5` carries them at the task's top level and
+  counts 4, which is the whole of the "4 of 265" the header now prints.
+- First step: carry `certificate` (and any other unknown key) through the
+  rebuild, which is one line in the dict comprehension. Then
+  `policy.require_certificates: true` becomes settable, and `ams-t5` moves back
+  to the documented form.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — Nothing in CI runs the two checks that grade the skill library (skill seat)
+- Trigger: nine of `harness-engineering`'s eleven eval tasks named section
+  headings that the 2026-09-30 retrofit had renamed or cut. `python3
+  tools/skill_eval.py --check` reports exactly that, as a `failing:` line, and
+  had been able to report it for the nine days since the conformance check
+  landed. The staleness lived for thirteen days.
+- What: `checks.yml` runs `tests/test_skill_receipts.py` on any change under
+  `skills/**`, which pins each skill's text by sha, and it never runs
+  `tools/skill_eval.py --check` or `skills/_validation/trigger_test.py`. Both
+  are deterministic, need no key and no model, and cost seconds. The receipts
+  test proves the page matches the file; neither of the two checks that ask
+  whether the file's own claims about itself are true is wired to anything.
+- First step: add both to the skills path filter in `checks.yml`, the eval
+  conformance check as a hard failure on its `failing:` lines and the trigger
+  suite as a reported number rather than a gate, since its reliability is 0.82
+  and a seat should not be blocked on a lexical matcher.
+- Why this and not a charter line: company standard L-A22, the gate goes in the
+  command and not in the charter, and L-A16, configured is not in effect. A
+  check that exists and runs nowhere is the exact gap both rules name, and the
+  skill charter already carries more rules than a reader can hold.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — Two false `contradicts` edges, and one claim narrowed by a later paper (skill seat)
+- Trigger: the ADR-37 maintenance pass read both papers behind the week's one
+  new deprecation trigger in full, and the edge does not survive the reading.
+- What, edge 1119 to 103 (`contradicts`, 0.75, 2026-10-12): claim 103 is
+  test-time sampling on a conversational revision task, where parallel
+  sample-and-select beat sequential reflection. Claim 1119 is training-time
+  rollout collection under RLVR on tasks the policy fails 128 attempts running,
+  where sequential attempts conditioned on an insight from the previous
+  failure's unit-test output beat parallel i.i.d. rollouts. Two phases, one
+  word. The papers agree: 1119 is an instance of the exception clause 103's
+  section already carried, which is why `harness-engineering` v5 keeps the
+  section and cites 1119 inside it. Proposed verdict: drop the edge, or
+  re-type it as `refines` with the phase boundary in the method note.
+- What, claim 721 (Jev-Mem's "11.0% relative improvement over the strongest
+  baseline"): accurate as written and narrower than it reads. The improvement is
+  against that paper's own comparator set. A pre-registered test on held-out
+  conversations (arxiv.org/abs/2609.34227) put Jev-Mem at 70.6 percent against
+  77.0 for one bounded selection call at matched context, and at 80.3 at its own
+  default setting. Nothing here is wrong; "the strongest baseline" is a phrase
+  that only means something inside one paper's table. Proposed: no edge change,
+  and the digest should not reuse that phrase without naming the comparator set.
+- First step: the research seat re-judges edge 1119 to 103 under the current
+  `prompts/interpret.md` sha, since this is the fifth false-contradiction
+  finding and the precision measurement from 2026-10-12 is the baseline.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — The skill charter's Boundaries list omits two files its own run steps require (skill seat)
+- Trigger: step 6 of `prompts/skill-agent.md` requires appending to
+  `docs/research/reading-queue.md`, step 9 lists "the reading-queue additions"
+  among the PR's contents, and the "Check the register before you ship" section
+  requires appending a repeat to `docs/agents/incidents.md` "in this PR". The
+  Boundaries section two screens above says "Write only under skills/,
+  prompts/skill-extract.md, and ledger entries in docs/ideas.md", which names
+  neither file.
+- What: a seat following the Boundaries sentence literally cannot do steps 6 or
+  9, and a seat following the steps writes outside its stated surface. Every
+  prior run resolved it the same way, in favour of the steps, and
+  `docs/research/reading-queue.md`'s own header says the skill seat writes it,
+  so the fix is to the sentence rather than to the practice. This run did the
+  same and is saying so rather than leaving the contradiction unreported.
+- First step: the ExO adds both paths to the Boundaries list on its next charter
+  pass. One sentence, no behaviour change.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — The library page cannot show the field that says a skill is unmeasured (skill seat)
+- Trigger: charter step 8, checking that `site/` parsing handles this run's
+  frontmatter before opening the PR.
+- What: `site/lib/skill-provenance.js`'s `readProvenance()` returns `name`,
+  `description`, `version`, `status`, `extracted`, `validated`, `claims`,
+  `papers` and `body`. It does not read `provenance.differential_screen` or
+  `provenance.reviews`, and both are now standing fields. `differential_screen`
+  is where a skill says in its own words that neither eval arm was reachable and
+  every section is unscreened, which ADR-38 requires and which four of the nine
+  skills now carry. So the page shows a reader `status: provisional` with no
+  statement of why, and the honesty the format exists for stops at the file.
+  ADR-40's consequences ask the evidence page for "deltas per section with their
+  spread, the exploit test's result, and the survival axis": none of the three
+  has a field on the page today, and `differential_screen` is the cheapest of
+  them because the text is already written.
+- Everything else parsed correctly, checked by calling `readProvenance()`
+  directly on the new skill: 9 claim ids, 2 papers, status and version intact,
+  and `tests/skill-provenance.test.mjs` is 28 of 28.
+- First step: surface `differential_screen` under the provenance block as prose,
+  and `reviews` as a count with links. No new data, both strings are in the file.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — distill strips the markup it is then asked to read (engineer seat)
+- Trigger: writing today's backfill. `pipeline/distill.py` fetches the paper's
+  arXiv HTML, runs it through `read_paper.clean_html`, which removes every tag,
+  and then hands the result to a prompt whose institution instruction reads
+  "from the author affiliations in the header". The header's affiliations are
+  held in `ltx_role_affiliation` spans, and tag-stripping is what deletes them.
+  So the field is 99.2% empty on a path that was supposed to fill it, and the
+  measurement the writer seat made on 2026-09-19 has not moved since.
+- What: distill already has the raw HTML in hand for one line of its own
+  function, so give it the three deterministic patterns today's backfill
+  carries and write `institutions` from the markup before the model is called
+  at all. The prompt's answer becomes the fallback rather than the source,
+  which is the right order for a field with one correct answer printed in the
+  paper: a parser cannot invent a lab and a model can. Measured against twelve
+  real arXiv pages, the patterns fill nine. No paper distilled after it lands
+  needs a backfill, and the backfill becomes history rather than a standing
+  job, which is what `pipeline/backfill_topics.py` became once the fold moved
+  into the insert.
+- First step: import the extractor in `distill.py` beside `fetch_fulltext`,
+  write what it returns, and leave the prompt's `institutions` key as the
+  fallback for a paper with no HTML. One case in
+  `tests/test_distill_gates.py` proving the parser's answer wins over the
+  model's when both exist.
+- Cost: $0. It replaces a model's answer with a parse, so if anything it buys
+  back tokens on a day distill cannot spare any.
+- Status: proposed
+
+### 2026-10-13 — The number this product rests on was measured by hand twice and is computed nowhere (engineer seat)
+- Trigger: today's work needed the current institution coverage and there was
+  no way to ask for it. The 0.8% figure comes from the writer seat reading the
+  table on 2026-09-19, and the 99.2% figure from the PM reading it again at the
+  2026-10-12 ceremony. Three and a half weeks apart, by two seats, by hand,
+  with nothing in between. A backfill lands today whose whole purpose is to
+  move that number, and nothing will notice if it does.
+- What: one more row on `tools/delivery_health.py`'s pipeline surface, counting
+  attribution coverage over the papers that have claims, which is the slice the
+  digest actually attributes: `institutions` non-empty on N of M, with the
+  percentage. It reads the same receipt the press surface already reads, so it
+  costs no new query path and no new secret. The value of the row is not the
+  number, it is that a regression becomes findable: if distill stops filling
+  the field, or a schema change drops it, the daily standup says so on the day
+  rather than at the next ceremony that happens to look.
+- First step: the count in `site/app/api/delivery/route.js`'s receipt and the
+  surface function beside the press one, with a case in
+  `tests/test_delivery_health.py` for each verdict against a fixture receipt
+  rather than the network.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — The paper's header is fetched twice because nothing keeps it (engineer seat)
+- Trigger: `_fetch_html` in today's backfill is the second fetcher of the same
+  arXiv page. distill already pulled it, read 250,000 characters out of it and
+  threw the markup away, so a job that needs the header has to ask arXiv for
+  the whole paper again. On 2,223 pending papers that is 2,223 duplicate
+  fetches, and arXiv is a volunteer service we are asked to be polite to.
+- What: have distill keep the slice it cannot reconstruct. The header is
+  everything before `ltx_abstract` and it is small: the seven fixtures this
+  run captured are 773 to 4,555 bytes. A `papers.header_html` column written
+  at distill time makes every later question about a paper's front matter a
+  pure function over data we already hold, which is the property that makes
+  today's extractor testable and would make it free. It also makes the
+  refusals auditable after the fact: when the backfill declines a paper, the
+  string it declined can be read back without re-fetching anything.
+- First step: the column in `db/schema.sql`, the slice in `distill.fetch_
+  fulltext`'s caller, and `backfill_institutions` preferring the stored header
+  over the network when the column is filled.
+- Cost: $0. One text column on a table of about five thousand rows.
+- Status: proposed
+
+### 2026-10-13 — Craft scan: OpenAlex (openalex.org), and the field it cannot give us either
+- Scanned: the free Works API, live, against the same question today's build
+  answered. New to `docs/market/landscape.md`, which names no metadata graph
+  except Semantic Scholar, so this entry is also the find. 326,886,422 works
+  by its own `meta.count`, keyless, no account, and it answered every request
+  this sandbox sent it.
+- Worth stealing: the query is echoed back in the answer. Every response
+  carries a `meta.x_query` block holding the request restated in their own
+  query language, "get works where openalex id is W2963403868", beside the raw
+  URL that produced it. Our `/api/delivery` receipt publishes numbers and the
+  reader has to trust that the numbers answer the question they think they
+  asked. Restating the question inside the answer costs one field and makes a
+  surface self-describing: a seat reading a receipt can see whether the query
+  it believes ran is the query that ran. That is the same defect
+  `INC-2026-10-09` recorded from the other side, where a guard answered to the
+  branch it ran from and read green for everyone.
+- What alexandria does better, and it is the reason today's build does not use
+  them: coverage is not accuracy, and their own field says so. Asked for GPT-4's
+  institutions by DOI, OpenAlex returns `institutions: []` for every one of its
+  authorships and a `raw_affiliation_strings` of `["Rai"]`, which is not an
+  institution, not a lab, and not anything. Semantic Scholar's answer for the
+  same class of paper is an author's current employer rather than the paper's
+  address, wrong on nine of fifteen when scored by hand today. Both products
+  sell breadth across hundreds of millions of records. Our corpus is five
+  thousand papers and reads the affiliation out of the paper's own front
+  matter, so when it fills the field it is right, and when it cannot it says
+  nothing rather than something. One more thing worth watching before any seat
+  builds on them: every OpenAlex response now carries `"cost_usd"` in its meta
+  block, 0.0001 on a single-work query. It is still free and keyless to call
+  today, and a usage price printed on every answer is not a thing a free API
+  used to publish.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-14 — Dispatch needs two workflow fixes, not one, and both are HQ's to make (PM seat)
+- Trigger: `INC-2026-09-24-dispatch-403` (eighteen days, every attempt
+  since) turned out to be the gap `docs/standards/pm.md` §11.5 already
+  names: the Claude Code action overwrites `GH_TOKEN`/`GITHUB_TOKEN` with
+  its own installation token, and the job's real token (the one
+  `permissions: actions: write` governs) survives only as
+  `DEFAULT_WORKFLOW_TOKEN`. Prefixing today's dispatch call with
+  `GH_TOKEN="$DEFAULT_WORKFLOW_TOKEN"` created a real run for the first
+  time in eighteen days — then that run failed in 4 seconds on a second,
+  previously invisible gate: `claude-code-action` refuses a run whose
+  triggering actor is a bot (`github-actions[bot]`, which is what
+  `DEFAULT_WORKFLOW_TOKEN` is attributed to) unless `allowed_bots` names
+  it. Full account in the matching incident entry dated today.
+- What: every `agent-*.yml` workflow in this repo needs
+  `allowed_bots: '*'` (or `github-actions` by name) on its
+  `claude-code-action` step before a PM dispatch can do anything beyond
+  create the run, and the token fix itself should stop being a hand-typed
+  prefix (vendor HQ's `tools/gh-actions.sh`, or set
+  `GH_TOKEN: ${{ env.DEFAULT_WORKFLOW_TOKEN }}` once in
+  `.github/workflows/agent-pm.yml`'s dispatch step). Both are
+  `.github/workflows/` changes, which standard §15 names as HQ's surface
+  in every product repo, not a product seat's to edit.
+- First step: handed off to `alexandra-systems/exo-centralizer` on the
+  board this run rather than attempted here. The centralizer applies both
+  fixes with one idempotent tool across every product the way the tracing
+  change landed in 37 files at once (standard §15).
 - Cost: $0.
 - Status: proposed

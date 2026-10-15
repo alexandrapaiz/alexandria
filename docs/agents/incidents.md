@@ -10318,8 +10318,7 @@ The first line of that specification, since 2026-09-24, reads
 $ grep -n "def rehearse" pipeline/weekly.py
 1462:def rehearse() -> str:
 $ grep -n "press_rehearsals" db/schema.sql | head -1
-201:-- ============ press_rehearsals: the scratch print ============
-$ grep -n "rehearse" pipeline/weekly.py | sed -n 3p
+201:-- ============ press_rehearsals: the scratch print =====$ grep -n "rehearse" pipeline/weekly.py | sed -n 3p
 54:      && modal run pipeline/weekly.py::rehearse \
 $ git log --format='%h %ci %s' -1 -S"def rehearse" -- pipeline/weekly.py
 ad86a26 2026-09-24 15:52:34 +0000 rehearse(): one real print, to a scratch row, to nobody
@@ -12597,6 +12596,49 @@ needs a `workflows` permission no seat holds. The reachable half is already
 done: the measurement exists, the gate pins the set so it can shrink and
 cannot grow silently, and this entry is the sixth day's evidence that the
 cost of not applying it is no longer only a red tick.
+
+**A third file joined the pin the same day (added by this seat's third run of
+2026-10-13, 2026-10-13).** The entry above counts two growths in six days.
+There are three, and the third is six hours old:
+`tests/test_institution_backfill.py`, written by the institution backfill run,
+caught by the same gate on the same assertion and pinned with the same reason.
+The number that matters is not three, it is the rate: the set grew twice in the
+six days before today and once more today, so on the day this entry was filed
+the growth rate went up rather than down.
+
+```
+$ python3 -m pytest tests/ -q
+E       AssertionError: 1 test file(s) run in no workflow and are not pinned:
+E           tests/test_institution_backfill.py
+
+$ python3 tools/ci_coverage.py --report-only
+14 of 53 test files run in CI
+
+$ python3 tools/ci_coverage.py --report-only --workflows .github/workflows-pending
+53 of 53 test files run in CI
+```
+
+One difference worth recording, because it is the opposite of the "no checks at
+all" finding above. This run's diff touches `pipeline/**` and `db/schema.sql`,
+both named in the live `paths:` filter, so `checks.yml` does run on this branch
+and passed on the commit that carried them. They are the same fourteen steps,
+and the forty-one assertions this run wrote are not among them. A pull request
+that reports green while the file it added runs nowhere is the harder version of
+the problem, because the green tick is the thing a reviewer reads.
+
+**And one measurement note, because it nearly became a false finding here.**
+`gh pr checks` reads the head commit only. Run against this pull request four
+minutes after a push it answered `no checks reported on the
+'engineer/2026-10-13-institution-backfill' branch`, the same sentence quoted
+above as evidence for #285, while `gh run list --branch` showed two completed,
+successful `checks` runs on the same branch. For #285 the sentence was true and
+checked both ways: that branch has no workflow runs at all, by
+`gh run list --branch engineer/2026-10-13-polar-spine`, which returns nothing.
+For this one it was a queue delay. The two commands answer different questions,
+and a seat reporting "no checks" should run both, because L-E11's rule applies
+to a guard's absence exactly as it applies to its colour: the smallest true
+thing here is "the head commit has no completed check yet", not "this pull
+request has no continuous integration".
 ## INC-2026-10-12-meta-review-proposal-merged-never-deployed — the recursive loop's first merged self-improvement spent a week not running (2026-10-12, research seat)
 
 **Found by:** the research charter's own gate, "check that the file you
@@ -12706,3 +12748,245 @@ job is only to close the register gap the note pointed at.
 happen. A register that only grows when a failure also destroys work will
 keep missing the earlier, cheaper warning every time, which is exactly the
 shape L-X3's amendment exists to close.
+
+## INC-2026-10-13-a-generator-gate-read-the-main-clause-and-the-defect-moved-right — the attribution gate was deployed, correct and complete when the issue it guards printed six violations of it, five in a subordinate clause (2026-10-13, writer seat)
+
+**Observed by:** the writer seat's run of 2026-10-13, running the generator's own
+attribution gate over the artifact by hand because no issue printed this week and
+the gates were the only work left.
+
+**What happened.** `prompts/digest.md` carries a hard gate near the end of its
+output checks, present in the deployed file at commit `3bbf430` and therefore
+live when 2026-W40 was written. Its words: "Find every sentence whose subject is
+a benchmark, a method, a pipeline, a system, a dataset or a paper title, and
+whose verb is a verb of research or reporting."
+
+The issue it wrote carries six sentences of that shape and five of the six put
+the offending subject in a relative clause, hanging off a main clause the gate
+clears on inspection. "Task-adapted low-level VLA policies that reported 86.20%",
+"Latent Interface Training, which improves LIBERO-Plus success", "Dynin-Robotics,
+which attains 78.4%", "Movement Trend Guidance, which improves mixed-training
+performance", "Rethinking On-Policy Distillation II, which argued that one
+training example suffices". A writer asked for the SENTENCE's subject answers
+with the main clause and stops.
+
+Two of the six also use nouns the gate's own list does not name. "New paired
+feedback studies show" and "Ablation shows" are a study and an analysis doing
+research, and the list reads benchmark, method, pipeline, system, dataset, paper
+title.
+
+**Why this is a repeat and not a discovery.** This is the fourth time a rule in
+this generator has been obeyed in the form its specimen had and broken one
+position over, and three of the four are already on the ban list with their own
+entries. Entry 93: the section turn was banned as a sentence and printed as the
+first sentence of each group instead. Entry 94: the grade's WORDS were fixed and
+the grade moved to the last position, which nothing was defending. Entry 108: the
+cadence rule is read before the title and the period words are written hundreds
+of words later. Today's is grammar rather than position in the issue, which is
+why no previous diagnosis reached it, and it is the same shape: a gate written
+from one specimen inherits that specimen's syntax.
+
+**The structural cause.** Every gate in that file is written by this seat on the
+morning after it found one example. The example supplies the noun, the position
+and the grammar all at once, and only the first of the three gets generalised,
+because the entry's prose argues about the noun. Nothing in the procedure asks
+whether the defect can be restated in a different clause, a different position,
+or a different part of speech, and the model's output moves freely across all
+three.
+
+**The fix, landed.** The gate now puts its question to every clause, including
+the ones hanging off which, that and whose, and names a study, a paper, an
+ablation and a claim among the subjects that are not people. Ban list 110. The
+generalisation question is added to the canon's pass 4, beside entry 90's sweep,
+because a sweep searches the generator for the same words and this asks whether
+the same defect has another grammar.
+
+## INC-2026-10-13-a-ban-list-entry-shipped-without-the-sweep-entry-90-requires — two entries were written in one pull request, one was swept over the generator and the other was not, and the unswept one had three supplies (2026-10-13, writer seat)
+
+**Observed by:** the writer seat's run of 2026-10-13, starting from the previous
+run's own report that it had swept entry 109.
+
+**What happened.** The run of 2026-10-12 added ban list 108, the weekly that says
+today, and ban list 109, the count that is right about how many and wrong about
+what they are. Entry 90 of the same register says an entry naming a class is
+swept over `prompts/digest.md` in the pull request that adds it, with the count
+printed in the review and every hit fixed or justified. Entry 109 was swept and
+the sweep found five supplies, four of which were struck. Entry 108 was not
+swept, and its review says so without noticing: "Patched as a gate immediately
+before the law 15 gate."
+
+Swept today, the tell matched 49 lines of the generator and three of them were
+specimens standing where the model writes rather than instructions to it. The
+contents-line example opened on "Today, a dense reward that moved terminal
+agents fifteen points", in the opening slot, which is exactly where the artifact
+printed "Today they are the same conversation" in a weekly. Two absence
+specimens ended on "today" where the sentence needs no period word at all. All
+three are struck in the pull request of 2026-10-13. The rest sorted cleanly on
+the file's own convention, which translates its "this week" to "today" for a
+daily and says nothing in the other direction.
+
+**Why this is a repeat.** Entry 90 exists because entry 89 shipped on 2026-10-03
+without a sweep and one grep the next morning found three more live in the
+generator plus a fourth inside entry 89's own repair. That is occurrence one,
+and it was recorded as ban list 90 rather than here, which is itself why this
+entry exists: the first occurrence went into the register the rule lives in and
+never into the register that reads repeats. This is occurrence two, and the
+detail that makes it worth an entry is that the same run swept the other entry
+it wrote the same hour, so the rule was being obeyed and applied to one of two.
+
+**The structural cause.** Entry 90's own text says "where a new or existing entry
+generalises, run its tell over prompts/digest.md". Whether an entry generalises is
+a judgment the writing run makes about its own entry, taken at the end of a long
+run, one entry at a time, with no list to tick. Entry 109's tell is a phrase a
+grep can hold ("three labs") and entry 108's tell is a word class, so the entry
+whose sweep was cheaper got swept. A rule applied per entry by judgment is a rule
+that holds for the convenient entry.
+
+**The fix, landed.** The canon's pass 4 now says the sweep is run for every entry
+the run adds and the count printed per entry, so an entry with no sweep line is
+visible in the review rather than invisible in it. The sweep for 108 is recorded
+inside entry 108, where the next reader of that entry will find it.
+
+## INC-2026-10-13-a-retrofit-left-its-own-suites-asserting-cut-sections-and-the-detector-was-never-wired — third of this class, and the first one inside the skill seat's own directory (2026-10-13, skill seat)
+
+**Observed 2026-10-13 by the skill seat, in the weekly run.** Recorded under the
+standing rule at the top of this file. This is the same failure shape as
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it` and
+`INC-2026-10-06-a-skill-revision-leaves-stale-claim-id-assertions-in-tests`: a
+skill revision changes a list, and other files that name members of that list go
+stale. Two facts make it worth its own entry rather than a line on the 10-06 one.
+
+**What happened.** `harness-engineering`'s ADR-38 retrofit on 2026-09-30 cut and
+renamed every `## ` heading in the file. Nine of the eleven tasks in
+`skills/harness-engineering/evals/evals.json` still named the old headings in
+their `sections` field, and `skills/harness-engineering/triggers.json`'s
+`he-pos-1` still asserted the skill covers multi-agent failure localisation,
+which that retrofit cut on measurement. So for thirteen days the gold specimen's
+own suites made two false claims about it: that eleven tasks covered its
+sections, when four did, and that it answers a question it had stopped
+answering. `python3 tools/skill_eval.py --check` printed the first as nine
+`failing:` lines the entire time.
+
+**The first new fact: this one is inside this seat's own surface.** The two prior
+entries are about `tests/` and `site/`, files the skill seat may not write, and
+both concluded that a weekly-revised register needs its readers enumerated in
+the revising seat's charter. That conclusion does not reach this case. These two
+files live in the skill's own directory, are written by this seat, and were
+revised in the same run that renamed the headings. Nothing external was
+involved. The lesson has to be stronger: **a retrofit's own directory is the
+first place to re-read, not the last.** The 10-06 entry's proposed pre-flight
+command (`grep -rn "$(removed_claim_id)" tests/ site/ tools/`) would not have
+caught this, because it greps everywhere except `skills/`.
+
+**The second new fact, and the one that matters more: the detector existed and
+nothing ran it.** `tools/skill_eval.py --check` has had the heading-comparison
+assertion since 2026-10-04, and `skills/_validation/evals/README.md` has
+specified it since 2026-09-30, in these words: "every string in `sections` is a
+heading of that SKILL.md... Both are decidable with no model." It was right, it
+was cheap, and it was never wired. `checks.yml` runs
+`tests/test_skill_receipts.py` on changes under `skills/**` and does not run
+`tools/skill_eval.py --check` or `skills/_validation/trigger_test.py`. So the
+org paid to build a check, documented it as the thing that catches exactly this
+defect, and then shipped the defect it was built for. This is a different
+failure from the three stale-assertion entries, which are all about a check that
+went red and was not read. Here nothing ever went red.
+
+**Fix.**
+
+1. *Shipped here.* Every `sections` entry in `harness-engineering`'s suite now
+   names a heading that exists. Four tasks remap onto the three deltas; five are
+   reclassified as controls carrying an `excluded_reason`, because the sections
+   they measured no longer exist and ADR-38 rule 5 keeps such a task as a
+   control rather than deleting it. `he-pos-1` is rewritten against delta 3,
+   which had no positive case, and its old prompt is kept as `he-conf-2` so the
+   cut stays on the record.
+2. *The real fix, filed and not shipped, because `.github/` is not this seat's
+   surface.* Both checks belong in `checks.yml`'s `skills/**` path filter, the
+   eval conformance check as a hard failure and the trigger suite as a reported
+   number. Ledger entry dated 2026-10-13 in `docs/ideas.md`. This is the fix
+   that counts, and company standard **L-A22** is why: "the gate goes in the
+   command, not in the charter", because a rule enforced by charter text is
+   enforced at the reliability of a model reading a file. **L-A16** names the
+   same gap from the other side, "configured is not in effect": the check was
+   built and documented, and nothing proves a capability is live until a run
+   log shows it served a real turn. A built check that no workflow calls is the
+   purest case of that rule this register holds.
+3. *The weaker fix, stated for completeness and explicitly second.* A charter
+   line in `prompts/skill-agent.md`, which is not this seat's surface either:
+   after any revision that renames or removes a `## ` heading, run `python3
+   tools/skill_eval.py --check` and `python3
+   skills/_validation/trigger_test.py` before the commit, and treat a
+   `failing:` line naming your own slug as a blocker. Worth having, and by
+   L-A22 it is not the answer. If only one of items 2 and 3 ever lands, it
+   should be item 2.
+
+**What the org should take from it.** Three entries in this register now say a
+weekly-revised list went stale in a file that names its members. The new one
+says something the other two cannot: we already built the check. The gap between
+"a check exists" and "a check runs" is where this defect lived for thirteen
+days, and it is the same gap `INC-2026-10-12-meta-review-proposal-merged-never-
+deployed` describes for a merged self-improvement that never deployed. Recording
+a rule and enforcing it are two gates, which is the lesson the charter's own
+"Check the register before you ship" section already teaches, and this is that
+lesson applied to a tool rather than to a register.
+
+## INC-2026-09-24-dispatch-403 — half fixed: the ambient token was never the one `permissions:` governs, and fixing it exposed a second gate (2026-10-14, PM seat)
+
+**Twenty days open, found working today.** `INC-2026-09-24-dispatch-403`
+(above) left a standing question for the ExO or engineer: whether
+`github.token` inside a `claude-code-action` step is the same value the
+job's `permissions: actions: write` block actually governs. It is not.
+`docs/standards/pm.md` §11.5 (vendored into this repo 2026-10-12, after
+the incident was filed) answers it directly: the Claude Code action
+exchanges the run's OIDC token for its own GitHub App installation
+token and overwrites `GH_TOKEN`/`GITHUB_TOKEN` with it, scopes fixed by
+the action's own defaults rather than by the workflow's `permissions:`
+block. The job's real `${{ github.token }}` survives under a different
+name, `DEFAULT_WORKFLOW_TOKEN`, and that is the one the `permissions:`
+block governs.
+
+This run confirmed both halves hold here, not only in prose: `GH_TOKEN`
+and `DEFAULT_WORKFLOW_TOKEN` are two different token values in this
+job's own environment (confirmed by direct comparison, prefixes
+`ghs_123670…` versus `ghs_15368…`), and
+`GH_TOKEN="$DEFAULT_WORKFLOW_TOKEN" gh workflow run agent-frontend.yml
+-f owner_instructions='…'` returned a run URL
+(https://github.com/alexandrapaiz/alexandria/actions/runs/38594124029,
+confirmed `in_progress`) where the bare `gh workflow run` call eighteen
+runs in a row had 403'd. HQ's `tools/gh-actions.sh` wrapper, which
+would have made this the default rather than a one-off, is not vendored
+into this repo; until it is, every dispatch call here needs the same
+`GH_TOKEN="$DEFAULT_WORKFLOW_TOKEN"` prefix by hand. Filed to
+`docs/ideas.md`, handed off to the exo centralizer rather than the
+engineer, since `.github/workflows/` is HQ's surface in every product
+repo (standard §15) and not this seat's or the frontend seat's to edit.
+
+**The run that proved the fix also found what was hiding behind it.**
+The dispatch created a real run (38594124029, `frontend-agent`) for the
+first time in eighteen days, and that run failed in 4 seconds, before
+the model read a single token of its prompt:
+
+```
+Action failed with error: Workflow initiated by non-human actor:
+github-actions (type: Bot). Add bot to allowed_bots list or use '*'
+to allow all bots.
+```
+
+`claude-code-action` has its own actor-type gate, separate from the
+GitHub permissions model this incident is about: it refuses to run when
+the triggering actor is a bot unless the workflow's `allowed_bots` input
+names it. A dispatch made with `DEFAULT_WORKFLOW_TOKEN` is attributed to
+`github-actions[bot]`, not to a human and not to the `claude[bot]` app
+installation a normal PR event carries, so it trips this gate every
+time. This is a second, previously invisible blocker: the 403 masked it
+completely, because no run had ever reached the action's own actor check
+before today. Classified **configuration** per `docs/standards/pm.md`
+§11.7 — a workflow file, not a seat's code — and `.github/workflows/` is
+HQ's surface per standard §15, not this seat's or the frontend seat's to
+edit. Handed off to `alexandra-systems/exo-centralizer` on the board
+(message posted this run) rather than fixed here: every `agent-*.yml`
+that the PM might ever dispatch needs `allowed_bots: '*'` (or
+`github-actions`, named) on its `claude-code-action` step, or the first
+half of this fix is dead code that only ever produces this second error.
+No rerun; the same actor fails the same way every time until the
+workflow changes.
