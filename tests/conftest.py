@@ -21,8 +21,17 @@ anything that needs to must be driven against a real deployment instead.
 
 import sys
 import types
+from pathlib import Path
 
 import pytest
+
+# The repository root on `sys.path`, so that `pipeline` and `mcp` import under
+# a bare `pytest tests/` and not only under `python3 -m pytest`, which adds the
+# working directory for you. A contributor who runs the obvious command should
+# get a result rather than a collection error.
+ROOT = str(Path(__file__).resolve().parent.parent)
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
 
 
 def _install_modal_stub():

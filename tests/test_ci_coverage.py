@@ -224,6 +224,15 @@ UNCOVERED = {
     # `.github/workflows/checks.yml`, which no seat's token may write. The
     # staged replacement already runs it, measured at `50 of 50` with `--only`.
     "tests/test_deploy_gate.py",
+    # Added 2026-10-14 with the pre-send quality gate, pinned for the same
+    # structural reason as every line above: the step that would run it goes
+    # in `.github/workflows/checks.yml`, which no seat's token may write, and
+    # pm.md section 15 gives those files to headquarters rather than to a
+    # product seat. The staged replacement runs it. This one guards what does
+    # and does not reach a subscriber's inbox, so its silence on a pull
+    # request would cost a reader rather than a red run, and the handoff
+    # asking headquarters to apply item 17 names it by name.
+    "tests/test_digest_quality.py",
     "tests/test_distill_practices.py",
     # Added 2026-10-13 with the institution backfill, pinned for the same
     # structural reason as every line above. This one guards a job that writes

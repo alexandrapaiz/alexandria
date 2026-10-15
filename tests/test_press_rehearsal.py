@@ -220,7 +220,7 @@ def test_the_report_shows_every_failure_the_incident_found():
         prompt_sha="abc123def456",
         stats_line="2026-W39: {'papers_ingested': 40} | new_claims=1 deprecated=0",
         finish_reason="stop", elapsed_seconds=74.2, row_id=7,
-        success_subject="What the week actually settled")
+        success_subject="What the week actually settled", blocking=0)
     # failure 1: an empty response with finish_reason 'length' was silent
     check("finish_reason is printed", "finish_reason: 'stop'" in report, report)
     # failure 1's other half: the reservation that was spent on hidden thinking
@@ -236,6 +236,24 @@ def test_the_report_shows_every_failure_the_incident_found():
           weekly.ALARM_SUBJECT_CANNOT_PRINT in report, report)
     check("the written-but-not-sent alarm subject is printed",
           weekly.ALARM_SUBJECT_NOT_SENT in report, report)
+    # 2026-10-14: and the pre-send gate's verdict, because from now on a
+    # blocking finding holds the send. A rehearsal that did not say so would
+    # be a rehearsal of a different run.
+    check("the gate's verdict is printed",
+          "quality gate: clean, so this issue would send" in report, report)
+    held = weekly.rehearsal_report(
+        model="kimi-k2.6", body="# A title\n\nSome words here to count.",
+        prompt_sha="abc123def456", stats_line="x", finish_reason="stop",
+        elapsed_seconds=1.0, row_id=8, success_subject="A subject", blocking=3)
+    check("a held rehearsal says it would not be emailed",
+          "3 blocking finding(s), so this issue would be held and not emailed"
+          in held, held)
+    unread = weekly.rehearsal_report(
+        model="kimi-k2.6", body="# A title\n\nSome words here to count.",
+        prompt_sha="abc123def456", stats_line="x", finish_reason="stop",
+        elapsed_seconds=1.0, row_id=9, success_subject="A subject", blocking=None)
+    check("a gate that could not run says the press would send unchecked",
+          "would send unchecked" in unread, unread)
     subjects = [ln for ln in report.splitlines() if "subject" in ln]
     check("three subjects are shown", len(subjects) == 3, f"{subjects}")
     check("no subject carries a week id or a bracket tag",

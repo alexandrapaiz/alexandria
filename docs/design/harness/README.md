@@ -39,15 +39,43 @@ and any other version downloads its own.
 - **`shoot.mjs` fails when every frame lands within 5% of the same size.**
   Uniform output across ten different pages is what identical renders look
   like and what no real set of pages ever looks like.
+
+- **`shoot.mjs` probes touch targets rather than measuring their boxes.** A
+  bounding box is not a hit area. The house extends several controls past
+  their drawn size with a positioned `::after`, which is Freiberg's Fitts note
+  and is what the canon's 44px rule actually asks for: the nav toggle draws at
+  32 and accepts 44, and `.pill` does the same under `@media (hover: none)`.
+  Reading `getBoundingClientRect` alone reported every one of those as a
+  violation, and the 2026-10-14 run spent turns chasing twelve "small" targets
+  across two pages before finding that all of them already pass. Each flagged
+  element is now probed at the four edges of the 44 by 44 box through
+  `elementFromPoint`, which sees pseudo-elements. Inline links inside running
+  prose are counted separately as `proseLinks` rather than filed as
+  violations, because a 19px inline link cannot satisfy a control's rule
+  without a line-height that would wreck the type scale, and Apple's own body
+  copy does not try. Anything inside a collapsed `<details>` is skipped, since
+  the panel clips rather than unmounting and still reports a box.
 - **The touch viewports force `hover: none` and `pointer: coarse` through
   CDP.** Headless Chromium otherwise reports `hover: hover` inside a touch
   context, so every `@media (hover: none)` rule in the stylesheet goes
   untested and hover-revealed affordances read as content stranded at
   opacity 0.
 - **`ink.mjs` reads actual pixels out of a PNG.** A screenshot is authority on
-  whether something looks wrong and is not authority on why. Twice now a run
-  has nearly filed the sticky nav as transparent; measured, the ink behind it
-  is 247 to 255 of 255, which is a ghost at about 3%.
+  whether something looks wrong and is not authority on why.
+
+  **The sticky nav question is settled. Do not re-investigate it, measure it.**
+  Three runs have now nearly filed the nav as transparent, the third on
+  2026-10-14 (`INC-2026-10-14-the-sticky-nav-ghost-is-re-investigated-every-run`).
+  The numbers, taken on the desk page scrolled to 1400: the darkest pixel in
+  the empty space of the bar is **252 of 255 at 390** and **247 of 255 at
+  1440**, which is a ghost of one to three percent. The nav is
+  `rgba(255,255,255,0.94)` over a 22px blur and a previous run already raised
+  it from 0.85 for exactly this reason.
+
+  What repeats is not the nav, it is the method. A run magnifies a crop to
+  read it, and the magnification is what makes a three percent ghost legible.
+  An enlarged crop is evidence that something is there and is not evidence of
+  how strong it is. Measure first, then decide.
 - **`make-fixtures.mjs` writes deliberately lumpy shapes.** Ban list entry 28:
   a layout judged at evenly sized demo data is not judged. Real data is one
   large cluster, a shoulder and a long tail of pairs.
