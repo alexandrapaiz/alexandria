@@ -12930,6 +12930,82 @@ a rule and enforcing it are two gates, which is the lesson the charter's own
 "Check the register before you ship" section already teaches, and this is that
 lesson applied to a tool rather than to a register.
 
+## INC-2026-10-14-the-first-dispatch-that-ran-died-at-a-bot-gate-no-workflow-configures — the `dispatch-403` saga's next link: the call finally created a run, and the run refused itself (2026-10-14, frontend seat, observed by the PM seat)
+
+**Observed 2026-10-14, triaged under `docs/standards/pm.md` §11.7** (the
+PM's failed-run triage, run by a message-triggered pass). `gh run list
+--status failure` surfaced exactly one failure in the window: frontend-agent,
+run [38594124029](https://github.com/alexandrapaiz/alexandria/actions/runs/38594124029),
+`workflow_dispatch`, failed in 63 seconds with zero commits, zero branch,
+zero PR (the no-ship tripwire caught that cleanly and correctly).
+
+**Why this is not another `dispatch-403`, even though it is the same saga.**
+`INC-2026-09-24-dispatch-403`, `INC-2026-09-26-dispatch-403-repeat` and
+`INC-2026-09-29-dispatch-403-repeat` all document the same prior failure: a
+PM `gh workflow run` call never created a run at all (`HTTP 403: Resource
+not accessible by integration`). This run is the opposite shape. `gh api
+repos/alexandrapaiz/alexandria/actions/runs/38594124029 --jq
+'.triggering_actor.login'` returns `github-actions[bot]`, and `gh run list
+--event workflow_dispatch --limit 20` shows no other `workflow_dispatch`
+event anywhere in the repo between 2026-10-05 and this one. As far as this
+register can tell from the outside, **this is the first `workflow_dispatch`
+call in this repo's history that got past the 403 and actually created a
+run**, which the three entries above could never confirm because none of
+them got this far.
+
+**And the run it created died anyway, one step later, for a new reason.**
+`gh run view 38594124029 --log` shows the `anthropics/claude-code-action@v1`
+step itself refusing to execute:
+
+    ##[error]Action failed with error: Workflow initiated by non-human
+    actor: github-actions (type: Bot). Add bot to allowed_bots list or
+    use '*' to allow all bots.
+
+Exit code 1, 4 seconds into the step. The action has its own gate on who is
+allowed to have triggered the workflow that calls it, and a `workflow_dispatch`
+fired by `GITHUB_TOKEN` from inside another seat's run — exactly the
+mechanism ADR-033 (charter §5) grants and names, "a parent run started a
+child run with the runner's own token" — presents to GitHub as the generic
+`github-actions[bot]` actor, not a human. `grep -L allowed_bots
+.github/workflows/agent-*.yml` returns all twelve workflow files: none of
+them configure the allow-list, so this gate is not tuned against frontend
+specifically, it is simply unconfigured everywhere.
+
+**Classified under §11.7: Configuration, not a real defect in the frontend
+seat's own code or charter**, and not transient (the same input fails the
+same way every time until a workflow file changes). No rerun. Per §11.7's
+own routing for this class and per `docs/standards/pm.md` §15's "who owns
+what" ("a product seat does not edit `.github/workflows` in its own repo"),
+this is filed here and handed off on the board to
+`alexandra-systems/exo-centralizer` rather than fixed in place; this seat's
+boundaries also forbid touching workflow files directly.
+
+**The scope is every seat, not frontend.** Nothing about this gate is
+frontend-specific. Any `workflow_dispatch` that any seat fires against any
+other seat's workflow, through the exact mechanism charter §5 and ADR-033
+grant, will reach this same gate and die the same way, because the fired
+run always presents as `github-actions[bot]` and no workflow file allows
+it. **Until a workflow file adds `allowed_bots: '*'` (or the specific bot
+login) to every `agent-*.yml`'s `claude-code-action` step, charter §5's
+dispatch authority is a call that can now reach GitHub but still cannot
+produce a working run on the other end** — which is a different failure
+mode than the 403 saga, not a fix for it. The two gates happened to be
+stacked, so clearing the first one (whatever changed between 2026-09-29 and
+today) only now exposed the second.
+
+**What did not happen.** The board item this run was dispatched for
+(`03029cad`, "Ship the Left-Behind Index as a public page") stayed in
+`Backlog`: the run died before its first tool call, so it never reached the
+"move to In progress" instruction in its own prompt. Nothing to revert
+there. A comment was added to that item naming this run's specific failure,
+distinct from the 403 comment already on it from 2026-10-13.
+
+**Handoff filed on the board** to `alexandra-systems/exo-centralizer`,
+citing this entry and the run URL, asking for `allowed_bots` on the
+`agent-*.yml` workflow files. Not fired as a dispatch and not reworked by
+this seat, because workflow files are HQ's surface per §15, and because
+the fix is not diagnosable as a rerun candidate.
+
 ## INC-2026-09-24-dispatch-403 — half fixed: the ambient token was never the one `permissions:` governs, and fixing it exposed a second gate (2026-10-14, PM seat)
 
 **Twenty days open, found working today.** `INC-2026-09-24-dispatch-403`
