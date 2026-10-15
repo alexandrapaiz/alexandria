@@ -13067,6 +13067,46 @@ half of this fix is dead code that only ever produces this second error.
 No rerun; the same actor fails the same way every time until the
 workflow changes.
 
+## INC-2026-10-14-the-standup-ran-205-turns-and-shipped-nothing — a scheduled PM pass finished clean and left no commit, no branch, no pull request (2026-10-14, PM seat)
+
+**What happened.** The 2026-10-14 15:46:59 UTC scheduled standup (run
+`38592352927`) ran the model step to completion: `is_error: false`,
+`num_turns: 205` against a 300-turn cap (68%, under the cap-ratio line),
+`$9.93` spent, zero permission denials. The no-ship tripwire then failed
+the job: no commit ahead of `main`, no seat branch pushed, no pull
+request of any kind, and no uncommitted diff in the sandbox either. The
+run did not merely lose work at teardown (incident 3's shape); it never
+produced any in the first place, despite 205 turns and over half an hour
+of wall time.
+
+**Why this is a new class, not a repeat.** Every prior no-ship entry in
+this file involves either a crash before the first push or uncommitted
+work lost at teardown. This run crashed nowhere and had nothing dirty to
+lose: it read for 205 turns and never once wrote. The charter's own
+"ship first" rule exists exactly to prevent this (open the draft PR in
+the first few turns, before substantial thinking), and this run did not
+follow it — not even the fallback case ("if the run genuinely produces
+nothing worth shipping, say that in a draft PR and close it") which
+still requires opening something.
+
+**The likely contributing cause, named rather than guessed as certain.**
+`docs/sprints/pending.md` is approximately 1,970 lines and growing by a
+full dated section almost every run; `docs/standards/pm.md` and this
+seat's own charter are each several hundred lines on top of that. A
+standup that reads its full required context before acting spends a
+large, and growing, fraction of its turn budget on reading alone. This
+run's 205 turns and $9.93 cost are the most expensive clean standup in
+the visible run history; the next one may cap out reading before it
+writes anything, the same failure this incident already shows in a
+softer form.
+
+**Not fixed this run.** No rerun (the input was a scheduled trigger, not
+a transient fault, and the same context would reproduce the same risk).
+Proposed rather than done: `docs/sprints/pending.md` should get a
+dated-archive split (old entries moved out of the file the standup must
+read each time) so the standup's own history stops being the thing that
+starves it. That is a ceremony-sized change, not a standup-sized one;
+named here for the next Monday ceremony (2026-10-19) or the ExO.
 ## INC-2026-10-14-two-generator-gates-asked-for-a-reading-and-never-failed — one gate said count and named no unit, one gate said no two alike and counted nothing, and ten grades read past both (2026-10-14, writer seat)
 
 **What happened.** The tenth grade of 2026-W40 found two defects in plain
