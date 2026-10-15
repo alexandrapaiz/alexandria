@@ -2397,6 +2397,348 @@ button.pill {
   }
 }
 
+/* ---------- left behind ---------- */
+
+/* The Left-Behind Index (sprint-2026-10-12 item 4). It is a list surface, so
+   it inherits the skills library's structure rather than inventing a second
+   one: a native <details> per row, one declared grid for the resting line, the
+   hairline wash on hover, and the panel's contents rising on the house clock
+   and the house curve. Nothing here adds a curve, a clock, a radius or a
+   colour that the stylesheet did not already have (ban list entry 25).
+
+   It does not use --contra. The :root comment reserves that red for
+   `contradicts` edges and their legend swatch on the owner's dispatch of
+   2026-09-25 and says in its own words that it enters nothing else. This page
+   is about contradicted findings and is therefore exactly the surface that
+   would be tempting, which is why the rule is written down here too. The
+   skill receipts made the same call for the same reason. */
+
+.lb-index {
+  margin-top: 48px;
+  border-top: 1px solid var(--line);
+}
+
+/* One grid, declared once, used by the column labels and by every row, so
+   the three fields hold three x positions down the whole list however long a
+   finding runs. Measured at 50 rows before this shipped: a flex line put the
+   date against the width of its own text and the identifier against the
+   width of the claim, which is ban list entry 30 at both ends.
+
+   56px holds C1119 at 12px monospace with room for a five-digit id. 92px
+   holds 2026-10-12 at 12px without wrapping. */
+.lb-head,
+.lb-line {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 92px;
+  gap: 16px;
+  align-items: baseline;
+}
+
+.lb-head {
+  padding: 0 12px 10px;
+  margin: 0 -12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gray);
+}
+
+.lb-row {
+  border-bottom: 1px solid var(--line);
+}
+
+/* 25px of line inside 12 and 12 clears the 44px touch minimum, and the band
+   runs 12px past the text column on both sides so a near miss with the
+   pointer still lands on the row (Freiberg's Fitts note, the same geometry
+   .skill-line uses). */
+.lb-line {
+  position: relative;
+  margin: 0 -12px;
+  padding: 12px 44px 12px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  list-style: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--fast) var(--ease);
+}
+
+.lb-line:hover,
+/* touch has no hover, so the press carries the same feedback; the native tap
+   flash is suppressed above */
+.lb-line:active {
+  background: var(--line);
+}
+
+.lb-line::-webkit-details-marker {
+  display: none;
+}
+
+/* Monospace where data lives, which is the ban list's own positive test. The
+   identifier is a key into the corpus, so it is set as one. */
+.lb-ref {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  letter-spacing: 0;
+  color: var(--gray);
+  white-space: nowrap;
+}
+
+/* ONE line at rest, at every viewport. A claim is two or three sentences, so
+   the resting row shows as much of its first line as the column holds and the
+   rest waits behind the disclosure (ban list entry 22). The clamp is on the
+   cell rather than on the row, so the identifier and the date stay on the
+   first baseline whatever the claim does. */
+.lb-claim {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.lb-head .lb-claim,
+.lb-head .lb-ref,
+.lb-head .lb-flagged {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  display: block;
+  overflow: visible;
+}
+
+.lb-flagged {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gray);
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* The marker, drawn as two hairlines rather than typed, so the upright one
+   rotates down into the minus. Anchored to the first line and not to the
+   middle of the row, because the claim cell is clamped to one line here but
+   the label row above it is not, and top: 50% drifts the moment anything
+   wraps. 12px is the row's padding-top and 14px is half the first line box. */
+.lb-line::before,
+.lb-line::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  top: 26px;
+  width: 11px;
+  height: 1px;
+  background: var(--gray);
+  transition: background-color var(--fast) var(--ease);
+}
+
+.lb-line::after {
+  transform: rotate(90deg);
+  transition: transform var(--slow) var(--ease),
+    background-color var(--fast) var(--ease);
+}
+
+.lb-row[open] > .lb-line::after {
+  transform: rotate(0deg);
+}
+
+/* Refinement, 2026-10-15, and it applies to both list surfaces rather than to
+   the new one alone.
+   
+   The observation that triggered it: at fifty rows an open row's resting line
+   is identical to a closed one except for an 11px marker at the far right, and
+   an open panel runs to 700px when a finding carries four contradictions. So a
+   reader who scrolls down into the panel and back has nothing that says which
+   row they are inside. The skills library has the same shape and the same gap.
+   
+   What it does is hold the hover wash while the row is open. It is the state
+   the row already has under the pointer, so no value enters the stylesheet: no
+   new colour, no new curve, no new clock, and nothing that moves. It works on
+   touch, where there is no hover to carry it, and it reads under
+   prefers-reduced-motion, where the transition is muted but the state is not.
+   
+   This is Freiberg's implicit feedback rather than an animation: the surface
+   answers by holding a state instead of by playing something. Benchmarked the
+   same day against Elicit, Linear and Consensus, none of which animates a
+   disclosure; Linear's whole surface is colour at 0.1s and Consensus's is one
+   clock, which is the discipline this follows rather than the motion. */
+.lb-row[open] > .lb-line,
+.skill-row[open] > .skill-line {
+  background: var(--line);
+}
+
+.lb-line:hover::before,
+.lb-line:hover::after,
+.lb-row[open] > .lb-line::before,
+.lb-row[open] > .lb-line::after {
+  background: var(--ink);
+}
+
+.lb-line:focus-visible {
+  outline-color: var(--ink);
+}
+
+/* The panel's height change is not animated, because the canon bans animating
+   layout properties. What is animated is the contents rising into place:
+   transform and opacity only, on the compositor, interruptible because a CSS
+   animation restarts cleanly when a row is closed and reopened mid-flight.
+   The same rule the skills panel runs, on the same clock and curve. */
+.lb-panel {
+  padding-bottom: 24px;
+}
+
+.lb-row[open] > .lb-panel > .lb-panel-in {
+  animation: skill-panel-in var(--slow) var(--ease) both;
+}
+
+.lb-full {
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.022em;
+  max-width: 600px;
+}
+
+.lb-detail-head {
+  margin-top: 24px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gray);
+}
+
+/* A definition list because that is what it is: a label and the fact behind
+   it, the same treatment the skill receipts carry. 148px matches that block
+   exactly, so a reader moving between the two pages reads one table of
+   evidence rather than two. */
+.lb-against {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--gray);
+  max-width: 600px;
+  display: grid;
+  gap: 10px;
+}
+
+.lb-against > div {
+  display: grid;
+  grid-template-columns: 148px 1fr;
+  gap: 4px 16px;
+  align-items: baseline;
+}
+
+.lb-against dt {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gray);
+}
+
+.lb-against dd {
+  min-width: 0;
+}
+
+/* Every contradiction after the first is a second opinion on the same
+   finding, so it is separated by the house hairline rather than by a card.
+   ADR-10 makes the graph append-only, which is why there can be several. */
+.lb-against + .lb-against {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+/* The papers are the evidence under a finding, which makes them the same
+   kind of link as the citations inside an issue, so they get that treatment
+   rather than a second one. `.digest a` is underline at a 3px offset with the
+   house hairline wash on hover, refined on 2026-10-14 after a run measured
+   every interactive element on the site and found those links answering
+   nothing when pointed at. Shipping a 1px #e8e8e8 border here instead would
+   have been a link that does not read as a link at rest (ban list entry 26)
+   and a second treatment for one job (entry 25). Measured before changing it:
+   the border sat at 1.2:1 against paper. */
+.lb-paper {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: background-color var(--fast) var(--ease);
+}
+
+/* :active carries the same feedback where there is no pointer to hover. */
+.lb-paper:hover,
+.lb-paper:active {
+  background-color: var(--line);
+}
+
+.lb-state {
+  margin-top: 48px;
+  font-size: 17px;
+  color: var(--gray);
+}
+
+/* The phone. The three fields do not fit one line at 390px: 56 and 92 and two
+   16px gaps leave 162px for the finding, which is ban list entry 30's narrow
+   face, where the thing the row exists to identify is the only field that can
+   be compressed and so is the one that gets compressed. So the row restacks
+   instead: the identifier and the date keep one line as metadata, and the
+   finding takes the full width underneath. Nothing is dropped and nothing is
+   truncated harder than it is on the desktop. */
+@media (max-width: 560px) {
+  /* The column labels go, because at this width they are not labelling
+     columns any more. On the restacked row the identifier and the date share
+     the first line and the finding takes the second, so a header built on the
+     same grid wraps to two lines of its own and reads as a stray row above
+     the list rather than as a key to it. Looked at on the phone frame at 1:1,
+     which is the only way this shows: at 390 it is the first thing under the
+     title and it looks like data. The row below carries the same three
+     fields and says what each one is by how it is set, which is what the
+     skills library does at every width. */
+  .lb-head {
+    display: none;
+  }
+
+  .lb-line {
+    grid-template-columns: 1fr auto;
+    gap: 4px 12px;
+    align-items: baseline;
+  }
+
+  .lb-line .lb-ref {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .lb-line .lb-flagged {
+    grid-row: 1;
+    grid-column: 2;
+  }
+
+  .lb-line .lb-claim {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+
+  /* The marker sits beside the metadata line rather than beside the finding,
+     because the metadata is the first line of the row at this width. */
+  .lb-line {
+    padding-right: 36px;
+  }
+
+  .lb-line::before,
+  .lb-line::after {
+    top: 21px;
+    right: 10px;
+  }
+
+  .lb-against > div {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ---------- reduced motion ----------
    Last in the file on purpose: these have to outrank the rules they mute,
    and several of them are defined further down than the block at the top.
@@ -2407,6 +2749,12 @@ button.pill {
   .desk-go,
   .waitlist-field,
   .lib-art,
+  /* the index's row wash and its marker, added with the page on 2026-10-15.
+     Both states still change, they just stop fading to get there. */
+  .lb-line,
+  .lb-line::before,
+  .lb-line::after,
+  .lb-paper,
   /* The citation wash added 2026-10-14 belongs with the other colour
      transitions the house mutes. The wash still appears, it just stops
      fading in to get there. */
@@ -2443,13 +2791,18 @@ button.pill {
   .skill-line,
   .skill-line::before,
   .skill-line::after,
+  .lb-line,
+  .lb-line::before,
+  .lb-line::after,
+  .lb-paper,
   .lib-filter input,
   .agent-note a {
     transition: none;
   }
 
   /* the panel still opens, it just arrives rather than rises */
-  .skill-row[open] > .skill-panel > .skill-panel-in {
+  .skill-row[open] > .skill-panel > .skill-panel-in,
+  .lb-row[open] > .lb-panel > .lb-panel-in {
     animation: none;
   }
 }
