@@ -23,14 +23,15 @@ column is a finding, not a blank.
 | Hugging Face Hub (model repo `Qwen/Qwen3-Embedding-0.6B`) | Model weights and tokenizer | safetensors plus JSON config | Loaded into torch, not code | **None. Revision is unpinned.** |
 | arXiv (`export.arxiv.org/api/query`) | Firehose metadata for 6 categories | Atom XML | No | TLS only, as of this run |
 | arXiv (`arxiv.org/html/<id>`) | Paper full text for distillation | HTML, stripped to text | No | TLS only |
-| 21 RSS and Atom feeds (`sources.yaml`) | Blog posts and release notes | XML | No | TLS only |
+| 45 RSS and Atom feeds (`sources.yaml`) | Blog posts and release notes | XML | No | TLS only |
 | Semantic Scholar (`api.semanticscholar.org`) | Citation counts | JSON numbers | No | TLS only |
 | Groq (`api.groq.com`) | Model completions | JSON text | No | TLS plus a JSON schema gate |
 | Neon (Postgres) | The corpus itself | Rows | No | TLS, and it is our own data |
 | GitHub (API, Actions, `ghcr.io`) | Actions, the agent image, repo content | Code that runs with write tokens | **Yes, all of it** | **Floating tags, no digest pinning** |
 | npm (`registry.npmjs.org`) | The site's dependency tree | Code that runs at build and in the browser | **Yes** | `package-lock.json` integrity hashes |
-| PyPI (via `modal.Image.pip_install`) | Pipeline and MCP dependencies | Code that runs with database and GitHub credentials | **Yes** | Pins on most, open floors on four |
+| PyPI (via `modal.Image.pip_install`) | Pipeline and MCP dependencies | Code that runs with database and GitHub credentials | **Yes** | Pins on most, open floors on five |
 | Clerk | Auth SDK and hosted auth | Code plus a hosted service | **Yes**, in the browser | `package-lock.json` integrity hashes |
+| Polar (`api.polar.sh`, plus its webhook deliveries) | Subscription and order events, as the Merchant of Record | JSON events that decide who may open a paid surface | No, but it alone sets the paid flag | HMAC-SHA256 over the raw bytes, a 300-second freshness window, constant-time compare (`site/lib/polar-core.js`), and it fails closed when the secret is unset |
 | Vercel | Hosting and build | Runs our code | Not an input we pull | Not applicable, it is a runtime |
 | Modal | Pipeline and MCP runtime | Runs our code | Not an input we pull | Not applicable, it is a runtime |
 | The company board (`board.libraryofalexandria.dev`) | Sprint, columns and items, read back by `tools/board.py` | JSON data that becomes text in an agent's context | No, but it steers agents that execute | **None. Bearer token over TLS, and no row here until 2026-10-01** |
@@ -258,6 +259,42 @@ one, because the thing standing between dormant and live is one repository
 secret being set, with no pull request and no smoke run, which
 `docs/agents/runtime-changes.md` classifies as a provider change and therefore a
 runtime change. The sweep records the state rather than the comfort.
+
+**Re-measured 2026-10-15, run 9.** Still dormant, and checked rather than
+carried: `Seat run (open-routed)` records `skipped` and `Seat run (Claude)`
+records `success` in pm-agent runs 38761360347 and 38592352927. The gate also
+gained a second condition since the last sweep, `vars.OPEN_ROUTING == 'on'`,
+so two settings now have to agree before a seat's prompt leaves for a third
+party. This seat cannot read either one: `gh variable list` and
+`gh secret list` both answer 403 for the security token, which is the right
+answer and is why the measurement above is taken from run outcomes instead.
+
+## Polar, and why it is in the table from 2026-10-15
+
+Polar went live on 2026-10-13 (ADR-30, ADR-31) and had no row here until this
+sweep added one, which the standing rule below asked for in the pull request
+that added it. The same gap was a finding on 2026-10-01 for two other
+surfaces, so this is the second sweep in a row to find it, and the pattern is
+recorded in docs/agents/incidents.md rather than only here.
+
+What makes Polar unlike every other row is the direction. We do not pull from
+Polar on a schedule. Polar pushes to us, at `/api/polar-webhook`, and what it
+pushes is the only thing in the product that decides who may open a paid
+surface. So the tamper question is not "would we notice a bad response", it is
+"can somebody else send us one", and that answer was read closely this run and
+is good: the HMAC covers the raw bytes before anything parses them, a missing
+`POLAR_WEBHOOK_SECRET` refuses rather than opens, all three signature headers
+are required, the timestamp is judged before any hashing so a stale replay
+costs nothing, every `v1` candidate is compared in constant time so a secret
+rotation does not need a flag day, and an unrecognised subscription status
+closes the door instead of leaving it as it was.
+
+The one property it does not have is a replay cache. A webhook captured in
+flight can be re-delivered inside the 300-second window. That is not a finding
+today, because every handled event writes the same entitlement state derived
+from the event's own status, so replaying one is idempotent in effect. It is
+written down because it stops being idempotent the first time an event handler
+counts something.
 
 ## The standing rule
 
