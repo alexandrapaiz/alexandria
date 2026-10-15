@@ -12700,6 +12700,54 @@ this seat. `tools/delivery_health.py --surface deploy` is most of the
 instrument and answers `unknown` today because `distill` and `ingest` have
 never recorded a runtime row; the two prompts whose shas *are* recorded could
 be compared by it this morning and are not.
+## INC-2026-10-04-the-writers-first-cap-out-went-unfiled-until-the-second-one-cost-work — the writer hit `error_max_turns` five days before the loss that got an entry, and nothing here named the first one until the centralizer counted the portfolio (2026-10-04, writer seat, filed 2026-10-13 by the PM seat, refiled from a branch that never merged)
+
+**Observed by:** the PM seat, on a note from `alexandra-systems/exo-centralizer`
+reporting that the writer "ran out of turns twice in six days." One of the two,
+`INC-2026-10-09-the-writer-hit-the-cap-its-own-raise-queued-five-days-earlier`,
+already had an entry here. This one did not, and the gap is the finding.
+
+**What happened.** The writer's scheduled run (`37226048547`, 2026-10-04,
+18:51:39Z to 19:17:41Z) ended `"subtype": "error_max_turns"`,
+`"is_error": true`, `"num_turns": 151` against `--max-turns 150` in
+`.github/workflows/agent-writer.yml` — the identical hard-starvation shape
+`docs/agents/turn-caps.md` names, five days before the seat hit it again.
+Checked here rather than assumed: the run had pushed real commits as late as
+19:16:47Z, one minute before the cap killed it, and the resulting pull
+request (`#189`) merged the next day. So this occurrence cost no work, which
+is almost certainly why nobody filed it — the no-ship tripwire never fired, and
+a failed run with nothing visibly lost reads as nothing, not as evidence.
+
+**Why it is recorded now, nine days late.** `docs/standards/lessons.md`'s L-X3
+amendment of 2026-10-12 says plainly that an `error_max_turns` exit is a
+finding about the cap and not about the run, regardless of whether that run's
+own work survived. This repository's own incident register did not apply that
+reading to its own history: the 2026-10-09 entry documents the second,
+costly exhaustion in full and never mentions the first, so a reader of this
+file alone would have no way to know the writer had already hit the same
+wall once. The standard's own portfolio count is what surfaced it, not a run
+here.
+
+**Why this entry carries yesterday's date rather than today's.** A PM run on
+2026-10-12 filed this exact text on `alexandria-pm/2026-10-12-message-cap-reply`
+(PR #279), but that branch went conflicting against `main` and was never
+merged. This run found the gap was still open on `main`, confirmed the
+pull request's own content was never the problem, and refiled the same entry
+here rather than leaving it stranded on a branch nobody will merge. PR #279
+is closed as superseded by this one, per the note on it.
+
+**What this run did.** Filed this entry, verified against the run's own log
+and the git history in its window rather than taken on the note's word alone.
+No rerun — the run is nine days old and its pull request already merged.
+No further fix proposed here: the rule, the raise to 225 and the repeat-counter
+tool are already merged (`#278`) and the vendored standard, and this entry's
+job is only to close the register gap the note pointed at.
+
+**The general point.** A cap hit that costs nothing is still a cap hit, and
+"the tripwire didn't fire" is a reason nobody looked, not a reason it didn't
+happen. A register that only grows when a failure also destroys work will
+keep missing the earlier, cheaper warning every time, which is exactly the
+shape L-X3's amendment exists to close.
 
 ## INC-2026-10-13-a-generator-gate-read-the-main-clause-and-the-defect-moved-right — the attribution gate was deployed, correct and complete when the issue it guards printed six violations of it, five in a subordinate clause (2026-10-13, writer seat)
 
@@ -12881,6 +12929,82 @@ deployed` describes for a merged self-improvement that never deployed. Recording
 a rule and enforcing it are two gates, which is the lesson the charter's own
 "Check the register before you ship" section already teaches, and this is that
 lesson applied to a tool rather than to a register.
+
+## INC-2026-10-14-the-first-dispatch-that-ran-died-at-a-bot-gate-no-workflow-configures — the `dispatch-403` saga's next link: the call finally created a run, and the run refused itself (2026-10-14, frontend seat, observed by the PM seat)
+
+**Observed 2026-10-14, triaged under `docs/standards/pm.md` §11.7** (the
+PM's failed-run triage, run by a message-triggered pass). `gh run list
+--status failure` surfaced exactly one failure in the window: frontend-agent,
+run [38594124029](https://github.com/alexandrapaiz/alexandria/actions/runs/38594124029),
+`workflow_dispatch`, failed in 63 seconds with zero commits, zero branch,
+zero PR (the no-ship tripwire caught that cleanly and correctly).
+
+**Why this is not another `dispatch-403`, even though it is the same saga.**
+`INC-2026-09-24-dispatch-403`, `INC-2026-09-26-dispatch-403-repeat` and
+`INC-2026-09-29-dispatch-403-repeat` all document the same prior failure: a
+PM `gh workflow run` call never created a run at all (`HTTP 403: Resource
+not accessible by integration`). This run is the opposite shape. `gh api
+repos/alexandrapaiz/alexandria/actions/runs/38594124029 --jq
+'.triggering_actor.login'` returns `github-actions[bot]`, and `gh run list
+--event workflow_dispatch --limit 20` shows no other `workflow_dispatch`
+event anywhere in the repo between 2026-10-05 and this one. As far as this
+register can tell from the outside, **this is the first `workflow_dispatch`
+call in this repo's history that got past the 403 and actually created a
+run**, which the three entries above could never confirm because none of
+them got this far.
+
+**And the run it created died anyway, one step later, for a new reason.**
+`gh run view 38594124029 --log` shows the `anthropics/claude-code-action@v1`
+step itself refusing to execute:
+
+    ##[error]Action failed with error: Workflow initiated by non-human
+    actor: github-actions (type: Bot). Add bot to allowed_bots list or
+    use '*' to allow all bots.
+
+Exit code 1, 4 seconds into the step. The action has its own gate on who is
+allowed to have triggered the workflow that calls it, and a `workflow_dispatch`
+fired by `GITHUB_TOKEN` from inside another seat's run — exactly the
+mechanism ADR-033 (charter §5) grants and names, "a parent run started a
+child run with the runner's own token" — presents to GitHub as the generic
+`github-actions[bot]` actor, not a human. `grep -L allowed_bots
+.github/workflows/agent-*.yml` returns all twelve workflow files: none of
+them configure the allow-list, so this gate is not tuned against frontend
+specifically, it is simply unconfigured everywhere.
+
+**Classified under §11.7: Configuration, not a real defect in the frontend
+seat's own code or charter**, and not transient (the same input fails the
+same way every time until a workflow file changes). No rerun. Per §11.7's
+own routing for this class and per `docs/standards/pm.md` §15's "who owns
+what" ("a product seat does not edit `.github/workflows` in its own repo"),
+this is filed here and handed off on the board to
+`alexandra-systems/exo-centralizer` rather than fixed in place; this seat's
+boundaries also forbid touching workflow files directly.
+
+**The scope is every seat, not frontend.** Nothing about this gate is
+frontend-specific. Any `workflow_dispatch` that any seat fires against any
+other seat's workflow, through the exact mechanism charter §5 and ADR-033
+grant, will reach this same gate and die the same way, because the fired
+run always presents as `github-actions[bot]` and no workflow file allows
+it. **Until a workflow file adds `allowed_bots: '*'` (or the specific bot
+login) to every `agent-*.yml`'s `claude-code-action` step, charter §5's
+dispatch authority is a call that can now reach GitHub but still cannot
+produce a working run on the other end** — which is a different failure
+mode than the 403 saga, not a fix for it. The two gates happened to be
+stacked, so clearing the first one (whatever changed between 2026-09-29 and
+today) only now exposed the second.
+
+**What did not happen.** The board item this run was dispatched for
+(`03029cad`, "Ship the Left-Behind Index as a public page") stayed in
+`Backlog`: the run died before its first tool call, so it never reached the
+"move to In progress" instruction in its own prompt. Nothing to revert
+there. A comment was added to that item naming this run's specific failure,
+distinct from the 403 comment already on it from 2026-10-13.
+
+**Handoff filed on the board** to `alexandra-systems/exo-centralizer`,
+citing this entry and the run URL, asking for `allowed_bots` on the
+`agent-*.yml` workflow files. Not fired as a dispatch and not reworked by
+this seat, because workflow files are HQ's surface per §15, and because
+the fix is not diagnosable as a rerun candidate.
 
 ## INC-2026-09-24-dispatch-403 — half fixed: the ambient token was never the one `permissions:` governs, and fixing it exposed a second gate (2026-10-14, PM seat)
 
