@@ -530,7 +530,7 @@ def fetch_paper(paper_id: str) -> dict | None:
     `html` is the half this job used to throw away, and throwing it away is
     what emptied `papers.institutions`: the affiliations are printed in the
     header, in markup, and `clean_html` deletes every tag. `text` is None, with
-    `html` still set, for a page too thin to read — the affiliations can still
+    `html` still set, for a page too thin to read. The affiliations can still
     be parsed out of it, and the claims then come from the abstract.
     """
     return read_paper().fetch_paper(paper_id, max_chars=FULLTEXT_CHARS)
