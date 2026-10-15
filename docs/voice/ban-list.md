@@ -2577,6 +2577,13 @@ gap that the same collision had left empty (incident 25).
     is one and on the paper's own title where there is not. The sweep entry 90
     requires found four gates of this class and three were already correct, so
     the count is one and the entry closes.
+    **And the ending is stated at its real strength, per L-A22.** The standard
+    says that when a law has failed to fire, writing it more clearly is not the
+    fix, and that where the check cannot go in a command the rule is recorded
+    as enforced at the reliability of reading. This one is. The patch is made
+    because it costs a paragraph and aligns this gate with the three that
+    already group by paper, and the stronger half is filed in docs/ideas.md on
+    2026-10-15 as a pipeline-side comparator, with entry 96 as its sibling.
     ```
     LANDED prompts/digest.md: "The check is a comparison against a list and never a reading of the sections."
     ```
