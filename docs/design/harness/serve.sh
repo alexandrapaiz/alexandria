@@ -58,19 +58,31 @@ fi
 # `next start` forks a worker, so the listener is the PID started above or a
 # descendant of it. Anything else holding the port is a process this script did
 # not start, which is the stale server by definition.
-if command -v ss >/dev/null 2>&1; then
-  listener=$(ss -lptnH "sport = :3000" 2>/dev/null | grep -o 'pid=[0-9]*' | head -1 | cut -d= -f2 || true)
-  owner="$listener"
+# This uses ps and nothing else on purpose. The first draft of this check
+# asked `ss` for the pid holding the port, which is the direct question, and
+# `ss` is not installed in the agent container, so the check skipped itself in
+# silence. A guard that quietly does nothing in the one environment it was
+# written for is worse than no guard, because the run reads its output and
+# believes it passed.
+#
+# So the question is asked a different way, with a tool that is always there:
+# every `next-server` alive after a successful start must descend from the
+# process this script started. A survivor is one that does not.
+strays=
+for srv in $(ps -eo pid=,args= | awk '$2=="next-server"{print $1}'); do
+  owner="$srv"
   while [ -n "$owner" ] && [ "$owner" != "1" ] && [ "$owner" != "$STARTED" ]; do
     owner=$(ps -o ppid= -p "$owner" 2>/dev/null | tr -d ' ' || true)
   done
-  if [ -n "$listener" ] && [ "$owner" != "$STARTED" ]; then
-    echo "FAIL: port 3000 is held by pid $listener, which did not come from" >&2
-    echo "      this script's pid $STARTED. That is a stale server." >&2
-    exit 1
-  fi
-  echo "PID MATCH: port 3000 is held by $listener, under $STARTED"
+  [ "$owner" = "$STARTED" ] || strays="$strays $srv"
+done
+if [ -n "$strays" ]; then
+  echo "FAIL: next-server($strays) is alive and did not come from this" >&2
+  echo "      script's pid $STARTED. That is a stale server, and it may be" >&2
+  echo "      the one answering on 3000." >&2
+  exit 1
 fi
+echo "PID MATCH: every live next-server descends from $STARTED"
 
 echo "== proving the server is THIS build =="
 served=$(curl -s http://127.0.0.1:3000/ | grep -o '/_next/static/css/[^"]*' | head -1)

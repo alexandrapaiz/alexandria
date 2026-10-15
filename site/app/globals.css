@@ -1538,8 +1538,13 @@ button.pill {
   align-items: baseline;
 }
 
+/* 12 and not 11. The canon's type scale says small print is 12 or 14 and
+   never 11, and this rule had carried 11 since the receipts shipped on
+   2026-09-29. Caught on 2026-10-15 while checking a new block that had copied
+   it, which is how an out-of-system value spreads: the second instance is
+   always justified by the first. */
 .skill-receipts dt {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -2622,7 +2627,7 @@ button.pill {
   color: var(--gray);
   max-width: 600px;
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .lb-against > div {
@@ -2634,7 +2639,7 @@ button.pill {
 
 .lb-against dt {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--gray);
@@ -2725,13 +2730,13 @@ button.pill {
   /* The marker sits beside the metadata line rather than beside the finding,
      because the metadata is the first line of the row at this width. */
   .lb-line {
-    padding-right: 36px;
+    padding-right: 32px;
   }
 
   .lb-line::before,
   .lb-line::after {
     top: 21px;
-    right: 10px;
+    right: 12px;
   }
 
   .lb-against > div {

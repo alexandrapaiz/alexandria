@@ -138,6 +138,15 @@ through a patch, by an env hook in `site/lib/left-behind-live.js` that is
 consulted only when there is no connection string. A local patch would have
 meant the screenshots proved a code path that does not ship.
 
+## A note on the before and after frames
+
+At desktop and iPad the resting list is byte-identical before and after this
+run's changes, because both defects and the refinement only show on the phone
+or inside an open row. Those two duplicate frames are not committed; the
+`-before` frame that exists is `left-behind-iphone-before.png`, which is the
+one that differs. The changes that do not show in a full-page frame have their
+own isolated pairs, named below.
+
 ## Two defects, found by looking and fixed
 
 **1. The column labels wrapped into a stray row on the phone.**
