@@ -15701,3 +15701,116 @@ nobody has to re-derive it:
   given two entries reached for `observation` independently.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-16 — Craft scan: Semantic Scholar publishes the ceiling and never what happens when you hit it (engineer seat)
+- Trigger: today's break-fix is about a provider limit binding on a shared
+  account, so the scan went to the one product in
+  `docs/market/landscape.md` whose whole surface is a rate-limited API, last
+  observed 2026-09-18 and a month stale. Read directly:
+  [semanticscholar.org/product/api](https://www.semanticscholar.org/product/api).
+- What is worth stealing: the ceiling is published as a SHARED number.
+  "Rate-limited to 1000 requests per second shared among all unauthenticated
+  users" tells a caller something a per-caller quota cannot, which is that its
+  own throughput depends on everybody else's behaviour. A key moves you to
+  "1 RPS on all endpoints", which is honest to the point of being unflattering
+  and is the number an integrator actually needs to plan against. alexandria has
+  exactly this structure and publishes it nowhere a reader can see: Moonshot's
+  organization concurrency is 1, Groq's free tier allows 200,000 tokens a day
+  per model and three corpus jobs share it, and both facts live in code comments
+  and ADR-39. The product's own surfaces never say that this week's issue read
+  what a shared account left it.
+- What alexandria does better: it says what happens when the ceiling binds, and
+  it says it per stage. The page publishes the limit and then stops. It does not
+  say what a caller receives when throttled, it gives no recommended backoff,
+  and "requests may also be further throttled during periods of heavy use"
+  carries no number at all. A distill run prints which of four ceilings stopped
+  it by name, because "raise the cap", "raise the Moonshot tier" and "raise the
+  paper count" are three different fixes, and `papers.fulltext_chars` records
+  per paper how much was actually read rather than how much was wanted. That is
+  the harder half of publishing a limit and almost nobody does it.
+- Also noted, against the landscape entry: still no documented full-text or
+  open-access PDF return on that page. The Academic Graph is metadata,
+  embeddings and citation edges, with bulk corpora behind the Datasets service
+  and S2ORC. So the entry's standing weakness, that it is infrastructure rather
+  than a product, is unchanged, and it remains unusable as a full-text source
+  for the one thing this pipeline needs full text for.
+- First step: update the Semantic Scholar entry in `docs/market/landscape.md`
+  with the two published numbers and today's date, which is the market seat's
+  file rather than this seat's to restructure, so it is named here and left.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-16 — A degradation note that names the destination and not the route
+- Trigger: today's break-fix. `budget.cron_degradations()` has printed the exact
+  arithmetic of the distill defect every day since 2026-09-30, three notes, one
+  per fallback, each ending "It falls back to abstract[:6000], which fits, so
+  the run succeeds and the paper is read from its abstract instead of in full."
+  Every word of that is true. The route it describes cost three refused requests
+  and up to 27 minutes of backoff per paper, and the note says nothing about the
+  route, so gate 1 of the deploy ladder passed on it for sixteen days.
+- What: give that function a second sentence per note, derived rather than
+  written: how many requests the degradation costs before it lands, and how much
+  wall clock, from `llm.RETRIES_PER_MODEL`, `llm.BACKOFF_SECONDS` and
+  `llm.BACKOFF_CEILING` against the number of models that cannot take the big
+  request. For distill before today that sentence reads "and it costs 12 refused
+  requests and up to 1,620 seconds per paper to get there, inside a 5,400-second
+  timeout", which is a line no reader could have passed. The general rule behind
+  it is that a guard reporting a fallback has to price the fallback, because an
+  unpriced fallback reads as a feature.
+- First step: one function in `pipeline/budget.py` that takes the count of
+  non-fitting models and returns the request count and the worst-case seconds,
+  called from `cron_degradations`, with a test that it moves when the retry
+  policy moves. Half a day, no provider, no key.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-16 — Every scheduled job sizes its request against its own fallback list, in CI, or the next one repeats this
+- Trigger: today's break-fix, and the fact that it was found by reading a stage
+  rather than by a gate. Four jobs in this repository call a model.
+  `pipeline/weekly.py` sizes its payload to the model it is about to ask and has
+  since incident 22. `pipeline/distill.py` does as of today. `triage.py` and
+  `interpret.py` do not, and they are fine by arithmetic rather than by
+  construction: triage's measured call is 4,745 tokens against the fallback's
+  6,800 and interpret's is about 1,000. Both have margin today and neither has a
+  test that notices the day a prompt grows into it.
+- What: one test over `budget.CRON_REQUESTS` that asserts, for every scheduled
+  job and every model on that job's own fallback list, that the job builds a
+  request that fits that model, at that job's documented degraded size where it
+  has one. Not the head of the list, which is the narrowing that let today's
+  defect through `tests/test_corpus_drain.py` for sixteen days. The point is to
+  make the property hold by construction for all four jobs rather than to audit
+  one job by hand after a stall.
+- First step: write it against `budget.check_request` and
+  `budget.request_models`, which already exist and already know every number it
+  needs, then add the file to `.github/workflows/checks.yml`'s list. The second
+  half needs a workflow-scoped hand, so item 17 of
+  `docs/agents/pending-workflow-changes.md` is the better carrier for it than a
+  fifth attempt at that file.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-16 — A red main is the one repair that must never ride a feature branch
+- Trigger: today's observation. `tests/test_check_registers.py` has been failing
+  on `main` for 48 hours. Detection took minutes and authorship took fifteen,
+  `98d670b`, written by the seat that found it on 2026-10-14. It is still not on
+  `main`, because it was committed onto `engineer/2026-10-15-undeployed-pipeline`,
+  which is PR #301: 3,901 insertions, 25 files, three runs of work, product
+  code. A one-line heading rename inherited the review latency of everything it
+  shared a branch with. Full account:
+  `INC-2026-10-16-the-red-main-fix-was-written-in-fifteen-minutes-and-took-two-days-to-ship`.
+- What: a clause in the engineer charter's red-main step, and in the same step
+  of every other charter that carries it, saying that the repair goes out as its
+  own pull request containing nothing else, titled so the owner can merge it
+  without reading anything beside it, even when the seat is already holding a
+  larger branch that could carry it. The reason it is worth a clause rather than
+  judgement is that the judgement made on 2026-10-14 was reasonable and still
+  produced a 48-hour red: the seat declined to rename a second time to avoid two
+  renames at one anchor, which is incident 6's shape, and then the only copy of
+  the fix was parked behind a review nobody could do in one sitting. A separate
+  pull request has neither problem.
+- First step: the owner's merge of this entry, then one paragraph in
+  `prompts/engineer-agent.md` under "Check the register before you ship". A
+  charter edit is the owner's and never this seat's commit, which is why this is
+  a ledger entry and not a diff.
+- Cost: $0
+- Status: proposed
