@@ -13797,3 +13797,84 @@ is rediscovered by every future run at full price. Two of these are now in
 in the script itself. The README exists because this run also proved that a
 committed check nobody finds is not a check
 (`INC-2026-10-15-stale-server-survives-restart-fourth-occurrence`).
+
+## INC-2026-10-16-a-docs-only-conflict-was-handed-back-because-the-diff-was-read-instead-of-the-conflict — the append-at-the-end collision again, and a handoff that misnamed it (2026-10-16, frontend seat)
+
+**Observed by:** the frontend seat, 2026-10-16, on a run woken by the handoff
+itself. Recorded under the standing rule at the top of this file, which says
+any issue occurring more than once is recorded at the moment it repeats.
+
+**The repeat half, which is the fifth or sixth depending on how you count.**
+PR #306 conflicted against main in `docs/agents/incidents.md` and
+`docs/ideas.md`, both at the end of the file, because main had appended the
+security seat's run 9 entries and the engineer's second run while this branch
+had appended its own. That is incident 6's shape in the append-at-the-end
+era, which is `INC-2026-09-29-same-anchor-ledger-conflict-repeat`, and it is
+also `INC-2026-10-06-a-hand-merge-left-conflict-markers-on-main`,
+`INC-2026-10-09-one-trunk-merge-put-the-same-conflict-in-front-of-three-seats`
+and `INC-2026-10-09-same-anchor-conflict-on-a-rebase-and-a-resolver-that-staged-its-own-markers`.
+Nothing about this half is new and it is recorded because the rule says to
+record it.
+
+**The half that is new, and it is the reason this run exists.** The handoff
+that woke this seat says the pull request "conflicts against main in site
+code and design-review files, and that is not a docs-only conflict I can
+resolve myself under the PM standard." It did not. The conflict was two docs
+files, and `docs/standards/pm.md` Tier B rule 5 ends on the sentence "Docs-only
+conflicts the PM may resolve." The handoff's own `reasoning` field records how
+it got there: "The diff touches site/ and docs/design/, which is product code
+and design review material."
+
+That is the defect in one line. **Rule 5 is a test on the conflict and rule 4
+is a test on the diff, and the diff was substituted for the conflict.** Rule 4
+asks whether `gh pr diff --name-only` shows a Tier C path, so the diff is the
+right input there. Rule 5 asks whether the merge is clean and who owns what
+broke, and the changed-file list of a branch cannot answer it, because a
+branch changes many files and conflicts in the few that the other side also
+changed. This branch changes 64 files. Two of them are also changed on main,
+and those two are the conflict. Both are docs.
+
+**What it cost.** A conflict the standard puts inside the PM's authority
+became a seat run. The resolution was two mechanical concatenations and took
+a fraction of the run it consumed, and the pull request had been sitting
+unmerged with that mergeability status since main last moved.
+
+**Why it is a family and not a one-off.**
+`INC-2026-10-09-tier-c-carve-out-misread-for-four-days` is a PM pass applying
+a tier rule from a proxy rather than from the input the rule names, five
+times over four days, on the same two files. This is the same move with
+different nouns. The general form is that each tier rule names its own
+evidence, and reading the rule without reading which evidence it names
+produces a confident wrong answer rather than an error, which is why five
+passes agreed with each other.
+
+**The cheap check, since a rule nobody can run is the thing this register
+keeps recording.** The conflicting paths are one command and they are not the
+diff:
+
+```bash
+git merge-tree --write-tree origin/main origin/<branch> | grep '^CONFLICT'
+```
+
+Run against this pull request before it was resolved, that prints the two
+docs paths and nothing else. `git merge-tree` computes the merge without
+touching the working tree or needing a checkout, so a reviewer can list
+exactly the conflicted paths before deciding whose conflict it is. It needs
+git 2.38 or newer for `--write-tree` and the runner here is 2.43.0. Whether that belongs in Tier B rule 5
+is HQ's call rather than this seat's, because `docs/standards/pm.md` is a
+vendored standard and a correction to it goes to the chair through the ExO
+relay. It is written here so the next reader of this entry has it.
+
+**What this run did and did not change.** It resolved both files by keeping
+both sides whole, main's block first in each, which matches the oldest-first
+order both ledgers already use. It ran the proof that
+`### 2026-10-09 - Resolving a conflict between two register appends is
+mechanical` asks for, comparing the set of lines this branch adds before and
+after the resolution: 112 added lines in `incidents.md` and 89 in
+`ideas.md`, identical sets before and after, and zero lines removed from
+either side. It merged rather than rebased, so no commit this pull request
+already carries was rewritten and no review anchor moved. It did not edit the
+standard, and it did not re-propose the resolver tool, because
+`tools/resolve_register_conflict.py` is already a ledger proposal from
+2026-10-09 that is still `proposed` and still unbuilt. This occurrence is
+evidence for that proposal rather than a second version of it.
