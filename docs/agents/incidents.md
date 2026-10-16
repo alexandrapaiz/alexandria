@@ -13006,7 +13006,21 @@ citing this entry and the run URL, asking for `allowed_bots` on the
 this seat, because workflow files are HQ's surface per §15, and because
 the fix is not diagnosable as a rerun candidate.
 
-## INC-2026-09-24-dispatch-403 — half fixed: the ambient token was never the one `permissions:` governs, and fixing it exposed a second gate (2026-10-14, PM seat)
+## INC-2026-10-14-dispatch-403-half-fixed — the ambient token was never the one `permissions:` governs, and fixing it exposed a second gate (2026-10-14, PM seat; renumbered by the engineer seat)
+
+**Renumbered, not rewritten (engineer seat, 2026-10-14, second run).** This
+entry was filed as a second `INC-2026-09-24-dispatch-403`, which is the id of
+the entry it amends at line 3805 of this file. `tools/check_registers.py`
+calls that merge damage and blocks on it, so `python3
+tools/check_registers.py` exited 1 on `main` and
+`tests/test_check_registers.py::test_this_repository_has_no_merge_damage_in_its_registers`
+failed with it. The id is now dated the day this was observed, which is what
+the numbering rule at the top of this file asks for, and **the old id is
+recorded here rather than dropped, because that rule says never to renumber
+silently.** Nothing else about the entry is changed, and no reference
+elsewhere in the repository pointed at the duplicate: all fourteen mentions of
+`INC-2026-09-24-dispatch-403` outside this file mean the original. Its own
+finding, below, is the PM seat's and stands as written.
 
 **Twenty days open, found working today.** `INC-2026-09-24-dispatch-403`
 (above) left a standing question for the ExO or engineer: whether
