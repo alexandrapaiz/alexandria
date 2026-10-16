@@ -15701,3 +15701,99 @@ nobody has to re-derive it:
   given two entries reached for `observation` independently.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-16 — Five sources are dead and retiring one is the owner's call (engineer seat, scheduled run)
+- Trigger: the first run of `tools/feed_health.py`, written today, which fetched
+  all 53 sources in `sources.yaml` and found 7 delivering nothing. One was a
+  real URL error and is fixed in this PR (`gh-spiffe` pointed at
+  `spiffe/spiffe`, the specification repository, which cuts no releases; it is
+  now `spiffe/spire`, which answers with 10 entries at 0.8 days). One was
+  intentional and now says so in a form the checker reads (`gh-autogen` carries
+  `expect: archive`). The other five need a ruling. Full measurement in
+  `docs/evals/2026-10-16-feed-health.json`.
+- What: `mit-csail` has published nothing in 2,664 days, which is 2019.
+  `stanford-sail` nothing in 1,595. `langchain-blog` returns 200 with zero
+  items and duplicates the live `langchain` entry. Those three are retirements
+  and the only reason this PR does not make them is that ADR-7 and ADR-12 give
+  `sources.yaml` the shape of a proposal surface rather than a file a seat
+  edits on its own judgement. Two are not retirements and are worth more:
+  `qwen` is tier c, a frontier lab's own channel, 200 with 44 items and nothing
+  in 389 days, and four candidate replacement URLs were probed today and all
+  failed, so a human has to find where that feed moved. `owasp-genai` returns
+  403 with a browser user agent too, so it is blocked rather than gone.
+- First step: the owner says retire or keep on the three dead ones, and
+  whoever has five minutes finds Qwen's current feed URL. Deleting a line from
+  `KNOWN_DEAD` in `tools/feed_health.py` is how a ruling lands.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-16 — A gate at deploy time cannot watch a feed that dies between deploys (engineer seat, scheduled run)
+- Trigger: today's work made `python3 tools/feed_health.py` the first rung of
+  ingest's deploy ladder, and then the ledger's own entry of 2026-10-08 said
+  the quiet part: nothing deploys the pipeline, so production runs whatever a
+  hand last pushed. A gate on an act nobody performs fires never. `mit-csail`
+  died in 2019 and no deploy since has been able to notice.
+- What: the census needs to run on a cadence rather than only at a deploy, and
+  post to the board when the count of delivering sources drops. The constraint
+  is that it must cost nothing and must not be a sixth Modal cron, since ADR-12
+  records the free tier's cap of five as already taken. Two cheap shapes: fold
+  the check into one of the five existing jobs so it rides an already-scheduled
+  container, or run it as a step in an existing GitHub Actions workflow, since
+  it needs no credentials at all and that is the whole reason it was built
+  credential-free. The second is cheaper and is also the one no seat can
+  install, which makes it a `pending-workflow-changes.md` item rather than a
+  build task.
+- First step: decide which of the two shapes, then either one import in a
+  pipeline job or one queued workflow step. The threshold is already computed:
+  `failures()` returns the unpinned dead and is what the exit code reads.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-16 — Nobody has measured which tier the corpus actually comes from (engineer seat, scheduled run)
+- Trigger: the ages in today's census, which were not what this seat expected.
+  The tier c sources, which `sources.yaml` calls "frontier/open-lab owned
+  channels" and gives a strong triage prior, are mostly slow:
+  `transformer-circuits` newest item 56.6 days, `thinking-machines` 77.6,
+  `lilianweng` 104.6, `gh-mcp-spec` 79.9. Every one passes the health check and
+  should. Meanwhile each of the 8 arXiv categories returned its full 100 items
+  dated today.
+- What: the tier is a triage prior carried on every paper row, so it steers
+  what gets read and what reaches an issue. If tier c contributes a few dozen
+  rows a month against the firehose's thousands a day, then the prior is doing
+  far less work than its design assumes, and the issue's evidence mix is
+  effectively arXiv with decoration. That may be fine. Nobody knows, because
+  the number has never been taken. It is one `select tier, source, count(*)`
+  against `papers` grouped by month, and the answer changes how much the
+  slow-but-trusted sources are worth chasing when one of them moves.
+- First step: one query, run against Neon by a seat that holds the credential,
+  printed into `docs/evals/` beside today's census. This run could not: no
+  `NEON_*` in the environment and no Modal CLI on the runner.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-16 — Craft scan: Last Week in AI publishes a cadence promise in its name and the evidence against it in its archive (engineer seat, scheduled run)
+- Trigger: today's rotation through `docs/market/landscape.md`, taking the one
+  weekly digest in the file that no craft scan had opened, and taking it on the
+  day this org's own press had missed two Mondays.
+- What is worth stealing: the two surfaces are deliberately different, and the
+  split is better craft than it first looks. The landing page carries no date
+  at all, no issue list and no archive link, so the product promises "weekly"
+  in prose and never promises a specific issue on a specific day. Nothing on
+  it can be late. The archive then carries a date and a sequential number on
+  every issue, so a reader who wants to audit cadence can, and the integers
+  make a skipped issue arithmetically visible in a way a date alone does not.
+  What alexandria should steal is the sequence number, not the vagueness:
+  `/library` labels issues by ISO week, which makes a gap visible only to a
+  reader who already knows which weeks exist. An issue number cannot have a
+  hole in it that nobody sees.
+- What alexandria does better: their actual cadence, measured on the archive
+  today, is #343 on Sep 7, #344 on Sep 17, #345 on Sep 30, #346 on Oct 9, which
+  is gaps of 10, 13 and 9 days under a name that says "week," and the newest is
+  7 days old right now. Nothing there appears to raise when a week slips. This
+  org discovered its own missed Monday in eleven hours and has three surfaces
+  watching it: `/api/delivery`, `tools/press_watch.py`, and the rule in
+  `docs/agents/delivery-health.md`. We also publish our sources, which they do
+  not: `sources.yaml` names all 53 in the open, and as of today their liveness
+  is measured rather than asserted.
+- Cost: $0
+- Status: proposed
