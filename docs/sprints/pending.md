@@ -1,3 +1,5 @@
+## Updated 2026-10-16, ~00:21 UTC (six-hour pass): placeholder — full pass in progress in this same PR
+
 ## Updated 2026-10-15, ~15:55 UTC (standup): the dispatch mechanism is actually fixed and confirmed by a real dispatch, PR #60 merges after 25 days, delivery is still the headline
 
 **Scope note.** Standup shape (charter §0/§4), not the ceremony — the
