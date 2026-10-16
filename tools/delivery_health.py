@@ -142,7 +142,7 @@ MCP_URL = "https://ap4509--alexandria-mcp-serve.modal.run"
 # publishes the rows this command judges and no seat needs a credential to read
 # them. Facts only: the judgement below is the single copy.
 RECEIPT_URL = f"{SITE_URL}/api/delivery"
-RECEIPT_VERSION = 4  # must match site/lib/delivery-core.js RECEIPT_VERSION
+RECEIPT_VERSION = 5  # must match site/lib/delivery-core.js RECEIPT_VERSION
 
 # And the versions this reader can still read. Exact-match was the rule until
 # 2026-10-10 and it made every additive field an outage: the site deploys on a
@@ -156,9 +156,11 @@ RECEIPT_VERSION = 4  # must match site/lib/delivery-core.js RECEIPT_VERSION
 # have, never a queue of zero), so version 1 stays readable. Version 3 added
 # `pipeline.distilled_newest` on the same terms, so versions 1 and 2 stay
 # readable too, and version 4 added the two sibling-stage markers on the same
-# terms again. A version that removed or renamed a field would not be added to
-# this tuple.
-READABLE_VERSIONS = (1, 2, 3, 4)
+# terms again, and version 5 added the `payments` block on the same terms once
+# more: an absent block is a till this reader cannot see, which is `unknown`,
+# and never a till with nothing wrong. A version that removed or renamed a
+# field would not be added to this tuple.
+READABLE_VERSIONS = (1, 2, 3, 4, 5)
 
 # Which reader answered. It goes in every surface's evidence as `read_via`,
 # because "the press printed" and "a second-hand record says the press printed"
@@ -181,6 +183,16 @@ PIPELINE_STALE_DAYS = 2
 # reason this is not tightened further, since its own drift is caught here long
 # before Monday comes round again.
 DEPLOY_GRACE_HOURS = 24
+
+# How long a deferred payment may stay deferred before it is an alarm rather
+# than a retry in flight. Polar answers a 503 by bringing the event back on its
+# own schedule, and the usual cause is this product's own Clerk webhook not
+# having landed yet, which is seconds. Six hours is many retries later: by then
+# the row is not waiting on a race, it is waiting on somebody. The number is
+# deliberately well inside Polar's own retry window, because the failure to
+# catch is a payment that stays stuck until the buyer writes in, and a day-long
+# grace is a day of a paid customer with no access.
+PAYMENT_DEFER_GRACE_HOURS = 6
 
 # One mail a day per app while a drift lasts, not one per check. The standup
 # runs this command every morning and a week of stale deploy must not be a week
@@ -1274,6 +1286,108 @@ def name_undeployed(found: dict, limit: int = DEPLOY_NAMED_COMMITS) -> str:
             + (f", and {rest} more" if rest > 0 else ""))
 
 
+def recording_asked_at(repo_root: Path, app: str, ref: str = "HEAD") -> dict:
+    """When the trunk started asking this app to record a runtime.
+
+    The answer is a date and the commit that carries it, or a `why`. It exists
+    because "this app has no row" has two causes that look identical in the
+    table and are opposites in production.
+
+    One is an app that cannot record: it is in `runtime_sha.APPS` and its
+    module never calls `record_runtime`, so no deploy of it will ever write a
+    row and the age of its code says nothing about the age of its image. That
+    is unmeasured, and this function returns a `why` for it.
+
+    The other is an app whose own code has asked it to record since a datable
+    commit, and which has still never recorded. A deploy built from that commit
+    or anything after it writes its row on its first run. So no row means the
+    running image predates that commit, which makes the age of that commit a
+    lower bound on the age of the deploy. That is drift, and it is the state
+    `distill` and `ingest` were in for five days while this guard called them
+    unmeasured and said nothing (`INC-2026-10-14-the-two-apps-the-drift-guard-
+    could-not-see`).
+
+    The pickaxe takes the newest commit that changed the call rather than the
+    oldest, which is the conservative end: a later edit to that line cannot
+    make the image younger than it is, and dating from the original add would
+    report an age the evidence does not carry.
+    """
+    from pipeline import runtime_sha
+
+    module = runtime_sha.APPS[app]
+    status, out = _git(repo_root, "log", "-1", "--format=%h%x1f%cI",
+                       "-S", f'record_runtime(conn, "{app}"', ref,
+                       "--", module)
+    if status != 0:
+        return {"why": f"git could not read {module} at {ref} here"}
+    if not out:
+        return {"why": f"no commit in this history adds a record_runtime call "
+                       f"to {module}"}
+    short, _, when = out.partition("\x1f")
+    try:
+        at = datetime.fromisoformat(when).astimezone(timezone.utc)
+    except ValueError:
+        return {"why": f"the commit that added the call ({short}) has no "
+                       f"readable date here"}
+    return {"sha": short, "at": at}
+
+
+def undeployed_since(repo_root: Path, app: str, commit: str,
+                     limit: int = DEPLOY_HISTORY_LIMIT,
+                     ref: str = "HEAD") -> dict:
+    """The commits an image older than `commit` cannot contain.
+
+    `undeployed_commits` recovers the deployed commit by replaying digests
+    until one matches what the container reported. An app that has never
+    reported has no digest to match, so that walk cannot start, and until now
+    the answer stopped at "there is no deployed state to diff against". There
+    is still no deployed commit here, and there is a bound: everything from
+    `commit` forward that touched this app's files is undeployed, because the
+    image predates `commit` by the argument in `recording_asked_at`.
+
+    A bound is worth naming. "distill is 5 days behind" does not tell the
+    owner that the five days contain the three fixes to the thing that is
+    broken, and `name_unrecorded` puts them in the headline.
+    """
+    paths = _paths_at(repo_root, app, ref)
+    if paths is None:
+        from pipeline import runtime_sha
+        return {"why": f"{runtime_sha.APPS[app]} cannot be read at {ref} here"}
+    # `commit^..ref` would drop `commit` itself, and `commit` is undeployed too.
+    status, out = _git(repo_root, "log", f"-{limit}",
+                       "--format=%H%x1f%h%x1f%s%x1f%cI",
+                       f"{commit}~1..{ref}", "--", *paths)
+    if status != 0:
+        # A root commit has no `~1`, and a shallow clone may not have the
+        # parent either. Both are a reason to name nothing rather than to
+        # guess at a range.
+        return {"why": f"this checkout cannot list the commits since {commit}"}
+    commits = []
+    for line in out.splitlines():
+        parts = line.split("\x1f")
+        if len(parts) == 4:
+            commits.append({"sha": parts[1], "subject": parts[2], "at": parts[3]})
+    return {"asked_in": commit, "commits": commits, "searched": len(commits)}
+
+
+def name_unrecorded(found: dict, limit: int = DEPLOY_NAMED_COMMITS) -> str:
+    """The same clause as `name_undeployed`, for an app with no row at all.
+
+    Empty string when there is nothing trustworthy to say, so a caller can
+    append it unconditionally.
+    """
+    if "commits" not in found:
+        return ""
+    commits = found["commits"]
+    if not commits:
+        return ""
+    named = ", ".join(f"{c['sha']} {c['subject']}" for c in commits[:limit])
+    rest = len(commits) - limit
+    plural = "commit" if len(commits) == 1 else "commits"
+    return (f"{len(commits)} undeployed {plural} since {found['asked_in']}: "
+            f"{named}" + (f", and {rest} more" if rest > 0 else ""))
+
+
 def deploy_facts(conn) -> dict | str:
     """What each job last reported it was running, from `deploy_runtime`.
 
@@ -1330,6 +1444,12 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
 
     evidence = {"read_via": source, "ref": ref}
     drifted, unknowns, alarms = [], [], []
+    # Alarms that cannot be mailed, kept apart from the ones that can. The
+    # cooldown lives in `deploy_runtime.notified_at`, so an app with no row
+    # has nowhere to remember that it was mailed, and this file already
+    # refuses to mail without a cooldown on the receipt path for the same
+    # reason: one mail every time a seat runs the standup is not an alarm.
+    blind = []
     cache: dict[str, str] = {}
     for app in sorted(runtime_sha.APPS):
         keys = _paths_at(root, app, ref)
@@ -1357,14 +1477,26 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
                 "recorded_sha": row["runtime_sha"] if row else None,
                 "last_run": str(row["recorded_at"]) if row else None}
 
-        # Never recorded is a third state, and it used to be read as the
-        # second. An app with no row has told this guard nothing, so the age
-        # of its last commit is not evidence that a deploy is late: it is
-        # evidence that the app is unmeasured. Reading it as drift produces a
-        # FAILING whose number is the age of the code rather than the age of
-        # the deploy, which cries wolf on an app that may be running
-        # perfectly. `ingest` is the live case: it delivered papers at 11:01
-        # UTC on 2026-10-09 and has never recorded a runtime in its life.
+        # Never recorded is a third state, and the question it turns on is
+        # not whether a row exists. It is whether the code at `ref` asks for
+        # one. `recording_asked_at` is the whole argument; the short version
+        # is that an app whose module calls `record_runtime` writes its row on
+        # the first run of any deploy built from that commit, so no row means
+        # the image predates it, and the age of that commit is a lower bound
+        # on the age of the deploy.
+        #
+        # This branch read UNKNOWN for both causes from 2026-10-09 to today,
+        # on the reasoning that dating an unmeasured app from its last commit
+        # cries wolf. That reasoning was right about the number and wrong
+        # about the state, and `ingest` was the case it was written against:
+        # it had never recorded because the deploy that would have recorded
+        # had not happened. Neither had `distill`'s. The guard called them
+        # unmeasured for five days while the stage that fills `claims` ran an
+        # image from before 2026-10-09, which is before all three fixes to
+        # the fallback pacing that was stopping it. The press printed nothing
+        # on 2026-10-12 and nothing on launch day because of it, and the one
+        # surface that could have named the cause was the one holding its
+        # tongue. INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see.
         #
         # Only when something else did record, and that condition is the whole
         # of the distinction. An EMPTY table is not five unmeasured apps, it is
@@ -1374,12 +1506,33 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
         # holds it. One app missing among four that reported is a gap in
         # coverage. Every app missing is a gap in the mechanism.
         if row is None and rows:
-            why = ("has never recorded a runtime, so this app is unmeasured "
-                   "rather than behind. It records on its next run after a "
-                   f"deploy: modal deploy {runtime_sha.APPS[app]}")
-            here.update(state=UNKNOWN, why=why)
-            unknowns.append(f"{app} (never recorded)")
+            asked = recording_asked_at(root, app, ref)
+            if "at" not in asked:
+                why = ("has never recorded a runtime and nothing in its code "
+                       f"asks it to ({asked['why']}), so this app is "
+                       "unmeasured rather than behind: modal deploy "
+                       f"{runtime_sha.APPS[app]}")
+                here.update(state=UNKNOWN, why=why)
+                unknowns.append(f"{app} (never recorded)")
+                evidence[app] = here
+                continue
+            age_hours = (now - asked["at"]).total_seconds() / 3600
+            found = undeployed_since(root, app, asked["sha"], ref=ref)
+            named = name_unrecorded(found)
+            here.update(state=FAILING if age_hours > DEPLOY_GRACE_HOURS else OK,
+                        asked_in=asked["sha"], asked_at=str(asked["at"]),
+                        drift_hours=round(age_hours, 1), undeployed=found,
+                        why=("has never recorded a runtime, and "
+                             f"{asked['sha']} asked it to "
+                             f"{round(age_hours / 24, 1)} days ago, so the "
+                             "running image is at least that old: modal "
+                             f"deploy {runtime_sha.APPS[app]}"))
             evidence[app] = here
+            if age_hours > DEPLOY_GRACE_HOURS:
+                blind.append((app, round(age_hours / 24, 1), asked["sha"], named))
+            else:
+                drifted.append(f"{app} (asked to record {round(age_hours, 1)}h "
+                               "ago and has not run since)")
             continue
 
         # Reported, never a verdict. Both halves of the comparison now come
@@ -1423,18 +1576,30 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
             inside = f"{round(age_hours, 1)}h" + (f", {named}" if named else "")
             drifted.append(f"{app} ({inside})")
 
-    if alarms:
+    if alarms or blind:
         names = "; ".join(
-            f"{app} is {days} days behind" + (f" ({named})" if named else "")
-            for app, days, _, _, named in alarms)
-        if notify_conn is not None:
+            [f"{app} is {days} days behind" + (f" ({named})" if named else "")
+             for app, days, _, _, named in alarms]
+            + [f"{app} has never recorded a runtime and {sha} asked it to "
+               f"{days} days ago, so its image predates {sha}"
+               + (f" ({named})" if named else "")
+               for app, days, sha, named in blind])
+        if alarms and notify_conn is not None:
             note = _notify_drift(notify_conn, alarms, root, now)
-        elif source == DIRECT:
+        elif alarms and source == DIRECT:
             note = "not notified"
-        else:
+        elif alarms:
             note = (f"not mailed: these rows came from {source}, which cannot "
                     "write the once-a-day cooldown, and an alarm with no "
                     "cooldown is one mail every time the standup runs")
+        else:
+            note = ""
+        if blind:
+            withheld = ("the apps with no row are not mailed: the cooldown is "
+                        "a column on the row they do not have, and an alarm "
+                        "with no cooldown is one mail every time the standup "
+                        "runs. This surface is where they are read")
+            note = f"{note}. {withheld}" if note else withheld
         evidence["alarm"] = note
         return Surface("deploy", FAILING,
                        f"the deployed code is not {ref}: {names}. "
@@ -1514,6 +1679,149 @@ def _notify_drift(conn, alarms: list[tuple], repo_root: Path,
     return sent
 
 
+# ------------------------------------------------------------- the till
+#
+# Whether a verified payment turned into access. This is the one surface here
+# that is not about the product reaching a reader; it is about a reader
+# reaching the product, and it fails in the same shape as everything else on
+# this page. Polar is the Merchant of Record (ADR-30), so /api/polar-webhook is
+# the only place this product learns anybody paid, and its two unrecoverable
+# outcomes used to end in a Vercel function log that nothing in this org reads.
+# `payment_exceptions` gives them a row and this reads the open ones.
+
+PAYMENT_TOTALS = """
+    select count(*),
+           count(*) filter (where not retryable),
+           min(occurred_at),
+           max(last_seen_at)
+    from payment_exceptions
+    where resolved_at is null
+"""
+
+PAYMENT_CODES = """
+    select reason_code, count(*)
+    from payment_exceptions
+    where resolved_at is null
+    group by reason_code
+    order by count(*) desc, reason_code
+"""
+
+
+def payment_facts(conn) -> dict | None:
+    """The open exceptions, or None when the table cannot be read.
+
+    None rather than zeroes, the same contract `queue_facts` keeps and for the
+    same reason: `payment_exceptions` is newer than every other table this file
+    reads and `apply_schema` is a hand step, so a database without it is a
+    state this really meets. A count of zero is the good news this surface
+    exists to confirm, and it is only good news when somebody looked.
+
+    Both reads run inside one `conn.transaction()`, which is a savepoint when
+    the caller is already in a transaction, and that is load-bearing rather
+    than tidy. A failed statement in psycopg aborts the whole transaction, and
+    `check_deploy` runs after this on the same connection, so without the
+    savepoint a missing `payment_exceptions` would take the deploy surface down
+    with it and the drift alarm would fire on a schema step. `queue_facts`
+    carries the same comment because it met the same thing first.
+    """
+    try:
+        with conn.transaction():
+            total = conn.execute(PAYMENT_TOTALS).fetchone()
+            codes = conn.execute(PAYMENT_CODES).fetchall()
+    except Exception:
+        return None
+    if total is None:
+        return None
+    return {"unresolved": total[0], "needs_a_hand": total[1],
+            "oldest": total[2], "newest": total[3],
+            "codes": [{"code": row[0], "n": row[1]} for row in codes]}
+
+
+def _name_codes(codes: list | None) -> str:
+    """The reason codes as a clause, so the headline names the job.
+
+    "3 payments unmatched" tells the owner a number. "2 no_account, 1
+    ambiguous_email" tells her that two people need inviting and one duplicate
+    needs merging, which are different half-hours of her afternoon. L-E11's
+    rule that a guard reports the smallest true thing applies to what it
+    reports as well as to how loud it is.
+    """
+    named = [f"{row['n']} {row['code']}" for row in (codes or [])
+             if row.get("code") and row.get("n")]
+    return ", ".join(named)
+
+
+def judge_payments(facts: dict | None, now: datetime | None = None,
+                   source: str = DIRECT) -> Surface:
+    """Open payment exceptions, against what will clear itself.
+
+    Three states and the middle one is the one worth being careful about.
+
+    A row Polar will retry is the system working. The usual cause of one is
+    this product's own Clerk webhook not having landed yet, which is a race
+    measured in seconds, and alarming on it would make every signup-then-buy
+    inside one second a red report. So a deferred row inside the grace window
+    is `ok` and says so with its count.
+
+    A row nothing will retry is somebody's money with no access, and it never
+    clears on its own: nobody holds that address at Clerk, or two accounts do.
+    That is `failing` from the first row, with no grace window, because the
+    grace window for a person waiting on the owner is the wrong idea.
+
+    And a deferred row still open after the grace window has stopped being a
+    race. Those two cases produce the same alarm on purpose: from the buyer's
+    side there is no difference between a refusal and a retry that will never
+    land, and the evidence below says which one it was.
+    """
+    now = now or datetime.now(timezone.utc)
+    read = {"read_via": source}
+    if facts is None:
+        return Surface("payments", UNKNOWN,
+                       "payment_exceptions could not be read, so whether a "
+                       "verified payment reached an account is unknown here",
+                       read)
+
+    open_rows = int(facts.get("unresolved") or 0)
+    stuck = int(facts.get("needs_a_hand") or 0)
+    oldest = facts.get("oldest")
+    age = _age_days(oldest, now)
+    evidence = {"unresolved": open_rows, "needs_a_hand": stuck,
+                "codes": _name_codes(facts.get("codes")) or "none",
+                "oldest_unresolved_at": str(oldest) if oldest else None,
+                "newest_unresolved_at": (str(facts.get("newest"))
+                                         if facts.get("newest") else None),
+                "defer_grace_hours": PAYMENT_DEFER_GRACE_HOURS, **read}
+
+    if open_rows == 0:
+        return Surface("payments", OK,
+                       "every verified payment reached an account", evidence)
+
+    named = _name_codes(facts.get("codes"))
+    aged = f", oldest {age:.1f} days" if age is not None else ""
+
+    if stuck:
+        return Surface("payments", FAILING,
+                       f"{stuck} verified payment(s) cannot reach an account "
+                       f"and will not retry ({named}{aged}); "
+                       f"{open_rows} open in total", evidence)
+
+    if age is not None and age * 24 > PAYMENT_DEFER_GRACE_HOURS:
+        return Surface("payments", FAILING,
+                       f"{open_rows} payment(s) have been waiting on a retry "
+                       f"for {age:.1f} days, past the "
+                       f"{PAYMENT_DEFER_GRACE_HOURS}-hour window a retry "
+                       f"lands in ({named})", evidence)
+
+    return Surface("payments", OK,
+                   f"{open_rows} payment(s) deferred and inside the "
+                   f"{PAYMENT_DEFER_GRACE_HOURS}-hour retry window "
+                   f"({named}){aged}", evidence)
+
+
+def check_payments(conn) -> Surface:
+    return judge_payments(payment_facts(conn))
+
+
 def _weeks_between(have: str, want: str) -> int:
     """How many issues are missing between the newest row and the week that ended."""
     def monday(label: str) -> date:
@@ -1576,12 +1884,13 @@ def read_receipt(url: str | None = None) -> tuple[dict | None, str]:
     return payload, ""
 
 
-def receipt_facts(payload: dict) -> tuple[dict | None, dict, dict | str]:
-    """The receipt's JSON, in the same three shapes the database reader returns.
+def receipt_facts(payload: dict) -> tuple[dict | None, dict, dict | str, dict | None]:
+    """The receipt's JSON, in the same four shapes the database reader returns.
 
     This is the whole of the translation. The judgement is `judge_press`,
-    `judge_pipeline` and `judge_deploy`, unchanged and shared, so a receipt and
-    a connection cannot reach different conclusions about the same week.
+    `judge_pipeline`, `judge_deploy` and `judge_payments`, unchanged and shared,
+    so a receipt and a connection cannot reach different conclusions about the
+    same week.
     """
     press = payload.get("press")
     press_row = None
@@ -1629,21 +1938,40 @@ def receipt_facts(payload: dict) -> tuple[dict | None, dict, dict | str]:
                                     "first_seen_at": _parse_iso(row.get("first_seen_at")),
                                     "notified_at": _parse_iso(row.get("notified_at"))}
                        for row in deploy if isinstance(row, dict) and row.get("app")}
-    return press_row, pipeline_row, deploy_rows
+
+    # The till. Absent on versions 1 to 4 and null on a version 5 receipt whose
+    # site could not read the table, and both arrive here as None, which is the
+    # shape `payment_facts` returns for an unreadable table. So the two readers
+    # hand the judgement the same thing and neither can call the till clear on
+    # evidence the other would call unknown.
+    published = payload.get("payments")
+    payments = None
+    if isinstance(published, dict):
+        codes = published.get("codes")
+        payments = {
+            "unresolved": published.get("unresolved"),
+            "needs_a_hand": published.get("needs_a_hand"),
+            "oldest": _parse_iso(published.get("oldest_unresolved_at")),
+            "newest": _parse_iso(published.get("newest_unresolved_at")),
+            "codes": [row for row in codes if isinstance(row, dict)]
+                     if isinstance(codes, list) else [],
+        }
+
+    return press_row, pipeline_row, deploy_rows, payments
 
 
 # ------------------------------------------------------------------ driver
 
 def database_surfaces(today: date | None = None, repo_root: Path | None = None,
                       notify: bool = True) -> list[Surface]:
-    """`press`, `pipeline` and `deploy`, by the best reader available.
+    """`press`, `pipeline`, `payments` and `deploy`, by the best reader available.
 
     Two readers, in order. A direct connection when this environment holds
     `DATABASE_URL`, which is the Modal jobs and the owner's laptop. Otherwise
     the receipt the site publishes, which needs no credential and is what every
     agent seat actually has. Both are judged by the same three functions.
 
-    When neither answers, all three surfaces are `unknown` and the message names
+    When neither answers, all four surfaces are `unknown` and the message names
     both paths, because the whole reason guardrail 4 went unenforced for four
     days is that nobody could see which reader was missing what.
     """
@@ -1656,23 +1984,25 @@ def database_surfaces(today: date | None = None, repo_root: Path | None = None,
 
     payload, receipt_why = read_receipt()
     if payload is not None:
-        press, pipeline, deploy = receipt_facts(payload)
+        press, pipeline, deploy, payments = receipt_facts(payload)
         return [judge_press(press, today, RECEIPT_URL),
                 judge_pipeline(pipeline, source=RECEIPT_URL),
+                judge_payments(payments, source=RECEIPT_URL),
                 judge_deploy(deploy, repo_root, source=RECEIPT_URL)]
 
     why = (f"the artifact guardrail 4 names cannot be read here: {direct_why}, "
            f"and the published receipt did not answer either ({receipt_why})")
     return [Surface("press", UNKNOWN, why, {"expected": week_label(today)}),
             Surface("pipeline", UNKNOWN, why),
+            Surface("payments", UNKNOWN, why),
             Surface("deploy", UNKNOWN, why)]
 
 
 def _from_database(url: str, today: date | None, repo_root: Path | None,
                    notify: bool) -> tuple[list[Surface] | None, str]:
-    """The three surfaces over a real connection, or None and why not.
+    """The four surfaces over a real connection, or None and why not.
 
-    None rather than three `unknown` surfaces, so the caller can fall through to
+    None rather than four `unknown` surfaces, so the caller can fall through to
     the receipt. A connection that fails is not a healthy press and not a broken
     one, and neither is a missing driver.
     """
@@ -1683,12 +2013,13 @@ def _from_database(url: str, today: date | None, repo_root: Path | None,
     try:
         with psycopg.connect(url, connect_timeout=15) as conn:
             return [check_press(conn, today), check_pipeline(conn),
+                    check_payments(conn),
                     check_deploy(conn, repo_root, notify=notify)], ""
     except Exception as exc:
         return None, f"DATABASE_URL is set but the connection failed: {exc}"
 
 
-ORDER = ["press", "pipeline", "deploy", "site", "archive", "mcp"]
+ORDER = ["press", "pipeline", "payments", "deploy", "site", "archive", "mcp"]
 
 
 def run(surfaces: list[str], today: date | None = None,
@@ -1703,7 +2034,7 @@ def run(surfaces: list[str], today: date | None = None,
     needed = asked | ({"press", "site"} if "archive" in asked else set())
 
     out: list[Surface] = []
-    if {"press", "pipeline", "deploy"} & needed:
+    if {"press", "pipeline", "payments", "deploy"} & needed:
         out += [s for s in database_surfaces(today, repo_root, notify)
                 if s.name in needed]
     if "site" in needed:
@@ -1766,7 +2097,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--surface", action="append", dest="surfaces",
                         choices=ORDER,
-                        help="check one surface; repeatable, default is all six")
+                        help="check one surface; repeatable, default is all seven")
     parser.add_argument("--no-notify", action="store_true",
                         help="find a stale deploy and do not mail the owner about it")
     parser.add_argument("--json", action="store_true",

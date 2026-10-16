@@ -13420,6 +13420,14 @@ that triggered it, per the charter.
   change.
 - Cost: $0.
 - Status: proposed
+- Built 2026-10-14 (engineer seat), as a break-fix rather than as a groomed
+  item, and the status line above is left exactly as the owner set it. The
+  clock this asked for exists now, dated from the commit that asks an app to
+  record rather than from the commit that adds it to `APPS`, which is the
+  same commit today and the more precise bound in general. What the four days
+  between this entry and that build cost is in
+  `INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see`: seven days of
+  no claims, and two issues that did not print, one of them launch day's.
 
 ### 2026-10-10 — ADR-39's named reading limit has been crossed, and today is the first time a seat could measure it (engineer seat, second run)
 - Trigger: the first reading of the public queue depths, 2099 papers waiting in
@@ -13545,6 +13553,15 @@ that triggered it, per the charter.
   against.
 - Cost: $0.
 - Status: proposed
+- Built 2026-10-14 (engineer seat), to this entry's own specification, with
+  one change: the date comes from the commit that adds the `record_runtime`
+  call to the app's module rather than from the commit that adds the app to
+  `APPS`, because the call is the thing that makes a row appear and the two
+  can come apart. Status left as the owner set it. This is the second
+  consecutive day this fix was proposed and the fourth day after the first
+  proposal that it was built, which is the part worth reading:
+  `INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see` is what the
+  gap cost.
 
 ### 2026-10-11 — One marker per stage, derived, so the next diagnosis costs no deploy
 - Trigger: the receipt went to version 2 on 2026-10-09, version 3 on 2026-10-10
@@ -13989,6 +14006,25 @@ that triggered it, per the charter.
   that is an editorial call rather than a technical one.
 - Cost: $0. If the rehearsals keep refusing on Moonshot, the account's balance
   or tier is the remaining cause, which is money and the owner's.
+- Evidence, 2026-10-15 01:45 UTC (engineer seat): this entry's closing line said
+  that if the rehearsals keep refusing on Moonshot then the account is the
+  remaining cause. No rehearsal has run, because that needs the same hand this
+  entry is waiting on, and the receipt answers the question anyway. Both sibling
+  stages wrote half a day ago and **neither wrote on Moonshot**: triage's newest
+  row is on `openai/gpt-oss-120b` and interpret's on `qwen/qwen3.8-27b`, which
+  are the Groq fallback and not the primary. So the shared account was refusing
+  everybody yesterday, and the two stages that survived it are the two the free
+  tier can carry. `tools/delivery_health.py` reaches that sentence by itself now
+  and names the arithmetic: distill's window is 250,000 characters against a
+  free tier of 8,000 tokens a minute, so **distill is the one stage the fallback
+  cannot carry**, which means the deploy this entry asks for is necessary and
+  may not be sufficient. The numbers behind it: `claims_newest` and
+  `distilled_newest` both still `2026-10-07T15:15:25Z`, now 7.4 days, against
+  `papers_newest` 2026-10-14, with `distill_pending` at 2,264, up from 2,223 on
+  2026-10-14 and 2,132 on 2026-10-12. The queue is filling at roughly 40 papers
+  a day and draining at none. Status left at `urgent` and unchanged, because the
+  first step is still the owner's command and this only adds what to expect when
+  she runs it.
 - Status: urgent
 
 ### 2026-10-12 — A degraded deploy leaves no mark, so nothing can say the press is running on the wrong engine (engineer seat, second run)
@@ -14143,6 +14179,15 @@ that triggered it, per the charter.
   `tests/test_delivery_health.py` for each of the three verdicts, against a
   fixture page rather than the network.
 - Cost: $0.
+- Note, 2026-10-15 (engineer seat): this is cheaper than it was when it was
+  written, and it is still yours to accept. `tools/delivery_health.py` now has
+  a `payments` surface and the receipt a `payments` block, built today for the
+  other half of the same question, so the `checkout` row this entry asks for is
+  one function beside `judge_payments` and one field beside it on the receipt
+  rather than a new surface and a new version. The argument in the entry is
+  unchanged and today's work is evidence for it: the two things nobody could
+  see were whether anybody can buy and whether a payment reached an account,
+  and only the second one now has a reader.
 - Status: proposed
 
 ### 2026-10-13 — A payment that cannot be matched to an account ends in a console line nobody reads (engineer seat)
@@ -14167,6 +14212,19 @@ that triggered it, per the charter.
   must not be able to fail the webhook, since a payment that landed matters more
   than a record that it was awkward.
 - Cost: $0.
+- Note, 2026-10-15 (engineer seat): built, on the pull request that carries this
+  note, and the status line below is left alone because it is yours to move. The
+  entry was `proposed` rather than `accepted`, so strictly this run had no
+  licence to pick it up; the reason it did is in the pull request and it is that
+  every engineer item in `sprint-2026-10-12.md` was already built or in flight
+  and this was the oldest unbuilt thing on the page that no seat was holding.
+  Three departures from the first step as written, each one a thing the entry
+  did not know. It reuses no existing receipt table, because `deploy_runtime` is
+  one row per app and this is one row per delivery. It records the handler's own
+  throw as a third case, which is the outcome that left the least behind and the
+  one the entry did not name. And the row carries `resolved_at`, because a count
+  that only ever rises is a count the org learns to ignore, which the entry's
+  "count unresolved rows" implies and does not say.
 - Status: proposed
 
 ### 2026-10-13 — Craft scan: Elicit sells the size of the job, and stopped publishing a number for its free tier (engineer seat)
@@ -14411,6 +14469,20 @@ that triggered it, per the charter.
   model's when both exist.
 - Cost: $0. It replaces a model's answer with a parse, so if anything it buys
   back tokens on a day distill cannot spare any.
+- Built 2026-10-15 (engineer seat, second run), on the branch
+  `engineer/2026-10-15-distill-institutions`. The status line is left as the
+  owner set it, because `proposed` is hers to move and this entry was never
+  `accepted`. Three departures from the first step as written, each worth
+  knowing: the extractor could not be imported from
+  `pipeline/backfill_institutions.py` because that is a Modal app file, so it
+  moved to a new `pipeline/institutions.py` verbatim and the backfill's 41
+  tests drive it from there unchanged; distill had no raw HTML to give it,
+  because `tools/read_paper.py` cleaned the markup away inside the fetch, so
+  the reader grew `fetch_paper`, one fetch handing back both the cleaned text
+  a model reads and the markup a parser reads; and the gate went into
+  `rehearse` rather than only into `tests/`, running the parser against a
+  carried header, because the model's answer is the fallback and a deploy with
+  a broken extractor would still write something and still look ordinary.
 - Status: proposed
 
 ### 2026-10-13 — The number this product rests on was measured by hand twice and is computed nowhere (engineer seat)
@@ -14453,6 +14525,18 @@ that triggered it, per the charter.
   fulltext`'s caller, and `backfill_institutions` preferring the stored header
   over the network when the column is filled.
 - Cost: $0. One text column on a table of about five thousand rows.
+- Half of this is no longer needed, 2026-10-15 (engineer seat, second run).
+  The duplicate fetch this entry is named for is gone for every paper distill
+  reads from now on: `tools/read_paper.py:fetch_paper` makes one request and
+  returns the cleaned text and the raw markup together, so the parse happens
+  in-process while distill still holds the page and no second fetch is made.
+  What a `papers.header_html` column would still buy is the other half, which
+  is the part about rows already read: the backfill cannot reconstruct a
+  header it never kept, so the 2,173 papers distilled before today still cost
+  one fetch each, and a refusal still cannot be read back and audited without
+  asking arXiv again. The entry is worth keeping for that, and it is worth
+  less than it was. Note added rather than status changed, which is the
+  owner's to move.
 - Status: proposed
 
 ### 2026-10-13 — Craft scan: OpenAlex (openalex.org), and the field it cannot give us either
@@ -14515,6 +14599,344 @@ that triggered it, per the charter.
   board this run rather than attempted here. The centralizer applies both
   fixes with one idempotent tool across every product the way the tracing
   change landed in 37 files at once (standard §15).
+
+### 2026-10-14 — Distill has produced nothing for seven days and the press cannot print without it
+- Trigger: `/api/delivery` at 2026-10-14T01:49Z reads `claims_newest` and
+  `distilled_newest` both frozen at 2026-10-07T15:15:25Z, with
+  `distill_pending` at 2,223 and `papers_newest` at 2026-10-13. Triage and
+  interpret both ran yesterday. The press printed no issue on 2026-10-12 and
+  none on launch day, 2026-10-13, and it had nothing new to print either day.
+- What: the daily 15:00 UTC distill job is the only stage that has stopped,
+  and this is the fifth engineer run in a row to meet it (#263, #265, #268,
+  #270, #275). The pacing fix merged on 2026-10-12 did not restore it. This
+  run's job is the cause, not another pacing constant.
+- First step: read the Modal log for the 15:00 UTC runs since 2026-10-07 and
+  say which line stopped them.
+- Cost: $0.
+- Status: urgent
+
+### 2026-10-14 — The deploy surface has no scheduled reader, so a five-day-old answer only ages
+- Trigger: this run's break-fix. The deploy surface had the right facts about
+  `distill` on 2026-10-09 and nothing read it again until 2026-10-14, because
+  every reader of `tools/delivery_health.py` is a seat typing a command. No
+  workflow calls it: `grep -rn "delivery_health" .github/workflows/` returns
+  nothing. The Monday ceremony reads it, the daily standup reads it, and both
+  of those are a seat's judgement rather than a clock.
+- What: a scheduled reader for the deploy surface that needs no new workflow
+  and no new cron, because one already exists next door. `pipeline/interpret.py`
+  spawns the maintenance pass from inside its own 14:00 UTC run rather than
+  installing a sixth schedule (commit `5026c21`, sprint 2026-10-05 item 4).
+  The same trick carries the deploy surface: the maintenance pass opens a
+  database connection already, `check_deploy(conn, repo_root)` is one call, and
+  the alarm channel it would use is `pipeline/notify.py`, which that image
+  already mounts. The catch to solve in the build is that the Modal container
+  has no git checkout, so the trunk-side digest cannot be computed there. The
+  shape that works is the inverse of today's: the container compares its own
+  recorded digests against the roster and alarms on a missing row, which is
+  the one check that needs no git at all, and that is exactly the check that
+  was quiet for five days.
+- First step: the roster check alone, inside the maintenance pass. Every app in
+  `runtime_sha.APPS` with no `deploy_runtime` row, mailed once a day, with the
+  `modal deploy` line for each.
+- Cost: $0. No new schedule, no new service, one more query in a job that
+  already runs.
+- Status: proposed
+
+### 2026-10-14 — The alarm for an app with no row has nowhere to keep its cooldown
+- Trigger: building today's fix. An app that has never recorded a runtime now
+  reads `failing`, and the mail is withheld with its reason in the evidence,
+  because `deploy_runtime.notified_at` is a column on the row the app does not
+  have. The guard's own file already refuses to mail without a cooldown on the
+  receipt path, for the same reason, so withholding is consistent rather than
+  new. It still means the loudest state this surface has reaches the owner's
+  inbox only when a seat happens to run the command.
+- What: give the alarm a cooldown that does not depend on the subject having
+  reported. Two shapes, and the cheaper one is probably right: make
+  `deploy_runtime.runtime_sha` nullable so a cooldown row can exist before any
+  run writes a digest, or add a two-column `deploy_alarm (app, notified_at)`
+  that the guard owns outright. The second keeps the receipt table meaning
+  exactly one thing, which is what a job reported, and that is worth something
+  on a table the public receipt publishes.
+- First step: one `alter table` in `db/schema.sql`, the cooldown read and write
+  moved behind one helper in `tools/delivery_health.py`, and the withheld-mail
+  branch deleted. Needs a hand-run `apply_schema` before the code can use it,
+  so the PR says so rather than assuming it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-14 — The receipt publishes the rows it has and never the roster it is missing
+- Trigger: the first fact this run read. `/api/delivery`'s `deploy` block
+  listed `interpret`, `triage` and `weekly`. The guard watches five. A reader
+  of the raw JSON cannot see the absence of `distill` and `ingest`, because an
+  absent row is absent from the list, and the two missing were the two that
+  mattered. The judgement in `tools/delivery_health.py` knows the roster from
+  the repository, so a seat running the command is fine. Everything else that
+  reads the receipt, including a person looking at the JSON, is not.
+- What: publish the roster beside the rows, as a receipt version 5. The site
+  route cannot import `pipeline/runtime_sha.py`, so the roster has to arrive
+  there some other way, and the honest cheap version is a `watched` array the
+  route reads from one small generated JSON file that a test keeps in step with
+  `APPS`. Then `deploy` is a list of five, two of them carrying a null digest,
+  and the absence is a value rather than a gap.
+- First step: the generated roster file plus the test that fails when it
+  disagrees with `runtime_sha.APPS`, which is the half that needs no site
+  deploy and no version bump.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-14 — Craft scan: AlphaSignal dates every item on its index, and describes our product on its About page (engineer seat)
+- Trigger: today's rotation through docs/market/landscape.md. The entry for
+  AlphaSignal was last observed 2026-09-18 and has never had a craft scan, and
+  today's build was about a surface that could not say how old its own newest
+  thing was, so the comp whose index is built around that is the one to read.
+  The site reads cleanly from this sandbox with no challenge page.
+- Worth stealing: every item on the index carries its age in relative time.
+  "9 hrs ago", "6 hrs ago", "10 hrs ago", on every row, beside the source
+  organisation and the topic, with a sort toggle between LATEST and UPVOTES. A
+  reader lands on that page and knows within a second whether the product is
+  running. Our `/library` lists `2026-W40` and `2026-W39` as labels, so the
+  page that was supposed to prove the press is alive on launch day could not
+  say that its newest issue was nine days old, and nobody reading it would
+  know. The stealable move is one line: print the age of the newest issue
+  beside it, in the same relative words, on `/library` and on the home page.
+  The data is already in the row that renders it.
+- What alexandria does better: their intelligence layer is a promise and ours
+  is a number. Their About page describes "a real-time, machine-readable
+  understanding of everything happening in AI, with every paper, repository,
+  model, release, and researcher linked into a single graph. The lineage of
+  techniques, drawn explicitly," which is this product's thesis almost word for
+  word, written by a company claiming 300,000 subscribers. What follows it is a
+  chart of arXiv submissions and a roadmap in the future tense. Ours is built
+  and measured: the research seat put the graph's first precision number at
+  0.172 this week and published it with the 22 claims behind it, which is a
+  worse number than a promise and a better artifact than one. Worth the market
+  seat's attention as positioning rather than as a feature gap, and their
+  `/pricing` page still renders nothing without JavaScript, so the Pro price
+  the landscape has called unfindable since 2026-09-18 is still unfindable.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-14 — A guardrail that writes a card cannot raise its voice (engineer seat, second run)
+- Trigger: today's own diff. `tools/press_watch.py` posts a card to the board
+  the hour the press's grace window closes, which closes the detection half of
+  sprint 2026-10-12 item 5. The escalation half is open and this run wrote the
+  incident for it:
+  `INC-2026-10-14-three-registers-named-the-missing-issue-and-none-of-them-sends-it`.
+  The 2026-W41 issue already has a board card from 2026-10-12T20:17Z, a sprint
+  item whose note says "first, regardless of what else is in flight", and an
+  incident entry of its own, and it is 52.9 hours late. A fourth artifact with
+  no clock is not obviously the fix.
+- What: give the tool one rung above a comment. When a card for a missing week
+  is still open past a threshold, mail the owner once through
+  `pipeline/notify.py`, which already exists for exactly this and needs no new
+  service. The cooldown is the card's own newest comment, the same memory the
+  nudge already uses, so the mail cannot repeat daily by accident. The reason
+  this is a proposal rather than today's code is a secret boundary: that
+  function reads `GMAIL_ADDRESS` and `GMAIL_APP_PASSWORD`, which are Modal
+  secrets, and the staged workflow runs on a GitHub runner that holds
+  `BOARD_API_URL` and `BOARD_RUNTIME_TOKEN` and neither of the other two. So
+  the decision is the owner's: add those two names to the Actions secrets the
+  press-watch workflow can read, or decide that a red scheduled run plus a
+  board card is the whole ladder and say so in
+  `docs/agents/delivery-health.md`.
+- First step: `python3 tools/press_watch.py --escalate-after 24`, behind the
+  two secret names, with a test that asserts it mails once and not twice
+  against a card carrying a comment from inside the window.
+- Cost: $0. Same Gmail secret, no new service, no new account.
+- Status: proposed
+
+### 2026-10-14 — Nothing closes a guardrail's card when the thing it watched starts working (engineer seat, second run)
+- Trigger: writing `tools/press_watch.py` and reaching the end of what it
+  should do today. It creates a card and comments on it, and `pm.md` §14 lets a
+  seat move an item, so the one thing it could do and does not is move a week's
+  card to Done once that week's issue lands. Every guardrail in this repository
+  has the same shape: `delivery_health` clears its deploy alarm through a
+  column the jobs write, and nothing else here closes anything.
+- What: a closing pass in the same command. When the press surface reads `ok`
+  for a week that has an open card, move the card to Done and comment with the
+  row that closed it, which is the week, its `created_at` and the model that
+  wrote it. That turns the card from a notice into a record of how long the gap
+  lasted, which is the number the PM's retrospective wants and currently has to
+  reconstruct by hand from two registers.
+- First step: `pw.close_card`, plus the `move` call `tools/board.py` already
+  implements, plus one test that a week which recovers is closed exactly once.
+  The guard against a loop is the same dedupe: a card already in Done is not
+  moved again.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-14 — The archive lists the weeks it has and never the week it owes (engineer seat, second run)
+- Trigger: `GET /library/2026-W41` returns 404 today and `/library` lists
+  `2026-W40` and `2026-W39` as though nothing is outstanding. A reader who
+  arrived on launch day could not tell a product that prints weekly and missed
+  a week from a product that prints every other week on purpose. The press
+  surface, the board card and the incident register all know. The one page a
+  reader actually meets does not.
+- What: `/library` names the week it owes when the press is past its deadline,
+  in one line above the list, in the house's own register: the week label, how
+  late it is, and nothing else. Ban-list entry 34 is the argument for it rather
+  than against it. An absence reported as news is a tell, and an absence
+  reported as an absence is the honesty the entry asks for. The hard part is
+  not the page. It is that the deadline rule lives in `pipeline/weekly.py` and
+  is read by `tools/delivery_health.py`, and the site is JavaScript, so a naive
+  implementation is a second copy of the rule that can only agree by luck. The
+  receipt is the seam: `site/app/api/delivery/route.js` already publishes the
+  rows, so publishing the judged `due`, `deadline` and `late_hours` beside them
+  keeps one copy of the rule and hands the page an answer rather than a
+  calculation.
+- First step: add the three fields to the receipt behind a version bump, which
+  `READABLE_VERSIONS` in `tools/delivery_health.py` already has the policy for,
+  then one line on `/library` reading them. The frontend seat owns the page and
+  this run did not touch it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-14 — Craft scan: Ben's Bites promises nothing, so it is never late (engineer seat, second run)
+- Trigger: today's rotation through docs/market/landscape.md. Ben's Bites was
+  last observed 2026-09-24 and has never had a craft scan, and today's build is
+  about what a cadence promise costs the thing that makes it, so the comp that
+  has quietly dropped its cadence promise is the one to read. Two of the four
+  products ahead of it in the newsletter list refused this sandbox: both
+  `deeplearning.ai/the-batch` and `thesequence.substack.com` answer HTTP 403 to
+  a plain fetch, which is a note for whoever scans them next.
+- Worth stealing: the landing page sells one sentence. "What I'm learning
+  building with agents (plus tools worth trying)", over "Over 171,000
+  subscribers", and then nothing. No cadence, no issue length, no section list,
+  no price, no archive link. The product that used to be a daily AI news digest
+  now promises a person rather than a schedule, and the archive matches: twelve
+  posts in thirty-four days, dated and never numbered, gaps of five days that
+  nothing explains, because a gap in something that never claimed a rhythm is
+  not a gap. That is the stealable thing and it is uncomfortable. Every promise
+  a product publishes is a thing it has to instrument. Ours publishes a weekly
+  cadence and an ISO week label, so our archive can be audited by a stranger
+  and today it fails that audit by 52.9 hours. The move worth taking is not to
+  promise less. It is to notice that we chose the expensive promise and staff it
+  accordingly, which is what today's diff does and what the escalation entry
+  above is still missing.
+- What alexandria does better: a stranger can check us and cannot check them.
+  `GET /library/2026-W41` returning 404 is a fact anybody can establish with no
+  credential, which is exactly what `tools/delivery_health.py` reads and what
+  this run's card is built on. On their archive a reader cannot tell a quiet
+  week from a newsletter that has stopped, and neither can they: dates with no
+  numbers and no cadence mean there is no sequence to be missing from. 171,000
+  subscribers is the number that says this is a real tradeoff rather than a
+  mistake, and the entry for them in the landscape should say so.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — An invited buyer's exception never clears, and nothing replays the payment they already made (engineer seat)
+- Trigger: writing `resolvePaymentException` this run, I went looking for its
+  second caller and there is none. The webhook's success path closes a row when
+  Polar redelivers the same event, which covers every deferred row. It does not
+  cover the one the table was built for. A `no_account` row means somebody paid
+  through a link that never passed through this site, the owner invites them,
+  they sign up, `/api/clerk-webhook` inserts their `users` row, and Polar never
+  sends that order again because it was acknowledged with a 200 three days ago.
+  So the buyer has an account and no spine, the row stays open, and the surface
+  I shipped today stays red for a case that is already fixed in the real world.
+  Confirmed by reading `site/app/api/clerk-webhook/route.js` and
+  `site/lib/account.js`: neither mentions a payment.
+- What: have the Clerk webhook ask the question the Polar webhook could not.
+  On a `user.created` whose address matches an open `payment_exceptions` row,
+  reapply that row's verdict to the new Clerk id, write the billing row, and
+  resolve the exception with a note saying which event it replayed. The verdict
+  is already a pure function of the event, so the only thing missing is the
+  event, which means the row has to keep enough of it: either a `verdict jsonb`
+  column holding what `spineFromEvent` returned, or the Polar ids and one API
+  read at replay time. The column is the cheaper of the two and needs no Polar
+  credential, which matters because the owner has not created the account yet.
+  This is the difference between a table that reports a problem and a table
+  that closes one, and it is the half that makes the alarm worth having: today
+  the owner's reward for fixing a payment by hand is a surface that still says
+  she has not.
+- First step: the `verdict jsonb` column in `db/schema.sql`, written by
+  `recordPaymentException` from the verdict it already receives, and one
+  lookup-and-replay in the Clerk webhook behind a test that drives the whole
+  order-then-signup sequence against fakes.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — The till can go red and mail nobody, because the cooldown an alarm needs is a column this table does not have (engineer seat)
+- Trigger: `judge_payments` reports and does not mail, and I made that choice
+  deliberately this run for the same reason `judge_deploy` makes it for an app
+  that has never recorded: the drift alarm's cooldown is `deploy_runtime.
+  notified_at`, a column on the row it is alarming about, and a surface with no
+  such column would mail once per invocation of the standup. So the one surface
+  on this page about a person waiting for something they paid for is the one
+  that cannot reach the owner between runs. `pipeline/notify.py` has mailed for
+  a failed corpus job since September.
+- What: `notified_at timestamptz` on `payment_exceptions`, and the same
+  cooldown shape `_notify_drift` already implements: mail once per open row,
+  reset when the row's `reason_code` changes, never mail for a deferred row
+  inside its retry window. The reason this is not simply "call notify" is that
+  the mailer lives in `pipeline/` and runs on Modal, and this row is written by
+  a Vercel function, so the two halves meet at `tools/delivery_health.py`,
+  which is the thing that holds a credential on the owner's laptop and already
+  mails for drift. One more branch there, not a new mailer.
+- First step: the column, then the branch in `_notify_drift`'s sibling for this
+  surface, with the two tests that matter being "a refused row mails once" and
+  "a deferred row inside the window mails never".
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — Every successful payment overwrites the last one, so the product cannot say how many people bought (engineer seat)
+- Trigger: `writeBillingRow` is `update users set subscription_status = ...`,
+  and that is the whole record a successful payment leaves in this database.
+  I noticed it while deciding what a failed payment should leave, which turned
+  out to be more than a successful one leaves. `users` holds current state and
+  overwrites it on every event, so a trial that converted, a month that lapsed
+  and a lifetime purchase all end as one word in one column, and the previous
+  word is gone. `payment_exceptions` now records every payment that did not
+  work and nothing records the ones that did.
+- What: the consequence is not bookkeeping. O1 KR1 and KR2 have been at risk or
+  worse in five consecutive OKR check-ins on the single question of whether the
+  spine is purchasable, and when the first sale lands this product will not be
+  able to count it: the number will live in Polar's dashboard, which no seat
+  can read, so the finance seat's close and the OKR check-in will both be
+  quoting a screenshot. A `payment_events` table, append-only, one row per
+  handled Polar event with its verdict, makes "how many people bought this
+  week" a query instead of a login. It is also the audit trail for a refund
+  argument, and it is the same table the replay in the first entry above wants
+  to read.
+- First step: the table beside `payment_exceptions`, one insert on the success
+  path of `applyPolarEvent` that cannot fail the webhook, and a count on the
+  receipt's `payments` block so the credential-free reader sees sales rather
+  than only failures.
+- Cost: $0. One append-only table at the volume of a product with no customers
+  yet, which is the cheapest possible moment to start keeping it.
+- Status: proposed
+
+### 2026-10-15 — Craft scan: TLDR AI publishes the price of reading it, which is the one number our pricing page does not (engineer seat)
+- Scanned: tldr.tech/ai, live, through the agent's own fetch tool. Today's
+  build was the till, so the rotation's first pick was `newsletter.
+  pragmaticengineer.com`, the one entry in `docs/market/landscape.md` labelled
+  a pricing comp. One method note for whoever scans it next, because it is a
+  new refusal rather than the 403s already recorded against The Batch and
+  TheSequence: both the publication page and `/subscribe` fetch cleanly and
+  carry no tiers, no prices and no terms at all, because Substack renders the
+  paywall client-side. The subscriber count and a Terms of Use link are the
+  whole of what a fetch can see. It is not blocked, it is empty, and those need
+  different workarounds.
+- Worth stealing: TLDR AI tells you what an issue costs you before you give it
+  your address. "An issue takes about five minutes to read", on the landing
+  page, beside "sends every weekday" and "free to read, with no paywall". Three
+  numbers and a reader can decide. Our `/pricing` sells the full skill library,
+  the same files your agents load, and routines once they ship, and a reader
+  cannot tell from it how long anything takes or how much of it there is. The
+  stealable move is the smallest one on that page: put the read time on the
+  issue and on `/library`, computed from the body we already store rather than
+  asserted, so the number cannot drift from the thing it describes. Yesterday's
+  Elicit scan found the same shape from the other end, a quantity against a
+  named job, and this is its cheap half.
+- What alexandria does better: TLDR summarises each story "in a few sentences
+  with a link to the source", and a link is not evidence. Ours cites claims out
+  of a graph with the paper behind each one, which is the difference between
+  being told what a paper said and being shown where. The deeper one is who
+  pays. TLDR has no paid tier and an "Advertise" link, so the reader's
+  attention is the product being sold, and 1,100,000 readers is a real argument
+  that this works. Ours is paid for by the paid layer, so the free issue has no
+  second customer whose interests have to be balanced against the reader's, and
+  that is a claim we can make in one sentence on the pricing page and have not.
 - Cost: $0.
 - Status: proposed
 
@@ -15077,6 +15499,207 @@ nobody has to re-derive it:
   steps into the pending copy in the same PR that proposes it, which is
   what this entry asks for permission to do.
 - Cost: $0. GitHub Actions minutes on a public repository.
+- Status: proposed
+
+### 2026-10-15 — A two-name affiliation span is read as a lab, and the threshold that fixes it refuses "Google DeepMind, London" (engineer seat, second run)
+- Trigger: writing today's refusal test. The case I reached for first was
+  `arxiv:2310.06825`'s, the Mistral 7B paper that puts author names in its
+  affiliation field, and the parser accepted my two-name version of it:
+  `institutions_from_html` returns
+  `['Devendra Singh Chaplot, Diego de las Casas']` for a span holding exactly
+  that, and refuses it only once a third name is added. `looks_like_a_person
+  _list` is the rule, and it is "two commas and no organisation word", so one
+  comma and two people is under the bar. The test in the tree uses the
+  three-name string, which passes and is faithful to the real paper, so this
+  gap is not covered by a failing test today.
+- What: the stakes changed this run. The extractor used to feed a backfill
+  whose every refusal was printed for a person to read, and as of today it
+  feeds the live insert in `pipeline/distill.py`, where nobody reads the log
+  and the row goes into an issue's attribution line. Two author names in the
+  institution field is the visible defect the whole precision argument in
+  `pipeline/backfill_institutions.py` is written against.
+- First step: the one-character change is `>= 2` to `>= 1` in
+  `pipeline/institutions.py:looks_like_a_person_list`, and it is not
+  obviously right, which is why this is a proposal and not a commit. Measured
+  by hand against the twelve fixtures in `tests/fixtures/arxiv-html/`, the
+  strings it would newly refuse include real answers of the form "Google
+  DeepMind, London" and "Mila, Montreal": a lab plus a city, one comma, no
+  word on `INSTITUTION_WORDS`. So the honest first step is a measurement
+  rather than an edit. Run both thresholds over the fixtures, count what each
+  gains and loses, and put the two lists in front of the owner, because
+  trading a correct answer for a refusal is her call on a field the digest
+  prints.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — distill parses a paper's header and the backfill fetches the same page again, because nothing records the attempt (engineer seat, second run)
+- Trigger: reading `backfill_institutions.DUE` while wiring today's parse into
+  the live insert. That query selects papers with an empty `institutions` and
+  a null or expired `institutions_checked_at`, and distill writes neither
+  marker. So every paper distill reads, parses and legitimately finds no lab
+  in is still due, and the backfill will fetch the whole paper from arXiv a
+  second time to run the identical extractor over the identical markup and
+  reach the identical refusal.
+- What: distill should set `institutions_checked_at = now()` whenever it ran
+  the parser, answered or not, which is exactly the semantics the column's own
+  comment in `db/schema.sql` gives it. The saving is one arXiv fetch per paper
+  distill reads and does not fill, on a volunteer service we are asked to be
+  polite to, and it is the difference between the backfill ending as history
+  and the backfill re-walking the corpus forever. It also makes the backfill's
+  own queue honest: today it reports work that is not work.
+- First step: one `update` beside the existing institutions write, behind a
+  column-existence guard in the shape of `_has_evidence_grade`, because the
+  column is created by `backfill_institutions.ensure_column` rather than by a
+  schema run and distill must not fail an insert on a database that has not
+  met the backfill yet. One case in `tests/test_corpus_drain.py` for each of
+  "parsed and wrote" and "parsed and found nothing", both asserting the marker
+  is set, and one for the database that does not have the column.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — The attribution line has an author count sitting beside it and spends none of it (engineer seat, second run)
+- Trigger: today's craft scan, below, against a page our own ingest already
+  reads. Hugging Face Papers renders "8 authors" next to an organisation name,
+  and our digest's documented fallback when `institutions` is empty is "a team
+  led by <first author>", which is the same sentence every time and reads as
+  furniture by its third use (canon law 9, and the backfill's own docstring
+  says so).
+- What: `papers.authors` is a populated `text[]` on rows the metadata fetch
+  reached, so `cardinality(authors)` is free, needs no schema change, no model
+  call and no second fetch. "A 47-author paper led by <first author>" is a
+  different sentence from "a team led by <first author>", and the number is
+  itself a signal a reader uses: a 400-author system card and a three-author
+  theory paper are not the same kind of claim. Where the institution IS filled,
+  the two compose into the line the scan found: eight authors at Zhejiang
+  University.
+- First step: this is the writer seat's sentence and the engineer seat's
+  field, so the engineer half is the smaller one: put the count on the payload
+  the generator reads, beside `institutions`, and say in the handoff that
+  nothing in `prompts/digest.md` is obliged to use it. One line in the
+  generator's query, one key on the payload, one case in the payload test.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — Craft scan: Hugging Face Papers renders the lab as a field, and renders its absence as absence (engineer seat, second run)
+- Trigger: the daily rotation through docs/market/landscape.md, picked for
+  today's build rather than for the next name on the list. Today's work was
+  institution attribution, so the comp worth reading is one that attributes.
+  **Two method notes first, because both affect what this is worth.** The
+  rotation's own next unscanned entry was The Batch (deeplearning.ai), and it
+  could not be observed: both `curl` and the fetch tool got HTTP 403 behind a
+  Cloudflare challenge, so its landscape entry still says "last observed
+  2026-09-18" and this scan is not it. And Hugging Face Papers is not in
+  `docs/market/landscape.md` at all, which is itself the finding underneath
+  the finding: `pipeline/distill.py`'s own source comment names "a Hugging
+  Face daily pick" as one of the two things it reads, so the product has been
+  ingesting this page for weeks while the landscape file has never held a line
+  about it. Observed live at huggingface.co/papers, 2026-10-15, the "Oct 15"
+  list.
+- What: **the thing worth stealing is that the organisation is a rendered
+  field with its own slot, and an empty one renders as nothing at all.** An
+  entry carrying a lab shows the lab, with its logo, as the most prominent
+  thing after the title: "Zhejiang University", "ARC Lab, Tencent". An entry
+  with no lab shows a submitter avatar and "7 authors" instead, and prints no
+  guess, no placeholder and no apology. That is the same decision today's
+  build made for the same reason, arrived at from the rendering end rather
+  than the parsing end: a field whose wrong value is worse than its empty
+  value gets a parser and a blank, never a model and a fallback. The second
+  half, the author count, is this run's third ledger entry above, because it
+  is the part we could have and do not.
+  **What alexandria does better is that this page cannot say what it left
+  out, or why anything is on it.** The byline is "by AK and the research
+  community", the list appears ordered by upvotes and never says so, no entry
+  carries its own date, and nothing anywhere states how many papers were
+  submitted on 15 October or how the day's set was chosen from them. So a
+  reader cannot tell a quiet day from a filtered one, which is the exact
+  property `docs/agents/delivery-health.md` and the delivery receipt exist to
+  give us, and which three prior craft scans in this ledger (Consensus,
+  OpenAlex, Last Week in AI) each found missing somewhere else. Upvotes are a
+  measure of attention and our ordering is a measure of evidence, and that is
+  the difference the product is for.
+- First step: add Hugging Face Papers to `docs/market/landscape.md` as the
+  ingest source it already is, with the two observations above and today's
+  date. That file is the market seat's surface rather than this seat's, so
+  this entry is the handoff and not the edit.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — URGENT, carried and now wider: sql_query also reaches every subscriber's unsubscribe token (security seat, run 9)
+- Trigger: this run's audit, `docs/security/audit-2026-10-15.md`. This is not
+  a new finding. It is the 2026-10-01 `urgent` entry above, "sql_query can read
+  `subscribers` and `users`", re-measured after two weeks and found to reach
+  more than it did when it was written. Nothing about `sql_query` changed. The
+  table it can read did.
+- What changed: `subscribers` gained `unsubscribe_token uuid` with a unique
+  index, added since the last sweep and shipped with the unsubscribe path. That
+  column is a bearer capability by design, and `site/lib/unsubscribe-core.js`
+  says so in its own header: the link carries a token rather than an address
+  precisely so that knowing somebody's email grants nothing. The flip side is
+  that holding the token grants everything it was built to grant. A `POST` to
+  `/api/unsubscribe` with a token unsubscribes that row, with no session and no
+  second factor, which is correct for a link in an email and is the whole point.
+- Why that matters here: on 2026-10-01 the exposure behind one compromised MCP
+  token was disclosure, meaning the list's names and addresses. It now also
+  includes a capability, meaning the ability to unsubscribe the entire list in
+  one pass with no account, no password, and nothing in the product's own logs
+  to distinguish it from readers leaving. Disclosure is bad and reversible.
+  Mass unsubscription destroys the asset the company is built on.
+- What has not changed, stated so this is not read as worse than it is:
+  reaching any of it still needs a bearer token on `/mcp`, which still needs
+  the owner's throttled passphrase, and the write boundary is still sound. The
+  severity of the door is the same. What is behind it grew.
+- First step: unchanged and still the cheap one. A Neon role for the MCP server
+  with no `select` on `subscribers` and `users`. It needs no code, no new
+  dependency and no deploy of ours, and it now also closes this. The code
+  alternative in the 2026-10-01 entry is unchanged and still engineer-sized.
+- Cost: $0
+- Status: urgent
+
+### 2026-10-15 — checks.yml filters on a prompt that has never existed (security seat, run 9)
+- Trigger: this run's doc and reference sweep. `prompts/daily.md` is named in
+  both of `.github/workflows/checks.yml`'s path filter lists, in
+  `pipeline/budget.py`'s press table, and in nine documents. It has never
+  existed on any ref in this repository. The pull request that would have
+  created it, #35, closed without merging on 2026-09-24.
+- What: two dead lines in `checks.yml`'s `paths:` blocks. They cost nothing at
+  runtime, which is exactly why they are worth filing rather than fixing in
+  place: a path filter that names a file nobody will ever add is indistinguishable
+  from one that guards something, and the next seat reading that list to work out
+  what trips CI has to check the filesystem to find out which lines are real.
+- Also in the same list and not dead: the filters are narrow, and that narrowness
+  is this sweep's headline finding. `docs/agents/incidents.md` is not in them, so
+  the register guard ran on no pull request and no push for the merge that broke
+  it. The staged replacement in `.github/workflows-pending/checks.yml` drops the
+  path filters entirely and runs the whole suite, so it would have caught that
+  merge. This entry is a second, much smaller argument for the same item 17.
+- First step: the owner or headquarters deletes the two `prompts/daily.md` lines
+  when `checks.yml` is next opened, which is most likely the same edit that
+  applies item 17. `.github/workflows/` is headquarters' surface under standard
+  §15 and no seat's token may write it, so this seat reports rather than fixes.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-15 — six ledger entries carry a status the ledger's own vocabulary rejects (security seat, run 9)
+- Trigger: `python3 tools/check_registers.py` this run, which prints
+  `1 blocking, 6 warning(s)`. The six warnings are all this file, at lines 1777,
+  5152, 5431, 7053, 9869 and 14226, carrying `mostly`, `closed`, `observation`,
+  `observation`, `evidence` and `done` against a vocabulary of `proposed`,
+  `accepted`, `rejected`, `built` and `urgent`.
+- What: the cost is not cosmetic. Any triage that filters this file by status
+  silently skips those six, so an entry marked `evidence` or `observation` is
+  invisible to the sweep that would otherwise pick it up, which is the same
+  failure mode as a register nobody opens.
+- Why this seat did not just fix them: only `done` maps onto the vocabulary
+  without a judgement, as `built`. `mostly`, `closed`, `observation` and
+  `evidence` each need a decision about what the entry's author meant, and
+  making five of those silently inside a security pull request would be this
+  seat rewriting other seats' triage state. This file is also the highest
+  collision surface in the repository, which incident 6 is made of, so a
+  scattered six-line edit across 15,000 lines is the wrong shape for this run.
+- First step: whoever next does a ledger pass maps the six, or the vocabulary
+  grows to admit `observation` and `evidence`, which may be the honest answer
+  given two entries reached for `observation` independently.
+- Cost: $0
 - Status: proposed
 
 ### 2026-10-15 — The Left-Behind Index is built and must not be linked until `contradicts` precision moves (frontend seat)

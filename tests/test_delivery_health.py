@@ -82,7 +82,8 @@ def test_neither_reader_available_is_unknown_not_failing():
     try:
         results = dh.database_surfaces()
         check("every database surface answers",
-              {s.name for s in results} == {"press", "pipeline", "deploy"},
+              {s.name for s in results} == {"press", "pipeline", "payments",
+                                            "deploy"},
               str(sorted(s.name for s in results)))
         check("press is unknown, not failing",
               all(s.state == dh.UNKNOWN for s in results),

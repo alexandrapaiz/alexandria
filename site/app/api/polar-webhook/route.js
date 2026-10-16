@@ -1,4 +1,4 @@
-import { readEvent, applyPolarEvent } from "../../../lib/polar";
+import { readEvent, applyPolarEvent, notePolarOutcome } from "../../../lib/polar";
 
 // Polar's events, written into the Clerk user's metadata and the `users`
 // row (ADR-30, ADR-31). Polar is the Merchant of Record, so this endpoint
@@ -39,6 +39,30 @@ export async function POST(request) {
 
   const type = read.event?.type ?? "unknown";
 
+  // Every outcome below passes through this, which writes the row the daily
+  // standup reads: a `payment_exceptions` row when the payment did not become
+  // access, and a resolution of any open row for the same delivery when it
+  // did. It cannot throw and it cannot fail the webhook, so it is safe to put
+  // on the path every branch takes.
+  //
+  // It is a closure rather than four call sites so that a branch added later
+  // cannot forget it. The log line stays beside it, because a row and a log
+  // line answer different readers: the row is for the standup tomorrow and the
+  // line is for whoever is tailing the function now.
+  const note = async (result) => {
+    const noted = await notePolarOutcome({ event: read.event, eventId: read.id, result });
+    if (noted.exception && !noted.recorded) {
+      // The alarm path itself is quiet, which is the one failure that hides
+      // every other one. Applying db/schema.sql is a hand step, so a missing
+      // `payment_exceptions` table is a state this really meets.
+      console.error(
+        `polar-webhook: ${type} could not be recorded as a payment exception, ` +
+          `${noted.why}`,
+      );
+    }
+    return noted;
+  };
+
   try {
     const result = await applyPolarEvent(read.event);
 
@@ -59,13 +83,23 @@ export async function POST(request) {
     // with no account will never succeed, so it is acknowledged and logged
     // rather than retried on a schedule for a day.
     if (!result.ok && result.retryable) {
-      console.error(`polar-webhook: ${type} deferred, ${result.reason}`);
+      const noted = await note(result);
+      console.error(
+        `polar-webhook: ${type} deferred, ${result.reason}` +
+          (noted.attempts > 1 ? ` (attempt ${noted.attempts})` : ""),
+      );
       return Response.json({ ok: false, error: "not ready" }, { status: 503 });
     }
     if (!result.ok) {
+      await note(result);
       console.error(`polar-webhook: ${type} skipped, ${result.reason}`);
       return Response.json({ ok: true, skipped: result.reason });
     }
+
+    // The success path writes too, and it has to. A delivery that was deferred
+    // eleven times and then landed must close its own row, or the count the
+    // standup reads only ever rises and the org learns to ignore it.
+    await note(result);
 
     return Response.json({
       type,
@@ -79,7 +113,20 @@ export async function POST(request) {
   } catch (err) {
     // Clerk or the database being down is worth retrying, so this is a 500
     // and Polar brings the event back. The message stays server-side.
+    //
+    // This branch gets a row as well, under `handler_threw`, and it is the one
+    // the ledger entry did not name. A throw inside the Clerk write is a
+    // payment that arrived, was verified, and left no trace of what happened
+    // to it, which is strictly worse than the two refusals that at least knew
+    // why they refused. The row carries the error's class and the customer id
+    // read off the event, which is enough to find the charge in Polar.
     console.error(`polar-webhook: ${type} failed`, err);
+    await note({
+      ok: false,
+      retryable: true,
+      code: "handler_threw",
+      reason: `the handler threw: ${err?.name ?? "Error"}`,
+    }).catch(() => null);
     return Response.json({ ok: false, error: "write failed" }, { status: 500 });
   }
 }

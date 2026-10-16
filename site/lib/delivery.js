@@ -14,7 +14,7 @@ import { buildReceipt } from "./delivery-core.js";
 // throws is not, and a seat reading this from a sandbox cannot see the
 // environment, so this field is its only diagnosis.
 //
-// Seven queries, and no parameter from the request reaches any of them. Two are
+// Nine queries, and no parameter from the request reaches any of them. Two are
 // cheap by construction: `digests` is ordered on its unique `week` index and
 // `deploy_runtime` has one row per scheduled job. The two `max()` reads over
 // `papers` and `claims` have no index to use and scan, which is thousands of
@@ -154,6 +154,48 @@ export async function loadDeliveryReceipt() {
       deploy = null;
     }
 
+    // The till's open exceptions, added in version 5. Verified payments that
+    // did not become access, counted rather than listed: the row holds the
+    // buyer's address and the Polar ids and this endpoint is public, so only
+    // the numbers and this codebase's own reason codes come out.
+    //
+    // Fail-soft for the same reason `deploy` and `queues` are, and more
+    // sharply: `payment_exceptions` is newer than every other table here and
+    // `apply_schema` is a hand step, so a site deployed before the table is
+    // applied meets this. Losing the press and the corpus timestamps because
+    // the newest table is absent would be the wrong trade.
+    //
+    // Two statements. The aggregate is one pass over the partial index and
+    // comes back as four scalars; the grouping is the same pass again for the
+    // breakdown, which is cheaper than a json_agg in the first and keeps both
+    // statements readable against db/schema.sql. The index this reads is
+    // `payment_exceptions_open_idx`, which covers only the open rows, so the
+    // cost is the size of the problem rather than the size of the table.
+    let payments = null;
+    try {
+      const totals = await sql`
+        select count(*)                                  as unresolved,
+               count(*) filter (where not retryable)     as needs_a_hand,
+               min(occurred_at)                          as oldest,
+               max(last_seen_at)                         as newest
+        from payment_exceptions
+        where resolved_at is null
+      `;
+      const codes = await sql`
+        select reason_code as code, count(*) as n
+        from payment_exceptions
+        where resolved_at is null
+        group by reason_code
+        order by n desc, reason_code
+      `;
+      payments = { ...(totals[0] ?? {}), codes };
+    } catch {
+      // null, not zero. A till with no open exceptions is the good news this
+      // surface exists to confirm, and a failed read must not be able to
+      // claim it.
+      payments = null;
+    }
+
     return {
       receipt: buildReceipt({
         digest: digests[0] ?? null,
@@ -163,6 +205,7 @@ export async function loadDeliveryReceipt() {
         siblings,
         queues,
         deploy,
+        payments,
         observedAt: new Date(),
       }),
     };

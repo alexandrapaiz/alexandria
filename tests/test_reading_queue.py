@@ -434,12 +434,75 @@ def test_distill_fetches_through_the_shared_reader(monkeypatch):
 
     def fake(paper_id, *, max_chars=None, timeout=30):
         seen["id"], seen["max_chars"] = paper_id, max_chars
-        return "x" * (max_chars or 99)
+        return {"text": "x" * (max_chars or 99), "html": "<html>"}
 
-    monkeypatch.setattr(read_paper, "fetch_fulltext", fake)
-    body = distill.fetch_fulltext("arxiv:2602.12670")
+    monkeypatch.setattr(read_paper, "fetch_paper", fake)
+    got = distill.fetch_paper("arxiv:2602.12670")
     assert seen == {"id": "arxiv:2602.12670", "max_chars": distill.FULLTEXT_CHARS}
-    assert len(body) == distill.FULLTEXT_CHARS
+    assert len(got["text"]) == distill.FULLTEXT_CHARS
+
+
+def test_one_fetch_hands_back_the_text_and_the_markup(monkeypatch):
+    """The fix for the field being 99.2% empty, at its narrowest.
+
+    distill needs two things out of one arXiv page: the cleaned text a model
+    reads, and the markup the affiliations are printed in, which `clean_html`
+    deletes. Before 2026-10-15 the reader returned only the first, so the
+    institution backfill fetched the same page a second time to read a header
+    distill had already held. One `_get`, asserted by counting it.
+    """
+    calls = []
+
+    def fake_get(url, timeout):
+        calls.append(url)
+        return 200, (
+            '<html><div class="ltx_authors">'
+            '<span class="ltx_personname">A Person</span>'
+            '<span class="ltx_role_affiliation">Google DeepMind</span>'
+            '</div>' + "word " * 2000 + '</html>')
+
+    monkeypatch.setattr(read_paper, "_get", fake_get)
+    got = read_paper.fetch_paper("arxiv:2602.12670")
+    assert len(calls) == 1, "one page, one fetch"
+    assert "ltx_role_affiliation" in got["html"], "the markup survives"
+    assert "<span" not in got["text"], "and the text is still cleaned"
+    assert read_paper.fetch_fulltext("arxiv:2602.12670") == got["text"], \
+        "the old entry point still answers exactly what it used to"
+    assert len(calls) == 2, "the wrapper is a second fetch, which is why "\
+        "distill calls fetch_paper and not this"
+
+
+def test_a_page_too_thin_to_read_still_hands_back_its_header(monkeypatch):
+    """The asymmetry in `fetch_paper`, which is deliberate and is a product
+    decision: a landing page cleans down below MIN_TEXT_CHARS and the claims
+    then come from the abstract, but the author block is still printed on it,
+    so `institutions` can be filled for a paper that was never read in full.
+    """
+    # Over MIN_HTML_BYTES as a page and under MIN_TEXT_CHARS once cleaned,
+    # which is what arXiv's "no HTML for this paper" rendering looks like:
+    # all chrome and no body.
+    stub = ('<html><div class="ltx_authors">'
+            '<span class="ltx_role_affiliation">OpenAI</span></div>'
+            + '<div class="ltx_page_content"></div>' * 300 + '</html>')
+    assert len(stub) > read_paper.MIN_HTML_BYTES
+    assert len(read_paper.clean_html(stub)) < read_paper.MIN_TEXT_CHARS
+    monkeypatch.setattr(read_paper, "_get", lambda url, timeout: (200, stub))
+    got = read_paper.fetch_paper("arxiv:2602.12670")
+    assert got["text"] is None, "nothing a model should be asked to read"
+    assert "OpenAI" in got["html"], "and a header a parser can still read"
+    assert read_paper.fetch_fulltext("arxiv:2602.12670") is None
+
+
+def test_no_page_at_all_is_none_rather_than_a_dict(monkeypatch):
+    """None means arXiv has no HTML for this paper, which for anything before
+    roughly 2024 is the common case and is not an error. The caller branches
+    on the whole return, so an empty dict here would be a truthy nothing."""
+    monkeypatch.setattr(read_paper, "_get", lambda url, timeout: (404, ""))
+    assert read_paper.fetch_paper("arxiv:2602.12670") is None
+    assert read_paper.fetch_html("arxiv:2602.12670") is None
+    # A stub page arXiv serves for a paper with no HTML rendering.
+    monkeypatch.setattr(read_paper, "_get", lambda url, timeout: (200, "no HTML"))
+    assert read_paper.fetch_paper("arxiv:2602.12670") is None
 
 
 def test_the_queue_file_and_the_reader_travel_with_the_job():
@@ -448,6 +511,11 @@ def test_the_queue_file_and_the_reader_travel_with_the_job():
     only the intake."""
     source = (ROOT / "pipeline" / "distill.py").read_text()
     for path in ("tools/read_paper.py", "pipeline/reading_queue.py",
+                 # The extractor, added 2026-10-15. A job that writes
+                 # `institutions` from the markup and does not carry the
+                 # parser fails at the import, every paper, after the model
+                 # has already been paid for the call.
+                 "pipeline/institutions.py",
                  "docs/research/reading-queue.md"):
         assert f'add_local_file("{path}"' in source
 
@@ -469,7 +537,7 @@ def test_there_is_one_cleaner_and_both_callers_use_it():
     distill_source = (ROOT / "pipeline" / "distill.py").read_text()
     assert "read_paper.clean_html(raw)" in density
     assert "re.sub(r\"<[^>]+>\"" not in density
-    assert "read_paper().fetch_fulltext(" in distill_source
+    assert "read_paper().fetch_paper(" in distill_source
     assert "re.sub(r\"<[^>]+>\"" not in distill_source
 
 

@@ -1,0 +1,67 @@
+name: press-watch
+# The press can only fail on a Monday, and Monday is the one day nothing reads
+# whether it did.
+#
+# Sprint 2026-10-12 item 5. On Monday 2026-10-12 the 09:00 UTC press cron
+# started, recorded its own runtime fingerprint, and wrote no row to `digests`.
+# The gap sat undetected for eleven hours, until the PM's weekly ceremony
+# opened the delivery receipt at 20:00 and found 2026-W40 still the newest
+# issue. Two days later the same week was still missing and the board still
+# carried nothing about it.
+#
+# The check that answers this already existed and was already correct.
+# `tools/delivery_health.py` knows the press's deadline, which is its cron plus
+# a two hour grace window, and the only scheduled reader of its press surface
+# is the PM's daily standup, which on a Monday runs the ceremony instead. So
+# the defect was never in the judgement. It was in the hour nothing ran it.
+#
+# This is that reader, and it costs seconds. No model, no database credential,
+# no dependency install: `tools/press_watch.py` is standard library only and
+# reads the receipt the site already publishes at /api/delivery. Apply with:
+#
+#   git mv .github/workflows-pending/press-watch.yml .github/workflows/
+#
+# Daily rather than Monday-only, which is the one design choice here worth
+# reading. The card it posts is deduped on the due week in its own title, so
+# seven runs in a week post one card, and a Monday run GitHub skips is then
+# caught on Tuesday rather than next week. A guardrail whose single firing
+# opportunity is the hour it is most likely to be skipped in is the defect
+# again one level up.
+#
+# No `pull_request` trigger on purpose. This workflow writes to the company
+# board, and a guard that writes must not fire from a branch: every pull
+# request touching the tool would post a card about a week that may already be
+# closed. `tests/test_press_watch.py` is what runs on a pull request, and it
+# asserts this file's shape as well as the tool's behaviour, so an edit here
+# that drops the schedule or adds a branch trigger turns that pull request red.
+
+on:
+  schedule:
+    - cron: "0 11 * * *" # two hours after the 09:00 UTC press cron, every day
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  press-watch:
+    name: the press owes an issue by now, and the board hears about it either way
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Exit 1 means the window closed with no issue and the card is on the
+      # board. Exit 2 means the receipt could not be read at all, which posts
+      # nothing and is deliberately not a pass: a gate that saw nothing
+      # reading as a quiet pass is INC-2026-10-14 and company standard L-A21.
+      # Both go red, and a red scheduled run is the second channel, because
+      # GitHub mails the owner about one and the board is read by everybody.
+      - name: the press, two hours after its cron
+        env:
+          BOARD_API_URL: ${{ secrets.BOARD_API_URL }}
+          BOARD_RUNTIME_TOKEN: ${{ secrets.BOARD_RUNTIME_TOKEN }}
+        run: python3 tools/press_watch.py
