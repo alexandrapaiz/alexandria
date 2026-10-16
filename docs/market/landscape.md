@@ -31,6 +31,9 @@ for orchestration essentially," not AI news.
 - **Last observed:** 2026-09-25. Re-checked pricing directly: unchanged
   (Pro $49/mo, Scale $169/mo, same tier contents).
   [elicit.com/pricing](https://elicit.com/pricing)
+- **Last observed again, 2026-10-16.** Re-checked pricing directly: still
+  unchanged (Free, Pro $49/mo or $588/yr, Scale $169/mo or $2,028/yr,
+  Enterprise custom). [elicit.com/pricing](https://elicit.com/pricing)
 
 ### Consensus (consensus.app)
 - **What it is:** AI search engine that surfaces consensus/claims across
@@ -85,6 +88,18 @@ for orchestration essentially," not AI news.
   whatever that site rendered that day, not a fact about Consensus's
   actual price, and this doc should stop treating one aggregator read
   as a resolution until the primary page is reachable directly.
+- **Last observed again, 2026-10-16.** Sixth direct attempt at the primary
+  source: still blocked, the pricing page's Monthly/Annual toggle renders
+  with no plain-text figure. costbench.com, re-fetched directly, still
+  reads Pro at $20/month ($12/month billed annually, $144/year) and Deep
+  at $65/month ($45/month billed annually, $540/year), with the page's
+  own "last verified" date of 2026-10-11.
+  [costbench.com](https://costbench.com/software/ai-research-tools/consensus/)
+  This is the second consecutive re-check landing on $20/month since the
+  2026-10-05 reversal, which starts to look like the figure settling
+  rather than another swing in an unstable source. Still not promoted
+  past medium confidence on this doc's own terms: one aggregator,
+  re-read twice in a row, is a pattern, not a second primary source.
 
 ### Semantic Scholar (semanticscholar.org)
 - **What it is:** Free, nonprofit AI-powered academic search engine and
@@ -561,6 +576,47 @@ for orchestration essentially," not AI news.
   curation-that-exists is now free in at least two independent places.
 - **Last observed:** 2026-09-30.
 
+### "Lost in Implicit Routing" — a fifth measurement of the skills-trust gap, and the first that is mechanistic rather than a count, added 2026-10-16
+- **What it is:** an academic paper, posted to arXiv 2026-10-13, that holds
+  SkillsBench's own tasks and golden skills fixed (SkillsBench is already
+  tracked above, added 2026-09-30) and adds irrelevant skills to the
+  library the agent must choose from. [arXiv 2610.18522](https://arxiv.org/abs/2610.18522)
+- **The number:** with 1,000 irrelevant skills added, the agent's
+  loaded-skill recall for the correct skill falls from 73.6% to 27.4%,
+  and the rate at which it loads no skill at all rises from 9.3% to
+  51.6%. Explicit selection from the same library (telling the agent
+  which skill to consider, rather than letting it choose from the full
+  list) holds recall at 73.9%, roughly where it started. The authors
+  call this "skill routing collapse" and attribute it to semantic
+  interference between skill descriptions as the library grows.
+- **Why it is a different kind of evidence than the four before it.**
+  Snyk's ToxicSkills, SkillsBench, NVIDIA's SkillSpector, and skills.sh's
+  own install-concentration data (all above) each measure that the open
+  ecosystem has a problem: unsafe code, mediocre quality, one install
+  in two. None of them explain a mechanism. This paper does: as a skill
+  library grows past a few hundred entries, an agent's own implicit
+  routing degrades sharply even when the right skill is sitting in the
+  list, which is a structural argument for scoped or pre-selected skill
+  delivery rather than a trust or quality argument.
+- **Corroborating demand signal, same week, not academic.** The paper
+  reached Hacker News as a plain Show-HN-style link on 2026-10-14
+  ([news.ycombinator.com/item?id=50083980](https://news.ycombinator.com/item?id=50083980)),
+  low traction (1 point, no comments) so not itself evidence of reach,
+  only of how this run found it. Separately the Cursor community forum has an open thread of users
+  reporting skills that are discovered (visible in Settings and the
+  slash menu) but never injected into the agent's actual system prompt
+  ([forum.cursor.com/t/cursor-agent-skills-in-agents-skills](https://forum.cursor.com/t/cursor-agent-skills-in-agents-skills/161142)).
+  Practitioners are already hand-building fixes rather than waiting for
+  one: at least three small discovery/routing tools (AgentSkill.club,
+  Agent-i-Kit, a TanStack registry that auto-indexes npm-published
+  skills) have appeared around exactly this gap, none of them attaching
+  evidence to a skill, all of them solving discovery alone.
+- **Reading for alexandria:** this is the strongest single piece of
+  evidence yet for the still-open "Scoped skill delivery by default"
+  ledger proposal (docs/ideas.md, 2026-09-18, unactioned as of this
+  run). Named here and escalated in the ledger this run.
+- **Last observed:** 2026-10-16.
+
 ### Strands Harness (AWS) and the CMU message-passing paper — orchestration-pattern signal, added 2026-09-25
 - **What happened:** AWS's Strands Agents team shipped "Strands Harness,"
   claiming frontier performance at 28% lower token cost.
@@ -618,6 +674,33 @@ for orchestration essentially," not AI news.
   a product that replaces it. Named in this week's brief for the
   research seat's signal read.
 - **Last observed:** 2026-10-02.
+
+### RRSI, regularized harness self-improvement — a fourth entrant in the orchestration-pattern thread, added 2026-10-16
+- **What it is:** a paper from Google Cloud AI Research with academic
+  co-authors (UNC-Chapel Hill, Stanford, Washington University in St.
+  Louis), posted to arXiv around 2026-09-21. It regularizes the loop
+  that repeatedly edits an agent's own prompts, tools, and control flow
+  to improve it: an annealed edit budget and history-aware exploration
+  on the proposal side, a critic and a pruner on the selection side, to
+  stop gains on training tasks from evaporating on held-out benchmarks.
+  [arXiv 2609.24972](https://arxiv.org/abs/2609.24972)
+- **The number:** across eight benchmarks in coding, agentic workspace,
+  and engineering design, the authors report gains of up to 14.1 points
+  in-distribution and 4.7 points out-of-distribution over unregularized
+  harness evolution, using roughly 30% fewer policy tokens. Figures are
+  from secondary summaries (alphaxiv, emergentmind, hyper.ai), not
+  independently confirmed against the paper's own tables this run.
+- **Why it is here rather than new:** picked up by TLDR AI's 2026-10-15
+  issue a month after posting, not new this week, but new to this doc.
+  It extends the same thread Strands Harness, the CMU message-passing
+  paper, and OrchBench already opened: a lab or vendor claiming a
+  harness-design win, this time with a specific guard against the
+  overfitting failure mode the other three entries do not address.
+  Still no independent, third-party evaluation of any of the four.
+- **Reading for alexandria:** named for the research seat's signal
+  read, same routing as the rest of this thread. Does not touch
+  pricing or positioning.
+- **Last observed:** 2026-10-16.
 
 ### OpenAI's 10,000-agent swarm — orchestration-at-scale precedent, added 2026-09-24
 - Not a competitor, a signal: OpenAI published a proposed resolution of the
@@ -764,3 +847,21 @@ for orchestration essentially," not AI news.
   2026, the first concrete precedent behind two prior briefs' structural
   observation that Anthropic sits outside the charter's named upstream
   list. See docs/market/briefs/2026-10-05.md for this run's full brief.
+- 2026-10-16 (regular Friday ceremony): re-checked Elicit directly, no
+  change. Re-checked Consensus a sixth time. Primary source still
+  blocked, but costbench.com's $20/month reading held for a second
+  consecutive check after the 2026-10-05 reversal. Added "Lost in
+  Implicit Routing" (arXiv 2610.18522), an academic paper that measures
+  the skills-trust gap's mechanism rather than its scale for the first
+  time: loaded-skill recall falls from 73.6% to 27.4% as irrelevant
+  skills are added to a library, with a zero-load rate that rises to
+  51.6%, which is the strongest evidence yet for the still-open,
+  unactioned "Scoped skill delivery by default" ledger proposal
+  (escalated this run). Added RRSI (arXiv 2609.24972), a fourth entrant
+  in the orchestration-pattern thread (after Strands Harness, the CMU
+  message-passing paper, and OrchBench), not new this week but new to
+  this doc, named for the research seat. See
+  docs/market/briefs/2026-10-16.md for this week's full brief, including
+  this run's "What the world learned" items (an OpenAI engineer's arrest,
+  Anthropic's self-replication research), named there rather than here
+  since none are competitors to alexandria.
