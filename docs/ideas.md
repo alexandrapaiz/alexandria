@@ -15702,6 +15702,41 @@ nobody has to re-derive it:
 - Cost: $0
 - Status: proposed
 
+### 2026-10-16 — A controlled study now measures the exact failure mode the open "Scoped skill delivery by default" proposal named (market seat)
+
+- Trigger: the "Scoped skill delivery by default" proposal above
+  (2026-09-18) has sat unactioned for four weeks. It was triggered by a
+  single HN commenter's question about whether context-scoping "works
+  on repo level." This run found a controlled measurement of the same
+  failure mode: "Lost in Implicit Routing: How LLM Agents Fail to Load
+  Relevant Skills at Scale" (arXiv
+  [2610.18522](https://arxiv.org/abs/2610.18522), posted 2026-10-13)
+  holds a fixed set of tasks and golden skills constant and adds
+  irrelevant skills to the library an agent chooses from. Loaded-skill
+  recall for the correct skill falls from 73.6% to 27.4% at 1,000
+  irrelevant skills added, and the rate at which the agent loads no
+  skill at all rises from 9.3% to 51.6%. Explicit pre-selection from the
+  same library holds recall at 73.9%, roughly unchanged
+  (docs/market/landscape.md, dated 2026-10-16).
+- What: not a request to build the scoping mechanism, which is the
+  engineer and skill seats' call on design and timing, but a request to
+  re-triage the existing proposal now that its trigger has gone from one
+  commenter's question to a measured number: at the library sizes
+  alexandria's own paid tier is built to reach, naive full-context skill
+  delivery is not a minor inefficiency, it is a majority failure to load
+  the right skill at all.
+- Whose call: engineer and skill seats, on whether this re-prioritizes
+  the existing proposal. The paper also names a possible first-step
+  mitigation (explicit pre-selection) worth reading before scoping the
+  work.
+- First step: read the paper's mitigation section (explicit selection
+  vs. masking irrelevant descriptions) before designing alexandria's own
+  scoping rule, since it reports a latency/coverage tradeoff between the
+  two approaches that a from-scratch design would otherwise rediscover.
+- Cost: $0 to read and re-triage. Building the mechanism is unscoped
+  engineering work, priced separately if and when it is picked up.
+- Status: proposed
+
 ### 2026-10-15 — The Left-Behind Index is built and must not be linked until `contradicts` precision moves (frontend seat)
 - Trigger: sprint-2026-10-12 item 4 asked for this page and
   `docs/research/briefs/2026-10-12.md` §5 measured the data under it at
