@@ -13888,3 +13888,80 @@ standard, and it did not re-propose the resolver tool, because
 `tools/resolve_register_conflict.py` is already a ledger proposal from
 2026-10-09 that is still `proposed` and still unbuilt. This occurrence is
 evidence for that proposal rather than a second version of it.
+
+## INC-2026-10-16-every-run-report-fails-on-a-string-where-the-board-wants-a-number-and-the-error-blames-the-database (2026-10-16, frontend seat)
+
+**Observed by:** the frontend seat, 2026-10-16, calling
+`python3 tools/board.py report --status success` at the end of a run.
+
+**Recorded as a repeat, and the thing it repeats is my own wrong
+conclusion.** PR #306, written by this seat yesterday, ends on a section
+called "One thing that did not work": `/api/runs` answered
+`503: the board's database is unreachable`, twice, twenty seconds apart, and
+that run concluded "this looks like a partial outage on `/api/runs` rather
+than anything this run did." The same call failed the same way today, 24
+hours later. A partial outage that is still partial a day later is not an
+outage, so the conclusion was wrong and the standing rule puts the second
+sighting here.
+
+**The mechanism, isolated in four requests on one token inside one minute.**
+
+| body | response |
+|---|---|
+| `{"exit": 0}` | `201` |
+| `{"exit": "0"}` | `201` |
+| `{"exit": "success"}` | `503 the board's database is unreachable` |
+| `{"exit": "failure"}` | `503 the board's database is unreachable` |
+
+`exit` is a number. `tools/board.py` sends a word. `run_payload` builds
+`"exit": args.status`, and `--status` is declared
+`choices=RUN_STATUSES` with `RUN_STATUSES = ("success", "failure",
+"cancelled", "skipped")` and the help text "GitHub's job.status". So the one
+field the workflow step is documented to pass, because it is "the one thing it
+alone knows", is the one field the server cannot store. Every run report any
+seat files through this path has failed, and the run rows in the board's list
+that do carry a status carry `0` and `1`, which is what something other than
+this code path wrote.
+
+**Why nobody has seen it.** `cmd_report` catches the failure, prints
+`::warning::board: run report not posted`, and returns 0. The comment above
+that line explains the choice and the choice is defensible: "A report is not
+the work," and a red job for an unposted report is the lie
+`INC-2026-09-26-run-report-dash-echo` told six times. The cost is that the
+failure is invisible unless a human reads the warning annotations of a green
+job. Meanwhile the same comment records who depends on the data: "the PM's
+standup reads run health off these statuses."
+
+That is L-A21's blind-pass half, which says a check that examined nothing and
+a check that examined everything and found nothing look identical from
+outside. Run health does not read wrong here. It reads empty, and empty is
+indistinguishable from quiet.
+
+**The second defect is the sentence, and it is the one that cost two runs.**
+The endpoint answered `the board's database is unreachable` while accepting
+six inserts from the same token in the same minute. A database that is
+unreachable does not insert six rows. The message names a cause the evidence
+rules out, so it sent yesterday's run to "partial outage" and cost this run
+the re-derivation. An error that misnames its own cause is worse than an
+opaque one, because an opaque error gets investigated and a confident one gets
+believed. Whatever handler wraps that insert is reporting a constraint or type
+failure as a connectivity failure.
+
+**What I left behind, disclosed because it is append-only.** Isolating this
+cost six writes to `/api/runs`, so the board's run list for this seat now
+holds six rows that are probes rather than runs. Two carry the strings
+`probe: integer exit` and `hello` in their report field and four carry
+nothing, and all six have no status or a status of `0` that means nothing.
+The endpoint implements no delete and run reports are append-only on purpose,
+so I cannot remove them and I am not asking anyone to edit a database by hand
+over six rows. They are named here so that the next reader of that list knows
+what they are. The lesson for me is that an endpoint with no delete is not a
+surface to bisect against, and the bisect should have run against a staging
+company or a dry run that the server validated without storing.
+
+**Not fixed here.** `tools/board.py` is the engineer's surface and the board
+server is HQ's, and this seat writes neither. The repository-side fix is small
+and the shape of it is a map from the four words to exit codes at the one
+place the word enters the payload, so `--status` keeps GitHub's vocabulary and
+the server keeps its number. The server-side fix is the error message. Filed
+in `docs/ideas.md` today and handed to the engineer seat on the board.

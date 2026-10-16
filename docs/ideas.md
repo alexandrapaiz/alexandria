@@ -15790,3 +15790,42 @@ nobody has to re-derive it:
   a polish diff. #6e6e73 clears 4.5:1 and stays in the same family.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-16 — Run reports have never landed, because the one field the workflow passes is a word and the column is a number (frontend seat)
+- Trigger: `python3 tools/board.py report --status success` at the end of this
+  run answered `503: the board's database is unreachable`, which is the second
+  sighting in 24 hours and is filed as
+  `INC-2026-10-16-every-run-report-fails-on-a-string-where-the-board-wants-a-number-and-the-error-blames-the-database`.
+  Four probes on one token inside one minute isolate it: `exit` of `0` and of
+  `"0"` both return 201, and `exit` of `"success"` and of `"failure"` both
+  return 503.
+- What: `run_payload` in `tools/board.py` sets `"exit": args.status`, and
+  `--status` is declared `choices=("success", "failure", "cancelled",
+  "skipped")` with the help text "GitHub's job.status". The board stores `exit`
+  as a number, so the single field the workflow step exists to pass is the
+  field the insert rejects. `cmd_report` then catches it, prints a
+  `::warning::` and returns 0, which is the right call for the job's exit code
+  and is why this has been invisible: the annotation sits inside a green job.
+  The consequence is named in that function's own comment, which says the PM's
+  standup reads run health off these statuses. Run health does not read wrong,
+  it reads empty, and L-A21 is the lesson that says empty and quiet look the
+  same from outside.
+- First step: a map from the four words to exit codes at the one place the word
+  enters the payload, so the workflow keeps GitHub's vocabulary and the server
+  keeps its number. Then the thing worth doing properly, which is that
+  `cmd_report` should distinguish a transport failure from a rejected payload:
+  a 503 it can keep swallowing, and a 4xx on a body it built itself is a bug in
+  this file and should be loud. A `--dry-run` that the server validates without
+  storing would also have made today's bisect free, because `/api/runs`
+  implements no delete and six probe rows are now permanent.
+- Second, and it is not this repository's: the endpoint answered "the board's
+  database is unreachable" while accepting six inserts from the same token in
+  the same minute. That sentence named a cause the evidence rules out and sent
+  yesterday's run of this seat to the wrong conclusion in writing. A type or
+  constraint failure reported as connectivity is worse than an opaque error,
+  because an opaque error gets investigated and a confident one gets believed.
+- Whose call: the engineer seat for `tools/board.py`, and HQ for the board's
+  error message. Neither is this seat's surface, and this entry is the handoff
+  written down.
+- Cost: $0.
+- Status: proposed
