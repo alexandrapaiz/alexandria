@@ -2587,3 +2587,141 @@ gap that the same collision had left empty (incident 25).
     ```
     LANDED prompts/digest.md: "The check is a comparison against a list and never a reading of the sections."
     ```
+116. The count whose unit only an obedient draft produces. Entry 112 fixed one
+    count by fixing its unit, and the diagnosis stopped at that count. This is
+    the same defect one step earlier: a gate that triggers on a number, where
+    the thing being numbered is a feature of the shape the gate is trying to
+    produce. Count it on a draft that already obeys and the number is right.
+    Count it on the draft that broke the rule and the number is zero, because
+    the objects it counts are what obeying would have created.
+    The specimen is the one unconditional list requirement in the generator.
+    The fell-behind slot said the superseded group "is a bulleted list and not
+    a paragraph" past two entries, and the shape gate's sixth count said
+    "Count the entries in that group. Three or more and the group is a list."
+    An entry is a thing a list has. A group written as flowing prose has
+    none of them, so the count the gate takes on the artifact that failed is
+    zero and the gate reports clean.
+    **The two prints of 2026-10-05 are what makes this an entry rather than a
+    guess, because they fail it from opposite directions and neither one fails
+    it by judging the number wrong.** The published body set three superseded
+    pairs as three paragraphs of 74, 59 and 33 words. The rehearsal of the
+    identical `prompt_sha` set four of them as four sentences inside one
+    149-word paragraph, which is the 2026-W39 defect this rule's own text
+    quotes back at itself. Run the gate as worded on the second one and it
+    counts the entries in a group that has no entries, so the worse print is
+    the one it clears.
+    The payload is where the number already is. `superseded` carried five rows
+    on 2026-10-05, available before a word was written, and the three
+    neighbouring gates that work all count the rows handed over rather than
+    the items drafted: `:839` counts distinct papers in the rows, `:914`
+    groups the rows by paper before anything is chosen, and `:1334` builds the
+    named-works list the link, grade and attribution gates are counted
+    against. This was the fourth and it was the one pointed at the draft.
+    The sweep entry 90 requires, over the class, which is a count whose
+    operand is a drafted object:
+    `grep -nE "Count the (entries|items|blocks|paragraphs|headings|grades|figures|semicolons|numbers)" prompts/digest.md`
+    printed five hits and none of them is an instance. Semicolons at `:1697`,
+    colon-carrying headings at `:1723` and leading-zero figures at `:1744`
+    count characters and figures, which are in the draft whatever shape it
+    took. `:2149` counts items in a section, the same. `:1974` is the one that
+    was this class and entry 112 already fixed it, in those words: the unit is
+    fixed there and not the writer's to pick. **A count of one, which closes
+    the entry.**
+    **Then the generalisation question, and it has one honest answer this
+    patch does not reach.** Restated in a different part of speech the group is
+    counted as pairs or replacements rather than entries, and the patch
+    survives that, because a `superseded` row is a fixed object with a name in
+    the payload. Restated in a subordinate clause, where a pair is folded into
+    another item rather than standing as its own, the row is still printed and
+    still counts. Restated in a different POSITION it is not caught at all:
+    the parallel-results list in the traction slot at `:849` and in the
+    new-work slot at `:876` have no count in them, because their trigger is a
+    judgment about whether the day's results are the same kind of thing. A
+    count cannot be fixed where there is no count, so those two keep failing
+    invisibly and that is a filing rather than a wording.
+    Added 2026-10-16. Enforced the same day in both positions, the composition
+    slot and the sixth count, because the slot is where the prose is written
+    and the count is where it was being checked too late.
+    ```
+    LANDED prompts/digest.md: "because that count is the shape and the shape is not a revision"
+    LANDED prompts/digest.md: "Count the `superseded` rows that group came from, NOT the entries you can see in the draft"
+    ```
+117. The name spelled wrong to satisfy a rule that exempted it. Entry 40 is a
+    mark doing a full stop's job and the ASCII rule has been in this generator
+    since the voice overhaul, stated as a question put to every character:
+    is this plain ASCII? It carried its exception in the same breath, "a
+    person's or an institution's name as the payload spells it", and the
+    exception had no direction. The rule says what to strike. Nothing said
+    what to keep, and the paragraph underneath it says to assume every string
+    handed over is contaminated rather than checking whether this one is.
+    So the print of 2026-10-05 wrote:
+
+    > An independent researcher, Jose Luis Pino, formalized a containment
+    > architecture that halts rogue agent execution
+
+    `select authors from papers where id='arxiv:2609.29808v1'` returns
+    `{"José Luis Pino"}`. The issue misspelled a named researcher in the one
+    sentence that attributes the work to him, and it scored zero non-ASCII
+    characters doing it. The rehearsal of the identical `prompt_sha` spelled
+    the name correctly.
+    This is worse than the ordinary tell because of who it is about. An
+    overstated result belongs to a lab and a reader who cares can check the
+    link. A person's name is the one thing in an issue the person themself
+    will read, and a stripped accent is not a typo the pipeline made. It is a
+    rule being obeyed in the direction nobody wrote down.
+    The sweep, over the class, which is an exception clause with no direction:
+    `grep -nE "[Tt]he one exception|no exception|exception is" prompts/digest.md`
+    printed three hits. `:219` and `:308` are prohibitions, "no assumed
+    vocabulary and no exception for terms that feel basic" and "Punctuation,
+    spacing, separators and mathematical symbols get no exception at all", and
+    both point the way a prohibition points. `:306` is the only permission in
+    the file and it is the one patched. **A count of one, which closes the
+    entry.**
+    Added 2026-10-16. Enforced the same day at the plain-ASCII bullet, which
+    now states the exception as a step with a direction and names which side
+    wins when the count and the name pull against each other.
+    ```
+    LANDED prompts/digest.md: "A name is copied out of `authors` character for character and is the one string on the page the contamination default below does not run on"
+    ```
+118. The count that cannot hold its own rule's exception, and the grade that
+    read the count as the verdict. Entry 117 is the generator half of one
+    morning's defect. This is the instrument half, it is the more general of
+    the two, and it is about this seat rather than about the model.
+    `docs/voice/check_voice.py measure` printed a bare non-ASCII census, one
+    row per character with a count beside it, and set a non-zero exit on any
+    hit. The rule it was built to measure carries an exception. A count has no
+    way to express one, so the instrument scored the two prints of 2026-10-05
+    exactly backwards: the body that stripped a researcher's accent exited
+    clean at zero, and the body that spelled his name as the payload spells it
+    exited non-zero at one.
+    **The cost is on the record and it is a verdict in this seat's own
+    register.** The grade of 2026-10-15 quoted that figure as evidence, in its
+    own words, that the rehearsal "carries one non-ASCII character" and is
+    therefore "worse under law 1". The character was an acute accent in José
+    Luis Pino's name. Canon pass 1 has said since 2026-10-04 that a FAIL
+    recorded against a clean artifact is worse than no grade, because it hides
+    the one thing the generator has solved and nobody can tell when to stop
+    working on it, and that sentence was written about a figure carried from
+    the wrong artifact. This is the same sentence failing on a figure measured
+    from the right artifact with the wrong unit.
+    The sweep, over the class, which is a gate stated as a target of zero
+    against a rule carrying an exception:
+    `grep -nE "target is zero" prompts/digest.md`
+    printed five hits, at the buzzword scan `:262`, the semicolon count
+    `:1697`, the colon-carrying heading count `:1724`, the uncompared figure
+    `:1734` and the trailing-zero scan `:1756`. Every one of those rules is an
+    unconditional prohibition with no exception in it, so zero is the honest
+    target for all five and none of them is an instance. The one rule in the
+    org that carries an exception was never stated as a count in the
+    generator at all. It was a count only in this file. **A count of one,
+    which closes the entry.**
+    Added 2026-10-16. Enforced the same day in `docs/voice/check_voice.py`,
+    where the census now divides the characters by unicode category, which is
+    the division the rule's own words make: punctuation, spacing, separators
+    and symbols are scored and set the exit code, and a letter is printed with
+    the word it sits in and handed to the grade, because the exception turns
+    on whose name it is and no command knows that.
+    ```
+    LANDED docs/voice/check_voice.py: "the division is the character's unicode category and not the word it sits in"
+    LANDED docs/voice/check_voice.py: "A letter is reported and left to the grade rather than scored, because the rule's exception turns on whose name it is and no command knows that."
+    ```
