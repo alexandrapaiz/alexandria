@@ -1154,8 +1154,8 @@ memory from", and the one item whose paper the list did not carry shared
 nothing with any of them. Three caught, none wrongly. This file said for a day
 that one piece of work carries two different strings and that recognising them
 as one is the step that cannot happen, and that was wrong about the artifact it
-was written from. The print of 2026-10-05 is what
-that looks like from a reader's chair: three picks, all three described at
+was written from. The print of 2026-10-05 is what a missed overlap
+looks like from a reader's chair: three picks, all three described at
 length in the section directly above, and seven candidates in `deep_reads` the
 issue had not covered left unprinted. Naming one stream is how this failed the
 first time: the rule used to say the overlap is with `new_claims`, one pick had
