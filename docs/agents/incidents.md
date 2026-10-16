@@ -13437,6 +13437,29 @@ was reached only by the exception handler, after the three refusals had already
 been paid for, so every reader of those three lines was being told the truth
 about the destination and nothing about the route.
 
+**And the sharpest evidence: the org's own tool printed the arithmetic every
+day.** `budget.cron_degradations()` returns three notes right now, one per
+fallback, each of them exact:
+
+```
+distill (pipeline/distill.py) rank 2 (openai/gpt-oss-120b) cannot take a full
+paper: prompt 1426 + payload 98814 + output reservation 2000 + envelope 32 =
+102272 tokens against 6800 usable (8000 TPM less 15% margin); DOES NOT FIT,
+headroom -95472. It falls back to abstract[:6000], which fits, so the run
+succeeds and the paper is read from its abstract instead of in full.
+```
+
+`python3 pipeline/budget.py` prints it, gate 1 of the deploy ladder runs it, and
+the whole thing passes, because `tests/test_corpus_drain.py` was deliberately
+narrowed on 2026-09-30 to check only the head of the list. The reasoning written
+into that test is sound as far as it goes: the Groq models not taking a paper is
+"the point of that function rather than a regression". What nobody asked is what
+the degradation COSTS to reach. That note describes the destination perfectly
+and says nothing at all about the route, and the route was three refused
+requests and up to 27 minutes of backoff per paper. A measurement that names
+where a run ends up and not what it pays to get there reads as a clean bill of
+health.
+
 And `tests/test_distill_fulltext_budget.py` had two tests either side of the
 gap. One asserted the head of the list takes a whole paper. One asserted every
 fallback takes the documented abstract. Both passed every day. Neither asked
