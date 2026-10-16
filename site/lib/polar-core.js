@@ -434,3 +434,91 @@ export function spineFromMetadata(metadata, nowMs) {
   if (!Number.isFinite(t)) return false;
   return t > nowMs;
 }
+
+// ------------------------------------- money that did not become access
+//
+// Every way this product can take a Polar event and fail to turn it into
+// access, as a vocabulary, plus the rule that decides whether an outcome
+// deserves a row in `payment_exceptions`.
+//
+// The problem this closes: both of the webhook's unrecoverable outcomes
+// end in a `console.error` in a Vercel function log that nothing in this
+// org reads. A buyer with no Clerk account cannot be granted anything and
+// an email matching two accounts matches neither. Both refusals are right
+// and both are a paid customer with no access, found when they write in.
+// The corpus has had an alarm path since pipeline/notify.py; the till had
+// none.
+//
+// The decision is here and the insert is in polar.js, the same split the
+// rest of this file keeps, so the question "is this worth waking somebody
+// for" is answered by a function with no database in front of it.
+
+// The code is the grouping key the daily standup counts by, so it is a
+// closed set checked by db/schema.sql rather than free text: a typo in a
+// free-text reason becomes a new category and splits the count that was
+// supposed to add up.
+//
+// The sentence beside each one is the row's `detail` when the outcome
+// carried no reason of its own, which is the case for anything that fails
+// before it has words for why. Whether a given code is one Polar will
+// retry is not written here: that answer is on the row, as the webhook's
+// own `retryable`, because the row should agree with the response Polar
+// actually saw rather than with a second table that could drift from it.
+export const EXCEPTION_CODES = {
+  no_account: "nobody holds this address at Clerk, so there is no account to grant",
+  ambiguous_email: "two accounts share this address, so neither can be the buyer",
+  lookup_failed: "the account lookup itself failed, so the buyer is unidentified",
+  no_users_row: "the account exists at Clerk and its billing row has not arrived",
+  no_database: "the site cannot reach its database, so the billing row is unwritten",
+  handler_threw: "the handler threw before it could finish granting access",
+};
+
+// The row, or null when there is nothing to record.
+//
+// Null in exactly two cases, and both of them are the handler working. An
+// `ok` result granted the access or correctly ignored an event that says
+// nothing about anybody's access. And a delivery with no id cannot be
+// recorded idempotently, so it is left to the log rather than written as a
+// row that every retry duplicates: the id comes out of the `webhook-id`
+// header the signature covers, so a verified delivery always has one and
+// this branch is unreachable from Polar.
+//
+// An unrecognised code is recorded rather than dropped, as `handler_threw`
+// with the code it did not know in the detail. The alternative is a new
+// failure path that silently writes nothing, which is the hole this whole
+// table exists to close, so the default leans towards one puzzling row.
+export function paymentExceptionOf({ event, eventId, result }) {
+  if (!result || result.ok === true) return null;
+
+  const id = clean(eventId);
+  if (!id) return null;
+
+  const known = Object.prototype.hasOwnProperty.call(EXCEPTION_CODES, result.code);
+  const code = known ? result.code : "handler_threw";
+  const detail = known
+    ? clean(result.reason) ?? EXCEPTION_CODES[code]
+    : `unrecognised outcome code ${JSON.stringify(result.code ?? null)}: ` +
+      (clean(result.reason) ?? "no reason given");
+
+  // The verdict when there is one, and the raw event when the failure came
+  // before a verdict existed. A handler that threw inside the Clerk call
+  // still knows which customer the event was about, and that id is the only
+  // way to find the charge in Polar's dashboard, so it is read off the
+  // event rather than given up on.
+  const verdict = result.verdict ?? null;
+  const subject = verdict ?? subjectOf(event?.data ?? null);
+
+  return {
+    event_id: id,
+    event_type: clean(event?.type) ?? "unknown",
+    reason_code: code,
+    // The result's own word for it, not a re-derivation from the code: a
+    // 503 and a 200 are what Polar actually saw, and the row should agree
+    // with the response that was sent rather than with the table above.
+    retryable: result.retryable === true,
+    detail: detail.slice(0, 500),
+    polar_customer_id: clean(subject?.polarCustomerId) ?? null,
+    polar_subscription_id: clean(verdict?.polarSubscriptionId) ?? null,
+    email: clean(subject?.email)?.toLowerCase() ?? null,
+  };
+}

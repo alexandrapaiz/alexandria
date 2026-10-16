@@ -60,6 +60,21 @@ const FULL = {
       notified_at: null,
     },
   ],
+  // The till's open exceptions, version 5. Two rows, one of each kind, so the
+  // fixture exercises the split the verdict turns on: a `no_account` refusal
+  // that will never clear itself and a `no_users_row` deferral that Polar will
+  // bring back. The counts are bigint strings for the same reason the queue
+  // depths are.
+  payments: {
+    unresolved: "2",
+    needs_a_hand: "1",
+    oldest: new Date("2026-09-30T18:00:00Z"),
+    newest: new Date("2026-10-01T01:30:00Z"),
+    codes: [
+      { code: "no_account", n: "1" },
+      { code: "no_users_row", n: "1" },
+    ],
+  },
   observedAt: new Date("2026-10-01T02:00:00Z"),
 };
 
@@ -186,10 +201,11 @@ test("the pipeline block has exactly the three markers and nothing else", () => 
   );
 });
 
-test("the top level has exactly seven keys", () => {
+test("the top level has exactly eight keys", () => {
   assert.deepEqual(Object.keys(core.buildReceipt(FULL)).sort(), [
     "deploy",
     "observed_at",
+    "payments",
     "press",
     "pipeline",
     "queues",
@@ -197,6 +213,86 @@ test("the top level has exactly seven keys", () => {
     "siblings",
     "version",
   ].sort());
+});
+
+// ------------------------------------------------- the till (version 5)
+//
+// This block is the first one on the receipt whose rows are about a person.
+// `payment_exceptions` holds the buyer's address and the Polar ids, the
+// endpoint is public and unauthenticated, and the tests below are the second
+// of the two defences the header names: lib/delivery.js does not select those
+// columns, and this builds every field by name so a row carrying them anyway
+// cannot widen the response.
+
+test("the till publishes counts, codes and two timestamps, and nothing else", () => {
+  const r = core.buildReceipt(FULL);
+  assert.deepEqual(Object.keys(r.payments).sort(), [
+    "codes",
+    "needs_a_hand",
+    "newest_unresolved_at",
+    "oldest_unresolved_at",
+    "unresolved",
+  ].sort());
+  assert.equal(r.payments.unresolved, 2);
+  assert.equal(r.payments.needs_a_hand, 1);
+  assert.equal(r.payments.oldest_unresolved_at, "2026-09-30T18:00:00.000Z");
+  assert.equal(r.payments.newest_unresolved_at, "2026-10-01T01:30:00.000Z");
+});
+
+test("a payer cannot escape, even when the rows carry one", () => {
+  const r = core.buildReceipt({
+    ...FULL,
+    payments: {
+      ...FULL.payments,
+      email: "buyer@example.com",
+      polar_customer_id: "cus_leak",
+      detail: "no Clerk account for this buyer (no match)",
+      codes: [
+        {
+          code: "no_account",
+          n: "1",
+          email: "buyer@example.com",
+          detail: "no Clerk account for this buyer (no match)",
+        },
+      ],
+    },
+  });
+  const json = JSON.stringify(r);
+  assert.ok(!json.includes("buyer@example.com"));
+  assert.ok(!json.includes("cus_leak"));
+  assert.ok(!json.includes("no Clerk account"));
+  assert.deepEqual(r.payments.codes, [{ code: "no_account", n: 1 }]);
+});
+
+test("a till with nothing open and an unreadable one are different answers", () => {
+  const clear = core.buildReceipt({
+    ...FULL,
+    payments: { unresolved: "0", needs_a_hand: "0", oldest: null,
+                newest: null, codes: [] },
+  });
+  assert.equal(clear.payments.unresolved, 0);
+  assert.equal(clear.payments.needs_a_hand, 0);
+  assert.equal(clear.payments.oldest_unresolved_at, null);
+  assert.deepEqual(clear.payments.codes, []);
+  // Null and not a zero, because zero is the good news and it is only good
+  // news when somebody looked.
+  assert.equal(core.buildReceipt({ ...FULL, payments: null }).payments, null);
+  assert.equal(core.buildReceipt({ ...FULL, payments: undefined }).payments, null);
+});
+
+test("a codes list that is not a list is an empty one, never a crash", () => {
+  for (const codes of [undefined, null, "no_account", 7, {}]) {
+    const r = core.buildReceipt({ ...FULL, payments: { ...FULL.payments, codes } });
+    assert.deepEqual(r.payments.codes, [], String(codes));
+  }
+});
+
+test("a code row with no code is dropped rather than published as null", () => {
+  const r = core.buildReceipt({
+    ...FULL,
+    payments: { ...FULL.payments, codes: [{ n: "3" }, { code: "no_account", n: "1" }] },
+  });
+  assert.deepEqual(r.payments.codes, [{ code: "no_account", n: 1 }]);
 });
 
 test("the queue depths come back as numbers, from the driver's bigint strings", () => {

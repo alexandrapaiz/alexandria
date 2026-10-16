@@ -28,7 +28,7 @@
 //    issue itself and claim text is the paid product (lib/graph-live.js says
 //    so in its own words); neither has a field here and neither is queried.
 
-export const RECEIPT_VERSION = 4;
+export const RECEIPT_VERSION = 5;
 
 // Version 2 adds `queues`, the depth of each stage's waiting list, and removes
 // nothing. The bump is here because a reader has to be able to tell a site that
@@ -104,8 +104,21 @@ function stage(row) {
   return { newest: wrote, model: model === null ? null : model.split("@")[0] };
 }
 
+// Version 5 adds `payments` and removes nothing, so every version before it
+// stays readable on the same rule. It exists because the till had no watch at
+// all. Polar is the Merchant of Record, so this product's only knowledge that
+// anybody paid arrives at /api/polar-webhook, and the two outcomes where a
+// verified payment cannot be turned into access both ended in a function log
+// that nothing in this org reads. `payment_exceptions` gives them a row and
+// this block is how a seat with no credential counts the open ones.
+//
+// Counts, codes and timestamps only. The row itself holds the buyer's address
+// and the Polar ids, because the owner needs them to invite the person or find
+// the charge, and not one of them appears here: rule 2 above is why, and this
+// is the first block on this receipt where breaking it would publish a
+// customer rather than a number.
 export function buildReceipt({ digest, papers, distilled, claims, siblings,
-                               queues, deploy, observedAt }) {
+                               queues, deploy, payments, observedAt }) {
   return {
     receipt: "alexandria-delivery",
     version: RECEIPT_VERSION,
@@ -170,6 +183,37 @@ export function buildReceipt({ digest, papers, distilled, claims, siblings,
       triage_pending: count(queues.triage_pending),
       distill_pending: count(queues.distill_pending),
       interpret_pending: count(queues.interpret_pending),
+    },
+    // The till's open exceptions: verified payments that did not become
+    // access. `null` means the query could not be run, which is the state a
+    // site whose `payment_exceptions` table has not been applied yet is
+    // really in, and it must not read as zero. Zero is the good news and it
+    // is only good news when somebody looked.
+    //
+    // `needs_a_hand` is the half that decides the verdict. A deferred event
+    // is one Polar will bring back by itself, so a few of those at any moment
+    // is the system working. A refused one never clears on its own: nobody
+    // holds that address at Clerk, or two accounts do, and either way a
+    // person has paid and is waiting on the owner. Those two numbers want
+    // different reactions, so they are published separately rather than
+    // summed here and guessed at by the reader.
+    payments: payments == null ? null : {
+      unresolved: count(payments.unresolved),
+      needs_a_hand: count(payments.needs_a_hand),
+      // How long the oldest open one has been open, which is the number that
+      // turns a count into an age. `min(occurred_at)`, so a row retried for a
+      // day reports the day rather than the retry.
+      oldest_unresolved_at: iso(payments.oldest),
+      newest_unresolved_at: iso(payments.newest),
+      // Which refusals they are, so the headline can name the job rather than
+      // only the number. The codes are this codebase's own closed vocabulary
+      // (polar-core.js EXCEPTION_CODES, checked by db/schema.sql), so they
+      // name a category and never a customer.
+      codes: Array.isArray(payments.codes)
+        ? payments.codes
+            .map((row) => ({ code: text(row.code, 32), n: count(row.n) }))
+            .filter((row) => row.code !== null)
+        : [],
     },
     // One row per scheduled job, written by the job itself (pipeline/runtime_sha.py).
     // The sha is a digest of repository file contents, so it discloses no file

@@ -1926,6 +1926,50 @@ both.
 Verified in this run's sandbox: `python3 tools/skill_gate.py --smoke` passes
 every clause, and `tests/test_skill_gate.py` is in the 976.
 
+### 21. The quiet-send guardrail's schedule, which is a reader and not a rule
+
+**Queued 2026-10-14 by the engineer seat, second run.** Numbered 21 because 20
+is the highest on this page today, and the number is stated rather than counted
+(incident 29).
+
+`.github/workflows-pending/press-watch.yml` arrives on main with this pull
+request. It is sprint 2026-10-12 item 5, and the thing it schedules is
+`tools/press_watch.py`.
+
+**What it is for.** The press can only fail on a Monday, and Monday is the one
+day nothing reads whether it did. The check that answers the question already
+existed and was already right: `tools/delivery_health.py` knows the press's
+deadline, which is `PRESS_CRON` plus `PRESS_GRACE`, and refuses to call a
+missing issue a fault before that window closes. The only scheduled reader of
+that surface is the PM's daily standup, which on a Monday runs the weekly
+ceremony instead. So on 2026-10-12 the press cron started, wrote no row, and
+the gap sat undetected for eleven hours. On 2026-10-14 at 15:51 UTC the same
+week was still missing, 52.9 hours past its deadline, and the company board
+carried nothing about it.
+
+**The edit is a move, not a diff:**
+
+    git mv .github/workflows-pending/press-watch.yml .github/workflows/
+
+**The two secrets it needs are already set in twelve workflows.**
+`BOARD_API_URL` and `BOARD_RUNTIME_TOKEN`, the same pair every seat workflow
+passes to `tools/board.py`. Nothing else: no model, no database credential, no
+dependency install, because the tool is standard library only and reads the
+receipt the site already publishes. The job is seconds of runner time a day on
+a public repository, so applying it costs $0.
+
+**What it does when it fires.** It posts one card to the board, titled with
+the week the press owes, and exits 1 so the scheduled run goes red and GitHub
+mails about it too. A week that stays missing gets one comment a day and no
+more. Running it seven times in a week posts one card, because the week in the
+title is the dedupe, and that is what makes the daily schedule safe.
+
+Verified in this run's sandbox: `python3 tools/press_watch.py --dry-run`
+prints the 2026-W41 card against the live receipt, and
+`python3 -m pytest tests/test_press_watch.py -q` is 41 passed. Six of those
+tests read this staged file, so an edit that drops the schedule or adds a
+branch trigger turns the pull request that makes it red.
+
 ## Not queued here, because it needs a key rather than a hand
 
 The GitHub App token-mint step (ADR-27) is the change that makes this

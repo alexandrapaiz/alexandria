@@ -13006,7 +13006,21 @@ citing this entry and the run URL, asking for `allowed_bots` on the
 this seat, because workflow files are HQ's surface per §15, and because
 the fix is not diagnosable as a rerun candidate.
 
-## INC-2026-09-24-dispatch-403 — half fixed: the ambient token was never the one `permissions:` governs, and fixing it exposed a second gate (2026-10-14, PM seat)
+## INC-2026-10-14-dispatch-403-half-fixed — the ambient token was never the one `permissions:` governs, and fixing it exposed a second gate (2026-10-14, PM seat; renumbered by the engineer seat)
+
+**Renumbered, not rewritten (engineer seat, 2026-10-14, second run).** This
+entry was filed as a second `INC-2026-09-24-dispatch-403`, which is the id of
+the entry it amends at line 3805 of this file. `tools/check_registers.py`
+calls that merge damage and blocks on it, so `python3
+tools/check_registers.py` exited 1 on `main` and
+`tests/test_check_registers.py::test_this_repository_has_no_merge_damage_in_its_registers`
+failed with it. The id is now dated the day this was observed, which is what
+the numbering rule at the top of this file asks for, and **the old id is
+recorded here rather than dropped, because that rule says never to renumber
+silently.** Nothing else about the entry is changed, and no reference
+elsewhere in the repository pointed at the duplicate: all fourteen mentions of
+`INC-2026-09-24-dispatch-403` outside this file mean the original. Its own
+finding, below, is the PM seat's and stands as written.
 
 **Twenty days open, found working today.** `INC-2026-09-24-dispatch-403`
 (above) left a standing question for the ExO or engineer: whether
@@ -13067,6 +13081,299 @@ half of this fix is dead code that only ever produces this second error.
 No rerun; the same actor fails the same way every time until the
 workflow changes.
 
+## INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see — "never recorded" read as unmeasured for five days, so three merged fixes never reached the stage they repair and the press printed nothing twice (2026-10-14, engineer seat)
+
+**Observed by:** the engineer seat's scheduled run of 2026-10-14, reading the
+public receipt at 01:49 UTC as the first step of its own observation.
+
+**What was wrong.** `tools/delivery_health.py`'s deploy surface had three
+states for an app and used two of them. An app with a recorded digest matching
+the trunk was `ok`. One with a stale digest was drift, dated and alarmed. One
+with no row at all was `unknown (never recorded)`, on the reasoning that
+dating an unmeasured app from its last commit would cry wolf. That reasoning
+is right about the number and wrong about the state, and the distinction it
+missed is one line of code wide: an app whose module calls `record_runtime`
+writes its row on the first run of any deploy built from that commit, so no
+row means the running image predates that commit. The age of the commit is a
+lower bound on the age of the image. It is drift, and it is datable.
+
+**The sequence, with the dates, because the shape is only visible in order.**
+
+| when | what |
+|---|---|
+| 2026-10-07 15:15 UTC | the last claim distill ever wrote |
+| 2026-10-08 | the primary provider stops answering, and distill's fallback path, paced for a day it does not have, produces nothing |
+| 2026-10-09 18:02 | `807d403` adds `distill` and `ingest` to the guard and asks them to record. Its own incident entry says plainly that both read `unknown` until the owner runs `modal deploy` |
+| 2026-10-11 16:47 | `e289242`, the fallback paced by the minute it actually has |
+| 2026-10-12 02:22 | `c005e9e` and `66f7e87`, the fallback's day shared three ways |
+| 2026-10-12 09:00 | the Monday press cron fires and has no new claims to print |
+| 2026-10-13 | launch day. Still `2026-W40` on the site, created 2026-10-05 |
+| 2026-10-14 01:49 | the receipt: `claims_newest` 2026-10-07, `distill_pending` 2,223, and a `deploy` block listing three apps where the guard watches five |
+
+Every fix to the thing that was broken landed inside the window where the one
+surface that grades deploys was saying `unknown` about the broken stage.
+
+**And it was quieter than `unknown`, which is the detail worth keeping.** The
+unknowns were reported only when nothing else alarmed. The old `judge_deploy`
+returned on its `alarms` branch before it reached them, so measured against
+the live rows and the real history, the surface read `failing` with the
+headline "triage is 1.2 days behind" and said nothing whatsoever about the two
+apps that had never recorded. The `unknown` that three seats saw and wrote
+down was the quiet day. The loud day was louder about the wrong app. Both
+readings leave a reader with no instruction to deploy `distill`, and the new
+code names the never-recorded apps in the same headline as the drifted ones.
+
+**The cost.** Two issues. The product's only output missed its Monday and then
+missed launch day, and `claims` has not moved in seven days while 2,223 papers
+wait. `INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue`
+is the same morning read from the press's end, and this is the cause at the
+other end of it.
+
+**Why it is recorded as a repeat.** Fifth sighting of one shape, which is that
+a merge is not a deploy and nothing in this repository closes that gap on its
+own: incident 24, PR #110 (merged 2026-09-26, inert for days, three documents
+calling it live), `INC-2026-10-10-four-editorial-grades-named-the-merge-as-the-
+gate-when-the-gate-is-the-deploy`, and
+`INC-2026-10-12-meta-review-proposal-merged-never-deployed`.
+
+It is also the second half of
+`INC-2026-10-09-the-drift-guard-watched-three-of-five-scheduled-jobs`, and
+that is the part worth reading twice. That entry closes with a section titled
+"The part that is still open", which says both new apps read `unknown` until
+somebody runs two commands. It was correct, it was specific, it named the
+commands, and it was filed by the right seat in the right register. Then five
+days passed, because `unknown` is not a state anything escalates. **A pending
+action parked in a non-escalating state is indistinguishable from a pending
+action nobody took.** The research seat met the same `unknown` on 2026-10-12
+and read it the same way, as a limitation of the instrument rather than as the
+alarm it was.
+
+**It is also both halves of L-A21, in one surface.** That standard says a
+gate is judged by what it can see, and that a gate which saw nothing is a
+failure rather than a quiet pass. The deploy surface had the first half: its
+answer about the three apps it could see was correct the whole time, which is
+what made it sound healthy. And it had the second half in the strongest
+available form, because `unknown (never recorded)` is the literal rendering of
+"this gate saw nothing", and it was being read as a quiet pass by every seat
+that met it, including the two that wrote it down. The test to run on a gate,
+by L-A21's own words, is to name a change that would break what it governs and
+ask whether the gate would have seen it. The change was a merge that is not
+deployed. The gate's whole job is that change. It could not see it for the two
+apps where it was true.
+
+And it is L-A9's shape once more, recording is not enforcing, with a new
+detail: the test that asserted the wrong reading
+(`test_an_app_that_never_recorded_is_unmeasured_while_the_others_are_judged`)
+was defined below its own file's `__main__` block, so `main()`'s walk over
+`globals()` never reached it and `python3 tests/test_deploy_drift.py` printed
+"all checks passed" without running it. Four tests in two files were in that
+position, in two files that `test_ci_coverage.py` pins as run by no workflow
+at all, which means a direct run was the only run they were ever going to get.
+A wrong assertion nothing executes and a right assertion nothing executes are
+the same artifact.
+
+**What was built this run.** `recording_asked_at` dates the commit that asks
+an app for a row, by pickaxe over the app's own module at the trunk.
+`undeployed_since` names the commits an image older than that commit cannot
+contain, since the usual recovery-by-replay has no reported digest to replay
+against. An app that has never recorded while its code asks it to is now
+`failing` with the deploy command in its evidence. An app whose code does not
+ask is still `unknown`, which keeps the cry-wolf case the old reasoning was
+right about. An app added within the grace window is still a pending deploy. The mail is withheld for these, with the reason in the evidence,
+because the alarm's cooldown is a column on the row they do not have. The
+runner block in both affected test files moved to the end of the file, and
+`test_ci_coverage.py` now fails if any test file strands a test below its
+`__main__` block.
+
+**What is still open and belongs to the owner.** The guard can only say it.
+`grep -rln "modal deploy" .github/workflows/` still returns nothing, so no
+merged change to `pipeline/` has ever reached production without somebody
+remembering a command. `.github/workflows-pending/modal-deploy.yml` has been
+written and waiting since 2026-10-08, and it needs `MODAL_TOKEN_ID` and
+`MODAL_TOKEN_SECRET` plus a `git mv`. Six days of rent on that item bought the
+two missing issues above. Until it is applied, the two commands are
+`modal deploy pipeline/distill.py` and `modal deploy pipeline/ingest.py`.
+
+## INC-2026-10-14-the-fix-to-the-guard-that-watches-deploys-fired-no-merge-check — the path filter's fourth sighting, on the pull request repairing the surface the press depends on (2026-10-14, engineer seat)
+
+**Observed by:** the engineer seat's scheduled run of 2026-10-14, running the
+charter's pre-ship gate against its own pull request, exactly as
+`INC-2026-10-10-a-whole-pull-request-fired-no-merge-check` was observed four
+days earlier.
+
+```
+$ gh pr checks 292
+no checks reported on the 'engineer/2026-10-14-distill-dark' branch
+```
+
+**What it is.** Today's diff is `tools/delivery_health.py`, three files under
+`tests/`, and three documents. `.github/workflows/checks.yml`'s `paths` list
+names `tools/board.py`, `tools/run_report.py` and `tools/graph_audit.py`, and
+fourteen individual test files, and none of today's. So the pull request that
+repairs the deploy guard, and the four new tests that hold its boundaries, are
+asserted on this branch and silent on the merge.
+
+**Why it is recorded as its own entry rather than a line on the 2026-10-10
+one.** Because the number is the finding. That entry's title says "third
+distinct failure" and its own text says the staged replacement's rent was
+three days. The rent is now six, the sighting is the fourth, and the two
+measurements this run made of the same filter are worth reading together: the
+diff fires no check, and the file holding the test this run had to rewrite is
+in `test_ci_coverage.py`'s uncovered pin, so the only run those tests were
+ever going to get was a seat typing a command. A gate that depends on a seat
+remembering is the thing every entry on this page is about.
+
+**What would close it** is unchanged and is not this seat's to apply: item 17
+in `docs/agents/pending-workflow-changes.md`, staged and verified in
+`.github/workflows-pending/checks.yml` since 2026-10-07, which replaces the
+filename list with a run of the whole suite.
+
+**Fifth sighting, same day, same branch, and narrower than it first looked
+(engineer seat, second run).** The pull request that supersedes this one, #294,
+carries every file above plus `tools/press_watch.py`, `tests/test_press_watch.py`
+and a new workflow in the pending lane. For its first eight commits
+`gh pr checks 294` answered `no checks reported`, and the API agreed:
+`actions/runs?branch=engineer/2026-10-14-quiet-send-guardrail` returned
+`total_count: 0` at 16:10, 16:14 and 16:16 UTC, after two pushes that changed
+`tools/board.py`, which is in that filter's own `paths` list. The ninth push,
+a merge of `main`, created a `pull_request` run at 16:17.
+
+So the honest version of this sighting is not that the branch fires nothing.
+It is that the branch fires a check which says nothing about the branch's own
+work. The job starts only because this run also edited `tools/board.py`, and
+what it runs is the press budget plus `tests/test_board.py`. The 46 tests in
+`tests/test_press_watch.py` that hold the quiet-send guardrail are outside the
+filter, as is the tool itself, so the green tick on this pull request is
+evidence about a file this run touched by accident rather than about the file
+it was written to add.
+
+Why two pushes that matched the filter produced no run is not something this
+run could establish from inside a sandbox, and it is written here as an
+observation rather than a mechanism. The part that needs no explanation is
+unchanged: item 17 of `docs/agents/pending-workflow-changes.md` has been
+staged and verified since 2026-10-07, which is seven days, and it replaces the
+filename list with a run of the whole suite. Not fixed here, because no seat's
+token may push a workflow file.
+
+## INC-2026-10-14-three-registers-named-the-missing-issue-and-none-of-them-sends-it — the week's issue has a board card, a sprint item marked first-regardless and an incident of its own, and it is still missing 53 hours later (2026-10-14, engineer seat, second run)
+
+**Observed by:** the engineer seat's second run of 2026-10-14, 15:51 UTC,
+while building sprint 2026-10-12 item 5. `python3 tools/delivery_health.py
+--surface press` reads `FAILING  press  the newest issue is 2026-W40 and
+2026-W41 has ended; 1 issue(s) missing`, read from the public receipt. The
+deadline for that issue was 2026-10-12 11:00 UTC, so it is 52.9 hours late.
+
+**What is already written down about it.** All three of these exist and are
+correct.
+
+- `INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue`,
+  filed by this seat's second run on Monday, with the whole arithmetic.
+- Sprint 2026-10-12 item 1, whose `Notes for the engineer` open with "Item 1
+  first, regardless of what else is in flight."
+- Board card `dee2d12f-0761-4136-9587-b8e0fca5b3fb`, "Diagnose and close
+  today's press-send gap", seat `engineer`, created 2026-10-12T20:17:59Z and
+  still in Backlog.
+
+Two pull requests have merged against the diagnosis since, #275 and #282, and
+the issue has not been sent. The receipt's newest row is still the one written
+2026-10-05T09:01:04Z.
+
+**The repeat, which is why this is filed.** The class is the one this seat's
+own first run of today named one register over, in
+`INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see`: **a pending
+action parked in a state that nothing escalates is indistinguishable from a
+pending action nobody took.** That entry was about a guard state, `unknown`,
+which gets quieter as it ages. This entry is the same sentence about three
+artifacts that are supposed to be loud. A card in Backlog, a sprint item with
+an emphatic note on it, and an incident entry all age the same way, because
+none of the three has a clock and none of them escalates.
+
+Sightings of the class in two days, all four in this repository:
+
+- 2026-10-09: the deploy guard's closing section named the two `modal deploy`
+  commands and five days passed.
+- 2026-10-12: the research seat met `unknown` on the same surface and read it
+  as unmeasured.
+- 2026-10-14, first run: `unknown` on `distill` and `ingest`, five days old,
+  with every fix for the outage merged inside the window.
+- 2026-10-14, second run: this entry.
+
+**The cause the four have in common, stated plainly.** Every one of them ends
+at a hand holding a Modal token. `modal deploy pipeline/distill.py`,
+`modal deploy pipeline/ingest.py`, and
+`modal run pipeline/weekly.py::resend --week 2026-W41` behind the rehearsal
+ladder are the three outstanding actions, and no seat can run any of them. So
+the escalation these registers lack would not be a seat noticing harder. It
+would be the owner being told once, in a channel she reads, with the command
+in it. `.github/workflows-pending/modal-deploy.yml` has been queued for that
+since 2026-10-08 and is six days into its own version of this entry.
+
+**What shipped with this entry, and what it does not fix.**
+`tools/press_watch.py` and its schedule close the detection half: from the
+hour the grace window closes, a missing issue is a card on the board with the
+deadline, the lateness and the command in it, rather than a correct answer
+nobody asked for. The escalation half is not fixed. The card this tool writes
+is a fourth artifact with no clock, and the honest version of its own limit is
+that it nudges once a day and never raises its voice. The ledger entry of
+today, "A guardrail that writes a card should be able to raise its voice", is
+the proposal for the next step, and the schema change the deploy alarm needs
+for its own cooldown is the same shape of work.
+
+## INC-2026-10-14-the-register-gate-was-blocking-on-main-and-nothing-ran-it-before-the-merge — two entries shared one id for the fifth time, and the tool that forbids it is pinned out of CI (2026-10-14, engineer seat, second run)
+
+**Observed by:** the engineer seat's second run of 2026-10-14, 16:21 UTC,
+running `python3 -m pytest tests/ -q` after merging `origin/main` at `365bc79`
+into its own branch. The suite came back `1 failed, 1422 passed` and the
+failure was `tests/test_check_registers.py::test_this_repository_has_no_merge_damage_in_its_registers`:
+
+    docs/agents/incidents.md:12885: incident id INC-2026-09-24-dispatch-403
+    already used at line 3805
+
+`python3 tools/check_registers.py` on `main` exits 1 with the same line, under
+its own headline, "the registers are damaged and every seat reads them".
+
+**What happened.** A correct and useful entry, the PM seat's finding that the
+dispatch 403 is half fixed, was filed on 2026-10-14 under the id of the entry
+it amends. The numbering rule at the top of this file asks for
+`INC-YYYY-MM-DD-slug` dated the day the incident was observed, and an
+amendment to an older entry is still a new entry with its own date. Nothing
+about the finding is wrong. The id is.
+
+**The repeat, which is why this is filed, and it is two classes at once.**
+
+Two entries sharing one id is the collision the date scheme replaced the
+counter to end. The header of this file says the allocator "has now happened
+four times". This is the fifth, and it is the first one that is not an
+accident of two branches: it is one seat deliberately reusing a slug to say
+"this is about that", which is a real need the scheme has no spelling for.
+
+The second class is incident 20's, which every charter's "Check the register
+before you ship" step exists to close: **a gate that exists, is correct, and
+runs nowhere between the writing and the merge.** `tools/check_registers.py`
+had this finding available the whole time. It is `blocking` rather than a
+warning, by its own design, precisely so this cannot merge. It ran in no
+workflow, because `tests/test_check_registers.py` is pinned in
+`tests/test_ci_coverage.py`'s `UNCOVERED` set, and `checks.yml` stayed green
+on `main` through the merge because that file is not in its fourteen steps.
+So the register gate and the merge check were both working and neither was
+pointed at the other.
+
+**What this run did about it.** Renumbered the newer entry to
+`INC-2026-10-14-dispatch-403-half-fixed`, with the old id recorded inside it,
+because the rule at the top of this file says never to renumber silently. The
+PM's text is otherwise untouched: the finding is that seat's and it is right.
+Checked every reference first, and all fourteen mentions of
+`INC-2026-09-24-dispatch-403` elsewhere in the repository mean the original
+entry, so nothing pointed at the duplicate. `python3 tools/check_registers.py`
+now exits 0 and the suite is green on this branch.
+
+**What would close the class rather than this instance.** Item 17 of
+`docs/agents/pending-workflow-changes.md`, seven days staged, which replaces
+`checks.yml`'s filename list with a run of the whole suite. That is the change
+that makes this gate fire on the pull request that breaks it, which is the
+only version of this fix that does not depend on a seat remembering to run a
+command. Measured today: `python3 tools/ci_coverage.py --only
+.github/workflows-pending/checks.yml` is `53 of 53`.
 ## INC-2026-10-14-the-standup-ran-205-turns-and-shipped-nothing — a scheduled PM pass finished clean and left no commit, no branch, no pull request (2026-10-14, PM seat)
 
 **What happened.** The 2026-10-14 15:46:59 UTC scheduled standup (run

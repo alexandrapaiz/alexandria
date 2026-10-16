@@ -603,6 +603,73 @@ def fixture_history(tmp: Path, edits: list[tuple[str, str]],
     return repo
 
 
+def _strip_recording(repo: Path, app: str) -> None:
+    """Take the `record_runtime` call out of one app's module in a fixture.
+
+    An app in `APPS` whose module does not call it is the state the real
+    repository forbids (`test_every_watched_app_records_its_own_runtime`) and
+    the state the guard still has to judge, because the two are a pair: the
+    rule is what makes "no row" mean "no deploy", and the judgement has to
+    hold when the rule is broken rather than guess.
+    """
+    module = repo / rs.APPS[app]
+    marker = f'record_runtime(conn, "{app}"'
+    kept = [line for line in module.read_text(encoding="utf-8").splitlines(True)
+            if marker not in line]
+    module.write_text("".join(kept), encoding="utf-8")
+
+
+def _commit(repo: Path, message: str, when: datetime, init: bool = False) -> None:
+    env = {**os.environ,
+           "GIT_AUTHOR_DATE": when.isoformat(), "GIT_COMMITTER_DATE": when.isoformat(),
+           "GIT_AUTHOR_NAME": "test", "GIT_AUTHOR_EMAIL": "t@example.com",
+           "GIT_COMMITTER_NAME": "test", "GIT_COMMITTER_EMAIL": "t@example.com"}
+    steps = ([["init", "-q", "-b", "main"]] if init else []) + [["add", "-A"],
+                                                               ["commit", "-qm", message]]
+    for args in steps:
+        subprocess.run(["git", "-C", str(repo), *args], env=env, check=True,
+                       capture_output=True)
+
+
+def _copy_manifest(repo: Path) -> None:
+    for key in MANIFEST_FILES:
+        dest = repo / key
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / key, dest)
+
+
+def fixture_recording_added(tmp: Path, app: str, base_days_ago: float,
+                            added_hours_ago: float,
+                            subject: str = "The app records its runtime") -> Path:
+    """A repository where one app learned to record in its second commit.
+
+    This is the shape of 2026-10-09 in production: `ingest` and `distill` were
+    added to the guard, and the deploy that would have let them record had not
+    happened. The age that matters is the age of that second commit, not the
+    age of the app's files, which is the whole of the distinction the guard
+    draws now.
+    """
+    repo = tmp / "repo"
+    _copy_manifest(repo)
+    _strip_recording(repo, app)
+    now = datetime.now(timezone.utc)
+    _commit(repo, "the deployed state", now - timedelta(days=base_days_ago),
+            init=True)
+    shutil.copyfile(ROOT / rs.APPS[app], repo / rs.APPS[app])
+    _commit(repo, subject, now - timedelta(hours=added_hours_ago))
+    return repo
+
+
+def fixture_never_records(tmp: Path, app: str, days_ago: float) -> Path:
+    """One commit, and this app's module never asks for a row at all."""
+    repo = tmp / "repo"
+    _copy_manifest(repo)
+    _strip_recording(repo, app)
+    _commit(repo, "the deployed state",
+            datetime.now(timezone.utc) - timedelta(days=days_ago), init=True)
+    return repo
+
+
 def _shas(repo: Path) -> list[str]:
     """Every commit in this fixture, oldest first."""
     status, out = dh._git(repo, "log", "--format=%h", "--reverse")
@@ -830,21 +897,6 @@ def test_the_headline_counts_what_it_does_not_name():
           named.startswith("5 undeployed commits"), named)
 
 
-def main() -> int:
-    for name, fn in sorted(globals().items()):
-        if name.startswith("test_") and callable(fn):
-            print(name)
-            fn()
-    print()
-    if FAILURES:
-        print(f"{len(FAILURES)} check(s) failed: {', '.join(FAILURES)}")
-        return 1
-    print("all checks passed")
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
 
 
 # ------------------------------------------------- the list cannot go short again
@@ -918,20 +970,92 @@ def test_every_watched_app_records_its_own_runtime():
             "the guard has nothing to compare and says so forever")
 
 
-def test_an_app_that_never_recorded_is_unmeasured_while_the_others_are_judged():
-    """One missing row among several is coverage, not drift.
+def test_an_app_that_has_never_recorded_since_its_code_asked_to_is_behind():
+    """No row, while the code asks for one, is the oldest deploy there is.
 
-    The distinction is why adding a job to the guard does not fire a false
-    alarm on the day it is added. `ingest` delivered papers at 11:01 UTC on
-    2026-10-09 and had never recorded a runtime in its life, so dating its
-    drift from its last commit would have reported a job that works as a job
-    that is days behind. An EMPTY table keeps reading as a failure, because
-    that is a recorder that has never worked rather than one app without
-    coverage, and `test_a_job_that_never_reported_is_treated_as_drift` holds
-    that line.
+    This test used to assert the opposite, and the opposite cost the press two
+    issues. The reasoning behind it was that dating an app's drift from its
+    last commit cries wolf, which is true, and the conclusion drawn was that
+    one missing row among several is a coverage gap, which is false. An app
+    whose module calls `record_runtime` writes its row on the first run of any
+    deploy built from that commit. So no row does not mean nobody is watching.
+    It means the image predates the line that asks for one, and that line has
+    a date.
+
+    `ingest` was the live case the old reasoning was written against, and it
+    was not unmeasured: it was running an image from before 2026-10-09, and so
+    was `distill`, the stage that fills `claims`. The three fixes to the
+    fallback pacing that had stopped distill were all inside the gap. Seven
+    days of no claims, two Mondays with no issue, and this surface read
+    `unknown` through all of it.
+    `INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see`.
     """
     with tempfile.TemporaryDirectory() as tmp:
         repo = fixture_repo(Path(tmp), days_ago=9)
+        reporting = [a for a in rs.APPS if a != "ingest"]
+        conn = FakeConn([row_for(app, repo) for app in reporting])
+        surface = dh.check_deploy(conn, repo, notify=False)
+        check("the surface is failing rather than unknown",
+              surface.state == dh.FAILING, f"{surface.state}: {surface.headline}")
+        check("and the headline says the app has never recorded",
+              "ingest" in surface.headline
+              and "never recorded a runtime" in surface.headline,
+              surface.headline)
+        check("and dates the image from the commit that asked for a row",
+              surface.evidence["ingest"]["drift_hours"] > 24 * 8.5,
+              str(surface.evidence["ingest"].get("drift_hours")))
+        check("and the deploy command to fix it is in the evidence",
+              "modal deploy pipeline/ingest.py" in surface.evidence["ingest"]["why"],
+              str(surface.evidence["ingest"]))
+        check("the mail is withheld, with its reason, because the cooldown is "
+              "a column on the row this app does not have",
+              "cooldown" in (surface.evidence.get("alarm") or "")
+              and "not mailed" in (surface.evidence.get("alarm") or ""),
+              str(surface.evidence.get("alarm")))
+        for app in reporting:
+            check(f"{app} is still judged on its own merits",
+                  surface.evidence[app]["state"] == dh.OK,
+                  str(surface.evidence[app]))
+
+
+def test_an_app_added_to_the_guard_today_is_a_pending_deploy_not_an_alarm():
+    """The cry-wolf case the old reasoning was right about, kept.
+
+    Adding a job to the guard must not alarm on the day it is added, because
+    nothing is wrong yet: the next deploy records, and the grace window is
+    exactly the room for it. The number that decides it is the age of the
+    commit that asked, so a module that is nine days old and learned to record
+    ten hours ago is ten hours of drift rather than nine days of it.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_recording_added(Path(tmp), "ingest", base_days_ago=9,
+                                       added_hours_ago=10)
+        reporting = [a for a in rs.APPS if a != "ingest"]
+        conn = FakeConn([row_for(app, repo) for app in reporting])
+        surface = dh.check_deploy(conn, repo, notify=False)
+        check("a deploy that is ten hours late is not an alarm",
+              surface.state == dh.OK, f"{surface.state}: {surface.headline}")
+        check("and the headline says a deploy is pending",
+              "pending" in surface.headline and "ingest" in surface.headline,
+              surface.headline)
+        check("and the age is the age of the line, not of the module",
+              surface.evidence["ingest"]["drift_hours"] < 24,
+              str(surface.evidence["ingest"].get("drift_hours")))
+
+
+def test_an_app_whose_code_never_asks_to_record_is_unmeasured():
+    """And the third state is still a third state.
+
+    An app in `APPS` whose module has no `record_runtime` call cannot write a
+    row from any deploy, so the absence of one says nothing about the age of
+    its image. `unknown` is the honest answer, and the headline has to name the
+    app. The real repository cannot reach this state, because
+    `test_every_watched_app_records_its_own_runtime` forbids it. The guard
+    still has to be right when it is reached, since the day that rule breaks
+    is the day this branch runs.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_never_records(Path(tmp), "ingest", days_ago=9)
         reporting = [a for a in rs.APPS if a != "ingest"]
         conn = FakeConn([row_for(app, repo) for app in reporting])
         surface = dh.check_deploy(conn, repo, notify=False)
@@ -943,10 +1067,78 @@ def test_an_app_that_never_recorded_is_unmeasured_while_the_others_are_judged():
         check("the unmeasured app carries no drift number",
               "drift_hours" not in surface.evidence["ingest"],
               str(surface.evidence["ingest"]))
-        check("and the deploy command to fix it is in the evidence",
-              "modal deploy pipeline/ingest.py" in surface.evidence["ingest"]["why"],
+        check("and the evidence says nothing in its code asks for a row",
+              "nothing in its code asks it to" in surface.evidence["ingest"]["why"],
               str(surface.evidence["ingest"]))
-        for app in reporting:
-            check(f"{app} is still judged on its own merits",
-                  surface.evidence[app]["state"] == dh.OK,
-                  str(surface.evidence[app]))
+
+
+def test_an_unrecorded_image_names_what_it_is_missing():
+    """The commits inside the gap, not only the size of it.
+
+    "distill is 4 days behind" is a number about the clock. Those four days
+    held `66f7e87`, `c005e9e` and `e289242`, the three fixes to the exact
+    thing that was broken, and the owner reading the alarm has one action
+    available and needs to know what is in it. `undeployed_commits` cannot
+    answer here, because there is no reported digest to replay the history
+    against. The bound is every commit from the one that asked for a row
+    forward, which is what `undeployed_since` returns.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_recording_added(
+            Path(tmp), "ingest", base_days_ago=9, added_hours_ago=72,
+            subject="The drift guard watched three of five scheduled jobs")
+        reporting = [a for a in rs.APPS if a != "ingest"]
+        surface = dh.check_deploy(
+            FakeConn([row_for(app, repo) for app in reporting]), repo, notify=False)
+        check("the headline names the commit inside the gap",
+              "The drift guard watched three of five" in surface.headline,
+              surface.headline)
+        found = surface.evidence["ingest"]["undeployed"]
+        check("and the evidence carries it as a list",
+              [c["subject"] for c in found["commits"]]
+              == ["The drift guard watched three of five scheduled jobs"],
+              str(found))
+
+
+def test_every_test_in_this_file_is_reached_by_the_runner():
+    """The runner block goes last, or the tests under it do not run.
+
+    `main()` walks `globals()`, so a test defined after the `__main__` block
+    does not exist when the walk happens and `python3 tests/test_deploy_drift.py`
+    prints "all checks passed" without it. Three tests sat under that block in
+    this file, one of them the test that asserted the behaviour the fix above
+    replaces, and the evidence line in a pull request said the file passed.
+    This file is also in `test_ci_coverage.py`'s uncovered pin, so a direct run
+    is the only run it gets.
+    """
+    import ast as _ast
+
+    source = Path(__file__).read_text(encoding="utf-8")
+    tree = _ast.parse(source)
+    block = [n for n in tree.body
+             if isinstance(n, _ast.If) and "__main__" in _ast.dump(n.test)]
+    check("the file has a runner block", len(block) == 1, str(len(block)))
+    if not block:
+        return
+    stranded = sorted(n.name for n in tree.body
+                      if isinstance(n, _ast.FunctionDef)
+                      and n.name.startswith("test_")
+                      and n.lineno > block[0].lineno)
+    check("and no test is stranded below it", not stranded, str(stranded))
+
+
+def main() -> int:
+    for name, fn in sorted(globals().items()):
+        if name.startswith("test_") and callable(fn):
+            print(name)
+            fn()
+    print()
+    if FAILURES:
+        print(f"{len(FAILURES)} check(s) failed: {', '.join(FAILURES)}")
+        return 1
+    print("all checks passed")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

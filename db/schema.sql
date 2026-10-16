@@ -596,3 +596,82 @@ create table if not exists retag_log (
     added      text[] not null default '{}',   -- empty is the common answer
     why        text
 );
+
+-- ======== payment_exceptions: money that arrived and did not become access ========
+--
+-- The payments layer's alarm path (site/lib/polar.js, ADR-30, ADR-31). The
+-- corpus has one already: pipeline/notify.py mails the owner when a job
+-- fails. The site had none, so every site-side failure was a
+-- `console.error` in a Vercel function log that nothing in this org reads,
+-- and the two outcomes that cost the most are exactly the two that end
+-- there. A buyer with no Clerk account cannot be granted anything, and an
+-- email matching two accounts matches neither. Both are correct refusals
+-- and both are a paid customer with no access, discovered when they write
+-- in rather than on the day it happened.
+--
+-- So the refusal gets a row instead of a line. `tools/delivery_health.py`
+-- counts the unresolved ones through the public receipt, which means the
+-- daily standup reads it with no credential, and the same row answers the
+-- owner's first question when somebody does write in: did we get their
+-- money and what did we do with it.
+--
+-- **This table holds no money and no card.** Polar is the Merchant of
+-- Record, so the charge, the card and the invoice all live there. What is
+-- here is the identifier needed to find that record in Polar's dashboard
+-- and the reason this product could not act on it.
+--
+-- `event_id` is Polar's own webhook delivery id, from the `webhook-id`
+-- header the signature covers, and it is unique on purpose. Polar retries a
+-- delivery this endpoint answered with a 503, so without that constraint one
+-- stuck payment would write a row every retry for a day and the count the
+-- standup reads would measure Polar's retry schedule rather than the number
+-- of people affected. One row per delivery, `attempts` counting the retries,
+-- is the number a human would want.
+--
+-- `resolved_at` is what makes the count trustworthy in the other direction.
+-- A deferred event whose retry later succeeds resolves its own row, so the
+-- unresolved count falls back to zero without anybody clearing it by hand.
+-- A count that only ever rises is a count the org learns to ignore, which is
+-- incident 20's shape and the reason this column is not an afterthought.
+create table if not exists payment_exceptions (
+    id                  bigserial primary key,
+    -- Polar's webhook delivery id. One row per delivery, however many times
+    -- it is retried.
+    event_id            text not null unique,
+    event_type          text not null,          -- 'subscription.active', 'order.paid', ...
+    -- Why this product could not turn the payment into access. Checked
+    -- rather than free text, because the count the standup reads is grouped
+    -- by it and a typo would become a category.
+    reason_code         text not null
+                        check (reason_code in ('no_account',
+                                               'ambiguous_email',
+                                               'lookup_failed',
+                                               'no_users_row',
+                                               'no_database',
+                                               'handler_threw')),
+    -- Whether Polar will bring this event back by itself. A deferred row may
+    -- resolve on its own; a refused one never will and needs a hand.
+    retryable           boolean not null default false,
+    attempts            integer not null default 1,
+    detail              text,                   -- the reason sentence, for a reader
+    -- Where to find the charge in Polar's dashboard. Nullable because an
+    -- event that threw before it was parsed carries none of them.
+    polar_customer_id   text,
+    polar_subscription_id text,
+    -- The address the buyer gave Polar, which is how the owner reaches them
+    -- to invite them or to merge the duplicate. Lower-cased by subjectOf(),
+    -- the same folding `users_email_lower_idx` uses.
+    email               text,
+    occurred_at         timestamptz not null default now(),
+    last_seen_at        timestamptz not null default now(),
+    resolved_at         timestamptz,
+    resolved_note       text
+);
+
+-- The index the standup's count reads: unresolved rows, newest first. Partial,
+-- because the resolved rows are history and the alarm only ever asks about the
+-- open ones, so the index stays the size of the problem rather than the size of
+-- the table.
+create index if not exists payment_exceptions_open_idx
+    on payment_exceptions (occurred_at desc)
+    where resolved_at is null;
