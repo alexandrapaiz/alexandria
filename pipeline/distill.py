@@ -169,6 +169,37 @@ EMBED_MODEL = "Qwen/Qwen3-Embedding-0.6B"
 # makes to readers, so it is counted from that column and never assumed.
 FULLTEXT_CHARS = 250_000
 
+# The number above is what the HEAD of the model list can take. It is not what
+# every model on the list can take, and until today this file sent it to
+# whichever model the walk reached first.
+#
+# The arithmetic, from `pipeline/budget.py` and nowhere else: a Groq fallback's
+# binding limit is its 8,000-tokens-a-minute budget, 6,800 of it usable after
+# the 15% margin, of which the rendered prompt takes about 2,019 and the
+# completion reservation 2,000. That leaves roughly 2,749 tokens for the paper,
+# which is about 6,900 characters at the measured density. A 250,000-character
+# body is about 98,800 tokens. So on a day the primary account does not answer,
+# every request this job sent was 14 times the size of the budget it was being
+# sent into, and it was sent three times, once per fallback, with four attempts
+# and up to 180 seconds of backoff each. That is between 10 and 27 minutes of
+# sleeping per paper on requests that arithmetic already knew could not fit,
+# inside a 5,400-second timeout.
+#
+# `window_for` is the fix and it is the press's fix, not a new idea: since
+# incident 22 `pipeline/weekly.py` has sized its payload to the model it is
+# about to ask, through `budget.fit_payload` and `budget.choose_model`. This
+# job gained full text on 2026-09-30 and never gained the guard.
+#
+# The floor is the second half. A window below it is not full-text reading and
+# must not be recorded as any, because "read in full" is a claim the masthead
+# makes and `papers.fulltext_chars` is where it is counted from. 12,000 is the
+# window this job used from 2026-09-26 to 2026-09-30, which is the smallest
+# window any version of it has called reading a paper. Below that the paper is
+# read from its abstract, which is exactly what `preflight` and the end-of-run
+# NOTE have both claimed happens on a degraded day since 2026-09-30, and what
+# nothing in this file implemented until today.
+FULLTEXT_FLOOR_CHARS = 12_000
+
 # Every paper in the run gets its full text. There was a fetch budget here,
 # `FULLTEXT_MAX_PER_RUN = 15`, and it existed because the provider could not
 # afford more; on Kimi the spend cap and the token ceiling below are the honest
@@ -698,11 +729,18 @@ def preflight() -> str:
     for line in cost_report(guard, usable[0]):
         print(f"  {line}")
     if usable[0] != MODELS[0]:
+        window = window_for(usable[0])
         print(f"  NOTE: {MODELS[0]} is not usable here, so the run would fall "
-              f"back to {usable[0]}. That model's whole per-request budget is "
-              f"smaller than one paper, so every paper would be read from its "
-              "abstract and papers.fulltext_chars would be null for all of "
-              "them. The run still writes claims. It does not read papers.")
+              f"back to {usable[0]}, which can take {window:,} characters of a "
+              f"paper against the {FULLTEXT_CHARS:,} this job would send.")
+        if window < FULLTEXT_FLOOR_CHARS:
+            print(f"  That is below the {FULLTEXT_FLOOR_CHARS:,}-character "
+                  "floor, so every paper would be read from its abstract and "
+                  "papers.fulltext_chars would be null for all of them. The "
+                  "run still writes claims. It does not read papers. It no "
+                  "longer spends ten to twenty-seven minutes a paper finding "
+                  "that out from the provider, which is what it did until "
+                  "2026-10-16.")
     return f"preflight ok: {usable[0]} would read the paper"
 
 
@@ -743,6 +781,51 @@ def prompt_tokens(kind: str = "paper") -> int:
 def expected_prompt_tokens(kind: str = "paper") -> int:
     """Payload plus prompt, the request this job expects to send."""
     return EXPECTED_PAYLOAD_TOKENS + prompt_tokens(kind)
+
+
+def reading_model(available, models: list[str] | None = None) -> str | None:
+    """Which model the walk will actually reach first, for these keys.
+
+    The same two skips `llm.ask_json` applies before it sends anything: a model
+    its provider has withdrawn, and a model the provider does not list for this
+    key. So the answer is the model the next request will go to, which is the
+    model its size has to be chosen for.
+
+    `available=None` means the catalogs could not be read, and the walk then
+    trusts `budget.MODELS`. The head of the list is the honest answer there, for
+    the same reason the walk's is: refusing to read a paper because a catalog
+    endpoint was down is worse than reading it.
+    """
+    guard = _sibling("budget")
+    for model in (models or MODELS):
+        if model in guard.DECOMMISSIONED:
+            continue
+        if available is not None and model not in available:
+            continue
+        return model
+    return None
+
+
+def window_for(model: str, kind: str = "paper") -> int:
+    """How much of a paper `model` can take, in characters, margin deducted.
+
+    Everything in it comes from the provider's published numbers through
+    `budget.limit_for`, so a tier change is one edit to `budget.MODELS` and this
+    moves with it. Never larger than `FULLTEXT_CHARS`: a model with room for a
+    million characters still gets 250,000, because past that the money buys
+    headroom nobody uses and the measurement behind that is above.
+
+    The density is `budget.FULLTEXT_CHARS_PER_TOKEN`, 2.53, measured over whole
+    papers rather than over prose. That is the conservative direction here: a
+    paper is denser than the sentence you would guess with, so a window sized at
+    4 chars a token fits a blog post and is refused on an equation.
+    """
+    guard = _sibling("budget")
+    usable = (guard.limit_for(model) - prompt_tokens(kind)
+              - MAX_COMPLETION_TOKENS - guard.ENVELOPE_TOKENS)
+    if usable <= 0:
+        return 0
+    return min(FULLTEXT_CHARS, int(usable * guard.FULLTEXT_CHARS_PER_TOKEN))
 
 
 def cost_report(guard, model: str) -> list[str]:
@@ -1145,6 +1228,31 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
     for note in notes:
         print(f"  {note}")
 
+    # How much of a paper today's provider can take, decided once, before the
+    # first request rather than discovered by three refusals per paper. The
+    # model named here is the model the walk will reach first, so this is the
+    # budget the next request is actually sent into.
+    reader = reading_model(available)
+    windows = {kind: window_for(reader, kind) for kind in PROMPTS} if reader \
+        else {kind: 0 for kind in PROMPTS}
+    degraded = bool(reader) and windows["paper"] < FULLTEXT_FLOOR_CHARS
+    if reader is None:
+        print("no model in distill's list is listed by its provider for these "
+              "keys, so this run will read nothing; the walk will say so per "
+              "paper and the next run resumes")
+    elif degraded:
+        print(f"degraded day: {reader} is the first model the walk reaches and "
+              f"it can take {windows['paper']:,} characters of a paper, below "
+              f"the {FULLTEXT_FLOOR_CHARS:,}-character floor. Every paper this "
+              "run is read from its abstract and papers.fulltext_chars stays "
+              "null, which is what the deploy preflight has said happens on a "
+              "day like this. A thin day of claims rather than none.")
+    elif windows["paper"] < FULLTEXT_CHARS:
+        print(f"{reader} is the first model the walk reaches and it can take "
+              f"{windows['paper']:,} of the {FULLTEXT_CHARS:,} characters this "
+              "job would send, so papers longer than that are cut and counted "
+              "as cut")
+
     with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
         # Say which deploy this is before anything else happens, the way
         # triage, interpret and weekly have since 2026-09-28. It cannot raise
@@ -1303,14 +1411,25 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
             # still has a header, so this is set on papers whose claims come
             # from the abstract.
             header_html = got["html"] if got else None
+            # The window belongs to the model, not to this constant, and the
+            # fetch still happens on a degraded day because the header is what
+            # the institutions come from and it is free.
+            window = windows[kind]
+            if body is not None and degraded:
+                body = None
             whole = None
             if body is not None:
+                if len(body) > window:
+                    body = body[:window]
                 # Strictly less than, so a paper that is exactly the window
                 # long counts as cut. It probably was, and a number the
-                # masthead rests on errs toward the smaller claim.
-                whole = len(body) < FULLTEXT_CHARS
+                # masthead rests on errs toward the smaller claim. Against the
+                # window and not against FULLTEXT_CHARS: a paper trimmed to
+                # what a smaller model can take was not read in full, and this
+                # is the column "read in full" is counted from.
+                whole = len(body) < window
                 print(f"  full text ({len(body)} chars"
-                      f"{'' if whole else f', cut at {FULLTEXT_CHARS}'}): "
+                      f"{'' if whole else f', cut at {window}'}): "
                       f"{title[:50]}")
             used_fulltext = body is not None
             if body is None:
@@ -1487,7 +1606,9 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
             if MODEL not in answered:
                 print(f"  NOTE: {MODEL} answered nothing this run. Every model "
                       "below it has a per-request budget smaller than one "
-                      "paper, so the claims above came from abstracts.")
+                      f"paper ({reader} takes {windows['paper']:,} characters "
+                      f"of one), so the claims above came from abstracts and "
+                      "the run knew that before it sent anything.")
         if finished:
             print(f"cost per paper this run: "
                   f"${cap.spent / len(finished):.4f} measured")
