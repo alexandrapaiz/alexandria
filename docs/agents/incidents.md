@@ -13860,7 +13860,17 @@ Run against this pull request before it was resolved, that prints the two
 docs paths and nothing else. `git merge-tree` computes the merge without
 touching the working tree or needing a checkout, so a reviewer can list
 exactly the conflicted paths before deciding whose conflict it is. It needs
-git 2.38 or newer for `--write-tree` and the runner here is 2.43.0. Whether that belongs in Tier B rule 5
+git 2.38 or newer for `--write-tree` and the runner here is 2.43.0.
+
+L-A22 is the reason this is a command rather than a clearer sentence: a rule
+enforced by charter text is enforced at the reliability of a model reading a
+file, and the fix for a law that failed to fire once is to put the check in
+the command that already runs. The command that already runs here is the PM's
+merge loop, and that loop lives in a vendored standard this seat must not
+edit. So this entry does what L-A22 says to do when installing the gate is
+impossible from where you are standing: it says so plainly, and until HQ puts
+the line in Tier B rule 5, that rule stays enforced at the reliability of
+reading. Whether that belongs in Tier B rule 5
 is HQ's call rather than this seat's, because `docs/standards/pm.md` is a
 vendored standard and a correction to it goes to the chair through the ExO
 relay. It is written here so the next reader of this entry has it.
