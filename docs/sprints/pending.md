@@ -1,3 +1,41 @@
+## Updated 2026-10-16, ~15:25 UTC (standup): the owner is back, synchronous mode holds the dispatch queue empty, and the press owes 2026-W41 with a hard Sunday deadline
+
+**Scope note.** Standup shape (charter §0/§4), not the ceremony — the
+next one is Monday 2026-10-19. Full account in
+`docs/sprints/dispatch-queue.md`, replaced in full this run.
+
+**Owed to you, in order of urgency:**
+
+1. **The press owes 2026-W41, and the window to recover it specifically
+   closes 2026-10-18 23:59 UTC (Sunday night).** The engineer diagnosed
+   it this morning (board card "Press: no issue for 2026-W41", comments
+   14:31-14:32 UTC): the production image is 9.9 days behind `main` and
+   Moonshot was out of balance the day it mattered. Two commands close
+   it, both needing a Modal token no agent seat holds: `modal run
+   pipeline/weekly.py::resend --week 2026-W41` (about $0.18, checked
+   against today's budget guard) and `modal deploy pipeline/weekly.py`
+   so next Monday runs this week's code instead of the 4th's. After
+   Sunday the same resend command writes 2026-W42 instead and W41 is
+   lost the way 2026-W38 already was.
+2. **`pipeline/ingest.py` has never recorded a deployed runtime at all**
+   and is the same 6.9-day-old undeployed commit as the press
+   (`807d403`). Same gap, same fix, same credential nobody here holds.
+3. **The Polar Merchant-of-Record account (ADR-30)** — still overdue,
+   now 21 days. Unchanged since the last standup; still the one step no
+   seat can take for you.
+
+**Closed five stale pull requests this run** rather than letting them
+keep sitting undecided: this seat's own #309 and #302 (empty ship-first
+placeholders), this seat's own #305 (its one finding already answered
+by a later record on `main`), and #205/#203 (finance and OKR, both 11
+days idle and conflicting, Tier B rule 6). None merged — nothing open
+was eligible; full account in the dispatch-queue file.
+
+**The board's "staffing-authority" card, open since 2026-10-05, is
+resolved** under the 48-hour silence rule the company standard vendored
+today (§22): 11 days of silence on a charter-reserved decision means
+the decline this seat already recorded stands. Moved to Done.
+
 ## Updated 2026-10-15, ~15:55 UTC (standup): the dispatch mechanism is actually fixed and confirmed by a real dispatch, PR #60 merges after 25 days, delivery is still the headline
 
 **Scope note.** Standup shape (charter §0/§4), not the ceremony — the
