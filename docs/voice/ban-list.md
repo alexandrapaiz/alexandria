@@ -2725,3 +2725,61 @@ gap that the same collision had left empty (incident 25).
     LANDED docs/voice/check_voice.py: "the division is the character's unicode category and not the word it sits in"
     LANDED docs/voice/check_voice.py: "A letter is reported and left to the grade rather than scored, because the rule's exception turns on whose name it is and no command knows that."
     ```
+119. The gate whose reason is a false claim about the artifact. Entry 115 was
+    written yesterday, correctly, about a check that asked for a reading. Its
+    repair carried a reason, and the reason is the defect this entry is about,
+    because a gate that tells the model something untrue about its own output
+    has spent the model's attention on a fiction.
+    The sentence, in the generator for one day: the sections above name a paper
+    by a written lead and this slot names it by its full title, "so one piece
+    of work carries two different strings and recognising them as one piece of
+    work is the step that does not happen."
+    Two different strings, yes. Independent strings, no, and that is the whole
+    question, because a lead written from a paper carries the paper's own
+    words. Lowercase the bold leads of the print of 2026-10-05 against the
+    titles of its three picks and every one of the three shares a run of three
+    or more words with the lead that covered it:
+
+    ```
+    kernel level preemption                      lead 1 against pick 1
+    not all experience belongs in the weights    lead 2 against pick 2
+    procedural memory from                       lead 3 against pick 3
+    ```
+
+    The fourth item, the parallel-branch work, shares nothing with any pick,
+    and it is the one item whose paper the reading list does not carry. Three
+    true, none false, on the artifact the gate was written from.
+    **How the false reason got written is the part worth keeping.** Item one of
+    that section is a paragraph about an independent researcher who
+    "formalized a containment architecture" and its pick is *Hard Stop:
+    Kernel-Level Preemption and Containment for Rogue Agentic Execution*, so
+    on item one the claim is nearly true and recognising them as one piece of
+    work really does take more than a string. Items two and three were never
+    looked at. The diagnosis was taken from the first specimen and generalised
+    to a set of three, which is the 2026-10-13 class with the specimen in the
+    diagnosis rather than in the gate, and it cost more than a sentence: the
+    stronger fix was routed out of the prompt and filed for the engineer on
+    the stated ground that no comparable string exists.
+    **The sweep, and it is the inverse pattern that makes the result readable.**
+    The class is a gate that declares a comparison impossible or unavailable:
+    `grep -nE "because (the|this|it|one|a) [a-z ']{0,40}(never|does not|cannot|has no|is not)" prompts/digest.md`
+    printed thirteen hits. Twelve are reasons about a class of writing rather
+    than claims about what the artifact contains, and the thirteenth is the one
+    patched. Two further lines run the other way and both are correct and both
+    stay: `:1336` and `:2186` each say that a candidate passing "only because
+    it failed to match a string" has not been checked at all. Those two are why
+    the repair adds the string comparison as a first pass and keeps the list
+    match, rather than replacing one with the other. **A count of one, which
+    closes the entry.**
+    **The determinacy of this one is not the usual argument and it should not be
+    read as one.** `docs/voice/check_voice.py compare` puts the overlap axis in
+    the undetermined class, so by the standard this register adopted today a
+    further wording of it is not a test of anything. This patch is made anyway
+    and on a different ground: a gate carrying a false statement is a defect
+    whether or not fixing the statement changes an outcome, and the measurement
+    of whether it does belongs to the comparator filed on 2026-10-15.
+    Added 2026-10-16. Enforced the same day at the overlap check, which now
+    names the comparison and the three specimens it catches.
+    ```
+    LANDED prompts/digest.md: "Take the short bold lead of every item you wrote above and the title of every candidate pick, lowercase both, and strike the pick wherever the two share a run of three or more words."
+    ```

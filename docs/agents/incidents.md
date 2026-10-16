@@ -14062,3 +14062,121 @@ payload's url where there is one and on the paper's own title where there is
 not. The generator already groups candidates by paper in three other places
 before anything is chosen, at `:839`, `:914` and `:1334`. This was the fourth
 place it needed to and the only one pointed at the finished prose.
+
+## INC-2026-10-16-a-fail-was-recorded-against-the-print-that-obeyed-the-rule — the non-ASCII census had no way to express its own rule's exception, so the instrument scored two prints backwards (2026-10-16, writer seat)
+
+**Observed by:** the writer seat, 2026-10-16, running canon's quoted-block step
+over the previous two grades of the same artifact.
+
+**The repeat.** `INC-2026-10-04-measurement-attributed-to-the-wrong-artifact`
+put one sentence into canon pass 1: a FAIL recorded against a clean artifact is
+worse than no grade, because it hides the one thing the generator has solved
+and nobody can tell when to stop working on it. That was written about a figure
+carried from the wrong artifact. This is the same sentence failing on a figure
+measured from the right artifact with the wrong unit, which is the half the
+first diagnosis did not reach.
+
+**What happened.** `docs/voice/check_voice.py measure` printed the non-ASCII
+census as a bare count and exited non-zero on any hit. The rule it measures,
+the plain-ASCII bullet in `prompts/digest.md`, carries an exception in its own
+words: "The one exception is a person's or an institution's name as the payload
+spells it." A count cannot express an exception, so the two prints of 2026-W40
+were scored in the wrong order.
+
+```
+digests id 21      "An independent researcher, Jose Luis Pino"     non-ASCII 0, exit 0
+press_rehearsals 4 "José Luis Pino's forensic autopsy"             non-ASCII 1, exit 1
+
+select authors from papers where id='arxiv:2609.29808v1'  ->  {"José Luis Pino"}
+```
+
+The body a reader received misspelled a named researcher in the one sentence
+attributing the work to him and scored clean. The body that spelled the name as
+the corpus spells it scored a finding. The grade of 2026-10-15 then quoted that
+figure as evidence that the rehearsal "carries one non-ASCII character" and is
+"worse under law 1", so the verdict reached the register.
+
+**Why it was not caught for eleven grades.** The census was added for a real
+defect, which is the non-breaking hyphen arriving inside ordinary words from
+machine-extracted payload text, and on that class a bare count is exactly
+right. The two prints of one generator are what separated the classes, because
+before 2026-10-15 nothing in this seat's procedure read a second sample and a
+single artifact carrying one accented name looks like an artifact carrying one
+stray character.
+
+**Fixed here.** The census divides by unicode category, which is the division
+the rule's own sentence makes: punctuation, spacing, separators and symbols are
+scored and set the exit code, and a letter is printed with the word it sits in
+and handed to the grade, because the exception turns on whose name it is and no
+command knows that. Ban list 117 is the generator half, where the exception now
+carries a direction. Ban list 118 is this half, and its sweep found that no
+other target-of-zero gate in the generator sits on a rule carrying an
+exception.
+
+**The generalisable lesson, for any seat.** A gate stated as a count inherits
+the count's silence about exceptions. Where the rule behind a count has an
+exception in it, the count is not the gate, and the honest form divides the
+measurement into the part the rule admits no exception for, which sets the exit
+code, and the part a human or a model has to rule on, which is printed and
+named as unruled. The failing direction is the dangerous one: a count pushed to
+zero will be satisfied by removing the exempt thing, and here that was a
+person's name.
+
+## INC-2026-10-16-a-gates-reason-generalised-from-the-first-of-three-specimens — the fix was routed out of the prompt on a stated ground that was false for two of the three items (2026-10-16, writer seat)
+
+**Observed by:** the writer seat, 2026-10-16, re-reading the blocks its own
+previous grade had quoted.
+
+**The repeat.** `INC-2026-10-13-a-generator-gate-read-the-main-clause-and-the-defect-moved-right`
+recorded a gate inheriting the syntax of the one specimen it was written from,
+and the canon gained a step for it: restate the defect in a different clause,
+position and part of speech before the gate is called finished. This is the
+same class one layer up, where the specimen is inside the DIAGNOSIS rather
+than inside the gate, so the canon's step cannot reach it. The step asks
+whether the gate still catches the defect when the defect moves. It does not
+ask whether the reason the gate gives is true of the specimens nobody opened.
+
+**What happened.** On 2026-10-15 this seat found that all three picks in the
+reading list of 2026-W40 were papers the issue had already covered at length.
+The repair was written with a reason: the body names a paper by a short written
+lead and the reading list names it by its full italic title, "so one piece of
+work carries two different strings and recognising them as one piece of work is
+the step that does not happen." On that ground the string comparison was
+declared unavailable, the prompt-side patch was recorded as enforced at the
+reliability of a model reading a file, and the stronger fix was filed for the
+engineer as pipeline code.
+
+The ground is false for two of the three items, and a three-word shingle
+comparison finds all three:
+
+```
+kernel level preemption                      bold lead 1 against pick 1
+not all experience belongs in the weights    bold lead 2 against pick 2
+procedural memory from                       bold lead 3 against pick 3
+```
+
+The fourth item of that section shares nothing with any pick and is the one
+item whose paper the list does not carry, so the comparison is three true
+positives and no false ones on the artifact the gate was written from. Item one
+is the specimen the reason was written from, and on item one the claim is close
+to true. Items two and three were never looked at.
+
+**The cost, and it is routing rather than wording.** A false reason inside a
+gate is a sentence the model is asked to act on. A false reason inside a
+DIAGNOSIS decides which seat gets the work. This one sent the only fix the seat
+believed would hold to the engineer, in a week when the press had not printed
+at all, and left a prompt-side comparison that was available the whole time
+unwritten.
+
+**Fixed here.** Ban list 119, and the overlap check now names the comparison
+and the three runs of words it catches. The entry says plainly that this axis is
+in the undetermined class by the comparator added today, so the patch is made
+on the ground that a gate carrying a false statement is a defect whether or not
+fixing it changes an outcome, and not on the ground that it will.
+
+**The generalisable lesson, for any seat.** When a run writes the reason a fix
+cannot go somewhere, that reason is a claim about every specimen the fix covers,
+and it is usually checked against one. Count the specimens the claim covers and
+check it against each, the same way a coverage law is graded by two integers
+rather than by a reading. A diagnosis that hands work to another seat earns the
+count most, because nothing downstream of it will ever re-derive it.

@@ -16009,3 +16009,43 @@ nobody has to re-derive it:
   this file already hold a word the vocabulary rejects. A seventh would be this
   seat adding to a problem it had just read.
 - Status: proposed
+
+### 2026-10-16 — The comparator the grade now runs exists for one week out of three by accident (writer seat)
+- Trigger: `docs/voice/check_voice.py compare` landed today and classified ten
+  measurable gates across the two prints of 2026-W40 into five determined
+  failures, three determined passes and two undetermined. The classification is
+  only possible where two bodies of one week share a `prompt_sha`, and that is
+  true for exactly one week.
+- The measurement: `press_rehearsals` holds four rows, three for 2026-W39 and
+  one for 2026-W40. `digests` holds three rows, for 2026-W37, 2026-W39 and
+  2026-W40. 2026-W37 has no rehearsal at all, and the W40 pair exists because a
+  deploy happened to run five and a half hours before that Monday's send.
+- The gap: `rehearse()` fires on the third gate of the deploy ladder, per
+  `docs/agents/press-rehearsal.md`, so a rehearsal row is a side effect of
+  deploying and not of sending. A week whose send follows no deploy gets one
+  sample, and one sample cannot tell a gate's wording from a gate's luck. That
+  is the state every future grade is in by default, and it is the state the
+  eleven grades before 2026-10-15 were in without knowing it.
+- The ask, and it is smaller than the comparator filed yesterday: keep writing
+  the row, and write one on the send path as well, so every issue has a second
+  body from the same prompt. The body is already generated and discarded on the
+  deploy path, so the only new cost is one call on a week with no deploy. If
+  that cost is unwanted, the cheaper half is to say so in the alarm when a send
+  has no comparable rehearsal row, because then a grade reads the absence rather
+  than inferring it.
+- Why it is worth the nickel: this seat has merged twenty patches to
+  `prompts/digest.md` since 2026-10-05 and can currently say of only ten gates
+  whether a wording change is testable at all. Two of the ten are undetermined,
+  and both of those are axes this seat has already patched three times each.
+  Every future grade without a second sample is a grade that cannot make that
+  distinction and will keep rewording gates that are not wording problems.
+- Sibling and order: the comparator filed on 2026-10-15 is the judge and needs
+  two bodies to judge. This entry is what guarantees the second body exists.
+  This one first, because the other has nothing to read without it.
+- Not this seat's surface: `pipeline/weekly.py` is the engineer's. The
+  classification command is in `docs/voice/` and is done.
+- Where this entry sits: appended at the end, touching no other line, because
+  this file is the org's highest collision surface (incident 6) and three pull
+  requests were open against this repository when this run started.
+- Cost: about a nickel a week, or $0 for the alarm-line half.
+- Status: proposed

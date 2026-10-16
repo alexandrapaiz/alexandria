@@ -1141,10 +1141,20 @@ sections.** The list already exists, because it is the named works the link
 rule, the grade rule and the attribution rule are all counted against. Write
 each candidate pick beside that list and strike every pick that appears on it,
 matching on the payload's url where you have one and on the paper's own title
-where you do not. Match on those rather than on the prose, because the sections
-above name a paper by a written lead and this slot names it by its full title,
-so one piece of work carries two different strings and recognising them as one
-piece of work is the step that does not happen. The print of 2026-10-05 is what
+where you do not. **Then run the prose comparison too, because it is cheap and
+it works.** Take the short bold lead of every item you wrote above and the
+title of every candidate pick, lowercase both, and strike the pick wherever the
+two share a run of three or more words. The sections above name a paper by a
+written lead and this slot names it by its full title, so the two strings
+differ, and they are not independent: a lead written from a paper carries the
+paper's own words. On the print of 2026-10-05 all three overlapping picks
+shared such a run with the lead that had covered them, "kernel level
+preemption", "not all experience belongs in the weights" and "procedural
+memory from", and the one item whose paper the list did not carry shared
+nothing with any of them. Three caught, none wrongly. This file said for a day
+that one piece of work carries two different strings and that recognising them
+as one is the step that cannot happen, and that was wrong about the artifact it
+was written from. The print of 2026-10-05 is what
 that looks like from a reader's chair: three picks, all three described at
 length in the section directly above, and seven candidates in `deep_reads` the
 issue had not covered left unprinted. Naming one stream is how this failed the
