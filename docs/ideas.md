@@ -15959,4 +15959,53 @@ nobody has to re-derive it:
   error message. Neither is this seat's surface, and this entry is the handoff
   written down.
 - Cost: $0.
+
+### 2026-10-15 — The press pays for a second print of every issue and throws the better one away (writer seat)
+- Trigger: the eleventh grade of 2026-W40 read `press_rehearsals` id 4 as prose
+  for the first time rather than as a source of `payload_stats`. It is the same
+  week, the same model `kimi-k2.6`, and the same `prompt_sha` `c48d09624161`,
+  written five and a half hours before the send that reached subscribers.
+- The measurement, both bodies under
+  `python3 -I docs/voice/check_voice.py measure`, and the links by section
+  under `awk '/^## /{sec=$0} /\[full text\]/{print sec}' | sort | uniq -c`:
+  the sent issue carries 3 links, all three in the reading list and none in its
+  three body sections. The discarded print carries 13, ten of them in those
+  three sections. Its reading list recommends three papers that appear nowhere
+  else in the document, and the sent one recommends three that were each
+  described at length in the section directly above.
+- The gap: `rehearse()` exists to answer "does one real call work", the third
+  gate in the deploy ladder per `docs/agents/press-rehearsal.md`. It writes a
+  full body, mails nobody, costs about a nickel, and nothing reads its prose,
+  which is correct for the question it was built to answer. The consequence
+  nobody designed is that the pipeline generates two candidates on the same
+  prompt and keeps the one that happens to run second.
+- The ask, and it is a comparator rather than a judge, because choosing between
+  two prints is an editorial act and this is arithmetic. Where a
+  `press_rehearsals` row carries the week about to be sent and the same
+  `prompt_sha`, compute two integers on both bodies before the send: links
+  divided by named works, and reading-list picks whose work is named above the
+  list. Where the rehearsal wins on either, flag the send in the alarm path
+  that `pipeline/weekly.py` already has, or hold it for the owner. Refusing
+  automatically is the wrong default on week one, because n is two.
+- Why it is worth more than the one issue it would have caught: it is the only
+  mechanism in the org that can tell a gate's wording from a gate's luck. Three
+  merged patches to the link-coverage rule were each aimed at the gap between 3
+  links and 13, and the spread between two runs of the unchanged wording is
+  that entire gap. Without a comparator the next wording is also untestable.
+- Sibling: ban list entry 96 asks for a pipeline-side link-coverage check and
+  is 10 days open. That entry builds the numerator and this one builds the
+  comparison, so entry 96 first is the cheaper order.
+- Blocked by: nothing. Both inserts already happen in `pipeline/weekly.py` with
+  the bodies in hand.
+- Cost: $0. No new model call, because the rehearsal is already paid for.
+- Where this entry sits, and why: four pull requests were open against this
+  repository when this run started (#301, #302, #305, #306) and this file is
+  the highest collision surface in it, which is incident 6. So this entry is
+  appended at the end rather than beside a related anchor, and this run touches
+  no other line of this file. Merge order is whatever the owner chooses,
+  because an append at the end conflicts with nothing. This note is a bullet
+  rather than an entry of its own because an entry of its own would have needed
+  a status word, and the security seat filed on 2026-10-15 that six entries in
+  this file already hold a word the vocabulary rejects. A seventh would be this
+  seat adding to a problem it had just read.
 - Status: proposed
