@@ -12700,6 +12700,54 @@ this seat. `tools/delivery_health.py --surface deploy` is most of the
 instrument and answers `unknown` today because `distill` and `ingest` have
 never recorded a runtime row; the two prompts whose shas *are* recorded could
 be compared by it this morning and are not.
+## INC-2026-10-04-the-writers-first-cap-out-went-unfiled-until-the-second-one-cost-work — the writer hit `error_max_turns` five days before the loss that got an entry, and nothing here named the first one until the centralizer counted the portfolio (2026-10-04, writer seat, filed 2026-10-13 by the PM seat, refiled from a branch that never merged)
+
+**Observed by:** the PM seat, on a note from `alexandra-systems/exo-centralizer`
+reporting that the writer "ran out of turns twice in six days." One of the two,
+`INC-2026-10-09-the-writer-hit-the-cap-its-own-raise-queued-five-days-earlier`,
+already had an entry here. This one did not, and the gap is the finding.
+
+**What happened.** The writer's scheduled run (`37226048547`, 2026-10-04,
+18:51:39Z to 19:17:41Z) ended `"subtype": "error_max_turns"`,
+`"is_error": true`, `"num_turns": 151` against `--max-turns 150` in
+`.github/workflows/agent-writer.yml` — the identical hard-starvation shape
+`docs/agents/turn-caps.md` names, five days before the seat hit it again.
+Checked here rather than assumed: the run had pushed real commits as late as
+19:16:47Z, one minute before the cap killed it, and the resulting pull
+request (`#189`) merged the next day. So this occurrence cost no work, which
+is almost certainly why nobody filed it — the no-ship tripwire never fired, and
+a failed run with nothing visibly lost reads as nothing, not as evidence.
+
+**Why it is recorded now, nine days late.** `docs/standards/lessons.md`'s L-X3
+amendment of 2026-10-12 says plainly that an `error_max_turns` exit is a
+finding about the cap and not about the run, regardless of whether that run's
+own work survived. This repository's own incident register did not apply that
+reading to its own history: the 2026-10-09 entry documents the second,
+costly exhaustion in full and never mentions the first, so a reader of this
+file alone would have no way to know the writer had already hit the same
+wall once. The standard's own portfolio count is what surfaced it, not a run
+here.
+
+**Why this entry carries yesterday's date rather than today's.** A PM run on
+2026-10-12 filed this exact text on `alexandria-pm/2026-10-12-message-cap-reply`
+(PR #279), but that branch went conflicting against `main` and was never
+merged. This run found the gap was still open on `main`, confirmed the
+pull request's own content was never the problem, and refiled the same entry
+here rather than leaving it stranded on a branch nobody will merge. PR #279
+is closed as superseded by this one, per the note on it.
+
+**What this run did.** Filed this entry, verified against the run's own log
+and the git history in its window rather than taken on the note's word alone.
+No rerun — the run is nine days old and its pull request already merged.
+No further fix proposed here: the rule, the raise to 225 and the repeat-counter
+tool are already merged (`#278`) and the vendored standard, and this entry's
+job is only to close the register gap the note pointed at.
+
+**The general point.** A cap hit that costs nothing is still a cap hit, and
+"the tripwire didn't fire" is a reason nobody looked, not a reason it didn't
+happen. A register that only grows when a failure also destroys work will
+keep missing the earlier, cheaper warning every time, which is exactly the
+shape L-X3's amendment exists to close.
 
 ## INC-2026-10-13-a-generator-gate-read-the-main-clause-and-the-defect-moved-right — the attribution gate was deployed, correct and complete when the issue it guards printed six violations of it, five in a subordinate clause (2026-10-13, writer seat)
 
@@ -12881,6 +12929,82 @@ deployed` describes for a merged self-improvement that never deployed. Recording
 a rule and enforcing it are two gates, which is the lesson the charter's own
 "Check the register before you ship" section already teaches, and this is that
 lesson applied to a tool rather than to a register.
+
+## INC-2026-10-14-the-first-dispatch-that-ran-died-at-a-bot-gate-no-workflow-configures — the `dispatch-403` saga's next link: the call finally created a run, and the run refused itself (2026-10-14, frontend seat, observed by the PM seat)
+
+**Observed 2026-10-14, triaged under `docs/standards/pm.md` §11.7** (the
+PM's failed-run triage, run by a message-triggered pass). `gh run list
+--status failure` surfaced exactly one failure in the window: frontend-agent,
+run [38594124029](https://github.com/alexandrapaiz/alexandria/actions/runs/38594124029),
+`workflow_dispatch`, failed in 63 seconds with zero commits, zero branch,
+zero PR (the no-ship tripwire caught that cleanly and correctly).
+
+**Why this is not another `dispatch-403`, even though it is the same saga.**
+`INC-2026-09-24-dispatch-403`, `INC-2026-09-26-dispatch-403-repeat` and
+`INC-2026-09-29-dispatch-403-repeat` all document the same prior failure: a
+PM `gh workflow run` call never created a run at all (`HTTP 403: Resource
+not accessible by integration`). This run is the opposite shape. `gh api
+repos/alexandrapaiz/alexandria/actions/runs/38594124029 --jq
+'.triggering_actor.login'` returns `github-actions[bot]`, and `gh run list
+--event workflow_dispatch --limit 20` shows no other `workflow_dispatch`
+event anywhere in the repo between 2026-10-05 and this one. As far as this
+register can tell from the outside, **this is the first `workflow_dispatch`
+call in this repo's history that got past the 403 and actually created a
+run**, which the three entries above could never confirm because none of
+them got this far.
+
+**And the run it created died anyway, one step later, for a new reason.**
+`gh run view 38594124029 --log` shows the `anthropics/claude-code-action@v1`
+step itself refusing to execute:
+
+    ##[error]Action failed with error: Workflow initiated by non-human
+    actor: github-actions (type: Bot). Add bot to allowed_bots list or
+    use '*' to allow all bots.
+
+Exit code 1, 4 seconds into the step. The action has its own gate on who is
+allowed to have triggered the workflow that calls it, and a `workflow_dispatch`
+fired by `GITHUB_TOKEN` from inside another seat's run — exactly the
+mechanism ADR-033 (charter §5) grants and names, "a parent run started a
+child run with the runner's own token" — presents to GitHub as the generic
+`github-actions[bot]` actor, not a human. `grep -L allowed_bots
+.github/workflows/agent-*.yml` returns all twelve workflow files: none of
+them configure the allow-list, so this gate is not tuned against frontend
+specifically, it is simply unconfigured everywhere.
+
+**Classified under §11.7: Configuration, not a real defect in the frontend
+seat's own code or charter**, and not transient (the same input fails the
+same way every time until a workflow file changes). No rerun. Per §11.7's
+own routing for this class and per `docs/standards/pm.md` §15's "who owns
+what" ("a product seat does not edit `.github/workflows` in its own repo"),
+this is filed here and handed off on the board to
+`alexandra-systems/exo-centralizer` rather than fixed in place; this seat's
+boundaries also forbid touching workflow files directly.
+
+**The scope is every seat, not frontend.** Nothing about this gate is
+frontend-specific. Any `workflow_dispatch` that any seat fires against any
+other seat's workflow, through the exact mechanism charter §5 and ADR-033
+grant, will reach this same gate and die the same way, because the fired
+run always presents as `github-actions[bot]` and no workflow file allows
+it. **Until a workflow file adds `allowed_bots: '*'` (or the specific bot
+login) to every `agent-*.yml`'s `claude-code-action` step, charter §5's
+dispatch authority is a call that can now reach GitHub but still cannot
+produce a working run on the other end** — which is a different failure
+mode than the 403 saga, not a fix for it. The two gates happened to be
+stacked, so clearing the first one (whatever changed between 2026-09-29 and
+today) only now exposed the second.
+
+**What did not happen.** The board item this run was dispatched for
+(`03029cad`, "Ship the Left-Behind Index as a public page") stayed in
+`Backlog`: the run died before its first tool call, so it never reached the
+"move to In progress" instruction in its own prompt. Nothing to revert
+there. A comment was added to that item naming this run's specific failure,
+distinct from the 403 comment already on it from 2026-10-13.
+
+**Handoff filed on the board** to `alexandra-systems/exo-centralizer`,
+citing this entry and the run URL, asking for `allowed_bots` on the
+`agent-*.yml` workflow files. Not fired as a dispatch and not reworked by
+this seat, because workflow files are HQ's surface per §15, and because
+the fix is not diagnosable as a rerun candidate.
 
 ## INC-2026-10-14-dispatch-403-half-fixed — the ambient token was never the one `permissions:` governs, and fixing it exposed a second gate (2026-10-14, PM seat; renumbered by the engineer seat)
 
@@ -13250,3 +13374,314 @@ that makes this gate fire on the pull request that breaks it, which is the
 only version of this fix that does not depend on a seat remembering to run a
 command. Measured today: `python3 tools/ci_coverage.py --only
 .github/workflows-pending/checks.yml` is `53 of 53`.
+## INC-2026-10-14-the-standup-ran-205-turns-and-shipped-nothing — a scheduled PM pass finished clean and left no commit, no branch, no pull request (2026-10-14, PM seat)
+
+**What happened.** The 2026-10-14 15:46:59 UTC scheduled standup (run
+`38592352927`) ran the model step to completion: `is_error: false`,
+`num_turns: 205` against a 300-turn cap (68%, under the cap-ratio line),
+`$9.93` spent, zero permission denials. The no-ship tripwire then failed
+the job: no commit ahead of `main`, no seat branch pushed, no pull
+request of any kind, and no uncommitted diff in the sandbox either. The
+run did not merely lose work at teardown (incident 3's shape); it never
+produced any in the first place, despite 205 turns and over half an hour
+of wall time.
+
+**Why this is a new class, not a repeat.** Every prior no-ship entry in
+this file involves either a crash before the first push or uncommitted
+work lost at teardown. This run crashed nowhere and had nothing dirty to
+lose: it read for 205 turns and never once wrote. The charter's own
+"ship first" rule exists exactly to prevent this (open the draft PR in
+the first few turns, before substantial thinking), and this run did not
+follow it — not even the fallback case ("if the run genuinely produces
+nothing worth shipping, say that in a draft PR and close it") which
+still requires opening something.
+
+**The likely contributing cause, named rather than guessed as certain.**
+`docs/sprints/pending.md` is approximately 1,970 lines and growing by a
+full dated section almost every run; `docs/standards/pm.md` and this
+seat's own charter are each several hundred lines on top of that. A
+standup that reads its full required context before acting spends a
+large, and growing, fraction of its turn budget on reading alone. This
+run's 205 turns and $9.93 cost are the most expensive clean standup in
+the visible run history; the next one may cap out reading before it
+writes anything, the same failure this incident already shows in a
+softer form.
+
+**Not fixed this run.** No rerun (the input was a scheduled trigger, not
+a transient fault, and the same context would reproduce the same risk).
+Proposed rather than done: `docs/sprints/pending.md` should get a
+dated-archive split (old entries moved out of the file the standup must
+read each time) so the standup's own history stops being the thing that
+starves it. That is a ceremony-sized change, not a standup-sized one;
+named here for the next Monday ceremony (2026-10-19) or the ExO.
+## INC-2026-10-14-two-generator-gates-asked-for-a-reading-and-never-failed — one gate said count and named no unit, one gate said no two alike and counted nothing, and ten grades read past both (2026-10-14, writer seat)
+
+**What happened.** The tenth grade of 2026-W40 found two defects in plain
+arithmetic, both forbidden by hard gates that were in the deployed file on the
+day the issue printed.
+
+The new-work slot opened "Three papers this week test what happens when you
+push the agent stack in directions no benchmark yet covers" and put four items
+under it. The gate against that calls itself "arithmetic rather than judgment",
+says to count what appears under the sentence, and never says what to count.
+Its four examples are all nouns for the issue's own contents rather than units
+a reader can see, so the writer picks the unit, and a writer who picks the unit
+can always rescue the count. The fourth item there names no paper, which is how
+this one was rescued.
+
+The issue carried eight evidence grades standing on three frames. Four opened
+on the identical three words. Two more were the same frame as each other about
+the same paper, one in the body and one in the reading list. The gate against
+that says "No two grades in the issue begin the same way, none begins on the
+word 'evidence', and no two are built on the same frame", and asks for no count
+at all. The step it does ask for is a judgment the writer makes about its own
+prose.
+
+**Why it is a repeat and not a discovery.** The class is already written down
+twice in this seat's own registers, in both directions, and neither recording
+reached the generator's gates.
+
+`docs/voice/canon.md` has said since 2026-09-29 that a law asserting coverage
+is graded by a count and never by a reading, and since 2026-10-13 that whether
+something generalises is "a judgment a tired run makes about its own prose".
+Both sentences were written about the grade's verdicts. Neither was ever turned
+on the generator's gates, which are the same instrument pointed the other way,
+and every gate in that file which holds was converted to a count after a print
+walked past it.
+
+**The sharper half, and it is about where the evidence was sitting.** Both
+defects were quoted verbatim in this seat's own earlier reviews of the same
+artifact, in blocks pasted as evidence for a different law.
+`docs/voice/reviews/2026-10-06.md` quotes "Three papers this week test what
+happens when you push [...]" inside a list of standalone lines, while counting
+shapes. `docs/voice/reviews/2026-10-05.md` prints all four "The authors' own"
+grades in a numbered block, while finding that grades sat in the position the
+meaning line needed. Each run quoted the string, graded the one law it had come
+for, and moved on. Nine and eight grades followed, each re-reading the reviews
+and never re-reading the quotations in them.
+
+Canon pass 5's fifth question already covers the half-graded SENTENCE and the
+sixth covers the forgiven half of a VERDICT. Neither covers a block of the
+artifact quoted inside a review, which is a third place a half-read thing can
+hide, and the cheapest one to check because the text is already extracted and
+sitting in the file.
+
+**The fix.** Both gates are patched in the writer pull request of 2026-10-14,
+each as a count rather than a reading, and five supplied specimens are struck
+from the two composition rules that were handing the shapes over. Ban list 112
+and 113 carry the entries and the sweeps. The grading procedure gains a step
+that puts the remaining laws to every block a review quotes, which is the only
+part of this that would have found either defect nine days earlier.
+
+**What it says about the seat.** This is not a reading failure that more care
+fixes. Ten careful grades read past both, which is the evidence that the
+procedure and not the attention was short. The pattern across all of it is one
+sentence: an instruction that asks somebody to look is satisfied by looking,
+and only an instruction that asks for a number can come back wrong.
+## INC-2026-10-14-the-sticky-nav-ghost-is-re-investigated-every-run — third run to spend turns on a 1 to 3 percent bleed-through that measurement has already settled twice (2026-10-14, frontend seat)
+
+**What happened.** The weekly visual run scrolled the desk page on a phone
+viewport, magnified the top of the frame to three times scale, and read the
+scrolled content showing through the sticky nav as a legibility collision
+between two layers of text. The run was about to file it. Measuring it with
+`docs/design/harness/ink.mjs` instead returned 252 of 255 for the darkest
+pixel in the empty space of the bar at 390, and 247 of 255 at 1440, which is a
+ghost of one to three percent and not a finding.
+
+**Why it is an incident rather than a near miss.** The harness README already
+records this: "Twice now a run has nearly filed the sticky nav as transparent;
+measured, the ink behind it is 247 to 255 of 255, which is a ghost at about
+3%." This run is the third. The standing rule at the top of this file is that
+an issue occurring more than once is recorded at the moment it repeats, with
+no judgment call, and a repeat that goes unrecorded is itself an incident.
+
+**The cause, which is not the nav.** The nav is correct. `rgba(255,255,255,0.94)`
+over a 22px backdrop blur is a deliberate value that a previous run raised from
+0.85 for this exact reason, and the comment in the stylesheet says so. What
+repeats is the method. A run looks at a screenshot, magnifies a region to read
+it, and the magnification is what makes a 3 percent ghost legible. The enlarged
+crop is evidence that something is there and is not evidence of how strong it
+is, because enlarging does not preserve the impression of contrast that the eye
+would get at one to one.
+
+**The fix applied this run.** The harness README's bullet on `ink.mjs` now says
+in its own words that the sticky nav question is settled, gives the two numbers,
+and tells the next run to measure before filing rather than after. Prose that
+records a conclusion is weaker than prose that names the next action, which is
+why the bullet changed rather than the count in it.
+
+**What would close this class.** A check in the harness that reads the bar's
+empty space and prints the number every run, so the answer arrives before the
+question does. That is a harness change rather than a site change and it is on
+the board for this seat.
+## INC-2026-09-20-the-arxiv-406-is-rate-limiting-wearing-the-wrong-status-code — the same 406 diagnosed three times and never once retried (observed 2026-09-20, filed 2026-10-14, engineer seat)
+
+Recorded under the standing rule: this failure has now happened three
+times and each time it was patched with a different theory of its cause.
+
+**What happened.** `tools/check_issue_citations.py` is the accuracy half
+of the pre-send quality tier: it is the only thing that checks a cited
+title against the paper its link resolves to. Run against 2026-W37 this
+morning it died on `HTTP Error 406: Not Acceptable` and exited 1.
+
+The file already carried two comments about 406s, both written by earlier
+runs that hit the same error and guessed at a header:
+
+- "the commas in id_list must stay literal; arxiv answers 406 to %2C"
+- "arxiv answers 406 to urllib's default Accept header"
+
+This run started on a third guess, that arXiv had begun refusing
+`Accept: application/atom+xml`, and the evidence looked good: curl
+returned 200 to nine consecutive requests while urllib returned 406 to
+all of them. Then the same test, run twice more, returned 200 to every
+urllib variant including the ones that had just failed, and 406 to a
+single-id request that had succeeded a minute earlier. The 406 is
+time-varying. It is rate limiting wearing the wrong status code, and no
+header change ever fixed it. Two of the three comments in that file are
+probably wrong for the same reason.
+
+**Why it kept happening.** Each encounter was a one-off run under time
+pressure, and a header change that is followed by a success looks like a
+fix. Nothing in the tool distinguished "this request is malformed" from
+"this service is refusing me right now", so every failure presented as
+the former. The 406 status is a real contributor here: a 429 would have
+been diagnosed correctly in thirty seconds by all three runs.
+
+**The fix.** Retry with backoff (15s, 45s, 120s) on 406, 429 and 5xx,
+with the reasoning written where the next person will read it. Afterwards
+the checker ran clean against 2026-W37: 9 citations checked, 0 failed. It
+runs once a day, so three and a half minutes of patience costs nothing.
+
+**What the org should take from it.** A retry is the first response to an
+intermittent external failure, not the third. Before changing a request
+to fix an error, run the unchanged request again. This tool is not the
+only one that talks to a free API on someone else's terms:
+`pipeline/weekly.py`'s citation slow loop calls Semantic Scholar and
+`pipeline/ingest.py` calls arXiv, and both should be read against this
+entry the next time either misbehaves.
+
+**Filed late, and the delay is part of the record.** This entry was
+written on 2026-09-20 on the branch that carries the fix, and that branch
+stayed open for twenty-four days, so the register never held it. It is
+being filed now by the run that cleared the branch's conflict. An
+incident that exists only on an unmerged branch is an incident the org
+does not have, which is the same lesson L-E10 teaches about code: `main`
+is the one place where work that is built but unmerged is invisible.
+
+**It also arrived carrying the wrong id.** The original took the number
+23, with a note reasoning about which sequential number was free. Main
+issued 23 to a different event five days later, and the collision was
+invisible until this merge. That is incident 29's class and it is
+recorded again today as
+`INC-2026-10-14-an-open-branch-held-two-ids-main-had-since-issued`.
+
+## INC-2026-10-14-an-open-branch-held-two-ids-main-had-since-issued — the sequential allocator collides across time, and only a merge conflict reveals it (2026-10-14, engineer seat)
+
+Recorded under the standing rule. This is incident 29's class, which is a
+sequential id allocated on a branch by a run that cannot see the whole
+register, and it has now happened again with a detail incident 29 does not
+cover: the collision was latent for twenty-four days.
+
+**What happened.** The pre-send quality gate's branch was opened on
+2026-09-20 and stayed open. On it, two ids were allocated by reading the
+highest number then visible: incident 23, for the arXiv 406 entry, and
+ADR-28, named in `pipeline/weekly.py`'s docstring for the gate itself. In
+the twenty-four days that followed, main issued incident 23 to the Kimi
+routing rollout and ADR-28 to the writer seat. Neither collision was
+detectable from the branch, because both numbers were free when they were
+taken and nothing on the branch changes when main issues one.
+
+**Why the existing fix did not catch it.** Incident 29's remedy is the
+date-scoped id, `INC-YYYY-MM-DD-slug`, and it works: a date-scoped id
+cannot collide. What it does not do is reach a branch that was written
+before the remedy, or an ADR, which still carries a sequential number by
+its own convention. So the remedy holds for new entries written by runs
+that have read the rule, and the exposure is every long-open branch that
+predates it plus every ADR number ever reserved on a branch.
+
+**The repair in this run.** The 406 entry is filed under
+`INC-2026-09-20-the-arxiv-406-is-rate-limiting-wearing-the-wrong-status-code`,
+with its observation date kept and its filing date named. The docstring's
+ADR-28 reference is now a reference to the decision that actually carded
+this work, which is the writer seat's ADR-28, and that is the right
+citation rather than a repaired wrong one: ADR-28 is where the owner
+deferred the pre-send gate and carded it to this seat.
+
+**What the org should take from it.** A merge conflict in a register file
+is not only a text conflict. It is the only detector the org has for an id
+that two branches both believe they own, and resolving one by taking
+either side wholesale destroys the evidence. `.github/workflows-pending/`
+holds an `adr-numbers.yml` that would catch the ADR half on a pull
+request. It is one of the staged workflows no seat can apply, which is the
+sixth day this register has recorded a staged fix nobody holds the
+permission to install.
+
+**Second finding from the same cause, recorded here rather than
+separately.** The branch was 1,239 commits behind main when it was
+reopened. In that time the press was rebuilt around a weekly-only cadence
+on a different provider, which is the exact assumption the branch's other
+half contradicts, so clearing the conflict meant deciding a product
+question rather than resolving text. A branch does not merely go stale. It
+goes wrong, and the longer it stays open the more of its own reasoning it
+loses the right to assert.
+
+## INC-2026-10-15-the-register-gates-fix-sat-in-an-unmerged-pr-while-main-stayed-red (security seat, run 9)
+
+**Filed as a repeat, and the half that is new is the second day.** The debug
+and security charter asks one question that is about the present rather than
+the past, which is whether the guard covering a change is green right now.
+It was not. `python3 -m pytest tests/ -q` on `main` at c1ddd58 is
+`1 failed, 1404 passed`, and the single failure is
+`test_check_registers.py::test_this_repository_has_no_merge_damage_in_its_registers`
+reporting that two entries in this file share the id
+`INC-2026-09-24-dispatch-403`.
+
+**The duplicate itself is already filed and is not what this entry adds.**
+The engineer seat found it on 2026-10-14, wrote
+`INC-2026-10-14-the-register-gate-was-blocking-on-main-and-nothing-ran-it-before-the-merge`
+for the pre-merge half, and fixed it in commit 98d670b by dating the newer
+entry and recording the old id inside it, which is what the numbering rule at
+the top of this file asks for. That work is correct and this seat did not
+redo it.
+
+**What is new is where that fix is.** It is not on `main`. Commit 98d670b
+lives on `engineer/2026-10-14-quiet-send-guardrail`, whose pull request #294
+was closed as superseded, and it was carried forward to
+`engineer/2026-10-15-undeployed-pipeline`, which is open as #301. So the
+breakage merged and the fix did not. The duplicate landed on `main` at
+16:13 on 2026-10-14 by way of #295, and it was still there 25 hours later
+when this run measured it. For that whole period the repository's own
+answer to "are the registers intact" was no, the incident entry recording
+that was also unmerged and therefore unreadable by anyone working from
+`main`, and every seat that read `main` saw a clean register and a red suite
+with no explanation in the register.
+
+**Why this is a repeat and not a new class.**
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it` is the same shape, and
+the clause it added to `docs/agents/runtime-changes.md` is the clause that
+caught this. That clause says a `failure` is a finding before you have read a
+single commit, and it says the auditor owns reporting it even when fixing it
+belongs to another seat. It does not say what to do when the fix already
+exists and is waiting on a merge, which is this case and is the gap worth
+naming. A fix in an open pull request protects nobody. Measured against the
+state of `main`, an unmerged fix and no fix are the same fix.
+
+**This seat deliberately did not fix it a second time.** Renaming the heading
+here would put the same rename in two branches at one anchor, which is
+incident 6 exactly, and #301 also inserts 71 lines immediately below that
+heading. So the correct action was to leave the rename to #301, report the red
+state, and append this entry at the end of the file where it cannot collide.
+The owner's action is to merge #301, after which the suite goes green with no
+further edit. This entry costs nothing if that merge happens today and is the
+only record of the window if it does not.
+
+**One smaller thing found in the same place and fixed nowhere.** The entry at
+the centre of all this quotes six and five literal characters of two live
+GitHub App installation tokens, as evidence that two environment variables held
+different values. Those tokens expired with the run that held them, so nothing
+needs rotating and the fragments are far too short to be material. It is
+recorded because the practice is the thing to correct rather than the string:
+"two different values, confirmed by direct comparison" carries the entire
+finding, and a public register is not the place to paste any part of a
+credential. Not edited here for the collision reason above. The owner or the
+engineer can drop the two fragments whenever #301 lands.

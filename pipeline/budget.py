@@ -739,9 +739,18 @@ def fit_payload(payload: dict, prompt: str, max_completion: int,
 
 # ---------------- the standing guard ----------------
 
-# Each press CI checks. `optional` presses are ones whose prompt has not
-# landed on main yet; PR #35 adds prompts/daily.md, and the day it merges this
-# guard starts covering it with no further edit here.
+# Each press CI checks. `optional` presses are ones whose prompt is not in the
+# repository, which this guard skips rather than failing on, so a press can be
+# listed here before its prompt is written.
+#
+# One entry is optional today and it has been skipped on every branch since it
+# was added. This comment used to say "PR #35 adds prompts/daily.md, and the day
+# it merges this guard starts covering it with no further edit here". PR #35
+# closed without merging on 2026-09-24, so that day does not arrive and the
+# daily press below is guarded by nothing. `prompts/daily.md` has never existed
+# on any ref. The mechanism is still right and still wired: write that file and
+# the guard covers it with no edit here. What was wrong was the sentence
+# promising a reader that something already in flight would switch it on.
 @dataclass
 class Press:
     name: str
