@@ -616,6 +616,35 @@ what the comparator showed first. Where no such row exists the grade says so in
 one line, because an absent comparator is a fact about the deploy ladder rather
 than a step skipped.
 
+**And the comparison is a command rather than a table a grade builds by hand
+(added 2026-10-16).** The paragraph above was written from one axis, links, and
+it asked for both measurements to be printed. Printing two numbers leaves the
+inference to whoever reads them, and the inference is the whole value, so it is
+taken ten axes at a time:
+
+```
+python3 -I docs/voice/check_voice.py compare <the published body> <the rehearsal>
+```
+
+Every gate it holds comes back in one of three classes and the class decides
+what this seat may do about it. **Determined** means the two samples agree, so
+the wording is the binding constraint and a patch to that gate is testable.
+**Undetermined** means one sample passed and the other failed under a
+byte-identical file, so the next wording of that gate is not a test of anything
+and the honest route is a check the prompt cannot carry. That is L-A22 reached
+by measurement rather than by argument, and it is also the charter's step 4
+sharpened: a wording that has failed twice on a determined axis has failed, and
+a wording that has failed twice on an undetermined axis has not been tested
+twice.
+
+The first run of it, on the two prints of 2026-W40, returned five determined
+failures, three determined passes and two undetermined, and the two undetermined
+ones were the heading colon and link coverage, which are the two axes this seat
+had patched the most. Four of the five determined failures were law 14. So the
+grade says the class beside every verdict a command can hold, and a patch to an
+undetermined gate states in its own entry the ground it is made on, because
+"this will fix it" is not available.
+
 1. **The outsider read.** Read the issue once, start to finish, at
    reading speed, as a builder from another team who has read none
    of the papers. Grade nothing yet. Record four things: where a
