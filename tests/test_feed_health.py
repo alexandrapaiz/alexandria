@@ -543,3 +543,124 @@ def test_fetched_zero_and_inserted_zero_are_different_events():
     assert refusal is None, (
         "a run that fetched plenty must not be refused, whatever it inserted"
     )
+
+
+# -------------------------------------- ingest end to end, with no network
+
+@pytest.fixture
+def fake_ingest(monkeypatch):
+    """`ingest()` with its four I/O calls replaced and nothing else.
+
+    This is the test the refactor actually needed. `fetch_arxiv` and
+    `fetch_feeds` changed from returning a list to returning a pair, and a
+    mistake in unpacking either one is invisible to every unit test above:
+    `judge_sources` would still be correct, the suite would still be green,
+    and the daily cron would raise a TypeError on its next unattended run.
+    Modal is stubbed by `tests/conftest.py`, which hands the real function
+    back through the decorator.
+    """
+    import pipeline.ingest as ingest
+
+    state = {"upserted": None}
+
+    def upsert(rows):
+        state["upserted"] = rows
+        return len(rows)
+
+    monkeypatch.setattr(ingest, "load_sources", lambda: {"arxiv": [], "feeds": []})
+    monkeypatch.setattr(ingest, "upsert_papers", upsert)
+
+    def configure(arxiv_counts, feed_counts, hf_count):
+        def paper(name, n):
+            return {"id": f"{name}:{n}", "source": name, "tier": "a"}
+
+        def fetch_arxiv(cfg):
+            rows, status = [], []
+            for index, count in enumerate(arxiv_counts):
+                name = f"arxiv:c{index}"
+                rows += [paper(name, n) for n in range(count)]
+                status.append({"name": name, "kind": "arxiv",
+                               "entries": count, "http": 200})
+            return rows, status
+
+        def fetch_feeds(cfg):
+            rows, status = [], []
+            for index, count in enumerate(feed_counts):
+                name = f"feed{index}"
+                rows += [paper(name, n) for n in range(count)]
+                status.append({"name": name, "kind": "feed",
+                               "entries": count, "http": 200})
+            return rows, status
+
+        monkeypatch.setattr(ingest, "fetch_arxiv", fetch_arxiv)
+        monkeypatch.setattr(ingest, "fetch_feeds", fetch_feeds)
+        monkeypatch.setattr(ingest, "fetch_hf_daily",
+                            lambda cfg: [paper("hf", n) for n in range(hf_count)])
+        return ingest, state
+
+    return configure
+
+
+def test_ingest_unpacks_both_fetchers_and_upserts_every_row(fake_ingest):
+    """The integration the unit tests cannot see."""
+    ingest, state = fake_ingest([10] * 8, [5] * 44, 50)
+    inserted = ingest.ingest()
+    assert inserted == 80 + 220 + 50
+    assert len(state["upserted"]) == 350
+    sources = {row["source"] for row in state["upserted"]}
+    assert "arxiv:c0" in sources and "feed0" in sources and "hf" in sources
+
+
+def test_ingest_counts_hf_daily_among_the_sources(fake_ingest):
+    """hf-daily has no status row of its own from the fetcher, so `ingest`
+    builds one. A miscount there would make the summary line lie."""
+    ingest, _ = fake_ingest([10] * 8, [5] * 44, 0)
+    summary, _ = judge_sources(
+        [{"name": f"arxiv:c{n}", "kind": "arxiv", "entries": 10, "http": 200}
+         for n in range(8)]
+        + [{"name": f"feed{n}", "kind": "feed", "entries": 5, "http": 200}
+           for n in range(44)]
+        + [{"name": "hf-daily", "kind": "json", "entries": 0, "http": None}]
+    )
+    assert "52 of 53 delivered" in summary
+    assert "hf-daily" in summary
+    # And the run still succeeds, because one dead source is not an outage.
+    assert ingest.ingest() == 300
+
+
+def test_ingest_raises_when_the_firehose_is_dark(fake_ingest):
+    """The case that used to print `fetched 880 items` and a success."""
+    ingest, state = fake_ingest([0] * 8, [20] * 44, 50)
+    with pytest.raises(ingest.NothingToIngest, match="arXiv"):
+        ingest.ingest()
+    assert state["upserted"] is None, (
+        "the refusal must come before the write, or a broken run still "
+        "changes the database"
+    )
+
+
+def test_ingest_raises_when_every_source_is_dark(fake_ingest):
+    ingest, state = fake_ingest([0] * 8, [0] * 44, 0)
+    with pytest.raises(ingest.NothingToIngest, match="returned zero items"):
+        ingest.ingest()
+    assert state["upserted"] is None
+
+
+def test_ingest_tells_the_reader_what_to_run(fake_ingest):
+    """A refusal a seat cannot act on is an outage with extra steps."""
+    ingest, _ = fake_ingest([0] * 8, [20] * 44, 50)
+    with pytest.raises(ingest.NothingToIngest) as caught:
+        ingest.ingest()
+    assert "tools/feed_health.py" in str(caught.value)
+    assert "no credentials" in str(caught.value)
+
+
+def test_a_day_with_nothing_new_is_not_a_failure(fake_ingest, monkeypatch):
+    """`inserted` is legitimately zero when every paper was already seen,
+    and that must never raise. It is the reason the guard reads `fetched`
+    rather than `inserted`, and it is the assumption that makes the guard
+    safe to switch on at all.
+    """
+    ingest, state = fake_ingest([10] * 8, [5] * 44, 50)
+    monkeypatch.setattr(ingest, "upsert_papers", lambda rows: 0)
+    assert ingest.ingest() == 0
