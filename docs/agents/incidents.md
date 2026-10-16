@@ -13464,7 +13464,12 @@ And `tests/test_distill_fulltext_budget.py` had two tests either side of the
 gap. One asserted the head of the list takes a whole paper. One asserted every
 fallback takes the documented abstract. Both passed every day. Neither asked
 whether the job SENDS the abstract to a model that can only take an abstract,
-which is the only question that would have failed.
+which is the only question that would have failed. That is L-A21 in
+`docs/standards/lessons.md` exactly, and L-A21 even prescribes the test that
+finds it: name one change that would break what this gate governs, then ask
+whether the gate would have SEEN that change rather than whether it would have
+fired on it. The change here is "send the big request to a small model". Three
+gates fire on it and none of them can see it.
 
 **The fix, on this run's branch.** `distill.window_for(model, kind)` derives
 the window from `budget.limit_for`, the rendered prompt and the completion
