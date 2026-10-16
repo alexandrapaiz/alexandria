@@ -97,6 +97,20 @@ GATES = ("preflight", "rehearse")
 # `modal deploy` uploads an image.
 SPENDING = ("rehearse",)
 
+# Gates that are not Modal functions: local commands that need no credentials
+# and spend nothing, so they run first and fail fastest.
+#
+# `ingest` is here because it was the one scheduled app with no gate at all.
+# It calls no model, so `preflight` and `rehearse` are the wrong shape for it,
+# and docs/agents/press-rehearsal.md says exactly that in its closing section:
+# "What it lacks is an availability check on its feeds, which is a different
+# question with a different answer." This is that answer. On 2026-10-16 it
+# found seven of the fifty-three sources delivering nothing, the oldest silent
+# since 2019, with no deploy having ever been able to notice.
+LOCAL_GATES = {
+    "ingest": [["python3", "tools/feed_health.py"]],
+}
+
 
 def module_source(app: str, repo_root: pathlib.Path | None = None) -> str:
     root = pathlib.Path(repo_root or ROOT)
@@ -104,12 +118,15 @@ def module_source(app: str, repo_root: pathlib.Path | None = None) -> str:
 
 
 def gates_for(app: str, repo_root: pathlib.Path | None = None) -> list[str]:
-    """Which gates this app's module actually defines, in ladder order.
+    """Which Modal gates this app's module actually defines, in ladder order.
 
     Read off the source rather than declared beside it. `ingest` calls no model
-    and defines neither, so its ladder is a bare deploy, which is what ADR-12's
-    own chain says. A module that grows a `rehearse` gains the rung the day it
-    does.
+    and defines neither, which is what ADR-12's own chain says. Its ladder is
+    no longer bare, because `LOCAL_GATES` gives it the availability check that
+    asks the question a model gate cannot, but this function stays about the
+    Modal rungs: a local gate is not a `modal run` and the window check must
+    keep telling them apart. A module that grows a `rehearse` gains the rung
+    the day it does.
     """
     source = module_source(app, repo_root)
     return [gate for gate in GATES if f"\ndef {gate}(" in source]
@@ -118,13 +135,15 @@ def gates_for(app: str, repo_root: pathlib.Path | None = None) -> list[str]:
 def ladder(app: str, repo_root: pathlib.Path | None = None) -> list[list[str]]:
     """The commands to run for one app, in order, as argv lists.
 
-    The budget guard comes first and only for an app with gates, because it
-    asks whether a model request fits and an app that sends none has no request
-    to size.
+    Local gates come first: they need no credentials and no network round trip
+    to Modal, so a chain that is going to stop should stop on the cheapest
+    rung. The budget guard comes next, and only for an app with model gates,
+    because it asks whether a model request fits and an app that sends none
+    has no request to size.
     """
     module = APPS[app]
     gates = gates_for(app, repo_root)
-    steps: list[list[str]] = []
+    steps: list[list[str]] = [list(step) for step in LOCAL_GATES.get(app, [])]
     if gates:
         steps.append(["python3", "pipeline/budget.py"])
     steps += [["modal", "run", f"{module}::{gate}"] for gate in gates]
