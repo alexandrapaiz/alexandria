@@ -57,7 +57,18 @@ scanner found 26.1% of 42,447 scanned skills carried a vulnerability and
 Snyk's and from an infrastructure vendor's own tooling rather than a
 security-research firm's (docs/market/landscape.md). The why-pay argument
 does not change in kind, only in how many independent parties have now
-measured the same gap.
+measured the same gap. A fifth measurement, added 2026-10-16, changes the
+kind of evidence rather than the count: an academic paper ("Lost in
+Implicit Routing," arXiv 2610.18522) shows that as a public skill library
+grows past a few hundred entries, an agent's own ability to find the
+right skill collapses even when that skill is present in the list, recall
+falling from 73.6% to 27.4% at 1,000 irrelevant skills added. The first
+four measurements argue the open ecosystem is unsafe, mediocre, or
+already self-filtered by readers. This one argues that scale itself
+breaks naive delivery, which is a structural case for the scoped,
+evidence-attached delivery alexandria's paid tier already proposes to
+build (docs/ideas.md, "Scoped skill delivery by default"), not only a
+trust argument (docs/market/landscape.md).
 
 ## The price ladder (observed, 2026-09-18)
 
@@ -83,7 +94,9 @@ above the essay tier: Consensus Pro at $20/month ($12/month billed
 annually). A 2026-10-02 pass found aggregator sites reading a different
 figure, $15/month. A 2026-10-05 direct re-check of the same two sites
 found them back at $20/month, so the $15 reading is treated as a
-transient render rather than a correction (docs/market/landscape.md).
+transient render rather than a correction (docs/market/landscape.md). A
+2026-10-16 re-check held the same $20/month reading for a second
+consecutive week, the figure now looking settled rather than contested.
 Elicit Pro at $49/month (Elicit Scale at $169/month).
 Institutional-grade technical
 research goes further still: SemiAnalysis's retail newsletter is $500/year,
@@ -245,3 +258,11 @@ already this doc's framing and needs no change.
   (26.1% vulnerable, 5.2% likely malicious) as a fourth independent
   measurement behind the why-pay paragraph's curation argument. No
   change to $20/month. Nothing found this run argues for one.
+- 2026-10-16 (regular Friday ceremony): Consensus's $20/month reading
+  held for a second consecutive check, now looking settled. Added a
+  fifth measurement to the why-pay paragraph, the first that argues a
+  mechanism rather than adding to a count: "Lost in Implicit Routing"
+  (arXiv 2610.18522) shows skill-routing recall collapsing as a public
+  library grows, which argues for alexandria's proposed scoped-delivery
+  approach specifically, not only for curation in general. No change to
+  $20/month. Nothing found this run argues for one.

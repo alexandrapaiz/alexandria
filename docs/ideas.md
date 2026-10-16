@@ -15797,3 +15797,166 @@ nobody has to re-derive it:
   is measured rather than asserted.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-16 — A controlled study now measures the exact failure mode the open "Scoped skill delivery by default" proposal named (market seat)
+
+- Trigger: the "Scoped skill delivery by default" proposal above
+  (2026-09-18) has sat unactioned for four weeks. It was triggered by a
+  single HN commenter's question about whether context-scoping "works
+  on repo level." This run found a controlled measurement of the same
+  failure mode: "Lost in Implicit Routing: How LLM Agents Fail to Load
+  Relevant Skills at Scale" (arXiv
+  [2610.18522](https://arxiv.org/abs/2610.18522), posted 2026-10-13)
+  holds a fixed set of tasks and golden skills constant and adds
+  irrelevant skills to the library an agent chooses from. Loaded-skill
+  recall for the correct skill falls from 73.6% to 27.4% at 1,000
+  irrelevant skills added, and the rate at which the agent loads no
+  skill at all rises from 9.3% to 51.6%. Explicit pre-selection from the
+  same library holds recall at 73.9%, roughly unchanged
+  (docs/market/landscape.md, dated 2026-10-16).
+- What: not a request to build the scoping mechanism, which is the
+  engineer and skill seats' call on design and timing, but a request to
+  re-triage the existing proposal now that its trigger has gone from one
+  commenter's question to a measured number: at the library sizes
+  alexandria's own paid tier is built to reach, naive full-context skill
+  delivery is not a minor inefficiency, it is a majority failure to load
+  the right skill at all.
+- Whose call: engineer and skill seats, on whether this re-prioritizes
+  the existing proposal. The paper also names a possible first-step
+  mitigation (explicit pre-selection) worth reading before scoping the
+  work.
+- First step: read the paper's mitigation section (explicit selection
+  vs. masking irrelevant descriptions) before designing alexandria's own
+  scoping rule, since it reports a latency/coverage tradeoff between the
+  two approaches that a from-scratch design would otherwise rediscover.
+- Cost: $0 to read and re-triage. Building the mechanism is unscoped
+  engineering work, priced separately if and when it is picked up.
+- Status: proposed
+
+### 2026-10-15 — The Left-Behind Index is built and must not be linked until `contradicts` precision moves (frontend seat)
+- Trigger: sprint-2026-10-12 item 4 asked for this page and
+  `docs/research/briefs/2026-10-12.md` §5 measured the data under it at
+  **0.172 precision over the full population** of 33 edges, not a sample: 5
+  correct, 24 wrong, 4 unsure. The brief states the consequence in its own
+  words, "19 of 22 claims on the Left-Behind Index are not superseded", and
+  `docs/product/graph-quality.md:91` had already named this page as the
+  surface the number would decide.
+- What: the route is built, public, verified at three viewports at fifty
+  findings, and deliberately **not linked** from the nav or any page. The
+  charter's quality-claims gate says a claim whose row is `contradicted`
+  stops and goes back as a ledger note naming the claim and the surface, so
+  this is that note. The claim is "replaced when newer work overturns it"
+  (`docs/agents/quality-claims.md`, state *reports, does not replace*,
+  already public at `site/app/page.jsx:40`). The surface is
+  `site/app/left-behind/page.jsx`.
+  There is no filter available to this seat that would publish it clean.
+  Confidence carries no signal and is inverted at the top: precision is 0.19
+  in the band holding 22 of the edges and **0.0 in both bands above it**, so
+  raising the threshold in `site/lib/` makes the page worse while looking
+  like diligence. The fix is in `pipeline/interpret.py` and its prompt, which
+  is the engineer's lane, and the brief's §7 already carries the diff.
+- First step: the owner decides whether to merge the page unlinked, which is
+  what this pull request proposes, or to hold it entirely. Linking it is one
+  line and the diff is in the PR. The gate to watch is a re-measured
+  precision number from `tools/graph_audit.py --labels`.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — The Left-Behind Index has no approved words (frontend seat)
+- Trigger: the page needed an intro and no approved line under `docs/voice/`
+  covers this surface. `docs/voice/preferences/site-copy-2026-09-20.md`
+  carries approved lines for the home statement, the library heading and the
+  skills `/llms.txt` line, and nothing for this one. The owner's division of
+  2026-09-19 is that the writer drafts and this seat sets, so the gap is a
+  note rather than a sentence written at the keyboard.
+- What: the page ships with no intro paragraph. Its kicker is `Library` and
+  its heading is `Left behind`, which is vision §1's own name for this class
+  of finding rather than authored copy, and taste's standing rule that
+  headings are bare nouns with no explanatory subtitle is what it follows.
+  Two state lines are the only prose on the page and both are provisional:
+  `No finding is flagged.` and `The library could not be read.` They are
+  named constants at the top of the route so one edit replaces them.
+- First step: the writer seat drafts an intro and a ruling on the two state
+  lines, in a copy round rather than inside a visual PR. Worth noting for
+  that round: whatever the page says about these findings has to survive the
+  0.172 precision above, so the honest line may be about what the machine
+  flagged rather than about what the field abandoned.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — The Playwright pin in site/package.json has drifted off the container (frontend seat)
+- Trigger: the visual harness could not launch this run.
+  `site/package.json` carries `playwright: ^1.63.0`, which resolves to 1.63.0
+  and looks for `chromium_headless_shell-1243`. The agent container bakes
+  `chromium-1148`, which is 1.49.x, so the launch fails with
+  `Executable doesn't exist at /ms-playwright/chromium_headless_shell-1243/`.
+  The charter names `npx playwright@1.49.1` as the pin precisely because the
+  browsers are baked.
+- What: this run used 1.49.1 from a scratch directory outside the repository
+  and changed neither the package nor the Dockerfile, because the charter
+  says moving the pin is a Dockerfile change proposed in the ledger and never
+  an in-run install. Two numbers disagree and this seat should not pick the
+  winner on its own: the container may be stale, or the devDependency bump
+  may have been made for CI without anyone checking the baked browsers.
+- First step: whoever owns the container checks whether CI installs its own
+  browsers. If it does, the devDependency is free to move and the container
+  pin is the one to raise. If it does not, they should agree on one number
+  and write it in both places.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — The house grey measures 3.6:1, which is under AA for small text (frontend seat)
+- Trigger: the charter asks this seat to judge contrast failures, so the
+  number was computed rather than eyeballed. `--gray` (#86868b) on #ffffff is
+  **3.6:1**. WCAG AA wants 4.5:1 for text under 24px.
+- What: it is the house's standing secondary colour and it carries the page
+  kicker, the row metadata, the definition-list labels and the footer, at 11
+  to 13px, on every page. The new page uses it exactly where the house
+  already does and introduces no new instance of it, which is why this is an
+  observation with a number rather than a diff. Ban list entry 27 is the
+  related rule and it is about opacity standing in for a state, not about
+  this.
+- First step: an owner ruling. Moving the value is a one-line change in
+  `:root` and it touches every page at once, which makes it hers rather than
+  a polish diff. #6e6e73 clears 4.5:1 and stays in the same family.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-16 — Run reports have never landed, because the one field the workflow passes is a word and the column is a number (frontend seat)
+- Trigger: `python3 tools/board.py report --status success` at the end of this
+  run answered `503: the board's database is unreachable`, which is the second
+  sighting in 24 hours and is filed as
+  `INC-2026-10-16-every-run-report-fails-on-a-string-where-the-board-wants-a-number-and-the-error-blames-the-database`.
+  Four probes on one token inside one minute isolate it: `exit` of `0` and of
+  `"0"` both return 201, and `exit` of `"success"` and of `"failure"` both
+  return 503.
+- What: `run_payload` in `tools/board.py` sets `"exit": args.status`, and
+  `--status` is declared `choices=("success", "failure", "cancelled",
+  "skipped")` with the help text "GitHub's job.status". The board stores `exit`
+  as a number, so the single field the workflow step exists to pass is the
+  field the insert rejects. `cmd_report` then catches it, prints a
+  `::warning::` and returns 0, which is the right call for the job's exit code
+  and is why this has been invisible: the annotation sits inside a green job.
+  The consequence is named in that function's own comment, which says the PM's
+  standup reads run health off these statuses. Run health does not read wrong,
+  it reads empty, and L-A21 is the lesson that says empty and quiet look the
+  same from outside.
+- First step: a map from the four words to exit codes at the one place the word
+  enters the payload, so the workflow keeps GitHub's vocabulary and the server
+  keeps its number. Then the thing worth doing properly, which is that
+  `cmd_report` should distinguish a transport failure from a rejected payload:
+  a 503 it can keep swallowing, and a 4xx on a body it built itself is a bug in
+  this file and should be loud. A `--dry-run` that the server validates without
+  storing would also have made today's bisect free, because `/api/runs`
+  implements no delete and six probe rows are now permanent.
+- Second, and it is not this repository's: the endpoint answered "the board's
+  database is unreachable" while accepting six inserts from the same token in
+  the same minute. That sentence named a cause the evidence rules out and sent
+  yesterday's run of this seat to the wrong conclusion in writing. A type or
+  constraint failure reported as connectivity is worse than an opaque error,
+  because an opaque error gets investigated and a confident one gets believed.
+- Whose call: the engineer seat for `tools/board.py`, and HQ for the board's
+  error message. Neither is this seat's surface, and this entry is the handoff
+  written down.
+- Cost: $0.
+- Status: proposed

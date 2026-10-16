@@ -8,6 +8,21 @@ const BASE = "http://127.0.0.1:3000";
 const [, , OUT, SPECJSON] = process.argv;
 fs.mkdirSync(OUT, { recursive: true });
 const specs = JSON.parse(SPECJSON);
+// `page.evaluate` given a STRING evaluates it as an expression. So a spec that
+// passes "() => { rows[1].open = true }" does not open anything: it evaluates
+// to a function object, Playwright serialises that as undefined, and the run
+// gets a screenshot of the state it asked to change plus a probe that reads
+// `undefined`. Nothing errors. On 2026-10-15 that produced three frames of
+// closed rows labelled as open frames, and the only reason it was caught is
+// that the probe printed `undefined` where it should have printed a count.
+//
+// So both forms are accepted and a function is always called. A spec may pass
+// an expression, an arrow function, or an IIFE, and all three do the obvious
+// thing. This is the harness's job rather than the spec author's, because the
+// failure is silent and the spec author is a different run each week.
+const call = (src) =>
+  `(() => { const _f = (${src}); return typeof _f === "function" ? _f() : _f; })()`;
+
 const browser = await chromium.launch();
 for (const s of specs) {
   const vp = s.vp || { width: 1440, height: 900 };
@@ -43,7 +58,7 @@ for (const s of specs) {
     process.exit(1);
   }
   if (s.scroll) { await page.evaluate((y) => window.scrollTo(0, y), s.scroll); await page.waitForTimeout(700); }
-  if (s.eval) await page.evaluate(s.eval);
+  if (s.eval) await page.evaluate(call(s.eval));
   if (s.wait) await page.waitForTimeout(s.wait);
   const file = path.join(OUT, `${s.id}.png`);
   if (s.clip) {
@@ -57,7 +72,7 @@ for (const s of specs) {
   } else {
     await page.screenshot({ path: file });
   }
-  if (s.probe) console.log(`${s.id}:`, JSON.stringify(await page.evaluate(s.probe)));
+  if (s.probe) console.log(`${s.id}:`, JSON.stringify(await page.evaluate(call(s.probe))));
   console.log(`${s.id} -> ${file}`);
   await ctx.close();
 }

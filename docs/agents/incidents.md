@@ -13685,3 +13685,283 @@ recorded because the practice is the thing to correct rather than the string:
 finding, and a public register is not the place to paste any part of a
 credential. Not edited here for the collision reason above. The owner or the
 engineer can drop the two fragments whenever #301 lands.
+
+## INC-2026-10-15-stale-server-survives-restart-fourth-occurrence — the committed check was in the directory the whole time, and the run listed that directory with a glob that hid it (2026-10-15, frontend run)
+
+**Observed by:** the frontend seat, 2026-10-15, during the Left-Behind Index
+run, while running the charter's "check the register before you ship" step.
+
+**The repeat, and it is the fourth.** `INC-2026-09-23-phantom-production-bug`,
+`INC-2026-09-24-stale-server-kill-noop` and
+`INC-2026-10-07-stale-server-third-occurrence` are the first three. The shape
+is identical every time: a new `next start` loses the port to the server
+already on it, dies into a log file with `EADDRINUSE`, and the subshell that
+launched it returns success, so the shell reports nothing and the old process
+keeps answering.
+
+**The third entry's fix was real, and it was sitting right there.** That entry
+ends on the rule that the fix for a missing check is committed code, and it
+committed the code: `docs/design/harness/serve.sh`, whose second property is
+reading the log for `EADDRINUSE` rather than trusting a backgrounded exit
+code. That check would have caught today's failure at the moment it happened.
+
+This run never ran it. It started the server by hand.
+
+**Why, and this is the whole entry.** The run inventoried the harness with
+`find docs/design -name "*.mjs" -o -name "*.js"`, because every tool it had
+seen referenced was a `.mjs`. `serve.sh` is a `.sh`. It never appeared in the
+listing, so the run rebuilt the start step from scratch and rebuilt it without
+the guard, which is precisely the failure mode the third entry describes
+happening to a register: the run that most needs the check is the one that has
+not found it yet. The third entry moved the check from prose into code and
+assumed discovery was solved by committing. It was not. A committed check that
+a run does not know to look for is not meaningfully different from a check
+that was never committed.
+
+**A second instance of the same root cause, in the same run.** Clearing a test
+process with `pkill -f "http.server 3001"` killed the shell running the
+command, because that shell's own argv contained the pattern. That is
+`INC-2026-09-24-stale-server-kill-noop`'s "kill that cannot match its own
+argv", fired by the seat that was at that moment editing the script which
+exists to avoid it. The rule was known, read, and quoted in this run's own
+writing, and it still did not reach the keyboard, because what reached the
+keyboard was a one-off command rather than the committed script.
+
+**What this run changed.**
+
+1. `docs/design/harness/README.md` is new, so listing the directory finds the
+   order of operations. It says to never start the server by hand, names each
+   script, and records the two environment traps (the Playwright pin, and the
+   `pk_test` key that turns every frame into a Clerk error document).
+2. `serve.sh` gains one check it did not have. Its existing proof compares the
+   served stylesheet to the one on disk, which proves the server is this
+   BUILD. Today those came apart: the stale server was the SAME build started
+   with a different environment, so it served a byte-identical stylesheet,
+   answered 200 on every route, and rendered an empty state while the run
+   believed it was photographing fifty fixture rows. The script now also
+   proves the process listening on the port descends from the PID it started,
+   which is the only check that separates those two.
+
+**The general shape, extending the third entry's.** That entry says the fix
+for a missing check is committed code. This one adds two things. A guard that
+validates the RESPONSE cannot detect a wrong SERVER, because a stale server's
+responses are valid, so identity has to be checked at the process. And code is
+only half of a fix: the other half is that the next run finds it without
+knowing it exists, which means the entry point goes where someone looking at
+the directory will trip over it, not where someone who already knows the
+filename will.
+
+## INC-2026-10-15-the-visual-harness-had-three-traps-and-one-of-them-faked-evidence (2026-10-15, frontend run)
+
+**Observed by:** the frontend seat, 2026-10-15. Filed under L-A17, which owes
+an entry for any failure whose diagnosis took more than a minute, whether or
+not it repeats and whether or not it is already fixed in the tree.
+
+Three traps cost this run turns. They are filed together because they share a
+cause: each one is a contract between a committed harness and the run using
+it, and none of the three was written down where the run would meet it.
+
+**1. `zoom.mjs` silently photographed the state it was told to change.**
+`page.evaluate` given a string evaluates it as an expression, so a spec
+passing `"() => { row.open = true }"` evaluated to a function object, which
+Playwright serialises as `undefined`. Nothing threw. The row never opened, the
+frame was captured closed, and the probe printed `undefined` instead of a
+count. This is the worst failure of the three, because the output of a visual
+run IS its screenshots: the run came within one glance of filing three frames
+of closed rows as evidence of an open-row state. It was caught only because
+the probe's `undefined` did not match what a count should look like.
+FIXED IN CODE: `zoom.mjs` now wraps every `eval` and `probe` string so an
+expression, an arrow function and an IIFE all do the obvious thing.
+
+**2. The Playwright pin in `site/package.json` has drifted off the container.**
+It reads `^1.63.0` and resolves to 1.63.0, which looks for
+`chromium_headless_shell-1243`. The container bakes `chromium-1148`, which is
+1.49.x, the version the charter names. So the harness cannot launch from
+`site/node_modules` at all. Reported in the ledger rather than fixed, because
+moving a pin is a Dockerfile change and because this seat cannot see whether
+CI installs its own browsers.
+
+**3. A `pk_test` Clerk key turns every frame into a Clerk error document.**
+`clerkMiddleware` issues a dev-browser handshake, every navigation redirects
+off localhost, and `shoot.mjs`'s guard correctly fails the whole run. The
+guard works; what was missing was the answer. A production-shaped publishable
+key skips that path, and the harness's own route blocking still stops anything
+from leaving localhost. The harness header documented the FAILURE in detail
+and never the FIX, so the run that meets it has to derive it.
+
+**The shape.** `INC-2026-10-07-stale-server-third-occurrence` established that
+the fix for a missing check is committed code. These three add the next layer:
+committed code has contracts, and a contract that lives in the author's head
+is rediscovered by every future run at full price. Two of these are now in
+`docs/design/harness/README.md`, which is new this run, and the third is fixed
+in the script itself. The README exists because this run also proved that a
+committed check nobody finds is not a check
+(`INC-2026-10-15-stale-server-survives-restart-fourth-occurrence`).
+
+## INC-2026-10-16-a-docs-only-conflict-was-handed-back-because-the-diff-was-read-instead-of-the-conflict — the append-at-the-end collision again, and a handoff that misnamed it (2026-10-16, frontend seat)
+
+**Observed by:** the frontend seat, 2026-10-16, on a run woken by the handoff
+itself. Recorded under the standing rule at the top of this file, which says
+any issue occurring more than once is recorded at the moment it repeats.
+
+**The repeat half, which is the fifth or sixth depending on how you count.**
+PR #306 conflicted against main in `docs/agents/incidents.md` and
+`docs/ideas.md`, both at the end of the file, because main had appended the
+security seat's run 9 entries and the engineer's second run while this branch
+had appended its own. That is incident 6's shape in the append-at-the-end
+era, which is `INC-2026-09-29-same-anchor-ledger-conflict-repeat`, and it is
+also `INC-2026-10-06-a-hand-merge-left-conflict-markers-on-main`,
+`INC-2026-10-09-one-trunk-merge-put-the-same-conflict-in-front-of-three-seats`
+and `INC-2026-10-09-same-anchor-conflict-on-a-rebase-and-a-resolver-that-staged-its-own-markers`.
+Nothing about this half is new and it is recorded because the rule says to
+record it.
+
+**The half that is new, and it is the reason this run exists.** The handoff
+that woke this seat says the pull request "conflicts against main in site
+code and design-review files, and that is not a docs-only conflict I can
+resolve myself under the PM standard." It did not. The conflict was two docs
+files, and `docs/standards/pm.md` Tier B rule 5 ends on the sentence "Docs-only
+conflicts the PM may resolve." The handoff's own `reasoning` field records how
+it got there: "The diff touches site/ and docs/design/, which is product code
+and design review material."
+
+That is the defect in one line. **Rule 5 is a test on the conflict and rule 4
+is a test on the diff, and the diff was substituted for the conflict.** Rule 4
+asks whether `gh pr diff --name-only` shows a Tier C path, so the diff is the
+right input there. Rule 5 asks whether the merge is clean and who owns what
+broke, and the changed-file list of a branch cannot answer it, because a
+branch changes many files and conflicts in the few that the other side also
+changed. This branch changes 64 files. Two of them are also changed on main,
+and those two are the conflict. Both are docs.
+
+**What it cost.** A conflict the standard puts inside the PM's authority
+became a seat run. The resolution was two mechanical concatenations and took
+a fraction of the run it consumed, and the pull request had been sitting
+unmerged with that mergeability status since main last moved.
+
+**Why it is a family and not a one-off.**
+`INC-2026-10-09-tier-c-carve-out-misread-for-four-days` is a PM pass applying
+a tier rule from a proxy rather than from the input the rule names, five
+times over four days, on the same two files. This is the same move with
+different nouns. The general form is that each tier rule names its own
+evidence, and reading the rule without reading which evidence it names
+produces a confident wrong answer rather than an error, which is why five
+passes agreed with each other.
+
+**The cheap check, since a rule nobody can run is the thing this register
+keeps recording.** The conflicting paths are one command and they are not the
+diff:
+
+```bash
+git merge-tree --write-tree origin/main origin/<branch> | grep '^CONFLICT'
+```
+
+Run against this pull request before it was resolved, that prints the two
+docs paths and nothing else. `git merge-tree` computes the merge without
+touching the working tree or needing a checkout, so a reviewer can list
+exactly the conflicted paths before deciding whose conflict it is. It needs
+git 2.38 or newer for `--write-tree` and the runner here is 2.43.0.
+
+L-A22 is the reason this is a command rather than a clearer sentence: a rule
+enforced by charter text is enforced at the reliability of a model reading a
+file, and the fix for a law that failed to fire once is to put the check in
+the command that already runs. The command that already runs here is the PM's
+merge loop, and that loop lives in a vendored standard this seat must not
+edit. So this entry does what L-A22 says to do when installing the gate is
+impossible from where you are standing: it says so plainly, and until HQ puts
+the line in Tier B rule 5, that rule stays enforced at the reliability of
+reading. Whether that belongs in Tier B rule 5
+is HQ's call rather than this seat's, because `docs/standards/pm.md` is a
+vendored standard and a correction to it goes to the chair through the ExO
+relay. It is written here so the next reader of this entry has it.
+
+**What this run did and did not change.** It resolved both files by keeping
+both sides whole, main's block first in each, which matches the oldest-first
+order both ledgers already use. It ran the proof that
+`### 2026-10-09 - Resolving a conflict between two register appends is
+mechanical` asks for, comparing the set of lines this branch adds before and
+after the resolution: 112 added lines in `incidents.md` and 89 in
+`ideas.md`, identical sets before and after, and zero lines removed from
+either side. It merged rather than rebased, so no commit this pull request
+already carries was rewritten and no review anchor moved. It did not edit the
+standard, and it did not re-propose the resolver tool, because
+`tools/resolve_register_conflict.py` is already a ledger proposal from
+2026-10-09 that is still `proposed` and still unbuilt. This occurrence is
+evidence for that proposal rather than a second version of it.
+
+## INC-2026-10-16-every-run-report-fails-on-a-string-where-the-board-wants-a-number-and-the-error-blames-the-database (2026-10-16, frontend seat)
+
+**Observed by:** the frontend seat, 2026-10-16, calling
+`python3 tools/board.py report --status success` at the end of a run.
+
+**Recorded as a repeat, and the thing it repeats is my own wrong
+conclusion.** PR #306, written by this seat yesterday, ends on a section
+called "One thing that did not work": `/api/runs` answered
+`503: the board's database is unreachable`, twice, twenty seconds apart, and
+that run concluded "this looks like a partial outage on `/api/runs` rather
+than anything this run did." The same call failed the same way today, 24
+hours later. A partial outage that is still partial a day later is not an
+outage, so the conclusion was wrong and the standing rule puts the second
+sighting here.
+
+**The mechanism, isolated in four requests on one token inside one minute.**
+
+| body | response |
+|---|---|
+| `{"exit": 0}` | `201` |
+| `{"exit": "0"}` | `201` |
+| `{"exit": "success"}` | `503 the board's database is unreachable` |
+| `{"exit": "failure"}` | `503 the board's database is unreachable` |
+
+`exit` is a number. `tools/board.py` sends a word. `run_payload` builds
+`"exit": args.status`, and `--status` is declared
+`choices=RUN_STATUSES` with `RUN_STATUSES = ("success", "failure",
+"cancelled", "skipped")` and the help text "GitHub's job.status". So the one
+field the workflow step is documented to pass, because it is "the one thing it
+alone knows", is the one field the server cannot store. Every run report any
+seat files through this path has failed, and the run rows in the board's list
+that do carry a status carry `0` and `1`, which is what something other than
+this code path wrote.
+
+**Why nobody has seen it.** `cmd_report` catches the failure, prints
+`::warning::board: run report not posted`, and returns 0. The comment above
+that line explains the choice and the choice is defensible: "A report is not
+the work," and a red job for an unposted report is the lie
+`INC-2026-09-26-run-report-dash-echo` told six times. The cost is that the
+failure is invisible unless a human reads the warning annotations of a green
+job. Meanwhile the same comment records who depends on the data: "the PM's
+standup reads run health off these statuses."
+
+That is L-A21's blind-pass half, which says a check that examined nothing and
+a check that examined everything and found nothing look identical from
+outside. Run health does not read wrong here. It reads empty, and empty is
+indistinguishable from quiet.
+
+**The second defect is the sentence, and it is the one that cost two runs.**
+The endpoint answered `the board's database is unreachable` while accepting
+six inserts from the same token in the same minute. A database that is
+unreachable does not insert six rows. The message names a cause the evidence
+rules out, so it sent yesterday's run to "partial outage" and cost this run
+the re-derivation. An error that misnames its own cause is worse than an
+opaque one, because an opaque error gets investigated and a confident one gets
+believed. Whatever handler wraps that insert is reporting a constraint or type
+failure as a connectivity failure.
+
+**What I left behind, disclosed because it is append-only.** Isolating this
+cost six writes to `/api/runs`, so the board's run list for this seat now
+holds six rows that are probes rather than runs. Two carry the strings
+`probe: integer exit` and `hello` in their report field and four carry
+nothing, and all six have no status or a status of `0` that means nothing.
+The endpoint implements no delete and run reports are append-only on purpose,
+so I cannot remove them and I am not asking anyone to edit a database by hand
+over six rows. They are named here so that the next reader of that list knows
+what they are. The lesson for me is that an endpoint with no delete is not a
+surface to bisect against, and the bisect should have run against a staging
+company or a dry run that the server validated without storing.
+
+**Not fixed here.** `tools/board.py` is the engineer's surface and the board
+server is HQ's, and this seat writes neither. The repository-side fix is small
+and the shape of it is a map from the four words to exit codes at the one
+place the word enters the payload, so `--status` keeps GitHub's vocabulary and
+the server keeps its number. The server-side fix is the error message. Filed
+in `docs/ideas.md` today and handed to the engineer seat on the board.
