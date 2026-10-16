@@ -13685,3 +13685,100 @@ recorded because the practice is the thing to correct rather than the string:
 finding, and a public register is not the place to paste any part of a
 credential. Not edited here for the collision reason above. The owner or the
 engineer can drop the two fragments whenever #301 lands.
+
+## INC-2026-10-15-the-generator-was-graded-on-one-sample-while-a-second-sat-in-the-database — eleven grades patched the wording of a gate whose own counterexample was one table over (2026-10-15, writer seat)
+
+**What happened.** The writer seat has graded `2026-W40` eleven times and has
+patched the generator's link-coverage rule three times, each patch aimed at a
+print carrying 3 links across 13 named works. On 2026-10-15 the grade read
+`press_rehearsals` id 4 for the first time as prose rather than as a source of
+`payload_stats`. That row is the same week, the same model `kimi-k2.6`, and the
+same `prompt_sha` `c48d09624161`, written five and a half hours before the
+send. It carries 13 links, 10 of them inside the three body sections where the
+published issue carries none, and its reading list recommends three papers that
+appear nowhere else in the document against the published list's three that
+were each described at length in the section directly above.
+
+```
+$ psql "$NEON_RO_URL" -c "select id,week,model,prompt_sha,created_at
+      from press_rehearsals where id=4"
+  4 | 2026-W40 | kimi-k2.6 | c48d09624161 | 2026-10-05 03:36:46+00
+$ awk '/^## /{sec=$0} /\[full text\]/{print sec}' <body> | sort | uniq -c
+  published   3 in the reading list, 0 in the three body sections
+  rehearsal   3 in the reading list, 10 in the three body sections
+```
+
+**Why it is a repeat.** This is the fourth time this seat's procedure has
+graded the wrong artifact in the same shape, and the canon already numbers the
+first three in its own words: which copy
+(`INC-2026-09-30-standing-defect-unverified-for-three-grades`), which
+generator read forwards (2026-10-10), and which edition
+(`INC-2026-10-12-the-grade-could-not-tell-an-edition-from-an-archive`). Each
+was a check that read the thing in front of it without asking whether that
+thing was the thing it was supposed to read. This one is which sample. The
+artifact was the right artifact and a reader received it, and the question the
+procedure never asked is whether one print can carry information about a gate
+at all.
+
+**The cost, stated as the thing to learn.** A merged patch to a gate is
+evaluated on the next print. Two prints of the byte-identical file differ 13 to
+3 on the measure three of those patches were aimed at, so the spread between
+two runs of one wording is wider than the gap any of the three was closing.
+Those three patches may all be right. Nothing in the evidence this seat had
+collected could have told.
+
+**The fix, and it is in this pull request.** `docs/voice/canon.md` gains one
+question after the three shas: where a `press_rehearsals` row carries the
+graded week and the artifact's own `prompt_sha`, it is a second sample of the
+identical generator, the grade measures both, and a verdict recommending a
+further wording of a gate says what the comparator showed first. Where no such
+row exists the grade says so in one line, because an absent comparator is a
+fact about the deploy ladder rather than a step somebody skipped.
+
+**The structural half, filed rather than fixed.** `rehearse()` is pipeline
+code and this seat never writes it. It exists to answer "does one real call
+work" as the deploy ladder's third gate per `docs/agents/press-rehearsal.md`,
+it mails nobody, and it costs about a nickel, so nothing reads its prose by
+design. The press is therefore already paying for a second candidate of every
+issue and discarding it unexamined. Filed in `docs/ideas.md` for the engineer
+as a comparator rather than a judge: count links against named works and count
+reading-list picks that appear above the list, on both bodies, and flag or
+refuse the send where the rehearsal wins. Ban list entry 96's ask for a
+pipeline-side link-coverage check is its sibling and is 10 days open.
+
+## INC-2026-10-15-a-fifth-generator-gate-asked-for-a-reading-and-never-failed — the reading-list overlap check, deployed, complete, and violated by every pick in the print (2026-10-15, writer seat)
+
+**What happened.** `2026-W40`'s reading list carries three picks and all three
+were described at length in the section directly above it. The rule against it
+was in the deployed generator at `prompts/digest.md:949` of `3bbf430`, in its
+own words: "A paper this issue has already covered at length is not a pick.
+[...] A paper covered anywhere above is covered. Drop the overlap and print
+what remains, even when what remains is one paper or none." The payload offered
+ten deep reads, so seven candidates the issue had not covered went unprinted
+while every slot went to one it had.
+
+**Why it is a repeat.**
+`INC-2026-10-14-two-generator-gates-asked-for-a-reading-and-never-failed`
+recorded four gates of exactly this class one day earlier: deployed, correct in
+their own words, never failed, each asking somebody to look rather than to
+count. This is the fifth, and it is the sharpest, because the identity the gate
+asks the writer to recognise is one the artifact does not print. The body names
+a paper by a short written lead and the reading list names it by its full
+italic title, under two different format rules of the same file, so one piece
+of work carries two strings by design and there is nothing to compare.
+
+**The evidence that the wording was never the constraint.** The same file and
+the same model, five and a half hours earlier, obeyed the rule in every slot
+(`press_rehearsals` id 4, picks GAVEL, Magenta and Just-In-Time Agent Memory,
+each appearing exactly once in the whole document). One wording, two runs, one
+clean and one failing three times over. That is L-A9 in
+`docs/standards/lessons.md`, recording a rule is not enforcing it, in the
+position where a gate is already supposed to be the enforcement.
+
+**The fix, and it is in this pull request.** Ban list 115, patched the same day
+at the overlap check, which now compares each candidate against the named-works
+list the link, grade and attribution gates already build, matching on the
+payload's url where there is one and on the paper's own title where there is
+not. The generator already groups candidates by paper in three other places
+before anything is chosen, at `:839`, `:914` and `:1334`. This was the fourth
+place it needed to and the only one pointed at the finished prose.
