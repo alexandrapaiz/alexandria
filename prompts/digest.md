@@ -1190,7 +1190,18 @@ they bind every item at every cadence. The format above had no place to put
 one, so a print of 2026-09-30 carried a grade on every section and none on
 any of its three picks, which is the one part of the issue asking the reader
 for an hour of their time. Say what this work cannot establish, inside the
-entry's own sentence and never as a second sentence stapled behind it. How
+entry's own sentence and never as a second sentence stapled behind it.
+**That has failed on every entry of both prints of 2026-10-05, six of six, so
+it is a count here rather than a sentence you are trusted with.** Read each
+finished entry and find the full stop before the grade. Where there is one,
+the grade is stapled and the entry is not finished: fold the limit into the
+clause that makes the recommendation, so the reader meets what the work cannot
+establish in the same breath as the reason to read it. The target is zero
+stapled grades and there is no budget. The shape that fails is a decision
+sentence, then a sentence counting the units of evidence, then a sentence
+assessing them, which is three sentences doing what one does, and all six
+entries took it.
+How
 many groups have done this, how much of the field it was tested on, and
 whether anybody outside the group has reproduced it: those are the facts that
 decide whether the hour is worth it, and the entry that withholds them is
@@ -1223,9 +1234,21 @@ available by moving up a line.
 Write each line as its own sentence instead, and let the shape follow what
 the decision actually is. One line can put the choice as a question the
 reader is already asking. One can name the thing they are about to build
-wrong. One can say what they will stop doing. In a subject no payload will
-ever hand you, so that copying it is obviously wrong: "The scheduling maths
-is in section 4 and it is the part nobody gets right by intuition." Then
+wrong. One can say what they will stop doing.
+**A third specimen stood here and is deleted, and it is the one that was
+printed.** It was a sentence about where in a paper the hard part sits,
+offered with the defence that no payload would ever hand you that subject, so
+copying it would be obviously wrong. The print of 2026-10-05 set it as the
+first line of its reading list, word for word, because the day's payload
+handed it a paper whose section 4 really is scheduling maths. The defence was
+the subject and the subject is the one thing a payload controls. Two
+specimens in this slot have already been deleted for this, the heading frame
+above and "Worth the hour if you are", and the reason given for both holds for
+this one without a word changed: a phrase quoted inside the slot the model
+writes into is not a prohibition, it is the nearest available draft. So the
+three shapes above are described and never drafted, and nothing in this slot
+is ever handed to you as a sentence you could print.
+Then
 count, because this is the one section where every entry sits next to its
 neighbours and the repetition is visible on the page: no two entries in an
 issue open on the same words, and no two take the same grammatical shape.
@@ -1678,9 +1701,9 @@ the rule's question to the thing in front of you.
   and three of them were those standing lines, so its honest count is two:
   paragraphs, and one line standing alone. That whole second kind is a single
   sentence, "Three papers this week test what happens when you push the agent
-  stack in directions no benchmark yet covers", and the collective-noun rule
-  further down this file requires that sentence rewritten, because four items
-  follow a count of three. Rewrite it and keep the line. Deleting it takes the
+  stack in directions no benchmark yet covers", and the counting gate further
+  down this file requires that sentence rewritten on its arithmetic half,
+  because four items follow a count of three. Rewrite it and keep the line. Deleting it takes the
   issue to one kind, which is the failing state this count exists to catch, so
   where a line standing alone is the only one on the page, no other rule in
   this file may be satisfied by removing it. The
