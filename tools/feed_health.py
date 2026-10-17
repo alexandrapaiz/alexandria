@@ -143,10 +143,11 @@ KNOWN_DEAD = {
         "with 100 items at 0.1 days, so this is a duplicate of a feed that "
         "moved. Retire."
     ),
-    "owasp-genai": (
-        "HTTP 403, with a browser user agent too. Blocked rather than gone. "
-        "Needs either a different path or the decision to drop it."
-    ),
+    # owasp-genai was here and is not dead. Removed 2026-10-17 by the run
+    # that re-measured it: 200 with 10 items, newest 8.6 days old, through
+    # the transport `pipeline/ingest.py` uses. The 403 that put it on this
+    # list was this file's httpx client being refused, which is what
+    # `confirm_with_production_transport` now rules out before a verdict.
 }
 
 ENTRY_OPEN = re.compile(rb"<(?:item|entry)[\s>]", re.IGNORECASE)
@@ -362,6 +363,35 @@ def classify(items: int, method: str, newest: str | None,
 
 # ------------------------------------------------------------------ fetching
 
+def confirm_with_production_transport(url: str) -> tuple[bytes | None, str]:
+    """Fetch the way `pipeline/ingest.py` does, and say what happened.
+
+    Returns (body, detail). `body` is None when this transport failed too,
+    and then `detail` says how, so a recorded failure carries both answers
+    rather than one.
+
+    `feedparser.parse(url)` is what ingest calls and `feedparser` fetches
+    with `urllib.request`, so this uses `urllib.request` directly: it needs
+    the raw bytes for `count_items` and `newest_date`, and going through
+    feedparser would hand back a parsed struct instead. The transport is the
+    same one, which is the only part that matters here.
+    """
+    import urllib.error
+    import urllib.request
+
+    request = urllib.request.Request(
+        url, headers={"User-Agent": "alexandria-feed-health/1.0 (+docs/agents/press-rehearsal.md)"})
+    try:
+        with urllib.request.urlopen(request, timeout=TIMEOUT) as response:
+            if response.status != 200:
+                return None, f"HTTP {response.status} to urllib as well"
+            return response.read(), "200 to urllib"
+    except urllib.error.HTTPError as exc:
+        return None, f"HTTP {exc.code} to urllib as well"
+    except Exception as exc:  # noqa: BLE001 - one verdict for any transport failure
+        return None, f"{type(exc).__name__} to urllib as well: {exc}"
+
+
 def check_one(source: dict, client) -> dict:
     """Fetch one source and judge it. Never raises, so one dead host cannot
     end the census before it reaches the rest."""
@@ -378,23 +408,54 @@ def check_one(source: dict, client) -> dict:
         "verdict": None,
         "detail": "",
     }
+    result["transport"] = "httpx"
+    body = None
     try:
         response = client.get(source["url"], timeout=TIMEOUT,
                               follow_redirects=True)
     except Exception as exc:  # noqa: BLE001 - any transport failure is one verdict
-        result["verdict"] = "unreachable"
-        result["detail"] = f"{type(exc).__name__}: {exc}"
-        return result
+        result["status"] = None
+        failure = f"{type(exc).__name__}: {exc}"
+    else:
+        result["status"] = response.status_code
+        if response.status_code == 200:
+            body = response.content
+            failure = None
+        else:
+            failure = f"HTTP {response.status_code}"
 
-    result["status"] = response.status_code
-    if response.status_code != 200:
-        result["verdict"] = f"http-{response.status_code}"
-        result["detail"] = f"HTTP {response.status_code}"
-        return result
+    if body is None:
+        # Confirm with the transport production uses before calling a source
+        # dead. INC-2026-09-20's own ruling is "before changing a request to
+        # fix an error, run the unchanged request again", and this adds the
+        # half that entry could not have known: the request has to be the
+        # one `pipeline/ingest.py` makes. It calls `feedparser.parse(url)`,
+        # which fetches with `urllib.request`, and this file fetches with
+        # `httpx`. On 2026-10-17 `genai.owasp.org/feed/` answered 403 to
+        # httpx under five different user agents and 200 with ten items,
+        # newest 8.6 days old, to urllib. So the verdict was about the client
+        # rather than about the feed, and it had already reached `sources.yaml`
+        # as `MEASURED DEAD` and the ledger as a retirement proposal.
+        confirmed, detail = confirm_with_production_transport(source["url"])
+        if confirmed is not None:
+            body = confirmed
+            result["status"] = 200
+            result["transport"] = "urllib"
+            result["detail"] = (
+                f"{failure} to httpx, 200 to urllib, which is how "
+                f"pipeline/ingest.py fetches. Judged on the urllib answer."
+            )
+        else:
+            result["verdict"] = (
+                "unreachable" if result["status"] is None
+                else f"http-{result['status']}"
+            )
+            result["detail"] = f"{failure}; and {detail}"
+            return result
 
     if source["kind"] == "json":
         try:
-            payload = response.json()
+            payload = json.loads(body)
         except Exception as exc:  # noqa: BLE001
             result["verdict"] = "empty"
             result["detail"] = f"200 but not JSON: {type(exc).__name__}: {exc}"
@@ -406,20 +467,25 @@ def check_one(source: dict, client) -> dict:
             result["detail"] = "200 with an empty JSON payload"
         return result
 
-    items, method = count_items(response.content)
-    newest = newest_date(response.content)
+    items, method = count_items(body)
+    newest = newest_date(body)
     verdict, age = classify(items, method, newest,
                             expect=source.get("expect"))
     result.update(items=items, method=method, newest=newest, age_days=age,
                   verdict=verdict)
+    note = ""
     if verdict == "empty":
-        result["detail"] = "200 with no items, which ingest reads as nothing"
+        note = "200 with no items, which ingest reads as nothing"
     elif verdict == "malformed":
-        result["detail"] = "strict XML parse failed, items counted crudely"
+        note = "strict XML parse failed, items counted crudely"
     elif verdict in ("stale", "dead-stale"):
-        result["detail"] = f"newest item is {age} days old"
+        note = f"newest item is {age} days old"
     elif verdict == "archive":
-        result["detail"] = f"archived on purpose, newest item {age} days old"
+        note = f"archived on purpose, newest item {age} days old"
+    if note:
+        # The transport note, when there is one, is kept rather than replaced.
+        # It is the reason the verdict is trustworthy at all.
+        result["detail"] = f"{result['detail']}. {note}" if result["detail"] else note
     return result
 
 
