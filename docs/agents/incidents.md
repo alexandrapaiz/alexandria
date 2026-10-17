@@ -13965,3 +13965,117 @@ and the shape of it is a map from the four words to exit codes at the one
 place the word enters the payload, so `--status` keeps GitHub's vocabulary and
 the server keeps its number. The server-side fix is the error message. Filed
 in `docs/ideas.md` today and handed to the engineer seat on the board.
+
+## INC-2026-10-17-a-403-was-recorded-as-a-measured-death-and-the-gate-never-asked-the-production-client — the second time this org read an HTTP status as a fact about a source (2026-10-17, engineer seat)
+
+Recorded under the standing rule. `INC-2026-09-20-the-arxiv-406-is-rate-
+limiting-wearing-the-wrong-status-code` is the same failure and its closing
+paragraph names the next place it would happen: "This tool is not the only one
+that talks to a free API on someone else's terms ... and both should be read
+against this entry the next time either misbehaves."
+
+**What happened.** `tools/feed_health.py` shipped on 2026-10-16 and its first
+census judged 53 sources. One of them, `owasp-genai`, came back `HTTP 403`.
+That verdict was written into three places the same day: `KNOWN_DEAD` in the
+tool, a comment in `sources.yaml` reading `MEASURED DEAD 2026-10-16: HTTP
+403, with a browser user agent too, so it is blocked rather than gone`, and a
+ledger entry asking the owner to rule on retiring five sources.
+
+The source was never dead. Re-measured today it answers 200 with 10 items,
+newest 8.6 days old, and its title is `OWASP Gen AI Security Project`. The
+403 is real and it is about the client. `tools/feed_health.py` fetches with
+`httpx`; `pipeline/ingest.py`, the job the gate exists to guard, fetches with
+`feedparser.parse(url)`, which uses `urllib.request`. Today's probe put five
+user agents through httpx, including a current Chrome string and no user
+agent at all, and got 403 and a 7,355-byte challenge page every time. urllib
+got 200 and 208 KB on the first try with any of them. So the blocking is on
+the client rather than on the header, which is why yesterday's "with a
+browser user agent too" looked like a thorough check and settled nothing.
+
+**Why it repeated.** The 2026-09-20 ruling was "before changing a request to
+fix an error, run the unchanged request again", and that is where the lesson
+stopped. The new tool did run the request again, twice, with different
+headers. What it never did was run the request the way production runs it. A
+gate whose transport differs from the transport of the thing it guards is
+measuring a different question, and it can be wrong in both directions: a
+source httpx is refused on reads as dead while ingest reads it fine, and a
+source httpx can read while feedparser cannot would pass the gate and deliver
+nothing.
+
+**What it cost, and what it nearly cost.** Nothing in production: ingest kept
+reading the feed the whole time, because ingest was never the thing that was
+confused. The near miss is the register. A retirement proposal naming a live
+tier-d security feed was in front of the owner for a day, with the word
+MEASURED in front of it, and ADR-7 makes retiring a source her call, so the
+next step after that proposal is a deletion that cannot be undone by
+re-measuring. A wrong number is cheap. A wrong number with a measurement date
+on it is expensive, because the date is what stops the next reader from
+checking.
+
+**The fix.** `check_one` now confirms any non-200 or transport error against
+the production transport before it records a failure, reports which client
+answered in the result, and keeps both answers in the detail when neither
+works. `owasp-genai` is out of `KNOWN_DEAD`, the `sources.yaml` comment is
+corrected rather than deleted, and six tests in
+`tests/test_feed_health.py` drive the new path, including the one that asserts
+a healthy source never pays for the second fetch. Today's census: 49 of 53
+delivering, 0 unrecorded failures, and the list the owner is asked to rule on
+is four rather than five.
+
+**What the org should take from it.** A status code is evidence about a
+request, not about a source. Where a check exists to predict what a job will
+see, it has to make the job's request, and the first version of any such
+check should be read against that test before it is believed. The same
+question is open elsewhere and is not fixed here: `tools/check_issue_
+citations.py` calls Semantic Scholar and arXiv with its own client, and
+`pipeline/weekly.py`'s citation loop calls Semantic Scholar with another, so
+neither can currently tell "this service is refusing me" from "this paper is
+not there". Filed in `docs/ideas.md` today rather than changed, because it is
+a separate surface with separate tests.
+
+**One measurement worth keeping from the same probe.** The `substack.com`
+apex host refuses this runner on both clients, consistently, with 403.
+Exactly one entry in `docs/market/landscape.md` sits on it, TheSequence, so
+that entry's `Last observed` date can never be refreshed by an agent on this
+host, and a seat that tries will read the refusal as the competitor being
+gone. The nuance is worth the sentence it costs: Latent Space and The
+Pragmatic Engineer are Substack publications on their own domains and both
+answer 200 to both clients, so this is about the apex host rather than about
+the platform, and a check that generalised it to "Substack" would be wrong
+about two entries out of three. That is the same mistake one level out and it
+has no owner yet, so it is in the ledger today.
+
+## INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days — item 17 is still unapplied and the set it waives has doubled since it was staged (2026-10-17, engineer seat)
+
+Recorded under the standing rule, as another occurrence of
+`INC-2026-10-13-the-uncovered-set-grew-again-and-this-time-it-is-the-payments-
+guards`. The class is not new and the count is.
+
+**What happened.** This run added `tests/test_ledger.py`, 26 cases over the
+parser that now carries a blocking ratchet on `docs/ideas.md`.
+`tests/test_ci_coverage.py` refused it, correctly, because no workflow runs
+it. The documented options are a step in `.github/workflows/checks.yml`, which
+no seat's token may write, applying the staged replacement in
+`.github/workflows-pending/checks.yml`, which needs the same hand, or pinning
+it with a reason. It is pinned with a reason.
+
+**The number, which is the reason to file.** Reasoned pins added since the
+staged fix was written on 2026-10-07: `test_deploy_gate.py` (2026-10-08),
+`test_polar.py` and `polar.test.mjs` and `test_institution_backfill.py`
+(2026-10-13), `test_press_watch.py` and `test_digest_quality.py` (2026-10-14),
+`test_feed_health.py` (2026-10-16), `test_ledger.py` (today). That is eight
+files in ten days, every one of them added by a seat following the documented
+procedure exactly. The gate is working, the pin is honest, and the set it
+waives grows every time a seat ships a test, which means the share of this
+repository's suite that reports on a pull request falls a little every day:
+14 of 56 files when this run started and 14 of 57 now.
+
+**Not fixed here, and this is the clause that matters.** Today's new pin is
+the first one whose test guards a *blocking* gate. `tools/check_registers.py`
+now fails on a pull request that appends a ledger entry with no readable
+status, and the test proving it fails on exactly that cannot run on a pull
+request. A ratchet nobody runs is a ratchet that only ratchets when a seat
+happens to run the suite by hand, which this seat does daily and no other
+seat is required to. That is worth one line in the handoff that already asks
+headquarters to apply item 17, and it is the second gate in this repository
+with that shape.

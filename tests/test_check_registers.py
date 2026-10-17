@@ -95,20 +95,73 @@ def test_distinct_incident_ids_pass(registers):
 
 # ---------------- the ledger contract, which only warns ----------------
 
+#: The contract's own shape, `### YYYY-MM-DD — name`. These fixtures used to
+#: read `### An idea`, which no entry in the ledger has ever looked like, and
+#: that is why the checker's blind spot survived them: a heading with no date
+#: is not an entry to anything that reads the file, so a fixture written that
+#: way cannot exercise the entry walk at all.
+HEAD = "### 2026-10-17 — An idea"
+
+
 def test_a_status_outside_the_contract_warns_and_does_not_block(registers):
     """The entry belongs to another seat, so this reports and does not block."""
-    write(registers, "docs/ideas.md", "### An idea\n- Status: mostly moot as of run 3\n")
+    write(registers, "docs/ideas.md", f"{HEAD}\n- Status: mostly moot as of run 3\n")
     blocking, warnings = checker.check(registers)
     assert blocking == []
     assert len(warnings) == 1
-    assert "'mostly'" in warnings[0]
+    assert "unknown-status" in warnings[0]
+    assert "mostly moot as of run 3" in warnings[0]
 
 
 @pytest.mark.parametrize("status", sorted(checker.VALID_STATUSES))
 def test_every_status_the_contract_names_is_accepted(registers, status):
-    write(registers, "docs/ideas.md", f"### An idea\n- Status: {status}\n")
+    write(registers, "docs/ideas.md", f"{HEAD}\n- Status: {status}\n")
     _, warnings = checker.check(registers)
     assert warnings == []
+
+
+def test_an_entry_with_no_status_line_at_all_is_reported(registers):
+    """The class the old status walk could not see, and 51 entries are in it."""
+    write(registers, "docs/ideas.md", f"{HEAD}\n- What: a paragraph and no verdict\n")
+    blocking, warnings = checker.check(registers)
+    assert blocking == []
+    assert len(warnings) == 1
+    assert "no-status" in warnings[0]
+    assert "invisible to every status filter" in warnings[0]
+
+
+def test_an_empty_status_is_reported(registers):
+    """`- Status:` with nothing after it matched no word, so it matched nothing."""
+    write(registers, "docs/ideas.md", f"{HEAD}\n- Status:\n")
+    _, warnings = checker.check(registers)
+    assert len(warnings) == 1
+    assert "empty-status" in warnings[0]
+
+
+def test_a_heading_with_no_date_is_reported(registers):
+    """Not an entry to the parser, so not an entry to any consumer either.
+
+    Two warnings rather than one, and the second is the interesting one: a
+    status line under a heading the parser cannot read belongs to no entry, so
+    it is a line that answers a grep for a verdict while being attached to
+    nothing. That is the over-count and the under-count in one entry.
+    """
+    write(registers, "docs/ideas.md", "### An idea\n- Status: proposed\n")
+    blocking, warnings = checker.check(registers)
+    assert blocking == []
+    assert len(warnings) == 2
+    assert "heading with no date" in warnings[0]
+    assert "makes a grep over-count" in warnings[1]
+
+
+def test_prose_that_reads_like_a_status_is_reported(registers):
+    """The over-count half: this is what put two inventions in a grep's answer."""
+    write(registers, "docs/ideas.md",
+          f"{HEAD}\n- What: the owner wrote Status: accepted in a comment\n"
+          "- Status: proposed\n")
+    _, warnings = checker.check(registers)
+    assert len(warnings) == 1
+    assert "makes a grep over-count" in warnings[0]
 
 
 # ---------------- a register that went missing ----------------
