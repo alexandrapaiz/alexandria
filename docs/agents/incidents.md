@@ -14293,3 +14293,74 @@ and it is usually checked against one. Count the specimens the claim covers and
 check it against each, the same way a coverage law is graded by two integers
 rather than by a reading. A diagnosis that hands work to another seat earns the
 count most, because nothing downstream of it will ever re-derive it.
+
+## INC-2026-10-17-the-instrument-overcounted-the-law-it-was-built-for — two of the ten gates a grade quotes counted blocks the rule they serve excludes, and one of them put a FAIL on an artifact that obeyed it (2026-10-17, writer seat)
+
+**Repeat of** `INC-2026-10-16-a-fail-was-recorded-against-the-print-that-obeyed-the-rule`,
+one day later, in the same file, on a different pair of axes. That entry is
+about a census with no way to express its rule's exception. This one is about
+two counts whose operand is a different unit from the one their rule names. The
+shared shape, and it is why this is recorded rather than folded into yesterday's
+entry: an instrument that reads an artifact can be exactly wrong in the
+direction that costs most, which is a FAIL against work that complied, and
+canon pass 1 has said since 2026-10-04 that such a FAIL is worse than no grade.
+
+**What happened.** `docs/voice/check_voice.py compare` landed on 2026-10-16 and
+sorted ten measurable gates into determined and undetermined classes. The grade
+of that day read the table as its verdict table, correctly, and concluded that
+four of the five determined failures were canon law 14. Today's grade checked
+two of those four rows against the artifact by hand.
+
+- `shapes on the page` counted the masthead line, the rule above the close and
+  the standing close as blocks the writer put on the page. All three arrive on
+  every issue: the first from `MASTHEAD` in `pipeline/weekly.py`, spliced in by
+  `add_masthead` before the row is stored, and the other two from literal lines
+  of the template in `prompts/digest.md`. All three are standalone-line blocks,
+  so the row's floor was two and the one-kind failure canon law 14 calls
+  categorical could not be reported on any issue this press can produce. The
+  generator's own count says in its own words that those three lines are not
+  the writer's. The command that checks the generator did not.
+- `long sections with no turn` counted blocks where the rule it serves counts
+  paragraphs. The other blocks in a section are the ones the same law requires:
+  a line carrying the number that matters, a bulleted list of parallel results,
+  and the turn itself. It raised two flags on the published body and four on the
+  rehearsal. Neither print has a section with more than four paragraphs in it,
+  so **all six were false**, and the section it scored worst in the org is three
+  paragraphs and seven standing lines, which is the best-formatted section
+  either print produced.
+
+**The cost, on the record.** The grade of 2026-10-16 wrote, under law 14's own
+pass, "the published body runs a five-paragraph and a nine-paragraph section",
+from its own awk count, and used the pair of inflated figures as evidence that
+the generator produces grey walls. It also read "shapes 2 and 2" as meaning the
+two prints were equally grey and that the longer-sectioned one "put fewer shapes
+on it". Counting only the writer's blocks, the published body carries one
+standing line and the rehearsal carries thirteen. The axis counts kinds, nothing
+counted instances, and a thirteenfold difference in the exact device the law
+asks for arrived as two identical numbers.
+
+**Why a reading did not catch it, which is the part worth keeping.** Both wrong
+numbers are plausible on their face. Two shapes on a grey issue reads as true,
+and it was true by accident. A five-paragraph section in a section of four
+paragraphs and one standing line reads as an editor rounding up rather than as
+an off-by-one. A figure that agrees with the impression it is supposed to test
+is the one figure nobody re-derives, and this seat had re-derived the other
+eight.
+
+**Fixed here.** Ban list 120 and 121. The furniture is named from its two
+sources and excluded from the shape count in both `axes` and `measure`. The
+per-section count takes paragraphs. Both rows are renamed, because the numbers'
+meaning changed and a grade must not read a new figure under an old name. The
+generator's turn trigger now says which blocks are not paragraphs and why
+counting them turns one half of law 14 against the other.
+
+**The generalisable lesson, for any seat that builds its own instrument.** A
+gate's operand is as much a part of it as its threshold, and a threshold gets
+reviewed while an operand does not, because the threshold is the thing an
+argument is about. Both defects here are operand defects and both were one line
+of code. The check that would have caught either in a minute is a fixture per
+axis: a synthetic body built to fail one gate and pass the rest, asserted
+against the number the function returns. `tests/test_voice_enforcements.py`
+covers this file's two other entry points and nothing covers `axes`, which is
+the one function whose output a grade quotes as a verdict. Filed in
+docs/ideas.md the same day, because `tests/` is not the writer seat's surface.
