@@ -214,6 +214,16 @@ UNCOVERED = {
     # the same defect one level down. The staged replacement runs it, measured
     # at `53 of 53`.
     "tests/test_press_watch.py",
+    # Added 2026-10-16 with the sources availability check, and pinned for
+    # the same structural reason as every line above: the step that would run
+    # it goes in `.github/workflows/checks.yml`, which no seat's token may
+    # write. The staged replacement runs it, because that file runs the suite
+    # rather than naming files. What this one guards is the top of the
+    # pipeline: `pipeline/ingest.py` fetched fifty-three sources a day and
+    # could not tell whether any answered, and seven were delivering nothing
+    # when it was first measured. A corpus that stops growing is invisible
+    # for as long as the press keeps printing from what it already has.
+    "tests/test_feed_health.py",
     "tests/delivery.test.mjs",
     "tests/issues.test.mjs",
     "tests/markdown.test.mjs",

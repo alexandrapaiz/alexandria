@@ -99,8 +99,64 @@ def test_the_deploy_is_last_and_the_budget_guard_is_first():
                   [s[-1].split("::")[-1] for s in steps if s[:2] == ["modal", "run"]]
                   == ["preflight", "rehearse"], str(steps))
         else:
-            check(f"{app} is a bare deploy, with no request to size",
-                  steps == [["modal", "deploy", dg.APPS[app]]], str(steps))
+            # An app with no model gate still has no request to size, so the
+            # budget rung stays off its chain. What it may carry is a local
+            # gate, which spends nothing and is not a `modal run`.
+            check(f"{app} does not size a request it never sends",
+                  ["python3", "pipeline/budget.py"] not in steps, str(steps))
+            check(f"{app} runs no modal gate",
+                  not [s for s in steps if s[:2] == ["modal", "run"]], str(steps))
+            check(f"{app}'s chain is its local gates and then the deploy",
+                  steps == [list(g) for g in dg.LOCAL_GATES.get(app, [])]
+                  + [["modal", "deploy", dg.APPS[app]]], str(steps))
+
+
+def test_ingest_has_the_availability_gate_its_sources_need():
+    """The rung docs/agents/press-rehearsal.md asks for in its closing section.
+
+    `ingest` calls no model, so `preflight` and `rehearse` are the wrong
+    shape for it and it was the one scheduled app whose deploy proved
+    nothing. The question it needs answered is whether its sources still
+    answer, and on 2026-10-16 seven of fifty-three did not.
+    """
+    steps = dg.ladder("ingest")
+    check("ingest checks its sources before it deploys",
+          steps[0] == ["python3", "tools/feed_health.py"], str(steps))
+    check("and the check is above the deploy, not below it",
+          steps.index(["python3", "tools/feed_health.py"])
+          < steps.index(["modal", "deploy", "pipeline/ingest.py"]), str(steps))
+    check("the gate it runs exists",
+          (ROOT / "tools/feed_health.py").exists())
+    check("it still spends no model call, so the window has no opinion",
+          dg.spends_a_call("ingest") is False)
+
+
+def test_a_local_gate_is_a_file_that_exists_and_needs_no_credentials():
+    """A rung naming a script that is gone is a chain that cannot be green."""
+    for app, gates in dg.LOCAL_GATES.items():
+        check(f"{app} is a known app", app in dg.APPS)
+        for argv in gates:
+            check(f"{app}'s local gate is a python script",
+                  argv[0] == "python3" and argv[1].endswith(".py"), str(argv))
+            check(f"{app}'s local gate {argv[1]} exists",
+                  (ROOT / argv[1]).exists(), argv[1])
+            check(f"{app}'s local gate is not a modal command",
+                  "modal" not in argv, str(argv))
+
+
+def test_a_local_gate_that_fails_leaves_the_deploy_unrun():
+    """The cheapest rung has to stop the chain like any other."""
+    ran: list[str] = []
+
+    def runner(argv, ran=ran):
+        ran.append(" ".join(argv))
+        return 1 if "feed_health" in " ".join(argv) else 0
+
+    status = dg.run("ingest", runner=runner, out=lambda *a: None)
+    check("the chain reports the failure", status == 1, str(status))
+    check("the source check ran", any("feed_health" in c for c in ran), str(ran))
+    check("and nothing deployed",
+          not any("deploy" in c for c in ran), str(ran))
 
 
 def test_a_gate_that_fails_leaves_the_deploy_unrun():
