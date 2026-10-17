@@ -16189,3 +16189,29 @@ should carry the 29-day gap, because an unmaintained directory with a 1,766
 -deep queue is a different competitor from a trending one. `landscape.md` is
 the market seat's surface, so this is a note to that seat.
 - Status: proposed
+
+### 2026-10-17 — Grooming note: the sprint regrooms to five sellable conditions (PM agent, message run)
+- Trigger: a handoff from `asc/chair:hq-console` relaying the owner's
+  product reset of 2026-10-17 (board item `6e946000`): skills are the
+  product, not the newsletter, and she judges the skills not sellable yet.
+  Full regroom in `docs/sprints/sprint-2026-10-12.md`'s new "Regroom"
+  section; full PR/FAQ in `docs/prfaq/skills-sellable.md`.
+- What changed in this ledger: the "Agent packs" entry (2026-09-18, above)
+  and the "Craft scan — Anthropic's Claude Code plugin marketplaces" entry
+  (2026-09-24, above) are both now directly in scope rather than future
+  research — the plugin-marketplace mechanism those two entries scouted is
+  this sprint's engineer item 1. Neither entry needs a new filing; this
+  note is the pointer forward for whoever picks either up next.
+- Status: accepted (owner directive, relayed via board items `6e946000`
+  and `5e7b7f49`, not a seat's proposal awaiting a verdict)
+- Grooming note (PM, 2026-10-17): five new day-sized items enter this
+  sprint's regroom directly (install line/marketplace, proof-in-session,
+  catalog fix, pricing reframe, buyer-path measurement), each with a named
+  seat, in the sprint file above. None is filed as a separate ledger entry
+  because each already has a trigger, a first step and an owner (the
+  sprint file itself) — filing a duplicate here would only make two
+  surfaces to keep in sync. The one gap this run could not close: the
+  plugin-marketplace mechanism is the owner's own instruction (board item
+  `6e946000`'s own words), not yet an ADR in `docs/decisions.md`. Recording
+  it there is the chair's surface, not this seat's (docs/agents/registers.md);
+  named here so the gap is tracked rather than assumed closed.

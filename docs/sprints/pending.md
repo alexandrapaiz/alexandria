@@ -1,3 +1,57 @@
+## Updated 2026-10-17, ~21:00 UTC (message run): the sprint regroomed to five sellable conditions, one of them needs no build at all
+
+**Scope note.** A handoff from `asc/chair:hq-console`, not the standup —
+today's standup already ran at ~14:20 UTC below. This pass is scoped to
+the one trigger it was given: the owner's product reset, relayed with the
+sprint goal and the two MVP items already on the board (`6e946000`,
+`5e7b7f49`). Full regroom in `docs/sprints/sprint-2026-10-12.md`'s new
+"Regroom" section; the PR/FAQ this initiative owes is
+`docs/prfaq/skills-sellable.md`. Reconciliation against `docs/decisions.md`
+and `docs/allhands/` was already done by today's 14:20 UTC standup below
+(stops at ADR-40, nothing newer in all-hands) and re-checked fresh this
+run — nothing has changed since, nothing new to strike.
+
+**Own open PRs at the start of this run, handled per the collision rule.**
+Two were open: `#329` (`alexandria-pm/2026-10-17-message-skill-marketplace`),
+a placeholder stub reacting to this same reset, superseded and closed in
+favor of this run's own PR (proof: `git log` of the old branch against this
+one printed nothing); and `#328` (`alexandria-pm/2026-10-17-message-chair-handoff`),
+a different, unrelated topic (the merge-authority handoff over `#312`/`#315`),
+left untouched.
+
+**The five conditions, one seat each, named on the board and in the sprint
+file.** Install line + plugin marketplace (engineer), proof inside the
+first session (skill), catalog page (frontend), pricing reframed to
+skill-library tiers (frontend, market advising), buyer's path measured
+(engineer). Full detail, including why each seat, in the sprint file.
+
+**One condition needs no seat at all, and it has been owed for 21 days.**
+The mechanical half of "a checkout that completes" needs no new code —
+`docs/product/polar-go-live.md` is a five-step, already-written checklist,
+starting with a sandbox org at sandbox.polar.sh, a browser task with no
+pull request in it. This is the same Polar account item this tracker has
+carried since 2026-09-26 (see below); what's new this run is confirming
+directly from the checklist's own text that the owner's half of condition
+3 is a half hour, not a blocker on any seat's build queue.
+
+**Named now, per the silence rule the directive itself invoked, rather
+than discovered Wednesday.** Two conditions chain a single scheduled run
+each with zero slack before Wednesday's brief (2026-10-21): skill's one
+shot is Tuesday, feeding frontend's one shot, Wednesday, which also has
+to ship the pricing reframe. If either slips a day, Wednesday's brief
+ships with fewer than five conditions met. The buyer's-path measurement
+(condition 5) is the one most likely to miss Wednesday outright — no
+analytics of any kind exists in `site/` today, and it is the condition
+furthest from the owner's own "done means" sentence (a URL, an install
+line, one test-mode payment). None of this was fired as a dispatch this
+run: frontend and skill both already carry other open or recent work from
+tonight's own session, and the hard stop against dispatching a seat with
+an open PR from its last run applies regardless of urgency.
+
+**Replied on the board, in first person, on both items this run was
+handed** (`6e946000`, `5e7b7f49`), naming the seat assignments and the two
+risks above.
+
 ## Updated 2026-10-17, ~14:20 UTC (standup): one docs-only Tier B merge, the deploy drift the chair just cleared came right back, engineer is mid-run on its own stalled stack
 
 **Scope note.** Standup shape (charter §0/§4) — today is Saturday, the
