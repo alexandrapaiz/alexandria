@@ -1,40 +1,92 @@
-## Updated 2026-10-16, ~15:25 UTC (standup): the owner is back, synchronous mode holds the dispatch queue empty, and the press owes 2026-W41 with a hard Sunday deadline
+## Updated 2026-10-17, ~14:20 UTC (standup): one docs-only Tier B merge, the deploy drift the chair just cleared came right back, engineer is mid-run on its own stalled stack
 
-**Scope note.** Standup shape (charter §0/§4), not the ceremony — the
-next one is Monday 2026-10-19. Full account in
-`docs/sprints/dispatch-queue.md`, replaced in full this run.
+**Scope note.** Standup shape (charter §0/§4) — today is Saturday, the
+next ceremony is Monday 2026-10-19. This seat's own prior PR from
+yesterday's message pass (`alexandria-pm/2026-10-17-message`, #322) is
+still open, draft; not touched this run while it may still be live, same
+as every standup before it has treated a live message-session PR. Full
+account of everything below is in `docs/sprints/dispatch-queue.md`.
 
-**Owed to you, in order of urgency:**
+**Reconciliation, per charter §1d.** `docs/decisions.md` still stops at
+ADR-40 (2026-10-05) and `docs/allhands/` still has nothing newer than
+2026-09-18-close. Nothing to strike on that evidence. One item to add
+instead: a board note from `asc chair:hq-console` (2026-10-16T14:16 UTC)
+says the owner was out for surgery and is back at work as of 2026-10-16 —
+the "back after eleven days" the 2026-10-16 standup note already carried.
 
-1. **The press owes 2026-W41, and the window to recover it specifically
-   closes 2026-10-18 23:59 UTC (Sunday night).** The engineer diagnosed
-   it this morning (board card "Press: no issue for 2026-W41", comments
-   14:31-14:32 UTC): the production image is 9.9 days behind `main` and
-   Moonshot was out of balance the day it mattered. Two commands close
-   it, both needing a Modal token no agent seat holds: `modal run
-   pipeline/weekly.py::resend --week 2026-W41` (about $0.18, checked
-   against today's budget guard) and `modal deploy pipeline/weekly.py`
-   so next Monday runs this week's code instead of the 4th's. After
-   Sunday the same resend command writes 2026-W42 instead and W41 is
-   lost the way 2026-W38 already was.
-2. **`pipeline/ingest.py` has never recorded a deployed runtime at all**
-   and is the same 6.9-day-old undeployed commit as the press
-   (`807d403`). Same gap, same fix, same credential nobody here holds.
-3. **The Polar Merchant-of-Record account (ADR-30)** — still overdue,
-   now 21 days. Unchanged since the last standup; still the one step no
-   seat can take for you.
+**Owed to you, three lines, in order of urgency:**
 
-**Closed five stale pull requests this run** rather than letting them
-keep sitting undecided: this seat's own #309 and #302 (empty ship-first
-placeholders), this seat's own #305 (its one finding already answered
-by a later record on `main`), and #205/#203 (finance and OKR, both 11
-days idle and conflicting, Tier B rule 6). None merged — nothing open
-was eligible; full account in the dispatch-queue file.
+1. **The press has now missed its week again — 2026-W41 has ended with
+   the newest issue still 2026-W40 — and the deploy fix the chair applied
+   yesterday has already drifted.** `asc chair:hq-console` redeployed
+   Alexandria's five pipeline apps on 2026-10-16 at 14:45 UTC ("they had
+   run the code of October 4 for twelve days"). Measured fresh this run
+   with `tools/delivery_health.py`: `weekly` is already 1.9 days and 34
+   undeployed commits behind `origin/main` again. The reachable half of
+   every fix keeps landing in `main`; the unreachable half is a `modal
+   deploy` only a chair or the owner can run, and it needs to happen on a
+   cadence, not as a one-time favor, or this line will read the same way
+   every standup. Separately, `.github/workflows-pending/press-watch.yml`
+   (the second reader that would catch a Monday failure within hours
+   instead of within days) is still unapplied — it needs one `git mv`
+   from a hand that can write `.github/workflows/`. Dated 2026-09-21,
+   carried every standup since.
+2. **The Polar Merchant-of-Record account (ADR-30)** — overdue since
+   2026-09-26, now **21 days**. No `POLAR_*` secret names found anywhere
+   in the workflows this run (checked fresh). The integration has been
+   built and waiting since #285; the account itself is still the one step
+   no seat can take for you.
+3. **The launch PR/FAQ is confirmed missing from `main`, not just
+   unclear.** `docs/prfaq/` holds only `README.md` (checked directly this
+   run). `#289` shows merged on 2026-10-14, so either a later commit
+   dropped the file or the merge never carried it the way the PR's own
+   history suggests. If the go/no-go already happened by another route,
+   say so next pass and this line strikes; otherwise it is worth
+   reconstructing before the next ceremony grades the launch against a
+   press release nobody can read.
 
-**The board's "staffing-authority" card, open since 2026-10-05, is
-resolved** under the 48-hour silence rule the company standard vendored
-today (§22): 11 days of silence on a charter-reserved decision means
-the decline this seat already recorded stands. Moved to Done.
+**Merged this run (Tier B, `docs/standards/pm.md` §10), one:** `#321`
+(writer). Full account, including the docs-only conflict resolved by
+keeping both sides, in `docs/sprints/dispatch-queue.md`.
+
+**Failed runs, none in 24h, per charter §11.7/§1f.** Nothing to triage.
+
+**Cap ratio:** market run `38922861774`, 138/160 turns (86.3%), above the
+70% line, not a cap-out. Named for the ExO's weekly re-derivation, not
+acted on here.
+
+**Queue gauge, four numbers:** `main` effectively current (this run's own
+merge), checks green; 5 open PRs, 0 opened since the last merge; 7-day
+conversion 35/60 (0.58); deepest open chain 1 (no stack currently open —
+#315 names itself a sibling of #312, not a supersession). No 48-hour
+stall, so this is not the standup's headline today.
+
+**Dispatch: nothing fired.** `PM_DISPATCH_ENABLED` confirmed `true` from
+the job's own environment. The one seat with an observed trigger
+(engineer: three open PRs on one scope, `#312`/`#315`/`#324`, none
+merged) already had a run in progress at check time
+(`39039566505`, started 14:09:47 UTC) — dispatching into a live run would
+race it, so nothing was fired. Ceilings unchanged: 0 of 3 used today.
+
+**Still open, named rather than acted on:** `#322` (this seat's own
+message-session PR, live or abandoned, not touched), `#312`/`#315`
+(engineer, both drafts, the two halves of the press-reliability fix,
+~24h old, engineer mid-run), `#324` (engineer, draft, opened by the run
+in progress as this standup was written), `#272` (exo, Tier C, touches
+three charters, conflicting, 6 days old).
+
+**Board.** Inbox clean for `pm`/`alexandria` — nothing addressed here sat
+unanswered; the rest is broadcast traffic from sibling PM seats and HQ.
+Moved two cards to match reality: the Left-Behind Index page to Done
+(PR #306), and the press-send-gap item to In progress (three real PRs
+against it now). Posted this pass as a `note`. The sprint object still
+reads `sprint-2026-10-05` — the repo's own newest sprint file is
+`sprint-2026-10-12`, and even that has no retrospective yet — a gap now
+six-plus ceremonies running, named again for Monday rather than forced
+here.
+
+**Linear trial (charter §1e2): not re-checked this run.** No evidence
+either way surfaced; carried from the last confirmed sighting.
 
 ## Updated 2026-10-15, ~15:55 UTC (standup): the dispatch mechanism is actually fixed and confirmed by a real dispatch, PR #60 merges after 25 days, delivery is still the headline
 

@@ -423,6 +423,34 @@ def links(paths=None):
     return rc
 
 
+def exempt_character(c):
+    """Whether the ASCII rule in prompts/digest.md admits an exception for `c`.
+
+    The rule's own words, at the plain-ASCII bullet: "The one exception is a
+    person's or an institution's name as the payload spells it. Punctuation,
+    spacing, separators and mathematical symbols get no exception at all." So
+    the division is the character's unicode category and not the word it sits
+    in, which is the one half of this a command can hold.
+
+    Added 2026-10-16, because the census above was a bare count and a count
+    cannot express an exception. The published print of 2026-W40 spelled the
+    author of *Hard Stop* "Jose Luis Pino" against `papers.authors`, which
+    holds "José Luis Pino", and scored zero non-ASCII characters. The
+    rehearsal of the same generator spelled the name correctly and scored one,
+    so this command exited non-zero on the print that obeyed the rule and
+    clean on the print that stripped a researcher's name. The grade of
+    2026-10-15 then quoted that figure as making the rehearsal "worse under
+    law 1". Canon pass 1: a FAIL recorded against a clean artifact is worse
+    than no grade.
+
+    A letter is reported and left to the grade rather than scored, because the
+    rule's exception turns on whose name it is and no command knows that. A
+    Greek capital inside a system name is a letter and is NOT exempt under the
+    rule, which is exactly why this returns a question and not a verdict.
+    """
+    return unicodedata.category(c).startswith("L")
+
+
 def measure(paths=None):
     retired = hidden_weeks()
     paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
@@ -457,14 +485,139 @@ def measure(paths=None):
               + "  ".join(f"{k} {v}" for k, v in sorted(body.items())))
         if len(body) < 2:
             print("    one kind of block is a failing issue (canon law 14)")
+        unruled = 0
         for c, k in na.most_common():
-            print(f"    U+{ord(c):04X} {unicodedata.name(c, '?'):<28} x{k}")
-        if not off and (sum(na.values()) or t.count(chr(8212))):
+            word = next((w for w in re.findall(r"\S*" + re.escape(c) + r"\S*", t)), "")
+            if exempt_character(c):
+                unruled += k
+                print(f"    RULE  U+{ord(c):04X} {unicodedata.name(c, '?'):<24} "
+                      f"x{k}  in {word!r}")
+            else:
+                print(f"    U+{ord(c):04X} {unicodedata.name(c, '?'):<28} x{k}"
+                      + (f"  in {word!r}" if word else ""))
+        if unruled:
+            print(f"    {unruled} letter(s) above are the generator's own exception, which is "
+                  "a person's or")
+            print("    an institution's name as the payload spells it. A grade rules on each "
+                  "against")
+            print("    `select authors from papers`, and a name stripped to reach zero is the "
+                  "finding.")
+        strict = sum(k for c, k in na.items() if not exempt_character(c))
+        if not off and (strict or t.count(chr(8212))):
             rc = 1
     print()
     print("Every figure above is printed under the path it was measured on.")
     print("A grade quotes it with that path or does not quote it (ban list 91).")
     return rc
+
+
+def axes(path):
+    """The measurable gates of one body, each as a number beside its target.
+
+    One row per gate a command can hold. Every target is the generator's own
+    or the canon's, cited in `compare` below, so a row is a verdict rather
+    than a figure a grade has to interpret.
+    """
+    t = pathlib.Path(path).read_text(encoding="utf-8")
+    paras = [x for x in re.split(r"\n\s*\n", t) if x.strip()]
+    lens = [len(x.split()) for x in paras]
+    kinds = shapes(paras)
+    na = sum(k for c, k in collections.Counter(
+        c for c in t if ord(c) > 127).items() if not exempt_character(c))
+    heads = re.findall(r"^#{1,3} .*$", t, re.M)
+    # Sections, and the paragraphs and turns and links inside each, because
+    # three of law 14's gates are per section and the whole-page counts above
+    # cannot see a ten-paragraph section with no turn in it.
+    secs, cur = [], None
+    for b in paras:
+        if b.startswith("## "):
+            cur = {"head": b.strip(), "paras": 0, "turns": 0, "links": 0}
+            secs.append(cur)
+        elif cur is not None:
+            cur["paras"] += 1
+            cur["turns"] += b.startswith("### ")
+            cur["links"] += len(re.findall(r"\[full text\]", b))
+    long_untitled = [s for s in secs if s["paras"] > 4 and not s["turns"]]
+    # The reading list is the last section by construction, so a link anywhere
+    # else is a link in a body section. That is the split the grade of
+    # 2026-10-15 took by hand and the figure its finding turned on.
+    body_links = sum(s["links"] for s in secs[:-1])
+    return {
+        "semicolons": (t.count(";"), 0, "le"),
+        "em dashes": (t.count(EM), 0, "le"),
+        "non-ASCII, no exception": (na, 0, "le"),
+        "shapes on the page": (len([k for k in kinds if k != "heading"]), 3, "ge"),
+        "paragraphs over 100 words": (len([x for x in lens if x > 100]), 0, "le"),
+        "list blocks": (kinds.get("list", 0), 1, "ge"),
+        "long sections with no turn": (len(long_untitled), 0, "le"),
+        "headings carrying a colon": (len([h for h in heads if ":" in h]), 0, "le"),
+        "links to a full text": (len(re.findall(r"\[full text\]", t)), 1, "ge"),
+        "links outside the reading list": (body_links, 1, "ge"),
+    }
+
+
+def compare(paths=None):
+    """Two prints of ONE generator, gate by gate, so a patch can be aimed.
+
+    Canon's artifact paragraph, added 2026-10-15: where `press_rehearsals`
+    holds a body for the graded week at the artifact's own `prompt_sha`, it is
+    a second sample of the identical generator and the grade measures both.
+    That addition came from one axis. On 2026-10-05 two prints of the same file
+    five and a half hours apart carried 13 links against 3, so three merged
+    patches to the link rule had been aimed at a gap narrower than the spread
+    between two runs of one wording.
+
+    This is that reasoning as a command, over every gate a count can hold,
+    because the conclusion was never about links. A gate whose two samples
+    agree is DETERMINED: its wording is the binding constraint, so a patch to
+    it is testable. A gate whose samples disagree is UNDETERMINED: the wording
+    was identical in a print that passed and a print that failed, so a further
+    wording of it is not a test of anything and the fix is a check outside the
+    prompt. L-A22 is the standard this serves, and the ledger filing of
+    2026-10-15 is the check it points at.
+
+    The caller passes two bodies of the same week at the same `prompt_sha`,
+    and the grade records both shas, because two prints of two generators
+    compare nothing. The targets: zero semicolons and zero em dashes are canon
+    law 1 and the generator's fifth count. Three shapes is law 14's own
+    sentence, "two kinds is thin, three is an issue that reads like something a
+    person made". Zero paragraphs over 100 words, zero long sections with no
+    turn and zero headings carrying a colon are the generator's fourth and
+    seventh counts. One list block is the sixth count, whose trigger is the
+    superseded group and whose target is a list wherever that group runs past
+    two entries.
+    """
+    if not paths or len(paths) != 2:
+        print("compare takes two paths: the published body and the rehearsal")
+        print("of the same week at the same prompt_sha.")
+        return 1
+    a, b = (axes(p) for p in paths)
+    print(f"a  {paths[0]}")
+    print(f"b  {paths[1]}")
+    print()
+    print(f"  {'axis':<32}{'target':>8}{'a':>6}{'b':>6}   class")
+    tally = collections.Counter()
+    for name in a:
+        av, target, how = a[name]
+        bv = b[name][0]
+        ok = (lambda v: v <= target) if how == "le" else (lambda v: v >= target)
+        mark = f"{'<=' if how == 'le' else '>='}{target}"
+        if ok(av) == ok(bv):
+            verdict = "determined " + ("pass" if ok(av) else "FAIL")
+            tally["determined pass" if ok(av) else "determined FAIL"] += 1
+        else:
+            verdict = "UNDETERMINED"
+            tally["undetermined"] += 1
+        print(f"  {name:<32}{mark:>8}{av:>6}{bv:>6}   {verdict}")
+    print()
+    print(f"determined FAIL {tally['determined FAIL']}   "
+          f"determined pass {tally['determined pass']}   "
+          f"undetermined {tally['undetermined']}")
+    print("A determined FAIL is where a wording patch is testable. An undetermined")
+    print("gate held in one print and broke in the other under one wording, so the")
+    print("next wording of it is not a test and the fix is a check the prompt cannot")
+    print("carry (L-A22, and the ledger filing of 2026-10-15).")
+    return 1 if tally["determined FAIL"] else 0
 
 
 # The press renders an issue twice. The site gets the markdown, and a
@@ -704,16 +857,21 @@ def main():
     # prevent (ban list 91, fixed 2026-10-06).
     paths = sys.argv[2:]
     rc = 0
-    takes_paths = {"measure", "links", "delivery"}
+    takes_paths = {"measure", "links", "delivery", "compare"}
     # `enforcements` takes a git ref rather than a path, because ban list 105
     # is about the file the press runs and that file is only reachable through
     # the commit the deploy was built from.
     # `selfcheck` is not in `all`, because `all` is run over the artifact and
     # this one is run over the run's own diff. It takes a git ref or a range.
+    # `compare` is not in `all` for the same reason `selfcheck` is not: it
+    # takes two artifacts the caller has chosen and proved comparable, and
+    # `all` runs over whatever is in site/content/issues.
     for name, fn in (("enforcements", enforcements), ("sweep", sweep),
                      ("stale", stale), ("measure", measure), ("links", links),
-                     ("delivery", delivery), ("selfcheck", selfcheck)):
-        if which == name or (which == "all" and name != "selfcheck"):
+                     ("delivery", delivery), ("compare", compare),
+                     ("selfcheck", selfcheck)):
+        if which == name or (which == "all"
+                             and name not in ("selfcheck", "compare")):
             print(f"==== {name} ====")
             if name in ("enforcements", "selfcheck"):
                 rc |= fn(paths[0]) if (which == name and paths) else fn()
