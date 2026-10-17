@@ -18,6 +18,17 @@
 set -euo pipefail
 cd "$(dirname "$0")/../../../site"
 
+# The port is read from the environment, because 3000 is not ours to assume.
+# On 2026-10-17 the agent container had an unrelated service listening on it,
+# and this script's own stale-server check reported "an older one is still on
+# 3000", which is a true sentence about the port and the wrong diagnosis: the
+# listener was never a next-server of ours and killing it was not an option.
+# Every script in this directory reads the same variable, so one export moves
+# the whole harness.
+PORT_FE="${FE_PORT:-3000}"
+BASE_FE="http://127.0.0.1:${PORT_FE}"
+echo "== port ${PORT_FE} =="
+
 echo "== stopping any server from a previous build =="
 for pid in $(ps -eo pid=,args= | awk '$2=="next-server"{print $1}'); do
   echo "   killing next-server $pid"; kill "$pid" 2>/dev/null || true
@@ -31,17 +42,20 @@ echo "== build =="
 npm run build
 
 echo "== start =="
-npx next start -p 3000 > /tmp/next-serve.log 2>&1 &
+npx next start -p "$PORT_FE" > /tmp/next-serve.log 2>&1 &
 STARTED=$!
 for _ in $(seq 1 40); do
   sleep 1
-  curl -sf -o /dev/null http://127.0.0.1:3000/ && break
+  curl -sf -o /dev/null "$BASE_FE/" && break
 done
 
 # EADDRINUSE goes to the log and the backgrounded command still looks fine, so
 # the log is read rather than trusted.
 if grep -q EADDRINUSE /tmp/next-serve.log; then
-  echo "FAIL: the server did not bind; an older one is still on 3000." >&2
+  echo "FAIL: the server did not bind. Something is already on ${PORT_FE}." >&2
+  echo "      If it is not one of ours, do not kill it: re-run with" >&2
+  echo "      FE_PORT=<free port> instead, and export the same FE_PORT to" >&2
+  echo "      every script in this directory." >&2
   exit 1
 fi
 
@@ -68,8 +82,21 @@ fi
 # So the question is asked a different way, with a tool that is always there:
 # every `next-server` alive after a successful start must descend from the
 # process this script started. A survivor is one that does not.
+#
+# Narrowed 2026-10-17. The check above asked the question of EVERY next-server
+# on the machine, which assumes every Next app on the box is ours. The agent
+# container is shared, and on 2026-10-17 it ran an unrelated Next service that
+# this check reported as our stale server, with a pid no run of this seat could
+# have started and must not kill. So the set is cut to the servers serving THIS
+# site: a process's `/proc/<pid>/cwd` is where it was started, `next start`
+# runs in `site/`, and /proc is present wherever this script can run at all. A
+# next-server whose cwd is some other tree is somebody else's and is none of
+# this harness's business.
+SITE_DIR="$(pwd -P)"
 strays=
 for srv in $(ps -eo pid=,args= | awk '$2=="next-server"{print $1}'); do
+  cwd=$(readlink -f "/proc/$srv/cwd" 2>/dev/null || true)
+  [ "$cwd" = "$SITE_DIR" ] || continue
   owner="$srv"
   while [ -n "$owner" ] && [ "$owner" != "1" ] && [ "$owner" != "$STARTED" ]; do
     owner=$(ps -o ppid= -p "$owner" 2>/dev/null | tr -d ' ' || true)
@@ -77,15 +104,15 @@ for srv in $(ps -eo pid=,args= | awk '$2=="next-server"{print $1}'); do
   [ "$owner" = "$STARTED" ] || strays="$strays $srv"
 done
 if [ -n "$strays" ]; then
-  echo "FAIL: next-server($strays) is alive and did not come from this" >&2
-  echo "      script's pid $STARTED. That is a stale server, and it may be" >&2
-  echo "      the one answering on 3000." >&2
+  echo "FAIL: next-server($strays) is serving $SITE_DIR, is alive, and did" >&2
+  echo "      not come from this script's pid $STARTED. That is a stale" >&2
+  echo "      server, and it may be the one answering on ${PORT_FE}." >&2
   exit 1
 fi
-echo "PID MATCH: every live next-server descends from $STARTED"
+echo "PID MATCH: every next-server in $SITE_DIR descends from $STARTED"
 
 echo "== proving the server is THIS build =="
-served=$(curl -s http://127.0.0.1:3000/ | grep -o '/_next/static/css/[^"]*' | head -1)
+served=$(curl -s "$BASE_FE/" | grep -o '/_next/static/css/[^"]*' | head -1)
 if [ -z "$served" ]; then
   echo "FAIL: the served page references no stylesheet at all." >&2
   exit 1
