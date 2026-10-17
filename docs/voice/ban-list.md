@@ -2859,10 +2859,11 @@ gap that the same collision had left empty (incident 25).
     census. `INC-2026-10-17-the-instrument-overcounted-the-law-it-was-built-for`.
     The sweep, over the class, which is a trigger whose number carries a unit:
     `grep -nE "(past|over|more than|under|within|fewer than|no more than|at least) (about )?(one|two|three|four|five|six|seven|eight|nine|ten|[0-9]+) [a-z]+" prompts/digest.md`
-    printed twelve hits. The section trigger at `:1717` and its restatement in
-    the four-count list are the one patched. The superseded group's "past two
-    entries" at `:1004`, `:1015` and `:1735` is this exact class and entry 116
-    closed it yesterday. The item-level trigger at `:426` and `:1534`, "an item
+    printed twelve hits, and the lines below are the file as it ships after this
+    patch. The section trigger at `:1740` and its restatement at `:1722` are the
+    one patched. The superseded group's "past two entries" at `:1004`, `:1015`
+    and `:1758` is this exact class and entry 116
+    closed it yesterday. The item-level trigger at `:426` and `:1557`, "an item
     that runs past three paragraphs gets written turns inside it", is the same
     class and no command counts it at all, so it keeps failing invisibly and
     that is a filing rather than a wording. The rest are prose about words and
