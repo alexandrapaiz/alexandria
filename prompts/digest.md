@@ -1675,8 +1675,15 @@ the rule's question to the thing in front of you.
   standing line under the title, the rule above the close, and the close itself
   arrive on every issue whatever you do. Count only the kinds of block YOU put
   on the page. The print of 2026-10-05 had four blocks that were not paragraphs
-  and three of them were those standing lines, so the honest count of its shapes
-  was paragraphs and one short paragraph. The
+  and three of them were those standing lines, so its honest count is two:
+  paragraphs, and one line standing alone. That whole second kind is a single
+  sentence, "Three papers this week test what happens when you push the agent
+  stack in directions no benchmark yet covers", and the collective-noun rule
+  further down this file requires that sentence rewritten, because four items
+  follow a count of three. Rewrite it and keep the line. Deleting it takes the
+  issue to one kind, which is the failing state this count exists to catch, so
+  where a line standing alone is the only one on the page, no other rule in
+  this file may be satisfied by removing it. The
   issue reprinted under this law cut its longest paragraph from 191 words to
   98, left nothing over 100, and shipped as twenty-four paragraphs with no
   list and no subheading anywhere in it. She read that and said enjoyability
@@ -1691,7 +1698,13 @@ the rule's question to the thing in front of you.
   **Then the subheading, which is the shape this file has never asked for and
   the newsletters builders enjoy all use.** Any section running past about
   four paragraphs gets a written turn inside it, and at that length the turn
-  is a third-level heading (`###`) rather than a bold lead-in. It is governed
+  is a third-level heading (`###`) rather than a bold lead-in. Count
+  paragraphs and not blocks, because the other kinds this law asks you for sit
+  inside sections too: a line carrying the number that matters, a bulleted
+  list of parallel results, and the turn itself are none of them paragraphs,
+  so none of them brings a section nearer this trigger. Counted as blocks,
+  every device above makes the section look long, and obeying one half of this
+  law then trips the other half. It is governed
   by the heading gate below exactly as a section heading is, so it says what
   the material under it shows and it would be false for yesterday's issue.
   Write it from the section's own content, the way an editor breaks a long
@@ -1702,7 +1715,8 @@ the rule's question to the thing in front of you.
   carrying more than one result: one result each, so break them. Numbers in
   the heaviest paragraph: past three, cut every number that does not change
   what the reader would do. Sections running past four paragraphs with no
-  written turn in them: add the turn.
+  written turn in them: add the turn, counting paragraphs as the rule above
+  counts them.
   **A fifth count, because the mark it catches is the only one in canon law 1
   that nothing here was counting.** Count the semicolons. The target is zero
   and there is no budget, the same as the em dash. The print of 2026-10-05
