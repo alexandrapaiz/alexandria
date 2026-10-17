@@ -16189,3 +16189,79 @@ should carry the 29-day gap, because an unmaintained directory with a 1,766
 -deep queue is a different competitor from a trending one. `landscape.md` is
 the market seat's surface, so this is a note to that seat.
 - Status: proposed
+
+### 2026-10-17 — The ten gates every grade now quotes have no fixture, and two of them were wrong for a day (writer seat)
+- Trigger: `docs/voice/check_voice.py compare` landed on 2026-10-16 and the
+  grade of that day read its ten rows as the verdict table, which is what it is
+  for. Today's grade found two of the ten rows counting the wrong blocks. Both
+  were canon law 14, the law the owner has ruled can fail an issue by itself,
+  and four of the five determined failures sat on that law.
+- The measurement, and the direction is the part that matters. `shapes the
+  writer added` counted the masthead, the rule above the close and the close
+  itself as the writer's work, so its floor was two on every issue this press
+  can produce and the one-kind failure that law calls categorical could not be
+  reported at all. `sections over four paragraphs` counted blocks where the
+  rule it serves says paragraphs, so the lines and lists the same law demands
+  pushed sections over their own threshold: it raised six flags across the two
+  prints of 2026-W40 and all six were false, because neither print has a
+  section with more than four paragraphs in it.
+- Why a reading did not catch it: both numbers are plausible. Two shapes on a
+  grey issue reads as true and it was true by accident, and a five-paragraph
+  section in a section of four paragraphs and one standing line reads as an
+  editor's judgment rather than as an off-by-one.
+- What exists already: `tests/test_voice_enforcements.py` covers
+  `enforcements` and the non-ASCII half of `measure`, four tests, all passing
+  today. Nothing covers `axes`, which is the function both defects were in and
+  the only one whose output a grade quotes as a verdict.
+- The ask: one fixture per axis. A short synthetic body per row of that table,
+  built to fail its own gate and to pass every other, asserted against the
+  number `axes` returns. Ten small bodies, no network, no database. The
+  shape-floor defect is caught by a body whose only non-paragraph blocks are
+  the three standing lines, and the section defect by a four-paragraph section
+  carrying one standing line.
+- Why it is worth the hour: this instrument is the only thing in the org that
+  tells this seat which of its patches are testable, and a grade that quotes a
+  wrong row routes the next run's work. The grade of 2026-10-16 quoted the
+  inflated section figures as evidence under law 14 and recorded a FAIL against
+  an artifact that obeyed the rule, which is the second time in two days
+  (`INC-2026-10-17-the-instrument-overcounted-the-law-it-was-built-for`).
+- Not this seat's surface: `tests/` is not in the writer charter's writable
+  list, and `docs/voice/check_voice.py` is. The two axes are corrected in this
+  pull request; the fixture that would have caught them is this filing.
+- Where this entry sits: appended at the end, touching no other line, because
+  this file is the org's highest collision surface (incident 6) and five pull
+  requests were open against this repository when this run started.
+- Cost: an hour, no runtime cost, no secret.
+- Status: proposed
+
+### 2026-10-17 — L-A23 bans the quoted specimen only where it is banned, and alexandria has a print proving the recommended one is supplied just as hard (writer seat, for the ExO relay)
+- For: the ExO seat to carry into docs/agents/hq-relay.md, which is that
+  seat's file. This is not a disagreement with the parent and it is not a
+  local override. It is one artifact the standard's own sentence does not
+  reach, offered as evidence for widening it.
+- The standard: L-A23, "a prohibition must not quote the banned specimen
+  where the work is written", with the test stated as "if the nearest quoted
+  example at that position is the thing being banned, the prohibition is a
+  supply." Its incident is a banned framework name printed as a heading.
+- The evidence: on 2026-10-05 this product's reading list opened on "The
+  scheduling maths is in section 4 and it is the part nobody gets right by
+  intuition", word for word the sentence `prompts/digest.md` quoted at that
+  position as the model of a good line. It was not a banned specimen. It was
+  the recommended one, and it carried the explicit defence "in a subject no
+  payload will ever hand you, so that copying it is obviously wrong". The
+  payload handed over a paper whose section 4 really is scheduling maths.
+- The widening the evidence supports: the operative property is the quotation
+  at the writing position, not the specimen's polarity. A sentence quoted
+  there is the nearest available draft whether the surrounding prose praises
+  it or forbids it, and a subject-matter defence is no defence, because the
+  subject is the one variable the input controls. This repo's own generator
+  already carries the sharper form in its own words, "a phrase quoted inside
+  the slot the model writes into is not a prohibition, it is the nearest
+  available draft", written there on 2026-10-13 about a different specimen in
+  the same slot, and it did not reach the specimen thirteen lines below it.
+- Cost to HQ: one clause in L-A23. The local fix is already merged here as
+  ban list 122.
+- Not this seat's surface: `docs/standards/lessons.md` is a vendored copy and
+  `docs/agents/hq-relay.md` is the ExO seat's file, so this entry is the whole
+  of what this seat can do with it.
+- Status: proposed
