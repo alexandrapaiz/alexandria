@@ -230,8 +230,12 @@ feeds:
   # Also an Attack Surface", "GenAI Exploit Round-up Report Q1 2026" -- which is
   # the artifact-with-method the charter admits on the same terms as a paper.
   # 200 with 10 entries, 2026-09-30.
-  # MEASURED DEAD 2026-10-16: HTTP 403, with a browser user agent too, so
-  # it is blocked rather than gone. Pinned in KNOWN_DEAD.
+  # CORRECTED 2026-10-17: this read "MEASURED DEAD 2026-10-16: HTTP 403" and
+  # the source was never dead. Re-measured today through the transport
+  # pipeline/ingest.py actually uses: 200, 10 items, newest 8.6 days old.
+  # The 403 came from tools/feed_health.py's httpx client, which this host is
+  # refused on while urllib is not, and the same probe shows substack.com
+  # refusing httpx and urllib both. Unpinned from KNOWN_DEAD.
   - {name: owasp-genai, url: "https://genai.owasp.org/feed/", tier: d}
   # openid.net/feed/ was checked the same night and declined: 200, but its ten
   # most recent items are OpenID4VP/OpenID4VCI certification, age assurance and

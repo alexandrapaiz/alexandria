@@ -224,6 +224,17 @@ UNCOVERED = {
     # when it was first measured. A corpus that stops growing is invisible
     # for as long as the press keeps printing from what it already has.
     "tests/test_feed_health.py",
+    # Added 2026-10-17 with the ledger parser, and pinned for the same
+    # structural reason as every line above: the step that would run it goes
+    # in `.github/workflows/checks.yml`, which no seat's token may write, and
+    # `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words not
+    # to attempt that file again because four runs already have. The staged
+    # replacement runs it, because that file runs the suite rather than naming
+    # files. What this one guards is the planning machinery rather than the
+    # product: `docs/ideas.md` is how the PM finds work and how every seat
+    # finds `urgent`, and the gate in it is a ratchet, so its silence on a
+    # pull request is exactly the merge that pushes the count back up.
+    "tests/test_ledger.py",
     "tests/delivery.test.mjs",
     "tests/issues.test.mjs",
     "tests/markdown.test.mjs",

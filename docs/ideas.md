@@ -6,6 +6,22 @@ agent appends; the owner writes verdicts. Contract in
 
 Statuses: `proposed`, `accepted`, `rejected`, `built`, `urgent`.
 
+**Read this file with a command, not with grep (engineer seat, 2026-10-17).**
+
+```
+python3 tools/ledger.py --status accepted    # the entries, read properly
+python3 tools/ledger.py --census             # and what no filter can see
+```
+
+Grepping this file for a verdict returns more entries than exist and fewer
+than it should, both at once. Nine entries are accepted and a grep for that
+word returns eleven hits, because two lines of prose write a verdict into a
+sentence: one inside the entry about this very defect, quoting the command,
+and one in a chair's note. In the other direction, sixty-two entries carry no
+status a filter can read at all, so a grep misses those in silence.
+`--status` answers the question and says how many entries it could not see.
+`tools/check_registers.py` now blocks when that count climbs.
+
 ## Standing backlog (owner-directed, all accepted)
 
 Groomed 2026-09-18 by the PM agent (ADR-15), per the owner's all-hands
@@ -15959,4 +15975,128 @@ nobody has to re-derive it:
   error message. Neither is this seat's surface, and this entry is the handoff
   written down.
 - Cost: $0.
+- Status: proposed
+
+## Engineer agent findings (2026-10-17, scheduled run)
+
+### 2026-10-17 — Two more clients ask a service a question and read the refusal as the answer (engineer seat, scheduled run)
+- Trigger: today's break-fix, `INC-2026-10-17-a-403-was-recorded-as-a-measured-
+  death-and-the-gate-never-asked-the-production-client`. The availability gate
+  called a live feed dead because its client was refused and the job it guards
+  uses a different client. That entry's closing paragraph names two more
+  places with the same shape and this is the entry it points at.
+- What: `tools/check_issue_citations.py` is the accuracy half of the pre-send
+  quality tier and the only thing that checks a cited title against the paper
+  its link resolves to. It calls arXiv and Semantic Scholar with its own
+  client. `pipeline/weekly.py`'s citation slow loop calls Semantic Scholar
+  with another. Neither can currently tell "this service is refusing me right
+  now" from "this paper is not there", which is the exact confusion that cost
+  three runs on `INC-2026-09-20`'s 406 and cost a live source a retirement
+  proposal yesterday. The checker got retry-with-backoff on 2026-09-20, so it
+  is half protected: it waits out a 429, and if the refusal is durable it
+  still reports the citation as unverifiable rather than itself as blocked.
+  The consequence is specific and it is not theoretical, because this gate
+  stands between a composed issue and a subscriber's inbox: a service having
+  a bad afternoon reads as an issue with bad citations, and the press holds a
+  send it should have made.
+- What: the fix is one distinction in two files. A check that cannot reach a
+  service reports `unverifiable` and does not count against the issue. A
+  check that reaches the service and gets a contradiction reports `wrong` and
+  blocks. Today they are the same verdict.
+- First step: add the two verdicts to `tools/check_issue_citations.py` and
+  one test per verdict driven off a faked client, then read
+  `pipeline/weekly.py`'s loop against the same distinction.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-17 — The one landscape entry an agent can never re-observe, and the generalisation that would be wrong (engineer seat, scheduled run)
+- Trigger: probing hosts from this runner during today's break-fix.
+  `thesequence.substack.com` answers 403 to httpx and to urllib both, with
+  five user agents tried, while `example.com`, `huggingface.co`, `arxiv.org`,
+  `genai.owasp.org`, `www.latent.space` and
+  `newsletter.pragmaticengineer.com` all answer 200 from the same process.
+- What: `docs/market/landscape.md` carries a `Last observed` date on every
+  competitor, and the market seat's ceremony refreshes them. TheSequence is
+  on the `substack.com` apex host, so no agent on this host can refresh it,
+  and the date will sit at 2026-10-02 looking like neglect rather than like a
+  block. Worse, the next seat to try will see 403 and may write the entry
+  down as gone, which is yesterday's mistake with a competitor instead of a
+  feed. The nuance is the interesting half: Latent Space and The Pragmatic
+  Engineer are Substack publications on their own domains and both answer
+  200, so a rule written as "Substack is unreachable" would be wrong about
+  two entries out of three and would strand two observable competitors.
+- First step: the market seat's own file gets a one-line `Reachable from CI:
+  no (403 on the substack.com apex, measured 2026-10-17)` on the TheSequence
+  entry, so a frozen date reads as a known block. `docs/market/landscape.md`
+  is the market seat's surface, so this is a proposal to that seat rather
+  than a diff from this one.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-17 — The ledger's contract cannot reach zero until someone rules on whether a note owes a verdict (engineer seat, scheduled run)
+- Trigger: `python3 tools/ledger.py --census`, written today. 551 dated
+  entries, 489 with a status a filter can read, 62 without. Of the 51 that
+  carry no status line at all, 30 are craft or competitive scan notes.
+- What: the 2026-09-24 entry on this defect asked for the status rule to move
+  from warning to blocking "once the count is zero", and the count cannot
+  reach zero by anyone's effort, because a scan note is not a proposal and
+  has no verdict to carry. Every charter asks its seat for a scan note in the
+  same file as its ideas, so the file holds two kinds of entry and the
+  contract describes one of them. Three ways out, and the choice is the
+  owner's because it is the vocabulary she writes verdicts in. Exempt entries
+  whose name begins "Craft scan" or "Competitive scan" from the status rule,
+  which is the cheapest and leaves 21 real proposals to fix. Or add a sixth
+  status, `note`, which makes a scan note say so in the same field as
+  everything else and makes the filter honest. Or rule that a scan note
+  carries `proposed` like anything else, which is what every scan note
+  appended since 2026-10-15 already does.
+- What, second half: 206 of the 489 readable entries are missing at least one
+  of the contract's four other fields, `Trigger`, `What`, `First step` and
+  `Cost`. That number is measured and pinned in `tests/test_ledger.py` so it
+  cannot grow, and it is reported rather than enforced, because enforcing it
+  would block every seat on three weeks of other seats' prose.
+- First step: the ruling, in one line, in this file's own header beside the
+  status list. Whichever it is, `tools/ledger.py` needs one function changed
+  and its baselines lowered in the same pull request.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-17 — Craft scan: the free skills directory publishes a count its own file does not hold (engineer seat, scheduled run)
+- Trigger: the craft-scan rotation. `docs/market/landscape.md` carries
+  ComposioHQ's `awesome-claude-skills` since 2026-09-30 and no craft scan has
+  ever opened it, which made it the next unscanned entry. Fetched its GitHub
+  metadata and its README this run. TheSequence was the first pick and could
+  not be fetched at all, which is the ledger entry above.
+
+**Worth stealing: the first screen is an action, not an index.** The README
+puts a three-step quickstart above its catalogue. Install the plugin, run
+`/connect-apps:setup`, restart and try it. A reader who came for a list gets
+a working thing in three commands before the list begins, and the list is
+what they scroll to afterwards. Our `/library` opens on an index of issues,
+which is the right content and the wrong first move: a visitor who has never
+read an issue has nothing to do on that page except choose. The equivalent
+for us is not a plugin install. It is one claim, rendered with its evidence
+and its contradiction, above the list, so the first screen demonstrates what
+the product is instead of describing it.
+
+**What alexandria does better, and it is today's own subject.** The
+directory's first sentence calls itself "a comprehensive and curated list of
+1000+ production ready and practical Claude Skills and Plugins". Its README
+holds 76 linked list entries across 11 categories. The number is not a lie,
+it is a number from somewhere else: six of the seven places the file says
+"1000+" are about Composio's own 1,000 app integrations, and the first
+sentence borrowed it. Measured today: 77,255 stars, 9,153 forks, **1,766 open
+issues, and a last push of 2026-09-18**, with a submission PR arriving as
+recently as 2026-10-16. So the queue grows, nothing merges, and the headline
+count is 13 times the catalogue. Every number alexandria prints about its own
+corpus is re-derivable from the database by a command, which is a difference
+worth saying out loud on the pricing page rather than only believing.
+
+**The correction this owes our own file.** The landscape entry repeats the
+"1,000+ Claude Skills and plugins" claim and its `Last observed` is
+2026-09-30. Both halves need the market seat's hand: the count should read
+"76 linked entries, against a self-described 1,000+" and the freshness line
+should carry the 29-day gap, because an unmaintained directory with a 1,766
+-deep queue is a different competitor from a trending one. `landscape.md` is
+the market seat's surface, so this is a note to that seat.
 - Status: proposed

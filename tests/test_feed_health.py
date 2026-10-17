@@ -30,6 +30,7 @@ against the real `sources.yaml` in the checkout.
 Run with `python3 -m pytest tests/test_feed_health.py -q`.
 """
 
+import json
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -337,10 +338,21 @@ def test_only_the_three_real_failures_gate():
 # ------------------------------------------------------------- the fetching
 
 class FakeResponse:
+    """A stand-in for an httpx response, carrying bytes the way one does.
+
+    `payload` used to be reachable only through `.json()`, which let the fake
+    disagree with the real thing: a real response holds the bytes and derives
+    the JSON from them. `check_one` now judges the bytes, because the bytes
+    are what the second transport returns when the first one is refused, so
+    the fake serializes the payload into `.content` as httpx would.
+    """
+
     def __init__(self, status_code=200, content=b"", payload=None):
         self.status_code = status_code
-        self.content = content
         self._payload = payload
+        if payload is not None and not content:
+            content = json.dumps(payload).encode()
+        self.content = content
 
     def json(self):
         if self._payload is None:
@@ -664,3 +676,77 @@ def test_a_day_with_nothing_new_is_not_a_failure(fake_ingest, monkeypatch):
     ingest, state = fake_ingest([10] * 8, [5] * 44, 50)
     monkeypatch.setattr(ingest, "upsert_papers", lambda rows: 0)
     assert ingest.ingest() == 0
+
+# ------- the second transport, after INC-2026-10-17 ------------------------
+#
+# The artifact these are written against is a real one. `genai.owasp.org/feed/`
+# answered 403 to httpx under five user agents and 200 with ten items, newest
+# 8.6 days old, to urllib, on 2026-10-17. `pipeline/ingest.py` fetches with
+# `feedparser.parse(url)`, which uses urllib, so the 403 was a fact about this
+# file's client and not about the feed, and it had already been written into
+# `sources.yaml` as `MEASURED DEAD` and into the ledger as a proposal to retire
+# the source.
+
+FEED_SOURCE = {"name": "owasp-ish", "kind": "feed", "tier": "d",
+               "url": "https://blocked.example/feed/"}
+
+
+def test_a_403_to_httpx_is_not_a_verdict_until_the_production_transport_agrees(monkeypatch):
+    monkeypatch.setattr(fh, "confirm_with_production_transport",
+                        lambda url: (RSS, "200 to urllib"))
+    result = fh.check_one(FEED_SOURCE, FakeClient(FakeResponse(403, content=HTML)))
+    assert result["verdict"] == "ok"
+    assert result["transport"] == "urllib"
+    assert result["items"] == 2
+    assert "403 to httpx, 200 to urllib" in result["detail"]
+    assert "pipeline/ingest.py" in result["detail"]
+
+
+def test_a_403_both_clients_see_is_still_a_failure(monkeypatch):
+    monkeypatch.setattr(fh, "confirm_with_production_transport",
+                        lambda url: (None, "HTTP 403 to urllib as well"))
+    result = fh.check_one(FEED_SOURCE, FakeClient(FakeResponse(403, content=HTML)))
+    assert result["verdict"] == "http-403"
+    assert "HTTP 403" in result["detail"] and "urllib as well" in result["detail"]
+    assert fh.failures([result]) == [result], "an http- verdict still fails the gate"
+
+
+def test_a_transport_error_is_also_retried_on_the_production_client(monkeypatch):
+    monkeypatch.setattr(fh, "confirm_with_production_transport",
+                        lambda url: (ATOM, "200 to urllib"))
+    result = fh.check_one(FEED_SOURCE, FakeClient(raises=RuntimeError("tls")))
+    assert result["verdict"] in ("ok", "stale", "dead-stale")
+    assert result["transport"] == "urllib"
+    assert result["status"] == 200
+
+
+def test_unreachable_names_both_clients(monkeypatch):
+    monkeypatch.setattr(fh, "confirm_with_production_transport",
+                        lambda url: (None, "URLError to urllib as well: no route"))
+    result = fh.check_one(FEED_SOURCE, FakeClient(raises=RuntimeError("tls")))
+    assert result["verdict"] == "unreachable"
+    assert "RuntimeError" in result["detail"]
+    assert "urllib as well" in result["detail"]
+
+
+def test_the_transport_note_survives_the_verdict_note(monkeypatch):
+    """A source the second transport reaches and that is still stale says both."""
+    stale = b"""<?xml version="1.0"?><rss version="2.0"><channel><title>t</title>
+    <item><title>old</title><pubDate>Mon, 01 Jan 2018 10:00:00 +0000</pubDate></item>
+    </channel></rss>"""
+    monkeypatch.setattr(fh, "confirm_with_production_transport",
+                        lambda url: (stale, "200 to urllib"))
+    result = fh.check_one(FEED_SOURCE, FakeClient(FakeResponse(403, content=HTML)))
+    assert result["verdict"] == "dead-stale"
+    assert "200 to urllib" in result["detail"]
+    assert "days old" in result["detail"]
+
+
+def test_a_200_never_pays_for_the_second_fetch(monkeypatch):
+    """The confirmation runs only on a failure, so the census costs what it did."""
+    def refuse(url):
+        raise AssertionError("the second transport ran on a healthy source")
+
+    monkeypatch.setattr(fh, "confirm_with_production_transport", refuse)
+    result = fh.check_one(FEED_SOURCE, FakeClient(FakeResponse(200, content=RSS)))
+    assert result["verdict"] == "ok" and result["transport"] == "httpx"
