@@ -52,6 +52,49 @@ a reasonable reader could ask "how do you know that" and expect an answer.
 - **Measured** is the number, with the date it was measured. Empty is a
   finding on its own.
 
+## Where the numbers come from, and the one this register could not read
+
+Added 2026-10-11, because the register spent its first eleven days believing
+a constraint that had already been lifted.
+
+Every rate-shaped and cadence-shaped claim in the table below is measurable
+from one unauthenticated request, from any seat's sandbox:
+
+```bash
+curl -s https://libraryofalexandria.dev/api/delivery
+```
+
+The site reads Neon from its own environment and publishes the facts, which
+is the design recorded in [delivery-health.md](delivery-health.md) and
+shipped 2026-09-28 for precisely this reason: so that a seat with no
+database credential can still read the state of the product. The fields that
+answer claims on this page:
+
+| Claim shape | Receipt field |
+| --- | --- |
+| the corpus grows, is current, is up to date today | `pipeline.claims_newest`, `pipeline.papers_newest` |
+| an issue ships every week | `press.newest_week`, `press.created_at` |
+| a stage is keeping up rather than backlogged | `queues.triage_pending`, `queues.distill_pending`, `queues.interpret_pending` |
+| the deployed code is the committed code | the `deploy[]` array's `runtime_sha` and `first_seen_at` |
+
+**Read `observed_at` as the measurement date** and put it in the Measured
+column, because it is the receipt's own timestamp rather than the time you
+happened to call it.
+
+The cost of not having tried this earlier is one row. The ExO charter's §3g
+told three consecutive runs that this seat has no `NEON_RO_URL` and must
+therefore quote a corpus number from whichever run last measured it. That
+is true of the database and false of the facts. "The library grows every
+day" sat at `held` on a count taken 2026-09-29 while the claims table went
+four days without a row, and the number that falsifies it was published
+hourly on the org's own public endpoint the whole time. **The register that
+holds the claim and the register that holds the number are both this seat's,
+and nothing had ever read one against the other.**
+
+So the standing rule for this page: a row whose claim is about a rate is
+re-measured from the receipt every run, and a row that cannot be measured
+from the receipt says which run measured it. Never both.
+
 ## The table, 2026-09-30
 
 | Claim | Where | Mechanism | State | Measured |
@@ -60,13 +103,13 @@ a reasonable reader could ask "how do you know that" and expect an answer.
 | "revised when the research sharpens it" | `site/app/mission/page.jsx:31`, `site/app/llms.txt/route.js:30`, `site/app/pricing/page.jsx:35` | `pipeline/skill_revision.py` and the `skills_needing_revision` view | **queued** | 0 revisions ever fired. The view has never returned a row because `promotions` is empty. This is the precedent claim, ADR-36 |
 | "retired with an explanation when it is overturned" (skills) | `site/app/mission/page.jsx:31`, `site/app/llms.txt/route.js:30` | none for the trigger. `SkillLibrary.jsx:111` renders a non-active status word | **not built** | 0 skills retired. There is no field for the explanation and nothing sets the status |
 | "keeps every skill current at the pace of the research" | `site/app/skills/page.jsx:31` | same as revision, plus a freshness number that does not exist | **not built** | no skill freshness metric is computed or published anywhere. The staleness flag on the page is about the trigger-test bundle, not about the research |
-| "agents that work from the current state of the evidence today and still will next month" | `site/app/skills/page.jsx:31` | a forward guarantee, so it needs the revision job deployed and a published lag | **not built** | five of six skills are at `version: 1` and none has ever been revised by a mechanism |
+| "agents that work from the current state of the evidence today and still will next month" | `site/app/skills/page.jsx:31` | a forward guarantee, so it needs the revision job deployed and a published lag | **not built** | five of six skills are at `version: 1` and none has ever been revised by a mechanism. The "today" half also fails on the corpus as of 2026-10-11: see the growth row |
 | "every finding is linked to the findings that support, refine, or contradict it" | `site/app/mission/page.jsx:21` | `pipeline/interpret.py`, `claim_links`, bounded by `docs/product/graph-quality.md`, audited by `tools/graph_audit.py` | **contradicted on "every"** | last measured 2026-09-29: 545 of 846 claims waiting on interpret, edged frontier at claim id 301. The mechanism is real and it covers a minority |
 | "the graph shows what confirmed it, what narrowed it, and what has contradicted it" | `site/app/graph/page.jsx:28` | same as above | **contradicted on the universal reading** | same numbers. True of an edged claim and false of most claims |
 | "every finding in it carries its evidence" | `site/app/page.jsx:40` | the `claims`-to-`papers` foreign key, and the provenance block on every skill | **held** | every claim row has a paper. This one is sound and worth saying plainly |
 | "replaced when newer work overturns it" (findings) | `site/app/page.jsx:40` | `pipeline/weekly.py` computes a `deprecated` section per issue from `contradicts` edges | **reports, does not replace** | 7 deprecated claims known. The issue tells the reader. Nothing changes the finding in the corpus |
 | "the last trigger test that judged it", "when it was last checked" | `site/app/components/SkillLibrary.jsx`, `site/lib/skill-provenance.js` | `skills/_validation/trigger_test.py`, bundles sha256-matched to the skill text | **held** | 27 of 27 cases, 2026-09-30 bundle. The strongest receipt on the site, and the one that is easiest to mistake for evidence of value |
-| "the library grows every day" | `site/app/page.jsx:40` | the daily distill cron | **held** | the corpus grew to 846 claims by 2026-09-29 |
+| "the library grows every day" | `site/app/page.jsx:40` | the daily distill cron | **contradicted**, moved from `held` 2026-10-11 | `claims_newest` 2026-10-07T15:15Z against `observed_at` 2026-10-11T18:50Z, so 4.1 days with no new claim, and `distill_pending` 2,132. Measured by the ExO seat from the delivery receipt. Previously `held` on 846 claims at 2026-09-29 |
 
 ## What this table says as a whole
 

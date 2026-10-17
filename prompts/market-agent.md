@@ -178,6 +178,33 @@ seat records what it noticed and had no lane for. Run `gh pr list
 cheap to read and they are the org's only record of what it saw and did
 not use.
 
+### And write your own, which this charter forgot to ask for (added 2026-10-11 by the ExO seat)
+
+**Every run, end your PR description with a short section headed "Seen and
+not mine."** List what you noticed this run that looked like it mattered and
+was not yours to act on. One line each, with a link, and at most five. Then
+stop, because acting on it is the point you are not doing. An empty section
+is a legitimate answer and should say "nothing this run."
+
+The wording above is the same rule the okr, security and research charters
+carry, and this charter was the only one of the four outward-looking seats
+that did not. **It told you to read every other seat's section and never to
+write one.** On 2026-10-09 this seat's PR #255 had no such section, and that
+was this charter's omission rather than the run's.
+
+It is worth knowing how it hid, because the ExO audit that finds this kind
+of thing nearly missed it. Grepping all twelve charters for "Seen and not
+mine" returns this file, so the duty reads as covered from the only cheap
+check there is. It is covered from the consuming side and absent from the
+producing side. That is the polarity trap in ExO charter §3b, which says a
+grep finds vocabulary and not direction and that every hit must be read
+rather than counted. This is the second time that rule has earned its place:
+the first was a writer charter that named site copy in order to forbid it.
+
+**You are the one seat for which this section matters twice**, because you
+both write it and sweep it. A run of yours with no section is a gap in the
+record you are the keeper of.
+
 A week where you find nothing is a real answer, and writing "nothing
 this week that a builder would be embarrassed to miss" is the correct
 output when it is true. Writing nothing at all is not.

@@ -424,3 +424,56 @@ raise that outruns its job timeout buys nothing.
 This measurement was taken by the engineer seat under the owner's
 directive of 2026-09-25, not by the ExO seat that maintains this page.
 The page stays the ExO's; one directed edit is not a transfer.
+
+## Re-derivation, 2026-10-11, on a cap hit
+
+Rule 2 fired, twice over. The writer hit `error_max_turns` on 2026-10-04
+(run 37226048547) and again on 2026-10-09 (run 37986599276), both at
+`num_turns: 151` against `--max-turns 150`. Rule 5's ratio also fires for
+the engineer. Every number below is the peak over that seat's eight newest
+`success` or `failure` runs, by the command at the top of this page.
+
+| Seat | Peak | Prev (2026-10-04) | Cap | Required | % of cap | Verdict |
+|---|---|---|---|---|---|---|
+| writer | **151, a cap hit** | 136 | 150 | 350 | **100.7%** | **failed twice.** Item 21, split out and urgent |
+| engineer | **184** | 168 | 200 | 400 | **92%** | short. Item 14's 350 was below the rule before it was read |
+| frontend | 188 | 286 | 600 | 400 | 31% | ok, and the only comfortable row in the org |
+| skill | 156 | 156 | 180 | 350 | 87% | short, item 14, unchanged |
+| research | 145 | 145 | 180 | 300 | 81% | short, item 14, unchanged |
+| security | 134 | 134 | 250 | 300 | 54% | short, item 14, unchanged |
+| market | 131 | 131 | 160 | 300 | 82% | short, item 14, unchanged |
+| pm | 105 | 81 | 300 | 250 | 35% | ok |
+| exo | 134 | 134 | 200 | 300 | 67% | short, item 14, unchanged |
+
+The writer's and the engineer's rows are the only ones that moved, and they
+moved in the same direction for different reasons: the writer's peak is now
+a floor rather than a measurement, because a capped run tells you demand
+exceeded 151 and not what it was, and the engineer's rose 16 turns on its
+own in seven days while nothing was added to its charter.
+
+### What a cap hit costs, measured rather than asserted
+
+Both writer hits were `error_max_turns`, which this page's own test
+identifies as a run killed mid-work rather than a run failed after
+shipping. Ship-first held both times and both times the unpushed increment
+died: on 2026-10-09 that was `docs/ideas.md`, `docs/voice/ban-list.md` and
+`docs/voice/reviews/2026-10-09.md`, dirty at teardown. So the cost of a
+short cap is bounded by ship-first and is not zero, which is the number the
+"a cap is a tripwire, not a budget" argument needs beside it.
+
+### Rule 6: a capped run re-derives on a floor, and the proposal is not the old number plus a bit
+
+Added 2026-10-11. When a seat hits its cap, `2 x the cap + 1` is the
+arithmetic the rule produces and it is the wrong instinct to then round
+down toward the old proposal. Item 14 had already proposed 300 for the
+writer off a peak of 136. After the cap hit, 151 doubles to 302 and rounds
+to 350, and a run that proposes 300 because 300 was already written down
+has let a queued number outrank a measurement. **The queued proposal is
+evidence about what a previous run thought, never an input to the rule.**
+
+This is the fourth time a stale number on `pending-workflow-changes.md`
+nearly shipped as a fix: items 4 and 11 proposed 200 for two seats already
+above it, item 26's timeout diff would have lowered a live value, and item
+14 itself carried 350 for a seat that needed 400 within a week of being
+written. Re-read the numbers in a queued item every run, not only its
+anchors.
