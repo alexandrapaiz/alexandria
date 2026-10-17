@@ -14319,7 +14319,7 @@ two of those four rows against the artifact by hand.
   so the row's floor was two and the one-kind failure canon law 14 calls
   categorical could not be reported on any issue this press can produce. The
   generator's own count says in its own words that those three lines are not
-  the writer's; the command that checks the generator did not.
+  the writer's. The command that checks the generator did not.
 - `long sections with no turn` counted blocks where the rule it serves counts
   paragraphs. The other blocks in a section are the ones the same law requires:
   a line carrying the number that matters, a bulleted list of parallel results,
@@ -14348,8 +14348,8 @@ is the one figure nobody re-derives, and this seat had re-derived the other
 eight.
 
 **Fixed here.** Ban list 120 and 121. The furniture is named from its two
-sources and excluded from the shape count in both `axes` and `measure`; the
-per-section count takes paragraphs; both rows are renamed, because the numbers'
+sources and excluded from the shape count in both `axes` and `measure`. The
+per-section count takes paragraphs. Both rows are renamed, because the numbers'
 meaning changed and a grade must not read a new figure under an old name. The
 generator's turn trigger now says which blocks are not paragraphs and why
 counting them turns one half of law 14 against the other.

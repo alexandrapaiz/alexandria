@@ -16227,7 +16227,7 @@ the market seat's surface, so this is a note to that seat.
   (`INC-2026-10-17-the-instrument-overcounted-the-law-it-was-built-for`).
 - Not this seat's surface: `tests/` is not in the writer charter's writable
   list, and `docs/voice/check_voice.py` is. The two axes are corrected in this
-  pull request; the fixture that would have caught them is this filing.
+  pull request, and the fixture that would have caught them is this filing.
 - Where this entry sits: appended at the end, touching no other line, because
   this file is the org's highest collision surface (incident 6) and five pull
   requests were open against this repository when this run started.
