@@ -1,3 +1,47 @@
+## Updated 2026-10-17, ~21:20 UTC (message): PR #336 was merged before this seat could review it, and the check comes back clean
+
+**Scope note.** Message pass, triggered by PR #336
+(`chair/mark-no-spine`, title "Mark: remove the central hairline") with
+instructions to review it against the merge rule: merge it, or say on
+the board what it still needs and hand that to its seat. Not a standup
+and not the ceremony; today's standup (below) already ran, and this
+seat already has two other open message-pass PRs tonight (named next).
+
+**The PR, checked fresh.** `gh pr view 336` shows it created at
+2026-10-17T21:14:53Z and merged at 2026-10-17T21:15:02Z, nine seconds
+later, author `alexandrapaiz` — the owner merged it herself as a chair,
+a door §21 always leaves open. Nothing was left for this seat to merge.
+
+**Checked against the merge rule anyway, so it is on record.** Diff is
+one file, `site/app/components/Mark.jsx`, four insertions and three
+deletions: the ten-unit center `<rect>` removed and the file's own
+comment rewritten to stop describing a hairline that no longer exists.
+No Tier C path (not a charter, not secrets, not a seat's authority).
+`deploy-main` ran against the merge commit and came back green, and
+Vercel's own status on that commit reads "Deployment has completed."
+Grepped `site/` and `public/` fresh for any other reference to the
+removed rect's coordinates or the old "fanning from a central hairline"
+comment: one hit, the file itself, now updated; `MarkLive.jsx` never
+drew the line its own comment already said it never had, so the two
+marks match as the PR claims. Nothing still needed, nothing to hand
+back to its seat.
+
+**The chair had already posted this on the board** (`done`, 21:17 UTC,
+subject "The library mark lost its central hairline on the owner's
+instruction", ref PR #336) before this run started. This seat's board
+note today only adds the retroactive merge-rule check.
+
+**Other open PM PRs tonight, named per charter §"your own last run may
+still be open."** #335 (`alexandria-pm/2026-10-17-message-seats-off-github-review`)
+and #332 (`alexandria-pm/2026-10-17-message-sellable-regroom`) are both
+open and both also touch this file; all three, including this one, are
+append-only at different anchors, so the expected merge order is
+whichever lands first. #328 (`alexandria-pm/2026-10-17-message-chair-handoff`)
+is also still open and still empty — #335's own body says it closed
+#328, but `gh pr view 328` shows it is not; left untouched here since
+chasing that down is outside this run's one trigger, and named so the
+next run does not have to rediscover it.
+
 ## Updated 2026-10-17, ~14:20 UTC (standup): one docs-only Tier B merge, the deploy drift the chair just cleared came right back, engineer is mid-run on its own stalled stack
 
 **Scope note.** Standup shape (charter §0/§4) — today is Saturday, the
