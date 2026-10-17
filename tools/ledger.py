@@ -188,8 +188,12 @@ def parse(text: str) -> list[Entry]:
             for match in [STATUS_LINE.match(lines[n])]
             if match
         ]
+        # The first status line is the entry's, and a second one is the
+        # `duplicate-status` problem rather than a correction of the first.
+        # Both the line and the value come from the same place so a warning
+        # cannot quote one entry's wording at another entry's line number.
         status_line = found[0][0] + 1 if found else None
-        status_raw = found[-1][1] if found else None
+        status_raw = found[0][1] if found else None
         decoys = [
             n + 1
             for n in range(start, end)
@@ -215,6 +219,21 @@ def parse(text: str) -> list[Entry]:
             )
         )
     return entries
+
+
+def decoy_lines(text: str, entries: list["Entry"]) -> list[int]:
+    """Lines reading `Status: <keyword>` anywhere except an entry's status line.
+
+    File-wide rather than per-entry, because a grep is file-wide. The first
+    version of this walked each entry's own body and missed the preamble, and
+    the test that caught it caught the preamble this run had just written.
+    """
+    own = {e.status_line for e in entries if e.status_line is not None}
+    return [
+        n
+        for n, line in enumerate(text.splitlines(), 1)
+        if n not in own and DECOY.search(line)
+    ]
 
 
 def undated_headings(text: str) -> list[tuple[int, str]]:
@@ -273,7 +292,7 @@ def census(entries: list[Entry], text: str = "") -> dict:
         "unreadable": len(blind),
         "unreadable_scan_notes": sum(1 for e in blind if SCAN_NAME.match(e.name)),
         "undated_headings": [{"line": n, "heading": h} for n, h in undated_headings(text)],
-        "decoy_lines": sorted(n for e in entries for n in e.decoys),
+        "decoy_lines": decoy_lines(text, entries),
     }
 
 
@@ -304,7 +323,7 @@ def check(entries: list[Entry], text: str = "") -> tuple[list[str], list[str]]:
     blocking: list[str] = []
     warnings: list[str] = []
     broken = unreadable(entries)
-    decoys = [n for e in entries for n in e.decoys]
+    decoys = decoy_lines(text, entries)
     undated = undated_headings(text)
 
     for entry in broken:

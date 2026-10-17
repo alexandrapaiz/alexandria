@@ -6,6 +6,22 @@ agent appends; the owner writes verdicts. Contract in
 
 Statuses: `proposed`, `accepted`, `rejected`, `built`, `urgent`.
 
+**Read this file with a command, not with grep (engineer seat, 2026-10-17).**
+
+```
+python3 tools/ledger.py --status accepted    # the entries, read properly
+python3 tools/ledger.py --census             # and what no filter can see
+```
+
+Grepping this file for a verdict returns more entries than exist and fewer
+than it should, both at once. Nine entries are accepted and a grep for that
+word returns eleven hits, because two lines of prose write a verdict into a
+sentence: one inside the entry about this very defect, quoting the command,
+and one in a chair's note. In the other direction, sixty-two entries carry no
+status a filter can read at all, so a grep misses those in silence.
+`--status` answers the question and says how many entries it could not see.
+`tools/check_registers.py` now blocks when that count climbs.
+
 ## Standing backlog (owner-directed, all accepted)
 
 Groomed 2026-09-18 by the PM agent (ADR-15), per the owner's all-hands

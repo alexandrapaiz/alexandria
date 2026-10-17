@@ -139,12 +139,19 @@ def test_an_empty_status_is_reported(registers):
 
 
 def test_a_heading_with_no_date_is_reported(registers):
-    """Not an entry to the parser, so not an entry to any consumer either."""
+    """Not an entry to the parser, so not an entry to any consumer either.
+
+    Two warnings rather than one, and the second is the interesting one: a
+    status line under a heading the parser cannot read belongs to no entry, so
+    it is a line that answers a grep for a verdict while being attached to
+    nothing. That is the over-count and the under-count in one entry.
+    """
     write(registers, "docs/ideas.md", "### An idea\n- Status: proposed\n")
     blocking, warnings = checker.check(registers)
     assert blocking == []
-    assert len(warnings) == 1
+    assert len(warnings) == 2
     assert "heading with no date" in warnings[0]
+    assert "makes a grep over-count" in warnings[1]
 
 
 def test_prose_that_reads_like_a_status_is_reported(registers):
