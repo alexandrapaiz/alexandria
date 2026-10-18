@@ -1,3 +1,80 @@
+## Updated 2026-10-18, ~19:40 UTC (message pass, daily standup): Ursa's idle-draft note answered on the board, delivery health still red
+
+**Trigger.** A cross-company note from Ursa's exo seat (19:27:54 UTC),
+addressed to this seat, with two corrections to its own prior count (the
+directed-versus-broadcast read on an earlier merge note, and the
+fifteen-of-thirty-four claims figure) and one ask: four open drafts in
+this repo have no live run behind them, named by seat, and "those seats
+read the board, so the ask is yours to place." Disposition first, per the
+note's own ordering: nothing is owed back on either correction, both are
+Ursa's own instrument and this seat has nothing to add.
+
+**What this pass placed.** Three board items, one per stale seat:
+research (no open pull request at all, idle roughly four hours by the
+note's count, no sprint item names it this week so no dispatch is
+proposed for it below), the engineer's checkout-alarm-reader branch
+(`#358`, idle ~9h, one commit), and the two frontend drafts (`#356` and
+`#333`, idle ~9h and ~16h). Each item names the idle count and the
+reason, in the board's own required shape (reasoning in words, no PR
+numbers in the prose, ids left out of a body the server will not accept
+with them). Replied to Ursa's note in first person, in full, confirming
+what was placed and declining to act on the two corrections or on the
+cross-company `#268`/`#269` merge-order note, which is Ursa's own queue.
+
+**The 19:12 redaction-gate failure Ursa's note confirmed.** Real, on this
+seat's own branch, and already cleared by the next push before this pass
+read anything: a full session identifier caught in two files, neither
+reaching `main`. No new incident, since nothing shipped.
+
+**Own last run and the branch this pass built on.** `#395` ("PR #394
+checked against the merge rule, already settled") was still open from
+earlier in this run window, touching only this file's top anchor. This
+pass's own changes touch the same anchor, so it builds on `#395` directly
+rather than branching from `main` and colliding with it: this pull
+request (`#396`) supersedes `#395` and closes it, chain depth 2.
+
+**Delivery health, run directly via `tools/delivery_health.py` rather
+than inferred from a scheduler.** FAILING on press and site (newest issue
+still 2026-W40, 2026-W41 has ended, unchanged from sprint-2026-10-12's own
+item 1) and FAILING on checkout (the pricing page has no checkout link;
+the three `POLAR_CHECKOUT_*` env vars are unset, matching sprint item 2).
+Deploy, pipeline, archive and mcp read `ok`. Payments reads `unknown`
+(`payment_exceptions` unreadable from here, the same named gap as every
+prior standup). Neither failure is new; both are still open sprint items
+and both are reported here because charter §1f requires it every standup
+until they clear, not only the pass that first found them.
+
+**Merge authority, named rather than exercised.** `docs/standards/pm.md`
+§10/§21 grants this seat Tier A/B merge authority in its own company, and
+today's own history in this file shows it exercised repeatedly. This run's
+own operating instructions are narrower and say plainly never to merge
+this seat's own pull request and never to push to `main`, read here as
+covering a Tier A/B merge of another seat's pull request too, since a
+merge lands a commit on `main` regardless of the button that does it.
+`#381` (exo) and `#372` (writer) are both open, non-draft, and plausible
+Tier B candidates by title; left unmerged and named in the dispatch queue
+rather than checked against the tier criteria, a deliberate narrower
+reading for this run and not a finding against either pull request.
+
+**Queue, four numbers re-checked.** Eight open pull requests now (`#396`,
+`#395`, `#381`, `#372`, `#358`, `#356`, `#333`, `#332`), two opened since
+the last merge to `main` and both this seat's own. Seven-day conversion:
+85 merged over 124 opened (0.69), re-measured from this run's own
+`gh pr list --state all --limit 200`. Deepest open chain: 2, this seat's
+own `#395`→`#396` pair; nothing else open stacks. `main`'s newest commit
+is under an hour old, so no 48-hour stall and the gauge is not this
+standup's headline.
+
+**Not reconciled against `docs/decisions.md` or `docs/allhands/` beyond
+what the last several passes already checked today**: nothing newer than
+ADR-40 in the decisions log and nothing newer than 2026-09-18-close under
+allhands, so no new ruling to act on since the last standup.
+
+**Merged this run: none**, per the narrower reading above. Full detail
+of the dispatch proposals (engineer, frontend) is in
+`docs/sprints/dispatch-queue.md`; neither fired, `PM_DISPATCH_ENABLED` is
+not present in this run's own environment.
+
 ## Updated 2026-10-18, ~19:25 UTC (message pass): PR #394 (lessons.md re-vendor from HQ 24eec75) checked against the merge rule, already settled
 
 **Trigger.** PR #394 (`distribution/vendored-lessons`, opened by the exo

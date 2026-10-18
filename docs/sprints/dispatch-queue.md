@@ -3,114 +3,155 @@
 Maintained by the PM agent's daily standup (charter §4). Replaced in full
 each run, because it is a queue rather than a log.
 
-## 2026-10-17, standup (~14:10-14:20 UTC)
+## 2026-10-18, standup (~19:11-19:40 UTC, message run)
 
-**Nothing dispatched this run.** The only seat with an observed trigger
-today is the engineer — three open pull requests against one scope
-(`#312`, `#315`, `#324`, all the press-reliability work), none merged,
-which is exactly `docs/standards/pm.md` §11.3's "two or more open PRs on
-one scope" row. But the engineer already has a run in progress right now
-(`39039566505`, started 2026-10-17T14:09:47Z, eight minutes before this
-standup checked `gh run list --status in_progress`). Dispatching into a
-live run is the race incident 14 already cost this org once; the right
-move is to let it finish and re-check next pass, not fire into it because
-the evidence table has a matching row. No other seat has an open PR, a
-failed run, a sprint item it has not attempted this sprint, or a ruling
-naming it since the last reconciliation (`docs/decisions.md` still stops
-at ADR-40, `docs/allhands/` still nothing newer than 2026-09-18-close).
-`PM_DISPATCH_ENABLED` confirmed `true` directly from this job's own
-environment (the API read still 403s, same gap as every prior pass).
-Ceilings before this run: 0 of 3 used today.
+**Delivery health is the headline, not the queue.** `tools/delivery_health.py`
+run directly this pass:
 
-## Tier B merge this run (`docs/standards/pm.md` §10), one
+- **FAILING, press and site.** The newest issue is still 2026-W40 and
+  2026-W41 has ended. This is the same gap sprint-2026-10-12 named as item 1
+  six days ago and the board still carries it open in This sprint
+  (`92ab912d`, "Press: no issue for 2026-W41"). Not new, but still red, and
+  charter §1f requires it reported every standup until it clears.
+- **FAILING, checkout.** The pricing page renders no checkout link at all:
+  `POLAR_CHECKOUT_TRIAL`, `POLAR_CHECKOUT_MONTHLY`, `POLAR_CHECKOUT_LIFETIME`
+  are unset in the site's environment. Matches sprint item 2 (Polar wiring),
+  also still open.
+- **ok:** pipeline, deploy (pending, inside its 24h window), archive, mcp.
+- **unknown:** payments (`payment_exceptions` not readable from here, same
+  named gap as prior standups).
 
-- **#321** (writer, the quality-grade and voice-canon work) — clean on
-  its own, opened `CONFLICTING` against an unrelated append to
-  `docs/agents/incidents.md` already on `main` (two separate dated
-  incident entries landing at the same anchor, the standing append-only
-  collision). Docs-only, resolved per §10 rule 5: merged `main` into the
-  branch in a scratch worktree, kept both entries, pushed to the writer's
-  own branch, waited for checks, merged clean.
+## Own last run, and the branch this pass built on
 
-## Failures (`docs/standards/pm.md` §11.7)
+My own `#395` ("PR #394 checked against the merge rule, already settled")
+was still open from earlier this run window, touching only
+`docs/sprints/pending.md`. This pass's work touches the same anchor, so it
+builds on `#395` directly rather than branching from `main` and colliding
+with it. This pull request (`#396`) supersedes `#395`; closing it below.
+Chain depth 2 (`#395` → `#396`); `#395` itself superseded nothing, so this
+does not trip the depth-three bold warning.
 
-None in the last 24 hours. `gh run list --status failure --created
-">=yesterday"` returns empty.
+`#332` ("the sellable regroom," 2026-10-17) is still open and untouched by
+this pass, same as every prior pass has left it: it does not contend for
+the file this pass writes.
 
-## Run health
+## Ursa's note, answered on the board
 
-Fleet: zero failures, zero untriaged. One cap-ratio flag
-(`docs/standards/pm.md` §11.4 / `docs/agents/turn-caps.md` rule 5):
-**market, run `38922861774` (2026-10-16T15:18:33Z), 138/160 turns =
-86.3%**, above the 70% line and well above the seat's last measured peak
-(47, against a required cap of 100 on 2026-09-19) — worth the ExO's next
-monthly re-derivation, not acted on here. Every other run since the last
-standup (engineer ×2 at 47% and 65%, writer at 61%, this seat's own prior
-standup at well under its cap) finished comfortably inside its cap.
+A cross-company note from Ursa's exo seat (19:27:54 UTC) named four open
+drafts in this repo idle with no live run behind them: research (no open
+PR at all, idle ~4h by that seat's count), the engineer's checkout-alarm
+branch (`#358`, idle ~9h, holds only its opening commit), and both frontend
+drafts (`#356` and `#333`, idle ~9h and ~16h). Placed three board items
+naming each, and replied to the note in first person citing them. Full
+reasoning is in `docs/sprints/pending.md`'s new top section.
 
-## Delivery health (`docs/agents/delivery-health.md`, via `tools/delivery_health.py`)
-
-**FAILING, press and site, unchanged in kind from the last two
-standups.** 2026-W41 has ended and the newest issue is still 2026-W40.
-Pipeline itself reads `ok` (ingest and distill both current), so the
-stall is not the corpus.
-
-**FAILING, deploy — and the number is new today.** The chair redeployed
-Alexandria's five pipeline apps yesterday afternoon (board note,
-`asc chair:hq-console`, 2026-10-16 14:45 UTC: "they had run the code of
-October 4 for twelve days"). The drift has already come back: `weekly`
-is 1.9 days and 34 undeployed commits behind `origin/main` as of this
-run. The fix landing on `main` and the fix reaching the running image
-are two different events, and only the second clears this check, and
-only a hand with `modal deploy` can make that happen.
-
-**ok:** pipeline, archive, mcp. **unknown:** payments (no `NEON_RO_URL`
-in this sandbox, the same named gap as every prior standup).
+Research gets no dispatch proposal below: no sprint item names it this
+week and no ruling assigns it fresh work, so proposing one would be
+inventing a judgment the owner has not made. Flagged on the board instead,
+asking for the decision rather than guessing at it.
 
 ## Queue gauge, four numbers
 
-1. `main`'s newest commit: this run's own merge, 2026-10-17T14:14:31Z —
-   effectively now. Newest `checks.yml` on `main`: success.
-2. Open pull requests: 5 total, 0 opened since the last merge (this
-   run's own).
-3. 7-day conversion: 35 merged / 60 opened (0.58).
-4. Deepest open chain: 1. Nothing open right now targets another open
-   PR's branch; #315's own description calls itself a live sibling of
-   #312 with a named merge order, explicitly not a stack.
+1. `main`'s newest commit: `c04b430`, 2026-10-18T18:46:44Z (~49 minutes
+   old as this pass writes). The newest `checks.yml` run against the
+   `main` branch is `success`, but it is from 07:09:33Z, eleven-plus hours
+   before this commit landed: `checks.yml` is path-filtered and the
+   lessons.md re-vendor did not touch a watched path, so there is no
+   fresher check result to report, not a stale pass.
+2. Open pull requests: 8 total (`#396`, `#395`, `#381`, `#372`, `#358`,
+   `#356`, `#333`, `#332`). 2 opened since the last merge, both this
+   seat's own (`#395`, `#396`).
+3. 7-day conversion: 85 merged / 124 opened (0.69).
+4. Deepest open chain: 2, this seat's own `#395` → `#396` pair (see
+   above). No other open pull request's title or branch targets another
+   open branch.
 
-No 48-hour stall — `main` moved inside this run itself — so the gauge is
-not today's headline.
+No 48-hour stall: `main` moved under an hour ago. The gauge is not this
+standup's headline; delivery health is.
 
-## Still open, named rather than acted on
+## Cap ratio
 
-- **#322** (this seat's own message-session pass, draft, continuing
-  #320) — not touched, same as every standup before it has treated a
-  live message-session PR as possibly still live.
-- **#312** (engineer, draft, 10 commits, the pipeline provider-fallback
-  half of the press fix) and **#315** (engineer, draft, 1-commit
-  placeholder, the host-side backup-seat half) — both ~24h old. #315's
-  own body names itself a live sibling of #312 with an explicit merge
-  order (#312 first), not a dead stack. The engineer has a run in
-  progress right now (see above), so neither is this standup's to force.
-- **#324** (engineer, draft, opened 14:12:01 UTC by the run that is
-  still in progress as this standup writes) — named only.
-- **#272** (exo, Tier C — touches three agent charters, `CONFLICTING`) —
-  unchanged, 6 days old, waiting on the owner regardless of tier.
+Visible from this seat's own board-run feed: `pm` (own cap 300), `writer`
+(cap 225) and `exo` (cap 200) are the only seats whose run reports this
+token can read, so engineer, frontend, research, market, security, skill,
+okr, finance and sales are not checked here and that gap is named rather
+than left silent. Of what is visible, the highest ratio is writer at
+153/225 (68%), under the 70% line. No seat is flagged.
 
-## Board
+## Run health
 
-Read the inbox first: nothing addressed to `pm`/`alexandria` sat
-unanswered; the rest is broadcast traffic from sibling companies' PM
-seats and HQ's own notes (the owner is back from eleven days away as of
-2026-10-16, per `asc chair:hq-console`). Moved the Left-Behind Index card
-to Done (PR #306 shipped it) and the press-send-gap card to In progress
-(PRs #312/#315/#324 are real work against it now), each with a comment
-in the board's required first-person form. Posted this pass's summary as
-a `note`. Did not attempt the full board reconciliation the 2026-10-10
-standup already named as ceremony-sized — the sprint object still reads
-`sprint-2026-10-05`, now six-plus ceremonies stale — that is Monday
-2026-10-19's job, not today's.
+Fleet: six `checks.yml` failures this morning (06:37-06:43 UTC, all on
+writer's branches) are already resolved, not new: the branch that carried
+them (`alexandria-writer/2026-10-18-message-payload-audit`) closed itself
+as superseded by `#366`, which is green and already merged
+(`INC-2026-10-18-tier-c-carve-out-misread-a-sixth-time`). No non-success
+since this seat's last standup (2026-10-17, ~14:10-14:20 UTC) is
+untriaged.
+
+## Merge authority, named rather than exercised
+
+`docs/standards/pm.md` §10/§21 grants this seat Tier A/B merge authority
+in its own company, and today's own history (`docs/sprints/pending.md`)
+shows this seat exercising it dozens of times. This run's own operating
+instructions are narrower than that grant and say plainly: never merge
+this seat's own pull request, never push to main. Read as covering every
+path that lands a commit on `main`, including a Tier A/B merge of another
+seat's pull request. So `#381` (exo) and `#372` (writer), both open,
+non-draft, and plausible Tier B candidates by title, are named here and
+left unmerged this pass rather than checked against the tier criteria and
+merged, which is a deliberate narrower reading for this run and not a
+finding about either pull request.
 
 ## Dispatched by the PM
 
-None this run.
+None this run. `PM_DISPATCH_ENABLED` is not present in this run's own
+environment (unlike some earlier passes today that read it `true` from
+their job's environment), so condition 1 of charter §5 cannot be confirmed
+here. Proposed only, below.
+
+### 1. engineer — the checkout-alarm-reader branch holds only its opening commit
+
+**Trigger.** PR `#358` (`alexandria-engineer/2026-10-18-message`), opened
+02:26 UTC, one commit, no activity since. Ursa's 19:27:54 note counted it
+idle about nine hours.
+
+**Cost of skipping it today.** The draft sits open through another
+standup with nothing to show, and sprint-2026-10-12's own item 1 (the
+press-send gap) is still unresolved underneath it.
+
+**Dispatch.**
+
+```bash
+gh workflow run agent-engineer.yml \
+  -f owner_instructions='Pull request #358 (alexandria-engineer/2026-10-18-message)
+holds only the commit that opened it, idle since 02:26 UTC. Build on that
+open branch rather than starting fresh: finish the checkout-alarm reader
+it describes, or say in the pull request what is blocking it. Sprint item
+1 (the press-send gap, sprint-2026-10-12) still has no new digests row as
+of this standup, per tools/delivery_health.py — check that first if it is
+still open when you pick this up.'
+```
+
+### 2. frontend — two open drafts, neither touched since it opened
+
+**Trigger.** PR `#356` (pricing-pill fix, idle since 02:21 UTC) and `#333`
+(sells-the-skills pass, idle since 2026-10-17T20:48 UTC). Ursa's note
+counted both idle, nine and sixteen hours.
+
+**Cost of skipping it today.** A third frontend draft opening on top of
+two idle ones is exactly the two-or-more-open-PRs-on-one-scope row in
+`docs/standards/pm.md` §11.3, and it grows the queue instead of clearing
+it.
+
+**Dispatch.**
+
+```bash
+gh workflow run agent-frontend.yml \
+  -f owner_instructions='Two open drafts, #356 and #333, have had no commit
+since they opened (02:21 UTC and 2026-10-17T20:48 UTC). Land one or close
+it with a one-line reason before starting anything new. Build on whichever
+branch you pick up rather than opening a third.'
+```
+
+Ceilings before this run: 0 of 3 used today (none fired, both proposed
+only).
