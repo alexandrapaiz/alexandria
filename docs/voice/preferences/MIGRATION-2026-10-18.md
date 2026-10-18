@@ -86,7 +86,7 @@ assigns it `"chair"`, together with the taste ruling of 2026-09-20 that ends
 attributes the round-one mission page draft to the writer. Its text was never
 recorded so it is not a row, which means the one candidate in the session known
 to have a different author is also the one the dataset cannot hold. Round one
-may have been the writer's batch throughout; nothing on the record says so, and
+may have been the writer's batch throughout. Nothing on the record says so, and
 nothing here claims it.
 
 `recorded_by` is `writer` on every row in both files, which is true and is the

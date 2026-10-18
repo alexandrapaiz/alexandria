@@ -16585,6 +16585,12 @@ the market seat's surface, so this is a note to that seat.
   cannot fail, because a consumer reading an empty directory cannot distinguish
   a register with no data from a register with nothing to say. The schema was
   specified 2026-09-21 and held zero rows until 2026-10-18.
+- This is not a new finding and that is the argument for acting on it.
+  `docs/standards/lessons.md` L-A21 already makes the blind pass a failure
+  rather than a quiet success, and L-A25 already makes appending one line per
+  candidate while the session is live a company law. Both predate the session
+  that lost its candidate text. The gap is not a missing rule, it is that no
+  command or charter step points either law at this register.
 - What the writer seat already did, so this entry is not asking for it: the
   migration is done in this pull request, 32 rows across two session files,
   with the unrecoverable candidates listed rather than invented.

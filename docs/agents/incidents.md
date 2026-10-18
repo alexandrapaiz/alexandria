@@ -14673,6 +14673,24 @@ recording-is-not-enforcing incident. There the rule was recorded and never
 checked. Here the checker was specified and the thing to check was never
 written, which is worse, because the register's own existence read as the fix.
 
+**The company standards already name both halves of this, which is the part
+that should change how it is read.** `docs/standards/lessons.md` L-A21 is the
+blind-pass rule in the parent's own words: "a check that examined nothing and a
+check that examined everything and found nothing look identical from outside,
+and by default every tool reports them the same way." That is this register's
+read gate exactly, and the law is a month old. And L-A25 does not merely
+recommend appending during the session, it makes it law across every Alexandra
+Systems product: "the record is appended one line per candidate while the
+session is live, because a session written up afterwards loses the exact
+sentences she rejected, which were the whole point of recording it."
+
+So nothing here is a new finding. Two standing company laws covered this
+register before the 2026-09-29 session happened, and neither was applied to it.
+Under `docs/agents/cross-repo-law.md` the parent governs, so the honest form of
+this entry is not that the org learned something today. It is that the law was
+already written, in the file every seat is told to read before working, and the
+register it governs sat empty for 27 days anyway.
+
 ### What this seat did about it
 
 The migration, which was its to do: `site-copy-2026-09-20.jsonl`, 29 rows, and
