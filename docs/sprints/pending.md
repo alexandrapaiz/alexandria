@@ -1,3 +1,95 @@
+## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
+
+**Trigger.** The event bundle for this pass named seven things: four of
+this seat's own prior passes already merged (`#347`, `#350`, `#353`,
+`#355`, all confirmed on `main` before this run touched anything), PR #352
+opening (engineer, the checkout probe, "nothing watched whether a sale can
+happen at all"), PR #357 opening (okr, a second pass finding nothing new
+to score), and the okr seat's run finishing with the instruction to merge
+what is mine and hand the next thing to a seat on the board.
+
+**PR #352 (engineer) checked against the merge rule (Tier B) and merged.**
+By the time this pass read it, the PR was no longer the stub the 02:20
+pass saw: not a draft, full run note and PR body, no `hold` label, no
+comment, no review. `gh pr view` still reported `mergeable: CONFLICTING`,
+which `docs/standards/pm.md` §11.2 warns is a cache GitHub may not have
+recomputed, so this pass did not take the cached field as fact. Confirmed
+directly instead: `git merge-base`, `git merge-tree` against `origin/main`,
+and a real `git merge --no-commit --no-ff` in the working tree all agreed
+the merge is clean, then aborted the test merge before touching anything.
+Checked out the branch in a worktree and ran `tests/test_delivery_health.py`
+directly, since the diff touches no path `checks.yml` watches: 29 passed, 0
+failed. Diff is `tools/delivery_health.py`, `tests/test_delivery_health.py`,
+one new run note, and the three append-only registers, no Tier C path.
+Merged with `gh pr merge --merge`, no force, no squash.
+
+**PR #357 (okr) checked against the merge rule (Tier B) and merged.** Not a
+draft, `mergeable: MERGEABLE`, no `hold`, no comment. One file,
+`docs/okrs/okrs-2026-Q4.md`, a 31-line note recording that nothing on the
+board or in `pending.md` names seat `okr` beyond what `#351` already
+closed, so this pass did no ceremony and said so. That is itself the
+record the evidence rule asks for, not a no-op, so it merges.
+
+**The checkout-probe board card closed, and one follow-up named rather
+than re-asked.** Moved board item `01df58a7` (engineer, "nothing watched
+whether a sale can happen at all") to Done with the merge and the test
+count. The 02:20 pass had already named the one thing still owed on that
+surface — the probe's failing assertion travels the same email alerting
+path `mba` found notifies nobody, because the cooldown column it depends
+on is database-only — so this pass did not re-ask it as a new card.
+Engineer had already picked it up independently: **PR #358** ("the
+checkout alarm gets a reader on the board") opened at 02:26:43Z, before
+this pass's own board comment at 02:29. Still a draft, run note only, not
+yet Tier-B-eligible. Named here, not acted on.
+
+**A charter fix, checked and agreed, then queued for the owner rather
+than made.** `alexandra-systems/exo-centralizer` handed this seat a
+finding (board message, 02:24:14Z, ref `alexandra-systems#233`): nine of
+this repository's charters (`engineer`, `finance`, `market`, `okr`, `pm`,
+`sales`, `security`, `skill`, `writer`) still name the bare role in their
+branch-naming line, while every run today actually branches as
+`alexandria-<role>/...`. Verified rather than taken on their count:
+`grep -n "branch named" prompts/*.md` across all nine confirms it, and
+this charter's own branch lines on the bare names match the pattern. The
+finding is real and matters for a reason beyond tidiness: a tripwire that
+decides whether a self-merged run shipped anything reads this exact
+prefix line as its fallback, so a stale prefix can report a real merge as
+a false failure. Not fixed here. This seat's own boundaries section
+forbids touching anything under `prompts/`, stricter than the company
+standard's general Tier C authorship allowance, so the edit is the
+owner's to make even though she could point another seat at drafting it.
+Replied to the centralizer in first person on the board, named below as
+an owner action.
+
+**`#335` and `#332`, both this seat's own, both from last night, still
+open.** Neither was in this pass's event bundle and neither is a Tier B
+pull request this seat may merge under its own name (Tier B condition 1:
+a PM's own pull request waits for another merger). Unchanged since the
+02:20 pass's note; still waiting on the owner or a chair.
+
+**Run health.** `gh run list --limit 30` shows every Actions run since
+the last pass green; this pass itself ran entirely through the board and
+local checks, not Actions.
+
+**Queue gauge, four numbers.** `main`'s newest commit: this pass's own
+`#357` merge, under five minutes old as this is written. Newest
+`checks.yml` conclusion on `main`: success, from 02:03:44Z, unchanged
+because nothing merged since carried a path that workflow watches. Open
+pull requests: 8 total, 1 opened since the last merge to `main` (`#358`,
+engineer, already named above). 7-day conversion: 56 merged over 55
+opened, better than even. Deepest open chain: none of the 8 titles reads
+as a continuation of another; depth 1 across the board.
+
+**Owed to you, unchanged, not re-litigated here:** the Polar
+Merchant-of-Record account (five weeks overdue), the missing launch
+PR/FAQ on `main`, this seat's own open pull requests `#335` and `#332`
+from last night, and now **the nine-charter branch-prefix fix**
+(`alexandra-systems#233`), a one line edit per file the owner or a chair
+can make directly, or hand to this seat to draft if she would rather it
+came as a pull request she merges.
+
+**Merged this run:** Tier B, two (`#352` engineer, `#357` okr).
+
 ## Updated 2026-10-18, ~02:20 UTC (message pass): PRs #349, #351, #352 and my own three answered, the dead checkout pills handed to frontend as a decided call, not asked twice
 
 **Trigger.** Five events in this pass's bundle. PR #349 opening (writer,
