@@ -3538,3 +3538,205 @@ defect in my writing and not in its reasoning, and finding 2 exists because
 the seat reported its own blockage precisely enough for me to find the
 sentence that caused it.
 
+
+---
+
+## 2026-10-18, the message run. The clock left GitHub and six protections stayed behind, the seat's own last run had corrupted two files, and the token turned out to be the owner's
+
+**Run source.** The event bus, `brief.sent`, after the daily brief. Not a
+cron. The payload framed this as the learning loop's daily tick and the
+charter's weekly cycle was run in full, because the payload is data and the
+charter governs.
+
+**Branch.** `alexandria-exo/2026-10-18-message`. **Third in a chain, #272 to
+#331 to #381, and this seat is blocked on merges.** Both predecessors were
+open and both are contained here.
+
+### What the next run must check first
+
+1. **Whether the writer's manifest cap is still 150.** One command, rule 6 of
+   `turn-caps.md`. If it is still 150, the writer has been running at a cap
+   that two registered exhaustions already proved too small, for however many
+   days have passed, and ask 4 of the 2026-10-18 relay entry has not been
+   carried.
+2. **Whether `grep -rn '^<<<<<<< ' docs/ prompts/ README.md` prints
+   anything.** It is step 0 of every charter's ship check as of today. A
+   marker conflicts once and is ordinary text forever after, so the run that
+   finds one is never the run that made it.
+3. **Whether the owner has ruled on the token.** The seat holds her account
+   credentials with admin on four repositories. Nothing was done with them
+   and nothing should be until she says so. If she says yes, the first act is
+   the workflow-push probe in §5, which has never been run under the host. If
+   she says nothing, the probe stays unrun.
+4. **Whether anything has ever been delivered to HQ.** Eight entries, now
+   125 cumulative days. The 2026-10-11 run set a condition, this run found it
+   fired, and the answer is in the relay rather than in a new surface.
+5. **The `[trigger].cron` and `max_turns` of all twelve manifests**, which is
+   now the only place either number is true. The §3b command fetches them in
+   one loop.
+
+### What this run observed
+
+**Main was green.** Eight consecutive `success` on `checks.yml`, newest
+2026-10-18 07:09Z. The red main in the day's brief was HQ's, not this
+repository's.
+
+**Ten failures in the window, two of them agent runs, and both already
+registered** by the seats that owned them, which is the §2b machinery
+working as designed. The other eight were `checks` on seat branches,
+resolved by their own runs. This is the first window in which this seat found
+nothing new to diagnose in the failure list, and the reason is that the daily
+engineer and PM passes now get there first. The backstop role §2 describes
+is the real one.
+
+**And then the machinery diff found the whole run.** One commit,
+`ab4e5bb1`, pushed directly to main by the owner at 2026-10-17 17:06 ET:
+`schedule:` deleted from all ten seat workflows under a one-line comment
+naming HQ decision 056. Each seat's clock is now its manifest on the company
+host.
+
+### The orientation, and it is one sentence
+
+**The org spent a month hardening one runtime, and then the seats moved to a
+different runtime that inherited none of it.**
+
+Twelve workflow files were carrying six things besides a schedule, each the
+paid fix for a registered incident:
+`fetch-depth: 0`, the no-ship tripwire, the transcript upload, the Langfuse
+trace, two board report steps, and `--max-turns`. Four are verified lost on
+the host and two are plausibly carried, and keeping those two apart is the
+difference between an audit and an accusation. Registered as
+`INC-2026-10-18-the-hardening-stayed-in-the-runtime-the-seats-left`, with the
+general rule: **a fix is attached to a runtime, not to an organization**, so
+a runtime migration re-opens every incident whose fix lived in the runtime
+being left. New charter section §2d is the one question that catches it, and
+it is an inventory rather than a judgement.
+
+**The cost was already paid twice before this run looked.** The shallow-clone
+fix was one of the six. `INC-2026-09-24-shallow-clone-merge-base-repeat`
+offered two remedies, a workflow change and a charter line, and said "Filed
+for the ExO's weekly pattern read". The workflow half shipped. The charter
+half did not, for 24 days, and not one of twelve charters contained the word
+"shallow" before today. Then the workflow half stopped governing. So the
+class recurred twice on 2026-10-18: the engineer's machinery diff read clean
+on a one-commit clone, and **this seat's own 2026-10-17 run committed 2,456
+lines of conflict markers into `docs/agents/incidents.md`** and sat open that
+way for 21 hours, because a three-way merge on a grafted default branch
+reads as unrelated histories. `epitome`'s own `cli/src/lib/runner.js` names
+that exact failure in a comment, as a defect it has already fixed, and the
+host is four weeks behind that fix.
+
+**The lesson is one layer below incident 13's.** Incident 13 taught that
+`incidents.md` is a work queue and a pending fix outranks a new idea. This
+teaches that **when an incident offers two remedies and one of them is a
+charter line, ship the charter line too, even when the mechanical fix looks
+complete**, because a mechanical fix is scoped to the machine it was applied
+to and a charter line travels with the seat.
+
+### The thing nobody was looking for, which points the other way
+
+Every other finding here is a protection the host did not inherit. This one
+is a privilege it did.
+
+`gh api user` returns `alexandrapaiz`. `gh api repos/<r>` returns
+`admin: true` on `alexandria`, `alexandra-systems`, `epitome` and `ursa`.
+**The seat is not running as a seat. It is running as the owner, with admin
+on every repository in the account.** Under Actions the same seat ran on
+`${{ github.token }}`, which is repo-scoped, job-scoped, narrowed by a
+`permissions:` block, and famously unable to push `.github/workflows/`. That
+one refusal is incident 12 and the entire reason
+`pending-workflow-changes.md` exists. So the cutover replaced it with account
+admin, for twelve seats, in one commit, unmentioned.
+
+**No privilege was exercised and the charter is why.** Secrets and the
+owner's personal exposure are owner-only, and §4 says a gap touching her
+exposure is proposed and never assigned. A token's scopes are not a grant.
+Registered as `INC-2026-10-18-the-host-runs-every-seat-as-the-owner`.
+
+**And it falsified a premise the org had reasoned from for 24 days.**
+`hq-relay.md` opened with "no seat in this repository can write to
+`alexandrapaiz/alexandra-systems`", and the whole design of a hand-carried
+outbox rested on it. One `GET` disproved it. This is the third stale "this
+seat cannot" sentence found in three weeks, after the `NEON_RO_URL`
+exemption and the two-lanes paragraph, and the rule the 2026-10-11 run wrote
+is what caught it.
+
+**The part worth carrying forward is the direction of the surprise.** The
+obvious remedy for "the relay is a drawer because the seat cannot write
+upward" was to ask for write access upward. The measurement says the seat
+already has far more than that and should have much less. **A capability gap
+and a capability excess look identical in a register written from a guess**,
+because neither was measured. So the ask became two asks in order: scope the
+seats down, then grant the one narrow permission the relay needs.
+
+### What changed, and why each one had an observed trigger
+
+**1. The unshallow reflex, in all twelve charters.** Trigger: three
+occurrences of a registered class in one day, one of them this seat's own
+corrupted artifact. Placed in "Your own last run may still be open", which is
+the section that tells a seat to merge a sibling branch and therefore the
+exact place the defect fires.
+
+**2. The conflict-marker sweep, as step 0 of the ship check in all twelve
+charters.** Trigger: the second corrupted file,
+`pending-workflow-changes.md`, whose markers **this run's own merge did not
+flag**, because on the second merge they are text one side has and the other
+does not. Run across the branch: 0 hits. Those markers were hiding a fifth
+item-number collision on the page whose rule against numbered items this seat
+wrote on 2026-10-11 and broke in the same pull request. Both item 21s are
+kept and the writer's cap took the slug.
+
+**3. The cadence test got a readable source.** Trigger: every cell of the
+Cadence column in `unowned-duties.md` named a cron that no longer exists, and
+the register read as healthy. The manifests are now the source,
+`[trigger].subscriptions` is a second cadence, and one row moved: **"runs
+that fail get diagnosed" has been a cadence gap since 2026-09-19 and
+`check.failed` closes it.** One row got sharper instead: no subscribed event
+carries a direct push to main, which is how decision 056 arrived and how the
+2026-09-30 red guard arrived, so the charter's oldest structural finding
+survived the migration intact and now has a concrete remedy to ask for.
+
+**4. The weekly-issue claim got the row its own register promised.**
+Trigger: §3g's field map had listed "an issue ships every week" for seven
+days with no row in the table, while the claim sat on five public surfaces
+including the pricing page. Measured from the receipt at 2026-10-18T12:07:22Z:
+`press.newest_week` is 2026-W40 from 2026-10-05, so **13.1 days and one
+missed issue**. The growth row improved, 4.1 days to 0.87, with
+`distill_pending` up from 2,132 to 2,559. And the summary paragraph had said
+"three hold" since 2026-10-11, when it became two.
+
+Three stale facts in one file in one day, all the same mechanism: **a
+register with a method half and a data half grows a gap between them**,
+because a run reading for one does not scroll to the other. §3g gained a
+fourth step that reads the two against each other.
+
+### Numbers to carry
+
+| Measure | 2026-10-11 | 2026-10-18 |
+|---|---|---|
+| Dispatches authored by the owner | 16 of 16 since 2026-09-24 | **0 of 2 in the window**, both `github-actions[bot]` |
+| `claude[bot]` commits against seat-named | 202 / 51 | 193 / 142 |
+| Agent runs in Actions since the cutover | n/a | **0** since 2026-10-17 17:59Z |
+| Undelivered HQ entries / cumulative days | 6 / 56 | **8 / 125** |
+| Branch names carrying more than one PR | 6 | **7**, the new one `distribution/vendored-lessons` (centralizer seat) |
+| Quality claims held | 3 of 11 (stale) | **2 of 12** |
+| Queue anchors rotted | 1 of 8 | **1 of 20** |
+
+The dispatch number is the presence gradient and it has finally moved. It is
+the one unambiguously good number on this page and it is worth saying so:
+through 2026-09-19 every dispatch was hers, and in this window neither was.
+
+### What this run did not do, said plainly
+
+The mermaid render could not run. The host is arm64 and its Chromium is
+missing `libatk-1.0.so.0`, so the launch dies with `Code: 127` before the
+`-p` sandbox flag matters, which is one more Actions-to-host difference. Both
+diagrams were proved unchanged in structure outside their quoted labels
+instead, and the charter's render recipe now records the new failure and the
+fallback proof.
+
+`turn-caps.md` was not re-derived and is frozen at 2026-10-11 on purpose. Its
+measurement reads `num_turns` out of an Actions artifact and the host logs to
+its own disk, so there is no evidence to re-derive from. Rule 7 says so on
+the page rather than letting a future run refresh a row from a guess. Rule 5,
+which two files had been citing for fourteen days, was finally written down.
