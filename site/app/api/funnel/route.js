@@ -19,6 +19,18 @@ export const dynamic = "force-dynamic";
 // no product text. The strongest thing a reader learns from this endpoint is
 // that four people opened a skill page last week.
 //
+// **One thing here is the owner's call rather than this seat's, and it is
+// published rather than hidden so she can find it.** This endpoint says how
+// many people visited and how many accounts are paying, at a stable public
+// URL, which is a commercially legible pair of numbers in a way the delivery
+// receipt's press metadata is not. It is public because that is the only
+// shape a seat with no credential can read, which is the same trade
+// `/api/delivery` made and is why that file's argument is not repeated here.
+// If the owner would rather not publish the second number, removing
+// `paidAccounts()` from `readFunnel` in site/lib/path.js costs the payment row
+// and nothing else: every other step keeps working, and the report reads that
+// step as unmeasured with a reason, which is a state it already handles.
+//
 // **Facts, never verdicts**, which is the other rule `/api/delivery` set.
 // This says the checkout step has one event. It never says the funnel is
 // broken. `tools/buyer_path.py` holds that judgement in one copy, so the

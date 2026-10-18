@@ -14609,3 +14609,83 @@ seat owns the register and that check.
 manifests and the install page are the engineer's surface, and the charter's
 step 1b is explicit that the seat which can say whether the machine exists is
 not this one.
+
+---
+
+## INC-2026-10-18-the-machinery-diff-reads-clean-on-a-shallow-clone — the charter's runtime-change gate answers "nothing to see" on a one-commit clone (engineer seat)
+
+**Recorded under the standing rule at the top of this file**: the root
+cause has occurred before and this is a new victim of it, so it is
+filed at the moment it repeated rather than folded into the older
+entry. The older entry is
+`INC-2026-09-24-shallow-clone-merge-base-repeat`, which is the same
+shallow clone breaking a different command.
+
+**What happened.** The engineer charter's "check the register before
+you ship" step requires one command before any work, because this seat
+is the only one that runs every day and therefore the only one that can
+catch a runtime change inside a day:
+
+```
+git log --since="36 hours ago" --format='%h %ci %an %s' -- .github/ pipeline/
+```
+
+On this run it printed exactly one line, a merge commit, and
+`git show --stat` on that commit listed every workflow file in the
+repository as an addition. Both observations are the same artifact:
+the sandbox's clone was shallow at depth one, `git log | wc -l` read
+2, and the single commit was the graft point, so every file in the
+tree is "added" by it and there is no second commit for `--since` to
+reach.
+
+**Why that is worse than the 2026-09-24 occurrence rather than the
+same.** A missing merge base fails loudly: `git merge-base` returns
+nothing and the seat knows it must do something. This fails quietly
+and in the direction of a pass. A seat that runs the command, sees one
+merge commit, and concludes that no runtime change landed in the
+window has run the check exactly as its charter asks and has reached
+the wrong answer. Nothing in the output says "your history is one
+commit deep".
+
+**What it would have cost on this run, measured.** After
+`git fetch --unshallow`, the same command returned two commits that
+the shallow version could not see, and the first is squarely the class
+the law exists for:
+
+- `ab4e5bb`, 2026-10-17 17:06, "Every seat's clock leaves GitHub: the
+  schedule blocks go, the host manifest keeps the cadence". Ten seat
+  workflow files, every `schedule:` block removed. A cron change in
+  ten runtime files is the central example in
+  `docs/agents/runtime-changes.md`.
+- `a941a71`, 2026-10-16 15:35, a guard added to `pipeline/ingest.py`
+  that raises on an empty run.
+
+Both turned out to be explained by merged pull requests, #334 and
+#317, with `checks.yml` green on `main` after each, so the window was
+clean on its merits. That is the point: the gate reported clean for
+the wrong reason, and it would have reported clean in exactly the same
+words if #334 had been a direct push with no rehearsal behind it.
+
+**What closes it.** One line, and it belongs in the charters rather
+than in a workflow, because the shallow clone is the host harness's
+default and not a GitHub Actions setting any seat can edit:
+
+```
+git rev-parse --is-shallow-repository    # true means the next answer is a lie
+git fetch --unshallow                     # before the machinery diff, not after
+```
+
+The 2026-09-24 entry already asked for this as "every seat's charter
+gets the one-line `git fetch --unshallow` reflex before any merge-base
+check". This run is evidence that the reflex needs to be attached to
+the machinery diff too, which is a second command in a second clause,
+and that the one-line form should be the shallow test rather than the
+fetch, so the seat learns the answer was unreliable rather than
+silently getting a reliable one.
+
+**Why this seat filed it and did not fix it.** Charters are editable
+only by the owner's merge (engineer charter, Boundaries), and this is
+a change to two charters and arguably to every one of them. The ExO
+seat owns the pattern read. Named here with the measurement rather
+than carried as a run note, because the next run of this seat starts
+from a fresh shallow clone and will meet the identical false negative.
