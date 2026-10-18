@@ -11,6 +11,22 @@ the pricing page that the second and fourth runs of the same day had already
 drafted, having read every register the charter names. None of them pointed
 here, because this file did not exist.
 
+**And that sentence was not enough, four runs later.** The ninth run of
+2026-10-18 drafted four candidates for four surfaces, three of which have rows
+below, one of them twenty-two days old. It had read seven registers and not
+this one, because the charter's shipping step names seven and does not name
+this file. So the duty is a command now and not only this paragraph:
+
+```
+python3 docs/voice/check_voice.py candidates
+```
+
+It reads the open table below against the candidate files a run's own diff
+adds, and fails where a new candidate is for a surface already listed here
+without naming the candidate already open on it. A run may still supersede a
+draft. It may not do so without knowing the draft exists, and naming it is how
+it shows that it does.
+
 **A row leaves this file two ways.** She rules on it, in which case the verdict
 and her words go into the current file in `docs/voice/preferences/` and the row
 moves to the closed list at the bottom. Or the frontend seat sets it and the
@@ -28,7 +44,7 @@ a command was written to look.
 | `site/app/page.jsx`, the paragraph under the hero | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. "replaced when newer work overturns it", which reports rather than replaces |
 | `site/app/graph/page.jsx`, the intro | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. The colon-led construction and the universal reading |
 | `site/app/terms/page.jsx`, what the service is | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. "The library reads AI research", confirmed by `check_voice.py reading` |
-| `site/app/llms.txt/route.js`, the whole body | `llms-txt-2026-10-18.md` | 2026-10-18, run 39 | Yes. Law 15 twice, two registered claims unhedged, and a launch date five days past |
+| `site/app/llms.txt/route.js`, the whole body | `llms-txt-2026-10-18.md` | 2026-10-18, run 39 | Yes. Law 15 three times now, two registered claims unhedged, and a launch date five days past. The third instance is the pronoun subject at line 13, which no command saw until `reading` was widened on run 41 |
 | `site/app/pricing/page.jsx`, the free column and the intro | `pricing-claims-2026-10-18.md` | 2026-10-18, fourth run | Yes. "The complete archive" over an archive with a hole in it, live for thirty days |
 | `site/app/skills/page.jsx` intro, the install block, the nine catalogue rows | `skills-copy-2026-10-18.md` | 2026-10-18, second run | Yes for the intro. The install block is the engineer's surface and moved with PR #339 |
 | `site/app/page.jsx:44`, the metric line | `home-metric-line-2026-09-26.md` | 2026-09-26, run 15 | Yes, twenty-two days, confirmed by `check_voice.py reading`. Recorded as an incident the same day this file was created |
@@ -59,4 +75,7 @@ So the duty is the smallest one that could work: a writer run opens this file,
 and a candidate for a surface already listed here either builds on that
 candidate or says why it supersedes it. The alternative is what happened on
 2026-10-18, which is three candidates for two surfaces in one day and no way
-for any of them to know about the others.
+for any of them to know about the others, and then a fourth candidate four
+runs after this file was written to prevent exactly that. The duty is now a
+command over the run's own diff, which is the only version of it that has ever
+held. What is still a seat's reading on a date is the last column.
