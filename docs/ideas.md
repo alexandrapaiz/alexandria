@@ -16975,7 +16975,11 @@ the market seat's surface, so this is a note to that seat.
 Today's scan asked a competitor the question this run built a tool to ask of
 us, and it is the same question: can a stranger buy anything. skillbay.sh is
 the hand-curated skill marketplace in `docs/market/landscape.md`, launched to
-Hacker News on 2026-09-17 and last observed 2026-09-18.
+Hacker News on 2026-09-17. **This seat craft-scanned it once before, on
+2026-09-29**, and that entry is the reason today's is worth writing rather than
+a repeat of it: that scan read the catalogue page and found the commercial fact
+stated as a field on every row, with "free" said where a number would go. Today
+the same field is read as data, and the number is what changed.
 
 **Observed 2026-10-18, by unauthenticated request.** The homepage answers 200.
 `/pricing` answers 404. `/openapi.json` publishes 32 paths including
@@ -16985,8 +16989,9 @@ getting paid are all built. `GET /api/v1/skills?limit=100` returns seven
 skills. Every one of them carries `priceCents: 0`. Thirty-one days after
 launch, a marketplace with a complete purchase path has nothing for sale.
 
-**The thing worth stealing, and it is not the marketplace.** The storefront is
-machine-readable to a stranger. There is an OpenAPI 3.1 spec at a stable path,
+**The thing worth stealing, and it is not the one the 2026-09-29 scan found.**
+That scan took the price being a field rather than a sentence. The newer and
+larger thing is that the whole storefront is machine-readable to a stranger. There is an OpenAPI 3.1 spec at a stable path,
 a `/.well-known/ai-catalog.json` that names the site's own MCP server with
 example queries, and a block on the homepage headed "copy prompt for your
 agent" that hands a visiting agent its own orientation text. The MCP server
@@ -17017,8 +17022,167 @@ answered by the sellers rather than by the buyers. Worth the market seat's
 attention, and a reason to watch whether their first nonzero price appears
 before ours does.
 
+**And one fact the earlier scan makes legible that a single reading could not.**
+On 2026-09-29 this seat described a catalogue selling twelve categories of
+skill. Today the catalogue holds seven listings in total and every price field
+reads zero. Whatever the first scan was looking at, the price column has not
+filled in over the nineteen days between the two readings, and that is a trend
+rather than a snapshot only because the first entry exists.
+
 - First step: the landscape entry's `Last observed` line moves to 2026-10-18
   with the price column's seven zeros recorded, which is the market seat's file
   and so is named here rather than edited.
 - Cost: $0.
+- Status: proposed
+### 2026-10-18 — The referrer host is a dimension and not an identifier, which today's design dropped and Plausible shows is safe to keep (engineer seat)
+- Trigger: today's craft scan, read against a hole this run's own build left.
+  `plausible.io/data-policy` publishes its visitor formula in its own words,
+  `hash(daily_salt + website_domain + ip_address + user_agent)`, with "the
+  salt is rotated and deleted every 24 hours". That hash is the design this
+  run refused, because it is still a pseudonymous identifier for one person
+  and the live privacy page rules one out. But the same policy stores a
+  referral source as an ordinary dimension on the event with no identifier
+  attached, and that half is not ruled out by anything. This run dropped the
+  referrer entirely, which was the cautious call and is more cautious than it
+  needed to be.
+- What: store the referring host, and only the host. `docs/product/buyer-path.md`
+  already names the reason it was left out, which is that a referrer carries a
+  query string and a query string is where an address ends up by accident.
+  Cutting to the host answers that completely: `news.ycombinator.com` is not a
+  fact about a person and cannot carry one. It is the only way the owner finds
+  out which writing brings a buyer in, which is a question `subscribers.source`
+  answers today for the few people who sign up and for nobody who merely
+  reads.
+- First step: one column on `path_events`, one line in
+  `site/lib/path-core.js` that takes `new URL(referer).hostname` and nothing
+  else, a null for anything that is not an absolute http url, and one
+  assertion in `tests/path.test.mjs` that a path and a query string cannot
+  survive the cut. The privacy page gains one clause in the same change,
+  because that page is what makes this honest.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-18 — Nothing runs the buyer-path reader, which is the third guardrail this org has built and not scheduled (engineer seat)
+- Trigger: finishing `tools/buyer_path.py` and looking for its caller. There
+  is none. The measurement exists, the verdict exists, the exit code separates
+  failing from unanswerable, and the only thing that will ever read it is a
+  seat that happens to remember. This is the pattern two entries in
+  `tests/test_ci_coverage.py` already describe about sibling guardrails:
+  `tools/press_watch.py` and `tools/drift_watch.py` are both correct readers
+  whose own tests are pinned because no seat can schedule them, and
+  `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` holds
+  the shape. A third instance is no longer a coincidence about three tools, it
+  is a fact about this org: it can build a check and it cannot start one.
+- What: the daily standup already reads `/api/delivery` through
+  `tools/delivery_health.py`, so the cheapest honest home for this is the same
+  reader's own report rather than a new schedule. Add the buyer path as a
+  sixth surface there, or call `buyer_path.py` from the standup's step and put
+  its output in the standup. Either way the decision is which existing
+  cadence owns it, and the answer should not be a twelfth workflow file.
+- First step: read `docs/agents/delivery-health.md` and decide whether the
+  buyer's path is guardrail 4's business or its own. If it is guardrail 4's,
+  the change is one surface in one file and no new schedule at all, which is
+  the version to prefer.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-18 — GitHub's clone traffic needs one permission this org has never granted, and it is the only unmeasured step in the buyer's path (engineer seat)
+- Trigger: measured directly this run, twice.
+  `gh api repos/alexandrapaiz/alexandria/traffic/clones` and the matching
+  `/traffic/views` both answer `403 Resource not accessible by personal access
+  token`. Every other step of the buyer's path is readable from what this org
+  already has, and this one is readable from nothing it holds.
+- What: not a build. A fine-grained token needs `administration: read`, or a
+  classic token needs the `repo` scope, and the value goes into the
+  environment a seat reads as `GH_TOKEN` or `GITHUB_TOKEN`.
+  `tools/buyer_path.py` attempts the call on every run and prints the refusal
+  with the permission named, so the step fills itself in the day the grant
+  exists and no code changes for it. Two honest limits go with the grant and
+  are already written into `docs/product/buyer-path.md`: GitHub's window is
+  its own fourteen days and is not configurable, and a clone is an upper bound
+  on installs rather than a count, because a developer reading the repository
+  clones it too.
+- First step: the owner's, on a token's settings page, and it is one checkbox.
+  Nothing here should be attempted by a seat, since a token that can read
+  traffic is a token with repository administration on it and that is not a
+  thing to hand a daily agent casually. The narrower read is worth asking
+  GitHub for and does not exist today.
+- Cost: $0, and it buys the one step of five that currently reads unmeasured.
+- Status: proposed
+
+### 2026-10-18 — Craft scan: Plausible Analytics, read as the product this run deliberately did not copy (engineer seat)
+- Trigger: the charter's daily craft scan, pointed at the one adjacent product
+  this run actually had to evaluate and reject. Source read:
+  `plausible.io/data-policy`, quoted above.
+- Worth stealing: **a dimension is not an identifier, and Plausible keeps the
+  dimensions this run threw away.** Its policy lists referral source, country,
+  browser and device as stored fields alongside the hash, and none of those
+  four is a fact about a person on its own. This run cut all of them to be
+  safe and only needed to cut the hash. The ledger entry above takes the
+  referrer back. The second thing worth stealing is the shape of its promise
+  rather than its code: "the salt is rotated and deleted every 24 hours" is a
+  claim with a mechanism in it, which is the register this product's privacy
+  page should be written in and now partly is.
+- What alexandria does better: **it counts a reader that has no browser.**
+  Plausible's count depends on a script running in a page, so a visitor who
+  reads the site with curl, or an agent that follows `/llms.txt`, is invisible
+  to it by construction. This product's audience is explicitly both a person
+  and that person's agents, the site publishes a plain-text catalogue for the
+  second, and the measurement built today sits in the request path rather than
+  in the page, so it counts both the same way. The second thing is the
+  stricter promise: Plausible needs no cookie banner and still stores a
+  per-person daily identifier, where this stores none at all, which is a
+  difference an audience that reads source will check.
+- The one to watch: Plausible is a paid subscription and this is a table in a
+  database this product already runs, so the comparison is only fair while the
+  question stays "how many". The day the question becomes "which cohort", the
+  refusal above is what makes it unanswerable, and that is the right moment to
+  revisit it rather than now.
+- Cost: $0, reading only.
+- Status: proposed
+
+### 2026-10-18 — The site asserts completeness and cadence, and nothing compares either one to the shelf (writer seat, for the engineer and the ExO)
+
+- The defect: `site/app/pricing/page.jsx` has told every visitor for thirty
+  days that the free tier includes "The complete archive". The public archive
+  holds one issue from `site/content/issues/` plus whatever rows the press
+  wrote, 2026-W37 is withheld on the owner's order of 2026-09-19, and two
+  weekly sends are missing. No gate in the repository can see that, because the
+  claim is a string in a component and the counter-evidence is a directory
+  listing and a database table.
+- Why the existing gates cannot reach it. `docs/voice/ban-list.md` entry 61
+  already says an editorial run reads the reader-facing constants in code once
+  per run, and that rule is a seat reading a page, so it reaches whatever a run
+  happens to open. Entry 126, filed today, names the class. Neither is a
+  command. `docs/voice/check_voice.py` has five checks and all five read the
+  issue or the generator, so none of them opens `site/`.
+- What would close it, and it is small because the data is already public.
+  `site/app/api/delivery/route.js` serves the newest issue's week
+  unauthenticated, for exactly this reason: no agent seat holds a database
+  credential. A check that reads the delivery receipt and the published listing,
+  derives the set of ISO weeks between the pilot and today, and fails when a
+  string in `site/` asserts completeness over a set with a hole, would have
+  fired on the day the hole opened rather than on the day a copy round happened
+  to look.
+- The cadence half is the same check and a different comparison: a page that
+  says "every Monday" against a receipt whose newest week is two Mondays old.
+- Cost: one command in `tools/`, called from the same place `check_voice.py`
+  should be called from, which is the ledger entry of 2026-10-04 that is still
+  open. Both are blocked on the same missing caller, so wiring one wires the
+  other.
+- Why this is worth a command rather than another register line. The sentence
+  was written 2026-09-18 and the owner's order that falsified it came
+  2026-09-19, so there was never a day when a careful seat reading the page
+  would have caught it by reading the page. It only shows up against the shelf.
+  `docs/standards/lessons.md` L-A24 is the company law for exactly this, that
+  where a scheduler and an artifact disagree the artifact wins, and its stated
+  consequence is that only an outside observer reading the artifact catches it.
+- The second half, which is the ExO seat's file rather than a command:
+  `docs/agents/quality-claims.md` has eleven rows, and ten of them are about the
+  skills, the corpus and the graph. The pricing page has one row. Nothing in the
+  register covers the three bullets that sell the free tier or the two
+  paragraphs that tell a reader how their card will be treated, and the writer
+  charter's own claims gate therefore passed a page whose free column is two
+  falsehoods and one truth. A register whose net was cast over the product's
+  best-measured half will keep clearing its worst-measured one.
 - Status: proposed

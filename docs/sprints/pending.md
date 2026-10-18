@@ -1,3 +1,275 @@
+## Updated 2026-10-18, ~02:05 UTC (message pass): PR #348 (the buyer's path becomes measurable) checked against the merge rule and merged, the board card closed
+
+**Trigger.** PR #348 (`alexandria-engineer/2026-10-18-message-buyer-path`,
+engineer's third run today, "the buyer's path becomes measurable, visit to
+install to payment"). Instruction: review it against the merge rule, merge
+it, or say on the board what it still needs and hand that to its seat.
+
+**Own last run may still be open, checked first.** Four found: `#347`
+(this seat's own pass minutes earlier, merging `#312`/`#343`/`#346`),
+`#350` (this seat's own pass right after it, the pricing-checkout
+handoff), and `#335`/`#332` from the night before. All four wait on
+another merger under Tier B condition 1 (a PM's own Tier B pull request
+waits for the owner or HQ's PM) and all four touch only
+`docs/sprints/pending.md`, append-only at the top rather than at a fixed
+anchor. Branched from `main` anyway: this pass's own work (reviewing one
+engineer pull request) shares no code scope with any of the four, so
+whichever merges first gives the others a one-line keep-both, the same
+shape this chain has used all day.
+
+**PR #348 opened `CONFLICTING`, then checked against the merge rule
+(`docs/standards/pm.md` §10 Tier B, amended §21) and merged.** Not a
+draft, no `hold` label, no comment, no review. `gh pr diff --name-only`:
+`db/schema.sql`, two new `docs/agents/` and `docs/product/` files,
+`docs/agents/incidents.md`, `docs/ideas.md`, three `site/` files (one
+new), `tools/buyer_path.py`, and three test files — no `.github/`, no
+`prompts/`, no `company.yaml`, no secret, so no Tier C path. The one
+check defined, the digest-budget gate, read `SUCCESS`.
+
+It opened in conflict with `main` at the usual two append-only anchors,
+`docs/ideas.md` and `docs/agents/incidents.md` (the tail this org's own
+ledger and incident register keep colliding at, same shape as `#312`,
+`#343` and `#346` today). Resolved it locally first, oldest-then-newest,
+to confirm the conflict really was docs-only before touching anything —
+then found the engineer's own branch had already pushed the identical
+resolution seconds earlier (`mergeStateStatus` flipped to `CLEAN` between
+my fetch and my push), so my own local resolution was discarded unpushed
+rather than raced against a live branch, the same move `#347` made on
+`#312` a few minutes before.
+
+**No other seat holds a claim on the surface.** Read the file lists of
+every other open pull request (`#332`, `#333`, `#335`, `#347`, `#349`,
+`#350`) rather than their titles: the only overlap anywhere is the same
+two append-only anchors shared with `#349` (writer), which is the
+ordinary keep-both conflict this org already resolves on whichever
+merges second.
+
+**Verified before merging, against the engineer's own resolved tip, not
+assumed from the pull request's own report.** Full suite in a venv:
+`pytest tests/ -q` → 1698 passed, 12 skipped, 0 failed. `node --test
+tests/path.test.mjs` → 25 passed, 0 failed. `python3
+tools/check_registers.py` → 0 blocking, 71 warnings, the same baseline
+`#347` measured. Merged clean at 2026-10-18T02:03:41Z. `main`'s next
+`checks.yml` run came back `success` three seconds after the merge
+commit landed.
+
+**Board.** Card `c688ef2e` ("Build a way to measure the buyer's path")
+moved from Review to Done, with the merge-rule check posted on it in
+first person. The two things the engineer's own report said still need
+the owner — applying `db/schema.sql` so the new table exists, and
+optionally granting GitHub's `administration: read` traffic permission
+for the one unmeasured step, the install — are named there, not
+repeated as new pending lines here, because the engineer's own pull
+request already names them in full and nothing here adds to that.
+
+**Run health.** `gh run list --limit 30`: all 30 `success` or in
+progress, nothing failed since the last pass.
+
+**Queue gauge, four numbers.** `main` under two minutes old at this
+pass's own merge, its newest `checks.yml` run `success`. 10 open pull
+requests, 0 opened since this pass's own merge (two did open earlier in
+the window this merge closes, `#351` okr and `#352` engineer, both
+answering `#350`'s board handoffs). 7-day conversion 48 merged over 84
+opened (0.57), up from `#347`'s 0.58 reading of six-hour-old numbers
+because the denominator moved faster than the numerator in between.
+Deepest open chain: 1, nothing currently stacked.
+
+**Owed to you, carried from `#347`/`#350`, not re-verified this pass
+since it is out of this pass's one trigger:** the press and site read
+FAILING at thirteen-plus days stale (a `modal run` only a human token can
+fire), two pending `modal deploy`s on `distill` and `ingest`, the Polar
+Merchant-of-Record account, and this seat's own four open pull requests
+above waiting on another merger.
+
+**Merged this run (Tier B, `docs/standards/pm.md` §10/§21), one:**
+`#348` (engineer).
+
+## Updated 2026-10-18, ~01:50 UTC (message pass): the pricing page's dead checkout links handed to engineer and okr, nothing here mine to merge
+
+**Trigger.** One event this pass answers: a handoff from `alexandra-systems/mba` (board message, `alexandra-systems` PR #216) addressed to this seat by name. The other three events in this pass's batch (PR #343 and #346 opening, the engineer's and writer's runs finishing) are already closed: PR #347, open against `main` as this entry is written, reports merging #312, #343 and #346 and already filed the related "complete archive" claim on the frontend's lane. Checked PR #347's own description before writing anything here rather than redoing its work; it does not mention checkout links at all, so the MBA handoff is the one genuinely new item.
+
+**The finding, read directly rather than relayed.** `libraryofalexandria.dev/pricing` renders "Opens shortly" with no href on both paid tiers, confirmed against `site/app/pricing/page.jsx:12` and the three unset env vars (`POLAR_CHECKOUT_TRIAL`, `POLAR_CHECKOUT_MONTHLY`, `POLAR_CHECKOUT_LIFETIME`). O1-KR1 committed both tiers purchasable end to end on 2026-10-13; today is the fifth day past that date with nothing on the page a person can buy. The code half shipped on time (alexandria PR #285, per MBA's own read of it): entitlement, checkout route, webhook, fail-closed, all real. The blocking half is that the Polar account itself has never been created, which `docs/product/polar-go-live.md` already names as the owner's decision (ADR-30, ADR-31), not a seat's and not mine. MBA has already put that half to the owner directly as this week's case's first recommendation, so this seat is not duplicating that ask.
+
+**What is mine, and what I did with it.** Nothing in either repository's automated checks would have caught this: `tools/delivery_health.py` watches the failure *after* a sale (a verified payment that can't become access) and has no check for the failure *before* one (an offer that can't be bought at all). Handed to `engineer` on the board (handoff, cites MBA's message and the three env var names) to add one outside-in probe to `tools/delivery_health.py`: fetch the public pricing page, assert at least one checkout link is present and resolves with a success status, fail otherwise — the same shape as the existing availability guardrail, sized at MBA's own "a morning, not a project." Handed to `okr` on the board (handoff) to record in `docs/okrs/okrs-2026-Q4.md` that O1-KR1 is not met as of 2026-10-18, with the reason named as the payment account rather than the code, since the code shipped on the committed date. Both are handoffs, not `gh workflow run` dispatches: the event bus (`docs/standards/pm.md` §17) is what has been waking this company's seats all day, and neither `docs/okrs/` nor `tools/` is this seat's writable surface, so the entries themselves are not mine to write.
+
+**Worth a register, not filed as one today.** This is the same shape as incident 24 (a product surface fails silently because nothing outside-in watches it) on a surface delivery-health.md's own table does not yet list (payments). It isn't a repeat of a prior entry, so the standing rule does not require filing it here; naming it for the ExO seat, whose file `docs/agents/delivery-health.md` this would extend with a fifth table row once engineer's probe exists.
+
+---
+
+## Updated 2026-10-18, ~01:43 UTC (message pass): three Tier B merges clear the night's docs-only queue, the press's two-week gap gets a second, verified consequence
+
+**Press is thirteen days stale, not a headline buried in a list.** The
+delivery endpoint still reports 2026-W40 (2026-10-05) as the newest issue, and
+`tools/delivery_health.py` calls both `press` and `site` FAILING for it.
+Two Mondays, 2026-10-12 and 2026-10-19 minus one day, have gone unwritten.
+The fix is one `modal run` command costing about eighteen cents, named on
+board card `92ab912d`, and it needs a hand on a Modal token that no agent
+seat holds. Not new this pass, but independently reverified against the live
+site rather than relayed, and sharper than the 2.2-day reading this card
+opened with on 2026-10-14.
+
+**Trigger.** Three events, the first two repeats this pass closes exactly the
+way the last one closed PR #342: PR #312 opening (engineer, ready for
+review) and the writer's own run finishing, which this pass reads as "merge
+what is yours, close what is superseded, hand the next thing to a seat." The
+third is PR #345 (this seat's own prior pass) having merged, which is the
+instruction to continue with the next item in this lane.
+
+**Own last run may still be open, checked first.** `#335`
+(`alexandria-pm/2026-10-17-message-seats-off-github-review`) and `#332`
+(`alexandria-pm/2026-10-17-message-sellable-regroom`) are both still open
+from the night before and both wait on another merger under Tier B
+condition 1 (a PM's own Tier B pull request waits for the owner or a chair).
+Branched from main anyway: this pass's own work (reviewing three other
+seats' pull requests) doesn't share scope with either of theirs. All three,
+plus every pull request below, append to `docs/sprints/pending.md` at the
+top rather than at a fixed anchor, so whichever merges first gives the
+others a one-line keep-both.
+
+## PR #312, #343 and #346: three Tier B merges, the same docs-only collision three times running
+
+**#312** (engineer, "the press stops skipping Mondays in silence") opened
+`CONFLICTING` against the same two append-only anchors this chain has hit
+all night, `docs/agents/incidents.md` and `docs/ideas.md`. Not a draft, no
+`hold` label, checks green (the budget guard). While this run was resolving
+the conflict on the branch, the engineer's own concurrent push resolved it
+first and the pull request turned `MERGEABLE`/`CLEAN` on its own; this run's
+local resolution was discarded unpushed rather than raced against it. One
+comment present, from HQ's YC advisory seat, explicitly self-labelled
+non-binding ("Not a verdict: a voice in the room") and its own verdict is
+"concur. Merge it," so it does not count as the owner comment Tier B
+condition 2 guards against. Merged.
+
+That comment also raised the press staleness independently, with one
+consequence this seat's own tracking did not have: the pricing page sells
+the free tier on "every issue in full" and "the complete archive," words
+that are false while the archive has a two-week hole. Verified directly
+against the live site rather than taken on the advisory's word (both quotes
+below). Commented on card `92ab912d` with the sharper number and filed a new
+card, `af60726e`, on the frontend seat's lane for the claim itself, since
+it's a different surface and a different fix than the send.
+
+**#343** (engineer, second run, "the two stalled press drafts get a
+disposition each") finished #312 before this pass could and closed #315 as
+abandoned with its branch kept. Docs-only once #312 landed on main and
+dropped out of the diff: a run note, two incident entries, four ledger
+entries. No draft, no hold, no comment, no checks defined (correctly: no
+`pipeline/` or `skills/` path). Opened `CONFLICTING` against the same two
+anchors a second time, resolved on the branch the same way, oldest first,
+with the orphaned trailing `- Status: proposed` line this PR's own body
+names as a risk restored for every entry it touched. Merged.
+
+**#346** (writer, third run, "the side-by-side the owner asked for on
+2026-10-05, and nobody fired") found that card already shipped and instead
+migrated 27 days of lost preference data into `docs/agents/preference-data.md`'s
+schema. Docs-only: two registers plus four files under
+`docs/voice/preferences/`. No draft, no hold, no comment, no checks defined.
+Opened `CONFLICTING` against the same two anchors a third time in one pass;
+resolved the same way. Merged.
+
+All three verified before push: `tools/check_registers.py` (0 blocking, 71
+warnings, at the baseline every one of tonight's passes has carried) and
+`tests/test_check_registers.py` plus `tests/test_board.py` (75 passed).
+`tests/test_deploy_drift.py`, `tests/test_distill_fulltext_budget.py` and
+`tests/test_press_watch.py` green on #312's merged tree (111 passed, 5
+skipped locally for a missing `tiktoken`, confirmed unrelated to this diff
+by running the same suite against a clean checkout of `origin/main`, where
+the same 5 skip and 7 unrelated oauth/db-outage tests also fail for the same
+missing-dependency reason this sandbox has).
+
+## Verified directly: the pricing claim against the live site
+
+```
+https://libraryofalexandria.dev/api/delivery returned "Newest Press Issue:
+Week 2026-W40 (created 2026-10-05)", thirteen days old today.
+
+https://libraryofalexandria.dev/pricing returned "Every issue in full" and
+"The complete archive" on the free tier.
+```
+
+Both fetched fresh this pass, not relayed from the YC advisory comment,
+though it found the same thing first. Filed as board card `af60726e` for
+the frontend seat (the claims-gate surface owner for site copy), with the
+writer seat advising on the words, the same split this pass's other merges
+used for the catalogue and install-line copy.
+
+## Delivery health, read from the artifact per `docs/agents/delivery-health.md`
+
+`python3 tools/delivery_health.py` against the live endpoint, this pass:
+
+- **press: FAILING.** 2026-W40 is the newest issue; 2026-W41 has ended. One
+  issue missing, now thirteen days, not the 2.2 this card opened with.
+- **site: FAILING.** Same cause, read from the database-backed archive
+  rather than a commit: the press wrote no row for 2026-W41.
+- **deploy: FAILING, and freshly interesting.** `distill` is 2.0 days behind
+  `origin/main` as of this merge: the undeployed commit is `f976b72`, which
+  is #312's own fix, landed nine minutes before this reading. `ingest` is
+  1.0 days behind on two undeployed commits. Both need `modal deploy`, which
+  no agent seat can run.
+- **pipeline: ok.** Ingesting and distilling within two days.
+- **archive: ok.** The record and the archive both end at 2026-W40, so
+  nothing between the database and the public page has drifted further.
+- **mcp: ok.** Up, and refusing unauthenticated calls.
+- **payments: unknown.** `payment_exceptions` could not be read here; no
+  agent seat holds the credential, same as every prior pass.
+
+## Run health
+
+`gh run list --limit 30` across all agent workflows, all green since the
+last pass. Fleet health is clean; the open finding above is delivery health,
+which is the other half, and the artifact says it plainly rather than by a
+scheduler's silence.
+
+## Queue gauge, four numbers
+
+1. **`main`'s age and checks.** Newest commit (#346's merge) under a minute
+   old at this writing. Newest `checks.yml` run on `main`: success (fired by
+   #312's merge; #343 and #346 were docs-only and correctly triggered none).
+2. **Open pull requests.** 7 total: #272, #331, #332, #333, #335, #347
+   (this one), #348. Zero opened since the last merge.
+3. **Conversion, 7 days.** 47 merged / 81 opened = 0.58, up from 0.54 at the
+   last pass six hours ago and 0.49 the pass before that.
+4. **Deepest open chain.** Two (`#331`, `#332`, each self-reported "depth
+   two, not at the depth-three blocking threshold"). Nothing stacked past
+   that.
+
+## Not touched, named rather than acted on
+
+- **#272** (exo, 2026-10-11, Tier C: touches three charters including this
+  seat's own, `prompts/pm-agent.md`): still open, not mine to merge or
+  close, six days old and idle since its own first hour. The company
+  standard's Tier B clause 6 would close an idle pull request past seven
+  days; it is not there yet.
+- **#331** (exo, draft), **#333** (frontend, draft), **#348** (engineer,
+  draft): all live runs, nothing to act on.
+- **#335, #332** (this seat's own, open since the night before): unchanged,
+  still waiting on another merger.
+
+## Linear trial
+
+Not checked this pass — a message-triggered pass of this size stays inside
+the merge-rule and board duties; the weekly note is the ceremony run's.
+
+## Owed to you, unchanged, not re-litigated here
+
+The Modal redeploy for #312's fix and the now two-undeployed-commit `ingest`
+drift (both `modal deploy`), the press issue itself (`modal run`, ~18
+cents, closes tonight under its own label), the Polar Merchant-of-Record
+account (ADR-30), the missing launch PR/FAQ on `main`, and your own open
+pull requests `#335` and `#332`.
+
+## Merged this run
+
+**Tier B** (`docs/standards/pm.md` §10, amended §21): `#312` (engineer),
+`#343` (engineer), `#346` (writer).
+
+## Boundaries respected
+
+Writable surface only: `docs/sprints/pending.md`, plus resolving the three
+docs-only conflicts on the other seats' own branches, which is this seat's
+to do under §10 rule 5. No charter, workflow, secret, or product code
+touched by this pull request itself.
+
 ## Updated 2026-10-18, ~01:20 UTC (message pass): PR #342 (the writer's selling copy) checked against the merge rule and merged, a thirteen-day-stale board card closed, the install page's own unfinished claim handed back to engineer
 
 **Trigger.** Four events this pass answers, two of them repeats of events

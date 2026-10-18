@@ -15089,3 +15089,183 @@ morning's work and it is filed in `docs/ideas.md` today with its first step.
 The read half is straightforward. The write half needs the server's own rules
 for the five kinds, and guessing at those in the same run that discovered the
 endpoint is how a client starts lying about a protocol.
+---
+
+## INC-2026-10-18-the-machinery-diff-reads-clean-on-a-shallow-clone — the charter's runtime-change gate answers "nothing to see" on a one-commit clone (engineer seat)
+
+**Recorded under the standing rule at the top of this file**: the root
+cause has occurred before and this is a new victim of it, so it is
+filed at the moment it repeated rather than folded into the older
+entry. The older entry is
+`INC-2026-09-24-shallow-clone-merge-base-repeat`, which is the same
+shallow clone breaking a different command.
+
+**What happened.** The engineer charter's "check the register before
+you ship" step requires one command before any work, because this seat
+is the only one that runs every day and therefore the only one that can
+catch a runtime change inside a day:
+
+```
+git log --since="36 hours ago" --format='%h %ci %an %s' -- .github/ pipeline/
+```
+
+On this run it printed exactly one line, a merge commit, and
+`git show --stat` on that commit listed every workflow file in the
+repository as an addition. Both observations are the same artifact:
+the sandbox's clone was shallow at depth one, `git log | wc -l` read
+2, and the single commit was the graft point, so every file in the
+tree is "added" by it and there is no second commit for `--since` to
+reach.
+
+**Why that is worse than the 2026-09-24 occurrence rather than the
+same.** A missing merge base fails loudly: `git merge-base` returns
+nothing and the seat knows it must do something. This fails quietly
+and in the direction of a pass. A seat that runs the command, sees one
+merge commit, and concludes that no runtime change landed in the
+window has run the check exactly as its charter asks and has reached
+the wrong answer. Nothing in the output says "your history is one
+commit deep".
+
+**What it would have cost on this run, measured.** After
+`git fetch --unshallow`, the same command returned two commits that
+the shallow version could not see, and the first is squarely the class
+the law exists for:
+
+- `ab4e5bb`, 2026-10-17 17:06, "Every seat's clock leaves GitHub: the
+  schedule blocks go, the host manifest keeps the cadence". Ten seat
+  workflow files, every `schedule:` block removed. A cron change in
+  ten runtime files is the central example in
+  `docs/agents/runtime-changes.md`.
+- `a941a71`, 2026-10-16 15:35, a guard added to `pipeline/ingest.py`
+  that raises on an empty run.
+
+Both turned out to be explained by merged pull requests, #334 and
+#317, with `checks.yml` green on `main` after each, so the window was
+clean on its merits. That is the point: the gate reported clean for
+the wrong reason, and it would have reported clean in exactly the same
+words if #334 had been a direct push with no rehearsal behind it.
+
+**What closes it.** One line, and it belongs in the charters rather
+than in a workflow, because the shallow clone is the host harness's
+default and not a GitHub Actions setting any seat can edit:
+
+```
+git rev-parse --is-shallow-repository    # true means the next answer is a lie
+git fetch --unshallow                     # before the machinery diff, not after
+```
+
+The 2026-09-24 entry already asked for this as "every seat's charter
+gets the one-line `git fetch --unshallow` reflex before any merge-base
+check". This run is evidence that the reflex needs to be attached to
+the machinery diff too, which is a second command in a second clause,
+and that the one-line form should be the shallow test rather than the
+fetch, so the seat learns the answer was unreliable rather than
+silently getting a reliable one.
+
+**Why this seat filed it and did not fix it.** Charters are editable
+only by the owner's merge (engineer charter, Boundaries), and this is
+a change to two charters and arguably to every one of them. The ExO
+seat owns the pattern read. Named here with the measurement rather
+than carried as a run note, because the next run of this seat starts
+from a fresh shallow clone and will meet the identical false negative.
+
+**Addendum, same day, the next run of this seat (engineer, fourth run,
+2026-10-18).** The prediction in the paragraph above came true in the
+very next run, about an hour later, and that run is this one. Fresh
+shallow clone, `git log --oneline | wc -l` read 9, and the machinery
+diff printed one merge commit. This run reported "no non-merge commit
+at all" in its own pull request description, in good faith, having run
+the charter's command exactly as written. It only caught the error
+because a merge of `main` brought this entry onto its branch and it
+read what it was merging. After `git fetch --unshallow`, the same
+command returned `ab4e5bb` and `a941a71`, the two commits this entry
+already names, so the window stays clean on its merits and there is no
+new unexplained runtime change.
+
+An addendum rather than a third entry, because the root cause, the
+measurement and the fix are all already above and the file's own header
+is unhappy about duplicates. What the addendum adds is the only thing
+this entry was missing, which is an observed repeat rather than a
+predicted one. **Two consecutive runs of the daily seat, both of which
+ran the gate correctly and both of which got a false pass.** The gate
+is not degraded by this, it is inoperative on this harness until a
+charter carries the shallow test, and the seat that can see that is the
+only seat that cannot edit a charter.
+
+## INC-2026-10-18-two-registers-held-both-halves-of-a-false-claim-one-day-apart — the pricing page's free column, false for thirty days, and the money page has one row in the claims register (2026-10-18, writer seat, fourth run)
+
+**What happened.** `site/app/pricing/page.jsx` sells the free tier on three
+bullets, and the third is "The complete archive". It was written on 2026-09-18
+in commit `ac9698f`. On 2026-09-19 the owner ordered 2026-W37 retired from the
+public site so that Monday's issue would be the pilot the public read first,
+and `site/lib/content.js:23` implements that order by withholding the week from
+the listing and from its own route. From that day the archive was deliberately
+incomplete and the bullet was false. It is still live, thirty days later, and
+the two missing weekly sends the board card was filed about are the smaller
+half of the problem rather than its cause.
+
+**Why this is a repeat, and of what.** Three ways, and the third is the one
+that is new enough to be worth the entry.
+
+It is ban list 61 for the third time. A reader-facing string kept in code is
+exempt from every gate this org has, because the gates run on what a model
+writes. The masthead was the first instance, repaired 2026-09-26 after running
+above every issue ever sent. The catalogue's row text was the second, found
+earlier today and recorded as ban list 125. This is the third, on the page
+where a visitor is asked to pay. Entry 61's own fix is that an editorial run
+reads the reader-facing constants in code once per run, which is a seat reading
+whatever a seat happens to open, so three surfaces have now been found by three
+runs that opened three different files for three unrelated reasons.
+
+It is `INC-2026-10-18-registered-claims-ship-unhedged-because-no-gate-reads-the-register`
+on a second surface, six hours later. That entry was filed this morning about
+`/llms.txt` and its diagnosis holds here without a word changed: the writer
+charter's claims gate is a gate on new candidates leaving this seat's hands,
+and nothing in the org re-checks a claim that was already live when the register
+was written.
+
+**And the part that is new.** Both halves of this contradiction were recorded
+correctly, in the right register, by the right seat, one day apart, and no gate
+in the org reads two registers at once. `docs/voice/taste.md` holds the ruling
+of 2026-09-19 that retired the pilot week. `site/lib/content.js` holds the code
+that obeys it, with her order named in the comment. The sentence that the
+ruling falsified sits in a third file. Every one of those three artifacts is
+accurate about itself. The falsehood exists only in the join, so no amount of
+care inside any one register could have found it, and every gate this
+organization owns is scoped to one register.
+
+That is the generalisable shape and it is worth stating as such: **recording is
+not enforcing was about one register's second gate, and this is the next layer
+out, where two registers each have both gates and the contradiction lives
+between them.** `docs/standards/lessons.md` L-A24 is the closest company law,
+that where a scheduler and an artifact disagree the artifact wins, and its
+consequence applies exactly: only an outside observer reading the artifact
+catches it, because each register reports its own contents.
+
+**The aggravating detail.** `docs/agents/quality-claims.md` has eleven rows.
+Ten are about the skills, the corpus and the graph. The pricing page has one,
+for a claim it shares with two other surfaces. Nothing in the register covers
+the three bullets that sell the free tier, and nothing covers the two
+paragraphs that tell a reader how their card will be treated, one of which
+promises a monthly renewal reminder that `grep -rn "reminder"` over `pipeline/`,
+`site/` and `tools/` finds in exactly one place, which is that sentence. The
+register's own closing analysis says every claim that holds is about the corpus
+and every claim that fails is about the skills. The distribution has a second
+axis nobody had looked along: the register is thorough about the half of the
+product that is instrumented and nearly silent about the page that takes the
+money.
+
+**What was done here.** The four candidate repairs are drafted in
+`docs/voice/pricing-claims-2026-10-18.md` for the owner to rule on and the
+frontend seat to set, since `site/` is not this seat's surface. The class is
+named as ban list 126, with a sweep showing the other four instances of the
+same vocabulary on the site are all correctly scoped and all four are lines the
+owner ruled on. The gate is filed in `docs/ideas.md` the same day, because the
+check that would close this reads the delivery receipt and the published
+listing and compares them to the strings in `site/`, and it is a command rather
+than a register line for the reason this entry exists: there was never a day
+when reading the page would have caught it.
+
+**What is not fixed.** Widening the claims register is the ExO seat's call and
+its file. Setting the words is the frontend seat's. The two missing sends are
+engineer card `92ab912d`.
