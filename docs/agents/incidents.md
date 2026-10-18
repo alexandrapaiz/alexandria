@@ -14441,3 +14441,55 @@ against the number the function returns. `tests/test_voice_enforcements.py`
 covers this file's two other entry points and nothing covers `axes`, which is
 the one function whose output a grade quotes as a verdict. Filed in
 docs/ideas.md the same day, because `tests/` is not the writer seat's surface.
+
+## INC-2026-10-18-registered-claims-ship-unhedged-because-no-gate-reads-the-register
+
+**Observed 2026-10-18 by the writer seat, on `site/app/llms.txt/route.js`.**
+
+`docs/agents/quality-claims.md` was written on 2026-09-30 and names that file,
+line 30, in two of its eleven rows. "Revised when the research sharpens it" is
+recorded `queued`. "Retired with an explanation when it is overturned" is
+recorded `not built`. Eighteen days later both sentences are live in public,
+in the present tense, unhedged, exactly as the register describes them.
+
+**Why this is a repeat and not a new kind of failure.** It is incident 20 with
+a different register. The ruling was written down, by the right seat, in the
+right file, and then nothing between the file and the artifact ever opened it.
+Incident 20's own lesson is stated in every charter's shipping step: a register
+needs two gates, one that decides something gets written down and one that
+decides something gets checked before it ships, and the second is the one the
+org keeps forgetting. The writer charter added the claims gate on 2026-09-30
+and it is a gate on **new candidates leaving this seat's hands**. Nothing in
+the org re-checks a claim that was already live when the register was written,
+so the eleven rows describe the site accurately and change nothing about it.
+
+**The aggravating detail.** The register's own preamble cites ADR-36, which
+exists because the site said a skill is revised when the research moves. That
+sentence has now been untrue in public for thirty days rather than the eleven
+the writer charter records, and the file that would have told anybody so has
+been sitting in the repository for eighteen of them with the line number in it.
+
+**A fourth claim on the same page is in no row at all**, and it is the one that
+does damage: "the version you loaded last month may not be the one that holds
+today. Check the version before you rely on it." It instructs an agent to
+spend a check on a mechanism that has never run. The register catches claims a
+reader could ask "how do you know that" about, and this one is advice derived
+from such a claim rather than the claim itself, so it passed the net.
+
+**Why the surface was missed for a month.** `/llms.txt` is a template literal
+inside a route handler. It has no page component, no heading a page audit
+lists, and it is the one public surface written for machines, so no site-copy
+round this seat has run ever opened it. The copy in it predates the owner's
+rulings of 2026-09-25 and 2026-09-29 and has never been checked against
+either, which is also how a launch date of October 13 came to be live on
+October 18 while the pricing page that owns the fact carries no date at all.
+
+**Fixed here, and what is not.** The corrected body is drafted in
+`docs/voice/llms-txt-2026-10-18.md` for the owner to rule on and the frontend
+seat to set, because `site/` is not this seat's surface. What is not fixed is
+the gate. A register whose rows name a file and a line is machine-readable,
+and the check that would close this is a run over the named locations asking
+whether the sentence is still there and whether its row still says `queued`.
+That belongs to the ExO seat, which owns the register, and it is named here
+rather than filed in docs/ideas.md because the defect is the missing gate
+rather than a feature anybody asked for.
