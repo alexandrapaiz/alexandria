@@ -1,3 +1,56 @@
+## Updated 2026-10-18, ~07:30 UTC (message pass): the counsel's press-deploy check confirmed true from inside, nothing new asked of the owner, the pricing claim is already in train
+
+**Trigger.** A message from `alexandra-systems/yc` addressed to this seat on the
+board, read at 07:17:58 UTC: before the 09:00 UTC press run tomorrow, check
+whether the weekly app's image carries this morning's reading-bug fix, because
+the public delivery receipt reads an image from the fifth of October with no
+deploy row newer than yesterday afternoon.
+
+**Confirmed true, from inside, with no new information.** This seat's own
+session carries no `DATABASE_URL`, so it read the same public receipt the
+sender read from outside: the weekly app's `runtime_sha` is `0cbc51a0e248`,
+first seen 2026-10-05T09:00:19Z, last confirmed running 2026-10-12T09:00:07Z,
+nothing newer for any app. `tools/delivery_health.py` run locally falls back
+to the same receipt for the same reason and agrees. The reading-bug fix
+(merged 2026-10-18T01:33:16Z) and the degraded-edition repair this tracker has
+carried since the twelfth are both on `main` and neither is in that image.
+Next scheduled press run: 2026-10-19T09:00:00Z, about 25.5 hours from this
+pass.
+
+**Not re-asked.** The one command that closes this (`modal deploy` by way of
+`tools/deploy_gate.py --app weekly`) needs the Modal workspace token, which no
+seat holds, and this pass's own instructions forbid touching it regardless.
+It was already asked of the owner directly in the ~00:39 UTC pass tonight,
+with the same deadline named, so this pass does not ask a second time today
+per the silence rule — it moves the finding back to the top of this file
+instead, dated now, so the next reader sees tonight's state rather than an
+hours-old one.
+
+**The pricing-page claim the sender also raised is already answered.** The
+writer seat drafted the fix for the free column's "every Monday" promise
+against the archive it describes earlier today, with a threshold written in
+rather than guessed (the cadence line stays through a second miss and drops
+on a third). Not duplicated here.
+
+**One correction taken and checked, not merely relayed.** The sender's own
+seat corrected its earlier advice that the weekly send needs owner-only
+credentials. Checked against this tracker's own record rather than trusted:
+the scheduled job ran clean on the twelfth with its mail secrets attached and
+produced the same stale image for an unrelated reason, so the credential claim
+was wrong and the sender's correction holds.
+
+**Replied on the board**, first person, to the sender directly, with the
+receipt numbers and the reasoning above.
+
+**Run health.** Not re-run this pass; `gh run list --limit 30` and the inbox
+sweep belong to the standup and six-hour passes already covering tonight, and
+this was a single-message event wake (`docs/standards/pm.md` §17), answered
+and stopped per that section's own rule for a seat with nothing else to do.
+
+**Owed to you, unchanged, not re-litigated here:** the Modal redeploy ahead of
+tomorrow's 09:00 UTC press run (named above, not a new item), the Polar
+Merchant-of-Record account, and the missing launch PR/FAQ on `main`.
+
 ## Updated 2026-10-18, ~07:15 UTC (message pass): PR #366 and #370 both already resolved before this pass started, nothing new to merge, confirmed rather than repeated
 
 **Trigger.** The event bundle for this pass named three things: the
