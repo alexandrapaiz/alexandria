@@ -1266,6 +1266,46 @@ def undeployed_commits(repo_root: Path, app: str, recorded_sha: str | None,
             "searched": len(commits)}
 
 
+def drift_began(found: dict, changed_at: datetime) -> tuple[datetime, str]:
+    """When this app's deploy started being late, and which fact says so.
+
+    The grace window exists so that a merge at noon is not an alarm at one.
+    It was measured from `changed_at`, the newest commit on the trunk to touch
+    the app's files, and that is the wrong end of the drift. A merge resets
+    that clock. An app eleven days behind therefore reads "inside the 24h
+    window" on any day somebody touches its files, and in a repository where
+    every seat commits daily that is every day.
+
+    The press is what it cost. `weekly`'s running image was built from
+    `3bbf430` of 2026-10-04. The degraded-edition repair for
+    `INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue`
+    merged on 2026-10-12 and never reached a container, the Monday cron of
+    2026-10-12 printed nothing, and this surface said `ok, a deploy is pending
+    and still inside the 24h window: weekly (20.7h)` for every one of those
+    days. Eleven days of drift, reported as twenty hours, because a later
+    commit kept moving the number the verdict was read off.
+
+    So the anchor is the OLDEST undeployed commit: the moment the running
+    image stopped being the trunk. `undeployed_commits` already recovers it
+    and already puts it in the evidence, which is the detail that makes this a
+    dating bug rather than a missing measurement. The number was on the page
+    the whole time, next to the one the verdict used.
+
+    Falls back to `changed_at` whenever the walk could not recover the
+    deployed commit, which is a shallow clone or a digest matching nothing in
+    range. That is the old behaviour, and keeping it is deliberate: a guard
+    that cannot date a drift should under-report rather than invent one. The
+    returned label says which of the two answered, so a reader never has to
+    guess which question the number is answering.
+    """
+    commits = found.get("commits")
+    if commits:
+        oldest = _parse_iso(commits[-1].get("at"))
+        if oldest:
+            return oldest, "the oldest undeployed commit"
+    return changed_at, "the newest commit to the app's files"
+
+
 def name_undeployed(found: dict, limit: int = DEPLOY_NAMED_COMMITS) -> str:
     """The commits, as one clause for a headline or an alarm.
 
@@ -1559,15 +1599,17 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
             evidence[app] = here
             continue
 
-        age_hours = (now - changed_at).total_seconds() / 3600
         # Only here, and never on the green path: the walk costs git processes
         # and an app that matches has nothing to name.
         found = undeployed_commits(root, app,
                                    row["runtime_sha"] if row else None,
                                    ref=ref)
         named = name_undeployed(found)
+        since, anchor = drift_began(found, changed_at)
+        age_hours = (now - since).total_seconds() / 3600
         here.update(state=FAILING if age_hours > DEPLOY_GRACE_HOURS else OK,
-                    merged_at=str(changed_at), drift_hours=round(age_hours, 1),
+                    merged_at=str(changed_at), drift_began=str(since),
+                    drift_anchor=anchor, drift_hours=round(age_hours, 1),
                     undeployed=found)
         evidence[app] = here
         if age_hours > DEPLOY_GRACE_HOURS:

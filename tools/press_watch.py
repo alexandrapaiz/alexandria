@@ -75,6 +75,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from pipeline import llm  # noqa: E402
 from tools import board  # noqa: E402
 from tools import delivery_health as dh  # noqa: E402
 
@@ -84,9 +85,23 @@ from tools import delivery_health as dh  # noqa: E402
 #: week reads as the same alarm every time.
 TITLE = "Press: no issue for {week}"
 
-#: The part of the title that is the same every week, which is what tells a
+#: The other thing worth a card, and the reason this file grew a second one.
+#: The owner's priority of 2026-10-16 is a press that runs on its own, and she
+#: asked for two things in one sentence: when a provider refuses, fall back to
+#: another, and say so on the board. The press has had the first half since
+#: ADR-32 and `write_digest` walks four models across two providers. The
+#: second half did not exist. A fallback that nobody is told about is a
+#: degradation the org discovers next quarter, from a reader, which is how it
+#: discovered the last three.
+FALLBACK_TITLE = "Press: {week} was written on a fallback, not {primary}"
+
+#: The part of each title that is the same every week, which is what tells a
 #: card this command wrote from a card somebody else wrote about the same week.
+#: Two titles now, so the mark is a phrase rather than a leading slice: both
+#: begin "Press: " and a dedupe on that alone would let a week's fallback card
+#: suppress its own missing-issue card, which are opposite findings.
 TITLE_PREFIX = TITLE.split("{")[0]
+FALLBACK_MARK = "was written on a fallback"
 
 #: Which seat the card lands on. The press is the engineer seat's surface and
 #: sprint 2026-10-12 put the send itself on that seat, so an unassigned card
@@ -242,17 +257,91 @@ def card_body(press, now: datetime) -> str:
     ]))
 
 
-def find_card(payload: dict, week: str) -> dict | None:
-    """The card this week already has, or None.
+def wrote_on_fallback(press) -> bool:
+    """Did a provider other than the primary write the issue on record.
+
+    `llm.on_fallback` is the rule, called and not copied, which is the same
+    argument this file already makes about `judge_press`. It compares the
+    model's provider against `budget.PRIMARY_MODEL`'s, so the day the primary
+    moves this answer moves with it and no second table has to be remembered.
+
+    False for a week with no issue at all, because "nobody wrote it" is the
+    other card and saying both about one week would be two alarms for one
+    fact.
+    """
+    model = (press.evidence or {}).get("model")
+    return bool(model) and not is_late(press) and llm.on_fallback(model)
+
+
+def fallback_title(press) -> str:
+    return FALLBACK_TITLE.format(week=(press.evidence or {}).get("newest_week"),
+                                 primary=llm.budget().PRIMARY_MODEL)
+
+
+def fallback_body(press, now: datetime) -> str:
+    """What the card says when the press survived on its second choice.
+
+    Written as news rather than as an alarm, because it is news: the issue
+    went out. What the reader has to decide is whether the primary is coming
+    back on its own, and the two facts that decide it are which provider
+    answered and what the issue cost in quality for having asked it.
+
+    The quality sentence is arithmetic rather than a guess.
+    `pipeline/budget.py` prints it on every run: the full generator prompt is
+    110,404 tokens against the 6,800 a Groq free-tier request may hold, so no
+    Groq model in `FALLBACK_MODELS` can print anything but the short edition.
+    An issue written off Moonshot is therefore a 400-word issue carrying a
+    handful of the ban list rather than the whole of it.
+    """
+    evidence = press.evidence or {}
+    model = evidence.get("model")
+    week = evidence.get("newest_week")
+    primary = llm.budget().PRIMARY_MODEL
+    provider = llm.budget().provider_of(model) or "an unknown provider"
+    written = dh._parse_iso(str(evidence.get("created_at")))
+    written = f"{written:%Y-%m-%d %H:%M} UTC" if written else evidence.get("created_at")
+    short = ("Everything behind the primary is on a free tier whose request "
+             "ceiling is 6,800 tokens against the full issue's 110,404, so "
+             "what went out is the short edition: 400 words, and a handful of "
+             "the ban list rather than all of it.")
+    return board.scannable("\n\n".join([
+        f"{week} went out on {model} at {written}, which is {provider} and "
+        f"not {primary}, so the press printed but it printed on its second "
+        "choice. I am saying so here because a fallback nobody is told about "
+        "is a degradation this org finds out about from a reader.",
+
+        short if llm.budget().provider_of(model) != "moonshot" else
+        ("The model is off the primary's provider, so the issue is the "
+         "degraded edition rather than the full one."),
+
+        "What this asks of a reader is one decision rather than a fix, "
+        "because the issue is already in the archive. Either the primary is "
+        "down for a reason that passes on its own, which a balance is, or it "
+        "is down for a reason that does not, and the difference decides "
+        f"whether next Monday prints in full. `modal app logs "
+        f"alexandria-weekly` carries the refusal {primary} gave.",
+
+        f"I am reading this from {evidence.get('read_via')} rather than from "
+        "the database, because no agent seat holds a database credential and "
+        "the site publishes the same rows without one.",
+    ]))
+
+
+def find_card(payload: dict, week: str, mark: str = TITLE_PREFIX) -> dict | None:
+    """The card this week already has for `mark`, or None.
 
     Matched on the week in the title rather than on an id kept somewhere,
     because there is nowhere to keep one: this runs from a fresh checkout with
     no state but the board itself. Every column is searched, including Done, so
     a week somebody has already closed is not alarmed about twice.
+
+    `mark` is what makes one week able to hold two different findings. A week
+    can be late and then be written on a fallback, and those are not the same
+    card: closing the first does not answer the second.
     """
     for item in payload.get("items") or []:
         title = item.get("title") or ""
-        if title.startswith(TITLE_PREFIX) and week in title:
+        if mark in title and week in title:
             return item
     return None
 
@@ -307,13 +396,23 @@ def read_press(today=None):
 
 def post(press, week: str, now: datetime, dry_run: bool = False,
          company: str | None = None, seat: str = SEAT,
-         column: str | None = COLUMN) -> dict:
+         column: str | None = COLUMN, kind: str = "late") -> dict:
     """Put the finding on the board, once per week, and nudge once a day.
 
     Returns what it did, as a dict, so `--json` and the prose render read the
     same answer rather than two.
+
+    `kind` picks which of the two findings this is. One function rather than
+    two, because everything below the title and the body is the same problem
+    solved the same way: dedupe on the week, resolve the column by name,
+    survive a board that will not take it. Two copies of that would disagree
+    the first time one of them was edited.
     """
-    title, body = card_title(week), card_body(press, now)
+    if kind == "fallback":
+        title, body, mark = (fallback_title(press),
+                             fallback_body(press, now), FALLBACK_MARK)
+    else:
+        title, body, mark = card_title(week), card_body(press, now), TITLE_PREFIX
     if dry_run:
         return {"action": "would create", "title": title, "body": body,
                 "column": column, "seat": seat}
@@ -321,9 +420,12 @@ def post(press, week: str, now: datetime, dry_run: bool = False,
     company = company or board.company_from_repo(
         os.environ.get("GITHUB_REPOSITORY", "")) or "alexandria"
     payload = board.read_board(company)
-    found = find_card(payload, week)
+    found = find_card(payload, week, mark)
     if found:
-        if not needs_nudge(found, now):
+        # A fallback card is a statement and not an open problem, so it is
+        # said once and never nudged. The late card is the opposite: a week
+        # that is still missing on Thursday is worth saying again.
+        if kind == "fallback" or not needs_nudge(found, now):
             return {"action": "already on the board", "id": found.get("id"),
                     "title": found.get("title")}
         board.api(f"/api/items/{found['id']}/comments", method="POST",
@@ -357,8 +459,25 @@ def watch(today=None, dry_run: bool = False, company: str | None = None) -> dict
                                   "claim this run cannot support"}
         answer["exit"] = 2
         return answer
+    answer["on_fallback"] = wrote_on_fallback(press)
     if not is_late(press):
-        answer["board"] = {"action": "nothing to post"}
+        if not answer["on_fallback"]:
+            answer["board"] = {"action": "nothing to post"}
+            answer["exit"] = 0
+            return answer
+        # The press delivered, so this exits 0 and the scheduled job stays
+        # green. That is deliberate and it is the whole design of a fallback:
+        # a degraded path that works is a success, and a red tick on a week
+        # the reader got an issue teaches everybody to stop reading the ticks.
+        # The card is the channel, because the card is read by a person who
+        # can decide about the provider, and a red run is read by nobody with
+        # that decision in front of them.
+        week = (press.evidence or {}).get("newest_week") or dh.week_label(now.date())
+        try:
+            answer["board"] = post(press, week, now, dry_run=dry_run,
+                                   company=company, kind="fallback")
+        except board.BoardError as exc:
+            answer["board"] = {"action": "not posted", "why": str(exc)}
         answer["exit"] = 0
         return answer
     week = due_week(press) or dh.week_label(now.date())
@@ -382,12 +501,18 @@ def render(answer: dict) -> str:
              "hour it happens)",
              "",
              f"  {mark[press['state']]}  press     {press['headline']}",
+             f"  provider   {(press.get('evidence') or {}).get('model') or 'none on record'}"
+             + ("  (a fallback, not the primary)" if answer.get("on_fallback")
+                else ""),
              f"  board      {action.get('action', '-')}"
              + (f": {action.get('title') or action.get('why') or ''}"
                 if action.get("title") or action.get("why") else ""),
              ""]
     lines.append({
-        0: "The press is current, or the week that just ended is not due yet.",
+        0: ("The press is current, or the week that just ended is not due "
+            "yet." + (" It printed on a fallback provider, which is a "
+                      "success and a card rather than a failure."
+                      if answer.get("on_fallback") else "")),
         1: "The window closed with no issue. The card above is the whole "
            "point of this command.",
         2: "Nothing was posted and this is not a green report: the press "
