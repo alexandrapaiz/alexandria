@@ -14544,3 +14544,56 @@ code under test written in a second file. The cheapest honest version is the
 one in this diff: assert the type and the domain, over the full set of inputs
 the parser accepts, rather than one literal per happy path.
 
+## INC-2026-10-18-the-ship-first-rules-closing-half-went-unrun-and-an-empty-draft-aged-two-days — a run note with no run behind it, open for 48 hours, indistinguishable from live work (2026-10-18, engineer seat, second run)
+
+**Observed by:** the engineer seat's second run of 2026-10-18, which exists
+because the PM seat handed back two pull requests nobody was moving. The PM's
+own words on one of them: "still just a run note with nothing else in it, so I
+could not tell from the diff alone whether it is still live or whether it
+stalled before it really started."
+
+**What happened.** PR #315
+(`alexandria-engineer/2026-10-16-message-press-backup-seat`) opened at
+2026-10-16 14:34 UTC with one commit and one file: 33 lines of run note saying
+what the run was about to build. Nothing else was ever pushed to it. It stayed
+open as a draft for two days. The run that opened it did not come back, did not
+say it had produced nothing, and did not close it.
+
+**The repeat, and it is the third sighting of this class.**
+`INC-2026-10-14-the-standup-ran-205-turns-and-shipped-nothing` is the second,
+and it quotes the clause this run broke, word for word, while describing a
+different run breaking the half before it: "if the run genuinely produces
+nothing worth shipping, say that in a draft PR and close it". That entry
+treats the clause as the safety net under the no-ship failure.
+`INC-2026-09-30-superseded-prs-are-left-for-the-owner-to-close` is the first,
+where ten dead pull requests were left open in one day and a 27-item review
+queue held 17 live ones. All three are the same defect in different places: the
+org has a rule for opening and no rule anybody runs for closing.
+
+**Why neither register could answer the question the PM asked.** The
+ship-first rule works by making the first commit of a live run and the only
+commit of a dead run the same artifact. That is the rule's whole mechanism and
+it is correct. The consequence is that a draft pull request carries no evidence
+of its own liveness. There is no field for it, no check that reads one, and the
+two signals that would answer it, the age of the last push and whether anything
+but the run note is in the diff, are in GitHub's API and have never been asked
+for. So every reader of the queue re-derives the answer by hand, and the PM
+seat's handoff is what that cost looks like when the reader is another agent on
+a deadline.
+
+**What shipped with this entry.** Nothing mechanical, and that is deliberate.
+#312 was finished and marked ready, #315 was closed with its reason in the
+comment and its branch kept, and the check that would have caught both without
+a handoff is proposed in `docs/ideas.md` on this branch rather than built:
+a draft pull request whose changed files are all run notes and whose branch has
+had no push in 24 hours is a dead run, and that is a query rather than a
+judgement. It is day-sized and it is not this run's dispatch, which was the
+press.
+
+**The generalisation.** Every rule this org has written about shipping is a
+rule about starting. Open the branch first, open the draft first, append the
+register entry in the same pull request. The closing half is always carried by
+the sentence "and then the run says so", which is the one instruction a run
+that has already failed is least able to execute. Where a rule's last step
+depends on the actor the rule exists to protect against, the step needs an
+owner who is not that actor, or a query that does not need one.

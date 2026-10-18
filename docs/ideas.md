@@ -16549,3 +16549,117 @@ the market seat's surface, so this is a note to that seat.
   it should read the job, not this sentence.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-18 — A dead draft is a query, not a judgement (engineer seat, second run)
+- Trigger: the PM seat handed this seat two stalled pull requests on 2026-10-18
+  and could say of one of them only that it was "still just a run note with
+  nothing else in it, so I could not tell from the diff alone whether it is
+  still live". PR #315 had been open for 48 hours holding one commit and one
+  33-line run note. The ship-first rule makes a live run's first commit and a
+  dead run's only commit the same artifact, so the queue carries no evidence of
+  liveness and every reader re-derives it by hand. Filed as
+  `INC-2026-10-18-the-ship-first-rules-closing-half-went-unrun-and-an-empty-draft-aged-two-days`,
+  the third sighting of a class that already has two entries.
+- What: a command that answers the question instead of asking a seat to. A
+  draft pull request is a dead run when every file it changes matches the run
+  note glob, `docs/agents/*run-note*`, and its branch has had no push for more
+  than 24 hours. Both facts are in `gh pr list --draft --json files,headRefName`
+  plus one `gh api` call per branch for the last commit date, so nothing new has
+  to be recorded and no seat has to remember anything. It prints the number, the
+  seat, the age and the one-line reason, exits non-zero when the list is not
+  empty, and posts the list to the board the way `tools/press_watch.py` already
+  posts a missing week. It never closes anything, because closing is the
+  author's act under the charter and a query that also acts is a query nobody
+  trusts.
+- First step: `tools/stale_drafts.py` with the two predicates and tests over
+  fixture payloads, no network in the test path, the same shape as
+  `tools/drift_watch.py`. One day. The board post is a second day and the
+  command is useful without it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-18 — The press has two labels for every issue and nothing has ever compared them (engineer seat, second run)
+- Trigger: today's craft scan of The Batch, below, which puts both a sequence
+  number and a publication date on every issue. Yesterday's scan of Import AI
+  found that a number alone hides a missed week; a date alone hides a late one.
+  Alexandria's issues carry two labels already and only one of them is ever
+  read. `delivery_health` judges the press on `week`, the ISO week the issue
+  covers, and `created_at`, the moment it was written, sits in the same row
+  untouched. That is exactly the gap the 2026-W38 scar and tonight's 2026-W41
+  window are both made of: an issue written late relabels itself to the week
+  that has just ended, so a send that is six days overdue reads as a send that
+  is on time, and the week it skipped becomes unreachable.
+- What: one predicate. An issue is late when its `created_at` falls outside the
+  seven days after the week its label names, and the press surface says so with
+  the two dates side by side rather than printing the label alone. It needs no
+  new column and no credential, because `/api/delivery` already publishes both
+  fields and that is the endpoint every seat reads the press through. The
+  honest consequence to publish with it: the archive currently cannot tell a
+  reader that 2026-W41 was skipped rather than published late, and after this it
+  can.
+- First step: `delivery_health.label_lag(row)` returning the gap in days and
+  which of the two dates anchored it, wired into the press verdict's evidence,
+  with tests over a row written inside its week, one written a week late, and
+  one whose week label the parser cannot read. Half a day.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-18 — The backup pen cannot send, so it should promise a draft (engineer seat, second run)
+- Trigger: PR #315 was abandoned this run and the reason is worth keeping. Its
+  design was a backup writer seat on the host that would write the week's issue
+  from the corpus, hold it to the voice check, and "send it down the same mail
+  path". The last clause is unbuildable by any seat. The mail path is the
+  owner's Gmail over authenticated SMTP behind the Modal secrets named `Gmail`
+  and `gmail_pass`, the issue row needs `DATABASE_URL`, and a host seat holds
+  neither and no Modal token to borrow them with. So the seat as designed would
+  write an issue it can neither send nor record, which leaves the one human step
+  that is actually holding 2026-W41 exactly where it was.
+- What: the smaller promise that can be kept. A command any seat can run that
+  writes the named week's issue from the corpus the site already publishes,
+  holds it to `docs/voice/check_voice.py` and the ban list, and leaves it in the
+  repository as a file with its week label and its model named in a header. Not
+  a seat on a roster and not a send. The owner then has a drafted issue to read
+  and one command to send it with, instead of a missing week and a cold start.
+  The difference between this and the abandoned design is that this one states
+  where the machine stops, which is the thing the Paperguide scan of 2026-10-12
+  already said this product should do in its own copy.
+- First step: `tools/draft_issue.py --week 2026-W41`, reading papers from
+  `/api/` rather than from the database, writing to `docs/press/drafts/`, and
+  exiting non-zero when the voice check fails. One day for the draft path. It
+  does not need the generator prompt's full budget, because a draft a human will
+  read before sending is allowed to be the short edition and say so.
+- Cost: $0 for the command. Whether a drafted issue is worth the path at all is
+  the owner's call, since it trades her reading time for the press's silence.
+- Status: proposed
+
+### 2026-10-18 — Craft scan: The Batch numbers and dates the same issue, so a missed week is arithmetic a reader can do (engineer seat, second run)
+- Scanned: The Batch (deeplearning.ai/the-batch), the weekly from Andrew Ng's
+  DeepLearning.AI, which sits in `docs/market/landscape.md` under the digest
+  category and had never been scanned by this seat. Read 2026-10-18.
+- What is worth stealing: every entry carries both labels at once. The newest
+  is "Oct 16, 2026" at the path `/the-batch/issue-375`, and the page states its
+  cadence in the subscription prompt, "weekly AI News and Insights". Three
+  facts, and together they are checkable: a weekly publication at issue 375
+  dated 2026-10-16 tells a reader where issue 374 should have fallen, without
+  the publisher having to admit anything. Neither label does that alone. A
+  number hides a skipped week because the sequence stays unbroken, which is
+  yesterday's Import AI finding. A date hides a late send because the date moves
+  with the sending. Carrying both costs nothing and makes the gap arithmetic,
+  and this seat has exactly the same two fields sitting in every issue row. The
+  ledger entry above is that observation turned into a day of work.
+- What alexandria does better: the label names the period rather than the
+  publication. An alexandria issue is `2026-W41`, the week it covers, so a
+  reader of the archive learns which weeks of the field the library has read.
+  The Batch's "Oct 16, 2026" is the day the mail went out, and nothing on its
+  index says which week of AI it covers, so an issue published four days late
+  looks identical to one published on time. And where The Batch's archive
+  paginates to "Page 1 of 25" and never names an absent week, `tools/press_watch.py`
+  puts a card on the board when a week is missing, with the deadline it missed
+  and the hours it is late. The gap is a published fact here and an inference
+  there.
+- The one to watch: 375 weekly issues is about seven years of never missing,
+  and that is the number a reader trusts rather than any claim on the page. It
+  is also the bar this product is being measured against while 2026-W41 sits
+  unwritten with hours left on its label.
+- Cost: $0, reading only.
+- Status: proposed
