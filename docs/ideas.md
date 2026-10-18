@@ -17274,3 +17274,65 @@ rather than a snapshot only because the first entry exists.
   of the four sections, which is true to the payload and worse for the reader
   than the alternative nobody has built.
 - Status: proposed
+
+## Writer seat, 2026-10-18 (seventh run): the generator prompt has no budget, and the one it broke cannot be held by trimming prose
+
+Two proposals and one measurement, out of three red workflow runs on this
+seat's own branch. The assertion was
+`tests/test_press_resilience.py`, "the cost is under the $0.15 ceiling ADR-32
+implies: $0.1519 an issue against $0.15", and the commit that crossed it was
+this seat's sixth run of the same day.
+
+**The measurement first, because both proposals rest on it.** Replaying every
+commit that has touched `prompts/digest.md`: 680 tokens on 2026-09-08, 38,745
+on 2026-10-18. 101 commits, of which nine subtract anything and none was a
+deliberate edit down. Main stood at $0.149996 before this run, which is four
+ten-thousandths of a cent under a ceiling nobody knew they were against.
+
+This run cut 2,227 tokens of genuine waste, the case history the generator
+carries about its own rules, and bought back 179 tokens of headroom. That
+number is the finding. The cost splits as $0.0960 output reservation, $0.0347
+generator prompt, $0.0192 worst-case payload. Deleting the entire prompt, every
+word, lands at $0.1152 against the $0.05 ADR-32 booked. The writer seat cannot
+hold this ceiling by writing less, and a seat that keeps trying will start
+cutting gates to make a budget.
+
+- **Proposal one, for the engineer: the writer's loop needs the budget command
+  before the commit, not after the push.** This is L-A22 almost verbatim, and
+  the standard's own worked example is this same press chain. The gate already
+  exists and already fires. What is missing is that it fires in CI, after a
+  push, where this seat learns about it three red runs later and one run after
+  the prompt went out of budget. The cheapest version is a single command this
+  seat runs before committing a prompt change, printing the cost and the
+  remaining headroom in tokens, exiting non-zero past the ceiling. `pipeline/
+  budget.py` already computes every term. Charter text cannot do this job:
+  nine of ten rows in this repo's register map are enforced by charter text and
+  the one enforced by an `&&` chain is the one that has never broken.
+
+- **Proposal two, for the engineer, and it is the structural one: the gates do
+  not belong in the same request as the writing.** 16,234 of the prompt's
+  tokens, 42% of the file, are a checking procedure that runs on finished text.
+  Twelve hard gates that read the draft, counting shapes, semicolons, headings,
+  grades, links and spans. They are sent to the model before the draft exists,
+  they are paid for on every issue, and they are read once at the top of a
+  single completion and recalled at the bottom. Split the press into a write
+  call and a check call and the largest request nearly halves, each gate reads
+  the artifact it was written about, and the reservation stops covering both
+  jobs at once. This is the charter's structure-watch move: the same class of
+  fix has now failed through prompt changes more than twice, and the third
+  attempt belongs in the pipeline rather than in the prose.
+
+- **One thing this seat is not proposing.** The ceiling is not raised. The test
+  says in its own words that raising it is a finance decision and belongs to
+  the owner, and that a ceiling quietly raised to fit the current number has
+  stopped being one. What is worth the owner's attention is that ADR-32 books
+  $0.05 and the real figure is 3x it, almost entirely because the output
+  reservation went from 6,000 tokens to 24,000 on 2026-09-24 and finance's
+  books were never told.
+
+- What changes if these land: the writer seat stops discovering its budget by
+  breaking it, and the prompt stops being the only place the cost can be paid
+  from. Until then this seat holds at 179 tokens of margin, which the next
+  writer run spends.
+
+- Status: proposed
