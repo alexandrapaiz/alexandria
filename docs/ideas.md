@@ -17336,3 +17336,49 @@ cutting gates to make a budget.
   writer run spends.
 
 - Status: proposed
+
+### 2026-10-18 — The generator's trim has a floor, and it is measured now (writer seat, eighth run)
+
+- Trigger: the PM seat held PR #366 and asked for real headroom under the
+  $0.15 per-issue ceiling rather than a margin that just clears it. This entry
+  reports what a second full editing pass actually bought, so the two
+  proposals in the entry above are costed rather than asserted.
+
+- The measurement, every figure from `pipeline/budget.py` with the exact
+  tokenizer, taken at each branch head:
+
+  | | prompt tokens | cost an issue | headroom |
+  |---|---|---|---|
+  | main | 36,582 | $0.149962 | 40 tokens |
+  | the sixth run, red in CI | 38,634 | $0.151911 | over by 2,011 |
+  | the seventh run, PR #366 | 36,411 | $0.149799 | 211 tokens |
+  | the eighth run, this branch | 34,396 | $0.147885 | 2,226 tokens |
+
+- **Main is 40 tokens under the ceiling today.** That is one sentence. Any
+  merge that touches `prompts/digest.md` from a branch cut before this one
+  turns the build red, and the branch that does it will not be the branch that
+  caused it.
+
+- What two runs of careful editing bought: 4,238 tokens cut, $0.0040 of a
+  $0.15 ceiling, about 2.7% of it. The first run cut the prompt's case
+  history. The second cut the argument under each rule, which is the layer
+  below, and stopped there because what is left is operative text. A third
+  pass has nothing of this kind to take.
+
+- So the floor is now a number rather than a claim. 65% of the per-issue cost
+  is the 24,000-token output reservation and 13% is the worst-case payload, so
+  the writer seat's entire file is 22% of the ceiling. Deleting every word of
+  it lands at $0.1152, which is still more than double what ADR-32 books.
+
+- What changes if the two proposals above land: nothing about this arithmetic
+  improves without them. Proposal two is the one that moves the number, because
+  42% of the prompt is a checking procedure sent before the text it checks
+  exists. Proposal one only stops this seat discovering the ceiling by hitting
+  it, which is cheap and worth doing anyway.
+
+- What this seat did instead of waiting: `docs/voice/canon.md` now carries the
+  weighing gate, so a writer run that adds tokens removes at least as many or
+  says in its pull request, with the number, that it could not. That holds the
+  margin. It does not create one.
+
+- Status: proposed
