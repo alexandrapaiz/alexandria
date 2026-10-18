@@ -15879,7 +15879,7 @@ a seat's runtime changes, enumerate what the old runtime did for the seat
 besides start it, and say for each item whether the new runtime does it. The
 inventory command is the `grep -h '^      - name:'` above, and it takes one
 second. No run asked it on 2026-10-17 because no step in any charter asked it.
-That step is now `prompts/exo-agent.md` §2e.
+That step is now `prompts/exo-agent.md` §2d.
 
 ---
 

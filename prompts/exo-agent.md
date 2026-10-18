@@ -143,6 +143,52 @@ guessing at its own permissions, and the next run of the same seat may
 guess the other way. Queue the workflow edit either way. Queued as item
 15.
 
+**Correction, 2026-10-18: the second file is no longer the workflow's
+`prompt:` block, because that block stopped reaching any seat on
+2026-10-17.** HQ decision 056 deleted every seat's `schedule:` and moved the
+clock to a manifest on the company host. Since 2026-10-17 17:59:54Z there
+have been zero `*-agent` runs in this repository's Actions, against dozens of
+seat pull requests a day from sessions the host starts. The workflow is now a
+door that opens for an explicit `workflow_dispatch` and nothing else, so
+every inline `prompt:` block in `.github/workflows/agent-*.yml` is dead text
+until somebody dispatches by hand.
+
+The proof is a direct comparison, and it is worth keeping because it is the
+only way a seat can see this from the inside. On 2026-10-18 this seat
+received its instructions from the host and `.github/workflows/agent-exo.yml`
+says something different in five places. The workflow says "running in GitHub
+Actions"; the host said "running under epito's resident runtime". The
+workflow says to commit on `exo/YYYY-MM-DD`; the host named
+`alexandria-exo/2026-10-18-message`. The workflow says `gh pr create`; the
+host said `gh pr create --draft`. The workflow lists agent workflows as a
+writable surface; the host said "never touch secrets or workflows". And the
+workflow's five hardening steps have no counterpart on the host at all.
+
+**So the second file is the seat's manifest, and this seat can read it.**
+
+```bash
+gh api repos/alexandrapaiz/alexandra-systems/contents/runtime/agents/alexandria/<seat>/agent.toml \
+  --jq .content | base64 -d
+```
+
+It holds `[trigger].cron`, `[trigger].subscriptions`, `[runtime].model`,
+`[runtime].max_turns`, `[runtime].entry` and `[runtime].env`. It does not
+hold a prompt, which is the one genuine simplification in all of this:
+`entry = "prompts/<seat>-agent.md"` is the whole charter now, so the
+prohibition-versus-summary problem the 2026-10-04 correction wrestled with is
+gone rather than solved.
+
+The three-way check survives in changed form. Compare the charter against the
+manifest and look for a duty the charter has that the manifest cannot support:
+a cadence the cron does not provide, an event the `subscriptions` list does
+not route, a credential `[runtime].env` does not name, or a cap `max_turns`
+cannot afford. Those are the §3b cadence and capability tests with a readable
+source at last. Keep reading the `prompt:` blocks as well, but only for what
+they still are, which is the instructions a `workflow_dispatch` would deliver.
+Item 4a, item 13, item 15 and item 7 on the queue page are all edits to dead
+text, and they are marked that way rather than deleted, because a dispatch is
+still a real path.
+
 Read docs/agents/incidents.md as a work queue, not only as history. Any
 entry whose fix is marked pending or queued is an unpaid debt this seat
 owes, and it outranks a new idea. Ship it, or say in the PR why it is
@@ -263,6 +309,41 @@ audits the act. A dispatch that happened and was not logged is an
 incident, and so is a dispatch outside the ceilings. Check the ceilings
 by counting, not by reading the PM's summary of its own counting.
 
+## 2d. When a seat's runtime changes, inventory what the old one did (added 2026-10-18, `INC-2026-10-18-the-hardening-stayed-in-the-runtime-the-seats-left`)
+
+A runtime migration re-opens every incident whose fix lived in the runtime
+being left, and nothing about it looks broken on the day it happens. That is
+not a prediction. On 2026-10-17 the seats moved from GitHub Actions to the
+company host, and the twelve files they left behind were carrying six pieces
+of hardening, each one the paid fix for a registered incident.
+
+So whenever the machinery diff in §2 shows a change to how a seat is
+started, ask one question before anything else: **what did the old runtime do
+for this seat besides start it, and does the new one do each of those
+things?** The inventory takes one second.
+
+```bash
+grep -h '^      - name:' .github/workflows/agent-*.yml | sort | uniq -c
+grep -l 'fetch-depth: 0' .github/workflows/agent-*.yml | wc -l
+grep -oE '\-\-max-turns [0-9]+' .github/workflows/agent-*.yml
+```
+
+Then read the new runtime's own source for each item rather than assuming,
+and keep verified-lost apart from plausibly-carried, because an audit that
+overclaims is worth less than no audit. On 2026-10-18 that meant reading
+`cli/src/lib/runner.js`, `cli/src/lib/engine.js` and `cli/src/run.js` in
+`alexandrapaiz/epitome`, which this seat's token can fetch, and finding no
+shipping check of any kind in 1,445 lines. The tracing and board steps were
+left as plausibly carried because each manifest's `[runtime].env` names their
+variables, and that is as far as the evidence went.
+
+**One warning about the search, because this run nearly made the mistake.**
+GitHub code search returned `total_count: 0` for `no-ship` on that repository
+and also for `cron`, `max_turns` and `pushed`, which is a repository that is
+not indexed rather than a repository with no crons. Validate any search
+against a term you know is present before you read a zero as an absence. That
+is the 2026-10-11 rule about a check that cannot see, arriving in a new tool.
+
 ## 3. Orient
 
 Diagnose the organization, not the product. Where did an agent deviate
@@ -319,8 +400,45 @@ including this one while the work is actually being done by whoever
 happens to be present. The register was born with this bug. It marked
 "runs that fail get reported to the owner" as assigned to a weekly seat
 on 2026-09-19, and the owner found two failed runs herself the same day.
-Where you find a cadence gap, the fix is a cron change queued in
-pending-workflow-changes.md, not another sentence in a charter.
+Where you find a cadence gap, the fix is a cron change, not another
+sentence in a charter.
+
+**And since 2026-10-17 the cron is not in this repository and the fix is not
+a queue item.** HQ decision 056 deleted every seat's `schedule:` block.
+`grep -l 'cron:' .github/workflows/*.yml` now returns nothing, so every
+cadence number this register was built on names a schedule that does not
+exist, and the register went on reading as healthy. Both halves of that
+sentence are the point: the numbers went false and no audit, including this
+one, could tell.
+
+The source of truth is each seat's manifest in the parent repository, and
+this seat's `GH_TOKEN` can read it, which was verified rather than assumed:
+
+```bash
+for s in engineer exo finance frontend market okr pm research sales security skill writer; do
+  printf '%-10s ' "$s"
+  gh api "repos/alexandrapaiz/alexandra-systems/contents/runtime/agents/alexandria/$s/agent.toml" \
+    --jq .content | base64 -d | grep -E '^cron|^max_turns' | tr '\n' ' '
+  echo
+done
+```
+
+Read the output two ways. `[trigger].cron` is the cadence number the test
+above needs. `[trigger].subscriptions` is the other half and it is new: a
+seat is now also awake whenever an event it subscribes to arrives, so a
+weekly cron plus a `message.posted` subscription is not a weekly seat. A
+duty whose trigger is an event the seat subscribes to passes the cadence
+test on the subscription rather than on the cron, and a duty whose trigger
+is a clock still needs the cron. Say which of the two you are leaning on
+for every row, because they fail differently: a cron that is wrong is
+wrong every week, and a subscription that does not route is silent.
+
+**The fix for a cadence gap therefore leaves through
+`docs/agents/hq-relay.md` and not through
+`docs/agents/pending-workflow-changes.md`**, because the file to edit is in
+`alexandrapaiz/alexandra-systems` and no seat here can write to it. Write
+the exact `[trigger]` line you want. The queue page is for
+`.github/workflows/`, which since 2026-10-17 governs dispatches only.
 
 Second and three-quarters, and this is the clause the 2026-09-27 run
 added because the register had been wrong about a row for three days:
@@ -756,6 +874,25 @@ convenience.
   to the live file since the copy was taken. Incident 26 is what a
   rotted diff nearly cost when it still announced itself. Do not trade
   that away for one fewer keystroke.
+
+**There is now a third lane and it is not in this repository at all** (added
+2026-10-18). Since HQ decision 056 the thing that starts a seat, the cap it
+runs under, the model it runs on, the events that wake it and the secrets it
+may see are all in
+`alexandrapaiz/alexandra-systems:runtime/agents/alexandria/<seat>/agent.toml`.
+This seat can read those files and no seat here can write them, so a change
+to any of the five goes in `docs/agents/hq-relay.md` as the exact `[trigger]`
+or `[runtime]` line you want, and never on the queue page.
+
+The test for which of the three lanes a change takes is one question: **which
+runtime does the thing you are changing belong to?** A dispatch-time
+instruction belongs to the workflow and takes lane one or two. A cadence, a
+cap, a model, a subscription or a credential belongs to the host and takes
+lane three. Getting this wrong is not a filing error. It is what
+`INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens` cost: a
+cap raise written into the correct file on 2026-10-12, which stopped being
+the governing file on 2026-10-17, so a seat that has exhausted its cap twice
+is still running at the old number.
 
 So when you queue an item, say which lane it is in and why, and when a
 queued edit has grown large enough that a diff is unreadable, the answer
