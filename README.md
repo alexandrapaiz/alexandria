@@ -276,7 +276,7 @@ docs/sprints/             the weekly sprint, one file per sprint
 docs/backlog.md           the consolidated board, every seat's proposals in one order
 docs/board.md             the company board: the two doors onto it, and the API as it really answers
 tools/board.py            the board client every seat run uses on a GitHub runner
-tools/delivery_health.py  did the product reach a reader: the press, the pipeline, the deploy, the site, the MCP server
+tools/delivery_health.py  did the product reach a reader, and can a reader buy it: the press, the pipeline, the till, the checkout links, the deploy, the site, the MCP server
 site/app/api/delivery/    the delivery receipt the command above reads, public and needing no credential
 tools/graph_audit.py      the claim graph's quality, eleven metrics and a worksheet for the twelfth
 docs/ideas.md             the ideas ledger: agents append, only the owner writes verdicts

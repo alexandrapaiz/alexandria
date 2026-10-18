@@ -128,6 +128,7 @@ import re
 import sys
 import types
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -136,6 +137,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 SITE_URL = "https://libraryofalexandria.dev"
 MCP_URL = "https://ap4509--alexandria-mcp-serve.modal.run"
+
+# The page a stranger is sent to in order to buy something, and the only
+# surface in this file that is read for what it is NOT showing.
+PRICING_URL = f"{SITE_URL}/pricing"
 
 # The credential-free reader for the three database surfaces. The site already
 # holds DATABASE_URL in its own environment, so `site/app/api/delivery/route.js`
@@ -368,14 +373,33 @@ def press_due_week(when: date | datetime | None = None) -> tuple[str, str | None
     return label(ended), None
 
 
-def fetch(url: str, timeout: int = 25) -> tuple[int, str, dict]:
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """Stop at the redirect instead of following it.
+
+    Returning None from `redirect_request` leaves the 3xx unhandled, so urllib
+    raises it as an `HTTPError`, which `fetch` already turns into a status and
+    a header dict. The checkout probe needs this because where a redirect goes
+    is the whole answer: the same route sends a stranger to `/sign-up` and an
+    unknown plan to `/pricing`, and a follower sees HTTP 200 for both.
+    """
+
+    def redirect_request(self, *args, **kwargs):
+        return None
+
+
+def fetch(url: str, timeout: int = 25, follow: bool = True) -> tuple[int, str, dict]:
     """GET a URL. Returns (status, body, headers); status 0 means it never answered.
 
     Never raises. A surface that is unreachable is a finding to report, not an
     exception to propagate, because one dead surface must not stop the other
     three from being checked.
+
+    `follow=False` reports the first answer rather than the last one, and it
+    builds its own opener so that every existing caller keeps the default
+    opener it has always used.
     """
     request = urllib.request.Request(url, headers={"User-Agent": "alexandria-delivery-health"})
+    opener = urllib.request.build_opener(_NoRedirect) if not follow else None
 
     def headers_of(message) -> dict:
         # Lowercased keys. `email.message.Message` looks up case-insensitively
@@ -385,7 +409,8 @@ def fetch(url: str, timeout: int = 25) -> tuple[int, str, dict]:
         return {k.lower(): v for k, v in message.items()}
 
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        open_it = opener.open if opener else urllib.request.urlopen
+        with open_it(request, timeout=timeout) as response:
             return (response.status, response.read().decode("utf-8", "replace"),
                     headers_of(response.headers))
     except urllib.error.HTTPError as exc:
@@ -557,6 +582,197 @@ def check_mcp() -> Surface:
                        "/mcp answered 200 to a request carrying no token", evidence)
     return Surface("mcp", FAILING, f"/mcp returned an unexpected HTTP {status}", evidence)
 
+
+# --------------------------------------------- can a sale happen at all
+#
+# Every surface above this one watches a sale that has already happened.
+# `payments` is the closest, and it asks whether a verified payment became
+# access, which is the failure *after* somebody bought something. Nothing asked
+# whether anybody could buy anything, so on 2026-10-18 both paid tiers on the
+# public pricing page rendered the words "Opens shortly" with no link behind
+# either one, five days past the date the company committed to taking a
+# payment, and every health report the org produced was accurate.
+#
+# That is L-A16 in `docs/standards/lessons.md`, word for word: configured is
+# not in effect, and the gap between the two is silent by construction. The
+# checkout route exists, the webhook is written, the entitlement read is live,
+# and none of that is a door a buyer can walk through.
+
+OFFERS_BLOCK_RE = re.compile(r"export const OFFERS\s*=\s*\[(.*?)\n\]", re.S)
+OFFER_FIELDS_RE = re.compile(r'id:\s*"([a-z0-9-]+)"\s*,\s*env:\s*"([A-Z0-9_]+)"')
+CHECKOUT_PATH_RE = re.compile(r"/api/checkout/([a-z0-9-]+)")
+
+# Clerk's two doors. Either one means the route is alive and asking a stranger
+# for an account, which is the designed answer and not a fault.
+SIGN_IN_PATHS = ("/sign-up", "/sign-in")
+REDIRECTS = (301, 302, 303, 307, 308)
+
+
+def checkout_offers(repo_root: Path | None = None) -> list[tuple[str, str]]:
+    """What the product sells, as (offer id, environment variable name) pairs.
+
+    Read out of `site/lib/polar-core.js` for the same reason `hidden_weeks` is
+    read out of `site/lib/content.js`. `OFFERS` is the single list that decides
+    which tiers the pricing page renders, so a second copy of it here would be
+    a second place to forget. Only the two names are read, because a checkout
+    URL is a secret this file never sees and has no use for.
+
+    An unreadable file yields an empty list, and that failure deserves saying
+    out loud rather than hiding, because it points the opposite way from the
+    hidden-weeks read. An empty hidden set can only make that check noisier. An
+    empty offer list makes this one quieter, since the per-offer comparison
+    below has nothing left to compare and only the floor check survives. So the
+    surface puts the list's provenance in its own evidence instead of implying
+    it looked.
+    """
+    root = repo_root or Path(__file__).resolve().parents[1]
+    try:
+        text = (root / "site" / "lib" / "polar-core.js").read_text()
+    except OSError:
+        return []
+    block = OFFERS_BLOCK_RE.search(text)
+    return OFFER_FIELDS_RE.findall(block.group(1)) if block else []
+
+
+def judge_hop(status: int, location: str, body: str = "") -> tuple[str | None, str]:
+    """Where one checkout link leads, and whether that counts as a door opening.
+
+    A pure function of one answer, so the five endings this probe can meet are
+    tested without a network and without a Polar account.
+
+    Returns the kind of hop and the words for it, or None and why the door did
+    not open. Two kinds count as open. A hop to another host is the seller, and
+    a hop to the sign-up page is `/api/checkout/[plan]` asking a stranger for
+    an account before it asks for a card, which is the deliberate design and
+    the reason that route exists at all rather than a bare link on the page.
+    """
+    if status == 0:
+        return None, f"nowhere, because the route did not answer: {body}"
+    if status in REDIRECTS:
+        if not location:
+            return None, (f"nowhere, because HTTP {status} arrived with no Location "
+                          "header for a client to follow")
+        target = urllib.parse.urlparse(urllib.parse.urljoin(PRICING_URL, location))
+        if target.netloc and target.netloc != urllib.parse.urlparse(SITE_URL).netloc:
+            return "seller", f"off-site to {target.netloc}, which is the seller"
+        if target.path.startswith(SIGN_IN_PATHS):
+            return "sign-in", "to the sign-up page, which asks for an account before a card"
+        if target.path.startswith("/pricing"):
+            return None, ("back to the pricing page, which is where this route sends a "
+                          "plan it does not recognise and an offer whose checkout link "
+                          "is unset")
+        return None, (f"to {target.path or '/'}, which is neither the sign-up page "
+                      "nor the seller")
+    if 200 <= status < 300:
+        return None, (f"nowhere, because the route answered HTTP {status} instead of "
+                      "redirecting, and the route in this repository only ever redirects")
+    if status == 404:
+        return None, "nowhere, because the checkout route answered HTTP 404 and is not deployed"
+    return None, f"nowhere, because the route answered HTTP {status}"
+
+
+def check_checkout(repo_root: Path | None = None) -> Surface:
+    """Can a stranger buy anything, read from the page a stranger is sent to.
+
+    Two assertions in a fixed order, and **the order is the whole design**.
+
+    First, the public pricing page has to render at least one checkout link.
+    Second, every link it renders has to open when it is followed.
+
+    The order matters because the second assertion cannot do the first one's
+    job, and a future reader who drops the page fetch and probes the route
+    directly will get a green report out of a shop with nothing for sale. The
+    reason is in `site/app/api/checkout/[plan]/route.js`: that route asks for a
+    signed-in account **before** it looks up the checkout link, so an
+    unauthenticated probe of `/api/checkout/monthly` gets the same 303 to
+    `/sign-up` whether the offer is configured or not. The rendered href is the
+    only evidence from out here that the environment variable behind it is set,
+    because `checkoutOffers` in `site/lib/polar-core.js` emits the link only
+    when it holds an https URL. So the page is the artifact and the route is
+    the follow-up, never the other way round.
+
+    **Where this is stricter than the ask, and why.** The handoff that asked
+    for this wanted at least one link present and answering. This fails instead
+    whenever any offer in `OFFERS` has no link on the page, which is the same
+    rule applied per offer rather than once. The argument for the stricter
+    form is that `OFFERS` is also what renders the tiers, so a tier the owner
+    does not want to sell leaves that list and stops being expected here, while
+    a tier that stays on the page and cannot be bought is exactly the failure
+    being watched. Half a launch reading green is how a report teaches its
+    reader to stop reading it.
+
+    **What this probe costs and touches.** One GET of a public page, plus one
+    GET per link. The checkout route is a GET by design and starts no session
+    that anybody is charged for, which its own comment says in so many words,
+    and an anonymous probe stops at the sign-up page without ever reaching the
+    seller. So this is free to run on a schedule and it spends nothing.
+
+    **What it still cannot see.** Whether the configured URL is a live product
+    at the seller. Proving that needs a session, so it is the next rung and not
+    this one, and it is in `docs/ideas.md` for the day a real account exists.
+    """
+    status, body, _ = fetch(PRICING_URL)
+    evidence: dict = {"url": PRICING_URL, "status": status}
+    if status == 0:
+        return Surface("checkout", FAILING,
+                       f"the pricing page did not answer: {body}", evidence)
+    if status != 200:
+        return Surface("checkout", FAILING,
+                       f"/pricing returned HTTP {status}, so nobody is reading an offer "
+                       "on it at all", evidence)
+
+    linked = sorted(set(CHECKOUT_PATH_RE.findall(body)))
+    offers = checkout_offers(repo_root)
+    env_of = dict(offers)
+    expected = [offer for offer, _ in offers]
+    evidence.update({
+        "linked": linked,
+        "expected": expected,
+        "expected_read_from": ("site/lib/polar-core.js" if offers
+                               else "unreadable, so only the floor check ran"),
+    })
+
+    if not linked:
+        unset = ", ".join(env_of[offer] for offer in expected)
+        return Surface("checkout", FAILING,
+                       "the pricing page renders no checkout link at all, so there is "
+                       "nothing on it a buyer can buy"
+                       + (f". Unset in the site's environment: {unset}" if unset else ""),
+                       evidence)
+
+    followed: dict[str, dict] = {}
+    shut = []
+    for offer in linked:
+        hop_status, hop_body, headers = fetch(f"{SITE_URL}/api/checkout/{offer}", follow=False)
+        location = headers.get("location", "")
+        hop, why = judge_hop(hop_status, location, hop_body)
+        followed[offer] = {"status": hop_status, "location": location,
+                           "hop": hop, "leads": why}
+        if hop is None:
+            shut.append(f"{offer} leads {why}")
+    evidence["followed"] = followed
+
+    if shut:
+        more = f", and {len(shut) - 1} more offer(s) in the same state" if len(shut) > 1 else ""
+        return Surface("checkout", FAILING,
+                       f"a checkout link on /pricing does not open a sale: {shut[0]}{more}",
+                       evidence)
+
+    missing = [offer for offer in expected if offer not in linked]
+    if missing:
+        names = ", ".join(f"{offer} ({env_of[offer]})" for offer in missing)
+        return Surface("checkout", FAILING,
+                       f"{len(linked)} of {len(expected)} offers can be bought, and the "
+                       f"page advertises the others with no link behind them: {names}",
+                       evidence)
+
+    stops_at_sign_up = all(hop["hop"] == "sign-in" for hop in followed.values())
+    return Surface("checkout", OK,
+                   f"all {len(linked)} offer(s) on /pricing carry a checkout link and "
+                   "every one of them opens"
+                   + (", each at the sign-up page, which is the route asking for an "
+                      "account before a card" if stops_at_sign_up else ""),
+                   evidence)
 
 def press_facts(conn) -> dict | None:
     """The newest row in `digests`, or None when the table is empty.
@@ -2061,7 +2277,11 @@ def _from_database(url: str, today: date | None, repo_root: Path | None,
         return None, f"DATABASE_URL is set but the connection failed: {exc}"
 
 
-ORDER = ["press", "pipeline", "payments", "deploy", "site", "archive", "mcp"]
+# `checkout` sits next to `payments` on purpose. One asks whether a sale can
+# happen and the other whether a sale that happened became access, and a reader
+# scanning this report for the state of the till should meet both in one glance.
+ORDER = ["press", "pipeline", "payments", "checkout", "deploy", "site",
+         "archive", "mcp"]
 
 
 def run(surfaces: list[str], today: date | None = None,
@@ -2084,6 +2304,8 @@ def run(surfaces: list[str], today: date | None = None,
     if "archive" in asked:
         by_name = {s.name: s for s in out}
         out.append(judge_archive(by_name.get("press"), by_name.get("site")))
+    if "checkout" in asked:
+        out.append(check_checkout(repo_root))
     if "mcp" in asked:
         out.append(check_mcp())
 
@@ -2139,7 +2361,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--surface", action="append", dest="surfaces",
                         choices=ORDER,
-                        help="check one surface; repeatable, default is all seven")
+                        help="check one surface; repeatable, default is all eight")
     parser.add_argument("--no-notify", action="store_true",
                         help="find a stale deploy and do not mail the owner about it")
     parser.add_argument("--json", action="store_true",

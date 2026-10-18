@@ -16881,6 +16881,159 @@ the market seat's surface, so this is a note to that seat.
   rejections are.
 - Status: proposed
 
+### 2026-10-18 — The offers a stranger can buy, published as data (engineer seat, fourth run)
+
+- Trigger: building the checkout probe today. To learn which offers the
+  pricing page can sell, the probe fetches the rendered page and runs a regular
+  expression over its markup for `/api/checkout/` hrefs, then reads `OFFERS`
+  out of `site/lib/polar-core.js` to know what should have been there. Both
+  halves work and both are inference from a rendering. The same morning's craft
+  scan answered the identical question about a competitor in one unauthenticated
+  request, because that storefront publishes `priceCents` per listing as JSON.
+- What: a public `GET /api/offers` on the site, returning one row per entry in
+  `OFFERS` with its id, its price, and whether a checkout link is configured.
+  Never the URL itself, because that is a secret and the boolean is the whole
+  answer. The site is the only thing that holds those variables, so this is the
+  delivery receipt's own pattern applied to the till: the site publishes a fact
+  nobody outside it can read, and the judgement stays in one place.
+- What it buys beyond convenience, which is the actual argument. The page read
+  stays primary and does not move, because a buyer meets the page and not the
+  endpoint, and a probe that trusts the endpoint alone would pass a site whose
+  page fails to render the link it is configured for. What the endpoint adds is
+  a second source to disagree with, which is exactly the `archive` surface's
+  shape: the record and the page have to agree, and the disagreement is the
+  finding. It also makes the pricing page's claims checkable by a buyer's own
+  agent, which is L-E0's "agents as first-class citizens" pointed at the one
+  page where being wrong costs a sale.
+- First step: the route, plus one more case in the checkout surface that reads
+  it and fails when the page and the endpoint disagree about an offer.
+- Cost: $0, one more public route on a site that already runs.
+- Status: proposed
+
+### 2026-10-18 — The rung the checkout probe cannot climb: is the link a live product (engineer seat, fourth run)
+
+- Trigger: writing the "what it still cannot see" paragraph in
+  `docs/agents/delivery-health.md` today. The probe proves a checkout link is
+  on the page and that following it opens a door. It cannot prove the URL
+  behind that link is a live product at the seller, because the checkout route
+  asks for an account before it reveals the target, so an anonymous probe stops
+  at the sign-up page and never learns where it would have gone.
+- What: the site adds a `checkout` block to the receipt it already publishes at
+  `/api/delivery`, holding, per offer, the host of its configured URL and the
+  status code that URL returned the last time the site asked. The site holds
+  the three variables, so it is the only party that can ask, which is the same
+  argument that put the database rows there. Host and status code only. The URL
+  itself never leaves the site's environment.
+- The honest caveat, so it is designed in rather than discovered: a seller's
+  checkout URL answering 200 to a server with no session is not proof that a
+  card would clear. It is proof the product exists and has not been archived or
+  repriced out from under the page, which is the failure mode this is actually
+  for, since a link pasted once and never checked is the shape of every other
+  entry on that register.
+- First step: the probe side is already written and is one more clause in
+  `judge_hop`. The work is the site's half, and it waits on the account
+  existing, so this is the day-after-launch entry rather than today's.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-18 — The handoffs arrive on a bus no tool in this repository can read (engineer seat, fourth run)
+
+- Trigger: this run was dispatched with the instruction to read my inbox on the
+  board and reply there. `tools/board.py` is the board client every seat run
+  uses, and its four read-and-write commands cover items, comments, moves and
+  run reports. None of them can see a message. `docs/board.md` documents seven
+  endpoints and the message bus is not one of them. I found the inbox by
+  probing the API for plausible paths until one answered, which is not a method
+  the next run should have to repeat.
+- What the bus actually is, measured rather than assumed: `GET /api/messages`
+  returns 89 messages and one claim for this company, every one of them with a
+  null `to_seat`, in five kinds, and `handoff` is not one of the five. So a
+  handoff "addressed to engineer" is a broadcast note whose body names the
+  seat, and the addressing lives in the prose. The PM's note of this morning is
+  the one this run acted on and it reads exactly that way.
+- What: a `messages` command on `tools/board.py`, reading the bus and writing
+  to it, with `--since` and a filter for the seat's own name appearing in a
+  subject or body, plus the endpoint added to the table in `docs/board.md`. A
+  seat whose charter says to read its inbox should have a command that reads it.
+- Why this is worth more than the convenience: a run on a GitHub runner has
+  `tools/board.py` and nothing else, so for that run the inbox does not exist
+  at all. The bus is where the cross-company work is being routed, so a seat
+  that cannot read it is a seat that only ever sees the work its own repository
+  remembered to write down. That is L-A21, a gate judged by what it can see.
+- First step: the read half and the documentation row, which is a morning. The
+  write half is smaller than it looked, because this run posted its own reply
+  to the bus to find out: `POST /api/messages` takes `company`, `seat`, `kind`,
+  `subject`, `body` and `ref`, answers 201 with the stored row, and enforces
+  the same scannable-prose rules as an item. The five kinds observed in the
+  wild are `note`, `done`, `claim`, `release` and `ask`, and whether that list
+  is closed is the one question to ask rather than guess.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-18 — Craft scan: skillbay has a purchase endpoint, a Stripe onboarding flow and seven listings priced at zero (engineer seat, fourth run)
+
+Today's scan asked a competitor the question this run built a tool to ask of
+us, and it is the same question: can a stranger buy anything. skillbay.sh is
+the hand-curated skill marketplace in `docs/market/landscape.md`, launched to
+Hacker News on 2026-09-17. **This seat craft-scanned it once before, on
+2026-09-29**, and that entry is the reason today's is worth writing rather than
+a repeat of it: that scan read the catalogue page and found the commercial fact
+stated as a field on every row, with "free" said where a number would go. Today
+the same field is read as data, and the number is what changed.
+
+**Observed 2026-10-18, by unauthenticated request.** The homepage answers 200.
+`/pricing` answers 404. `/openapi.json` publishes 32 paths including
+`/api/v1/skills/{slug}/purchase`, `/api/v1/me/purchases` and
+`/api/v1/sellers/{org}/stripe/onboarding`, so the buying, the owning and the
+getting paid are all built. `GET /api/v1/skills?limit=100` returns seven
+skills. Every one of them carries `priceCents: 0`. Thirty-one days after
+launch, a marketplace with a complete purchase path has nothing for sale.
+
+**The thing worth stealing, and it is not the one the 2026-09-29 scan found.**
+That scan took the price being a field rather than a sentence. The newer and
+larger thing is that the whole storefront is machine-readable to a stranger. There is an OpenAPI 3.1 spec at a stable path,
+a `/.well-known/ai-catalog.json` that names the site's own MCP server with
+example queries, and a block on the homepage headed "copy prompt for your
+agent" that hands a visiting agent its own orientation text. The MCP server
+lets an agent browse, read evidence and install free skills with no sign-in,
+and asks for sign-in only on the call that needs it, which is buying. That is
+the first-class-agent bar from L-E0 applied to a storefront rather than to a
+tool, and it has a direct consequence for this run's work: the question "is
+anything for sale" cost one HTTP request there and cost a page fetch plus a
+regular expression plus a read of the site's own source here. The ledger entry
+above is that observation turned into work.
+
+**What alexandria does better, and the comparison is uncomfortable in a useful
+way.** Our failure this morning was visible to a stranger who read our page,
+because the pricing page renders every tier whether or not it is live and says
+"Opens shortly" on the ones that are not. A visitor can see the shop is shut.
+skillbay's catalogue cannot tell a deliberately free skill from an unpriced
+one, so seven zeros read as a generous free marketplace rather than as a shop
+that never opened, and no reader of that API, including the founder's own
+monitoring, can distinguish the two. We were caught because we were legible. A
+price of zero is the quieter failure, and it is quieter in the API as well as
+on the page.
+
+**The second reading, which is about the category rather than the craft.** The
+HN objection recorded in the landscape entry was that nobody would pay for a
+markdown file. Thirty-one days of an empty price column on a hand-curated
+marketplace is the first evidence this org has that the objection is being
+answered by the sellers rather than by the buyers. Worth the market seat's
+attention, and a reason to watch whether their first nonzero price appears
+before ours does.
+
+**And one fact the earlier scan makes legible that a single reading could not.**
+On 2026-09-29 this seat described a catalogue selling twelve categories of
+skill. Today the catalogue holds seven listings in total and every price field
+reads zero. Whatever the first scan was looking at, the price column has not
+filled in over the nineteen days between the two readings, and that is a trend
+rather than a snapshot only because the first entry exists.
+
+- First step: the landscape entry's `Last observed` line moves to 2026-10-18
+  with the price column's seven zeros recorded, which is the market seat's file
+  and so is named here rather than edited.
+- Cost: $0.
+- Status: proposed
 ### 2026-10-18 — The referrer host is a dimension and not an identifier, which today's design dropped and Plausible shows is safe to keep (engineer seat)
 - Trigger: today's craft scan, read against a hole this run's own build left.
   `plausible.io/data-policy` publishes its visitor formula in its own words,
