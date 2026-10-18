@@ -2997,3 +2997,46 @@ gap that the same collision had left empty (incident 25).
     ```
     LANDED prompts/digest.md: "Does the clause name something the work did not measure, or does"
     ```
+
+125. The selling sentence nobody wrote, lifted out of text addressed to a
+    machine. Entry 61 is standing copy fixed in code that no pass ever graded,
+    and its fix is that an editorial run reads the reader-facing constants in
+    code once per run. This is the same failure one move further out, and that
+    fix cannot reach it, because the sentence is not a constant and is not in
+    the site's code at all.
+
+    `site/lib/skill-shelves.js` takes each skill's `description`, cuts it at
+    the first sentence, and the catalogue prints that fragment as the row's
+    one-line pitch. The `description` is the text an agent's router matches a
+    task against, so it is written for a machine, by the seat that owns
+    `skills/`, under a 150-word budget enforced by a trigger test. It is good
+    at the job it was written for. What a stranger reads on the page a sprint
+    is now selling from is this:
+
+    > Where to enforce the boundary an agent runs inside, and what each choice
+    > measures.
+
+    Nothing in it is false, no internal vocabulary appears in it, and entry 14
+    therefore passes it. No editorial pass has ever read it either, because the
+    string lives in `skills/*/SKILL.md` front matter, which a copy round over
+    `site/` never opens, and the function that promotes it lives in a third
+    directory that belongs to a third seat. Three surfaces, three owners, and
+    the sentence that sells the product is the output of a slice.
+
+    The tell, and it is checkable in one question: **who was this sentence
+    written to?** A line in a selling slot that was addressed to a router, a
+    schema, an index or another program reads as accurate and sells nothing,
+    and her ruling of 2026-09-20 names the register exactly: "no more
+    technical. we want to sell." The repair is never to rewrite the machine's
+    text, which is correct as it stands and has its own gate. It is to write
+    the reader's sentence as a second artifact and to give it somewhere to
+    live.
+
+    No sweep, and no change to `prompts/digest.md`, because the generator does
+    not write site copy and nothing in a prompt can reach a slicing function.
+    The nine candidate sentences are drafted in
+    `docs/voice/skills-copy-2026-10-18.md` and the ending this entry carries is
+    the ledger entry that asks for the field to put them in, filed
+    2026-10-18, because the half this register cannot hold is that there is
+    nowhere in the repository for a reader-facing sentence about a skill to go.
+    Added 2026-10-18, from the copy round for the catalogue page.
