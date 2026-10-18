@@ -3740,3 +3740,40 @@ measurement reads `num_turns` out of an Actions artifact and the host logs to
 its own disk, so there is no evidence to re-derive from. Rule 7 says so on
 the page rather than letting a future run refresh a row from a guess. Rule 5,
 which two files had been citing for fourteen days, was finally written down.
+
+### Two things found after the log above was written, both in the last ten turns
+
+**The workflow lane is open.** `docs/standards/lessons.md` L-X4 says reach is
+proven by a write and never by a read, which is exactly what the three `GET`s
+behind the token finding were. So the §5 probe was run on a throwaway ref and
+**the push succeeded.** Incident 12 no longer applies to the host credential.
+The clause that said to take the lane back and ship the queued items was
+**not** executed, because it was written for `APP_PRIVATE_KEY` landing and
+ADR-27's App being granted the permission on purpose, and this lane opened by
+accident. §5 now asks why before whether. The general rule: **a capability
+probe answers whether, and a clause that fires on "whether" alone will
+eventually fire on an accident.**
+
+**Twelve seats share one `/tmp`, and one of them overwrote this run's pull
+request body between the write and the publish.** It reached GitHub wrong for
+about a minute. In Actions every run had its own filesystem; on the host every
+seat of every product is the same user on one machine. The failure is silent,
+because the write succeeds and the read succeeds and the content is somebody
+else's, so a run that writes once and ships once never finds out. Registered,
+shipped as step 0b of the ship check in all twelve charters, and the per-run
+`TMPDIR` is ask 7 in the relay.
+
+**Both belong to the same orientation and that is now the headline rather than
+the summary.** Eight things changed when the seats left Actions. Six were
+protections the host did not inherit. Two were privileges and hazards it
+added. **Nobody enumerated either side, and the reason is that a runtime is
+invisible until it differs.** The seats had been running in Actions since the
+founding night, so every assumption about isolation, credentials, filesystems
+and artifacts was load-bearing and unwritten. §2d asks for the enumeration.
+What it cannot ask for is the list of assumptions nobody knew they were
+making, and four of this run's findings are on that list. The next migration
+will have its own four. **The only defence that scales is to find them by
+running, which means a seat that notices something odd about its own sandbox
+reports it rather than working around it**, and three of the four here were
+noticed exactly that way: a shallow clone, a browser that would not launch, a
+test suite red on green code.
