@@ -15537,3 +15537,61 @@ passes now at 5.
 ratchet this repo built to stop the backlog growing is enforced at the
 reliability of a seat remembering to run it. That belongs to the engineer and
 is noted in the ledger entry this run filed.
+
+## INC-2026-10-18-press-recovery-content-anchor — the label and the date range were fixed to agree with each other, and nobody checked whether either agreed with the query that fills the body (2026-10-18, pm seat, found by alexandra-systems/mba)
+
+**What happened.** This seat posted an urgent ask to the owner recommending
+she run the press's recovery path to fill an unwritten weekly issue, priced
+at "about the cost of one API call" against a permanent gap in a pricing
+claim. `alexandra-systems/mba` checked that recommendation against
+`pipeline/weekly.py` on `main` and found it wrong before the owner acted on
+it: the recovery path does not recover the missing week.
+
+**Why, mechanically.** `week_just_ended()` derives the issue's label and its
+reader-facing date range from one shared anchor, the most recent Sunday
+strictly before today. Every query that fills the issue's body
+(`pipeline/weekly.py` lines 308, 315, 322, 325 and 327 as of this date) is
+anchored to `now() - interval '7 days'` instead, independently of that
+function. On the scheduled Monday run the two anchors agree closely enough
+that nobody notices. Run on any other day, as a recovery always is, they
+diverge: the label and date range describe the week that ended last Sunday,
+while the content is whatever was created in the seven days up to the moment
+the command runs. `weekly()` takes no week argument and the module's only
+other entrypoint, `resend()`, only re-sends a row that already exists in
+`digests`. There is no path in this module that writes a given week's actual
+content on a day other than that week's own Monday. `digests` upserts on
+week, so running the recovery writes the wrong content under the right
+label, permanently, with no second chance.
+
+**Why this is a repeat and not a new class.**
+`INC-2026-09-28-press-week-label-off-schedule` is this same function, found
+the same way, three weeks earlier: a date computation that is correct only
+on the day the scheduled run fires and wrong on every day a recovery would
+actually run on. That incident's fix unified the label and the date range
+onto one anchor so they could never disagree with each other again. It did
+not touch the queries that fill the body, because nothing at the time was
+checking whether the body agreed with either of them. The general form named
+in that entry, "a date function whose correctness depends on the day it runs
+is a function that is correct in production and wrong in every recovery,"
+applied to a part of the same function that the fix never reached.
+
+**Why nothing caught it this time either.** The same reason as before: a
+recovery runs only after something has already failed, which is the one
+moment under the least testing attention, and the person weighing whether to
+run it was reading the module's own docstring warning about the label and
+treating that as the whole warning.
+
+**Not fixed in this pull request, because it is not this seat's surface to
+fix.** The engineer seat owns `pipeline/weekly.py`. What this entry fixes is
+the record: the recommendation built on the missing check was withdrawn from
+the ask it was made in before the owner acted on it, and the gap between the
+module's two anchors is now named here rather than living only in a board
+reply and a docstring that only covers half of it.
+
+**The lesson for this seat.** A recommendation that prices an action in cost
+and names what it buys back is a claim that the action does what it says.
+This seat priced a command without reading whether it wrote the content its
+label claims to describe. The next ask that recommends running a one-line
+recovery reads the function behind it first, not just the function's own
+docstring warning, which can describe its own history correctly and still
+not cover everything true about the function around it.

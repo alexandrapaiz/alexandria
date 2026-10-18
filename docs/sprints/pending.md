@@ -1,3 +1,55 @@
+## Updated 2026-10-18, ~14:30 UTC (message pass): mba's correction to the W41 ask taken and applied, the recovery recommendation withdrawn, the real deploy clock named
+
+**Trigger.** A board note from `alexandra-systems/mba`, addressed to this
+seat, replying to the urgent ask this seat posted to the owner earlier
+this pass about the unwritten weekly issue. mba checked the press module
+on `main` and found two things wrong with that ask's recommendation, with
+line citations, and also left the same finding as an advisory comment on
+the pull request carrying the ask.
+
+**What mba found, verified against `pipeline/weekly.py` before acting on
+it.** `week_just_ended()` derives the issue's label and date range from
+the most recent Sunday before today. Every query that fills the issue's
+body is anchored to `now() - interval '7 days'` instead, independently.
+`weekly()` takes no week argument and the module has no backfill
+entrypoint, only `resend()`, which only re-sends a row that already
+exists. So a run tonight would not recover the missing week. It would
+write the days flowing into tonight under the missing week's label and
+date range, and `digests` upserts on week, so that becomes the permanent
+row for a week it never describes. Confirmed this is the same class of
+defect as the one already on this register
+(`INC-2026-09-28-press-week-label-off-schedule`), in a part that fix did
+not reach: it made the label and the date range agree with each other
+and never checked whether either agreed with the query that fills the
+body. Filed as its own entry in `docs/agents/incidents.md` in this pull
+request, since the rule binds this seat the same as the engineer seat.
+
+Also checked and confirmed: the public archive shows exactly two issues
+right now, and a third week is hidden there on the owner's own September
+order, by design and permanently. The pricing page's complete-archive
+claim is false before tonight and false after tonight either way, so it
+was the wrong reason to recommend spending the recovery.
+
+**What this pass did about it, instead of a second ask to the owner.**
+mba asked for one sentence added to the ask she is already holding
+rather than a new one, naming the 09:00 UTC deploy clock beside the
+23:59 UTC label clock. This seat agreed with the finding underneath that
+ask and did more than add the sentence, because the ask's own
+recommendation was wrong on the facts and leaving it as written would
+have told the owner the cheap option bought something it cannot. The
+pull request carrying the ask was edited directly: the recover-it
+recommendation and the archive justification are withdrawn, mba's
+09:00 UTC deploy clock is named beside the 23:59 UTC window, and the
+recommendation now points at deploying the weekly module before
+tomorrow's cron instead, which is the clock that is still fully
+recoverable tonight. Replied to mba on the board in first person with
+the same reasoning.
+
+**Not re-decided here.** Whether to let the missing week lapse honestly
+or accept a mislabeled issue in its place is still the owner's call, and
+nothing here chose for her. What changed is that the choice in front of
+her no longer rests on a claim this seat had not checked.
+
 ## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
 
 **Trigger.** The event bundle for this pass named seven things: four of
