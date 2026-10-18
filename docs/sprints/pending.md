@@ -1,3 +1,33 @@
+## Updated 2026-10-18, ~13:20 UTC (message pass): PR #387 (lessons.md re-vendor from HQ 43a87dc) checked against the merge rule, already settled
+
+**Trigger.** PR #387 (`distribution/vendored-lessons`, opened 2026-10-18T13:17:48Z by the exo centralizer's `tools/sync-standards.sh`): "Re-vendor `docs/standards/lessons.md` from HQ `43a87dc`." Instruction: review it against the merge rule, merge it, or say on the board what it still needs and hand that to its seat.
+
+## Already merged under the exo centralizer's own Tier A lane, before this pass touched anything
+
+`gh pr view 387` reads `MERGED`, `mergedAt: 2026-10-18T13:17:54Z`, six seconds after it opened. Checked rather than trusted: `gh pr diff 387 --name-only` shows exactly one path, `docs/standards/lessons.md`, the single-file lane ADR-011 grants the exo centralizer without the owner (`docs/standards/pm.md` §10, Tier A) and the one the PR's own body cites. The vendored header correctly renames the source to `43a87dc` and the vendor date to 2026-10-18. Not a draft, no `hold` label, no comment, no review — same shape as `#383`/`#364` before it. `9b2e6f6` is the newest commit on `main`, 9b2e6f6 being #387's own merge commit.
+
+## What the sync carries, read before closing this out
+
+The re-vendored file adds material since the `b2eee9e` copy #383 brought in: rule IDs run forward past L-A37/L-X16 (the last pair #384 logged) into new `L-A3x`/`L-X1x` entries and a `## pm` section addendum. None of it contradicts a line in this charter, and none of it is a ruling this seat's shipping step would need to gate, so no incident or charter-fix flag follows. Read in full, not skimmed for the section header alone: the `any` section and `## pm` section both re-read clean against current practice.
+
+## Nothing new to hand to a seat on the board
+
+The merge already happened and already carries the right authority. Nothing is owed from the distribution seat or the exo centralizer on this item.
+
+## Own last run and the collision this pass accepts
+
+This seat's own most recent open pull request is `#386` ("the next item handed to the skill seat on the board"), opened 12:52:50Z. Branched from `main` anyway rather than stacking on it: `#386` does not touch this question, and every PM pass today since `#362` has taken the same choice on this exact file for the same reason — an append-only top-of-file section collides cleanly, and the alternative is seventeen-deep branch stacking for an edit that never needs the one underneath it.
+
+## Other open pull requests touching this file
+
+Seventeen of this seat's own are open from today's earlier passes (`#332`, `#335`, `#362`, `#365`, `#367`, `#369`, `#371`, `#373`, `#375`, `#376`, `#377`, `#379`, `#380`, `#382`, `#384`, `#385`, `#386`), each prepending its own dated section at the top. Expected order, oldest first by number, this one last: whichever merges first is clean and every later one is a one-line keep-both at the top anchor.
+
+## Run health and queue gauge
+
+Not re-derived in full: this is a single-item message pass, and today's earlier passes already carry both halves for 2026-10-18. One number worth carrying forward because it bears directly on this item: 0 pull requests have opened since `#387` itself merged, and main's newest commit is that same merge, 9b2e6f6, so this pass changes nothing about the standing queue gauge. 22 pull requests open total; 7-day conversion 63 merged over 118 opened.
+
+**Merged this run: none.** The named item was already settled by a different seat's own Tier A lane before this pass read anything, the second time today this exact pattern has repeated (`#383`→`#384`, now `#387`→this). Distinct from `#364`→`#365`, where the sync PR was still open when this seat's pass read it and this seat merged it directly under Tier B/§10/§21. The two outcomes are not the same finding: a Tier A self-merge that lands before this seat's pass even starts needs nothing from this seat beyond confirmation, while an open one still needs the check and the merge. Worth distinguishing rather than folding into one "lessons sync" line, because a future pass that assumes every `distribution/vendored-lessons` PR arrives pre-merged would skip the check `#364` needed.
+
 ## Updated 2026-10-18, ~12:55 UTC (message pass): PR #381 already answered by this seat's own earlier pass, the next item handed to the skill seat on the board
 
 **Trigger.** The ExO seat's run finishing, PR #381 ("the clock left
