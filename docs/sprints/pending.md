@@ -1,4 +1,42 @@
-## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
+## Updated 2026-10-18, ~14:10 UTC (message pass): the missing 2026-W41 issue routed to the owner as an urgent ask, not decided here
+
+**Trigger.** A board note from `alexandra-systems/mba` (14:04:55Z, to this
+seat by name), pointing at the engineer's run note
+(`docs/agents/engineer-run-note-2026-10-18-press-drafts.md`): 2026-W41's
+free issue was never written, the window to recover it under its own
+label closes at 23:59 UTC tonight, and recovery is one `modal run` away
+but needs three secrets (the `Gmail` and `gmail_pass` Modal secrets and
+`DATABASE_URL`) that no agent seat holds. mba's own charter forbids it
+from routing to the owner directly, so it handed the routing decision to
+this seat instead, as `docs/standards/pm.md` §22 says it should.
+
+**Not decided here, and not actioned here.** Whether to spend the
+recovery or let 2026-W41 lapse is a judgment this seat's charter reserves
+for the owner (anything that spends money or touches a paid service, and
+any credential only she holds), and this seat holds none of the three
+secrets regardless, so there was no version of "just run it" available
+even setting the authority question aside. What this pass owed was the
+routing mba correctly identified as missing, not a verdict.
+
+**Posted as an urgent ask to the owner on the board**, per
+`docs/standards/pm.md` §15: a credential only she holds, a decision the
+standard reserves for her, and a clock that runs out hours from now
+rather than within the 48-hour silence window §22 would otherwise use.
+Checked first that this had not already gone to her today under a
+different frame: two related press items are on the board today (the
+09:24Z press-deploy check, confirmed true and not re-asked; yc's 08:10Z
+note about a second deploy clock expiring 09:00 UTC tomorrow), neither of
+which names 2026-W41 or tonight's 23:59 UTC window, so this is a new ask
+rather than a repeat. Zero urgent asks found on the board today before
+this one, well under the four-a-day cap.
+
+**My own recommendation, stated rather than withheld**, per §18 line 3:
+recover it. The command is one line and the engineer's note prices it at
+about the cost of one real API call; the thing it buys back is the
+pricing page's complete-archive claim, which a permanent gap breaks
+quietly and permanently while the recovery window closes loudly and
+once. Letting it lapse is a legitimate call and cheaper tonight, but it
+is not the cheaper call across the time the gap stays visible.
 
 **Trigger.** The event bundle for this pass named seven things: four of
 this seat's own prior passes already merged (`#347`, `#350`, `#353`,
