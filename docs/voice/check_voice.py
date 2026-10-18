@@ -1531,6 +1531,97 @@ def taste():
                  or red) else 0
 
 
+AWAITING = ROOT / "docs/voice/awaiting-her-word.md"
+# A path inside backticks, which is how every row of the register and every
+# candidate file names the surface it is about.
+SURFACE = re.compile(r"`(site/[A-Za-z0-9_./-]+\.(?:jsx|js|txt))")
+CANDIDATE_FILE = re.compile(r"`([a-z0-9][A-Za-z0-9_.-]*\.md)`")
+
+
+def open_rows():
+    """docs/voice/awaiting-her-word.md's open table, as {surface: candidates}.
+
+    Only the open section. A closed row is a candidate she ruled on or the
+    frontend seat set, and drafting for that surface again is ordinary work
+    rather than the duplicate this looks for.
+    """
+    if not AWAITING.exists():
+        return {}
+    text = AWAITING.read_text()
+    start = text.find("## Open")
+    end = text.find("\n## ", start + 1)
+    rows = {}
+    for line in text[start:end if end > 0 else len(text)].split("\n"):
+        cells = [c.strip() for c in line.split("|")]
+        if len(cells) < 4:
+            continue
+        for surface in SURFACE.findall(cells[1]):
+            for cand in CANDIDATE_FILE.findall(cells[2]):
+                rows.setdefault(surface, set()).add(cand)
+    return rows
+
+
+def candidates(ref=None):
+    """A candidate this run drafted for a surface already awaiting her word.
+
+    `INC-2026-10-18-three-candidates-for-two-surfaces-in-one-day`, and then the
+    same thing again four runs later. The register that answers "has this
+    surface already been written for" was created on 2026-10-18 and says in its
+    own second paragraph that it is the first file a writer run opens. The
+    charter's shipping step names seven registers and not that one, so the
+    ninth run of the day read all seven, drafted four candidates, and every one
+    of the four surfaces already had an open row. All three of the earlier
+    candidates were better.
+
+    That is the shape this file keeps recording: the register was written, the
+    duty was written inside it, and nothing between the duty and the artifact
+    ever opened the file. So the duty becomes a command over the run's own
+    diff, which is where `selfcheck` already looks.
+
+    The escape is the register's own rule rather than a new one. A run may
+    draft for a listed surface when it builds on the open candidate or says why
+    it supersedes it, and naming that candidate file is how it says so. A file
+    that names it passes. A file that does not has not read it.
+    """
+    ref = ref or "origin/main"
+    rows = open_rows()
+    out = subprocess.run(["git", "diff", "--name-status", ref],
+                         cwd=ROOT, capture_output=True, text=True)
+    new = []
+    for line in out.stdout.splitlines():
+        parts = line.split("\t")
+        if len(parts) < 2 or not parts[0].startswith("A"):
+            continue
+        path = parts[-1]
+        if path.startswith("docs/voice/") and path.endswith(".md") \
+                and (ROOT / path).exists() and (ROOT / path) != AWAITING:
+            new.append(path)
+    clashes = []
+    for path in new:
+        body = (ROOT / path).read_text()
+        named = set(CANDIDATE_FILE.findall(body)) | {m for m in re.findall(
+            r"([a-z0-9][A-Za-z0-9_.-]*\.md)", body)}
+        for surface in sorted(set(SURFACE.findall(body))):
+            held = rows.get(surface, set())
+            if held and not (held & named):
+                clashes.append((path, surface, sorted(held)))
+    print(f"candidate files this diff adds under docs/voice/   {len(new)}")
+    for path in new:
+        print(f"  {path}")
+    print(f"surfaces with an open row in awaiting-her-word.md  {len(rows)}")
+    for path, surface, held in clashes:
+        print(f"  FAIL    {path}")
+        print(f"            drafts for {surface}, which is already open in "
+              f"{', '.join(held)}")
+    if not clashes:
+        print("  no candidate here redrafts a surface already awaiting her word")
+    print()
+    print("A run may draft for a listed surface. It may not do so without")
+    print("naming the candidate already open on it, because that is the")
+    print("difference between superseding a draft and not knowing it exists.")
+    return 1 if clashes else 0
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -1554,11 +1645,12 @@ def main():
                      ("stale", stale), ("measure", measure), ("links", links),
                      ("delivery", delivery), ("claims", claims),
                      ("reading", reading),
+                     ("candidates", candidates),
                      ("compare", compare), ("selfcheck", selfcheck)):
         if which == name or (which == "all"
                              and name not in ("selfcheck", "compare")):
             print(f"==== {name} ====")
-            if name in ("enforcements", "selfcheck"):
+            if name in ("enforcements", "selfcheck", "candidates"):
                 rc |= fn(paths[0]) if (which == name and paths) else fn()
             else:
                 rc |= fn(paths) if (name in takes_paths and paths) else fn()
