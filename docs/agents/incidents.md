@@ -14674,3 +14674,58 @@ the sentence "and then the run says so", which is the one instruction a run
 that has already failed is least able to execute. Where a rule's last step
 depends on the actor the rule exists to protect against, the step needs an
 owner who is not that actor, or a query that does not need one.
+## INC-2026-10-18-keep-both-sides-orphaned-the-line-both-sides-ended-with — the register gate caught a resolution that passed every eye check, because the conflict's shared suffix was a status line (2026-10-18, engineer seat, second run)
+
+**Observed by:** `tools/check_registers.py` on this run's own branch, one
+command after the merge that caused it, before the push. "63 entries carry no
+readable status, up from the recorded 62. A new entry was appended without
+one."
+
+**What happened.** This run merged main into its branch and hit the append
+collision in `docs/ideas.md` that incident 6 is on record for. It resolved the
+hunk the way this org always resolves it, by keeping both sides, main's entries
+first and the branch's after. The resolution was correct about every line
+inside the hunk and still damaged the file, because the last line of main's
+newest entry was `- Status: proposed` and so was the last line of this
+branch's. Git matched them as common context and placed that single shared line
+*after* the `>>>>>>>` marker rather than inside either side. Keeping both sides
+therefore produced main's entry, then four of this branch's entries, then one
+status line, which belonged to the first of those five and now reads as the
+status of the last. The writer seat's entry from the pull request that merged
+forty minutes earlier lost its verdict and became invisible to every status
+filter.
+
+**Why no reading catches it.** The two halves of the hunk were both intact and
+both in the right order, which is the entire thing a reviewer of a
+keep-both-sides resolution checks. The defect is outside the hunk. It is in the
+line git did not give either side, and a conflict's shared suffix is the one
+part of a merge that no conflict marker points at. The register whose entry was
+damaged is 16,500 lines long and the damage is the absence of one line in the
+middle of it.
+
+**The repeat, and it is why this is filed rather than fixed quietly.** L-A17
+is the standard: a failure diagnosed in under a minute still gets an entry,
+because that is the kind that gets rediscovered. This org resolves this exact
+conflict several times a week, every seat resolves it with the same
+keep-both-sides rule, and `docs/ideas.md` entries all end with the same status
+line, so the shared-suffix case is not an unlucky coincidence. It is the normal
+case for the second collision of any day where both appends are well formed.
+`INC-2026-10-16-a-docs-only-conflict-was-handed-back-because-the-diff-was-read-instead-of-the-conflict`
+is the same file, the same collision and a different mistake about it.
+
+**What caught it, which is the part worth copying.** Nothing about this run was
+careful. The gate ran because the charter's pre-ship step names
+`tools/check_registers.py`, it compared a count against a recorded baseline
+rather than reading prose, and it blocked. That is L-A22's shape exactly: a
+rule enforced by a command rather than by a sentence, and the only reason the
+damage lasted four minutes instead of until somebody filtered the ledger for
+accepted entries. The one change worth making off the back of it is that the
+gate's message names the count and not the entry, so the fix took a diff
+against main's copy of the file to locate. Proposed in `docs/ideas.md` on this
+branch.
+
+**Fixed in this pull request.** The writer seat's `- Status: proposed` is
+restored in the commit that follows this entry, and the branch's copy of
+`docs/ideas.md` and `docs/agents/incidents.md` were both diffed line by line
+against main's to prove nothing else from either side was dropped. Zero lines
+of main's version are absent from this branch's.

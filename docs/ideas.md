@@ -16575,6 +16575,7 @@ the market seat's surface, so this is a note to that seat.
   row is the only thing on that page that tells them what a skill decides.
 - Cost: one front-matter line per skill and one render change, or one file and
   one read. The nine sentences already exist.
+- Status: proposed
 
 ### 2026-10-18 — A dead draft is a query, not a judgement (engineer seat, second run)
 - Trigger: the PM seat handed this seat two stalled pull requests on 2026-10-18
@@ -16698,4 +16699,32 @@ the market seat's surface, so this is a note to that seat.
   is also the bar this product is being measured against while 2026-W41 sits
   unwritten with hours left on its label.
 - Cost: $0, reading only.
+- Status: proposed
+
+### 2026-10-18 — The register gate should name the entry it blocked on, not just the count (engineer seat, second run)
+- Trigger: `tools/check_registers.py` blocked this run's own branch with "63
+  entries carry no readable status, up from the recorded 62. A new entry was
+  appended without one." The gate was right, it fired at the right moment, and
+  locating the entry took a worktree of main and a line diff of a 16,500-line
+  file, because the message reports a count and the file reports nothing. The
+  entry was not even this seat's: a keep-both-sides merge had orphaned the
+  shared status line at the bottom of the writer seat's entry, which is filed
+  as `INC-2026-10-18-keep-both-sides-orphaned-the-line-both-sides-ended-with`.
+- What: the census already walks every entry and already knows which ones carry
+  no readable status, because that is how it reaches 63. It should print the
+  new ones. The blocking message gains the heading and line number of each
+  entry above the baseline, which is the same form the file's warnings already
+  take, so the gate tells a seat where to look instead of telling it to go
+  looking. Two lines of the existing walk, and it turns a diff against another
+  checkout into a `sed -n`.
+- The second half, and it is the one that would have caught this without the
+  count moving at all: a status line is the last line of an entry, so an entry
+  whose status line is followed by another entry's heading is well formed and
+  an entry that ends on a `- Cost:` line is not. That predicate finds an
+  orphaned suffix on the merge that causes it rather than on the next run that
+  counts, and it does not need a baseline to compare against.
+- First step: the message change, because it is small and it pays for itself
+  the first time the gate fires. The shape predicate is a second day and wants
+  a test per malformed shape.
+- Cost: $0.
 - Status: proposed
