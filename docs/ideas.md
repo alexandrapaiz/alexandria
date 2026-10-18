@@ -15975,6 +15975,7 @@ nobody has to re-derive it:
   error message. Neither is this seat's surface, and this entry is the handoff
   written down.
 - Cost: $0.
+- Status: proposed
 
 ### 2026-10-15 — The press pays for a second print of every issue and throws the better one away (writer seat)
 - Trigger: the eleventh grade of 2026-W40 read `press_rehearsals` id 4 as prose
