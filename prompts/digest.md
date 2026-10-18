@@ -307,6 +307,16 @@ same fixed template, that is the failure mode this section exists to prevent.
   or an institution's name as the payload spells it. Punctuation, spacing,
   separators and mathematical symbols get no exception at all, so a paper
   called "Psi-Spec" is written that way here.
+  **The exception has a direction and this rule has now broken in it.** A name
+  is copied out of `authors` character for character and is the one string on
+  the page the contamination default below does not run on, so the acute, the
+  umlaut and the cedilla survive into the issue. The print of 2026-10-05 wrote
+  "Jose Luis Pino" for an author the payload spells "José Luis Pino", scored
+  zero non-ASCII characters, and misspelled a named researcher in the one
+  sentence attributing the work to him. The other print of that same day
+  spelled it correctly. Zero is the target for every character you chose and it
+  was never the target for a letter in somebody's name, so when the two pull
+  against each other the name wins and the count carries it.
   Where these characters come from decides where you catch them, and they
   are not typed by you. They arrive in the payload, whose claim text is
   machine-extracted from PDFs, and most of its claim strings carry at least
@@ -998,6 +1008,19 @@ four of these inside one 167-word paragraph and the reader could not tell
 where one ended and the next began. One plain sentence underneath the list
 says what the whole group means for a builder, because a list of replacements
 with no meaning under it is an inventory the reader has to interpret alone.
+**Count the `superseded` rows you are going to print BEFORE you write the
+first one, because that count is the shape and the shape is not a revision.**
+Three such rows and the group is a list, so the list is what you compose, and
+you never write the group as prose and then look for a place to break it. The
+trigger above says "past two entries", and an entry is a thing a list has, so
+a group written as flowing prose produces none and the count has nothing to
+count. Two prints of this file on 2026-10-05 both failed it in that exact way
+and neither failed it by judging the number wrong: one printed three of these
+as three paragraphs, the other printed four of them as sentences inside one
+149-word paragraph. The rows are in the payload before a word is written and
+the drafted prose is not, which is why the count is taken there, the way the
+traction and new-work slots above already count distinct papers in the rows
+they were handed rather than in the items they have drafted.
 
 Judge every edge before you print it, and there are two tests, not one.
 
@@ -1113,14 +1136,34 @@ Printing everything `deep_reads` returned is the opposite of judgment, and
 judgment is what the reader pays for.
 A paper this issue has already covered at length is not a pick. The reader
 just read it here, so the line would send them to what they were handed.
-Check each pick against the ISSUE you have just written, section by section,
-and never against a payload stream. Naming one stream is how this failed: the
-rule used to say the overlap is with `new_claims`, one pick had been covered
-in the traction section instead, and it went out with a line recommending the
-paper the issue's own lead item was about. A paper covered anywhere above is
-covered. Drop the overlap and print what remains, even when what remains is
-one paper or none. When nothing remains, the section does not run and its
-heading does not print, the same as any other empty slot.
+**The check is a comparison against a list and never a reading of the
+sections.** The list already exists, because it is the named works the link
+rule, the grade rule and the attribution rule are all counted against. Write
+each candidate pick beside that list and strike every pick that appears on it,
+matching on the payload's url where you have one and on the paper's own title
+where you do not. **Then run the prose comparison too, because it is cheap and
+it works.** Take the short bold lead of every item you wrote above and the
+title of every candidate pick, lowercase both, and strike the pick wherever the
+two share a run of three or more words. The sections above name a paper by a
+written lead and this slot names it by its full title, so the two strings
+differ, and they are not independent: a lead written from a paper carries the
+paper's own words. On the print of 2026-10-05 all three overlapping picks
+shared such a run with the lead that had covered them, "kernel level
+preemption", "not all experience belongs in the weights" and "procedural
+memory from", and the one item whose paper the list did not carry shared
+nothing with any of them. Three caught, none wrongly. This file said for a day
+that one piece of work carries two different strings and that recognising them
+as one is the step that cannot happen, and that was wrong about the artifact it
+was written from. The print of 2026-10-05 is what a missed overlap
+looks like from a reader's chair: three picks, all three described at
+length in the section directly above, and seven candidates in `deep_reads` the
+issue had not covered left unprinted. Naming one stream is how this failed the
+first time: the rule used to say the overlap is with `new_claims`, one pick had
+been covered in the traction section instead, and it went out with a line
+recommending the paper the issue's own lead item was about. A paper covered
+anywhere above is covered. Drop the overlap and print what remains, even when
+what remains is one paper or none. When nothing remains, the section does not
+run and its heading does not print, the same as any other empty slot.
 Drop it silently. A dropped paper leaves no trace in the issue. A sentence
 explaining why a paper is not on the list spends the shortest section in the
 newsletter on this file's own bookkeeping, and the reader did not come for the
@@ -1677,10 +1720,15 @@ the rule's question to the thing in front of you.
   list mandatory is the place it keeps not happening.** The fell-behind slot says
   the superseded group is a bulleted list past two entries, which is a trigger
   with a number in it and the only unconditional list requirement in this file.
-  Count the entries in that group. Three or more and the group is a list, or the
-  issue is not finished. The print of 2026-10-05 had three and set them as three
-  paragraphs, so it shipped with no list anywhere in it for the ninth issue
-  running, and the count that would have caught it was never taken.
+  Count the `superseded` rows that group came from, NOT the entries you can see
+  in the draft, because a group you wrote as flowing prose has no entries in it
+  and this count then reads zero off a paragraph carrying four of them. Three
+  rows or more and the group is a list, or the issue is not finished. The print
+  of 2026-10-05 had three and set them as three paragraphs, so it shipped with
+  no list anywhere in it for the ninth issue running, and the count that would
+  have caught it was never taken. The other print of that same day had four in
+  one 149-word paragraph, so this count run on entries would have cleared the
+  worse of the two.
   **A seventh count, for the colon in a heading, because it is the last mark
   this file governs in prose alone.** Count the headings that carry a colon, the
   title included. The target is zero and there is no budget. The print of

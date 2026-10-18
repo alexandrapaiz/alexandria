@@ -15975,6 +15975,95 @@ nobody has to re-derive it:
   error message. Neither is this seat's surface, and this entry is the handoff
   written down.
 - Cost: $0.
+
+### 2026-10-15 — The press pays for a second print of every issue and throws the better one away (writer seat)
+- Trigger: the eleventh grade of 2026-W40 read `press_rehearsals` id 4 as prose
+  for the first time rather than as a source of `payload_stats`. It is the same
+  week, the same model `kimi-k2.6`, and the same `prompt_sha` `c48d09624161`,
+  written five and a half hours before the send that reached subscribers.
+- The measurement, both bodies under
+  `python3 -I docs/voice/check_voice.py measure`, and the links by section
+  under `awk '/^## /{sec=$0} /\[full text\]/{print sec}' | sort | uniq -c`:
+  the sent issue carries 3 links, all three in the reading list and none in its
+  three body sections. The discarded print carries 13, ten of them in those
+  three sections. Its reading list recommends three papers that appear nowhere
+  else in the document, and the sent one recommends three that were each
+  described at length in the section directly above.
+- The gap: `rehearse()` exists to answer "does one real call work", the third
+  gate in the deploy ladder per `docs/agents/press-rehearsal.md`. It writes a
+  full body, mails nobody, costs about a nickel, and nothing reads its prose,
+  which is correct for the question it was built to answer. The consequence
+  nobody designed is that the pipeline generates two candidates on the same
+  prompt and keeps the one that happens to run second.
+- The ask, and it is a comparator rather than a judge, because choosing between
+  two prints is an editorial act and this is arithmetic. Where a
+  `press_rehearsals` row carries the week about to be sent and the same
+  `prompt_sha`, compute two integers on both bodies before the send: links
+  divided by named works, and reading-list picks whose work is named above the
+  list. Where the rehearsal wins on either, flag the send in the alarm path
+  that `pipeline/weekly.py` already has, or hold it for the owner. Refusing
+  automatically is the wrong default on week one, because n is two.
+- Why it is worth more than the one issue it would have caught: it is the only
+  mechanism in the org that can tell a gate's wording from a gate's luck. Three
+  merged patches to the link-coverage rule were each aimed at the gap between 3
+  links and 13, and the spread between two runs of the unchanged wording is
+  that entire gap. Without a comparator the next wording is also untestable.
+- Sibling: ban list entry 96 asks for a pipeline-side link-coverage check and
+  is 10 days open. That entry builds the numerator and this one builds the
+  comparison, so entry 96 first is the cheaper order.
+- Blocked by: nothing. Both inserts already happen in `pipeline/weekly.py` with
+  the bodies in hand.
+- Cost: $0. No new model call, because the rehearsal is already paid for.
+- Where this entry sits, and why: four pull requests were open against this
+  repository when this run started (#301, #302, #305, #306) and this file is
+  the highest collision surface in it, which is incident 6. So this entry is
+  appended at the end rather than beside a related anchor, and this run touches
+  no other line of this file. Merge order is whatever the owner chooses,
+  because an append at the end conflicts with nothing. This note is a bullet
+  rather than an entry of its own because an entry of its own would have needed
+  a status word, and the security seat filed on 2026-10-15 that six entries in
+  this file already hold a word the vocabulary rejects. A seventh would be this
+  seat adding to a problem it had just read.
+- Status: proposed
+
+### 2026-10-16 — The comparator the grade now runs exists for one week out of three by accident (writer seat)
+- Trigger: `docs/voice/check_voice.py compare` landed today and classified ten
+  measurable gates across the two prints of 2026-W40 into five determined
+  failures, three determined passes and two undetermined. The classification is
+  only possible where two bodies of one week share a `prompt_sha`, and that is
+  true for exactly one week.
+- The measurement: `press_rehearsals` holds four rows, three for 2026-W39 and
+  one for 2026-W40. `digests` holds three rows, for 2026-W37, 2026-W39 and
+  2026-W40. 2026-W37 has no rehearsal at all, and the W40 pair exists because a
+  deploy happened to run five and a half hours before that Monday's send.
+- The gap: `rehearse()` fires on the third gate of the deploy ladder, per
+  `docs/agents/press-rehearsal.md`, so a rehearsal row is a side effect of
+  deploying and not of sending. A week whose send follows no deploy gets one
+  sample, and one sample cannot tell a gate's wording from a gate's luck. That
+  is the state every future grade is in by default, and it is the state the
+  eleven grades before 2026-10-15 were in without knowing it.
+- The ask, and it is smaller than the comparator filed yesterday: keep writing
+  the row, and write one on the send path as well, so every issue has a second
+  body from the same prompt. The body is already generated and discarded on the
+  deploy path, so the only new cost is one call on a week with no deploy. If
+  that cost is unwanted, the cheaper half is to say so in the alarm when a send
+  has no comparable rehearsal row, because then a grade reads the absence rather
+  than inferring it.
+- Why it is worth the nickel: this seat has merged twenty patches to
+  `prompts/digest.md` since 2026-10-05 and can currently say of only ten gates
+  whether a wording change is testable at all. Two of the ten are undetermined,
+  and both of those are axes this seat has already patched three times each.
+  Every future grade without a second sample is a grade that cannot make that
+  distinction and will keep rewording gates that are not wording problems.
+- Sibling and order: the comparator filed on 2026-10-15 is the judge and needs
+  two bodies to judge. This entry is what guarantees the second body exists.
+  This one first, because the other has nothing to read without it.
+- Not this seat's surface: `pipeline/weekly.py` is the engineer's. The
+  classification command is in `docs/voice/` and is done.
+- Where this entry sits: appended at the end, touching no other line, because
+  this file is the org's highest collision surface (incident 6) and three pull
+  requests were open against this repository when this run started.
+- Cost: about a nickel a week, or $0 for the alarm-line half.
 - Status: proposed
 
 ## Engineer agent findings (2026-10-17, scheduled run)

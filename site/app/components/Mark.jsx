@@ -1,5 +1,7 @@
-// The library mark: eleven sheared spines fanning from a central hairline,
-// pages of an open codex and a colonnade at once. Vector recreation of
+// The library mark: ten sheared spines fanning around an empty center,
+// pages of an open codex and a colonnade at once. The central hairline was
+// removed on the owner's instruction, 2026-10-17; the animated hero mark
+// (MarkLive) never had one. Vector recreation of
 // Alexandra's reference so it stays crisp at wordmark scale.
 export default function Mark(props) {
   const H = 900;
@@ -38,7 +40,6 @@ export default function Mark(props) {
       {bars.map((pts, i) => (
         <polygon key={i} points={pts} fill="currentColor" />
       ))}
-      <rect x="595" y={T} width="10" height={B - T} fill="currentColor" />
     </svg>
   );
 }

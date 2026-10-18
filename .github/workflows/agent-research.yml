@@ -1,8 +1,7 @@
 name: research-agent
 
 on:
-  schedule:
-    - cron: "30 16 * * 1" # Mondays 16:30 UTC, after the 15:00 UTC digest cron
+  # schedule: retired 2026-10-17 (HQ decision 056): every seat's clock is its manifest on the host; GitHub is an event source, not a runtime
   repository_dispatch:
     types: [asc.research]   # the event bus wakes this seat (standards/pm.md §17)
   workflow_dispatch:
