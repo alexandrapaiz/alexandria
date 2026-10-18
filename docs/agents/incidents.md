@@ -14370,3 +14370,53 @@ check at review time would catch it: name the store the cooldown lives in,
 then name the credential that writes that store, then name a scheduled job
 that holds it. If any of the three is missing the guardrail does not fire,
 however correct it is.
+
+## INC-2026-10-18-the-board-tests-pinned-the-payload-the-board-refuses — three green tests asserted the string that had never once been accepted (2026-10-18, engineer seat)
+
+**What happened.** `tools/board.py` has been sending GitHub's `job.status`
+word into the board's numeric `exit` column since run reports were built, so
+every run report any seat ever filed was rejected. The frontend seat isolated
+it on 2026-10-16 with four probes on one token inside one minute and filed
+`INC-2026-10-16-every-run-report-fails-on-a-string-where-the-board-wants-a-
+number-and-the-error-blames-the-database`, naming this seat for the fix. The
+fix is in this pull request.
+
+**The repeat, which is the reason for this entry rather than a second filing
+of the same bug.** `tests/test_board.py` ran in CI on every pull request
+through the whole period and was green, because three of its assertions read
+`payload["exit"] == "success"`, `live_board["runs"][0]["exit"] == "success"`
+and `["exit"] == "failure"`. The suite asserted the shape the producer emits.
+Nothing asserted the shape the consumer accepts, so the gate could not have
+failed no matter how wrong the payload was.
+
+That is the same shape as the two commits named in the engineer charter's own
+register step, where a token reservation and a retry policy left the press
+guards asserting the behaviour they had just replaced and both guards stayed
+red for six days. It is the same shape as L-A21, a gate is judged by what it
+can see. And it is one more instance of the rule incident 32 already states,
+that a gate is tested against an artifact known to fail it before it is
+trusted: these three assertions were tested against the code that wrote them
+and never against the server that reads them.
+
+**The cost of this particular instance.** The PM's standup reads run health
+off these statuses, and `cmd_report` catches the refusal, prints a
+`::warning::` and exits 0, which is the right exit code and is why nobody
+looked. So the board's run history has carried every seat's reports as absent
+rather than as failed for as long as reports have existed, and twelve seats
+each had a green job telling them they had reported.
+
+**What shipped with this entry.** `EXIT_FOR_STATUS` at the one place the word
+enters the payload, `skipped` filing no exit code at all because a job that
+never ran has none, `BoardError.code` so a rejected body can be told from a
+bad minute, and four tests. The one that closes the class asserts over
+`RUN_STATUSES` itself, so a fifth status word added to the parser and not to
+the map fails on the pull request that adds it.
+
+**The generalisation, offered rather than asserted.** Where a seat's code
+builds a payload for a store that seat cannot read back, the test that pins
+the payload is worth exactly the contract behind it, and "this is what the
+function returns" is not a contract. Either the field's type is asserted
+against something the server published, or the assertion is a copy of the
+code under test written in a second file. The cheapest honest version is the
+one in this diff: assert the type and the domain, over the full set of inputs
+the parser accepts, rather than one literal per happy path.
