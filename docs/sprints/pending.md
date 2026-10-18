@@ -1,3 +1,68 @@
+## Updated 2026-10-18, ~08:50 UTC (message pass): the newsletter promise on the board corrected, because the fix that merged today is not in tomorrow's image
+
+**Trigger.** A board message from `alexandra-systems/pm`, addressed to this
+seat: the urgent message already in front of the owner, promising tomorrow
+morning's newsletter goes out on schedule, leans on two fixes that merged
+today, but the image that actually runs tomorrow's 09:00 UTC send was built
+on 2026-10-05 and does not carry them. The redeploy that would fix that is
+itself blocked on a missing workflow install and two missing secrets, both
+already handed to the owner through the centralizer, so the sender named this
+seat's own newsletter as the thing to correct, not theirs to fix.
+
+**Checked rather than relayed.** Ran `python3 tools/delivery_health.py
+--json` fresh this pass. The weekly app's recorded digest is still
+`0cbc51a0e248`, last run 2026-10-12, unchanged from every earlier reading
+tonight. The two fixes that merged on `main` today (the fulltext payload
+sizing and the deploy-drift anchor itself) are not in that image, so the
+message's premise is confirmed true, not merely plausible.
+
+**One thing the tool itself now hides, worth naming.** The same JSON reads
+`deploy` as `ok`, drift only 1.6 hours old, because today's merge touched
+the weekly app's own files and reset the tool's drift-began anchor to the
+moment of merge. That is a side effect of the anchor fix landing, not a
+redeploy, and it is the same shape as this morning's engineer comment on
+board item `Deploy: weekly is not running main`, which read the same green
+signal as the drift having "cleared on its own." It had not. The running
+digest is unchanged.
+
+**What still blocks the redeploy, confirmed against the register.**
+`docs/agents/pending-workflow-changes.md` still lists `modal-deploy.yml` as
+needing a `git mv` into `.github/workflows/` and the two repository secrets
+`MODAL_TOKEN_ID` and `MODAL_TOKEN_SECRET`, neither of which exists. No agent
+seat can touch workflows or secrets, so both are the owner's alone, exactly
+as the triggering message said.
+
+**Replied on the board, first person, addressed to the sender.** Comment
+on item `2170a62f-1807-4b56-9c33-dcf229662d98` ("Deploy: weekly is not
+running main, still on 0cbc51a0e248"), the card already in front of the
+owner, laying out the confirmed finding above rather than letting the
+earlier reassurance stand uncorrected.
+
+**Run health.** Not re-run this pass. This is a single-message event wake,
+and the standing six-hour and standup passes already cover tonight's
+`gh run list` and inbox sweep.
+
+**Own last run may still be open, checked first.** Thirteen of this seat's
+own pull requests are currently open (`#332`, `#335`, `#362`, `#365`,
+`#367`, `#369`, `#371`, `#373`, `#374`, `#375`, `#376`, `#377`, `#378`),
+all touching this file at the same top anchor, matching tonight's pattern
+across these message passes. Branched from `main` anyway rather than
+stacking on any one of them, since this pass answers a different,
+narrowly-scoped event. Expected merge order, oldest first: the list above
+in that order, then this one. Chain depth on this question is 1, nothing
+here supersedes another pull request.
+
+**Owed to you, unchanged, and this is the newest and most urgent of them:**
+
+1. **The Modal redeploy ahead of tomorrow's 09:00 UTC press run.**
+   Confirmed again this pass, with today's two fixes now sitting on `main`
+   and not in the image. The command is written down
+   (`tools/deploy_gate.py --app weekly`); it needs the workflow move and the
+   two secrets above, which only you can supply.
+2. **The Polar Merchant-of-Record account** — still overdue, unchanged.
+3. **The missing launch PR/FAQ on `main`** — still only a `README.md` under
+   `docs/prfaq/`, unchanged.
+
 ## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
 
 **Trigger.** The event bundle for this pass named seven things: four of
