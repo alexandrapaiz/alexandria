@@ -15371,6 +15371,43 @@ in that new file is twenty-two days old and nobody knew, which is
 this same pull request. One missing list produced both: a stale candidate
 nobody set, and a duplicate candidate nobody knew existed.
 
+## INC-2026-10-18-the-cost-ceiling-breached-a-third-time-this-one-caught-before-main — PR #363's prompt growth pushed the exact per-issue cost over ADR-32's $0.15 (2026-10-18, writer seat, sixth run, caught by the PM's message pass)
+
+**Observed** reviewing PR #363 against the merge rule. `gh pr checks 363`
+showed `digest request fits the model's budget` red.
+`gh run view --log-failed` named the exact assertion:
+`tests/test_press_resilience.py::test_the_press_fits_its_primary_at_full_caps`,
+`the cost is under the $0.15 ceiling ADR-32 implies`, actual `$0.1519` against
+`$0.15`, on the exact tokenizer (CI installs tiktoken, so this is a real cost,
+not `INC-2026-09-25-budget-guard-estimates`'s chars-per-token fallback).
+
+**Repeat of.** The same assertion failed once before, at `$0.1628`, recorded in
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it`. The standing rule at
+the top of this file records any repeat with no exceptions, so this is that
+record, even though the two are different in the one way that matters.
+
+**What is different, and worth keeping.** The 2026-09-30 incident's cost was
+nobody reading a red check on `main` for six days. This one never reached
+`main`: it is red on PR #363 itself, the PM's review caught it in this same
+pass, and the PR is held rather than merged. The gate did what it exists to
+do. The root cause is also new: not a token-reservation hike this time, but
+the PR's own content — two new `docs/voice/` sections and 140 added lines in
+`prompts/digest.md` (the seven generator-rule fixes the PR's body describes)
+grew the real prompt far enough that the worst-case request, which was already
+most of the way to the ceiling, crossed it.
+
+**Fix, not made here.** Trimming the added prompt text, or the prompt the
+seven fixes depend on, back under the ceiling is the writer's to do and is
+named in the handoff this pass sent on the board rather than redone here.
+
+**Why this is not also an engineer-surface incident.** PR #363's own body
+separately reports that the preflight budget estimate undersizes its
+worst case against the titles the press actually sends, and files that in
+`docs/ideas.md`. That is a planning gap in the estimate; this entry is the
+exact, enforced ceiling itself, read with real tokens, and the two are
+independent even though they sit in the same test file.
+
+
 ---
 
 ## INC-2026-10-18-a-taste-ruling-named-its-file-and-never-reached-it
@@ -15537,3 +15574,151 @@ passes now at 5.
 ratchet this repo built to stop the backlog growing is enforced at the
 reliability of a seat remembering to run it. That belongs to the engineer and
 is noted in the ledger entry this run filed.
+
+---
+
+## INC-2026-10-18-press-recovery-content-anchor — the label and the date range were fixed to agree with each other, and nobody checked whether either agreed with the query that fills the body (2026-10-18, pm seat, found by alexandra-systems/mba)
+
+**What happened.** This seat posted an urgent ask to the owner recommending
+she run the press's recovery path to fill an unwritten weekly issue, priced
+at "about the cost of one API call" against a permanent gap in a pricing
+claim. `alexandra-systems/mba` checked that recommendation against
+`pipeline/weekly.py` on `main` and found it wrong before the owner acted on
+it: the recovery path does not recover the missing week.
+
+**Why, mechanically.** `week_just_ended()` derives the issue's label and its
+reader-facing date range from one shared anchor, the most recent Sunday
+strictly before today. Every query that fills the issue's body
+(`pipeline/weekly.py` lines 308, 315, 322, 325 and 327 as of this date) is
+anchored to `now() - interval '7 days'` instead, independently of that
+function. On the scheduled Monday run the two anchors agree closely enough
+that nobody notices. Run on any other day, as a recovery always is, they
+diverge: the label and date range describe the week that ended last Sunday,
+while the content is whatever was created in the seven days up to the moment
+the command runs. `weekly()` takes no week argument and the module's only
+other entrypoint, `resend()`, only re-sends a row that already exists in
+`digests`. There is no path in this module that writes a given week's actual
+content on a day other than that week's own Monday. `digests` upserts on
+week, so running the recovery writes the wrong content under the right
+label, permanently, with no second chance.
+
+**Why this is a repeat and not a new class.**
+`INC-2026-09-28-press-week-label-off-schedule` is this same function, found
+the same way, three weeks earlier: a date computation that is correct only
+on the day the scheduled run fires and wrong on every day a recovery would
+actually run on. That incident's fix unified the label and the date range
+onto one anchor so they could never disagree with each other again. It did
+not touch the queries that fill the body, because nothing at the time was
+checking whether the body agreed with either of them. The general form named
+in that entry, "a date function whose correctness depends on the day it runs
+is a function that is correct in production and wrong in every recovery,"
+applied to a part of the same function that the fix never reached.
+
+**Why nothing caught it this time either.** The same reason as before: a
+recovery runs only after something has already failed, which is the one
+moment under the least testing attention, and the person weighing whether to
+run it was reading the module's own docstring warning about the label and
+treating that as the whole warning.
+
+**Not fixed in this pull request, because it is not this seat's surface to
+fix.** The engineer seat owns `pipeline/weekly.py`. What this entry fixes is
+the record: the recommendation built on the missing check was withdrawn from
+the ask it was made in before the owner acted on it, and the gap between the
+module's two anchors is now named here rather than living only in a board
+reply and a docstring that only covers half of it.
+
+**The lesson for this seat.** A recommendation that prices an action in cost
+and names what it buys back is a claim that the action does what it says.
+This seat priced a command without reading whether it wrote the content its
+label claims to describe. The next ask that recommends running a one-line
+recovery reads the function behind it first, not just the function's own
+docstring warning, which can describe its own history correctly and still
+not cover everything true about the function around it.
+
+
+---
+
+## INC-2026-10-18-a-pass-is-not-a-pull-request — one PM seat opened fifteen pull requests in one day, thirteen of them changing nothing but one tracker file (2026-10-18, pm seat, six-hour pass)
+
+**Observed** at the start of this pass: `gh pr list` showed fifteen open pull
+requests authored by this seat alone from today, `#332`, `#335`, `#362`,
+`#365`, `#367`, `#369`, `#371`, `#373` through `#380`. Eleven of them touch
+only `docs/sprints/pending.md`, each the record of a single event-bus wake
+answered on the board rather than in the tree. None merged; three were
+restating the same confirmed finding a second and third time (`#374`, `#378`,
+`#380`).
+
+**The rule that produced it.** `docs/standards/pm.md` §1 still says one run
+makes one pull request. §17 turned a run into a pass that fires on every
+board write. The two rules were written for different cadences and nobody
+reconciled them when the second one shipped, so a pass that answers one
+narrow event correctly, by this charter's own instructions, still opens a
+whole pull request to say so.
+
+**Not a first telling.** `alexandra-systems/mba`'s note to HQ's own PM,
+read in this seat's inbox this morning, named the same shape across the
+whole portfolio: twenty-six of fifty-nine open pull requests change nothing
+but a tracker file. This seat's own prior pass (`#380`) already named its own
+fourteen-PR count on the board without filing it here. Recording it now
+rather than a second time unrecorded.
+
+**Why it costs more than the clutter.** Every one of these PRs is this
+seat's own, so Tier B condition 1 bars this seat from merging any of them no
+matter which tier the diff actually sits in. A prior pass (`#374`) verified
+six of them as genuinely Tier A by `git merge-tree`, clean against `main`,
+and still nobody but the owner or a chair can clear them. The queue this
+seat exists to move instead grows by one every time the bus wakes it, and
+the growth is indistinguishable from real backlog to anyone reading PR count
+alone.
+
+**Fix, not taken here.** Reconciling §1 and §17 is a standards change,
+HQ's to make or the owner's to direct, not this seat's to invent. What this
+pass did instead: closed two of its own fifteen as superseded by a third,
+named the six Tier-A-clean ones as a batchable merge for the owner or a
+chair, and is filing this entry so the next pass reads the pattern here
+rather than rediscovering it as a fresh surprise.
+
+
+---
+
+## INC-2026-10-18-tier-c-carve-out-misread-a-sixth-time — PR #367 held a green budget-gate fix for a prompt file that is not a seat's authority (2026-10-18, pm seat)
+
+**What happened.** `docs/standards/pm.md` §21 (owner, 2026-10-05) and §10's own
+amendment note say a PM merges every tier in its own company except a change
+to a seat's own authority, spend, an account, or a secret. `INC-2026-10-09-tier-c-carve-out-misread-for-four-days`
+already recorded five passes over four days reading `prompts/` as a single
+Tier C path regardless of that carve-out, on `prompts/distill.md` and
+`prompts/distill-practices.md`. This seat's own pass at ~06:46 UTC today
+(PR #367, reviewing PR #363) made the identical read on a third file:
+"Tier C names `prompts/` as a charter path on its own, independent of the
+check result, so even a green run on this diff would not be mine to merge."
+`prompts/digest.md` carries no seat's authority, no tier definition, no spend,
+account or secret; it is the writer seat's generator prompt, the exact kind of
+content prompt the 2026-10-09 entry already named as outside Tier C.
+
+**Why it is a repeat and not a new mistake.** Same shorthand, same wrong
+conclusion, same unchecked assumption ("prompts/ is Tier C") that the standing
+incident already diagnosed and named a fix for: read the carve-out sentence
+against the specific file in the diff, not the remembered shape of the
+directory. The fix did not stick across the four-day gap between the two
+incidents, and nothing short of a check run against the actual sentence
+would have caught it before a PM pass repeated it.
+
+**What this run found and did differently.** PR #363 closed on its own
+(superseded by PR #366, "build on #363," confirmed with
+`git log --oneline origin/alexandria-writer/2026-10-18-message-payload-audit ^HEAD`
+printing nothing), and PR #366 fixed exactly the red check #367 held on: the
+single `checks.yml` job (`digest request fits the model's budget`) is green,
+`mergeStateStatus: CLEAN`, not a draft, no `hold` label, no comment, no review,
+and `gh pr diff --name-only 366` shows `docs/agents/incidents.md`,
+`docs/ideas.md`, `docs/voice/ban-list.md`, `docs/voice/canon.md`, two new
+`docs/voice/reviews/` files, and `prompts/digest.md` — no seat-authority path,
+no spend, no secret. Merged under Tier B (`gh pr merge 366 --merge`,
+`99a1405`).
+
+**Not fixed here, named instead.** A command that answers the carve-out
+question from the actual file in the diff, the way `tools/check-tier.sh`
+already does per the 2026-10-09 entry's own account of PR #253, would stop
+this from costing a sixth pass. This repo has no such script yet
+(`ls tools/` shows no `check-tier.sh` or equivalent); filed in `docs/ideas.md`
+is the engineer's to size, not this seat's to build.
