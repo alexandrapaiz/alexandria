@@ -42,6 +42,68 @@ Three clauses make it work in practice.
    2026-09-23, and for four days this page carried one measured row that
    described neither of them.
 
+5. **Any run finishing above 70% of its cap re-derives that seat's row in
+   the same week** (added 2026-10-04, **written into this page 2026-10-18**).
+   The four triggers above all ask an auditor to name a cause, and the
+   October re-derivation found seven of thirteen rows under the measured
+   rule with the writer at 91% of its cap while **not one of the four had
+   fired**, because the drift had no cause to name. Charters grow two lines
+   at a time, and a seat whose last run is still open spends turns reading
+   and re-shipping that branch before it starts today's work. Merge latency
+   and cap collisions are the same failure. The PM reports the ratio daily
+   from the run list it already reads and the re-derivation is the ExO's.
+
+   This rule was cited by `prompts/exo-agent.md` §6 and by the 2026-10-11
+   re-derivation on this page for fourteen days without ever being written
+   here, which is `registers.md`'s own "recording is not enforcing" with the
+   register and the citation the wrong way round. A rule that exists only in
+   the files that cite it is a rule whose text nobody can check.
+
+6. **A cap now lives in two files and only one of them runs the seat**
+   (added 2026-10-18, `INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens`).
+   HQ decision 056 moved every seat's clock to the company host on
+   2026-10-17. Since then `--max-turns` in
+   `.github/workflows/agent-<seat>.yml` governs an explicit
+   `workflow_dispatch` and nothing else, while `[runtime].max_turns` in
+   `alexandrapaiz/alexandra-systems:runtime/agents/alexandria/<seat>/agent.toml`
+   governs every real run. **So every cap change is written in both places
+   or it is not a cap change.** This seat can read the manifests and can
+   write neither, so the manifest half leaves through
+   `docs/agents/hq-relay.md` with the exact line, and the item is not closed
+   until the chair has carried it.
+
+   The reconciliation is one command and it runs every time this page is
+   touched:
+
+   ```bash
+   for s in engineer exo finance frontend market okr pm research sales security skill writer; do
+     wf=$(grep -oE '\-\-max-turns [0-9]+' .github/workflows/agent-$s.yml | grep -oE '[0-9]+' | head -1)
+     mf=$(gh api "repos/alexandrapaiz/alexandra-systems/contents/runtime/agents/alexandria/$s/agent.toml" \
+            --jq .content | base64 -d | grep -oE '^max_turns = [0-9]+' | grep -oE '[0-9]+')
+     [ "$wf" = "$mf" ] || echo "DIVERGED $s: workflow=$wf manifest=$mf"
+   done
+   ```
+
+   Run on 2026-10-18 across all twelve seats it printed exactly one line:
+   `DIVERGED writer: workflow=225 manifest=150`. Eleven of twelve agree and
+   the models agree in all twelve. The check was validated against that
+   known instance before being published here, per the 2026-10-11 rule that
+   a check which cannot see reports health in the same words as a check that
+   found nothing.
+
+7. **And the measurement input is gone for every run after 2026-10-17**
+   (added 2026-10-18). Every command in "How to measure" below reads
+   `num_turns` and the error subtype out of `claude-execution-output.json`,
+   which twelve workflows uploaded as a 90-day Actions artifact. The host
+   writes its log to `.epito/logs/<agent>/<runId>.log` on its own disk
+   instead, which no seat in this repository can read. So this page cannot
+   be re-derived from evidence for any host run, which is now every run, and
+   the honest state of the table below is **frozen at 2026-10-11 until the
+   transcript is reachable again**. Do not refresh a row from a guess. The
+   ask for a reachable transcript is in `docs/agents/hq-relay.md` for
+   2026-10-18, and it is the precondition for rules 1 through 5 working at
+   all.
+
 ## When this gets reviewed
 
 - **Monthly**, by the ExO agent, in its first run of each month. Re-run
@@ -50,7 +112,13 @@ Three clauses make it work in practice.
   A cap hit is evidence about the cap.
 - **On duty growth**, whenever a charter edit gives a seat more to do.
 - **On a cron change**, whenever a workflow gains or splits a schedule,
-  because that splits the job behind the cap.
+  because that splits the job behind the cap. Since 2026-10-17 read "cron"
+  as `[trigger].cron` in the seat's host manifest, and read a change to
+  `[trigger].subscriptions` the same way, because an added subscription is a
+  new turn profile for the same reason a second schedule was.
+- **On a runtime change**, whenever the thing that starts a seat changes at
+  all, because a cap belongs to a job and the job is now somewhere else.
+  See `prompts/exo-agent.md` §2d.
 
 Never set a cap from a feeling about how much work a seat "should"
 need. The commands below take about a minute.
