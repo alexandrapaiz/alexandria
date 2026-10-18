@@ -1,4 +1,109 @@
-## Updated 2026-10-18, ~01:05 UTC (message pass): PR #339 (the plugin) merged under tier B, three of my own open tier A pull requests cleared, one handoff sent to engineer
+## Updated 2026-10-18, ~01:20 UTC (message pass): PR #342 (the writer's selling copy) checked against the merge rule and merged, a thirteen-day-stale board card closed, the install page's own unfinished claim handed back to engineer
+
+**Trigger.** Four events this pass answers, two of them repeats of events
+the last pass already closed: the engineer's run finishing (PR #339,
+already merged by this seat's own prior pass as #344) and three of this
+seat's own pull requests merging (#338, #341, #337, also already
+self-merged and recorded by that same prior pass). The one genuinely new
+event is PR #342 opening (writer, "the skills' selling copy, and the
+delta claim it cannot make").
+
+**Own last run may still be open, checked first.** `#335`
+(`alexandria-pm/2026-10-17-message-seats-off-github-review`) and `#332`
+(`alexandria-pm/2026-10-17-message-sellable-regroom`) are both still
+open, both from last night, and both wait on the owner under Tier B
+condition 1 (a PM's own Tier B pull request waits for another merger).
+Branched from main anyway rather than building on either: this pass's
+own work (reviewing one writer pull request) doesn't share scope with
+either of theirs, and all three, including this one, append to
+`docs/sprints/pending.md` at the top rather than at a fixed anchor, so
+whichever merges first gives the others a one-line keep-both the same
+way every prior pass in this chain has. `#332` and `#312`/`#343`
+(engineer) also touch `docs/ideas.md`; same shape, same resolution.
+
+**PR #342 opened `CONFLICTING`, resolved as a docs-only append, then
+checked against the merge rule (Tier B) and merged.** Not a draft, no
+`hold` label, no comment, no review. The diff is
+`docs/agents/incidents.md`, `docs/ideas.md`, `docs/voice/ban-list.md`
+and one new file, `docs/voice/skills-copy-2026-10-18.md`, so no Tier C
+path. It had opened in conflict with PR #339's own install-work entries
+at the same two append-only anchors in `incidents.md` and `ideas.md`.
+Resolved on the writer's own branch by keeping both sides, oldest
+(already-landed) first, and restoring each entry its own trailing
+`Status: proposed` line rather than leaving two entries share the one
+line `git` had matched as common context, which is the exact defect
+#339's own commit described fixing for a different pair of entries in
+this file last pass. Verified before pushing: `tools/ledger.py --check`
+(0 blocking, at or under baseline) and `tests/test_check_registers.py`
+plus `tests/test_board.py` (75 passed). `gh pr checks` reports nothing
+defined for this diff, which is correct, not pending: nothing in it
+touches `pipeline/`, `prompts/digest.md` or `skills/`. Merged clean at
+2026-10-18T01:14:57Z.
+
+**What the PR surfaced, relayed on the board rather than decided here.**
+The writer's run found the same unhedged claim — "revised when the
+evidence moves" — now live on four surfaces the engineer's install work
+shipped a run earlier: the readme, the install page, and both plugin
+manifest descriptions. `docs/agents/quality-claims.md` already records
+that half of the sentence as `queued`, with no revision mechanism ever
+fired, and the writer named this by file and sentence rather than
+editing it, since those four surfaces are the engineer's, not hers to
+set. Filed on the board as the next item in that lane (not dispatched —
+the engineer's own last run already has three open pull requests
+against it: #343, #312 and #315).
+
+**Board hygiene: one thirteen-day-stale card closed.** `2da782ae`, "The
+distill timeout question doesn't hold, the queue-cap math does," had
+sat in Backlog since 2026-10-05 with its own diagnosis already finished
+and handed to the engineer in its first comment. Re-checked both
+numbers against the code fresh rather than trusting the old note;
+neither has changed. Moved to Done. The one open thread inside it, why
+the chair's manual run once stopped short of its own budget, was always
+the engineer's to trace from Modal's run history and stays open there,
+not closed by this move.
+
+**PR #343 (engineer, draft, "the two stalled press drafts get a
+disposition each"), named rather than acted on.** Still a draft and
+still gaining commits as this pass was written (three so far, the
+newest eight minutes old), so it fails Tier B's own first test before
+anything else is worth reading. It is the engineer's own answer to the
+handoff the prior pass's six-hour run already sent about `#312` and
+`#315`, so nothing further is owed from this seat; it waits on that run
+to mark itself ready.
+
+**Cap ratio, one seat over the line.** The host-window run that opened
+#343 reported 190 of its seat's 200-turn cap (95%) on the board before
+the pull request existed, well past the 70% line and the closest any
+run has come to the hard cap without hitting it. Named for the ExO's
+weekly re-derivation, not acted on here; the run has kept landing real
+commits past that point, so it is not itself a cap-out, but it is the
+sharpest cap-ratio reading recorded yet. The same window's writer run
+(97/225, 43%) is unremarkable by comparison.
+
+**Run health.** `gh run list --limit 30` shows every GitHub Actions run
+since the last pass green (`checks`, `deploy-main`); it does not cover
+tonight's host-window message runs at all, which report through the
+board instead, and the cap-ratio line above is read from there for
+exactly that reason.
+
+**Queue gauge, four numbers.** `main` current as of this pass's own
+merge (under two minutes old at the time of writing), its newest
+`checks.yml` run against it still the `success` from the plugin merge
+two passes ago, since a docs-only merge does not trigger a new one. 9
+open pull requests, essentially none opened since the last merge (this
+pass's own draft is the only one). 7-day conversion 43 merged over 79
+opened (0.54), better than the six-hour pass's 0.49 earlier tonight.
+Deepest open chain: 1, nothing currently stacked.
+
+**Owed to you, unchanged, not re-litigated here:** the Modal redeploy
+ahead of Monday's 09:00 UTC press run, the Polar Merchant-of-Record
+account (ADR-30, day 23), the missing launch PR/FAQ on `main`, and your
+own open pull requests `#335` and `#332`.
+
+**Merged this run (Tier B, `docs/standards/pm.md` §10), one:** `#342`
+(writer).
+
+
 
 **Trigger.** Two events this pass answers: the writer's run finishing
 (PR #340, already checked and merged by this seat's own #341 moments
