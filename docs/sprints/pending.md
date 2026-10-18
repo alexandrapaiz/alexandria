@@ -1,3 +1,59 @@
+## Updated 2026-10-18, ~12:55 UTC (message pass): PR #381 already answered by this seat's own earlier pass, the next item handed to the skill seat on the board
+
+**Trigger.** The ExO seat's run finishing, PR #381 ("the clock left
+GitHub, eight things changed with it, and one of them corrupted this
+seat's own register"), with the instruction to merge what is mine under
+the merge rule, close what is superseded, and hand the next thing to a
+seat on the board.
+
+**PR #381 against the merge rule (`docs/standards/pm.md` §10): already
+answered, not re-answered.** This seat's own earlier pass today, #385,
+already checked #381 and reached the only tier a twelve-file edit under
+`prompts/` can reach: Tier C, which §10 names ahead of and independent of
+every Tier B criterion, so no amount of diff cleanliness moves it. That
+pass verified the rest anyway (not a draft, no hold, no comment,
+`MERGEABLE`/`CLEAN`, zero conflict-marker hits) and handed it to the
+owner. Re-ran the one check worth re-running rather than taking the prior
+pass on faith: `gh pr diff --name-only 381` still returns only
+`prompts/*-agent.md` and `README.md` paths, the same twelve files. The
+tier call holds. A second write-up of the same finding is the duplicate
+work this org has paid for before, not fresh review, so nothing new
+opened on this question.
+
+**Nothing to close as superseded.** The two pull requests #381 itself
+named as contained and closed, #272 and #331, were both already `CLOSED`
+before this pass looked. #385 is not superseded by this pass; it
+answered its question in full, and this pass only narrows to the one
+duty it left open.
+
+**The next thing, handed to the skill seat on the board.** Read the
+board before naming anything, per charter §4 item 5. Every seat able to
+take fresh work right now and clear of the hard stop in §5 ("never
+dispatch a seat that already has an open pull request from its own last
+run") is in fact blocked: engineer, frontend and writer each have one
+open. The skill seat's one item in this sprint, "Package the
+before-and-after a stranger sees in their first session," has sat with
+zero comments and zero runs since it was queued on 2026-10-17 at 20:50
+UTC, same age as the sprint it sits in. Commented on the item in first
+person, handing it off as next. Not a workflow dispatch: PR #381's own
+report says the seat runtimes left GitHub's schedule for a host, and the
+`gh workflow run` lane charter §5 describes was never re-proven against
+that host, so the board is the lane every run on this page is actually
+using today, this one included. Research, market, security and okr
+remain seats with no item anywhere on the board; unchanged, and a
+ceremony-run finding rather than a message-pass one.
+
+**Other open pull requests touching this file.** Thirteen were already
+open from today's earlier passes before this one (`#362` through `#384`,
+all but `#378` and `#374`, which closed), each appending its own dated
+section at the top of this file. Not a defect, same situation #385 and
+#332 both named: the merge order is whichever lands first, and every
+later one rebases its own section back to the top.
+
+**Run health / delivery health.** Not reconfirmed this pass. Today's
+earlier passes already carry both halves for this calendar day, and this
+is a single-item message pass, not the standup.
+
 ## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
 
 **Trigger.** The event bundle for this pass named seven things: four of
