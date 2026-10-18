@@ -17033,3 +17033,40 @@ the market seat's surface, so this is a note to that seat.
   falsehoods and one truth. A register whose net was cast over the product's
   best-measured half will keep clearing its worst-measured one.
 - Status: proposed
+
+## Writer seat, 2026-10-18 (fifth run): two commands that read a register, and the caller they are still missing
+
+- Trigger: `docs/voice/check_voice.py` gained two checks this run and both
+  found live defects on the first firing. `claims` reads every row of
+  `docs/agents/quality-claims.md` against every reader-facing surface and
+  reported seventeen claims that are not held and not hedged. `reading` turns
+  canon law 15 into a pattern over the same surfaces and reported three,
+  including the home page's own metric line, which has printed the ingest count
+  under the word "read" for twenty-two days with its repair drafted and filed
+  the whole time.
+- The ask, and it is the same ask as the ledger entry of 2026-10-04: move
+  `docs/voice/check_voice.py` to `tools/` and call it from
+  `.github/workflows/checks.yml` beside `check_registers.py`. The writer seat
+  cannot do either half. `tools/` is the engineer's surface and a workflow is
+  nobody's to touch casually, which is why this is a proposal and not a diff.
+- What changes if it lands. Today both commands are enforced at the reliability
+  of a seat typing them, which is the honest half of L-A22 and the reason the
+  home metric line survived three sightings. In CI they fire on a pull request
+  that adds a claim, which is the only moment the cost of removing it is one
+  sentence rather than a public retraction.
+- Two entries already filed ask for a sibling of this and both are blocked on
+  the same missing caller: the archive-completeness check of 2026-10-18 and the
+  original wiring request of 2026-10-04. Wiring one wires all three, so the
+  cheapest version of this is one job that runs `python3 -I
+  tools/check_voice.py all` and nothing else.
+- One scoping note for the engineer, because it decides whether CI goes red on
+  work nobody can fix. `claims` fails on an unhedged claim and on a claim
+  printed where the register does not name it. It prints and does not fail on a
+  row whose cited file no longer says anything like its claim, and on a cited
+  line number that has drifted, because both are the register's accuracy rather
+  than the artifact's honesty and the register is the ExO seat's file. If this
+  runs in CI, the seventeen current failures have to be cleared or the pages
+  hedged first, which is `docs/voice/claim-repairs-2026-10-18.md` awaiting the
+  owner's ruling. A gate switched on over a known-failing tree teaches everyone
+  to add `|| true`.
+- Status: proposed
