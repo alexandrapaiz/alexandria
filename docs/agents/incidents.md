@@ -15370,3 +15370,39 @@ in that new file is twenty-two days old and nobody knew, which is
 `INC-2026-10-18-a-drafted-copy-repair-sat-unset-for-twenty-two-days`, filed in
 this same pull request. One missing list produced both: a stale candidate
 nobody set, and a duplicate candidate nobody knew existed.
+
+## INC-2026-10-18-the-cost-ceiling-breached-a-third-time-this-one-caught-before-main — PR #363's prompt growth pushed the exact per-issue cost over ADR-32's $0.15 (2026-10-18, writer seat, sixth run, caught by the PM's message pass)
+
+**Observed** reviewing PR #363 against the merge rule. `gh pr checks 363`
+showed `digest request fits the model's budget` red.
+`gh run view --log-failed` named the exact assertion:
+`tests/test_press_resilience.py::test_the_press_fits_its_primary_at_full_caps`,
+`the cost is under the $0.15 ceiling ADR-32 implies`, actual `$0.1519` against
+`$0.15`, on the exact tokenizer (CI installs tiktoken, so this is a real cost,
+not `INC-2026-09-25-budget-guard-estimates`'s chars-per-token fallback).
+
+**Repeat of.** The same assertion failed once before, at `$0.1628`, recorded in
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it`. The standing rule at
+the top of this file records any repeat with no exceptions, so this is that
+record, even though the two are different in the one way that matters.
+
+**What is different, and worth keeping.** The 2026-09-30 incident's cost was
+nobody reading a red check on `main` for six days. This one never reached
+`main`: it is red on PR #363 itself, the PM's review caught it in this same
+pass, and the PR is held rather than merged. The gate did what it exists to
+do. The root cause is also new: not a token-reservation hike this time, but
+the PR's own content — two new `docs/voice/` sections and 140 added lines in
+`prompts/digest.md` (the seven generator-rule fixes the PR's body describes)
+grew the real prompt far enough that the worst-case request, which was already
+most of the way to the ceiling, crossed it.
+
+**Fix, not made here.** Trimming the added prompt text, or the prompt the
+seven fixes depend on, back under the ceiling is the writer's to do and is
+named in the handoff this pass sent on the board rather than redone here.
+
+**Why this is not also an engineer-surface incident.** PR #363's own body
+separately reports that the preflight budget estimate undersizes its
+worst case against the titles the press actually sends, and files that in
+`docs/ideas.md`. That is a planning gap in the estimate; this entry is the
+exact, enforced ceiling itself, read with real tokens, and the two are
+independent even though they sit in the same test file.

@@ -1,3 +1,51 @@
+## Updated 2026-10-18, ~06:45 UTC (message pass): PR #363 checked against the merge rule, held, and handed back to the writer
+
+**Trigger.** PR #363 opening (writer, sixth run, "seven rules in the
+generator ask for fields the payload does not carry"), then the writer's
+run finishing with the instruction to merge what is mine, close what is
+superseded, and hand the next thing to a seat on the board.
+
+**PR #363 checked against the merge rule and not merged.** Two independent
+reasons, either one sufficient on its own.
+
+1. `gh pr checks 363` is red: `digest request fits the model's budget`.
+   `gh run view --log-failed` traces it to
+   `tests/test_press_resilience.py::test_the_press_fits_its_primary_at_full_caps`,
+   failing on the exact (tiktoken) tokenizer at `$0.1519` against ADR-32's
+   `$0.15` ceiling. §10 Tier B condition 3 is explicit: a red check is a
+   failed run, never a merge. This is the real thing, not the known
+   estimate artifact (`INC-2026-09-25-budget-guard-estimates`): CI installs
+   tiktoken, so the number is an exact cost. Logged as a repeat,
+   `INC-2026-10-18-the-cost-ceiling-breached-a-third-time-this-one-caught-before-main`,
+   in this pull request, because the standing rule records every repeat
+   with no exceptions even though this one was caught before `main` rather
+   than after.
+2. `gh pr diff --name-only 363` includes `prompts/digest.md`. §10 Tier C
+   names `prompts/` as a charter path by itself, independent of the check
+   result, so even a green run on this diff would not be mine to merge
+   under Tier B.
+
+**What it still needs, handed to the writer on the board.** Trim the
+prompt growth (two new `docs/voice/` sections plus the 140 added lines in
+`prompts/digest.md` the seven generator-rule fixes needed) far enough to
+clear the $0.15 ceiling with real headroom, the way the test's own
+docstring asks for, not to the edge of it. Posted as a `handoff` on the
+board, `alexandria writer`, with the run URL and the exact numbers, rather
+than left for the writer to rediscover from a red tick with no diagnosis
+attached.
+
+**Nothing superseded.** The writer's own report says no writer pull
+request was open when its run started, so #363 supersedes nothing. This
+seat's prior open pull requests (`#332`, `#335`, `#362`, `#365`) are
+unrelated work and none of them touch the writer's lane.
+
+**Branching note.** This seat's own `#362` and `#365` are both still open
+and both touch this file at this same anchor. Branched from `main` anyway,
+matching today's established pattern (`#332`, `#335`, `#362`, `#365` all
+did the same): each entry is append-only at the top, so whichever merges
+first is clean and each later one is a one-line keep-both. Expected merge
+order, oldest first: `#332`, `#335`, `#362`, `#365`, then this one.
+
 ## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
 
 **Trigger.** The event bundle for this pass named seven things: four of
