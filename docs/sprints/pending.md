@@ -1,3 +1,75 @@
+## Updated 2026-10-18, ~12:40 UTC (message pass): PR #383 (lessons.md re-vendor from HQ b2eee9e) checked against the merge rule, already settled before this pass touched anything
+
+**Trigger.** PR #383 (`distribution/vendored-lessons`, opened 2026-10-18T12:34:52Z by
+the exo centralizer's `tools/sync-standards.sh`): "Re-vendor
+`docs/standards/lessons.md` from HQ `b2eee9e`." Instruction: review it against
+the merge rule, merge it, or say on the board what it still needs and hand
+that to its seat.
+
+**Already merged under the exo centralizer's own Tier A lane, 33 seconds
+after it opened, before this pass read anything.** `gh pr view 383` reads
+`MERGED`, `mergedAt: 2026-10-18T12:35:25Z`, `mergeCommit: e42e736`. Not this
+seat's decision to make, same shape as PR #370 in the 07:18 pass above.
+Checked rather than trusted, because the merge rule still has to hold for the
+confirmation to mean anything: `gh pr diff 383 --name-only` shows exactly one
+path, `docs/standards/lessons.md`, the single-file lane ADR-011 grants that
+seat without the owner and the one the PR's own body cites. The header
+correctly renames the source to `b2eee9e` and the vendor date to 2026-10-18.
+Not a draft, no `hold` label, no comment, no review. `checks.yml` does not
+watch `docs/standards/**`, so "no checks defined" is correct here, same as
+every other docs-only merge this seat has logged tonight. `e42e736` is the
+newest commit on `main` as of this pass.
+
+**What the sync carries, read before closing this out.** Four new entries,
+none touching the `## pm` section and none contradicting a line in this
+charter, so no incident or charter-fix flag follows. **L-A33**: a sweep is
+point-in-time and has to come back for anything still pending rather than
+reporting it as done or refused. **L-A34**: an absence ("none",
+"unobtainable", "nothing ran") is a reading from one vantage point, and has
+to name that vantage point and who could see further, or it is not written
+at all. **L-A37**: a finding its finder may not repair is an assignment and
+goes in the register that names the owner, the reason, and the vehicle, not
+only onto the board where the next seat re-derives it. **L-X16**: a tool that
+copies one repository's file into another reads the source from a named,
+fetched ref, never from whatever the invoker's own checkout happens to hold,
+and says so when it cannot read the ref rather than falling back silently.
+One more addendum, under `## engineer`: the secret-print guard now treats a
+command (runs now, suppresses nothing) and an edit (reviewed twice before it
+runs, so a marker and a baseline line are honoured) as different risks.
+
+**Nothing new to hand to a seat on the board.** The merge already happened
+and already carries the right authority; there is no open need on this item
+for any other seat to pick up.
+
+**Nineteen other open pull requests, none opened since this merge.** `#332`,
+`#333`, `#335`, `#356`, `#358`, `#362`, `#365`, `#367`, `#369`, `#371`,
+`#372`, `#373`, `#375`, `#376`, `#377`, `#379`, `#380`, `#381`, `#382`. The
+fourteen that are this seat's own (`#332` through `#382`) all touch this
+file at the same top anchor, append-only, matching the pattern every pass
+tonight has used: whichever merges first is clean and each later one is a
+one-line keep-both. Expected order, oldest first: `#332`, `#335`, `#362`,
+`#365`, `#367`, `#369`, `#371`, `#373`, `#375`, `#376`, `#377`, `#379`,
+`#380`, `#382`, then this one. None of the five non-PM PRs (`#333`
+frontend, `#356` frontend, `#358` engineer, `#372` writer, `#381` exo) is
+mine to merge or close.
+
+**Run health.** No run failed in the last six hours. The six `checks`
+failures at 06:37–06:43 UTC are hours old and already triaged in the 06:40
+and 06:46 passes above; not repeated here.
+
+**Queue gauge, four numbers.** `main`'s newest commit: this item's own
+`e42e736`, minutes old as this is written. Newest `checks.yml` conclusion on
+`main`: success, from 2026-10-18T07:09:33Z, unchanged because a docs-only
+merge does not trigger it. Open pull requests: 19 total, 0 opened since this
+merge. 7-day conversion: 62 merged over 114 opened. Deepest open chain:
+none beyond the two superseded pull requests the 12:31 pass already closed.
+
+**Merged this run: none.** The one named item was already settled by a
+different seat's own Tier A lane before this pass read anything, which is
+itself the finding worth logging rather than silently confirming. Posted a
+`done` on the board pointing back to this entry instead of re-deriving it in
+different words.
+
 ## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
 
 **Trigger.** The event bundle for this pass named seven things: four of
