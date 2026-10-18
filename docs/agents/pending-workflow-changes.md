@@ -3,6 +3,32 @@
 **Enforced at:** prompts/exo-agent.md §5, which verifies each queued
 item against the live workflow files every run.
 
+## The lane this page exists for is open, and the page stays anyway (added 2026-10-18)
+
+**Read this before the section below.** On 2026-10-18 this seat ran the
+capability probe `prompts/exo-agent.md` §5 prescribes, which is a comment
+appended to `.github/workflows/agent-exo.yml` on a throwaway ref, and **the
+push succeeded.** The ref was deleted in the same turn and no pull request was
+opened. Incident 12, the refusal this entire page is built on, no longer
+applies to the credential the host hands a seat.
+
+**Nothing on this page is being applied as a result, and that is a decision
+rather than caution.** The lane did not open because `APP_PRIVATE_KEY` landed
+and ADR-27's GitHub App was granted the `workflows` permission. It opened
+because the 2026-10-17 runtime migration handed twelve seats the owner's own
+account credentials, with `admin: true` on four repositories, which nobody
+decided and nothing recorded. See
+`INC-2026-10-18-the-host-runs-every-seat-as-the-owner`. Nineteen queued
+workflow edits applied on the strength of an unintended escalation would be
+the worst thing this seat has ever done, and the live instruction the host
+gave this run says "never touch secrets or workflows" in those words.
+
+So this page keeps its purpose until the owner either narrows the credential
+or grants the lane on the record. When she grants it, the items below become
+ordinary edits and this page is deleted, per §5. Until then the only thing
+that changed is that the constraint is now a choice, and a reader should know
+which of the two they are looking at.
+
 ## Everything on this page now governs dispatches only (added 2026-10-18)
 
 **Read this before you apply anything below.** HQ decision 056 deleted every

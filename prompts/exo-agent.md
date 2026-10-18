@@ -1073,10 +1073,41 @@ run. ADR-27 gives the seats one shared GitHub App holding the
 `workflows` permission, and docs/agents/app-identity-handover.md is the
 plan for the day its private key lands. So probe the lane every run:
 append a comment to a workflow file on a throwaway branch and try to
-push it. When that push succeeds, the paragraph above is void. Take the
-lane back, rewrite it in the same PR, ship the queued items in
-pending-workflow-changes.md as ordinary edits, delete that file, and
-work the rest of the handover page's step 6. Commit on a branch named
+push it, then delete the ref in the same turn whatever the answer.
+`docs/standards/lessons.md` L-X4 is why the probe is a write and not a
+read, and it is also where the safe shape comes from, which is a
+throwaway ref and never a protected branch.
+
+**The probe succeeded on 2026-10-18, and the clause that used to follow it
+was wrong** (`INC-2026-10-18-the-host-runs-every-seat-as-the-owner`). It
+said: when that push succeeds, the paragraph above is void, take the lane
+back, ship the queued items as ordinary edits, delete the queue page. That is
+right for the reason it was written, which is `APP_PRIVATE_KEY` landing and
+ADR-27's App being granted the `workflows` permission on purpose. It is wrong
+for what actually happened, which is a runtime migration handing twelve seats
+the owner's account credentials with nobody deciding it and nothing recording
+it.
+
+**So the probe has two questions and the second one governs. First, does the
+push succeed. Second, why.** A grant leaves a record: an ADR, a secret the
+owner created, a permission she changed, a line in the handover page. Run
+the second question as a search before you act on the first answer.
+
+```bash
+gh api user --jq .login        # whose identity is this run using?
+grep -rn 'APP_PRIVATE_KEY\|workflows permission' docs/decisions.md docs/agents/
+```
+
+If the push succeeds and the identity is the owner's rather than an app's, or
+no record of a grant exists, **the finding is the missing record and the lane
+stays shut by choice.** Report it, register it, ask her. Do not ship a queued
+workflow edit, and do not delete the queue page, on the strength of a
+capability nobody granted. A probe answers whether. Only a record answers
+whether you may.
+
+When the lane does open by decision, take it back, rewrite this paragraph in
+the same PR, ship the queued items in pending-workflow-changes.md as ordinary
+edits, delete that file, and work the rest of the handover page's step 6. Commit on a branch named
 exo/YYYY-MM-DD and open ONE pull request; the owner's merge is what
 applies any change to the org. Never edit pipeline code, the site,
 skills/, sprints, OKRs, market docs, the ideas ledger's statuses, or
