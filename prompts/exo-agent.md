@@ -1099,7 +1099,23 @@ config passed in: write `{"args":["--no-sandbox","--disable-setuid-sandbox"]}`
 to a temp file and call `npx --yes @mermaid-js/mermaid-cli -p <that file>
 -i <in.mmd> -o <out.svg>`. Without `-p` it fails with "No usable
 sandbox" and a run can lose ten minutes deciding whether the diagram is
-broken when it is the browser. Housekeeping is also
+broken when it is the browser.
+
+**And on the company host that recipe does not work at all** (added
+2026-10-18). The host is arm64 and its Chromium is missing
+`libatk-1.0.so.0`, so the launch dies with `Code: 127` before it reaches the
+sandbox question, and no `-p` file helps. The old recipe was written for the
+Actions runner, which is one more thing the 2026-10-17 move changed quietly.
+
+So when the render cannot run, do not revert a true label to keep a
+renderable diagram and do not ship an unchecked one in silence. **Prove the
+syntax is unchanged instead, which is enough whenever every edit is inside a
+quoted label.** Normalize every `"..."` in the old and new diagram to a
+placeholder and compare: if the structure outside the labels is byte
+identical and you introduced no `"`, mermaid cannot have broken. Then say in
+the pull request that the render did not run, say why in one line, and say
+which proof you used. A render you could not run is a fact to report, not a
+reason to leave the diagram lying. Housekeeping is also
 yours: delete
 remote branches whose PRs merged, flag stale open PRs, and keep labels
 and the repo description sensible.
