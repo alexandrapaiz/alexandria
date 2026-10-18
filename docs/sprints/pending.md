@@ -1,6 +1,118 @@
-## Updated 2026-10-18, ~02:36 UTC (message pass): PR #360 (okr) checked and merged, the centralizer's corroboration of the nine-charter finding read, next board item taken (run in progress, filling in below)
+## Updated 2026-10-18, ~06:30 UTC (six-hour pass): PR #354 (writer) checked and merged under Tier B, the missed press week escalated to the owner directly, the charter-prefix fix moved from a note to a timed ask
 
-_(This pass is still running. The merge below already landed; the board hand-off is being verified before this note is finalized.)_
+**Trigger.** The six-hour pass: read the inbox, triage failed runs, merge
+what qualifies under Tier B, report what waits on the owner and why, and
+move the sprint. Own last run checked first: PR #361, this seat's own
+run from minutes earlier, was still open and only a ship-first stub (one
+file, four lines, body still said "Full account to follow"). Built on it
+rather than starting over — merged its branch in first, confirmed with
+`git log origin/<branch> ^HEAD` that nothing of its one commit was lost,
+then closed #361 with the proof once this pull request was open.
+
+**Inbox, read in full back to 2026-10-16.** Seven messages addressed to
+this seat by name since then, all already answered or acted on by prior
+passes except the two below. Everything else — the centralizer's
+nine-charter finding, both of `mba`'s notes on the dead pricing pills,
+and the three chair handoffs on regrooming the sprint, the plugin
+marketplace and the press merge-before-Monday deadline — already has an
+open pull request, a merged one, or a board reply against it, named in
+the entries below rather than re-litigated.
+
+**PR #354 (writer) checked against the merge rule (Tier B) and merged.**
+Not a draft, no `hold` label, no comment, no review, `mergeStateStatus:
+CLEAN`. Diff is `docs/agents/incidents.md`, `docs/ideas.md`, and five
+`docs/voice/` files including a new gate script, `check_voice.py`. No
+`.github/`, no `prompts/`, no secret — no Tier C path. `checks.yml` is
+path-filtered to the pipeline and does not watch any of these paths, so
+no checks were defined for this diff, which the rule treats as green.
+
+**The press's missed week, escalated directly rather than renoted.**
+`tools/delivery_health.py` this pass reads the press surface FAILING:
+the newest issue is still two weeks old and the week that should have
+sent last Monday never did. `docs/agents/engineer-run-note-2026-10-18-press-drafts.md`
+confirms the two pull requests that merged tonight (engineer's press fix
+and deploy-alarm fix) make tomorrow's run survive the same failure —
+they cannot write the week that was already missed, because that needs
+a model call, a database write, and an authenticated send through the
+owner's own Gmail, and no agent seat holds any of the three. The
+incident register already worked out the exact three-command recovery
+on the fourteenth and nobody has run it since. A broadcast note on the
+sixteenth flagged the deadline but was not addressed to the owner by
+name and did not carry the command. This pass sent her a direct, urgent
+ask with the exact recovery, the deadline it closes at, and nothing else
+asked of her tonight.
+
+**The nine-charter branch-prefix finding, moved from a note to a timed
+ask.** The centralizer's handoff (02:24:14Z) was already read and agreed
+by the prior pass, which replied on the board and named it as an owner
+action in this file. It had not been put to the owner as a direct ask
+with a recommendation, so the 48-hour silence rule's clock had never
+started. This pass sent that ask by name, with the one-line fix
+recommended for each of the nine charters, and will draft the nine-file
+pull request itself if two days pass with no word.
+
+**What is still open and not this pass's to merge.** `#358` (engineer,
+the checkout alarm's board reader) and `#356` (frontend, the dead
+pricing pills) are both still the ship-first stub each seat opened
+three-plus hours ago: a run note or a design-review file only, the real
+diff not yet pushed. Neither is a draft that failed, and neither seat
+can be dispatched again while its own pull request from this run is
+still open, so both are named here rather than queued. `#333` (frontend,
+"the site has to sell the skills") is the same shape, nearly ten hours
+old. `#331` (exo, the learning-loop handoff) is a draft in conflict with
+`main`, which is the seat's own branch to resolve, not a docs-only
+conflict this seat may touch. `#335` and `#332`, both this seat's own
+from the last two nights, are unchanged: Tier B condition 1 means a
+PM's own pull request waits for another merger, and neither was named
+in this pass's event bundle.
+
+**Run health.** `gh run list --limit 50` shows every GitHub Actions run
+in the last six hours green; the last failure on any workflow was
+2026-10-14. The twenty-four failing-check events the engineer's own note
+(02:35:06Z) answered are not Actions runs and were already closed as a
+job no runner ever took — not re-triaged here.
+
+**Delivery health, the other half.** Checked with `tools/delivery_health.py`
+rather than the scheduler: pipeline, deploy, archive and the MCP server
+all read ok. Press and site both read FAILING for the same missed week,
+named above. Checkout reads FAILING — the pricing page has no live
+checkout link at all, the same gap `mba` and frontend's `#356` are
+already working. Payments reads unknown; the table it needs could not be
+read from here.
+
+**Queue gauge, four numbers.** `main`'s newest commit is this pass's own
+`#354` merge, minutes old. Newest `checks.yml` conclusion on `main`:
+success, from 02:03:44Z, unchanged because nothing merged since touched
+a path it watches. Open pull requests: 9 total, 0 opened against this
+company since that merge. 7-day conversion: 58 merged over 94 opened.
+Deepest open chain: 2 (`#272` to `#331`, exo's own, named by that seat
+itself); nothing else currently stacked.
+
+**The sprint.** `sprint-2026-10-12.md` is the current file and its own
+end date is today; tomorrow is the next Monday ceremony, which is where
+its retrospective and the next sprint belong, not this pass. What moved
+since the file was written: items 1 (press gap) and 2 (Polar) both
+shipped in substance — payments landed on the committed date per `mba`'s
+own read, and the press's silent-skip is fixed going forward — but the
+owner's own reset of 2026-10-17 (the skills are the product, named in
+the chair's handoff) now sits over the file's original goal rather than
+inside it. The regroom that reset asked for is this seat's own `#332`,
+open and waiting on the owner or a chair, not redone here. What moves
+today: the owner's two direct asks above, and whichever of `#356`/`#358`/`#333`
+its own seat finishes next, each already named rather than re-asked.
+
+**Owed to you, unchanged except where noted:** the Polar
+Merchant-of-Record account (now also the named cause of the missed press
+week and the dead checkout links), the missing launch PR/FAQ on `main`,
+this seat's own open pull requests `#335` and `#332`, and the nine-charter
+branch-prefix fix, all four now carrying either a direct ask or a timed
+one rather than a renoted line.
+
+**Merged this run:** Tier B, one (`#354`, writer). `#361`, this seat's
+own prior stub, was not merged; it was built on and then closed as
+superseded by this pull request, per the own-last-run-open rule.
+
+## Updated 2026-10-18, ~02:36 UTC (message pass): PR #360 (okr) checked and merged, the centralizer's corroboration of the nine-charter finding read, next board item taken
 
 ## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
 
