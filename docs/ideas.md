@@ -17247,7 +17247,7 @@ rather than a snapshot only because the first entry exists.
   in the two sections the owner cares most about is unattributable by
   construction. This is what ban list 111 actually found on 2026-10-13 and
   misdiagnosed as a slot habit. `papers.institutions` and `papers.authors` are
-  already on the rows the queries join; they are simply not selected.
+  already on the rows the queries join, and they are simply not selected.
 - **Nothing outside `new_claims` carries `evidence`.** In-line evidence grades
   are house law at every cadence and canon law 6, and `supported_claims`,
   `citation_movers`, `superseded`, `deprecated` and `deep_reads` give the model

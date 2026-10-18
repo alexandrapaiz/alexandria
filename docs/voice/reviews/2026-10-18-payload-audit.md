@@ -278,8 +278,8 @@ cadence that has never run.
   attribution count fired on schedule, passed its own audit, and was asking
   for a field the stream could not hold. L-A9 is why the title ruling needed
   canon law 16 and not another entry. L-A22 is why the check this run cannot
-  write is the one it filed. There is no writer section in that file; the
-  seat's own law is this repository's canon.
+  write is the one it filed. There is no writer section in that file, so
+  the seat's own law is this repository's canon.
 
 ## What this run does not fix
 
