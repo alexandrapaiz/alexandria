@@ -58,6 +58,304 @@ branch-prefix fix.
 by this seat's own prior pass and one by a different seat's own Tier A
 lane, before this pass read anything.
 
+## Updated 2026-10-18, ~07:10 UTC (message pass): PR #366 checked against the merge rule and merged, this seat's own prior hold on the same chain corrected, a sixth Tier C misread filed
+
+**Trigger.** PR #366 opening (writer, seventh run, "the generator's own weight
+broke the budget gate, and the gate was right"). Instruction: review it
+against the merge rule, merge it, or say on the board what it still needs and
+hand that to its seat.
+
+**Own last run may still be open, checked first: three found, none built on.**
+`#362`, `#365` and `#367` are this seat's own open pull requests from earlier
+passes tonight, each touching `docs/sprints/pending.md` at this same top
+anchor. Branched from `main` anyway, matching today's established pattern:
+each is append-only at the top, so whichever merges first is clean and each
+later one is a one-line keep-both. Expected merge order, oldest first:
+`#332`, `#335`, `#362`, `#365`, `#367`, then this one.
+
+**PR #366 checked against the merge rule (Tier B) and merged.** Not a draft,
+`mergeStateStatus: CLEAN`, `mergeable: MERGEABLE`, no `hold` label, no
+comment, no review. The one `checks.yml` job this diff triggers (`digest
+request fits the model's budget`) is green — the same job that failed on
+`#363`, which this PR supersedes (`git log --oneline
+origin/alexandria-writer/2026-10-18-message-payload-audit ^HEAD` prints
+nothing, confirming this branch carries every commit of the superseded one).
+`gh pr diff --name-only 366`: `docs/agents/incidents.md`, `docs/ideas.md`,
+`docs/voice/ban-list.md`, `docs/voice/canon.md`, two new
+`docs/voice/reviews/` files, and `prompts/digest.md`. No Tier C path — see
+the correction below for why `prompts/digest.md` does not count as one.
+Confirmed the merge is clean beyond the cached field with `git merge-tree`
+before acting. Merged with `gh pr merge --merge`, no force, no squash:
+`99a1405`.
+
+**A correction to this seat's own prior pass, not a new judgment call.** This
+seat's own earlier pass tonight (`#367`, ~06:46 UTC, reviewing `#363`, the PR
+`#366` supersedes) held that PR for two reasons: a red check, and "`prompts/`
+as a charter path on its own, independent of the check result, so even a
+green run on this diff would not be mine to merge." The first reason was
+real and the check is now green. The second reason was wrong, and it was
+already wrong when written: `docs/standards/pm.md` §21 (owner, 2026-10-05)
+and §10's own amendment note say no tier waits for the owner except a change
+to a seat's own authority, spend, an account, or a secret, and
+`prompts/digest.md` is the writer seat's generator prompt, not a seat
+charter — the exact distinction `INC-2026-10-09-tier-c-carve-out-misread-for-four-days`
+already drew for two other files five passes earlier. Filed as
+`INC-2026-10-18-tier-c-carve-out-misread-a-sixth-time` in this pull request,
+because the standing rule records a repeat the moment it recurs, including
+when this seat is the one repeating it. A tool that answers the carve-out
+question from the actual diff rather than the remembered shape of the
+directory is proposed in `docs/ideas.md`, for the engineer to size.
+
+**Ledger collision, named rather than discovered on merge.** This pass
+appends one entry to `docs/ideas.md` (the `check-tier.sh` proposal above).
+Two other open pull requests also touch that file: `#368` (writer, eighth
+run, still a draft, "the PM's hold answered — real headroom under the cost
+ceiling" — a direct response to `#367`'s hold, substantively still useful
+since the 179-token margin `#366` left is a real finding independent of the
+Tier C misread) and `#332` (this seat's own, from 2026-10-17). None of the
+three entries share an anchor with another, so the expected merge order is
+whichever lands first; each later one is a one-line keep-both if they
+collide at the file's end.
+
+**Not acted on this pass.** `#368` is still a draft and not yet a Tier B
+candidate. `#358`, `#356`, `#333`, `#331` are unchanged from the last pass's
+account. `#332` and `#335` (this seat's own) are still waiting on the owner
+or a chair under Tier B condition 1.
+
+**Run health.** `gh run list --limit 30` shows every Actions run since the
+last pass green; this pass's own work (the `checks.yml` job on `#366`) was
+already green before this pass started.
+
+**Queue gauge, four numbers.** `main`'s newest commit: this pass's own `#366`
+merge (`99a1405`, 2026-10-18T07:09:30Z), minutes old as this is written.
+Newest `checks.yml` conclusion on `main`: success, from the same merge.
+Open pull requests: 12 total (`#272`, `#331`, `#332`, `#333`, `#335`, `#356`,
+`#358`, `#362`, `#365`, `#367`, `#368`, and this pass's own `#369`), 0 opened
+since the `#366` merge — `#368` and this pass's own `#369` both opened a few
+seconds before it. 7-day conversion: 62 merged over 103 opened. Deepest open
+chain: 2 (`#272` to `#331`, exo's own), unchanged from the last pass.
+
+**Owed to the owner, unchanged, not re-litigated here:** the Polar
+Merchant-of-Record account, the missing launch PR/FAQ on `main`, this seat's
+own `#332` and `#335`, and the nine-charter branch-prefix fix.
+
+**Merged this run:** Tier B, one (`#366`, writer).
+
+## Updated 2026-10-18, ~06:45 UTC (message pass): PR #363 checked against the merge rule, held, and handed back to the writer
+
+**Trigger.** PR #363 opening (writer, sixth run, "seven rules in the
+generator ask for fields the payload does not carry"), then the writer's
+run finishing with the instruction to merge what is mine, close what is
+superseded, and hand the next thing to a seat on the board.
+
+**PR #363 checked against the merge rule and not merged.** Two independent
+reasons, either one sufficient on its own.
+
+1. `gh pr checks 363` is red: `digest request fits the model's budget`.
+   `gh run view --log-failed` traces it to
+   `tests/test_press_resilience.py::test_the_press_fits_its_primary_at_full_caps`,
+   failing on the exact (tiktoken) tokenizer at `$0.1519` against ADR-32's
+   `$0.15` ceiling. §10 Tier B condition 3 is explicit: a red check is a
+   failed run, never a merge. This is the real thing, not the known
+   estimate artifact (`INC-2026-09-25-budget-guard-estimates`): CI installs
+   tiktoken, so the number is an exact cost. Logged as a repeat,
+   `INC-2026-10-18-the-cost-ceiling-breached-a-third-time-this-one-caught-before-main`,
+   in this pull request, because the standing rule records every repeat
+   with no exceptions even though this one was caught before `main` rather
+   than after.
+2. `gh pr diff --name-only 363` includes `prompts/digest.md`. §10 Tier C
+   names `prompts/` as a charter path by itself, independent of the check
+   result, so even a green run on this diff would not be mine to merge
+   under Tier B.
+
+**What it still needs, handed to the writer on the board.** Trim the
+prompt growth (two new `docs/voice/` sections plus the 140 added lines in
+`prompts/digest.md` the seven generator-rule fixes needed) far enough to
+clear the $0.15 ceiling with real headroom, the way the test's own
+docstring asks for, not to the edge of it. Posted as a `handoff` on the
+board, `alexandria writer`, with the run URL and the exact numbers, rather
+than left for the writer to rediscover from a red tick with no diagnosis
+attached.
+
+**Nothing superseded.** The writer's own report says no writer pull
+request was open when its run started, so #363 supersedes nothing. This
+seat's prior open pull requests (`#332`, `#335`, `#362`, `#365`) are
+unrelated work and none of them touch the writer's lane.
+
+**Branching note.** This seat's own `#362` and `#365` are both still open
+and both touch this file at this same anchor. Branched from `main` anyway,
+matching today's established pattern (`#332`, `#335`, `#362`, `#365` all
+did the same): each entry is append-only at the top, so whichever merges
+first is clean and each later one is a one-line keep-both. Expected merge
+order, oldest first: `#332`, `#335`, `#362`, `#365`, then this one.
+
+## Updated 2026-10-18, ~06:40 UTC (message pass): PR #364 (distribution, lessons.md re-vendor) checked against the merge rule and merged
+
+**Trigger.** PR #364 (`distribution/vendored-lessons`, opened 06:37 UTC by
+the exo centralizer's `tools/sync-standards.sh`): "Re-vendor
+`docs/standards/lessons.md` from HQ `a9a3e08`." Instruction: review it
+against the merge rule, merge it, or say on the board what it still
+needs and hand that to its seat.
+
+**Checked against the merge rule (ADR-011 Tier A, also qualifying under
+§10/§21's general PM authority) and merged.** `gh pr diff --name-only`
+showed exactly one path, `docs/standards/lessons.md`, which is the
+single-file lane the PR's own body cites and the one ADR-011 names for
+a sync of this register. Not a draft, `mergeStateStatus: CLEAN`,
+`mergeable: MERGEABLE`, no `hold` label, no comment, no review.
+`checks.yml` is path-filtered to the pipeline and does not watch
+`docs/standards/**`, so "no checks defined" is correct and treated as
+green, same as every other docs-only merge this seat has made today. No
+other open pull request touches `docs/standards/lessons.md` (checked
+every open PR's diff). Not a workflow file and not a secret, so this
+run's own narrower boundary ("never touch secrets or workflows," which
+is why PR #334 was handed to the chair instead on 2026-10-17, #335)
+does not apply here. Merged with `gh pr merge --merge`, no force, no
+squash: `c529eab`.
+
+**What the sync actually carries, read before shipping (lessons.md's
+own `any`-section rule, which binds this seat).** Two new entries under
+`## any`, both relevant here. **L-A31** says a red check is not evidence
+a branch is broken until you confirm a runner actually took the job
+(`tools/check-run-ran.py`), which sharpens this seat's own queue-gauge
+and run-health reporting going forward: a zero-step red is its own
+category, distinct from green and from a real failure, and should be
+reported as such rather than folded into either. **L-A32** says a run
+is finished when its pull request is readied, not when the branch is
+written, and that an unreadied draft carrying only its opening note is
+not unfinished work, it is nothing — directly the rule this run follows
+by calling `gh pr ready` on its own #365 before ending rather than
+leaving a stub. No change to the `## pm` section this sync, and no
+charter line here contradicts either new entry, so no incident or
+charter-fix flag follows from this merge.
+
+**Other open PM PRs tonight, named per charter §"your own last run may
+still be open."** #362 (`alexandria-pm/2026-10-18-message-inbox-sweep`),
+#335, and #332 are all still open and all touch `docs/sprints/pending.md`
+at the same prepend anchor this entry uses. This run branched from `main`
+rather than stacking on any of them, same as the established pattern in
+today's own chain: each is append-only at the top of the file, so
+whichever merges first is clean and each later one is a one-line
+keep-both at that anchor. Expected order is oldest first: #332, #335,
+#362, then this one.
+
+## Updated 2026-10-18, ~06:30 UTC (six-hour pass): PR #354 (writer) checked and merged under Tier B, the missed press week escalated to the owner directly, the charter-prefix fix moved from a note to a timed ask
+
+**Trigger.** The six-hour pass: read the inbox, triage failed runs, merge
+what qualifies under Tier B, report what waits on the owner and why, and
+move the sprint. Own last run checked first: PR #361, this seat's own
+run from minutes earlier, was still open and only a ship-first stub (one
+file, four lines, body still said "Full account to follow"). Built on it
+rather than starting over — merged its branch in first, confirmed with
+`git log origin/<branch> ^HEAD` that nothing of its one commit was lost,
+then closed #361 with the proof once this pull request was open.
+
+**Inbox, read in full back to 2026-10-16.** Seven messages addressed to
+this seat by name since then, all already answered or acted on by prior
+passes except the two below. Everything else — the centralizer's
+nine-charter finding, both of `mba`'s notes on the dead pricing pills,
+and the three chair handoffs on regrooming the sprint, the plugin
+marketplace and the press merge-before-Monday deadline — already has an
+open pull request, a merged one, or a board reply against it, named in
+the entries below rather than re-litigated.
+
+**PR #354 (writer) checked against the merge rule (Tier B) and merged.**
+Not a draft, no `hold` label, no comment, no review, `mergeStateStatus:
+CLEAN`. Diff is `docs/agents/incidents.md`, `docs/ideas.md`, and five
+`docs/voice/` files including a new gate script, `check_voice.py`. No
+`.github/`, no `prompts/`, no secret — no Tier C path. `checks.yml` is
+path-filtered to the pipeline and does not watch any of these paths, so
+no checks were defined for this diff, which the rule treats as green.
+
+**The press's missed week, escalated directly rather than renoted.**
+`tools/delivery_health.py` this pass reads the press surface FAILING:
+the newest issue is still two weeks old and the week that should have
+sent last Monday never did. `docs/agents/engineer-run-note-2026-10-18-press-drafts.md`
+confirms the two pull requests that merged tonight (engineer's press fix
+and deploy-alarm fix) make tomorrow's run survive the same failure —
+they cannot write the week that was already missed, because that needs
+a model call, a database write, and an authenticated send through the
+owner's own Gmail, and no agent seat holds any of the three. The
+incident register already worked out the exact three-command recovery
+on the fourteenth and nobody has run it since. A broadcast note on the
+sixteenth flagged the deadline but was not addressed to the owner by
+name and did not carry the command. This pass sent her a direct, urgent
+ask with the exact recovery, the deadline it closes at, and nothing else
+asked of her tonight.
+
+**The nine-charter branch-prefix finding, moved from a note to a timed
+ask.** The centralizer's handoff (02:24:14Z) was already read and agreed
+by the prior pass, which replied on the board and named it as an owner
+action in this file. It had not been put to the owner as a direct ask
+with a recommendation, so the 48-hour silence rule's clock had never
+started. This pass sent that ask by name, with the one-line fix
+recommended for each of the nine charters, and will draft the nine-file
+pull request itself if two days pass with no word.
+
+**What is still open and not this pass's to merge.** `#358` (engineer,
+the checkout alarm's board reader) and `#356` (frontend, the dead
+pricing pills) are both still the ship-first stub each seat opened
+three-plus hours ago: a run note or a design-review file only, the real
+diff not yet pushed. Neither is a draft that failed, and neither seat
+can be dispatched again while its own pull request from this run is
+still open, so both are named here rather than queued. `#333` (frontend,
+"the site has to sell the skills") is the same shape, nearly ten hours
+old. `#331` (exo, the learning-loop handoff) is a draft in conflict with
+`main`, which is the seat's own branch to resolve, not a docs-only
+conflict this seat may touch. `#335` and `#332`, both this seat's own
+from the last two nights, are unchanged: Tier B condition 1 means a
+PM's own pull request waits for another merger, and neither was named
+in this pass's event bundle.
+
+**Run health.** `gh run list --limit 50` shows every GitHub Actions run
+in the last six hours green; the last failure on any workflow was
+2026-10-14. The twenty-four failing-check events the engineer's own note
+(02:35:06Z) answered are not Actions runs and were already closed as a
+job no runner ever took — not re-triaged here.
+
+**Delivery health, the other half.** Checked with `tools/delivery_health.py`
+rather than the scheduler: pipeline, deploy, archive and the MCP server
+all read ok. Press and site both read FAILING for the same missed week,
+named above. Checkout reads FAILING — the pricing page has no live
+checkout link at all, the same gap `mba` and frontend's `#356` are
+already working. Payments reads unknown; the table it needs could not be
+read from here.
+
+**Queue gauge, four numbers.** `main`'s newest commit is this pass's own
+`#354` merge, minutes old. Newest `checks.yml` conclusion on `main`:
+success, from 02:03:44Z, unchanged because nothing merged since touched
+a path it watches. Open pull requests: 9 total, 0 opened against this
+company since that merge. 7-day conversion: 58 merged over 94 opened.
+Deepest open chain: 2 (`#272` to `#331`, exo's own, named by that seat
+itself); nothing else currently stacked.
+
+**The sprint.** `sprint-2026-10-12.md` is the current file and its own
+end date is today; tomorrow is the next Monday ceremony, which is where
+its retrospective and the next sprint belong, not this pass. What moved
+since the file was written: items 1 (press gap) and 2 (Polar) both
+shipped in substance — payments landed on the committed date per `mba`'s
+own read, and the press's silent-skip is fixed going forward — but the
+owner's own reset of 2026-10-17 (the skills are the product, named in
+the chair's handoff) now sits over the file's original goal rather than
+inside it. The regroom that reset asked for is this seat's own `#332`,
+open and waiting on the owner or a chair, not redone here. What moves
+today: the owner's two direct asks above, and whichever of `#356`/`#358`/`#333`
+its own seat finishes next, each already named rather than re-asked.
+
+**Owed to you, unchanged except where noted:** the Polar
+Merchant-of-Record account (now also the named cause of the missed press
+week and the dead checkout links), the missing launch PR/FAQ on `main`,
+this seat's own open pull requests `#335` and `#332`, and the nine-charter
+branch-prefix fix, all four now carrying either a direct ask or a timed
+one rather than a renoted line.
+
+**Merged this run:** Tier B, one (`#354`, writer). `#361`, this seat's
+own prior stub, was not merged; it was built on and then closed as
+superseded by this pull request, per the own-last-run-open rule.
+
+## Updated 2026-10-18, ~02:36 UTC (message pass): PR #360 (okr) checked and merged, the centralizer's corroboration of the nine-charter finding read, next board item taken
+
+
 ## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
 
 **Trigger.** The event bundle for this pass named seven things: four of
@@ -861,6 +1159,66 @@ to the engineer seat naming its two stalled press-reliability drafts
 Not a redundant dispatch: the engineer already carries those two PRs plus
 a fresh one opened minutes ago on the skill-marketplace item, so this is
 information for a seat already working, not a new assignment.
+
+
+## Updated 2026-10-17, ~21:12 UTC (message): PR #334 is Tier B-clean by every mechanical test and still not merged, because it is a workflow diff and that is outside this run's boundary; #328 closes as an empty placeholder, #312/#315 are still drafts
+
+**Scope note.** Message pass, triggered by PR #334 (`chair/seats-off-github`,
+opened by the chair seat at 21:06 UTC) with instructions to review it
+against the merge rule: merge it, or say what it still needs and hand
+that to its seat. Not a standup and not the ceremony; today's standup
+(above) already ran. Reviewed only #334, plus the loose thread #328 left
+open on the same general question.
+
+**PR #334, checked against `docs/standards/pm.md` §10 Tier B / §21,
+item by item:** not a draft. No `hold` label, no comment, no review.
+`mergeable: MERGEABLE`. Diff touches only `.github/workflows/agent-*.yml`
+(ten files, each removing its `schedule:` block and leaving
+`repository_dispatch` and `workflow_dispatch` in place) — no Tier C path
+by §10's own list, and not a change to any seat's authority under §21.
+`checks.yml` only triggers on `pipeline/**`, `prompts/digest.md`,
+`skills/**` and a short named list that does not include the other
+workflow files, so "no checks defined" is correct, not pending. Under
+seven days old. By the written tiers this is a clean PM merge.
+
+**Why it is not merged this run anyway.** This run's own standing
+instructions carry a narrower line than §10: never touch secrets or
+workflows. A diff that is ten `agent-*.yml` files is exactly that
+category, so it is handed to the owner or a chair to merge directly
+(§21: "a chair merges with the owner's GitHub account from her
+machine"), not merged from here. This is the boundary on this run, not
+a defect found in the PR.
+
+**What the PR still needs, named so the chair's seat can act on it.**
+One real gap: the PR body cites "HQ decision 056" as the reason the
+host manifest now carries every seat's cadence, but
+`docs/decisions.md` has no entry for it (`grep -i "056\|host manifest"`
+found nothing) and `docs/agents/cross-repo-law.md` rule 1 is explicit
+that an HQ decision reaching this repository needs a record here naming
+the ADR and the local law it touches, a commit subject is not that
+record. Add the entry before or alongside the merge. Once it lands,
+`docs/agents/org-chart.md`'s Cadence column (ten rows reading "daily
+7:06 ET", "Tue 8:00 ET" and so on, sourced from the crons this PR
+removes) goes stale the moment this merges; that edit is this seat's own
+(§1b) and queued for the run after #334 lands, not asked of the chair.
+
+**#328 (`alexandria-pm/2026-10-17-message-chair-handoff`), this seat's
+own earlier run tonight, closes with this PR.** Its diff is empty —
+one placeholder commit, no files — and its title asked the same
+question this entry answers in full: why #312 and #315 were not merged.
+Proof it carries nothing of its own: `git log origin/alexandria-pm/2026-10-17-message-chair-handoff ^HEAD`
+prints nothing against this branch. Closed, not deleted, per the
+branch-reuse rule.
+
+**#312 and #315, the question #328 left open, answered on the same
+checklist.** Both fail Tier B before the content is even worth reading:
+both are still drafts (`isDraft: true`). #312 also shows
+`mergeable: CONFLICTING`, which is the engineer's to rebase, not this
+seat's to resolve in code. Nothing is owed from you on either; they wait
+on the engineer seat to finish and mark them ready, same as every other
+draft. Not re-dispatched: both already have an open PR from their own
+last run, which is the hard stop in charter §5.
+
 
 ## Updated 2026-10-17, ~14:20 UTC (standup): one docs-only Tier B merge, the deploy drift the chair just cleared came right back, engineer is mid-run on its own stalled stack
 
