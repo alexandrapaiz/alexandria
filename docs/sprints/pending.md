@@ -1,3 +1,86 @@
+## Updated 2026-10-18, ~07:10 UTC (message pass): PR #366 checked against the merge rule and merged, this seat's own prior hold on the same chain corrected, a sixth Tier C misread filed
+
+**Trigger.** PR #366 opening (writer, seventh run, "the generator's own weight
+broke the budget gate, and the gate was right"). Instruction: review it
+against the merge rule, merge it, or say on the board what it still needs and
+hand that to its seat.
+
+**Own last run may still be open, checked first: three found, none built on.**
+`#362`, `#365` and `#367` are this seat's own open pull requests from earlier
+passes tonight, each touching `docs/sprints/pending.md` at this same top
+anchor. Branched from `main` anyway, matching today's established pattern:
+each is append-only at the top, so whichever merges first is clean and each
+later one is a one-line keep-both. Expected merge order, oldest first:
+`#332`, `#335`, `#362`, `#365`, `#367`, then this one.
+
+**PR #366 checked against the merge rule (Tier B) and merged.** Not a draft,
+`mergeStateStatus: CLEAN`, `mergeable: MERGEABLE`, no `hold` label, no
+comment, no review. The one `checks.yml` job this diff triggers (`digest
+request fits the model's budget`) is green — the same job that failed on
+`#363`, which this PR supersedes (`git log --oneline
+origin/alexandria-writer/2026-10-18-message-payload-audit ^HEAD` prints
+nothing, confirming this branch carries every commit of the superseded one).
+`gh pr diff --name-only 366`: `docs/agents/incidents.md`, `docs/ideas.md`,
+`docs/voice/ban-list.md`, `docs/voice/canon.md`, two new
+`docs/voice/reviews/` files, and `prompts/digest.md`. No Tier C path — see
+the correction below for why `prompts/digest.md` does not count as one.
+Confirmed the merge is clean beyond the cached field with `git merge-tree`
+before acting. Merged with `gh pr merge --merge`, no force, no squash:
+`99a1405`.
+
+**A correction to this seat's own prior pass, not a new judgment call.** This
+seat's own earlier pass tonight (`#367`, ~06:46 UTC, reviewing `#363`, the PR
+`#366` supersedes) held that PR for two reasons: a red check, and "`prompts/`
+as a charter path on its own, independent of the check result, so even a
+green run on this diff would not be mine to merge." The first reason was
+real and the check is now green. The second reason was wrong, and it was
+already wrong when written: `docs/standards/pm.md` §21 (owner, 2026-10-05)
+and §10's own amendment note say no tier waits for the owner except a change
+to a seat's own authority, spend, an account, or a secret, and
+`prompts/digest.md` is the writer seat's generator prompt, not a seat
+charter — the exact distinction `INC-2026-10-09-tier-c-carve-out-misread-for-four-days`
+already drew for two other files five passes earlier. Filed as
+`INC-2026-10-18-tier-c-carve-out-misread-a-sixth-time` in this pull request,
+because the standing rule records a repeat the moment it recurs, including
+when this seat is the one repeating it. A tool that answers the carve-out
+question from the actual diff rather than the remembered shape of the
+directory is proposed in `docs/ideas.md`, for the engineer to size.
+
+**Ledger collision, named rather than discovered on merge.** This pass
+appends one entry to `docs/ideas.md` (the `check-tier.sh` proposal above).
+Two other open pull requests also touch that file: `#368` (writer, eighth
+run, still a draft, "the PM's hold answered — real headroom under the cost
+ceiling" — a direct response to `#367`'s hold, substantively still useful
+since the 179-token margin `#366` left is a real finding independent of the
+Tier C misread) and `#332` (this seat's own, from 2026-10-17). None of the
+three entries share an anchor with another, so the expected merge order is
+whichever lands first; each later one is a one-line keep-both if they
+collide at the file's end.
+
+**Not acted on this pass.** `#368` is still a draft and not yet a Tier B
+candidate. `#358`, `#356`, `#333`, `#331` are unchanged from the last pass's
+account. `#332` and `#335` (this seat's own) are still waiting on the owner
+or a chair under Tier B condition 1.
+
+**Run health.** `gh run list --limit 30` shows every Actions run since the
+last pass green; this pass's own work (the `checks.yml` job on `#366`) was
+already green before this pass started.
+
+**Queue gauge, four numbers.** `main`'s newest commit: this pass's own `#366`
+merge (`99a1405`, 2026-10-18T07:09:30Z), minutes old as this is written.
+Newest `checks.yml` conclusion on `main`: success, from the same merge.
+Open pull requests: 12 total (`#272`, `#331`, `#332`, `#333`, `#335`, `#356`,
+`#358`, `#362`, `#365`, `#367`, `#368`, and this pass's own `#369`), 0 opened
+since the `#366` merge — `#368` and this pass's own `#369` both opened a few
+seconds before it. 7-day conversion: 62 merged over 103 opened. Deepest open
+chain: 2 (`#272` to `#331`, exo's own), unchanged from the last pass.
+
+**Owed to the owner, unchanged, not re-litigated here:** the Polar
+Merchant-of-Record account, the missing launch PR/FAQ on `main`, this seat's
+own `#332` and `#335`, and the nine-charter branch-prefix fix.
+
+**Merged this run:** Tier B, one (`#366`, writer).
+
 ## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
 
 **Trigger.** The event bundle for this pass named seven things: four of
