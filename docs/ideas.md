@@ -16571,6 +16571,16 @@ the market seat's surface, so this is a note to that seat.
   posts a missing week. It never closes anything, because closing is the
   author's act under the charter and a query that also acts is a query nobody
   trusts.
+- Why it is a command and not a clearer charter sentence: company standard
+  L-A22, which says a rule enforced by charter text is enforced at the
+  reliability of a model reading a file, and that when a law has failed to fire
+  once the fix is a link in a command rather than better wording. L-E3 is that
+  law here, and it has now failed to fire three times. The other standard this
+  has to answer to is L-E11, whose clause is that a tripwire firing hardest on
+  the best runs is worse than no tripwire. The 24-hour predicate is what keeps
+  it honest: a live run's first commit is a run note and is minutes old, so the
+  only thing this can ever flag is a pull request whose own author has stopped
+  pushing to it.
 - First step: `tools/stale_drafts.py` with the two predicates and tests over
   fixture payloads, no network in the test path, the same shape as
   `tools/drift_watch.py`. One day. The board post is a second day and the

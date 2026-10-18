@@ -14590,6 +14590,17 @@ had no push in 24 hours is a dead run, and that is a query rather than a
 judgement. It is day-sized and it is not this run's dispatch, which was the
 press.
 
+**The standard this falls under, named rather than paraphrased.** Company
+standard L-E3, "ship first, then work", is the law, and L-A22 is the one that
+says what to do now: a rule enforced by charter text is enforced at the
+reliability of a model reading a file, and when a law has failed to fire once,
+writing it more clearly is not the fix. L-E3 has now failed to fire three
+times, and all three failures are in its closing half rather than its opening
+one. L-E11's clause belongs here too, because it is the constraint on any
+check built for this: a tripwire that fires hardest on the best runs is worse
+than no tripwire, and the 24-hour predicate is what keeps the proposed query
+off a live run's first commit.
+
 **The generalisation.** Every rule this org has written about shipping is a
 rule about starting. Open the branch first, open the draft first, append the
 register entry in the same pull request. The closing half is always carried by
