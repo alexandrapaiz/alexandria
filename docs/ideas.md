@@ -17186,3 +17186,153 @@ rather than a snapshot only because the first entry exists.
   falsehoods and one truth. A register whose net was cast over the product's
   best-measured half will keep clearing its worst-measured one.
 - Status: proposed
+
+### 2026-10-18 — Two commands that read a register, and the caller they are still missing (writer seat, fifth run)
+
+- Trigger: `docs/voice/check_voice.py` gained two checks this run and both
+  found live defects on the first firing. `claims` reads every row of
+  `docs/agents/quality-claims.md` against every reader-facing surface and
+  reported seventeen claims that are not held and not hedged. `reading` turns
+  canon law 15 into a pattern over the same surfaces and reported three,
+  including the home page's own metric line, which has printed the ingest count
+  under the word "read" for twenty-two days with its repair drafted and filed
+  the whole time.
+- The ask, and it is the same ask as the ledger entry of 2026-10-04: move
+  `docs/voice/check_voice.py` to `tools/` and call it from
+  `.github/workflows/checks.yml` beside `check_registers.py`. The writer seat
+  cannot do either half. `tools/` is the engineer's surface and a workflow is
+  nobody's to touch casually, which is why this is a proposal and not a diff.
+- What changes if it lands. Today both commands are enforced at the reliability
+  of a seat typing them, which is the honest half of L-A22 and the reason the
+  home metric line survived three sightings. In CI they fire on a pull request
+  that adds a claim, which is the only moment the cost of removing it is one
+  sentence rather than a public retraction.
+- Two entries already filed ask for a sibling of this and both are blocked on
+  the same missing caller: the archive-completeness check of 2026-10-18 and the
+  original wiring request of 2026-10-04. Wiring one wires all three, so the
+  cheapest version of this is one job that runs `python3 -I
+  tools/check_voice.py all` and nothing else.
+- One scoping note for the engineer, because it decides whether CI goes red on
+  work nobody can fix. `claims` fails on an unhedged claim and on a claim
+  printed where the register does not name it. It prints and does not fail on a
+  row whose cited file no longer says anything like its claim, and on a cited
+  line number that has drifted, because both are the register's accuracy rather
+  than the artifact's honesty and the register is the ExO seat's file. If this
+  runs in CI, the seventeen current failures have to be cleared or the pages
+  hedged first, which is `docs/voice/claim-repairs-2026-10-18.md` awaiting the
+  owner's ruling. A gate switched on over a known-failing tree teaches everyone
+  to add `|| true`.
+- Status: proposed
+
+### 2026-10-18 — The payload carries no attribution, no evidence and one url per pair outside one stream (writer seat, sixth run)
+
+- Trigger: a full pass of `prompts/digest.md` against `gather()` in
+  `pipeline/weekly.py`. The entry filed this morning, about the distiller
+  recording no omission, is one instance of a class and this is the rest of it.
+  Seven rules in the generator asked the model for a field the stream in front
+  of it does not carry. The prompt side of all seven is fixed in this pull
+  request by naming the escape each rule takes. Four of them are only honest
+  repairs, and the thing a reader would actually want is the field.
+- For: the engineer seat. All four are changes to `gather()`, which is not this
+  seat's surface.
+- **The contradicting paper has no url.** A `deprecated` row joins
+  `papers` on the OLD claim's paper only, so the row carries the title and url
+  of the belief that fell and nothing at all for the work that overturned it.
+  The link rule counts every named work and the fell-behind slot's whole job is
+  to name both ends, so the generator can either drop the newer end or invent a
+  link. One extra join, symmetrical with the one `superseded` already has.
+- **Nothing outside `new_claims` carries an institution or an author.** The
+  canon's attribution law is institution first, and the three streams that feed
+  the traction slot and the fell-behind slot carry neither field, so every item
+  in the two sections the owner cares most about is unattributable by
+  construction. This is what ban list 111 actually found on 2026-10-13 and
+  misdiagnosed as a slot habit. `papers.institutions` and `papers.authors` are
+  already on the rows the queries join, and they are simply not selected.
+- **Nothing outside `new_claims` carries `evidence`.** In-line evidence grades
+  are house law at every cadence and canon law 6, and `supported_claims`,
+  `citation_movers`, `superseded`, `deprecated` and `deep_reads` give the model
+  no evidence string to grade from. `deep_reads` is the sharpest case, because
+  the reading list is the one place the issue asks a reader for an hour, and
+  the row is a title, a url and a triage note.
+- **`edges` names the claim at the far end by its number, and that claim is not
+  in the payload.** The generator is told the edges are "any edges already
+  drawn to older claims" and can read only an integer, so an edge can be
+  counted and never described. The daily shape in the prompt rests its entire
+  traction signal on exactly this, which is one reason to fix it before a daily
+  ever runs.
+- Two smaller findings, reported rather than proposed. `worst_case_payload()`
+  in `pipeline/budget.py` omits `prior_titles`, so the preflight budget is
+  short by up to twenty-four titles against what `weekly()` actually sends.
+  And `week_just_ended()` always returns a date range, while the prompt tells
+  the model that `dates` names a single day when it is writing a daily, so the
+  cadence test the prompt asks it to settle can only ever answer weekly. That
+  second one is a product decision about whether the daily ships, not a defect,
+  and this seat has left the daily shape in the prompt untouched.
+- What changes if these land: four rules in the generator stop being honest
+  workarounds and start being the rule they were written as. Until then the
+  prompt tells the model to write items with no attribution and no grade in two
+  of the four sections, which is true to the payload and worse for the reader
+  than the alternative nobody has built.
+- Status: proposed
+
+### 2026-10-18 — The generator prompt has no budget, and the one it broke cannot be held by trimming prose (writer seat, seventh run)
+
+Two proposals and one measurement, out of three red workflow runs on this
+seat's own branch. The assertion was
+`tests/test_press_resilience.py`, "the cost is under the $0.15 ceiling ADR-32
+implies: $0.1519 an issue against $0.15", and the commit that crossed it was
+this seat's sixth run of the same day.
+
+**The measurement first, because both proposals rest on it.** Replaying every
+commit that has touched `prompts/digest.md`: 680 tokens on 2026-09-08, 38,745
+on 2026-10-18. 101 commits, of which nine subtract anything and none was a
+deliberate edit down. Main stood at $0.149996 before this run, which is four
+ten-thousandths of a cent under a ceiling nobody knew they were against.
+
+This run cut 2,227 tokens of genuine waste, the case history the generator
+carries about its own rules, and bought back 179 tokens of headroom. That
+number is the finding. The cost splits as $0.0960 output reservation, $0.0347
+generator prompt, $0.0192 worst-case payload. Deleting the entire prompt, every
+word, lands at $0.1152 against the $0.05 ADR-32 booked. The writer seat cannot
+hold this ceiling by writing less, and a seat that keeps trying will start
+cutting gates to make a budget.
+
+- **Proposal one, for the engineer: the writer's loop needs the budget command
+  before the commit, not after the push.** This is L-A22 almost verbatim, and
+  the standard's own worked example is this same press chain. The gate already
+  exists and already fires. What is missing is that it fires in CI, after a
+  push, where this seat learns about it three red runs later and one run after
+  the prompt went out of budget. The cheapest version is a single command this
+  seat runs before committing a prompt change, printing the cost and the
+  remaining headroom in tokens, exiting non-zero past the ceiling. `pipeline/
+  budget.py` already computes every term. Charter text cannot do this job:
+  nine of ten rows in this repo's register map are enforced by charter text and
+  the one enforced by an `&&` chain is the one that has never broken.
+
+- **Proposal two, for the engineer, and it is the structural one: the gates do
+  not belong in the same request as the writing.** 16,234 of the prompt's
+  tokens, 42% of the file, are a checking procedure that runs on finished text.
+  Twelve hard gates that read the draft, counting shapes, semicolons, headings,
+  grades, links and spans. They are sent to the model before the draft exists,
+  they are paid for on every issue, and they are read once at the top of a
+  single completion and recalled at the bottom. Split the press into a write
+  call and a check call and the largest request nearly halves, each gate reads
+  the artifact it was written about, and the reservation stops covering both
+  jobs at once. This is the charter's structure-watch move: the same class of
+  fix has now failed through prompt changes more than twice, and the third
+  attempt belongs in the pipeline rather than in the prose.
+
+- **One thing this seat is not proposing.** The ceiling is not raised. The test
+  says in its own words that raising it is a finance decision and belongs to
+  the owner, and that a ceiling quietly raised to fit the current number has
+  stopped being one. What is worth the owner's attention is that ADR-32 books
+  $0.05 and the real figure is 3x it, almost entirely because the output
+  reservation went from 6,000 tokens to 24,000 on 2026-09-24 and finance's
+  books were never told.
+
+- What changes if these land: the writer seat stops discovering its budget by
+  breaking it, and the prompt stops being the only place the cost can be paid
+  from. Until then this seat holds at 179 tokens of margin, which the next
+  writer run spends.
+
+- Status: proposed

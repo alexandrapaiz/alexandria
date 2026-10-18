@@ -1726,8 +1726,11 @@ gap that the same collision had left empty (incident 25).
     with a record of working on this class, plus the slot-job rename that
     removed the words two of the headings were lifted from.
     ```
-    LANDED prompts/digest.md: "Two specimen turns stood here and both are deleted rather than re-warned."
+    LANDED prompts/digest.md: "No turn of phrase is offered here, and there will not be one."
     ```
+    Re-anchored 2026-10-18. The rule is unchanged and the sentence carrying it
+    was rewritten when the generator lost its case history. The old anchor read
+    "Two specimen turns stood here and both are deleted rather than re-warned."
     What is NOT enforced, said plainly: the file still teaches by worked example
     at other writing positions and this run did not inventory them, because
     counting them is a different job from grading an issue and a guessed count
@@ -1854,8 +1857,11 @@ gap that the same collision had left empty (incident 25).
     Added 2026-10-06. Enforced in two places, because the defect was in both.
     In the generator, at the shape gate.
     ```
-    LANDED prompts/digest.md: "Count only the kinds of block YOU put on the page."
+    LANDED prompts/digest.md: "Count only the kinds of block YOU put"
     ```
+    Re-anchored 2026-10-18 to the clause rather than the sentence, because the
+    sentence now continues into the standing-lines discount and the clause is
+    the part the entry is about.
     And in docs/voice/check_voice.py, which now takes the count that canon law
     14 says comes first. It took four of law 14's five counts and not the fifth,
     which is the one the law says can pass the other four and still fail, so the
@@ -2376,8 +2382,22 @@ gap that the same collision had left empty (incident 25).
     Added 2026-10-13. Enforced the same day at the attribution gate, as a count
     of named works against named works attributed to people, which is the form
     the coverage laws already use.
+    **Corrected 2026-10-18, and the correction is about the repair rather than
+    about the tell.** The entry above names the repair as the institution from
+    the claim's own paper, and the four specimen items come from `deprecated`
+    and `superseded`, which carry no institution and no author at all. So the
+    first repair was never available to the section this entry is about, and
+    nor was the second, and the gate as written was counting those four as
+    misses for not inventing a name. The tell stands exactly as written: an
+    item with no agent anywhere in it is still the defect, and the attribution
+    rule's third form is still what fixes it. What changed is that the third
+    form is now a pass at the gate rather than a shortfall, and the gate's
+    denominator is the named works whose stream carries an attribution field.
+    This is the same class as the payload field map added to the generator the
+    same day: a rule that asks for a field the stream does not hold is answered
+    by substitution or scored as a failure nobody could have avoided.
     ```
-    LANDED prompts/digest.md: "The two numbers are the same number or the issue is not finished."
+    LANDED prompts/digest.md: "every work on it is attributed to an institution or to a named author or the"
     ```
 
 112. The count of its own contents that nobody could check, because the
@@ -2923,8 +2943,12 @@ gap that the same collision had left empty (incident 25).
     the specimen is deleted and the three shapes it illustrated are described
     instead.
     ```
-    LANDED prompts/digest.md: "A third specimen stood here and is deleted, and it is the one that was printed."
+    LANDED prompts/digest.md: "Nothing in this slot is ever handed to you as a sentence you could print"
     ```
+    Re-anchored 2026-10-18. The deletion the entry records still stands and the
+    rule is now stated positively instead of as a tombstone, which is L-A23 in
+    the direction it wants. The old anchor read "A third specimen stood here and
+    is deleted, and it is the one that was printed."
 123. The grade stapled behind the sentence that was supposed to carry it. The
     reading-list rule says to say what the work cannot establish "inside the
     entry's own sentence and never as a second sentence stapled behind it". It
@@ -3101,3 +3125,56 @@ gap that the same collision had left empty (incident 25).
     asserts a completeness or a cadence the shelf does not show. Added
     2026-10-18, from the copy round on the pricing page, where the sentence had
     been live for thirty days.
+
+127. The present tense worn by a machine that has not been built. Eleven
+    sentences on the site say something about the quality of what we ship, and
+    `docs/agents/quality-claims.md` names the code that would have to run for
+    each one to be true. Three of the eleven have it. Four have nothing
+    anywhere. The register has said so since 2026-09-30 and the pages have not
+    changed, so on 2026-10-18 the mission page still read "proven against the
+    same tasks with and without it, revised when the research sharpens it, and
+    retired with the reason when the research overturns it", which is one
+    sentence carrying a measurement that came back negative, a job that has
+    never merged, and a field that does not exist.
+
+    The tell is not a word, and that is what makes it hard to catch by reading.
+    Every sentence in this class is grammatical, plausible, and written by
+    somebody who believed it, because the thing it describes is the thing the
+    org intends to build. Entry 50 is a true concession licensing a false
+    assertion, 126 is a true claim about the item licensing a false one about
+    the shelf, and this one is a true INTENTION licensing a false tense. The
+    question that separates them is one: is this sentence about the research or
+    about our artifact? "The research has shown this technique to work" is
+    checkable against the corpus and is almost always true. "Each skill is
+    proven with and without it" is checkable only against a measured delta, and
+    on 2026-09-30 the library's first such measurement came back at 5.4 without
+    the skill against 5.3 with it.
+
+    The repair is the one law 15 already gives, which is to drop the claim
+    rather than soften it, with one exception the register itself writes down.
+    Where the machine is genuinely being built, the sentence may stand in the
+    tense of a thing that does not exist yet, which is the form
+    `site/app/routines/page.jsx` has used in public since it shipped and the
+    form the pricing page already uses in the last bullet of its own paid tier
+    while the intro four lines above sells the same routines as running. A page
+    disagreeing with itself about whether a machine exists is this entry at its
+    clearest.
+
+    The ending, and it is a command rather than a line in the generator.
+    `docs/voice/check_voice.py claims` reads every row of the register against
+    every reader-facing surface and fails on a claim that is not held and not
+    hedged, and on the same claim appearing somewhere the row does not name,
+    which is how the revision promise reached three pages. It found seventeen
+    live instances on the run that wrote it. `docs/voice/check_voice.py
+    reading` does the same for law 15's vocabulary and found three, one of them
+    the home page's own metric line, twenty-two days after the repair for it
+    was drafted and filed. No sweep of `prompts/digest.md` and no change to it,
+    for the reason entry 126 gives: the generator does not write a React
+    component. Neither command is called by anything yet, so the ledger entry
+    filed 2026-10-18 asks the engineer seat for the wiring, and until that
+    lands these two are enforced at the reliability of a seat typing them.
+    Added 2026-10-18, writer run 40.
+    ```
+    LANDED docs/voice/check_voice.py: "A gate that turns red on a file its own seat must not edit gets ignored, which is the failure mode after the failure mode this check exists for."
+    LANDED docs/voice/check_voice.py: "The law is about what the library claims to have done."
+    ```
