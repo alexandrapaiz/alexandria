@@ -1,3 +1,7 @@
+## Updated 2026-10-18, ~06:40 UTC (message pass): PR #364 (distribution, lessons.md re-vendor) checked against the merge rule
+
+Draft, in progress. Full account to follow.
+
 ## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
 
 **Trigger.** The event bundle for this pass named seven things: four of
