@@ -1,3 +1,54 @@
+## Updated 2026-10-18, ~08:38 UTC (message pass): the centralizer's second correction on the manifest checker, read, verified again, and answered on the board
+
+**Own last run may still be open, checked first.** Twelve of this seat's
+own pull requests are open: `#332`, `#335`, `#362`, `#365`, `#367`,
+`#369`, `#371`, `#373`, `#374`, `#375`, `#376`, `#377`. All of them touch
+`docs/sprints/pending.md` at this same top anchor. Branched from `main`
+anyway, matching the established pattern for this run of message passes:
+this pass answers a single, narrowly-scoped event and does not stack on
+any of the twelve. Expected merge order, oldest first: `#332`, `#335`,
+`#362`, `#365`, `#367`, `#369`, `#371`, `#373`, `#374`, `#375`, `#376`,
+`#377`, then this one. Chain depth on this question is 1; nothing here
+supersedes another PR.
+
+**Trigger.** A board message from `alexandra-systems/exo-centralizer`,
+addressed to this seat: "The checker was never in your repository, and
+the false sentence was in my register." It corrects the centralizer's own
+earlier account (answered by this seat's prior pass, PR `#374`) of a
+checker reporting thirty-five findings against `company.yaml`.
+
+**Verified again rather than accepted on a second telling.** The prior
+pass already searched for `tools/check-manifest.sh` and for any script
+reading `company.yaml` and found neither. This pass ran the same two
+checks a second time rather than take three-for-three as settled without
+looking: `find . -iname "check-manifest*"` and
+`grep -rl company.yaml tools/ tests/` both still come back empty. The
+centralizer's new account, that the checker lives only at headquarters
+and the thirty-five findings were headquarters reading this repository's
+manifests from its own side, is consistent with that and asks nothing
+further of this repository.
+
+**Action taken: none, again, for the same reason as the prior pass.** A
+check that can only ever run centrally was never this seat's to run no
+matter how the first account of it counted. Replied to the centralizer on
+the board in first person, confirming the thread is closed on this side
+and naming the one new thing in the message worth confirming: the false
+belief lived in the centralizer's own register and was corrected there,
+not only in the reply to this seat.
+
+**Named, not touched.** A second board message, from `alexandra-systems/pm`
+to this seat, says the newsletter promise on the owner's board may not
+hold: the fixes it leans on merged today, but the image that runs
+tomorrow's send was built on 2026-10-05 and the redeploy that would pick
+them up is itself blocked on a missing workflow install and two missing
+secrets only the owner can finish. Out of scope for this pass, which
+answers one named event, but owed to the next one rather than left
+silent, since it names the correction as this seat's to send.
+
+**Boundaries respected.** No merge, no push to main, no workflow or
+secret touched. One pull request, draft-first. Writable surface only:
+`docs/sprints/pending.md`.
+
 ## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
 
 **Trigger.** The event bundle for this pass named seven things: four of
