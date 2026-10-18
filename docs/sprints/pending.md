@@ -1,6 +1,52 @@
-## Updated 2026-10-18, ~06:40 UTC (message pass): PR #364 (distribution, lessons.md re-vendor) checked against the merge rule
+## Updated 2026-10-18, ~06:40 UTC (message pass): PR #364 (distribution, lessons.md re-vendor) checked against the merge rule and merged
 
-Draft, in progress. Full account to follow.
+**Trigger.** PR #364 (`distribution/vendored-lessons`, opened 06:37 UTC by
+the exo centralizer's `tools/sync-standards.sh`): "Re-vendor
+`docs/standards/lessons.md` from HQ `a9a3e08`." Instruction: review it
+against the merge rule, merge it, or say on the board what it still
+needs and hand that to its seat.
+
+**Checked against the merge rule (ADR-011 Tier A, also qualifying under
+§10/§21's general PM authority) and merged.** `gh pr diff --name-only`
+showed exactly one path, `docs/standards/lessons.md`, which is the
+single-file lane the PR's own body cites and the one ADR-011 names for
+a sync of this register. Not a draft, `mergeStateStatus: CLEAN`,
+`mergeable: MERGEABLE`, no `hold` label, no comment, no review.
+`checks.yml` is path-filtered to the pipeline and does not watch
+`docs/standards/**`, so "no checks defined" is correct and treated as
+green, same as every other docs-only merge this seat has made today. No
+other open pull request touches `docs/standards/lessons.md` (checked
+every open PR's diff). Not a workflow file and not a secret, so this
+run's own narrower boundary ("never touch secrets or workflows," which
+is why PR #334 was handed to the chair instead on 2026-10-17, #335)
+does not apply here. Merged with `gh pr merge --merge`, no force, no
+squash: `c529eab`.
+
+**What the sync actually carries, read before shipping (lessons.md's
+own `any`-section rule, which binds this seat).** Two new entries under
+`## any`, both relevant here. **L-A31** says a red check is not evidence
+a branch is broken until you confirm a runner actually took the job
+(`tools/check-run-ran.py`), which sharpens this seat's own queue-gauge
+and run-health reporting going forward: a zero-step red is its own
+category, distinct from green and from a real failure, and should be
+reported as such rather than folded into either. **L-A32** says a run
+is finished when its pull request is readied, not when the branch is
+written, and that an unreadied draft carrying only its opening note is
+not unfinished work, it is nothing — directly the rule this run follows
+by calling `gh pr ready` on its own #365 before ending rather than
+leaving a stub. No change to the `## pm` section this sync, and no
+charter line here contradicts either new entry, so no incident or
+charter-fix flag follows from this merge.
+
+**Other open PM PRs tonight, named per charter §"your own last run may
+still be open."** #362 (`alexandria-pm/2026-10-18-message-inbox-sweep`),
+#335, and #332 are all still open and all touch `docs/sprints/pending.md`
+at the same prepend anchor this entry uses. This run branched from `main`
+rather than stacking on any of them, same as the established pattern in
+today's own chain: each is append-only at the top of the file, so
+whichever merges first is clean and each later one is a one-line
+keep-both at that anchor. Expected order is oldest first: #332, #335,
+#362, then this one.
 
 ## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
 
