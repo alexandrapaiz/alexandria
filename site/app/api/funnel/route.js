@@ -4,7 +4,7 @@ import { readFunnel, clampDays } from "../../../lib/path";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// GET /api/funnel — the buyer's path as counts, public and unauthenticated.
+// GET /api/funnel, the buyer's path as counts, public and unauthenticated.
 // Board card c688ef2e.
 //
 // It is unauthenticated for the reason `/api/delivery` gives at length in its

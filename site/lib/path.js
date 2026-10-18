@@ -65,11 +65,30 @@ function reasonFor(error) {
   return "the insert failed";
 }
 
+// One variable turns the whole measurement off, and it exists because the
+// judgement behind it is the owner's rather than this seat's.
+//
+// The reading this was built on is that a row holding a page, a time and no
+// identifier is not personal data, so the live privacy page can describe it
+// honestly and nothing needs anybody's consent. That reading is stated at
+// length in db/schema.sql and it may be wrong, or the owner may simply want
+// the count off while she decides. Setting `PATH_MEASUREMENT=off` in the
+// site's environment stops every insert with no deploy and no revert, and
+// `/api/funnel` then reads as a recorder that is not running rather than as a
+// quiet week, because that is what it is.
+export const OFF_REASON = "PATH_MEASUREMENT is off";
+
+export function isOff(env = process.env) {
+  return String(env.PATH_MEASUREMENT ?? "").trim().toLowerCase() === "off";
+}
+
 // One row, one insert, no read. There is deliberately no de-duplication and
 // no upsert: a second view of the same page by the same person is a second
 // event, and this table holds no identifier that could tell those two apart
 // anyway.
 export async function record(request) {
+  if (isOff()) return { ok: false, reason: OFF_REASON };
+
   const row = pathRow(request);
   if (!row) return { ok: false, reason: "not a counted request" };
 
@@ -199,6 +218,11 @@ export async function readFunnel(days = DEFAULT_DAYS) {
 
   return {
     days: window,
+    // Published, because a funnel of zeros with the recorder switched off is
+    // not the same fact as a funnel of zeros with nobody visiting, and a
+    // reader with no access to the site's environment has no other way to
+    // tell them apart.
+    off: isOff(),
     funnel: funnel({
       counts: steps.counts ?? {},
       paid: { accounts: paid.accounts, reason: paid.reason },

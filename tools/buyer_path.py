@@ -272,7 +272,23 @@ def judge_recorder(facts: dict | str) -> Surface:
         "read_via": facts.get("read_via", RECEIPT),
         "days": facts.get("days"),
         "counts_read": facts.get("counts_read"),
+        "off": facts.get("off"),
     }
+
+    if facts.get("off"):
+        # Deliberately off, which is neither a failure nor a quiet week. The
+        # switch is `PATH_MEASUREMENT=off` in the site's environment and it is
+        # the owner's to hold (site/lib/path.js). Reported as `unknown`
+        # because that is what the buyer's path is while it is set, and read
+        # before the counts because the counts under it are a frozen number
+        # that would otherwise read as live.
+        return Surface(
+            "recorder",
+            UNKNOWN,
+            "PATH_MEASUREMENT is off in the site's environment, so nothing is "
+            "being recorded and the counts below stopped when it was set",
+            evidence,
+        )
 
     if not facts.get("counts_read"):
         return Surface(
