@@ -802,6 +802,66 @@ Not a redundant dispatch: the engineer already carries those two PRs plus
 a fresh one opened minutes ago on the skill-marketplace item, so this is
 information for a seat already working, not a new assignment.
 
+
+## Updated 2026-10-17, ~21:12 UTC (message): PR #334 is Tier B-clean by every mechanical test and still not merged, because it is a workflow diff and that is outside this run's boundary; #328 closes as an empty placeholder, #312/#315 are still drafts
+
+**Scope note.** Message pass, triggered by PR #334 (`chair/seats-off-github`,
+opened by the chair seat at 21:06 UTC) with instructions to review it
+against the merge rule: merge it, or say what it still needs and hand
+that to its seat. Not a standup and not the ceremony; today's standup
+(above) already ran. Reviewed only #334, plus the loose thread #328 left
+open on the same general question.
+
+**PR #334, checked against `docs/standards/pm.md` §10 Tier B / §21,
+item by item:** not a draft. No `hold` label, no comment, no review.
+`mergeable: MERGEABLE`. Diff touches only `.github/workflows/agent-*.yml`
+(ten files, each removing its `schedule:` block and leaving
+`repository_dispatch` and `workflow_dispatch` in place) — no Tier C path
+by §10's own list, and not a change to any seat's authority under §21.
+`checks.yml` only triggers on `pipeline/**`, `prompts/digest.md`,
+`skills/**` and a short named list that does not include the other
+workflow files, so "no checks defined" is correct, not pending. Under
+seven days old. By the written tiers this is a clean PM merge.
+
+**Why it is not merged this run anyway.** This run's own standing
+instructions carry a narrower line than §10: never touch secrets or
+workflows. A diff that is ten `agent-*.yml` files is exactly that
+category, so it is handed to the owner or a chair to merge directly
+(§21: "a chair merges with the owner's GitHub account from her
+machine"), not merged from here. This is the boundary on this run, not
+a defect found in the PR.
+
+**What the PR still needs, named so the chair's seat can act on it.**
+One real gap: the PR body cites "HQ decision 056" as the reason the
+host manifest now carries every seat's cadence, but
+`docs/decisions.md` has no entry for it (`grep -i "056\|host manifest"`
+found nothing) and `docs/agents/cross-repo-law.md` rule 1 is explicit
+that an HQ decision reaching this repository needs a record here naming
+the ADR and the local law it touches, a commit subject is not that
+record. Add the entry before or alongside the merge. Once it lands,
+`docs/agents/org-chart.md`'s Cadence column (ten rows reading "daily
+7:06 ET", "Tue 8:00 ET" and so on, sourced from the crons this PR
+removes) goes stale the moment this merges; that edit is this seat's own
+(§1b) and queued for the run after #334 lands, not asked of the chair.
+
+**#328 (`alexandria-pm/2026-10-17-message-chair-handoff`), this seat's
+own earlier run tonight, closes with this PR.** Its diff is empty —
+one placeholder commit, no files — and its title asked the same
+question this entry answers in full: why #312 and #315 were not merged.
+Proof it carries nothing of its own: `git log origin/alexandria-pm/2026-10-17-message-chair-handoff ^HEAD`
+prints nothing against this branch. Closed, not deleted, per the
+branch-reuse rule.
+
+**#312 and #315, the question #328 left open, answered on the same
+checklist.** Both fail Tier B before the content is even worth reading:
+both are still drafts (`isDraft: true`). #312 also shows
+`mergeable: CONFLICTING`, which is the engineer's to rebase, not this
+seat's to resolve in code. Nothing is owed from you on either; they wait
+on the engineer seat to finish and mark them ready, same as every other
+draft. Not re-dispatched: both already have an open PR from their own
+last run, which is the hard stop in charter §5.
+
+
 ## Updated 2026-10-17, ~14:20 UTC (standup): one docs-only Tier B merge, the deploy drift the chair just cleared came right back, engineer is mid-run on its own stalled stack
 
 **Scope note.** Standup shape (charter §0/§4) — today is Saturday, the
