@@ -15797,9 +15797,8 @@ gh run list --created '2026-10-17..2026-10-19' --limit 200 \
 Four agent runs since 2026-10-17, all `schedule`, the last at 17:59:54Z,
 which is 53 minutes after the schedules were deleted and is GitHub running a
 job it had already queued. **Since then: zero.** Over the same hours this
-repository received nine writer pull requests, eleven PM pull requests, and
-engineer and frontend pull requests besides, every one of them from a session
-the host started. The door in `.github/workflows/agent-*.yml` now opens only
+repository received twenty-four PM pull requests, nine writer, five engineer
+and one frontend, every one of them from a session the host started. The door in `.github/workflows/agent-*.yml` now opens only
 for an explicit `workflow_dispatch`, and there have been two of those in
 eight days.
 
@@ -16261,7 +16260,7 @@ path.
 its own ephemeral runner and therefore its own `/tmp`. On the company host,
 twelve alexandria seats plus the seats of three other products run as the
 same user on one machine, so `/tmp/<anything>` is a shared namespace with no
-per-run prefix. There were nine writer runs and eleven PM runs on 2026-10-18
+per-run prefix. There were twenty-four PM runs and nine writer runs on 2026-10-18
 alone. A fixed filename in `/tmp` is now a race, and the race is silent: the
 write succeeds, the read succeeds, and the content belongs to somebody else.
 

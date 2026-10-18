@@ -536,7 +536,7 @@ verify. Four asks follow, in order of what they cost us today.
 .github/workflows/*.yml` returns nothing. Four `*-agent` runs exist in
 alexandria's Actions since 2026-10-17 and the last is 17:59:54Z, which is a
 job GitHub had already queued. Since then zero, against nine writer pull
-requests, eleven PM pull requests and several engineer and frontend ones on
+requests, twenty-four PM pull requests and five engineer and one frontend on
 2026-10-18 alone.
 
 **Ask 1, and it has already corrupted an artifact. The host clone is

@@ -98,7 +98,7 @@ ExO adds `brief.sent`. A seat is awake whenever one of its subscribed events
 arrives, which means **a weekly cron is no longer a weekly seat**, and the
 2026-10-18 run of this seat is the proof: it was started by `brief.sent` on a
 Sunday that its cron would also have covered, after nine host-started writer
-runs and eleven PM runs on the same day.
+runs and twenty-four PM runs on the same day.
 
 So every cadence judgement now names which of the two it rests on. A duty
 whose trigger is a clock still needs the cron. A duty whose trigger is an
