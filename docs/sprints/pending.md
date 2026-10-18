@@ -54,6 +54,73 @@ filed in Backlog so the work isn't only in a PR number.
 **Merged this run (Tier B, `docs/standards/pm.md` §10), one:** `#340`
 (writer).
 
+
+## Updated 2026-10-18, ~00:35 UTC (six-hour pass): two Tier B merges clear the press-diagnosis and voice-gate stacks, and a Modal redeploy only a human can run is the one thing standing between Monday's 09:00 UTC issue and the same miss again
+
+**Reconciliation, per charter §1d.** `docs/decisions.md` still stops at the
+same point as last pass and `docs/allhands/` still has nothing newer than
+2026-09-18-close. Nothing to strike.
+
+**Owed to you, in order of urgency:**
+
+1. **The weekly app is still serving the image built from `3bbf430` of
+   2026-10-04, the same one flagged last pass, and none of the last 40
+   commits that touch its files appear in its build.** The code fix (the
+   degraded-edition repair) has been on `main` since 2026-10-12. The
+   missing half is `modal deploy pipeline/weekly.py`, which needs a human
+   hand on the Modal token, and the next scheduled press run is
+   **2026-10-19 09:00 UTC, about 32 hours from this pass.** This is the
+   same item carried every standup since 2026-09-21, and the reason it is
+   flagged urgent on the board this time rather than only listed here is
+   that the deadline is now inside one day. I am not asking for a new
+   decision, only for the one command this org already has written down
+   (`docs/sprints/pending.md`'s own "what the chair runs after this PR
+   merges" section, further down this file).
+2. **The Polar Merchant-of-Record account (ADR-30)** — overdue since
+   2026-09-26, now **22 days**. Still no `POLAR_*` secret name in any
+   workflow (checked fresh this pass).
+3. **The launch PR/FAQ is still missing from `main`.** `docs/prfaq/`
+   holds only `README.md`. A different PR/FAQ, for the skills-sellable
+   initiative, is drafted in my own open PR #332 and waits on your merge
+   same as the rest of that PR; it does not substitute for the original
+   launch document #289 was supposed to carry.
+
+**Merged this run (Tier B, `docs/standards/pm.md` §10), two.** An
+engineer PR diagnosing the deploy drift above and adding a monitoring
+tool for it, and a writer PR fixing two miscounting voice gates. Both
+needed the same kind of conflict resolved first: an append-only collision
+in `docs/agents/incidents.md` (and `docs/ideas.md` for the second one)
+against a `main` that had moved since each branch was cut. Kept both
+sides in each case, oldest first. Full account, including which commits,
+in `docs/sprints/dispatch-queue.md`.
+
+**My own open PRs, waiting on you, not touched this run.** Three:
+one answering a handoff about the skills-sellable regroom, one checking
+a chair-merged workflow PR against the merge rule, one confirming a
+chair-merged site PR against the merge rule. The standing rule is that a
+PM's own Tier B PR waits for another merger, so none of the three moved.
+
+**Failed runs: none in the last 24 hours.** Fleet green across every
+workflow.
+
+**Cap ratio.** The two most recent engineer and writer runs: writer
+152/225 turns (67.6%), engineer 114/200 (57%). Both under the 70% line,
+nothing to name beyond that.
+
+**Queue gauge, four numbers.** `main` is current as of this pass's own
+merge, checks green. 12 open pull requests, 1 opened since the last
+merge. 7-day conversion 36 merged over 73 opened (0.49). Deepest open
+chain right now: 1 — nothing is currently stacked.
+
+**Dispatch: nothing fired, PM_DISPATCH_ENABLED not present in this run's
+environment.** Posted a handoff instead (board, not a workflow dispatch)
+to the engineer seat naming its two stalled press-reliability drafts
+(#312, still conflicting after 34 hours; #315, still just a run note after
+34 hours) and the Monday deadline, asking it to finish or mark ready.
+Not a redundant dispatch: the engineer already carries those two PRs plus
+a fresh one opened minutes ago on the skill-marketplace item, so this is
+information for a seat already working, not a new assignment.
+
 ## Updated 2026-10-17, ~14:20 UTC (standup): one docs-only Tier B merge, the deploy drift the chair just cleared came right back, engineer is mid-run on its own stalled stack
 
 **Scope note.** Standup shape (charter §0/§4) — today is Saturday, the
@@ -2232,4 +2299,3 @@ and the command above, and it emails you.
 One optional secret, no action needed for it to work: `PRESS_ALERT_TO`.
 Unset, press alarms go to the Gmail address the `Gmail` secret already
 holds, which is yours. Set it if you would rather they went elsewhere.
-
