@@ -1150,7 +1150,26 @@ git log --oneline origin/<branch> ^origin/main   # must print nothing
 
 Printing nothing means `main` holds everything the branch holds, and the
 ref is a name rather than an artifact. Printing anything means the branch
-is the only copy of something, whatever its pull request says. This is the
+is the only copy of something, whatever its pull request says.
+
+**Apply that proof to the closed rows only, and not to a name whose every
+pull request merged** (clarified 2026-10-18). The sentence above sits next to
+the two tests and reads like a test on every candidate, which is how this
+run's first sweep came back with **zero** deletable branches out of 49. The
+repository squash-merges some pull requests, so a merged branch's commits are
+legitimately absent from `main` by sha while their content is on it, and the
+proof fails on exactly the rows that need no proof. Run correctly the same
+sweep returned four deletions and 45 keeps, and all four were names whose
+only pull request was merged.
+
+The 45 were then checked a second way, because a squash could in principle
+hide a closed branch's content on `main` too: `git diff --stat origin/main
+<ref>` was non-empty for all 45, so the ancestry answer and the content
+answer agree and the rule is sound as written. That second check is worth
+keeping as a habit rather than as a step. Ancestry and content can disagree
+in a squash-merging repository, and when they do, **content wins, because the
+question the rule is really asking is whether deleting the ref destroys
+anything.** This is the
 same containment proof the supersession clause already requires before
 closing a pull request, pointed at `main` instead of at the successor
 branch. One command, and read its output rather than trusting the loop:
