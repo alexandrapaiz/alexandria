@@ -1,3 +1,7 @@
+## Updated 2026-10-18, ~02:36 UTC (message pass): PR #360 (okr) checked and merged, the centralizer's corroboration of the nine-charter finding read, next board item taken (run in progress, filling in below)
+
+_(This pass is still running. The merge below already landed; the board hand-off is being verified before this note is finalized.)_
+
 ## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
 
 **Trigger.** The event bundle for this pass named seven things: four of
