@@ -1,3 +1,64 @@
+## Updated 2026-10-18, ~12:50 UTC (message pass): PR #381 checked against the merge rule, Tier C, handed to you rather than to ExO
+
+**Trigger.** ExO's message naming its own PR, #381
+(`alexandria-exo/2026-10-18-message`, "the clock left GitHub, eight
+things changed with it, and one of them corrupted this seat's own
+register"): review it against the merge rule, merge it, or say on the
+board what it still needs and hand that to its seat.
+
+**Other open PM PRs right now, named per charter "Act."** Thirteen are
+open from today's earlier passes alone (`#362` through `#384`), every
+one of them appending its own dated section at the top of this same
+file. That is not a defect in any of them: the expected merge order is
+whichever lands first, and every later one is a one-block rebase at the
+top of the file, the same situation PR #335 named last night for `#332`
+and `#334`. Not re-described per PR here, because this pass's own
+question is narrower than the reconciliation sweep.
+
+**PR #381 checked against the merge rule (`docs/standards/pm.md` §10,
+Tier C) — this is not mine to merge, and the reason is categorical, not
+a defect in the PR.** The diff touches twelve files under `prompts/`
+(`engineer`, `exo`, `finance`, `frontend`, `market`, `okr`, `pm`,
+`research`, `sales`, `security`, `skill`, `writer`), and §10 lists
+"Charters (`prompts/`)" first in Tier C's own enumeration, ahead of and
+independent of every Tier B criterion. Checked the rest anyway, because
+a PR that also failed on cleanliness would need two separate notes back
+to ExO: not a draft (`isDraft: false`), no `hold` label, no review, zero
+comments, `mergeable: MERGEABLE`, `mergeStateStatus: CLEAN`. No checks
+ran, and that is correct rather than pending: `checks.yml`'s `paths:`
+list is `prompts/digest.md`, `prompts/daily.md`, `pipeline/**`, named
+test files, `skills/**`, and a short additional list, none of which this
+diff touches. So on every criterion that is mine to apply, this PR is
+clean. It still waits on you, because the one criterion that is not
+mine to apply is the one Tier C exists for.
+
+**What I read in the charter edits, since they are the twelve-file
+part.** `prompts/pm-agent.md`'s own hunk adds the 24-hour cap-ratio
+floor and the `$PM_DISPATCH_ENABLED`-is-unreadable-by-`gh`-fix ExO
+shipped 2026-10-11 (both already live in the copy this pass is running
+from, so no surprise there), plus three new entries dated today: the
+unshallow-before-merge reflex, a conflict-marker sweep as step 0 of the
+ship check, and a per-run scratch-file warning for the shared `/tmp`.
+All three cite a named incident, all three are additive, and none
+touches this charter's dispatch ceilings, its boundaries section, or
+anything else Tier C also lists by name (`company.yaml`, spend, secrets,
+tier definitions themselves). I did not verify the other eleven prompt
+files line by line; that is the owner-merge gate's job, not a
+substitute check for it to pass before she sees it.
+
+**One real gap, named so it travels with the PR rather than waiting for
+you to find it.** The PR's own "Housekeeping" section claims the
+conflict-marker sweep it just added to this charter returns zero hits
+across the branch. Confirmed independently on this branch: `grep -rn
+'^<<<<<<< \|^=======$\|^>>>>>>> ' docs/ prompts/ README.md` on
+`alexandria-exo/2026-10-18-message` prints nothing. No gap there.
+
+**Nothing handed back to ExO.** The instruction offered two branches,
+merge it or hand what it still needs to its seat. Nothing here is ExO's
+to fix: the block is the tier, not the content, and the tier does not
+clear by editing the PR. Handed to you instead, which is what Tier C
+means.
+
 ## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
 
 **Trigger.** The event bundle for this pass named seven things: four of
