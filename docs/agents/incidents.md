@@ -15001,3 +15001,81 @@ a blocker on the same footing as the missing value statement. The schema's own
 rule 4 makes that measurable, because pairs are derived per slot and the count
 is one command. Filed in `docs/ideas.md` for the ExO seat, which owns both the
 schema and the charters.
+
+## INC-2026-10-18-two-registers-held-both-halves-of-a-false-claim-one-day-apart — the pricing page's free column, false for thirty days, and the money page has one row in the claims register (2026-10-18, writer seat, fourth run)
+
+**What happened.** `site/app/pricing/page.jsx` sells the free tier on three
+bullets, and the third is "The complete archive". It was written on 2026-09-18
+in commit `ac9698f`. On 2026-09-19 the owner ordered 2026-W37 retired from the
+public site so that Monday's issue would be the pilot the public read first,
+and `site/lib/content.js:23` implements that order by withholding the week from
+the listing and from its own route. From that day the archive was deliberately
+incomplete and the bullet was false. It is still live, thirty days later, and
+the two missing weekly sends the board card was filed about are the smaller
+half of the problem rather than its cause.
+
+**Why this is a repeat, and of what.** Three ways, and the third is the one
+that is new enough to be worth the entry.
+
+It is ban list 61 for the third time. A reader-facing string kept in code is
+exempt from every gate this org has, because the gates run on what a model
+writes. The masthead was the first instance, repaired 2026-09-26 after running
+above every issue ever sent. The catalogue's row text was the second, found
+earlier today and recorded as ban list 125. This is the third, on the page
+where a visitor is asked to pay. Entry 61's own fix is that an editorial run
+reads the reader-facing constants in code once per run, which is a seat reading
+whatever a seat happens to open, so three surfaces have now been found by three
+runs that opened three different files for three unrelated reasons.
+
+It is `INC-2026-10-18-registered-claims-ship-unhedged-because-no-gate-reads-the-register`
+on a second surface, six hours later. That entry was filed this morning about
+`/llms.txt` and its diagnosis holds here without a word changed: the writer
+charter's claims gate is a gate on new candidates leaving this seat's hands,
+and nothing in the org re-checks a claim that was already live when the register
+was written.
+
+**And the part that is new.** Both halves of this contradiction were recorded
+correctly, in the right register, by the right seat, one day apart, and no gate
+in the org reads two registers at once. `docs/voice/taste.md` holds the ruling
+of 2026-09-19 that retired the pilot week. `site/lib/content.js` holds the code
+that obeys it, with her order named in the comment. The sentence that the
+ruling falsified sits in a third file. Every one of those three artifacts is
+accurate about itself. The falsehood exists only in the join, so no amount of
+care inside any one register could have found it, and every gate this
+organization owns is scoped to one register.
+
+That is the generalisable shape and it is worth stating as such: **recording is
+not enforcing was about one register's second gate, and this is the next layer
+out, where two registers each have both gates and the contradiction lives
+between them.** `docs/standards/lessons.md` L-A24 is the closest company law,
+that where a scheduler and an artifact disagree the artifact wins, and its
+consequence applies exactly: only an outside observer reading the artifact
+catches it, because each register reports its own contents.
+
+**The aggravating detail.** `docs/agents/quality-claims.md` has eleven rows.
+Ten are about the skills, the corpus and the graph. The pricing page has one,
+for a claim it shares with two other surfaces. Nothing in the register covers
+the three bullets that sell the free tier, and nothing covers the two
+paragraphs that tell a reader how their card will be treated, one of which
+promises a monthly renewal reminder that `grep -rn "reminder"` over `pipeline/`,
+`site/` and `tools/` finds in exactly one place, which is that sentence. The
+register's own closing analysis says every claim that holds is about the corpus
+and every claim that fails is about the skills. The distribution has a second
+axis nobody had looked along: the register is thorough about the half of the
+product that is instrumented and nearly silent about the page that takes the
+money.
+
+**What was done here.** The four candidate repairs are drafted in
+`docs/voice/pricing-claims-2026-10-18.md` for the owner to rule on and the
+frontend seat to set, since `site/` is not this seat's surface. The class is
+named as ban list 126, with a sweep showing the other four instances of the
+same vocabulary on the site are all correctly scoped and all four are lines the
+owner ruled on. The gate is filed in `docs/ideas.md` the same day, because the
+check that would close this reads the delivery receipt and the published
+listing and compares them to the strings in `site/`, and it is a command rather
+than a register line for the reason this entry exists: there was never a day
+when reading the page would have caught it.
+
+**What is not fixed.** Widening the claims register is the ExO seat's call and
+its file. Setting the words is the frontend seat's. The two missing sends are
+engineer card `92ab912d`.
