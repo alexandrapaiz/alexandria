@@ -501,16 +501,153 @@ learn from the other until a human carried the numbers.
 is doing the thing the org most needed, which is running seats more than
 once a day. The gap is the receipt and not the mechanism.
 
+## 2026-10-18 — Decision 056 moved the seats to the host, and six pieces of hardening stayed behind in GitHub
+
+**Status: undelivered.**
+
+**For:** whoever owns HQ decision 056, and the epitome seat for the three
+runtime items.
+
+**The short version.** The cutover is right and this is not an argument
+against it. What happened alongside it is that every seat workflow in
+alexandria was carrying six pieces of hardening, each one the paid fix for a
+registered incident, and the host inherited none of the four we were able to
+verify. Four asks follow, in order of what they cost us today.
+
+**The evidence that the cutover is complete.** `grep -l 'cron:'
+.github/workflows/*.yml` returns nothing. Four `*-agent` runs exist in
+alexandria's Actions since 2026-10-17 and the last is 17:59:54Z, which is a
+job GitHub had already queued. Since then zero, against nine writer pull
+requests, eleven PM pull requests and several engineer and frontend ones on
+2026-10-18 alone.
+
+**Ask 1, and it has already corrupted an artifact. The host clone is
+shallow.** `git rev-parse --is-shallow-repository` returns `true` in a host
+sandbox. `cli/src/lib/runner.js` in `alexandrapaiz/epitome` opens with a
+comment describing this exact failure as already fixed: `--depth 1` implies
+`--single-branch`, the default branch is grafted with no parents, and "a
+three-way merge between two close branches read as unrelated histories",
+which the comment itself calls the dangerous shape. The host is running a
+build that predates that fix, which matches the epitome seat's own
+2026-10-18 report that the host has been four weeks behind main and
+hand-patched.
+
+What it cost: alexandria's ExO run of 2026-10-17 merged its predecessor's
+branch in that state and committed 2,456 lines of conflict markers into
+`docs/agents/incidents.md`, and the pull request sat open that way for 21
+hours. Registered as
+`INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register`.
+The engineer seat recorded a second instance the same day, where the
+charter's machinery-diff gate read clean because the clone could not see the
+commits. **The ask is to get the host onto a build that carries the
+full-clone fix.** We have shipped the charter-side reflex for all twelve
+seats in the meantime, which is `git fetch --unshallow` before any
+comparison, but that is a seat remembering and not a guarantee.
+
+**Ask 2. There is no no-ship check on the host.** The workflows carried a
+tripwire that fails a run which produced no commit, no branch and no pull
+request. It is incident 3's fix, from alexandria's founding night, where two
+runs reported success and lost every line at teardown, and it has fired
+twice in the last thirteen days: pm-agent 37261823136 on 2026-10-05 and
+pm-agent 38592352927 on 2026-10-14. `cli/src/lib/runner.js` (725 lines),
+`cli/src/lib/engine.js` (211) and `cli/src/run.js` (509) were read in full
+and contain no `rev-list`, no `--contains`, no `porcelain`, no `pr list` and
+no reference to pushing. **The ask is the check inside the runner**, because
+a seat cannot audit whether it shipped after it has stopped running. It
+belongs where the process exits, not in a charter.
+
+**Ask 3. The run transcript is unreachable, so turn caps cannot be
+measured.** `claude-execution-output.json` was a 90-day Actions artifact and
+every command in alexandria's `docs/agents/turn-caps.md` reads `num_turns`
+and the error subtype out of it. The host writes `.epito/logs/<agent>/<runId>.log`
+to its own disk, which no seat in the product repository can read. That page
+is frozen at 2026-10-11 as a result. **The ask is any reachable copy**, an
+artifact, an API field on the board's run record, or a line in the Slack run
+report. The board already receives a run record per run, so a `num_turns`
+field on it would close this at the lowest cost.
+
+**Ask 4, and it is one line in one file.** The writer seat's manifest says
+`max_turns = 150`. Its workflow says 225, raised on 2026-10-12 after two
+exhaustions six days apart, both at `num_turns: 151`, the second losing
+commits it had never pushed. Eleven of the twelve alexandria manifests agree
+with their workflow and this one does not, because the writer is the only
+seat whose cap changed after the manifests were generated. The writer ran
+nine sessions on 2026-10-18.
+
+```toml
+# runtime/agents/alexandria/writer/agent.toml
+-max_turns = 150
++max_turns = 225
+```
+
+**Two smaller corrections while the file is open.** Every alexandria
+manifest's `description` still ends "Actions cron live" or "Actions cron
+off", which describes a mechanism retired the same day the `cron` line was
+added directly below it. And `runtime/README.md` still publishes the
+pre-056 interim rule in full: "the manifests carry **no cron**. GitHub
+Actions remains the async heartbeat", "their Actions crons remain the
+heartbeat", and "The cutover (crons move to the manifests, Actions crons go
+quiet) is an owner decision recorded as an ADR when it comes." The cutover
+came on 2026-10-17 and that README is the document a reader would check to
+find out. It also still says "`max_turns` is the cap from evidence, as in
+the Actions workflow", which ask 4 is the counter-example to.
+
+---
+
+## 2026-10-18 — No event the seats subscribe to can carry a direct push to main, which is how the decision above arrived
+
+**Status: undelivered.**
+
+**For:** whoever owns the event bus and the manifest schema.
+
+**The short version.** One added subscription would close alexandria's
+oldest structural blind spot. We are asking for `push.main`.
+
+**The evidence.** All twelve alexandria manifests subscribe to
+`message.posted`, `item.moved`, `pr.merged` and `check.failed`. That list is
+good and it has already closed a cadence gap that had been open since
+2026-09-19: "runs that fail get diagnosed" was assigned to a weekly seat and
+is now effectively continuous through `check.failed`. We want to say that
+first, because it is the subscription list working.
+
+**What none of the four routes is a commit pushed straight to `main`.**
+`pr.merged` does not fire for it. And a direct push by the owner is not an
+edge case in this organization, it is how the most consequential changes
+arrive. Decision 056 itself was `ab4e5bb1`, pushed directly, and its entire
+record in alexandria is one comment line repeated in ten workflow files. The
+seat that owns reading parent decisions against local law found it 25 hours
+later on its weekly pass, and no event would ever have delivered it. The same
+shape cost alexandria six days of a red cost guard in
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it`, where two direct
+pushes left guards asserting replaced behaviour.
+
+alexandria's ExO charter has stated the general rule since 2026-09-30: **a
+gate scoped to pull requests is not a gate on a repository whose owner
+commits directly, and no seat can notice it from the inside, because seats
+only ever open pull requests.** That has now survived the move to the host
+unchanged.
+
+**The ask.** A `push.main` event on the bus, and `push.main` added to
+`[trigger].subscriptions` for the alexandria ExO and engineer seats, which
+are the two that hold the machinery-diff duty. A payload carrying the sha
+and the changed paths is enough. Those two seats already know what to do
+with it: the engineer runs the machinery diff daily as step 0 and the ExO
+runs it as §2.
+
+---
+
 ## Delivery log
 
 | Entry | Written | Delivered | By |
 | --- | --- | --- | --- |
-| Kimi routing failed alexandria's PM seat twice | 2026-09-24 | not yet, 17 days | |
-| An HQ incident number reached here as a commit subject | 2026-09-27 | not yet, 14 days | |
-| L-X6's missing half: the capability test | 2026-09-27 | not yet, 14 days | |
-| Decision 041 is urgent, with the supersession numbers | 2026-09-30, updated 2026-10-04 | not yet, 11 days | |
-| Amendments to L-X7 (four costs of queue depth) and L-X3 (the 70% ratio trigger) | 2026-10-04 | not yet, 7 days | |
-| The event bus reports no run outcome, so a third of our runs cannot be audited | 2026-10-11 | not yet, 0 days | |
+| Kimi routing failed alexandria's PM seat twice | 2026-09-24 | not yet, 24 days | |
+| An HQ incident number reached here as a commit subject | 2026-09-27 | not yet, 21 days | |
+| L-X6's missing half: the capability test | 2026-09-27 | not yet, 21 days | |
+| Decision 041 is urgent, with the supersession numbers | 2026-09-30, updated 2026-10-04 | not yet, 18 days | |
+| Amendments to L-X7 (four costs of queue depth) and L-X3 (the 70% ratio trigger) | 2026-10-04 | not yet, 14 days | |
+| The event bus reports no run outcome, so a third of our runs cannot be audited | 2026-10-11 | not yet, 7 days | |
+| Decision 056 left six pieces of hardening in GitHub, with four asks | 2026-10-18 | not yet, 0 days | |
+| No subscribed event carries a direct push to main | 2026-10-18 | not yet, 0 days | |
 
 **Nothing on this page has ever been delivered.** Five entries as of
 2026-10-11, ages 17, 14, 14, 11, 7 and 0 days. That is the finding the
@@ -518,6 +655,37 @@ table was built to produce and no run had read it as one. The ExO charter
 §3f now carries every undelivered entry into that seat's pull request
 description, so the age is in front of the owner weekly instead of in a
 file she has no reason to open.
+
+**Second reading, 2026-10-18, and the 2026-10-11 run left a condition that
+has now fired.** It said: "If the next run finds the same six entries with
+seven more days on each, the conclusion is that a pull request description is
+also not a channel, and the honest next step is to say so and ask her for one
+rather than to invent a third surface." This run found exactly that. The same
+six entries, seven more days on each, nothing delivered, and two more added.
+
+**So the conclusion is owed, and it comes with one confound that has to be
+stated first.** The carry rule has shipped its heading twice, in PR #272 and
+PR #331, and **both of those pull requests are still open.** The heading has
+therefore never appeared in a merged pull request. That is not a defect in
+the rule and it is not evidence against it. It is the merge queue, and it is
+the same fact as this seat being third in a chain today.
+
+With that said, the honest reading of the two data points is that a pull
+request description is a place the ages are *visible* and not a place they are
+*acted on*, because reading it costs the owner nothing and acting on it costs
+her a trip to another repository. Eight entries and 125 cumulative days of
+age is not a backlog of information. It is a backlog of errands.
+
+**So the ask, which is the third idea in the 2026-10-18 pull request rather
+than a new mechanism here.** This seat can read `alexandra-systems` with the
+token it already has, which was verified on 2026-10-18 by reading all twelve
+host manifests. If it could also open an issue there, every entry on this
+page would leave on its own and this file would become what it was always
+described as, which is an outbox rather than a drawer. That is a grant of
+authority across a repository boundary and it is hers alone to make. **No
+third surface is being invented here**, per the condition the last run set.
+The two options are a credential or a human carrier, and the page keeps
+saying so until she picks one.
 
 **First reading of the table since the carry rule shipped, 2026-10-11.**
 The carry rule was written on 2026-10-04 and merged, so this is the first

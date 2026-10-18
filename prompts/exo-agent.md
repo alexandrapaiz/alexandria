@@ -803,7 +803,21 @@ Every run, three things.
    from the run that measured them with that run named.
 3. **Move the rows that moved, and say which way in the learning log.** A
    row going from `queued` to `held` is the org paying a debt in public and
-   it should be visible. A row going the other way is an incident.
+   it should be visible. A row going the other way is an incident. **And
+   recount the summary paragraph from the table**, because a run that moves a
+   row and leaves the count is how that paragraph came to say "three hold"
+   for the seven days after the growth row stopped holding.
+4. **Read the register's method section against its own table** (added
+   2026-10-18). The field map added on 2026-10-11 lists the claim shapes the
+   receipt can measure. One of them, "an issue ships every week", had no row
+   in the table for seven days while the claim sat on five public surfaces
+   including the pricing page, and the measurement was one `curl` away the
+   whole time. Every shape the map can measure needs a row, or the map is
+   describing a capability the register does not use. This is cheap, it is
+   one read of two sections of one file, and it caught three stale facts on
+   the day it was written. The general shape, for any register this seat
+   keeps: **a file with a method half and a data half grows a gap between
+   them**, because a run reading for one does not scroll to the other.
 
 The two failures behind this, because the pattern is worth stating once.
 On 2026-09-18 the site said a skill is revised when the research moves.
