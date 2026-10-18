@@ -78,15 +78,15 @@ of 2026-09-29.
 **One candidate.**
 
 > Most of building with models is knowing which techniques actually
-> hold, and the measurements that settle that arrive faster than anyone
-> can read them. Each skill here covers one job an agent does, written
-> from the papers the library read in full, and each one is built around
-> the places where the measurement points somewhere other than the
-> choice a good engineer makes unaided. Every section names the findings
-> and the papers behind it, so your agent works from a number you can
-> check instead of from the consensus it was trained on. The library
-> grows every day, and every skill carries its own dated record of what
-> it used to say and which paper changed it.
+> hold, and the measurements that settle those questions arrive faster
+> than anyone can read them. Each skill here covers one job an agent
+> does, written from papers the library read in full, and built around
+> the places where the evidence points somewhere other than the choice
+> a good engineer makes unaided. Every section names the findings and
+> the papers behind it, so your agent works from a number you can check
+> instead of from the consensus it was trained on. The library grows
+> every day, and every skill carries its own dated record of what it
+> used to say and which paper changed it.
 
 The approved agent line stays under it, verbatim, because an approved
 line outranks any rule about lines.
@@ -124,7 +124,7 @@ around them are this seat's.
 > /plugin install alexandria-skills@alexandria
 > ```
 >
-> Nothing runs on your machine when they install. The nine descriptions
+> The plugin is nine files and nothing that runs. Their descriptions
 > stand in the session at about 1,900 tokens, and a skill's body is read
 > only when the work in front of your agent matches what that skill is
 > for.
@@ -198,13 +198,13 @@ other in shape, because nine rows in one grammar is the symmetry ban
 list entry 3 names.
 
 - **agent-containment** — Most teams keep an agent in bounds with a deny
-  list of forbidden commands and paths, and the measurement says that
-  list blocks almost nothing, so the useful question becomes where the
-  boundary gets enforced instead.
+  list of forbidden commands and paths, and when that control was
+  measured against no control at all the difference was almost nothing,
+  so the question becomes where the boundary gets enforced instead.
 - **agent-memory-selection** — An assistant that remembers across
   sessions has to decide what to write down and what to fetch back
-  later, and the evidence is clear about which of those two deserves the
-  expensive model call.
+  later, and the cheaper of those two choices measured within three
+  points of the expensive one.
 - **agent-security-measurement** — A refusal rate measures what a model
   said and not what the account went on to do, which is why most
   reported agent-safety numbers survive an adversary badly.
@@ -214,19 +214,20 @@ list entry 3 names.
   would expect.
 - **evaluation-integrity** — Once the rubric, the benchmark or the judge
   is itself written by a model, a high score can come from a broken
-  instrument rather than from a good system, and a broken instrument
-  never throws an error to say so.
+  instrument rather than from a good system, and the instrument never
+  throws an error to say so.
 - **harness-engineering** — Fine-tuning a smaller model on a stronger
   one's transcripts is the move most teams reach for, and it lost ground
   on every task in the study that tried it, which changes where the next
   week of work should go.
-- **recursive-harness-self-improvement** — An agent that rewrites the
-  scaffolding around itself, meaning its own prompts and tools, and
-  keeps whatever scores better, needs every safeguard a human reviewer
-  would have supplied built into the loop instead.
+- **recursive-harness-self-improvement** — An agent that rewrites its own
+  prompts and tools unattended and keeps whatever scores better has to
+  carry every safeguard a human reviewer would otherwise have supplied,
+  and the first of them is knowing what may not be touched.
 - **self-improving-post-training-loops** — When a model's own output
-  becomes the supervision for its next training run, particular things
-  break that an ordinary fine-tune never has to worry about.
+  becomes the supervision for its next training run, the questions that
+  decide the outcome are whether that teacher can be trusted and how
+  often it has to be rebuilt.
 - **skill-library-engineering** — A skill file written carefully by hand
   from the task description left agents slightly worse off than loading
   nothing at all, so what a skill is built from matters more than how
