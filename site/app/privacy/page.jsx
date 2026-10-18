@@ -7,7 +7,7 @@ export default function Privacy() {
       <h1 className="page-title">What we hold, and what we do not.</h1>
       <div className="prose">
         <p>
-          <b>Last updated 19 September 2026.</b> This policy explains what
+          <b>Last updated 18 October 2026.</b> This policy explains what
           personal data the library collects, why, and how you get it back or
           get rid of it. The library is run by Alexandra Paiz Delgado in
           Guatemala, who is the data controller for everything described here.
@@ -20,11 +20,14 @@ export default function Privacy() {
 
         <h2>The short version</h2>
         <p>
-          There is no analytics, no tracking pixel, no advertising network,
-          and no third-party script watching you read. Nothing is sold or
-          rented to anyone, ever. The only personal data the library holds is
-          what you typed in yourself, which is your email address and
-          optionally your name.
+          There is no tracking pixel, no advertising network, and no
+          third-party script watching you read. The library counts how many
+          people open each page, so it can tell which writing is worth doing
+          more of, and a count is all it is. No cookie is set, your address is
+          not stored, your browser is not fingerprinted, and nothing links one
+          page you opened to another. Nothing is sold or rented to anyone,
+          ever. The only personal data the library holds is what you typed in
+          yourself, which is your email address and optionally your name.
         </p>
 
         <h2>What is collected</h2>
@@ -48,6 +51,15 @@ export default function Privacy() {
           collects your payment and billing details under its own privacy
           policy. The library never receives your card number and never stores
           payment details.
+        </p>
+        <p>
+          <b>Page counts.</b> When a page is opened, the library writes one
+          row recording which page it was and when. That row holds nothing
+          else. There is no identifier in it, so there is no way to tell
+          whether two rows are the same person, and the library could not
+          single you out from them if it tried. The purpose is to know which
+          skills and which writing people actually read, which is the only
+          thing it is used for.
         </p>
         <p>
           <b>Server logs.</b> Hosting produces ordinary request logs that may
