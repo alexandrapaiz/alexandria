@@ -67,7 +67,7 @@ this state and the row it was found in is below.
 | The repo describes the system it is | exo (§5b) | weekly | weekly Sun | assigned |
 | Runs that fail get diagnosed | exo (§2b) | daily, 25 runs on 2026-09-19 | weekly Sun | **cadence gap** |
 | Runs that fail get reported to the owner | pm (§1f) | daily | **daily 6:35 ET, applied 2026-09-24** | **cadence gap CLOSED 2026-09-27**, see below |
-| The org decides what to do next between Mondays | pm (§5, `PM_DISPATCH_ENABLED` now `true`) | hourly | daily | **assigned and unexercised**: 12 of 12 dispatches since 2026-09-24 were the owner's, see below |
+| The org decides what to do next between Mondays | pm (§5, `PM_DISPATCH_ENABLED` now `true`) | hourly | daily | **route gap, found 2026-10-11**: still unexercised, and 16 of 16 dispatches since 2026-09-24 were the owner's. The seat read its switch with a command its token cannot run, see below |
 | A runtime change is smoke-tested before the next cron fires | engineer (§0, added 2026-09-20), exo (§2) as backstop | twice in the week of 2026-09-14 | daily | assigned 2026-09-20, **and it was true only for `.github/` until 2026-09-24**, see below |
 | Reader-facing site copy gets drafted | writer (§"Site copy is yours to draft", added 2026-09-21) | per copy session, 8 rounds in one day on 2026-09-20 | daily 16:00 UTC | assigned 2026-09-21. **Was worse than unowned from 2026-09-19 to 2026-09-21**, see below |
 | Approved copy reaches the live site | frontend (sets only, §added 2026-09-21) | per approval | weekly Wed | assigned, lag accepted, see below |
@@ -78,6 +78,7 @@ this state and the row it was found in is below.
 | The daily pipeline's providers stay available | **none** | continuous, three failures in five days | n/a | **unowned**, see below |
 | **A skill's measured effect** | skill (the bar section, added 2026-09-30) | per skill shipped or revised, 6 in 18 days | weekly Tue | **capability gap, found 2026-09-30**: the seat has no `GROQ_API_KEY` and the benchmark subject has no provider route at all, see below |
 | **The organization's finished work reaches `main`** | pm (§4 queue gauge, added 2026-10-04) | continuous, 49 pull requests in 112 hours | daily standup | **was unowned until 2026-10-04**, assigned here, see below |
+| **A run the event bus started is known to have succeeded or failed** | **none** | continuous, 41 pull requests and 51 commits in the week to 2026-10-11 | n/a | **unowned, found 2026-10-11**: no charter in twelve contains the words "event bus" or `client_payload`, see below |
 
 ## The 2026-09-21 rows, and the state that is worse than unowned
 
@@ -742,3 +743,97 @@ gate. HQ decision 041 gives the PM seat Tier B merges and it reached this
 repository as PR #147 on 2026-09-30, where it remains open. Until it
 merges, this row buys visibility and not throughput, and saying so is part
 of the row rather than a caveat on it.
+
+## The 2026-10-11 rows, and a fourth shape this register did not have
+
+### Route gap: a duty whose precondition is readable and whose route is not
+
+The register already has four states for a duty that looks owned and is
+not. Wording, where a charter names it in words no run can act on.
+Cadence, where the naming seat is asleep when the trigger arrives.
+Capability, where the seat cannot reach the evidence. Existence, where the
+mechanism the rule depends on was never built. Each of those is a fact
+about the seat or the world.
+
+This one is a fact about the sentence. **The duty is named, the cron fires,
+the mechanism exists, the seat holds the input, and the charter does not
+say which of the seat's inputs carries it.** So the seat picks a route, and
+if the route it picks is refused, a correctly written fail-safe converts
+the refusal into a negative answer.
+
+"The org decides what to do next between Mondays" is the instance. PM
+charter §5 condition 1 reads "the repository variable
+`PM_DISPATCH_ENABLED` is exactly `true`" and names no way to read it. On
+2026-10-09 the PM's fourth pass ran `gh variable list`, which returns
+`HTTP 403: Resource not accessible by integration` for the runner's token
+under every `permissions:` setting, and reported the switch unconfirmed.
+Reading an unreadable condition as unmet is right. The conclusion was still
+wrong: `.github/workflows/agent-pm.yml` exports the variable into the job's
+`env` on line 44 and interpolates its value verbatim into the seat's own
+prompt on lines 100 and 129. The answer was in the seat's hand twice before
+it ran a command.
+
+**Why this is worth a state of its own rather than a note.** It is
+invisible to all four existing tests. A wording audit passes, because the
+sentence is specific and testable. A cadence audit passes. A capability
+audit passes, and this is the one that matters: the input is present in the
+runtime, so the `grep -oE 'secrets\.[A-Z_]+'` check in ExO §3b returns
+exactly what the duty needs. An existence audit passes. The only way to see
+it is to ask the fifth question, which is **how would the seat come to know
+this, in one command it can actually run.**
+
+Fixed in `prompts/pm-agent.md` §5 the same run: the condition now names
+`$PM_DISPATCH_ENABLED` and the prompt line, and forbids `gh variable list`
+as the route. The fail-safe is unchanged and now has one place to look, so
+"unconfirmed" is no longer a state the condition can be in.
+
+**The general form, for every charter this seat edits from here.** When a
+clause makes a seat's behaviour depend on a fact, write the command that
+reads the fact in the clause. A precondition without a route is a
+precondition that will be evaluated by guesswork, and the next run of the
+same seat may guess differently.
+
+### Unowned: the outcome of a run the event bus started
+
+Found by §3b's prescribed method, and it is the cheapest row the register
+has ever gained. Five greps across twelve charters:
+
+```
+grep -ril "event bus"          prompts/*.md   # nothing
+grep -ril "client_payload"     prompts/*.md   # nothing
+grep -ril "message pass"       prompts/*.md   # nothing
+grep -ril "six-hour"           prompts/*.md   # nothing
+grep -ril "repository_dispatch" prompts/*.md  # one hit
+```
+
+The single hit is in `prompts/pm-agent.md` at line 398, and the polarity
+check that §3b requires says it does not count: the sentence is about
+whether `GITHUB_TOKEN` can start a run, not about the event bus as a source
+of runs. So the vocabulary is absent.
+
+What depends on it. In the week to 2026-10-11 the event bus started seat
+sessions that produced 41 pull requests and 51 commits, roughly a third of
+the org's output, under committer identities of the form
+`alexandria-<seat>`. Those sessions run outside this repository's GitHub
+Actions and leave no run record in it. `alexandria-pm/2026-10-11-message`
+(#269) was opened at 06:24:52 and `-message-sixhour` (#271) at 18:26:20,
+and no Actions run was live at either moment; the nearest ones had ended at
+02:12:02 and 16:48:38. Across the window, 24 PM pull requests arrived
+against 12 `pm-agent` runs.
+
+**The shape of the gap, stated precisely, because half of it is closable
+here and half is not.** A bus-started run that gets as far as its
+ship-first commit is observable from the committer identity and from its
+pull request, and ExO §2b now reads both. A bus-started run that dies
+before that commit is observable from nothing: not from Actions, which
+never saw it, and not from this repository, which it never wrote to. There
+is no seat that could notice it and no evidence it could notice.
+
+So this row is deliberately left **unowned** rather than assigned to the
+PM, which is the seat that would otherwise take it. Assigning it would buy
+the appearance of coverage over the observable half and would hide the
+half that matters, which is exactly the substitution §3b's capability
+clause was written about. Closing it needs the bus to report its own run
+outcomes somewhere this repository can read, and the bus is HQ's
+infrastructure. The ask is in `docs/agents/hq-relay.md` and the assignment
+is the owner's.
