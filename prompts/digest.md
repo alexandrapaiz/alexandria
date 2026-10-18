@@ -1534,26 +1534,19 @@ the rule's question to the thing in front of you.
   already used in this issue, and fold the grade into a sentence that is doing
   other work. "Nobody outside the group has run it again" grades, and it grades
   without handing you a shape, which is the only kind of specimen this rule is
-  allowed to carry. A second one stood here until today, reading two units of
-  scale and then an assessment, and the gate below bans exactly that frame.
-  The print of 2026-09-30 carried it four times out of four and two of those
-  opened on its first two words. So the frame is not demonstrated here at all:
-  the gate names it as the thing to avoid and this rule names no replacement,
-  because a replacement offered at the position where you write is the next
-  frame. The counting of frames happens at the gate.
+  allowed to carry. No replacement frame is named here, because a replacement
+  offered at the position where you write is the next frame. The counting of
+  frames happens at the gate.
   **The rule above is about the grade's WORDS and it lost to the grade's
-  POSITION, so the position is now fixed.** The print of 2026-10-05 ended seven
-  items out of seven on a standalone grade, and five of those seven were a noun
-  phrase with no verb in it, in the shape "the authors' own experiments on X; no
-  replication yet". The rule above forbids all of that in prose and could not
-  reach it, because it tells you what the grade must not look like and never
-  says where it goes, so the grade kept the one position nothing was defending,
-  which is last.
+  POSITION, so the position is now fixed.** A rule that says what a grade must
+  not look like and never says where it goes leaves the grade the one position
+  nothing is defending, which is last, and standalone grades have closed seven
+  items out of seven, five of them noun phrases with no verb in them.
   The last sentence of an item is not available. It belongs to the line of plain
   meaning the shape gate asks for, the one that says what the result makes true
   for a builder with no number in it. An item that ends on its grade has spent
-  that line, and the print above spent it seven times, which is why that issue
-  explains seven results and tells a builder what to do about none of them.
+  that line, and an issue that spends it every time explains every result and
+  tells a builder what to do about none of them.
   So the grade sits in the middle of the item, inside a sentence that is also
   carrying a fact, and the item ends on meaning. Two consequences, both
   checkable before you output. A grade is a CLAUSE, which means it has a finite
@@ -1565,18 +1558,15 @@ the rule's question to the thing in front of you.
   Then count them, off the same list the links are counted against one rule
   above, which is every named piece of work in the issue and not every item.
   Take from that list the entries whose number the issue prints, and count the
-  grades. They match, or the issue is not
-  finished. Running the count over items instead let a fell-behind section
-  print three benchmark numbers with no grade anywhere near them, and the
-  grade of that issue counted three grades against three items and called the
-  presence half a pass. The fell-behind section is where this hides, because
-  its numbers arrive as an old belief and a newer one rather than as a result,
-  and a number that overturned something needs its grade more than any other
-  number in the issue, not less. The count is the rule and not a reminder of
-  it. On 2026-09-24 these
-  two rules sat next to each other in this file, one of them counted and the
-  other only described, and the issue shipped with five links out of five and
-  zero grades out of four. The grade is a clause, every compression pass
+  grades. They match, or the issue is not finished. Run the count over named
+  works and never over items: counted over items, a fell-behind section can
+  print three benchmark numbers with no grade anywhere near them and still
+  score three grades against three items. That section is where this hides,
+  because its numbers arrive as an old belief and a newer one rather than as a
+  result, and a number that overturned something needs its grade more than any
+  other number in the issue, not less. The count is the rule and not a reminder
+  of it: a rule only described has shipped five links out of five beside zero
+  grades out of four. The grade is a clause, every compression pass
   reaches for clauses first, and the only thing that survives a compression
   pass is what something counts afterwards.
 - **A number without its comparison is not finished, in any section.** "64% of
@@ -1802,21 +1792,15 @@ the rule's question to the thing in front of you.
   several of them to count. And the lines you did not write are not yours: the
   standing line under the title, the rule above the close, and the close itself
   arrive on every issue whatever you do. Count only the kinds of block YOU put
-  on the page. The print of 2026-10-05 had four blocks that were not paragraphs
-  and three of them were those standing lines, so its honest count is two:
-  paragraphs, and one line standing alone. That whole second kind is a single
-  sentence, "Three papers this week test what happens when you push the agent
-  stack in directions no benchmark yet covers", and the counting gate further
-  down this file requires that sentence rewritten on its arithmetic half,
-  because four items follow a count of three. Rewrite it and keep the line. Deleting it takes the
-  issue to one kind, which is the failing state this count exists to catch, so
-  where a line standing alone is the only one on the page, no other rule in
-  this file may be satisfied by removing it. The
-  issue reprinted under this law cut its longest paragraph from 191 words to
-  98, left nothing over 100, and shipped as twenty-four paragraphs with no
-  list and no subheading anywhere in it. She read that and said enjoyability
-  is still not fixed. Two kinds is thin. Three is an issue that reads like
-  something a person made.
+  on the page, and discount the standing lines, which have supplied three of the
+  four non-paragraph blocks in an issue that read itself as varied. Where a line
+  standing alone is the only one on the page, no other rule in this file may be
+  satisfied by removing it: deleting it takes the issue to one kind, which is
+  the failing state this count exists to catch, so a line that trips another
+  rule is rewritten and kept. An issue that cut its longest paragraph to 98
+  words and shipped as twenty-four paragraphs with no list and no subheading
+  anywhere in it has not fixed enjoyability, and she has said so. Two kinds is
+  thin. Three is an issue that reads like something a person made.
   The fix is never decoration, and there is exactly one honest move: find the
   material in the day's payload that is genuinely parallel, meaning several
   results that did the same kind of thing and stand side by side, and set
@@ -1847,16 +1831,13 @@ the rule's question to the thing in front of you.
   counts them.
   **A fifth count, because the mark it catches is the only one in canon law 1
   that nothing here was counting.** Count the semicolons. The target is zero
-  and there is no budget, the same as the em dash. The print of 2026-10-05
-  carried eight, against one in the print before it, under a punctuation rule
-  that had named the semicolon and called it banned outright for weeks. That
-  rule is prose in a bullet about four marks, and this issue got every counted
-  rule right and every prose rule wrong: zero non-ASCII characters, zero em
-  dashes, eight semicolons. The difference between the mark that went to zero
-  and the mark that went to eight is that one of them was in a count.
-  All eight were the same construction, two finished sentences in a balanced
+  and there is no budget, the same as the em dash. An issue has scored zero
+  non-ASCII characters, zero em dashes and eight semicolons under a rule that
+  banned all three in prose, and the difference between the mark that went to
+  zero and the mark that went to eight is that one of them was in a count.
+  All eight were one construction, two finished sentences in a balanced
   contrast, which is the shape that feels most like craft and is the one canon
-  law 1 names. Replace it with a full stop and nothing else, because the
+  law 1 names. Replace the mark with a full stop and nothing else, because the
   contrast was never in the mark. It was in the two sentences.
   **A sixth count, for the list, because the one place this file already makes a
   list mandatory is the place it keeps not happening.** The fell-behind slot says
@@ -1865,53 +1846,45 @@ the rule's question to the thing in front of you.
   Count the `superseded` rows that group came from, NOT the entries you can see
   in the draft, because a group you wrote as flowing prose has no entries in it
   and this count then reads zero off a paragraph carrying four of them. Three
-  rows or more and the group is a list, or the issue is not finished. The print
-  of 2026-10-05 had three and set them as three paragraphs, so it shipped with
-  no list anywhere in it for the ninth issue running, and the count that would
-  have caught it was never taken. The other print of that same day had four in
-  one 149-word paragraph, so this count run on entries would have cleared the
-  worse of the two.
+  rows or more and the group is a list, or the issue is not finished. Issues
+  have shipped with three such rows set as three paragraphs, and with four of
+  them inside one 149-word paragraph, which is the case a count run on entries
+  rather than rows would have cleared.
   **A seventh count, for the colon in a heading, because it is the last mark
   this file governs in prose alone.** Count the headings that carry a colon, the
-  title included. The target is zero and there is no budget. The print of
-  2026-10-05 had five headings and three of them were a slot name, then a colon,
-  then the day's news, which is the one construction the heading rule spends a
-  paragraph forbidding, and that rule has now been written three times in prose
-  without ever being counted. The fix is the rule's own: delete everything to
+  title included. The target is zero and there is no budget. The construction to
+  look for is a slot name, then a colon, then the day's news, which the heading
+  rule spends a paragraph forbidding and which has taken three headings out of
+  five in one issue. The fix is the rule's own: delete everything to
   the left of the colon and the colon with it, then check whether what is left
   is the heading. It almost always is.
   **An eighth count, for the number with nothing to measure it against,
   because the rule is above and the one place it failed is the one place it is
   expensive.** Go through the issue's figures and count the ones with no
-  comparison beside them. The target is zero. The print of 2026-10-05 opened
-  its fell-behind section on a bound of 0.0468 derived from zero events in 96
-  tries, and overturned it with "30 truthful recoveries and zero neutral ones"
-  and no denominator anywhere, so a reader who wanted to check whether the
-  bound had actually been broken had nothing to divide by. That section tells a
+  comparison beside them. The target is zero. The expensive case is a fell-behind
+  section that states a bound derived from a denominator and then overturns it
+  with a bare count, leaving a reader who wants to check the reversal nothing to
+  divide by. That section tells a
   reader what stopped being true, and a reversal asserted on a count the reader
   cannot place is the one kind of error that costs the subscription. Either the
   denominator goes in beside the count or the reversal does not print.
   **A ninth count, for the figure still wearing the units and the precision of
   the table it came out of.** Two scans of the finished draft, both of them
-  arithmetic. Count the figures whose magnitude needs leading zeros to write:
-  the print of 2026-10-05 gave one latency in microseconds in its opening and
-  in its bold lead, then gave the result itself as "0.0048 ms, with a 95%
-  confidence interval of [0.0042, 0.0057] ms", two sentences apart. The
-  readable unit was the one the issue had already chosen, and the sentence
-  carrying the finding abandoned it, so one measurement reached the reader as
-  two numbers and nothing on the page said they were the same one. Convert to
-  the unit that makes the figure one or two digits, and then use that unit
-  every time the quantity appears. Then count the decimals ending in zero: that
-  same print carried "86.20%", "97.40%" and "3.87-10.70 points", which is a
-  cell copied rather than a precision chosen, because no reader's decision
-  turns on the second place and a trailing zero says it was never considered.
+  arithmetic. Count the figures whose magnitude needs leading zeros to write: an
+  issue that gives a latency in microseconds in its opening and then prints the
+  result itself as "0.0048 ms" two sentences later has sent one measurement to
+  the reader as two numbers, with nothing on the page saying they are the same
+  one. Convert to the unit that makes the figure one or two digits, and then use
+  that unit every time the quantity appears. Then count the decimals ending in
+  zero: "86.20%", "97.40%" and "3.87-10.70 points" are a cell copied rather than
+  a precision chosen, because no reader's decision turns on the second place and
+  a trailing zero says it was never considered.
   Round to what changes the decision. The target is zero on both scans.
-  This is the lesson of that print and it is worth carrying to every rule in
-  this file, with the line drawn in the right place. It scored zero non-ASCII
-  characters and zero em dashes. It broke the heading rule, the grade-shape
-  rule, the semicolon rule, the list rule, the link-coverage rule and the
-  grade-coverage rule. The last two are already written as counts, so the
-  difference is not whether a rule says "count".
+  One lesson carries to every rule in this file, and the line has to be drawn in
+  the right place. An issue can score zero non-ASCII characters and zero em
+  dashes while breaking the heading rule, the grade-shape rule, the semicolon
+  rule, the list rule and both coverage rules, and the last two are already
+  written as counts, so the difference is not whether a rule says "count".
   It is whether the check can be run on the finished text by itself. A character
   census, a semicolon tally and a look at how many kinds of block are on the page
   all read only what you just wrote, and those are the ones that hold. Counting
