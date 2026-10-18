@@ -233,13 +233,16 @@ list entry 3 names.
   nothing at all, so what a skill is built from matters more than how
   well it is written.
 
+The bold name on each line is the row's existing name cell, so what gets
+set is the sentence alone.
+
 Each sentence is checkable against the paper the skill cites for it, and
 none of them says anything about what our file will do for your agent.
 That is the line the register draws and it is the line this round holds.
 
 **Where they have to live is not this seat's call.** A `summary` field
-in each skill's front matter belongs to the skill seat; a copy file the
-site reads belongs to the frontend seat. The ledger entry naming that
+in each skill's front matter belongs to the skill seat, and a copy file
+the site reads belongs to the frontend seat. The ledger entry naming that
 choice is in `docs/ideas.md` for this run.
 
 ## The registers, checked before this shipped
