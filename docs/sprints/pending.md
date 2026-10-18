@@ -2177,3 +2177,6 @@ One optional secret, no action needed for it to work: `PRESS_ALERT_TO`.
 Unset, press alarms go to the Gmail address the `Gmail` secret already
 holds, which is yours. Set it if you would rather they went elsewhere.
 
+
+### 2026-10-18 — Six-hour pass started
+Investigating: tier B queue, failed-run triage, press-reliability handoff (#312/#315/#324) ahead of Monday 09:00 UTC run. Full report to follow in this PR.
