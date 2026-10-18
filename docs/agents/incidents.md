@@ -14781,3 +14781,124 @@ so the owner can merge it without reading anything, even when the same seat is
 already holding a larger branch that could carry it. Proposed in
 `docs/ideas.md` on this run's branch, because a charter edit is the owner's
 merge and not this seat's commit.
+
+## INC-2026-10-18-the-ship-first-rules-closing-half-went-unrun-and-an-empty-draft-aged-two-days — a run note with no run behind it, open for 48 hours, indistinguishable from live work (2026-10-18, engineer seat, second run)
+
+**Observed by:** the engineer seat's second run of 2026-10-18, which exists
+because the PM seat handed back two pull requests nobody was moving. The PM's
+own words on one of them: "still just a run note with nothing else in it, so I
+could not tell from the diff alone whether it is still live or whether it
+stalled before it really started."
+
+**What happened.** PR #315
+(`alexandria-engineer/2026-10-16-message-press-backup-seat`) opened at
+2026-10-16 14:34 UTC with one commit and one file: 33 lines of run note saying
+what the run was about to build. Nothing else was ever pushed to it. It stayed
+open as a draft for two days. The run that opened it did not come back, did not
+say it had produced nothing, and did not close it.
+
+**The repeat, and it is the third sighting of this class.**
+`INC-2026-10-14-the-standup-ran-205-turns-and-shipped-nothing` is the second,
+and it quotes the clause this run broke, word for word, while describing a
+different run breaking the half before it: "if the run genuinely produces
+nothing worth shipping, say that in a draft PR and close it". That entry
+treats the clause as the safety net under the no-ship failure.
+`INC-2026-09-30-superseded-prs-are-left-for-the-owner-to-close` is the first,
+where ten dead pull requests were left open in one day and a 27-item review
+queue held 17 live ones. All three are the same defect in different places: the
+org has a rule for opening and no rule anybody runs for closing.
+
+**Why neither register could answer the question the PM asked.** The
+ship-first rule works by making the first commit of a live run and the only
+commit of a dead run the same artifact. That is the rule's whole mechanism and
+it is correct. The consequence is that a draft pull request carries no evidence
+of its own liveness. There is no field for it, no check that reads one, and the
+two signals that would answer it, the age of the last push and whether anything
+but the run note is in the diff, are in GitHub's API and have never been asked
+for. So every reader of the queue re-derives the answer by hand, and the PM
+seat's handoff is what that cost looks like when the reader is another agent on
+a deadline.
+
+**What shipped with this entry.** Nothing mechanical, and that is deliberate.
+#312 was finished and marked ready, #315 was closed with its reason in the
+comment and its branch kept, and the check that would have caught both without
+a handoff is proposed in `docs/ideas.md` on this branch rather than built:
+a draft pull request whose changed files are all run notes and whose branch has
+had no push in 24 hours is a dead run, and that is a query rather than a
+judgement. It is day-sized and it is not this run's dispatch, which was the
+press.
+
+**The standard this falls under, named rather than paraphrased.** Company
+standard L-E3, "ship first, then work", is the law, and L-A22 is the one that
+says what to do now: a rule enforced by charter text is enforced at the
+reliability of a model reading a file, and when a law has failed to fire once,
+writing it more clearly is not the fix. L-E3 has now failed to fire three
+times, and all three failures are in its closing half rather than its opening
+one. L-E11's clause belongs here too, because it is the constraint on any
+check built for this: a tripwire that fires hardest on the best runs is worse
+than no tripwire, and the 24-hour predicate is what keeps the proposed query
+off a live run's first commit.
+
+**The generalisation.** Every rule this org has written about shipping is a
+rule about starting. Open the branch first, open the draft first, append the
+register entry in the same pull request. The closing half is always carried by
+the sentence "and then the run says so", which is the one instruction a run
+that has already failed is least able to execute. Where a rule's last step
+depends on the actor the rule exists to protect against, the step needs an
+owner who is not that actor, or a query that does not need one.
+
+## INC-2026-10-18-keep-both-sides-orphaned-the-line-both-sides-ended-with — the register gate caught a resolution that passed every eye check, because the conflict's shared suffix was a status line (2026-10-18, engineer seat, second run)
+
+**Observed by:** `tools/check_registers.py` on this run's own branch, one
+command after the merge that caused it, before the push. "63 entries carry no
+readable status, up from the recorded 62. A new entry was appended without
+one."
+
+**What happened.** This run merged main into its branch and hit the append
+collision in `docs/ideas.md` that incident 6 is on record for. It resolved the
+hunk the way this org always resolves it, by keeping both sides, main's entries
+first and the branch's after. The resolution was correct about every line
+inside the hunk and still damaged the file, because the last line of main's
+newest entry was `- Status: proposed` and so was the last line of this
+branch's. Git matched them as common context and placed that single shared line
+*after* the `>>>>>>>` marker rather than inside either side. Keeping both sides
+therefore produced main's entry, then four of this branch's entries, then one
+status line, which belonged to the first of those five and now reads as the
+status of the last. The writer seat's entry from the pull request that merged
+forty minutes earlier lost its verdict and became invisible to every status
+filter.
+
+**Why no reading catches it.** The two halves of the hunk were both intact and
+both in the right order, which is the entire thing a reviewer of a
+keep-both-sides resolution checks. The defect is outside the hunk. It is in the
+line git did not give either side, and a conflict's shared suffix is the one
+part of a merge that no conflict marker points at. The register whose entry was
+damaged is 16,500 lines long and the damage is the absence of one line in the
+middle of it.
+
+**The repeat, and it is why this is filed rather than fixed quietly.** L-A17
+is the standard: a failure diagnosed in under a minute still gets an entry,
+because that is the kind that gets rediscovered. This org resolves this exact
+conflict several times a week, every seat resolves it with the same
+keep-both-sides rule, and `docs/ideas.md` entries all end with the same status
+line, so the shared-suffix case is not an unlucky coincidence. It is the normal
+case for the second collision of any day where both appends are well formed.
+`INC-2026-10-16-a-docs-only-conflict-was-handed-back-because-the-diff-was-read-instead-of-the-conflict`
+is the same file, the same collision and a different mistake about it.
+
+**What caught it, which is the part worth copying.** Nothing about this run was
+careful. The gate ran because the charter's pre-ship step names
+`tools/check_registers.py`, it compared a count against a recorded baseline
+rather than reading prose, and it blocked. That is L-A22's shape exactly: a
+rule enforced by a command rather than by a sentence, and the only reason the
+damage lasted four minutes instead of until somebody filtered the ledger for
+accepted entries. The one change worth making off the back of it is that the
+gate's message names the count and not the entry, so the fix took a diff
+against main's copy of the file to locate. Proposed in `docs/ideas.md` on this
+branch.
+
+**Fixed in this pull request.** The writer seat's `- Status: proposed` is
+restored in the commit that follows this entry, and the branch's copy of
+`docs/ideas.md` and `docs/agents/incidents.md` were both diffed line by line
+against main's to prove nothing else from either side was dropped. Zero lines
+of main's version are absent from this branch's.

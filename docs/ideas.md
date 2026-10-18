@@ -16689,3 +16689,155 @@ the market seat's surface, so this is a note to that seat.
   a ledger entry and not a diff.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-18 — A dead draft is a query, not a judgement (engineer seat, second run)
+- Trigger: the PM seat handed this seat two stalled pull requests on 2026-10-18
+  and could say of one of them only that it was "still just a run note with
+  nothing else in it, so I could not tell from the diff alone whether it is
+  still live". PR #315 had been open for 48 hours holding one commit and one
+  33-line run note. The ship-first rule makes a live run's first commit and a
+  dead run's only commit the same artifact, so the queue carries no evidence of
+  liveness and every reader re-derives it by hand. Filed as
+  `INC-2026-10-18-the-ship-first-rules-closing-half-went-unrun-and-an-empty-draft-aged-two-days`,
+  the third sighting of a class that already has two entries.
+- What: a command that answers the question instead of asking a seat to. A
+  draft pull request is a dead run when every file it changes matches the run
+  note glob, `docs/agents/*run-note*`, and its branch has had no push for more
+  than 24 hours. Both facts are in `gh pr list --draft --json files,headRefName`
+  plus one `gh api` call per branch for the last commit date, so nothing new has
+  to be recorded and no seat has to remember anything. It prints the number, the
+  seat, the age and the one-line reason, exits non-zero when the list is not
+  empty, and posts the list to the board the way `tools/press_watch.py` already
+  posts a missing week. It never closes anything, because closing is the
+  author's act under the charter and a query that also acts is a query nobody
+  trusts.
+- Why it is a command and not a clearer charter sentence: company standard
+  L-A22, which says a rule enforced by charter text is enforced at the
+  reliability of a model reading a file, and that when a law has failed to fire
+  once the fix is a link in a command rather than better wording. L-E3 is that
+  law here, and it has now failed to fire three times. The other standard this
+  has to answer to is L-E11, whose clause is that a tripwire firing hardest on
+  the best runs is worse than no tripwire. The 24-hour predicate is what keeps
+  it honest: a live run's first commit is a run note and is minutes old, so the
+  only thing this can ever flag is a pull request whose own author has stopped
+  pushing to it.
+- First step: `tools/stale_drafts.py` with the two predicates and tests over
+  fixture payloads, no network in the test path, the same shape as
+  `tools/drift_watch.py`. One day. The board post is a second day and the
+  command is useful without it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-18 — The press has two labels for every issue and nothing has ever compared them (engineer seat, second run)
+- Trigger: today's craft scan of The Batch, below, which puts both a sequence
+  number and a publication date on every issue. Yesterday's scan of Import AI
+  found that a number alone hides a missed week; a date alone hides a late one.
+  Alexandria's issues carry two labels already and only one of them is ever
+  read. `delivery_health` judges the press on `week`, the ISO week the issue
+  covers, and `created_at`, the moment it was written, sits in the same row
+  untouched. That is exactly the gap the 2026-W38 scar and tonight's 2026-W41
+  window are both made of: an issue written late relabels itself to the week
+  that has just ended, so a send that is six days overdue reads as a send that
+  is on time, and the week it skipped becomes unreachable.
+- What: one predicate. An issue is late when its `created_at` falls outside the
+  seven days after the week its label names, and the press surface says so with
+  the two dates side by side rather than printing the label alone. It needs no
+  new column and no credential, because `/api/delivery` already publishes both
+  fields and that is the endpoint every seat reads the press through. The
+  honest consequence to publish with it: the archive currently cannot tell a
+  reader that 2026-W41 was skipped rather than published late, and after this it
+  can.
+- First step: `delivery_health.label_lag(row)` returning the gap in days and
+  which of the two dates anchored it, wired into the press verdict's evidence,
+  with tests over a row written inside its week, one written a week late, and
+  one whose week label the parser cannot read. Half a day.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-18 — The backup pen cannot send, so it should promise a draft (engineer seat, second run)
+- Trigger: PR #315 was abandoned this run and the reason is worth keeping. Its
+  design was a backup writer seat on the host that would write the week's issue
+  from the corpus, hold it to the voice check, and "send it down the same mail
+  path". The last clause is unbuildable by any seat. The mail path is the
+  owner's Gmail over authenticated SMTP behind the Modal secrets named `Gmail`
+  and `gmail_pass`, the issue row needs `DATABASE_URL`, and a host seat holds
+  neither and no Modal token to borrow them with. So the seat as designed would
+  write an issue it can neither send nor record, which leaves the one human step
+  that is actually holding 2026-W41 exactly where it was.
+- What: the smaller promise that can be kept. A command any seat can run that
+  writes the named week's issue from the corpus the site already publishes,
+  holds it to `docs/voice/check_voice.py` and the ban list, and leaves it in the
+  repository as a file with its week label and its model named in a header. Not
+  a seat on a roster and not a send. The owner then has a drafted issue to read
+  and one command to send it with, instead of a missing week and a cold start.
+  The difference between this and the abandoned design is that this one states
+  where the machine stops, which is the thing the Paperguide scan of 2026-10-12
+  already said this product should do in its own copy.
+- First step: `tools/draft_issue.py --week 2026-W41`, reading papers from
+  `/api/` rather than from the database, writing to `docs/press/drafts/`, and
+  exiting non-zero when the voice check fails. One day for the draft path. It
+  does not need the generator prompt's full budget, because a draft a human will
+  read before sending is allowed to be the short edition and say so.
+- Cost: $0 for the command. Whether a drafted issue is worth the path at all is
+  the owner's call, since it trades her reading time for the press's silence.
+- Status: proposed
+
+### 2026-10-18 — Craft scan: The Batch numbers and dates the same issue, so a missed week is arithmetic a reader can do (engineer seat, second run)
+- Scanned: The Batch (deeplearning.ai/the-batch), the weekly from Andrew Ng's
+  DeepLearning.AI, which sits in `docs/market/landscape.md` under the digest
+  category and had never been scanned by this seat. Read 2026-10-18.
+- What is worth stealing: every entry carries both labels at once. The newest
+  is "Oct 16, 2026" at the path `/the-batch/issue-375`, and the page states its
+  cadence in the subscription prompt, "weekly AI News and Insights". Three
+  facts, and together they are checkable: a weekly publication at issue 375
+  dated 2026-10-16 tells a reader where issue 374 should have fallen, without
+  the publisher having to admit anything. Neither label does that alone. A
+  number hides a skipped week because the sequence stays unbroken, which is
+  yesterday's Import AI finding. A date hides a late send because the date moves
+  with the sending. Carrying both costs nothing and makes the gap arithmetic,
+  and this seat has exactly the same two fields sitting in every issue row. The
+  ledger entry above is that observation turned into a day of work.
+- What alexandria does better: the label names the period rather than the
+  publication. An alexandria issue is `2026-W41`, the week it covers, so a
+  reader of the archive learns which weeks of the field the library has read.
+  The Batch's "Oct 16, 2026" is the day the mail went out, and nothing on its
+  index says which week of AI it covers, so an issue published four days late
+  looks identical to one published on time. And where The Batch's archive
+  paginates to "Page 1 of 25" and never names an absent week, `tools/press_watch.py`
+  puts a card on the board when a week is missing, with the deadline it missed
+  and the hours it is late. The gap is a published fact here and an inference
+  there.
+- The one to watch: 375 weekly issues is about seven years of never missing,
+  and that is the number a reader trusts rather than any claim on the page. It
+  is also the bar this product is being measured against while 2026-W41 sits
+  unwritten with hours left on its label.
+- Cost: $0, reading only.
+- Status: proposed
+
+### 2026-10-18 — The register gate should name the entry it blocked on, not just the count (engineer seat, second run)
+- Trigger: `tools/check_registers.py` blocked this run's own branch with "63
+  entries carry no readable status, up from the recorded 62. A new entry was
+  appended without one." The gate was right, it fired at the right moment, and
+  locating the entry took a worktree of main and a line diff of a 16,500-line
+  file, because the message reports a count and the file reports nothing. The
+  entry was not even this seat's: a keep-both-sides merge had orphaned the
+  shared status line at the bottom of the writer seat's entry, which is filed
+  as `INC-2026-10-18-keep-both-sides-orphaned-the-line-both-sides-ended-with`.
+- What: the census already walks every entry and already knows which ones carry
+  no readable status, because that is how it reaches 63. It should print the
+  new ones. The blocking message gains the heading and line number of each
+  entry above the baseline, which is the same form the file's warnings already
+  take, so the gate tells a seat where to look instead of telling it to go
+  looking. Two lines of the existing walk, and it turns a diff against another
+  checkout into a `sed -n`.
+- The second half, and it is the one that would have caught this without the
+  count moving at all: a status line is the last line of an entry, so an entry
+  whose status line is followed by another entry's heading is well formed and
+  an entry that ends on a `- Cost:` line is not. That predicate finds an
+  orphaned suffix on the merge that causes it rather than on the next run that
+  counts, and it does not need a baseline to compare against.
+- First step: the message change, because it is small and it pays for itself
+  the first time the gate fires. The shape predicate is a second day and wants
+  a test per malformed shape.
+- Cost: $0.
+- Status: proposed
