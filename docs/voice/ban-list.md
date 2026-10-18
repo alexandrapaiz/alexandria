@@ -2376,8 +2376,22 @@ gap that the same collision had left empty (incident 25).
     Added 2026-10-13. Enforced the same day at the attribution gate, as a count
     of named works against named works attributed to people, which is the form
     the coverage laws already use.
+    **Corrected 2026-10-18, and the correction is about the repair rather than
+    about the tell.** The entry above names the repair as the institution from
+    the claim's own paper, and the four specimen items come from `deprecated`
+    and `superseded`, which carry no institution and no author at all. So the
+    first repair was never available to the section this entry is about, and
+    nor was the second, and the gate as written was counting those four as
+    misses for not inventing a name. The tell stands exactly as written: an
+    item with no agent anywhere in it is still the defect, and the attribution
+    rule's third form is still what fixes it. What changed is that the third
+    form is now a pass at the gate rather than a shortfall, and the gate's
+    denominator is the named works whose stream carries an attribution field.
+    This is the same class as the payload field map added to the generator the
+    same day: a rule that asks for a field the stream does not hold is answered
+    by substitution or scored as a failure nobody could have avoided.
     ```
-    LANDED prompts/digest.md: "The two numbers are the same number or the issue is not finished."
+    LANDED prompts/digest.md: "every work on it is attributed to an institution or to a named author or the"
     ```
 
 112. The count of its own contents that nobody could check, because the
