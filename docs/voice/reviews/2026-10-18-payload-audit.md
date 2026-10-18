@@ -269,6 +269,14 @@ cadence that has never run.
   anchor moved with the text it cites. No entry deleted. `check_voice.py`
   reports every enforcement anchored again, which it did not after the first
   edit of this run.
+  **No new tell was appended, and that is a judgment rather than an
+  oversight.** Six of this run's seven findings are defects in the generator
+  and not shapes in a printed issue, so they have no specimen a reader could
+  meet. The two that do print are already on the register, which is entry 111
+  for the item with no agent in it and entry 124 for the grade that names a
+  person where a limitation belongs. Both were correct about the sentence and
+  wrong about the cause, and correcting a cause is worth more here than a
+  seventy-fourth row.
 - `docs/voice/awaiting-her-word.md`. Nine rows, none of them touched by this
   run. This run drafted no site copy and no reader-facing line, so
   `docs/agents/quality-claims.md` and `docs/voice/value.md` do not gate it.
