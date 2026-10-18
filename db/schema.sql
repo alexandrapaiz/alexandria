@@ -675,3 +675,72 @@ create table if not exists payment_exceptions (
 create index if not exists payment_exceptions_open_idx
     on payment_exceptions (occurred_at desc)
     where resolved_at is null;
+
+-- ============ path_events: the buyer's path, counted and never identified ============
+-- Board card c688ef2e, "Build a way to measure the buyer's path". Until this
+-- table existed, nothing in this product recorded a visit, and the card's own
+-- sentence is why that mattered: without it nobody can tell which skill
+-- actually sells.
+--
+-- **What this table deliberately does not hold, and the sentence that decided
+-- it.** `site/app/privacy/page.jsx` promises a reader that "there is no
+-- analytics, no tracking pixel, no advertising network, and no third-party
+-- script watching you read". So there is no address here, no user agent, no
+-- cookie, no session, no referrer and no identifier of any kind, not even an
+-- irreversible hash of one. Every cookieless analytics product ships that
+-- hash and it is still a pseudonymous identifier for one person, which is the
+-- thing the promise rules out.
+--
+-- The cost of that is real and it is stated rather than hidden: a conversion
+-- rate is not computable from these rows. Two steps counted here are two
+-- counts of events and not two counts of the same people, so
+-- `tools/buyer_path.py` reports the counts and refuses the ratio. What the
+-- card asks for survives the refusal, because which skill sells is a count
+-- per skill.
+--
+-- `step` is checked rather than free text for the reason `payment_exceptions`
+-- gives above: the funnel is grouped by it, so a typo would quietly become a
+-- sixth step. `site/lib/path-core.js` holds the same five words and
+-- tests/path.test.mjs asserts the two lists agree, so a step added to one and
+-- not the other fails on the pull request that adds it.
+--
+-- `detail` is the one varying field and it is bounded and sanitised in
+-- `path-core.js` before it arrives: a skill's slug on a `skill` row, a plan id
+-- on a `checkout` row, and null everywhere else. It is never a query string,
+-- because a query string is where an address ends up by accident.
+create table if not exists path_events (
+    id          bigserial primary key,
+    step        text not null
+                check (step in ('visit', 'catalog', 'skill', 'pricing', 'checkout')),
+    -- The route, normalised to the shape the funnel groups by, so that
+    -- /library/2026-W39 and /library/2026-W40 are one row's worth of path
+    -- rather than one path each.
+    path        text not null,
+    detail      text,
+    occurred_at timestamptz not null default now()
+);
+
+-- The index the funnel reads: a window of recent rows, grouped by step. Both
+-- queries in site/lib/path.js start from a time bound, so the time column
+-- leads.
+create index if not exists path_events_recent_idx
+    on path_events (occurred_at desc, step);
+
+-- Which skill sells, which is the card's own question, so it gets an index
+-- rather than a sequential scan over every visit ever recorded. Partial,
+-- because only `skill` rows carry a slug and that is a small fraction of the
+-- table, so the index stays the size of the question.
+create index if not exists path_events_skill_idx
+    on path_events (detail, occurred_at desc)
+    where step = 'skill';
+
+-- The shape a human reads, and the shape the daily reader asks for: one row
+-- per day per step. A view rather than a rollup table, because the volume
+-- this product sees pre-launch is counted in hundreds and a materialised copy
+-- would be a second number that can disagree with the first.
+create or replace view buyer_path_daily as
+    select date_trunc('day', occurred_at)::date as day,
+           step,
+           count(*) as events
+    from path_events
+    group by 1, 2;
