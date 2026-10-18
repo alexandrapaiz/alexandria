@@ -435,6 +435,201 @@ def test_the_site_surface_reads_the_same_deadline():
         dh.fetch = real_fetch
 
 
+# --- can a sale happen at all (2026-10-18) -----------------------------------
+#
+# The state these cases are written from: on 2026-10-18 the live pricing page
+# answered HTTP 200, carried no `/api/checkout/` href anywhere in its markup,
+# and rendered "Opens shortly" on both paid tiers, while
+# `/api/checkout/monthly` answered 303 to `/sign-up`. Both halves verified
+# against the deployed site that morning.
+
+PRICING_SHELL = """<main class="page"><h1>Read for free. Build for $20.</h1>
+  <div class="tier"><h2>Digest</h2><a class="pill ghost" href="#waitlist">Start reading</a></div>
+  <div class="tier featured"><h2>Full access</h2>{monthly}</div>
+  <div class="tier"><h2>Lifetime</h2>{lifetime}</div></main>"""
+
+SOLD_OUT = '<span class="pill ghost">Opens shortly</span>'
+
+
+def _pricing(*linked: str) -> str:
+    """The pricing page as it renders with these offers live, and no others."""
+    def pill(offer):
+        return (f'<a class="pill" href="/api/checkout/{offer}">Buy</a>'
+                if offer in linked else SOLD_OUT)
+    page = PRICING_SHELL.format(monthly=pill("monthly"), lifetime=pill("lifetime"))
+    if "trial" in linked:
+        page += '<p class="tier-note"><a href="/api/checkout/trial">Start the trial</a></p>'
+    return page
+
+
+def _site_that_answers(page: str, hops: dict) -> callable:
+    """A stand-in for `dh.fetch`: one pricing page, and one answer per route."""
+    def fake(url, timeout=25, follow=True):
+        if url == dh.PRICING_URL:
+            return 200, page, {}
+        for offer, answer in hops.items():
+            if url.endswith(f"/api/checkout/{offer}"):
+                return answer
+        raise AssertionError(f"the probe fetched something unexpected: {url}")
+    return fake
+
+
+def _to_sign_up(offer: str) -> tuple:
+    return 303, "", {"location": "https://libraryofalexandria.dev/sign-up"
+                                 f"?redirect_url=%2Fapi%2Fcheckout%2F{offer}"}
+
+
+def _with_fetch(fake, call):
+    real = dh.fetch
+    dh.fetch = fake
+    try:
+        return call()
+    finally:
+        dh.fetch = real
+
+
+def test_the_pricing_page_with_no_checkout_link_is_failing():
+    """2026-10-18, and the one case this surface was built for.
+
+    Both paid tiers render the words and neither renders a link, so the state
+    of the till is that nothing on the page can be bought. Every other surface
+    in this file was green about it.
+    """
+    s = _with_fetch(_site_that_answers(_pricing(), {}), dh.check_checkout)
+    check("no checkout link at all is failing", s.state == dh.FAILING, s.headline)
+    check("and the headline says a buyer cannot buy",
+          "nothing on it a buyer can buy" in s.headline, s.headline)
+    check("and it names the three variables that are unset",
+          all(name in s.headline for name in ("POLAR_CHECKOUT_TRIAL",
+                                              "POLAR_CHECKOUT_MONTHLY",
+                                              "POLAR_CHECKOUT_LIFETIME")),
+          s.headline)
+    check("and no link was followed, because there was none",
+          "followed" not in s.evidence, str(s.evidence))
+
+
+def test_probing_the_route_instead_of_the_page_would_report_green():
+    """The reason the page is read first, as a test rather than as a comment.
+
+    `/api/checkout/[plan]` asks for a signed-in account before it looks up the
+    checkout link, so a stranger gets the same 303 to `/sign-up` whether the
+    offer is configured or not. A probe built on the route alone is green on
+    the exact morning both tiers were unbuyable.
+    """
+    status, _, headers = _to_sign_up("monthly")
+    hop, why = dh.judge_hop(status, headers["location"])
+    check("the route's answer to a stranger reads as a door that opens",
+          hop == "sign-in", f"{hop}: {why}")
+    check("so only the page read catches an unset offer",
+          _with_fetch(_site_that_answers(_pricing(), {}),
+                      dh.check_checkout).state == dh.FAILING)
+
+
+def test_every_ending_one_followed_link_can_meet():
+    """Five answers, judged without a network and without a Polar account."""
+    hop, why = dh.judge_hop(0, "", "connection refused")
+    check("silence is not a door", hop is None and "did not answer" in why, why)
+
+    hop, why = dh.judge_hop(303, "https://buy.polar.sh/checkout-abc")
+    check("a hop off-site is the seller", hop == "seller", why)
+    check("and it names the host it reached", "buy.polar.sh" in why, why)
+
+    hop, why = dh.judge_hop(303, "https://libraryofalexandria.dev/pricing")
+    check("a bounce back to the pricing page is not a door",
+          hop is None, why)
+    check("and it says what sends a buyer back there",
+          "checkout link" in why and "unset" in why, why)
+
+    hop, why = dh.judge_hop(303, "")
+    check("a redirect with no Location goes nowhere", hop is None, why)
+
+    hop, why = dh.judge_hop(200, "")
+    check("a 200 from a route that only redirects is a finding",
+          hop is None and "only ever redirects" in why, why)
+
+    hop, why = dh.judge_hop(404, "")
+    check("a 404 says the route is not deployed",
+          hop is None and "not deployed" in why, why)
+
+
+def test_a_link_that_leads_back_to_the_page_that_sent_it_is_failing():
+    """A link on the page the route does not recognise is a loop, not a sale."""
+    bounce = (303, "", {"location": "https://libraryofalexandria.dev/pricing"})
+    fake = _site_that_answers(_pricing("monthly"), {"monthly": bounce})
+    s = _with_fetch(fake, dh.check_checkout)
+    check("a link that loops is failing", s.state == dh.FAILING, s.headline)
+    check("and the headline says the link does not open a sale",
+          "does not open a sale" in s.headline, s.headline)
+    check("and the evidence keeps where it went",
+          s.evidence["followed"]["monthly"]["hop"] is None, str(s.evidence))
+
+
+def test_half_a_launch_does_not_read_green():
+    """One tier buyable and two advertised with no link behind them."""
+    fake = _site_that_answers(_pricing("monthly"),
+                              {"monthly": _to_sign_up("monthly")})
+    s = _with_fetch(fake, dh.check_checkout)
+    check("one offer of three is still failing", s.state == dh.FAILING, s.headline)
+    check("and it counts what can be bought", "1 of 3 offers" in s.headline,
+          s.headline)
+    check("and names the offers that cannot, with their variables",
+          "POLAR_CHECKOUT_LIFETIME" in s.headline
+          and "POLAR_CHECKOUT_TRIAL" in s.headline, s.headline)
+
+
+def test_every_offer_linked_and_opening_is_the_only_green():
+    hops = {offer: _to_sign_up(offer) for offer in ("trial", "monthly", "lifetime")}
+    fake = _site_that_answers(_pricing("trial", "monthly", "lifetime"), hops)
+    s = _with_fetch(fake, dh.check_checkout)
+    check("three offers, three open links, is ok", s.state == dh.OK, s.headline)
+    check("and the headline says where the hop stops",
+          "account before a card" in s.headline, s.headline)
+    check("and every link was actually followed",
+          sorted(s.evidence["followed"]) == ["lifetime", "monthly", "trial"],
+          str(sorted(s.evidence["followed"])))
+
+    seller = {offer: (303, "", {"location": f"https://buy.polar.sh/{offer}"})
+              for offer in ("trial", "monthly", "lifetime")}
+    s = _with_fetch(_site_that_answers(_pricing("trial", "monthly", "lifetime"), seller),
+                    dh.check_checkout)
+    check("and a hop to the real seller is ok too", s.state == dh.OK, s.headline)
+
+
+def test_the_offers_are_read_from_the_site_and_not_copied():
+    offers = dh.checkout_offers()
+    check("the three offers come out of site/lib/polar-core.js",
+          [offer for offer, _ in offers] == ["trial", "monthly", "lifetime"],
+          str(offers))
+    check("with the environment variable behind each one",
+          dict(offers)["monthly"] == "POLAR_CHECKOUT_MONTHLY", str(offers))
+
+    core = (Path(__file__).resolve().parents[1]
+            / "site" / "lib" / "polar-core.js").read_text()
+    check("and that is where the list lives", "export const OFFERS" in core)
+
+    check("an unreadable file yields no offers",
+          dh.checkout_offers(Path("/nonexistent")) == [])
+    s = _with_fetch(_site_that_answers(_pricing(), {}),
+                    lambda: dh.check_checkout(Path("/nonexistent")))
+    check("and the surface says so instead of implying it looked",
+          "unreadable" in s.evidence["expected_read_from"],
+          s.evidence["expected_read_from"])
+    check("while the floor check still fails an empty page",
+          s.state == dh.FAILING, s.headline)
+
+
+def test_the_checkout_surface_is_in_the_default_run():
+    source = (Path(__file__).resolve().parents[1]
+              / "tools" / "delivery_health.py").read_text()
+    check("checkout is one of the surfaces", "checkout" in dh.ORDER, str(dh.ORDER))
+    check("and it reads beside payments, which is the other money surface",
+          dh.ORDER.index("checkout") == dh.ORDER.index("payments") + 1,
+          str(dh.ORDER))
+    check("run() reaches it", 'if "checkout" in asked' in source)
+    check("and the default is every surface", "args.surfaces or ORDER" in source)
+    check("and the help text counts them all",
+          "all eight" in source, "the --surface help text is out of date")
+
 def main() -> int:
     for fn in [
         test_unknown_is_never_green_and_never_red,
@@ -458,6 +653,14 @@ def main() -> int:
         test_the_cron_this_check_assumes_is_the_cron_the_press_runs,
         test_a_bare_date_still_asks_about_a_day_that_is_over,
         test_the_site_surface_reads_the_same_deadline,
+        test_the_pricing_page_with_no_checkout_link_is_failing,
+        test_probing_the_route_instead_of_the_page_would_report_green,
+        test_every_ending_one_followed_link_can_meet,
+        test_a_link_that_leads_back_to_the_page_that_sent_it_is_failing,
+        test_half_a_launch_does_not_read_green,
+        test_every_offer_linked_and_opening_is_the_only_green,
+        test_the_offers_are_read_from_the_site_and_not_copied,
+        test_the_checkout_surface_is_in_the_default_run,
     ]:
         print(f"\n{fn.__name__}")
         fn()
