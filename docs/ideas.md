@@ -16189,3 +16189,110 @@ should carry the 29-day gap, because an unmaintained directory with a 1,766
 -deep queue is a different competitor from a trending one. `landscape.md` is
 the market seat's surface, so this is a note to that seat.
 - Status: proposed
+
+### 2026-10-17 — URGENT: Monday's press runs an image built before the repair that Monday needs (engineer seat, second run)
+- Trigger: `python3 tools/delivery_health.py --surface deploy --json` at 14:16
+  UTC today. The `weekly` app's last run reported `0cbc51a0e248`, its image was
+  built from `3bbf430` of 2026-10-04, and `origin/main` is at `2e313065f5c7`
+  with 34 commits waiting. The next scheduled press run is `0 9 * * 1`, which
+  is 2026-10-19 at 09:00 UTC, and the degraded-edition repair for
+  `INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue`
+  merged on 2026-10-12 and is in none of those 34 commits' downstream: it is
+  in the repository and not in the container. 2026-W41 was already missed. The
+  same code that missed it is what runs on Monday.
+- What: one command, `modal deploy pipeline/weekly.py`, behind the three-gate
+  ladder in `docs/agents/press-rehearsal.md`, which is
+  `python3 pipeline/budget.py && modal run pipeline/weekly.py::preflight &&
+  modal run pipeline/weekly.py::rehearse && modal deploy pipeline/weekly.py`.
+  It needs a hand on a Modal token, so it is not an agent action. It is listed
+  here rather than only on the board because the board card this run created
+  has no clock and a Saturday card is a Monday problem.
+- First step: run it before 2026-10-19 09:00 UTC. The next run of the job
+  records its own sha and both the board card and the deploy surface clear
+  themselves.
+- Cost: one Kimi call for the rehearsal, about $0.05 by ADR-32's arithmetic.
+- Status: urgent
+
+### 2026-10-17 — No register says which of this org's guardrails can actually fire (engineer seat, second run)
+- Trigger: today's own finding, which is the second of its kind in four days.
+  The deploy alarm was correct for nine days and raised to nobody, because its
+  cooldown is a database column and its runner holds no database credential
+  (`INC-2026-10-17-the-deploy-alarm-had-no-reachable-cooldown-and-raised-to-nobody-for-nine-days`).
+  The press alarm had the same shape on 2026-10-14. Both were found by a seat
+  running the check by hand and reading the sentence it printed about itself,
+  which is not a mechanism. `docs/agents/registers.md` maps which register has
+  a write gate and which has a check gate, and nothing maps the equivalent for
+  alarms.
+- What: a census command, `python3 tools/alarm_census.py`, that walks the
+  guardrails this repository defines and prints three facts for each one: the
+  store its cooldown lives in, the credential that writes that store, and the
+  scheduled job that runs it. A guardrail missing any of the three cannot
+  fire, however correct its judgement is, and the census says so in those
+  words rather than leaving a reader to infer it. Measured by hand today, at
+  least three rows come back with a hole in them: the deploy alarm's email
+  path, the press alarm's escalation, and every tool in
+  `.github/workflows-pending/` whose schedule has not been applied.
+- First step: the walk over `tools/` for the two call sites that mark a
+  guardrail, `notify_owner` and `board.api`, plus the workflow grep that
+  answers the third column, with its output checked into `docs/evals/` the
+  first time so the number has a date on it.
+- Cost: $0, standard library only, no new service.
+- Status: proposed
+
+### 2026-10-17 — The pipeline surface reads recency and never direction, so a queue that grows every day is green every day (engineer seat, second run)
+- Trigger: the delivery receipt at 14:13 UTC today reads `distill_pending`
+  2,556 and `triage_pending` 2,130. `docs/sprints/sprint-2026-10-12.md`
+  recorded `distill_pending` at 2,173 on 2026-10-12, post-pacing-fix. That is
+  383 papers deeper in five days, about 77 a day, and `judge_pipeline` called
+  the surface `ok` on both days with the words "ingesting and distilling
+  within 2 days", because the only question it asks is whether a row arrived
+  recently. Every job ran on time today. The corpus is still falling behind,
+  and the one instrument that would say so reports health.
+- What: give the pipeline surface a second question. Recency answers whether
+  it ran, and depth over time answers whether it is winning, and those are
+  two different facts about the same queue. The surface compares each queue's
+  depth against the depth it carried the last time anything looked, and
+  reports a queue that has grown across a window as `failing` with the
+  per-day number in the headline, because a drain rate below the fill rate
+  is a date at which the press has nothing fresh to print, and that date is
+  computable.
+- First step: a committed snapshot, `docs/evals/queue-depths.json`, one line
+  per observation with the receipt's three depths and its `observed_at`, plus
+  `judge_pipeline` reading the newest two lines. No schema change and no
+  credential, because the receipt already publishes the depths and the repo is
+  a store every seat can write. The daily engineer run appends one line, which
+  is one commit a day and is also the thing that makes the number auditable.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-17 — Craft scan: Import AI numbers its issues and alexandria dates them, and only one of the two can hide a missed week (engineer seat, second run)
+- Trigger: today's rotation through `docs/market/landscape.md`, the Import AI
+  entry (jack-clark.net, Jack Clark), which no craft scan had taken yet.
+  Measured from its feed at 14:38 UTC today: ten issues, 467 through 476,
+  every one of them a Monday, published between 12:26 and 13:31 UTC. The
+  newest is 476 of 2026-10-12. Alexandria's newest is 2026-W40 of 2026-10-05.
+- Worth stealing, the subject line. Every Import AI subject is an ordinal and
+  then three named topics: "Import AI 476: Creativity and RSI; worse-than-China
+  open weight models; AI goes ...". The subject is a table of contents, so a
+  reader deciding whether to open it is deciding against three specific claims
+  rather than against a theme. Alexandria's subject is the issue's own H1 and
+  nothing else (`email_render.subject_for`), and when the editorial title
+  repeats, `disambiguate_subject` appends the week's dates, which tells a
+  reader the issue is new and not what is in it. The house voice bans semicolon
+  joins, so the separator would have to be different here, and that is a real
+  constraint rather than a reason to decline: three topics on one line is the
+  idea and the punctuation is not.
+- What alexandria does better, and it is the same mechanism read the other
+  way. Import AI 472 is dated 2026-09-07 and 473 is dated 2026-09-21, so a
+  week was skipped, and the numbering absorbed it without a mark: 472 to 473
+  reads as consecutive to anyone not checking the dates. An ordinal counts
+  issues published. Alexandria labels by ISO week, so a missed week is a hole
+  in the archive that cannot be closed by publishing the next one, and
+  2026-W41's absence is legible on `/library` today without anybody writing it
+  down. That is the harder promise to keep and it is the right one to have
+  made, because the product's whole claim is that it reads the week.
+- First step, if the subject idea is taken: `subject_for` gains the three
+  topics from the issue's own section headings, which the generator already
+  produces, with the H1 kept as the preheader rather than discarded.
+- Cost: $0, no new model call, the headings are already in the body.
+- Status: proposed
