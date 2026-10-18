@@ -1008,16 +1008,10 @@ law 12 governs them exactly as it governs the headings above. Write the turn
 instead, the way an editor moves a reader from one group to the next. One
 sentence each, written from that day's items, and never the same two sentences
 twice.
-**Two specimen turns stood here and both are deleted rather than re-warned.**
-They were quoted with the words "neither is ever printed", on the record that an
-earlier issue had printed one of them word for word. The print of 2026-10-05
-then opened both of its groups with both of them, verbatim, as the first
-sentence of each. A warning attached to a specimen has never once beaten the
-specimen, and this position has now cost two issues.
-So there is no example here and there will not be one. This is the same remedy
-the reading-list slot already carries for the same disease: a frame handed over
-at the position where you write is a template no matter how good it is, and a
-replacement offered there is only the next template. You are being told what the
+**No turn of phrase is offered here, and there will not be one.** A frame handed
+over at the position where you write is a template no matter how good it is, a
+warning attached to one has never once beaten it, and a replacement offered in
+its place is only the next template. You are being told what the
 sentence must DO, which is carry the reader from one group to the next, and the
 words are yours. If you find yourself writing a sentence that would have fitted
 last week's items as well as this week's, you have written the furniture this
@@ -1182,16 +1176,12 @@ hour, in terms this day's papers make specific. The test is whether the heading
 would be false over a different day's list. A heading that announces the issue
 is now recommending things is the act describing itself, and it would have
 fitted every issue ever sent.
-**A specimen of the second form stood here and is deleted.** It was a sentence
-of the shape "Three papers for anyone who ...", offered as the model of a good
-heading, and the print of 2026-10-05 set that shape as its heading with the tail
-swapped for the day's own material. The paragraph three lines below already says
-why, in its own words: a phrase quoted inside the slot the model writes into is
-not a prohibition, it is the nearest available draft. That sentence was written
-about the forbidden phrase and it is just as true of the recommended one. A
-counted noun and a preposition is a frame, so "Three papers for anyone", "Four
-reads if you", "Two papers worth" and every variation of them are furniture now,
-and the heading is built from the papers instead.
+**No heading is drafted for you here, and that includes a good one.** A phrase
+quoted inside the slot the model writes into is not a prohibition, it is the
+nearest available draft, and that is as true of a recommended shape as of a
+forbidden one. A counted noun and a preposition is a frame, so "Three papers for
+anyone", "Four reads if you", "Two papers worth" and every variation of them are
+furniture, and the heading is built from the papers instead.
 The slot's internal name is not a candidate and is not repeated here, because
 a forbidden phrase quoted inside the slot the model writes into is not a
 prohibition. It is the nearest available draft. The heading gate at the end of
@@ -1316,19 +1306,12 @@ Write each line as its own sentence instead, and let the shape follow what
 the decision actually is. One line can put the choice as a question the
 reader is already asking. One can name the thing they are about to build
 wrong. One can say what they will stop doing.
-**A third specimen stood here and is deleted, and it is the one that was
-printed.** It was a sentence about where in a paper the hard part sits,
-offered with the defence that no payload would ever hand you that subject, so
-copying it would be obviously wrong. The print of 2026-10-05 set it as the
-first line of its reading list, word for word, because the day's payload
-handed it a paper whose section 4 really is scheduling maths. The defence was
-the subject and the subject is the one thing a payload controls. Two
-specimens in this slot have already been deleted for this, the heading frame
-above and "Worth the hour if you are", and the reason given for both holds for
-this one without a word changed: a phrase quoted inside the slot the model
-writes into is not a prohibition, it is the nearest available draft. So the
-three shapes above are described and never drafted, and nothing in this slot
-is ever handed to you as a sentence you could print.
+**Nothing in this slot is ever handed to you as a sentence you could print, and
+that holds for a specimen defended as uncopyable.** The usual defence is that no
+payload would ever hand you that subject, and the subject is the one thing a
+payload controls. A phrase quoted inside the slot the model writes into is not a
+prohibition, it is the nearest available draft. So the three shapes above are
+described and never drafted.
 Then
 count, because this is the one section where every entry sits next to its
 neighbours and the repetition is visible on the page: no two entries in an
@@ -2281,21 +2264,12 @@ the rule's question to the thing in front of you.
   front of a sentence is a piece of a line, and a line whose second half is
   real writing passes a question its first half would fail, which is the
   whole reason this shape keeps getting through.
-  **The first unit is positional rather than punctuational on purpose, and
-  the reason is one character.** A print of 2026-09-30 opened four of its
-  paragraphs on a bolded label that ended in a full stop, and each of them
-  would have fitted any issue this product will ever send. None sat alone on
-  its line, so the step above did not collect it. None contained a colon, so
-  the colon unit did not collect it either, and one of the four was a shape
-  this file already names with the colon swapped for a period. A unit defined
-  by a punctuation mark can always be escaped by changing the punctuation
-  mark, so the unit is the position instead: anything bold or italic at the
-  start of a line is a label until the question below clears it.
-  The published 2026-W39 carried three of the colon kind under an earlier
-  commit, none of them bolded alone and none collected by the step above:
-  "**The number that matters:**", which is the name of a formatting rule in
-  this file, "For builders:", and "The procedure is extractable:". Take the
-  fragment, drop whatever punctuates it, and write the sentence whole.
+  **The first unit is positional rather than punctuational on purpose.** A unit
+  defined by a punctuation mark can always be escaped by changing the mark, and
+  labels have shipped welded by a colon, welded by a full stop, and wearing no
+  mark at all. So the unit is the position: anything bold or italic at the start
+  of a line is a label until the question below clears it. Take the fragment,
+  drop whatever punctuates it, and write the sentence whole.
   Then put ONE question to everything you collected, lines and fragments
   alike, and it is the question that decides, never a list. Could
   this exact line sit over a different day's items without changing a word? If it could, it is a
@@ -2314,15 +2288,11 @@ the rule's question to the thing in front of you.
   dismantles. This is the hedge rule above arriving one level up: the section
   noticed the comparison fails and the heading had already been written as
   though it held.
-  **This specimen is deliberately about nothing, and the reason is a heading
-  that printed.** A real one stood here until 2026-09-30, quoted from the
-  print that produced this rule, and the next print carried that heading
-  verbatim over the same self-dismantling body. The four slot names are quoted
-  in this file eight times and have never printed, because they are not about
-  any paper. A specimen drawn from material you are actually handed is not an
-  illustration of the answer, it is the answer, and holding it at the end of
-  the file does not change that. So no example in this gate names a real
-  result, and any example that does is a draft of your output.
+  **That specimen is deliberately about nothing, and it stays that way.** A
+  specimen drawn from material you could actually be handed is not an
+  illustration of the answer, it is the answer, and holding it at the end of the
+  file does not change that. No example in this gate names a real result, and
+  any example that does is a draft of your output.
   Where the body's real finding is that a comparison does not work, the heading
   says that. It is a finding, it is that day's, and it is more interesting than
   the false version.
@@ -2330,30 +2300,19 @@ the rule's question to the thing in front of you.
   against and not the heading the body simply is not about.** A heading that
   names a property is a claim about every item under it. Count the items in the
   section, then count the ones the heading actually describes, and the two are
-  the same number or the heading is rewritten from what is there. The print of
-  2026-10-05 headed its fell-behind section on the assumptions that let agents
-  run unchecked, and four things fell behind under it: one about an audit bound,
-  one about self-improvement, and two about robot manipulation benchmarks, which
-  are not assumptions about anything running unchecked. Nothing in the body
-  withdrew the heading and nothing contradicted it. The heading had been written
-  from the issue's own argument instead of from the section's items, which is
-  the one way a heading passes every other question on this gate, including
-  whether it would fit a different day, and is still wrong about the block it
-  sits on. The argument belongs in the opening. The heading belongs to its
-  items.
+  the same number or the heading is rewritten from what is there. A heading
+  written from the issue's own argument rather than from the section's items
+  passes every other question on this gate, including whether it would fit a
+  different day, and is still wrong about the block it sits on. The argument
+  belongs in the opening. The heading belongs to its items.
 
   Ask it of every line and every fragment you collected, because this failure
-  has now arrived seven times
-  in seven disguises, and each one walked past the check written for the one
-  before: a section heading ("Gaining traction"), a taxonomy word
-  ("Compounding"), a bold word over a group inside a section
-  ("**Replaced**"), an italic word over a numbered list ("*Procedure*"), a
-  bolded label welded to a sentence by a colon ("**The number that
-  matters:**"), a plain one that is not bolded at all ("For builders:"), and
-  the same bolded label welded by a full stop instead, four times in one
-  issue. The first four are lines, the next two are colon fragments, and the
-  seventh is why the collection step above stopped asking about punctuation at
-  all.
+  has arrived seven times in seven disguises and each one walked past the check
+  written for the one before: a section heading, a taxonomy word, a bold word
+  over a group, an italic word over a numbered list, a bolded label welded to a
+  sentence by a colon, a plain one not bolded at all, and the same label welded
+  by a full stop. The first four are lines, the next two are colon fragments,
+  and the seventh is why the collection step stopped asking about punctuation.
   The next one will wear a disguise that is not on any list, so a line that
   passes only because it failed to match a string has not been checked at all.
   A label is a label at any level and in any typeface, and the steps under one
@@ -2371,15 +2330,13 @@ the rule's question to the thing in front of you.
   copied it from here, and the fix is to write that heading again from the
   items underneath it.
   **Then search the prose for the same four ideas, because a slot name does not
-  need a heading to print.** This tripwire has always read the four headings and
-  the words got out through the sentences instead. The print of 2026-09-28
-  carries "The strongest compounding evidence this week sits on the boundary
-  between training and deployment" and "The genuinely new work this week tests
-  two different bets", which is two slot names used as adjectives in two section
-  intros. Neither is one of the four exact strings, so the tripwire above passed
-  both. Both tell the reader which internal bin the items were sorted into, and
-  the first one also narrates the ranking, which the owner ruled out on
-  2026-09-19.
+  need a heading to print.** The tripwire reads the four headings and the words
+  get out through the sentences instead. A section intro opening on the
+  strongest compounding evidence, or on the genuinely new work, is a slot name
+  used as an adjective. Neither matches one of the four exact strings, so the
+  tripwire above passes both, and both tell the reader which internal bin the
+  items were sorted into. Narrating the ranking is separately ruled out
+  (owner, 2026-09-19).
   So the check is the idea and not the string: no sentence in the issue says
   which of the four slots the material under it came from. The section's
   contents are the only argument it gets to make for itself. Say what the
