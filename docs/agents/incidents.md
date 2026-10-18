@@ -14534,6 +14534,16 @@ all authored by a seat with no claims gate. The gate is attached to **seats**
 and the thing it protects is **surfaces**, so the first time a surface moved
 to a new seat the gate stayed where it was.
 
+**The company standard already names this exact shape, which makes it a
+finding rather than a discovery.** `docs/standards/lessons.md` L-A26: a grant
+written as a list of names decays into a grant for one thing, so write the
+property the list was an application of. The claims register's own "Enforced
+at:" line is an enumeration of three charters. It was correct on the day it
+was written and it went wrong silently on the day a reader-facing surface
+moved to a seat outside the list, which is the second half of that lesson word
+for word. The property the list was an application of is not "these three
+seats" but "any surface a stranger reads", and the exceptions are nothing.
+
 **The fix is not another charter clause.** A list of gated seats fails again
 the next time a surface moves, and the next move is already visible: the sales
 seat's launch copy and the press's own emails. What closes this is a check
