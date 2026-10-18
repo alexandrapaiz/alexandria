@@ -1,3 +1,113 @@
+## Updated 2026-10-18, ~01:05 UTC (message pass): PR #339 (the plugin) merged under tier B, three of my own open tier A pull requests cleared, one handoff sent to engineer
+
+**Trigger.** Two events this pass answers: the writer's run finishing
+(PR #340, already checked and merged by this seat's own #341 moments
+earlier) and PR #339 opening (engineer, "the nine skills become an
+installable plugin, with an install line a stranger can paste").
+
+**Own last run may still be open, checked first, three found.** #338,
+#341 and #337 were all this seat's own open pull requests from earlier
+passes tonight, and all three touched only `docs/sprints/pending.md`, a
+knowledge surface, so I self-merged all three under tier A rather than
+opening a fourth pull request on top of them. Main moved under each of
+the first two merges, because other seats' passes were landing at the
+same time, so each merge needed its own docs-only append conflict
+resolved by hand; `docs/standards/pm.md` §10 point 5 says that kind of
+conflict is the PM's to resolve. One of those resolutions (#337's) left
+a bare duplicate header with no body behind it, my own mistake in the
+script that built the conflict resolution; caught and removed in this
+pass's own commit rather than left for the next reader to puzzle over.
+
+**PR #340 needed no further action from this pass.** #341 had already
+checked it against the merge rule and merged it; nothing was left open
+from that event by the time this pass started.
+
+**PR #339 checked against the merge rule (tier B) and merged.** Not a
+draft, no `hold` label, no comment, no review. `mergeable: MERGEABLE`,
+`mergeStateStatus: CLEAN` (after one "head branch out of date" retry,
+once main moved from the tier A merges above). The one check defined,
+"digest request fits the model's budget," read `SUCCESS`.
+`gh pr diff --name-only` shows twelve changed files, none under
+`prompts/`, `.github/` or `company.yaml`, so no Tier C path. Scoped to
+board card `126f4250`, "Give a stranger a one-line way to install a
+skill," which the chair's 2026-10-17 handoff set as the product bar.
+Moved that card to Done and commented the merge-rule check on it.
+
+**What the PR surfaced, relayed rather than decided.**
+
+- A correction to frontend's board card `a1a2f14a`: the catalog page
+  already renders nine skills, because `listSkills()` reads the skills
+  directory itself. The "two skills" line the card describes is a
+  stale comment in `site/lib/skill-shelves.js`, not rendered copy.
+  Relayed as a board comment on that card; the real risk the engineer
+  found (shelf assignment by keyword fallback) is named there too, so
+  frontend reads it before starting.
+- The next engineering priority: board card `c688ef2e`, "Build a way to
+  measure the buyer's path," which the engineer's own run note on #339
+  called a day of work left out on purpose, not missed. Handed to
+  engineer as a board handoff, citing the chair's 2026-10-17 Wednesday
+  deadline, since nothing in the site tracks a visit, an install or a
+  payment today.
+- One new item, carried from #339's own words rather than invented: the
+  staged workflow replacement at `.github/workflows-pending/checks.yml`
+  would clear nine pinned test exceptions at once and still needs a
+  workflow-scoped hand, which is HQ's or a chair's to give, not a
+  product seat's.
+
+**Owed to you, unchanged from the last pass, not re-litigated here:**
+the Modal redeploy ahead of Monday's 09:00 UTC press run, the Polar
+Merchant-of-Record account (ADR-30, now day 23), the missing launch
+PR/FAQ on `main`, and the llms.txt candidate #341 already asked you to
+rule on.
+
+**Merged this run (tier B, `docs/standards/pm.md` §10), one:** `#339`
+(engineer). **Self-merged (tier A), three:** `#338`, `#341`, `#337`
+(all this seat's own, all pure `docs/sprints/pending.md`).
+
+## Updated 2026-10-17, ~21:20 UTC (message): PR #336 was merged before this seat could review it, and the check comes back clean
+
+**Scope note.** Message pass, triggered by PR #336
+(`chair/mark-no-spine`, title "Mark: remove the central hairline") with
+instructions to review it against the merge rule: merge it, or say on
+the board what it still needs and hand that to its seat. Not a standup
+and not the ceremony; today's standup (below) already ran, and this
+seat already has two other open message-pass PRs tonight (named next).
+
+**The PR, checked fresh.** `gh pr view 336` shows it created at
+2026-10-17T21:14:53Z and merged at 2026-10-17T21:15:02Z, nine seconds
+later, author `alexandrapaiz` — the owner merged it herself as a chair,
+a door §21 always leaves open. Nothing was left for this seat to merge.
+
+**Checked against the merge rule anyway, so it is on record.** Diff is
+one file, `site/app/components/Mark.jsx`, four insertions and three
+deletions: the ten-unit center `<rect>` removed and the file's own
+comment rewritten to stop describing a hairline that no longer exists.
+No Tier C path (not a charter, not secrets, not a seat's authority).
+`deploy-main` ran against the merge commit and came back green, and
+Vercel's own status on that commit reads "Deployment has completed."
+Grepped `site/` and `public/` fresh for any other reference to the
+removed rect's coordinates or the old "fanning from a central hairline"
+comment: one hit, the file itself, now updated; `MarkLive.jsx` never
+drew the line its own comment already said it never had, so the two
+marks match as the PR claims. Nothing still needed, nothing to hand
+back to its seat.
+
+**The chair had already posted this on the board** (`done`, 21:17 UTC,
+subject "The library mark lost its central hairline on the owner's
+instruction", ref PR #336) before this run started. This seat's board
+note today only adds the retroactive merge-rule check.
+
+**Other open PM PRs tonight, named per charter §"your own last run may
+still be open."** #335 (`alexandria-pm/2026-10-17-message-seats-off-github-review`)
+and #332 (`alexandria-pm/2026-10-17-message-sellable-regroom`) are both
+open and both also touch this file; all three, including this one, are
+append-only at different anchors, so the expected merge order is
+whichever lands first. #328 (`alexandria-pm/2026-10-17-message-chair-handoff`)
+is also still open and still empty — #335's own body says it closed
+#328, but `gh pr view 328` shows it is not; left untouched here since
+chasing that down is outside this run's one trigger, and named so the
+next run does not have to rediscover it.
+
 ## Updated 2026-10-18, ~00:55 UTC (message pass): PR #340 checked against the merge rule and merged, one new owner ruling needed
 
 **Trigger.** The event this pass answers: PR #340 (writer, "the prose
