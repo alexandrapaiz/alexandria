@@ -1419,6 +1419,18 @@ the rule's question to the thing in front of you.
   family"). Naming the missing measurement is the difference between a grade
   and a compliment. Draw that half from what the payload's `evidence` and
   `procedure` actually cover, and never invent an omission.
+  **When there is no omission to name, the second half does not get filled.**
+  The condition on it is real and it is usually unmet, because the payload
+  records what each paper did and holds no field for what a paper left out, so
+  most items arrive with no missing measurement in reach. The failure that
+  follows is not an empty slot. It is a substitution: who ran the work, or who
+  has not repeated it, written into the position the missing measurement was
+  supposed to occupy, where it reads like a limitation and names none. Across
+  the seven grades of 2026-10-05, six said who ran it and one named a
+  measurement that was absent. So put one question to the second half before
+  you keep it. Does the clause name something the work did not measure, or does
+  it name a person? If it names a person, it is the first half again, and the
+  grade is finished without it.
   **The grade is a clause inside a sentence, and it is written fresh each time.**
   The first line of this rule says "inside the item's own prose", and the shape
   that keeps shipping instead is a sentence of its own, in one frame, once per

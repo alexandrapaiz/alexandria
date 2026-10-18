@@ -2959,3 +2959,41 @@ gap that the same collision had left empty (incident 25).
     ```
     LANDED prompts/digest.md: "Read each finished entry and find the full stop before the grade."
     ```
+
+124. Provenance standing where a missing measurement belongs. The generator
+    asks the evidence grade for two halves, how strong the number is and what
+    the work did not measure, and the second half is conditional on the payload
+    supporting it. The payload never does. `pipeline/distill.py` stores
+    `claim`, `evidence`, `topics` and `procedure`, every one of which records
+    something a paper did, and no field anywhere records something a paper left
+    out. So the slot gets filled with the nearest true sentence in reach, which
+    is who ran the work or who has not repeated it.
+
+    > The authors' own experiments, not yet replicated outside the group.
+    > The authors' own traffic and benchmarks; no external replication.
+    > The authors' own experiments against their Meta-Harness baseline.
+
+    Six of the seven grades 2026-W40 printed take that shape, and the seventh,
+    "no external benchmark", is the only one on the page that names a
+    measurement rather than a person. The tell is that the clause reads like a
+    limitation, sits in the position a limitation goes, and leaves the reader
+    knowing nothing about the work's reach that they did not already know from
+    the first half.
+    This is not law 6 being broken. Law 6's own example is "authors' own
+    experiments, not yet replicated", and that is the right example of the
+    FIRST half. The defect is the first half printed twice under one grade,
+    with the second half's slot spent on it.
+    The strongest evidence that this is structural rather than careless: the
+    hand-written rewrite in `docs/voice/benchmark-2026-10-18.md`, composed by
+    this seat with the rule open, produced "nobody outside it has repeated the
+    result" in the same position. A writer who knows the rule and has the paper
+    cannot satisfy it from the payload either.
+    No sweep, and no re-wording of the demand, because the demand is not the
+    broken part. The missing field is filed for the engineer in docs/ideas.md
+    on 2026-10-18. What the prompt can hold is the prohibition on substituting,
+    and that is what landed.
+    Added 2026-10-18. Enforced the same day at the evidence-grade rule, which
+    now puts one question to the second half before it is kept.
+    ```
+    LANDED prompts/digest.md: "Does the clause name something the work did not measure, or does"
+    ```
