@@ -1190,7 +1190,18 @@ they bind every item at every cadence. The format above had no place to put
 one, so a print of 2026-09-30 carried a grade on every section and none on
 any of its three picks, which is the one part of the issue asking the reader
 for an hour of their time. Say what this work cannot establish, inside the
-entry's own sentence and never as a second sentence stapled behind it. How
+entry's own sentence and never as a second sentence stapled behind it.
+**That has failed on every entry of both prints of 2026-10-05, six of six, so
+it is a count here rather than a sentence you are trusted with.** Read each
+finished entry and find the full stop before the grade. Where there is one,
+the grade is stapled and the entry is not finished: fold the limit into the
+clause that makes the recommendation, so the reader meets what the work cannot
+establish in the same breath as the reason to read it. The target is zero
+stapled grades and there is no budget. The shape that fails is a decision
+sentence, then a sentence counting the units of evidence, then a sentence
+assessing them, which is three sentences doing what one does, and all six
+entries took it.
+How
 many groups have done this, how much of the field it was tested on, and
 whether anybody outside the group has reproduced it: those are the facts that
 decide whether the hour is worth it, and the entry that withholds them is
@@ -1223,9 +1234,21 @@ available by moving up a line.
 Write each line as its own sentence instead, and let the shape follow what
 the decision actually is. One line can put the choice as a question the
 reader is already asking. One can name the thing they are about to build
-wrong. One can say what they will stop doing. In a subject no payload will
-ever hand you, so that copying it is obviously wrong: "The scheduling maths
-is in section 4 and it is the part nobody gets right by intuition." Then
+wrong. One can say what they will stop doing.
+**A third specimen stood here and is deleted, and it is the one that was
+printed.** It was a sentence about where in a paper the hard part sits,
+offered with the defence that no payload would ever hand you that subject, so
+copying it would be obviously wrong. The print of 2026-10-05 set it as the
+first line of its reading list, word for word, because the day's payload
+handed it a paper whose section 4 really is scheduling maths. The defence was
+the subject and the subject is the one thing a payload controls. Two
+specimens in this slot have already been deleted for this, the heading frame
+above and "Worth the hour if you are", and the reason given for both holds for
+this one without a word changed: a phrase quoted inside the slot the model
+writes into is not a prohibition, it is the nearest available draft. So the
+three shapes above are described and never drafted, and nothing in this slot
+is ever handed to you as a sentence you could print.
+Then
 count, because this is the one section where every entry sits next to its
 neighbours and the repetition is visible on the page: no two entries in an
 issue open on the same words, and no two take the same grammatical shape.
@@ -1396,6 +1419,18 @@ the rule's question to the thing in front of you.
   family"). Naming the missing measurement is the difference between a grade
   and a compliment. Draw that half from what the payload's `evidence` and
   `procedure` actually cover, and never invent an omission.
+  **When there is no omission to name, the second half does not get filled.**
+  The condition on it is real and it is usually unmet, because the payload
+  records what each paper did and holds no field for what a paper left out, so
+  most items arrive with no missing measurement in reach. The failure that
+  follows is not an empty slot. It is a substitution: who ran the work, or who
+  has not repeated it, written into the position the missing measurement was
+  supposed to occupy, where it reads like a limitation and names none. Across
+  the seven grades of 2026-10-05, six said who ran it and one named a
+  measurement that was absent. So put one question to the second half before
+  you keep it. Does the clause name something the work did not measure, or does
+  it name a person? If it names a person, it is the first half again, and the
+  grade is finished without it.
   **The grade is a clause inside a sentence, and it is written fresh each time.**
   The first line of this rule says "inside the item's own prose", and the shape
   that keeps shipping instead is a sentence of its own, in one frame, once per
@@ -1675,8 +1710,15 @@ the rule's question to the thing in front of you.
   standing line under the title, the rule above the close, and the close itself
   arrive on every issue whatever you do. Count only the kinds of block YOU put
   on the page. The print of 2026-10-05 had four blocks that were not paragraphs
-  and three of them were those standing lines, so the honest count of its shapes
-  was paragraphs and one short paragraph. The
+  and three of them were those standing lines, so its honest count is two:
+  paragraphs, and one line standing alone. That whole second kind is a single
+  sentence, "Three papers this week test what happens when you push the agent
+  stack in directions no benchmark yet covers", and the counting gate further
+  down this file requires that sentence rewritten on its arithmetic half,
+  because four items follow a count of three. Rewrite it and keep the line. Deleting it takes the
+  issue to one kind, which is the failing state this count exists to catch, so
+  where a line standing alone is the only one on the page, no other rule in
+  this file may be satisfied by removing it. The
   issue reprinted under this law cut its longest paragraph from 191 words to
   98, left nothing over 100, and shipped as twenty-four paragraphs with no
   list and no subheading anywhere in it. She read that and said enjoyability
@@ -1691,7 +1733,13 @@ the rule's question to the thing in front of you.
   **Then the subheading, which is the shape this file has never asked for and
   the newsletters builders enjoy all use.** Any section running past about
   four paragraphs gets a written turn inside it, and at that length the turn
-  is a third-level heading (`###`) rather than a bold lead-in. It is governed
+  is a third-level heading (`###`) rather than a bold lead-in. Count
+  paragraphs and not blocks, because the other kinds this law asks you for sit
+  inside sections too: a line carrying the number that matters, a bulleted
+  list of parallel results, and the turn itself are none of them paragraphs,
+  so none of them brings a section nearer this trigger. Counted as blocks,
+  every device above makes the section look long, and obeying one half of this
+  law then trips the other half. It is governed
   by the heading gate below exactly as a section heading is, so it says what
   the material under it shows and it would be false for yesterday's issue.
   Write it from the section's own content, the way an editor breaks a long
@@ -1702,7 +1750,8 @@ the rule's question to the thing in front of you.
   carrying more than one result: one result each, so break them. Numbers in
   the heaviest paragraph: past three, cut every number that does not change
   what the reader would do. Sections running past four paragraphs with no
-  written turn in them: add the turn.
+  written turn in them: add the turn, counting paragraphs as the rule above
+  counts them.
   **A fifth count, because the mark it catches is the only one in canon law 1
   that nothing here was counting.** Count the semicolons. The target is zero
   and there is no budget, the same as the em dash. The print of 2026-10-05
