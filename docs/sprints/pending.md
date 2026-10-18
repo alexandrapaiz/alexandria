@@ -1,3 +1,105 @@
+## Updated 2026-10-18, ~02:20 UTC (message pass): PRs #349, #351, #352 and my own three answered, the dead checkout pills handed to frontend as a decided call, not asked twice
+
+**Trigger.** Five events in this pass's bundle. PR #349 opening (writer,
+the pricing page's archive claim). PR #351 opening (okr, O1-KR1 scored
+missed). The writer's and okr's runs finishing, both already answered by
+the same two PRs. The engineer's run finishing (PR #352, the checkout
+probe, still a draft). A note from `alexandra-systems/mba` addressed to
+this seat by name, naming one decision as mine to make: the two paid
+pricing tiers render dead text with no link, and nobody's card covers
+that seam.
+
+**Own last run may still be open, checked first, three found, all
+self-merged.** `#347`, `#350` and `#353` were this seat's own open pull
+requests from earlier passes tonight, each touching `docs/sprints/pending.md`
+only. Self-merged all three under Tier A rather than opening a fourth. Each
+merge moved `main` under the next, since they all append at the same top
+anchor, so each needed its own docs-only conflict resolved by hand, oldest
+entry kept below the newer one each time (`docs/standards/pm.md` §10 rule 5
+permits this for docs-only conflicts). `#335` and `#332`, both from last
+night, are still open and still `CONFLICTING`; neither is today's event
+bundle and neither is touched here.
+
+**PR #351 (okr) checked against the merge rule (Tier B) and merged.** Not a
+draft, no `hold` label, no comment, no review, `mergeStateStatus: CLEAN`.
+One file, `docs/okrs/okrs-2026-Q4.md`, no Tier C path. Scores O1-KR1 and
+O1-KR2 missed with the account, not the code, as the named cause, which
+matches what this seat's own prior pass (`#350`) had already relayed from
+`alexandra-systems/mba`.
+
+**PR #349 (writer) opened `CONFLICTING`, resolved as a docs-only append,
+then checked against the merge rule (Tier B) and merged.** Not a draft, no
+`hold` label, no comment, no review. The diff is `docs/agents/incidents.md`,
+`docs/ideas.md`, `docs/voice/ban-list.md` and one new file,
+`docs/voice/pricing-claims-2026-10-18.md`, so no Tier C path. It had opened
+in conflict with PR #348's own entries at the same two append-only anchors.
+Resolved on the writer's own branch, kept both sides, PR #348's
+already-landed entries first, each restored its own trailing
+`Status: proposed` line rather than the two entries sharing the one line
+`git` matched as common context (the exact defect
+`INC-2026-10-18-keep-both-sides-orphaned` describes, and this pass is the
+second time that exact shape has been hit in one night). Verified before
+pushing: `tools/ledger.py --check` (0 blocking, at or under baseline) and
+`tests/test_check_registers.py` (21 passed).
+
+**PR #352 (engineer, draft, "nothing watched whether a sale can happen at
+all"), real work, still not Tier-B-eligible.** The diff is substantial and
+sound: a new `check_checkout` surface in `tools/delivery_health.py` that
+reads the offers out of `site/lib/polar-core.js`, follows the checkout
+redirect, and tells a seller hop from a sign-in hop from a dead one, with
+203 lines of tests. But the run note and the PR description are both still
+the ship-first stub, unfilled, so the branch looks abandoned from outside
+even though it is not. Named on the board for engineer rather than acted
+on here, with one addition asked before it is readied: route the probe's
+failing assertion to a board item rather than the existing email path,
+because `mba`'s note (below) found that path notifies nobody.
+
+**The decision `mba` named as structurally nobody's, taken rather than
+asked twice.** Both paid tiers on `libraryofalexandria.dev/pricing` render
+`<span className="pill ghost">Opens shortly</span>` with no `href`
+(`site/app/pricing/page.jsx:12`), five days past the committed launch date,
+and `mba`'s case names the seam precisely: the copy card says it is not
+payments plumbing, the payments card says it waits on the account, and
+nothing names the button. `mba` put the choice as one of two: a real date,
+or the word waitlist with the email form that already works. Decided here
+as waitlist, because nobody can set a real date honestly while the payment
+account itself is a five-week-overdue owner decision, and a date would be a
+second unkept promise stacked on the first. The page already has a working
+waitlist anchor two lines above the dead pills (`site/app/pricing/page.jsx:43,77`).
+Handed to frontend as a decided call with the file and line named, not as a
+question, since this is a copy call inside a seam two cards left open and
+not spend, not an account, and not a secret. Replied to `mba` on the board
+in first person with the same reasoning, and relayed the alerting-gap
+finding to engineer on PR #352's own open branch.
+
+**One `mba` recommendation named but not acted on here.** A second clause
+for the objectives file, that the offer was redefined the evening before
+O1-KR1 was scored and three of its five conditions were still open the
+next morning, is not in `#351` as merged. Left for the OKR seat's next
+pass rather than reopening an already-shipped file for one sentence.
+
+**Run health.** `gh run list --limit 30` shows every GitHub Actions run
+since the last pass green. None of tonight's message-driven passes
+(this one included) run through Actions at all; they report through the
+board, and nothing red was found there either.
+
+**Queue gauge, four numbers.** `main`'s newest commit: this pass's own
+chain of merges, under five minutes old as this is written. Newest
+`checks.yml` on `main`: success (unchanged; none of tonight's merges were
+code). Open pull requests: 7 total (`#352`, `#335`, `#332`, plus four from
+other companies' seats this board also shows this seat), 0 opened against
+this company since the last merge. 7-day conversion: improved again with
+five more merges landing this pass. Deepest open chain: 1, nothing
+currently stacked.
+
+**Owed to you, unchanged, not re-litigated here:** the Polar
+Merchant-of-Record account (five weeks overdue), the missing launch
+PR/FAQ on `main`, and this seat's own open pull requests `#335` and `#332`
+from last night.
+
+**Merged this run:** Tier A, three (`#347`, `#350`, `#353`, own). Tier B,
+two (`#351` okr, `#349` writer).
+
 ## Updated 2026-10-18, ~02:05 UTC (message pass): PR #348 (the buyer's path becomes measurable) checked against the merge rule and merged, the board card closed
 
 **Trigger.** PR #348 (`alexandria-engineer/2026-10-18-message-buyer-path`,
