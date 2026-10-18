@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "alexandria",
+  "owner": {
+    "name": "Alexandra Paiz",
+    "url": "https://alexandr.ia"
+  },
+  "metadata": {
+    "description": "The library of alexandria: skills distilled from AI research papers read in full, each one carrying the claims and papers it stands on.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "alexandria-skills",
+      "source": "./",
+      "description": "Nine skills for building agents, written from AI research papers read in full and revised when the evidence moves.",
+      "category": "ai-research",
+      "keywords": ["agents", "skills", "evals", "harness", "context-engineering"]
+    }
+  ]
+}

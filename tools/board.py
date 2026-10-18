@@ -88,6 +88,7 @@ will contain is to spend it.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import os
 import re
@@ -123,6 +124,26 @@ HORIZONS = ("now", "next", "later")
 #: A job status, as GitHub's `job.status` reports it.
 RUN_STATUSES = ("success", "failure", "cancelled", "skipped")
 
+#: The same four statuses as the number the board's `exit` column stores.
+#:
+#: `INC-2026-10-16-every-run-report-fails-on-a-string-where-the-board-wants-a-
+#: number-and-the-error-blames-the-database`: this file sent the word and the
+#: board answered 503, so every run report any seat has ever filed was
+#: rejected, and `cmd_report` swallowed it into a `::warning::` inside a green
+#: job. Four probes on one token inside one minute isolated it: `0` and `"0"`
+#: both answered 201, `"success"` and `"failure"` both answered 503.
+#:
+#: `skipped` maps to nothing on purpose. A job that never ran has no exit
+#: code, and inventing a 0 for it would file the only status that means "this
+#: seat did not work today" as the status that means it worked and succeeded.
+#: The field is optional, so the honest report omits it.
+EXIT_FOR_STATUS = {"success": 0, "failure": 1, "cancelled": 130, "skipped": None}
+
+#: The codes that mean the board read the body and refused it, as opposed to
+#: refusing the caller (401, 403), the route (404) or the moment (5xx). Only
+#: these say the bug is in this file.
+BODY_REJECTED = (400, 409, 422)
+
 #: A markdown bullet, including the one Slack renders. Written as an escape
 #: rather than as the character, so every file in this repository stays plain
 #: ASCII (ban-list entry 13).
@@ -130,7 +151,19 @@ BULLET_LINE = "^\\s*[-*•] "
 
 
 class BoardError(RuntimeError):
-    """Anything the board refused, or could not be asked."""
+    """Anything the board refused, or could not be asked.
+
+    `code` is the HTTP status when there was one, and None when the board was
+    never reached. A caller that wants to tell its own bad request apart from
+    the board having a bad day needs that number, and the message alone cannot
+    be read for it: the board answered "the board's database is unreachable"
+    to a payload it had type-rejected, so the prose said connectivity while
+    the code said 5xx about a 4xx fault.
+    """
+
+    def __init__(self, message, code=None):
+        super().__init__(message)
+        self.code = code
 
 
 # --------------------------------------------------------------------------
@@ -318,8 +351,12 @@ def run_payload(env, args, branch=None, pr=None):
     payload = {
         "company": args.company or env.get("ASC_COMPANY") or company_from_repo(repo) or "alexandria",
         "seat": seat,
-        "exit": args.status,
     }
+    # The word enters here and the number leaves here, which is the one place
+    # that keeps GitHub's vocabulary in the workflow and the board's in the
+    # payload. See EXIT_FOR_STATUS.
+    if (code := EXIT_FOR_STATUS.get(args.status)) is not None:
+        payload["exit"] = code
     if repo:
         payload["repo"] = repo
     if trigger := env.get("GITHUB_EVENT_NAME"):
@@ -398,7 +435,9 @@ def api(path, method="GET", payload=None, env=None, opener=None):
             detail = json.loads(detail).get("error", detail)
         except json.JSONDecodeError:
             pass
-        raise BoardError(f"board said {exc.code} to {method} {path}: {detail[:400]}") from None
+        raise BoardError(
+            f"board said {exc.code} to {method} {path}: {detail[:400]}", code=exc.code
+        ) from None
     except urllib.error.URLError as exc:
         raise BoardError(f"board unreachable for {method} {path}: {exc.reason}") from None
     try:
@@ -552,6 +591,20 @@ def cmd_comment(args):
 def cmd_report(args):
     branch = args.branch if args.branch is not None else current_branch()
     payload = run_payload(os.environ, args, branch=branch, pr=pr_for_branch(branch))
+    # A report with no timestamp at all prints as `no time` in the run list
+    # and tells a reader nothing about when it happened. The filing time is
+    # the one timestamp this command knows to be true, so it supplies that,
+    # and never a start time, because a start time it did not observe would be
+    # a claim about how long the run took.
+    #
+    # What this does not buy, measured against the live board on 2026-10-18:
+    # the board orders its run list by `started_at`, so a report carrying only
+    # an end time is stored, is returned by the API, and still sorts behind
+    # every run that has a start. The caller has to pass `--started-at` to be
+    # read in that list, and on a seat workflow that value is one expression
+    # GitHub already knows. That is a workflow edit rather than a change here,
+    # and it is filed in docs/ideas.md.
+    payload.setdefault("ended_at", dt.datetime.now(dt.timezone.utc).isoformat())
     if args.dry_run:
         print(json.dumps(payload, indent=2, sort_keys=True))
         print("would POST /api/runs")
@@ -562,7 +615,22 @@ def cmd_report(args):
         # A report is not the work. The run already happened, and a red job for
         # an unposted report is the lie INC-2026-09-26-run-report-dash-echo
         # told six times: the PM's standup reads run health off these statuses.
-        print(f"::warning::board: run report not posted, {exc}")
+        # So the exit code stays 0 whatever happened here.
+        #
+        # The annotation level is not the same question. A rejected body is a
+        # bug in this file and nowhere else, so it is worth shouting about,
+        # while a 401 is a missing secret and a 5xx is the board having a bad
+        # minute, and neither is news this file can act on.
+        #
+        # Being exact about what this does not buy: the fault that forced
+        # EXIT_FOR_STATUS came back as a 503, so this rule would have left it
+        # a `::warning::` too. A server that reports a type rejection as a
+        # connectivity failure cannot be classified by its own status code.
+        # The gate that actually catches that class is in tests/test_board.py,
+        # which asserts the payload this file builds, runs on every pull
+        # request, and needs no board at all.
+        level = "error" if exc.code in BODY_REJECTED else "warning"
+        print(f"::{level}::board: run report not posted, {exc}")
         return 0
     print(f"board: reported {posted.get('id')} for {payload['seat']}")
     return 0
