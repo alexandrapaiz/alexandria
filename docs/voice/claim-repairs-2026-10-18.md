@@ -93,7 +93,7 @@ One word out, and the sentence stops promising coverage it does not have while
 keeping the compounding she asked for. The real repair is the backlog rather
 than the wording, and that belongs to the seat that owns the interpret queue.
 
-## 3. The skills page, the intro — WITHDRAWN, and this is a finding about this seat
+## 3. The skills page, the intro, withdrawn, and this is a finding about this seat
 
 This run drafted a repair for `site/app/skills/page.jsx:31` and then found that
 the second writer run of this same day had already drafted one, in
@@ -190,7 +190,7 @@ The candidate:
 > full, and the library keeps a record of what they claim. It writes a digest
 > from that record and turns durable procedures into agent skills.
 
-## 8. The pricing page — WITHDRAWN for the same reason
+## 8. The pricing page, withdrawn for the same reason
 
 The intro's routines clause and the "Skill updates as the research moves"
 bullet were both drafted four hours before this run, by the fourth writer run

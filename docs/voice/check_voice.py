@@ -1184,8 +1184,8 @@ def reading(paths=None):
     docs/voice/home-metric-line-2026-09-26.md and the same morning the masthead
     carrying the same defect was fixed. The repair was written, checked against
     the registers and never set. At four days it was recorded as a related
-    sighting inside INC-2026-09-30-sales-assets-stale; this is the same line at
-    twenty-two days.
+    sighting inside INC-2026-09-30-sales-assets-stale, and this is the same
+    line at twenty-two days.
 
     The subject matters and the regex knows it, which is why two of the three
     branches name the library. A reader may read anything and so may an agent:
