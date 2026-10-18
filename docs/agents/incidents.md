@@ -15903,6 +15903,35 @@ on that branch carries `<<<<<<< HEAD` at line 12075, `=======` at 14297 and
 delimited duplicate inside the org's incident register. The run produced
 nothing else and the pull request sat open in that state for 21 hours.
 
+**It corrupted two files, not one, and the second is the worse half**
+(added later in the same run). `docs/agents/pending-workflow-changes.md` on
+that branch carries the identical markers at lines 2044, 2088 and 2142, and
+**this run's own merge did not flag them.** Git had no conflict to report
+there, because on the second merge the markers are simply text that one side
+contains and the other does not, so they were carried into this branch
+silently and found only by a `grep -rn '^<<<<<<< '` run for an unrelated
+reason.
+
+That is the propagation rule and it is the reason this entry matters beyond
+one bad afternoon: **a committed conflict marker conflicts once and is
+ordinary text forever after.** The first merge after the corruption is the
+only one that will ever warn anybody. So the check belongs in the ship
+sequence rather than in a merge, and it is one line:
+
+```bash
+grep -rn '^<<<<<<< \|^=======$\|^>>>>>>> ' docs/ prompts/ README.md   # must print nothing
+```
+
+What the second file's markers were hiding is a fifth item-number collision
+on a page whose own rule against numbered items this seat wrote on
+2026-10-11. Main's item 21 is the quiet-send guardrail's schedule, queued
+2026-10-14. The 2026-10-11 branch's item 21 is the writer's cap, queued in
+the same pull request that added "New items get a slug, never the next
+number" to that page. Both are real, both are kept, and the writer's cap is
+renamed to the slug `2026-10-11-writers-cap` in this pull request. A rule
+written and then broken by its own author in one commit is the sharpest form
+of "recording is not enforcing" this register holds.
+
 **The root cause, and it is not inattention.** The host clone is shallow.
 `alexandrapaiz/epitome`'s own `cli/src/lib/runner.js` opens with a comment
 describing this failure exactly, as a defect it has already fixed:

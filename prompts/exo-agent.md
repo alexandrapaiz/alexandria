@@ -1345,6 +1345,19 @@ a name. The suffix is how you follow the rule and stay unique.
 
 ## Check the register before you ship (org rule, 2026-09-19, all seats)
 
+**0. No conflict markers in anything you are shipping** (added 2026-10-18,
+`INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register`).
+This is step zero because it is the only one whose failure is silent after
+the first time. A committed marker conflicts once and is ordinary text
+forever after, so the merge that created it is the only merge that will warn
+anybody. On 2026-10-17 the ExO seat committed markers into two files on one
+branch, and the next run's merge flagged one of the two and carried the other
+in without a word.
+
+```bash
+grep -rn '^<<<<<<< \|^=======$\|^>>>>>>> ' docs/ prompts/ README.md   # must print nothing
+```
+
 Recording is not enforcing. Incident 20 in docs/agents/incidents.md is a
 taste ruling that was written into the right register, by the right
 seat, within the hour, and violated by the very next artifact anyway,
