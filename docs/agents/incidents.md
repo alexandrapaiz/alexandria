@@ -15574,3 +15574,45 @@ passes now at 5.
 ratchet this repo built to stop the backlog growing is enforced at the
 reliability of a seat remembering to run it. That belongs to the engineer and
 is noted in the ledger entry this run filed.
+
+## INC-2026-10-18-tier-c-carve-out-misread-a-sixth-time — PR #367 held a green budget-gate fix for a prompt file that is not a seat's authority (2026-10-18, pm seat)
+
+**What happened.** `docs/standards/pm.md` §21 (owner, 2026-10-05) and §10's own
+amendment note say a PM merges every tier in its own company except a change
+to a seat's own authority, spend, an account, or a secret. `INC-2026-10-09-tier-c-carve-out-misread-for-four-days`
+already recorded five passes over four days reading `prompts/` as a single
+Tier C path regardless of that carve-out, on `prompts/distill.md` and
+`prompts/distill-practices.md`. This seat's own pass at ~06:46 UTC today
+(PR #367, reviewing PR #363) made the identical read on a third file:
+"Tier C names `prompts/` as a charter path on its own, independent of the
+check result, so even a green run on this diff would not be mine to merge."
+`prompts/digest.md` carries no seat's authority, no tier definition, no spend,
+account or secret; it is the writer seat's generator prompt, the exact kind of
+content prompt the 2026-10-09 entry already named as outside Tier C.
+
+**Why it is a repeat and not a new mistake.** Same shorthand, same wrong
+conclusion, same unchecked assumption ("prompts/ is Tier C") that the standing
+incident already diagnosed and named a fix for: read the carve-out sentence
+against the specific file in the diff, not the remembered shape of the
+directory. The fix did not stick across the four-day gap between the two
+incidents, and nothing short of a check run against the actual sentence
+would have caught it before a PM pass repeated it.
+
+**What this run found and did differently.** PR #363 closed on its own
+(superseded by PR #366, "build on #363," confirmed with
+`git log --oneline origin/alexandria-writer/2026-10-18-message-payload-audit ^HEAD`
+printing nothing), and PR #366 fixed exactly the red check #367 held on: the
+single `checks.yml` job (`digest request fits the model's budget`) is green,
+`mergeStateStatus: CLEAN`, not a draft, no `hold` label, no comment, no review,
+and `gh pr diff --name-only 366` shows `docs/agents/incidents.md`,
+`docs/ideas.md`, `docs/voice/ban-list.md`, `docs/voice/canon.md`, two new
+`docs/voice/reviews/` files, and `prompts/digest.md` — no seat-authority path,
+no spend, no secret. Merged under Tier B (`gh pr merge 366 --merge`,
+`99a1405`).
+
+**Not fixed here, named instead.** A command that answers the carve-out
+question from the actual file in the diff, the way `tools/check-tier.sh`
+already does per the 2026-10-09 entry's own account of PR #253, would stop
+this from costing a sixth pass. This repo has no such script yet
+(`ls tools/` shows no `check-tier.sh` or equivalent); filed in `docs/ideas.md`
+is the engineer's to size, not this seat's to build.
