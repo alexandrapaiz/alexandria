@@ -1,3 +1,98 @@
+## Updated 2026-10-18, ~07:55 UTC (message pass): PR #372 (writer, the taste-gate check) checked against the merge rule and held on a Tier C path, a quality-claims gap handed to the ExO on the board
+
+**Trigger.** Three copies of one event: the writer's ninth run finishing,
+PR #372 opening ("the register this seat reads first has no check, and
+one ruling proved it"), and a board run-report for the same run.
+Instruction in all three: review it against the merge rule, merge or say
+what it needs, then merge what is mine, close what is superseded, and
+hand the next thing to a seat.
+
+**Own last run may still be open, checked first.** Eight found, all this
+seat's own, all from earlier passes tonight (#362, #365, #367, #369,
+#371, #373, #374, #375), every one touching this file at the same
+append-only top anchor and none of them a Tier B pull request this seat
+may merge under its own name (Tier B condition 1: a PM's own pull
+request waits for another merger). Branched from `main` anyway, the same
+way this chain has done all night: this pass's own work, reviewing one
+writer pull request, shares no code scope with any of the eight, and
+whichever of us merges first gives the rest a one-line keep-both at this
+same anchor.
+
+**PR #372 checked against the merge rule and held, not merged.** Every
+Tier B condition but one holds: not a draft, no `hold` label, no
+comment, no review, `mergeable: MERGEABLE`, `mergeStateStatus: CLEAN`
+confirmed directly rather than trusted from the cache (`git merge-tree`
+against `origin/main` in a scratch ref, zero conflict markers), and the
+one defined check (the digest-budget gate) reads `SUCCESS`. But
+`gh pr diff --name-only` shows `prompts/digest.md` in the file list, a
+Tier C path, so rule 4 fails and it is not mine to merge under
+`docs/standards/pm.md` §10 no matter how clean the rest of it is. The
+writer's own PR body reaches the identical conclusion in its own last
+line ("still a `prompts/` path, so still not the PM's to merge. A chair
+or the owner"); this pass is the independent check that confirms it
+rather than taking the seat's word for its own scope.
+
+**Confirmed, not assumed, that the two open writer Review cards are both
+this one pull request and nothing is double-counted.** The board carries
+two cards in Review: the taste-gate check and, separately, "the
+generator's trim has a floor." The second one's own board comment says
+it shipped in the now-closed budget-headroom pull request (#368). Ran
+`git merge-base --is-ancestor` of #368's branch against #372's branch:
+true, so #372 (second in a chain, #368 to this one, depth two, not a
+blockage) carries every commit #368 had. Both Review cards are
+represented by the single open pull request #372, and both wait on the
+same Tier C gate.
+
+**Nothing to close as superseded beyond what the writer already closed
+itself.** #368 and #363, the two prior writer pull requests this chain
+supersedes, are both already `CLOSED` (confirmed via `gh pr view`), both
+closed by the writer's own earlier passes, not by this one. No other
+open pull request touches `prompts/digest.md`, `docs/voice/canon.md`, or
+`docs/voice/check_voice.py`, so nothing else in the open queue competes
+with or is made stale by this one.
+
+**The next thing, handed to a seat on the board rather than queued as a
+card nobody owns.** PR #372's own report names a gap it says plainly is
+not this seat's to close: the home page's metric line, the papers-read-
+count pulled from `weeklyIngestCount()` at `site/app/page.jsx:44`, sits
+two lines below three rows the quality-claims register already carries
+for the paragraph above it, and has no row of its own. That register is
+maintained by the ExO seat, which this seat may never dispatch, so I did
+not fire a dispatch. Posted it as a board item in Backlog, seat `exo`,
+horizon now, in the ExO's own words about what the register is for,
+citing the writer's pull request as the source and naming exactly what I
+did and did not check (not whether the count holds, only that no row
+says either way). The ExO's own cadence is Sunday 10:00 ET, which is
+today, so this should reach it on schedule rather than sit a week.
+
+Also replied in first person on the taste-gate card itself, confirming
+the merge-rule check and its outcome, so the writer (or whoever reads
+that card next) does not have to re-derive why it is still waiting.
+
+**Run health.** `gh run list --limit 30` shows every Actions run since
+the last pass green. This pass itself ran through the board and local
+checks, not Actions, same as the other message passes tonight.
+
+**Queue gauge, four numbers.** `main`'s newest commit: the lessons
+re-vendor (#370), merged 2026-10-18T07:09:45Z, about 50 minutes old as
+this is written. Newest `checks.yml` on `main`: success, from
+07:09:33Z, unchanged because nothing has merged since that carried a
+path the workflow watches. Open pull requests: 17 total (the eight PM
+passes above, #372, #358, #356, #335, #332, #333, #331, #272, plus this
+one), 6 opened since the last merge to `main` (#371, #372, #373, #374,
+#375, and this one). 7-day conversion: unchanged this pass, no merge
+landed. Deepest open chain: two, `#368` to `#372`, named above and not a
+blockage at that depth.
+
+**Owed to you, unchanged, not re-litigated here:** the Polar
+Merchant-of-Record account, the missing launch PR/FAQ on `main`, the
+Modal redeploy of the weekly app, the nine-charter branch-prefix fix, and
+this seat's own eight other open pull requests from tonight's passes.
+
+**Merged this run:** none. PR #372 is clean and Tier-B-eligible on every
+axis but scope; the scope axis is the one that matters, and it holds the
+PR for the owner or a chair.
+
 ## Updated 2026-10-18, ~07:51 UTC (message pass): yc's standdown accepted, the deploy and pricing threads both closed with no new work on either
 
 **Trigger.** A board message from `alexandra-systems/yc` addressed to this
