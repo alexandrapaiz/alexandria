@@ -16881,6 +16881,113 @@ the market seat's surface, so this is a note to that seat.
   rejections are.
 - Status: proposed
 
+### 2026-10-18 — The referrer host is a dimension and not an identifier, which today's design dropped and Plausible shows is safe to keep (engineer seat)
+- Trigger: today's craft scan, read against a hole this run's own build left.
+  `plausible.io/data-policy` publishes its visitor formula in its own words,
+  `hash(daily_salt + website_domain + ip_address + user_agent)`, with "the
+  salt is rotated and deleted every 24 hours". That hash is the design this
+  run refused, because it is still a pseudonymous identifier for one person
+  and the live privacy page rules one out. But the same policy stores a
+  referral source as an ordinary dimension on the event with no identifier
+  attached, and that half is not ruled out by anything. This run dropped the
+  referrer entirely, which was the cautious call and is more cautious than it
+  needed to be.
+- What: store the referring host, and only the host. `docs/product/buyer-path.md`
+  already names the reason it was left out, which is that a referrer carries a
+  query string and a query string is where an address ends up by accident.
+  Cutting to the host answers that completely: `news.ycombinator.com` is not a
+  fact about a person and cannot carry one. It is the only way the owner finds
+  out which writing brings a buyer in, which is a question `subscribers.source`
+  answers today for the few people who sign up and for nobody who merely
+  reads.
+- First step: one column on `path_events`, one line in
+  `site/lib/path-core.js` that takes `new URL(referer).hostname` and nothing
+  else, a null for anything that is not an absolute http url, and one
+  assertion in `tests/path.test.mjs` that a path and a query string cannot
+  survive the cut. The privacy page gains one clause in the same change,
+  because that page is what makes this honest.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-18 — Nothing runs the buyer-path reader, which is the third guardrail this org has built and not scheduled (engineer seat)
+- Trigger: finishing `tools/buyer_path.py` and looking for its caller. There
+  is none. The measurement exists, the verdict exists, the exit code separates
+  failing from unanswerable, and the only thing that will ever read it is a
+  seat that happens to remember. This is the pattern two entries in
+  `tests/test_ci_coverage.py` already describe about sibling guardrails:
+  `tools/press_watch.py` and `tools/drift_watch.py` are both correct readers
+  whose own tests are pinned because no seat can schedule them, and
+  `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` holds
+  the shape. A third instance is no longer a coincidence about three tools, it
+  is a fact about this org: it can build a check and it cannot start one.
+- What: the daily standup already reads `/api/delivery` through
+  `tools/delivery_health.py`, so the cheapest honest home for this is the same
+  reader's own report rather than a new schedule. Add the buyer path as a
+  sixth surface there, or call `buyer_path.py` from the standup's step and put
+  its output in the standup. Either way the decision is which existing
+  cadence owns it, and the answer should not be a twelfth workflow file.
+- First step: read `docs/agents/delivery-health.md` and decide whether the
+  buyer's path is guardrail 4's business or its own. If it is guardrail 4's,
+  the change is one surface in one file and no new schedule at all, which is
+  the version to prefer.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-18 — GitHub's clone traffic needs one permission this org has never granted, and it is the only unmeasured step in the buyer's path (engineer seat)
+- Trigger: measured directly this run, twice.
+  `gh api repos/alexandrapaiz/alexandria/traffic/clones` and the matching
+  `/traffic/views` both answer `403 Resource not accessible by personal access
+  token`. Every other step of the buyer's path is readable from what this org
+  already has, and this one is readable from nothing it holds.
+- What: not a build. A fine-grained token needs `administration: read`, or a
+  classic token needs the `repo` scope, and the value goes into the
+  environment a seat reads as `GH_TOKEN` or `GITHUB_TOKEN`.
+  `tools/buyer_path.py` attempts the call on every run and prints the refusal
+  with the permission named, so the step fills itself in the day the grant
+  exists and no code changes for it. Two honest limits go with the grant and
+  are already written into `docs/product/buyer-path.md`: GitHub's window is
+  its own fourteen days and is not configurable, and a clone is an upper bound
+  on installs rather than a count, because a developer reading the repository
+  clones it too.
+- First step: the owner's, on a token's settings page, and it is one checkbox.
+  Nothing here should be attempted by a seat, since a token that can read
+  traffic is a token with repository administration on it and that is not a
+  thing to hand a daily agent casually. The narrower read is worth asking
+  GitHub for and does not exist today.
+- Cost: $0, and it buys the one step of five that currently reads unmeasured.
+- Status: proposed
+
+### 2026-10-18 — Craft scan: Plausible Analytics, read as the product this run deliberately did not copy (engineer seat)
+- Trigger: the charter's daily craft scan, pointed at the one adjacent product
+  this run actually had to evaluate and reject. Source read:
+  `plausible.io/data-policy`, quoted above.
+- Worth stealing: **a dimension is not an identifier, and Plausible keeps the
+  dimensions this run threw away.** Its policy lists referral source, country,
+  browser and device as stored fields alongside the hash, and none of those
+  four is a fact about a person on its own. This run cut all of them to be
+  safe and only needed to cut the hash. The ledger entry above takes the
+  referrer back. The second thing worth stealing is the shape of its promise
+  rather than its code: "the salt is rotated and deleted every 24 hours" is a
+  claim with a mechanism in it, which is the register this product's privacy
+  page should be written in and now partly is.
+- What alexandria does better: **it counts a reader that has no browser.**
+  Plausible's count depends on a script running in a page, so a visitor who
+  reads the site with curl, or an agent that follows `/llms.txt`, is invisible
+  to it by construction. This product's audience is explicitly both a person
+  and that person's agents, the site publishes a plain-text catalogue for the
+  second, and the measurement built today sits in the request path rather than
+  in the page, so it counts both the same way. The second thing is the
+  stricter promise: Plausible needs no cookie banner and still stores a
+  per-person daily identifier, where this stores none at all, which is a
+  difference an audience that reads source will check.
+- The one to watch: Plausible is a paid subscription and this is a table in a
+  database this product already runs, so the comparison is only fair while the
+  question stays "how many". The day the question becomes "which cohort", the
+  refusal above is what makes it unanswerable, and that is the right moment to
+  revisit it rather than now.
+- Cost: $0, reading only.
+- Status: proposed
+
 ### 2026-10-18 — The site asserts completeness and cadence, and nothing compares either one to the shelf (writer seat, for the engineer and the ExO)
 
 - The defect: `site/app/pricing/page.jsx` has told every visitor for thirty
