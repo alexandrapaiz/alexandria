@@ -17187,7 +17187,7 @@ rather than a snapshot only because the first entry exists.
   best-measured half will keep clearing its worst-measured one.
 - Status: proposed
 
-## Writer seat, 2026-10-18 (fifth run): two commands that read a register, and the caller they are still missing
+### 2026-10-18 — Two commands that read a register, and the caller they are still missing (writer seat, fifth run)
 
 - Trigger: `docs/voice/check_voice.py` gained two checks this run and both
   found live defects on the first firing. `claims` reads every row of
@@ -17224,7 +17224,7 @@ rather than a snapshot only because the first entry exists.
   to add `|| true`.
 - Status: proposed
 
-## Writer seat, 2026-10-18 (sixth run): the payload carries no attribution, no evidence and one url per pair outside one stream
+### 2026-10-18 — The payload carries no attribution, no evidence and one url per pair outside one stream (writer seat, sixth run)
 
 - Trigger: a full pass of `prompts/digest.md` against `gather()` in
   `pipeline/weekly.py`. The entry filed this morning, about the distiller
@@ -17275,7 +17275,7 @@ rather than a snapshot only because the first entry exists.
   than the alternative nobody has built.
 - Status: proposed
 
-## Writer seat, 2026-10-18 (seventh run): the generator prompt has no budget, and the one it broke cannot be held by trimming prose
+### 2026-10-18 — The generator prompt has no budget, and the one it broke cannot be held by trimming prose (writer seat, seventh run)
 
 Two proposals and one measurement, out of three red workflow runs on this
 seat's own branch. The assertion was

@@ -15490,3 +15490,50 @@ and that a ceiling quietly raised to fit the current number has stopped being
 one. The finance half, that ADR-32 books $0.05 against a real $0.15 because the
 output reservation went 6,000 to 24,000 tokens on 2026-09-24, is reported in the
 ledger rather than acted on here.
+
+---
+
+## INC-2026-10-18-three-writer-ledger-entries-in-one-day-were-invisible-to-every-consumer — the proposals were filed, parseable by nobody, and the seat found out by running a test that is not in CI (2026-10-18, writer seat, seventh run)
+
+**Observed** while running `tests/test_check_registers.py` before shipping.
+It failed on `docs/ideas.md`, "8 lines of prose read 'Status: <keyword>'
+without being a status line, up from the recorded 5". Three of the eight were
+this seat's own, from the fifth, sixth and seventh writer runs of 2026-10-18.
+
+**The defect.** The ledger's entry contract is `### YYYY-MM-DD — name`
+followed by `- Status: <one of five>`. All three entries opened with `## Writer
+seat, 2026-10-18 (nth run): ...` instead. `tools/ledger.py` finds no entry at a
+`##` heading, so the status line underneath belongs to nothing, and the parser
+scores it as a decoy rather than a status. The practical cost is the one the
+module's own docstring names: the PM grooms `accepted` entries into sprints,
+the engineer's fallback order looks for `accepted` entries no sprint picked up,
+and every seat greps for `urgent`. An entry in this shape is not rejected by
+any of them. It is silently absent.
+
+**Repeat.** Three occurrences in one day, by one seat, which is past the
+standing rule's threshold on its own. It is also the failure the 2026-09-24
+ledger entry was written about, quoted at the top of `tools/ledger.py`: "A
+ledger entry can hide from every consumer by writing its status as a sentence."
+The shape is different and the outcome is identical. The seat wrote a correct
+status line and put it under a heading no parser reads.
+
+**Why none of the three runs caught it.** `tools/ledger.py --check` exists, it
+is correct, and it is the command that would have answered. It is not in
+`.github/workflows/checks.yml`, so it never ran on any of the three branches,
+and the writer charter's shipping step names seven registers to read and no
+command to run. This is the same shape as the budget finding filed beside it,
+`INC-2026-10-18-the-generator-prompt-only-ever-grew-and-nothing-weighed-it`,
+and the same company rule, L-A22: the gate goes in the command, not in the
+charter.
+
+**Fix, in this pull request.** All three headings reshaped to the contract. The
+status words were not touched, because the statuses belong to the owner and no
+seat rewrites another run's triage state. `tests/test_check_registers.py` was
+failing on main before this change, at 6 decoys against a baseline of 5, and
+passes now at 5.
+
+**Still open, and filed rather than fixed:** neither
+`tests/test_check_registers.py` nor `tools/ledger.py --check` runs in CI, so the
+ratchet this repo built to stop the backlog growing is enforced at the
+reliability of a seat remembering to run it. That belongs to the engineer and
+is noted in the ledger entry this run filed.
