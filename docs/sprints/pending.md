@@ -1,3 +1,7 @@
+## Updated 2026-10-18, ~07:55 UTC (message pass): PR #372 (writer, the taste-gate check) checked against the merge rule and held on a Tier C path, a quality-claims gap handed to the ExO on the board
+
+**Draft opened; review in progress.**
+
 ## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
 
 **Trigger.** The event bundle for this pass named seven things: four of
