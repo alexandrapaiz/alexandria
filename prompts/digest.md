@@ -979,14 +979,15 @@ paragraph is about.
 
 First kind, claims newer evidence says are wrong. Each item is a short prose
 unit with the same context-first pyramid as everything else. What was believed
+First kind, claims newer evidence says are wrong. Each item is a short prose
+unit with the same context-first pyramid as everything else. What was believed
 and where that belief came from, in plain words, then what overturned it and on
 what evidence, and then the practical consequence for a builder.
-This slot used to say "attributed by institution" here, and `deprecated`
-carries no institution and no author, so the line was asking for a name the
-payload does not hold and four items of 2026-10-05 were graded down for not
-inventing one. Write who overturned it where the work is also sitting in
-`new_claims` and that row names somebody. Otherwise write what overturned it
-with no attributive phrase, per the attribution rule's third form. Never open an item mid-argument with "The claim
+`deprecated` carries no institution and no author, so this slot never asks for
+a name the payload does not hold. Write who overturned it where the work is
+also sitting in `new_claims` and that row names somebody. Otherwise write what
+overturned it with no attributive phrase, per the attribution rule's third
+form. Never open an item mid-argument with "The claim
 that...". Set the scene first ("An early benchmark result suggested coding
 agents had hit a hard ceiling...").
 
@@ -1228,15 +1229,15 @@ that says what the bottleneck in some subfield really is, on the authority of
 one unreplicated paper, is the general claim over the particular evidence
 with the evidence left out. The grade is what bounds it.
 
-**The line is written and never filled in, and one frame is now spent.** The
-model line this file used to quote here came back on five entries out of five
-across two prints, which is the whole reading list twice. It was not banned
-for being bad. It was banned because it was the first thing this file put in
-front of you at the position where you write, and a frame handed over at that
-position is a template no matter how good the sentence is. Do not reach for a
-find-and-replace of it either, so "Read this if you are", "Give it an hour
-when you are" and "Spend the hour if you are" are the same line wearing a
-hat.
+**The line is written and never filled in, and one frame is now spent.**
+"Worth the hour if you are" came back on five entries out of five across two
+prints, which is the whole reading list twice. It is not banned for being
+bad. It is banned because it was the first thing this file put in front of
+you at the position where you write, and a frame handed over at that position
+is a template no matter how good the sentence is. Do not write it. Do not
+write a find-and-replace of it either, so "Read this if you are", "Give it an
+hour when you are" and "Spend the hour if you are" are the same line wearing
+a hat.
 **A frame banned in this slot is banned everywhere in this slot, the heading
 included.** A print kept the banned line off all three entries, correctly, and
 put it in the section heading instead, where the banned words did the one job

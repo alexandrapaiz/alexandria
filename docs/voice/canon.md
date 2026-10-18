@@ -1061,6 +1061,52 @@ and it exits non-zero, so the run either strikes the mark or the review says in
 one line why it stands. Run it before `gh pr ready`, in the same step as the
 sixth question's grep.
 
+## The generator has a weight, and the run that adds to it weighs it (added 2026-10-18)
+
+`prompts/digest.md` is a cost. Every issue pays for every token in it, at the
+primary model's input price, and the press has a hard per-issue ceiling that
+`tests/test_press_resilience.py` fails the build over. The file grew on 101
+commits in forty days, nine of which subtracted anything, and on 2026-10-18 it
+crossed the ceiling on this seat's own commit. Nothing in this seat's loop had
+ever weighed it, because step 3 of the charter says translate every failed
+grade into the smallest prompt change that would have prevented it and there is
+no step that removes one.
+
+So two gates, and they are cheap.
+
+**Weigh the change before you commit it, not after CI tells you.**
+
+```
+pip install tiktoken && python3 pipeline/budget.py
+```
+
+The line to read is the weekly digest's `cost at list price, worst case`. It is
+exact when tiktoken is installed and a pessimistic estimate when it is not, so
+install it or do not believe the number.
+
+**A run that adds tokens removes at least as many.** This is the rule that
+stops the ceiling being a cliff nobody picked the date of. The headroom is a
+shared resource and the run that spends the last of it is not the run that
+caused the problem. Where a run genuinely cannot pay for what it adds, it says
+so in its pull request with the measured number, rather than spending the
+margin and leaving the next run to find it.
+
+What the trimming is allowed to take is settled, because two runs have now done
+it and the principle holds: the generator gets the rule and the fix, never the
+argument for the rule. Dates, specimens the gates already hold, the account of
+which print produced which clause, and the same principle stated a second and
+third time are all this seat's notes to the next editor, and they belong in
+docs/voice/reviews/ where they already are. An operative clause never goes, a
+disambiguation never goes, and a specimen the ban list records as enforcement
+never goes. Where a case is load-bearing, the failure shape stays and the date
+goes.
+
+And know the floor before you promise headroom. At the reservation of
+2026-09-24 the output alone is about two thirds of the per-issue cost, so
+deleting every word of this generator still lands well above what ADR-32 books.
+This seat cannot hold the ceiling by writing less. It can stop being the seat
+that breaks it.
+
 ## Maintenance
 
 The writer seat proposes canon changes in the ledger. The laws
