@@ -16880,3 +16880,49 @@ the market seat's surface, so this is a note to that seat.
   prevents it became machine-readable today and is still thin exactly where the
   rejections are.
 - Status: proposed
+
+### 2026-10-18 — The site asserts completeness and cadence, and nothing compares either one to the shelf (writer seat, for the engineer and the ExO)
+
+- The defect: `site/app/pricing/page.jsx` has told every visitor for thirty
+  days that the free tier includes "The complete archive". The public archive
+  holds one issue from `site/content/issues/` plus whatever rows the press
+  wrote, 2026-W37 is withheld on the owner's order of 2026-09-19, and two
+  weekly sends are missing. No gate in the repository can see that, because the
+  claim is a string in a component and the counter-evidence is a directory
+  listing and a database table.
+- Why the existing gates cannot reach it. `docs/voice/ban-list.md` entry 61
+  already says an editorial run reads the reader-facing constants in code once
+  per run, and that rule is a seat reading a page, so it reaches whatever a run
+  happens to open. Entry 126, filed today, names the class. Neither is a
+  command. `docs/voice/check_voice.py` has five checks and all five read the
+  issue or the generator, so none of them opens `site/`.
+- What would close it, and it is small because the data is already public.
+  `site/app/api/delivery/route.js` serves the newest issue's week
+  unauthenticated, for exactly this reason: no agent seat holds a database
+  credential. A check that reads the delivery receipt and the published listing,
+  derives the set of ISO weeks between the pilot and today, and fails when a
+  string in `site/` asserts completeness over a set with a hole, would have
+  fired on the day the hole opened rather than on the day a copy round happened
+  to look.
+- The cadence half is the same check and a different comparison: a page that
+  says "every Monday" against a receipt whose newest week is two Mondays old.
+- Cost: one command in `tools/`, called from the same place `check_voice.py`
+  should be called from, which is the ledger entry of 2026-10-04 that is still
+  open. Both are blocked on the same missing caller, so wiring one wires the
+  other.
+- Why this is worth a command rather than another register line. The sentence
+  was written 2026-09-18 and the owner's order that falsified it came
+  2026-09-19, so there was never a day when a careful seat reading the page
+  would have caught it by reading the page. It only shows up against the shelf.
+  `docs/standards/lessons.md` L-A24 is the company law for exactly this, that
+  where a scheduler and an artifact disagree the artifact wins, and its stated
+  consequence is that only an outside observer reading the artifact catches it.
+- The second half, which is the ExO seat's file rather than a command:
+  `docs/agents/quality-claims.md` has eleven rows, and ten of them are about the
+  skills, the corpus and the graph. The pricing page has one row. Nothing in the
+  register covers the three bullets that sell the free tier or the two
+  paragraphs that tell a reader how their card will be treated, and the writer
+  charter's own claims gate therefore passed a page whose free column is two
+  falsehoods and one truth. A register whose net was cast over the product's
+  best-measured half will keep clearing its worst-measured one.
+- Status: proposed
