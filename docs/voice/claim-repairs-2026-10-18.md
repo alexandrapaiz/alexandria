@@ -1,4 +1,4 @@
-# Six live sentences the product cannot back, and the words that replace them
+# The live sentences the product cannot back, and the words that replace them
 
 Writer run 40, 2026-10-18. One candidate per surface, drafted here for the
 owner to rule on and the frontend seat to set. No line of `site/` is touched
@@ -93,54 +93,20 @@ One word out, and the sentence stops promising coverage it does not have while
 keeping the compounding she asked for. The real repair is the backlog rather
 than the wording, and that belongs to the seat that owns the interpret queue.
 
-## 3. The skills page, the intro
+## 3. The skills page, the intro — WITHDRAWN, and this is a finding about this seat
 
-Live now:
+This run drafted a repair for `site/app/skills/page.jsx:31` and then found that
+the second writer run of this same day had already drafted one, in
+`docs/voice/skills-copy-2026-10-18.md`, four hours earlier. That candidate
+replaces the whole intro, it removes both unbuilt promises rather than hedging
+them, and it is the better of the two for the reason its own notes give, which
+is that the dated record each skill file already carries is checkable while a
+guarantee about next month is not.
 
-> Your agents stay at the frontier without you carrying them there. Each skill
-> in this library gives an agent a way of doing one job that the research has
-> shown to work, and the library keeps every skill current at the pace of the
-> research that is gaining the most traction, so as the field confirms a
-> technique, sharpens it, or overturns it, your agents change with it. You do
-> not schedule the update or read the paper, because the library follows the
-> field and your agents direct themselves from what it holds. What you get is
-> agents that work from the current state of the evidence today and still will
-> next month.
-
-Two sentences here promise currency that nothing produces, and the last one
-promises it for next month. Five of six skills are at version one and none has
-ever been revised by a machine. This is the hardest candidate in the file,
-because the first and last sentences are hers from 29 September and they are
-the ones the page sells with.
-
-The candidate:
-
-> Your agents work from the frontier without you carrying it to them. Each
-> skill in this library gives an agent a way of doing one job that the research
-> has shown to work, and each one names the papers it came from and the date of
-> the last trigger test that judged it. The library grows every day as new work
-> lands, so what the next skill is built from is the state of the evidence
-> rather than the state of a training run. Keeping every skill current as the
-> research moves is what the routines are being built to do, and we will tell
-> you the day they run.
-
-What changed and why. "Stay at the frontier" became "work from the frontier",
-because staying is a promise about every month after this one and working is
-true the moment an agent loads the file. The currency promise moves into the
-tense of a thing being built. What replaces it is the growth of the library,
-which is the claim on this product that holds and is measured daily, and the
-comparison a builder actually feels, which is a file against a training cutoff.
-
-**One candidate below is the alternative, and it exists because this is her
-line.** If she would rather keep "stay at the frontier" as written, the honest
-version of the page keeps it and hedges the mechanism in the same breath.
-
-> Your agents stay at the frontier without you carrying them there, which is
-> what the routines are being built to do, and we will tell you the day they
-> run.
-
-I prefer the first. A promise with its own disclaimer attached reads as a
-promise, and a reader remembers the first half.
+So this seat's second candidate is withdrawn rather than offered, and the live
+candidate for that surface is the one in that file. Nothing is lost and one
+thing is learned, which is at the end of this file under what this run found out
+about itself.
 
 ## 4. The home page, the paragraph under the hero
 
@@ -224,36 +190,22 @@ The candidate:
 > full, and the library keeps a record of what they claim. It writes a digest
 > from that record and turns durable procedures into agent skills.
 
-## 8. The pricing page, the intro and one bullet
+## 8. The pricing page — WITHDRAWN for the same reason
 
-Live now, in the intro:
+The intro's routines clause and the "Skill updates as the research moves"
+bullet were both drafted four hours before this run, by the fourth writer run
+of the day, in `docs/voice/pricing-claims-2026-10-18.md`. That candidate drops
+the routines clause from the intro entirely and replaces the bullet with "Every
+skill names the papers behind it", which is law 15's rule followed exactly,
+where this run's version hedged the tense instead. Dropping beats hedging and
+that file is the candidate.
 
-> The paid plan opens the skill library, in the same files you read and your
-> agents load, and the routines that keep it current as the research moves.
-
-And in the paid tier's list:
-
-> Skill updates as the research moves
-
-The page already does this right once. Its last bullet reads "Routines, once
-they ship", which is the honest form, and then the intro sells the same
-routines in the present tense and the bullet above sells the updates they would
-produce. A reader who reads the list carefully finds the page disagreeing with
-itself about whether a machine exists.
-
-The candidate, for the intro:
-
-> The paid plan opens the skill library, in the same files you read and your
-> agents load, and the routines that will keep it current as the research
-> moves, once they ship.
-
-And for the bullet, which becomes one line instead of two:
-
-> Skill updates as the research moves, once the routines ship
-
-Both are the tense the page already uses in its own last bullet. The pricing
-page is being reframed by another seat this sprint, so these two lines are
-written to survive that reframe rather than to depend on today's layout.
+One thing this run adds and does not withdraw, because it is an observation
+rather than a line. The pricing page already carries the honest form in its own
+last bullet, "Routines, once they ship", four lines under an intro that sells
+the same routines as running. A page disagreeing with itself about whether a
+machine exists is the clearest instance of this class on the site, and it is
+worth her seeing even though the words to fix it are in another file.
 
 ---
 
@@ -271,6 +223,29 @@ no machine produces is a sales question, and the honest hedge makes it visible
 rather than answering it. Whether "Skill updates as the research moves, once
 the routines ship" belongs in a twenty dollar tier at all is the owner's call
 and the product seat's, not this seat's.
+
+## What this run found out about itself
+
+Two of the eight candidates above are withdrawn because this seat had already
+drafted them today, in two other files, hours earlier. This run read the taste
+register, the value statement, the preference record and the copy pipeline
+before drafting, which is every gate the charter names, and not one of those
+gates points at the candidates the same seat wrote this morning.
+
+That is the same defect as the twenty-two day old line in finding 5, seen from
+the other end. A candidate lives in a file in `docs/voice/`, the owner rules on
+it when she gets to it, and between those two moments nothing anywhere lists
+what is open. So a later run cannot tell a surface that is waiting from a
+surface that is untouched, and it drafts again. The charter warned about this
+in the shape it took in September, which was a candidate that existed only in a
+conversation. It has a file now and no index, which is far better and still not
+enough.
+
+`docs/voice/awaiting-her-word.md` is this run's answer and it ships in the same
+pull request. One row per open candidate, the surface it is for, the file it
+lives in, the day it was drafted, and whether the defective line is still live.
+Every run of this seat reads it before drafting a word, and the duty is small
+enough to survive.
 
 ## Checked before this left the run
 
