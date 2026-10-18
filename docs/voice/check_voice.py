@@ -42,8 +42,16 @@ choosing to type it. Filed in docs/ideas.md for the engineer, to move to
 tools/ and add to .github/workflows/checks.yml beside check_registers.py.
 The stronger form of check 4 needs the corpus and is filed with it.
 
+7. `claims`, docs/agents/quality-claims.md and the incident of 2026-10-18.
+   The register names the machine under every public quality claim and the file
+   that prints it, three charters tell a seat to read it, and two rows recorded
+   as unbuilt stayed live in the present tense for eighteen days anyway. This
+   reads every row against every reader-facing surface and fails when a claim
+   that is not held ships without a hedge, or ships somewhere the row does not
+   name.
+
 Usage:  python3 docs/voice/check_voice.py
-          [enforcements|stale|measure|links|delivery|sweep|all] [path...]
+          [enforcements|stale|measure|links|delivery|sweep|claims|all] [path...]
         python3 docs/voice/check_voice.py enforcements <git-ref>
         python3 docs/voice/check_voice.py selfcheck <git-ref-or-range>
 Exit:   1 if any check reports a finding, 0 if clean.
@@ -900,6 +908,237 @@ def plain_md(line):
     return re.sub(r"[*_`]", "", line)
 
 
+CLAIMS = ROOT / "docs/agents/quality-claims.md"
+
+# What this check can see, which is the half of a gate L-A21 says to state
+# rather than assume. The register names one file per row, and the defect it
+# missed was a claim COPIED to a page the row does not name, so the search
+# space is every reader-facing surface rather than the cited one.
+SURFACE_GLOBS = ("site/app/**/*.jsx", "site/app/**/*.js", "site/lib/*.js",
+                 "site/emails/*.html", "pipeline/*.py")
+
+# Words that carry no claim. Overlap is scored on the rest, because the claim
+# in the register and the claim on the page are rarely the same string: the
+# register holds "revised when the research sharpens it" and /llms.txt prints
+# "revised when its research sharpens", which an exact match reads as absent.
+CLAIM_STOP = set("""a about an and any are as at be been being but by can could
+does do each every for from had has have in into is it its of on only or our
+same so than that the their them then there these they this to up was what when
+where which who will with without you your""".split())
+
+# The hedge, taken from site/app/routines/page.jsx, which is the form the
+# register itself names as acceptable: the absence said out loud. "Still being
+# built. We will write to you the day they ship."
+#
+# The word "will" is not on this list, and the first draft of this check had it
+# there, which read the skills page's "agents that work from the current state
+# of the evidence today and still will next month" as hedged. That sentence is
+# a guarantee about next month for a mechanism the register calls `not built`,
+# so it is the furthest thing from a hedge. A hedge says the thing does not
+# exist yet. A promise says it will, and only one of the two is honest while
+# the mechanism column is empty.
+HEDGE = re.compile(r"\b(not built|not yet|yet to|never been|has never|"
+                   r"have never|none of them|still being built|not shipped|"
+                   r"when (?:they|it) ship|day (?:they|it) ship|planned|"
+                   r"not live|so far|no skill has|intend to|aim to)\b")
+
+STATES = ("held", "unproven", "contradicted", "not built", "queued")
+
+
+def claim_words(phrase):
+    """The content words of a claim, lightly stemmed, as a set."""
+    words = re.findall(r"[a-z]+", phrase.lower())
+    out = set()
+    for w in words:
+        if w in CLAIM_STOP or len(w) < 3:
+            continue
+        out.add(re.sub(r"(ies|es|ed|ing|s)$", "", w) if len(w) > 4 else w)
+    return out
+
+
+def claim_rows():
+    """The register's table as rows: phrases, surfaces, state, measured."""
+    rows = []
+    for line in CLAIMS.read_text().split("\n"):
+        if not line.startswith("|") or line.startswith("| ---"):
+            continue
+        cells = [c.strip() for c in line.strip("|").split("|")]
+        if len(cells) < 4 or cells[0] == "Claim":
+            continue
+        phrases = re.findall(r'"([^"]+)"', cells[0])
+        if not phrases:
+            continue
+        where = [(p.split(":")[0], int(p.split(":")[1]) if ":" in p else 0)
+                 for p in re.findall(r"`([^`]+)`", cells[1])]
+        state = next((s for s in STATES if s in cells[3].lower()), cells[3])
+        rows.append({"phrases": phrases, "where": where, "state": state,
+                     "label": phrases[0], "measured": cells[4] if len(cells) > 4 else ""})
+    return rows
+
+
+def uncommented(path, lines):
+    """The file's lines with its own commentary gone.
+
+    A seat's commentary quotes the claim it is fixing, which is what this check
+    hunts, so leaving it in makes the module that documents a defect read as a
+    surface committing it. `pipeline/skill_revision.py` opens by quoting the
+    site sentence it exists to make true, and the first run of this check
+    reported that docstring as a live unhedged claim. The rule that follows is
+    narrow and it holds: a reader never sees a comment, so a comment is not a
+    surface.
+
+    Python keeps its single-quoted constants, because that is where the
+    masthead lives (`pipeline/weekly.py`, ban list 61) and a sentence fixed in
+    code prints on every issue. It loses its triple-quoted blocks, which are
+    docstrings in every file this reads.
+    """
+    out, in_doc = [], False
+    for line in lines:
+        if path.suffix == ".py":
+            if line.count('"""') == 1:
+                in_doc = not in_doc
+                out.append("")
+                continue
+            line = "" if in_doc else re.sub(r"#.*$", "", line)
+        else:
+            line = re.sub(r"(?<!:)//.*$", "", line)
+        out.append(line)
+    return out
+
+
+def surface_sentences(path):
+    """Reader-facing sentences of one file, each with the line it starts on."""
+    text, marks = "", []
+    raw = re.sub(r"/\*.*?\*/|<!--.*?-->", " ", path.read_text(), flags=re.S)
+    for n, line in enumerate(uncommented(path, raw.split("\n")), 1):
+        marks.append((len(text), n))
+        text += re.sub(r"<[^>]*>", " ", line).strip() + " "
+    out = []
+    for m in re.finditer(r"[^.!?]+[.!?]", text):
+        start, body = m.start(), norm(m.group())
+        line = max(n for off, n in marks if off <= start)
+        if len(body) > 24:
+            out.append((line, body))
+    return out
+
+
+def claims():
+    """Every registered quality claim against the surface that prints it.
+
+    docs/agents/quality-claims.md says a claim with no mechanism ships hedged
+    or does not ship. Three charters enforce that by telling a seat to read the
+    file, and on 2026-10-18 two rows recorded as `queued` and `not built` on
+    2026-09-30 were live on /llms.txt in the flat present tense, eighteen days
+    later, with the register's own cells accurate the whole time
+    (INC-2026-10-18-registered-claims-ship-unhedged-because-no-gate-reads-the-register).
+    L-A22: the gate goes in the command.
+
+    It fails three ways.
+
+    - UNHEDGED, a claim whose state is not `held` printed in the present tense.
+      That is the defect above and it is the writer's to fix, by drafting the
+      hedge, or the register's rule to refuse the line.
+    - UNNAMED, a claim that is not `held` on a surface the row does not cite.
+      The revision claim reached three pages by being copied, and a measurement
+      attached to one file does not follow the sentence to the next one.
+    - EMPTY, no rows parsed or no surfaces read, because a check that examined
+      nothing and a check that found nothing look identical from outside.
+
+    GONE and MOVED print and do not fail, and the reason is whose work they
+    are. A cited file that no longer says anything like its claim, and a cited
+    line number that has drifted, are both the register's accuracy rather than
+    the artifact's honesty, and the register belongs to the ExO seat while this
+    command runs in the writer's. A gate that turns red on a file its own seat
+    must not edit gets ignored, which is the failure mode after the failure
+    mode this check exists for. They are counted separately and reported.
+
+    GONE also fires on a row whose claim is rendered as an element rather than
+    written as a sentence. `SkillLibrary.jsx` prints "Trigger test" over a
+    date, and the register's row for it is a fair description of what a reader
+    sees and not a string that is anywhere in the file. That is the clearest
+    case for printing it and not failing on it.
+
+    What it cannot see, which is the other half of L-A21. It finds a claim the
+    register already knows. A sentence making a NEW quality claim that no row
+    covers scores no overlap and passes here, and that is the finding the
+    charter hands to a reading rather than to a command, because deciding
+    whether a sentence is a claim about our artifact is the judgment this check
+    does not have.
+    """
+    rows, fails = claim_rows(), []
+    hedged, moved, spread, gone = [], [], [], []
+    surfaces = []
+    for glob in SURFACE_GLOBS:
+        surfaces += sorted(ROOT.glob(glob))
+    scanned = [(p, surface_sentences(p)) for p in surfaces if p.is_file()]
+    print(f"rows in docs/agents/quality-claims.md       {len(rows)}")
+    print(f"  not `held`, so hedged or not shipped      "
+          f"{sum(1 for r in rows if r['state'] != 'held')}")
+    print(f"reader-facing surfaces read                 {len(scanned)}")
+    print(f"  sentences in them                         "
+          f"{sum(len(s) for _, s in scanned)}")
+    print()
+    if not rows or not scanned:
+        print("  FAIL    this check examined nothing, which is not a pass")
+        return 1
+
+    for row in rows:
+        words = [claim_words(p) for p in row["phrases"]]
+        cited = {p for p, _ in row["where"]}
+        hits = []
+        for path, sentences in scanned:
+            rel = str(path.relative_to(ROOT))
+            for line, body in sentences:
+                have = claim_words(body)
+                score = max((len(w & have) / len(w)) if w else 0 for w in words)
+                if score >= 0.6 and max(len(w & have) for w in words) >= 3:
+                    hits.append((rel, line, body, score))
+        print(f"{row['state']:>13}  \"{row['label'][:58]}\"")
+        for rel, line, body, score in hits:
+            tag = "ok      "
+            if row["state"] != "held" and not HEDGE.search(body):
+                tag, _ = "UNHEDGED", fails.append((row, rel, line, body))
+            elif row["state"] != "held":
+                hedged.append((row, rel, line))
+            if rel not in cited:
+                if row["state"] == "held":
+                    spread.append((row, rel, line))
+                    tag = "SPREAD  " if tag == "ok      " else tag
+                else:
+                    fails.append((row, rel, line, body))
+                    tag = "UNNAMED " if tag == "ok      " else tag + "+UNNAMED"
+            print(f"  {tag}  {rel}:{line}  ({score:.0%} of the claim's words)")
+            print(f"            {body[:96]}")
+        for path, want in row["where"]:
+            f = ROOT / path
+            if not f.exists():
+                continue
+            there = [h for h in hits if h[0] == path]
+            if not there:
+                print(f"  GONE      {path} is cited and says nothing like it")
+                gone.append((row, path))
+            elif want and all(abs(h[1] - want) > 4 for h in there):
+                print(f"  MOVED     {path} cites line {want}, found at "
+                      f"{', '.join(str(h[1]) for h in there)}")
+                moved.append((row, path))
+        if not hits:
+            print("  not printed on any surface this check can see")
+        print()
+
+    print(f"FAIL, unhedged or unnamed, live right now   {len(fails)}")
+    print(f"claims not held and properly hedged         {len(hedged)}")
+    print(f"held claims on an uncited surface           {len(spread)}")
+    print(f"for the register's owner, not a failure here")
+    print(f"  cited files that no longer say it         {len(gone)}")
+    print(f"  cited line numbers that have drifted      {len(moved)}")
+    print()
+    print("A claim that is not `held` ships hedged the way routines/page.jsx")
+    print("hedges a routine that does not exist yet, or it does not ship. The")
+    print("repair is to drop the claim rather than to soften it where softening")
+    print("leaves a false sentence standing, which is canon law 15.")
+    return 1 if fails else 0
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -920,8 +1159,8 @@ def main():
     # `all` runs over whatever is in site/content/issues.
     for name, fn in (("enforcements", enforcements), ("sweep", sweep),
                      ("stale", stale), ("measure", measure), ("links", links),
-                     ("delivery", delivery), ("compare", compare),
-                     ("selfcheck", selfcheck)):
+                     ("delivery", delivery), ("claims", claims),
+                     ("compare", compare), ("selfcheck", selfcheck)):
         if which == name or (which == "all"
                              and name not in ("selfcheck", "compare")):
             print(f"==== {name} ====")
