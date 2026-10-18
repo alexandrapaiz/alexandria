@@ -979,8 +979,6 @@ paragraph is about.
 
 First kind, claims newer evidence says are wrong. Each item is a short prose
 unit with the same context-first pyramid as everything else. What was believed
-First kind, claims newer evidence says are wrong. Each item is a short prose
-unit with the same context-first pyramid as everything else. What was believed
 and where that belief came from, in plain words, then what overturned it and on
 what evidence, and then the practical consequence for a builder.
 `deprecated` carries no institution and no author, so this slot never asks for
