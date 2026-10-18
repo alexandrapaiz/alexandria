@@ -1,3 +1,63 @@
+## Updated 2026-10-18, ~07:15 UTC (message pass): PR #366 and #370 both already resolved before this pass started, nothing new to merge, confirmed rather than repeated
+
+**Trigger.** The event bundle for this pass named three things: the
+writer seat's run finishing with PR #366 open, the same event a second
+time from a different report address, and PR #370 opened by
+distribution (the lessons.md re-vendor from HQ 4464b1d). Each asked this
+seat to check the item against the merge rule, merge what is this
+seat's to merge, and hand the next thing to a seat on the board.
+
+**PR #366, already merged by this seat's own prior pass.** The board's
+inbox carries a `done` message from `pm`/`alexandria` at 07:12:52 UTC,
+ref PR #369: the writer's seventh run fixed the budget-gate failure,
+read clean and green under the merge rule (Tier B), and is merged as
+`99a1405`. That pass also corrected its own hold from forty minutes
+earlier (PR #367's "`prompts/` is Tier C" read), filing
+`INC-2026-10-18-tier-c-carve-out-misread-a-sixth-time`. Confirmed rather
+than trusted: `gh pr view 366 --json state,mergedAt` reads `MERGED`, and
+`99a1405` is the newest commit on `main` before #370's merge. Nothing
+left here.
+
+**PR #370, already merged under the exo centralizer's own Tier A lane.**
+`gh pr view 370` reads `MERGED`, `gh pr diff 370 --name-only` shows
+exactly one path, `docs/standards/lessons.md`, opened ready per
+ADR-011. That is the one file the centralizer may self-merge without
+the owner (§10), so it was never this seat's decision to make.
+
+**Hand the next thing to a seat: nothing new to hand.** Every open pull
+request already names a seat already working it: #358 (engineer, the
+checkout alarm's reader) and #356 (frontend, the dead pricing pills) are
+both drafts already in progress against their own backlog cards. The
+two engineer-facing proposals PR #366 filed in `docs/ideas.md` (a
+pre-commit budget check, splitting the press into a write call and a
+check call) are `proposed`, not `accepted`, so dispatching either would
+invent the owner's verdict rather than relay one. Posted a `done` on the
+board naming this rather than repeating #369's account.
+
+**Run health.** `gh run list --limit 30`: the six failures in the last
+24 hours are all on `alexandria-writer/2026-10-18-message-payload-audit`
+and `alexandria-writer/2026-10-18-message`, the same budget-gate class
+PR #366 fixed. No new failure class. `checks.yml` on `main`: success,
+from the #366 merge (`99a1405`), 2026-10-18T07:09:33Z.
+
+**Queue gauge, four numbers.**
+1. `main`'s newest commit: `99a1405` (the #366 merge), minutes old.
+   Newest `checks.yml` on `main`: success.
+2. Open pull requests: 12 total (#272, #331, #332, #333, #335, #356,
+   #358, #362, #365, #367, #368, #369). 0 opened since the #366 merge.
+3. 7-day conversion: 62 merged over 103 opened (0.60), unchanged since
+   the last pass — no new merge, no new open.
+4. Deepest open chain: 2 (#272 to #331, exo's own), unchanged.
+
+**Owed to the owner, unchanged, not re-litigated here:** the Polar
+Merchant-of-Record account, the missing launch PR/FAQ on `main`, this
+seat's own open pull requests `#332` and `#335`, and the nine-charter
+branch-prefix fix.
+
+**Merged this run:** none. Both named items were already settled, one
+by this seat's own prior pass and one by a different seat's own Tier A
+lane, before this pass read anything.
+
 ## Updated 2026-10-18, ~07:10 UTC (message pass): PR #366 checked against the merge rule and merged, this seat's own prior hold on the same chain corrected, a sixth Tier C misread filed
 
 **Trigger.** PR #366 opening (writer, seventh run, "the generator's own weight
