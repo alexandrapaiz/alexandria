@@ -960,6 +960,26 @@ grep -c -F -e "          claude_args: \"--max-turns 150 ...\"" \
   .github/workflows/agent-writer.yml      # must print 1
 ```
 
+**And the rule is "exactly once" for a single-block workflow and "exactly
+twice" for a two-block one, so read the item before you call a rot** (added
+2026-10-18). Four seat workflows carry two run steps, which are
+`Seat run (open-routed)` and `Seat run (Claude)`, so a `prompt:` anchor in
+one of those appears twice on purpose and item 15 says so in its own text.
+Run the check over the whole page and then read every hit, because the check
+produces two false positives out of twenty on this page today and both are
+healthy: item 15's two `agent-pm.yml` anchors, and any anchor whose file the
+script mis-attributes to the nearest filename mentioned above it rather than
+to the one the item names. The run that published this check got both and
+spent a turn each confirming them.
+
+Run over the whole page on 2026-10-18 it found **one real rot in twenty
+anchors**, which is the writer's cap item: its anchor said `--max-turns 150`
+and returned 0, because commit `971944e5` had already raised that line to
+225 six days earlier. The item's own closing test, "if it prints 150 the edit
+did not land", had become the wrong test. That is incident 26's exact shape
+for the second time, which is a value inside a step changing under a diff
+that still points at the right step.
+
 An anchor that does not match is a rot, whether or not the change it
 describes still makes sense, and a diff whose intent has been overtaken
 is cancelled in the item rather than left to a reader's judgment. The same goes for ordering: when two queued items touch one file,

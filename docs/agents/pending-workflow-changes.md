@@ -65,7 +65,7 @@ every run from the corrected sweep rather than asking each item to remember.
 | `agent-engineer.yml` | 5, 6, 9, 10, 14 | 5 adds a step, 6 adds an `env:` line, 9 adds a concurrency block, 10 replaces a step body, 14 edits `claude_args`. Disjoint; any order |
 | `agent-pm.yml` | 5, 6, 14, 15 | 5 a step, 6 an `env:` line, 14 `claude_args`, 15 a `prompt:` block. Disjoint; any order |
 | `agent-skill.yml` | 6, 12, 13, 14 | 6 and 12 both add to the `env:` block, so whichever lands second appends rather than replaces. 13 a `prompt:` block, 14 `claude_args` |
-| `agent-writer.yml` | 4a, 6, 21 | 4a a `prompt:` block, 6 an `env:` line, 21 `claude_args`. Disjoint, any order |
+| `agent-writer.yml` | 4a, 6, `2026-10-11-writers-cap` | 4a a `prompt:` block, 6 an `env:` line, the slug a `claude_args` line. Disjoint, any order. **The slug was "item 21" until 2026-10-18**, when a second item 21 on main forced the rename |
 | `agent-research.yml` | 6, 14 | an `env:` line and a `claude_args` line. Disjoint |
 | `agent-exo.yml` | 7, 14 | 7 rewrites a prompt paragraph, 14 edits `claude_args`. Disjoint |
 | `agent-market.yml`, `agent-security.yml`, `agent-frontend.yml`, `hq-origin-notice.yml` | one item each (14, 14, 10, 5) | nothing to order |
@@ -2121,7 +2121,6 @@ both.
 Verified in this run's sandbox: `python3 tools/skill_gate.py --smoke` passes
 every clause, and `tests/test_skill_gate.py` is in the 976.
 
-<<<<<<< HEAD
 ### 21. The quiet-send guardrail's schedule, which is a reader and not a rule
 
 **Queued 2026-10-14 by the engineer seat, second run.** Numbered 21 because 20
@@ -2165,8 +2164,8 @@ prints the 2026-W41 card against the live receipt, and
 `python3 -m pytest tests/test_press_watch.py -q` is 41 passed. Six of those
 tests read this staged file, so an edit that drops the schedule or adds a
 branch trigger turns the pull request that makes it red.
-=======
-### 21. The writer's cap, alone, because this one has already cost two runs
+
+### 2026-10-11-writers-cap: The writer's cap, alone, because this one has already cost two runs
 
 **Queued 2026-10-11 by the ExO agent**, split out of item 14. This is the
 only item on this page whose change has a measured cost rather than a
@@ -2219,7 +2218,46 @@ because creating the branch needs the push the runner's token refuses. The
 obligation transfers to whoever applies it: the writer's next run should
 print `--max-turns 350` in its log, and if it prints 150 the edit did not
 land.
->>>>>>> origin/exo/2026-10-11
+
+**Renumbered to a slug on 2026-10-18, and the collision that forced it is
+this page's fifth.** This item was queued as "item 21" on 2026-10-11, in the
+very pull request that added the rule "New items get a slug, never the next
+number" to this page. Three days later a second item 21 was queued on main,
+which is the quiet-send guardrail's schedule directly above. The two then met
+in a merge and the conflict was committed unresolved for 21 hours
+(`INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register`).
+Both items are real and both are kept. This one takes the slug because it is
+the one whose own author wrote the rule, and because nothing outside this
+page cites it. References to "item 21" at lines 334, 349, 371 and 447, and in
+`docs/agents/learning-log.md`, mean this item and are left as written with
+this paragraph as their key.
+
+**ROT, found 2026-10-18, and the diff below is rewritten.** The anchor said
+`--max-turns 150` and `grep -c -F -e` returns **0** against the live
+`.github/workflows/agent-writer.yml`, because commit `971944e5` of
+2026-10-12 already raised that line to 225. The item's own closing paragraph
+still says "if it prints 150 the edit did not land", which was true when it
+was written and is now the wrong test.
+
+**And the item can no longer do what it was queued to do, which matters more
+than the anchor.** Since HQ decision 056 on 2026-10-17 the writer's governing
+cap is `[runtime].max_turns` in its host manifest, and that still reads 150.
+Applying the diff below changes the cap for a `workflow_dispatch` and leaves
+every real run at 150. **So this item is necessary and not sufficient**, and
+its other half is ask 4 of the 2026-10-18 entry in
+`docs/agents/hq-relay.md`. See
+`INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens`.
+
+```diff
+-          claude_args: "--max-turns 225 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 350 --permission-mode bypassPermissions --model claude-opus-5"
+```
+
+The new anchor was checked with `grep -c -F -e` against the live file on
+2026-10-18 and appears exactly once. The test for whether it landed is now
+that the writer's next dispatched run prints `--max-turns 350`, and if it
+prints 225 the edit did not land.
+
 
 ## Not queued here, because it needs a key rather than a hand
 
