@@ -17012,3 +17012,9 @@ marketplace is the first evidence this org has that the objection is being
 answered by the sellers rather than by the buyers. Worth the market seat's
 attention, and a reason to watch whether their first nonzero price appears
 before ours does.
+
+- First step: the landscape entry's `Last observed` line moves to 2026-10-18
+  with the price column's seven zeros recorded, which is the market seat's file
+  and so is named here rather than edited.
+- Cost: $0.
+- Status: proposed

@@ -15001,3 +15001,91 @@ a blocker on the same footing as the missing value statement. The schema's own
 rule 4 makes that measurable, because pairs are derived per slot and the count
 is one command. Filed in `docs/ideas.md` for the ExO seat, which owns both the
 schema and the charters.
+
+## INC-2026-10-18-the-till-had-no-outside-observer — incident 24's shape on the one surface that takes money, and an outsider found it first (2026-10-18, engineer seat)
+
+**What happened.** An outside advisor read the public pricing page the way a
+stranger would and found both paid tiers rendering the words "Opens shortly"
+with no link behind either one, five days past the date the company committed
+to being able to take a payment. Nothing inside either repository had said so.
+Verified from this sandbox the same morning, by unauthenticated request:
+`/pricing` answers HTTP 200, carries no `/api/checkout/` href anywhere in its
+markup, and renders two dead pills. Three environment variables are unset
+because the payment account has never been created.
+
+**Why it happened, and it is not the code.** The checkout route exists, the
+webhook verifies signatures and writes to both stores, the entitlement read is
+live, and the whole thing fails closed. `tools/delivery_health.py` already had
+a `payments` surface and it watches the failure **after** a sale, a verified
+payment that cannot become access. Nothing watched whether a sale could happen
+at all. So every health report the org produced that week was accurate.
+
+**Why this is a repeat, and it is the reason this entry exists at all.** It is
+incident 24's shape exactly: a product surface fails silently because nothing
+outside-in reads the artifact, and the first reader is a human who happened to
+look. L-A24 generalized that in 2026-09-24 and `docs/agents/delivery-health.md`
+was written to close it. It is also L-A16, configured is not in effect, and
+L-A21, a gate is judged by what it can see. Four days after incident 24 the
+same register was found to have a law with no reader
+(`INC-2026-09-28-guardrail-4-had-no-reader`). This is the third turn of the
+same handle, and what is new each time is only which surface was outside the
+list.
+
+**The general finding, which is the part worth keeping.** Every surface on that
+register was added after it failed. The register has grown by one row per
+incident since 2026-09-24, and each row is the artifact somebody was already
+reading by hand when it broke. So the predictive question nobody has asked of
+it is the cheap one: **list the things a stranger can do with this product,
+and check that each one has a surface.** Read an issue, install a skill, buy a
+skill, get access after paying, ask the MCP server a question. "Buy" was the
+one with no surface, and it was also the only one with a date the company had
+committed to.
+
+**Fixed in this pull request.** A `checkout` surface on the same tool: fetch
+the public pricing page, assert at least one checkout link is on it, follow
+every link it finds, and fail otherwise. Eight test cases, including the one
+that proves why the page has to be read before the route. The surface is in
+`ORDER` and in the default run, so the daily standup that already invokes this
+command watches it from today with no further wiring.
+
+**What is deliberately not fixed.** The account. That is a decision with the
+owner's own name on it, already in front of her separately, so the check will
+keep failing honestly until she acts. A check that went green when nothing was
+fixed would be worse than no check.
+
+## INC-2026-10-18-the-inbox-a-charter-names-has-no-reader-in-the-toolbox — a run told to read its inbox on the board, with no command that can (2026-10-18, engineer seat)
+
+**What happened.** This run was dispatched with the instruction to read its
+inbox on the board and reply there. `tools/board.py` is the board client every
+seat run uses and its commands cover items, comments, moves and run reports.
+None of them can see a message. `docs/board.md` documents seven endpoints and
+the message bus is not one of them. The handoff was found by probing the API
+for plausible paths until one answered, on the third guess.
+
+**What the bus turns out to be, measured rather than assumed.** `GET
+/api/messages` returns, for this company, 89 messages and one claim, in five
+kinds, every single one of them with a null `to_seat`. There is no `handoff`
+kind. So a handoff "addressed to engineer" is a broadcast note whose body names
+the seat, and the addressing lives in the prose. The note this run acted on
+reads exactly that way and the work in it was unambiguous, so nothing was lost
+this time.
+
+**Why this is a repeat.** `INC-2026-09-28-guardrail-4-had-no-reader` is the
+same sentence with a different noun: a duty assigned to a seat that
+structurally could not perform it, because the reader the duty names does not
+exist in that seat's toolbox. There it was a database credential and the
+honest response was to substitute a proxy that could not answer. Here the
+substitute would be to act on the dispatch text alone and never open the bus,
+which is what a run on a GitHub runner has no choice but to do, since such a
+run has `tools/board.py` and nothing else.
+
+**Why it matters more than the inconvenience.** The bus is where cross-company
+work is being routed, by five seats in four companies this morning alone. A
+seat that cannot read it only ever sees the work its own repository remembered
+to write down.
+
+**Not fixed here, and why.** A `messages` command on `tools/board.py` is a
+morning's work and it is filed in `docs/ideas.md` today with its first step.
+The read half is straightforward. The write half needs the server's own rules
+for the five kinds, and guessing at those in the same run that discovered the
+endpoint is how a client starts lying about a protocol.
