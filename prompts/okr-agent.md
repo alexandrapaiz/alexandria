@@ -152,6 +152,34 @@ predecessor's work is often wrong.
 If you find one, choose deliberately between two options, and say which
 one you chose at the top of your PR description.
 
+**First, unshallow the clone, before you run a single command that compares
+two branches** (added 2026-10-18, `INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register`).
+
+The host clones this repository shallow. A shallow clone does not only hide
+history. `--depth 1` implies `--single-branch`, so the default branch is
+grafted with no parents, and a three-way merge between two close branches
+reads as unrelated histories. The merge then produces garbage that commits
+cleanly. On 2026-10-17 the ExO seat's own run merged its predecessor's branch
+in that state and committed 2,456 lines of conflict markers into
+`docs/agents/incidents.md`, and the pull request sat open that way for 21
+hours.
+
+Two commands, always, before any merge, `git merge-base`, `A...B` diff, or
+staleness check:
+
+```bash
+git rev-parse --is-shallow-repository    # true means every comparison below lies
+git fetch --unshallow                    # harmless when it is already full
+```
+
+This was filed for a charter on 2026-09-24 as
+`INC-2026-09-24-shallow-clone-merge-base-repeat`, which offered two remedies.
+The mechanical one shipped as `fetch-depth: 0` in all twelve workflows and
+stopped governing on 2026-10-17 when the seats left GitHub Actions. This
+sentence is the other one, and it is here rather than in a workflow because
+a charter line travels with the seat and a workflow step does not.
+
+
 - **Build on it.** Merge that branch into yours early, in your first
   few turns, before you write anything. Your PR then supersedes it, and
   you say so plainly at the top of your description. **Then close the
