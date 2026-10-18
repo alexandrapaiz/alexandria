@@ -57,7 +57,9 @@ Usage:  python3 docs/voice/check_voice.py
 Exit:   1 if any check reports a finding, 0 if clean.
 """
 import collections
+import contextlib
 import html
+import io
 import pathlib
 import re
 import subprocess
@@ -68,6 +70,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 BAN = ROOT / "docs/voice/ban-list.md"
 DIGEST = ROOT / "prompts/digest.md"
 CANON = ROOT / "docs/voice/canon.md"
+TASTE = ROOT / "docs/voice/taste.md"
 
 # The tell from ban list 89, which is the entry's own giveaway. "the last
 # issue" and "the newest print" are here because both are referents that move
@@ -1167,7 +1170,16 @@ READING = re.compile(
     r"papers? read\b(?! in full| closely)"
     r"|\bread\b(?! in full| closely)\s+[\d,{][^ ]*\s+papers?\b"
     r"|\b(?:library|alexandria|corpus)\b[^.]{0,60}\breads?\b"
-    r"[^.]{0,40}\b(?:research|papers?|literature|abstracts?)\b", re.I)
+    r"[^.]{0,40}\b(?:research|papers?|literature|abstracts?)\b"
+    # The subject is a pronoun, which is how three sentences of
+    # site/app/llms.txt/route.js escaped this on 2026-10-18. The clause
+    # above needs the library named inside the same sentence, and a
+    # paragraph that names it once then says "It reads the week's AI
+    # research" is the same false claim with the subject moved out of
+    # reach. Her 2026-09-20 ruling rejects "it" as the subject of a
+    # mechanism sentence anyway, so the form is wrong twice over.
+    r"|\bit reads\b[^.]{0,40}"
+    r"\b(?:research|papers?|literature|abstracts?)\b", re.I)
 
 
 def reading(paths=None):
@@ -1235,6 +1247,290 @@ def reading(paths=None):
     return 1 if hits else 0
 
 
+# Her rulings, each mapped to the text that enforces it. The key is the
+# ruling's own words, copied verbatim out of docs/voice/taste.md, which is
+# what lets this map exist at all: the writer seat is forbidden to edit her
+# register, so the anchor convention the ban list uses (a LANDED line inside
+# the entry) is not available here. The quote has to live on this side and
+# reach across.
+#
+# That inversion is the whole design. In `sweep` the register holds the
+# numbers and the map answers for them. Here the register holds prose nobody
+# else may touch, so the map quotes it and the check asks whether the quote
+# still resolves. A ruling she rewords breaks its own row, which is correct:
+# a reworded ruling is a ruling to re-read.
+class Check:
+    """An enforcement that is a command in this file rather than a line in a
+
+    file. A ruling with one of these is green only when that command is green,
+    so the taste gate inherits the verdict instead of reporting a quote that
+    resolves while the rule it anchors is being broken on a live page.
+
+    This exists because the first green run of `taste` was a false one. Her
+    ruling of 2026-09-29 carries six numbered verdicts. Two of them were
+    anchored to approved headings on the site, both quotes resolved, and the
+    sixth verdict, never "read" for ingested, was being violated on three
+    reader-facing surfaces at that moment. A quote proves a rule is present
+    and says nothing about the artifact.
+    """
+
+    def __init__(self, name):
+        self.name = name
+
+    exists = staticmethod(lambda: True)
+
+    @property
+    def stem(self):
+        return self.name
+
+
+TASTE_MAP = {
+    '"stale and mechanical and boring"': [
+        (CANON, "Study decisions, never copy sentences"),
+    ],
+    '"Traction matters a lot." Relevance is impact of': [
+        (DIGEST, "Traction leads, because relevance is impact and not release date"),
+    ],
+    'Fresh items with no traction are listed honestly as': [
+        (DIGEST, "Fresh work is labeled honestly as unproven here"),
+    ],
+    "The headline is a finding a builder can act on, not a greeting.": [
+        (DIGEST, "The title states a FINDING, never a topic, a direction, or a greeting"),
+    ],
+    "Evidence grading appears in-line per item.": [
+        (DIGEST, "In-line evidence grades are house law at the top of this file"),
+    ],
+    "Instrument honesty notes are part of the product.": [
+        (DIGEST, "Honesty still binds, but it serves items, in place, in one plain sentence"),
+    ],
+    '"You didn\'t show me the paper": links must reach the': [
+        (DIGEST, "Links reach the full text, never the landing page"),
+        (Check("links"), "the form half, on the served issues"),
+    ],
+    "NO meta-commentary inside the newsletter.": [
+        (DIGEST, "the issue never narrates its own methodology, ranking logic, or virtues"),
+    ],
+    "Section headings must be newsletter craft, not": [
+        (DIGEST, "The heading for the traction slot, written from the items you are about to"),
+    ],
+    '"A lot of things are given with 0 context. I did this': [
+        (DIGEST, "Big picture first, then specifics"),
+        (DIGEST, "Never make the reader climb through details to find the point"),
+    ],
+    "The date does NOT belong in the title.": [
+        (DIGEST, "The date does NOT belong in this line"),
+    ],
+    "Section headers: same FRAMEWORK, never the same": [
+        (DIGEST, "The slot's internal name is not repeated here and is not a candidate"),
+    ],
+    "Length follows the news. Issues are never fixed": [
+        (DIGEST, "Length follows the news, and the news is different every day"),
+        (DIGEST, "Padding a thin day and truncating a heavy one are the same failure"),
+    ],
+    'SECOND OCCURRENCE, her word "AGAIN": section headings': [
+        (DIGEST, "it is REPLACED by your own writing, never printed. That binds the title, "
+                 "all four headings"),
+        (DIGEST, "the four slot names are held only in the heading gate at the end"),
+    ],
+    "THE OUTSIDER TEST, from her read of the first": [
+        (DIGEST, "The outsider test, and it is a hard rule"),
+        (DIGEST, "they do not carry the subfield's map in their head"),
+    ],
+    'DENSITY is the twin ruling: "avoiding density is': [
+        (DIGEST, "White space between sections, and never two walls in a row"),
+    ],
+    "Two rejected-verbatim specimens for the outsider": [
+        (DIGEST, "So every term of art carries its plain-words clause the FIRST time it"),
+    ],
+    "Scope widens: the voice canon governs SITE COPY too.": [
+        (CANON, "this canon governs SITE COPY as well as the newsletter"),
+        (CANON, "The writer seat drafts the words and the frontend seat sets them"),
+    ],
+    "The pilot issue: the current archived issue (2026-W37)": [
+        (ROOT / "site/lib/content.js", 'HIDDEN_WEEKS = new Set(["2026-W37"])'),
+    ],
+    '"dont name it [alexandria] 2026-W39. give it a proper': [
+        (ROOT / "pipeline/weekly.py",
+         'ALARM_SUBJECT_CANNOT_PRINT = "The press could not print this week\'s issue"'),
+        (DIGEST, "never the ISO week id here or anywhere else reader-facing"),
+    ],
+    '"dont assume readers read each issue." EVERY ISSUE STANDS ALONE.': [
+        (DIGEST, "Then check that the issue stands alone. A hard gate"),
+    ],
+    '"so much better, but feels dense and like a hassle to read.': [
+        (DIGEST, "Judge each item's weight and let its length follow"),
+        (DIGEST, "a list appears because the material is parallel and never because the "
+                 "page needed a list"),
+    ],
+    "Codes are never owner-facing.": [
+        (ROOT / "tools/board.py", "prose must not carry codes or PR numbers"),
+    ],
+    'Graph page copy. "A graph that never forgets."': [
+        (ROOT / "site/app/graph/page.jsx", '<h1 className="page-title">Claim graph</h1>'),
+    ],
+    'SITE COPY, the rounds that landed (owner: "good. i like': [
+        (ROOT / "site/app/skills/page.jsx", "Skill library"),
+        (ROOT / "site/app/library/page.jsx", "Every issue"),
+        # Verdict (6) of this ruling, never "read" for ingested, has a command
+        # of its own. Two bare-noun headings resolving says nothing about it.
+        (Check("reading"), "verdict 6, never \"read\" for ingested"),
+    ],
+    'THE CLOSE. "change each of these: You read to decide. Your': [
+        (DIGEST, "**Accelerate every builder and agent to frontier speed.**"),
+        (ROOT / "pipeline/email_render.py",
+         'CLOSE = "Accelerate every builder and agent to frontier speed."'),
+    ],
+    'TITLES. "two issues should never have the same title.': [
+        (DIGEST, "A title the library has already used is not a title"),
+    ],
+}
+
+# Rulings no file in this repository can enforce, each with the reason and the
+# seat the answer belongs to. This is the `SWEEP_FILED` half of the same idea:
+# a row here is a judgment that the ruling is binding and unmechanisable, not
+# an exemption from reading it.
+TASTE_FILED = {
+    "Site copy, round one verdicts (line by line, hers)":
+        "Verdicts on eight specific lines, five of them rejections. The rules "
+        "they produced are law in canon.md and the ban list; the verdicts "
+        "themselves are evidence and are checked by a reading.",
+    "Site copy rounds two to eight, all rejected.":
+        "docs/agents/copy-pipeline.md is the process fix and "
+        "docs/voice/preferences/site-copy-2026-09-20.md is the record. A "
+        "rejection of eight drafts cannot be checked against a file; it is "
+        "read before the next draft.",
+    "Daily cadence adopted so the product can be seen and":
+        "A cadence decision, the engineer's surface. The daily has never run, "
+        "so there is no artifact for a check to read.",
+}
+
+# Rulings a later ruling replaced. The value is the anchor of the ruling that
+# replaced it, which must itself carry a row above, so a supersession cannot
+# point at nothing.
+TASTE_SUPERSEDED = {
+    "The dual-audience close stands: \"You read to decide.":
+        'THE CLOSE. "change each of these: You read to decide. Your',
+}
+
+# Her register separates the date from the ruling with an em dash, written
+# here as the escape so that canon law 1 needs no exception for the one
+# place in this file that has to match the mark rather than avoid it.
+RULING = re.compile("^- (20\\d\\d-\\d\\d-\\d\\d) \\u2014 ", re.M)
+
+
+def rulings():
+    """docs/voice/taste.md's dated bullets, as (date, normalised body).
+
+    A ruling runs from its own "- YYYY-MM-DD — " to the next one, so a bullet
+    that wraps over fourteen lines is one ruling and the sub-numbered verdicts
+    inside it stay with it. That is her file's shape and not a choice this
+    makes: she gives one ruling that contains five verdicts and the writer
+    reads it as one ruling.
+    """
+    text = TASTE.read_text()
+    marks = list(RULING.finditer(text))
+    out = []
+    for i, m in enumerate(marks):
+        end = marks[i + 1].start() if i + 1 < len(marks) else len(text)
+        out.append((m.group(1), norm(text[m.start():end])))
+    return out
+
+
+def taste():
+    """docs/voice/taste.md against the files that carry it, incident 20.
+
+    The canon's grading procedure has read the taste register ruling by ruling
+    since the day it was written, and pass 2 says "against the issue and
+    against the generator". Nothing re-ran that. Her title ruling of
+    2026-10-04 names this seat and prompts/digest.md in its own last sentence,
+    and fourteen days and five writer runs later the generator did not carry
+    it, because a taste check written as a check against the artifact in front
+    of you is blind on a day the artifact is not the generator.
+
+    This is the other gate. It fails five ways, and L-A21's rule that a gate
+    seeing nothing is a failure rather than a quiet pass is why each one is
+    counted out loud:
+
+      a ruling in her register that no row here claims,
+      a row whose quote of her words no longer resolves in her register,
+      a row whose anchor matches more than one ruling, which makes the row's
+        verdict ambiguous about which ruling it answered,
+      an enforcement quote that has left the file it named,
+      a supersession pointing at a ruling that has no row.
+
+    What it cannot see is the same thing `sweep` cannot see, and it is worth
+    naming rather than discovering. A quote that resolves proves the
+    enforcement is present, never that it is as wide as the ruling. Her
+    outsider ruling covers every term of art in the issue and the quote
+    anchoring it covers the first use of one. Checking the width is a reading,
+    and it belongs to the grade.
+    """
+    rows = {}
+    for src, kind in ((TASTE_MAP, "landed"), (TASTE_FILED, "filed"),
+                      (TASTE_SUPERSEDED, "superseded")):
+        for anchor in src:
+            rows.setdefault(anchor, kind)
+    found = rulings()
+    claimed, ambiguous, phantom = {}, [], []
+    for anchor in rows:
+        hits = [i for i, (_, body) in enumerate(found) if norm(anchor) in body]
+        if not hits:
+            phantom.append(anchor)
+        elif len(hits) > 1:
+            ambiguous.append((anchor, len(hits)))
+        else:
+            claimed.setdefault(hits[0], []).append(anchor)
+    uncovered = [i for i in range(len(found)) if i not in claimed]
+
+    cache, gone, red = {}, [], []
+    for anchor, pairs in TASTE_MAP.items():
+        for path, quote in pairs:
+            if isinstance(path, Check):
+                if path.name not in cache:
+                    buf = io.StringIO()
+                    with contextlib.redirect_stdout(buf):
+                        cache[path.name] = globals()[path.name]()
+                if cache[path.name]:
+                    red.append((anchor, path.name, quote))
+                continue
+            if path not in cache:
+                cache[path] = norm(path.read_text()) if path.exists() else ""
+            if norm(quote) not in cache[path]:
+                gone.append((anchor, path, quote))
+    dangling = [(a, t) for a, t in TASTE_SUPERSEDED.items() if t not in TASTE_MAP]
+
+    print(f"rulings in docs/voice/taste.md                 {len(found)}")
+    print(f"  enforced in a file, and quoted here          {len(TASTE_MAP)}")
+    print(f"  no file can carry, filed with the reason     {len(TASTE_FILED)}")
+    print(f"  replaced by a later ruling                   {len(TASTE_SUPERSEDED)}")
+    for anchor, reason in sorted(TASTE_FILED.items()):
+        print(f'  FILED   "{anchor[:46]}"')
+        print(f"            {reason[:72]}")
+    for i in uncovered:
+        date, body = found[i]
+        print(f"  FAIL    {date} in her register and in no row here")
+        print(f'            "{body[14:94]}"')
+    for anchor in sorted(phantom):
+        print(f'  FAIL    row here and no such ruling: "{anchor[:50]}"')
+    for anchor, n in sorted(ambiguous):
+        print(f'  FAIL    row matches {n} rulings: "{anchor[:50]}"')
+    for anchor, path, quote in gone:
+        print(f'  FAIL    enforcement gone from {path.name}: "{quote[:48]}"')
+    for anchor, name, quote in red:
+        print(f"  FAIL    `{name}` is red, so this ruling is not held: {quote}")
+        print(f'            ruling: "{anchor[:62]}"')
+    for anchor, target in dangling:
+        print(f'  FAIL    superseded by a ruling with no row: "{target[:44]}"')
+    if not (uncovered or phantom or ambiguous or gone or dangling or red):
+        print("  every ruling is claimed and every enforcement still resolves")
+    print()
+    print("A quote is the enforcement, never the ruling. A rule rewritten and")
+    print("still enforcing the ruling keeps its row. A rule deleted takes the")
+    print("ruling's enforcement with it, and that is what fails here.")
+    return 1 if (uncovered or phantom or ambiguous or gone or dangling
+                 or red) else 0
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -1254,6 +1550,7 @@ def main():
     # takes two artifacts the caller has chosen and proved comparable, and
     # `all` runs over whatever is in site/content/issues.
     for name, fn in (("enforcements", enforcements), ("sweep", sweep),
+                     ("taste", taste),
                      ("stale", stale), ("measure", measure), ("links", links),
                      ("delivery", delivery), ("claims", claims),
                      ("reading", reading),
