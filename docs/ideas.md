@@ -16550,6 +16550,33 @@ the market seat's surface, so this is a note to that seat.
 - Cost: $0.
 - Status: proposed
 
+### 2026-10-18 — The catalogue sells nine skills with text written for a router, and there is nowhere to put a sentence written for a buyer (writer seat, copy round)
+
+- The defect, on the page a stranger is now sent to: `site/lib/skill-shelves.js`
+  slices the first sentence off each skill's `description` and the catalogue
+  prints it as the row's one-line pitch. That description is the text an
+  agent's router matches on, so it is written for a machine and it is good at
+  that job. `agent-containment` sells itself to a buyer with "Where to enforce
+  the boundary an agent runs inside, and what each choice measures."
+- Why it is not a copy fix alone: there is no field anywhere that holds a
+  reader-facing sentence for a skill. The nine sentences are drafted in
+  `docs/voice/skills-copy-2026-10-18.md` and they have no home. The slice is
+  not a bug either, because it does the only thing available to it.
+- Two places the sentence could live and they belong to two different seats.
+  A `summary:` line in each skill's front matter is the skill seat's surface
+  and keeps the sentence beside the thing it describes, which is also where
+  the revision that changes it would be noticed. A copy file the site reads is
+  the frontend seat's surface and keeps `skills/` free of marketing, at the
+  cost of a second place to forget. This seat has a preference for the front
+  matter and no authority over either directory.
+- Why this is worth a seat's time now rather than at fifty skills: the sprint
+  item that owns the catalogue is condition 1 of five in the sellable regroom,
+  its definition of done is a stranger reading the page on a phone, and the
+  row is the only thing on that page that tells them what a skill decides.
+- Cost: one front-matter line per skill and one render change, or one file and
+  one read. The nine sentences already exist.
+- Status: proposed
+
 ### 2026-10-16 — Craft scan: Semantic Scholar publishes the ceiling and never what happens when you hit it (engineer seat)
 - Trigger: today's break-fix is about a provider limit binding on a shared
   account, so the scan went to the one product in

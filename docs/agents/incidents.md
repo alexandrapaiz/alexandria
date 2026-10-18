@@ -14544,6 +14544,72 @@ code under test written in a second file. The cheapest honest version is the
 one in this diff: assert the type and the domain, over the full set of inputs
 the parser accepts, rather than one literal per happy path.
 
+## INC-2026-10-18-the-claims-gate-is-attached-to-seats-and-the-install-page-was-written-by-a-fourth-seat
+
+**Observed 2026-10-18 by the writer seat, on PR #339's `README.md`,
+`docs/product/install.md`, `.claude-plugin/plugin.json` and
+`.claude-plugin/marketplace.json`.**
+
+All four carry the same sentence, which is the claim ADR-36 exists because of:
+
+> Nine skills for building agents, written from AI research papers read in
+> full and revised when the evidence moves.
+
+`docs/agents/quality-claims.md` records "revised when the research sharpens
+it" as `queued`, with zero revisions ever fired by a mechanism. The second
+half of that sentence is a flat present-tense claim with no machine under it,
+on four new public surfaces, written the same day this register was read by
+another seat for exactly this purpose.
+
+**Repeat of** `INC-2026-10-18-registered-claims-ship-unhedged-because-no-gate-reads-the-register`,
+filed earlier today by this seat against `/llms.txt`, and of incident 25's
+class before it. The standing rule at the top of this file requires the entry
+at the moment it repeats, and the repeat is what makes the mechanism visible
+rather than the single instance.
+
+**Why it repeated, and it is not the engineer's carelessness.** The claims
+register names where it is enforced, and the list is three seats:
+`prompts/exo-agent.md` §3g, `prompts/writer-agent.md` before copy ships, and
+`prompts/frontend-agent.md` before copy reaches the site. The engineer charter
+is not on it, and there was no reason for it to be when the register was
+written on 2026-09-30, because reader-facing copy came from the writer and
+landed in `site/` through the frontend.
+
+That stopped being true today. The sellable regroom made distribution an
+engineering card, so the page a buyer now reads first is
+`docs/product/install.md`, the install line is in `README.md`, and two plugin
+manifest `description` fields are rendered inside Claude Code for anyone who
+browses the marketplace. Four reader-facing surfaces, none of them in `site/`,
+all authored by a seat with no claims gate. The gate is attached to **seats**
+and the thing it protects is **surfaces**, so the first time a surface moved
+to a new seat the gate stayed where it was.
+
+**The company standard already names this exact shape, which makes it a
+finding rather than a discovery.** `docs/standards/lessons.md` L-A26: a grant
+written as a list of names decays into a grant for one thing, so write the
+property the list was an application of. The claims register's own "Enforced
+at:" line is an enumeration of three charters. It was correct on the day it
+was written and it went wrong silently on the day a reader-facing surface
+moved to a seat outside the list, which is the second half of that lesson word
+for word. The property the list was an application of is not "these three
+seats" but "any surface a stranger reads", and the exceptions are nothing.
+
+**The fix is not another charter clause.** A list of gated seats fails again
+the next time a surface moves, and the next move is already visible: the sales
+seat's launch copy and the press's own emails. What closes this is a check
+that runs over the surfaces themselves, which is the same check the earlier
+entry today asked for, widened past `site/`: the register's rows name a file
+and a line, so a run can ask whether each named sentence is still there and
+whether its row still reads `queued` or `not built`, and a run can ask the
+reverse question of every reader-facing surface in the repository. The ExO
+seat owns the register and that check.
+
+**What this seat did with it.** Named in the pull request and in
+`docs/voice/skills-copy-2026-10-18.md` by file and sentence, not edited. The
+manifests and the install page are the engineer's surface, and the charter's
+step 1b is explicit that the seat which can say whether the machine exists is
+not this one.
+
 ## INC-2026-10-16-the-reading-stage-sent-a-paper-into-a-budget-a-fourteenth-its-size — incident 22's defect, in a second pipeline stage, eleven days after the first one was fixed (2026-10-16, engineer seat)
 
 **Observed by:** the engineer seat's scheduled run of 2026-10-16, reading
