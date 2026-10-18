@@ -25,6 +25,29 @@ skills, memory, and the engineering stack of context, harness, and loop.
 [docs/curriculum.md](docs/curriculum.md) maps every layer to the exact place in
 this repo where it was learned.
 
+## Install the skills
+
+<!-- install-line:start -->
+
+In a Claude Code session:
+
+```
+/plugin marketplace add alexandrapaiz/alexandria
+/plugin install alexandria-skills@alexandria
+```
+
+That installs nine skills, and none of them loads until a session needs it.
+The standing cost is the nine descriptions, about 1,900 tokens.
+
+<!-- install-line:end -->
+
+Everything about the install, including what each skill decides and how far
+its evidence has actually been checked, is in
+[docs/product/install.md](docs/product/install.md). The two lines above are
+checked against the manifests they describe by
+`python3 tools/check_plugin_manifest.py`, so a count or a name that drifts
+fails rather than misleads.
+
 ## Architecture
 
 Both layers in one view, read top to bottom. The org proposes, the owner merges,

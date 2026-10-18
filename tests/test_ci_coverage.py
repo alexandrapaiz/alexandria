@@ -250,6 +250,21 @@ UNCOVERED = {
     # which is the sentence `tests/test_press_watch.py` above already
     # carries, about the sibling guardrail, for the same reason.
     "tests/test_drift_watch.py",
+    # Added 2026-10-18 with the plugin marketplace, and pinned for the same
+    # structural reason as every line above: the step that would run it goes
+    # in `.github/workflows/checks.yml`, which no seat's token may write, and
+    # `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words not
+    # to attempt that file again. This is the ninth line added in eleven days.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already the finding and already correct, so this entry counts itself
+    # there rather than opening a third incident on one pattern. What this one
+    # guards is the first thing a stranger does with this product: the two
+    # lines that install the library, and whether the number of skills they
+    # advertise is still the number that ships. The defect it exists for is
+    # live on `site/app/skills/page.jsx` today, which says two against nine,
+    # so a gate on it that fires on no pull request is the same defect one
+    # level down.
+    "tests/test_plugin_manifest.py",
     "tests/delivery.test.mjs",
     "tests/issues.test.mjs",
     "tests/markdown.test.mjs",
