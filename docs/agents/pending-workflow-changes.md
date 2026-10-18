@@ -3,6 +3,48 @@
 **Enforced at:** prompts/exo-agent.md §5, which verifies each queued
 item against the live workflow files every run.
 
+## Everything on this page now governs dispatches only (added 2026-10-18)
+
+**Read this before you apply anything below.** HQ decision 056 deleted every
+seat's `schedule:` block from `.github/workflows/` on 2026-10-17 and moved
+each seat's clock to a manifest on the company host. There have been zero
+`*-agent` runs in this repository's Actions since 2026-10-17 17:59:54Z,
+against dozens of host-started seat pull requests a day.
+
+So a seat workflow is now a door that opens for an explicit
+`workflow_dispatch` and nothing else. **Every item on this page that edits a
+`prompt:` block or a `claude_args` line in an `agent-*.yml` file still
+matters, and it matters only for a dispatched run.** Those are items 4a, 7,
+13 and 15 for prompts and items 3, 14 and 21 for caps. They are marked here
+rather than deleted, because a dispatch is a real path and the owner uses it.
+
+**What has moved off this page entirely** is any change to a cadence, a cap,
+a model, an event subscription or a credential. Those five now live in
+`alexandrapaiz/alexandra-systems:runtime/agents/alexandria/<seat>/agent.toml`,
+which this seat can read and cannot write, so they leave through
+`docs/agents/hq-relay.md` as the exact `[trigger]` or `[runtime]` line
+wanted. The test for which lane a change takes is one question: which
+runtime does the thing you are changing belong to? See
+`prompts/exo-agent.md` §5.
+
+**The cost of getting that wrong is already measured.** Item 21's writer cap
+was applied to `.github/workflows/agent-writer.yml` on 2026-10-12, correctly
+and with full reasoning, and the file stopped governing the writer five days
+later. The manifest still says 150. See
+`INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens`.
+
+**And one item's mechanism is now in question rather than its anchors.**
+`.github/workflows-pending/press-watch.yml`, staged on 2026-10-14, triggers
+on a GitHub `schedule:` with `cron: "0 11 * * *"`. Decision 056's own words
+are "No schedule here means no run starts on GitHub minutes by itself," and
+whether that verdict covers a guard workflow or only a seat workflow is not
+recorded anywhere a reader can check, because the decision's entire record
+in this repository is one comment line repeated in ten files. **That
+ambiguity is the finding, not the schedule.** The question is in the relay
+entry for 2026-10-18 and item 21 should not be installed until it is
+answered, because installing a cron the parent decision retired is worse
+than leaving the guard unbuilt.
+
 ## The overlap table, regenerated every run
 
 **Added 2026-10-11, and it replaces the rule that every item restate its own
@@ -53,9 +95,47 @@ paragraphs are being retired as their items are touched rather than in one
 sweep, because rewriting seventeen of them in a single run would be this
 seat editing other seats' queued work on a day none of it is being applied.
 
-**One human read is still required, and here is exactly which one.** The
-sweep finds a filename, not a verb, so it cannot tell an item that *edits*
-`agent-writer.yml` from an item that *mentions* it. Item 14 names
+**Four things to discount in the raw counts, re-checked 2026-10-18.** The
+sweep over-counts three ways and under-counts one, and all four were present
+the day it was published.
+
+1. **A mention is not an edit.** The sweep finds a filename, not a verb.
+2. **The self-references in this section count.** The paragraph above that
+   lists `agent-finance.yml` and `agent-okr.yml` as the table's own earlier
+   errors is itself two hits on each, which is why the raw sweep reported
+   `agent-okr.yml: 2` and `agent-finance.yml: 2` on 2026-10-18 when no live
+   item names either.
+3. **The "Applied and deleted" section at the bottom counts.** It names four
+   seat workflows, and those items are gone.
+4. **The published regex cannot see the pending lane.** It matches
+   `agent-*`, `checks`, `deploy-main`, `build-agent-image` and
+   `hq-origin-notice` only, so it is blind to `press-watch.yml`,
+   `skill-gate.yml`, `modal-deploy.yml`, `subscriber-list.yml` and
+   `adr-numbers.yml`, which this page names nine times between them. Lane-one
+   items are staged whole files and collide differently, but two items can
+   still touch one staged file. The corrected pattern adds them:
+
+   ```bash
+   grep -oE '(\.github/workflows(-pending)?/)?(agent-[a-z]+|checks|deploy-main|build-agent-image|hq-origin-notice|press-watch|skill-gate|modal-deploy|subscriber-list|adr-numbers)\.yml' \
+     docs/agents/pending-workflow-changes.md | sed 's#.*/##' | sort | uniq -c | sort -rn
+   ```
+
+   This is the **third** correction to this one command, after the full-path
+   bug on 2026-10-11 and the item-boundary bug an hour earlier the same day.
+   A sweep whose output is a table of counts is very hard to read as wrong,
+   because every number looks like a number. The standing answer is the one
+   the 2026-10-11 run wrote: validate the check against an instance confirmed
+   by eye before publishing it. Here the instance is
+   `agent-okr.yml`, which the table says no item touches and the raw sweep
+   says two do. If a future version of this command reports `0` for
+   `agent-okr.yml`, it is reading the page correctly.
+
+**The edit sets in the table above are unchanged on 2026-10-18**, verified
+against the corrected sweep with all four discounts applied. No item has
+been added to this page since the table was generated except the pending
+lane's README note, which touches no workflow.
+
+**One human read is still required, and here is exactly which one.** Item 14 names
 `agent-writer.yml` once, in the sentence saying the writer row moved to item
 21, and the sweep reports it as a fifth item on that file. The table records
 the **edit** set, so item 14 is not in the `agent-writer.yml` row. This is
