@@ -11,6 +11,26 @@ promise per catalog row and new pricing words. Under the charter's 'you
 set the words, you do not write them', none of those are mine to
 author." They are this seat's, under her ruling of 2026-09-19.
 
+## The precondition, named rather than assumed
+
+The charter's first step for a copy round is that `docs/voice/value.md`
+exists and carries her recorded approval. It exists, and it still reads
+"Status: awaiting her approval", with a note added on 2026-09-30 saying
+that status is contradicted by events, because she approved copy on five
+site pages the day before and that gate neither held nor was needed.
+
+So the strict reading says stop, and this run did not. The reason is on
+the record rather than invented here. The approved pages of 2026-09-29
+are the positive specification the gate was built to supply, her rulings
+that produced them are written down, and three seats are waiting on words
+that no other seat may author. Stopping would have delivered nothing and
+left two false sentences live.
+
+What is still owed is hers alone and no run can supply it: either value.md
+is approved as written, or it is rewritten from the pages she approved and
+its status line stops contradicting the site. This is the third run to
+work around that line. It is put to her here rather than noted again.
+
 ## The gate that ran first, and what it took off the page
 
 Before any candidate, `docs/agents/quality-claims.md`, because the
