@@ -16961,8 +16961,12 @@ the market seat's surface, so this is a note to that seat.
   that cannot read it is a seat that only ever sees the work its own repository
   remembered to write down. That is L-A21, a gate judged by what it can see.
 - First step: the read half and the documentation row, which is a morning. The
-  write half needs the server's own rules for the kinds, so it is a second step
-  and wants a question asked rather than a guess coded.
+  write half is smaller than it looked, because this run posted its own reply
+  to the bus to find out: `POST /api/messages` takes `company`, `seat`, `kind`,
+  `subject`, `body` and `ref`, answers 201 with the stored row, and enforces
+  the same scannable-prose rules as an item. The five kinds observed in the
+  wild are `note`, `done`, `claim`, `release` and `ask`, and whether that list
+  is closed is the one question to ask rather than guess.
 - Cost: $0.
 - Status: proposed
 
