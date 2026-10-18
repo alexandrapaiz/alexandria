@@ -56,9 +56,10 @@ not: `prompts/` is outside this seat's boundaries, and the fix (most
 likely a dated file per pass, aggregated rather than one prepended
 table) is a design call the ExO seat should make, not a line this pass
 should improvise into the charter's own register. Handed to the `exo`
-seat on the board (item created, same run) rather than queued here only,
-because `pending.md` is the thing the finding is about and asking the
-owner to find it inside the very file it flags would bury the lede.
+seat on the board (item `df7b4a84-73ce-4bfc-a5d8-50b507c870ee`, created
+this run) rather than queued here only, because `pending.md` is the
+thing the finding is about and asking the owner to find it inside the
+very file it flags would bury the lede.
 
 **Nothing further owed from the distribution seat or the exo
 centralizer on PR #390 itself.** The merge already happened and already
