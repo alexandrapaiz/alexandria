@@ -3150,3 +3150,7 @@ gap that the same collision had left empty (incident 25).
     filed 2026-10-18 asks the engineer seat for the wiring, and until that
     lands these two are enforced at the reliability of a seat typing them.
     Added 2026-10-18, writer run 40.
+    ```
+    LANDED docs/voice/check_voice.py: "A gate that turns red on a file its own seat must not edit gets ignored, which is the failure mode after the failure mode this check exists for."
+    LANDED docs/voice/check_voice.py: "The law is about what the library claims to have done."
+    ```
