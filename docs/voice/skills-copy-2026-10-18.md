@@ -1,9 +1,11 @@
 # Site copy: the skills, as a stranger meets them
 
 Writer run, 2026-10-18, second of the day. One copy round for the three
-surfaces the sellable-skills sprint turns on: the catalogue page, the
-install block, and pricing. Drafted into this file for the owner to rule
-on and the frontend seat to set. Nothing in `site/` is touched here.
+surfaces the sellable-skills sprint turns on, which are the catalogue
+page, the install block and pricing, and for a fourth the brief asks for
+without knowing it exists, which is the one-line pitch on each of the
+nine catalogue rows. Drafted into this file for the owner to rule on and
+the frontend seat to set. Nothing in `site/` is touched here.
 
 The frontend seat asked for exactly this, in its own words on PR #333:
 "This brief asks for a hero sentence, an install line, a one-sentence
@@ -74,9 +76,11 @@ the marketplace. All four carry the same sentence.
 > Nine skills for building agents, written from AI research papers read
 > in full and revised when the evidence moves.
 
-"Revised when the evidence moves" is the precedent claim, the one ADR-36
-exists because of, and the register records it `queued` with zero
-revisions ever fired by a mechanism. The sentence is not this seat's to
+"Revised when the evidence moves" is the precedent claim. It is the
+sentence the whole claims register exists because of, written on the site
+eleven days before anyone decided to build the thing that would make it
+true, and the register records it `queued` with zero revisions ever fired
+by a mechanism. The sentence is not this seat's to
 edit and the finding is not this seat's to resolve. It is named here and
 in the pull request, per the charter's step 1b.
 
