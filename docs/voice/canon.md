@@ -479,6 +479,31 @@ Study decisions, never copy sentences.
     Standing copy fixed in code is where it hid for the whole life of the
     product, because a string that never changes is never graded (ban
     list 61), so a reader-facing sentence is graded wherever it lives.
+16. A title the library has already used is not a title (owner's
+    ruling, 2026-10-04). Her words: "two issues should never have the
+    same title. thats a big and quite obvious issue." The Monday issue
+    of 2026-09-28 printed under the title of the two sends before it,
+    and she opened a new issue and read a repeat. A title is how a
+    reader tells one issue from another, so a repeated one tells them
+    there is nothing here they have not seen.
+    The test is not string equality. The press already refuses an exact
+    repeat and asks the model again, so the repeat that survives to a
+    reader is the reworded one: the same finding in different words is
+    the same title, and the question to ask is whether a subscriber who
+    saw the earlier issue would think this is that issue again.
+    This law is worth its own number rather than a clause under law 4
+    because the two fail in opposite directions. Law 4 is about whether
+    the line says enough to open the issue. This one is about whether
+    the line has been said before, and a title can pass law 4 perfectly
+    and still be the third printing of it.
+    Where it is enforced: `prior_titles` in the payload, the rule in the
+    title slot of prompts/digest.md, and the press's own refusal in
+    `ensure_fresh_title`. Note what the last resort costs, because it is
+    a conflict between two of her rulings and the first slot is where it
+    gets avoided: when the retitle call also fails, the press stamps the
+    week's dates onto the repeated title, and the ruling of 2026-09-19
+    says the date does not belong in that line. The generator getting
+    the title right is the only path on which no ruling is spent.
 
 ## How an issue is graded
 
