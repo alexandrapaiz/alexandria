@@ -5,12 +5,30 @@ undelivered entry into that seat's pull request description. The ExO seat
 writes entries.
 The chair carries them, because no automated channel exists yet.
 
-Seats never message each other and no seat in this repository can write
-to `alexandrapaiz/alexandra-systems`. So evidence that matters to the
-parent stops here unless a human moves it. This file is the outbox. Each
-entry is written to be copied into an HQ issue or a chair message with
-no editing, per the standard the PM's dispatch queue already uses: if
-the carrier has to compose anything, the note did not work.
+Seats never message each other, so evidence that matters to the parent stops
+here unless something moves it. This file is the outbox. Each entry is
+written to be copied into an HQ issue or a chair message with no editing, per
+the standard the PM's dispatch queue already uses: if the carrier has to
+compose anything, the note did not work.
+
+**The second sentence of this file used to read "and no seat in this
+repository can write to `alexandrapaiz/alexandra-systems`." It is false and
+it was never re-tested** (corrected 2026-10-18,
+`INC-2026-10-18-the-host-runs-every-seat-as-the-owner`). The host provides a
+`GH_TOKEN` that authenticates as `alexandrapaiz` with `admin: true` on every
+repository in the account, which three `GET` calls established in one turn.
+Twenty-four days of hand-carried backlog rested on a sentence nobody spent a
+command on.
+
+**That does not make this file a channel, and the reason is worth keeping.**
+The remedy for an outbox nobody empties is not for a seat to start writing to
+the parent with the owner's own credentials because the credential happens to
+allow it. A token's scopes are not a grant. The correct remedy is the pair of
+asks in the 2026-10-18 entry below: scope the seats down to something
+narrower than the owner's account, and then grant the one narrow permission
+this file needs, which is issue creation on the parent. Until she rules, the
+carrier is still the chair, and the entries below still stay until she marks
+them delivered.
 
 An entry stays until the chair marks it delivered with a date.
 
@@ -580,6 +598,21 @@ nine sessions on 2026-10-18.
 +max_turns = 225
 ```
 
+**Ask 5, and it is hers rather than epitome's, so it is stated and not
+pressed.** The `GH_TOKEN` the host hands a seat authenticates as
+`alexandrapaiz` with `admin: true` on `alexandria`, `alexandra-systems`,
+`epitome` and `ursa`. Under Actions the same seat ran on
+`${{ github.token }}`, repo-scoped, job-scoped, and narrowed by a
+`permissions:` block, and its refusal to push `.github/workflows/` is the
+foundation incident 12 and the whole pending-queue process are built on. So
+the cutover widened twelve seats from a repo-scoped token to account admin
+in one commit. No privilege was exercised in finding this out and none will
+be without her word. Registered as
+`INC-2026-10-18-the-host-runs-every-seat-as-the-owner`. The remedy already
+has a plan in `docs/agents/app-identity-handover.md`, which was written for
+the day the seats needed *more* and now reads as the fix for their having
+too much.
+
 **Two smaller corrections while the file is open.** Every alexandria
 manifest's `description` still ends "Actions cron live" or "Actions cron
 off", which describes a mechanism retired the same day the `cron` line was
@@ -677,15 +710,19 @@ her a trip to another repository. Eight entries and 125 cumulative days of
 age is not a backlog of information. It is a backlog of errands.
 
 **So the ask, which is the third idea in the 2026-10-18 pull request rather
-than a new mechanism here.** This seat can read `alexandra-systems` with the
-token it already has, which was verified on 2026-10-18 by reading all twelve
-host manifests. If it could also open an issue there, every entry on this
-page would leave on its own and this file would become what it was always
-described as, which is an outbox rather than a drawer. That is a grant of
-authority across a repository boundary and it is hers alone to make. **No
-third surface is being invented here**, per the condition the last run set.
-The two options are a credential or a human carrier, and the page keeps
-saying so until she picks one.
+than a new mechanism here, and it came out the opposite way round from
+expected.** The obvious move was to ask for write access upward so the
+entries could leave on their own. Then the capability was actually measured,
+and the seat turns out to hold admin on the parent already, as the owner.
+**A capability gap and a capability excess look identical in a register
+written from a guess.** So the ask is two things in order: scope the seats
+down from the owner's account to a fine-grained token or the GitHub App that
+`docs/agents/app-identity-handover.md` already plans, and then grant that
+identity issue-creation on the parent, which is the one narrow permission
+that turns this page from a drawer into an outbox. **No third surface is
+being invented here**, per the condition the last run set. The two options
+remain a credential or a human carrier, and now the credential question has
+a measurement under it instead of an assumption.
 
 **First reading of the table since the carry rule shipped, 2026-10-11.**
 The carry rule was written on 2026-10-04 and merged, so this is the first

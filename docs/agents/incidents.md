@@ -16072,3 +16072,89 @@ here can write to it. Queued as the 2026-10-18 entry in
 `docs/agents/hq-relay.md` with the exact one-line edit, and the
 reconciliation command is now rule 6 of `docs/agents/turn-caps.md` so that no
 future cap change is written into one file and believed in the other.
+
+---
+
+## INC-2026-10-18-the-host-runs-every-seat-as-the-owner — the migration took protections away and handed out privileges, and the second half is the one nobody was looking for (2026-10-18, exo seat)
+
+**This is the sixth item in the inventory
+`INC-2026-10-18-the-hardening-stayed-in-the-runtime-the-seats-left` asks for,
+and it is the only one that moved in the other direction.** The other five
+are protections the host did not inherit. This is a privilege the host did
+inherit and should not have.
+
+**What was observed.** Three read-only API calls from inside this run's
+sandbox, using the `GH_TOKEN` the host provides:
+
+```bash
+gh api user --jq .login
+#   alexandrapaiz
+for r in alexandrapaiz/ursa alexandrapaiz/epitome alexandrapaiz/alexandria \
+         alexandrapaiz/alexandra-systems; do
+  gh api repos/$r --jq '"push=\(.permissions.push) admin=\(.permissions.admin)"'
+done
+#   push=true admin=true, on all four
+```
+
+The seat is not running as a seat. **It authenticates as the account owner,
+with admin on every repository in the account**, including the parent
+`alexandra-systems` and the runtime repository `epitome`.
+
+**What it was before, which is the whole point.** Under GitHub Actions every
+seat workflow sets `GH_TOKEN: ${{ github.token }}`, which is the ephemeral
+`GITHUB_TOKEN`: scoped to this one repository, expiring with the job, and
+narrowed further by each workflow's own `permissions:` block to `contents:
+write`, `pull-requests: write`, `id-token: write`, `actions: read`. That
+token famously **cannot** push a file under `.github/workflows/`, which is
+incident 12 and the reason `docs/agents/pending-workflow-changes.md` exists
+at all. Half this organization's process is built on that one refusal.
+
+So the 2026-10-17 migration did not only leave five protections behind. It
+replaced a repo-scoped, job-scoped, path-restricted token with the owner's
+own account credentials, for twelve seats, in one commit, with no mention of
+it anywhere.
+
+**No privilege was exercised and none will be.** This run read four
+repository permission fields and twelve manifest files, all `GET`. The
+charter's boundaries put secrets and the owner's personal exposure in the
+owner-only column, and §4 says a gap that touches her personal exposure is
+proposed and never assigned. A token's scopes are not a grant. Writing to
+the parent repository because the credential happens to allow it is exactly
+the act this seat would register as an incident if another seat did it.
+
+**It does, however, falsify a premise this org has been reasoning from for
+24 days.** `docs/agents/hq-relay.md` opens with "no seat in this repository
+can write to `alexandrapaiz/alexandra-systems`," and the whole design of
+that file, a hand-carried outbox with eight undelivered entries and 125
+cumulative days of age, rests on it. The sentence is false. It is also the
+third time this seat has found a "this seat cannot" sentence that had gone
+stale, after the `NEON_RO_URL` exemption on 2026-10-11 and the queue page's
+two-lanes paragraph on 2026-09-27, and the 2026-10-11 run wrote the rule
+that caught this one: "Before quoting any 'this seat cannot' sentence in your
+own charter, spend the one command on finding out whether it is still so."
+
+**The correct remedy is a smaller credential and not a larger charter**, and
+that distinction is the lesson. The obvious reading of "the relay is a
+drawer because the seat cannot write upward" is to ask for write access
+upward. The measurement says the seat already has far more than that and
+should have much less. **A capability gap and a capability excess look
+identical in a register that was written from a guess**, because neither one
+was measured. Both asks are in the relay entry for 2026-10-18 and both are
+hers: scope the seats down to a GitHub App or a fine-grained token, and then
+grant the one narrow thing the relay actually needs, which is issue creation
+on the parent.
+
+**Two consequences for existing law, recorded so they are not rediscovered.**
+First, every sentence in every charter and queue page that says a seat cannot
+push a workflow file is now unverified rather than false: the refusal came
+from the Actions token, and the probe `prompts/exo-agent.md` §5 prescribes,
+which is to append a comment to a workflow on a throwaway branch and try to
+push, has not been run under the host. It is not run in this pull request
+either, because a successful probe would be a push to a protected surface
+with the owner's credentials and that needs her word first. **The probe is
+the first thing the next run should do if she says yes, and it must not be
+done if she says nothing.** Second, `docs/agents/app-identity-handover.md`
+plans for the day `APP_PRIVATE_KEY` lands and gives the seats one shared
+GitHub App holding the `workflows` permission. That plan is now the remedy
+for an excess rather than the end of a constraint, which makes it more
+urgent and not less.
