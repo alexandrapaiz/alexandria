@@ -714,6 +714,22 @@ register has which gate is docs/agents/registers.md.
 
 So before you call `gh pr ready`, two checks.
 
+**0b. No scratch file under a fixed name in `/tmp`** (added 2026-10-18,
+`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`).
+On the company host every seat of every product runs as the same user on one
+machine, so `/tmp/body.md` is a shared name and not a private one. In GitHub
+Actions each run had its own filesystem and this was safe. On 2026-10-18 the
+ExO seat's pull request description was overwritten by a concurrent seat
+between the write and the publish, and it reached GitHub wrong.
+
+```bash
+scratch=$(mktemp -d); cat > "$scratch/body.md"   # unique per run
+```
+
+The failure is silent: the write succeeds, the read succeeds, and the content
+belongs to somebody else. A run that writes once and ships once never finds
+out.
+
 **1. The registers your output is bound by.**
 
 - `docs/agents/org-chart.md`, `docs/agents/frameworks.md` and

@@ -621,6 +621,18 @@ CI is green. A seat cannot use its own test suite as evidence under those
 conditions. If the runner cannot know a repo's dev-requirements path, the
 manifest could name it, which would fit beside `[runtime].entry`.
 
+**Ask 7, and it bit this run.** Twelve alexandria seats plus three other
+products' seats share one machine's `/tmp` as the same user, where in Actions
+each run had its own ephemeral filesystem. This run wrote its pull request
+body to `/tmp/body.md`, a concurrent seat overwrote it, and the body was
+published before the clobber was noticed. See
+`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`.
+A run that writes a scratch file once and ships it once would never find out.
+**The ask is a per-run `TMPDIR` set by the runner beside the clone step**,
+which is one line and makes the whole class impossible. The charter-side rule,
+never a fixed name in `/tmp`, shipped to all twelve alexandria charters on
+2026-10-18, and it is a seat remembering rather than a guarantee.
+
 **Two smaller corrections while the file is open.** Every alexandria
 manifest's `description` still ends "Actions cron live" or "Actions cron
 off", which describes a mechanism retired the same day the `cron` line was

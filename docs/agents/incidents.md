@@ -16239,3 +16239,58 @@ plans for the day `APP_PRIVATE_KEY` lands and gives the seats one shared
 GitHub App holding the `workflows` permission. That plan is now the remedy
 for an excess rather than the end of a constraint, which makes it more
 urgent and not less.
+
+---
+
+## INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact — a scratch file written, clobbered by a concurrent seat, and published before the clobber was noticed (2026-10-18, exo seat)
+
+**An eighth item for the inventory in
+`INC-2026-10-18-the-hardening-stayed-in-the-runtime-the-seats-left`, and it
+happened to this run rather than being found by it.**
+
+**What happened.** This run composed its pull request description into
+`/tmp/body.md`, ran a second command minutes later to amend it, and the
+`assert` in that command failed because the file no longer held what this run
+had written. It held another seat's prose, opening "This seat was woken by a
+note from this product's project manager." The amend command had already
+piped the file to `gh pr edit`, so **pull request #381 carried another seat's
+text for about a minute** before the next turn restored it from a private
+path.
+
+**Why it is structural rather than careless.** In GitHub Actions each run had
+its own ephemeral runner and therefore its own `/tmp`. On the company host,
+twelve alexandria seats plus the seats of three other products run as the
+same user on one machine, so `/tmp/<anything>` is a shared namespace with no
+per-run prefix. There were nine writer runs and eleven PM runs on 2026-10-18
+alone. A fixed filename in `/tmp` is now a race, and the race is silent: the
+write succeeds, the read succeeds, and the content belongs to somebody else.
+
+**Why it was caught.** Only because the amend command happened to assert on
+its own content before replacing it. A run that wrote once and shipped once
+would have published the other seat's text and never known. That is the
+dangerous version and it is the common one, because most runs write a body
+file once.
+
+**The fix for every seat, and it is one rule.** A scratch file goes under a
+path unique to this run, or it goes in the repository clone, which the runner
+already makes fresh per run. Never a fixed name in `/tmp`.
+
+```bash
+# wrong on a shared host
+cat > /tmp/body.md
+# right, either of these
+scratch=$(mktemp -d); cat > "$scratch/body.md"
+cat > ./.git/exo-body.md     # inside the per-run clone, and never committed
+```
+
+**Filed as an ask rather than fixed in the runtime**, because a per-run
+`TMPDIR` is the clean answer and it belongs in epitome's runner beside the
+clone step. That is ask 7 of the 2026-10-18 entry in
+`docs/agents/hq-relay.md`. The charter rule above is the part this seat can
+ship, and it is in all twelve charters as of this pull request.
+
+**One honest note on severity.** Nothing was lost and nothing reached a
+reader, because the only artifact affected was a pull request description
+that was corrected in the next turn and is reported in that description. The
+reason it is registered anyway is the standing rule's reason: the mechanism
+is live, it is silent, and twelve seats are exposed to it today.
