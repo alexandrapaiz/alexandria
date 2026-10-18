@@ -3178,3 +3178,36 @@ gap that the same collision had left empty (incident 25).
     LANDED docs/voice/check_voice.py: "A gate that turns red on a file its own seat must not edit gets ignored, which is the failure mode after the failure mode this check exists for."
     LANDED docs/voice/check_voice.py: "The law is about what the library claims to have done."
     ```
+
+128. The false claim whose subject is a pronoun, one sentence past the noun
+    that makes it checkable. `site/app/llms.txt/route.js` has said "alexandria
+    is an autonomous research pipeline. It reads the week's AI research" since
+    the file was written, and that is canon law 15 broken in public on a
+    reader-facing surface. Entry 127's command found three instances of the
+    same law on 2026-10-18 and did not find this one, because its pattern
+    needs the library named inside the sentence that carries the verb, and a
+    paragraph that names it once and then pronominalises it has moved the
+    subject out of reach while keeping the claim.
+
+    This is not a weakness in that one pattern. It is the general shape of
+    every check that keys on a subject, and it is worth its own entry because
+    the repair is cheap and the class is wide. A false claim survives longest
+    in the second sentence of a paragraph, where the prose has earned the
+    right to say "it" and the checker has lost the word it was matching on.
+
+    The owner has already ruled on this word from the other side. On
+    2026-09-20 she rejected "it" as the subject of a mechanism sentence and
+    named the word herself, so the form here is wrong twice over: false by
+    law 15 and rejected by her register, and caught by neither gate for
+    twenty-three days. Two rulings pointing at one sentence and no reader of
+    either is the argument for the taste gate in the same run.
+
+    The repair is the law's own vocabulary with the subject restored, and the
+    candidate open on this surface is `docs/voice/llms-txt-2026-10-18.md`,
+    which rewrites the body and already fixes the sentence. No change to
+    `prompts/digest.md`: the generator does not write a route handler, which
+    is the reason entries 126 and 127 give for the same thing.
+    Added 2026-10-18, writer run 41.
+    ```
+    LANDED docs/voice/check_voice.py: "The subject is a pronoun, which is how three sentences of"
+    ```
