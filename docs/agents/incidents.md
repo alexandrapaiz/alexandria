@@ -15850,6 +15850,22 @@ the thing this register exists to stop.
    agree with their workflow. The writer's does not. See the fourth entry
    below.
 
+**A seventh item, found at the end of the same run and in the other
+direction from all six.** The host sandbox does not install
+`requirements-dev.txt`. `checks.yml` does, at line 93, and that file pins
+both `markdown==3.7` and `python-multipart`, so running `pytest tests/` on
+the host today returns 5 failures and 32 errors that are entirely
+environmental. Main's `checks.yml` is green on eight consecutive runs over
+the same code.
+
+This one is a trap rather than a loss, and it cuts both ways. A seat can
+"find" a regression that does not exist and spend a run on it, or it can
+learn to read a red local suite as noise and then miss a real one. Either way
+the local suite has stopped being evidence. **The fix is one line in the
+host's clone step** and it is ask 6 of the 2026-10-18 relay entry. Until it
+lands, a seat that runs tests on the host says which failures it reproduced
+after installing the pinned dependencies, or says it did not install them.
+
 **Plausibly carried, and not claimed as lost.** The Langfuse tracing and both
 board report steps have their environment named in `[runtime].env` in each
 manifest, including `BOARD_API_URL`, `BOARD_RUNTIME_TOKEN` and the eleven

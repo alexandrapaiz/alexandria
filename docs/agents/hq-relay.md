@@ -613,6 +613,14 @@ has a plan in `docs/agents/app-identity-handover.md`, which was written for
 the day the seats needed *more* and now reads as the fix for their having
 too much.
 
+**Ask 6, and it is one line.** The host does not install
+`requirements-dev.txt` after cloning a product repo. alexandria's
+`checks.yml` does, and that file pins `markdown==3.7` and `python-multipart`,
+so `pytest tests/` on the host returns 5 failures and 32 errors on code whose
+CI is green. A seat cannot use its own test suite as evidence under those
+conditions. If the runner cannot know a repo's dev-requirements path, the
+manifest could name it, which would fit beside `[runtime].entry`.
+
 **Two smaller corrections while the file is open.** Every alexandria
 manifest's `description` still ends "Actions cron live" or "Actions cron
 off", which describes a mechanism retired the same day the `cron` line was
