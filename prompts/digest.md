@@ -550,11 +550,9 @@ subscriber who saw the earlier issue would think this is that issue again. The
 same finding told in different words is the same title. Where this week's
 sharpest result is genuinely the one a past title already carried, the line
 moves to what is new about it this week, which is why it is in the issue at
-all.
-That matters more than it looks, because the press's last resort is to stamp
-the week's dates onto a repeated title, and the ruling above says the date does
-not belong in this line. A title this slot gets right is the only version of
-this rule that never reaches a reader as a dated one.
+all. That matters more than it looks, because the press's last resort is to
+stamp the week's dates onto a repeated title, and the ruling below says the
+date does not belong in this line.
 
 The date does NOT belong in this line (owner's ruling, 2026-09-19). The title
 is the finding alone, and the date lives where dates live: the email's own
@@ -616,8 +614,6 @@ because they carry no information and they are exactly what a form being
 filled in says. Vary the construction every issue and never open two issues
 running the same way. The warmth comes from knowing what the reader's job is
 like, never from pleasantries and never from claiming to know their history.
-
-**A stranger has to enjoy that sentence.** This is the test it has to pass
 and it is the reason the line exists (owner's dispatch, 2026-09-25). Read it
 as somebody who has never heard of alexandria, does not know the subfield,
 and is deciding in about four seconds whether to keep reading. It has to be
@@ -1147,6 +1143,11 @@ spend an hour on, which on a rich day is a handful and on a thin day is one or
 two. Rarely more than five, and never five because five was the number.
 Printing everything `deep_reads` returned is the opposite of judgment, and
 judgment is what the reader pays for.
+{Chosen, never listed. Print the papers you would actually tell a builder to
+spend an hour on, which on a rich day is a handful and on a thin day is one or
+two. Rarely more than five, and never five because five was the number.
+Printing everything `deep_reads` returned is the opposite of judgment, and
+judgment is what the reader pays for.
 A paper this issue has already covered at length is not a pick. The reader
 just read it here, so the line would send them to what they were handed.
 **The check is a comparison against a list and never a reading of the
@@ -1160,17 +1161,11 @@ title of every candidate pick, lowercase both, and strike the pick wherever the
 two share a run of three or more words. The sections above name a paper by a
 written lead and this slot names it by its full title, so the two strings
 differ, and they are not independent: a lead written from a paper carries the
-paper's own words. Run on a real issue the comparison caught all three
-overlapping picks and struck none wrongly. What a missed overlap looks like from
-a reader's chair: three picks, all three described at length in the section
-directly above, and seven candidates in `deep_reads` the issue had not covered
-left unprinted. Naming one stream is how this failed the first time, when the
-rule said the overlap is with `new_claims` and a pick covered in the traction
-section went out with a line recommending the paper the issue's own lead item
-was about. A paper covered anywhere above is covered, whichever stream it came
-out of. Drop the overlap and print what remains, even when
-what remains is one paper or none. When nothing remains, the section does not
-run and its heading does not print, the same as any other empty slot.
+paper's own words. A paper covered anywhere above is covered, whichever stream
+it came out of, so never run this against one stream only. Drop the overlap
+and print what remains, even when what remains is one paper or none. When
+nothing remains, the section does not run and its heading does not print, the
+same as any other empty slot.
 Drop it silently. A dropped paper leaves no trace in the issue. A sentence
 explaining why a paper is not on the list spends the shortest section in the
 newsletter on this file's own bookkeeping, and the reader did not come for the
@@ -1219,8 +1214,7 @@ clause that makes the recommendation, so the reader meets what the work cannot
 establish in the same breath as the reason to read it. The target is zero
 stapled grades and there is no budget. The shape that fails is a decision
 sentence, then a sentence counting the units of evidence, then a sentence
-assessing them, which is three sentences doing what one does, and all six
-entries took it.
+assessing them, which is three sentences doing what one does.
 How
 many groups have done this, how much of the field it was tested on, and
 whether anybody outside the group has reproduced it: those are the facts that
@@ -1234,23 +1228,21 @@ that says what the bottleneck in some subfield really is, on the authority of
 one unreplicated paper, is the general claim over the particular evidence
 with the evidence left out. The grade is what bounds it.
 
-**The line is written and never filled in, and one frame is now spent.**
-"Worth the hour if you are..." was quoted in this file as the model line and
-it came back on five entries out of five across two prints, which is the
-whole reading list twice. It is not banned for being bad. It is banned
-because it is the first thing this file put in front of you at the position
-where you write, and a frame handed over at that position is a template no
-matter how good the sentence is. Do not write it. Do not write a
+**The line is written and never filled in, and one frame is now spent.** The
+model line this file used to quote here came back on five entries out of five
+across two prints, which is the whole reading list twice. It was not banned
+for being bad. It was banned because it was the first thing this file put in
+front of you at the position where you write, and a frame handed over at that
+position is a template no matter how good the sentence is. Do not reach for a
 find-and-replace of it either, so "Read this if you are", "Give it an hour
 when you are" and "Spend the hour if you are" are the same line wearing a
 hat.
 **A frame banned in this slot is banned everywhere in this slot, the heading
-included.** The ban above is on a sentence and it was read as a ban on a
-position. A print of 2026-09-30 kept it off all three entries, correctly, and
-put "worth the hour" in the section heading instead, where the banned words
-did the one job the heading is forbidden to do, which is announce that the
-issue is now recommending things. A phrase this slot refuses does not become
-available by moving up a line.
+included.** A print kept the banned line off all three entries, correctly, and
+put it in the section heading instead, where the banned words did the one job
+the heading is forbidden to do, which is announce that the issue is now
+recommending things. A phrase this slot refuses does not become available by
+moving up a line.
 Write each line as its own sentence instead, and let the shape follow what
 the decision actually is. One line can put the choice as a question the
 reader is already asking. One can name the thing they are about to build
@@ -1267,7 +1259,6 @@ neighbours and the repetition is visible on the page: no two entries in an
 issue open on the same words, and no two take the same grammatical shape.
 Two that match are the section turning into a catalogue, which is the one
 thing judgment was supposed to buy.
-
 Do not open those lines with a verb of presentation, and ask it of the verb
 rather than of a list: does this word belong to the paper or to the reader?
 "Shows", "details", "presents", "provides", "introduces" and every synonym any
@@ -1294,14 +1285,13 @@ no two entries take the same shape.}
 ---
 {Sign off in two moves, because the last thing a reader sees is the thing
 they carry into their day.
-
 **Both moves go in ONE paragraph, with no blank line between them.** The press
 takes the first paragraph after the rule above and that is all it sends. Set
 the two moves as two paragraphs and a subscriber receives the first one only,
 so the sentence of scale below is the one that disappears, which is the one
-sentence in the issue canon law 15 exists to protect. The print of 2026-10-05
-happened to run them together and reached the inbox whole. Nothing in this
-file asked it to, so the next issue is a coin toss. Run them together.
+sentence in the issue canon law 15 exists to protect. An issue that reached
+the inbox whole did so by accident, because nothing in this file asked it to.
+Run them together.
 
 First, one short line in plain words that hands the day back to them, the
 way a person ends a letter rather than the way a report stops: what you
@@ -1322,15 +1312,15 @@ out of it, and this close is the one line in the issue where two numbers
 standing together are the point rather than a crowd.
 **When `papers_read_in_full` is zero, this line does not appear at all.** Not
 as a zero, not as a word for zero, and not as a sentence explaining the zero.
-The print of 2026-09-30 closed by naming the week's arrivals and then saying
-in plain words that none of them had been read in full. Both numbers were
-correct and both verbs were right, which is why no gate in this file caught
-it. It still told a reader deciding whether to pay that the product read
-nothing. No such sentence is quoted here, because a line this file wants never
-written is a line it must not hand you. Canon law 15 carries
-the answer in its own words: an issue that says nothing about its own scale
-has lost nothing a reader came for. The repair for a claim you cannot make is
-to drop it, never to soften it and never to print its absence.
+An issue has closed by naming the week's arrivals and then saying in plain
+words that none of them had been read in full. Both numbers were correct and
+both verbs were right, which is why no gate in this file caught it. It still
+told a reader deciding whether to pay that the product read nothing. No such
+sentence is quoted here, because a line this file wants never written is a
+line it must not hand you. Canon law 15 carries the answer in its own words:
+an issue that says nothing about its own scale has lost nothing a reader came
+for. The repair for a claim you cannot make is to drop it, never to soften it
+and never to print its absence.
 **And the count reaches the week, never the items below it.** A phrase like
 "for this issue" attaches a seven-day count to the papers you just cited, and
 those are two different sets. The papers in the reading list are often read in
@@ -1357,7 +1347,6 @@ fail the decoding question in the first section above, as does the ISO week
 id, so none of them reaches the reader. This line states scale, never method:
 it says how much was read, never how the reading was done. The reading gate at
 the end of this file holds the sentence that made this rule necessary.
-
 Then the standing close, on its own line, exactly as written below. It is
 always last and never reworded.}
 
@@ -1971,7 +1960,11 @@ the rule's question to the thing in front of you.
   file that wrote it. A writer told to count what appears under a sentence
   chooses the unit first, and a count can always be rescued by ruling the item
   that named no paper out of it.
+  So the unit is fixed here and it is not yours to pick. Count the blocks a
+  reader sees under the sentence, one for every bold lead, bullet or paragraph
+  carrying its own piece of work, whatever noun your sentence happened to use.
   The sentence's number is that count. Then the noun goes to every block you
+  just counted, which is the next paragraph.
   just counted, which is the next paragraph.
   A heading is one of those places and so is a bold lead, so read this
   paragraph with the word "sentence" meaning whichever of them said the number.
