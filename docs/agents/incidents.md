@@ -15269,3 +15269,104 @@ when reading the page would have caught it.
 **What is not fixed.** Widening the claims register is the ExO seat's call and
 its file. Setting the words is the frontend seat's. The two missing sends are
 engineer card `92ab912d`.
+
+## INC-2026-10-18-a-drafted-copy-repair-sat-unset-for-twenty-two-days — the home page's first number still prints the ingest count under the word read (2026-10-18, writer seat, fifth run)
+
+**Observed** by `docs/voice/check_voice.py reading`, written this run, on
+`site/app/page.jsx:44`:
+
+> **{papersThisWeek}** papers read this week
+
+`papersThisWeek` is `weeklyIngestCount()`, which is `count(*) from papers where
+fetched_at > now() - interval '7 days'`. A row in `papers` is a title and an
+abstract. Canon law 15 is the owner's ruling of 2026-09-25 and it says the word
+"read" may name one act and must cite the full-read count and no other.
+
+**Repeat, and this is the third sighting of the same line.** The masthead
+carrying the same defect was repaired on 2026-09-26. Writer run 15 drafted the
+exact repair for this line the same day, in
+`docs/voice/home-metric-line-2026-09-26.md`, checked against every register the
+charter names. At four days it was recorded as a related sighting inside
+`INC-2026-09-30-sales-assets-stale`, under the heading "the same shape again",
+with the sentence "the candidate was written, reviewed against the registers,
+and never set". It is twenty-two days today and the line is unchanged, so the
+record of the repeat did not move the artifact either.
+
+**Why it repeated, stated as a property rather than as a seat's lapse.** The
+copy pipeline is correct and it has no queue. The writer drafts into
+`docs/voice/`, the owner rules, the frontend seat sets. Nothing in that chain
+holds a list of candidates awaiting a ruling, so a candidate's whole existence
+after its pull request merges is a file in a directory that the next run has no
+reason to open. Both halves of the pipeline worked: the draft was good and the
+law was already written. What is missing is the state between them.
+
+That is the same shape as the register gate this seat keeps finding, pointed at
+a handoff instead of at a file: the gate is attached to the seat that writes and
+the thing it protects is the artifact, so nothing fires on the days between
+runs. `INC-2026-10-18-the-claims-gate-is-attached-to-seats-and-the-install-page-was-written-by-a-fourth-seat`
+is that sentence about surfaces, filed this morning. This is it about time.
+
+**What this run did about it.** `docs/voice/check_voice.py reading` turns law 15
+into a command over every reader-facing surface, so this line now fails a check
+rather than waiting for a seat to remember it. It found three instances and the
+home metric line is one. The candidate is re-issued verbatim in
+`docs/voice/claim-repairs-2026-10-18.md`, which names run 15's file as the
+authority rather than redrafting it, because the words were right in September
+and nothing about them has aged.
+
+**What is not fixed, and it is the part that matters.** The command is not
+called by anything. `docs/voice/check_voice.py` has said so in its own header
+since it was written, and the ledger entry asking for the wiring is filed again
+in this pull request. Until that lands, a check this seat typed on 2026-10-18
+is enforced at the reliability of a seat typing it on 2026-10-19. The second
+open question is not a gate at all and belongs to the owner: a candidate she
+has not ruled on has no home, and the obvious cheap fix is one file listing
+what is awaiting her word, which this seat can keep in `docs/voice/` and name
+in every pull request it opens.
+
+## INC-2026-10-18-three-candidates-for-two-surfaces-in-one-day — the fifth writer run redrafted copy the second and fourth runs had already drafted, having read every register the charter names (2026-10-18, writer seat, fifth run)
+
+**Observed** in this seat's own output, while checking a candidate file against
+the live pages. The fifth run of 2026-10-18 drafted a repair for the skills
+page intro and two for the pricing page. `docs/voice/skills-copy-2026-10-18.md`
+had already replaced that intro four hours earlier, and
+`docs/voice/pricing-claims-2026-10-18.md` had already replaced both pricing
+lines two hours earlier. Both earlier candidates are better, because both drop
+the unbacked claim where this run hedged its tense, which is canon law 15's own
+rule.
+
+**Repeat of** the failure the charter's copy-pipeline section names in its own
+words: "A candidate that exists only in a conversation cannot be read by the
+next round, and that is how round seven repeated round two." The 2026-09-20
+instance was eight rounds in one session with no file. This instance has files,
+which is the fix working, and it repeated anyway because a file nobody indexes
+is only findable by a seat that already knows it exists.
+
+**Why it repeated, and the gate list is the evidence.** The charter's shipping
+step names five registers to read before a candidate leaves a run, and this run
+read all five: the taste register line by line, the canon, the ban list, the
+value statement and the newest preference file, plus the copy pipeline and the
+quality register. Not one of them answers "has this surface already been
+written for today". The preference record holds candidates she has RULED on.
+The gap is the state in between, which is a candidate drafted and not yet
+ruled, and the org had no name for it and no list of it.
+
+Three writer runs in one day is new. The seat ran once a day when the pipeline
+was written, so the window where this could happen was a day wide and a run
+could hold the whole of it in its own context. At five runs a day the window is
+hours and the context is not shared, so a property that used to be true by
+accident has to be written down.
+
+**Fix, in this pull request.** `docs/voice/awaiting-her-word.md`, one row per
+open candidate, the surface, the file, the day it was drafted and whether the
+defective line is still live. The charter's own list of what to read is a
+charter edit and not this seat's to make, so the file names the duty in its own
+first paragraph and the pull request asks for the charter line. Until that
+lands this is enforced at the reliability of a seat reading a file, which is
+the thing this register exists to be sceptical about.
+
+**The other half, which is the same discovery pointed at time.** The oldest row
+in that new file is twenty-two days old and nobody knew, which is
+`INC-2026-10-18-a-drafted-copy-repair-sat-unset-for-twenty-two-days`, filed in
+this same pull request. One missing list produced both: a stale candidate
+nobody set, and a duplicate candidate nobody knew existed.

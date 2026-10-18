@@ -3101,3 +3101,56 @@ gap that the same collision had left empty (incident 25).
     asserts a completeness or a cadence the shelf does not show. Added
     2026-10-18, from the copy round on the pricing page, where the sentence had
     been live for thirty days.
+
+127. The present tense worn by a machine that has not been built. Eleven
+    sentences on the site say something about the quality of what we ship, and
+    `docs/agents/quality-claims.md` names the code that would have to run for
+    each one to be true. Three of the eleven have it. Four have nothing
+    anywhere. The register has said so since 2026-09-30 and the pages have not
+    changed, so on 2026-10-18 the mission page still read "proven against the
+    same tasks with and without it, revised when the research sharpens it, and
+    retired with the reason when the research overturns it", which is one
+    sentence carrying a measurement that came back negative, a job that has
+    never merged, and a field that does not exist.
+
+    The tell is not a word, and that is what makes it hard to catch by reading.
+    Every sentence in this class is grammatical, plausible, and written by
+    somebody who believed it, because the thing it describes is the thing the
+    org intends to build. Entry 50 is a true concession licensing a false
+    assertion, 126 is a true claim about the item licensing a false one about
+    the shelf, and this one is a true INTENTION licensing a false tense. The
+    question that separates them is one: is this sentence about the research or
+    about our artifact? "The research has shown this technique to work" is
+    checkable against the corpus and is almost always true. "Each skill is
+    proven with and without it" is checkable only against a measured delta, and
+    on 2026-09-30 the library's first such measurement came back at 5.4 without
+    the skill against 5.3 with it.
+
+    The repair is the one law 15 already gives, which is to drop the claim
+    rather than soften it, with one exception the register itself writes down.
+    Where the machine is genuinely being built, the sentence may stand in the
+    tense of a thing that does not exist yet, which is the form
+    `site/app/routines/page.jsx` has used in public since it shipped and the
+    form the pricing page already uses in the last bullet of its own paid tier
+    while the intro four lines above sells the same routines as running. A page
+    disagreeing with itself about whether a machine exists is this entry at its
+    clearest.
+
+    The ending, and it is a command rather than a line in the generator.
+    `docs/voice/check_voice.py claims` reads every row of the register against
+    every reader-facing surface and fails on a claim that is not held and not
+    hedged, and on the same claim appearing somewhere the row does not name,
+    which is how the revision promise reached three pages. It found seventeen
+    live instances on the run that wrote it. `docs/voice/check_voice.py
+    reading` does the same for law 15's vocabulary and found three, one of them
+    the home page's own metric line, twenty-two days after the repair for it
+    was drafted and filed. No sweep of `prompts/digest.md` and no change to it,
+    for the reason entry 126 gives: the generator does not write a React
+    component. Neither command is called by anything yet, so the ledger entry
+    filed 2026-10-18 asks the engineer seat for the wiring, and until that
+    lands these two are enforced at the reliability of a seat typing them.
+    Added 2026-10-18, writer run 40.
+    ```
+    LANDED docs/voice/check_voice.py: "A gate that turns red on a file its own seat must not edit gets ignored, which is the failure mode after the failure mode this check exists for."
+    LANDED docs/voice/check_voice.py: "The law is about what the library claims to have done."
+    ```
