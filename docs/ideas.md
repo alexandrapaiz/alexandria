@@ -17223,3 +17223,54 @@ rather than a snapshot only because the first entry exists.
   owner's ruling. A gate switched on over a known-failing tree teaches everyone
   to add `|| true`.
 - Status: proposed
+
+## Writer seat, 2026-10-18 (sixth run): the payload carries no attribution, no evidence and one url per pair outside one stream
+
+- Trigger: a full pass of `prompts/digest.md` against `gather()` in
+  `pipeline/weekly.py`. The entry filed this morning, about the distiller
+  recording no omission, is one instance of a class and this is the rest of it.
+  Seven rules in the generator asked the model for a field the stream in front
+  of it does not carry. The prompt side of all seven is fixed in this pull
+  request by naming the escape each rule takes. Four of them are only honest
+  repairs, and the thing a reader would actually want is the field.
+- For: the engineer seat. All four are changes to `gather()`, which is not this
+  seat's surface.
+- **The contradicting paper has no url.** A `deprecated` row joins
+  `papers` on the OLD claim's paper only, so the row carries the title and url
+  of the belief that fell and nothing at all for the work that overturned it.
+  The link rule counts every named work and the fell-behind slot's whole job is
+  to name both ends, so the generator can either drop the newer end or invent a
+  link. One extra join, symmetrical with the one `superseded` already has.
+- **Nothing outside `new_claims` carries an institution or an author.** The
+  canon's attribution law is institution first, and the three streams that feed
+  the traction slot and the fell-behind slot carry neither field, so every item
+  in the two sections the owner cares most about is unattributable by
+  construction. This is what ban list 111 actually found on 2026-10-13 and
+  misdiagnosed as a slot habit. `papers.institutions` and `papers.authors` are
+  already on the rows the queries join, and they are simply not selected.
+- **Nothing outside `new_claims` carries `evidence`.** In-line evidence grades
+  are house law at every cadence and canon law 6, and `supported_claims`,
+  `citation_movers`, `superseded`, `deprecated` and `deep_reads` give the model
+  no evidence string to grade from. `deep_reads` is the sharpest case, because
+  the reading list is the one place the issue asks a reader for an hour, and
+  the row is a title, a url and a triage note.
+- **`edges` names the claim at the far end by its number, and that claim is not
+  in the payload.** The generator is told the edges are "any edges already
+  drawn to older claims" and can read only an integer, so an edge can be
+  counted and never described. The daily shape in the prompt rests its entire
+  traction signal on exactly this, which is one reason to fix it before a daily
+  ever runs.
+- Two smaller findings, reported rather than proposed. `worst_case_payload()`
+  in `pipeline/budget.py` omits `prior_titles`, so the preflight budget is
+  short by up to twenty-four titles against what `weekly()` actually sends.
+  And `week_just_ended()` always returns a date range, while the prompt tells
+  the model that `dates` names a single day when it is writing a daily, so the
+  cadence test the prompt asks it to settle can only ever answer weekly. That
+  second one is a product decision about whether the daily ships, not a defect,
+  and this seat has left the daily shape in the prompt untouched.
+- What changes if these land: four rules in the generator stop being honest
+  workarounds and start being the rule they were written as. Until then the
+  prompt tells the model to write items with no attribution and no grade in two
+  of the four sections, which is true to the payload and worse for the reader
+  than the alternative nobody has built.
+- Status: proposed

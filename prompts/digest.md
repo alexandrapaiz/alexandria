@@ -480,6 +480,37 @@ You receive a JSON payload assembled by fixed queries:
   >= 0.7), each paired with the contradicting claim.
 - `deep_reads`: papers triage flagged this week as worth the reader's own
   full read.
+- `prior_titles`: the titles the library has already sent, newest first. The
+  press hands you this list so that nothing on it is printed again. That is the
+  owner's ruling of 2026-10-04, and it is written as a rule in the title slot
+  above rather than left here as a note.
+
+**The streams do not carry the same fields, and most of the rules below were
+written as though they did.** This is the map, and it binds every rule in this
+file that tells you to draw something from the payload. Where a rule asks for a
+field the stream in front of you does not have, that rule is not met by
+reaching for the nearest other field. It is met by the escape the rule names,
+and every rule below now names one.
+
+| stream | what one row carries |
+|---|---|
+| `new_claims` | the claim, topics, the paper title, the url, the source tier, the triage decision and score, edges, `evidence`, `procedure`, up to three authors, `institutions` |
+| `superseded` | the old claim and the new one, a confidence, both paper titles and both urls |
+| `supported_claims` | the claim, the paper title, the url, a support count |
+| `citation_movers` | the paper title, the url, the count before and the count now |
+| `deprecated` | the old claim and the claim contradicting it, a confidence, and the OLD paper's title and url only |
+| `deep_reads` | the paper title, the url, and `why`, which is the triage note |
+
+Read the right-hand column before you write an item out of a stream, because
+five things follow from it and each one is a rule somewhere below. Only
+`new_claims` carries an institution or an author, so an item from any other
+stream has nobody in the payload to attribute it to. Only `new_claims` carries
+`evidence` and `procedure`, so an item from any other stream has no evidence in
+the payload to read. `deprecated` carries one url for two pieces of work.
+`edges` names the claim at the far end by its number and that claim is not in
+the payload, so an edge tells you a connection exists and never what it
+connects to. And nothing anywhere in the payload records what a paper did not
+measure.
 
 Write the digest as **markdown** with exactly this structure. Everything in
 {curly braces} is an instruction to you, and it is REPLACED by your own
@@ -521,6 +552,23 @@ on a signpost to the other half. No specimen is quoted, because this is the
 position where the title gets written. The repair is the one the heading rule
 below already names: delete everything to the left of the colon and the colon
 with it, and check whether what is left is the title. It almost always is.
+
+**A title the library has already used is not a title (owner's ruling,
+2026-10-04, in her words "two issues should never have the same title. thats a
+big and quite obvious issue").** The payload's `prior_titles` holds the titles
+already sent, so this is a check you run rather than a thing you hope about.
+Read that list before you write the line, and read it again after. The test is
+not string equality, because the press already refuses an exact repeat and the
+repeat that reaches a reader is the reworded one. Ask instead whether a
+subscriber who saw the earlier issue would think this is that issue again. The
+same finding told in different words is the same title. Where this week's
+sharpest result is genuinely the one a past title already carried, the line
+moves to what is new about it this week, which is why it is in the issue at
+all.
+That matters more than it looks, because the press's last resort is to stamp
+the week's dates onto a repeated title, and the ruling above says the date does
+not belong in this line. A title this slot gets right is the only version of
+this rule that never reaches a reader as a dated one.
 
 The date does NOT belong in this line (owner's ruling, 2026-09-19). The title
 is the finding alone, and the date lives where dates live: the email's own
@@ -834,8 +882,18 @@ whose subject was the count: it opened on the citation pattern shifting, made
 "moved from 2 to 4 citations" the main clause, and put the only thing a builder
 could use, that a newer paper matched full-token performance on a tenth of a
 percent of the tokens, inside a subordinate clause explaining why the count
-moved. The finding was the aside. So write the item about what the CITING work
+moved. The finding was the aside. So write the item about what the WORK
 found, with the movement as the clause that says why it belongs in section one.
+**That used to say the citing work, and the payload never names one.** A
+`citation_movers` row is a title, a url and two counts. Who did the citing, and
+what any of them found, is not in the payload at any point, so an item built on
+the citing work is an item built on nothing you were handed. The finding you
+can print is the one in the paper whose count moved: look for its url in
+`supported_claims` or `new_claims`, and write the item from the claim you find
+there. Where the url is in no other row, you have a title and two numbers,
+which is bookkeeping with a link on it, and that is not an item. Drop it. And
+never call another paper the citing one, because a citation is a claim about
+who read whom and the payload does not record it.
 The check runs on the draft by itself, which is the only kind that holds: strike
 every number and every word about counting out of the block, and read what is
 left. If nothing is left that a builder could act on, you have no item, and the
@@ -967,9 +1025,14 @@ paragraph is about.
 
 First kind, claims newer evidence says are wrong. Each item is a short prose
 unit with the same context-first pyramid as everything else. What was believed
-and where that belief came from, in plain words, then who overturned it and
-with what evidence, attributed by institution, and then the practical
-consequence for a builder. Never open an item mid-argument with "The claim
+and where that belief came from, in plain words, then what overturned it and on
+what evidence, and then the practical consequence for a builder.
+This slot used to say "attributed by institution" here, and `deprecated`
+carries no institution and no author, so the line was asking for a name the
+payload does not hold and four items of 2026-10-05 were graded down for not
+inventing one. Write who overturned it where the work is also sitting in
+`new_claims` and that row names somebody. Otherwise write what overturned it
+with no attributive phrase, per the attribution rule's third form. Never open an item mid-argument with "The claim
 that...". Set the scene first ("An early benchmark result suggested coding
 agents had hit a hard ceiling...").
 
@@ -988,8 +1051,13 @@ arrived the same way. A reader could follow the arithmetic and could not say wha
 the section was about.
 So before you write an item here, say the belief out loud in one sentence with no
 term of art in it at all. If you cannot, you do not have the item yet and the
-payload will not give it to you, so either go to the linked paper for the context
-the claim string dropped or cut the item. A measured number attached to an
+payload will not give it to you, so cut the item. There is no second branch.
+This line used to offer one, which was to go to the linked paper for the
+context the claim string dropped, and you cannot: this is one prompt in and one
+issue out, with no way to fetch anything. An instruction to go and read
+something is an instruction to supply it from memory, and a context supplied
+from memory about a paper you were handed a sentence of is the invention this
+whole slot is trying to prevent. A measured number attached to an
 unnamed quantity is not a finding, and it is worse than no item, because it
 spends the reader's trust and hands back nothing. The same test catches the
 acronym the claim string never expanded: if a capitalised short form reaches your
@@ -1191,9 +1259,22 @@ one, so a print of 2026-09-30 carried a grade on every section and none on
 any of its three picks, which is the one part of the issue asking the reader
 for an hour of their time. Say what this work cannot establish, inside the
 entry's own sentence and never as a second sentence stapled behind it.
-**That has failed on every entry of both prints of 2026-10-05, six of six, so
-it is a count here rather than a sentence you are trusted with.** Read each
-finished entry and find the full stop before the grade. Where there is one,
+**And read the field map before you write that clause, because this is the
+thinnest row in the payload.** A `deep_reads` row is a title, a url and `why`,
+which is the note triage wrote when it set the paper aside. There is no
+`evidence` here, no tier, no support count and no procedure, so on most picks
+nothing in front of you establishes what the work cannot establish. Where
+`why` says something about how the result was got, that is the grade and it is
+a real one. Where it does not, the entry says what decision the paper would
+inform and claims nothing at all about how well established it is. What you
+never do is write the limit you would expect a paper like this to have. A
+plausible limitation is an invented one, and it is worse here than anywhere
+else in the issue, because the reader is being asked for an hour on the
+strength of it.
+**Where an entry has a grade, its position is a count rather than a sentence
+you are trusted with, because that failed on every entry of both prints of
+2026-10-05, six of six.** Read each finished entry and find the full stop
+before the grade. Where there is one,
 the grade is stapled and the entry is not finished: fold the limit into the
 clause that makes the recommendation, so the reader meets what the work cannot
 establish in the same breath as the reason to read it. The target is zero
@@ -1394,7 +1475,17 @@ the rule's question to the thing in front of you.
   an item that names three pieces of work needs three links rather than one.
   A superseded pairing is two entries and takes two links, the old work and
   the new one, because the reader who wants to check what changed has to
-  reach both ends of it. Count the list. Count the links. They match, or the
+  reach both ends of it.
+  **A contradicted pairing is two entries as well, and the payload hands you
+  one url for them.** A `deprecated` row carries the title and url of the OLD
+  paper and nothing at all for the work that contradicts it, so the link this
+  rule wants on the newer end is not in that row. It is often in another row:
+  the contradicting claim was distilled this week, so look for its text at the
+  front of a `new_claims` claim string and take that row's url when you find
+  it. Where you do not find it, the newer work is not named, because a named
+  work with no link is the absence this rule was written to count and a url you
+  reasoned your way to is a url you invented. Write the item about the belief
+  that fell, which is the end the payload can actually reach. Count the list. Count the links. They match, or the
   issue is not finished. Counting items instead passed an issue whose
   fell-behind section named three separate results and carried no link at
   all, and the grade of that issue also recorded a pass, because what this
@@ -1410,7 +1501,26 @@ the rule's question to the thing in front of you.
   that reads the finished grades, where a specimen is read rather than copied.
   Draw the grade from the payload's `evidence`, source tier and support
   counts, and never claim a stronger one than the payload supports. The grade
-  is product, not hedging. It is the difference between this and a press
+  is product, not hedging.
+  **Three of those sources sit on one stream, so read the field map above
+  before you grade anything.** `evidence` and the source tier are on
+  `new_claims` and nowhere else, and the support count is on
+  `supported_claims` and nowhere else. An item drawn from any other stream has
+  none of the three in front of it, and the grade it gets is the one its own
+  stream can actually support.
+  For an item built on a support count, the count is the grade and it is the
+  strongest one this product prints: separate groups reporting the same effect
+  is replication, so say that in the reader's words and say how many.
+  For a fell-behind item, count the newer results standing against the older
+  one, which is a number the rows in front of you hold, and grade on it: one
+  newer result against a belief is one result, and nobody has repeated that one
+  either.
+  For an item with none of the three, you have no basis for a grade, and the
+  repair is never to assemble one out of the claim string. A sentence of the
+  shape "nothing here says how widely that was tested" grades our knowledge of
+  the paper rather than the paper, and the reader cannot tell the difference.
+  Print the item without the grade and without resting it on the number, or
+  drop it. The second is usually the better issue. It is the difference between this and a press
   release, and a reader deciding what to build has to know how much weight a
   number carries.
   The grade has two halves. Say how strong the number is, and, where the
@@ -2129,12 +2239,25 @@ the rule's question to the thing in front of you.
   can find.** Everything above finds a sentence that hands the work to a thing.
   An item that hands it to nobody prints no such sentence, so this gate reads
   clean over it. Take the same list of named works the links and the grades are
-  counted against, and count the ones whose work is attributed to an institution
-  or, where the payload has no institution, to a named author. The two numbers
-  are the same number or the issue is not finished. In the print of 2026-10-05
-  they were 5 and 12, and all four items in the fell-behind section sat on the
-  wrong side of it, which is the slot whose own rule in this file says
-  "attributed by institution".
+  counted against, and strike from it every work whose stream carries neither
+  `institutions` nor authors, because the rule above allows exactly two forms
+  and the payload hands you neither for those. Only `new_claims` carries
+  either, per the field map. What is left is the list this gate counts, and
+  every work on it is attributed to an institution or to a named author or the
+  issue is not finished.
+  **The works you struck are not thereby unattributed.** They take the rule's
+  third form, which is the finding written with no attributive phrase at all,
+  and that form is a pass here rather than a miss. Run the sentence check above
+  over them the same way, because the form they must not take is the invented
+  one.
+  In the print of 2026-10-05 the two numbers were 5 and 12, and all four items
+  in the fell-behind section sat on the wrong side of it. That diagnosis was
+  half wrong and the half matters: those four came from `deprecated` and
+  `superseded`, which carry no institution and no author, so no attribution was
+  available to any of them and the count was asking for something the payload
+  had not supplied. The repair there was never to find the institution. It was
+  to write those four with no attributive phrase, which is what this gate now
+  asks of them.
 - **Then read the issue for this file's own words.** Every name for a piece of
   the pipeline, and every name for a check in this file, is internal. A print on
   2026-09-28 told a subscriber that two results "fail the kind test", which is

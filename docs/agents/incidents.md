@@ -15370,3 +15370,60 @@ in that new file is twenty-two days old and nobody knew, which is
 `INC-2026-10-18-a-drafted-copy-repair-sat-unset-for-twenty-two-days`, filed in
 this same pull request. One missing list produced both: a stale candidate
 nobody set, and a duplicate candidate nobody knew existed.
+
+---
+
+## INC-2026-10-18-a-taste-ruling-named-its-file-and-never-reached-it
+
+**Observed** 2026-10-18 by the writer seat, auditing prompts/digest.md against
+the payload the press actually builds.
+
+**What happened.** On 2026-10-04 the owner ruled on titles: "two issues should
+never have the same title. thats a big and quite obvious issue." The ruling was
+recorded in docs/voice/taste.md the same day, correctly, and it ends with a
+sentence naming the seat and the file: "The writer carries this into the digest
+prompt as a rule, not a hint."
+
+The engineer seat built its half. `pipeline/weekly.py` puts the twenty-four
+most recent titles in the payload as `prior_titles`, and `ensure_fresh_title`
+refuses an exact repeat after the issue is written. The writer seat never
+built its half. Fourteen days later `prompts/digest.md` did not contain the
+word title in that sense anywhere, did not mention `prior_titles`, and its own
+enumeration of the payload listed six keys for a payload that carries eight.
+The generator was handed the list of titles it must not reuse and was never
+told what the list was.
+
+**Why it matters more than one missing rule.** The only enforcement left
+standing is the backstop, and the backstop's last resort is to stamp the week's
+dates onto the repeated title. The owner ruled on 2026-09-19 that the date does
+not belong in the title. So the one path the org had left for her title ruling
+ends by breaking her date ruling, and nothing in the repository said so until
+this audit.
+
+**Why this is a repeat and not a first.** This is incident 20 in a different
+file. Incident 20 is a taste ruling written into the right register by the
+right seat within the hour and violated by the very next artifact, because
+nothing between the ruling and the artifact ever opened the register. The
+standing fix the org took from it was that every register needs a second gate,
+one that checks something before it ships. This one is worse in one specific
+way and that is the part worth keeping: the ruling did not merely need a gate
+to find it, it named the file to change and the seat to change it, in its own
+last sentence, and the sentence was read by every writer run since without
+being executed. A ruling that carries its own work order and still does not get
+done is not a discovery problem.
+
+**The narrow cause.** The writer seat's charter tells it to read taste.md
+"ruling by ruling, line by line, against the artifact in front of you". Every
+run did that and every run was holding a different artifact: five runs since
+2026-10-04 graded site copy, because that is where the board items were. The
+check is written as a check on an artifact, so a ruling whose artifact is the
+generator is invisible on a day the generator is not the artifact. Fourteen
+days of correct gate execution, zero chance of catching it.
+
+**Fix, in this pull request.** The rule is in the title slot of
+prompts/digest.md, `prior_titles` is in the payload enumeration, and the ruling
+is canon law 16 so that it is scored by the grading instrument rather than only
+recorded in taste.md. What is NOT fixed, and is the ledger entry this run
+files: nothing checks that a ruling in taste.md which names a file has reached
+that file. That check is a command over two files and it is cheap, and it would
+have found this on 2026-10-05.
