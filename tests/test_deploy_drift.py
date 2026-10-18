@@ -1127,6 +1127,79 @@ def test_every_test_in_this_file_is_reached_by_the_runner():
     check("and no test is stranded below it", not stranded, str(stranded))
 
 
+def test_a_fresh_merge_does_not_reset_the_drift_clock():
+    """The grace window is dated from when the drift began, not from today.
+
+    `INC-2026-10-16-the-drift-clock-was-reset-by-every-merge`. The window
+    exists so that a merge at noon is not an alarm at one, and it was measured
+    from the newest commit to touch the app's files. That is the wrong end of
+    the drift: every later merge pushed the number back under the ceiling, so
+    an app nine days behind reported "a deploy is pending and still inside the
+    24h window" on any day somebody touched its files.
+
+    The fixture is the production shape in miniature. The deployed image is
+    2.5 days old, one undeployed commit landed 1.5 days ago, and a second
+    landed 12 hours ago. The old rule read 12 hours and passed. The drift is
+    36 hours and the window is 24.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_history(Path(tmp), [
+            ("pipeline/llm.py", "The press prints a short edition"),
+            ("prompts/triage.md", "A docstring, merged this morning"),
+        ], base_days_ago=2.5)
+        deployed = _shas(repo)[0]
+        rows = [row_for(app, repo, sha=_digest_at_commit(repo, app, deployed))
+                for app in rs.APPS]
+        surface = dh.check_deploy(FakeConn(rows), repo, notify=False)
+
+        check("the surface is failing, which it was not before this fix",
+              surface.state == dh.FAILING, f"{surface.state}: {surface.headline}")
+        triage = surface.evidence["triage"]
+        check("the drift is dated from the oldest undeployed commit",
+              triage["drift_anchor"] == "the oldest undeployed commit",
+              str(triage.get("drift_anchor")))
+        check("so it reads a day and a half rather than half a day",
+              35.0 < triage["drift_hours"] < 37.0, str(triage["drift_hours"]))
+        check("while the newest commit is still reported, because a reader "
+              "wants both dates",
+              "merged_at" in triage and "drift_began" in triage, str(triage))
+        check("and the headline names the undeployed work",
+              "short edition" in surface.headline, surface.headline)
+        # The old rule, computed here rather than asserted from memory: this
+        # fixture is only a regression test if the anchor it replaces would
+        # have passed it.
+        newest = dh._parse_iso(triage["merged_at"])
+        was = (datetime.now(timezone.utc) - newest).total_seconds() / 3600
+        check("and the anchor this replaces would have called it fine",
+              was < dh.DEPLOY_GRACE_HOURS, f"{was:.1f}h")
+
+
+def test_an_undatable_drift_falls_back_to_the_old_anchor():
+    """A guard that cannot recover the deployed commit under-reports, not invents.
+
+    The replay needs the deployed digest to match a commit in range. A row
+    whose digest matches nothing, which is a shallow clone or an image built
+    from code that never merged, leaves `undeployed_commits` with a `why` and
+    no commits. The anchor then goes back to the newest commit, exactly as it
+    did before, and the evidence says which question the number answered.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_history(Path(tmp), [
+            ("pipeline/llm.py", "Swap the provider for triage"),
+        ], base_days_ago=9.0)
+        rows = [row_for(app, repo, sha="ffffffffffff") for app in rs.APPS]
+        surface = dh.check_deploy(FakeConn(rows), repo, notify=False)
+
+        triage = surface.evidence["triage"]
+        check("the replay could not place the image",
+              "why" in triage["undeployed"], str(triage["undeployed"]))
+        check("so the anchor is the one the guard has always had",
+              triage["drift_anchor"] == "the newest commit to the app's files",
+              str(triage.get("drift_anchor")))
+        check("and the drift is still reported rather than withheld",
+              triage["drift_hours"] > dh.DEPLOY_GRACE_HOURS, str(triage["drift_hours"]))
+
+
 def main() -> int:
     for name, fn in sorted(globals().items()):
         if name.startswith("test_") and callable(fn):

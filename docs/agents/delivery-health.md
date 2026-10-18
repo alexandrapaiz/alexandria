@@ -608,3 +608,78 @@ same day, as the first entry of 2026-10-15. **A surface that reports a problem
 and cannot be closed by fixing the problem will teach its reader to stop
 reading it**, which is this file's own recurring lesson pointed at the newest
 row on it.
+
+## 2026-10-18 (engineer seat): an eighth surface, for the sale that cannot happen
+
+Every surface on this page watches a sale that already happened. `payments` is
+the closest one and it asks whether a verified payment became access, which is
+the failure *after* somebody bought something. Nothing asked whether anybody
+could buy anything.
+
+So on the morning of 2026-10-18 the public pricing page answered HTTP 200,
+carried no checkout link anywhere in its markup, and rendered the words "Opens
+shortly" on both paid tiers, five days past the date the company committed to
+being able to take a payment. An outside advisor found it by reading our own
+page the way a stranger would. Every health report the org produced that week
+was accurate, which is incident 24's shape pointed at the till instead of at
+the press.
+
+The law this breaks is already written. `docs/standards/lessons.md` L-A16:
+configured is not in effect, and the gap between the two is silent by
+construction. The checkout route exists, the webhook is written, the
+entitlement read is live, the whole thing fails closed, and none of that is a
+door a buyer can walk through.
+
+**What `checkout` reads.** The public pricing page, as a stranger gets it. Then
+every `/api/checkout/` link that page renders, followed one hop with redirects
+turned off.
+
+**Two assertions in a fixed order, and the order is the design.** First the
+page has to render at least one checkout link. Only then is each link followed.
+A reader who reverses those, or who drops the page fetch as redundant and
+probes the route directly, gets a green report out of a shop with nothing for
+sale. The reason is in `site/app/api/checkout/[plan]/route.js`: that route asks
+for a signed-in account **before** it looks up the checkout link, so an
+anonymous request for `/api/checkout/monthly` answers 303 to `/sign-up`
+whether the offer is configured or not. Verified against the deployed site on
+2026-10-18, with all three variables unset. The rendered href is the only
+evidence from outside that the variable behind it is set, because
+`checkoutOffers` emits a link only when it holds an https URL. So the page is
+the artifact and the route is the follow-up, and never the other way round.
+That argument is a test rather than a comment:
+`test_probing_the_route_instead_of_the_page_would_report_green`.
+
+**Where this is stricter than it was asked to be.** The handoff asked for at
+least one link present and answering. The surface fails instead whenever any
+offer in `OFFERS` has no link on the page, which is the same rule applied per
+offer rather than once. `OFFERS` is also what renders the tiers, so an offer
+the owner stops selling leaves that list and stops being expected here, while
+an offer that stays on the page and cannot be bought is exactly the thing being
+watched. Half a launch reading green is how a report teaches its reader to stop
+reading it, which is this page's own recurring lesson.
+
+**What it costs.** One GET of a public page plus one GET per link, so one
+request on the day this shipped. The checkout route is a GET by design and
+starts no session anybody is charged for, and an anonymous probe stops at the
+sign-up page without ever reaching the seller. Nothing is spent and nobody is
+billed.
+
+**What it still cannot see, and this is the honest limit.** Whether a
+configured URL is a live product at the seller. Proving that needs a session,
+so it is the next rung and it is in `docs/ideas.md` for the day a real account
+exists. Until then the strongest true statement this surface can make is that
+the page offers a door and the door opens.
+
+**It will keep failing until the owner acts, and that is the point.** The three
+variables are unset because the payment account has never been created, which
+is a decision with her own name on it and is already in front of her
+separately. A check that goes green when nothing was fixed would be worse than
+no check.
+
+**The table above is not mine to extend.** `docs/agents/registers.md` gives
+these guardrails to the ExO seat, and the table in "The known state of each
+surface" is a dated snapshot rather than a live list. The row this surface
+would add, for whoever owns it next: the trigger is a human pasting three URLs
+into the hosting environment, the artifact to check is the rendered pricing
+page, the guardrail status is shipped today, and the daily watch is this
+command.

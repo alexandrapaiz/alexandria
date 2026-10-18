@@ -1726,8 +1726,11 @@ gap that the same collision had left empty (incident 25).
     with a record of working on this class, plus the slot-job rename that
     removed the words two of the headings were lifted from.
     ```
-    LANDED prompts/digest.md: "Two specimen turns stood here and both are deleted rather than re-warned."
+    LANDED prompts/digest.md: "No turn of phrase is offered here, and there will not be one."
     ```
+    Re-anchored 2026-10-18. The rule is unchanged and the sentence carrying it
+    was rewritten when the generator lost its case history. The old anchor read
+    "Two specimen turns stood here and both are deleted rather than re-warned."
     What is NOT enforced, said plainly: the file still teaches by worked example
     at other writing positions and this run did not inventory them, because
     counting them is a different job from grading an issue and a guessed count
@@ -1854,8 +1857,11 @@ gap that the same collision had left empty (incident 25).
     Added 2026-10-06. Enforced in two places, because the defect was in both.
     In the generator, at the shape gate.
     ```
-    LANDED prompts/digest.md: "Count only the kinds of block YOU put on the page."
+    LANDED prompts/digest.md: "Count only the kinds of block YOU put"
     ```
+    Re-anchored 2026-10-18 to the clause rather than the sentence, because the
+    sentence now continues into the standing-lines discount and the clause is
+    the part the entry is about.
     And in docs/voice/check_voice.py, which now takes the count that canon law
     14 says comes first. It took four of law 14's five counts and not the fifth,
     which is the one the law says can pass the other four and still fail, so the
@@ -2376,8 +2382,22 @@ gap that the same collision had left empty (incident 25).
     Added 2026-10-13. Enforced the same day at the attribution gate, as a count
     of named works against named works attributed to people, which is the form
     the coverage laws already use.
+    **Corrected 2026-10-18, and the correction is about the repair rather than
+    about the tell.** The entry above names the repair as the institution from
+    the claim's own paper, and the four specimen items come from `deprecated`
+    and `superseded`, which carry no institution and no author at all. So the
+    first repair was never available to the section this entry is about, and
+    nor was the second, and the gate as written was counting those four as
+    misses for not inventing a name. The tell stands exactly as written: an
+    item with no agent anywhere in it is still the defect, and the attribution
+    rule's third form is still what fixes it. What changed is that the third
+    form is now a pass at the gate rather than a shortfall, and the gate's
+    denominator is the named works whose stream carries an attribution field.
+    This is the same class as the payload field map added to the generator the
+    same day: a rule that asks for a field the stream does not hold is answered
+    by substitution or scored as a failure nobody could have avoided.
     ```
-    LANDED prompts/digest.md: "The two numbers are the same number or the issue is not finished."
+    LANDED prompts/digest.md: "every work on it is attributed to an institution or to a named author or the"
     ```
 
 112. The count of its own contents that nobody could check, because the
@@ -2782,4 +2802,379 @@ gap that the same collision had left empty (incident 25).
     names the comparison and the three specimens it catches.
     ```
     LANDED prompts/digest.md: "Take the short bold lead of every item you wrote above and the title of every candidate pick, lowercase both, and strike the pick wherever the two share a run of three or more words."
+    ```
+120. The gate whose floor sits above its own failing state. Canon law 14's
+    first count is how many kinds of block are on the page, and that law says
+    in its own words that one kind is a failing issue whatever the paragraph
+    lengths say. The generator's shape count says the same and goes further,
+    naming the blocks that do not belong to the writer: "the lines you did not
+    write are not yours: the standing line under the title, the rule above the
+    close, and the close itself arrive on every issue whatever you do."
+    `docs/voice/check_voice.py` counted them anyway. Three of them are
+    standalone-line blocks, so every issue this press can produce carries at
+    least two kinds before the generator writes a word, and the row read 2 on
+    the two prints of 2026-W40.
+    The proof is one deletion. The published body's only non-paragraph block
+    the writer actually wrote is the sentence "Three papers this week test what
+    happens when you push the agent stack in directions no benchmark yet
+    covers". Strike it and the writer's honest count is one kind, which is the
+    categorical failure. The row still read 2, and `measure`'s own line, "one
+    kind of block is a failing issue (canon law 14)", had been unreachable
+    since it was written on 2026-10-06.
+    **The cost is that the number was right by luck and read as a verdict.**
+    Two prints of one generator scored 2 and 2, and the grade of 2026-10-16
+    concluded from that pair that both were equally grey and that "the one with
+    the longer sections put fewer shapes on it". Counting only the writer's
+    blocks, the published body carries one standing line and the rehearsal
+    carries thirteen. The axis counts kinds and nothing counted instances, so a
+    thirteenfold difference in the exact device this law asks for arrived as
+    two identical numbers.
+    The sweep, over the class, which is a count whose operand includes blocks
+    the rule it serves excludes: five counts in that file read blocks or the
+    whole text. The shape count is this entry. The per-section count is entry
+    121. The semicolon, em dash and non-ASCII censuses read the whole text,
+    furniture included, and no furniture string carries any of those marks.
+    `over100` counts every block, and the longest non-paragraph block in either
+    print of 2026-W40 is 19 words against a threshold of 100, so it is in the
+    class and cannot err. **A count of two, both patched here.**
+    Added 2026-10-17. Enforced the same day in `docs/voice/check_voice.py`,
+    where the furniture is named from `MASTHEAD` and `SHORT_EDITION_NOTE` in
+    `pipeline/weekly.py` and from the two literal lines of the template, and
+    the shape count in `axes` and in `measure` runs over the writer's blocks
+    alone. The row is renamed, because the number's meaning changed and a grade
+    must not read the new figure under the old name.
+    ```
+    LANDED docs/voice/check_voice.py: "Did the generator put this block on the page, or does it arrive anyway."
+    LANDED docs/voice/check_voice.py: "the generator's own shape count already excludes in its own words"
+    ```
+121. The count that took a different unit from the rule it enforces, and
+    punished the issue for obeying the same law twice. The generator's turn
+    trigger is "any section running past about four paragraphs gets a written
+    turn inside it". `axes` counted blocks. The other kinds of block in that
+    section are the ones this same law requires: a line carrying the number
+    that matters, a bulleted list where the results are parallel, and the turn
+    itself.
+    So the fix for a grey page made the page look long. Every device the writer
+    added moved its section nearer a flag, and the flag's own remedy, the turn,
+    counted as a paragraph too.
+    The measurement, by section, on both prints of 2026-W40:
+
+    ```
+    digests 21      4+0  4+1  4+0  4+2    paragraphs + other blocks
+    rehearsal 4     3+2  4+4  3+7  4+2
+    ```
+
+    Not one section in either print runs past four paragraphs. The row read 2
+    and 4 and called both determined failures, so **all six flags were false**,
+    and the worst-scoring section in the org was the rehearsal's third, which
+    is three paragraphs and seven standing lines and is therefore the single
+    best-formatted section either print produced.
+    **The cost is a verdict in this seat's own register, one day after the same
+    class was recorded.** The grade of 2026-10-16 quoted "the published body
+    runs a five-paragraph and a nine-paragraph section" as evidence under law
+    14, and ran its own awk count to get there. Canon pass 1: a FAIL recorded
+    against a clean artifact is worse than no grade, because it hides the one
+    thing the generator has solved and nobody can tell when to stop working on
+    it. Entry 118 is the same sentence failing yesterday on the non-ASCII
+    census. `INC-2026-10-17-the-instrument-overcounted-the-law-it-was-built-for`.
+    The sweep, over the class, which is a trigger whose number carries a unit:
+    `grep -nE "(past|over|more than|under|within|fewer than|no more than|at least) (about )?(one|two|three|four|five|six|seven|eight|nine|ten|[0-9]+) [a-z]+" prompts/digest.md`
+    printed twelve hits, and the lines below are the file as it ships after this
+    patch. The section trigger at `:1740` and its restatement at `:1722` are the
+    one patched. The superseded group's "past two entries" at `:1004`, `:1015`
+    and `:1758` is this exact class and entry 116
+    closed it yesterday. The item-level trigger at `:426` and `:1557`, "an item
+    that runs past three paragraphs gets written turns inside it", is the same
+    class and no command counts it at all, so it keeps failing invisibly and
+    that is a filing rather than a wording. The rest are prose about words and
+    sentences with no command behind them. **Two instances, one patched here
+    and one patched yesterday.**
+    Added 2026-10-17. Enforced the same day in both places: in
+    `docs/voice/check_voice.py`, where the per-section count takes paragraphs
+    and not blocks, and in `prompts/digest.md`, where the trigger now says
+    which blocks are not paragraphs and why counting them turns one half of
+    this law against the other.
+    ```
+    LANDED prompts/digest.md: "Count paragraphs and not blocks, because the other kinds this law asks you for sit inside sections too"
+    LANDED docs/voice/check_voice.py: "A paragraph, and not a block."
+    ```
+122. The model sentence printed verbatim, defended by a subject the payload
+    turned out to hand over. The reading-list slot quoted a line as the shape a
+    good entry takes, with the defence written beside it: "in a subject no
+    payload will ever hand you, so that copying it is obviously wrong". The
+    print of 2026-10-05 opened its reading list with that sentence, word for
+    word, because the day's payload handed it a paper whose section 4 really is
+    scheduling maths.
+
+    > The scheduling maths is in section 4 and it is the part nobody gets right
+    > by intuition.
+
+    The specimen entered the generator on 2026-09-26 and the press still holds
+    it. The rehearsal of the identical `prompt_sha` did not copy it, so the copy
+    is one print's version of the failure and not the failure itself: both
+    prints open their reading-list lines on the paper rather than on the
+    reader's decision, one of three in the published body and three of three in
+    the rehearsal, which is the shape this slot's own subject rule was written
+    from. The axis is determined and the patch is testable.
+    **The reason this is the third time, and the file already held the answer
+    twice.** This slot has deleted two specimens for exactly this: the heading
+    frame of the second form, and "Worth the hour if you are". Both deletions
+    carry the same reason, that a phrase quoted inside the slot the model writes
+    into is not a prohibition but the nearest available draft. Neither deletion
+    reached the third specimen thirteen lines below, because its defence was
+    subject matter, and subject matter is the one variable a payload controls.
+    A quoted sentence is a draft whatever it is about.
+    The sweep, over the class, which is a printable sentence quoted inside a
+    slot the model writes into: `grep -nE '^\s*(ever hand you|is in|[A-Z][a-z]+ [a-z]+)[^"]*"[A-Z][^"]{25,}"' prompts/digest.md`
+    is not the readable form of this one, so it was taken by hand over the four
+    slots and the opening. The traction slot and the fell-behind slot quote no
+    candidate sentence. The new-work slot quotes one and it is labelled in the
+    same breath as a subject no payload hands over, "**Apple.** One model drives
+    desktop, phone and browser, and it beats the specialists trained for each",
+    and the number rule quotes another, "The night shift closes **83% of
+    tickets** before morning, up from 41%". Both carry the defence this entry
+    just falsified, and both stay for now with the defence weakened rather than
+    deleted, because each is demonstrating a punctuation shape rather than a
+    sentence's job and no payload in this product's corpus is about night shifts
+    or Apple's desktop. That is a judgment and it is recorded as one.
+    **One instance deleted, two left standing with the reason they rest on named
+    as weaker than it reads.**
+    Added 2026-10-17. Enforced the same day at the reading-list line rule, where
+    the specimen is deleted and the three shapes it illustrated are described
+    instead.
+    ```
+    LANDED prompts/digest.md: "Nothing in this slot is ever handed to you as a sentence you could print"
+    ```
+    Re-anchored 2026-10-18. The deletion the entry records still stands and the
+    rule is now stated positively instead of as a tombstone, which is L-A23 in
+    the direction it wants. The old anchor read "A third specimen stood here and
+    is deleted, and it is the one that was printed."
+123. The grade stapled behind the sentence that was supposed to carry it. The
+    reading-list rule says to say what the work cannot establish "inside the
+    entry's own sentence and never as a second sentence stapled behind it". It
+    has failed on six entries out of six across both prints of 2026-W40, and
+    every one of the six took the same three-sentence shape: the decision, then
+    a sentence counting the units of evidence, then a sentence assessing them.
+
+    > The scheduling maths is in section 4 and it is the part nobody gets right
+    > by intuition. One incident autopsy, one formal model, one prototype you
+    > can wire into LangGraph today. The latency claim is measured; the breach
+    > narrative is single-source.
+
+    That is one entry doing in three sentences what the rule asks of one, and
+    its third sentence restates in different words the grade the body already
+    gave the same paper sixty lines above ("The latency numbers are reproducible
+    ... the breach narrative is not independently verified"), which is law 6's
+    two-grades-on-one-work failure arriving through the shape rather than
+    through the vocabulary.
+    This is the lesson of the semicolon, which this file wrote down on
+    2026-10-13 and is the clearest rule it owns: the difference between the mark
+    that went to zero and the mark that went to eight is that one of them was in
+    a count. This rule has run twice in prose and failed six times out of six,
+    the axis is determined by the comparator, and so it becomes a count. The
+    count is new rather than a re-wording, which is the distinction the grade of
+    2026-10-16 refused to patch across.
+    No sweep, because the class is a rule stated in prose that a count can hold,
+    and that class is the subject of this entire register rather than of one
+    entry.
+    Added 2026-10-17. Enforced the same day at the grade rule in the
+    reading-list slot, which now names the full stop before the grade as the
+    thing to find and sets the target at zero.
+    ```
+    LANDED prompts/digest.md: "Read each finished entry and find the full stop before the grade."
+    ```
+
+124. Provenance standing where a missing measurement belongs. The generator
+    asks the evidence grade for two halves, how strong the number is and what
+    the work did not measure, and the second half is conditional on the payload
+    supporting it. The payload never does. `pipeline/distill.py` stores
+    `claim`, `evidence`, `topics` and `procedure`, every one of which records
+    something a paper did, and no field anywhere records something a paper left
+    out. So the slot gets filled with the nearest true sentence in reach, which
+    is who ran the work or who has not repeated it.
+
+    > The authors' own experiments, not yet replicated outside the group.
+    > The authors' own traffic and benchmarks; no external replication.
+    > The authors' own experiments against their Meta-Harness baseline.
+
+    Six of the seven grades 2026-W40 printed take that shape, and the seventh,
+    "no external benchmark", is the only one on the page that names a
+    measurement rather than a person. The tell is that the clause reads like a
+    limitation, sits in the position a limitation goes, and leaves the reader
+    knowing nothing about the work's reach that they did not already know from
+    the first half.
+    This is not law 6 being broken. Law 6's own example is "authors' own
+    experiments, not yet replicated", and that is the right example of the
+    FIRST half. The defect is the first half printed twice under one grade,
+    with the second half's slot spent on it.
+    The strongest evidence that this is structural rather than careless: the
+    hand-written rewrite in `docs/voice/benchmark-2026-10-18.md`, composed by
+    this seat with the rule open, produced "nobody outside it has repeated the
+    result" in the same position. A writer who knows the rule and has the paper
+    cannot satisfy it from the payload either.
+    No sweep, and no re-wording of the demand, because the demand is not the
+    broken part. The missing field is filed for the engineer in docs/ideas.md
+    on 2026-10-18. What the prompt can hold is the prohibition on substituting,
+    and that is what landed.
+    Added 2026-10-18. Enforced the same day at the evidence-grade rule, which
+    now puts one question to the second half before it is kept.
+    ```
+    LANDED prompts/digest.md: "Does the clause name something the work did not measure, or does"
+    ```
+
+125. The selling sentence nobody wrote, lifted out of text addressed to a
+    machine. Entry 61 is standing copy fixed in code that no pass ever graded,
+    and its fix is that an editorial run reads the reader-facing constants in
+    code once per run. This is the same failure one move further out, and that
+    fix cannot reach it, because the sentence is not a constant and is not in
+    the site's code at all.
+
+    `site/lib/skill-shelves.js` takes each skill's `description`, cuts it at
+    the first sentence, and the catalogue prints that fragment as the row's
+    one-line pitch. The `description` is the text an agent's router matches a
+    task against, so it is written for a machine, by the seat that owns
+    `skills/`, under a 150-word budget enforced by a trigger test. It is good
+    at the job it was written for. What a stranger reads on the page a sprint
+    is now selling from is this:
+
+    > Where to enforce the boundary an agent runs inside, and what each choice
+    > measures.
+
+    Nothing in it is false, no internal vocabulary appears in it, and entry 14
+    therefore passes it. No editorial pass has ever read it either, because the
+    string lives in `skills/*/SKILL.md` front matter, which a copy round over
+    `site/` never opens, and the function that promotes it lives in a third
+    directory that belongs to a third seat. Three surfaces, three owners, and
+    the sentence that sells the product is the output of a slice.
+
+    The tell, and it is checkable in one question: **who was this sentence
+    written to?** A line in a selling slot that was addressed to a router, a
+    schema, an index or another program reads as accurate and sells nothing,
+    and her ruling of 2026-09-20 names the register exactly: "no more
+    technical. we want to sell." The repair is never to rewrite the machine's
+    text, which is correct as it stands and has its own gate. It is to write
+    the reader's sentence as a second artifact and to give it somewhere to
+    live.
+
+    No sweep, and no change to `prompts/digest.md`, because the generator does
+    not write site copy and nothing in a prompt can reach a slicing function.
+    The nine candidate sentences are drafted in
+    `docs/voice/skills-copy-2026-10-18.md` and the ending this entry carries is
+    the ledger entry that asks for the field to put them in, filed
+    2026-10-18, because the half this register cannot hold is that there is
+    nowhere in the repository for a reader-facing sentence about a skill to go.
+    Added 2026-10-18, from the copy round for the catalogue page.
+126. The completeness word that belongs to the part, spent on the whole, with
+    the true version standing next to it. Canon law 15 is a count given the
+    neighbouring count's verb. This is a scope one line wide: a claim that is
+    true of the unit, restated about the collection of units, where the
+    collection has gaps the unit does not.
+
+    The free column of `site/app/pricing/page.jsx` carries three bullets, and
+    two of them are one word apart:
+
+    > Every issue in full
+    >
+    > The complete archive
+
+    The first is true and it is load-bearing, because the vision's §0 as
+    amended 2026-09-17 makes the digest free in full, and `site/lib/content.js`
+    enforces it in code: "an issue has no teaser split and no entitlement
+    check: the whole body is public." The second takes that truth and moves it
+    up a level, from each issue being whole to the series having no holes, and
+    at that level it is false twice over. `site/lib/content.js:23` withholds
+    2026-W37 from the listing and from its own route on the owner's order of
+    2026-09-19, and the press has missed 2026-W41 and W42.
+
+    What makes it a tell rather than a mistake is the adjacency. Neither
+    sentence would survive alone in front of a reader who checked, and together
+    the first one vouches for the second, so a pass that reads the line above
+    arrives at the line below already satisfied. It is ban list 50's mechanism
+    with the parts reversed: 50 is a true concession licensing a false
+    assertion inside one sentence, and this is a true claim licensing a false
+    one across two lines of a list.
+
+    The tell is checkable in one question, and it is not about the word: **what
+    is this sentence's subject, the item or the shelf?** A completeness word on
+    the item is a promise about craft and it is usually true, because nothing is
+    held back from a reader who arrives. The same word on the shelf is a promise
+    about a record, and a record is the one thing in a product that an outage
+    makes permanently false. The repair is never to soften the shelf's claim,
+    which is law 15's rule and 50's: "most issues", "the archive so far" and "a
+    complete archive from the pilot onward" are the same false sentence in
+    coats. The repair is to say what the shelf actually offers a stranger, which
+    here is that arriving late costs nothing and reading costs no account.
+
+    **Swept, and this is the half worth keeping.** Four other lines on the site
+    use the same vocabulary and every one of them is correctly scoped.
+    `site/app/library/page.jsx:29`, "The weekly issue is free and complete",
+    puts the word on the unit. `site/app/library/[week]/page.jsx:51`, "Every
+    issue reads like this one, free and in full", the same. The library page's
+    heading "Every issue" names the page's own scope, and both it and the line
+    under it were approved by the owner on 2026-09-29. So the one defective
+    instance is the one line of the five she never ruled on, and the four she
+    approved get the scope right. That is the argument for this entry being a
+    tell rather than an accident: her ear put the word on the part every time,
+    and the copy written without her got it wrong the first time it tried.
+
+    No sweep of `prompts/digest.md` and no change to it, because the generator
+    does not write a tier card and no sentence in a prompt can reach a bullet
+    in a React component. The ending this entry carries is the ledger entry
+    filed 2026-10-18 asking for the gate that could, which is a check that
+    reads the archive's published contents and fails a build when a site string
+    asserts a completeness or a cadence the shelf does not show. Added
+    2026-10-18, from the copy round on the pricing page, where the sentence had
+    been live for thirty days.
+
+127. The present tense worn by a machine that has not been built. Eleven
+    sentences on the site say something about the quality of what we ship, and
+    `docs/agents/quality-claims.md` names the code that would have to run for
+    each one to be true. Three of the eleven have it. Four have nothing
+    anywhere. The register has said so since 2026-09-30 and the pages have not
+    changed, so on 2026-10-18 the mission page still read "proven against the
+    same tasks with and without it, revised when the research sharpens it, and
+    retired with the reason when the research overturns it", which is one
+    sentence carrying a measurement that came back negative, a job that has
+    never merged, and a field that does not exist.
+
+    The tell is not a word, and that is what makes it hard to catch by reading.
+    Every sentence in this class is grammatical, plausible, and written by
+    somebody who believed it, because the thing it describes is the thing the
+    org intends to build. Entry 50 is a true concession licensing a false
+    assertion, 126 is a true claim about the item licensing a false one about
+    the shelf, and this one is a true INTENTION licensing a false tense. The
+    question that separates them is one: is this sentence about the research or
+    about our artifact? "The research has shown this technique to work" is
+    checkable against the corpus and is almost always true. "Each skill is
+    proven with and without it" is checkable only against a measured delta, and
+    on 2026-09-30 the library's first such measurement came back at 5.4 without
+    the skill against 5.3 with it.
+
+    The repair is the one law 15 already gives, which is to drop the claim
+    rather than soften it, with one exception the register itself writes down.
+    Where the machine is genuinely being built, the sentence may stand in the
+    tense of a thing that does not exist yet, which is the form
+    `site/app/routines/page.jsx` has used in public since it shipped and the
+    form the pricing page already uses in the last bullet of its own paid tier
+    while the intro four lines above sells the same routines as running. A page
+    disagreeing with itself about whether a machine exists is this entry at its
+    clearest.
+
+    The ending, and it is a command rather than a line in the generator.
+    `docs/voice/check_voice.py claims` reads every row of the register against
+    every reader-facing surface and fails on a claim that is not held and not
+    hedged, and on the same claim appearing somewhere the row does not name,
+    which is how the revision promise reached three pages. It found seventeen
+    live instances on the run that wrote it. `docs/voice/check_voice.py
+    reading` does the same for law 15's vocabulary and found three, one of them
+    the home page's own metric line, twenty-two days after the repair for it
+    was drafted and filed. No sweep of `prompts/digest.md` and no change to it,
+    for the reason entry 126 gives: the generator does not write a React
+    component. Neither command is called by anything yet, so the ledger entry
+    filed 2026-10-18 asks the engineer seat for the wiring, and until that
+    lands these two are enforced at the reliability of a seat typing them.
+    Added 2026-10-18, writer run 40.
+    ```
+    LANDED docs/voice/check_voice.py: "A gate that turns red on a file its own seat must not edit gets ignored, which is the failure mode after the failure mode this check exists for."
+    LANDED docs/voice/check_voice.py: "The law is about what the library claims to have done."
     ```

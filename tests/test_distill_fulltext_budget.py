@@ -112,6 +112,139 @@ def test_every_fallback_can_at_least_take_the_documented_abstract():
             "run pretending it has somewhere to go.")
 
 
+def test_every_model_in_the_list_can_take_the_window_sized_for_it():
+    """The invariant the two tests above left uncovered, and it is the defect.
+
+    Those two say the head of the list takes a whole paper and every fallback
+    takes an abstract. Both were true on 2026-10-15 and the job sent 250,000
+    characters to whichever model the walk reached first anyway, because nothing
+    chose the size from the model. `window_for` is that choice and this is the
+    property it has to hold: whatever the walk reaches, the request built for it
+    fits without the provider having to say so.
+
+    Sized against `budget.request_text`, which builds the payload at the
+    measured density of a real paper rather than of prose, and against the
+    RENDERED prompt, which is the text the model is sent. The raw file is a
+    third of the size and sizing against it is the hazard that made the first
+    version of this guard wrong by a factor of seventeen.
+    """
+    pytest.importorskip("tiktoken", reason=NEEDS_TIKTOKEN)
+    for kind in distill.PROMPTS:
+        rendered, _ = distill.load_prompt(kind)
+        for model in distill.MODELS:
+            window = distill.window_for(model, kind)
+            report = budget.check_request(
+                rendered, budget.request_text(SPEC, window),
+                distill.MAX_COMPLETION_TOKENS, model)
+            assert report.fits, (
+                f"a {kind} request sized by window_for at {window} characters "
+                f"does not fit {model}: {report.summary()}. The window is "
+                "supposed to be derived from this model's own published limit, "
+                "so either the derivation lost a term or the density is stale.")
+
+
+def test_the_head_of_the_list_still_gets_the_whole_measured_window():
+    """The funded path does not pay for the fallbacks' problem.
+
+    250,000 characters is a measurement, not a guess: 13 of the 14 papers in
+    docs/evals/2026-09-30-fulltext-token-density.json arrive complete at it and
+    the expected cost stops moving past it. kimi-k2.6's usable budget is wide
+    enough for twice that, so a per-model window must cap at the measurement
+    rather than spend the headroom.
+    """
+    assert distill.window_for(distill.MODELS[0]) == distill.FULLTEXT_CHARS
+    for kind in distill.PROMPTS:
+        assert distill.window_for(distill.MODELS[0], kind) == distill.FULLTEXT_CHARS
+
+
+def test_a_fallback_window_is_below_the_floor_so_a_degraded_day_reads_abstracts():
+    """The floor is what keeps "read in full" from becoming a 7,000-character claim.
+
+    A Groq fallback's whole per-request budget is 6,800 tokens, which is about
+    6,900 characters of a paper once the prompt and the output reservation are
+    out. That is a tenth of the shortest window this job has ever called
+    reading a paper, so the honest answer is the abstract and a null
+    `fulltext_chars`, which is what `preflight` and the end-of-run NOTE have
+    both promised since 2026-09-30.
+    """
+    assert distill.FULLTEXT_FLOOR_CHARS < distill.FULLTEXT_CHARS
+    for model in distill.MODELS[1:]:
+        window = distill.window_for(model)
+        assert window < distill.FULLTEXT_FLOOR_CHARS, (
+            f"{model} can take {window} characters of a paper, at or above the "
+            f"{distill.FULLTEXT_FLOOR_CHARS}-character floor, so the run would "
+            "now record a full read for it. If that is right, the floor and "
+            "the masthead's sentence both need revisiting, in that order.")
+    # And the abstract the degraded day falls back to fits inside what the
+    # fallback can take, or the day has nowhere to go at all.
+    assert SPEC["degrades_to_chars"] <= distill.window_for(distill.MODELS[1])
+
+
+def test_the_window_moves_with_the_providers_published_limit():
+    """Derived, not remembered. A tier change is one edit to budget.MODELS.
+
+    The whole point of taking the number out of the job is that the day the
+    free tier doubles its per-minute budget, the job reads more of a paper
+    without anyone editing the job. A literal anywhere in the chain fails here.
+    """
+    model = distill.MODELS[1]
+    before = distill.window_for(model)
+    spec = dict(budget.MODELS[model])
+    spec["tpm"] = spec["tpm"] * 4
+    saved = budget.MODELS[model]
+    budget.MODELS[model] = spec
+    try:
+        after = distill.window_for(model)
+    finally:
+        budget.MODELS[model] = saved
+    assert after > before, (
+        "quadrupling this model's published per-minute budget did not widen "
+        "the window, so something in the chain is a constant rather than a "
+        "derivation")
+    assert distill.window_for(model) == before
+
+
+def test_reading_model_is_the_model_the_walk_will_actually_reach():
+    """Same skips as `llm.ask_json`, or the window is sized for the wrong model.
+
+    Three cases, because the three disagree: the catalogs could not be read
+    (trust the table, take the head), the catalogs answered and the head is
+    missing (take the first one that is there), and nothing is listed at all
+    (say so rather than guess).
+    """
+    assert distill.reading_model(None) == distill.MODELS[0]
+    fallbacks = set(distill.MODELS[1:])
+    assert distill.reading_model(fallbacks) == distill.MODELS[1]
+    assert distill.reading_model(set()) is None
+    assert distill.reading_model({distill.MODELS[2]}) == distill.MODELS[2]
+    # A model its provider has withdrawn is skipped the way the walk skips it,
+    # which is incident 24's 404 never paid for twice.
+    saved = dict(budget.DECOMMISSIONED)
+    budget.DECOMMISSIONED[distill.MODELS[0]] = "withdrawn, for this test only."
+    try:
+        assert distill.reading_model(None) == distill.MODELS[1]
+    finally:
+        budget.DECOMMISSIONED.clear()
+        budget.DECOMMISSIONED.update(saved)
+
+
+def test_the_run_counts_a_full_read_against_the_window_and_not_the_constant():
+    """`whole` has to compare against what was sent, not against the ambition.
+
+    This is the half of the fix that is about honesty rather than about speed.
+    A paper trimmed to what a smaller model can take was not read in full, and
+    `papers.fulltext_chars` is the column the masthead's "read in full"
+    sentence is counted from. A `len(body) < FULLTEXT_CHARS` left in the loop
+    would report a complete read of a paper that was cut by 97%.
+    """
+    source = (ROOT / "pipeline" / "distill.py").read_text()
+    assert "whole = len(body) < window" in source
+    assert "whole = len(body) < FULLTEXT_CHARS" not in source
+    # And the trim itself, so the body cannot be larger than the window the
+    # line above then measures it against.
+    assert "body = body[:window]" in source
+
+
 def test_the_job_declares_its_reservation_instead_of_leaving_it_assumed():
     # The guard used to carry `reservation_assumed: 2000` for this job because
     # the job sent nothing. A request sized against an assumption is not sized.

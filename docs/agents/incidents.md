@@ -14293,3 +14293,1247 @@ and it is usually checked against one. Count the specimens the claim covers and
 check it against each, the same way a coverage law is graded by two integers
 rather than by a reading. A diagnosis that hands work to another seat earns the
 count most, because nothing downstream of it will ever re-derive it.
+
+## INC-2026-10-17-the-deploy-alarm-had-no-reachable-cooldown-and-raised-to-nobody-for-nine-days — the second guardrail in four days shipped with its memory in a store its own runner cannot write (2026-10-17, engineer seat, second run)
+
+**Observed by:** the engineer seat's second run of 2026-10-17, 14:16 UTC,
+running `python3 tools/delivery_health.py` as the first observation step of an
+ordinary OODA cycle. The deploy surface came back `FAILING`, correctly, and
+then said this about what it had done with that verdict:
+
+    not mailed: these rows came from https://libraryofalexandria.dev/api/delivery,
+    which cannot write the once-a-day cooldown, and an alarm with no cooldown
+    is one mail every time the standup runs
+
+**What happened.** The drift guard in `tools/delivery_health.py` shipped on
+2026-10-08 with an email alarm and a cooldown, and the cooldown is
+`deploy_runtime.notified_at`, a column. Writing a column needs `DATABASE_URL`.
+No agent seat holds `DATABASE_URL`, by design, and the surface's own
+credential-free reader exists precisely because of that. So the alarm has two
+paths and the org only ever walks one of them: read the receipt, find drift,
+decline to mail, print the decline. Between 2026-10-08 and today it raised to
+nobody, nine days, while `weekly` sat on an image built from `3bbf430` of
+2026-10-04.
+
+The declining is not a bug and that is the point worth keeping. The reasoning
+in that sentence is correct on its own terms: an alarm that cannot remember
+mailing will mail every run, and daily mail about a known drift is how a
+reader learns to filter the sender. The defect is one level up, in deciding
+that the only store a cooldown may live in is the one the alarm's own runner
+cannot reach.
+
+**Why this is a repeat and not a first.** The identical shape was found on the
+press on 2026-10-14, by this seat, and written down in
+`INC-2026-10-14-three-registers-named-the-missing-issue-and-none-of-them-sends-it`.
+That entry closes with the sentence that makes today a repeat rather than a
+discovery:
+
+    the schema change the deploy alarm needs for its own cooldown is the same
+    shape of work
+
+It was read correctly as the same shape and then sized wrongly, and the wrong
+sizing is the finding. It is called a schema change in that sentence, which
+makes it a database migration behind a credential nobody has, which makes it
+a thing to propose rather than a thing to do. It is not a schema change. The
+store it needed already existed, was already reachable from every seat
+workflow through `BOARD_API_URL` and `BOARD_RUNTIME_TOKEN`, and was already
+being used for exactly this purpose by `tools/press_watch.py`, which had
+merged into the same repository two days earlier with the answer in its
+docstring: the card is the memory. Nine days of silence cost a sentence that
+described the fix as harder than it was.
+
+**What shipped with this entry.** `tools/drift_watch.py` and
+`tests/test_drift_watch.py`, 33 cases, no network and no credential. It calls
+`delivery_health.judge_deploy` rather than copying it, and posts one board
+card per stale image, keyed on the sha the job last reported so that the card
+is its own cooldown. Run live at 14:29 UTC it created
+`Deploy: weekly is not running main, still on 0cbc51a0e248` in the working
+column, and a second run two minutes later wrote nothing, which is the
+dedupe working rather than a claim about it.
+
+**What it does not fix, stated so the next run does not assume otherwise.**
+Three things. The card still has no clock above a daily nudge, which is the
+open ledger proposal of 2026-10-14 and is now the open proposal for two
+guardrails rather than one. Nothing closes the card when the deploy lands,
+which is the other open proposal from the same day and has the same scope
+creep. And the tool runs nowhere on a schedule: `.github/workflows-pending/`
+is where a seat may stage a workflow and `.github/workflows/` is where one
+runs, so until a workflow-scoped hand applies something, this fires only when
+a seat happens to run it, which is what happened today.
+
+**The generalisation, offered for the lessons register rather than asserted.**
+A guardrail is finished when something that can run it can also write its
+memory. Those are two credentials and the second one is the one that gets
+assumed. Both times this has happened here, the alarm's judgement was right,
+its restraint was right, and the pair of them produced silence. A one-line
+check at review time would catch it: name the store the cooldown lives in,
+then name the credential that writes that store, then name a scheduled job
+that holds it. If any of the three is missing the guardrail does not fire,
+however correct it is.
+
+## INC-2026-10-17-the-instrument-overcounted-the-law-it-was-built-for — two of the ten gates a grade quotes counted blocks the rule they serve excludes, and one of them put a FAIL on an artifact that obeyed it (2026-10-17, writer seat)
+
+**Repeat of** `INC-2026-10-16-a-fail-was-recorded-against-the-print-that-obeyed-the-rule`,
+one day later, in the same file, on a different pair of axes. That entry is
+about a census with no way to express its rule's exception. This one is about
+two counts whose operand is a different unit from the one their rule names. The
+shared shape, and it is why this is recorded rather than folded into yesterday's
+entry: an instrument that reads an artifact can be exactly wrong in the
+direction that costs most, which is a FAIL against work that complied, and
+canon pass 1 has said since 2026-10-04 that such a FAIL is worse than no grade.
+
+**What happened.** `docs/voice/check_voice.py compare` landed on 2026-10-16 and
+sorted ten measurable gates into determined and undetermined classes. The grade
+of that day read the table as its verdict table, correctly, and concluded that
+four of the five determined failures were canon law 14. Today's grade checked
+two of those four rows against the artifact by hand.
+
+- `shapes on the page` counted the masthead line, the rule above the close and
+  the standing close as blocks the writer put on the page. All three arrive on
+  every issue: the first from `MASTHEAD` in `pipeline/weekly.py`, spliced in by
+  `add_masthead` before the row is stored, and the other two from literal lines
+  of the template in `prompts/digest.md`. All three are standalone-line blocks,
+  so the row's floor was two and the one-kind failure canon law 14 calls
+  categorical could not be reported on any issue this press can produce. The
+  generator's own count says in its own words that those three lines are not
+  the writer's. The command that checks the generator did not.
+- `long sections with no turn` counted blocks where the rule it serves counts
+  paragraphs. The other blocks in a section are the ones the same law requires:
+  a line carrying the number that matters, a bulleted list of parallel results,
+  and the turn itself. It raised two flags on the published body and four on the
+  rehearsal. Neither print has a section with more than four paragraphs in it,
+  so **all six were false**, and the section it scored worst in the org is three
+  paragraphs and seven standing lines, which is the best-formatted section
+  either print produced.
+
+**The cost, on the record.** The grade of 2026-10-16 wrote, under law 14's own
+pass, "the published body runs a five-paragraph and a nine-paragraph section",
+from its own awk count, and used the pair of inflated figures as evidence that
+the generator produces grey walls. It also read "shapes 2 and 2" as meaning the
+two prints were equally grey and that the longer-sectioned one "put fewer shapes
+on it". Counting only the writer's blocks, the published body carries one
+standing line and the rehearsal carries thirteen. The axis counts kinds, nothing
+counted instances, and a thirteenfold difference in the exact device the law
+asks for arrived as two identical numbers.
+
+**Why a reading did not catch it, which is the part worth keeping.** Both wrong
+numbers are plausible on their face. Two shapes on a grey issue reads as true,
+and it was true by accident. A five-paragraph section in a section of four
+paragraphs and one standing line reads as an editor rounding up rather than as
+an off-by-one. A figure that agrees with the impression it is supposed to test
+is the one figure nobody re-derives, and this seat had re-derived the other
+eight.
+
+**Fixed here.** Ban list 120 and 121. The furniture is named from its two
+sources and excluded from the shape count in both `axes` and `measure`. The
+per-section count takes paragraphs. Both rows are renamed, because the numbers'
+meaning changed and a grade must not read a new figure under an old name. The
+generator's turn trigger now says which blocks are not paragraphs and why
+counting them turns one half of law 14 against the other.
+
+**The generalisable lesson, for any seat that builds its own instrument.** A
+gate's operand is as much a part of it as its threshold, and a threshold gets
+reviewed while an operand does not, because the threshold is the thing an
+argument is about. Both defects here are operand defects and both were one line
+of code. The check that would have caught either in a minute is a fixture per
+axis: a synthetic body built to fail one gate and pass the rest, asserted
+against the number the function returns. `tests/test_voice_enforcements.py`
+covers this file's two other entry points and nothing covers `axes`, which is
+the one function whose output a grade quotes as a verdict. Filed in
+docs/ideas.md the same day, because `tests/` is not the writer seat's surface.
+
+## INC-2026-10-18-registered-claims-ship-unhedged-because-no-gate-reads-the-register
+
+**Observed 2026-10-18 by the writer seat, on `site/app/llms.txt/route.js`.**
+
+`docs/agents/quality-claims.md` was written on 2026-09-30 and names that file,
+line 30, in two of its eleven rows. "Revised when the research sharpens it" is
+recorded `queued`. "Retired with an explanation when it is overturned" is
+recorded `not built`. Eighteen days later both sentences are live in public,
+in the present tense, unhedged, exactly as the register describes them.
+
+**Why this is a repeat and not a new kind of failure.** It is incident 20 with
+a different register. The ruling was written down, by the right seat, in the
+right file, and then nothing between the file and the artifact ever opened it.
+Incident 20's own lesson is stated in every charter's shipping step: a register
+needs two gates, one that decides something gets written down and one that
+decides something gets checked before it ships, and the second is the one the
+org keeps forgetting. The writer charter added the claims gate on 2026-09-30
+and it is a gate on **new candidates leaving this seat's hands**. Nothing in
+the org re-checks a claim that was already live when the register was written,
+so the eleven rows describe the site accurately and change nothing about it.
+
+**The aggravating detail.** The register's own preamble cites ADR-36, which
+exists because the site said a skill is revised when the research moves. That
+sentence has now been untrue in public for thirty days rather than the eleven
+the writer charter records, and the file that would have told anybody so has
+been sitting in the repository for eighteen of them with the line number in it.
+
+**A fourth claim on the same page is in no row at all**, and it is the one that
+does damage: "the version you loaded last month may not be the one that holds
+today. Check the version before you rely on it." It instructs an agent to
+spend a check on a mechanism that has never run. The register catches claims a
+reader could ask "how do you know that" about, and this one is advice derived
+from such a claim rather than the claim itself, so it passed the net.
+
+**Why the surface was missed for a month.** `/llms.txt` is a template literal
+inside a route handler. It has no page component, no heading a page audit
+lists, and it is the one public surface written for machines, so no site-copy
+round this seat has run ever opened it. The copy in it predates the owner's
+rulings of 2026-09-25 and 2026-09-29 and has never been checked against
+either, which is also how a launch date of October 13 came to be live on
+October 18 while the pricing page that owns the fact carries no date at all.
+
+**Fixed here, and what is not.** The corrected body is drafted in
+`docs/voice/llms-txt-2026-10-18.md` for the owner to rule on and the frontend
+seat to set, because `site/` is not this seat's surface. What is not fixed is
+the gate. A register whose rows name a file and a line is machine-readable,
+and the check that would close this is a run over the named locations asking
+whether the sentence is still there and whether its row still says `queued`.
+That belongs to the ExO seat, which owns the register, and it is named here
+rather than filed in docs/ideas.md because the defect is the missing gate
+rather than a feature anybody asked for.
+
+## INC-2026-10-18-the-board-tests-pinned-the-payload-the-board-refuses — three green tests asserted the string that had never once been accepted (2026-10-18, engineer seat)
+
+**What happened.** `tools/board.py` has been sending GitHub's `job.status`
+word into the board's numeric `exit` column since run reports were built, so
+every run report any seat ever filed was rejected. The frontend seat isolated
+it on 2026-10-16 with four probes on one token inside one minute and filed
+`INC-2026-10-16-every-run-report-fails-on-a-string-where-the-board-wants-a-
+number-and-the-error-blames-the-database`, naming this seat for the fix. The
+fix is in this pull request.
+
+**The repeat, which is the reason for this entry rather than a second filing
+of the same bug.** `tests/test_board.py` ran in CI on every pull request
+through the whole period and was green, because three of its assertions read
+`payload["exit"] == "success"`, `live_board["runs"][0]["exit"] == "success"`
+and `["exit"] == "failure"`. The suite asserted the shape the producer emits.
+Nothing asserted the shape the consumer accepts, so the gate could not have
+failed no matter how wrong the payload was.
+
+That is the same shape as the two commits named in the engineer charter's own
+register step, where a token reservation and a retry policy left the press
+guards asserting the behaviour they had just replaced and both guards stayed
+red for six days. It is the same shape as L-A21, a gate is judged by what it
+can see. And it is one more instance of the rule incident 32 already states,
+that a gate is tested against an artifact known to fail it before it is
+trusted: these three assertions were tested against the code that wrote them
+and never against the server that reads them.
+
+**The cost of this particular instance.** The PM's standup reads run health
+off these statuses, and `cmd_report` catches the refusal, prints a
+`::warning::` and exits 0, which is the right exit code and is why nobody
+looked. So the board's run history has carried every seat's reports as absent
+rather than as failed for as long as reports have existed, and twelve seats
+each had a green job telling them they had reported.
+
+**What shipped with this entry.** `EXIT_FOR_STATUS` at the one place the word
+enters the payload, `skipped` filing no exit code at all because a job that
+never ran has none, `BoardError.code` so a rejected body can be told from a
+bad minute, and four tests. The one that closes the class asserts over
+`RUN_STATUSES` itself, so a fifth status word added to the parser and not to
+the map fails on the pull request that adds it.
+
+**The generalisation, offered rather than asserted.** Where a seat's code
+builds a payload for a store that seat cannot read back, the test that pins
+the payload is worth exactly the contract behind it, and "this is what the
+function returns" is not a contract. Either the field's type is asserted
+against something the server published, or the assertion is a copy of the
+code under test written in a second file. The cheapest honest version is the
+one in this diff: assert the type and the domain, over the full set of inputs
+the parser accepts, rather than one literal per happy path.
+
+## INC-2026-10-18-the-claims-gate-is-attached-to-seats-and-the-install-page-was-written-by-a-fourth-seat
+
+**Observed 2026-10-18 by the writer seat, on PR #339's `README.md`,
+`docs/product/install.md`, `.claude-plugin/plugin.json` and
+`.claude-plugin/marketplace.json`.**
+
+All four carry the same sentence, which is the claim ADR-36 exists because of:
+
+> Nine skills for building agents, written from AI research papers read in
+> full and revised when the evidence moves.
+
+`docs/agents/quality-claims.md` records "revised when the research sharpens
+it" as `queued`, with zero revisions ever fired by a mechanism. The second
+half of that sentence is a flat present-tense claim with no machine under it,
+on four new public surfaces, written the same day this register was read by
+another seat for exactly this purpose.
+
+**Repeat of** `INC-2026-10-18-registered-claims-ship-unhedged-because-no-gate-reads-the-register`,
+filed earlier today by this seat against `/llms.txt`, and of incident 25's
+class before it. The standing rule at the top of this file requires the entry
+at the moment it repeats, and the repeat is what makes the mechanism visible
+rather than the single instance.
+
+**Why it repeated, and it is not the engineer's carelessness.** The claims
+register names where it is enforced, and the list is three seats:
+`prompts/exo-agent.md` §3g, `prompts/writer-agent.md` before copy ships, and
+`prompts/frontend-agent.md` before copy reaches the site. The engineer charter
+is not on it, and there was no reason for it to be when the register was
+written on 2026-09-30, because reader-facing copy came from the writer and
+landed in `site/` through the frontend.
+
+That stopped being true today. The sellable regroom made distribution an
+engineering card, so the page a buyer now reads first is
+`docs/product/install.md`, the install line is in `README.md`, and two plugin
+manifest `description` fields are rendered inside Claude Code for anyone who
+browses the marketplace. Four reader-facing surfaces, none of them in `site/`,
+all authored by a seat with no claims gate. The gate is attached to **seats**
+and the thing it protects is **surfaces**, so the first time a surface moved
+to a new seat the gate stayed where it was.
+
+**The company standard already names this exact shape, which makes it a
+finding rather than a discovery.** `docs/standards/lessons.md` L-A26: a grant
+written as a list of names decays into a grant for one thing, so write the
+property the list was an application of. The claims register's own "Enforced
+at:" line is an enumeration of three charters. It was correct on the day it
+was written and it went wrong silently on the day a reader-facing surface
+moved to a seat outside the list, which is the second half of that lesson word
+for word. The property the list was an application of is not "these three
+seats" but "any surface a stranger reads", and the exceptions are nothing.
+
+**The fix is not another charter clause.** A list of gated seats fails again
+the next time a surface moves, and the next move is already visible: the sales
+seat's launch copy and the press's own emails. What closes this is a check
+that runs over the surfaces themselves, which is the same check the earlier
+entry today asked for, widened past `site/`: the register's rows name a file
+and a line, so a run can ask whether each named sentence is still there and
+whether its row still reads `queued` or `not built`, and a run can ask the
+reverse question of every reader-facing surface in the repository. The ExO
+seat owns the register and that check.
+
+**What this seat did with it.** Named in the pull request and in
+`docs/voice/skills-copy-2026-10-18.md` by file and sentence, not edited. The
+manifests and the install page are the engineer's surface, and the charter's
+step 1b is explicit that the seat which can say whether the machine exists is
+not this one.
+
+## INC-2026-10-16-the-reading-stage-sent-a-paper-into-a-budget-a-fourteenth-its-size — incident 22's defect, in a second pipeline stage, eleven days after the first one was fixed (2026-10-16, engineer seat)
+
+**Observed by:** the engineer seat's scheduled run of 2026-10-16, reading
+`tools/delivery_health.py` live at the top of its own observation. The press
+surface said two issues missing and the pipeline surface said `claims` had not
+moved in eight days with 2,308 papers waiting, and it named the shape
+correctly: distill is the one stage the fallback cannot carry.
+
+**What was wrong.** `pipeline/distill.py` built one request per paper, sized at
+`FULLTEXT_CHARS`, 250,000 characters, and handed it to `llm.ask_json`, which
+walks `kimi-k2.6` and then three Groq models in order. A Groq model's whole
+per-request budget is 6,800 tokens after the 15% margin. A 250,000-character
+paper is 100,833 tokens at the guard's own measured density. So on any day the
+funded Moonshot account did not answer, every request this job sent was
+fourteen times the size of the budget it was sent into, and it was sent three
+times per paper, once per fallback, with four attempts and up to 180 seconds of
+backoff each. That is between 10 and 27 minutes of sleeping per paper on a
+request arithmetic already knew could not fit, inside a 5,400-second timeout.
+
+**Why this is a repeat and not a new class.** It is incident 22,
+the 413 of 2026-09-19, which is the same defect in `pipeline/weekly.py`: a payload larger than a provider's per-request budget,
+discovered from the provider rather than from the published limit. The press
+was repaired properly. It has sized its payload to the model it is about to ask
+ever since, through `budget.fit_payload` and `budget.choose_model`, and
+`tests/test_press_resilience.py` holds it. `pipeline/distill.py` gained full
+text on 2026-09-30, eleven days after that repair, and never gained the guard,
+so the second instance ran for the sixteen days from then until today.
+The company standard this falls under is already written, L-E6 in
+`docs/standards/lessons.md`: a text a pipeline feeds to a model plus a
+worst-case payload must fit the runtime model's request limit with margin, and
+that fit is measured in CI or at deploy, never assumed. L-E6 was harvested from
+incident 22. It did not reach the second stage either.
+
+**What made it invisible for two weeks.** Three separate places in this
+repository already SAID what happens on a degraded day, in prose, correctly.
+`distill.preflight` printed "every paper would be read from its abstract and
+papers.fulltext_chars would be null for all of them." The end-of-run NOTE
+printed "every model below it has a per-request budget smaller than one paper,
+so the claims above came from abstracts." ADR-39's own rejected-options section
+chose that behaviour by name. Nothing in the job implemented it. The abstract
+was reached only by the exception handler, after the three refusals had already
+been paid for, so every reader of those three lines was being told the truth
+about the destination and nothing about the route.
+
+**And the sharpest evidence: the org's own tool printed the arithmetic every
+day.** `budget.cron_degradations()` returns three notes right now, one per
+fallback, each of them exact:
+
+```
+distill (pipeline/distill.py) rank 2 (openai/gpt-oss-120b) cannot take a full
+paper: prompt 1426 + payload 98814 + output reservation 2000 + envelope 32 =
+102272 tokens against 6800 usable (8000 TPM less 15% margin); DOES NOT FIT,
+headroom -95472. It falls back to abstract[:6000], which fits, so the run
+succeeds and the paper is read from its abstract instead of in full.
+```
+
+`python3 pipeline/budget.py` prints it, gate 1 of the deploy ladder runs it, and
+the whole thing passes, because `tests/test_corpus_drain.py` was deliberately
+narrowed on 2026-09-30 to check only the head of the list. The reasoning written
+into that test is sound as far as it goes: the Groq models not taking a paper is
+"the point of that function rather than a regression". What nobody asked is what
+the degradation COSTS to reach. That note describes the destination perfectly
+and says nothing at all about the route, and the route was three refused
+requests and up to 27 minutes of backoff per paper. A measurement that names
+where a run ends up and not what it pays to get there reads as a clean bill of
+health.
+
+And `tests/test_distill_fulltext_budget.py` had two tests either side of the
+gap. One asserted the head of the list takes a whole paper. One asserted every
+fallback takes the documented abstract. Both passed every day. Neither asked
+whether the job SENDS the abstract to a model that can only take an abstract,
+which is the only question that would have failed. That is L-A21 in
+`docs/standards/lessons.md` exactly, and L-A21 even prescribes the test that
+finds it: name one change that would break what this gate governs, then ask
+whether the gate would have SEEN that change rather than whether it would have
+fired on it. The change here is "send the big request to a small model". Three
+gates fire on it and none of them can see it.
+
+**The fix, on this run's branch.** `distill.window_for(model, kind)` derives
+the window from `budget.limit_for`, the rendered prompt and the completion
+reservation, so the request is built for the model the walk will actually
+reach, and `distill.reading_model(available)` answers which model that is using
+the same two skips `ask_json` applies. `FULLTEXT_FLOOR_CHARS` is the honesty
+half: a window of 6,954 characters is not reading a paper, so below the floor
+the paper is read from its abstract and `papers.fulltext_chars` stays null,
+which keeps the masthead's "read in full" sentence counted from rows rather
+than from ambition. Six tests, in the file checks.yml already runs.
+
+**The part this does not fix, stated plainly.** A `pipeline/` change reaches a
+scheduled run only on `modal deploy`, which no seat can run. So this entry
+describes a repair that is correct in `main` and inert in production until the
+owner or the chair deploys, which is
+`INC-2026-10-12-the-deploy-ladder-refuses-the-fix-for-the-outage-it-is-in`
+holding for a fourth artifact.
+
+**One correction to an earlier diagnosis, because it was necessary and not
+sufficient.** The comment at `pipeline/triage.py:165` attributes the stall that
+began on 2026-10-08 to triage spending the free tier's whole day before distill
+reached it, and `FALLBACK_TOKENS_PER_RUN` was added to all three jobs to fix
+that. That was a real defect and the fix is right. It could not have ended this
+stall on its own: a share of the day is tokens, and distill's problem was one
+request too large to send whatever the day's balance was. Triage and interpret
+both wrote rows on Groq within the last twelve hours, which is the evidence
+that the share is working and that distill's failure is a different one.
+
+**What the org should take from it.** The repair that matters is not either
+window. It is that a lesson harvested from one stage of a pipeline has to be
+applied to the other stages the same day, by reading them, and that reading was
+never anybody's task. `pipeline/budget.py` already knows every model's limit
+and already has `choose_model`. Two of the four jobs that call a model use it.
+The cheap general form is a test that asserts every scheduled job sizes its
+request against `budget.limit_for` for every model on its own fallback list,
+rather than four jobs each being audited by hand when something stalls.
+
+## INC-2026-10-16-the-red-main-fix-was-written-in-fifteen-minutes-and-took-two-days-to-ship — a one-line docs repair inherited the review latency of the 3,900-line branch it was parked on (2026-10-16, engineer seat)
+
+**Observed by:** the engineer seat's scheduled run of 2026-10-16, running the
+full suite on a branch cut from `main` ten minutes earlier.
+
+**What was wrong.** `tests/test_check_registers.py::test_this_repository_has_no_merge_damage_in_its_registers`
+failed on `main`. Two entries in `docs/agents/incidents.md` shared the id
+`INC-2026-09-24-dispatch-403`, at lines 3805 and 13009. It had been failing
+since `f659429`, 2026-10-14 16:09 UTC, which is 48 hours.
+
+**Why this is a repeat.** Three ways, and the third is the new one.
+
+1. Two entries sharing one id is the class incident 29 retired the
+   sequential allocator over, most recently recorded as
+   `INC-2026-10-14-an-open-branch-held-two-ids-main-had-since-issued` and
+   `INC-2026-10-14-the-register-gate-was-blocking-on-main-and-nothing-ran-it-before-the-merge`,
+   both on 2026-10-14.
+2. A red `main` that `checks.yml` calls green is
+   `INC-2026-09-30-the-guard-went-red-and-nobody-read-it` and
+   `INC-2026-10-14-the-register-gate-was-blocking-on-main-and-nothing-ran-it-before-the-merge`.
+   `checks.yml` runs a hand-maintained list of filenames,
+   `tools/ci_coverage.py` puts it at 14 of 54 test files, and
+   `tests/test_check_registers.py` is one of the 40. All five of `main`'s most
+   recent `checks.yml` runs were green across the whole window.
+3. **The new finding: detection and authorship were both fast, and shipping was
+   not.** The defect landed at 16:09 on 2026-10-14. The fix was written at
+   16:24, fifteen minutes later, by the seat that found it, correctly, as
+   `98d670b`. It is still not on `main` 48 hours later, because it was
+   committed onto `engineer/2026-10-15-undeployed-pipeline`, whose pull request
+   is #301: 3,901 insertions across 25 files, three runs of work, product code,
+   and the deepest open chain in the repository. A one-line heading rename
+   inherited the review latency of everything it happened to share a branch
+   with. The register's own entry for that day says the seat deliberately
+   declined to fix it a second time, to avoid two renames at one anchor, and
+   that reasoning was sound on the evidence it had. The consequence is that the
+   only copy of a 48-hour red-main repair sat behind a review no owner could do
+   in one sitting.
+
+**What this run did.** Both halves, because the charter says a red `main` is the
+finding you fix rather than only file. First, #301's merge conflict was resolved
+in place and it is `MERGEABLE` again, so the merge that fixes this is actually
+available now rather than only recommended. Second, the rename was applied to
+this run's branch as well, byte-identical to #301's version over the whole
+17-line region, which removes the collision the 2026-10-14 entry was right to
+avoid. Proved rather than asserted: merging #301 into this branch in a scratch
+worktree auto-merged with no conflict, left exactly one copy of the heading,
+and `python3 tools/check_registers.py` exited 0 on the result.
+
+**What the org should take from it.** A fix for a red `main` is the one change
+that should never ride a feature branch, because its value decays by the hour
+and every other open pull request pays for the delay through its own merge
+check. The general form is a rule rather than a tool: when a seat finds `main`
+red, the repair goes out as its own pull request containing nothing else, named
+so the owner can merge it without reading anything, even when the same seat is
+already holding a larger branch that could carry it. Proposed in
+`docs/ideas.md` on this run's branch, because a charter edit is the owner's
+merge and not this seat's commit.
+
+## INC-2026-10-18-the-ship-first-rules-closing-half-went-unrun-and-an-empty-draft-aged-two-days — a run note with no run behind it, open for 48 hours, indistinguishable from live work (2026-10-18, engineer seat, second run)
+
+**Observed by:** the engineer seat's second run of 2026-10-18, which exists
+because the PM seat handed back two pull requests nobody was moving. The PM's
+own words on one of them: "still just a run note with nothing else in it, so I
+could not tell from the diff alone whether it is still live or whether it
+stalled before it really started."
+
+**What happened.** PR #315
+(`alexandria-engineer/2026-10-16-message-press-backup-seat`) opened at
+2026-10-16 14:34 UTC with one commit and one file: 33 lines of run note saying
+what the run was about to build. Nothing else was ever pushed to it. It stayed
+open as a draft for two days. The run that opened it did not come back, did not
+say it had produced nothing, and did not close it.
+
+**The repeat, and it is the third sighting of this class.**
+`INC-2026-10-14-the-standup-ran-205-turns-and-shipped-nothing` is the second,
+and it quotes the clause this run broke, word for word, while describing a
+different run breaking the half before it: "if the run genuinely produces
+nothing worth shipping, say that in a draft PR and close it". That entry
+treats the clause as the safety net under the no-ship failure.
+`INC-2026-09-30-superseded-prs-are-left-for-the-owner-to-close` is the first,
+where ten dead pull requests were left open in one day and a 27-item review
+queue held 17 live ones. All three are the same defect in different places: the
+org has a rule for opening and no rule anybody runs for closing.
+
+**Why neither register could answer the question the PM asked.** The
+ship-first rule works by making the first commit of a live run and the only
+commit of a dead run the same artifact. That is the rule's whole mechanism and
+it is correct. The consequence is that a draft pull request carries no evidence
+of its own liveness. There is no field for it, no check that reads one, and the
+two signals that would answer it, the age of the last push and whether anything
+but the run note is in the diff, are in GitHub's API and have never been asked
+for. So every reader of the queue re-derives the answer by hand, and the PM
+seat's handoff is what that cost looks like when the reader is another agent on
+a deadline.
+
+**What shipped with this entry.** Nothing mechanical, and that is deliberate.
+#312 was finished and marked ready, #315 was closed with its reason in the
+comment and its branch kept, and the check that would have caught both without
+a handoff is proposed in `docs/ideas.md` on this branch rather than built:
+a draft pull request whose changed files are all run notes and whose branch has
+had no push in 24 hours is a dead run, and that is a query rather than a
+judgement. It is day-sized and it is not this run's dispatch, which was the
+press.
+
+**The standard this falls under, named rather than paraphrased.** Company
+standard L-E3, "ship first, then work", is the law, and L-A22 is the one that
+says what to do now: a rule enforced by charter text is enforced at the
+reliability of a model reading a file, and when a law has failed to fire once,
+writing it more clearly is not the fix. L-E3 has now failed to fire three
+times, and all three failures are in its closing half rather than its opening
+one. L-E11's clause belongs here too, because it is the constraint on any
+check built for this: a tripwire that fires hardest on the best runs is worse
+than no tripwire, and the 24-hour predicate is what keeps the proposed query
+off a live run's first commit.
+
+**The generalisation.** Every rule this org has written about shipping is a
+rule about starting. Open the branch first, open the draft first, append the
+register entry in the same pull request. The closing half is always carried by
+the sentence "and then the run says so", which is the one instruction a run
+that has already failed is least able to execute. Where a rule's last step
+depends on the actor the rule exists to protect against, the step needs an
+owner who is not that actor, or a query that does not need one.
+
+## INC-2026-10-18-keep-both-sides-orphaned-the-line-both-sides-ended-with — the register gate caught a resolution that passed every eye check, because the conflict's shared suffix was a status line (2026-10-18, engineer seat, second run)
+
+**Observed by:** `tools/check_registers.py` on this run's own branch, one
+command after the merge that caused it, before the push. "63 entries carry no
+readable status, up from the recorded 62. A new entry was appended without
+one."
+
+**What happened.** This run merged main into its branch and hit the append
+collision in `docs/ideas.md` that incident 6 is on record for. It resolved the
+hunk the way this org always resolves it, by keeping both sides, main's entries
+first and the branch's after. The resolution was correct about every line
+inside the hunk and still damaged the file, because the last line of main's
+newest entry was `- Status: proposed` and so was the last line of this
+branch's. Git matched them as common context and placed that single shared line
+*after* the `>>>>>>>` marker rather than inside either side. Keeping both sides
+therefore produced main's entry, then four of this branch's entries, then one
+status line, which belonged to the first of those five and now reads as the
+status of the last. The writer seat's entry from the pull request that merged
+forty minutes earlier lost its verdict and became invisible to every status
+filter.
+
+**Why no reading catches it.** The two halves of the hunk were both intact and
+both in the right order, which is the entire thing a reviewer of a
+keep-both-sides resolution checks. The defect is outside the hunk. It is in the
+line git did not give either side, and a conflict's shared suffix is the one
+part of a merge that no conflict marker points at. The register whose entry was
+damaged is 16,500 lines long and the damage is the absence of one line in the
+middle of it.
+
+**The repeat, and it is why this is filed rather than fixed quietly.** L-A17
+is the standard: a failure diagnosed in under a minute still gets an entry,
+because that is the kind that gets rediscovered. This org resolves this exact
+conflict several times a week, every seat resolves it with the same
+keep-both-sides rule, and `docs/ideas.md` entries all end with the same status
+line, so the shared-suffix case is not an unlucky coincidence. It is the normal
+case for the second collision of any day where both appends are well formed.
+`INC-2026-10-16-a-docs-only-conflict-was-handed-back-because-the-diff-was-read-instead-of-the-conflict`
+is the same file, the same collision and a different mistake about it.
+
+**What caught it, which is the part worth copying.** Nothing about this run was
+careful. The gate ran because the charter's pre-ship step names
+`tools/check_registers.py`, it compared a count against a recorded baseline
+rather than reading prose, and it blocked. That is L-A22's shape exactly: a
+rule enforced by a command rather than by a sentence, and the only reason the
+damage lasted four minutes instead of until somebody filtered the ledger for
+accepted entries. The one change worth making off the back of it is that the
+gate's message names the count and not the entry, so the fix took a diff
+against main's copy of the file to locate. Proposed in `docs/ideas.md` on this
+branch.
+
+**Fixed in this pull request.** The writer seat's `- Status: proposed` is
+restored in the commit that follows this entry, and the branch's copy of
+`docs/ideas.md` and `docs/agents/incidents.md` were both diffed line by line
+against main's to prove nothing else from either side was dropped. Zero lines
+of main's version are absent from this branch's.
+
+## INC-2026-10-18-the-preference-schema-had-no-writer-for-27-days — the fix for candidate text being lost was specified, and the next session lost its candidate text (2026-10-18, writer seat)
+
+**The number.** `INC-YYYY-MM-DD-slug` per the rule at the top of this
+file.
+
+### What happened
+
+`docs/agents/preference-data.md` was written on 2026-09-21 to fix a named
+defect: the owner's copy verdicts were captured as narrative after the
+session, so two of eight rounds lost their candidate text and the loss was
+unrecoverable. Its rule 5 states the fix in one line. "Append during the
+session. A session recorded afterwards loses the candidate text, which is
+finding 4 above and is unrecoverable."
+
+Nine days later, on 2026-09-29, the owner ruled on site copy and approved it.
+That session was recorded as six rulings in `docs/voice/taste.md` and as words
+set on the site. No line was appended during it. Its long-form candidates are
+gone by the same mechanism, for the same reason, after the page that names the
+reason.
+
+Twenty-seven days after the schema was specified, this directory held one file
+and it was the pre-schema markdown. Zero `.jsonl` lines existed anywhere in the
+repository. The migration the schema itself called "worth doing and not worth
+faking" had not been done, and no run had written a row.
+
+### Why it is a repeat and not a new finding
+
+The standing rule at the top of this file binds a repeat, and this is the third
+instance of one shape.
+
+- The copy-pipeline incident of 2026-09-20, layer 3: "The drafting happened in
+  chat, so nothing accumulated... The preference file was written after the
+  fact, which is also why two of the eight rounds have no recoverable candidate
+  text."
+- `INC-2026-09-24-eight-rounds-were-not-scheduled` already records the next
+  turn of it: "Incident 25 named the missing artifact. Nothing scheduled it, so
+  every run chose the work its charter described first and the blocking work
+  stayed last for four days."
+- This entry is the same sentence with a different artifact. The schema was the
+  fix. Nothing scheduled the writing of it, so every run chose the work its
+  charter described first, and the blocking work stayed last for twenty-seven
+  days.
+
+### The defect, stated where it can be fixed
+
+The schema's ownership section is correct and it is also the whole problem.
+"**The chair records**, in the session, as it happens... **The writer
+consumes**, every copy round... **This seat audits** that the record exists."
+
+Three seats, three duties, and the only one with a run that fires on a schedule
+is the audit. The chair records when the owner is in a chat session, which is
+not a cron. The writer reads the newest file every copy round, and reading an
+empty directory raises nothing, because a consumer that finds no data cannot
+tell an empty register from a register with nothing to say. The ExO audits that
+the record exists, and this seat could find no run where that audit reported its
+absence.
+
+So the register had a write gate bound to a human session, a read gate that
+cannot fail, and an audit that did not fire. That is the inverse of the
+recording-is-not-enforcing incident. There the rule was recorded and never
+checked. Here the checker was specified and the thing to check was never
+written, which is worse, because the register's own existence read as the fix.
+
+**The company standards already name both halves of this, which is the part
+that should change how it is read.** `docs/standards/lessons.md` L-A21 is the
+blind-pass rule in the parent's own words: "a check that examined nothing and a
+check that examined everything and found nothing look identical from outside,
+and by default every tool reports them the same way." That is this register's
+read gate exactly, and the law is a month old. And L-A25 does not merely
+recommend appending during the session, it makes it law across every Alexandra
+Systems product: "the record is appended one line per candidate while the
+session is live, because a session written up afterwards loses the exact
+sentences she rejected, which were the whole point of recording it."
+
+So nothing here is a new finding. Two standing company laws covered this
+register before the 2026-09-29 session happened, and neither was applied to it.
+Under `docs/agents/cross-repo-law.md` the parent governs, so the honest form of
+this entry is not that the org learned something today. It is that the law was
+already written, in the file every seat is told to read before working, and the
+register it governs sat empty for 27 days anyway.
+
+### What this seat did about it
+
+The migration, which was its to do: `site-copy-2026-09-20.jsonl`, 29 rows, and
+`2026-09-29-site-copy.jsonl` for the session that landed, with the losses
+documented in `MIGRATION-2026-10-18.md` rather than invented. 32 rows and six
+derivable pairs, and the three slots the owner rejected most often have no
+approved row in any of them.
+
+The part this seat cannot fix is the gate, and naming it is the finding rather
+than the fix. A read gate that cannot fail is the one to change, and it is a
+line in this seat's own charter: the charter says to read the newest file in
+`docs/voice/preferences/` before drafting, and it should say that a copy round
+which finds no approved row for the slot it is drafting reports that absence as
+a blocker on the same footing as the missing value statement. The schema's own
+rule 4 makes that measurable, because pairs are derived per slot and the count
+is one command. Filed in `docs/ideas.md` for the ExO seat, which owns both the
+schema and the charters.
+
+## INC-2026-10-18-the-till-had-no-outside-observer — incident 24's shape on the one surface that takes money, and an outsider found it first (2026-10-18, engineer seat)
+
+**What happened.** An outside advisor read the public pricing page the way a
+stranger would and found both paid tiers rendering the words "Opens shortly"
+with no link behind either one, five days past the date the company committed
+to being able to take a payment. Nothing inside either repository had said so.
+Verified from this sandbox the same morning, by unauthenticated request:
+`/pricing` answers HTTP 200, carries no `/api/checkout/` href anywhere in its
+markup, and renders two dead pills. Three environment variables are unset
+because the payment account has never been created.
+
+**Why it happened, and it is not the code.** The checkout route exists, the
+webhook verifies signatures and writes to both stores, the entitlement read is
+live, and the whole thing fails closed. `tools/delivery_health.py` already had
+a `payments` surface and it watches the failure **after** a sale, a verified
+payment that cannot become access. Nothing watched whether a sale could happen
+at all. So every health report the org produced that week was accurate.
+
+**Why this is a repeat, and it is the reason this entry exists at all.** It is
+incident 24's shape exactly: a product surface fails silently because nothing
+outside-in reads the artifact, and the first reader is a human who happened to
+look. L-A24 generalized that in 2026-09-24 and `docs/agents/delivery-health.md`
+was written to close it. It is also L-A16, configured is not in effect, and
+L-A21, a gate is judged by what it can see. Four days after incident 24 the
+same register was found to have a law with no reader
+(`INC-2026-09-28-guardrail-4-had-no-reader`). This is the third turn of the
+same handle, and what is new each time is only which surface was outside the
+list.
+
+**The general finding, which is the part worth keeping.** Every surface on that
+register was added after it failed. The register has grown by one row per
+incident since 2026-09-24, and each row is the artifact somebody was already
+reading by hand when it broke. So the predictive question nobody has asked of
+it is the cheap one: **list the things a stranger can do with this product,
+and check that each one has a surface.** Read an issue, install a skill, buy a
+skill, get access after paying, ask the MCP server a question. "Buy" was the
+one with no surface, and it was also the only one with a date the company had
+committed to.
+
+**Fixed in this pull request.** A `checkout` surface on the same tool: fetch
+the public pricing page, assert at least one checkout link is on it, follow
+every link it finds, and fail otherwise. Eight test cases, including the one
+that proves why the page has to be read before the route. The surface is in
+`ORDER` and in the default run, so the daily standup that already invokes this
+command watches it from today with no further wiring.
+
+**What is deliberately not fixed.** The account. That is a decision with the
+owner's own name on it, already in front of her separately, so the check will
+keep failing honestly until she acts. A check that went green when nothing was
+fixed would be worse than no check.
+
+## INC-2026-10-18-the-inbox-a-charter-names-has-no-reader-in-the-toolbox — a run told to read its inbox on the board, with no command that can (2026-10-18, engineer seat)
+
+**What happened.** This run was dispatched with the instruction to read its
+inbox on the board and reply there. `tools/board.py` is the board client every
+seat run uses and its commands cover items, comments, moves and run reports.
+None of them can see a message. `docs/board.md` documents seven endpoints and
+the message bus is not one of them. The handoff was found by probing the API
+for plausible paths until one answered, on the third guess.
+
+**What the bus turns out to be, measured rather than assumed.** `GET
+/api/messages` returns, for this company, 89 messages and one claim, in five
+kinds, every single one of them with a null `to_seat`. There is no `handoff`
+kind. So a handoff "addressed to engineer" is a broadcast note whose body names
+the seat, and the addressing lives in the prose. The note this run acted on
+reads exactly that way and the work in it was unambiguous, so nothing was lost
+this time.
+
+**Why this is a repeat.** `INC-2026-09-28-guardrail-4-had-no-reader` is the
+same sentence with a different noun: a duty assigned to a seat that
+structurally could not perform it, because the reader the duty names does not
+exist in that seat's toolbox. There it was a database credential and the
+honest response was to substitute a proxy that could not answer. Here the
+substitute would be to act on the dispatch text alone and never open the bus,
+which is what a run on a GitHub runner has no choice but to do, since such a
+run has `tools/board.py` and nothing else.
+
+**Why it matters more than the inconvenience.** The bus is where cross-company
+work is being routed, by five seats in four companies this morning alone. A
+seat that cannot read it only ever sees the work its own repository remembered
+to write down.
+
+**Not fixed here, and why.** A `messages` command on `tools/board.py` is a
+morning's work and it is filed in `docs/ideas.md` today with its first step.
+The read half is straightforward. The write half needs the server's own rules
+for the five kinds, and guessing at those in the same run that discovered the
+endpoint is how a client starts lying about a protocol.
+---
+
+## INC-2026-10-18-the-machinery-diff-reads-clean-on-a-shallow-clone — the charter's runtime-change gate answers "nothing to see" on a one-commit clone (engineer seat)
+
+**Recorded under the standing rule at the top of this file**: the root
+cause has occurred before and this is a new victim of it, so it is
+filed at the moment it repeated rather than folded into the older
+entry. The older entry is
+`INC-2026-09-24-shallow-clone-merge-base-repeat`, which is the same
+shallow clone breaking a different command.
+
+**What happened.** The engineer charter's "check the register before
+you ship" step requires one command before any work, because this seat
+is the only one that runs every day and therefore the only one that can
+catch a runtime change inside a day:
+
+```
+git log --since="36 hours ago" --format='%h %ci %an %s' -- .github/ pipeline/
+```
+
+On this run it printed exactly one line, a merge commit, and
+`git show --stat` on that commit listed every workflow file in the
+repository as an addition. Both observations are the same artifact:
+the sandbox's clone was shallow at depth one, `git log | wc -l` read
+2, and the single commit was the graft point, so every file in the
+tree is "added" by it and there is no second commit for `--since` to
+reach.
+
+**Why that is worse than the 2026-09-24 occurrence rather than the
+same.** A missing merge base fails loudly: `git merge-base` returns
+nothing and the seat knows it must do something. This fails quietly
+and in the direction of a pass. A seat that runs the command, sees one
+merge commit, and concludes that no runtime change landed in the
+window has run the check exactly as its charter asks and has reached
+the wrong answer. Nothing in the output says "your history is one
+commit deep".
+
+**What it would have cost on this run, measured.** After
+`git fetch --unshallow`, the same command returned two commits that
+the shallow version could not see, and the first is squarely the class
+the law exists for:
+
+- `ab4e5bb`, 2026-10-17 17:06, "Every seat's clock leaves GitHub: the
+  schedule blocks go, the host manifest keeps the cadence". Ten seat
+  workflow files, every `schedule:` block removed. A cron change in
+  ten runtime files is the central example in
+  `docs/agents/runtime-changes.md`.
+- `a941a71`, 2026-10-16 15:35, a guard added to `pipeline/ingest.py`
+  that raises on an empty run.
+
+Both turned out to be explained by merged pull requests, #334 and
+#317, with `checks.yml` green on `main` after each, so the window was
+clean on its merits. That is the point: the gate reported clean for
+the wrong reason, and it would have reported clean in exactly the same
+words if #334 had been a direct push with no rehearsal behind it.
+
+**What closes it.** One line, and it belongs in the charters rather
+than in a workflow, because the shallow clone is the host harness's
+default and not a GitHub Actions setting any seat can edit:
+
+```
+git rev-parse --is-shallow-repository    # true means the next answer is a lie
+git fetch --unshallow                     # before the machinery diff, not after
+```
+
+The 2026-09-24 entry already asked for this as "every seat's charter
+gets the one-line `git fetch --unshallow` reflex before any merge-base
+check". This run is evidence that the reflex needs to be attached to
+the machinery diff too, which is a second command in a second clause,
+and that the one-line form should be the shallow test rather than the
+fetch, so the seat learns the answer was unreliable rather than
+silently getting a reliable one.
+
+**Why this seat filed it and did not fix it.** Charters are editable
+only by the owner's merge (engineer charter, Boundaries), and this is
+a change to two charters and arguably to every one of them. The ExO
+seat owns the pattern read. Named here with the measurement rather
+than carried as a run note, because the next run of this seat starts
+from a fresh shallow clone and will meet the identical false negative.
+
+**Addendum, same day, the next run of this seat (engineer, fourth run,
+2026-10-18).** The prediction in the paragraph above came true in the
+very next run, about an hour later, and that run is this one. Fresh
+shallow clone, `git log --oneline | wc -l` read 9, and the machinery
+diff printed one merge commit. This run reported "no non-merge commit
+at all" in its own pull request description, in good faith, having run
+the charter's command exactly as written. It only caught the error
+because a merge of `main` brought this entry onto its branch and it
+read what it was merging. After `git fetch --unshallow`, the same
+command returned `ab4e5bb` and `a941a71`, the two commits this entry
+already names, so the window stays clean on its merits and there is no
+new unexplained runtime change.
+
+An addendum rather than a third entry, because the root cause, the
+measurement and the fix are all already above and the file's own header
+is unhappy about duplicates. What the addendum adds is the only thing
+this entry was missing, which is an observed repeat rather than a
+predicted one. **Two consecutive runs of the daily seat, both of which
+ran the gate correctly and both of which got a false pass.** The gate
+is not degraded by this, it is inoperative on this harness until a
+charter carries the shallow test, and the seat that can see that is the
+only seat that cannot edit a charter.
+
+## INC-2026-10-18-two-registers-held-both-halves-of-a-false-claim-one-day-apart — the pricing page's free column, false for thirty days, and the money page has one row in the claims register (2026-10-18, writer seat, fourth run)
+
+**What happened.** `site/app/pricing/page.jsx` sells the free tier on three
+bullets, and the third is "The complete archive". It was written on 2026-09-18
+in commit `ac9698f`. On 2026-09-19 the owner ordered 2026-W37 retired from the
+public site so that Monday's issue would be the pilot the public read first,
+and `site/lib/content.js:23` implements that order by withholding the week from
+the listing and from its own route. From that day the archive was deliberately
+incomplete and the bullet was false. It is still live, thirty days later, and
+the two missing weekly sends the board card was filed about are the smaller
+half of the problem rather than its cause.
+
+**Why this is a repeat, and of what.** Three ways, and the third is the one
+that is new enough to be worth the entry.
+
+It is ban list 61 for the third time. A reader-facing string kept in code is
+exempt from every gate this org has, because the gates run on what a model
+writes. The masthead was the first instance, repaired 2026-09-26 after running
+above every issue ever sent. The catalogue's row text was the second, found
+earlier today and recorded as ban list 125. This is the third, on the page
+where a visitor is asked to pay. Entry 61's own fix is that an editorial run
+reads the reader-facing constants in code once per run, which is a seat reading
+whatever a seat happens to open, so three surfaces have now been found by three
+runs that opened three different files for three unrelated reasons.
+
+It is `INC-2026-10-18-registered-claims-ship-unhedged-because-no-gate-reads-the-register`
+on a second surface, six hours later. That entry was filed this morning about
+`/llms.txt` and its diagnosis holds here without a word changed: the writer
+charter's claims gate is a gate on new candidates leaving this seat's hands,
+and nothing in the org re-checks a claim that was already live when the register
+was written.
+
+**And the part that is new.** Both halves of this contradiction were recorded
+correctly, in the right register, by the right seat, one day apart, and no gate
+in the org reads two registers at once. `docs/voice/taste.md` holds the ruling
+of 2026-09-19 that retired the pilot week. `site/lib/content.js` holds the code
+that obeys it, with her order named in the comment. The sentence that the
+ruling falsified sits in a third file. Every one of those three artifacts is
+accurate about itself. The falsehood exists only in the join, so no amount of
+care inside any one register could have found it, and every gate this
+organization owns is scoped to one register.
+
+That is the generalisable shape and it is worth stating as such: **recording is
+not enforcing was about one register's second gate, and this is the next layer
+out, where two registers each have both gates and the contradiction lives
+between them.** `docs/standards/lessons.md` L-A24 is the closest company law,
+that where a scheduler and an artifact disagree the artifact wins, and its
+consequence applies exactly: only an outside observer reading the artifact
+catches it, because each register reports its own contents.
+
+**The aggravating detail.** `docs/agents/quality-claims.md` has eleven rows.
+Ten are about the skills, the corpus and the graph. The pricing page has one,
+for a claim it shares with two other surfaces. Nothing in the register covers
+the three bullets that sell the free tier, and nothing covers the two
+paragraphs that tell a reader how their card will be treated, one of which
+promises a monthly renewal reminder that `grep -rn "reminder"` over `pipeline/`,
+`site/` and `tools/` finds in exactly one place, which is that sentence. The
+register's own closing analysis says every claim that holds is about the corpus
+and every claim that fails is about the skills. The distribution has a second
+axis nobody had looked along: the register is thorough about the half of the
+product that is instrumented and nearly silent about the page that takes the
+money.
+
+**What was done here.** The four candidate repairs are drafted in
+`docs/voice/pricing-claims-2026-10-18.md` for the owner to rule on and the
+frontend seat to set, since `site/` is not this seat's surface. The class is
+named as ban list 126, with a sweep showing the other four instances of the
+same vocabulary on the site are all correctly scoped and all four are lines the
+owner ruled on. The gate is filed in `docs/ideas.md` the same day, because the
+check that would close this reads the delivery receipt and the published
+listing and compares them to the strings in `site/`, and it is a command rather
+than a register line for the reason this entry exists: there was never a day
+when reading the page would have caught it.
+
+**What is not fixed.** Widening the claims register is the ExO seat's call and
+its file. Setting the words is the frontend seat's. The two missing sends are
+engineer card `92ab912d`.
+
+## INC-2026-10-18-a-drafted-copy-repair-sat-unset-for-twenty-two-days — the home page's first number still prints the ingest count under the word read (2026-10-18, writer seat, fifth run)
+
+**Observed** by `docs/voice/check_voice.py reading`, written this run, on
+`site/app/page.jsx:44`:
+
+> **{papersThisWeek}** papers read this week
+
+`papersThisWeek` is `weeklyIngestCount()`, which is `count(*) from papers where
+fetched_at > now() - interval '7 days'`. A row in `papers` is a title and an
+abstract. Canon law 15 is the owner's ruling of 2026-09-25 and it says the word
+"read" may name one act and must cite the full-read count and no other.
+
+**Repeat, and this is the third sighting of the same line.** The masthead
+carrying the same defect was repaired on 2026-09-26. Writer run 15 drafted the
+exact repair for this line the same day, in
+`docs/voice/home-metric-line-2026-09-26.md`, checked against every register the
+charter names. At four days it was recorded as a related sighting inside
+`INC-2026-09-30-sales-assets-stale`, under the heading "the same shape again",
+with the sentence "the candidate was written, reviewed against the registers,
+and never set". It is twenty-two days today and the line is unchanged, so the
+record of the repeat did not move the artifact either.
+
+**Why it repeated, stated as a property rather than as a seat's lapse.** The
+copy pipeline is correct and it has no queue. The writer drafts into
+`docs/voice/`, the owner rules, the frontend seat sets. Nothing in that chain
+holds a list of candidates awaiting a ruling, so a candidate's whole existence
+after its pull request merges is a file in a directory that the next run has no
+reason to open. Both halves of the pipeline worked: the draft was good and the
+law was already written. What is missing is the state between them.
+
+That is the same shape as the register gate this seat keeps finding, pointed at
+a handoff instead of at a file: the gate is attached to the seat that writes and
+the thing it protects is the artifact, so nothing fires on the days between
+runs. `INC-2026-10-18-the-claims-gate-is-attached-to-seats-and-the-install-page-was-written-by-a-fourth-seat`
+is that sentence about surfaces, filed this morning. This is it about time.
+
+**What this run did about it.** `docs/voice/check_voice.py reading` turns law 15
+into a command over every reader-facing surface, so this line now fails a check
+rather than waiting for a seat to remember it. It found three instances and the
+home metric line is one. The candidate is re-issued verbatim in
+`docs/voice/claim-repairs-2026-10-18.md`, which names run 15's file as the
+authority rather than redrafting it, because the words were right in September
+and nothing about them has aged.
+
+**What is not fixed, and it is the part that matters.** The command is not
+called by anything. `docs/voice/check_voice.py` has said so in its own header
+since it was written, and the ledger entry asking for the wiring is filed again
+in this pull request. Until that lands, a check this seat typed on 2026-10-18
+is enforced at the reliability of a seat typing it on 2026-10-19. The second
+open question is not a gate at all and belongs to the owner: a candidate she
+has not ruled on has no home, and the obvious cheap fix is one file listing
+what is awaiting her word, which this seat can keep in `docs/voice/` and name
+in every pull request it opens.
+
+## INC-2026-10-18-three-candidates-for-two-surfaces-in-one-day — the fifth writer run redrafted copy the second and fourth runs had already drafted, having read every register the charter names (2026-10-18, writer seat, fifth run)
+
+**Observed** in this seat's own output, while checking a candidate file against
+the live pages. The fifth run of 2026-10-18 drafted a repair for the skills
+page intro and two for the pricing page. `docs/voice/skills-copy-2026-10-18.md`
+had already replaced that intro four hours earlier, and
+`docs/voice/pricing-claims-2026-10-18.md` had already replaced both pricing
+lines two hours earlier. Both earlier candidates are better, because both drop
+the unbacked claim where this run hedged its tense, which is canon law 15's own
+rule.
+
+**Repeat of** the failure the charter's copy-pipeline section names in its own
+words: "A candidate that exists only in a conversation cannot be read by the
+next round, and that is how round seven repeated round two." The 2026-09-20
+instance was eight rounds in one session with no file. This instance has files,
+which is the fix working, and it repeated anyway because a file nobody indexes
+is only findable by a seat that already knows it exists.
+
+**Why it repeated, and the gate list is the evidence.** The charter's shipping
+step names five registers to read before a candidate leaves a run, and this run
+read all five: the taste register line by line, the canon, the ban list, the
+value statement and the newest preference file, plus the copy pipeline and the
+quality register. Not one of them answers "has this surface already been
+written for today". The preference record holds candidates she has RULED on.
+The gap is the state in between, which is a candidate drafted and not yet
+ruled, and the org had no name for it and no list of it.
+
+Three writer runs in one day is new. The seat ran once a day when the pipeline
+was written, so the window where this could happen was a day wide and a run
+could hold the whole of it in its own context. At five runs a day the window is
+hours and the context is not shared, so a property that used to be true by
+accident has to be written down.
+
+**Fix, in this pull request.** `docs/voice/awaiting-her-word.md`, one row per
+open candidate, the surface, the file, the day it was drafted and whether the
+defective line is still live. The charter's own list of what to read is a
+charter edit and not this seat's to make, so the file names the duty in its own
+first paragraph and the pull request asks for the charter line. Until that
+lands this is enforced at the reliability of a seat reading a file, which is
+the thing this register exists to be sceptical about.
+
+**The other half, which is the same discovery pointed at time.** The oldest row
+in that new file is twenty-two days old and nobody knew, which is
+`INC-2026-10-18-a-drafted-copy-repair-sat-unset-for-twenty-two-days`, filed in
+this same pull request. One missing list produced both: a stale candidate
+nobody set, and a duplicate candidate nobody knew existed.
+
+---
+
+## INC-2026-10-18-a-taste-ruling-named-its-file-and-never-reached-it
+
+**Observed** 2026-10-18 by the writer seat, auditing prompts/digest.md against
+the payload the press actually builds.
+
+**What happened.** On 2026-10-04 the owner ruled on titles: "two issues should
+never have the same title. thats a big and quite obvious issue." The ruling was
+recorded in docs/voice/taste.md the same day, correctly, and it ends with a
+sentence naming the seat and the file: "The writer carries this into the digest
+prompt as a rule, not a hint."
+
+The engineer seat built its half. `pipeline/weekly.py` puts the twenty-four
+most recent titles in the payload as `prior_titles`, and `ensure_fresh_title`
+refuses an exact repeat after the issue is written. The writer seat never
+built its half. Fourteen days later `prompts/digest.md` did not contain the
+word title in that sense anywhere, did not mention `prior_titles`, and its own
+enumeration of the payload listed six keys for a payload that carries eight.
+The generator was handed the list of titles it must not reuse and was never
+told what the list was.
+
+**Why it matters more than one missing rule.** The only enforcement left
+standing is the backstop, and the backstop's last resort is to stamp the week's
+dates onto the repeated title. The owner ruled on 2026-09-19 that the date does
+not belong in the title. So the one path the org had left for her title ruling
+ends by breaking her date ruling, and nothing in the repository said so until
+this audit.
+
+**Why this is a repeat and not a first.** This is incident 20 in a different
+file. Incident 20 is a taste ruling written into the right register by the
+right seat within the hour and violated by the very next artifact, because
+nothing between the ruling and the artifact ever opened the register. The
+standing fix the org took from it was that every register needs a second gate,
+one that checks something before it ships. This one is worse in one specific
+way and that is the part worth keeping: the ruling did not merely need a gate
+to find it, it named the file to change and the seat to change it, in its own
+last sentence, and the sentence was read by every writer run since without
+being executed. A ruling that carries its own work order and still does not get
+done is not a discovery problem.
+
+**The narrow cause.** The writer seat's charter tells it to read taste.md
+"ruling by ruling, line by line, against the artifact in front of you". Every
+run did that and every run was holding a different artifact: five runs since
+2026-10-04 graded site copy, because that is where the board items were. The
+check is written as a check on an artifact, so a ruling whose artifact is the
+generator is invisible on a day the generator is not the artifact. Fourteen
+days of correct gate execution, zero chance of catching it.
+
+**Fix, in this pull request.** The rule is in the title slot of
+prompts/digest.md, `prior_titles` is in the payload enumeration, and the ruling
+is canon law 16 so that it is scored by the grading instrument rather than only
+recorded in taste.md. What is NOT fixed, and is the ledger entry this run
+files: nothing checks that a ruling in taste.md which names a file has reached
+that file. That check is a command over two files and it is cheap, and it would
+have found this on 2026-10-05.
+
+---
+
+## INC-2026-10-18-the-generator-prompt-only-ever-grew-and-nothing-weighed-it — 101 commits, nine subtractions, and the cost ceiling found before the seat did (2026-10-18, writer seat, seventh run)
+
+**Observed** as three red workflow runs on this seat's own branch
+`alexandria-writer/2026-10-18-message-payload-audit`
+(39104702728, 39104759569, 39104867224), all failing one assertion in
+`tests/test_press_resilience.py`:
+
+```
+FAIL the cost is under the $0.15 ceiling ADR-32 implies: $0.1519 an issue against $0.15
+```
+
+The sixth writer run of the same day added 2,056 tokens of field-map rules to
+`prompts/digest.md`. Main stood at $0.149996. The prompt crossed the ceiling on
+this seat's own commit, and the seat learned about it one run later, from the
+dispatch that told it a workflow was red.
+
+**Repeat of** the class this register keeps recording, most recently
+`INC-2026-10-14-the-register-gate-was-blocking-on-main-and-nothing-ran-it-before-the-merge`:
+a gate that exists, fires correctly, and sits downstream of the seat whose
+output it governs. The company standard already names it. L-A22, "the gate goes
+in the command, not in the charter", and its worked example is this same press
+chain. The seat's charter lists seven registers to check before `gh pr ready`
+and not one of them is a number.
+
+**Why it was never going to be caught earlier, which is the part worth having.**
+The charter's step 3 says to translate every failed grade into the smallest
+prompt change that would have prevented it. There is no step that removes one.
+Replaying every commit that has touched the file: 680 tokens on 2026-09-08,
+38,745 on 2026-10-18, across 101 commits of which nine subtract anything at all
+and the largest of those nine is a merge artifact rather than a deliberate cut.
+The file has never once been edited down on purpose in forty days. A loop that
+only adds hits a wall on a date nobody picked, and no single run is at fault
+for the date.
+
+**The second finding, and it is the one that outlives the fix.** This run cut
+2,227 tokens of genuine waste and bought back 179 tokens of headroom. The cost
+splits as $0.0960 output reservation, $0.0347 generator prompt, $0.0192
+worst-case payload. Deleting the entire prompt lands at $0.1152 against the
+$0.05 ADR-32 booked. So the seat that broke the ceiling is not the seat that
+can hold it, the margin a full run of careful editing buys is one third of a
+median writer run, and a seat that keeps paying this bill in prose will
+eventually cut a gate to make a budget.
+
+**Fix, in this pull request.** The red is cleared and the prompt is now 171
+tokens smaller than main while carrying the sixth run's new rules. Both durable
+fixes are filed for the engineer in docs/ideas.md under "Writer seat, 2026-10-18
+(seventh run)": a budget command this seat runs before committing a prompt
+change, and the structural one, which is that 42% of the prompt is a checking
+procedure for finished text being sent before the text exists.
+
+Until the first of those lands, this is enforced at the reliability of a seat
+remembering to run a test, which is exactly what L-A22 says not to rely on, and
+it is recorded here as such rather than claimed as closed.
+
+**One thing deliberately not done.** The ceiling was not raised. The test says
+in its own words that raising it is a finance decision belonging to the owner,
+and that a ceiling quietly raised to fit the current number has stopped being
+one. The finance half, that ADR-32 books $0.05 against a real $0.15 because the
+output reservation went 6,000 to 24,000 tokens on 2026-09-24, is reported in the
+ledger rather than acted on here.
+
+---
+
+## INC-2026-10-18-three-writer-ledger-entries-in-one-day-were-invisible-to-every-consumer — the proposals were filed, parseable by nobody, and the seat found out by running a test that is not in CI (2026-10-18, writer seat, seventh run)
+
+**Observed** while running `tests/test_check_registers.py` before shipping.
+It failed on `docs/ideas.md`, "8 lines of prose read 'Status: <keyword>'
+without being a status line, up from the recorded 5". Three of the eight were
+this seat's own, from the fifth, sixth and seventh writer runs of 2026-10-18.
+
+**The defect.** The ledger's entry contract is `### YYYY-MM-DD — name`
+followed by `- Status: <one of five>`. All three entries opened with `## Writer
+seat, 2026-10-18 (nth run): ...` instead. `tools/ledger.py` finds no entry at a
+`##` heading, so the status line underneath belongs to nothing, and the parser
+scores it as a decoy rather than a status. The practical cost is the one the
+module's own docstring names: the PM grooms `accepted` entries into sprints,
+the engineer's fallback order looks for `accepted` entries no sprint picked up,
+and every seat greps for `urgent`. An entry in this shape is not rejected by
+any of them. It is silently absent.
+
+**Repeat.** Three occurrences in one day, by one seat, which is past the
+standing rule's threshold on its own. It is also the failure the 2026-09-24
+ledger entry was written about, quoted at the top of `tools/ledger.py`: "A
+ledger entry can hide from every consumer by writing its status as a sentence."
+The shape is different and the outcome is identical. The seat wrote a correct
+status line and put it under a heading no parser reads.
+
+**Why none of the three runs caught it.** `tools/ledger.py --check` exists, it
+is correct, and it is the command that would have answered. It is not in
+`.github/workflows/checks.yml`, so it never ran on any of the three branches,
+and the writer charter's shipping step names seven registers to read and no
+command to run. This is the same shape as the budget finding filed beside it,
+`INC-2026-10-18-the-generator-prompt-only-ever-grew-and-nothing-weighed-it`,
+and the same company rule, L-A22: the gate goes in the command, not in the
+charter.
+
+**Fix, in this pull request.** All three headings reshaped to the contract. The
+status words were not touched, because the statuses belong to the owner and no
+seat rewrites another run's triage state. `tests/test_check_registers.py` was
+failing on main before this change, at 6 decoys against a baseline of 5, and
+passes now at 5.
+
+**Still open, and filed rather than fixed:** neither
+`tests/test_check_registers.py` nor `tools/ledger.py --check` runs in CI, so the
+ratchet this repo built to stop the backlog growing is enforced at the
+reliability of a seat remembering to run it. That belongs to the engineer and
+is noted in the ledger entry this run filed.

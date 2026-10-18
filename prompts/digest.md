@@ -307,16 +307,15 @@ same fixed template, that is the failure mode this section exists to prevent.
   or an institution's name as the payload spells it. Punctuation, spacing,
   separators and mathematical symbols get no exception at all, so a paper
   called "Psi-Spec" is written that way here.
-  **The exception has a direction and this rule has now broken in it.** A name
-  is copied out of `authors` character for character and is the one string on
-  the page the contamination default below does not run on, so the acute, the
-  umlaut and the cedilla survive into the issue. The print of 2026-10-05 wrote
-  "Jose Luis Pino" for an author the payload spells "José Luis Pino", scored
-  zero non-ASCII characters, and misspelled a named researcher in the one
-  sentence attributing the work to him. The other print of that same day
-  spelled it correctly. Zero is the target for every character you chose and it
-  was never the target for a letter in somebody's name, so when the two pull
-  against each other the name wins and the count carries it.
+  **The exception has a direction and this rule has broken in it.** A name is
+  copied out of `authors` character for character and is the one string on the
+  page the contamination default below does not run on, so the acute, the umlaut
+  and the cedilla survive into the issue. An issue that strips the accent off an
+  author's name scores zero non-ASCII characters and misspells a researcher in
+  the one sentence attributing the work to them. Zero is the target for every
+  character you chose and it was never the target for a letter in somebody's
+  name, so when the two pull against each other the name wins and the count
+  carries it.
   Where these characters come from decides where you catch them, and they
   are not typed by you. They arrive in the payload, whose claim text is
   machine-extracted from PDFs, and most of its claim strings carry at least
@@ -344,12 +343,12 @@ same fixed template, that is the failure mode this section exists to prevent.
   heading that sorts rows reads as machine output no matter how good the prose
   underneath it is.
   **The ban is on the slot's IDEA and not on four strings, and the words that
-  beat it came out of this file.** The print of 2026-10-05 carried "What is
-  gaining ground", "What is genuinely new" and "What fell behind" over its
-  three sections. None of them is one of the four names above, so none of them
-  was caught, and the last two were lifted from the sentence at the top of this
-  bullet, which used to render the slots as plain English clauses. A paraphrase
-  of a banned heading is the banned heading. Any heading a reader could map
+  beat it came out of this file.** Headings of the shape "What is gaining
+  ground", "What is genuinely new" and "What fell behind" have gone out over
+  three sections, none of them one of the four names above and so none of them
+  caught, and two were lifted from this bullet's own plain-English rendering of
+  the slots. A paraphrase of a banned heading is the banned heading. Any heading
+  a reader could map
   back onto the slot it sits over has named the slot, whatever words it uses,
   and "what is new", "what is working", "what to watch", "what changed" and
   "what fell behind" are that failure in its commonest dress.
@@ -480,20 +479,51 @@ You receive a JSON payload assembled by fixed queries:
   >= 0.7), each paired with the contradicting claim.
 - `deep_reads`: papers triage flagged this week as worth the reader's own
   full read.
+- `prior_titles`: the titles the library has already sent, newest first. The
+  press hands you this list so that nothing on it is printed again. That is the
+  owner's ruling of 2026-10-04, and it is written as a rule in the title slot
+  above rather than left here as a note.
+
+**The streams do not carry the same fields, and most of the rules below were
+written as though they did.** This is the map, and it binds every rule in this
+file that tells you to draw something from the payload. Where a rule asks for a
+field the stream in front of you does not have, that rule is not met by
+reaching for the nearest other field. It is met by the escape the rule names,
+and every rule below now names one.
+
+| stream | what one row carries |
+|---|---|
+| `new_claims` | the claim, topics, the paper title, the url, the source tier, the triage decision and score, edges, `evidence`, `procedure`, up to three authors, `institutions` |
+| `superseded` | the old claim and the new one, a confidence, both paper titles and both urls |
+| `supported_claims` | the claim, the paper title, the url, a support count |
+| `citation_movers` | the paper title, the url, the count before and the count now |
+| `deprecated` | the old claim and the claim contradicting it, a confidence, and the OLD paper's title and url only |
+| `deep_reads` | the paper title, the url, and `why`, which is the triage note |
+
+Read the right-hand column before you write an item out of a stream, because
+five things follow from it and each one is a rule somewhere below. Only
+`new_claims` carries an institution or an author, so an item from any other
+stream has nobody in the payload to attribute it to. Only `new_claims` carries
+`evidence` and `procedure`, so an item from any other stream has no evidence in
+the payload to read. `deprecated` carries one url for two pieces of work.
+`edges` names the claim at the far end by its number and that claim is not in
+the payload, so an edge tells you a connection exists and never what it
+connects to. And nothing anywhere in the payload records what a paper did not
+measure.
 
 Write the digest as **markdown** with exactly this structure. Everything in
 {curly braces} is an instruction to you, and it is REPLACED by your own
 writing, never printed. That binds the title, all four headings, and every
 block of guidance inside the sections alike, and no sentence quoted from this
 file as an example survives into the issue.
-That invariant has been stated here since the file was written and it was
-broken three times in one issue on 2026-09-24, so it is now backed rather than
-repeated. Every example in this file is drawn from a subject the payload
-cannot contain, and the four slot names are held only in the heading gate at
-the end. An example written from the same research the generator is about to
-be handed is not an illustration of the answer. It is the answer. That is how
-a worked rewrite of an issue became that issue's prose the next time it ran.
-Whoever edits this file next keeps examples out of the week they are grading.
+That invariant has been stated here since the file was written and has been
+broken three times in one issue, so it is now backed rather than repeated.
+Every example in this file is drawn from a subject the payload cannot contain,
+and the four slot names are held only in the heading gate at the end. An example
+written from the same research the generator is about to be handed is not an
+illustration of the answer. It is the answer. That is how a worked rewrite of an
+issue became that issue's prose the next time it ran. Whoever edits this file
+next keeps examples out of the week they are grading.
 
 ```
 # {Editorial title}
@@ -519,8 +549,25 @@ And no colon. The shape the mark makes here is a short label, then the finding
 explained behind it, which spends the half of the line the reader actually gets
 on a signpost to the other half. No specimen is quoted, because this is the
 position where the title gets written. The repair is the one the heading rule
-below already names: delete everything to the left of the colon and the colon
-with it, and check whether what is left is the title. It almost always is.
+below already names: strike the label and the colon, and check whether what is
+left is the title. It almost always is.
+
+**A title the library has already used is not a title (owner's ruling,
+2026-10-04, in her words "two issues should never have the same title. thats a
+big and quite obvious issue").** The payload's `prior_titles` holds the titles
+already sent, so this is a check you run rather than a thing you hope about.
+Read that list before you write the line, and read it again after. The test is
+not string equality, because the press already refuses an exact repeat and the
+repeat that reaches a reader is the reworded one. Ask instead whether a
+subscriber who saw the earlier issue would think this is that issue again. The
+same finding told in different words is the same title. Where this week's
+sharpest result is genuinely the one a past title already carried, the line
+moves to what is new about it this week, which is why it is in the issue at
+all.
+That matters more than it looks, because the press's last resort is to stamp
+the week's dates onto a repeated title, and the ruling above says the date does
+not belong in this line. A title this slot gets right is the only version of
+this rule that never reaches a reader as a dated one.
 
 The date does NOT belong in this line (owner's ruling, 2026-09-19). The title
 is the finding alone, and the date lives where dates live: the email's own
@@ -637,10 +684,10 @@ the subject line, in grey, as the words that decide whether the issue gets
 opened at all. A mail client shows about ninety characters of it and cuts the
 rest without a mark. So that sentence carries one complete thought inside
 ninety characters, and it is never the setup half of a construction the second
-sentence pays off. The print of 2026-10-05 opened on a sentence of a hundred
-and twenty-eight characters whose whole point arrived in the sentence after
-it, so what a subscriber saw in the inbox was an either-or with the answer
-cut off. Say the thing, then build on it. The sentence that sells the issue
+sentence pays off. An opening of a hundred and twenty-eight characters whose
+whole point arrives in the sentence after it reaches the inbox as an either-or
+with the answer cut off. Say the thing, then build on it. The sentence that
+sells the issue
 and the sentence that starts it are the same sentence, and this is the only
 line in the issue a reader meets before deciding to read anything.
 
@@ -650,14 +697,10 @@ clause in the title's own sentence or in this first sentence. Ninety
 characters will not hold a complete thought and a definition both, so do not
 try to make them. Choose a title out of words a builder already has. A title
 needing a gloss is competing for the one sentence that has to sell the issue,
-and the way to win that argument is not to start it. The print of 2026-10-05
-is the case and its two title terms are not quoted here, because the nearest
-example at the position where you write a title is a supply rather than a
-warning. Both were adjectives of the field, neither was defined anywhere in
-the issue, the first of them never appeared again after the title, and the
-three sentences nearest to it reached for three more terms of the same family
-instead of one plain one. The first-use gate at the end of this file carries
-that case as the second of its two.
+and the way to win that argument is not to start it. The case that produced
+this rule is held by the first-use gate at the end of the file and its two
+title terms are not quoted anywhere, because the nearest example at the
+position where you write a title is a supply rather than a warning.
 Both rules are satisfied by a plainer title and neither is satisfied by a
 cleverer one.
 
@@ -692,10 +735,10 @@ them. It took the banned subject and tense from the struck one, then three
 separate phrases from the repair, one of them a whole clause word for word,
 and assembled an opening in which every part came from this page and no part
 came from that day's news. A banned example and an approved example standing
-together at the position where writing happens are not a warning and a model.
-They are one menu, and the output will be a dish from both halves of it. This
-is why the examples in this file are written about subjects no payload will
-hand you, and why the failures live at the gate.
+together at the position where writing happens are one menu, not a warning and
+a model, and the output will be a dish from both halves of it. This is why the
+examples in this file are written about subjects no payload will hand you, and
+why the failures live at the gate.
 The test is one question, and it is a hard gate in the final checks. Strike
 every sentence that would leave a reader wondering what they missed. Note
 which side of the line this falls on, because it is easy to overcorrect:
@@ -772,10 +815,10 @@ slot. A ranking whose ordering key is invisible reads as an arbitrary list.
 from `traction` and from nowhere else. A claim that arrives in `deprecated` or
 `superseded` belongs to the fell-behind slot even when its supersession is the
 most interesting thing in the payload, because a claim that just lost is not a
-claim the week is building on, whatever the edge count says. The print of 2026-10-05 ran
-one supersession in this slot and then ran the same supersession again in the
-fell-behind slot, so the reader met one fact twice and the second telling added
-nothing but length. Before you write, list the claims you are putting in each
+claim the week is building on, whatever the edge count says. An issue that runs
+one supersession in this slot and the same supersession again in the fell-behind
+slot gives the reader one fact twice. Before you write, list the claims you are
+putting in each
 slot and check that no claim appears on two lists. Where a claim genuinely
 belongs to both, it goes in the fell-behind slot once and the traction slot does
 not mention it.
@@ -795,10 +838,9 @@ the instruction instead of the finding, which is the recipe rather than the
 product.
 The payload's own field names are the third vocabulary on that list and they
 arrive disguised as facts about the paper, which is why they get through. A
-print of 2026-09-26 wrote "New work from ACLArena, flagged for deep reading,
-measures what multi-stage post-training does", and "flagged for deep reading"
-is the `deep_reads` stream describing itself in the middle of a sentence
-about somebody's research. Put entry 14's question to it. Flagged by whom?
+clause like "flagged for deep reading", dropped into the middle of a sentence
+about somebody's research, is the `deep_reads` stream describing itself. Put
+entry 14's question to it. Flagged by whom?
 The subscriber cannot say, because the flagger is this pipeline. The same
 holds for anything sourced from a payload key rather than from the work:
 "distilled this week", "scored highly in triage", "carries a procedure",
@@ -814,11 +856,10 @@ Then ask whether it signals anything. A paper going from zero citations to
 one, or from one to two, is a single reader rather than the field moving.
 Ask that of the movers you were actually handed, one at a time, and count how
 many clear it. **This file does not know how many you have or how big they
-are, and a sentence here that says it does is a sentence to distrust.** One
-stood here asserting that all of the day's movers were too small to signal
-anything. It was a true observation about one past payload, it stayed in the
-file, and an issue went out with no traction section at all. A verdict read
-before the stream is looked at is a verdict about a day that has gone.
+are, and a sentence here that says it does is a sentence to distrust.** A
+verdict of that shape once stood here, true about one past payload, and an
+issue went out with no traction section at all. A verdict read before the
+stream is looked at is a verdict about a day that has gone.
 This is the impact section and it is section one, so the bar is real
 and the finding has to be yours: movement earns a slot where a builder could
 act on it, and a stream with nothing that size in it is a stream you report.
@@ -829,13 +870,22 @@ empty stream is never news.
 This is the rule four paragraphs above, that the payload tells YOU why a paper
 is in front of you and never tells the reader, applied to the one stream it was
 not applied to. A count moving is bookkeeping, and bookkeeping printed as news
-is the recipe rather than the product. The print of 2026-10-05 carried a block
-whose subject was the count: it opened on the citation pattern shifting, made
-"moved from 2 to 4 citations" the main clause, and put the only thing a builder
-could use, that a newer paper matched full-token performance on a tenth of a
-percent of the tokens, inside a subordinate clause explaining why the count
-moved. The finding was the aside. So write the item about what the CITING work
+is the recipe rather than the product. An item that opens on the citation
+pattern shifting and makes "moved from 2 to 4 citations" its main clause has
+pushed the one thing a builder could use into a subordinate clause explaining
+why the count moved. The finding becomes the aside. So write the item about
+what the WORK
 found, with the movement as the clause that says why it belongs in section one.
+**That used to say the citing work, and the payload never names one.** A
+`citation_movers` row is a title, a url and two counts. Who did the citing, and
+what any of them found, is not in the payload at any point, so an item built on
+the citing work is an item built on nothing you were handed. The finding you
+can print is the one in the paper whose count moved: look for its url in
+`supported_claims` or `new_claims`, and write the item from the claim you find
+there. Where the url is in no other row, you have a title and two numbers,
+which is bookkeeping with a link on it, and that is not an item. Drop it. And
+never call another paper the citing one, because a citation is a claim about
+who read whom and the payload does not record it.
 The check runs on the draft by itself, which is the only kind that holds: strike
 every number and every word about counting out of the block, and read what is
 left. If nothing is left that a builder could act on, you have no item, and the
@@ -920,8 +970,7 @@ Check it by counting, because the payload makes this easy to fall into rather
 than hard. `new_claims` returns up to 22 rows, and they are distilled claims
 rather than papers, so a handful of papers can fill the entire list. **This
 file does not know how many papers are under your rows, and a sentence here
-that says it does is a sentence to distrust.** One stood here naming a row
-count and a paper count for a single past day. Group the rows by paper
+that says it does is a sentence to distrust.** Group the rows by paper
 yourself, before you choose anything, and let the count of distinct papers
 decide how long this section runs.}
 
@@ -950,16 +999,10 @@ law 12 governs them exactly as it governs the headings above. Write the turn
 instead, the way an editor moves a reader from one group to the next. One
 sentence each, written from that day's items, and never the same two sentences
 twice.
-**Two specimen turns stood here and both are deleted rather than re-warned.**
-They were quoted with the words "neither is ever printed", on the record that an
-earlier issue had printed one of them word for word. The print of 2026-10-05
-then opened both of its groups with both of them, verbatim, as the first
-sentence of each. A warning attached to a specimen has never once beaten the
-specimen, and this position has now cost two issues.
-So there is no example here and there will not be one. This is the same remedy
-the reading-list slot already carries for the same disease: a frame handed over
-at the position where you write is a template no matter how good it is, and a
-replacement offered there is only the next template. You are being told what the
+**No turn of phrase is offered here, and there will not be one.** A frame handed
+over at the position where you write is a template no matter how good it is, a
+warning attached to one has never once beaten it, and a replacement offered in
+its place is only the next template. You are being told what the
 sentence must DO, which is carry the reader from one group to the next, and the
 words are yours. If you find yourself writing a sentence that would have fitted
 last week's items as well as this week's, you have written the furniture this
@@ -967,9 +1010,14 @@ paragraph is about.
 
 First kind, claims newer evidence says are wrong. Each item is a short prose
 unit with the same context-first pyramid as everything else. What was believed
-and where that belief came from, in plain words, then who overturned it and
-with what evidence, attributed by institution, and then the practical
-consequence for a builder. Never open an item mid-argument with "The claim
+and where that belief came from, in plain words, then what overturned it and on
+what evidence, and then the practical consequence for a builder.
+This slot used to say "attributed by institution" here, and `deprecated`
+carries no institution and no author, so the line was asking for a name the
+payload does not hold and four items of 2026-10-05 were graded down for not
+inventing one. Write who overturned it where the work is also sitting in
+`new_claims` and that row names somebody. Otherwise write what overturned it
+with no attributive phrase, per the attribution rule's third form. Never open an item mid-argument with "The claim
 that...". Set the scene first ("An early benchmark result suggested coding
 agents had hit a hard ceiling...").
 
@@ -988,8 +1036,13 @@ arrived the same way. A reader could follow the arithmetic and could not say wha
 the section was about.
 So before you write an item here, say the belief out loud in one sentence with no
 term of art in it at all. If you cannot, you do not have the item yet and the
-payload will not give it to you, so either go to the linked paper for the context
-the claim string dropped or cut the item. A measured number attached to an
+payload will not give it to you, so cut the item. There is no second branch, and
+in particular you cannot go to the linked paper for the context the claim string
+dropped: this is one prompt in and one issue out, with no way to fetch anything.
+An instruction to go and read something is an instruction to supply it from
+memory, and a context supplied from memory about a paper you were handed a
+sentence of is the invention this whole slot is trying to prevent. A measured
+number attached to an
 unnamed quantity is not a finding, and it is worse than no item, because it
 spends the reader's trust and hands back nothing. The same test catches the
 acronym the claim string never expanded: if a capitalised short form reaches your
@@ -1007,7 +1060,9 @@ replaced it and why, and the link goes on the entry. The 2026-W39 issue ran
 four of these inside one 167-word paragraph and the reader could not tell
 where one ended and the next began. One plain sentence underneath the list
 says what the whole group means for a builder, because a list of replacements
-with no meaning under it is an inventory the reader has to interpret alone.
+with no meaning under it is an inventory the reader has to interpret alone. Four
+of these inside one 167-word paragraph is the failure: the reader cannot tell
+where one entry ends and the next begins.
 **Count the `superseded` rows you are going to print BEFORE you write the
 first one, because that count is the shape and the shape is not a revision.**
 Three such rows and the group is a list, so the list is what you compose, and
@@ -1038,10 +1093,8 @@ The shape, in a subject no payload will ever hand you. A section opens on a
 delivery service completing 82% of its routes and a hospital winning 87% of
 its appeals, and declares a ceiling broken. The two numbers share a percent
 sign and nothing else, and nothing was broken. The specimen is invented on
-purpose: a real one stood here, and the section it described was written
-again four days later off the same two numbers, because a well-formed
-sentence about a paper in your payload is a draft no matter what the words
-around it say.
+purpose, because a well-formed sentence about a paper in your payload is a
+draft no matter what the words around it say.
 
 **Ask it of one pairing at a time, because a group verdict is not a
 verdict.** The question above is written in the singular and the payload
@@ -1114,20 +1167,14 @@ hour, in terms this day's papers make specific. The test is whether the heading
 would be false over a different day's list. A heading that announces the issue
 is now recommending things is the act describing itself, and it would have
 fitted every issue ever sent.
-**A specimen of the second form stood here and is deleted.** It was a sentence
-of the shape "Three papers for anyone who ...", offered as the model of a good
-heading, and the print of 2026-10-05 set that shape as its heading with the tail
-swapped for the day's own material. The paragraph three lines below already says
-why, in its own words: a phrase quoted inside the slot the model writes into is
-not a prohibition, it is the nearest available draft. That sentence was written
-about the forbidden phrase and it is just as true of the recommended one. A
-counted noun and a preposition is a frame, so "Three papers for anyone", "Four
-reads if you", "Two papers worth" and every variation of them are furniture now,
-and the heading is built from the papers instead.
-The slot's internal name is not a candidate and is not repeated here, because
-a forbidden phrase quoted inside the slot the model writes into is not a
-prohibition. It is the nearest available draft. The heading gate at the end of
-this file holds the four names.}
+**No heading is drafted for you here, and that includes a good one.** A phrase
+quoted inside the slot the model writes into is not a prohibition, it is the
+nearest available draft, and that holds for a recommended shape, a forbidden one
+and the slot's own internal name alike, so none of the three is written down
+here. A counted noun and a preposition is a frame, so "Three papers for anyone",
+"Four reads if you", "Two papers worth" and every variation of them are
+furniture, and the heading is built from the papers instead. The heading gate at
+the end of this file holds the four names.}
 
 {Chosen, never listed. Print the papers you would actually tell a builder to
 spend an hour on, which on a rich day is a handful and on a thin day is one or
@@ -1147,21 +1194,15 @@ title of every candidate pick, lowercase both, and strike the pick wherever the
 two share a run of three or more words. The sections above name a paper by a
 written lead and this slot names it by its full title, so the two strings
 differ, and they are not independent: a lead written from a paper carries the
-paper's own words. On the print of 2026-10-05 all three overlapping picks
-shared such a run with the lead that had covered them, "kernel level
-preemption", "not all experience belongs in the weights" and "procedural
-memory from", and the one item whose paper the list did not carry shared
-nothing with any of them. Three caught, none wrongly. This file said for a day
-that one piece of work carries two different strings and that recognising them
-as one is the step that cannot happen, and that was wrong about the artifact it
-was written from. The print of 2026-10-05 is what a missed overlap
-looks like from a reader's chair: three picks, all three described at
-length in the section directly above, and seven candidates in `deep_reads` the
-issue had not covered left unprinted. Naming one stream is how this failed the
-first time: the rule used to say the overlap is with `new_claims`, one pick had
-been covered in the traction section instead, and it went out with a line
-recommending the paper the issue's own lead item was about. A paper covered
-anywhere above is covered. Drop the overlap and print what remains, even when
+paper's own words. Run on a real issue the comparison caught all three
+overlapping picks and struck none wrongly. What a missed overlap looks like from
+a reader's chair: three picks, all three described at length in the section
+directly above, and seven candidates in `deep_reads` the issue had not covered
+left unprinted. Naming one stream is how this failed the first time, when the
+rule said the overlap is with `new_claims` and a pick covered in the traction
+section went out with a line recommending the paper the issue's own lead item
+was about. A paper covered anywhere above is covered, whichever stream it came
+out of. Drop the overlap and print what remains, even when
 what remains is one paper or none. When nothing remains, the section does not
 run and its heading does not print, the same as any other empty slot.
 Drop it silently. A dropped paper leaves no trace in the issue. A sentence
@@ -1178,8 +1219,8 @@ nothing and is filler, because it describes the paper's topic instead of the
 reader's choice.
 **The title is the paper's own title, in italic, and never a system name
 lifted out of it.** Every item in the four sections above prints the full
-title that way, and a print of 2026-09-30 set all three of its picks as a
-bolded short name instead, one of them a bare acronym. An acronym standing
+title that way, and issues have set all three picks as a bolded short name
+instead, one of them a bare acronym. An acronym standing
 alone where the title goes is the coined name leading the idea, which the
 voice rules at the top of this file forbid everywhere else, and it is worse
 here than anywhere, because this is the line on which the reader decides
@@ -1187,10 +1228,34 @@ whether to give up an hour.
 **The grade belongs in this entry, and this slot is where it has been
 missing.** In-line evidence grades are house law at the top of this file and
 they bind every item at every cadence. The format above had no place to put
-one, so a print of 2026-09-30 carried a grade on every section and none on
-any of its three picks, which is the one part of the issue asking the reader
-for an hour of their time. Say what this work cannot establish, inside the
-entry's own sentence and never as a second sentence stapled behind it. How
+one, so an issue can carry a grade on every section and none on any of its
+three picks, which is the one part of the issue asking the reader for an hour of
+their time. Say what this work cannot establish, inside the
+entry's own sentence and never as a second sentence stapled behind it.
+**And read the field map before you write that clause, because this is the
+thinnest row in the payload.** A `deep_reads` row is a title, a url and `why`,
+which is the note triage wrote when it set the paper aside. There is no
+`evidence` here, no tier, no support count and no procedure, so on most picks
+nothing in front of you establishes what the work cannot establish. Where
+`why` says something about how the result was got, that is the grade and it is
+a real one. Where it does not, the entry says what decision the paper would
+inform and claims nothing at all about how well established it is. What you
+never do is write the limit you would expect a paper like this to have. A
+plausible limitation is an invented one, and it is worse here than anywhere
+else in the issue, because the reader is being asked for an hour on the
+strength of it.
+**Where an entry has a grade, its position is a count rather than a sentence
+you are trusted with, because that failed on every entry of both prints of
+2026-10-05, six of six.** Read each finished entry and find the full stop
+before the grade. Where there is one,
+the grade is stapled and the entry is not finished: fold the limit into the
+clause that makes the recommendation, so the reader meets what the work cannot
+establish in the same breath as the reason to read it. The target is zero
+stapled grades and there is no budget. The shape that fails is a decision
+sentence, then a sentence counting the units of evidence, then a sentence
+assessing them, which is three sentences doing what one does, and all six
+entries took it.
+How
 many groups have done this, how much of the field it was tested on, and
 whether anybody outside the group has reproduced it: those are the facts that
 decide whether the hour is worth it, and the entry that withholds them is
@@ -1223,9 +1288,14 @@ available by moving up a line.
 Write each line as its own sentence instead, and let the shape follow what
 the decision actually is. One line can put the choice as a question the
 reader is already asking. One can name the thing they are about to build
-wrong. One can say what they will stop doing. In a subject no payload will
-ever hand you, so that copying it is obviously wrong: "The scheduling maths
-is in section 4 and it is the part nobody gets right by intuition." Then
+wrong. One can say what they will stop doing.
+**Nothing in this slot is ever handed to you as a sentence you could print, and
+that holds for a specimen defended as uncopyable.** The usual defence is that no
+payload would ever hand you that subject, and the subject is the one thing a
+payload controls. A phrase quoted inside the slot the model writes into is not a
+prohibition, it is the nearest available draft. So the three shapes above are
+described and never drafted.
+Then
 count, because this is the one section where every entry sits next to its
 neighbours and the repetition is visible on the page: no two entries in an
 issue open on the same words, and no two take the same grammatical shape.
@@ -1238,11 +1308,11 @@ rather than of a list: does this word belong to the paper or to the reader?
 of them has describe the paper's posture instead of the reader's decision, and
 a column of them turns the picks into a catalogue.
 **Then ask the same question of the SUBJECT, because a posture does not need a
-verb and the verb rule was obeyed by dropping it.** A print of 2026-09-30
-carried no banned verb and no synonym of one, and opened all three of its
-entries on a bare noun phrase describing the paper: the study of a thing, the
-case for a thing, the model that does a thing. Three catalogue entries with no
-catalogue verb in them. So the test is grammatical and it is the one that
+verb and the verb rule was obeyed by dropping it.** Entries have gone out with
+no banned verb and no synonym of one, all three opening on a bare noun phrase
+describing the paper: the study of a thing, the case for a thing, the model that
+does a thing. Three catalogue entries with no catalogue verb in them. So the
+test is grammatical and it is the one that
 cannot be escaped by deletion. What are the first words of the line ABOUT? The
 reader, their decision, or the thing they are about to build wrong. Never the
 paper, never its contents, and never its method. Where the line opens on the
@@ -1290,8 +1360,8 @@ The print of 2026-09-30 closed by naming the week's arrivals and then saying
 in plain words that none of them had been read in full. Both numbers were
 correct and both verbs were right, which is why no gate in this file caught
 it. It still told a reader deciding whether to pay that the product read
-nothing. The sentence is not quoted here, because a line this file wants
-never written is a line this file must not hand you. Canon law 15 carries
+nothing. No such sentence is quoted here, because a line this file wants never
+written is a line it must not hand you. Canon law 15 carries
 the answer in its own words: an issue that says nothing about its own scale
 has lost nothing a reader came for. The repair for a claim you cannot make is
 to drop it, never to soften it and never to print its absence.
@@ -1304,13 +1374,10 @@ not the span of the ISO week the issue is filed under. So the sentence names
 the seven days and never the week,
 and no figure from this paragraph or any other in this file is a figure you
 print, because every count you print comes from the payload you were handed.
-**The reason that rule is absolute, restated, because the reason it used to
-carry was a number and the number is sometimes zero.** This paragraph said the
-two spans differ by hundreds, and the print of 2026-10-05 closed on "the week
-ending October 4", naming a calendar week over a rolling count, under a rule
-that forbids exactly that. For that week the two spans happened to hold the
-same papers, so the figure was right and the rule it broke read as contingent.
-It is not contingent. You are handed a count and never the window it was taken
+**That rule is absolute, and it is not contingent on the two spans differing.**
+A close that names a calendar week over a rolling count breaks it even in the
+weeks when the two spans happen to hold the same papers and the figure is
+right. You are handed a count and never the window it was taken
 over, so any calendar span you name is a boundary you cannot check, and a
 sentence about this product's own work is the one sentence in the issue a
 reader cannot check either. Name the seven days, which is what the count is,
@@ -1350,19 +1417,19 @@ the rule's question to the thing in front of you.
   character, version suffix and all.** The example above carries a `v2` because
   nine in ten of the urls you will be handed carry a version and the example
   used to be the one in ten that does not, so the only string transformation
-  this file asks you to perform was taught from its own minority case. The
-  print of 2026-10-05 is what that looks like from a reader's chair: three
-  links, two of which kept the version they were given and one of which
-  dropped it, which is not a choice anybody made. `abs` becomes `html` and
+  this file asks you to perform was taught from its own minority case. From a
+  reader's chair that looks like three links, two keeping the version they were
+  given and one dropping it, which is not a choice anybody made. `abs` becomes
+  `html` and
   nothing else moves. If you find yourself deciding what the identifier should
   be, you have left the payload, and a link you composed is a link you invented.
   Coverage is the half of this rule that the form of the link keeps hiding,
   so count before you output. Every item in every section carries its own
   link, and the traction section and the fell-behind section are items just
-  as much as the reading list is. The 2026-W39 issue got the form right on
-  all three of its links and printed seven more items, in three sections,
-  with no link on any of them, because this rule was read as a rule about
-  what a url should look like.
+  as much as the reading list is. An issue has got the form right on all three
+  of its links and printed seven more items, in three sections, with no link on
+  any of them, because this rule was read as a rule about what a url should
+  look like.
   **Count named works, not items, because an item can name three of them.**
   Go through the finished issue and list every piece of research it names:
   every paper, every benchmark result, every method or system whose number
@@ -1371,7 +1438,17 @@ the rule's question to the thing in front of you.
   an item that names three pieces of work needs three links rather than one.
   A superseded pairing is two entries and takes two links, the old work and
   the new one, because the reader who wants to check what changed has to
-  reach both ends of it. Count the list. Count the links. They match, or the
+  reach both ends of it.
+  **A contradicted pairing is two entries as well, and the payload hands you
+  one url for them.** A `deprecated` row carries the title and url of the OLD
+  paper and nothing at all for the work that contradicts it, so the link this
+  rule wants on the newer end is not in that row. It is often in another row:
+  the contradicting claim was distilled this week, so look for its text at the
+  front of a `new_claims` claim string and take that row's url when you find
+  it. Where you do not find it, the newer work is not named, because a named
+  work with no link is the absence this rule was written to count and a url you
+  reasoned your way to is a url you invented. Write the item about the belief
+  that fell, which is the end the payload can actually reach. Count the list. Count the links. They match, or the
   issue is not finished. Counting items instead passed an issue whose
   fell-behind section named three separate results and carried no link at
   all, and the grade of that issue also recorded a pass, because what this
@@ -1379,15 +1456,32 @@ the rule's question to the thing in front of you.
 - **Grade the evidence in-line, on every item that carries a number.** A short
   clause inside the item's own prose, not a footnote and not a separate line.
   **Four model grades stood in this sentence and all four are deleted, and none
-  of them is repeated here.** The print of 2026-10-05 opened four of its eight
-  grades on the first three words of one of them, and carried another of them
-  twice. A run had already struck a fifth from this rule for this reason and
-  left these four standing four lines above it, which is how the stem the rule
-  forbids reusing was the stem the rule handed over. They are held in the gate
-  that reads the finished grades, where a specimen is read rather than copied.
+  of them is repeated here.** A stem quoted at this rule is the stem the rule
+  hands over, and issues have opened four grades out of eight on the first three
+  words of one. The specimens are held in the gate that reads the finished
+  grades, where a specimen is read rather than copied.
   Draw the grade from the payload's `evidence`, source tier and support
   counts, and never claim a stronger one than the payload supports. The grade
-  is product, not hedging. It is the difference between this and a press
+  is product, not hedging.
+  **Three of those sources sit on one stream, so read the field map above
+  before you grade anything.** `evidence` and the source tier are on
+  `new_claims` and nowhere else, and the support count is on
+  `supported_claims` and nowhere else. An item drawn from any other stream has
+  none of the three in front of it, and the grade it gets is the one its own
+  stream can actually support.
+  For an item built on a support count, the count is the grade and it is the
+  strongest one this product prints: separate groups reporting the same effect
+  is replication, so say that in the reader's words and say how many.
+  For a fell-behind item, count the newer results standing against the older
+  one, which is a number the rows in front of you hold, and grade on it: one
+  newer result against a belief is one result, and nobody has repeated that one
+  either.
+  For an item with none of the three, you have no basis for a grade, and the
+  repair is never to assemble one out of the claim string. A sentence of the
+  shape "nothing here says how widely that was tested" grades our knowledge of
+  the paper rather than the paper, and the reader cannot tell the difference.
+  Print the item without the grade and without resting it on the number, or
+  drop it. The second is usually the better issue. It is the difference between this and a press
   release, and a reader deciding what to build has to know how much weight a
   number carries.
   The grade has two halves. Say how strong the number is, and, where the
@@ -1396,6 +1490,18 @@ the rule's question to the thing in front of you.
   family"). Naming the missing measurement is the difference between a grade
   and a compliment. Draw that half from what the payload's `evidence` and
   `procedure` actually cover, and never invent an omission.
+  **When there is no omission to name, the second half does not get filled.**
+  The condition on it is real and it is usually unmet, because the payload
+  records what each paper did and holds no field for what a paper left out, so
+  most items arrive with no missing measurement in reach. The failure that
+  follows is not an empty slot. It is a substitution: who ran the work, or who
+  has not repeated it, written into the position the missing measurement was
+  supposed to occupy, where it reads like a limitation and names none. Across
+  the seven grades of 2026-10-05, six said who ran it and one named a
+  measurement that was absent. So put one question to the second half before
+  you keep it. Does the clause name something the work did not measure, or does
+  it name a person? If it names a person, it is the first half again, and the
+  grade is finished without it.
   **The grade is a clause inside a sentence, and it is written fresh each time.**
   The first line of this rule says "inside the item's own prose", and the shape
   that keeps shipping instead is a sentence of its own, in one frame, once per
@@ -1406,26 +1512,19 @@ the rule's question to the thing in front of you.
   already used in this issue, and fold the grade into a sentence that is doing
   other work. "Nobody outside the group has run it again" grades, and it grades
   without handing you a shape, which is the only kind of specimen this rule is
-  allowed to carry. A second one stood here until today, reading two units of
-  scale and then an assessment, and the gate below bans exactly that frame.
-  The print of 2026-09-30 carried it four times out of four and two of those
-  opened on its first two words. So the frame is not demonstrated here at all:
-  the gate names it as the thing to avoid and this rule names no replacement,
-  because a replacement offered at the position where you write is the next
-  frame. The counting of frames happens at the gate.
+  allowed to carry. No replacement frame is named here, because a replacement
+  offered at the position where you write is the next frame. The counting of
+  frames happens at the gate.
   **The rule above is about the grade's WORDS and it lost to the grade's
-  POSITION, so the position is now fixed.** The print of 2026-10-05 ended seven
-  items out of seven on a standalone grade, and five of those seven were a noun
-  phrase with no verb in it, in the shape "the authors' own experiments on X; no
-  replication yet". The rule above forbids all of that in prose and could not
-  reach it, because it tells you what the grade must not look like and never
-  says where it goes, so the grade kept the one position nothing was defending,
-  which is last.
+  POSITION, so the position is now fixed.** A rule that says what a grade must
+  not look like and never says where it goes leaves the grade the one position
+  nothing is defending, which is last, and standalone grades have closed seven
+  items out of seven, five of them noun phrases with no verb in them.
   The last sentence of an item is not available. It belongs to the line of plain
   meaning the shape gate asks for, the one that says what the result makes true
   for a builder with no number in it. An item that ends on its grade has spent
-  that line, and the print above spent it seven times, which is why that issue
-  explains seven results and tells a builder what to do about none of them.
+  that line, and an issue that spends it every time explains every result and
+  tells a builder what to do about none of them.
   So the grade sits in the middle of the item, inside a sentence that is also
   carrying a fact, and the item ends on meaning. Two consequences, both
   checkable before you output. A grade is a CLAUSE, which means it has a finite
@@ -1437,18 +1536,15 @@ the rule's question to the thing in front of you.
   Then count them, off the same list the links are counted against one rule
   above, which is every named piece of work in the issue and not every item.
   Take from that list the entries whose number the issue prints, and count the
-  grades. They match, or the issue is not
-  finished. Running the count over items instead let a fell-behind section
-  print three benchmark numbers with no grade anywhere near them, and the
-  grade of that issue counted three grades against three items and called the
-  presence half a pass. The fell-behind section is where this hides, because
-  its numbers arrive as an old belief and a newer one rather than as a result,
-  and a number that overturned something needs its grade more than any other
-  number in the issue, not less. The count is the rule and not a reminder of
-  it. On 2026-09-24 these
-  two rules sat next to each other in this file, one of them counted and the
-  other only described, and the issue shipped with five links out of five and
-  zero grades out of four. The grade is a clause, every compression pass
+  grades. They match, or the issue is not finished. Run the count over named
+  works and never over items: counted over items, a fell-behind section can
+  print three benchmark numbers with no grade anywhere near them and still
+  score three grades against three items. That section is where this hides,
+  because its numbers arrive as an old belief and a newer one rather than as a
+  result, and a number that overturned something needs its grade more than any
+  other number in the issue, not less. The count is the rule and not a reminder
+  of it: a rule only described has shipped five links out of five beside zero
+  grades out of four. The grade is a clause, every compression pass
   reaches for clauses first, and the only thing that survives a compression
   pass is what something counts afterwards.
 - **A number without its comparison is not finished, in any section.** "64% of
@@ -1475,13 +1571,10 @@ the rule's question to the thing in front of you.
   intros that justify the section. Honesty still binds, but it serves items,
   in place, in one plain sentence. Where a slot rests on fewer pieces of work
   than a reader would expect, say the number where the items appear rather than
-  reaching for a collective that hides it. The model sentence that stood here
-  is deleted. It was a counted noun, a verb and the week, quoted at a rule
-  that tells you what to write, and the print of 2026-10-05 opened its
-  new-work slot on that frame with the count and the verb swapped for the
-  day's own. The slot below says why in its own words, about a heading, and it
-  is as true of a sentence, because a phrase quoted where the work happens is
-  not a rule, it is the nearest available draft.
+  reaching for a collective that hides it. No model sentence is offered here. A
+  counted noun, a verb and the week, quoted at a rule that tells you what to
+  write, is not a rule. It is the nearest available draft, and it has opened a
+  new-work slot with nothing swapped but the count and the verb.
   When a headline number leans on a flattering or obsolete baseline, say so in
   that item's grade. When a stream came back
   empty or an edge was judged wrong, that is pipeline information for the
@@ -1512,10 +1605,10 @@ the rule's question to the thing in front of you.
   not say, name each paper's own institution and let the reader see they are
   different.
   **A paper's name is not a research group, and there is no third fallback.**
-  When `institutions` is empty the answer is the author, and a print of
-  2026-09-26 reached for neither: it wrote "New work from ACLArena", which
-  attributes a finding to the title of the paper that reports it. The reader
-  is told a thing did the research. The two allowed forms are the institution
+  When `institutions` is empty the answer is the author, and an issue that
+  reaches for neither writes "New work from <benchmark name>", attributing a
+  finding to the thing the paper is about. The reader is told an artifact did
+  the research. The two allowed forms are the institution
   and the named author, so where the payload has neither, write the finding
   with no attributive phrase at all rather than promoting a system name into
   one. A benchmark, a pipeline, a method and a dataset all arrive in the
@@ -1552,23 +1645,17 @@ the rule's question to the thing in front of you.
   and nowhere later: a title term defined in the third section is not
   defined, because the reader met it before they had any reason to keep
   reading, and law 4 says that line is where they decide. This runs first and
-  separately because it has already failed in the way an unbounded list
-  always fails. An issue glossed one of its title's two terms properly, then
-  carried the other bare through eight appearances including a heading, a
-  bold lead and the closing line. The duty was in this file the whole time,
-  sitting inside the rule about two names for one idea, and the bare word had
-  no second name, so nothing in that rule ever reached it.
-  **The second case failed the same gate with both terms rather than one, and
-  it is why the opening slot now refuses to share its first sentence.** The
-  print of 2026-10-05 titled itself on two adjectives of the field and defined
-  neither, anywhere. One of them never appeared after the title at all, and
-  the three sentences nearest it reached for three more terms of the same
-  family rather than one plain word, which is a club term answered with
-  interest. Neither term is quoted here or in the slot where you write the
-  title, because at that position an example is a supply. What you check is
-  the shape: a title noun that the title's own sentence does not define, and
-  that the opening's first sentence does not define either, is undefined, and
-  the repair is a plainer title rather than a longer opening.
+  separately because it has already failed twice in the way an unbounded list
+  always fails: once with a title term carried bare through eight appearances
+  including a heading, a bold lead and the closing line, and once with both of
+  a title's terms undefined anywhere, one of them never appearing after the
+  title at all while the sentences nearest it reached for three more terms of
+  the same family rather than one plain word. No term from either is quoted
+  here or in the slot where you write the title, because at that position an
+  example is a supply. What you check is the shape: a title noun that the
+  title's own sentence does not define, and that the opening's first sentence
+  does not define either, is undefined, and the repair is a plainer title
+  rather than a longer opening.
   Then go back
   through the issue from the top and list every term of art it uses: method
   names, training vocabulary, metric and benchmark names, coined names,
@@ -1623,12 +1710,10 @@ the rule's question to the thing in front of you.
   says it twice. Nothing above produces the list, and the class this pass names
   as the one it exists to catch is defined by not looking like jargon, so a
   writer assembling the list by eye leaves out exactly the words the pass was
-  written for. The print of 2026-10-05 leans on one such word eight times, from
-  the opening's third sentence to the last line before the close, and nothing
-  in the issue introduces it. Four terms carry that issue and none of the four
-  is glossed. The two earlier prints this pass was written from failed on that
-  same word, so it has now gone unintroduced three times under a rule that
-  covers it in full.
+  written for. One such word has carried an issue eight times, from the
+  opening's third sentence to the last line before the close, with nothing in
+  the issue introducing it, and it has now gone unintroduced in three prints
+  under a rule that covers it in full.
   So build the list mechanically before you judge anything. Take every word and
   short phrase in the finished issue that appears three times or more and is
   not ordinary English doing an ordinary job. Write it down with its count and
@@ -1674,14 +1759,15 @@ the rule's question to the thing in front of you.
   several of them to count. And the lines you did not write are not yours: the
   standing line under the title, the rule above the close, and the close itself
   arrive on every issue whatever you do. Count only the kinds of block YOU put
-  on the page. The print of 2026-10-05 had four blocks that were not paragraphs
-  and three of them were those standing lines, so the honest count of its shapes
-  was paragraphs and one short paragraph. The
-  issue reprinted under this law cut its longest paragraph from 191 words to
-  98, left nothing over 100, and shipped as twenty-four paragraphs with no
-  list and no subheading anywhere in it. She read that and said enjoyability
-  is still not fixed. Two kinds is thin. Three is an issue that reads like
-  something a person made.
+  on the page, and discount the standing lines, which have supplied three of the
+  four non-paragraph blocks in an issue that read itself as varied. Where a line
+  standing alone is the only one on the page, no other rule in this file may be
+  satisfied by removing it: deleting it takes the issue to one kind, which is
+  the failing state this count exists to catch, so a line that trips another
+  rule is rewritten and kept. An issue that cut its longest paragraph to 98
+  words and shipped as twenty-four paragraphs with no list and no subheading
+  anywhere in it has not fixed enjoyability, and she has said so. Two kinds is
+  thin. Three is an issue that reads like something a person made.
   The fix is never decoration, and there is exactly one honest move: find the
   material in the day's payload that is genuinely parallel, meaning several
   results that did the same kind of thing and stand side by side, and set
@@ -1691,7 +1777,13 @@ the rule's question to the thing in front of you.
   **Then the subheading, which is the shape this file has never asked for and
   the newsletters builders enjoy all use.** Any section running past about
   four paragraphs gets a written turn inside it, and at that length the turn
-  is a third-level heading (`###`) rather than a bold lead-in. It is governed
+  is a third-level heading (`###`) rather than a bold lead-in. Count
+  paragraphs and not blocks, because the other kinds this law asks you for sit
+  inside sections too: a line carrying the number that matters, a bulleted
+  list of parallel results, and the turn itself are none of them paragraphs,
+  so none of them brings a section nearer this trigger. Counted as blocks,
+  every device above makes the section look long, and obeying one half of this
+  law then trips the other half. It is governed
   by the heading gate below exactly as a section heading is, so it says what
   the material under it shows and it would be false for yesterday's issue.
   Write it from the section's own content, the way an editor breaks a long
@@ -1702,19 +1794,17 @@ the rule's question to the thing in front of you.
   carrying more than one result: one result each, so break them. Numbers in
   the heaviest paragraph: past three, cut every number that does not change
   what the reader would do. Sections running past four paragraphs with no
-  written turn in them: add the turn.
+  written turn in them: add the turn, counting paragraphs as the rule above
+  counts them.
   **A fifth count, because the mark it catches is the only one in canon law 1
   that nothing here was counting.** Count the semicolons. The target is zero
-  and there is no budget, the same as the em dash. The print of 2026-10-05
-  carried eight, against one in the print before it, under a punctuation rule
-  that had named the semicolon and called it banned outright for weeks. That
-  rule is prose in a bullet about four marks, and this issue got every counted
-  rule right and every prose rule wrong: zero non-ASCII characters, zero em
-  dashes, eight semicolons. The difference between the mark that went to zero
-  and the mark that went to eight is that one of them was in a count.
-  All eight were the same construction, two finished sentences in a balanced
+  and there is no budget, the same as the em dash. An issue has scored zero
+  non-ASCII characters, zero em dashes and eight semicolons under a rule that
+  banned all three in prose, and the difference between the mark that went to
+  zero and the mark that went to eight is that one of them was in a count.
+  All eight were one construction, two finished sentences in a balanced
   contrast, which is the shape that feels most like craft and is the one canon
-  law 1 names. Replace it with a full stop and nothing else, because the
+  law 1 names. Replace the mark with a full stop and nothing else, because the
   contrast was never in the mark. It was in the two sentences.
   **A sixth count, for the list, because the one place this file already makes a
   list mandatory is the place it keeps not happening.** The fell-behind slot says
@@ -1723,53 +1813,44 @@ the rule's question to the thing in front of you.
   Count the `superseded` rows that group came from, NOT the entries you can see
   in the draft, because a group you wrote as flowing prose has no entries in it
   and this count then reads zero off a paragraph carrying four of them. Three
-  rows or more and the group is a list, or the issue is not finished. The print
-  of 2026-10-05 had three and set them as three paragraphs, so it shipped with
-  no list anywhere in it for the ninth issue running, and the count that would
-  have caught it was never taken. The other print of that same day had four in
-  one 149-word paragraph, so this count run on entries would have cleared the
-  worse of the two.
+  rows or more and the group is a list, or the issue is not finished. Issues
+  have shipped with three such rows set as three paragraphs, and with four of
+  them inside one 149-word paragraph, which is the case a count run on entries
+  rather than rows would have cleared.
   **A seventh count, for the colon in a heading, because it is the last mark
   this file governs in prose alone.** Count the headings that carry a colon, the
-  title included. The target is zero and there is no budget. The print of
-  2026-10-05 had five headings and three of them were a slot name, then a colon,
-  then the day's news, which is the one construction the heading rule spends a
-  paragraph forbidding, and that rule has now been written three times in prose
-  without ever being counted. The fix is the rule's own: delete everything to
-  the left of the colon and the colon with it, then check whether what is left
-  is the heading. It almost always is.
+  title included. The target is zero and there is no budget. The construction to
+  look for is a slot name, then a colon, then the day's news, which the heading
+  rule spends a paragraph forbidding and which has taken three headings out of
+  five in one issue. The fix is the one named above: strike the label and the
+  colon, and check whether what is left is the heading.
   **An eighth count, for the number with nothing to measure it against,
   because the rule is above and the one place it failed is the one place it is
   expensive.** Go through the issue's figures and count the ones with no
-  comparison beside them. The target is zero. The print of 2026-10-05 opened
-  its fell-behind section on a bound of 0.0468 derived from zero events in 96
-  tries, and overturned it with "30 truthful recoveries and zero neutral ones"
-  and no denominator anywhere, so a reader who wanted to check whether the
-  bound had actually been broken had nothing to divide by. That section tells a
+  comparison beside them. The target is zero. The expensive case is a fell-behind
+  section that states a bound derived from a denominator and then overturns it
+  with a bare count, leaving a reader who wants to check the reversal nothing to
+  divide by. That section tells a
   reader what stopped being true, and a reversal asserted on a count the reader
   cannot place is the one kind of error that costs the subscription. Either the
   denominator goes in beside the count or the reversal does not print.
   **A ninth count, for the figure still wearing the units and the precision of
   the table it came out of.** Two scans of the finished draft, both of them
-  arithmetic. Count the figures whose magnitude needs leading zeros to write:
-  the print of 2026-10-05 gave one latency in microseconds in its opening and
-  in its bold lead, then gave the result itself as "0.0048 ms, with a 95%
-  confidence interval of [0.0042, 0.0057] ms", two sentences apart. The
-  readable unit was the one the issue had already chosen, and the sentence
-  carrying the finding abandoned it, so one measurement reached the reader as
-  two numbers and nothing on the page said they were the same one. Convert to
-  the unit that makes the figure one or two digits, and then use that unit
-  every time the quantity appears. Then count the decimals ending in zero: that
-  same print carried "86.20%", "97.40%" and "3.87-10.70 points", which is a
-  cell copied rather than a precision chosen, because no reader's decision
-  turns on the second place and a trailing zero says it was never considered.
+  arithmetic. Count the figures whose magnitude needs leading zeros to write: an
+  issue that gives a latency in microseconds in its opening and then prints the
+  result itself as "0.0048 ms" two sentences later has sent one measurement to
+  the reader as two numbers, with nothing on the page saying they are the same
+  one. Convert to the unit that makes the figure one or two digits, and then use
+  that unit every time the quantity appears. Then count the decimals ending in
+  zero: "86.20%", "97.40%" and "3.87-10.70 points" are a cell copied rather than
+  a precision chosen, because no reader's decision turns on the second place and
+  a trailing zero says it was never considered.
   Round to what changes the decision. The target is zero on both scans.
-  This is the lesson of that print and it is worth carrying to every rule in
-  this file, with the line drawn in the right place. It scored zero non-ASCII
-  characters and zero em dashes. It broke the heading rule, the grade-shape
-  rule, the semicolon rule, the list rule, the link-coverage rule and the
-  grade-coverage rule. The last two are already written as counts, so the
-  difference is not whether a rule says "count".
+  One lesson carries to every rule in this file, and the line has to be drawn in
+  the right place. An issue can score zero non-ASCII characters and zero em
+  dashes while breaking the heading rule, the grade-shape rule, the semicolon
+  rule, the list rule and both coverage rules, and the last two are already
+  written as counts, so the difference is not whether a rule says "count".
   It is whether the check can be run on the finished text by itself. A character
   census, a semicolon tally and a look at how many kinds of block are on the page
   all read only what you just wrote, and those are the ones that hold. Counting
@@ -1842,10 +1923,10 @@ the rule's question to the thing in front of you.
   the repair itself: a sentence that says what the field believed is the
   product, and a sentence that says what this newsletter printed is the
   violation, whichever way it is worded.
-  "Never deletion" binds the slot as well as the sentence. The struck line of
-  2026-09-24 was a greeting, and the reprint repaired it by having no greeting
-  at all, which cleared this gate and lost an element that is house law. So
-  after the repair, check the opening still does its four jobs in order, and
+  "Never deletion" binds the slot as well as the sentence. A struck greeting
+  repaired by having no greeting at all clears this gate and loses an element
+  that is house law. So after the repair, check the opening still does its four
+  jobs in order, and
   the first of them is that the issue says hello to the reader in a line true
   about this particular day. A slot does not stop being required because the
   sentence that filled it was wrong.
@@ -1881,11 +1962,10 @@ the rule's question to the thing in front of you.
   count is a false sentence about the product.
   The specimen, held here where you read finished output and deliberately
   absent from the closing slot where the line gets written: "the library read
-  1,289 papers", printed on 2026-09-26, on a day when 1,289 papers had been
-  ingested that week and 164 had ever been read in full. No number was
-  invented and no paper was misread. One count was handed the neighbouring
-  count's verb, and the sentence read so naturally that no pass which reads
-  the prose could see it.
+  1,289 papers", on a day when 1,289 papers had been ingested and a fraction of
+  that had ever been read in full. No number is invented and no paper misread.
+  One count is handed the neighbouring count's verb, and the sentence reads so
+  naturally that no pass which reads the prose can see it.
   The repair is never a qualifier. "Read or reviewed", "read at some depth",
   "surveyed" and "processed" all keep the claim and soften it, which is this
   file noticing the sentence is false and going on anyway. Two repairs are
@@ -1897,10 +1977,9 @@ the rule's question to the thing in front of you.
   name a week, a month or a date? Every count you were handed covers the seven
   days ending when the payload was built, and you were not handed that window,
   so a calendar span in that sentence is a claim about the product's own work
-  with nothing behind it. The close of 2026-10-05 put the right verb on each of
-  its two counts and said "the week ending October 4" around them, so it passed
-  this gate five times on the half it was asked about. Strike the span and
-  leave the seven days.
+  with nothing behind it. A close can put the right verb on each of its counts
+  and still name a dated week around them, which is how it passes this gate on
+  the half it is asked about. Strike the span and leave the seven days.
 - **Then check the issue's numbers against each other. A hard gate (canon
   laws 6 and 7, the claims pass's fourth question).** Every gate above reads
   sentences. This one reads only the figures, and it catches what a careful
@@ -1911,17 +1990,17 @@ the rule's question to the thing in front of you.
   the same number, or two setups the issue has told the reader apart in the
   sentence where the second one appears.
   **Compare the quantity and not the numeral, because the same number in two
-  units is two numbers to a reader.** Convert before you group. This gate read
-  the print of 2026-10-05 five times and cleared it, because the one latency it
-  reports appears once in microseconds and once in milliseconds and the two
-  numerals look nothing like each other. Neither figure was wrong and the
-  conversion is exact. A reader meets the measurement twice, has to do the
+  units is two numbers to a reader.** Convert before you group. One latency
+  reported once in microseconds and once in milliseconds clears this gate every
+  time, because the two numerals look nothing like each other, neither figure is
+  wrong and the conversion is exact. A reader meets the measurement twice, has
+  to do the
   arithmetic to learn it was once, and cannot tell until they have whether the
   bold lead was rounding or describing something else. One quantity, one unit,
   for the whole issue.
-  The specimen, invented so that copying it is obviously wrong, because the
-  real one stood here and the pair it described was printed again on
-  2026-09-30. An item says a night shift closes 44% of its tickets, and four
+  The specimen, invented so that copying it is obviously wrong, because the real
+  one stood here and was printed again the next issue. An item says a night
+  shift closes 44% of its tickets, and four
   sentences later says the checklist that taught it to "closes 30%" of them,
   on the same named measure. Both figures were in the payload and neither was
   wrong. The page made them contradict, because the second one came from a
@@ -1975,21 +2054,19 @@ the rule's question to the thing in front of you.
   **Name the unit before you count, because this gate says count and never
   said count what.** The print of 2026-10-05 opened its new-work slot on "Three
   papers this week test what happens when you push the agent stack in
-  directions no benchmark yet covers" and put four items under it. This gate
-  was in the file that wrote it, and it failed on the arithmetic half, which is
-  the half it calls easy. A writer told to count what appears under a sentence
-  chooses the unit first, so the count can always be rescued by ruling the
-  fourth item out of it, and the fourth item there named no paper, which is how
-  it was rescued.
+  directions no benchmark yet covers" and put four items under it, with this
+  gate in the file that wrote it. It failed on the arithmetic half, which is the
+  half it calls easy, because a writer told to count what appears under a
+  sentence chooses the unit first, and a count can always be rescued by ruling
+  the item that named no paper out of it.
   So the unit is fixed here and it is not yours to pick. Count the blocks a
   reader sees under the sentence, one for every bold lead, bullet or paragraph
   carrying its own piece of work, whatever noun your sentence happened to use.
   The sentence's number is that count. Then the noun goes to every block you
   just counted, which is the next paragraph.
   A heading is one of those places and so is a bold lead, so read this
-  paragraph with the word "sentence" meaning whichever of them said the
-  number. The 2026-09-28 failure above was a heading and a first sentence
-  disagreeing with the same two items.
+  paragraph with the word "sentence" meaning whichever of them said the number.
+  A heading and a first sentence can disagree about the same two items.
   **The noun is counted too, and it is the half of this gate that has never
   been read.** Every count above is a number and a noun, and the check as first
   written is arithmetic on the number alone, so a count can be exactly right
@@ -2010,22 +2087,21 @@ the rule's question to the thing in front of you.
 - **Then check the opening's promise against the issue that followed it.** The
   contents line named some items. Take each one, find the section that delivered
   it, and match the institution, the system and the result rather than the
-  topic. On 2026-09-28 one of three promised findings, a named team's named
-  system carrying a latency number, appeared nowhere else in the issue, and the
-  section that ran in its place had never been promised. Every line involved was
-  true on its own. Cut what did not arrive, or name what did.
+  topic. One of three promised findings, a named team's named system carrying a
+  latency number, can appear nowhere else in the issue while a section that was
+  never promised runs in its place, with every line involved true on its own.
+  Cut what did not arrive, or name what did.
 - **Then read the grades for their shape, not their opening words.** Every item
   carrying a number carries a grade, and grades against items are counted
   further up. This is the other check, and its unit is the whole sentence. No
   two grades in the issue begin the same way, none begins on the word
   "evidence", and **no two are built on the same frame**, meaning the same
   sequence of parts in the same order however the words change.
-  The unit is the frame because naming a stem only moves the stem. The gate
-  written on 2026-09-28 forbade the word "evidence" after three grades opened
-  on it. The print of 2026-09-30 obeyed that and carried four grades shaped
-  "One [unit], [unit], and [the assessment]", two of them opening on the same
-  two words. Every one was accurate and by the third the form was the furniture
-  between items rather than something being said.
+  The unit is the frame because naming a stem only moves the stem. A gate that
+  forbade the word "evidence" after three grades opened on it was obeyed by four
+  grades shaped "One [unit], [unit], and [the assessment]", two of them opening
+  on the same two words. Every one was accurate and by the third the form was
+  the furniture between items rather than something being said.
   So write each grade into a sentence already doing other work, and if you can
   lift all of them out of the issue and line them up as a matching set, they
   have stopped being grades. Say what this particular work cannot establish. A
@@ -2033,12 +2109,9 @@ the rule's question to the thing in front of you.
   **Three requirements above and no count under them, which is why this gate
   has never failed.** Every gate in this list that holds was turned into a
   count after a print walked past it, and this one was left as a reading of
-  your own prose. The print of 2026-10-05 carried eight grades. Four of them
-  opened on the same three words, "The authors' own". Two more were the same
-  frame as each other about the same paper, "One benchmark, one incident
-  autopsy, one prototype" and "One incident autopsy, one formal model, one
-  prototype". Eight grades stood on three frames, and all three requirements
-  above were in the file that wrote them.
+  your own prose. Eight grades have stood on three frames, four of them opening
+  on the same three words and two of them the same frame about the same paper,
+  with all three requirements above in the file that wrote them.
   So write them out rather than weighing them. Every grade in the issue, one
   per line, in print order, the reading list included. Where a grade is folded
   into a sentence doing other work, which is what the rule above asks for, the
@@ -2080,12 +2153,25 @@ the rule's question to the thing in front of you.
   can find.** Everything above finds a sentence that hands the work to a thing.
   An item that hands it to nobody prints no such sentence, so this gate reads
   clean over it. Take the same list of named works the links and the grades are
-  counted against, and count the ones whose work is attributed to an institution
-  or, where the payload has no institution, to a named author. The two numbers
-  are the same number or the issue is not finished. In the print of 2026-10-05
-  they were 5 and 12, and all four items in the fell-behind section sat on the
-  wrong side of it, which is the slot whose own rule in this file says
-  "attributed by institution".
+  counted against, and strike from it every work whose stream carries neither
+  `institutions` nor authors, because the rule above allows exactly two forms
+  and the payload hands you neither for those. Only `new_claims` carries
+  either, per the field map. What is left is the list this gate counts, and
+  every work on it is attributed to an institution or to a named author or the
+  issue is not finished.
+  **The works you struck are not thereby unattributed.** They take the rule's
+  third form, which is the finding written with no attributive phrase at all,
+  and that form is a pass here rather than a miss. Run the sentence check above
+  over them the same way, because the form they must not take is the invented
+  one.
+  In the print of 2026-10-05 the two numbers were 5 and 12, and all four items
+  in the fell-behind section sat on the wrong side of it. That diagnosis was
+  half wrong and the half matters: those four came from `deprecated` and
+  `superseded`, which carry no institution and no author, so no attribution was
+  available to any of them and the count was asking for something the payload
+  had not supplied. The repair there was never to find the institution. It was
+  to write those four with no attributive phrase, which is what this gate now
+  asks of them.
 - **Then read the issue for this file's own words.** Every name for a piece of
   the pipeline, and every name for a check in this file, is internal. A print on
   2026-09-28 told a subscriber that two results "fail the kind test", which is
@@ -2109,21 +2195,12 @@ the rule's question to the thing in front of you.
   front of a sentence is a piece of a line, and a line whose second half is
   real writing passes a question its first half would fail, which is the
   whole reason this shape keeps getting through.
-  **The first unit is positional rather than punctuational on purpose, and
-  the reason is one character.** A print of 2026-09-30 opened four of its
-  paragraphs on a bolded label that ended in a full stop, and each of them
-  would have fitted any issue this product will ever send. None sat alone on
-  its line, so the step above did not collect it. None contained a colon, so
-  the colon unit did not collect it either, and one of the four was a shape
-  this file already names with the colon swapped for a period. A unit defined
-  by a punctuation mark can always be escaped by changing the punctuation
-  mark, so the unit is the position instead: anything bold or italic at the
-  start of a line is a label until the question below clears it.
-  The published 2026-W39 carried three of the colon kind under an earlier
-  commit, none of them bolded alone and none collected by the step above:
-  "**The number that matters:**", which is the name of a formatting rule in
-  this file, "For builders:", and "The procedure is extractable:". Take the
-  fragment, drop whatever punctuates it, and write the sentence whole.
+  **The first unit is positional rather than punctuational on purpose.** A unit
+  defined by a punctuation mark can always be escaped by changing the mark, and
+  labels have shipped welded by a colon, welded by a full stop, and wearing no
+  mark at all. So the unit is the position: anything bold or italic at the start
+  of a line is a label until the question below clears it. Take the fragment,
+  drop whatever punctuates it, and write the sentence whole.
   Then put ONE question to everything you collected, lines and fragments
   alike, and it is the question that decides, never a list. Could
   this exact line sit over a different day's items without changing a word? If it could, it is a
@@ -2142,15 +2219,11 @@ the rule's question to the thing in front of you.
   dismantles. This is the hedge rule above arriving one level up: the section
   noticed the comparison fails and the heading had already been written as
   though it held.
-  **This specimen is deliberately about nothing, and the reason is a heading
-  that printed.** A real one stood here until 2026-09-30, quoted from the
-  print that produced this rule, and the next print carried that heading
-  verbatim over the same self-dismantling body. The four slot names are quoted
-  in this file eight times and have never printed, because they are not about
-  any paper. A specimen drawn from material you are actually handed is not an
-  illustration of the answer, it is the answer, and holding it at the end of
-  the file does not change that. So no example in this gate names a real
-  result, and any example that does is a draft of your output.
+  **That specimen is deliberately about nothing, and it stays that way.** A
+  specimen drawn from material you could actually be handed is not an
+  illustration of the answer, it is the answer, and holding it at the end of the
+  file does not change that. No example in this gate names a real result, and
+  any example that does is a draft of your output.
   Where the body's real finding is that a comparison does not work, the heading
   says that. It is a finding, it is that day's, and it is more interesting than
   the false version.
@@ -2158,30 +2231,19 @@ the rule's question to the thing in front of you.
   against and not the heading the body simply is not about.** A heading that
   names a property is a claim about every item under it. Count the items in the
   section, then count the ones the heading actually describes, and the two are
-  the same number or the heading is rewritten from what is there. The print of
-  2026-10-05 headed its fell-behind section on the assumptions that let agents
-  run unchecked, and four things fell behind under it: one about an audit bound,
-  one about self-improvement, and two about robot manipulation benchmarks, which
-  are not assumptions about anything running unchecked. Nothing in the body
-  withdrew the heading and nothing contradicted it. The heading had been written
-  from the issue's own argument instead of from the section's items, which is
-  the one way a heading passes every other question on this gate, including
-  whether it would fit a different day, and is still wrong about the block it
-  sits on. The argument belongs in the opening. The heading belongs to its
-  items.
+  the same number or the heading is rewritten from what is there. A heading
+  written from the issue's own argument rather than from the section's items
+  passes every other question on this gate, including whether it would fit a
+  different day, and is still wrong about the block it sits on. The argument
+  belongs in the opening. The heading belongs to its items.
 
   Ask it of every line and every fragment you collected, because this failure
-  has now arrived seven times
-  in seven disguises, and each one walked past the check written for the one
-  before: a section heading ("Gaining traction"), a taxonomy word
-  ("Compounding"), a bold word over a group inside a section
-  ("**Replaced**"), an italic word over a numbered list ("*Procedure*"), a
-  bolded label welded to a sentence by a colon ("**The number that
-  matters:**"), a plain one that is not bolded at all ("For builders:"), and
-  the same bolded label welded by a full stop instead, four times in one
-  issue. The first four are lines, the next two are colon fragments, and the
-  seventh is why the collection step above stopped asking about punctuation at
-  all.
+  has arrived seven times in seven disguises and each one walked past the check
+  written for the one before: a section heading, a taxonomy word, a bold word
+  over a group, an italic word over a numbered list, a bolded label welded to a
+  sentence by a colon, a plain one not bolded at all, and the same label welded
+  by a full stop. The first four are lines, the next two are colon fragments,
+  and the seventh is why the collection step stopped asking about punctuation.
   The next one will wear a disguise that is not on any list, so a line that
   passes only because it failed to match a string has not been checked at all.
   A label is a label at any level and in any typeface, and the steps under one
@@ -2199,15 +2261,13 @@ the rule's question to the thing in front of you.
   copied it from here, and the fix is to write that heading again from the
   items underneath it.
   **Then search the prose for the same four ideas, because a slot name does not
-  need a heading to print.** This tripwire has always read the four headings and
-  the words got out through the sentences instead. The print of 2026-09-28
-  carries "The strongest compounding evidence this week sits on the boundary
-  between training and deployment" and "The genuinely new work this week tests
-  two different bets", which is two slot names used as adjectives in two section
-  intros. Neither is one of the four exact strings, so the tripwire above passed
-  both. Both tell the reader which internal bin the items were sorted into, and
-  the first one also narrates the ranking, which the owner ruled out on
-  2026-09-19.
+  need a heading to print.** The tripwire reads the four headings and the words
+  get out through the sentences instead. A section intro opening on the
+  strongest compounding evidence, or on the genuinely new work, is a slot name
+  used as an adjective. Neither matches one of the four exact strings, so the
+  tripwire above passes both, and both tell the reader which internal bin the
+  items were sorted into. Narrating the ranking is separately ruled out
+  (owner, 2026-09-19).
   So the check is the idea and not the string: no sentence in the issue says
   which of the four slots the material under it came from. The section's
   contents are the only argument it gets to make for itself. Say what the

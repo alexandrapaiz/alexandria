@@ -25,6 +25,29 @@ skills, memory, and the engineering stack of context, harness, and loop.
 [docs/curriculum.md](docs/curriculum.md) maps every layer to the exact place in
 this repo where it was learned.
 
+## Install the skills
+
+<!-- install-line:start -->
+
+In a Claude Code session:
+
+```
+/plugin marketplace add alexandrapaiz/alexandria
+/plugin install alexandria-skills@alexandria
+```
+
+That installs nine skills, and none of them loads until a session needs it.
+The standing cost is the nine descriptions, about 1,900 tokens.
+
+<!-- install-line:end -->
+
+Everything about the install, including what each skill decides and how far
+its evidence has actually been checked, is in
+[docs/product/install.md](docs/product/install.md). The two lines above are
+checked against the manifests they describe by
+`python3 tools/check_plugin_manifest.py`, so a count or a name that drifts
+fails rather than misleads.
+
 ## Architecture
 
 Both layers in one view, read top to bottom. The org proposes, the owner merges,
@@ -253,7 +276,7 @@ docs/sprints/             the weekly sprint, one file per sprint
 docs/backlog.md           the consolidated board, every seat's proposals in one order
 docs/board.md             the company board: the two doors onto it, and the API as it really answers
 tools/board.py            the board client every seat run uses on a GitHub runner
-tools/delivery_health.py  did the product reach a reader: the press, the pipeline, the deploy, the site, the MCP server
+tools/delivery_health.py  did the product reach a reader, and can a reader buy it: the press, the pipeline, the till, the checkout links, the deploy, the site, the MCP server
 site/app/api/delivery/    the delivery receipt the command above reads, public and needing no credential
 tools/graph_audit.py      the claim graph's quality, eleven metrics and a worksheet for the twelfth
 docs/ideas.md             the ideas ledger: agents append, only the owner writes verdicts

@@ -258,12 +258,48 @@ def test_run_payload_derives_everything_from_one_status():
                                    "body": "- the one line\n"})
     assert payload["seat"] == "engineer"
     assert payload["company"] == "alexandria"
-    assert payload["exit"] == "success"
+    assert payload["exit"] == 0
     assert payload["trigger"] == "schedule"
     assert payload["repo"] == "alexandrapaiz/alexandria"
     assert payload["run_url"] == "https://github.com/alexandrapaiz/alexandria/actions/runs/36366360908"
     assert payload["pr_url"] == "https://github.com/a/b/pull/127"
     assert payload["report"] == "the one line"
+
+
+def test_every_status_the_parser_accepts_becomes_a_number_or_nothing():
+    """The gate for the fault that made every run report fail.
+
+    `INC-2026-10-16-every-run-report-fails-on-a-string-where-the-board-wants-a-
+    number-and-the-error-blames-the-database`. The board stores `exit` as a
+    number and this file sent GitHub's word, so the one field the workflow
+    step exists to pass was the field the insert rejected, for every seat,
+    silently, inside a green job. This test is cheap, it runs on every pull
+    request, and it needs no board: a workflow vocabulary and a database
+    column drifting apart is exactly the class that no live probe will catch
+    until it is already in production.
+    """
+    for status in board.RUN_STATUSES:
+        payload = board.run_payload(ENV, Args(status=status), branch="b", pr=None)
+        assert isinstance(payload.get("exit", 0), int), (
+            f"--status {status} puts {payload.get('exit')!r} in the exit field, "
+            "and the board's column is a number"
+        )
+
+
+def test_a_skipped_job_files_no_exit_code_rather_than_a_zero():
+    """A job that never ran has no exit code, and 0 would read as a success."""
+    payload = board.run_payload(ENV, Args(status="skipped"), branch="b", pr=None)
+    assert "exit" not in payload
+
+
+def test_a_cancelled_job_is_not_filed_as_a_success():
+    payload = board.run_payload(ENV, Args(status="cancelled"), branch="b", pr=None)
+    assert payload["exit"] == 130
+
+
+def test_every_status_the_cli_accepts_is_one_the_map_knows():
+    """Adding a fifth word to one tuple and not the other is the same bug again."""
+    assert set(board.RUN_STATUSES) == set(board.EXIT_FOR_STATUS)
 
 
 def test_run_payload_names_the_branch_when_there_is_no_pull_request():
@@ -368,7 +404,7 @@ def test_comment_posts_the_body(live_board, capsys):
 def test_report_posts_one_run(live_board, no_git, capsys):
     assert board.main(["report", "--status", "success"]) == 0
     assert "reported r-1 for engineer" in capsys.readouterr().out
-    assert live_board["runs"][0]["exit"] == "success"
+    assert live_board["runs"][0]["exit"] == 0
     assert live_board["runs"][0]["seat"] == "engineer"
 
 
@@ -376,8 +412,31 @@ def test_report_dry_run_posts_nothing(live_board, no_git, capsys):
     assert board.main(["report", "--status", "failure", "--dry-run"]) == 0
     out = capsys.readouterr().out
     assert "would POST /api/runs" in out
-    assert json.loads(out.split("would POST")[0])["exit"] == "failure"
+    assert json.loads(out.split("would POST")[0])["exit"] == 1
     assert live_board["runs"] == []
+
+
+def test_a_report_carries_the_time_it_was_filed_even_with_no_clock_given(
+        live_board, no_git, capsys):
+    """Otherwise the run list prints `no time` against it.
+
+    Measured on the live board 2026-10-18: ordering there is by `started_at`,
+    which this command cannot observe, so this is about the row being legible
+    and not about where it sorts. The sort half needs `--started-at` from the
+    workflow and is filed in docs/ideas.md.
+    """
+    assert board.main(["report", "--status", "success"]) == 0
+    assert live_board["runs"][0]["ended_at"], "a report with no time sorts last"
+    assert "started_at" not in live_board["runs"][0], (
+        "a start time this command never observed would be a claim about "
+        "how long the run took"
+    )
+
+
+def test_an_explicit_end_time_wins_over_the_filing_time(live_board, no_git, capsys):
+    assert board.main(["report", "--status", "success",
+                       "--ended-at", "2026-10-18T01:02:03+00:00"]) == 0
+    assert live_board["runs"][0]["ended_at"] == "2026-10-18T01:02:03+00:00"
 
 
 def test_report_never_fails_the_run_when_the_board_refuses(live_board, no_git, capsys, monkeypatch):
@@ -385,6 +444,22 @@ def test_report_never_fails_the_run_when_the_board_refuses(live_board, no_git, c
     assert board.main(["report", "--status", "success"]) == 0
     assert "::warning::board:" in capsys.readouterr().out
     assert live_board["runs"] == []
+
+
+def test_a_rejected_body_is_an_error_annotation_and_still_exits_zero(
+        live_board, no_git, capsys, monkeypatch):
+    """Loud about this file's own bug, quiet about the board's bad minute.
+
+    The exit code stays 0 either way, because a red job for an unposted
+    report is the lie INC-2026-09-26-run-report-dash-echo told six times.
+    """
+    def refuse(*a, **kw):
+        raise board.BoardError("board said 422 to POST /api/runs: exit is a number",
+                               code=422)
+
+    monkeypatch.setattr(board, "api", refuse)
+    assert board.main(["report", "--status", "success"]) == 0
+    assert "::error::board:" in capsys.readouterr().out
 
 
 def test_a_write_that_is_not_a_report_does_fail_loudly(live_board, capsys, monkeypatch):
