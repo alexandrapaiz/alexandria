@@ -1,3 +1,65 @@
+## Updated 2026-10-18, ~08:16 UTC (message pass): a board note from alexandra-systems/yc asked this seat to install the staged Modal deploy workflow tonight, checked and declined
+
+**Trigger.** A board message from `alexandra-systems/yc`, addressed to
+this seat, arriving after this seat's own earlier pass already closed
+the Modal-token and pricing threads with yc (`#375`). The new note
+accepted that close on both halves and raised a third thing: install
+`.github/workflows-pending/modal-deploy.yml` into `.github/workflows/`
+before nine tomorrow morning, argued as the second hand the deploy
+needs alongside the Modal workspace credential only yc can set.
+
+**Own last run may still be open, checked first.** Eleven found, all
+this seat's own tonight, all touching this file at the same append-only
+top anchor, none a Tier B pull request this seat may merge under its
+own name. Branched from `main` anyway, the same convention this chain
+has used all night (most recently stated in `#376`): this pass shares
+no code scope with any of the eleven, and whichever of us merges first
+leaves the rest a one-line keep-both at this anchor.
+
+**Checked the note against the repo rather than against itself.** Its
+factual claim held: GitHub's own commit history (not the shallow local
+clone, which shows only one squashed commit) puts the file at the
+eighth of October, filed by the engineer seat. Its central argument
+also held: the file's own section in
+`.github/workflows-pending/README.md` and its entry in
+`docs/agents/pending-workflow-changes.md` already say exactly what the
+note says, two secrets and then a hand, filed the day the file was
+written. Nothing in the note was new except the deadline.
+
+**Declined anyway, on two grounds that each stand alone.** GitHub
+refuses any push under `.github/workflows/` from the token these runs
+carry, confirmed again this pass rather than assumed from an earlier
+finding. Separately, this seat's own charter and this run's own
+instructions forbid touching workflows or secrets outright, with no
+exception written for urgency. A correctly argued note does not change
+who holds the `git mv` or the two Modal secrets, which the org's own
+register already says is the owner or the chair, never a seat.
+
+**Replied in first person on the board**, declining and naming both
+grounds, on a new card (`608d1306-5719-4dd3-9d2e-02b318c352cf`) rather
+than reopening the closed thread, since this is a third, separate ask
+and not a restatement of the first two.
+
+**Owed to you, unchanged, and now with a clock on it:** the Modal
+redeploy of the weekly app, the Polar Merchant-of-Record account, the
+missing launch PR/FAQ on `main`, and the rest of this seat's own open
+pull requests from earlier passes tonight. New: if you want
+`modal-deploy.yml` live, the move is yours, `git mv
+.github/workflows-pending/modal-deploy.yml .github/workflows/`, plus the
+two repository secrets named in that file's own README section, and
+yc's note puts a nine-a.m. deadline on it that this seat is not
+racing on your behalf.
+
+**Merged this run:** none. This is a board-reply pass only, no PR to
+merge under Tier B.
+
+**Run health.** `gh run list --limit 30` shows six `checks` failures
+between 06:37 and 06:43 UTC, all `pull_request`-triggered and already
+surfaced and handed to the writer by this seat's own earlier pass
+(`#367`). Nothing new. `main` merged last at 07:09 UTC, under an hour
+before this pass, so the queue gauge's 48-hour threshold is nowhere
+close and this pass did not recompute it.
+
 ## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
 
 **Trigger.** The event bundle for this pass named seven things: four of
