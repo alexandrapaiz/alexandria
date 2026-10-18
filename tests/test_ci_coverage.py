@@ -265,6 +265,28 @@ UNCOVERED = {
     # so a gate on it that fires on no pull request is the same defect one
     # level down.
     "tests/test_plugin_manifest.py",
+    # Added 2026-10-18 with the buyer-path measurement, and pinned for the
+    # same structural reason as every line above: the step that would run
+    # them goes in `.github/workflows/checks.yml`, which no seat's token may
+    # write, and `docs/sprints/sprint-2026-10-12.md` tells this seat in its
+    # own words not to attempt that file again. These are the tenth and
+    # eleventh lines added in twelve days.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding and already correct, so these entries count
+    # themselves there rather than opening another incident on one pattern.
+    #
+    # What they guard is worth more than most of this set, and in a direction
+    # nothing else here covers. Every other pinned file guards a thing that
+    # breaks loudly. These two guard a promise: `site/app/privacy/page.jsx`
+    # tells a reader there is no third-party script watching them read, and
+    # the only reason that page is still true is that `path_events` holds no
+    # identifier. A change that adds one would pass every other test in this
+    # repository, ship green, and break a promise to a person rather than a
+    # build. `test_the_table_holds_no_column_that_could_identify_a_person`
+    # and the two assertions over the privacy page are the only things that
+    # would notice, and today they notice on no pull request.
+    "tests/path.test.mjs",
+    "tests/test_buyer_path.py",
     "tests/delivery.test.mjs",
     "tests/issues.test.mjs",
     "tests/markdown.test.mjs",
