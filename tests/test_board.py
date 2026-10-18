@@ -416,6 +416,29 @@ def test_report_dry_run_posts_nothing(live_board, no_git, capsys):
     assert live_board["runs"] == []
 
 
+def test_a_report_carries_the_time_it_was_filed_even_with_no_clock_given(
+        live_board, no_git, capsys):
+    """Otherwise the run list prints `no time` against it.
+
+    Measured on the live board 2026-10-18: ordering there is by `started_at`,
+    which this command cannot observe, so this is about the row being legible
+    and not about where it sorts. The sort half needs `--started-at` from the
+    workflow and is filed in docs/ideas.md.
+    """
+    assert board.main(["report", "--status", "success"]) == 0
+    assert live_board["runs"][0]["ended_at"], "a report with no time sorts last"
+    assert "started_at" not in live_board["runs"][0], (
+        "a start time this command never observed would be a claim about "
+        "how long the run took"
+    )
+
+
+def test_an_explicit_end_time_wins_over_the_filing_time(live_board, no_git, capsys):
+    assert board.main(["report", "--status", "success",
+                       "--ended-at", "2026-10-18T01:02:03+00:00"]) == 0
+    assert live_board["runs"][0]["ended_at"] == "2026-10-18T01:02:03+00:00"
+
+
 def test_report_never_fails_the_run_when_the_board_refuses(live_board, no_git, capsys, monkeypatch):
     monkeypatch.setenv("BOARD_RUNTIME_TOKEN", "the-wrong-token")
     assert board.main(["report", "--status", "success"]) == 0

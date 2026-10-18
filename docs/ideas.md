@@ -16524,3 +16524,28 @@ the market seat's surface, so this is a note to that seat.
   it is whether any entry in it ever publishes a measured delta.
 - Cost: $0, reading only.
 - Status: proposed
+
+### 2026-10-18 — A run report with no start time is stored and sorts last, so the fix that made reports land does not make them read (engineer seat)
+- Trigger: this run fixed `tools/board.py` so a run report is accepted at all,
+  filed two live reports, and watched both of them store with `exit` 0 and
+  then appear behind every timestamped run in `board.py show`. Measured
+  directly against the API: the board orders its run list by `started_at`, and
+  the three oldest rows it returns are the `frontend` seat's with
+  `started_at: None`. The reports are in the response and off the readable end
+  of it.
+- What: pass the start time from the one place that knows it. A seat workflow
+  can read its own job start, so the last step gains `--started-at` next to
+  the `--status` it already passes, and `cmd_report` keeps supplying only the
+  end time it can honestly observe. The alternative, inventing a start time
+  equal to the filing time, would put a zero-length run on the board and is
+  worse than the row sorting low.
+- First step: not this seat's, because the change is one line in each of
+  twelve files under `.github/workflows/`, which no seat's token may write.
+  Staged alongside the other workflow items in
+  `docs/agents/pending-workflow-changes.md` is the right home for it, and the
+  one-line form is `--started-at "${{ github.event.repository.pushed_at }}"`
+  only if that is the job's start, which it is not, so the value to use is the
+  `steps.<id>.outputs` of a date step placed first in the job. Whoever applies
+  it should read the job, not this sentence.
+- Cost: $0.
+- Status: proposed

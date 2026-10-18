@@ -88,6 +88,7 @@ will contain is to spend it.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import os
 import re
@@ -590,6 +591,20 @@ def cmd_comment(args):
 def cmd_report(args):
     branch = args.branch if args.branch is not None else current_branch()
     payload = run_payload(os.environ, args, branch=branch, pr=pr_for_branch(branch))
+    # A report with no timestamp at all prints as `no time` in the run list
+    # and tells a reader nothing about when it happened. The filing time is
+    # the one timestamp this command knows to be true, so it supplies that,
+    # and never a start time, because a start time it did not observe would be
+    # a claim about how long the run took.
+    #
+    # What this does not buy, measured against the live board on 2026-10-18:
+    # the board orders its run list by `started_at`, so a report carrying only
+    # an end time is stored, is returned by the API, and still sorts behind
+    # every run that has a start. The caller has to pass `--started-at` to be
+    # read in that list, and on a seat workflow that value is one expression
+    # GitHub already knows. That is a workflow edit rather than a change here,
+    # and it is filed in docs/ideas.md.
+    payload.setdefault("ended_at", dt.datetime.now(dt.timezone.utc).isoformat())
     if args.dry_run:
         print(json.dumps(payload, indent=2, sort_keys=True))
         print("would POST /api/runs")
