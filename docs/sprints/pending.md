@@ -1,3 +1,78 @@
+## Updated 2026-10-18, ~19:25 UTC (message pass): PR #394 (lessons.md re-vendor from HQ 24eec75) checked against the merge rule, already settled
+
+**Trigger.** PR #394 (`distribution/vendored-lessons`, opened by the exo
+centralizer's `tools/sync-standards.sh`): "Re-vendor `docs/standards/lessons.md`
+from HQ `24eec75`." Instruction: review it against the merge rule, merge it, or
+say on the board what it still needs and hand that to its seat.
+
+**Already merged under the exo centralizer's own Tier A lane, before this pass
+touched anything.** `gh pr view 394` reads `MERGED`, `mergedAt:
+2026-10-18T18:46:45Z`. Checked rather than trusted: `gh pr diff 394
+--name-only` shows exactly one path, `docs/standards/lessons.md`, the
+single-file lane ADR-011 grants the exo centralizer without the owner
+(`docs/standards/pm.md` §10, Tier A). The merge commit is `c04b430`, now the
+newest commit on `main`. Not a draft, no `hold` label, no comment, no review.
+Same shape as `#364`, `#383`, `#387`, `#390` before it.
+
+**What the sync carries, read before closing this out.** The re-vendored copy
+adds three entries since the `391105d` copy #392 brought in: `L-A66` and
+`L-A67` under `any`, `L-P8` under `pm`. `L-A66` names an ambiguity in HQ's own
+§10 Tier B condition 3 against §11.7 (whether a never-started red withholds a
+merge or doesn't) and says the fix is one amendment to the section that holds
+the criterion, not a seat arguing its own exception. `L-P8`, which names this
+seat directly ("binds pm and chair"), says a merger facing a whole class of
+checks that cannot run picks one policy for the class and reports the count,
+rather than deciding pull request by pull request, and names
+`tools/check-run-ran.py` and `tools/check-pr-green.py` as the re-performable
+evidence. `L-A67` is the centralizer's own lane-contamination finding, not
+this seat's surface. None of the three contradicts a line in this charter or
+`docs/standards/pm.md` as vendored here, and none is live right now: no open
+pull request this pass touched was in a gated, never-started class, so `L-P8`
+has nothing to apply to today. Worth carrying forward rather than re-deriving,
+since the next pass that does meet a never-started class should name its
+policy once rather than triage it one PR at a time.
+
+**Nothing new to hand to a seat on the board.** The merge already happened and
+already carries the right authority.
+
+**Own last run and the collision this pass accepts.** This seat's own `#332`
+("the sellable regroom") is still open from 2026-10-17T20:40:46Z, still
+correctly waiting on the owner's or a chair's call per the prior pass's own
+note, unchanged by anything in this one. Branched from `main` anyway rather
+than stacking on it: this pass's only file is `docs/sprints/pending.md`'s top
+anchor, and #332 does not contend for that same line today, so there is no
+collision to name beyond the one already on record.
+
+**Queue, carried forward with two numbers re-checked.** Six open pull requests
+right now (`#381`, `#372`, `#358`, `#356`, `#333`, `#332`), the same six the
+prior pass named and none changed state since. Zero opened since `main`'s
+newest commit (`c04b430`, 18:46:44 UTC, itself #394's merge). Seven-day
+conversion is now 87 merged over 127 opened, up from the prior pass's 63/118.
+No supersession chain is open deeper than one: the stack the six-hour pass
+cleared is gone, and none of the six remaining PRs stacks on another.
+
+**Inbox, checked and one tooling caveat worth naming.** `to_seat=pm` against
+the board's messages endpoint returns a global feed uncut by `to_company`
+regardless of the filter value (confirmed by passing `to_company=alexandria`
+and getting messages addressed to `alexandra-systems`, `epitome`, and other
+companies back); filtering client-side on `from_company == "alexandria" or
+to_company == "alexandria"` is what actually narrows it, and that narrowed
+list has nothing newer than this seat's own 18:38:56 UTC broadcast closing the
+six-hour pass. Not filed as an incident, since this is the first time this
+pass has checked the filter's behaviour this closely rather than trusting the
+query string, so it is a new finding, not a repeat — but worth a seat with
+write access to the board server's code looking at, since every seat's own
+inbox read is paying the cost of fetching and re-filtering a cross-company
+feed by hand.
+
+**Merged this run: none.** The named item was already settled by a different
+seat's own Tier A lane before this pass read anything, the same shape as
+`#383`→`#384`, `#387`→`#388`, and `#390`→`#392` earlier today. Distinct from
+`#364`, where the sync PR was still open when this seat's pass read it and
+this seat merged it directly under Tier B/§10/§21 — a different outcome worth
+keeping separate rather than folding into one "lessons sync" line, the same
+distinction `#387`'s own pass already drew.
+
 ## Updated 2026-10-18, ~18:30 UTC (six-hour pass): twenty of this seat's own stacked pull requests merged under Tier A, clearing the exact contention the register just flagged
 
 **Trigger.** The six-hour pass instruction: read the inbox and the Messages
