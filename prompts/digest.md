@@ -549,8 +549,8 @@ And no colon. The shape the mark makes here is a short label, then the finding
 explained behind it, which spends the half of the line the reader actually gets
 on a signpost to the other half. No specimen is quoted, because this is the
 position where the title gets written. The repair is the one the heading rule
-below already names: delete everything to the left of the colon and the colon
-with it, and check whether what is left is the title. It almost always is.
+below already names: strike the label and the colon, and check whether what is
+left is the title. It almost always is.
 
 **A title the library has already used is not a title (owner's ruling,
 2026-10-04, in her words "two issues should never have the same title. thats a
@@ -1169,14 +1169,12 @@ is now recommending things is the act describing itself, and it would have
 fitted every issue ever sent.
 **No heading is drafted for you here, and that includes a good one.** A phrase
 quoted inside the slot the model writes into is not a prohibition, it is the
-nearest available draft, and that is as true of a recommended shape as of a
-forbidden one. A counted noun and a preposition is a frame, so "Three papers for
-anyone", "Four reads if you", "Two papers worth" and every variation of them are
-furniture, and the heading is built from the papers instead.
-The slot's internal name is not a candidate and is not repeated here, because
-a forbidden phrase quoted inside the slot the model writes into is not a
-prohibition. It is the nearest available draft. The heading gate at the end of
-this file holds the four names.}
+nearest available draft, and that holds for a recommended shape, a forbidden one
+and the slot's own internal name alike, so none of the three is written down
+here. A counted noun and a preposition is a frame, so "Three papers for anyone",
+"Four reads if you", "Two papers worth" and every variation of them are
+furniture, and the heading is built from the papers instead. The heading gate at
+the end of this file holds the four names.}
 
 {Chosen, never listed. Print the papers you would actually tell a builder to
 spend an hour on, which on a rich day is a handful and on a thin day is one or
@@ -1824,9 +1822,8 @@ the rule's question to the thing in front of you.
   title included. The target is zero and there is no budget. The construction to
   look for is a slot name, then a colon, then the day's news, which the heading
   rule spends a paragraph forbidding and which has taken three headings out of
-  five in one issue. The fix is the rule's own: delete everything to
-  the left of the colon and the colon with it, then check whether what is left
-  is the heading. It almost always is.
+  five in one issue. The fix is the one named above: strike the label and the
+  colon, and check whether what is left is the heading.
   **An eighth count, for the number with nothing to measure it against,
   because the rule is above and the one place it failed is the one place it is
   expensive.** Go through the issue's figures and count the ones with no
