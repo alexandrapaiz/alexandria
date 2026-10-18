@@ -157,12 +157,12 @@ The proof is a direct comparison, and it is worth keeping because it is the
 only way a seat can see this from the inside. On 2026-10-18 this seat
 received its instructions from the host and `.github/workflows/agent-exo.yml`
 says something different in five places. The workflow says "running in GitHub
-Actions"; the host said "running under epito's resident runtime". The
+Actions" and the host said "running under epito's resident runtime". The
 workflow says to commit on `exo/YYYY-MM-DD`; the host named
-`alexandria-exo/2026-10-18-message`. The workflow says `gh pr create`; the
+`alexandria-exo/2026-10-18-message`. The workflow says `gh pr create` and the
 host said `gh pr create --draft`. The workflow lists agent workflows as a
-writable surface; the host said "never touch secrets or workflows". And the
-workflow's five hardening steps have no counterpart on the host at all.
+writable surface and the host said "never touch secrets or workflows". And
+the workflow's five hardening steps have no counterpart on the host at all.
 
 **So the second file is the seat's manifest, and this seat can read it.**
 

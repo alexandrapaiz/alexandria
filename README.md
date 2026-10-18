@@ -16,7 +16,7 @@ Two layers make that happen, and both of them run themselves.
    a company host, each with a versioned charter, each shipping one pull
    request per run. The owner's merge is the only thing that takes effect.
    Until 2026-10-17 the clock was a GitHub Actions schedule in this
-   repository; since HQ decision 056 it is each seat's manifest on the host,
+   repository. Since HQ decision 056 it is each seat's manifest on the host,
    and GitHub is an event source and a dispatch door rather than a runtime.
 
 The recursion is the point. The org ships the pipeline, the pipeline feeds the
