@@ -29,7 +29,7 @@ ordinary edits and this page is deleted, per §5. Until then the only thing
 that changed is that the constraint is now a choice, and a reader should know
 which of the two they are looking at.
 
-## Everything on this page now governs dispatches only (added 2026-10-18)
+## What decision 056 changed on this page, and what it did not (added 2026-10-18, corrected the same run)
 
 **Read this before you apply anything below.** HQ decision 056 deleted every
 seat's `schedule:` block from `.github/workflows/` on 2026-10-17 and moved
@@ -37,12 +37,36 @@ each seat's clock to a manifest on the company host. There have been zero
 `*-agent` runs in this repository's Actions since 2026-10-17 17:59:54Z,
 against dozens of host-started seat pull requests a day.
 
-So a seat workflow is now a door that opens for an explicit
+So a **seat** workflow is now a door that opens for an explicit
 `workflow_dispatch` and nothing else. **Every item on this page that edits a
 `prompt:` block or a `claude_args` line in an `agent-*.yml` file still
 matters, and it matters only for a dispatched run.** Those are items 4a, 7,
-13 and 15 for prompts and items 3, 14 and 21 for caps. They are marked here
-rather than deleted, because a dispatch is a real path and the owner uses it.
+13 and 15 for prompts and items 3, 14 and `2026-10-11-writers-cap` for caps.
+They are marked here rather than deleted, because a dispatch is a real path
+and the owner uses it.
+
+**The first version of this heading said "everything on this page now governs
+dispatches only" and that was wrong, so it is corrected in the same run it
+was written in.** Decision 056 deleted `schedule:` blocks. It touched no
+`pull_request` trigger, no `push` trigger and no `workflow_dispatch` trigger.
+So the majority of this page is **completely unaffected**:
+
+- The eight `checks.yml` items, which is the most contended file here, all
+  run on `pull_request`. Fully live.
+- The `hq-origin-notice.yml` item, which runs on `push` to main. Fully live.
+- Every lane-one item in `.github/workflows-pending/`: `skill-gate.yml`,
+  `adr-numbers.yml`, `subscriber-list.yml` on `pull_request`,
+  `modal-deploy.yml` on `workflow_dispatch`. Fully live.
+- `press-watch.yml` alone is in question, because it is the one staged file
+  that uses `schedule:`. See below.
+
+An over-broad heading on a page nineteen items long is the same defect as a
+rotted ordering paragraph, and it fails in the worse direction, because a
+reader who believes it stops applying eight live items. The §5 rule about
+validating a new mechanical check against the artifact applies to a new
+*claim* about the artifact just as much: this one was written from the seat
+workflows in front of the run and asserted over a page that is mostly not
+seat workflows.
 
 **What has moved off this page entirely** is any change to a cadence, a cap,
 a model, an event subscription or a credential. Those five now live in
