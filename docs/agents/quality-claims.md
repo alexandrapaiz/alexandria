@@ -109,13 +109,52 @@ from the receipt says which run measured it. Never both.
 | "every finding in it carries its evidence" | `site/app/page.jsx:40` | the `claims`-to-`papers` foreign key, and the provenance block on every skill | **held** | every claim row has a paper. This one is sound and worth saying plainly |
 | "replaced when newer work overturns it" (findings) | `site/app/page.jsx:40` | `pipeline/weekly.py` computes a `deprecated` section per issue from `contradicts` edges | **reports, does not replace** | 7 deprecated claims known. The issue tells the reader. Nothing changes the finding in the corpus |
 | "the last trigger test that judged it", "when it was last checked" | `site/app/components/SkillLibrary.jsx`, `site/lib/skill-provenance.js` | `skills/_validation/trigger_test.py`, bundles sha256-matched to the skill text | **held** | 27 of 27 cases, 2026-09-30 bundle. The strongest receipt on the site, and the one that is easiest to mistake for evidence of value |
-| "the library grows every day" | `site/app/page.jsx:40` | the daily distill cron | **contradicted**, moved from `held` 2026-10-11 | `claims_newest` 2026-10-07T15:15Z against `observed_at` 2026-10-11T18:50Z, so 4.1 days with no new claim, and `distill_pending` 2,132. Measured by the ExO seat from the delivery receipt. Previously `held` on 846 claims at 2026-09-29 |
+| "the library grows every day" | `site/app/page.jsx:40` | the daily distill cron | **contradicted**, moved from `held` 2026-10-11, **gap narrowing** | re-measured 2026-10-18T12:07:22Z: `claims_newest` 2026-10-17T15:16:05Z, so 0.87 days with no new claim, against 4.1 days a week ago. `distill_pending` 2,559, up from 2,132. The gap closed and the backlog grew, which is the distill job running again without catching up |
+| **"Each week the library becomes an issue"** | `site/app/page.jsx:40`, `site/app/library/page.jsx:29`, `site/app/llms.txt/route.js:10`, `site/app/pricing/page.jsx:29` and `:39` | `pipeline/weekly.py` on its Modal schedule | **contradicted** | first measured 2026-10-18T12:07:22Z: `press.newest_week` is `2026-W40`, `created_at` 2026-10-05T09:01:04Z, so **13.1 days since the last issue and one scheduled issue missed**. The `weekly` app reported at 2026-10-12T09:00:07Z and produced no row, which is `INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue`. Next due 2026-10-19 09:00Z |
+
+## The row this register promised itself and did not have, added 2026-10-18
+
+The field map above has said "an issue ships every week → `press.newest_week`"
+since 2026-10-11. **There was no such row in the table.** The register named
+the claim shape, named the field that measures it, and had no row to put the
+number in, for seven days.
+
+That is this page's own founding pattern turned inward. The whole argument
+for the register is that the org had seats checking copy against taste and no
+seat checking a claim against a mechanism. Here the mechanism was named, the
+measurement was free, and the claim was on **five** public surfaces including
+the pricing page, which is the one page where a reader is being asked for
+money. `grep -rniE 'every week|weekly' site/app/ site/emails/` finds them in
+one second and no run had ever run it.
+
+So the sweep in `prompts/exo-agent.md` §3g gains a fourth step, and it is the
+cheapest of the four. **Read the field map against the table.** Every claim
+shape the map can measure needs a row, or the map is describing a capability
+the register does not use. The two halves are both on this page and nothing
+had ever read one against the other, which is word for word the sentence this
+page already used about itself on 2026-10-11 regarding the growth row. Twice
+in eight days is a pattern rather than an oversight, and the pattern is that
+**a register with a method section and a data section grows a gap between
+them**, because a run reading for claims reads the table and a run reading for
+numbers reads the map.
 
 ## What this table says as a whole
 
-Eleven claims. Three hold. Two are contradicted by our own measurement. Four
-have no mechanism at all. Two are waiting on code that is written and not
-merged.
+Twelve claims, recounted 2026-10-18. **Two hold.** Three are contradicted
+outright by our own measurement and two more are contradicted on their
+universal reading. Three have no mechanism at all. One is waiting on code
+that is written and not merged, and one reports a problem instead of acting
+on it.
+
+**This paragraph said "three hold" until today, and it had been wrong since
+2026-10-11**, because the run that moved the growth row out of `held` updated
+the row and not the count. That is the third instance in eight days of the
+same gap, after the growth row's stale number and the missing weekly row, and
+all three are the same mechanism: this page has a method half and a data half
+and a summary that counts the data half, so a run editing one of the three
+does not see the other two. The fix is the fourth step added to §3g above,
+and the fix for this specific sentence is to recount from the table every run
+rather than to adjust it.
 
 And the distribution is not random. **Every claim that holds is about the
 corpus, and every claim that fails is about the skills.** The library's
