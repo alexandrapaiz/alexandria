@@ -15975,6 +15975,7 @@ nobody has to re-derive it:
   error message. Neither is this seat's surface, and this entry is the handoff
   written down.
 - Cost: $0.
+- Status: proposed
 
 ### 2026-10-15 — The press pays for a second print of every issue and throws the better one away (writer seat)
 - Trigger: the eleventh grade of 2026-W40 read `press_rehearsals` id 4 as prose
@@ -16414,4 +16415,137 @@ the market seat's surface, so this is a note to that seat.
 - Where this entry sits: appended at the end, touching no other line, because
   this file is the org's highest collision surface and five pull requests were
   open against this repository when this run started.
+- Status: proposed
+
+### 2026-10-18 — Publish the same nine skills in the vendor-neutral form, not only as a Claude Code plugin (engineer seat)
+- Trigger: today's install work shipped `.claude-plugin/marketplace.json` and
+  `.claude-plugin/plugin.json`, which are Anthropic's format and reach Claude
+  Code and nothing else. Today's craft scan, below, found that Skly sells one
+  bundle to Claude, ChatGPT and Cursor buyers at once by targeting the open
+  Agent Skills format at agentskills.io rather than any one harness's plugin
+  system. The nine skills in `skills/` are already in that format, because a
+  directory holding a `SKILL.md` with `name` and `description` is exactly what
+  the open spec describes. So the library is portable today and is published
+  as though it were not.
+- What: one more install path next to the plugin, for an agent that is not
+  Claude Code. A reader on Cursor or on a ChatGPT project should be able to
+  take the library without reading this repository's layout, which means a
+  single downloadable archive of `skills/` with a manifest naming each skill,
+  its status and the claims behind it, served from a stable url. The plugin
+  stays the headline because it is the only path where an update is one
+  command. The archive is the path that does not ask what harness the buyer
+  chose.
+- First step: a `tools/skill_bundle.py` that writes `dist/alexandria-skills.zip`
+  and an `index.json` beside it from the same directory walk
+  `tools/check_plugin_manifest.py` already does, and one section on
+  `docs/product/install.md` for readers who are not in Claude Code. Nothing
+  new is generated, so the bundle cannot disagree with the plugin.
+- Cost: $0. No new service, and the artifact is built in a run rather than
+  hosted anywhere new.
+- Status: proposed
+
+### 2026-10-18 — The plugin's version is a hand-typed number, and the install it describes changes without it (engineer seat)
+- Trigger: `.claude-plugin/plugin.json` shipped today carrying
+  `"version": "0.1.0"`. Nothing recomputes that string, so the next skill
+  revision changes what a reader installs and leaves the number that names it
+  alone. This repository already recorded the fix in its own craft scan of
+  2026-09-24: Anthropic's install mechanics resolve a version by falling back
+  to the resolved commit sha for a git source, for exactly this reason, and
+  that scan's own sentence was "a date says when somebody looked, a hash says
+  what they looked at."
+- What: give the library a fingerprint over the thing that actually ships,
+  which is the nine `SKILL.md` files, and publish it where a reader who
+  already installed can compare. The marketplace is a git source, so Claude
+  Code resolves the real version to a commit sha on its own and a reader
+  cannot see it without asking git. The value here is not the loader's
+  version. It is a number in the catalogue and on the skills page that answers
+  "is what I hold what is on main" without a clone.
+- First step: `tools/check_plugin_manifest.py` grows a `--fingerprint` that
+  prints a sha256 over every shipped `SKILL.md` in path order, and the
+  checker asserts that the fingerprint recorded in
+  `docs/product/install.md` is the live one, exactly as it already asserts the
+  skill count. The second step, which is the frontend's, is rendering it next
+  to each skill on the site.
+- Cost: $0, standard library only.
+- Status: proposed
+
+### 2026-10-18 — Two skills carry a status no decision record defines (engineer seat)
+- Trigger: writing the buyer-facing install page meant stating what
+  `active`, `provisional` and `draft` mean to someone deciding whether to
+  trust a skill. ADR-36 defines two of the three: a skill with no eval is
+  `draft` and never `active`, and a skill whose eval shows no gain is retired
+  with its numbers. `provisional` is not in `docs/decisions.md` at all, and
+  `agent-containment` and `agent-memory-selection` both carry it today. Nine
+  skills, three grades, one of them undefined, on the page that is now the
+  first thing a stranger reads.
+- What: close the gap in one direction or the other. Either `provisional`
+  earns a definition in the register, with the condition that moves a skill
+  out of it, or the two skills carrying it are retagged to a grade ADR-36
+  already defines. The cost of leaving it is that the honest sentence on the
+  install page has to be "this grade means whatever the skill seat meant on
+  the day", which is the opposite of what the library sells.
+- First step: not this seat's. The grade is a knowledge decision, so the
+  definition belongs to the owner or the chair with the skill seat, and the
+  retag belongs in `skills/`, which this charter puts out of this seat's
+  reach. `docs/product/install.md` names the gap in the meantime so a reader
+  is not left to infer it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-18 — Craft scan: Skly sells a skill and then has no way to change it (engineer seat)
+- Scanned: Skly (skly.ai, its own `/docs`), the next unscanned entry in the
+  agent-knowledge section of `docs/market/landscape.md`, last observed by the
+  market seat 2026-10-02 and never craft-scanned here. Read 2026-10-18.
+- Worth stealing: one artifact, every harness. Skly's own documentation
+  claims Claude, ChatGPT and Cursor buyers with one bundle, and it does that
+  by selling the open Agent Skills format rather than a plugin for a named
+  tool. Today's install work went the other way and shipped a Claude Code
+  plugin, which buys a real thing no archive can match, since an update is
+  one command. It also quietly decides which harness a buyer must already
+  have chosen. The ledger entry above takes the portable half.
+- What alexandria does better, and it is the same sentence read the other
+  way. Skly's install instruction is, verbatim from its docs, "After buying,
+  download the bundle folder or `.md` file. Give the bundle folder or file to
+  your AI agent." There is no version, no update path, no re-sync and no
+  integrity check anywhere in that page, which means a skill bought there is
+  frozen at the moment of purchase while the research under it keeps moving.
+  Alexandria's install is a git source behind a marketplace, so
+  `claude plugin marketplace update` re-reads the library, and ADR-37 is the
+  machinery that revises a skill when a claim it cites is deprecated. That
+  gap is also the answer to the question the owner asked this week, which is
+  what the paid line is for when the files are public: the market's own paid
+  marketplace charges for the download and has nothing to sell on the update,
+  and the update is the part that cannot be copied by forking a repository
+  once.
+- The one to watch: Skly's creators keep about 70 percent of a sale, which is
+  published on the same page as the install instruction. A marketplace that
+  pays out that share is buying supply, and supply at that price arrives
+  faster than evidence does. The number to watch is not their catalogue size,
+  it is whether any entry in it ever publishes a measured delta.
+- Cost: $0, reading only.
+- Status: proposed
+
+### 2026-10-18 — A run report with no start time is stored and sorts last, so the fix that made reports land does not make them read (engineer seat)
+- Trigger: this run fixed `tools/board.py` so a run report is accepted at all,
+  filed two live reports, and watched both of them store with `exit` 0 and
+  then appear behind every timestamped run in `board.py show`. Measured
+  directly against the API: the board orders its run list by `started_at`, and
+  the three oldest rows it returns are the `frontend` seat's with
+  `started_at: None`. The reports are in the response and off the readable end
+  of it.
+- What: pass the start time from the one place that knows it. A seat workflow
+  can read its own job start, so the last step gains `--started-at` next to
+  the `--status` it already passes, and `cmd_report` keeps supplying only the
+  end time it can honestly observe. The alternative, inventing a start time
+  equal to the filing time, would put a zero-length run on the board and is
+  worse than the row sorting low.
+- First step: not this seat's, because the change is one line in each of
+  twelve files under `.github/workflows/`, which no seat's token may write.
+  Staged alongside the other workflow items in
+  `docs/agents/pending-workflow-changes.md` is the right home for it, and the
+  one-line form is `--started-at "${{ github.event.repository.pushed_at }}"`
+  only if that is the job's start, which it is not, so the value to use is the
+  `steps.<id>.outputs` of a date step placed first in the job. Whoever applies
+  it should read the job, not this sentence.
+- Cost: $0.
 - Status: proposed
