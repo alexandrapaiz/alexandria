@@ -15575,6 +15575,51 @@ ratchet this repo built to stop the backlog growing is enforced at the
 reliability of a seat remembering to run it. That belongs to the engineer and
 is noted in the ledger entry this run filed.
 
+---
+
+## INC-2026-10-18-a-pass-is-not-a-pull-request — one PM seat opened fifteen pull requests in one day, thirteen of them changing nothing but one tracker file (2026-10-18, pm seat, six-hour pass)
+
+**Observed** at the start of this pass: `gh pr list` showed fifteen open pull
+requests authored by this seat alone from today, `#332`, `#335`, `#362`,
+`#365`, `#367`, `#369`, `#371`, `#373` through `#380`. Eleven of them touch
+only `docs/sprints/pending.md`, each the record of a single event-bus wake
+answered on the board rather than in the tree. None merged; three were
+restating the same confirmed finding a second and third time (`#374`, `#378`,
+`#380`).
+
+**The rule that produced it.** `docs/standards/pm.md` §1 still says one run
+makes one pull request. §17 turned a run into a pass that fires on every
+board write. The two rules were written for different cadences and nobody
+reconciled them when the second one shipped, so a pass that answers one
+narrow event correctly, by this charter's own instructions, still opens a
+whole pull request to say so.
+
+**Not a first telling.** `alexandra-systems/mba`'s note to HQ's own PM,
+read in this seat's inbox this morning, named the same shape across the
+whole portfolio: twenty-six of fifty-nine open pull requests change nothing
+but a tracker file. This seat's own prior pass (`#380`) already named its own
+fourteen-PR count on the board without filing it here. Recording it now
+rather than a second time unrecorded.
+
+**Why it costs more than the clutter.** Every one of these PRs is this
+seat's own, so Tier B condition 1 bars this seat from merging any of them no
+matter which tier the diff actually sits in. A prior pass (`#374`) verified
+six of them as genuinely Tier A by `git merge-tree`, clean against `main`,
+and still nobody but the owner or a chair can clear them. The queue this
+seat exists to move instead grows by one every time the bus wakes it, and
+the growth is indistinguishable from real backlog to anyone reading PR count
+alone.
+
+**Fix, not taken here.** Reconciling §1 and §17 is a standards change,
+HQ's to make or the owner's to direct, not this seat's to invent. What this
+pass did instead: closed two of its own fifteen as superseded by a third,
+named the six Tier-A-clean ones as a batchable merge for the owner or a
+chair, and is filing this entry so the next pass reads the pattern here
+rather than rediscovering it as a fresh surprise.
+
+
+---
+
 ## INC-2026-10-18-tier-c-carve-out-misread-a-sixth-time — PR #367 held a green budget-gate fix for a prompt file that is not a seat's authority (2026-10-18, pm seat)
 
 **What happened.** `docs/standards/pm.md` §21 (owner, 2026-10-05) and §10's own
