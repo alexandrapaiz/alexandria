@@ -99,8 +99,8 @@ upstairs.
 
 ## The candidates
 
-One per slot, not three. Nothing here is a hedge of the sentence it replaces;
-in every case the claim is dropped and the slot's job is carried by something
+One per slot, not three. Nothing here is a hedge of the sentence it replaces.
+In every case the claim is dropped and the slot's job is carried by something
 that can be checked. That is canon law 15's rule and ban list 50's, and the
 reason both insist on it is that a concession reads careful and leaves the
 falsehood standing.
@@ -158,20 +158,32 @@ Now:
 
 Candidate:
 
-> Every skill names the papers it came from and when it was last checked
+> Every skill names the papers behind it
 
-The slot's job is the promise that what the reader buys does not quietly go
-stale. Today nothing in the org can keep that promise, because zero revisions
-have ever fired, so the slot moves from the promise to the receipt. The receipt
-is real and it is measured: the claims register records "the last trigger test
-that judged it" and "when it was last checked" as **held**, at 27 of 27 cases on
-the 2026-09-30 bundle, and calls it the strongest receipt on the site.
+The slot's job was the promise that what the reader buys does not quietly go
+stale, and today nothing in the org can keep that promise, because zero
+revisions have ever fired. So the slot carries a smaller claim that holds
+rather than the same claim softened. The claims register records "every finding
+in it carries its evidence" as **held**, and says of it that it "is sound and
+worth saying plainly".
 
-One caution rides with this candidate, from that same row, and it is the reason
-the bullet says "names" and "checked" rather than anything stronger. A date is
-evidence that somebody looked. It is not evidence that the skill is good, and
-the register warns that this receipt is the easiest one on the site to mistake
-for evidence of value.
+Two things were considered for this bullet and rejected, and both are worth
+writing down because the next round will reach for them.
+
+The date was in an earlier draft of this candidate: "and when it was last
+checked". It is true, it is the strongest receipt the site has, 27 of 27
+trigger cases on the 2026-09-30 bundle, and the register that records it also
+warns that it is the easiest receipt on the site to mistake for evidence of
+value. In a pricing tier, beside a price, a buyer reads a date as a quality
+measure. That is ban list 124's family, provenance standing where a
+measurement belongs, and the resemblance was close enough to drop it. The
+difference from 124 is real, because that entry is about a slot whose job is to
+state a limitation, and this is a selling line. The resemblance is also real,
+and a selling line is the worse place to be wrong.
+
+Dropping the forward promise entirely was the other option, and it is not a fix
+by deletion for once, because the element survives on the same page in the one
+form that is honest about it: "Routines, once they ship".
 
 ### 4. The billing note
 
@@ -187,14 +199,19 @@ Now:
 
 Candidate:
 
-> Nothing is charged yet, because the paid plans are not open. When they open, a
-> subscription renews automatically unless you choose the other way, which is to
-> let it stop at the end of each month until a reminder arrives and you say yes.
-> Many subscription businesses count on being forgotten, and we would rather
-> earn the renewal than collect it.
+> Nothing is charged yet, because the paid plans are not open. When they open
+> you will choose how your subscription behaves. It can renew automatically, or
+> it can stop at the end of each month until a reminder arrives and you decide
+> to continue. Many subscription businesses count on being forgotten, and we
+> would rather earn the renewal than collect it.
 >
 > Payment and invoicing will run through Polar, the seller of record, which
 > handles tax wherever you are. Your card details never reach this site.
+
+Her two sentences are kept word for word and one sentence is added in front of
+them, because the defect here is the tense and not the craft. A copy round that
+rewrites a sentence it was only asked to re-date has spent the owner's attention
+on a change nobody needed.
 
 The form is copied from `site/app/routines/page.jsx` rather than invented, since
 that page is the one the writer charter names as the house hedge: state the
@@ -250,3 +267,36 @@ Both are named here rather than noted a fifth time.
   those two, which is that the fact is not the selling point.
 - `docs/agents/quality-claims.md`, the table above.
 - `docs/agents/copy-pipeline.md`, read once before this round.
+
+## The blocks this round quotes, re-read against the laws the quoting verdict was not about
+
+The canon's rule of 2026-10-14. Every block extracted above was put to the laws
+the verdict that extracted it was not about, since the extracting is the
+expensive part and it has already been done. Three results, and one of them is
+a clean close rather than a finding.
+
+**The intro's "in the same files you read and your agents load" survives law
+15.** It was quoted for the routines clause at the end of the same sentence, and
+the word "read" in it is exactly the word law 15 fixes. The law's subject is the
+library, and its ruling is that the arriving count never gets a verb of reading.
+Here the subject is the builder, reading a file she is holding. Her ruling of
+2026-09-29, never "read" for ingested, is about papers. So the word stands, and
+it is noted because it is the kind of line a grep-shaped check would fail and a
+reading would clear, which is ban list 87.
+
+**The free tier's bullets survive law 3 and the outsider test.** They were
+quoted for the claims pass. Nothing in them is recipe, nothing is a term of art,
+and "back issues" is the plainest available word for the thing. The candidate
+adds no vocabulary a stranger has to be taught.
+
+**The billing block does not survive its own second paragraph, and that is a
+finding the claims table understates.** It was quoted for the renewal promise.
+Read again for law 3, the sentence "Payment and invoicing run through Polar,
+which is the seller of record and handles tax wherever you are" is the page's
+only paragraph about an outside company's plumbing, and the reason it earns its
+place is that it answers a real worry about where a card number goes. That
+reading holds. What does not hold is the pairing: a paragraph that reassures a
+reader about a payment processor sits under a paragraph that tells her how her
+subscription behaves, on a page where no subscription can be bought. The two
+paragraphs are a billing section for a product that does not take money yet, and
+the candidate's first sentence is what makes both of them honest at once.
