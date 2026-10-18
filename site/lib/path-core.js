@@ -94,15 +94,27 @@ const NEVER = [
 export function isCounted({ method = "GET", pathname = "", headers = null } = {}) {
   // A HEAD is a probe and a POST to a form is not a page view. GET only.
   if (String(method).toUpperCase() !== "GET") return false;
-  if (!pathname.startsWith("/")) return false;
+  // The raw value is checked for the one thing normalising would hide, which
+  // is a value that is not a path at all. `normalizePath` prepends a slash to
+  // be forgiving about how a caller spells a route, and that forgiveness must
+  // not turn `https://elsewhere.example/x` into a counted page.
+  if (!String(pathname).startsWith("/")) return false;
   if (isPrefetch(headers)) return false;
+
+  // Normalised before the two tests below, and this is not a tidy-up. The
+  // asset test reads the last segment for a dot, and a query string lives in
+  // the last segment: `/pricing?email=ada@example.com` ends in a dot-bearing
+  // segment and was refused as an asset until tests/path.test.mjs caught it.
+  // Middleware passes `nextUrl.pathname`, which carries no query, so the
+  // defect was invisible from the one caller and live for every other.
+  const path = normalizePath(pathname);
   for (const prefix of NEVER) {
-    if (pathname === prefix || pathname.startsWith(prefix + "/")) return false;
+    if (path === prefix || path.startsWith(prefix + "/")) return false;
   }
   // An extension in the last segment is an asset the matcher in
   // site/middleware.js already excludes. Checked here too, because the two
   // files are edited by different hands and this one is the one under test.
-  const last = pathname.split("/").pop() ?? "";
+  const last = path.split("/").pop() ?? "";
   if (last.includes(".")) return false;
   return true;
 }
