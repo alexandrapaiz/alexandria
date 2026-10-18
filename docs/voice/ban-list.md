@@ -1726,8 +1726,11 @@ gap that the same collision had left empty (incident 25).
     with a record of working on this class, plus the slot-job rename that
     removed the words two of the headings were lifted from.
     ```
-    LANDED prompts/digest.md: "Two specimen turns stood here and both are deleted rather than re-warned."
+    LANDED prompts/digest.md: "No turn of phrase is offered here, and there will not be one."
     ```
+    Re-anchored 2026-10-18. The rule is unchanged and the sentence carrying it
+    was rewritten when the generator lost its case history. The old anchor read
+    "Two specimen turns stood here and both are deleted rather than re-warned."
     What is NOT enforced, said plainly: the file still teaches by worked example
     at other writing positions and this run did not inventory them, because
     counting them is a different job from grading an issue and a guessed count
@@ -1854,8 +1857,11 @@ gap that the same collision had left empty (incident 25).
     Added 2026-10-06. Enforced in two places, because the defect was in both.
     In the generator, at the shape gate.
     ```
-    LANDED prompts/digest.md: "Count only the kinds of block YOU put on the page."
+    LANDED prompts/digest.md: "Count only the kinds of block YOU put"
     ```
+    Re-anchored 2026-10-18 to the clause rather than the sentence, because the
+    sentence now continues into the standing-lines discount and the clause is
+    the part the entry is about.
     And in docs/voice/check_voice.py, which now takes the count that canon law
     14 says comes first. It took four of law 14's five counts and not the fifth,
     which is the one the law says can pass the other four and still fail, so the
@@ -2376,8 +2382,22 @@ gap that the same collision had left empty (incident 25).
     Added 2026-10-13. Enforced the same day at the attribution gate, as a count
     of named works against named works attributed to people, which is the form
     the coverage laws already use.
+    **Corrected 2026-10-18, and the correction is about the repair rather than
+    about the tell.** The entry above names the repair as the institution from
+    the claim's own paper, and the four specimen items come from `deprecated`
+    and `superseded`, which carry no institution and no author at all. So the
+    first repair was never available to the section this entry is about, and
+    nor was the second, and the gate as written was counting those four as
+    misses for not inventing a name. The tell stands exactly as written: an
+    item with no agent anywhere in it is still the defect, and the attribution
+    rule's third form is still what fixes it. What changed is that the third
+    form is now a pass at the gate rather than a shortfall, and the gate's
+    denominator is the named works whose stream carries an attribution field.
+    This is the same class as the payload field map added to the generator the
+    same day: a rule that asks for a field the stream does not hold is answered
+    by substitution or scored as a failure nobody could have avoided.
     ```
-    LANDED prompts/digest.md: "The two numbers are the same number or the issue is not finished."
+    LANDED prompts/digest.md: "every work on it is attributed to an institution or to a named author or the"
     ```
 
 112. The count of its own contents that nobody could check, because the
@@ -2923,8 +2943,12 @@ gap that the same collision had left empty (incident 25).
     the specimen is deleted and the three shapes it illustrated are described
     instead.
     ```
-    LANDED prompts/digest.md: "A third specimen stood here and is deleted, and it is the one that was printed."
+    LANDED prompts/digest.md: "Nothing in this slot is ever handed to you as a sentence you could print"
     ```
+    Re-anchored 2026-10-18. The deletion the entry records still stands and the
+    rule is now stated positively instead of as a tombstone, which is L-A23 in
+    the direction it wants. The old anchor read "A third specimen stood here and
+    is deleted, and it is the one that was printed."
 123. The grade stapled behind the sentence that was supposed to carry it. The
     reading-list rule says to say what the work cannot establish "inside the
     entry's own sentence and never as a second sentence stapled behind it". It
