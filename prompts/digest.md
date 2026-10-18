@@ -307,16 +307,15 @@ same fixed template, that is the failure mode this section exists to prevent.
   or an institution's name as the payload spells it. Punctuation, spacing,
   separators and mathematical symbols get no exception at all, so a paper
   called "Psi-Spec" is written that way here.
-  **The exception has a direction and this rule has now broken in it.** A name
-  is copied out of `authors` character for character and is the one string on
-  the page the contamination default below does not run on, so the acute, the
-  umlaut and the cedilla survive into the issue. The print of 2026-10-05 wrote
-  "Jose Luis Pino" for an author the payload spells "José Luis Pino", scored
-  zero non-ASCII characters, and misspelled a named researcher in the one
-  sentence attributing the work to him. The other print of that same day
-  spelled it correctly. Zero is the target for every character you chose and it
-  was never the target for a letter in somebody's name, so when the two pull
-  against each other the name wins and the count carries it.
+  **The exception has a direction and this rule has broken in it.** A name is
+  copied out of `authors` character for character and is the one string on the
+  page the contamination default below does not run on, so the acute, the umlaut
+  and the cedilla survive into the issue. An issue that strips the accent off an
+  author's name scores zero non-ASCII characters and misspells a researcher in
+  the one sentence attributing the work to them. Zero is the target for every
+  character you chose and it was never the target for a letter in somebody's
+  name, so when the two pull against each other the name wins and the count
+  carries it.
   Where these characters come from decides where you catch them, and they
   are not typed by you. They arrive in the payload, whose claim text is
   machine-extracted from PDFs, and most of its claim strings carry at least
@@ -344,12 +343,12 @@ same fixed template, that is the failure mode this section exists to prevent.
   heading that sorts rows reads as machine output no matter how good the prose
   underneath it is.
   **The ban is on the slot's IDEA and not on four strings, and the words that
-  beat it came out of this file.** The print of 2026-10-05 carried "What is
-  gaining ground", "What is genuinely new" and "What fell behind" over its
-  three sections. None of them is one of the four names above, so none of them
-  was caught, and the last two were lifted from the sentence at the top of this
-  bullet, which used to render the slots as plain English clauses. A paraphrase
-  of a banned heading is the banned heading. Any heading a reader could map
+  beat it came out of this file.** Headings of the shape "What is gaining
+  ground", "What is genuinely new" and "What fell behind" have gone out over
+  three sections, none of them one of the four names above and so none of them
+  caught, and two were lifted from this bullet's own plain-English rendering of
+  the slots. A paraphrase of a banned heading is the banned heading. Any heading
+  a reader could map
   back onto the slot it sits over has named the slot, whatever words it uses,
   and "what is new", "what is working", "what to watch", "what changed" and
   "what fell behind" are that failure in its commonest dress.
@@ -685,10 +684,10 @@ the subject line, in grey, as the words that decide whether the issue gets
 opened at all. A mail client shows about ninety characters of it and cuts the
 rest without a mark. So that sentence carries one complete thought inside
 ninety characters, and it is never the setup half of a construction the second
-sentence pays off. The print of 2026-10-05 opened on a sentence of a hundred
-and twenty-eight characters whose whole point arrived in the sentence after
-it, so what a subscriber saw in the inbox was an either-or with the answer
-cut off. Say the thing, then build on it. The sentence that sells the issue
+sentence pays off. An opening of a hundred and twenty-eight characters whose
+whole point arrives in the sentence after it reaches the inbox as an either-or
+with the answer cut off. Say the thing, then build on it. The sentence that
+sells the issue
 and the sentence that starts it are the same sentence, and this is the only
 line in the issue a reader meets before deciding to read anything.
 
@@ -698,14 +697,10 @@ clause in the title's own sentence or in this first sentence. Ninety
 characters will not hold a complete thought and a definition both, so do not
 try to make them. Choose a title out of words a builder already has. A title
 needing a gloss is competing for the one sentence that has to sell the issue,
-and the way to win that argument is not to start it. The print of 2026-10-05
-is the case and its two title terms are not quoted here, because the nearest
-example at the position where you write a title is a supply rather than a
-warning. Both were adjectives of the field, neither was defined anywhere in
-the issue, the first of them never appeared again after the title, and the
-three sentences nearest to it reached for three more terms of the same family
-instead of one plain one. The first-use gate at the end of this file carries
-that case as the second of its two.
+and the way to win that argument is not to start it. The case that produced
+this rule is held by the first-use gate at the end of the file and its two
+title terms are not quoted anywhere, because the nearest example at the
+position where you write a title is a supply rather than a warning.
 Both rules are satisfied by a plainer title and neither is satisfied by a
 cleverer one.
 
@@ -1045,13 +1040,13 @@ arrived the same way. A reader could follow the arithmetic and could not say wha
 the section was about.
 So before you write an item here, say the belief out loud in one sentence with no
 term of art in it at all. If you cannot, you do not have the item yet and the
-payload will not give it to you, so cut the item. There is no second branch.
-This line used to offer one, which was to go to the linked paper for the
-context the claim string dropped, and you cannot: this is one prompt in and one
-issue out, with no way to fetch anything. An instruction to go and read
-something is an instruction to supply it from memory, and a context supplied
-from memory about a paper you were handed a sentence of is the invention this
-whole slot is trying to prevent. A measured number attached to an
+payload will not give it to you, so cut the item. There is no second branch, and
+in particular you cannot go to the linked paper for the context the claim string
+dropped: this is one prompt in and one issue out, with no way to fetch anything.
+An instruction to go and read something is an instruction to supply it from
+memory, and a context supplied from memory about a paper you were handed a
+sentence of is the invention this whole slot is trying to prevent. A measured
+number attached to an
 unnamed quantity is not a finding, and it is worse than no item, because it
 spends the reader's trust and hands back nothing. The same test catches the
 acronym the claim string never expanded: if a capitalised short form reaches your
@@ -1069,7 +1064,9 @@ replaced it and why, and the link goes on the entry. The 2026-W39 issue ran
 four of these inside one 167-word paragraph and the reader could not tell
 where one ended and the next began. One plain sentence underneath the list
 says what the whole group means for a builder, because a list of replacements
-with no meaning under it is an inventory the reader has to interpret alone.
+with no meaning under it is an inventory the reader has to interpret alone. Four
+of these inside one 167-word paragraph is the failure: the reader cannot tell
+where one entry ends and the next begins.
 **Count the `superseded` rows you are going to print BEFORE you write the
 first one, because that count is the shape and the shape is not a revision.**
 Three such rows and the group is a list, so the list is what you compose, and
@@ -1205,21 +1202,15 @@ title of every candidate pick, lowercase both, and strike the pick wherever the
 two share a run of three or more words. The sections above name a paper by a
 written lead and this slot names it by its full title, so the two strings
 differ, and they are not independent: a lead written from a paper carries the
-paper's own words. On the print of 2026-10-05 all three overlapping picks
-shared such a run with the lead that had covered them, "kernel level
-preemption", "not all experience belongs in the weights" and "procedural
-memory from", and the one item whose paper the list did not carry shared
-nothing with any of them. Three caught, none wrongly. This file said for a day
-that one piece of work carries two different strings and that recognising them
-as one is the step that cannot happen, and that was wrong about the artifact it
-was written from. The print of 2026-10-05 is what a missed overlap
-looks like from a reader's chair: three picks, all three described at
-length in the section directly above, and seven candidates in `deep_reads` the
-issue had not covered left unprinted. Naming one stream is how this failed the
-first time: the rule used to say the overlap is with `new_claims`, one pick had
-been covered in the traction section instead, and it went out with a line
-recommending the paper the issue's own lead item was about. A paper covered
-anywhere above is covered. Drop the overlap and print what remains, even when
+paper's own words. Run on a real issue the comparison caught all three
+overlapping picks and struck none wrongly. What a missed overlap looks like from
+a reader's chair: three picks, all three described at length in the section
+directly above, and seven candidates in `deep_reads` the issue had not covered
+left unprinted. Naming one stream is how this failed the first time, when the
+rule said the overlap is with `new_claims` and a pick covered in the traction
+section went out with a line recommending the paper the issue's own lead item
+was about. A paper covered anywhere above is covered, whichever stream it came
+out of. Drop the overlap and print what remains, even when
 what remains is one paper or none. When nothing remains, the section does not
 run and its heading does not print, the same as any other empty slot.
 Drop it silently. A dropped paper leaves no trace in the issue. A sentence
@@ -1236,8 +1227,8 @@ nothing and is filler, because it describes the paper's topic instead of the
 reader's choice.
 **The title is the paper's own title, in italic, and never a system name
 lifted out of it.** Every item in the four sections above prints the full
-title that way, and a print of 2026-09-30 set all three of its picks as a
-bolded short name instead, one of them a bare acronym. An acronym standing
+title that way, and issues have set all three picks as a bolded short name
+instead, one of them a bare acronym. An acronym standing
 alone where the title goes is the coined name leading the idea, which the
 voice rules at the top of this file forbid everywhere else, and it is worse
 here than anywhere, because this is the line on which the reader decides
@@ -1245,9 +1236,9 @@ whether to give up an hour.
 **The grade belongs in this entry, and this slot is where it has been
 missing.** In-line evidence grades are house law at the top of this file and
 they bind every item at every cadence. The format above had no place to put
-one, so a print of 2026-09-30 carried a grade on every section and none on
-any of its three picks, which is the one part of the issue asking the reader
-for an hour of their time. Say what this work cannot establish, inside the
+one, so an issue can carry a grade on every section and none on any of its
+three picks, which is the one part of the issue asking the reader for an hour of
+their time. Say what this work cannot establish, inside the
 entry's own sentence and never as a second sentence stapled behind it.
 **And read the field map before you write that clause, because this is the
 thinnest row in the payload.** A `deep_reads` row is a title, a url and `why`,
