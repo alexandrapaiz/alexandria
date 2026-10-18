@@ -1,3 +1,60 @@
+## Updated 2026-10-18, ~00:55 UTC (message pass): PR #340 checked against the merge rule and merged, one new owner ruling needed
+
+**Trigger.** The event this pass answers: PR #340 (writer, "the prose
+benchmark is scored, and /llms.txt has been telling agents something
+untrue for a month"). Instruction: review it against the merge rule, merge
+it, or say on the board what it still needs and hand that to its seat.
+
+**Own last run may still be open, checked first.** `#338`
+(`alexandria-pm/2026-10-18-message`, this seat's own six-hour pass from
+minutes earlier) is still open and also touches `docs/sprints/pending.md`.
+Branched from main anyway rather than building on it: that pass's scope
+(inbox, failed runs, tier B queue, press deadline) is unrelated to this
+one PR's review, and `pending.md`'s entries are prepended rather than
+anchored, so whichever of us merges first gives the other a one-line
+keep-both, the same docs-only shape `#338` itself already names for
+`#337`/`#335`/`#332`. `#332` is also still open and touches `docs/ideas.md`,
+which PR #340 touched too; same shape, same resolution, no action needed
+here.
+
+**PR #340 checked against the merge rule (`docs/standards/pm.md` §10
+Tier B, amended §21) and merged.** Not a draft, no `hold` label, no
+comment, no review. `mergeable: MERGEABLE`, `mergeStateStatus: CLEAN`.
+The one check that gates a `prompts/digest.md` change, "digest request
+fits the model's budget," read `SUCCESS`. The diff —
+`docs/agents/incidents.md`, `docs/ideas.md`, `docs/voice/ban-list.md`,
+three new `docs/voice/` files, and a 12-line addition to
+`prompts/digest.md` — carries no Tier C path: `prompts/digest.md` is the
+digest pipeline's content prompt, not a `*-agent.md` charter, the exact
+distinction `INC-2026-10-09-tier-c-carve-out-misread-for-four-days`
+already drew for `prompts/distill.md`, and nothing in the diff touches a
+seat's own authority, spend, an account, or a secret. Scoped to what the
+seat was asked: the board item "Blind prose benchmark" (writer, urgent,
+carried since Oct 5), left in Review rather than Done because the
+benchmark's own pick — adopt the rewrite's devices as the house style — is
+the owner's, not this seat's. No competing claim found in the board
+inbox or on these files. Merged clean at 2026-10-18T00:53:13Z.
+
+**What the PR surfaced that still needs you, one new ask.** The writer's
+run opened `/llms.txt` for the first time ever (it is served from a
+template literal with no heading, so no copy round had read it) and found
+four live defects against your own rulings: the site says the library
+"reads" every paper twice, against your 2026-09-25 vocabulary ruling; two
+claims `docs/agents/quality-claims.md` names by file and line as
+`queued`/`not built` ship unhedged; and a launch date of October 13 is
+live on October 18. A corrected candidate is drafted at
+`docs/voice/llms-txt-2026-10-18.md`. The file itself,
+`site/app/llms.txt/route.js`, is the frontend seat's to set, not the
+writer's and not mine. Posted as an `ask` to you on the board with this
+seat's recommendation (adopt the candidate as drafted) under the silence
+rule (charter §22 / standard §22): if you say nothing in 48 hours, it
+proceeds and this seat hands the candidate to frontend. A board item is
+filed in Backlog so the work isn't only in a PR number.
+
+**Merged this run (Tier B, `docs/standards/pm.md` §10), one:** `#340`
+(writer).
+
+
 ## Updated 2026-10-18, ~00:35 UTC (six-hour pass): two Tier B merges clear the press-diagnosis and voice-gate stacks, and a Modal redeploy only a human can run is the one thing standing between Monday's 09:00 UTC issue and the same miss again
 
 **Reconciliation, per charter §1d.** `docs/decisions.md` still stops at the
