@@ -1,3 +1,110 @@
+## Updated 2026-10-18, ~18:30 UTC (six-hour pass): twenty of this seat's own stacked pull requests merged under Tier A, clearing the exact contention the register just flagged
+
+**Trigger.** The six-hour pass instruction: read the inbox and the Messages
+hub, answer every ask and handoff addressed to this seat, triage the last
+six hours of failed runs, merge what qualifies under Tier B if the
+authority change has landed here, say what waits on the owner otherwise,
+move the sprint, and post one board note in first person.
+
+**Inbox, checked first.** `to_seat=pm&to_company=alexandria` across the
+newest 200 board messages returned six addressed to this seat by name, the
+newest at 14:22:58 UTC, all from before the prior pass (`#392`, 14:38:54
+UTC) and already answered by it or an earlier one: mba's two notes on the
+W41 recovery and the spend clock, the centralizer's two notes on the
+manifest checker, and `alexandra-systems/pm`'s note on the newsletter
+promise. Nothing newer than `#392` named this company or this seat. Read
+again after the merges below, in case something arrived mid-pass: still
+nothing new.
+
+**Failed runs, last six hours.** `gh run list` shows zero Actions runs of
+any kind in the window, because `checks.yml` is path-filtered and nothing
+that ran today touched a watched path. The board's own run log carries one
+non-zero exit, this seat at 09:47:06 UTC, and it is not a new finding: the
+run that recorded it is the same run `#380` already closed out in full,
+replying to the centralizer and shipping its own pull request from the
+same session, so this is a false alarm already resolved by its own
+continuation, not a defect sitting untriaged.
+
+**The authority change has landed here, and this pass used it.** This
+repository's own vendored `docs/standards/pm.md` carries §10's amendment
+and §21 ("Merges belong to the PMs and the chairs, not to the owner"),
+dated 2026-10-05, so Tier B and Tier A merge authority are both active in
+this repo right now, not pending. Before merging anything, this pass read
+every open pull request's actual diff rather than trusting a title:
+
+- **Twenty of this seat's own twenty-one open pull requests touched
+  nothing but Tier A knowledge surfaces** (`docs/sprints/pending.md`,
+  `docs/sprints/run-note-*.md`, `docs/agents/incidents.md`,
+  `docs/ideas.md`), confirmed file by file with `gh pr diff --name-only`
+  before touching any of them. None had been merged by anyone across
+  several hours and several passes, which is exactly the shape the
+  register's newest sync named this file as the worst merge-contention
+  point measured anywhere in the portfolio. Rather than add a twenty-second
+  entry to a pile nobody was clearing, this pass cleared the pile: merged
+  `#335`, `#362`, `#365`, `#367`, `#369`, `#371`, `#373`, `#375`, `#376`,
+  `#377`, `#379`, `#380`, `#382`, `#384`, `#385`, `#386`, `#388`, `#389`,
+  `#391`, `#392`, in chronological order, one at a time. Seventeen of the
+  twenty conflicted with the branch ahead of them at the same prepend
+  anchor in `pending.md` (plus two also in `incidents.md`'s append anchor), and
+  each is a pure, non-overlapping addition from a different pass. So this
+  pass resolved every one by keeping both sides in their own chronological
+  order rather than dropping either, pushed the resolution to that PR's own
+  branch, and merged normally once GitHub reported the merge clean. No
+  force push, no squash, no edit to either side's actual claim. Two
+  (`#380`, a stub that had been a draft, and others already ready) needed
+  `gh pr ready` first. None needed anything beyond that.
+- **`#332` is the one of this seat's own PRs this pass did not merge**,
+  because its diff also touches `docs/prfaq/skills-sellable.md`, and §2c
+  reserves a PR/FAQ's merge for the owner as the go decision, not a
+  knowledge-surface edit this seat clears for itself. Still open, still
+  hers.
+- **`#372` (writer) and `#381` (exo) are both still correctly held**,
+  confirmed again rather than re-trusted: `#372` touches
+  `prompts/digest.md` and `#381` touches eleven files under `prompts/`,
+  both charter paths Tier C reserves for the owner regardless of how green
+  the checks are. Neither changed since the prior pass named them.
+- **`#358`, `#356`, `#333` are still drafts** from the engineer and
+  frontend seats, nothing this pass can merge yet.
+
+**The queue, before and after.** Twenty-six open pull requests at the start
+of this pass, every one of this seat's own twenty-one touching no other
+file than the four knowledge surfaces above except `#332`. Six open now:
+`#381`, `#372`, `#358`, `#356`, `#333`, and this seat's own `#332`, every
+one of them already named above with the reason it waits.
+
+**What shipped since the sprint goal was written.** Both of its two
+items shipped in substance before this pass started: the Polar payments
+integration landed on the committed date, and the press's silent weekly
+skip is fixed going forward. What has not shipped and is not new: the
+missing 2026-W41 issue itself (the recovery path was found to write the
+wrong content under the right label and withdrawn as a recommendation by
+the prior pass, not re-raised here), and live checkout links on `/pricing`
+(`POLAR_CHECKOUT_TRIAL/MONTHLY/LIFETIME` still unset, confirmed again by
+`tools/delivery_health.py` this pass: press, checkout, deploy and site all
+still read FAILING for the reasons already on record).
+
+**What moves today.** The backlog this pass actually moved is the queue
+itself, twenty pull requests off it and onto `main`. Next: whichever of
+`#356`/`#358`/`#333` its own seat finishes and readies, and the owner's or
+a chair's decision on `#332` (the sellable regroom), `#372`, and `#381`,
+named above rather than re-asked.
+
+**Handed off.** `#332`, `#372`, `#381` to the owner or a chair, by name,
+with the reason each waits. Nothing new handed to ExO this pass. The prior
+pass's charter-fix finding to ExO (PR #390's own authorship question) and
+the register's pending.md-contention finding (`INC-2026-10-18-a-pass-is-
+not-a-pull-request`) both still stand unchanged and are not re-sent.
+
+**Owed to the owner, unchanged:** the Polar Merchant-of-Record account,
+the missing 2026-W41 issue (no safe recovery path exists yet), the
+checkout-link secrets, the nine-charter branch-prefix fix, and `#332`,
+`#372`, `#381` above.
+
+**Merged this run:** Tier A, twenty (`#335`, `#362`, `#365`, `#367`,
+`#369`, `#371`, `#373`, `#375`, `#376`, `#377`, `#379`, `#380`, `#382`,
+`#384`, `#385`, `#386`, `#388`, `#389`, `#391`, `#392`). Tier B, zero. The
+only candidates (`#372`, `#381`) are Tier C.
+
 ## Updated 2026-10-18, ~14:40 UTC (message pass): PR #390 (lessons.md re-vendor from HQ 391105d) checked against the merge rule, already settled, a self-referential charter-fix finding handed to ExO on the board
 
 **Trigger.** PR #390 (`distribution/vendored-lessons`, opened 14:30:39Z by
