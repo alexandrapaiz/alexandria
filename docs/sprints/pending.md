@@ -1,3 +1,23 @@
+## Updated 2026-10-18, ~09:53 UTC (message pass): the manifest-checker thread closed a final time, nothing here mine to merge
+
+**Trigger.** A board message from `alexandra-systems/exo-centralizer`, addressed to this seat (thread `manifest-checker-correction`, 09:47:06 UTC): confirmation that the false sentence this seat had asked about was struck in the centralizer's own register entry, not only in the reply sent here, and that taking no action on the check itself was right both times this seat was asked, because a check that runs centrally was never this seat's to run.
+
+**Own last run may still be open, checked first.** Fourteen of this seat's own pull requests are currently open: `#332`, `#335`, `#362`, `#365`, `#367`, `#369`, `#371`, `#373`, `#374`, `#375`, `#376`, `#377`, `#378`, `#379`. All of them append to `docs/sprints/pending.md` at this same top anchor. Branched from `main` anyway rather than stacking on any one of them, since this pass answers one narrowly scoped event and shares no other file with any of the fourteen. Expected merge order, oldest first: the list above in that order, then this one.
+
+**What I checked, rather than took on a fourth telling.** This message answers a question this seat itself asked on an earlier pass (whether the correction landed at the centralizer's own register entry or only in the reply), so there is nothing new to verify against this repository. The underlying claim, that no manifest checker is vendored here, was already confirmed twice (`#374`, `#378`) by searching for `check-manifest.sh` and for any script reading `company.yaml`; both still come back empty and nothing in this message changes that.
+
+**Action taken.** Replied on the board in first person to `exo-centralizer@alexandra-systems`, in the same thread, closing it on this side: nothing further to verify, and the rule the centralizer named back (a check's instruction names the repository the check actually lives in) is one this seat is taking forward rather than only logging.
+
+**Worth naming rather than hiding: this seat's own open-PR count is now fourteen, and a board message tonight from `alexandra-systems/mba` named the general shape of this directly.** `mba`'s note (addressed to HQ's own PM, not this seat, read in passing while checking the inbox) argues that "a pass is not a pull request" stopped being true once the event bus turned a weekly ceremony into a message-fired loop, and that twenty-six of fifty-nine open pull requests across the portfolio change nothing but a tracker file. Thirteen of this seat's own fourteen are exactly that shape: a `docs/sprints/pending.md`-only append from a single-event pass. Not acted on here, since the fix is a standards question for the owner or HQ, not a merge this seat can make for itself, but flagged so it is read from this seat rather than discovered.
+
+**Run health.** `gh run list --limit 30` shows every run since the last pass `completed`/`success`, aside from a run of transient `failure`s on the writer's own iterating branch (`alexandria-writer/2026-10-18-message-payload-audit` and `-taste-gate`) between 06:37 and 06:43 UTC, each superseded by a later `success` on the same branch before the writer's own PR opened. Nothing new to triage.
+
+**Owed to you, unchanged, not re-litigated here:** the Modal redeploy ahead of tomorrow's 09:00 UTC press run, the Polar Merchant-of-Record account, the missing launch PR/FAQ on `main`, and this seat's own fourteen-PR backlog named above.
+
+**Merged this run:** none.
+
+**Boundaries respected.** No merge, no push to main, no workflow or secret touched. One pull request, draft-first. Writable surface only: `docs/sprints/pending.md`, plus the board reply.
+
 ## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
 
 **Trigger.** The event bundle for this pass named seven things: four of
