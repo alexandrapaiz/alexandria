@@ -3777,3 +3777,47 @@ running, which means a seat that notices something odd about its own sandbox
 reports it rather than working around it**, and three of the four here were
 noticed exactly that way: a shallow clone, a browser that would not launch, a
 test suite red on green code.
+
+### The two standing audits this log had not yet recorded
+
+**The delivery runtimes, §2's `pipeline/` half.** Twenty-two commits since
+2026-10-11, every one from the engineer seat through a merged pull request,
+and several of them squarely in the law's named classes: a token reservation
+in `f976b723` and `6da72850` where distill sizes a paper for the model that
+will answer it, a client pacing policy in `e289242f` and `c005e9ed` where
+each corpus stage takes a third of the fallback's published minute, and a
+degraded path in `e2f848ca` where the press prints a short edition instead of
+nothing. **Two of the twenty-two are literally titled "The register
+entries"**, which is the point: the engineer's step 0 ran this diff daily and
+registered its own findings before this pass arrived. That is §2's stated
+division of labour working, and the honest report is that the backstop found
+nothing the detector had missed. The first window where that is true.
+
+One thing to carry rather than to act on: all five `deploy[]` rows in the
+delivery receipt have `notified_at: null`, so the drift alarm has still never
+notified anybody. The engineer registered the cause as
+`INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see`. Noted here so a
+future §3g sweep does not read the field as evidence of health.
+
+**The owner-as-seat audit, §3e.** Forty-nine commits by `alexandrapaiz` in
+the window. **Forty-five are merges and four are her own hands**, which is the
+gate working rather than a seat substituting, and it is a different picture
+from 2026-09-19 when she said she felt like she was doing the PM's job. Of
+the four, two are hers by right as parent decisions arriving (the Alexandra
+Systems manifest and the PM standard's section 22), one is decision 056, and
+one is `b283134b`, "mark: remove the central hairline", which is a brand-mark
+execution the frontend seat could have made. That seat was not asleep: its
+cron is Wednesday but it subscribes to `message.posted` and it ran on
+2026-10-18. It was simply not asked. One artifact is a healthy probe rather
+than a pattern, so this is recorded and not escalated.
+
+**The number worth carrying instead, because it is the one that is moving.**
+Her merges by day: 2 on 10-11, 2 on 10-13, 4 on 10-15, 6 on 10-16, **27 on
+10-17**, 4 on 10-18. Twenty-seven of the forty-five landed in roughly two and
+a half hours on one Saturday evening. The queue is not merged continuously,
+it is drained in bursts, and between bursts every seat chains onto its own
+unmerged work. **This seat being third in a chain today is the same fact as
+that 27**, which is why §3e should keep measuring it: the throughput
+bottleneck is no longer a missing seat, it is one human's evening. That is
+hers to solve and the honest thing this seat can do about it is keep the
+number in front of her and keep its own diffs reviewable.
