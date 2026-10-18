@@ -1630,10 +1630,10 @@ the rule's question to the thing in front of you.
   not say, name each paper's own institution and let the reader see they are
   different.
   **A paper's name is not a research group, and there is no third fallback.**
-  When `institutions` is empty the answer is the author, and a print of
-  2026-09-26 reached for neither: it wrote "New work from ACLArena", which
-  attributes a finding to the title of the paper that reports it. The reader
-  is told a thing did the research. The two allowed forms are the institution
+  When `institutions` is empty the answer is the author, and an issue that
+  reaches for neither writes "New work from <benchmark name>", attributing a
+  finding to the thing the paper is about. The reader is told an artifact did
+  the research. The two allowed forms are the institution
   and the named author, so where the payload has neither, write the finding
   with no attributive phrase at all rather than promoting a system name into
   one. A benchmark, a pipeline, a method and a dataset all arrive in the
@@ -1670,23 +1670,17 @@ the rule's question to the thing in front of you.
   and nowhere later: a title term defined in the third section is not
   defined, because the reader met it before they had any reason to keep
   reading, and law 4 says that line is where they decide. This runs first and
-  separately because it has already failed in the way an unbounded list
-  always fails. An issue glossed one of its title's two terms properly, then
-  carried the other bare through eight appearances including a heading, a
-  bold lead and the closing line. The duty was in this file the whole time,
-  sitting inside the rule about two names for one idea, and the bare word had
-  no second name, so nothing in that rule ever reached it.
-  **The second case failed the same gate with both terms rather than one, and
-  it is why the opening slot now refuses to share its first sentence.** The
-  print of 2026-10-05 titled itself on two adjectives of the field and defined
-  neither, anywhere. One of them never appeared after the title at all, and
-  the three sentences nearest it reached for three more terms of the same
-  family rather than one plain word, which is a club term answered with
-  interest. Neither term is quoted here or in the slot where you write the
-  title, because at that position an example is a supply. What you check is
-  the shape: a title noun that the title's own sentence does not define, and
-  that the opening's first sentence does not define either, is undefined, and
-  the repair is a plainer title rather than a longer opening.
+  separately because it has already failed twice in the way an unbounded list
+  always fails: once with a title term carried bare through eight appearances
+  including a heading, a bold lead and the closing line, and once with both of
+  a title's terms undefined anywhere, one of them never appearing after the
+  title at all while the sentences nearest it reached for three more terms of
+  the same family rather than one plain word. No term from either is quoted
+  here or in the slot where you write the title, because at that position an
+  example is a supply. What you check is the shape: a title noun that the
+  title's own sentence does not define, and that the opening's first sentence
+  does not define either, is undefined, and the repair is a plainer title
+  rather than a longer opening.
   Then go back
   through the issue from the top and list every term of art it uses: method
   names, training vocabulary, metric and benchmark names, coined names,
@@ -1957,10 +1951,10 @@ the rule's question to the thing in front of you.
   the repair itself: a sentence that says what the field believed is the
   product, and a sentence that says what this newsletter printed is the
   violation, whichever way it is worded.
-  "Never deletion" binds the slot as well as the sentence. The struck line of
-  2026-09-24 was a greeting, and the reprint repaired it by having no greeting
-  at all, which cleared this gate and lost an element that is house law. So
-  after the repair, check the opening still does its four jobs in order, and
+  "Never deletion" binds the slot as well as the sentence. A struck greeting
+  repaired by having no greeting at all clears this gate and loses an element
+  that is house law. So after the repair, check the opening still does its four
+  jobs in order, and
   the first of them is that the issue says hello to the reader in a line true
   about this particular day. A slot does not stop being required because the
   sentence that filled it was wrong.
@@ -1996,11 +1990,10 @@ the rule's question to the thing in front of you.
   count is a false sentence about the product.
   The specimen, held here where you read finished output and deliberately
   absent from the closing slot where the line gets written: "the library read
-  1,289 papers", printed on 2026-09-26, on a day when 1,289 papers had been
-  ingested that week and 164 had ever been read in full. No number was
-  invented and no paper was misread. One count was handed the neighbouring
-  count's verb, and the sentence read so naturally that no pass which reads
-  the prose could see it.
+  1,289 papers", on a day when 1,289 papers had been ingested and a fraction of
+  that had ever been read in full. No number is invented and no paper misread.
+  One count is handed the neighbouring count's verb, and the sentence reads so
+  naturally that no pass which reads the prose can see it.
   The repair is never a qualifier. "Read or reviewed", "read at some depth",
   "surveyed" and "processed" all keep the claim and soften it, which is this
   file noticing the sentence is false and going on anyway. Two repairs are
@@ -2012,10 +2005,9 @@ the rule's question to the thing in front of you.
   name a week, a month or a date? Every count you were handed covers the seven
   days ending when the payload was built, and you were not handed that window,
   so a calendar span in that sentence is a claim about the product's own work
-  with nothing behind it. The close of 2026-10-05 put the right verb on each of
-  its two counts and said "the week ending October 4" around them, so it passed
-  this gate five times on the half it was asked about. Strike the span and
-  leave the seven days.
+  with nothing behind it. A close can put the right verb on each of its counts
+  and still name a dated week around them, which is how it passes this gate on
+  the half it is asked about. Strike the span and leave the seven days.
 - **Then check the issue's numbers against each other. A hard gate (canon
   laws 6 and 7, the claims pass's fourth question).** Every gate above reads
   sentences. This one reads only the figures, and it catches what a careful
@@ -2026,17 +2018,17 @@ the rule's question to the thing in front of you.
   the same number, or two setups the issue has told the reader apart in the
   sentence where the second one appears.
   **Compare the quantity and not the numeral, because the same number in two
-  units is two numbers to a reader.** Convert before you group. This gate read
-  the print of 2026-10-05 five times and cleared it, because the one latency it
-  reports appears once in microseconds and once in milliseconds and the two
-  numerals look nothing like each other. Neither figure was wrong and the
-  conversion is exact. A reader meets the measurement twice, has to do the
+  units is two numbers to a reader.** Convert before you group. One latency
+  reported once in microseconds and once in milliseconds clears this gate every
+  time, because the two numerals look nothing like each other, neither figure is
+  wrong and the conversion is exact. A reader meets the measurement twice, has
+  to do the
   arithmetic to learn it was once, and cannot tell until they have whether the
   bold lead was rounding or describing something else. One quantity, one unit,
   for the whole issue.
-  The specimen, invented so that copying it is obviously wrong, because the
-  real one stood here and the pair it described was printed again on
-  2026-09-30. An item says a night shift closes 44% of its tickets, and four
+  The specimen, invented so that copying it is obviously wrong, because the real
+  one stood here and was printed again the next issue. An item says a night
+  shift closes 44% of its tickets, and four
   sentences later says the checklist that taught it to "closes 30%" of them,
   on the same named measure. Both figures were in the payload and neither was
   wrong. The page made them contradict, because the second one came from a
