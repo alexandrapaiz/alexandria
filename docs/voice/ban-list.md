@@ -1726,8 +1726,11 @@ gap that the same collision had left empty (incident 25).
     with a record of working on this class, plus the slot-job rename that
     removed the words two of the headings were lifted from.
     ```
-    LANDED prompts/digest.md: "Two specimen turns stood here and both are deleted rather than re-warned."
+    LANDED prompts/digest.md: "No turn of phrase is offered here, and there will not be one."
     ```
+    Re-anchored 2026-10-18. The rule is unchanged and the sentence carrying it
+    was rewritten when the generator lost its case history. The old anchor read
+    "Two specimen turns stood here and both are deleted rather than re-warned."
     What is NOT enforced, said plainly: the file still teaches by worked example
     at other writing positions and this run did not inventory them, because
     counting them is a different job from grading an issue and a guessed count
@@ -1854,8 +1857,11 @@ gap that the same collision had left empty (incident 25).
     Added 2026-10-06. Enforced in two places, because the defect was in both.
     In the generator, at the shape gate.
     ```
-    LANDED prompts/digest.md: "Count only the kinds of block YOU put on the page."
+    LANDED prompts/digest.md: "Count only the kinds of block YOU put"
     ```
+    Re-anchored 2026-10-18 to the clause rather than the sentence, because the
+    sentence now continues into the standing-lines discount and the clause is
+    the part the entry is about.
     And in docs/voice/check_voice.py, which now takes the count that canon law
     14 says comes first. It took four of law 14's five counts and not the fifth,
     which is the one the law says can pass the other four and still fail, so the
@@ -2937,8 +2943,12 @@ gap that the same collision had left empty (incident 25).
     the specimen is deleted and the three shapes it illustrated are described
     instead.
     ```
-    LANDED prompts/digest.md: "A third specimen stood here and is deleted, and it is the one that was printed."
+    LANDED prompts/digest.md: "Nothing in this slot is ever handed to you as a sentence you could print"
     ```
+    Re-anchored 2026-10-18. The deletion the entry records still stands and the
+    rule is now stated positively instead of as a tombstone, which is L-A23 in
+    the direction it wants. The old anchor read "A third specimen stood here and
+    is deleted, and it is the one that was printed."
 123. The grade stapled behind the sentence that was supposed to carry it. The
     reading-list rule says to say what the work cannot establish "inside the
     entry's own sentence and never as a second sentence stapled behind it". It
