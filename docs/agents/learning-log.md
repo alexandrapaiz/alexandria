@@ -3569,7 +3569,7 @@ open and both are contained here.
    the workflow-push probe in §5, which has never been run under the host. If
    she says nothing, the probe stays unrun.
 4. **Whether anything has ever been delivered to HQ.** Eight entries, now
-   125 cumulative days. The 2026-10-11 run set a condition, this run found it
+   105 cumulative days. The 2026-10-11 run set a condition, this run found it
    fired, and the answer is in the relay rather than in a new surface.
 5. **The `[trigger].cron` and `max_turns` of all twelve manifests**, which is
    now the only place either number is true. The §3b command fetches them in

@@ -726,7 +726,7 @@ the same fact as this seat being third in a chain today.
 With that said, the honest reading of the two data points is that a pull
 request description is a place the ages are *visible* and not a place they are
 *acted on*, because reading it costs the owner nothing and acting on it costs
-her a trip to another repository. Eight entries and 125 cumulative days of
+her a trip to another repository. Eight entries and 105 cumulative days of
 age is not a backlog of information. It is a backlog of errands.
 
 **So the ask, which is the third idea in the 2026-10-18 pull request rather
