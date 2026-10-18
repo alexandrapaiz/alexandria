@@ -17349,15 +17349,17 @@ cutting gates to make a budget.
 
   | | prompt tokens | cost an issue | headroom |
   |---|---|---|---|
-  | main | 36,582 | $0.149962 | 40 tokens |
+  | main, before #366 merged | 36,582 | $0.149962 | 40 tokens |
   | the sixth run, red in CI | 38,634 | $0.151911 | over by 2,011 |
-  | the seventh run, PR #366 | 36,411 | $0.149799 | 211 tokens |
+  | the seventh run, now main | 36,411 | $0.149799 | 211 tokens |
   | the eighth run, this branch | 34,396 | $0.147885 | 2,226 tokens |
 
-- **Main is 40 tokens under the ceiling today.** That is one sentence. Any
-  merge that touches `prompts/digest.md` from a branch cut before this one
-  turns the build red, and the branch that does it will not be the branch that
-  caused it.
+- **Main carried a 40-token margin for most of today and nothing watched it.**
+  That is one sentence of prompt. #366 merged at 07:09:30Z and took it to 211,
+  which is still less than a tenth of what a single writer run added this
+  morning. Any merge that touches `prompts/digest.md` from a branch cut before
+  this one turns the build red, and the branch that does it will not be the
+  branch that caused it.
 
 - What two runs of careful editing bought: 4,238 tokens cut, $0.0040 of a
   $0.15 ceiling, about 2.7% of it. The first run cut the prompt's case

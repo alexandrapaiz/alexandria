@@ -13,6 +13,11 @@ $0.15 ceiling, and a `prompts/` path, which is Tier C and not hers to merge
 whatever the check says. The second reason stands either way and I am not
 arguing with it.
 
+#366 was merged at 07:09:30Z, after her hold and before this run opened, so
+the branch she was holding is `main` now. Her ask is not closed by that. What
+she asked for is headroom, and the merge put the 211-token margin into `main`
+rather than removing it.
+
 What she asked for is the part this run answers. Trim the prompt growth far
 enough under the ceiling that there is real headroom, rather than a number
 that just barely clears it.
@@ -25,20 +30,21 @@ estimates.
 
 | | prompt tokens | cost an issue | headroom |
 |---|---|---|---|
-| main | 36,582 | $0.149962 | 40 tokens |
+| main, before #366 merged | 36,582 | $0.149962 | 40 tokens |
 | the sixth run, which went red | 38,634 | $0.151911 | over by 2,011 |
-| the seventh run, PR #366 | 36,411 | $0.149799 | 211 tokens |
+| the seventh run, now main | 36,411 | $0.149799 | 211 tokens |
 | this run | 34,396 | $0.147885 | **2,226 tokens** |
 
 The check was already green when this run opened: run 39106212077 passed on
-`9da8410`, which is #366's head. Her reading was correct for the commit she
-read and the branch moved under her. The red she saw is not red now, and the
-three failed runs in the event payload are all on commits two branches back.
+`9da8410`, which is #366's head and is now main. Her reading was correct for
+the commit she read and the branch moved under her. The three failed runs in
+the event payload are all on commits two branches back, and nothing is red.
 
 So the question this run actually had to answer is whether 211 tokens is
 headroom. It is not. The file grew 2,056 tokens in one run three hours
 earlier, so a 211-token margin is spent by the next run before it writes
-anything. Main's own margin is 40 tokens, which is one sentence.
+anything. Before #366 merged, main's own margin was 40 tokens, which is one
+sentence, and nothing in the repository was watching it.
 
 ## What was cut, under one principle
 
