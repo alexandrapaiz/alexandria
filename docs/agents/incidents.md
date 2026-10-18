@@ -14609,3 +14609,175 @@ seat owns the register and that check.
 manifests and the install page are the engineer's surface, and the charter's
 step 1b is explicit that the seat which can say whether the machine exists is
 not this one.
+
+## INC-2026-10-16-the-reading-stage-sent-a-paper-into-a-budget-a-fourteenth-its-size — incident 22's defect, in a second pipeline stage, eleven days after the first one was fixed (2026-10-16, engineer seat)
+
+**Observed by:** the engineer seat's scheduled run of 2026-10-16, reading
+`tools/delivery_health.py` live at the top of its own observation. The press
+surface said two issues missing and the pipeline surface said `claims` had not
+moved in eight days with 2,308 papers waiting, and it named the shape
+correctly: distill is the one stage the fallback cannot carry.
+
+**What was wrong.** `pipeline/distill.py` built one request per paper, sized at
+`FULLTEXT_CHARS`, 250,000 characters, and handed it to `llm.ask_json`, which
+walks `kimi-k2.6` and then three Groq models in order. A Groq model's whole
+per-request budget is 6,800 tokens after the 15% margin. A 250,000-character
+paper is 100,833 tokens at the guard's own measured density. So on any day the
+funded Moonshot account did not answer, every request this job sent was
+fourteen times the size of the budget it was sent into, and it was sent three
+times per paper, once per fallback, with four attempts and up to 180 seconds of
+backoff each. That is between 10 and 27 minutes of sleeping per paper on a
+request arithmetic already knew could not fit, inside a 5,400-second timeout.
+
+**Why this is a repeat and not a new class.** It is incident 22,
+the 413 of 2026-09-19, which is the same defect in `pipeline/weekly.py`: a payload larger than a provider's per-request budget,
+discovered from the provider rather than from the published limit. The press
+was repaired properly. It has sized its payload to the model it is about to ask
+ever since, through `budget.fit_payload` and `budget.choose_model`, and
+`tests/test_press_resilience.py` holds it. `pipeline/distill.py` gained full
+text on 2026-09-30, eleven days after that repair, and never gained the guard,
+so the second instance ran for the sixteen days from then until today.
+The company standard this falls under is already written, L-E6 in
+`docs/standards/lessons.md`: a text a pipeline feeds to a model plus a
+worst-case payload must fit the runtime model's request limit with margin, and
+that fit is measured in CI or at deploy, never assumed. L-E6 was harvested from
+incident 22. It did not reach the second stage either.
+
+**What made it invisible for two weeks.** Three separate places in this
+repository already SAID what happens on a degraded day, in prose, correctly.
+`distill.preflight` printed "every paper would be read from its abstract and
+papers.fulltext_chars would be null for all of them." The end-of-run NOTE
+printed "every model below it has a per-request budget smaller than one paper,
+so the claims above came from abstracts." ADR-39's own rejected-options section
+chose that behaviour by name. Nothing in the job implemented it. The abstract
+was reached only by the exception handler, after the three refusals had already
+been paid for, so every reader of those three lines was being told the truth
+about the destination and nothing about the route.
+
+**And the sharpest evidence: the org's own tool printed the arithmetic every
+day.** `budget.cron_degradations()` returns three notes right now, one per
+fallback, each of them exact:
+
+```
+distill (pipeline/distill.py) rank 2 (openai/gpt-oss-120b) cannot take a full
+paper: prompt 1426 + payload 98814 + output reservation 2000 + envelope 32 =
+102272 tokens against 6800 usable (8000 TPM less 15% margin); DOES NOT FIT,
+headroom -95472. It falls back to abstract[:6000], which fits, so the run
+succeeds and the paper is read from its abstract instead of in full.
+```
+
+`python3 pipeline/budget.py` prints it, gate 1 of the deploy ladder runs it, and
+the whole thing passes, because `tests/test_corpus_drain.py` was deliberately
+narrowed on 2026-09-30 to check only the head of the list. The reasoning written
+into that test is sound as far as it goes: the Groq models not taking a paper is
+"the point of that function rather than a regression". What nobody asked is what
+the degradation COSTS to reach. That note describes the destination perfectly
+and says nothing at all about the route, and the route was three refused
+requests and up to 27 minutes of backoff per paper. A measurement that names
+where a run ends up and not what it pays to get there reads as a clean bill of
+health.
+
+And `tests/test_distill_fulltext_budget.py` had two tests either side of the
+gap. One asserted the head of the list takes a whole paper. One asserted every
+fallback takes the documented abstract. Both passed every day. Neither asked
+whether the job SENDS the abstract to a model that can only take an abstract,
+which is the only question that would have failed. That is L-A21 in
+`docs/standards/lessons.md` exactly, and L-A21 even prescribes the test that
+finds it: name one change that would break what this gate governs, then ask
+whether the gate would have SEEN that change rather than whether it would have
+fired on it. The change here is "send the big request to a small model". Three
+gates fire on it and none of them can see it.
+
+**The fix, on this run's branch.** `distill.window_for(model, kind)` derives
+the window from `budget.limit_for`, the rendered prompt and the completion
+reservation, so the request is built for the model the walk will actually
+reach, and `distill.reading_model(available)` answers which model that is using
+the same two skips `ask_json` applies. `FULLTEXT_FLOOR_CHARS` is the honesty
+half: a window of 6,954 characters is not reading a paper, so below the floor
+the paper is read from its abstract and `papers.fulltext_chars` stays null,
+which keeps the masthead's "read in full" sentence counted from rows rather
+than from ambition. Six tests, in the file checks.yml already runs.
+
+**The part this does not fix, stated plainly.** A `pipeline/` change reaches a
+scheduled run only on `modal deploy`, which no seat can run. So this entry
+describes a repair that is correct in `main` and inert in production until the
+owner or the chair deploys, which is
+`INC-2026-10-12-the-deploy-ladder-refuses-the-fix-for-the-outage-it-is-in`
+holding for a fourth artifact.
+
+**One correction to an earlier diagnosis, because it was necessary and not
+sufficient.** The comment at `pipeline/triage.py:165` attributes the stall that
+began on 2026-10-08 to triage spending the free tier's whole day before distill
+reached it, and `FALLBACK_TOKENS_PER_RUN` was added to all three jobs to fix
+that. That was a real defect and the fix is right. It could not have ended this
+stall on its own: a share of the day is tokens, and distill's problem was one
+request too large to send whatever the day's balance was. Triage and interpret
+both wrote rows on Groq within the last twelve hours, which is the evidence
+that the share is working and that distill's failure is a different one.
+
+**What the org should take from it.** The repair that matters is not either
+window. It is that a lesson harvested from one stage of a pipeline has to be
+applied to the other stages the same day, by reading them, and that reading was
+never anybody's task. `pipeline/budget.py` already knows every model's limit
+and already has `choose_model`. Two of the four jobs that call a model use it.
+The cheap general form is a test that asserts every scheduled job sizes its
+request against `budget.limit_for` for every model on its own fallback list,
+rather than four jobs each being audited by hand when something stalls.
+
+## INC-2026-10-16-the-red-main-fix-was-written-in-fifteen-minutes-and-took-two-days-to-ship — a one-line docs repair inherited the review latency of the 3,900-line branch it was parked on (2026-10-16, engineer seat)
+
+**Observed by:** the engineer seat's scheduled run of 2026-10-16, running the
+full suite on a branch cut from `main` ten minutes earlier.
+
+**What was wrong.** `tests/test_check_registers.py::test_this_repository_has_no_merge_damage_in_its_registers`
+failed on `main`. Two entries in `docs/agents/incidents.md` shared the id
+`INC-2026-09-24-dispatch-403`, at lines 3805 and 13009. It had been failing
+since `f659429`, 2026-10-14 16:09 UTC, which is 48 hours.
+
+**Why this is a repeat.** Three ways, and the third is the new one.
+
+1. Two entries sharing one id is the class incident 29 retired the
+   sequential allocator over, most recently recorded as
+   `INC-2026-10-14-an-open-branch-held-two-ids-main-had-since-issued` and
+   `INC-2026-10-14-the-register-gate-was-blocking-on-main-and-nothing-ran-it-before-the-merge`,
+   both on 2026-10-14.
+2. A red `main` that `checks.yml` calls green is
+   `INC-2026-09-30-the-guard-went-red-and-nobody-read-it` and
+   `INC-2026-10-14-the-register-gate-was-blocking-on-main-and-nothing-ran-it-before-the-merge`.
+   `checks.yml` runs a hand-maintained list of filenames,
+   `tools/ci_coverage.py` puts it at 14 of 54 test files, and
+   `tests/test_check_registers.py` is one of the 40. All five of `main`'s most
+   recent `checks.yml` runs were green across the whole window.
+3. **The new finding: detection and authorship were both fast, and shipping was
+   not.** The defect landed at 16:09 on 2026-10-14. The fix was written at
+   16:24, fifteen minutes later, by the seat that found it, correctly, as
+   `98d670b`. It is still not on `main` 48 hours later, because it was
+   committed onto `engineer/2026-10-15-undeployed-pipeline`, whose pull request
+   is #301: 3,901 insertions across 25 files, three runs of work, product code,
+   and the deepest open chain in the repository. A one-line heading rename
+   inherited the review latency of everything it happened to share a branch
+   with. The register's own entry for that day says the seat deliberately
+   declined to fix it a second time, to avoid two renames at one anchor, and
+   that reasoning was sound on the evidence it had. The consequence is that the
+   only copy of a 48-hour red-main repair sat behind a review no owner could do
+   in one sitting.
+
+**What this run did.** Both halves, because the charter says a red `main` is the
+finding you fix rather than only file. First, #301's merge conflict was resolved
+in place and it is `MERGEABLE` again, so the merge that fixes this is actually
+available now rather than only recommended. Second, the rename was applied to
+this run's branch as well, byte-identical to #301's version over the whole
+17-line region, which removes the collision the 2026-10-14 entry was right to
+avoid. Proved rather than asserted: merging #301 into this branch in a scratch
+worktree auto-merged with no conflict, left exactly one copy of the heading,
+and `python3 tools/check_registers.py` exited 0 on the result.
+
+**What the org should take from it.** A fix for a red `main` is the one change
+that should never ride a feature branch, because its value decays by the hour
+and every other open pull request pays for the delay through its own merge
+check. The general form is a rule rather than a tool: when a seat finds `main`
+red, the repair goes out as its own pull request containing nothing else, named
+so the owner can merge it without reading anything, even when the same seat is
+already holding a larger branch that could carry it. Proposed in
+`docs/ideas.md` on this run's branch, because a charter edit is the owner's
+merge and not this seat's commit.
