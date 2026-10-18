@@ -3040,3 +3040,64 @@ gap that the same collision had left empty (incident 25).
     2026-10-18, because the half this register cannot hold is that there is
     nowhere in the repository for a reader-facing sentence about a skill to go.
     Added 2026-10-18, from the copy round for the catalogue page.
+126. The completeness word that belongs to the part, spent on the whole, with
+    the true version standing next to it. Canon law 15 is a count given the
+    neighbouring count's verb. This is a scope one line wide: a claim that is
+    true of the unit, restated about the collection of units, where the
+    collection has gaps the unit does not.
+
+    The free column of `site/app/pricing/page.jsx` carries three bullets, and
+    two of them are one word apart:
+
+    > Every issue in full
+    >
+    > The complete archive
+
+    The first is true and it is load-bearing, because the vision's §0 as
+    amended 2026-09-17 makes the digest free in full, and `site/lib/content.js`
+    enforces it in code: "an issue has no teaser split and no entitlement
+    check: the whole body is public." The second takes that truth and moves it
+    up a level, from each issue being whole to the series having no holes, and
+    at that level it is false twice over. `site/lib/content.js:23` withholds
+    2026-W37 from the listing and from its own route on the owner's order of
+    2026-09-19, and the press has missed 2026-W41 and W42.
+
+    What makes it a tell rather than a mistake is the adjacency. Neither
+    sentence would survive alone in front of a reader who checked, and together
+    the first one vouches for the second, so a pass that reads the line above
+    arrives at the line below already satisfied. It is ban list 50's mechanism
+    with the parts reversed: 50 is a true concession licensing a false
+    assertion inside one sentence, and this is a true claim licensing a false
+    one across two lines of a list.
+
+    The tell is checkable in one question, and it is not about the word: **what
+    is this sentence's subject, the item or the shelf?** A completeness word on
+    the item is a promise about craft and it is usually true, because nothing is
+    held back from a reader who arrives. The same word on the shelf is a promise
+    about a record, and a record is the one thing in a product that an outage
+    makes permanently false. The repair is never to soften the shelf's claim,
+    which is law 15's rule and 50's: "most issues", "the archive so far" and "a
+    complete archive from the pilot onward" are the same false sentence in
+    coats. The repair is to say what the shelf actually offers a stranger, which
+    here is that arriving late costs nothing and reading costs no account.
+
+    **Swept, and this is the half worth keeping.** Four other lines on the site
+    use the same vocabulary and every one of them is correctly scoped.
+    `site/app/library/page.jsx:29`, "The weekly issue is free and complete",
+    puts the word on the unit. `site/app/library/[week]/page.jsx:51`, "Every
+    issue reads like this one, free and in full", the same. The library page's
+    heading "Every issue" names the page's own scope, and both it and the line
+    under it were approved by the owner on 2026-09-29. So the one defective
+    instance is the one line of the five she never ruled on, and the four she
+    approved get the scope right. That is the argument for this entry being a
+    tell rather than an accident: her ear put the word on the part every time,
+    and the copy written without her got it wrong the first time it tried.
+
+    No sweep of `prompts/digest.md` and no change to it, because the generator
+    does not write a tier card and no sentence in a prompt can reach a bullet
+    in a React component. The ending this entry carries is the ledger entry
+    filed 2026-10-18 asking for the gate that could, which is a check that
+    reads the archive's published contents and fails a build when a site string
+    asserts a completeness or a cadence the shelf does not show. Added
+    2026-10-18, from the copy round on the pricing page, where the sentence had
+    been live for thirty days.
