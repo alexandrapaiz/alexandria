@@ -914,8 +914,18 @@ CLAIMS = ROOT / "docs/agents/quality-claims.md"
 # rather than assume. The register names one file per row, and the defect it
 # missed was a claim COPIED to a page the row does not name, so the search
 # space is every reader-facing surface rather than the cited one.
+#
+# Two modules of the pipeline are on the list and the rest are not. The
+# masthead and the email chrome are sentences a reader reads, fixed in code
+# and graded by nothing, which is ban list 61 and the reason law 15 went
+# unnoticed for the life of the product. The other modules' strings are
+# preflight messages and log lines, and the first draft of this list took
+# pipeline/*.py and reported four of distill's error strings as reader-facing
+# copy. A gate that cries about a log line teaches the seat reading it to
+# skim.
 SURFACE_GLOBS = ("site/app/**/*.jsx", "site/app/**/*.js", "site/lib/*.js",
-                 "site/emails/*.html", "pipeline/*.py")
+                 "site/emails/*.html", "pipeline/weekly.py",
+                 "pipeline/email_render.py")
 
 # Words that carry no claim. Overlap is scored on the rest, because the claim
 # in the register and the claim on the page are rarely the same string: the
@@ -1006,19 +1016,28 @@ def uncommented(path, lines):
     return out
 
 
-def surface_sentences(path):
-    """Reader-facing sentences of one file, each with the line it starts on."""
+def surface_text(path):
+    """One file's reader-facing text, with a map from offset back to line."""
     text, marks = "", []
     raw = re.sub(r"/\*.*?\*/|<!--.*?-->", " ", path.read_text(), flags=re.S)
     for n, line in enumerate(uncommented(path, raw.split("\n")), 1):
         marks.append((len(text), n))
         text += re.sub(r"<[^>]*>", " ", line).strip() + " "
+    return text, marks
+
+
+def line_of(marks, offset):
+    return max(n for off, n in marks if off <= offset)
+
+
+def surface_sentences(path):
+    """Reader-facing sentences of one file, each with the line it starts on."""
+    text, marks = surface_text(path)
     out = []
     for m in re.finditer(r"[^.!?]+[.!?]", text):
-        start, body = m.start(), norm(m.group())
-        line = max(n for off, n in marks if off <= start)
+        body = norm(m.group())
         if len(body) > 24:
-            out.append((line, body))
+            out.append((line_of(marks, m.start()), body))
     return out
 
 
@@ -1139,6 +1158,83 @@ def claims():
     return 1 if fails else 0
 
 
+# Canon law 15's own vocabulary, which is the half of the law that makes it
+# checkable. Papers come in, arrive or land. They are sorted or ranked. They
+# are read in full or read closely, and that is the only act the word "read"
+# may name. A reader or an agent may read anything, because the law is about
+# what the library claims to have done, not about the verb.
+READING = re.compile(
+    r"papers? read\b(?! in full| closely)"
+    r"|\bread\b(?! in full| closely)\s+[\d,{][^ ]*\s+papers?\b"
+    r"|\b(?:library|alexandria|corpus)\b[^.]{0,60}\breads?\b"
+    r"[^.]{0,40}\b(?:research|papers?|literature|abstracts?)\b", re.I)
+
+
+def reading(paths=None):
+    """Canon law 15 on every surface, which is where the law says it binds.
+
+    "The library never claims to have read what it only ingested" was her
+    ruling of 2026-09-25, and the law's last paragraph says it binds the
+    masthead, the email, the site and any line of copy drafted under the canon,
+    because a string fixed in code is never graded (ban list 61).
+
+    It was graded by a reading, so on 2026-10-18 the home page's first number
+    still printed the ingest count under the word read, twenty-two days after
+    writer run 15 drafted the exact repair in
+    docs/voice/home-metric-line-2026-09-26.md and the same morning the masthead
+    carrying the same defect was fixed. The repair was written, checked against
+    the registers and never set. At four days it was recorded as a related
+    sighting inside INC-2026-09-30-sales-assets-stale; this is the same line at
+    twenty-two days.
+
+    The subject matters and the regex knows it, which is why two of the three
+    branches name the library. A reader may read anything and so may an agent:
+    "Your agents can read this catalogue on their own" is a line she approved
+    on 2026-09-20, and the first draft of this check failed it along with "You
+    do not schedule the update or read the paper". The law is about what the
+    library claims to have done.
+
+    It reads the whole text rather than its sentences, because the defect it
+    was written for is not a sentence. "papers read this week" sits in a JSX
+    fragment under a count, with no full stop anywhere near it, and a check
+    that only looks at sentences cannot see the one line this check exists to
+    catch.
+
+    What it cannot see. The verb is checkable and the count behind it is not:
+    "papers read this week" is caught by the word, while a sentence that says
+    read in full over a number that came from the ingest field passes here and
+    is a worse version of the same lie. The number's provenance is a reading of
+    site/lib/metrics.js and it belongs to the grade.
+    """
+    targets = [ROOT / p for p in paths] if paths else []
+    if not targets:
+        for glob in SURFACE_GLOBS:
+            targets += sorted(ROOT.glob(glob))
+    hits = []
+    for path in [t for t in targets if t.is_file()]:
+        text, marks = surface_text(path)
+        for m in READING.finditer(text):
+            around = norm(text[max(0, m.start() - 40):m.start() + 72])
+            hits.append((str(path.relative_to(ROOT)),
+                         line_of(marks, m.start()), m.group(), around))
+    print(f"surfaces read                               "
+          f"{len([t for t in targets if t.is_file()])}")
+    print(f"lines giving the arriving count a verb of reading   {len(hits)}")
+    for rel, line, phrase, body in hits:
+        print(f'  FAIL    {rel}:{line}  "{phrase.strip()}"')
+        print(f"            {body[:96]}")
+    if not targets:
+        print("  FAIL    this check examined nothing, which is not a pass")
+        return 1
+    if not hits:
+        print("  every surface uses the verb the law allows")
+    print()
+    print("The repair is to drop the claim, never to soften it. Read or")
+    print("reviewed, read at some depth, surveyed and processed are hedges on a")
+    print("false sentence and the law names each one as ban list 50 in a coat.")
+    return 1 if hits else 0
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -1160,6 +1256,7 @@ def main():
     for name, fn in (("enforcements", enforcements), ("sweep", sweep),
                      ("stale", stale), ("measure", measure), ("links", links),
                      ("delivery", delivery), ("claims", claims),
+                     ("reading", reading),
                      ("compare", compare), ("selfcheck", selfcheck)):
         if which == name or (which == "all"
                              and name not in ("selfcheck", "compare")):
