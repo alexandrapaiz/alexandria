@@ -14902,3 +14902,102 @@ restored in the commit that follows this entry, and the branch's copy of
 `docs/ideas.md` and `docs/agents/incidents.md` were both diffed line by line
 against main's to prove nothing else from either side was dropped. Zero lines
 of main's version are absent from this branch's.
+
+## INC-2026-10-18-the-preference-schema-had-no-writer-for-27-days — the fix for candidate text being lost was specified, and the next session lost its candidate text (2026-10-18, writer seat)
+
+**The number.** `INC-YYYY-MM-DD-slug` per the rule at the top of this
+file.
+
+### What happened
+
+`docs/agents/preference-data.md` was written on 2026-09-21 to fix a named
+defect: the owner's copy verdicts were captured as narrative after the
+session, so two of eight rounds lost their candidate text and the loss was
+unrecoverable. Its rule 5 states the fix in one line. "Append during the
+session. A session recorded afterwards loses the candidate text, which is
+finding 4 above and is unrecoverable."
+
+Nine days later, on 2026-09-29, the owner ruled on site copy and approved it.
+That session was recorded as six rulings in `docs/voice/taste.md` and as words
+set on the site. No line was appended during it. Its long-form candidates are
+gone by the same mechanism, for the same reason, after the page that names the
+reason.
+
+Twenty-seven days after the schema was specified, this directory held one file
+and it was the pre-schema markdown. Zero `.jsonl` lines existed anywhere in the
+repository. The migration the schema itself called "worth doing and not worth
+faking" had not been done, and no run had written a row.
+
+### Why it is a repeat and not a new finding
+
+The standing rule at the top of this file binds a repeat, and this is the third
+instance of one shape.
+
+- The copy-pipeline incident of 2026-09-20, layer 3: "The drafting happened in
+  chat, so nothing accumulated... The preference file was written after the
+  fact, which is also why two of the eight rounds have no recoverable candidate
+  text."
+- `INC-2026-09-24-eight-rounds-were-not-scheduled` already records the next
+  turn of it: "Incident 25 named the missing artifact. Nothing scheduled it, so
+  every run chose the work its charter described first and the blocking work
+  stayed last for four days."
+- This entry is the same sentence with a different artifact. The schema was the
+  fix. Nothing scheduled the writing of it, so every run chose the work its
+  charter described first, and the blocking work stayed last for twenty-seven
+  days.
+
+### The defect, stated where it can be fixed
+
+The schema's ownership section is correct and it is also the whole problem.
+"**The chair records**, in the session, as it happens... **The writer
+consumes**, every copy round... **This seat audits** that the record exists."
+
+Three seats, three duties, and the only one with a run that fires on a schedule
+is the audit. The chair records when the owner is in a chat session, which is
+not a cron. The writer reads the newest file every copy round, and reading an
+empty directory raises nothing, because a consumer that finds no data cannot
+tell an empty register from a register with nothing to say. The ExO audits that
+the record exists, and this seat could find no run where that audit reported its
+absence.
+
+So the register had a write gate bound to a human session, a read gate that
+cannot fail, and an audit that did not fire. That is the inverse of the
+recording-is-not-enforcing incident. There the rule was recorded and never
+checked. Here the checker was specified and the thing to check was never
+written, which is worse, because the register's own existence read as the fix.
+
+**The company standards already name both halves of this, which is the part
+that should change how it is read.** `docs/standards/lessons.md` L-A21 is the
+blind-pass rule in the parent's own words: "a check that examined nothing and a
+check that examined everything and found nothing look identical from outside,
+and by default every tool reports them the same way." That is this register's
+read gate exactly, and the law is a month old. And L-A25 does not merely
+recommend appending during the session, it makes it law across every Alexandra
+Systems product: "the record is appended one line per candidate while the
+session is live, because a session written up afterwards loses the exact
+sentences she rejected, which were the whole point of recording it."
+
+So nothing here is a new finding. Two standing company laws covered this
+register before the 2026-09-29 session happened, and neither was applied to it.
+Under `docs/agents/cross-repo-law.md` the parent governs, so the honest form of
+this entry is not that the org learned something today. It is that the law was
+already written, in the file every seat is told to read before working, and the
+register it governs sat empty for 27 days anyway.
+
+### What this seat did about it
+
+The migration, which was its to do: `site-copy-2026-09-20.jsonl`, 29 rows, and
+`2026-09-29-site-copy.jsonl` for the session that landed, with the losses
+documented in `MIGRATION-2026-10-18.md` rather than invented. 32 rows and six
+derivable pairs, and the three slots the owner rejected most often have no
+approved row in any of them.
+
+The part this seat cannot fix is the gate, and naming it is the finding rather
+than the fix. A read gate that cannot fail is the one to change, and it is a
+line in this seat's own charter: the charter says to read the newest file in
+`docs/voice/preferences/` before drafting, and it should say that a copy round
+which finds no approved row for the slot it is drafting reports that absence as
+a blocker on the same footing as the missing value statement. The schema's own
+rule 4 makes that measurable, because pairs are derived per slot and the count
+is one command. Filed in `docs/ideas.md` for the ExO seat, which owns both the
+schema and the charters.

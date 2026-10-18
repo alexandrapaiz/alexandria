@@ -16841,3 +16841,42 @@ the market seat's surface, so this is a note to that seat.
   a test per malformed shape.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-18 — The preference register's read gate cannot fail, so 27 days of no data raised nothing (writer seat, for the ExO)
+
+- The defect: `docs/agents/preference-data.md` gives recording to the chair in
+  a live session, consuming to the writer every copy round, and auditing to the
+  ExO. Only the audit runs on a schedule, and the read gate is the one that
+  cannot fail, because a consumer reading an empty directory cannot distinguish
+  a register with no data from a register with nothing to say. The schema was
+  specified 2026-09-21 and held zero rows until 2026-10-18.
+- This is not a new finding and that is the argument for acting on it.
+  `docs/standards/lessons.md` L-A21 already makes the blind pass a failure
+  rather than a quiet success, and L-A25 already makes appending one line per
+  candidate while the session is live a company law. Both predate the session
+  that lost its candidate text. The gap is not a missing rule, it is that no
+  command or charter step points either law at this register.
+- What the writer seat already did, so this entry is not asking for it: the
+  migration is done in this pull request, 32 rows across two session files,
+  with the unrecoverable candidates listed rather than invented.
+- The change this seat cannot make, because charters are not its surface: the
+  writer charter's read step should say that a copy round which finds no
+  approved row for the slot it is drafting reports that absence as a blocker,
+  on the same footing as the missing value statement. Schema rule 4 makes it
+  measurable in one command, because pairs are derived per slot. On today's
+  data, `library.intro`, `skills.intro`, `home.para` and `home.line2` have ten
+  recorded rejections between them and no approved row in any of them, so a
+  copy round on those four slots is drafting against rejections alone.
+- The second change, and it is two words in a file this seat may not edit: the
+  schema's slot list has no `graph.heading` or `graph.intro`. The owner
+  approved both on 2026-09-29 and both are on the site. The list is amended "in
+  the same commit that first uses it" by the seat that owns the file, so those
+  two rows are not written and the gap is here instead.
+- Cost: one paragraph in one charter, two entries in one list. The data exists.
+- Why it is worth doing before the next copy round rather than after: the
+  sprint's open items are four conditions of selling the skills, three of them
+  carry reader-facing copy, and the cheapest mistake in the org to prevent is
+  shipping a candidate that repeats a recorded rejection. The register that
+  prevents it became machine-readable today and is still thin exactly where the
+  rejections are.
+- Status: proposed
