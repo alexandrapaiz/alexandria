@@ -20,11 +20,29 @@ a gate belongs in a command rather than in a charter line, and a register check
 is worth exactly as much as the number of commands that run it.
 """
 
+import importlib.util
 import re
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _ledger_module():
+    """`tools/ledger.py`, loaded by path so this stays runnable from anywhere.
+
+    Every other tool in this directory is invoked as `python3 tools/x.py` from
+    the repository root and none of them is a package, so a plain import of a
+    sibling works only by accident of the current directory. This file already
+    sits in front of an `&&` in seat commands, so it loads its sibling the way
+    `tests/test_check_registers.py` loads this one.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "ledger", Path(__file__).resolve().parent / "ledger.py")
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
 
 REGISTERS = [
     "docs/ideas.md",
@@ -60,9 +78,11 @@ CONFLICT = re.compile(r"^(<{7}|={7}|>{7})(\s|$)")
 #: `INC-YYYY-MM-DD-slug`, the scheme incident 29 replaced the counter with.
 INCIDENT_SLUG = re.compile(r"^#{2,3}\s+(INC-\d{4}-\d{2}-\d{2}-[a-z0-9-]+)", re.M)
 
-#: The ledger's own entry contract, docs/ideas.md.
-LEDGER_STATUS = re.compile(r"^-\s+Status:\s*(\w+)", re.M)
-VALID_STATUSES = {"proposed", "accepted", "rejected", "built", "urgent"}
+#: The ledger's own entry contract, docs/ideas.md. The vocabulary and the shape
+#: of an entry both live in `tools/ledger.py` now, so the two files cannot
+#: drift apart. Re-exported because `tests/test_check_registers.py` reads it
+#: from here and one source of truth with one name in two modules is the point.
+VALID_STATUSES = set(_ledger_module().VALID_STATUSES)
 
 
 def conflict_markers(path: Path, root: Path = ROOT) -> list[str]:
@@ -88,15 +108,40 @@ def duplicate_incident_ids(path: Path, root: Path = ROOT) -> list[str]:
 
 
 def unknown_ledger_statuses(path: Path, root: Path = ROOT) -> list[str]:
-    """A status outside the contract is usually a typo, and it hides the entry."""
-    out = []
+    """Every entry a status filter cannot read, which is more than a typo count.
+
+    This used to walk the status lines in the file and judge each word it
+    found, and it reported six problems against a real sixty-two. The gap was
+    structural rather than a loose pattern: an entry with no status line at all
+    produces nothing for a walk over status lines to look at, so the entry that
+    is most thoroughly hidden from the PM's grooming and from every seat's
+    `urgent` sweep was the one entry class this check could never name. Fifty-
+    one entries were in it. `tools/ledger.py` walks the entries instead, and
+    this function is now its caller.
+    """
+    ledger = _ledger_module()
     text = path.read_text()
-    for match in LEDGER_STATUS.finditer(text):
-        status = match.group(1)
-        if status not in VALID_STATUSES:
-            line = text[: match.start()].count("\n") + 1
-            out.append(f"{path.relative_to(root)}:{line}: status {status!r} is not one of {sorted(VALID_STATUSES)}")
-    return out
+    blocking, warnings = ledger.check(ledger.parse(text), text)
+    # The ratchet's own verdict is returned to the caller as a blocking line
+    # only through `ledger_ratchet` below, so that this function keeps the one
+    # job its name and this module's two-tier rule give it.
+    return warnings
+
+
+def ledger_ratchet(path: Path, root: Path = ROOT) -> list[str]:
+    """Did this pull request add an entry with no readable status?
+
+    The 2026-09-24 ledger entry that asked for this check predicted its own
+    fate: "the checker warns rather than blocks, deliberately ... so the
+    warning will sit there being ignored, which is what warnings do." It was
+    right, and the count went from one to sixty-two in three weeks. A ratchet
+    is the shape that blocks without requiring this seat to rewrite another
+    seat's triage state, which no charter permits.
+    """
+    ledger = _ledger_module()
+    text = path.read_text()
+    blocking, _ = ledger.check(ledger.parse(text), text)
+    return [f"{path.relative_to(root)}: {line}" for line in blocking]
 
 
 def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
@@ -108,6 +153,13 @@ def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
     to another seat and no charter lets this one rewrite it. Two classes is
     the most this tool gets: incident 32 is what happens when a gate has a
     warning tier wide enough to put real failures in.
+
+    One addition, 2026-10-17, which does not widen the warning tier and is
+    the reason that rule survives it. The ledger's status warnings stay
+    warnings for the reason above, and the COUNT of them blocks when it
+    climbs. Blocking on an old bad entry would block every seat on a backlog
+    none of them made. Blocking on a new one costs the seat that appended it
+    one word.
     """
     blocking, warnings = [], []
     for name in REGISTERS:
@@ -122,6 +174,7 @@ def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
     ledger = root / "docs/ideas.md"
     if ledger.exists():
         warnings += unknown_ledger_statuses(ledger, root)
+        blocking += ledger_ratchet(ledger, root)
     return blocking, warnings
 
 

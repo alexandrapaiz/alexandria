@@ -6,6 +6,22 @@ agent appends; the owner writes verdicts. Contract in
 
 Statuses: `proposed`, `accepted`, `rejected`, `built`, `urgent`.
 
+**Read this file with a command, not with grep (engineer seat, 2026-10-17).**
+
+```
+python3 tools/ledger.py --status accepted    # the entries, read properly
+python3 tools/ledger.py --census             # and what no filter can see
+```
+
+Grepping this file for a verdict returns more entries than exist and fewer
+than it should, both at once. Nine entries are accepted and a grep for that
+word returns eleven hits, because two lines of prose write a verdict into a
+sentence: one inside the entry about this very defect, quoting the command,
+and one in a chair's note. In the other direction, sixty-two entries carry no
+status a filter can read at all, so a grep misses those in silence.
+`--status` answers the question and says how many entries it could not see.
+`tools/check_registers.py` now blocks when that count climbs.
+
 ## Standing backlog (owner-directed, all accepted)
 
 Groomed 2026-09-18 by the PM agent (ADR-15), per the owner's all-hands
@@ -15700,6 +15716,838 @@ nobody has to re-derive it:
   grows to admit `observation` and `evidence`, which may be the honest answer
   given two entries reached for `observation` independently.
 - Cost: $0
+- Status: proposed
+
+### 2026-10-16 — Five sources are dead and retiring one is the owner's call (engineer seat, scheduled run)
+- Trigger: the first run of `tools/feed_health.py`, written today, which fetched
+  all 53 sources in `sources.yaml` and found 7 delivering nothing. One was a
+  real URL error and is fixed in this PR (`gh-spiffe` pointed at
+  `spiffe/spiffe`, the specification repository, which cuts no releases; it is
+  now `spiffe/spire`, which answers with 10 entries at 0.8 days). One was
+  intentional and now says so in a form the checker reads (`gh-autogen` carries
+  `expect: archive`). The other five need a ruling. Full measurement in
+  `docs/evals/2026-10-16-feed-health.json`.
+- What: `mit-csail` has published nothing in 2,664 days, which is 2019.
+  `stanford-sail` nothing in 1,595. `langchain-blog` returns 200 with zero
+  items and duplicates the live `langchain` entry. Those three are retirements
+  and the only reason this PR does not make them is that ADR-7 and ADR-12 give
+  `sources.yaml` the shape of a proposal surface rather than a file a seat
+  edits on its own judgement. Two are not retirements and are worth more:
+  `qwen` is tier c, a frontier lab's own channel, 200 with 44 items and nothing
+  in 389 days, and four candidate replacement URLs were probed today and all
+  failed, so a human has to find where that feed moved. `owasp-genai` returns
+  403 with a browser user agent too, so it is blocked rather than gone.
+- First step: the owner says retire or keep on the three dead ones, and
+  whoever has five minutes finds Qwen's current feed URL. Deleting a line from
+  `KNOWN_DEAD` in `tools/feed_health.py` is how a ruling lands.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-16 — A gate at deploy time cannot watch a feed that dies between deploys (engineer seat, scheduled run)
+- Trigger: today's work made `python3 tools/feed_health.py` the first rung of
+  ingest's deploy ladder, and then the ledger's own entry of 2026-10-08 said
+  the quiet part: nothing deploys the pipeline, so production runs whatever a
+  hand last pushed. A gate on an act nobody performs fires never. `mit-csail`
+  died in 2019 and no deploy since has been able to notice.
+- What: the census needs to run on a cadence rather than only at a deploy, and
+  post to the board when the count of delivering sources drops. The constraint
+  is that it must cost nothing and must not be a sixth Modal cron, since ADR-12
+  records the free tier's cap of five as already taken. Two cheap shapes: fold
+  the check into one of the five existing jobs so it rides an already-scheduled
+  container, or run it as a step in an existing GitHub Actions workflow, since
+  it needs no credentials at all and that is the whole reason it was built
+  credential-free. The second is cheaper and is also the one no seat can
+  install, which makes it a `pending-workflow-changes.md` item rather than a
+  build task.
+- First step: decide which of the two shapes, then either one import in a
+  pipeline job or one queued workflow step. The threshold is already computed:
+  `failures()` returns the unpinned dead and is what the exit code reads.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-16 — Nobody has measured which tier the corpus actually comes from (engineer seat, scheduled run)
+- Trigger: the ages in today's census, which were not what this seat expected.
+  The tier c sources, which `sources.yaml` calls "frontier/open-lab owned
+  channels" and gives a strong triage prior, are mostly slow:
+  `transformer-circuits` newest item 56.6 days, `thinking-machines` 77.6,
+  `lilianweng` 104.6, `gh-mcp-spec` 79.9. Every one passes the health check and
+  should. Meanwhile each of the 8 arXiv categories returned its full 100 items
+  dated today.
+- What: the tier is a triage prior carried on every paper row, so it steers
+  what gets read and what reaches an issue. If tier c contributes a few dozen
+  rows a month against the firehose's thousands a day, then the prior is doing
+  far less work than its design assumes, and the issue's evidence mix is
+  effectively arXiv with decoration. That may be fine. Nobody knows, because
+  the number has never been taken. It is one `select tier, source, count(*)`
+  against `papers` grouped by month, and the answer changes how much the
+  slow-but-trusted sources are worth chasing when one of them moves.
+- First step: one query, run against Neon by a seat that holds the credential,
+  printed into `docs/evals/` beside today's census. This run could not: no
+  `NEON_*` in the environment and no Modal CLI on the runner.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-16 — Craft scan: Last Week in AI publishes a cadence promise in its name and the evidence against it in its archive (engineer seat, scheduled run)
+- Trigger: today's rotation through `docs/market/landscape.md`, taking the one
+  weekly digest in the file that no craft scan had opened, and taking it on the
+  day this org's own press had missed two Mondays.
+- What is worth stealing: the two surfaces are deliberately different, and the
+  split is better craft than it first looks. The landing page carries no date
+  at all, no issue list and no archive link, so the product promises "weekly"
+  in prose and never promises a specific issue on a specific day. Nothing on
+  it can be late. The archive then carries a date and a sequential number on
+  every issue, so a reader who wants to audit cadence can, and the integers
+  make a skipped issue arithmetically visible in a way a date alone does not.
+  What alexandria should steal is the sequence number, not the vagueness:
+  `/library` labels issues by ISO week, which makes a gap visible only to a
+  reader who already knows which weeks exist. An issue number cannot have a
+  hole in it that nobody sees.
+- What alexandria does better: their actual cadence, measured on the archive
+  today, is #343 on Sep 7, #344 on Sep 17, #345 on Sep 30, #346 on Oct 9, which
+  is gaps of 10, 13 and 9 days under a name that says "week," and the newest is
+  7 days old right now. Nothing there appears to raise when a week slips. This
+  org discovered its own missed Monday in eleven hours and has three surfaces
+  watching it: `/api/delivery`, `tools/press_watch.py`, and the rule in
+  `docs/agents/delivery-health.md`. We also publish our sources, which they do
+  not: `sources.yaml` names all 53 in the open, and as of today their liveness
+  is measured rather than asserted.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-16 — A controlled study now measures the exact failure mode the open "Scoped skill delivery by default" proposal named (market seat)
+
+- Trigger: the "Scoped skill delivery by default" proposal above
+  (2026-09-18) has sat unactioned for four weeks. It was triggered by a
+  single HN commenter's question about whether context-scoping "works
+  on repo level." This run found a controlled measurement of the same
+  failure mode: "Lost in Implicit Routing: How LLM Agents Fail to Load
+  Relevant Skills at Scale" (arXiv
+  [2610.18522](https://arxiv.org/abs/2610.18522), posted 2026-10-13)
+  holds a fixed set of tasks and golden skills constant and adds
+  irrelevant skills to the library an agent chooses from. Loaded-skill
+  recall for the correct skill falls from 73.6% to 27.4% at 1,000
+  irrelevant skills added, and the rate at which the agent loads no
+  skill at all rises from 9.3% to 51.6%. Explicit pre-selection from the
+  same library holds recall at 73.9%, roughly unchanged
+  (docs/market/landscape.md, dated 2026-10-16).
+- What: not a request to build the scoping mechanism, which is the
+  engineer and skill seats' call on design and timing, but a request to
+  re-triage the existing proposal now that its trigger has gone from one
+  commenter's question to a measured number: at the library sizes
+  alexandria's own paid tier is built to reach, naive full-context skill
+  delivery is not a minor inefficiency, it is a majority failure to load
+  the right skill at all.
+- Whose call: engineer and skill seats, on whether this re-prioritizes
+  the existing proposal. The paper also names a possible first-step
+  mitigation (explicit pre-selection) worth reading before scoping the
+  work.
+- First step: read the paper's mitigation section (explicit selection
+  vs. masking irrelevant descriptions) before designing alexandria's own
+  scoping rule, since it reports a latency/coverage tradeoff between the
+  two approaches that a from-scratch design would otherwise rediscover.
+- Cost: $0 to read and re-triage. Building the mechanism is unscoped
+  engineering work, priced separately if and when it is picked up.
+- Status: proposed
+
+### 2026-10-15 — The Left-Behind Index is built and must not be linked until `contradicts` precision moves (frontend seat)
+- Trigger: sprint-2026-10-12 item 4 asked for this page and
+  `docs/research/briefs/2026-10-12.md` §5 measured the data under it at
+  **0.172 precision over the full population** of 33 edges, not a sample: 5
+  correct, 24 wrong, 4 unsure. The brief states the consequence in its own
+  words, "19 of 22 claims on the Left-Behind Index are not superseded", and
+  `docs/product/graph-quality.md:91` had already named this page as the
+  surface the number would decide.
+- What: the route is built, public, verified at three viewports at fifty
+  findings, and deliberately **not linked** from the nav or any page. The
+  charter's quality-claims gate says a claim whose row is `contradicted`
+  stops and goes back as a ledger note naming the claim and the surface, so
+  this is that note. The claim is "replaced when newer work overturns it"
+  (`docs/agents/quality-claims.md`, state *reports, does not replace*,
+  already public at `site/app/page.jsx:40`). The surface is
+  `site/app/left-behind/page.jsx`.
+  There is no filter available to this seat that would publish it clean.
+  Confidence carries no signal and is inverted at the top: precision is 0.19
+  in the band holding 22 of the edges and **0.0 in both bands above it**, so
+  raising the threshold in `site/lib/` makes the page worse while looking
+  like diligence. The fix is in `pipeline/interpret.py` and its prompt, which
+  is the engineer's lane, and the brief's §7 already carries the diff.
+- First step: the owner decides whether to merge the page unlinked, which is
+  what this pull request proposes, or to hold it entirely. Linking it is one
+  line and the diff is in the PR. The gate to watch is a re-measured
+  precision number from `tools/graph_audit.py --labels`.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — The Left-Behind Index has no approved words (frontend seat)
+- Trigger: the page needed an intro and no approved line under `docs/voice/`
+  covers this surface. `docs/voice/preferences/site-copy-2026-09-20.md`
+  carries approved lines for the home statement, the library heading and the
+  skills `/llms.txt` line, and nothing for this one. The owner's division of
+  2026-09-19 is that the writer drafts and this seat sets, so the gap is a
+  note rather than a sentence written at the keyboard.
+- What: the page ships with no intro paragraph. Its kicker is `Library` and
+  its heading is `Left behind`, which is vision §1's own name for this class
+  of finding rather than authored copy, and taste's standing rule that
+  headings are bare nouns with no explanatory subtitle is what it follows.
+  Two state lines are the only prose on the page and both are provisional:
+  `No finding is flagged.` and `The library could not be read.` They are
+  named constants at the top of the route so one edit replaces them.
+- First step: the writer seat drafts an intro and a ruling on the two state
+  lines, in a copy round rather than inside a visual PR. Worth noting for
+  that round: whatever the page says about these findings has to survive the
+  0.172 precision above, so the honest line may be about what the machine
+  flagged rather than about what the field abandoned.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — The Playwright pin in site/package.json has drifted off the container (frontend seat)
+- Trigger: the visual harness could not launch this run.
+  `site/package.json` carries `playwright: ^1.63.0`, which resolves to 1.63.0
+  and looks for `chromium_headless_shell-1243`. The agent container bakes
+  `chromium-1148`, which is 1.49.x, so the launch fails with
+  `Executable doesn't exist at /ms-playwright/chromium_headless_shell-1243/`.
+  The charter names `npx playwright@1.49.1` as the pin precisely because the
+  browsers are baked.
+- What: this run used 1.49.1 from a scratch directory outside the repository
+  and changed neither the package nor the Dockerfile, because the charter
+  says moving the pin is a Dockerfile change proposed in the ledger and never
+  an in-run install. Two numbers disagree and this seat should not pick the
+  winner on its own: the container may be stale, or the devDependency bump
+  may have been made for CI without anyone checking the baked browsers.
+- First step: whoever owns the container checks whether CI installs its own
+  browsers. If it does, the devDependency is free to move and the container
+  pin is the one to raise. If it does not, they should agree on one number
+  and write it in both places.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — The house grey measures 3.6:1, which is under AA for small text (frontend seat)
+- Trigger: the charter asks this seat to judge contrast failures, so the
+  number was computed rather than eyeballed. `--gray` (#86868b) on #ffffff is
+  **3.6:1**. WCAG AA wants 4.5:1 for text under 24px.
+- What: it is the house's standing secondary colour and it carries the page
+  kicker, the row metadata, the definition-list labels and the footer, at 11
+  to 13px, on every page. The new page uses it exactly where the house
+  already does and introduces no new instance of it, which is why this is an
+  observation with a number rather than a diff. Ban list entry 27 is the
+  related rule and it is about opacity standing in for a state, not about
+  this.
+- First step: an owner ruling. Moving the value is a one-line change in
+  `:root` and it touches every page at once, which makes it hers rather than
+  a polish diff. #6e6e73 clears 4.5:1 and stays in the same family.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-16 — Run reports have never landed, because the one field the workflow passes is a word and the column is a number (frontend seat)
+- Trigger: `python3 tools/board.py report --status success` at the end of this
+  run answered `503: the board's database is unreachable`, which is the second
+  sighting in 24 hours and is filed as
+  `INC-2026-10-16-every-run-report-fails-on-a-string-where-the-board-wants-a-number-and-the-error-blames-the-database`.
+  Four probes on one token inside one minute isolate it: `exit` of `0` and of
+  `"0"` both return 201, and `exit` of `"success"` and of `"failure"` both
+  return 503.
+- What: `run_payload` in `tools/board.py` sets `"exit": args.status`, and
+  `--status` is declared `choices=("success", "failure", "cancelled",
+  "skipped")` with the help text "GitHub's job.status". The board stores `exit`
+  as a number, so the single field the workflow step exists to pass is the
+  field the insert rejects. `cmd_report` then catches it, prints a
+  `::warning::` and returns 0, which is the right call for the job's exit code
+  and is why this has been invisible: the annotation sits inside a green job.
+  The consequence is named in that function's own comment, which says the PM's
+  standup reads run health off these statuses. Run health does not read wrong,
+  it reads empty, and L-A21 is the lesson that says empty and quiet look the
+  same from outside.
+- First step: a map from the four words to exit codes at the one place the word
+  enters the payload, so the workflow keeps GitHub's vocabulary and the server
+  keeps its number. Then the thing worth doing properly, which is that
+  `cmd_report` should distinguish a transport failure from a rejected payload:
+  a 503 it can keep swallowing, and a 4xx on a body it built itself is a bug in
+  this file and should be loud. A `--dry-run` that the server validates without
+  storing would also have made today's bisect free, because `/api/runs`
+  implements no delete and six probe rows are now permanent.
+- Second, and it is not this repository's: the endpoint answered "the board's
+  database is unreachable" while accepting six inserts from the same token in
+  the same minute. That sentence named a cause the evidence rules out and sent
+  yesterday's run of this seat to the wrong conclusion in writing. A type or
+  constraint failure reported as connectivity is worse than an opaque error,
+  because an opaque error gets investigated and a confident one gets believed.
+- Whose call: the engineer seat for `tools/board.py`, and HQ for the board's
+  error message. Neither is this seat's surface, and this entry is the handoff
+  written down.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-15 — The press pays for a second print of every issue and throws the better one away (writer seat)
+- Trigger: the eleventh grade of 2026-W40 read `press_rehearsals` id 4 as prose
+  for the first time rather than as a source of `payload_stats`. It is the same
+  week, the same model `kimi-k2.6`, and the same `prompt_sha` `c48d09624161`,
+  written five and a half hours before the send that reached subscribers.
+- The measurement, both bodies under
+  `python3 -I docs/voice/check_voice.py measure`, and the links by section
+  under `awk '/^## /{sec=$0} /\[full text\]/{print sec}' | sort | uniq -c`:
+  the sent issue carries 3 links, all three in the reading list and none in its
+  three body sections. The discarded print carries 13, ten of them in those
+  three sections. Its reading list recommends three papers that appear nowhere
+  else in the document, and the sent one recommends three that were each
+  described at length in the section directly above.
+- The gap: `rehearse()` exists to answer "does one real call work", the third
+  gate in the deploy ladder per `docs/agents/press-rehearsal.md`. It writes a
+  full body, mails nobody, costs about a nickel, and nothing reads its prose,
+  which is correct for the question it was built to answer. The consequence
+  nobody designed is that the pipeline generates two candidates on the same
+  prompt and keeps the one that happens to run second.
+- The ask, and it is a comparator rather than a judge, because choosing between
+  two prints is an editorial act and this is arithmetic. Where a
+  `press_rehearsals` row carries the week about to be sent and the same
+  `prompt_sha`, compute two integers on both bodies before the send: links
+  divided by named works, and reading-list picks whose work is named above the
+  list. Where the rehearsal wins on either, flag the send in the alarm path
+  that `pipeline/weekly.py` already has, or hold it for the owner. Refusing
+  automatically is the wrong default on week one, because n is two.
+- Why it is worth more than the one issue it would have caught: it is the only
+  mechanism in the org that can tell a gate's wording from a gate's luck. Three
+  merged patches to the link-coverage rule were each aimed at the gap between 3
+  links and 13, and the spread between two runs of the unchanged wording is
+  that entire gap. Without a comparator the next wording is also untestable.
+- Sibling: ban list entry 96 asks for a pipeline-side link-coverage check and
+  is 10 days open. That entry builds the numerator and this one builds the
+  comparison, so entry 96 first is the cheaper order.
+- Blocked by: nothing. Both inserts already happen in `pipeline/weekly.py` with
+  the bodies in hand.
+- Cost: $0. No new model call, because the rehearsal is already paid for.
+- Where this entry sits, and why: four pull requests were open against this
+  repository when this run started (#301, #302, #305, #306) and this file is
+  the highest collision surface in it, which is incident 6. So this entry is
+  appended at the end rather than beside a related anchor, and this run touches
+  no other line of this file. Merge order is whatever the owner chooses,
+  because an append at the end conflicts with nothing. This note is a bullet
+  rather than an entry of its own because an entry of its own would have needed
+  a status word, and the security seat filed on 2026-10-15 that six entries in
+  this file already hold a word the vocabulary rejects. A seventh would be this
+  seat adding to a problem it had just read.
+- Status: proposed
+
+### 2026-10-16 — The comparator the grade now runs exists for one week out of three by accident (writer seat)
+- Trigger: `docs/voice/check_voice.py compare` landed today and classified ten
+  measurable gates across the two prints of 2026-W40 into five determined
+  failures, three determined passes and two undetermined. The classification is
+  only possible where two bodies of one week share a `prompt_sha`, and that is
+  true for exactly one week.
+- The measurement: `press_rehearsals` holds four rows, three for 2026-W39 and
+  one for 2026-W40. `digests` holds three rows, for 2026-W37, 2026-W39 and
+  2026-W40. 2026-W37 has no rehearsal at all, and the W40 pair exists because a
+  deploy happened to run five and a half hours before that Monday's send.
+- The gap: `rehearse()` fires on the third gate of the deploy ladder, per
+  `docs/agents/press-rehearsal.md`, so a rehearsal row is a side effect of
+  deploying and not of sending. A week whose send follows no deploy gets one
+  sample, and one sample cannot tell a gate's wording from a gate's luck. That
+  is the state every future grade is in by default, and it is the state the
+  eleven grades before 2026-10-15 were in without knowing it.
+- The ask, and it is smaller than the comparator filed yesterday: keep writing
+  the row, and write one on the send path as well, so every issue has a second
+  body from the same prompt. The body is already generated and discarded on the
+  deploy path, so the only new cost is one call on a week with no deploy. If
+  that cost is unwanted, the cheaper half is to say so in the alarm when a send
+  has no comparable rehearsal row, because then a grade reads the absence rather
+  than inferring it.
+- Why it is worth the nickel: this seat has merged twenty patches to
+  `prompts/digest.md` since 2026-10-05 and can currently say of only ten gates
+  whether a wording change is testable at all. Two of the ten are undetermined,
+  and both of those are axes this seat has already patched three times each.
+  Every future grade without a second sample is a grade that cannot make that
+  distinction and will keep rewording gates that are not wording problems.
+- Sibling and order: the comparator filed on 2026-10-15 is the judge and needs
+  two bodies to judge. This entry is what guarantees the second body exists.
+  This one first, because the other has nothing to read without it.
+- Not this seat's surface: `pipeline/weekly.py` is the engineer's. The
+  classification command is in `docs/voice/` and is done.
+- Where this entry sits: appended at the end, touching no other line, because
+  this file is the org's highest collision surface (incident 6) and three pull
+  requests were open against this repository when this run started.
+- Cost: about a nickel a week, or $0 for the alarm-line half.
+- Status: proposed
+
+## Engineer agent findings (2026-10-17, scheduled run)
+
+### 2026-10-17 — Two more clients ask a service a question and read the refusal as the answer (engineer seat, scheduled run)
+- Trigger: today's break-fix, `INC-2026-10-17-a-403-was-recorded-as-a-measured-
+  death-and-the-gate-never-asked-the-production-client`. The availability gate
+  called a live feed dead because its client was refused and the job it guards
+  uses a different client. That entry's closing paragraph names two more
+  places with the same shape and this is the entry it points at.
+- What: `tools/check_issue_citations.py` is the accuracy half of the pre-send
+  quality tier and the only thing that checks a cited title against the paper
+  its link resolves to. It calls arXiv and Semantic Scholar with its own
+  client. `pipeline/weekly.py`'s citation slow loop calls Semantic Scholar
+  with another. Neither can currently tell "this service is refusing me right
+  now" from "this paper is not there", which is the exact confusion that cost
+  three runs on `INC-2026-09-20`'s 406 and cost a live source a retirement
+  proposal yesterday. The checker got retry-with-backoff on 2026-09-20, so it
+  is half protected: it waits out a 429, and if the refusal is durable it
+  still reports the citation as unverifiable rather than itself as blocked.
+  The consequence is specific and it is not theoretical, because this gate
+  stands between a composed issue and a subscriber's inbox: a service having
+  a bad afternoon reads as an issue with bad citations, and the press holds a
+  send it should have made.
+- What: the fix is one distinction in two files. A check that cannot reach a
+  service reports `unverifiable` and does not count against the issue. A
+  check that reaches the service and gets a contradiction reports `wrong` and
+  blocks. Today they are the same verdict.
+- First step: add the two verdicts to `tools/check_issue_citations.py` and
+  one test per verdict driven off a faked client, then read
+  `pipeline/weekly.py`'s loop against the same distinction.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-17 — The one landscape entry an agent can never re-observe, and the generalisation that would be wrong (engineer seat, scheduled run)
+- Trigger: probing hosts from this runner during today's break-fix.
+  `thesequence.substack.com` answers 403 to httpx and to urllib both, with
+  five user agents tried, while `example.com`, `huggingface.co`, `arxiv.org`,
+  `genai.owasp.org`, `www.latent.space` and
+  `newsletter.pragmaticengineer.com` all answer 200 from the same process.
+- What: `docs/market/landscape.md` carries a `Last observed` date on every
+  competitor, and the market seat's ceremony refreshes them. TheSequence is
+  on the `substack.com` apex host, so no agent on this host can refresh it,
+  and the date will sit at 2026-10-02 looking like neglect rather than like a
+  block. Worse, the next seat to try will see 403 and may write the entry
+  down as gone, which is yesterday's mistake with a competitor instead of a
+  feed. The nuance is the interesting half: Latent Space and The Pragmatic
+  Engineer are Substack publications on their own domains and both answer
+  200, so a rule written as "Substack is unreachable" would be wrong about
+  two entries out of three and would strand two observable competitors.
+- First step: the market seat's own file gets a one-line `Reachable from CI:
+  no (403 on the substack.com apex, measured 2026-10-17)` on the TheSequence
+  entry, so a frozen date reads as a known block. `docs/market/landscape.md`
+  is the market seat's surface, so this is a proposal to that seat rather
+  than a diff from this one.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-17 — The ledger's contract cannot reach zero until someone rules on whether a note owes a verdict (engineer seat, scheduled run)
+- Trigger: `python3 tools/ledger.py --census`, written today. 551 dated
+  entries, 489 with a status a filter can read, 62 without. Of the 51 that
+  carry no status line at all, 30 are craft or competitive scan notes.
+- What: the 2026-09-24 entry on this defect asked for the status rule to move
+  from warning to blocking "once the count is zero", and the count cannot
+  reach zero by anyone's effort, because a scan note is not a proposal and
+  has no verdict to carry. Every charter asks its seat for a scan note in the
+  same file as its ideas, so the file holds two kinds of entry and the
+  contract describes one of them. Three ways out, and the choice is the
+  owner's because it is the vocabulary she writes verdicts in. Exempt entries
+  whose name begins "Craft scan" or "Competitive scan" from the status rule,
+  which is the cheapest and leaves 21 real proposals to fix. Or add a sixth
+  status, `note`, which makes a scan note say so in the same field as
+  everything else and makes the filter honest. Or rule that a scan note
+  carries `proposed` like anything else, which is what every scan note
+  appended since 2026-10-15 already does.
+- What, second half: 206 of the 489 readable entries are missing at least one
+  of the contract's four other fields, `Trigger`, `What`, `First step` and
+  `Cost`. That number is measured and pinned in `tests/test_ledger.py` so it
+  cannot grow, and it is reported rather than enforced, because enforcing it
+  would block every seat on three weeks of other seats' prose.
+- First step: the ruling, in one line, in this file's own header beside the
+  status list. Whichever it is, `tools/ledger.py` needs one function changed
+  and its baselines lowered in the same pull request.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-17 — Craft scan: the free skills directory publishes a count its own file does not hold (engineer seat, scheduled run)
+- Trigger: the craft-scan rotation. `docs/market/landscape.md` carries
+  ComposioHQ's `awesome-claude-skills` since 2026-09-30 and no craft scan has
+  ever opened it, which made it the next unscanned entry. Fetched its GitHub
+  metadata and its README this run. TheSequence was the first pick and could
+  not be fetched at all, which is the ledger entry above.
+
+**Worth stealing: the first screen is an action, not an index.** The README
+puts a three-step quickstart above its catalogue. Install the plugin, run
+`/connect-apps:setup`, restart and try it. A reader who came for a list gets
+a working thing in three commands before the list begins, and the list is
+what they scroll to afterwards. Our `/library` opens on an index of issues,
+which is the right content and the wrong first move: a visitor who has never
+read an issue has nothing to do on that page except choose. The equivalent
+for us is not a plugin install. It is one claim, rendered with its evidence
+and its contradiction, above the list, so the first screen demonstrates what
+the product is instead of describing it.
+
+**What alexandria does better, and it is today's own subject.** The
+directory's first sentence calls itself "a comprehensive and curated list of
+1000+ production ready and practical Claude Skills and Plugins". Its README
+holds 76 linked list entries across 11 categories. The number is not a lie,
+it is a number from somewhere else: six of the seven places the file says
+"1000+" are about Composio's own 1,000 app integrations, and the first
+sentence borrowed it. Measured today: 77,255 stars, 9,153 forks, **1,766 open
+issues, and a last push of 2026-09-18**, with a submission PR arriving as
+recently as 2026-10-16. So the queue grows, nothing merges, and the headline
+count is 13 times the catalogue. Every number alexandria prints about its own
+corpus is re-derivable from the database by a command, which is a difference
+worth saying out loud on the pricing page rather than only believing.
+
+**The correction this owes our own file.** The landscape entry repeats the
+"1,000+ Claude Skills and plugins" claim and its `Last observed` is
+2026-09-30. Both halves need the market seat's hand: the count should read
+"76 linked entries, against a self-described 1,000+" and the freshness line
+should carry the 29-day gap, because an unmaintained directory with a 1,766
+-deep queue is a different competitor from a trending one. `landscape.md` is
+the market seat's surface, so this is a note to that seat.
+- Status: proposed
+
+### 2026-10-17 — URGENT: Monday's press runs an image built before the repair that Monday needs (engineer seat, second run)
+- Trigger: `python3 tools/delivery_health.py --surface deploy --json` at 14:16
+  UTC today. The `weekly` app's last run reported `0cbc51a0e248`, its image was
+  built from `3bbf430` of 2026-10-04, and `origin/main` is at `2e313065f5c7`
+  with 34 commits waiting. The next scheduled press run is `0 9 * * 1`, which
+  is 2026-10-19 at 09:00 UTC, and the degraded-edition repair for
+  `INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue`
+  merged on 2026-10-12 and is in none of those 34 commits' downstream: it is
+  in the repository and not in the container. 2026-W41 was already missed. The
+  same code that missed it is what runs on Monday.
+- What: one command, `modal deploy pipeline/weekly.py`, behind the three-gate
+  ladder in `docs/agents/press-rehearsal.md`, which is
+  `python3 pipeline/budget.py && modal run pipeline/weekly.py::preflight &&
+  modal run pipeline/weekly.py::rehearse && modal deploy pipeline/weekly.py`.
+  It needs a hand on a Modal token, so it is not an agent action. It is listed
+  here rather than only on the board because the board card this run created
+  has no clock and a Saturday card is a Monday problem.
+- First step: run it before 2026-10-19 09:00 UTC. The next run of the job
+  records its own sha and both the board card and the deploy surface clear
+  themselves.
+- Cost: one Kimi call for the rehearsal, about $0.05 by ADR-32's arithmetic.
+- Status: urgent
+
+### 2026-10-17 — No register says which of this org's guardrails can actually fire (engineer seat, second run)
+- Trigger: today's own finding, which is the second of its kind in four days.
+  The deploy alarm was correct for nine days and raised to nobody, because its
+  cooldown is a database column and its runner holds no database credential
+  (`INC-2026-10-17-the-deploy-alarm-had-no-reachable-cooldown-and-raised-to-nobody-for-nine-days`).
+  The press alarm had the same shape on 2026-10-14. Both were found by a seat
+  running the check by hand and reading the sentence it printed about itself,
+  which is not a mechanism. `docs/agents/registers.md` maps which register has
+  a write gate and which has a check gate, and nothing maps the equivalent for
+  alarms.
+- What: a census command, `python3 tools/alarm_census.py`, that walks the
+  guardrails this repository defines and prints three facts for each one: the
+  store its cooldown lives in, the credential that writes that store, and the
+  scheduled job that runs it. A guardrail missing any of the three cannot
+  fire, however correct its judgement is, and the census says so in those
+  words rather than leaving a reader to infer it. Measured by hand today, at
+  least three rows come back with a hole in them: the deploy alarm's email
+  path, the press alarm's escalation, and every tool in
+  `.github/workflows-pending/` whose schedule has not been applied.
+- First step: the walk over `tools/` for the two call sites that mark a
+  guardrail, `notify_owner` and `board.api`, plus the workflow grep that
+  answers the third column, with its output checked into `docs/evals/` the
+  first time so the number has a date on it.
+- Cost: $0, standard library only, no new service.
+- Status: proposed
+
+### 2026-10-17 — The pipeline surface reads recency and never direction, so a queue that grows every day is green every day (engineer seat, second run)
+- Trigger: the delivery receipt at 14:13 UTC today reads `distill_pending`
+  2,556 and `triage_pending` 2,130. `docs/sprints/sprint-2026-10-12.md`
+  recorded `distill_pending` at 2,173 on 2026-10-12, post-pacing-fix. That is
+  383 papers deeper in five days, about 77 a day, and `judge_pipeline` called
+  the surface `ok` on both days with the words "ingesting and distilling
+  within 2 days", because the only question it asks is whether a row arrived
+  recently. Every job ran on time today. The corpus is still falling behind,
+  and the one instrument that would say so reports health.
+- What: give the pipeline surface a second question. Recency answers whether
+  it ran, and depth over time answers whether it is winning, and those are
+  two different facts about the same queue. The surface compares each queue's
+  depth against the depth it carried the last time anything looked, and
+  reports a queue that has grown across a window as `failing` with the
+  per-day number in the headline, because a drain rate below the fill rate
+  is a date at which the press has nothing fresh to print, and that date is
+  computable.
+- First step: a committed snapshot, `docs/evals/queue-depths.json`, one line
+  per observation with the receipt's three depths and its `observed_at`, plus
+  `judge_pipeline` reading the newest two lines. No schema change and no
+  credential, because the receipt already publishes the depths and the repo is
+  a store every seat can write. The daily engineer run appends one line, which
+  is one commit a day and is also the thing that makes the number auditable.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-17 — Craft scan: Import AI numbers its issues and alexandria dates them, and only one of the two can hide a missed week (engineer seat, second run)
+- Trigger: today's rotation through `docs/market/landscape.md`, the Import AI
+  entry (jack-clark.net, Jack Clark), which no craft scan had taken yet.
+  Measured from its feed at 14:38 UTC today: ten issues, 467 through 476,
+  every one of them a Monday, published between 12:26 and 13:31 UTC. The
+  newest is 476 of 2026-10-12. Alexandria's newest is 2026-W40 of 2026-10-05.
+- Worth stealing, the subject line. Every Import AI subject is an ordinal and
+  then three named topics: "Import AI 476: Creativity and RSI; worse-than-China
+  open weight models; AI goes ...". The subject is a table of contents, so a
+  reader deciding whether to open it is deciding against three specific claims
+  rather than against a theme. Alexandria's subject is the issue's own H1 and
+  nothing else (`email_render.subject_for`), and when the editorial title
+  repeats, `disambiguate_subject` appends the week's dates, which tells a
+  reader the issue is new and not what is in it. The house voice bans semicolon
+  joins, so the separator would have to be different here, and that is a real
+  constraint rather than a reason to decline: three topics on one line is the
+  idea and the punctuation is not.
+- What alexandria does better, and it is the same mechanism read the other
+  way. Import AI 472 is dated 2026-09-07 and 473 is dated 2026-09-21, so a
+  week was skipped, and the numbering absorbed it without a mark: 472 to 473
+  reads as consecutive to anyone not checking the dates. An ordinal counts
+  issues published. Alexandria labels by ISO week, so a missed week is a hole
+  in the archive that cannot be closed by publishing the next one, and
+  2026-W41's absence is legible on `/library` today without anybody writing it
+  down. That is the harder promise to keep and it is the right one to have
+  made, because the product's whole claim is that it reads the week.
+- First step, if the subject idea is taken: `subject_for` gains the three
+  topics from the issue's own section headings, which the generator already
+  produces, with the H1 kept as the preheader rather than discarded.
+- Cost: $0, no new model call, the headings are already in the body.
+- Status: proposed
+
+### 2026-10-17 — The ten gates every grade now quotes have no fixture, and two of them were wrong for a day (writer seat)
+- Trigger: `docs/voice/check_voice.py compare` landed on 2026-10-16 and the
+  grade of that day read its ten rows as the verdict table, which is what it is
+  for. Today's grade found two of the ten rows counting the wrong blocks. Both
+  were canon law 14, the law the owner has ruled can fail an issue by itself,
+  and four of the five determined failures sat on that law.
+- The measurement, and the direction is the part that matters. `shapes the
+  writer added` counted the masthead, the rule above the close and the close
+  itself as the writer's work, so its floor was two on every issue this press
+  can produce and the one-kind failure that law calls categorical could not be
+  reported at all. `sections over four paragraphs` counted blocks where the
+  rule it serves says paragraphs, so the lines and lists the same law demands
+  pushed sections over their own threshold: it raised six flags across the two
+  prints of 2026-W40 and all six were false, because neither print has a
+  section with more than four paragraphs in it.
+- Why a reading did not catch it: both numbers are plausible. Two shapes on a
+  grey issue reads as true and it was true by accident, and a five-paragraph
+  section in a section of four paragraphs and one standing line reads as an
+  editor's judgment rather than as an off-by-one.
+- What exists already: `tests/test_voice_enforcements.py` covers
+  `enforcements` and the non-ASCII half of `measure`, four tests, all passing
+  today. Nothing covers `axes`, which is the function both defects were in and
+  the only one whose output a grade quotes as a verdict.
+- The ask: one fixture per axis. A short synthetic body per row of that table,
+  built to fail its own gate and to pass every other, asserted against the
+  number `axes` returns. Ten small bodies, no network, no database. The
+  shape-floor defect is caught by a body whose only non-paragraph blocks are
+  the three standing lines, and the section defect by a four-paragraph section
+  carrying one standing line.
+- Why it is worth the hour: this instrument is the only thing in the org that
+  tells this seat which of its patches are testable, and a grade that quotes a
+  wrong row routes the next run's work. The grade of 2026-10-16 quoted the
+  inflated section figures as evidence under law 14 and recorded a FAIL against
+  an artifact that obeyed the rule, which is the second time in two days
+  (`INC-2026-10-17-the-instrument-overcounted-the-law-it-was-built-for`).
+- Not this seat's surface: `tests/` is not in the writer charter's writable
+  list, and `docs/voice/check_voice.py` is. The two axes are corrected in this
+  pull request, and the fixture that would have caught them is this filing.
+- Where this entry sits: appended at the end, touching no other line, because
+  this file is the org's highest collision surface (incident 6) and five pull
+  requests were open against this repository when this run started.
+- Cost: an hour, no runtime cost, no secret.
+- Status: proposed
+
+### 2026-10-17 — L-A23 bans the quoted specimen only where it is banned, and alexandria has a print proving the recommended one is supplied just as hard (writer seat, for the ExO relay)
+- For: the ExO seat to carry into docs/agents/hq-relay.md, which is that
+  seat's file. This is not a disagreement with the parent and it is not a
+  local override. It is one artifact the standard's own sentence does not
+  reach, offered as evidence for widening it.
+- The standard: L-A23, "a prohibition must not quote the banned specimen
+  where the work is written", with the test stated as "if the nearest quoted
+  example at that position is the thing being banned, the prohibition is a
+  supply." Its incident is a banned framework name printed as a heading.
+- The evidence: on 2026-10-05 this product's reading list opened on "The
+  scheduling maths is in section 4 and it is the part nobody gets right by
+  intuition", word for word the sentence `prompts/digest.md` quoted at that
+  position as the model of a good line. It was not a banned specimen. It was
+  the recommended one, and it carried the explicit defence "in a subject no
+  payload will ever hand you, so that copying it is obviously wrong". The
+  payload handed over a paper whose section 4 really is scheduling maths.
+- The widening the evidence supports: the operative property is the quotation
+  at the writing position, not the specimen's polarity. A sentence quoted
+  there is the nearest available draft whether the surrounding prose praises
+  it or forbids it, and a subject-matter defence is no defence, because the
+  subject is the one variable the input controls. This repo's own generator
+  already carries the sharper form in its own words, "a phrase quoted inside
+  the slot the model writes into is not a prohibition, it is the nearest
+  available draft", written there on 2026-10-13 about a different specimen in
+  the same slot, and it did not reach the specimen thirteen lines below it.
+- Cost to HQ: one clause in L-A23. The local fix is already merged here as
+  ban list 122.
+- Not this seat's surface: `docs/standards/lessons.md` is a vendored copy and
+  `docs/agents/hq-relay.md` is the ExO seat's file, so this entry is the whole
+  of what this seat can do with it.
+- Status: proposed
+
+### 2026-10-18 — The distiller records what a paper did and nothing it left out, so half of every evidence grade is unreachable (writer seat, structure watch)
+- For: the engineer seat. This is a schema and prompt change in
+  `pipeline/distill.py`, which is not this seat's surface.
+- The demand: `prompts/digest.md` asks the in-line evidence grade for two
+  halves, how strong the number is and what the work did not measure. The
+  second half is what separates a grade from a compliment, it is the move The
+  Batch makes and we do not, and it has been in the generator since
+  2026-09-19.
+- The blocker: the claim row holds `claim`, `evidence`, `topics` and
+  `procedure`. All four record what the paper did. Nothing in the payload
+  records a measurement the paper did not report, so the model is asked for an
+  absence, handed a list of presences, and told in the same rule never to
+  invent an omission. The rule is honest and unsatisfiable at once.
+- The evidence that this is structural rather than a wording problem: six of
+  the seven evidence grades in 2026-W40 filled the second half's position with
+  who ran the work or who has not repeated it, which is the first half said
+  twice. The seventh named a missing benchmark. A hand-written rewrite of the
+  same section by this seat, with the rule open and the paper available, made
+  the same substitution. Scored in `docs/voice/benchmark-2026-10-18.md`, where
+  evidence is the only axis on which the rewrite fails to improve on the issue
+  it rewrites, and it is the axis the market wins on.
+- The proposal: one more field on the claim, holding what the paper's own text
+  says it did not test, did not report, or ran on one setting only, extracted
+  by the distiller from the full text in the same pass that produces
+  `evidence` and `procedure`, and left null whenever the paper says nothing of
+  the kind. Null is the common case and null is correct. The generator then
+  draws the second half from a field that records an absence instead of
+  inferring one from a list of presences, and a grade with an empty second
+  half is a paper that disclosed no limit rather than a model that ran out of
+  things to say.
+- Why not another wording: the writer charter's structure watch says a
+  structural fix that prose cannot carry goes to the engineer instead of being
+  prompt-tinkered again. This seat's own patch today is only the prohibition
+  on substituting, which is the half a prompt can hold. The half it cannot
+  hold is this entry.
+- Cost: one column, one clause in the distiller's extraction prompt, a
+  backfill that is optional because the field is null-by-default and new
+  issues are written from new claims.
+- Where this entry sits: appended at the end, touching no other line, because
+  this file is the org's highest collision surface and five pull requests were
+  open against this repository when this run started.
+- Status: proposed
+
+### 2026-10-18 — Publish the same nine skills in the vendor-neutral form, not only as a Claude Code plugin (engineer seat)
+- Trigger: today's install work shipped `.claude-plugin/marketplace.json` and
+  `.claude-plugin/plugin.json`, which are Anthropic's format and reach Claude
+  Code and nothing else. Today's craft scan, below, found that Skly sells one
+  bundle to Claude, ChatGPT and Cursor buyers at once by targeting the open
+  Agent Skills format at agentskills.io rather than any one harness's plugin
+  system. The nine skills in `skills/` are already in that format, because a
+  directory holding a `SKILL.md` with `name` and `description` is exactly what
+  the open spec describes. So the library is portable today and is published
+  as though it were not.
+- What: one more install path next to the plugin, for an agent that is not
+  Claude Code. A reader on Cursor or on a ChatGPT project should be able to
+  take the library without reading this repository's layout, which means a
+  single downloadable archive of `skills/` with a manifest naming each skill,
+  its status and the claims behind it, served from a stable url. The plugin
+  stays the headline because it is the only path where an update is one
+  command. The archive is the path that does not ask what harness the buyer
+  chose.
+- First step: a `tools/skill_bundle.py` that writes `dist/alexandria-skills.zip`
+  and an `index.json` beside it from the same directory walk
+  `tools/check_plugin_manifest.py` already does, and one section on
+  `docs/product/install.md` for readers who are not in Claude Code. Nothing
+  new is generated, so the bundle cannot disagree with the plugin.
+- Cost: $0. No new service, and the artifact is built in a run rather than
+  hosted anywhere new.
+- Status: proposed
+
+### 2026-10-18 — The plugin's version is a hand-typed number, and the install it describes changes without it (engineer seat)
+- Trigger: `.claude-plugin/plugin.json` shipped today carrying
+  `"version": "0.1.0"`. Nothing recomputes that string, so the next skill
+  revision changes what a reader installs and leaves the number that names it
+  alone. This repository already recorded the fix in its own craft scan of
+  2026-09-24: Anthropic's install mechanics resolve a version by falling back
+  to the resolved commit sha for a git source, for exactly this reason, and
+  that scan's own sentence was "a date says when somebody looked, a hash says
+  what they looked at."
+- What: give the library a fingerprint over the thing that actually ships,
+  which is the nine `SKILL.md` files, and publish it where a reader who
+  already installed can compare. The marketplace is a git source, so Claude
+  Code resolves the real version to a commit sha on its own and a reader
+  cannot see it without asking git. The value here is not the loader's
+  version. It is a number in the catalogue and on the skills page that answers
+  "is what I hold what is on main" without a clone.
+- First step: `tools/check_plugin_manifest.py` grows a `--fingerprint` that
+  prints a sha256 over every shipped `SKILL.md` in path order, and the
+  checker asserts that the fingerprint recorded in
+  `docs/product/install.md` is the live one, exactly as it already asserts the
+  skill count. The second step, which is the frontend's, is rendering it next
+  to each skill on the site.
+- Cost: $0, standard library only.
+- Status: proposed
+
+### 2026-10-18 — Two skills carry a status no decision record defines (engineer seat)
+- Trigger: writing the buyer-facing install page meant stating what
+  `active`, `provisional` and `draft` mean to someone deciding whether to
+  trust a skill. ADR-36 defines two of the three: a skill with no eval is
+  `draft` and never `active`, and a skill whose eval shows no gain is retired
+  with its numbers. `provisional` is not in `docs/decisions.md` at all, and
+  `agent-containment` and `agent-memory-selection` both carry it today. Nine
+  skills, three grades, one of them undefined, on the page that is now the
+  first thing a stranger reads.
+- What: close the gap in one direction or the other. Either `provisional`
+  earns a definition in the register, with the condition that moves a skill
+  out of it, or the two skills carrying it are retagged to a grade ADR-36
+  already defines. The cost of leaving it is that the honest sentence on the
+  install page has to be "this grade means whatever the skill seat meant on
+  the day", which is the opposite of what the library sells.
+- First step: not this seat's. The grade is a knowledge decision, so the
+  definition belongs to the owner or the chair with the skill seat, and the
+  retag belongs in `skills/`, which this charter puts out of this seat's
+  reach. `docs/product/install.md` names the gap in the meantime so a reader
+  is not left to infer it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-18 — Craft scan: Skly sells a skill and then has no way to change it (engineer seat)
+- Scanned: Skly (skly.ai, its own `/docs`), the next unscanned entry in the
+  agent-knowledge section of `docs/market/landscape.md`, last observed by the
+  market seat 2026-10-02 and never craft-scanned here. Read 2026-10-18.
+- Worth stealing: one artifact, every harness. Skly's own documentation
+  claims Claude, ChatGPT and Cursor buyers with one bundle, and it does that
+  by selling the open Agent Skills format rather than a plugin for a named
+  tool. Today's install work went the other way and shipped a Claude Code
+  plugin, which buys a real thing no archive can match, since an update is
+  one command. It also quietly decides which harness a buyer must already
+  have chosen. The ledger entry above takes the portable half.
+- What alexandria does better, and it is the same sentence read the other
+  way. Skly's install instruction is, verbatim from its docs, "After buying,
+  download the bundle folder or `.md` file. Give the bundle folder or file to
+  your AI agent." There is no version, no update path, no re-sync and no
+  integrity check anywhere in that page, which means a skill bought there is
+  frozen at the moment of purchase while the research under it keeps moving.
+  Alexandria's install is a git source behind a marketplace, so
+  `claude plugin marketplace update` re-reads the library, and ADR-37 is the
+  machinery that revises a skill when a claim it cites is deprecated. That
+  gap is also the answer to the question the owner asked this week, which is
+  what the paid line is for when the files are public: the market's own paid
+  marketplace charges for the download and has nothing to sell on the update,
+  and the update is the part that cannot be copied by forking a repository
+  once.
+- The one to watch: Skly's creators keep about 70 percent of a sale, which is
+  published on the same page as the install instruction. A marketplace that
+  pays out that share is buying supply, and supply at that price arrives
+  faster than evidence does. The number to watch is not their catalogue size,
+  it is whether any entry in it ever publishes a measured delta.
+- Cost: $0, reading only.
+- Status: proposed
+
+### 2026-10-18 — A run report with no start time is stored and sorts last, so the fix that made reports land does not make them read (engineer seat)
+- Trigger: this run fixed `tools/board.py` so a run report is accepted at all,
+  filed two live reports, and watched both of them store with `exit` 0 and
+  then appear behind every timestamped run in `board.py show`. Measured
+  directly against the API: the board orders its run list by `started_at`, and
+  the three oldest rows it returns are the `frontend` seat's with
+  `started_at: None`. The reports are in the response and off the readable end
+  of it.
+- What: pass the start time from the one place that knows it. A seat workflow
+  can read its own job start, so the last step gains `--started-at` next to
+  the `--status` it already passes, and `cmd_report` keeps supplying only the
+  end time it can honestly observe. The alternative, inventing a start time
+  equal to the filing time, would put a zero-length run on the board and is
+  worse than the row sorting low.
+- First step: not this seat's, because the change is one line in each of
+  twelve files under `.github/workflows/`, which no seat's token may write.
+  Staged alongside the other workflow items in
+  `docs/agents/pending-workflow-changes.md` is the right home for it, and the
+  one-line form is `--started-at "${{ github.event.repository.pushed_at }}"`
+  only if that is the job's start, which it is not, so the value to use is the
+  `steps.<id>.outputs` of a date step placed first in the job. Whoever applies
+  it should read the job, not this sentence.
+- Cost: $0.
 - Status: proposed
 
 ### 2026-10-16 — Craft scan: Semantic Scholar publishes the ceiling and never what happens when you hit it (engineer seat)

@@ -32,6 +32,7 @@ const PAGES = [
   { id: "issue", url: "/library/2026-W39" },
   { id: "skills", url: "/skills" },
   { id: "graph", url: "/graph" },
+  { id: "left-behind", url: "/left-behind" },
   { id: "pricing", url: "/pricing" },
   { id: "mission", url: "/mission" },
   { id: "desk", url: "/desk" },

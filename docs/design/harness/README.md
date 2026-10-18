@@ -1,84 +1,71 @@
-# The visual run's harness
+# The visual harness
 
-Committed on 2026-10-07 because three incidents
-(`INC-2026-09-23-phantom-production-bug`,
-`INC-2026-09-24-stale-server-kill-noop` and
-`INC-2026-10-07-stale-server-third-occurrence`) prescribed the same checks in
-prose and none of them ever became code, so every run of this seat started
-from a container with no memory and rebuilt a harness without them.
+Committed on 2026-10-07 so that each run of the frontend seat starts from a
+harness that already refuses, rather than from a blank container and a
+register entry it has to read first
+(`INC-2026-10-07-stale-server-third-occurrence`).
 
-Run from the repository root, with the Playwright pin the charter names:
+This file exists because on 2026-10-15 a run rebuilt the start step by hand
+and hit the stale server for the fourth time, with `serve.sh` sitting in this
+directory the whole time. The script was not ignored on purpose. The run
+listed this directory with a `*.mjs` glob, because every tool it knew about
+was a `.mjs`, and a committed check that a run does not know to look for is
+not meaningfully different from a check that was never committed. So: the
+order of operations is written down here, where listing the directory finds
+it.
+
+## Start here
 
 ```bash
-docs/design/harness/serve.sh                       # build, serve, prove the server is this build
-node docs/design/harness/make-fixtures.mjs .       # 45 DUMMY FIXTURE skills, gitignored
-node docs/design/harness/shoot.mjs out/ before     # 10 pages x 3 viewports, audited
-node docs/design/harness/states.mjs out/           # reveal, morph, reduced motion
-node docs/design/harness/morph.mjs out/            # the morph inside its own scroll window
-node docs/design/harness/bench.mjs out/            # Elicit, Linear, Consensus
-node docs/design/harness/ourmotion.mjs             # the same measurement turned on us
+docs/design/harness/serve.sh          # kill, build, start, PROVE the server
 ```
 
-`npx playwright@1.49.1` exactly: the container's baked Chromium is build 1148
-and any other version downloads its own.
+Never start the server by hand. `serve.sh` is four checks, and three of them
+have an incident behind them: it kills with a `ps` field match that cannot hit
+its own argv, it reads the log for `EADDRINUSE` instead of trusting a
+backgrounded exit code, it proves the listening process descends from the one
+it started, and it proves the served stylesheet is the one on disk.
 
-## What each guard is for, and which failure wrote it
+Environment is inherited, so anything the pages need goes in front of it:
 
-- **`serve.sh`'s kill, bind check and HASH MATCH.** A rebuild under a live
-  server leaves the old one serving asset hashes the build replaced. Every
-  chunk 400s, the page is unstyled and unhydrated, and curl still answers 200
-  with a plausible byte count. Three occurrences.
-- **`shoot.mjs` and `zoom.mjs` assert the page is ours before photographing
-  it.** A placeholder `pk_test_` Clerk key makes `clerkMiddleware` issue a dev
-  browser handshake, so the browser leaves the site on every navigation and
-  thirty screenshots are photographs of a two-line JSON error document. That
-  audit comes back perfectly clean, because an error page genuinely has no
-  overflow, no low contrast and no small targets. A clean report is the
-  symptom. Use a production-form key so the middleware treats the request as
-  an ordinary signed-out visitor, and block every request leaving localhost.
-- **`shoot.mjs` fails when every frame lands within 5% of the same size.**
-  Uniform output across ten different pages is what identical renders look
-  like and what no real set of pages ever looks like.
+```bash
+LEFT_BEHIND_FIXTURE=/tmp/lb.json docs/design/harness/serve.sh
+```
 
-- **`shoot.mjs` probes touch targets rather than measuring their boxes.** A
-  bounding box is not a hit area. The house extends several controls past
-  their drawn size with a positioned `::after`, which is Freiberg's Fitts note
-  and is what the canon's 44px rule actually asks for: the nav toggle draws at
-  32 and accepts 44, and `.pill` does the same under `@media (hover: none)`.
-  Reading `getBoundingClientRect` alone reported every one of those as a
-  violation, and the 2026-10-14 run spent turns chasing twelve "small" targets
-  across two pages before finding that all of them already pass. Each flagged
-  element is now probed at the four edges of the 44 by 44 box through
-  `elementFromPoint`, which sees pseudo-elements. Inline links inside running
-  prose are counted separately as `proseLinks` rather than filed as
-  violations, because a 19px inline link cannot satisfy a control's rule
-  without a line-height that would wreck the type scale, and Apple's own body
-  copy does not try. Anything inside a collapsed `<details>` is skipped, since
-  the panel clips rather than unmounting and still reports a box.
-- **The touch viewports force `hover: none` and `pointer: coarse` through
-  CDP.** Headless Chromium otherwise reports `hover: hover` inside a touch
-  context, so every `@media (hover: none)` rule in the stylesheet goes
-  untested and hover-revealed affordances read as content stranded at
-  opacity 0.
-- **`ink.mjs` reads actual pixels out of a PNG.** A screenshot is authority on
-  whether something looks wrong and is not authority on why.
+## Then
 
-  **The sticky nav question is settled. Do not re-investigate it, measure it.**
-  Three runs have now nearly filed the nav as transparent, the third on
-  2026-10-14 (`INC-2026-10-14-the-sticky-nav-ghost-is-re-investigated-every-run`).
-  The numbers, taken on the desk page scrolled to 1400: the darkest pixel in
-  the empty space of the bar is **252 of 255 at 390** and **247 of 255 at
-  1440**, which is a ghost of one to three percent. The nav is
-  `rgba(255,255,255,0.94)` over a 22px blur and a previous run already raised
-  it from 0.85 for exactly this reason.
+| Script | What it does |
+|---|---|
+| `shoot.mjs <out> <tag> [only]` | the sweep: every page at three viewports, plus the overflow, tap-target and opacity audit |
+| `zoom.mjs <out> <spec-json>` | close looks at 1:1, element clips, scroll offsets, injected states, probes |
+| `bench.mjs <out>` | reads the motion system off Elicit, Linear and Consensus |
+| `morph.mjs <out>` | the home mark's machine, middle and book frames |
+| `states.mjs <out>` | hover, focus and reduced-motion states |
+| `ink.mjs` | decodes a PNG and reads pixel values, for when a frame looks like a defect and is not |
+| `make-fixtures.mjs <repo-root>` | 45 DUMMY FIXTURE skills under `skills/fixture-*` (gitignored) |
+| `make-left-behind-fixture.mjs <out.json>` | 50 DUMMY FIXTURE findings for the Left-Behind Index |
 
-  What repeats is not the nav, it is the method. A run magnifies a crop to
-  read it, and the magnification is what makes a three percent ghost legible.
-  An enlarged crop is evidence that something is there and is not evidence of
-  how strong it is. Measure first, then decide.
-- **`make-fixtures.mjs` writes deliberately lumpy shapes.** Ban list entry 28:
-  a layout judged at evenly sized demo data is not judged. Real data is one
-  large cluster, a shoulder and a long tail of pairs.
+## The one contract that will bite you
 
-Fixtures land at `skills/fixture-*`, which `.gitignore` carries for exactly
-this. Delete them before finishing: `rm -rf skills/fixture-*`.
+`zoom.mjs` takes `eval` and `probe` as strings. Pass whatever form you like,
+an expression, an arrow function or an IIFE, and the script calls it. Before
+2026-10-15 it did not: a bare arrow function evaluated to a function object,
+Playwright serialised it as `undefined`, nothing threw, and the run
+photographed the state it had asked to change. Read a probe's output before
+trusting a frame that was supposed to show an injected state
+(`INC-2026-10-15-the-visual-harness-had-three-traps`).
+
+## Two things the scripts cannot know
+
+**Playwright.** The container bakes the browsers for the pin the charter
+names, `1.49.1`. `site/package.json` currently asks for `^1.63.0`, which looks
+for a browser build that is not in the container, so these scripts cannot be
+run from `site/node_modules` until the two numbers agree. Ledger entry
+2026-10-15. Until then, install the pin into a scratch directory outside the
+repository and run the scripts from there.
+
+**Clerk.** A `pk_test_*` publishable key makes `clerkMiddleware` issue a
+dev-browser handshake, and every page becomes a photograph of a Clerk error
+document that audits clean. `shoot.mjs` blocks it and fails loudly. Give the
+server a production-shaped key instead, which skips that path, and let the
+harness's own route blocking stop anything from leaving localhost.

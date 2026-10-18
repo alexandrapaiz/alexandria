@@ -2515,3 +2515,485 @@ gap that the same collision had left empty (incident 25).
     ```
     LANDED prompts/digest.md: "Take every word and short phrase in the finished issue that appears three times or more and is not ordinary English doing an ordinary job."
     ```
+
+115. The reading list recommends the papers the issue just finished
+    describing, because the gate against it asks the writer to recognise a
+    piece of work the issue never names. Entry 112 is the count whose unit was
+    never fixed and entry 113 is the shape no count was ever taken of. This is
+    the third of that family and the most expensive, because the section it
+    ruins is the one asking the reader for an hour.
+    2026-W40's reading list carries three picks. All three were described at
+    length in the section directly above it, by bold leads that are written
+    phrases rather than titles: "Kernel-level preemption in five microseconds"
+    against *Hard Stop: Kernel-Level Preemption and Containment for Rogue
+    Agentic Execution*, "Not all experience belongs in the weights" against
+    *Not All Experience Belongs in the Weights: Component Routing for
+    Self-Improving GUI Agents*, and "Procedural memory from real user traffic"
+    against *Designer-RSI: Evolving Procedural Memory from User Traffic for
+    Agentic Graphic Design*. The fourth item in that section is the one paper
+    the reading list does not carry.
+    The rule against it was complete, unconditional, and in the deployed file
+    at `prompts/digest.md:949` of `3bbf430`: "A paper this issue has already
+    covered at length is not a pick. [...] A paper covered anywhere above is
+    covered. Drop the overlap and print what remains, even when what remains
+    is one paper or none." It even carries the history of its own earlier
+    failure, because a previous version named a single payload stream and was
+    broadened after one pick slipped through from the traction section.
+    What is missing is not the requirement. It is the comparison. The step the
+    rule asks for is to check each pick "against the ISSUE you have just
+    written, section by section", which is a reading, and a reading for an
+    identity the artifact does not print. The body never prints a paper's
+    title, so item one is a paragraph about an independent researcher who
+    "formalized a containment architecture" and the pick is a full italic
+    title, and deciding those are one piece of work is recognition rather than
+    comparison. The two slots sit under two different format rules of this same
+    file, one asking for a short written lead and the other for the paper's own
+    title, so one piece of work carries two strings by design.
+    The generator turns on the identity of a piece of work in four places and
+    three of them already do it right, on the payload and before anything is
+    chosen: `:839` counts the distinct papers in the rows handed over, `:914`
+    groups the rows by paper before choosing, and `:1334` builds the one
+    written list of named works that the link, grade and attribution gates are
+    counted against. This was the fourth, it needed exactly that list, and it
+    was the one pointed at the finished prose.
+    What it cost is three laws rather than one. Law 11, because seven
+    uncovered candidates in `deep_reads` went unprinted while every slot went
+    to a paper the issue had already spent a paragraph on. Law 8, because the
+    reading list is the only section in this print carrying a link, so the
+    three links the issue has sit on three works it had already described
+    without one. Law 6, because three papers carry six grades in two
+    vocabularies, and the pair on the lead pick is close to verbatim.
+    **The comparator is why this is an entry about a gate and not about a
+    print.** `press_rehearsals` id 4 is the same model and the same
+    `prompt_sha`, five and a half hours earlier, and its reading list carries
+    GAVEL, Magenta and Just-In-Time Agent Memory, each appearing exactly once
+    in the whole document and none of them covered above. One file, two runs,
+    one obeying the rule and one breaking it in every slot. That is what a gate
+    asking for a reading is, and it is L-A9 in the position where the standard
+    costs most.
+    Added 2026-10-15. Enforced the same day at the overlap check, which now
+    compares each candidate against the named-works list the link, grade and
+    attribution gates already build, matching on the payload's url where there
+    is one and on the paper's own title where there is not. The sweep entry 90
+    requires found four gates of this class and three were already correct, so
+    the count is one and the entry closes.
+    **And the ending is stated at its real strength, per L-A22.** The standard
+    says that when a law has failed to fire, writing it more clearly is not the
+    fix, and that where the check cannot go in a command the rule is recorded
+    as enforced at the reliability of reading. This one is. The patch is made
+    because it costs a paragraph and aligns this gate with the three that
+    already group by paper, and the stronger half is filed in docs/ideas.md on
+    2026-10-15 as a pipeline-side comparator, with entry 96 as its sibling.
+    ```
+    LANDED prompts/digest.md: "The check is a comparison against a list and never a reading of the sections."
+    ```
+116. The count whose unit only an obedient draft produces. Entry 112 fixed one
+    count by fixing its unit, and the diagnosis stopped at that count. This is
+    the same defect one step earlier: a gate that triggers on a number, where
+    the thing being numbered is a feature of the shape the gate is trying to
+    produce. Count it on a draft that already obeys and the number is right.
+    Count it on the draft that broke the rule and the number is zero, because
+    the objects it counts are what obeying would have created.
+    The specimen is the one unconditional list requirement in the generator.
+    The fell-behind slot said the superseded group "is a bulleted list and not
+    a paragraph" past two entries, and the shape gate's sixth count said
+    "Count the entries in that group. Three or more and the group is a list."
+    An entry is a thing a list has. A group written as flowing prose has
+    none of them, so the count the gate takes on the artifact that failed is
+    zero and the gate reports clean.
+    **The two prints of 2026-10-05 are what makes this an entry rather than a
+    guess, because they fail it from opposite directions and neither one fails
+    it by judging the number wrong.** The published body set three superseded
+    pairs as three paragraphs of 74, 59 and 33 words. The rehearsal of the
+    identical `prompt_sha` set four of them as four sentences inside one
+    149-word paragraph, which is the 2026-W39 defect this rule's own text
+    quotes back at itself. Run the gate as worded on the second one and it
+    counts the entries in a group that has no entries, so the worse print is
+    the one it clears.
+    The payload is where the number already is. `superseded` carried five rows
+    on 2026-10-05, available before a word was written, and the three
+    neighbouring gates that work all count the rows handed over rather than
+    the items drafted: `:839` counts distinct papers in the rows, `:914`
+    groups the rows by paper before anything is chosen, and `:1334` builds the
+    named-works list the link, grade and attribution gates are counted
+    against. This was the fourth and it was the one pointed at the draft.
+    The sweep entry 90 requires, over the class, which is a count whose
+    operand is a drafted object:
+    `grep -nE "Count the (entries|items|blocks|paragraphs|headings|grades|figures|semicolons|numbers)" prompts/digest.md`
+    printed five hits and none of them is an instance. Semicolons at `:1697`,
+    colon-carrying headings at `:1723` and leading-zero figures at `:1744`
+    count characters and figures, which are in the draft whatever shape it
+    took. `:2149` counts items in a section, the same. `:1974` is the one that
+    was this class and entry 112 already fixed it, in those words: the unit is
+    fixed there and not the writer's to pick. **A count of one, which closes
+    the entry.**
+    **Then the generalisation question, and it has one honest answer this
+    patch does not reach.** Restated in a different part of speech the group is
+    counted as pairs or replacements rather than entries, and the patch
+    survives that, because a `superseded` row is a fixed object with a name in
+    the payload. Restated in a subordinate clause, where a pair is folded into
+    another item rather than standing as its own, the row is still printed and
+    still counts. Restated in a different POSITION it is not caught at all:
+    the parallel-results list in the traction slot at `:849` and in the
+    new-work slot at `:876` have no count in them, because their trigger is a
+    judgment about whether the day's results are the same kind of thing. A
+    count cannot be fixed where there is no count, so those two keep failing
+    invisibly and that is a filing rather than a wording.
+    Added 2026-10-16. Enforced the same day in both positions, the composition
+    slot and the sixth count, because the slot is where the prose is written
+    and the count is where it was being checked too late.
+    ```
+    LANDED prompts/digest.md: "because that count is the shape and the shape is not a revision"
+    LANDED prompts/digest.md: "Count the `superseded` rows that group came from, NOT the entries you can see in the draft"
+    ```
+117. The name spelled wrong to satisfy a rule that exempted it. Entry 40 is a
+    mark doing a full stop's job and the ASCII rule has been in this generator
+    since the voice overhaul, stated as a question put to every character:
+    is this plain ASCII? It carried its exception in the same breath, "a
+    person's or an institution's name as the payload spells it", and the
+    exception had no direction. The rule says what to strike. Nothing said
+    what to keep, and the paragraph underneath it says to assume every string
+    handed over is contaminated rather than checking whether this one is.
+    So the print of 2026-10-05 wrote:
+
+    > An independent researcher, Jose Luis Pino, formalized a containment
+    > architecture that halts rogue agent execution
+
+    `select authors from papers where id='arxiv:2609.29808v1'` returns
+    `{"José Luis Pino"}`. The issue misspelled a named researcher in the one
+    sentence that attributes the work to him, and it scored zero non-ASCII
+    characters doing it. The rehearsal of the identical `prompt_sha` spelled
+    the name correctly.
+    This is worse than the ordinary tell because of who it is about. An
+    overstated result belongs to a lab and a reader who cares can check the
+    link. A person's name is the one thing in an issue the person themself
+    will read, and a stripped accent is not a typo the pipeline made. It is a
+    rule being obeyed in the direction nobody wrote down.
+    The sweep, over the class, which is an exception clause with no direction:
+    `grep -nE "[Tt]he one exception|no exception|exception is" prompts/digest.md`
+    printed three hits. `:219` and `:308` are prohibitions, "no assumed
+    vocabulary and no exception for terms that feel basic" and "Punctuation,
+    spacing, separators and mathematical symbols get no exception at all", and
+    both point the way a prohibition points. `:306` is the only permission in
+    the file and it is the one patched. **A count of one, which closes the
+    entry.**
+    Added 2026-10-16. Enforced the same day at the plain-ASCII bullet, which
+    now states the exception as a step with a direction and names which side
+    wins when the count and the name pull against each other.
+    ```
+    LANDED prompts/digest.md: "A name is copied out of `authors` character for character and is the one string on the page the contamination default below does not run on"
+    ```
+118. The count that cannot hold its own rule's exception, and the grade that
+    read the count as the verdict. Entry 117 is the generator half of one
+    morning's defect. This is the instrument half, it is the more general of
+    the two, and it is about this seat rather than about the model.
+    `docs/voice/check_voice.py measure` printed a bare non-ASCII census, one
+    row per character with a count beside it, and set a non-zero exit on any
+    hit. The rule it was built to measure carries an exception. A count has no
+    way to express one, so the instrument scored the two prints of 2026-10-05
+    exactly backwards: the body that stripped a researcher's accent exited
+    clean at zero, and the body that spelled his name as the payload spells it
+    exited non-zero at one.
+    **The cost is on the record and it is a verdict in this seat's own
+    register.** The grade of 2026-10-15 quoted that figure as evidence, in its
+    own words, that the rehearsal "carries one non-ASCII character" and is
+    therefore "worse under law 1". The character was an acute accent in José
+    Luis Pino's name. Canon pass 1 has said since 2026-10-04 that a FAIL
+    recorded against a clean artifact is worse than no grade, because it hides
+    the one thing the generator has solved and nobody can tell when to stop
+    working on it, and that sentence was written about a figure carried from
+    the wrong artifact. This is the same sentence failing on a figure measured
+    from the right artifact with the wrong unit.
+    The sweep, over the class, which is a gate stated as a target of zero
+    against a rule carrying an exception:
+    `grep -nE "target is zero" prompts/digest.md`
+    printed five hits, at the buzzword scan `:262`, the semicolon count
+    `:1697`, the colon-carrying heading count `:1724`, the uncompared figure
+    `:1734` and the trailing-zero scan `:1756`. Every one of those rules is an
+    unconditional prohibition with no exception in it, so zero is the honest
+    target for all five and none of them is an instance. The one rule in the
+    org that carries an exception was never stated as a count in the
+    generator at all. It was a count only in this file. **A count of one,
+    which closes the entry.**
+    Added 2026-10-16. Enforced the same day in `docs/voice/check_voice.py`,
+    where the census now divides the characters by unicode category, which is
+    the division the rule's own words make: punctuation, spacing, separators
+    and symbols are scored and set the exit code, and a letter is printed with
+    the word it sits in and handed to the grade, because the exception turns
+    on whose name it is and no command knows that.
+    ```
+    LANDED docs/voice/check_voice.py: "the division is the character's unicode category and not the word it sits in"
+    LANDED docs/voice/check_voice.py: "A letter is reported and left to the grade rather than scored, because the rule's exception turns on whose name it is and no command knows that."
+    ```
+119. The gate whose reason is a false claim about the artifact. Entry 115 was
+    written yesterday, correctly, about a check that asked for a reading. Its
+    repair carried a reason, and the reason is the defect this entry is about,
+    because a gate that tells the model something untrue about its own output
+    has spent the model's attention on a fiction.
+    The sentence, in the generator for one day: the sections above name a paper
+    by a written lead and this slot names it by its full title, "so one piece
+    of work carries two different strings and recognising them as one piece of
+    work is the step that does not happen."
+    Two different strings, yes. Independent strings, no, and that is the whole
+    question, because a lead written from a paper carries the paper's own
+    words. Lowercase the bold leads of the print of 2026-10-05 against the
+    titles of its three picks and every one of the three shares a run of three
+    or more words with the lead that covered it:
+
+    ```
+    kernel level preemption                      lead 1 against pick 1
+    not all experience belongs in the weights    lead 2 against pick 2
+    procedural memory from                       lead 3 against pick 3
+    ```
+
+    The fourth item, the parallel-branch work, shares nothing with any pick,
+    and it is the one item whose paper the reading list does not carry. Three
+    true, none false, on the artifact the gate was written from.
+    **How the false reason got written is the part worth keeping.** Item one of
+    that section is a paragraph about an independent researcher who
+    "formalized a containment architecture" and its pick is *Hard Stop:
+    Kernel-Level Preemption and Containment for Rogue Agentic Execution*, so
+    on item one the claim is nearly true and recognising them as one piece of
+    work really does take more than a string. Items two and three were never
+    looked at. The diagnosis was taken from the first specimen and generalised
+    to a set of three, which is the 2026-10-13 class with the specimen in the
+    diagnosis rather than in the gate, and it cost more than a sentence: the
+    stronger fix was routed out of the prompt and filed for the engineer on
+    the stated ground that no comparable string exists.
+    **The sweep, and it is the inverse pattern that makes the result readable.**
+    The class is a gate that declares a comparison impossible or unavailable:
+    `grep -nE "because (the|this|it|one|a) [a-z ']{0,40}(never|does not|cannot|has no|is not)" prompts/digest.md`
+    printed thirteen hits. Twelve are reasons about a class of writing rather
+    than claims about what the artifact contains, and the thirteenth is the one
+    patched. Two further lines run the other way and both are correct and both
+    stay: `:1336` and `:2186` each say that a candidate passing "only because
+    it failed to match a string" has not been checked at all. Those two are why
+    the repair adds the string comparison as a first pass and keeps the list
+    match, rather than replacing one with the other. **A count of one, which
+    closes the entry.**
+    **The determinacy of this one is not the usual argument and it should not be
+    read as one.** `docs/voice/check_voice.py compare` puts the overlap axis in
+    the undetermined class, so by the standard this register adopted today a
+    further wording of it is not a test of anything. This patch is made anyway
+    and on a different ground: a gate carrying a false statement is a defect
+    whether or not fixing the statement changes an outcome, and the measurement
+    of whether it does belongs to the comparator filed on 2026-10-15.
+    Added 2026-10-16. Enforced the same day at the overlap check, which now
+    names the comparison and the three specimens it catches.
+    ```
+    LANDED prompts/digest.md: "Take the short bold lead of every item you wrote above and the title of every candidate pick, lowercase both, and strike the pick wherever the two share a run of three or more words."
+    ```
+120. The gate whose floor sits above its own failing state. Canon law 14's
+    first count is how many kinds of block are on the page, and that law says
+    in its own words that one kind is a failing issue whatever the paragraph
+    lengths say. The generator's shape count says the same and goes further,
+    naming the blocks that do not belong to the writer: "the lines you did not
+    write are not yours: the standing line under the title, the rule above the
+    close, and the close itself arrive on every issue whatever you do."
+    `docs/voice/check_voice.py` counted them anyway. Three of them are
+    standalone-line blocks, so every issue this press can produce carries at
+    least two kinds before the generator writes a word, and the row read 2 on
+    the two prints of 2026-W40.
+    The proof is one deletion. The published body's only non-paragraph block
+    the writer actually wrote is the sentence "Three papers this week test what
+    happens when you push the agent stack in directions no benchmark yet
+    covers". Strike it and the writer's honest count is one kind, which is the
+    categorical failure. The row still read 2, and `measure`'s own line, "one
+    kind of block is a failing issue (canon law 14)", had been unreachable
+    since it was written on 2026-10-06.
+    **The cost is that the number was right by luck and read as a verdict.**
+    Two prints of one generator scored 2 and 2, and the grade of 2026-10-16
+    concluded from that pair that both were equally grey and that "the one with
+    the longer sections put fewer shapes on it". Counting only the writer's
+    blocks, the published body carries one standing line and the rehearsal
+    carries thirteen. The axis counts kinds and nothing counted instances, so a
+    thirteenfold difference in the exact device this law asks for arrived as
+    two identical numbers.
+    The sweep, over the class, which is a count whose operand includes blocks
+    the rule it serves excludes: five counts in that file read blocks or the
+    whole text. The shape count is this entry. The per-section count is entry
+    121. The semicolon, em dash and non-ASCII censuses read the whole text,
+    furniture included, and no furniture string carries any of those marks.
+    `over100` counts every block, and the longest non-paragraph block in either
+    print of 2026-W40 is 19 words against a threshold of 100, so it is in the
+    class and cannot err. **A count of two, both patched here.**
+    Added 2026-10-17. Enforced the same day in `docs/voice/check_voice.py`,
+    where the furniture is named from `MASTHEAD` and `SHORT_EDITION_NOTE` in
+    `pipeline/weekly.py` and from the two literal lines of the template, and
+    the shape count in `axes` and in `measure` runs over the writer's blocks
+    alone. The row is renamed, because the number's meaning changed and a grade
+    must not read the new figure under the old name.
+    ```
+    LANDED docs/voice/check_voice.py: "Did the generator put this block on the page, or does it arrive anyway."
+    LANDED docs/voice/check_voice.py: "the generator's own shape count already excludes in its own words"
+    ```
+121. The count that took a different unit from the rule it enforces, and
+    punished the issue for obeying the same law twice. The generator's turn
+    trigger is "any section running past about four paragraphs gets a written
+    turn inside it". `axes` counted blocks. The other kinds of block in that
+    section are the ones this same law requires: a line carrying the number
+    that matters, a bulleted list where the results are parallel, and the turn
+    itself.
+    So the fix for a grey page made the page look long. Every device the writer
+    added moved its section nearer a flag, and the flag's own remedy, the turn,
+    counted as a paragraph too.
+    The measurement, by section, on both prints of 2026-W40:
+
+    ```
+    digests 21      4+0  4+1  4+0  4+2    paragraphs + other blocks
+    rehearsal 4     3+2  4+4  3+7  4+2
+    ```
+
+    Not one section in either print runs past four paragraphs. The row read 2
+    and 4 and called both determined failures, so **all six flags were false**,
+    and the worst-scoring section in the org was the rehearsal's third, which
+    is three paragraphs and seven standing lines and is therefore the single
+    best-formatted section either print produced.
+    **The cost is a verdict in this seat's own register, one day after the same
+    class was recorded.** The grade of 2026-10-16 quoted "the published body
+    runs a five-paragraph and a nine-paragraph section" as evidence under law
+    14, and ran its own awk count to get there. Canon pass 1: a FAIL recorded
+    against a clean artifact is worse than no grade, because it hides the one
+    thing the generator has solved and nobody can tell when to stop working on
+    it. Entry 118 is the same sentence failing yesterday on the non-ASCII
+    census. `INC-2026-10-17-the-instrument-overcounted-the-law-it-was-built-for`.
+    The sweep, over the class, which is a trigger whose number carries a unit:
+    `grep -nE "(past|over|more than|under|within|fewer than|no more than|at least) (about )?(one|two|three|four|five|six|seven|eight|nine|ten|[0-9]+) [a-z]+" prompts/digest.md`
+    printed twelve hits, and the lines below are the file as it ships after this
+    patch. The section trigger at `:1740` and its restatement at `:1722` are the
+    one patched. The superseded group's "past two entries" at `:1004`, `:1015`
+    and `:1758` is this exact class and entry 116
+    closed it yesterday. The item-level trigger at `:426` and `:1557`, "an item
+    that runs past three paragraphs gets written turns inside it", is the same
+    class and no command counts it at all, so it keeps failing invisibly and
+    that is a filing rather than a wording. The rest are prose about words and
+    sentences with no command behind them. **Two instances, one patched here
+    and one patched yesterday.**
+    Added 2026-10-17. Enforced the same day in both places: in
+    `docs/voice/check_voice.py`, where the per-section count takes paragraphs
+    and not blocks, and in `prompts/digest.md`, where the trigger now says
+    which blocks are not paragraphs and why counting them turns one half of
+    this law against the other.
+    ```
+    LANDED prompts/digest.md: "Count paragraphs and not blocks, because the other kinds this law asks you for sit inside sections too"
+    LANDED docs/voice/check_voice.py: "A paragraph, and not a block."
+    ```
+122. The model sentence printed verbatim, defended by a subject the payload
+    turned out to hand over. The reading-list slot quoted a line as the shape a
+    good entry takes, with the defence written beside it: "in a subject no
+    payload will ever hand you, so that copying it is obviously wrong". The
+    print of 2026-10-05 opened its reading list with that sentence, word for
+    word, because the day's payload handed it a paper whose section 4 really is
+    scheduling maths.
+
+    > The scheduling maths is in section 4 and it is the part nobody gets right
+    > by intuition.
+
+    The specimen entered the generator on 2026-09-26 and the press still holds
+    it. The rehearsal of the identical `prompt_sha` did not copy it, so the copy
+    is one print's version of the failure and not the failure itself: both
+    prints open their reading-list lines on the paper rather than on the
+    reader's decision, one of three in the published body and three of three in
+    the rehearsal, which is the shape this slot's own subject rule was written
+    from. The axis is determined and the patch is testable.
+    **The reason this is the third time, and the file already held the answer
+    twice.** This slot has deleted two specimens for exactly this: the heading
+    frame of the second form, and "Worth the hour if you are". Both deletions
+    carry the same reason, that a phrase quoted inside the slot the model writes
+    into is not a prohibition but the nearest available draft. Neither deletion
+    reached the third specimen thirteen lines below, because its defence was
+    subject matter, and subject matter is the one variable a payload controls.
+    A quoted sentence is a draft whatever it is about.
+    The sweep, over the class, which is a printable sentence quoted inside a
+    slot the model writes into: `grep -nE '^\s*(ever hand you|is in|[A-Z][a-z]+ [a-z]+)[^"]*"[A-Z][^"]{25,}"' prompts/digest.md`
+    is not the readable form of this one, so it was taken by hand over the four
+    slots and the opening. The traction slot and the fell-behind slot quote no
+    candidate sentence. The new-work slot quotes one and it is labelled in the
+    same breath as a subject no payload hands over, "**Apple.** One model drives
+    desktop, phone and browser, and it beats the specialists trained for each",
+    and the number rule quotes another, "The night shift closes **83% of
+    tickets** before morning, up from 41%". Both carry the defence this entry
+    just falsified, and both stay for now with the defence weakened rather than
+    deleted, because each is demonstrating a punctuation shape rather than a
+    sentence's job and no payload in this product's corpus is about night shifts
+    or Apple's desktop. That is a judgment and it is recorded as one.
+    **One instance deleted, two left standing with the reason they rest on named
+    as weaker than it reads.**
+    Added 2026-10-17. Enforced the same day at the reading-list line rule, where
+    the specimen is deleted and the three shapes it illustrated are described
+    instead.
+    ```
+    LANDED prompts/digest.md: "A third specimen stood here and is deleted, and it is the one that was printed."
+    ```
+123. The grade stapled behind the sentence that was supposed to carry it. The
+    reading-list rule says to say what the work cannot establish "inside the
+    entry's own sentence and never as a second sentence stapled behind it". It
+    has failed on six entries out of six across both prints of 2026-W40, and
+    every one of the six took the same three-sentence shape: the decision, then
+    a sentence counting the units of evidence, then a sentence assessing them.
+
+    > The scheduling maths is in section 4 and it is the part nobody gets right
+    > by intuition. One incident autopsy, one formal model, one prototype you
+    > can wire into LangGraph today. The latency claim is measured; the breach
+    > narrative is single-source.
+
+    That is one entry doing in three sentences what the rule asks of one, and
+    its third sentence restates in different words the grade the body already
+    gave the same paper sixty lines above ("The latency numbers are reproducible
+    ... the breach narrative is not independently verified"), which is law 6's
+    two-grades-on-one-work failure arriving through the shape rather than
+    through the vocabulary.
+    This is the lesson of the semicolon, which this file wrote down on
+    2026-10-13 and is the clearest rule it owns: the difference between the mark
+    that went to zero and the mark that went to eight is that one of them was in
+    a count. This rule has run twice in prose and failed six times out of six,
+    the axis is determined by the comparator, and so it becomes a count. The
+    count is new rather than a re-wording, which is the distinction the grade of
+    2026-10-16 refused to patch across.
+    No sweep, because the class is a rule stated in prose that a count can hold,
+    and that class is the subject of this entire register rather than of one
+    entry.
+    Added 2026-10-17. Enforced the same day at the grade rule in the
+    reading-list slot, which now names the full stop before the grade as the
+    thing to find and sets the target at zero.
+    ```
+    LANDED prompts/digest.md: "Read each finished entry and find the full stop before the grade."
+    ```
+
+124. Provenance standing where a missing measurement belongs. The generator
+    asks the evidence grade for two halves, how strong the number is and what
+    the work did not measure, and the second half is conditional on the payload
+    supporting it. The payload never does. `pipeline/distill.py` stores
+    `claim`, `evidence`, `topics` and `procedure`, every one of which records
+    something a paper did, and no field anywhere records something a paper left
+    out. So the slot gets filled with the nearest true sentence in reach, which
+    is who ran the work or who has not repeated it.
+
+    > The authors' own experiments, not yet replicated outside the group.
+    > The authors' own traffic and benchmarks; no external replication.
+    > The authors' own experiments against their Meta-Harness baseline.
+
+    Six of the seven grades 2026-W40 printed take that shape, and the seventh,
+    "no external benchmark", is the only one on the page that names a
+    measurement rather than a person. The tell is that the clause reads like a
+    limitation, sits in the position a limitation goes, and leaves the reader
+    knowing nothing about the work's reach that they did not already know from
+    the first half.
+    This is not law 6 being broken. Law 6's own example is "authors' own
+    experiments, not yet replicated", and that is the right example of the
+    FIRST half. The defect is the first half printed twice under one grade,
+    with the second half's slot spent on it.
+    The strongest evidence that this is structural rather than careless: the
+    hand-written rewrite in `docs/voice/benchmark-2026-10-18.md`, composed by
+    this seat with the rule open, produced "nobody outside it has repeated the
+    result" in the same position. A writer who knows the rule and has the paper
+    cannot satisfy it from the payload either.
+    No sweep, and no re-wording of the demand, because the demand is not the
+    broken part. The missing field is filed for the engineer in docs/ideas.md
+    on 2026-10-18. What the prompt can hold is the prohibition on substituting,
+    and that is what landed.
+    Added 2026-10-18. Enforced the same day at the evidence-grade rule, which
+    now puts one question to the second half before it is kept.
+    ```
+    LANDED prompts/digest.md: "Does the clause name something the work did not measure, or does"
+    ```

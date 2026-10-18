@@ -324,6 +324,34 @@ def hidden_weeks():
     return set(re.findall(r'"([^"]+)"', m.group(1))) if m else set()
 
 
+# The blocks that arrive on every issue whatever the generator writes, which
+# the generator's own shape count already excludes in its own words: "the lines
+# you did not write are not yours: the standing line under the title, the rule
+# above the close, and the close itself". The first two come from
+# `MASTHEAD` and `SHORT_EDITION_NOTE` in pipeline/weekly.py, spliced in by
+# `add_masthead` before the row is stored. The last two are literal lines of
+# the template in prompts/digest.md. Counted as the writer's work they put a
+# floor of two under law 14's first count, so the categorical failure that law
+# names, one kind of block, was unreachable (ban list 120).
+FURNITURE = {
+    "*What's new in AI research, what's gaining acceptance, and what newer "
+    "evidence has overturned.*",
+    "*A short edition. This week's issue is the week in brief.*",
+    "---",
+    "**Accelerate every builder and agent to frontier speed.**",
+}
+
+
+def written_here(block):
+    """Did the generator put this block on the page, or does it arrive anyway.
+
+    Normalised on whitespace, because every copy of the issue wraps its prose
+    differently and the stored row, the site page and a rehearsal dump do not
+    agree on where a line ends.
+    """
+    return " ".join(block.split()) not in {" ".join(f.split()) for f in FURNITURE}
+
+
 def shapes(blocks):
     """How many KINDS of block are on the page, which is canon law 14's first count.
 
@@ -423,6 +451,34 @@ def links(paths=None):
     return rc
 
 
+def exempt_character(c):
+    """Whether the ASCII rule in prompts/digest.md admits an exception for `c`.
+
+    The rule's own words, at the plain-ASCII bullet: "The one exception is a
+    person's or an institution's name as the payload spells it. Punctuation,
+    spacing, separators and mathematical symbols get no exception at all." So
+    the division is the character's unicode category and not the word it sits
+    in, which is the one half of this a command can hold.
+
+    Added 2026-10-16, because the census above was a bare count and a count
+    cannot express an exception. The published print of 2026-W40 spelled the
+    author of *Hard Stop* "Jose Luis Pino" against `papers.authors`, which
+    holds "José Luis Pino", and scored zero non-ASCII characters. The
+    rehearsal of the same generator spelled the name correctly and scored one,
+    so this command exited non-zero on the print that obeyed the rule and
+    clean on the print that stripped a researcher's name. The grade of
+    2026-10-15 then quoted that figure as making the rehearsal "worse under
+    law 1". Canon pass 1: a FAIL recorded against a clean artifact is worse
+    than no grade.
+
+    A letter is reported and left to the grade rather than scored, because the
+    rule's exception turns on whose name it is and no command knows that. A
+    Greek capital inside a system name is a letter and is NOT exempt under the
+    rule, which is exactly why this returns a question and not a verdict.
+    """
+    return unicodedata.category(c).startswith("L")
+
+
 def measure(paths=None):
     retired = hidden_weeks()
     paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
@@ -450,21 +506,170 @@ def measure(paths=None):
               f"longest {max(lens) if lens else 0:<4} over100 {len([x for x in lens if x > 100])}")
         print(f"  em dashes {t.count(chr(8212)):<4} semicolons {t.count(';'):<4} "
               f"non-ASCII {sum(na.values()):<5} distinct {len(na)}")
-        kinds = shapes(paras)
+        # The writer's own blocks, not every block on the page. The line below
+        # used to read 2 on an issue whose generator had added nothing but
+        # paragraphs, because the masthead, the rule and the close are three
+        # standalone lines that arrive on every issue, so the sentence under it
+        # could never print on an artifact this press can produce.
+        kinds = shapes([b for b in paras if written_here(b)])
         body = {k: v for k, v in kinds.items() if k != "heading"}
         links = set(re.findall(r"https?://[^)\\s]+", t))
         print(f"  shapes {len(body):<5} links {len(links):<5} "
               + "  ".join(f"{k} {v}" for k, v in sorted(body.items())))
         if len(body) < 2:
             print("    one kind of block is a failing issue (canon law 14)")
+        unruled = 0
         for c, k in na.most_common():
-            print(f"    U+{ord(c):04X} {unicodedata.name(c, '?'):<28} x{k}")
-        if not off and (sum(na.values()) or t.count(chr(8212))):
+            word = next((w for w in re.findall(r"\S*" + re.escape(c) + r"\S*", t)), "")
+            if exempt_character(c):
+                unruled += k
+                print(f"    RULE  U+{ord(c):04X} {unicodedata.name(c, '?'):<24} "
+                      f"x{k}  in {word!r}")
+            else:
+                print(f"    U+{ord(c):04X} {unicodedata.name(c, '?'):<28} x{k}"
+                      + (f"  in {word!r}" if word else ""))
+        if unruled:
+            print(f"    {unruled} letter(s) above are the generator's own exception, which is "
+                  "a person's or")
+            print("    an institution's name as the payload spells it. A grade rules on each "
+                  "against")
+            print("    `select authors from papers`, and a name stripped to reach zero is the "
+                  "finding.")
+        strict = sum(k for c, k in na.items() if not exempt_character(c))
+        if not off and (strict or t.count(chr(8212))):
             rc = 1
     print()
     print("Every figure above is printed under the path it was measured on.")
     print("A grade quotes it with that path or does not quote it (ban list 91).")
     return rc
+
+
+def axes(path):
+    """The measurable gates of one body, each as a number beside its target.
+
+    One row per gate a command can hold. Every target is the generator's own
+    or the canon's, cited in `compare` below, so a row is a verdict rather
+    than a figure a grade has to interpret.
+    """
+    t = pathlib.Path(path).read_text(encoding="utf-8")
+    paras = [x for x in re.split(r"\n\s*\n", t) if x.strip()]
+    lens = [len(x.split()) for x in paras]
+    kinds = shapes([b for b in paras if written_here(b)])
+    na = sum(k for c, k in collections.Counter(
+        c for c in t if ord(c) > 127).items() if not exempt_character(c))
+    heads = re.findall(r"^#{1,3} .*$", t, re.M)
+    # Sections, and the paragraphs and turns and links inside each, because
+    # three of law 14's gates are per section and the whole-page counts above
+    # cannot see a ten-paragraph section with no turn in it.
+    #
+    # A paragraph, and not a block. The trigger this serves is the generator's
+    # own, "any section running past about four paragraphs gets a written turn
+    # inside it", and the same law asks the writer for the other kinds of block
+    # in the same breath: a line carrying the number that matters, a bulleted
+    # list where the results are parallel, the turn itself. Counting blocks
+    # made every one of those count against the section, so obeying one half of
+    # law 14 tripped the other half, and six flags across two prints of
+    # 2026-W40 were all of them false (ban list 121).
+    secs, cur = [], None
+    for b in paras:
+        if b.startswith("## "):
+            cur = {"head": b.strip(), "paras": 0, "turns": 0, "links": 0}
+            secs.append(cur)
+        elif cur is not None:
+            cur["paras"] += shapes([b]).get("paragraph", 0) if written_here(b) else 0
+            cur["turns"] += b.startswith("### ")
+            cur["links"] += len(re.findall(r"\[full text\]", b))
+    long_untitled = [s for s in secs if s["paras"] > 4 and not s["turns"]]
+    # The reading list is the last section by construction, so a link anywhere
+    # else is a link in a body section. That is the split the grade of
+    # 2026-10-15 took by hand and the figure its finding turned on.
+    body_links = sum(s["links"] for s in secs[:-1])
+    return {
+        "semicolons": (t.count(";"), 0, "le"),
+        "em dashes": (t.count(EM), 0, "le"),
+        "non-ASCII, no exception": (na, 0, "le"),
+        "shapes the writer added": (len([k for k in kinds if k != "heading"]), 3, "ge"),
+        "paragraphs over 100 words": (len([x for x in lens if x > 100]), 0, "le"),
+        "list blocks": (kinds.get("list", 0), 1, "ge"),
+        "sections over four paragraphs": (len(long_untitled), 0, "le"),
+        "headings carrying a colon": (len([h for h in heads if ":" in h]), 0, "le"),
+        "links to a full text": (len(re.findall(r"\[full text\]", t)), 1, "ge"),
+        "links outside the reading list": (body_links, 1, "ge"),
+    }
+
+
+def compare(paths=None):
+    """Two prints of ONE generator, gate by gate, so a patch can be aimed.
+
+    Canon's artifact paragraph, added 2026-10-15: where `press_rehearsals`
+    holds a body for the graded week at the artifact's own `prompt_sha`, it is
+    a second sample of the identical generator and the grade measures both.
+    That addition came from one axis. On 2026-10-05 two prints of the same file
+    five and a half hours apart carried 13 links against 3, so three merged
+    patches to the link rule had been aimed at a gap narrower than the spread
+    between two runs of one wording.
+
+    This is that reasoning as a command, over every gate a count can hold,
+    because the conclusion was never about links. A gate whose two samples
+    agree is DETERMINED: its wording is the binding constraint, so a patch to
+    it is testable. A gate whose samples disagree is UNDETERMINED: the wording
+    was identical in a print that passed and a print that failed, so a further
+    wording of it is not a test of anything and the fix is a check outside the
+    prompt. L-A22 is the standard this serves, and the ledger filing of
+    2026-10-15 is the check it points at.
+
+    The caller passes two bodies of the same week at the same `prompt_sha`,
+    and the grade records both shas, because two prints of two generators
+    compare nothing. The targets: zero semicolons and zero em dashes are canon
+    law 1 and the generator's fifth count. Three shapes is law 14's own
+    sentence, "two kinds is thin, three is an issue that reads like something a
+    person made". Zero paragraphs over 100 words, zero sections over four
+    paragraphs and zero headings carrying a colon are the generator's fourth
+    and seventh counts. One list block is the sixth count, whose trigger is the
+    superseded group and whose target is a list wherever that group runs past
+    two entries.
+
+    Two of those rows carried the wrong number until 2026-10-17 and both were
+    law 14, which is the law four of the five determined failures sat on. The
+    shape row counted the masthead, the rule and the close as the writer's
+    work, so its floor was two and the one-kind failure law 14 calls
+    categorical could not be reported. The section row counted blocks rather
+    than paragraphs, so the lines and lists this same law demands pushed
+    sections over their own threshold, and all six flags it raised on the two
+    prints of 2026-W40 were false. Ban list 120 and 121, and the figures are
+    not comparable to the ones a grade before that date printed.
+    """
+    if not paths or len(paths) != 2:
+        print("compare takes two paths: the published body and the rehearsal")
+        print("of the same week at the same prompt_sha.")
+        return 1
+    a, b = (axes(p) for p in paths)
+    print(f"a  {paths[0]}")
+    print(f"b  {paths[1]}")
+    print()
+    print(f"  {'axis':<32}{'target':>8}{'a':>6}{'b':>6}   class")
+    tally = collections.Counter()
+    for name in a:
+        av, target, how = a[name]
+        bv = b[name][0]
+        ok = (lambda v: v <= target) if how == "le" else (lambda v: v >= target)
+        mark = f"{'<=' if how == 'le' else '>='}{target}"
+        if ok(av) == ok(bv):
+            verdict = "determined " + ("pass" if ok(av) else "FAIL")
+            tally["determined pass" if ok(av) else "determined FAIL"] += 1
+        else:
+            verdict = "UNDETERMINED"
+            tally["undetermined"] += 1
+        print(f"  {name:<32}{mark:>8}{av:>6}{bv:>6}   {verdict}")
+    print()
+    print(f"determined FAIL {tally['determined FAIL']}   "
+          f"determined pass {tally['determined pass']}   "
+          f"undetermined {tally['undetermined']}")
+    print("A determined FAIL is where a wording patch is testable. An undetermined")
+    print("gate held in one print and broke in the other under one wording, so the")
+    print("next wording of it is not a test and the fix is a check the prompt cannot")
+    print("carry (L-A22, and the ledger filing of 2026-10-15).")
+    return 1 if tally["determined FAIL"] else 0
 
 
 # The press renders an issue twice. The site gets the markdown, and a
@@ -704,16 +909,21 @@ def main():
     # prevent (ban list 91, fixed 2026-10-06).
     paths = sys.argv[2:]
     rc = 0
-    takes_paths = {"measure", "links", "delivery"}
+    takes_paths = {"measure", "links", "delivery", "compare"}
     # `enforcements` takes a git ref rather than a path, because ban list 105
     # is about the file the press runs and that file is only reachable through
     # the commit the deploy was built from.
     # `selfcheck` is not in `all`, because `all` is run over the artifact and
     # this one is run over the run's own diff. It takes a git ref or a range.
+    # `compare` is not in `all` for the same reason `selfcheck` is not: it
+    # takes two artifacts the caller has chosen and proved comparable, and
+    # `all` runs over whatever is in site/content/issues.
     for name, fn in (("enforcements", enforcements), ("sweep", sweep),
                      ("stale", stale), ("measure", measure), ("links", links),
-                     ("delivery", delivery), ("selfcheck", selfcheck)):
-        if which == name or (which == "all" and name != "selfcheck"):
+                     ("delivery", delivery), ("compare", compare),
+                     ("selfcheck", selfcheck)):
+        if which == name or (which == "all"
+                             and name not in ("selfcheck", "compare")):
             print(f"==== {name} ====")
             if name in ("enforcements", "selfcheck"):
                 rc |= fn(paths[0]) if (which == name and paths) else fn()

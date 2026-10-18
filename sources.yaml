@@ -57,6 +57,10 @@ feeds:
   - {name: deepmind, url: "https://deepmind.google/blog/rss.xml", tier: c}
   - {name: google-research, url: "https://research.google/blog/rss/", tier: c}
   - {name: thinking-machines, url: "https://thinkingmachines.ai/index.xml", tier: c}
+  # MEASURED DEAD 2026-10-16 (tools/feed_health.py): 200 with 44 items and
+  # nothing in 389 days, and four candidate replacement URLs all failed.
+  # Qwen has not gone quiet, so this feed moved. Pinned in KNOWN_DEAD and
+  # in docs/ideas.md; finding the live URL needs a human.
   - {name: qwen, url: "https://qwenlm.github.io/blog/index.xml", tier: c}
   # ai.meta.com has no RSS (verified 2026-09-07); engineering.fb.com carries
   # Meta's systems/infra writing, which is the half we most want anyway
@@ -72,8 +76,12 @@ feeds:
   # engineering feed, so most of it is DNS, cache and security work that triage
   # should discard; prompts/triage.md now knows what a practice report is.
   - {name: cloudflare-engineering, url: "https://blog.cloudflare.com/rss/", tier: d}
+  # MEASURED DEAD 2026-10-16: 200 with 15 items, newest 1595 days old.
+  # Retirement proposed in docs/ideas.md.
   - {name: stanford-sail, url: "https://ai.stanford.edu/blog/feed.xml", tier: d}
   - {name: mit-news-ai, url: "https://news.mit.edu/rss/topic/artificial-intelligence2", tier: d}
+  # MEASURED DEAD 2026-10-16: 200 with 9 items, newest 2664 days old, which
+  # is 2019. mit-news-ai above covers MIT and is live. Retirement proposed.
   - {name: mit-csail, url: "https://www.csail.mit.edu/rss.xml", tier: d}
   - {name: simonwillison, url: "https://simonwillison.net/atom/everything/", tier: d}
   - {name: interconnects, url: "https://www.interconnects.ai/feed", tier: d}
@@ -103,6 +111,9 @@ feeds:
   # it costs the triage budget almost nothing. Tier d, a trusted practitioner,
   # the same tier as the other two named individuals.
   - {name: lilianweng, url: "https://lilianweng.github.io/index.xml", tier: d}
+  # MEASURED DEAD 2026-10-16: 200 with zero items, on /rss/ and /rss both.
+  # Duplicates `langchain` above, which is live with 100 items. Retirement
+  # proposed in docs/ideas.md.
   - {name: langchain-blog, url: "https://blog.langchain.com/rss/", tier: d}
   # ---- tools & software: GitHub release feeds (releases.atom, all verified 200) ----
   # The unit here is a release, not a paper: triage routes major capability
@@ -147,7 +158,11 @@ feeds:
   # agentskills.io, which publishes no feed (/feed.xml and /rss.xml both 404 on
   # 2026-09-30). This is its development repository and the working proxy. 200.
   - {name: gh-mcp-ext-skills, url: "https://github.com/modelcontextprotocol/ext-skills/commits/main.atom", tier: d}
-  - {name: gh-spiffe, url: "https://github.com/spiffe/spiffe/releases.atom", tier: d}
+  # Was spiffe/spiffe/releases.atom, which answers 200 with zero entries
+  # because the specification repository cuts no releases. SPIRE is the
+  # implementation and the thing that actually ships: 10 entries, newest 0.8
+  # days old, measured 2026-10-16 by tools/feed_health.py.
+  - {name: gh-spiffe, url: "https://github.com/spiffe/spire/releases.atom", tier: d}
   - {name: hf-blog, url: "https://huggingface.co/blog/feed.xml", tier: d}
   # openai-blog and deepmind-blog were added here on 2026-09-19 and removed on
   # 2026-09-21 (research meta-review): both carried URLs byte-identical to the
@@ -169,7 +184,10 @@ feeds:
   # gh-autogen is the reference line, kept for its archive: its newest release is
   # python-v0.7.5 (2025-09-30). Active development moved to the AG2 fork, which
   # shipped v1.0.1-v1.0.5 between 2026-07-29 and 2026-09-11 (research brief 2026-09-19 §1.4).
-  - {name: gh-autogen, url: "https://github.com/microsoft/autogen/releases.atom", tier: d}
+  # `expect: archive` is the comment above in a form tools/feed_health.py can
+  # read: this source is silent on purpose, so its age is forgiven and its
+  # reachability is not.
+  - {name: gh-autogen, url: "https://github.com/microsoft/autogen/releases.atom", tier: d, expect: archive}
   - {name: gh-ag2, url: "https://github.com/ag2ai/ag2/releases.atom", tier: d}
   - {name: gh-openai-agents, url: "https://github.com/openai/openai-agents-python/releases.atom", tier: d}
   - {name: gh-crewai, url: "https://github.com/crewAIInc/crewAI/releases.atom", tier: d}
@@ -212,6 +230,12 @@ feeds:
   # Also an Attack Surface", "GenAI Exploit Round-up Report Q1 2026" -- which is
   # the artifact-with-method the charter admits on the same terms as a paper.
   # 200 with 10 entries, 2026-09-30.
+  # CORRECTED 2026-10-17: this read "MEASURED DEAD 2026-10-16: HTTP 403" and
+  # the source was never dead. Re-measured today through the transport
+  # pipeline/ingest.py actually uses: 200, 10 items, newest 8.6 days old.
+  # The 403 came from tools/feed_health.py's httpx client, which this host is
+  # refused on while urllib is not, and the same probe shows substack.com
+  # refusing httpx and urllib both. Unpinned from KNOWN_DEAD.
   - {name: owasp-genai, url: "https://genai.owasp.org/feed/", tier: d}
   # openid.net/feed/ was checked the same night and declined: 200, but its ten
   # most recent items are OpenID4VP/OpenID4VCI certification, age assurance and
