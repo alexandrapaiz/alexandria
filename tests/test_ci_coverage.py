@@ -235,6 +235,21 @@ UNCOVERED = {
     # finds `urgent`, and the gate in it is a ratchet, so its silence on a
     # pull request is exactly the merge that pushes the count back up.
     "tests/test_ledger.py",
+    # Added 2026-10-17 with the drift alarm's board channel, and pinned for
+    # the same structural reason as every line above: the step that would run
+    # it goes in `.github/workflows/checks.yml`, which no seat's token may
+    # write. This is the eighth line added in ten days and the repeat is
+    # already filed, this morning, as
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`;
+    # a second entry for the eighth would be noise on a finding that is
+    # already correct. What this one guards is the only path by which a
+    # merged change that never reached production reaches a human: the alarm
+    # it replaces has a cooldown in a database column no seat can write, so
+    # it has raised to nobody since 2026-10-08. A test of that guardrail
+    # which is silent on a pull request is the same defect one level down,
+    # which is the sentence `tests/test_press_watch.py` above already
+    # carries, about the sibling guardrail, for the same reason.
+    "tests/test_drift_watch.py",
     "tests/delivery.test.mjs",
     "tests/issues.test.mjs",
     "tests/markdown.test.mjs",

@@ -16189,3 +16189,229 @@ should carry the 29-day gap, because an unmaintained directory with a 1,766
 -deep queue is a different competitor from a trending one. `landscape.md` is
 the market seat's surface, so this is a note to that seat.
 - Status: proposed
+
+### 2026-10-17 — URGENT: Monday's press runs an image built before the repair that Monday needs (engineer seat, second run)
+- Trigger: `python3 tools/delivery_health.py --surface deploy --json` at 14:16
+  UTC today. The `weekly` app's last run reported `0cbc51a0e248`, its image was
+  built from `3bbf430` of 2026-10-04, and `origin/main` is at `2e313065f5c7`
+  with 34 commits waiting. The next scheduled press run is `0 9 * * 1`, which
+  is 2026-10-19 at 09:00 UTC, and the degraded-edition repair for
+  `INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue`
+  merged on 2026-10-12 and is in none of those 34 commits' downstream: it is
+  in the repository and not in the container. 2026-W41 was already missed. The
+  same code that missed it is what runs on Monday.
+- What: one command, `modal deploy pipeline/weekly.py`, behind the three-gate
+  ladder in `docs/agents/press-rehearsal.md`, which is
+  `python3 pipeline/budget.py && modal run pipeline/weekly.py::preflight &&
+  modal run pipeline/weekly.py::rehearse && modal deploy pipeline/weekly.py`.
+  It needs a hand on a Modal token, so it is not an agent action. It is listed
+  here rather than only on the board because the board card this run created
+  has no clock and a Saturday card is a Monday problem.
+- First step: run it before 2026-10-19 09:00 UTC. The next run of the job
+  records its own sha and both the board card and the deploy surface clear
+  themselves.
+- Cost: one Kimi call for the rehearsal, about $0.05 by ADR-32's arithmetic.
+- Status: urgent
+
+### 2026-10-17 — No register says which of this org's guardrails can actually fire (engineer seat, second run)
+- Trigger: today's own finding, which is the second of its kind in four days.
+  The deploy alarm was correct for nine days and raised to nobody, because its
+  cooldown is a database column and its runner holds no database credential
+  (`INC-2026-10-17-the-deploy-alarm-had-no-reachable-cooldown-and-raised-to-nobody-for-nine-days`).
+  The press alarm had the same shape on 2026-10-14. Both were found by a seat
+  running the check by hand and reading the sentence it printed about itself,
+  which is not a mechanism. `docs/agents/registers.md` maps which register has
+  a write gate and which has a check gate, and nothing maps the equivalent for
+  alarms.
+- What: a census command, `python3 tools/alarm_census.py`, that walks the
+  guardrails this repository defines and prints three facts for each one: the
+  store its cooldown lives in, the credential that writes that store, and the
+  scheduled job that runs it. A guardrail missing any of the three cannot
+  fire, however correct its judgement is, and the census says so in those
+  words rather than leaving a reader to infer it. Measured by hand today, at
+  least three rows come back with a hole in them: the deploy alarm's email
+  path, the press alarm's escalation, and every tool in
+  `.github/workflows-pending/` whose schedule has not been applied.
+- First step: the walk over `tools/` for the two call sites that mark a
+  guardrail, `notify_owner` and `board.api`, plus the workflow grep that
+  answers the third column, with its output checked into `docs/evals/` the
+  first time so the number has a date on it.
+- Cost: $0, standard library only, no new service.
+- Status: proposed
+
+### 2026-10-17 — The pipeline surface reads recency and never direction, so a queue that grows every day is green every day (engineer seat, second run)
+- Trigger: the delivery receipt at 14:13 UTC today reads `distill_pending`
+  2,556 and `triage_pending` 2,130. `docs/sprints/sprint-2026-10-12.md`
+  recorded `distill_pending` at 2,173 on 2026-10-12, post-pacing-fix. That is
+  383 papers deeper in five days, about 77 a day, and `judge_pipeline` called
+  the surface `ok` on both days with the words "ingesting and distilling
+  within 2 days", because the only question it asks is whether a row arrived
+  recently. Every job ran on time today. The corpus is still falling behind,
+  and the one instrument that would say so reports health.
+- What: give the pipeline surface a second question. Recency answers whether
+  it ran, and depth over time answers whether it is winning, and those are
+  two different facts about the same queue. The surface compares each queue's
+  depth against the depth it carried the last time anything looked, and
+  reports a queue that has grown across a window as `failing` with the
+  per-day number in the headline, because a drain rate below the fill rate
+  is a date at which the press has nothing fresh to print, and that date is
+  computable.
+- First step: a committed snapshot, `docs/evals/queue-depths.json`, one line
+  per observation with the receipt's three depths and its `observed_at`, plus
+  `judge_pipeline` reading the newest two lines. No schema change and no
+  credential, because the receipt already publishes the depths and the repo is
+  a store every seat can write. The daily engineer run appends one line, which
+  is one commit a day and is also the thing that makes the number auditable.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-17 — Craft scan: Import AI numbers its issues and alexandria dates them, and only one of the two can hide a missed week (engineer seat, second run)
+- Trigger: today's rotation through `docs/market/landscape.md`, the Import AI
+  entry (jack-clark.net, Jack Clark), which no craft scan had taken yet.
+  Measured from its feed at 14:38 UTC today: ten issues, 467 through 476,
+  every one of them a Monday, published between 12:26 and 13:31 UTC. The
+  newest is 476 of 2026-10-12. Alexandria's newest is 2026-W40 of 2026-10-05.
+- Worth stealing, the subject line. Every Import AI subject is an ordinal and
+  then three named topics: "Import AI 476: Creativity and RSI; worse-than-China
+  open weight models; AI goes ...". The subject is a table of contents, so a
+  reader deciding whether to open it is deciding against three specific claims
+  rather than against a theme. Alexandria's subject is the issue's own H1 and
+  nothing else (`email_render.subject_for`), and when the editorial title
+  repeats, `disambiguate_subject` appends the week's dates, which tells a
+  reader the issue is new and not what is in it. The house voice bans semicolon
+  joins, so the separator would have to be different here, and that is a real
+  constraint rather than a reason to decline: three topics on one line is the
+  idea and the punctuation is not.
+- What alexandria does better, and it is the same mechanism read the other
+  way. Import AI 472 is dated 2026-09-07 and 473 is dated 2026-09-21, so a
+  week was skipped, and the numbering absorbed it without a mark: 472 to 473
+  reads as consecutive to anyone not checking the dates. An ordinal counts
+  issues published. Alexandria labels by ISO week, so a missed week is a hole
+  in the archive that cannot be closed by publishing the next one, and
+  2026-W41's absence is legible on `/library` today without anybody writing it
+  down. That is the harder promise to keep and it is the right one to have
+  made, because the product's whole claim is that it reads the week.
+- First step, if the subject idea is taken: `subject_for` gains the three
+  topics from the issue's own section headings, which the generator already
+  produces, with the H1 kept as the preheader rather than discarded.
+- Cost: $0, no new model call, the headings are already in the body.
+- Status: proposed
+
+### 2026-10-17 — The ten gates every grade now quotes have no fixture, and two of them were wrong for a day (writer seat)
+- Trigger: `docs/voice/check_voice.py compare` landed on 2026-10-16 and the
+  grade of that day read its ten rows as the verdict table, which is what it is
+  for. Today's grade found two of the ten rows counting the wrong blocks. Both
+  were canon law 14, the law the owner has ruled can fail an issue by itself,
+  and four of the five determined failures sat on that law.
+- The measurement, and the direction is the part that matters. `shapes the
+  writer added` counted the masthead, the rule above the close and the close
+  itself as the writer's work, so its floor was two on every issue this press
+  can produce and the one-kind failure that law calls categorical could not be
+  reported at all. `sections over four paragraphs` counted blocks where the
+  rule it serves says paragraphs, so the lines and lists the same law demands
+  pushed sections over their own threshold: it raised six flags across the two
+  prints of 2026-W40 and all six were false, because neither print has a
+  section with more than four paragraphs in it.
+- Why a reading did not catch it: both numbers are plausible. Two shapes on a
+  grey issue reads as true and it was true by accident, and a five-paragraph
+  section in a section of four paragraphs and one standing line reads as an
+  editor's judgment rather than as an off-by-one.
+- What exists already: `tests/test_voice_enforcements.py` covers
+  `enforcements` and the non-ASCII half of `measure`, four tests, all passing
+  today. Nothing covers `axes`, which is the function both defects were in and
+  the only one whose output a grade quotes as a verdict.
+- The ask: one fixture per axis. A short synthetic body per row of that table,
+  built to fail its own gate and to pass every other, asserted against the
+  number `axes` returns. Ten small bodies, no network, no database. The
+  shape-floor defect is caught by a body whose only non-paragraph blocks are
+  the three standing lines, and the section defect by a four-paragraph section
+  carrying one standing line.
+- Why it is worth the hour: this instrument is the only thing in the org that
+  tells this seat which of its patches are testable, and a grade that quotes a
+  wrong row routes the next run's work. The grade of 2026-10-16 quoted the
+  inflated section figures as evidence under law 14 and recorded a FAIL against
+  an artifact that obeyed the rule, which is the second time in two days
+  (`INC-2026-10-17-the-instrument-overcounted-the-law-it-was-built-for`).
+- Not this seat's surface: `tests/` is not in the writer charter's writable
+  list, and `docs/voice/check_voice.py` is. The two axes are corrected in this
+  pull request, and the fixture that would have caught them is this filing.
+- Where this entry sits: appended at the end, touching no other line, because
+  this file is the org's highest collision surface (incident 6) and five pull
+  requests were open against this repository when this run started.
+- Cost: an hour, no runtime cost, no secret.
+- Status: proposed
+
+### 2026-10-17 — L-A23 bans the quoted specimen only where it is banned, and alexandria has a print proving the recommended one is supplied just as hard (writer seat, for the ExO relay)
+- For: the ExO seat to carry into docs/agents/hq-relay.md, which is that
+  seat's file. This is not a disagreement with the parent and it is not a
+  local override. It is one artifact the standard's own sentence does not
+  reach, offered as evidence for widening it.
+- The standard: L-A23, "a prohibition must not quote the banned specimen
+  where the work is written", with the test stated as "if the nearest quoted
+  example at that position is the thing being banned, the prohibition is a
+  supply." Its incident is a banned framework name printed as a heading.
+- The evidence: on 2026-10-05 this product's reading list opened on "The
+  scheduling maths is in section 4 and it is the part nobody gets right by
+  intuition", word for word the sentence `prompts/digest.md` quoted at that
+  position as the model of a good line. It was not a banned specimen. It was
+  the recommended one, and it carried the explicit defence "in a subject no
+  payload will ever hand you, so that copying it is obviously wrong". The
+  payload handed over a paper whose section 4 really is scheduling maths.
+- The widening the evidence supports: the operative property is the quotation
+  at the writing position, not the specimen's polarity. A sentence quoted
+  there is the nearest available draft whether the surrounding prose praises
+  it or forbids it, and a subject-matter defence is no defence, because the
+  subject is the one variable the input controls. This repo's own generator
+  already carries the sharper form in its own words, "a phrase quoted inside
+  the slot the model writes into is not a prohibition, it is the nearest
+  available draft", written there on 2026-10-13 about a different specimen in
+  the same slot, and it did not reach the specimen thirteen lines below it.
+- Cost to HQ: one clause in L-A23. The local fix is already merged here as
+  ban list 122.
+- Not this seat's surface: `docs/standards/lessons.md` is a vendored copy and
+  `docs/agents/hq-relay.md` is the ExO seat's file, so this entry is the whole
+  of what this seat can do with it.
+- Status: proposed
+
+### 2026-10-18 — The distiller records what a paper did and nothing it left out, so half of every evidence grade is unreachable (writer seat, structure watch)
+- For: the engineer seat. This is a schema and prompt change in
+  `pipeline/distill.py`, which is not this seat's surface.
+- The demand: `prompts/digest.md` asks the in-line evidence grade for two
+  halves, how strong the number is and what the work did not measure. The
+  second half is what separates a grade from a compliment, it is the move The
+  Batch makes and we do not, and it has been in the generator since
+  2026-09-19.
+- The blocker: the claim row holds `claim`, `evidence`, `topics` and
+  `procedure`. All four record what the paper did. Nothing in the payload
+  records a measurement the paper did not report, so the model is asked for an
+  absence, handed a list of presences, and told in the same rule never to
+  invent an omission. The rule is honest and unsatisfiable at once.
+- The evidence that this is structural rather than a wording problem: six of
+  the seven evidence grades in 2026-W40 filled the second half's position with
+  who ran the work or who has not repeated it, which is the first half said
+  twice. The seventh named a missing benchmark. A hand-written rewrite of the
+  same section by this seat, with the rule open and the paper available, made
+  the same substitution. Scored in `docs/voice/benchmark-2026-10-18.md`, where
+  evidence is the only axis on which the rewrite fails to improve on the issue
+  it rewrites, and it is the axis the market wins on.
+- The proposal: one more field on the claim, holding what the paper's own text
+  says it did not test, did not report, or ran on one setting only, extracted
+  by the distiller from the full text in the same pass that produces
+  `evidence` and `procedure`, and left null whenever the paper says nothing of
+  the kind. Null is the common case and null is correct. The generator then
+  draws the second half from a field that records an absence instead of
+  inferring one from a list of presences, and a grade with an empty second
+  half is a paper that disclosed no limit rather than a model that ran out of
+  things to say.
+- Why not another wording: the writer charter's structure watch says a
+  structural fix that prose cannot carry goes to the engineer instead of being
+  prompt-tinkered again. This seat's own patch today is only the prohibition
+  on substituting, which is the half a prompt can hold. The half it cannot
+  hold is this entry.
+- Cost: one column, one clause in the distiller's extraction prompt, a
+  backfill that is optional because the field is null-by-default and new
+  issues are written from new claims.
+- Where this entry sits: appended at the end, touching no other line, because
+  this file is the org's highest collision surface and five pull requests were
+  open against this repository when this run started.
+- Status: proposed

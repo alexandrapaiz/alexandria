@@ -14293,3 +14293,203 @@ and it is usually checked against one. Count the specimens the claim covers and
 check it against each, the same way a coverage law is graded by two integers
 rather than by a reading. A diagnosis that hands work to another seat earns the
 count most, because nothing downstream of it will ever re-derive it.
+
+## INC-2026-10-17-the-deploy-alarm-had-no-reachable-cooldown-and-raised-to-nobody-for-nine-days — the second guardrail in four days shipped with its memory in a store its own runner cannot write (2026-10-17, engineer seat, second run)
+
+**Observed by:** the engineer seat's second run of 2026-10-17, 14:16 UTC,
+running `python3 tools/delivery_health.py` as the first observation step of an
+ordinary OODA cycle. The deploy surface came back `FAILING`, correctly, and
+then said this about what it had done with that verdict:
+
+    not mailed: these rows came from https://libraryofalexandria.dev/api/delivery,
+    which cannot write the once-a-day cooldown, and an alarm with no cooldown
+    is one mail every time the standup runs
+
+**What happened.** The drift guard in `tools/delivery_health.py` shipped on
+2026-10-08 with an email alarm and a cooldown, and the cooldown is
+`deploy_runtime.notified_at`, a column. Writing a column needs `DATABASE_URL`.
+No agent seat holds `DATABASE_URL`, by design, and the surface's own
+credential-free reader exists precisely because of that. So the alarm has two
+paths and the org only ever walks one of them: read the receipt, find drift,
+decline to mail, print the decline. Between 2026-10-08 and today it raised to
+nobody, nine days, while `weekly` sat on an image built from `3bbf430` of
+2026-10-04.
+
+The declining is not a bug and that is the point worth keeping. The reasoning
+in that sentence is correct on its own terms: an alarm that cannot remember
+mailing will mail every run, and daily mail about a known drift is how a
+reader learns to filter the sender. The defect is one level up, in deciding
+that the only store a cooldown may live in is the one the alarm's own runner
+cannot reach.
+
+**Why this is a repeat and not a first.** The identical shape was found on the
+press on 2026-10-14, by this seat, and written down in
+`INC-2026-10-14-three-registers-named-the-missing-issue-and-none-of-them-sends-it`.
+That entry closes with the sentence that makes today a repeat rather than a
+discovery:
+
+    the schema change the deploy alarm needs for its own cooldown is the same
+    shape of work
+
+It was read correctly as the same shape and then sized wrongly, and the wrong
+sizing is the finding. It is called a schema change in that sentence, which
+makes it a database migration behind a credential nobody has, which makes it
+a thing to propose rather than a thing to do. It is not a schema change. The
+store it needed already existed, was already reachable from every seat
+workflow through `BOARD_API_URL` and `BOARD_RUNTIME_TOKEN`, and was already
+being used for exactly this purpose by `tools/press_watch.py`, which had
+merged into the same repository two days earlier with the answer in its
+docstring: the card is the memory. Nine days of silence cost a sentence that
+described the fix as harder than it was.
+
+**What shipped with this entry.** `tools/drift_watch.py` and
+`tests/test_drift_watch.py`, 33 cases, no network and no credential. It calls
+`delivery_health.judge_deploy` rather than copying it, and posts one board
+card per stale image, keyed on the sha the job last reported so that the card
+is its own cooldown. Run live at 14:29 UTC it created
+`Deploy: weekly is not running main, still on 0cbc51a0e248` in the working
+column, and a second run two minutes later wrote nothing, which is the
+dedupe working rather than a claim about it.
+
+**What it does not fix, stated so the next run does not assume otherwise.**
+Three things. The card still has no clock above a daily nudge, which is the
+open ledger proposal of 2026-10-14 and is now the open proposal for two
+guardrails rather than one. Nothing closes the card when the deploy lands,
+which is the other open proposal from the same day and has the same scope
+creep. And the tool runs nowhere on a schedule: `.github/workflows-pending/`
+is where a seat may stage a workflow and `.github/workflows/` is where one
+runs, so until a workflow-scoped hand applies something, this fires only when
+a seat happens to run it, which is what happened today.
+
+**The generalisation, offered for the lessons register rather than asserted.**
+A guardrail is finished when something that can run it can also write its
+memory. Those are two credentials and the second one is the one that gets
+assumed. Both times this has happened here, the alarm's judgement was right,
+its restraint was right, and the pair of them produced silence. A one-line
+check at review time would catch it: name the store the cooldown lives in,
+then name the credential that writes that store, then name a scheduled job
+that holds it. If any of the three is missing the guardrail does not fire,
+however correct it is.
+
+## INC-2026-10-17-the-instrument-overcounted-the-law-it-was-built-for — two of the ten gates a grade quotes counted blocks the rule they serve excludes, and one of them put a FAIL on an artifact that obeyed it (2026-10-17, writer seat)
+
+**Repeat of** `INC-2026-10-16-a-fail-was-recorded-against-the-print-that-obeyed-the-rule`,
+one day later, in the same file, on a different pair of axes. That entry is
+about a census with no way to express its rule's exception. This one is about
+two counts whose operand is a different unit from the one their rule names. The
+shared shape, and it is why this is recorded rather than folded into yesterday's
+entry: an instrument that reads an artifact can be exactly wrong in the
+direction that costs most, which is a FAIL against work that complied, and
+canon pass 1 has said since 2026-10-04 that such a FAIL is worse than no grade.
+
+**What happened.** `docs/voice/check_voice.py compare` landed on 2026-10-16 and
+sorted ten measurable gates into determined and undetermined classes. The grade
+of that day read the table as its verdict table, correctly, and concluded that
+four of the five determined failures were canon law 14. Today's grade checked
+two of those four rows against the artifact by hand.
+
+- `shapes on the page` counted the masthead line, the rule above the close and
+  the standing close as blocks the writer put on the page. All three arrive on
+  every issue: the first from `MASTHEAD` in `pipeline/weekly.py`, spliced in by
+  `add_masthead` before the row is stored, and the other two from literal lines
+  of the template in `prompts/digest.md`. All three are standalone-line blocks,
+  so the row's floor was two and the one-kind failure canon law 14 calls
+  categorical could not be reported on any issue this press can produce. The
+  generator's own count says in its own words that those three lines are not
+  the writer's. The command that checks the generator did not.
+- `long sections with no turn` counted blocks where the rule it serves counts
+  paragraphs. The other blocks in a section are the ones the same law requires:
+  a line carrying the number that matters, a bulleted list of parallel results,
+  and the turn itself. It raised two flags on the published body and four on the
+  rehearsal. Neither print has a section with more than four paragraphs in it,
+  so **all six were false**, and the section it scored worst in the org is three
+  paragraphs and seven standing lines, which is the best-formatted section
+  either print produced.
+
+**The cost, on the record.** The grade of 2026-10-16 wrote, under law 14's own
+pass, "the published body runs a five-paragraph and a nine-paragraph section",
+from its own awk count, and used the pair of inflated figures as evidence that
+the generator produces grey walls. It also read "shapes 2 and 2" as meaning the
+two prints were equally grey and that the longer-sectioned one "put fewer shapes
+on it". Counting only the writer's blocks, the published body carries one
+standing line and the rehearsal carries thirteen. The axis counts kinds, nothing
+counted instances, and a thirteenfold difference in the exact device the law
+asks for arrived as two identical numbers.
+
+**Why a reading did not catch it, which is the part worth keeping.** Both wrong
+numbers are plausible on their face. Two shapes on a grey issue reads as true,
+and it was true by accident. A five-paragraph section in a section of four
+paragraphs and one standing line reads as an editor rounding up rather than as
+an off-by-one. A figure that agrees with the impression it is supposed to test
+is the one figure nobody re-derives, and this seat had re-derived the other
+eight.
+
+**Fixed here.** Ban list 120 and 121. The furniture is named from its two
+sources and excluded from the shape count in both `axes` and `measure`. The
+per-section count takes paragraphs. Both rows are renamed, because the numbers'
+meaning changed and a grade must not read a new figure under an old name. The
+generator's turn trigger now says which blocks are not paragraphs and why
+counting them turns one half of law 14 against the other.
+
+**The generalisable lesson, for any seat that builds its own instrument.** A
+gate's operand is as much a part of it as its threshold, and a threshold gets
+reviewed while an operand does not, because the threshold is the thing an
+argument is about. Both defects here are operand defects and both were one line
+of code. The check that would have caught either in a minute is a fixture per
+axis: a synthetic body built to fail one gate and pass the rest, asserted
+against the number the function returns. `tests/test_voice_enforcements.py`
+covers this file's two other entry points and nothing covers `axes`, which is
+the one function whose output a grade quotes as a verdict. Filed in
+docs/ideas.md the same day, because `tests/` is not the writer seat's surface.
+
+## INC-2026-10-18-registered-claims-ship-unhedged-because-no-gate-reads-the-register
+
+**Observed 2026-10-18 by the writer seat, on `site/app/llms.txt/route.js`.**
+
+`docs/agents/quality-claims.md` was written on 2026-09-30 and names that file,
+line 30, in two of its eleven rows. "Revised when the research sharpens it" is
+recorded `queued`. "Retired with an explanation when it is overturned" is
+recorded `not built`. Eighteen days later both sentences are live in public,
+in the present tense, unhedged, exactly as the register describes them.
+
+**Why this is a repeat and not a new kind of failure.** It is incident 20 with
+a different register. The ruling was written down, by the right seat, in the
+right file, and then nothing between the file and the artifact ever opened it.
+Incident 20's own lesson is stated in every charter's shipping step: a register
+needs two gates, one that decides something gets written down and one that
+decides something gets checked before it ships, and the second is the one the
+org keeps forgetting. The writer charter added the claims gate on 2026-09-30
+and it is a gate on **new candidates leaving this seat's hands**. Nothing in
+the org re-checks a claim that was already live when the register was written,
+so the eleven rows describe the site accurately and change nothing about it.
+
+**The aggravating detail.** The register's own preamble cites ADR-36, which
+exists because the site said a skill is revised when the research moves. That
+sentence has now been untrue in public for thirty days rather than the eleven
+the writer charter records, and the file that would have told anybody so has
+been sitting in the repository for eighteen of them with the line number in it.
+
+**A fourth claim on the same page is in no row at all**, and it is the one that
+does damage: "the version you loaded last month may not be the one that holds
+today. Check the version before you rely on it." It instructs an agent to
+spend a check on a mechanism that has never run. The register catches claims a
+reader could ask "how do you know that" about, and this one is advice derived
+from such a claim rather than the claim itself, so it passed the net.
+
+**Why the surface was missed for a month.** `/llms.txt` is a template literal
+inside a route handler. It has no page component, no heading a page audit
+lists, and it is the one public surface written for machines, so no site-copy
+round this seat has run ever opened it. The copy in it predates the owner's
+rulings of 2026-09-25 and 2026-09-29 and has never been checked against
+either, which is also how a launch date of October 13 came to be live on
+October 18 while the pricing page that owns the fact carries no date at all.
+
+**Fixed here, and what is not.** The corrected body is drafted in
+`docs/voice/llms-txt-2026-10-18.md` for the owner to rule on and the frontend
+seat to set, because `site/` is not this seat's surface. What is not fixed is
+the gate. A register whose rows name a file and a line is machine-readable,
+and the check that would close this is a run over the named locations asking
+whether the sentence is still there and whether its row still says `queued`.
+That belongs to the ExO seat, which owns the register, and it is named here
+rather than filed in docs/ideas.md because the defect is the missing gate
+rather than a feature anybody asked for.

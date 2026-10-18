@@ -324,6 +324,34 @@ def hidden_weeks():
     return set(re.findall(r'"([^"]+)"', m.group(1))) if m else set()
 
 
+# The blocks that arrive on every issue whatever the generator writes, which
+# the generator's own shape count already excludes in its own words: "the lines
+# you did not write are not yours: the standing line under the title, the rule
+# above the close, and the close itself". The first two come from
+# `MASTHEAD` and `SHORT_EDITION_NOTE` in pipeline/weekly.py, spliced in by
+# `add_masthead` before the row is stored. The last two are literal lines of
+# the template in prompts/digest.md. Counted as the writer's work they put a
+# floor of two under law 14's first count, so the categorical failure that law
+# names, one kind of block, was unreachable (ban list 120).
+FURNITURE = {
+    "*What's new in AI research, what's gaining acceptance, and what newer "
+    "evidence has overturned.*",
+    "*A short edition. This week's issue is the week in brief.*",
+    "---",
+    "**Accelerate every builder and agent to frontier speed.**",
+}
+
+
+def written_here(block):
+    """Did the generator put this block on the page, or does it arrive anyway.
+
+    Normalised on whitespace, because every copy of the issue wraps its prose
+    differently and the stored row, the site page and a rehearsal dump do not
+    agree on where a line ends.
+    """
+    return " ".join(block.split()) not in {" ".join(f.split()) for f in FURNITURE}
+
+
 def shapes(blocks):
     """How many KINDS of block are on the page, which is canon law 14's first count.
 
@@ -478,7 +506,12 @@ def measure(paths=None):
               f"longest {max(lens) if lens else 0:<4} over100 {len([x for x in lens if x > 100])}")
         print(f"  em dashes {t.count(chr(8212)):<4} semicolons {t.count(';'):<4} "
               f"non-ASCII {sum(na.values()):<5} distinct {len(na)}")
-        kinds = shapes(paras)
+        # The writer's own blocks, not every block on the page. The line below
+        # used to read 2 on an issue whose generator had added nothing but
+        # paragraphs, because the masthead, the rule and the close are three
+        # standalone lines that arrive on every issue, so the sentence under it
+        # could never print on an artifact this press can produce.
+        kinds = shapes([b for b in paras if written_here(b)])
         body = {k: v for k, v in kinds.items() if k != "heading"}
         links = set(re.findall(r"https?://[^)\\s]+", t))
         print(f"  shapes {len(body):<5} links {len(links):<5} "
@@ -521,20 +554,29 @@ def axes(path):
     t = pathlib.Path(path).read_text(encoding="utf-8")
     paras = [x for x in re.split(r"\n\s*\n", t) if x.strip()]
     lens = [len(x.split()) for x in paras]
-    kinds = shapes(paras)
+    kinds = shapes([b for b in paras if written_here(b)])
     na = sum(k for c, k in collections.Counter(
         c for c in t if ord(c) > 127).items() if not exempt_character(c))
     heads = re.findall(r"^#{1,3} .*$", t, re.M)
     # Sections, and the paragraphs and turns and links inside each, because
     # three of law 14's gates are per section and the whole-page counts above
     # cannot see a ten-paragraph section with no turn in it.
+    #
+    # A paragraph, and not a block. The trigger this serves is the generator's
+    # own, "any section running past about four paragraphs gets a written turn
+    # inside it", and the same law asks the writer for the other kinds of block
+    # in the same breath: a line carrying the number that matters, a bulleted
+    # list where the results are parallel, the turn itself. Counting blocks
+    # made every one of those count against the section, so obeying one half of
+    # law 14 tripped the other half, and six flags across two prints of
+    # 2026-W40 were all of them false (ban list 121).
     secs, cur = [], None
     for b in paras:
         if b.startswith("## "):
             cur = {"head": b.strip(), "paras": 0, "turns": 0, "links": 0}
             secs.append(cur)
         elif cur is not None:
-            cur["paras"] += 1
+            cur["paras"] += shapes([b]).get("paragraph", 0) if written_here(b) else 0
             cur["turns"] += b.startswith("### ")
             cur["links"] += len(re.findall(r"\[full text\]", b))
     long_untitled = [s for s in secs if s["paras"] > 4 and not s["turns"]]
@@ -546,10 +588,10 @@ def axes(path):
         "semicolons": (t.count(";"), 0, "le"),
         "em dashes": (t.count(EM), 0, "le"),
         "non-ASCII, no exception": (na, 0, "le"),
-        "shapes on the page": (len([k for k in kinds if k != "heading"]), 3, "ge"),
+        "shapes the writer added": (len([k for k in kinds if k != "heading"]), 3, "ge"),
         "paragraphs over 100 words": (len([x for x in lens if x > 100]), 0, "le"),
         "list blocks": (kinds.get("list", 0), 1, "ge"),
-        "long sections with no turn": (len(long_untitled), 0, "le"),
+        "sections over four paragraphs": (len(long_untitled), 0, "le"),
         "headings carrying a colon": (len([h for h in heads if ":" in h]), 0, "le"),
         "links to a full text": (len(re.findall(r"\[full text\]", t)), 1, "ge"),
         "links outside the reading list": (body_links, 1, "ge"),
@@ -581,11 +623,21 @@ def compare(paths=None):
     compare nothing. The targets: zero semicolons and zero em dashes are canon
     law 1 and the generator's fifth count. Three shapes is law 14's own
     sentence, "two kinds is thin, three is an issue that reads like something a
-    person made". Zero paragraphs over 100 words, zero long sections with no
-    turn and zero headings carrying a colon are the generator's fourth and
-    seventh counts. One list block is the sixth count, whose trigger is the
+    person made". Zero paragraphs over 100 words, zero sections over four
+    paragraphs and zero headings carrying a colon are the generator's fourth
+    and seventh counts. One list block is the sixth count, whose trigger is the
     superseded group and whose target is a list wherever that group runs past
     two entries.
+
+    Two of those rows carried the wrong number until 2026-10-17 and both were
+    law 14, which is the law four of the five determined failures sat on. The
+    shape row counted the masthead, the rule and the close as the writer's
+    work, so its floor was two and the one-kind failure law 14 calls
+    categorical could not be reported. The section row counted blocks rather
+    than paragraphs, so the lines and lists this same law demands pushed
+    sections over their own threshold, and all six flags it raised on the two
+    prints of 2026-W40 were false. Ban list 120 and 121, and the figures are
+    not comparable to the ones a grade before that date printed.
     """
     if not paths or len(paths) != 2:
         print("compare takes two paths: the published body and the rehearsal")
