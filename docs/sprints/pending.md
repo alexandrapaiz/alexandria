@@ -1,3 +1,98 @@
+## Updated 2026-10-18, ~14:40 UTC (message pass): PR #390 (lessons.md re-vendor from HQ 391105d) checked against the merge rule, already settled, a self-referential charter-fix finding handed to ExO on the board
+
+**Trigger.** PR #390 (`distribution/vendored-lessons`, opened 14:30:39Z by
+the exo centralizer's `tools/sync-standards.sh`): "Re-vendor
+`docs/standards/lessons.md` from HQ `391105d`." Instruction: review it
+against the merge rule, merge it, or say on the board what it still
+needs and hand that to its seat.
+
+**Already merged under the exo centralizer's own Tier A lane, before
+this pass touched anything.** `gh pr view 390` reads `MERGED`,
+`mergedAt: 2026-10-18T14:30:43Z`, four seconds after it opened. Checked
+rather than trusted: the GitHub compare API between the prior merge
+commit (`9b2e6f6`, #387) and this one (`1a72557`) shows exactly one
+changed path, `docs/standards/lessons.md`, the single-file lane ADR-011
+grants the exo centralizer without the owner (`docs/standards/pm.md`
+§10, Tier A) and the one the PR's own body cites. The vendored header
+correctly renames the source to `391105d`. Not a draft, no `hold`
+label, no comment, no review — same shape as `#383` and `#387` before
+it. `1a72557` is the newest commit on `main`, and it is #390's own
+merge commit. (`mergedBy` on this PR reads `alexandrapaiz`; per the
+sync's own new L-A53, every seat runs on the owner's personal access
+token since decision 056, so that field cannot distinguish her merge
+from the exo centralizer's. The commit's author and co-author lines —
+`exo-centralizer <exo-centralizer@agents.epito.me>` — are what this
+pass actually relied on.)
+
+**What the sync carries, and one entry is not an FYI.** Ten new
+entries land under `## any` (`L-A48` through `L-A57`), all binding on
+every seat per the file's own stated rule. Most are informational for
+this seat: `L-A49` (a `.gitattributes` merge driver does not change
+what GitHub's merge button does), `L-A50` (class a refusal apart from
+a failure at the boundary that knows it), `L-A52` ("fix shipped" is a
+claim about `main` only), `L-A54` (a platform-change repair owes a
+sweep of every instrument on the same surface), `L-A56` (a filter the
+board API accepts and silently ignores on the message read), `L-A57`
+(a `done` names its stage: written, merged, or running). `L-A51` and
+`L-A55` restate practice this seat already follows (hand off work with
+the test already run and a named blocking condition; the seat that
+supersedes a pull request closes it). None of those six contradict a
+line in this charter.
+
+**`L-A48` does, and it names this file.** It measured, across the
+portfolio with `tools/merge-order.sh`, which shared append-only
+anchors turn independently-clean pull requests into a mutually
+exclusive queue, and its own evidence table reads: "alexandria
+`docs/sprints/pending.md` (15)" — the single worst anchor measured in
+any of the four repositories that day. The rule it states is "a pass
+writes its own file... two passes must never be editing the same
+anchor," which is the exact opposite of what `prompts/pm-agent.md` §1d
+and §4 instruct this seat to do every run: prepend to this one shared
+file. Twenty of this seat's own pull requests are open right now, all
+touching this exact anchor (see below), which is the finding in
+practice rather than only in the lesson's table. This is a charter line
+the ruling contradicts, so naming it is this seat's job and the edit is
+not: `prompts/` is outside this seat's boundaries, and the fix (most
+likely a dated file per pass, aggregated rather than one prepended
+table) is a design call the ExO seat should make, not a line this pass
+should improvise into the charter's own register. Handed to the `exo`
+seat on the board (item `df7b4a84-73ce-4bfc-a5d8-50b507c870ee`, created
+this run) rather than queued here only, because `pending.md` is the
+thing the finding is about and asking the owner to find it inside the
+very file it flags would bury the lede.
+
+**Nothing further owed from the distribution seat or the exo
+centralizer on PR #390 itself.** The merge already happened and already
+carried the right authority.
+
+**Own last run and the collision this pass accepts.** This seat's own
+most recent pull request is `#391` ("mba's correction taken, the W41
+recovery recommendation withdrawn"), opened 14:31:27Z, open, touching
+`docs/agents/incidents.md` and this same file. Branched from `main`
+anyway rather than stacking on it, matching the choice every PM pass
+has taken today on this exact file: an append-only top-of-file section
+collides cleanly, and the alternative is a twenty-deep branch stack for
+an edit that never needs the one underneath it. Twenty of this seat's
+own pull requests are open from today's passes
+(`#332, #335, #362, #365, #367, #369, #371, #373, #375, #376, #377,
+#379, #380, #382, #384, #385, #386, #388, #389, #391`), each prepending
+its own dated section at the same anchor. Expected order, oldest first
+by number, this one last.
+
+**Run health and queue gauge.** Not re-derived in full: this is a
+single-item message pass. One number carried forward because this
+item bears on it directly: `main`'s newest commit is `1a72557`, #390's
+own merge, and one pull request (`#391`) has opened since. 25 pull
+requests open total as of this pass.
+
+**Merged this run: none.** The named item was already settled by the
+exo centralizer's own Tier A lane before this pass read anything, the
+third time today this exact pattern has repeated (`#364`→merged by a
+PM pass directly, `#383`→`#384` and `#387`→`#388` both already
+settled, now `#390`→this). Full account above.
+
+---
+
 ## Updated 2026-10-18, ~14:30 UTC (message pass): mba's correction to the W41 ask taken and applied, the recovery recommendation withdrawn, the real deploy clock named
 
 **Trigger.** A board note from `alexandra-systems/mba`, addressed to this
