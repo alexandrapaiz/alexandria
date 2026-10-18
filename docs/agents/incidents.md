@@ -15771,3 +15771,304 @@ first**, by feeding it one instance confirmed by eye and requiring it to
 find that instance. Both of these checks had passed every run since they
 were written, because a check that under-matches and a check that found
 nothing wrong produce the same output.
+
+---
+
+## INC-2026-10-18-the-hardening-stayed-in-the-runtime-the-seats-left — decision 056 moved every seat to the host, and six pieces of hardening stayed behind in the workflow files (2026-10-18, exo seat)
+
+**This is the orientation of the 2026-10-18 run and the other three entries
+below are instances of it.** Read it first.
+
+**What happened.** Commit `ab4e5bb1`, pushed directly to main by the owner on
+2026-10-17 at 17:06 ET, deleted the `schedule:` block from all ten seat
+workflows under a one-line comment naming HQ decision 056. Each seat's clock
+now lives in its manifest on the company host. The direction is the owner's
+and is not in question here. What is in question is everything else those
+files were carrying.
+
+**The measurement, and it is unambiguous.**
+
+```bash
+grep -l 'cron:' .github/workflows/*.yml          # nothing
+gh run list --created '2026-10-17..2026-10-19' --limit 200 \
+  --jq '[.[]|select(.workflowName|endswith("-agent"))]|length'   # 4
+```
+
+Four agent runs since 2026-10-17, all `schedule`, the last at 17:59:54Z,
+which is 53 minutes after the schedules were deleted and is GitHub running a
+job it had already queued. **Since then: zero.** Over the same hours this
+repository received nine writer pull requests, eleven PM pull requests, and
+engineer and frontend pull requests besides, every one of them from a session
+the host started. The door in `.github/workflows/agent-*.yml` now opens only
+for an explicit `workflow_dispatch`, and there have been two of those in
+eight days.
+
+**What those twelve files were carrying, counted rather than recalled.**
+
+```bash
+grep -h '^      - name:' .github/workflows/agent-*.yml | sort | uniq -c
+#   12  Upload run transcript
+#   12  Trace this run to Langfuse
+#   12  Report this run to the board
+#   12  Post run report to the board
+#   12  No-ship tripwire
+grep -l 'fetch-depth: 0' .github/workflows/agent-*.yml | wc -l   # 12 of 12
+```
+
+Four of those are verified lost on the host path and two are plausibly
+carried. Keeping the two apart matters, because an audit that overclaims is
+the thing this register exists to stop.
+
+**Verified lost, with the evidence for each.**
+
+1. **`fetch-depth: 0`.** The host clone is shallow.
+   `git rev-parse --is-shallow-repository` returned `true` in this very
+   sandbox, and `git diff origin/main...origin/alexandria-exo/2026-10-17-message`
+   answered `no merge base` until `git fetch --unshallow` fixed it. This is
+   the exact fix `INC-2026-09-24-shallow-clone-merge-base-repeat` asked for
+   and got, in the lane that has now been retired. See the next entry for
+   what it cost.
+2. **The no-ship tripwire.** This is the fix for incident 3, the founding
+   night's two runs that reported success and lost every line at teardown,
+   and it has caught real failures since: pm-agent 37261823136 on 2026-10-05
+   and pm-agent 38592352927 on 2026-10-14, the second of which the security
+   seat's 2026-10-15 audit records by name. The host runner has no
+   equivalent. `cli/src/lib/runner.js` (725 lines), `cli/src/lib/engine.js`
+   (211 lines) and `cli/src/run.js` (509 lines) in `alexandrapaiz/epitome`
+   were read in full for `rev-list`, `--contains`, `porcelain`, `pr list`
+   and `pushed`, and the only hit is a prose comment. The runner clones,
+   asserts the entry file exists, spawns the command, captures stdout to
+   `.epito/logs/<agent>/<runId>.log`, and kills the process group on
+   timeout. Nothing asks whether the session pushed anything.
+3. **The run transcript.** `claude-execution-output.json` was uploaded as a
+   90-day artifact on every run, and it is where `docs/agents/turn-caps.md`
+   gets `num_turns` and the `error_max_turns` subtype. The host writes a log
+   to its own disk instead, which no seat in this repository can read. The
+   turn-caps page's measurement commands are therefore unexecutable for
+   every run after 2026-10-17.
+4. **`--max-turns`.** Now the manifest's `max_turns`. Eleven of twelve
+   agree with their workflow. The writer's does not. See the fourth entry
+   below.
+
+**Plausibly carried, and not claimed as lost.** The Langfuse tracing and both
+board report steps have their environment named in `[runtime].env` in each
+manifest, including `BOARD_API_URL`, `BOARD_RUNTIME_TOKEN` and the eleven
+`OTEL_*` variables. Whether the host actually posts them was not verified
+here and should not be asserted either way.
+
+**Why no gate caught any of this.** Because the change was a direct push to
+main by the owner, which `prompts/exo-agent.md` §2 already names as the one
+shape no pull-request gate can see: "A gate scoped to pull requests is not a
+gate on a repository whose owner commits directly." That clause was written
+on 2026-09-30 about a token reservation. This is the same clause arriving at
+the scale of the whole fleet.
+
+**The generalization, which is the part worth keeping.** The org spent a
+month hardening one runtime. Every fix landed in `.github/workflows/`,
+because that is where the runtime was, and each fix was correct and smoke-
+tested and recorded. Then the seats moved to a second runtime that inherited
+none of it. **A fix is attached to a runtime, not to an organization**, and a
+runtime migration therefore re-opens every incident whose fix lived in the
+runtime being left. Nothing about this looked broken on the day it happened,
+and that is the signature of the shape `§3b` calls a missing mechanism: a
+rule that names a seat, fires often enough and holds every credential, and
+still cannot run because the thing it refers to is no longer there.
+
+**So the standing rule for the next migration, and it is one question.** When
+a seat's runtime changes, enumerate what the old runtime did for the seat
+besides start it, and say for each item whether the new runtime does it. The
+inventory command is the `grep -h '^      - name:'` above, and it takes one
+second. No run asked it on 2026-10-17 because no step in any charter asked it.
+That step is now `prompts/exo-agent.md` §2e.
+
+---
+
+## INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register — the shallow-clone fix was filed for this seat on 2026-09-24, never shipped, and then broke this seat (2026-10-18, exo seat, about its own 2026-10-17 run)
+
+**Third occurrence of a registered class, so it is recorded under the
+standing rule at the top of this file.** The class is
+`INC-2026-09-24-shallow-clone-merge-base-repeat`. The engineer seat recorded
+the second occurrence earlier today as
+`INC-2026-10-18-the-machinery-diff-reads-clean-on-a-shallow-clone`. This is
+the third, it is this seat's own, and it is the worst of the three because
+the other two produced a wrong answer while this one produced a corrupted
+artifact.
+
+**What happened.** PR #331, the 2026-10-17 ExO run, has exactly one commit:
+`caa93dc8`, "Ship-first placeholder for the 2026-10-17 ExO run". That commit
+is a merge of `origin/exo/2026-10-11` into a main-based branch, and its
+conflict in `docs/agents/incidents.md` was **committed unresolved**. The file
+on that branch carries `<<<<<<< HEAD` at line 12075, `=======` at 14297 and
+`>>>>>>> origin/exo/2026-10-11` at 14531, which is 2,456 lines of marker-
+delimited duplicate inside the org's incident register. The run produced
+nothing else and the pull request sat open in that state for 21 hours.
+
+**The root cause, and it is not inattention.** The host clone is shallow.
+`alexandrapaiz/epitome`'s own `cli/src/lib/runner.js` opens with a comment
+describing this failure exactly, as a defect it has already fixed:
+
+> The clone is FULL on purpose: `--depth 1` also implies `--single-branch`,
+> so the checkout it made could not answer about any branch but its own, a
+> fetched branch left no remote-tracking ref and read as missing, and the
+> default branch was grafted with no parents, so a three-way merge between
+> two close branches read as unrelated histories. **That second shape is the
+> dangerous one: a mergeable queue came back confidently unmergeable instead
+> of failing loudly.**
+
+That is this incident, named by the runtime's own source, as fixed. The host
+is running a build that predates the fix. The epitome seat reported on
+2026-10-18 that the host has been four weeks behind main and hand-patched,
+which is the same fact from the other end.
+
+**How this run avoided it.** By accident of order. The first git command this
+run ran happened to be a `git diff origin/main...origin/<branch>`, which
+failed loudly with `no merge base` rather than quietly, so the shallow clone
+announced itself before any merge was attempted. One `git fetch --unshallow`
+later the merge resolved cleanly. The difference between the two runs is
+which command they happened to run first.
+
+**The debt, stated plainly because it is this seat's.** The 2026-09-24 entry
+closes with the remedy and the assignment: "either the checkout step
+(`.github/workflows/*`, ExO's to change) fetches full history by default, or
+every seat's charter gets the one-line `git fetch --unshallow` reflex before
+any merge-base check. Filed for the ExO's weekly pattern read." **The first
+half shipped and the second half did not.** All twelve workflows carry
+`fetch-depth: 0`. Not one of the twelve charters contained the word
+"shallow" before this pull request, 24 days later. Then the lane the first
+half lived in was retired, and the half that was skipped is the only one
+that would still be working.
+
+This is incident 13's shape, which is the draft-PR-first fix that was agreed
+on the founding night, assigned here, and sat unapplied through sixteen pull
+requests while the owner carried it by hand. The lesson there was that
+`incidents.md` is a work queue and a pending fix outranks a new idea. The
+lesson here is one layer down: **when an incident offers two remedies and
+one of them is a charter line, ship the charter line too, even when the
+mechanical fix looks complete.** A mechanical fix is scoped to the machine it
+was applied to. A charter line travels with the seat.
+
+**Fixed in this pull request.** The `git fetch --unshallow` reflex is now in
+the "Your own last run may still be open" section of all twelve charters,
+which is the section that tells a seat to merge a sibling branch and is
+therefore the exact place the defect fires.
+
+---
+
+## INC-2026-10-18-decision-056-reached-alexandria-as-a-comment-in-ten-workflow-files — second occurrence of the shape the 2026-09-27 run named, and this one changed how every seat is started (2026-10-18, exo seat)
+
+**Second occurrence, recorded under the standing rule.** The first is in
+`docs/agents/hq-relay.md` for 2026-09-27: HQ Incident 5 changed how
+alexandria deploys to production, its reasoning existed only as nine lines of
+comment at the top of `.github/workflows/deploy-main.yml`, and
+`grep -rn "HQ Incident 5" docs/` returned nothing at all. The ExO charter
+§3f was amended that day to say that a comment inside the artifact is not a
+record, and to run the grep on the parent's own words for its decision.
+
+**The grep, run as the charter now instructs.**
+
+```bash
+grep -rn 'decision 056' docs/ prompts/   # nothing
+grep -rn 'host manifest\|host roster' docs/ prompts/
+#   docs/agents/incidents.md only, and only as of this entry
+```
+
+HQ decision 056 retired every seat's GitHub schedule in this repository. Its
+entire record here is one comment line, repeated in ten workflow files, each
+reading `# schedule: retired 2026-10-17 (HQ decision 056): every seat's clock
+is its manifest on the host; GitHub is an event source, not a runtime`. It is
+not in `docs/decisions.md`, not in `docs/agents/runtime-changes.md`, not in
+`docs/agents/delivery-health.md`, and not in `docs/agents/unowned-duties.md`,
+whose entire Cadence column is written in the crons the decision deleted.
+
+**Question 1 of §3f, which is the severe one: does a local law cover the same
+subject, and does that law's file say it has been overridden?** Yes and no.
+`docs/agents/unowned-duties.md` makes cadence one of its four tests for
+whether a duty is owned, and the operational form of that test is a
+comparison between a seat's cron and a duty's trigger rate. Every cron in
+that column now names a deleted schedule. The register reads exactly as
+healthy as it did on 2026-10-16 and not one of its cadence cells is checkable
+from inside this repository any more. The exemption is written into that file
+by this pull request, naming the decision, per §3f's instruction to write it
+in yourself.
+
+**Question 3: do the seats whose behaviour changed know?** No. Ten of twelve
+seats had their start mechanism replaced and no charter mentions it. The
+sharpest instance is in this seat's own §2, which tells every run that "every
+seat's charter is two files, so read both", the second being the inline
+`prompt:` block in the seat's workflow. That block is now dead text. The
+proof is a direct comparison between `.github/workflows/agent-exo.yml`'s
+prompt and the prompt this run actually received, which differ in five
+places: the workflow says "running in GitHub Actions", the host said
+"running under epito's resident runtime"; the workflow says to commit on
+`exo/YYYY-MM-DD`, the host named `alexandria-exo/2026-10-18-message`; the
+workflow says `gh pr create`, the host said `gh pr create --draft`; the
+workflow lists agent workflows as a writable surface, the host said "never
+touch secrets or workflows"; and the workflow's five hardening steps have no
+counterpart at all. **A seat reading its workflow's prompt block today is
+reading another runtime's instructions.** §2 is corrected in this pull
+request.
+
+**What this costs beyond bookkeeping.** The 2026-09-27 entry's argument was
+that a comment is read by whoever opens that file for some other reason.
+Twenty-one days later the same shape arrived on the mechanism that starts
+every seat in the company, and it was found by a weekly audit rather than by
+a gate. The amendment §3f got in September was the right amendment. It is
+just that the only thing enforcing it is one seat remembering to run one
+grep, which is `registers.md`'s own definition of unenforced.
+
+---
+
+## INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens — 225 in the file that stopped starting runs, 150 in the file that starts them, on the one seat that has exhausted its cap twice (2026-10-18, exo seat, about the writer seat)
+
+**Third cap event for this seat in fourteen days, so it is a repeat under the
+standing rule.** The first two are
+`INC-2026-10-09-the-writer-hit-the-cap-its-own-raise-queued-five-days-earlier`
+and `INC-2026-10-12-the-writers-cap-raise-landed-with-no-smoke-run`.
+
+**The measurement.** Every alexandria seat has a manifest at
+`alexandrapaiz/alexandra-systems:runtime/agents/alexandria/<seat>/agent.toml`,
+and this seat's `GH_TOKEN` can read all twelve. Reconciling `max_turns`
+there against `--max-turns` in each live workflow:
+
+| Seat | workflow `--max-turns` | manifest `max_turns` |
+| --- | --- | --- |
+| engineer, exo | 200 | 200 |
+| finance | 120 | 120 |
+| frontend | 600 | 600 |
+| market, okr, sales | 160 | 160 |
+| pm | 300 | 300 |
+| research, skill | 180 | 180 |
+| security | 250 | 250 |
+| **writer** | **225** | **150** |
+
+Eleven of twelve agree. The models agree in all twelve.
+
+**Why it is the writer.** Because the writer is the only seat whose cap has
+been changed since the manifests were generated. Commit `971944e5` of
+2026-10-12 raised it from 150 to 225 after two exhaustions six days apart,
+both at `num_turns: 151`, the second losing commits it had never pushed. The
+reasoning was full and correct and L-X3 as amended gave it the step of half
+again rather than a doubling. It was written into
+`.github/workflows/agent-writer.yml`, which was the right file on 2026-10-12
+and stopped being the file that starts the writer five days later.
+
+**The resolution path the earlier entry named is now closed.** The
+2026-10-12 entry ends: "the remedy is a `workflow_dispatch` of the writer
+seat before its next scheduled run, which is the owner's," and "The next
+scheduled writer run will be this change's first execution." There will be no
+next scheduled writer run. The raise's first execution is never, unless
+somebody edits the manifest.
+
+**What is not claimed.** Whether the host build in service actually reads
+`max_turns` from the manifest was not verified from inside this repository,
+and the epitome seat's 2026-10-18 report that the host is four weeks behind
+main and hand-patched is a reason to be careful about it. What is verified is
+that the two files disagree on exactly one seat, that the manifest is the one
+the live runtime is pointed at, and that the seat in question ran nine
+sessions on 2026-10-18 alone.
+
+**Not fixable here.** The manifest is in the parent repository and no seat
+here can write to it. Queued as the 2026-10-18 entry in
+`docs/agents/hq-relay.md` with the exact one-line edit, and the
+reconciliation command is now rule 6 of `docs/agents/turn-caps.md` so that no
+future cap change is written into one file and believed in the other.
