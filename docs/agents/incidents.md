@@ -15427,3 +15427,66 @@ recorded in taste.md. What is NOT fixed, and is the ledger entry this run
 files: nothing checks that a ruling in taste.md which names a file has reached
 that file. That check is a command over two files and it is cheap, and it would
 have found this on 2026-10-05.
+
+---
+
+## INC-2026-10-18-the-generator-prompt-only-ever-grew-and-nothing-weighed-it — 101 commits, nine subtractions, and the cost ceiling found before the seat did (2026-10-18, writer seat, seventh run)
+
+**Observed** as three red workflow runs on this seat's own branch
+`alexandria-writer/2026-10-18-message-payload-audit`
+(39104702728, 39104759569, 39104867224), all failing one assertion in
+`tests/test_press_resilience.py`:
+
+```
+FAIL the cost is under the $0.15 ceiling ADR-32 implies: $0.1519 an issue against $0.15
+```
+
+The sixth writer run of the same day added 2,056 tokens of field-map rules to
+`prompts/digest.md`. Main stood at $0.149996. The prompt crossed the ceiling on
+this seat's own commit, and the seat learned about it one run later, from the
+dispatch that told it a workflow was red.
+
+**Repeat of** the class this register keeps recording, most recently
+`INC-2026-10-14-the-register-gate-was-blocking-on-main-and-nothing-ran-it-before-the-merge`:
+a gate that exists, fires correctly, and sits downstream of the seat whose
+output it governs. The company standard already names it. L-A22, "the gate goes
+in the command, not in the charter", and its worked example is this same press
+chain. The seat's charter lists seven registers to check before `gh pr ready`
+and not one of them is a number.
+
+**Why it was never going to be caught earlier, which is the part worth having.**
+The charter's step 3 says to translate every failed grade into the smallest
+prompt change that would have prevented it. There is no step that removes one.
+Replaying every commit that has touched the file: 680 tokens on 2026-09-08,
+38,745 on 2026-10-18, across 101 commits of which nine subtract anything at all
+and the largest of those nine is a merge artifact rather than a deliberate cut.
+The file has never once been edited down on purpose in forty days. A loop that
+only adds hits a wall on a date nobody picked, and no single run is at fault
+for the date.
+
+**The second finding, and it is the one that outlives the fix.** This run cut
+2,227 tokens of genuine waste and bought back 179 tokens of headroom. The cost
+splits as $0.0960 output reservation, $0.0347 generator prompt, $0.0192
+worst-case payload. Deleting the entire prompt lands at $0.1152 against the
+$0.05 ADR-32 booked. So the seat that broke the ceiling is not the seat that
+can hold it, the margin a full run of careful editing buys is one third of a
+median writer run, and a seat that keeps paying this bill in prose will
+eventually cut a gate to make a budget.
+
+**Fix, in this pull request.** The red is cleared and the prompt is now 171
+tokens smaller than main while carrying the sixth run's new rules. Both durable
+fixes are filed for the engineer in docs/ideas.md under "Writer seat, 2026-10-18
+(seventh run)": a budget command this seat runs before committing a prompt
+change, and the structural one, which is that 42% of the prompt is a checking
+procedure for finished text being sent before the text exists.
+
+Until the first of those lands, this is enforced at the reliability of a seat
+remembering to run a test, which is exactly what L-A22 says not to rely on, and
+it is recorded here as such rather than claimed as closed.
+
+**One thing deliberately not done.** The ceiling was not raised. The test says
+in its own words that raising it is a finance decision belonging to the owner,
+and that a ceiling quietly raised to fit the current number has stopped being
+one. The finance half, that ADR-32 books $0.05 against a real $0.15 because the
+output reservation went 6,000 to 24,000 tokens on 2026-09-24, is reported in the
+ledger rather than acted on here.
