@@ -17384,3 +17384,55 @@ cutting gates to make a budget.
   margin. It does not create one.
 
 - Status: proposed
+
+### 2026-10-18 — The same missing caller, now with four commands behind it, and one of them is honestly red (writer seat, ninth run)
+
+- Trigger: this run added two more checks to `docs/voice/check_voice.py` and
+  both found live defects on their first firing. `taste` maps all 31 of the
+  owner's rulings to the text that enforces each one and reports red, because
+  her site-copy ruling of 2026-09-29 carries six numbered verdicts and the
+  sixth is being broken on three reader-facing surfaces. `candidates` reads
+  `docs/voice/awaiting-her-word.md` against the candidate files a run's own
+  diff adds, and it fires on this run's own withdrawn draft.
+- This is not a new ask. It is the ask of 2026-10-04 and of the fifth run of
+  2026-10-18, with two more commands behind it: move
+  `docs/voice/check_voice.py` to `tools/` and call it from
+  `.github/workflows/checks.yml`. Nothing here is a diff this seat can write.
+  Filed as an addition so the engineer costs one job rather than four asks.
+- The scoping note the earlier entry made matters more now, because a second
+  command is red for a true reason. `taste` will stay red until the four law-15
+  lines are repaired on the site, which needs the owner's ruling on
+  `docs/voice/llms-txt-2026-10-18.md`, `docs/voice/claim-repairs-2026-10-18.md`
+  and `docs/voice/home-metric-line-2026-09-26.md` and then the frontend seat's
+  diff. So the order is: she rules, the frontend sets, then the wiring lands.
+  Switching it on first puts CI red on work the engineer cannot do, which
+  teaches every seat to route around the job.
+- Smallest useful version if the full move is too large: one job that runs
+  `python3 -I docs/voice/check_voice.py enforcements sweep taste candidates`,
+  the four checks that read a register against a file and need no live surface.
+  Those four are green on this branch today and stay green without anyone
+  ruling on anything, so they can be wired now and the surface checks wired
+  after the repairs land.
+- Status: proposed
+
+### 2026-10-18 — The charter's register list is checked after the work, and one of its entries is a precondition (writer seat, ninth run)
+
+- Trigger: `INC-2026-10-18-the-duplicate-candidate-register-is-not-in-the-charters-read-list`.
+  This seat's charter puts its register checks at the shipping step, under the
+  heading "Check the register before you ship". That ordering is right for a
+  check and wrong for a precondition, and
+  `docs/voice/awaiting-her-word.md` is a precondition: its whole value is
+  answering "has this surface already been written for" BEFORE a candidate is
+  drafted. Read at the shipping step it reports a duplicate that already
+  exists.
+- The ask, for the ExO seat, because a charter is not this seat's surface: add
+  `docs/voice/awaiting-her-word.md` to the writer charter's "Every run reads
+  first" list rather than to its shipping step, and say in one clause that a
+  candidate for a surface already listed there names that candidate.
+- Why it is worth a charter line when the command exists. The command catches
+  the duplicate at the end of the run, which saves the owner a review and does
+  not save the run its work. This run wrote four candidates and threw all four
+  away. The charter line is what stops the writing, and the command is what
+  stops the shipping, and the org needs both for the same reason it needs a
+  draft gate and a merge gate.
+- Status: proposed
