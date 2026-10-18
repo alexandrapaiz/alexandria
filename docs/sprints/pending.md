@@ -1,3 +1,117 @@
+## Updated 2026-10-18, ~12:30 UTC (six-hour pass): nothing new to merge, nothing new wrong, two superseded pull requests of my own closed
+
+**Trigger.** The six-hour pass: read the inbox and the board, triage the
+last six hours of failed runs, merge what qualifies under Tier B or name
+what waits on the owner, move the sprint, and post one note on the board.
+
+**Own last run may still be open, checked first.** Fifteen of this seat's
+own pull requests were open when this pass started: `#332`, `#335`,
+`#362`, `#365`, `#367`, `#369`, `#371`, `#373`, `#374`, `#375`, `#376`,
+`#377`, `#378`, `#379`, `#380`. Branched from `main` anyway rather than
+stacking on any one of them, since this pass shares no file with any of
+the fifteen beyond the same append-only anchor on this tracker. `#374`,
+`#378` and `#380` are the same thread (the centralizer's manifest-checker
+correction) told a first, second and third time, each adding nothing the
+one before it had not already confirmed. Closed `#374` and `#378` here as
+superseded by `#380`, which carries the fullest account and the final
+reply on the board. The other twelve are untouched and named below.
+
+**Inbox.** One message arrived since the last pass (09:54 UTC): a
+company-wide broadcast from `epitome/exo` about today's provider-capacity
+outage, addressed to nobody by seat or company. Nothing addressed to
+`pm@alexandria` is unanswered; the last genuine ask or handoff this seat
+owed a reply to was the centralizer's manifest thread, closed above.
+
+**Failed runs, last six hours.** Six `checks` runs failed between 06:37
+and 06:43 UTC, all on the writer seat's own iterating branch
+(`alexandria-writer/2026-10-18-message-payload-audit` and
+`-taste-gate`), all the same assertion: the digest generator's prompt
+had crossed the $0.15 cost ceiling by $0.0019. This is a real defect, and
+it is already fixed and already filed: the writer's own later commit on
+the same branch cut 2,227 tokens and the check is green on `main` and on
+the writer's current pull request (`#372`), and the incident is on record
+as `INC-2026-10-18-the-generator-prompt-only-ever-grew-and-nothing-weighed-it`.
+No rerun needed, nothing outstanding.
+
+**Tier B queue: nothing eligible.** Two open pull requests outside this
+seat's own exist right now. `#372` (writer, ninth run) is clean, green,
+and not a draft, but its diff touches `prompts/digest.md`, a Tier C path
+under `docs/standards/pm.md` §10's "Charters (`prompts/`)" line, so it
+waits on the owner regardless of how clean the rest of it reads. `#272`
+(exo, seven days old) touches three charter files under `prompts/` and
+is `CONFLICTING` against current `main`; it waits on the exo seat to
+rebase and then on the owner for the same Tier C reason. Nothing merged
+this pass.
+
+**This seat's own backlog, named rather than hidden.** Thirteen pull
+requests of this seat's own remain open after the two closures above.
+Eleven of them (`#362`, `#365`, `#367`, `#369`, `#371`, `#373`, `#375`,
+`#376`, `#377`, `#379`, `#380`) touch only `docs/sprints/pending.md` or
+a knowledge surface, from a single-event pass each. A prior pass
+(`#374`) already checked six of these (`#362`, `#365`, `#367`, `#369`,
+`#371`, `#373`) against `git merge-tree` and found them genuinely Tier A:
+no Tier C path, each merges clean against `main` on its own. **This is a
+batchable owner or chair action, not performed here**, because Tier B
+condition 1 bars this seat from merging its own pull request under any
+tier: merge oldest first, keeping both sides of the `pending.md` append
+each time the anchor collides, the same way this seat's own passes have
+resolved that exact collision tonight. `#332` (a `prfaq/` path) and
+`#335` (a stale draft) are not Tier A and wait on the owner as before.
+
+**Delivery health, the four surfaces plus the three outside Actions.**
+`gh run list --limit 30`: every run since the last pass is `success` or
+the writer's own already-resolved reds above. Fleet health: all green.
+Delivery health, read from `tools/delivery_health.py --no-notify --json`
+rather than from any scheduler: press is `failing`, no row for 2026-W41,
+about six days past the 2026-10-12 11:00 UTC deadline and already an
+open board card under the engineer seat, waiting on a chair's Modal
+token to resend or to write down why it correctly held. Checkout is
+`failing`, the pricing page still renders no buyer-facing link because
+`POLAR_CHECKOUT_*` is unset, the same five-plus-week owner item as every
+prior pass. Deploy is `failing`, the distill and ingest Modal functions
+are running code roughly two days behind `origin/main`, which also needs
+a chair's redeploy. Pipeline, archive and MCP all read `ok`. None of
+these three reds is new; none needs a new card.
+
+**Sprint.** `sprint-2026-10-12`, "Launch eve: the send proves itself, and
+the spine becomes purchasable," ends today. Items 2 (Polar wired end to
+end), 3 (institution backfill), 4 (the Left-Behind Index) and 5 (the
+press-watch guardrail) are all on `main`. Item 1, diagnosing the press
+gap, is the sprint's one open red: the gap it named on 2026-10-12
+recurred the following week as the 2026-W41 miss above, and it carries
+into tomorrow's ceremony rather than closing clean. Who hands off to
+whom: the engineer's next run resends or documents the hold once a chair
+has turned the Modal key; the owner's merge of the Tier A six and the two
+Tier C pull requests is what actually moves this seat's own queue.
+
+**Worth naming plainly.** This seat opened fifteen pull requests today
+before this one, and eleven of them changed nothing but this file. A
+message from `alexandra-systems/mba` to HQ's own PM, read in passing
+while checking the inbox, names the shape directly: a run used to be a
+weekly ceremony and the event bus turned it into a pass that fires on
+every board write, and nobody changed the rule that one run makes one
+pull request. This pass closed two superseded ones and named the six
+that are safely batchable, which is what it can do without merging its
+own work. The standards fix is the owner's or HQ's to make, not this
+seat's to invent.
+
+**Run health.** All green since the last pass, aside from the writer's
+own already-resolved reds above.
+
+**Owed to you, unchanged, not re-litigated:** the Modal redeploy (press
+resend and the distill/ingest drift both need it), the Polar
+Merchant-of-Record account, the missing launch PR/FAQ on `main`, the
+Tier A six and the two Tier C pull requests named above, and `#332` and
+`#335` from last night.
+
+**Merged this run:** none. **Closed this run:** `#374`, `#378` (both
+superseded by `#380`).
+
+**Boundaries respected.** No merge, no push to main, no workflow or
+secret touched. One pull request, draft-first. Writable surface only:
+`docs/sprints/pending.md`, plus the board note and the two closures
+above.
+
 ## Updated 2026-10-18, ~02:30 UTC (message pass): PR #352 and #357 checked against the merge rule and merged, the board's checkout-probe card closed, a charter fix handed to the owner
 
 **Trigger.** The event bundle for this pass named seven things: four of
