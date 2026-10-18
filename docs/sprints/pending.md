@@ -1,3 +1,89 @@
+## Updated 2026-10-18, ~02:05 UTC (message pass): PR #348 (the buyer's path becomes measurable) checked against the merge rule and merged, the board card closed
+
+**Trigger.** PR #348 (`alexandria-engineer/2026-10-18-message-buyer-path`,
+engineer's third run today, "the buyer's path becomes measurable, visit to
+install to payment"). Instruction: review it against the merge rule, merge
+it, or say on the board what it still needs and hand that to its seat.
+
+**Own last run may still be open, checked first.** Four found: `#347`
+(this seat's own pass minutes earlier, merging `#312`/`#343`/`#346`),
+`#350` (this seat's own pass right after it, the pricing-checkout
+handoff), and `#335`/`#332` from the night before. All four wait on
+another merger under Tier B condition 1 (a PM's own Tier B pull request
+waits for the owner or HQ's PM) and all four touch only
+`docs/sprints/pending.md`, append-only at the top rather than at a fixed
+anchor. Branched from `main` anyway: this pass's own work (reviewing one
+engineer pull request) shares no code scope with any of the four, so
+whichever merges first gives the others a one-line keep-both, the same
+shape this chain has used all day.
+
+**PR #348 opened `CONFLICTING`, then checked against the merge rule
+(`docs/standards/pm.md` §10 Tier B, amended §21) and merged.** Not a
+draft, no `hold` label, no comment, no review. `gh pr diff --name-only`:
+`db/schema.sql`, two new `docs/agents/` and `docs/product/` files,
+`docs/agents/incidents.md`, `docs/ideas.md`, three `site/` files (one
+new), `tools/buyer_path.py`, and three test files — no `.github/`, no
+`prompts/`, no `company.yaml`, no secret, so no Tier C path. The one
+check defined, the digest-budget gate, read `SUCCESS`.
+
+It opened in conflict with `main` at the usual two append-only anchors,
+`docs/ideas.md` and `docs/agents/incidents.md` (the tail this org's own
+ledger and incident register keep colliding at, same shape as `#312`,
+`#343` and `#346` today). Resolved it locally first, oldest-then-newest,
+to confirm the conflict really was docs-only before touching anything —
+then found the engineer's own branch had already pushed the identical
+resolution seconds earlier (`mergeStateStatus` flipped to `CLEAN` between
+my fetch and my push), so my own local resolution was discarded unpushed
+rather than raced against a live branch, the same move `#347` made on
+`#312` a few minutes before.
+
+**No other seat holds a claim on the surface.** Read the file lists of
+every other open pull request (`#332`, `#333`, `#335`, `#347`, `#349`,
+`#350`) rather than their titles: the only overlap anywhere is the same
+two append-only anchors shared with `#349` (writer), which is the
+ordinary keep-both conflict this org already resolves on whichever
+merges second.
+
+**Verified before merging, against the engineer's own resolved tip, not
+assumed from the pull request's own report.** Full suite in a venv:
+`pytest tests/ -q` → 1698 passed, 12 skipped, 0 failed. `node --test
+tests/path.test.mjs` → 25 passed, 0 failed. `python3
+tools/check_registers.py` → 0 blocking, 71 warnings, the same baseline
+`#347` measured. Merged clean at 2026-10-18T02:03:41Z. `main`'s next
+`checks.yml` run came back `success` three seconds after the merge
+commit landed.
+
+**Board.** Card `c688ef2e` ("Build a way to measure the buyer's path")
+moved from Review to Done, with the merge-rule check posted on it in
+first person. The two things the engineer's own report said still need
+the owner — applying `db/schema.sql` so the new table exists, and
+optionally granting GitHub's `administration: read` traffic permission
+for the one unmeasured step, the install — are named there, not
+repeated as new pending lines here, because the engineer's own pull
+request already names them in full and nothing here adds to that.
+
+**Run health.** `gh run list --limit 30`: all 30 `success` or in
+progress, nothing failed since the last pass.
+
+**Queue gauge, four numbers.** `main` under two minutes old at this
+pass's own merge, its newest `checks.yml` run `success`. 10 open pull
+requests, 0 opened since this pass's own merge (two did open earlier in
+the window this merge closes, `#351` okr and `#352` engineer, both
+answering `#350`'s board handoffs). 7-day conversion 48 merged over 84
+opened (0.57), up from `#347`'s 0.58 reading of six-hour-old numbers
+because the denominator moved faster than the numerator in between.
+Deepest open chain: 1, nothing currently stacked.
+
+**Owed to you, carried from `#347`/`#350`, not re-verified this pass
+since it is out of this pass's one trigger:** the press and site read
+FAILING at thirteen-plus days stale (a `modal run` only a human token can
+fire), two pending `modal deploy`s on `distill` and `ingest`, the Polar
+Merchant-of-Record account, and this seat's own four open pull requests
+above waiting on another merger.
+
+**Merged this run (Tier B, `docs/standards/pm.md` §10/§21), one:**
+`#348` (engineer).
+
 ## Updated 2026-10-18, ~01:20 UTC (message pass): PR #342 (the writer's selling copy) checked against the merge rule and merged, a thirteen-day-stale board card closed, the install page's own unfinished claim handed back to engineer
 
 **Trigger.** Four events this pass answers, two of them repeats of events
