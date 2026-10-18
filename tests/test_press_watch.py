@@ -43,6 +43,10 @@ W40 = {"week": "2026-W40", "created_at": datetime(2026, 10, 5, 9, 1, tzinfo=UTC)
        "model": "kimi-k2.6"}
 W41 = {"week": "2026-W41", "created_at": datetime(2026, 10, 12, 9, 1, tzinfo=UTC),
        "model": "kimi-k2.6"}
+#: The same week, printed by the second provider in `weekly.FALLBACK_MODELS`.
+#: This is what the owner asked to be told about on 2026-10-16: the press
+#: survived an outage and nothing said which account carried it.
+W41_FALLBACK = {**W41, "model": "openai/gpt-oss-120b"}
 
 
 def press(facts, when):
@@ -311,6 +315,104 @@ def test_an_unresolvable_column_still_gets_the_card_posted(recorder, capsys):
 
 
 # ---------------------------------------------------------------- the verdict
+
+
+# ------------------------------------- the issue printed, on the wrong account
+
+
+def test_an_issue_off_the_primarys_provider_is_a_fallback():
+    assert pw.wrote_on_fallback(press(W41_FALLBACK, AFTER))
+
+
+def test_an_issue_on_the_primary_is_not():
+    assert not pw.wrote_on_fallback(press(W41, AFTER))
+
+
+def test_a_missing_issue_is_not_also_a_fallback():
+    """Two cards for one week is two alarms for one fact.
+
+    The late card already says the week has no issue. Asking the fallback
+    question of a week whose newest row is some older week would answer about
+    that older week, which is a true sentence about the wrong subject.
+    """
+    assert not pw.wrote_on_fallback(press(W40, AFTER))
+
+
+def test_the_fallback_card_names_the_week_the_model_and_the_primary():
+    surface = press(W41_FALLBACK, AFTER)
+    title = pw.fallback_title(surface)
+    assert "2026-W41" in title
+    assert "kimi-k2.6" in title, "the title says what it is not, so a reader can tell"
+    body = pw.fallback_body(surface, AFTER)
+    assert "openai/gpt-oss-120b" in body
+    assert "groq" in body
+    assert "short edition" in body, "the quality cost is arithmetic, so it is stated"
+
+
+def test_the_fallback_card_reads_as_prose_the_board_will_accept():
+    """The board refuses a labelled block and a block over 420 characters."""
+    body = pw.fallback_body(press(W41_FALLBACK, AFTER), AFTER)
+    for block in body.split("\n\n"):
+        assert len(block) <= 420, block
+    assert board.scannable(body) == body
+
+
+def test_the_two_cards_for_one_week_do_not_dedupe_each_other():
+    """`find_card` matched on a shared title prefix until there were two titles."""
+    late = {"id": "late", "title": pw.card_title("2026-W41")}
+    fell = {"id": "fell", "title": pw.fallback_title(press(W41_FALLBACK, AFTER))}
+    payload = board_payload([late, fell])
+    assert pw.find_card(payload, "2026-W41", pw.TITLE_PREFIX)["id"] == "late"
+    assert pw.find_card(payload, "2026-W41", pw.FALLBACK_MARK)["id"] == "fell"
+
+
+def test_a_fallback_week_gets_a_card_and_the_run_still_exits_zero(monkeypatch,
+                                                                  recorder):
+    """The press delivered, so the job is green and the board is told anyway.
+
+    A red tick on a week the reader got an issue teaches everybody to stop
+    reading the ticks, and the decision a fallback asks for belongs to a
+    person looking at a card rather than at a job status.
+    """
+    rec = recorder(board_payload([]))
+    fixed_press(press(W41_FALLBACK, AFTER), monkeypatch)
+    answer = pw.watch(today=AFTER, company="alexandria")
+    assert answer["exit"] == 0
+    assert answer["on_fallback"] is True
+    assert answer["board"]["action"] == "created"
+    (method, path, payload) = rec.calls[-1]
+    assert (method, path) == ("POST", "/api/items")
+    assert pw.FALLBACK_MARK in payload["title"]
+
+
+def test_a_fallback_card_is_said_once_and_never_nudged(recorder):
+    """A statement is not an open problem, so it does not get a daily reminder."""
+    surface = press(W41_FALLBACK, AFTER)
+    stale = {"id": "fell", "title": pw.fallback_title(surface),
+             "created_at": (AFTER - timedelta(days=9)).isoformat(),
+             "comments": []}
+    rec = recorder(board_payload([stale]))
+    did = pw.post(surface, "2026-W41", AFTER, company="alexandria",
+                  kind="fallback")
+    assert did["action"] == "already on the board"
+    assert not any(m == "POST" for (m, *_) in rec.calls)
+
+
+def test_the_primary_path_still_says_nothing(monkeypatch):
+    """The quiet case stays quiet, which is what makes the card worth reading."""
+    fixed_press(press(W41, AFTER), monkeypatch)
+    answer = pw.watch(today=AFTER)
+    assert answer["exit"] == 0
+    assert answer["on_fallback"] is False
+    assert answer["board"]["action"] == "nothing to post"
+
+
+def test_the_render_names_the_provider_on_every_verdict(monkeypatch):
+    """"Which provider wrote it" is the owner's question, so it is always printed."""
+    fixed_press(press(W41_FALLBACK, AFTER), monkeypatch)
+    text = pw.render(pw.watch(today=AFTER, dry_run=True))
+    assert "openai/gpt-oss-120b" in text
+    assert "a fallback, not the primary" in text
 
 
 def fixed_press(surface, monkeypatch):
