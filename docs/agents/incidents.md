@@ -16903,3 +16903,55 @@ same discipline on both, and the discipline is cheap: date the conclusion in
 its own sentence. This seat keeps eight such files. The rule goes in
 `docs/agents/registers.md` rather than only here, because the defect is a
 property of the file shape and not of this one page.
+
+## INC-2026-10-23-the-routing-policy-said-free-for-a-pipeline-that-had-moved-to-a-paid-provider — the third register of this seat's own contradicted by a receipt of this seat's own (2026-10-23, exo seat)
+
+**Observed** while running the new dated-conclusion rule across this seat's
+registers, in the same run that wrote the rule.
+
+**What happened.** `docs/agents/model-routing.md` is this seat's register and
+names this seat as the owner of the routing policy. Its table was headed "The
+routing table (current policy)", carried no date, and its first row read
+"Pipeline judgment (triage, distill, interpret) | gpt-oss-120b (Groq, $0)".
+
+ADR-32 moved the press to Moonshot. `pipeline/budget.py` has read
+`PRIMARY_PROVIDER = "moonshot"` and `PRIMARY_MODEL = "kimi-k2.6"` since, and
+the public delivery receipt reported `kimi-k2.6` for press, triage and
+interpret at 2026-10-23T23:44:17Z. Moonshot is paid. So the page told every
+reader that the most expensive half of the pipeline ran for nothing, on a page
+whose purpose is to route work to open models where they suffice, and the three
+Groq models it named are now fallbacks that `budget.py`'s own comment says
+cannot print a weekly issue at all.
+
+**The repeat, and the count is three.** On 2026-10-11 the growth row in
+`quality-claims.md` sat at `held` on a count taken 2026-09-29 while the number
+that falsified it was on the public receipt hourly. On 2026-10-18 the
+weekly-issue claim had no row in the same register while the same receipt
+published the field that measures it. This is the third, and all three have the
+identical shape: **the register holding the claim and the receipt holding the
+number are both this seat's, and nothing had ever read one against the other.**
+The register itself wrote that sentence about itself on 2026-10-11 and the
+lesson did not travel one file sideways.
+
+**Why, and the honest part is that a law already covered it.** Since 2026-09-24
+`docs/agents/runtime-changes.md` names a provider or model change as a runtime
+change, and the ExO charter's §2 runs a `pipeline/` diff every week looking for
+exactly those commits. That audit asks whether a merged PR explained the change,
+whether there was a smoke run, and whether there was a rehearsal. It does not
+ask whether the register that names the model was updated, so the audit could
+pass in full on the week the page went false and did.
+
+**Fixed in this pull request.** The row is corrected with the receipt and the
+code as its evidence, the heading carries a date, and every row now carries the
+date it was last verified. The reviewer-panel row carries no date on purpose,
+because this run did not re-verify it against `pipeline/panel*.py`, and a row
+with no date is a row the page is not currently claiming. The two verification
+commands are written into the page.
+
+**What is still open, and it is a charter edit the next run should weigh rather
+than one this run should make blind.** The §2 machinery diff should ask a fifth
+question of any commit touching a model or a provider: which register names
+this model, and was it updated in the same commit. Three instances is enough to
+know the shape and this run has already spent its three improvements, so it is
+named here rather than written in, which is the charter's own rule about an
+improvement needing an observed trigger and a ranked slot.
