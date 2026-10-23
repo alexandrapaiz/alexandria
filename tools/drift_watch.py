@@ -97,7 +97,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -107,7 +106,7 @@ sys.path.insert(0, str(ROOT))
 
 from tools import board  # noqa: E402
 from tools import delivery_health as dh  # noqa: E402
-from tools import press_watch  # noqa: E402
+from tools import board_alarm  # noqa: E402
 
 #: The title a card carries. The app and the running image are both in it,
 #: because the board's list view is what a seat reads and a card that names
@@ -286,25 +285,19 @@ def find_card(payload: dict, app: str, key: str) -> dict | None:
     including Done, so a drift somebody has already closed is not alarmed
     about twice.
     """
-    for item in payload.get("items") or []:
-        title = item.get("title") or ""
-        if title.startswith(TITLE_PREFIX) and app in title and key in title:
-            return item
-    return None
+    return board_alarm.find_card(payload, [app, key], prefix=TITLE_PREFIX)
 
 
 def needs_nudge(card: dict, now: datetime, after: timedelta = NUDGE_AFTER) -> bool:
     """Has it been long enough since this card last said anything.
 
-    `press_watch.needs_nudge` already reads a card's comments for their newest
-    timestamp and already resolves the unrecognised-comment-shape case the
-    right way, which is to treat the card as recently nudged: the failure that
-    costs something is a comment every run, and the failure that costs nothing
-    is a quiet day on a card already on the board. That reasoning is about
-    cards and not about the press, so it is called rather than copied, and a
-    correction to it lands in both guardrails at once.
+    One rule for every watcher, in `tools/board_alarm.py`. This used to call
+    `press_watch.needs_nudge` with a docstring arguing that the reasoning is
+    about cards and not about the press, which was right and was an import
+    between two siblings. The third sibling is what turned that argument into
+    a module.
     """
-    return press_watch.needs_nudge(card, now, after)
+    return board_alarm.needs_nudge(card, now, after)
 
 
 def nudge_body(record: dict, now: datetime) -> str:
@@ -345,33 +338,17 @@ def post(record: dict, deploy, now: datetime, dry_run: bool = False,
         return {"app": app, "action": "would create", "title": title,
                 "body": body, "column": column, "seat": seat}
 
-    company = company or board.company_from_repo(
-        os.environ.get("GITHUB_REPOSITORY", "")) or "alexandria"
+    company = board_alarm.company_here(company)
     if payload is None:
         payload = board.read_board(company)
     found = find_card(payload, app, key)
-    if found:
-        if not needs_nudge(found, now):
-            return {"app": app, "action": "already on the board",
-                    "id": found.get("id"), "title": found.get("title")}
-        board.api(f"/api/items/{found['id']}/comments", method="POST",
-                  payload={"company": company, "seat": seat,
-                           "body": nudge_body(record, now)})
-        return {"app": app, "action": "nudged", "id": found.get("id"),
-                "title": found.get("title")}
-
-    item = {"company": company, "seat": seat, "title": title,
-            "body": body, "horizon": "now"}
-    if column:
-        try:
-            item["column_id"] = board.resolve_column(payload, column)
-        except board.BoardError as exc:
-            print(f"drift_watch: {exc}. Creating the card without a column, "
-                  "because the card matters and its column does not.",
-                  file=sys.stderr)
-    created = board.api("/api/items", method="POST", payload=item)
-    return {"app": app, "action": "created", "id": created.get("id"),
-            "title": title}
+    did = board_alarm.place(
+        found, payload=payload, title=title, body=body,
+        nudge=nudge_body(record, now), now=now, company=company,
+        tool="drift_watch", seat=seat, column=column)
+    # The app rides along, because a run alarming about three apps reports
+    # three lines and a reader needs to know which app each one is about.
+    return {"app": app, **did}
 
 
 def watch(today=None, dry_run: bool = False, company: str | None = None) -> dict:
@@ -399,8 +376,7 @@ def watch(today=None, dry_run: bool = False, company: str | None = None) -> dict
     # between the path that worked and the path that did not.
     payload = None
     if not dry_run:
-        company = company or board.company_from_repo(
-            os.environ.get("GITHUB_REPOSITORY", "")) or "alexandria"
+        company = board_alarm.company_here(company)
         try:
             payload = board.read_board(company)
         except board.BoardError as exc:

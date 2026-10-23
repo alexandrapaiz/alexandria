@@ -336,15 +336,68 @@ def test_and_a_real_deploy_clears_it():
 
 
 def test_a_drift_younger_than_a_day_is_a_pending_deploy_not_an_alarm():
-    """The org merges most days, and most mornings are not an incident."""
+    """The org merges most days, and most mornings are not an incident.
+
+    The row here holds the digest of the commit BEFORE the edit, which is what
+    a real deploy's row holds: the image was built from the trunk as it stood,
+    and then somebody merged. Until 2026-10-23 this fixture recorded a digest
+    matching no commit at all, which is the shape of a shallow clone rather
+    than of a recent merge. The two have to answer differently, because one is
+    a pending deploy and the other is a question the checkout cannot answer,
+    and `test_a_checkout_that_cannot_place_the_image_is_not_a_green_deploy` is
+    the other half of that pair.
+    """
     with tempfile.TemporaryDirectory() as tmp:
-        repo = fixture_repo(Path(tmp), days_ago=0.1)
-        conn = FakeConn([row_for(app, repo, sha="0ldc0dec0de") for app in rs.APPS])
+        repo = fixture_history(Path(tmp), [
+            ("pipeline/llm.py", "A change merged two hours ago"),
+        ], base_days_ago=1.1)
+        deployed = {app: dh._digest_at(repo, app, "HEAD~1", {}) for app in rs.APPS}
+        conn = FakeConn([row_for(app, repo, sha=deployed[app]) for app in rs.APPS])
         surface = dh.check_deploy(conn, repo, notify=False)
         check("a two-hour-old drift is not red",
               surface.state == dh.OK, f"{surface.state}: {surface.headline}")
         check("and the headline still names the pending deploy",
               "pending" in surface.headline, surface.headline)
+        check("and it was dated from the undeployed commit, not from the file",
+              surface.evidence["triage"]["drift_anchor"]
+              == "the oldest undeployed commit",
+              str(surface.evidence["triage"].get("drift_anchor")))
+
+
+def test_a_checkout_that_cannot_place_the_image_is_not_a_green_deploy():
+    """The shallow-clone hole, which was open to every seat for two weeks.
+
+    Every agent seat runs from `git clone --depth 1`. One commit of history
+    means the replay in `undeployed_commits` can never match the running
+    digest, so `drift_began` falls back to the newest commit to the app's
+    files, which in a shallow clone is that single commit and is hours old.
+    The surface then reported a pending deploy inside its grace window.
+
+    Measured on the live repository on 2026-10-23, same tree and same rows,
+    with the only difference being the clone: shallow read `ok, a deploy is
+    pending and still inside the 24h window: distill (0.1h), ingest (0.1h),
+    weekly (0.1h)`, and the same checkout after `git fetch --unshallow` read
+    three apps between 7.3 and 8.2 days behind. `weekly` is the press.
+
+    So an undated drift inside the window is `unknown`. The one outside it
+    still alarms, which is `test_an_undatable_drift_falls_back_to_the_old_anchor`
+    and is unchanged: under-reporting the number is the old and correct
+    behaviour, and reporting the state as green was never part of it.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_repo(Path(tmp), days_ago=0.1)
+        conn = FakeConn([row_for(app, repo, sha="0ldc0dec0de") for app in rs.APPS])
+        surface = dh.check_deploy(conn, repo, notify=False)
+        check("an image this checkout cannot place is not green",
+              surface.state == dh.UNKNOWN, f"{surface.state}: {surface.headline}")
+        check("and the headline says the comparison is what failed",
+              "cannot be compared" in surface.headline, surface.headline)
+        triage = surface.evidence["triage"]
+        check("and the evidence says why, in the app's own row",
+              "matches no commit this checkout can see" in triage.get("why", ""),
+              str(triage.get("why")))
+        check("while the number it could not trust is still on the page",
+              "drift_hours" in triage, str(sorted(triage)))
 
 
 def test_a_job_that_never_reported_is_treated_as_drift():
