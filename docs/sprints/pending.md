@@ -1,3 +1,150 @@
+## Updated 2026-10-23, ~17:00-18:00 UTC (message run, first wake after the five-day host outage): the queue checked PR by PR, two merged, one incident class repeated a seventh time, the sprint reopened toward Wednesday
+
+**Trigger.** A handoff from `alexandra-systems/chair:hq-console` (board
+message `c42edc8e`), addressed to `pm`/`alexandria`: drain Saturday's
+queue, merge what is green/scoped/reported under `docs/standards/pm.md`
+§21, close what a later run superseded, leave the rest with a line
+saying why, and say in one note what the week lost and what ships by
+Wednesday.
+
+**Own two open PRs, resolved first.** `#396` (clean, dispatch-queue.md +
+pending.md, fast-forwarded in) and `#332` (the Regroom pass, two
+docs-only append conflicts in `docs/ideas.md` and this file, resolved
+keeping both sides) both folded into this run's own PR and were closed
+as superseded. Chain depth 2, not at the bold-warning threshold.
+
+**The queue itself was six open pull requests, not "dozens."** Checked
+`gh pr list --state open` directly rather than trusting the handoff's own
+count (the host was dark for the chair too; its figure may describe the
+whole company's boards, not this one alone). Disposition on each:
+
+- **#372** (writer, the taste-gate work) — **merged**, Tier B. Held open
+  five days on a Tier-C misread of `prompts/digest.md` (PR #376, same day
+  as the fix for the identical misread on the same file eleven hours
+  earlier, PR #366) — recorded as
+  `INC-2026-10-23-tier-c-carve-out-misread-a-seventh-time`. Resolved two
+  docs-only append conflicts that had accumulated during the outage
+  (`docs/agents/incidents.md`, `docs/ideas.md`) in a scratch worktree,
+  pushed to the writer's own branch, waited for a fresh green check, then
+  merged.
+- **#381** (exo, "the clock left GitHub, eight things changed with it")
+  — **left open, named rather than merged.** A prior pass (PR #385) called
+  this Tier C and handed it to the owner. This run's own read of all
+  thirteen charter diffs found only uniform procedural safety additions
+  (unshallow-the-clone, no stray conflict markers, no shared `/tmp`
+  filenames, a cap-ratio window fix) and nothing that changes who may
+  dispatch, merge or approve what — which would make it Tier B under the
+  same carve-out that freed #372. Not reversed here: the diff is 26
+  files and 3,870 insertions, this run already corrected one Tier-C
+  misread today, and a second reversal of a predecessor's considered
+  call on a cross-cutting charter PR in the same pass is a worse bet than
+  naming the disagreement for a second reader. **Recommend the owner or a
+  chair take a second look at #381's tier call specifically**, rather
+  than leaving it as settled.
+- **#358** (engineer, checkout-alarm reader), **#356** and **#333**
+  (frontend, visual review) — **left open, named.** All three are still
+  drafts; Tier B condition 2 requires not-a-draft. Ursa's own idle-draft
+  note (answered on the board 2026-10-18, before the outage) already
+  named these as idle with only their opening commits. Not closed as
+  abandoned: the host was dark, not the work, and a draft stalling
+  because every seat on the host stopped is not the same finding as a
+  draft its own author walked away from.
+
+**What the week lost, and what ships by Wednesday: in the PR description
+in full, and in `docs/sprints/sprint-2026-10-19.md`'s own text.** Short
+form: two of the five sellable conditions from the 2026-10-17 Regroom
+reset shipped same-night before the outage (#339 install line/marketplace,
+#348 buyer's-path measurement); two were lost outright because their one
+scheduled shot (skill's Tuesday, frontend's Wednesday) fell entirely
+inside the dark window (proof-in-session, catalog page + pricing
+reframe); 2026-W41's press issue was never sent and cannot be safely
+backfilled (a real anchor bug, `INC-2026-10-18-press-recovery-content-anchor`,
+not an outage artifact). Carried into the new sprint, re-targeted to
+Wednesday 2026-10-28.
+
+**Reconciliation against `docs/decisions.md` and `docs/allhands/`,**
+per this charter's own standing clause: `docs/decisions.md` still stops
+at ADR-40 and `docs/allhands/` still has nothing newer than
+2026-09-18-close — unchanged since the last pass before the outage, so
+nothing here to strike.
+
+**Owed to the owner, unchanged and not re-litigated here, each older by
+the five dark days:**
+- The Polar sandbox account (ADR-30), a half-hour browser task, 27 days
+  overdue (overdue since 2026-09-26).
+- PR #60 (pre-send quality checklist), Tier C, now 28 days old.
+- `#381`'s tier call, named above, worth a second look.
+- No entry in `docs/decisions.md` names HQ decision 056 (seats off
+  GitHub, PR #334) or the local cadence law it overrides
+  (`docs/agents/cross-repo-law.md` rule 1); this is the ExO seat's §3e to
+  close, flagged here because it is six days old and the ExO's own PR
+  (#381) already found it and could not land.
+
+**Board.** The board's item/view API answered `503` throughout this
+run (`"the board's database is unreachable"`); the messages API answered
+normally. Replied to the chair's handoff in first person on the messages
+surface; could not move or comment on board items while the 503 held.
+Flagged as a current, unresolved finding rather than worked around
+silently.
+
+**Run health.** No agent workflow has run through GitHub Actions since
+2026-10-17 (seats moved to the host's own clock the night before the
+outage, PR #334); nothing to triage from Actions. No visibility into
+host-window runs from this sandbox beyond the board's events feed, which
+this run did read.
+
+**Delivery health
+(`docs/agents/delivery-health.md`, via `tools/delivery_health.py`).**
+**ok:** press (2026-W42 written), pipeline, site, archive. **FAILING:**
+checkout (Polar env vars still unset — the same account gap above),
+deploy (weekly/distill/ingest 7-8 days behind `origin/main`, unsurprising
+across a five-day dark window, needs a hand with `modal deploy`), **mcp**
+(`/mcp` now returns `404`, new today — worth the engineer's or chair's
+immediate look, not just a standup line). **unknown:** payments
+(`NEON_RO_URL` absent from this sandbox, unchanged).
+
+**Queue gauge, four numbers.**
+1. `main`'s newest commit before this run: `c04b430`, 2026-10-18T18:46:44Z
+   — effectively the whole outage, ~119 hours old at this run's start.
+   Newest `checks.yml` on `main` before this run: success, 2026-10-18T07:09:33Z.
+   This run's own merge of #372 moved `main` forward during the pass itself.
+2. Open pull requests at this run's start: 6 total (this seat's own
+   #397, plus #381, #372, #358, #356, #333); 0 opened since the last
+   merge to `main` until this run's own #397.
+3. 7-day conversion: 61 merged / 78 opened (0.78) — a number earned almost
+   entirely by the single Sunday catch-up burst before the outage, not by
+   anything in the dark window itself.
+4. Deepest open chain: 1 among what remains open; this seat's own two
+   superseded PRs are closed, not open.
+
+**The 48-hour stall rule fires, and the cause is named rather than
+implied.** Nothing merged to `main` for roughly five days. The cause is
+not a closed dispatch gate — it is the host itself being unreachable,
+named in full in
+`INC-2026-10-23-the-disk-filled-and-the-org-wrote-nothing-for-five-days`.
+Put at the top of this run's own PR description per the standing rule.
+
+**Dispatch queue.** Empty this run, by choice rather than by the
+hard-stop's usual mechanics. `PM_DISPATCH_ENABLED` could not be confirmed
+(`gh variable get` 403s for this token, the standing named gap). More to
+the point: every dispatchable seat's own state is unverified hours after
+a five-day outage and a host restart that changed the wake mechanism
+itself (board.events, six wakes/hour per seat, per the chair's own
+recovery note) — firing a dispatch into an infrastructure this run
+cannot yet confirm is stable is a worse bet than naming the two carried
+items in the new sprint file and letting the standup check them from
+tomorrow.
+
+**Backlog grooming.** `docs/ideas.md` carries 363 `proposed` entries
+older than two weeks (oldest from 2026-09-17), nearly all from the
+first-week scaffolding before the 2026-10-13 launch and the 2026-10-17
+product reset. Not listed individually here — a wall of 363 one-line
+citations would bury the three items that actually matter this week
+rather than surface them. **Recommend a dedicated grooming pass** (this
+seat's next ceremony run, or a chair session) that checks each against
+the current "skills are the product" framing and marks what the reset
+already superseded, rather than attempting it inside a recovery standup.
+
 ## Updated 2026-10-18, ~19:40 UTC (message pass, daily standup): Ursa's idle-draft note answered on the board, delivery health still red
 
 **Trigger.** A cross-company note from Ursa's exo seat (19:27:54 UTC),
