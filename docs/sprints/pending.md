@@ -1,3 +1,74 @@
+## Updated 2026-10-23, ~18:10 UTC (message pass): PR #400 (writer, second run, the generator's own duplicated text) checked against the merge rule and held on a Tier C path, handed to the owner, nothing owed from the writer
+
+**Own last run may still be open, checked first.** `gh pr list --state
+open` found `#399` (this seat's own message pass on PR #398, opened
+17:44:02Z), still open. Its diff lands in `docs/sprints/pending.md` at
+this same anchor, so this run built on it rather than branching from
+main: the new branch starts at `#399`'s own tip,
+`git log --oneline origin/alexandria-pm/2026-10-23-message-pr398 ^HEAD`
+printed nothing, confirming containment, and `#399` is closed as
+superseded by this run's own pull request (`#401`). Chain: `#397` to
+`#399` to `#401`, depth 3. **This seat is blocked on merges**: by this
+point the diff carries three runs of `pending.md` work for one run of
+review, which is slower to review, which is what deepens the chain
+again.
+
+**Trigger.** Event: a pull request opened by the writer seat, "Writer
+2026-10-23 (second run): the generator was carrying four blocks of its
+own text twice, and one left a slot open to the end of the file"
+(`alexandrapaiz/alexandria#400`). Instruction: review it against the
+merge rule, merge it, or say on the board what it still needs and hand
+that to its seat.
+
+**PR #400 checked against the merge rule and held, not merged.** Every
+Tier B condition but one holds: not a draft, no `hold` label, no
+comment, no review, `mergeable: MERGEABLE`, `mergeStateStatus: CLEAN`,
+and the one defined check (the digest-budget gate) reads `SUCCESS`. But
+`gh pr diff --name-only` shows `prompts/digest.md` in the file list, a
+Tier C path (`docs/standards/pm.md` §10, "Charters (`prompts/`)"), so
+rule 4 fails and it is not mine to merge no matter how clean the rest of
+it is. This is the same read `#376` and `#385` already gave `#372` and
+`#381`: a `prompts/` path is Tier C regardless of what the change inside
+it does.
+
+**Checked rather than trusted.** The PR's whole claim is that a gate can
+read a broken file as fine, so I did not take its own grade of itself on
+faith. Fetched the branch into a scratch worktree and ran
+`docs/voice/check_voice.py generator` myself: green on the repaired
+`prompts/digest.md` (zero duplicated blocks, zero unpaired braces, zero
+mid-clause truncations). Then pointed the same command at
+`origin/main`'s copy of the file, the one `#400` has not touched yet,
+and it came back red: three duplicated blocks, one brace opened on line
+1140 that never closes before the file ends, and two lines ending
+mid-clause. That is the gate working in both directions, not a one-way
+pass, and it independently confirms the PR's central finding that `main`
+is carrying the damage right now.
+
+**Nothing owed back to the writer.** The diff is clean on every axis but
+scope, and the scope axis is the one that matters. The PR's own two
+asks for the engineer (list `prompts/digest.md` in the shared edit-
+damage checker's register, and widen that checker's test past the git-
+conflict marker to the duplicated-block form) are already filed as a
+`proposed` entry in `docs/ideas.md` dated today, addressed to the
+engineer seat's surface, not mine to groom into `accepted` on a message
+pass. Replied on the board (`writer`'s Review card for this PR) in first
+person: the merge-rule check, the independent re-run of the new check
+against both the repaired file and `main`'s current one, and the hold.
+
+**Run health.** Not re-run this pass; a single-message event wake
+answered and stopped per the standing rule for a seat with nothing else
+to do, same as the other message passes today.
+
+**Owed to the owner, unchanged:** `#381` (exo, Tier C, all eleven
+`prompts/*-agent.md` files, named by the 2026-10-18 pass and not
+re-litigated here) and now `#400` (writer, Tier C, `prompts/digest.md`),
+both waiting on the owner's or a chair's merge for the same reason. The
+Polar Merchant-of-Record account and the other items already on this
+tracker are unchanged and not restated.
+
+**Merged this run:** none. `#400` is clean and Tier-B-eligible on every
+axis but scope; the scope axis holds it for the owner.
+
 ## Updated 2026-10-23, ~17:40-17:50 UTC (message pass): PR #398 (writer, the outsider-cap instrument) checked against the merge rule and merged under Tier B
 
 **Trigger.** Event: a pull request opened by the writer seat, "Writer
