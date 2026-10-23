@@ -1,3 +1,63 @@
+## Updated 2026-10-23, ~18:55 UTC (message pass): PR #402 (chair, skill evals' first host run) checked against the merge rule, Tier B, merged
+
+**Own last run may still be open, checked first.** `gh pr list --state
+open` found `#401` (this seat's own message pass on PR #400, opened
+18:09:21Z), still open. Its diff lands in `docs/sprints/pending.md` and
+`docs/sprints/dispatch-queue.md` at this same anchor, so this run built
+on it rather than branching from main: the new branch starts at `#401`'s
+own tip, `git log --oneline origin/alexandria-pm/2026-10-23-message-pr400-review ^HEAD`
+printed nothing, confirming containment, and `#401` is closed as
+superseded by this run's own pull request (`#403`). Chain: `#397` to
+`#399` to `#401` to `#403`, depth 4. **This seat is blocked on merges**:
+by this point the diff carries four runs of `pending.md` work for one
+run of review, which is slower to review, which is what deepens the
+chain again.
+
+**Trigger.** Event: a pull request opened by a seat in the company, the
+chair's "Skill evals: register the policy on every suite and let the
+judge finish" (`alexandrapaiz/alexandria#402`). Instruction: review it
+against the merge rule, merge it, or say on the board what it still
+needs and hand that to its seat.
+
+**PR #402 checked against the merge rule and merged, this time
+cleanly.** `gh pr diff --name-only` showed seven files, all six
+`skills/*/evals/evals.json` and `tools/skill_eval.py` — no `prompts/`,
+no `company.yaml`, no secret, so none of the Tier C paths this exact
+pass held `#400` on. Every Tier B condition held: not a draft, no
+`hold` label, no comment, no review, `mergeable: MERGEABLE`,
+`mergeStateStatus: CLEAN`, the one defined check (the digest-budget
+gate) `SUCCESS`, opened today. §21 ("Merges belong to the PMs and the
+chairs, not to the owner") and the broadened §10 amendment both clear
+it independently of Tier B. Not the PM's own PR, and it does not spend
+money, open an account or write a secret: `JUDGE_MAX_TOKENS` 700→2000
+and a retry-once-with-double-budget change tune an existing eval
+harness that already carries its own `CAP_USD` guardrail, not a new
+spend.
+
+**Checked rather than trusted.** The PR's own "Checks" section claims
+`tools/skill_eval.py --check` shows no `failing:` lines and `--smoke`
+passes. Ran `--check` on `origin/main` first: exit 1, nine `failing:`
+lines, six of them "`policy.repetitions` is not pre-registered" and
+eight of them `context-window-engineering`'s `sections` naming headings
+that are not in the current `SKILL.md`, exactly the two defects the PR
+describes. Then fetched the PR branch into a scratch worktree and ran
+the same two commands: `--check` exits 0, "9 of 9 skills carry a
+conformant eval file," zero `failing:` lines; `--smoke` exits 0, "the
+harness measures what it should." Also read the `ask()` diff: the new
+`except self.llm.NoModelAnswered` branch catches the exact exception
+`llm.ask_json` already raises elsewhere in this file (confirmed at the
+two other call sites), so the retry path is reachable rather than
+dead code.
+
+**Nothing owed back to the chair.** The two follow-ups the PR body
+itself names (gameable-rubric findings from `--audit`, and the
+measured `results.json` once the host run finishes) are declared as
+coming in a second PR, not asked of this one.
+
+**Board.** No open board item or Review card named this PR or
+`chair`'s seat; posted nothing to the board for want of a card to post
+to, logged here instead.
+
 ## Updated 2026-10-23, ~18:10 UTC (message pass): PR #400 (writer, second run, the generator's own duplicated text) checked against the merge rule and held on a Tier C path, handed to the owner, nothing owed from the writer
 
 **Own last run may still be open, checked first.** `gh pr list --state
