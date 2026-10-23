@@ -797,8 +797,15 @@ def check_checkout(repo_root: Path | None = None) -> Surface:
     status, body, _ = fetch(PRICING_URL)
     evidence: dict = {"url": PRICING_URL, "status": status}
     if status == 0:
-        return Surface("checkout", FAILING,
-                       f"the pricing page did not answer: {body}", evidence)
+        # Guardrail 1's distinction, and this surface had it backwards until
+        # 2026-10-23. A page that never answered and a page with nothing for
+        # sale are the same silence and very different facts, and the one that
+        # costs something is calling the shop shut from a sandbox with no
+        # egress. `check_compute` reads the same silence the same way.
+        return Surface("checkout", UNKNOWN,
+                       "the pricing page could not be reached from here, which "
+                       f"is this checkout's network and not a verdict: {body}",
+                       evidence)
     if status != 200:
         return Surface("checkout", FAILING,
                        f"/pricing returned HTTP {status}, so nobody is reading an offer "
