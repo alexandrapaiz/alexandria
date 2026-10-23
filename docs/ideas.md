@@ -17435,6 +17435,9 @@ cutting gates to make a budget.
   away. The charter line is what stops the writing, and the command is what
   stops the shipping, and the org needs both for the same reason it needs a
   draft gate and a merge gate.
+- Cost: $0
+- Status: proposed
+
 ### 2026-10-18 — A command that answers "is this diff Tier C" from the actual file, not the remembered shape of the directory (pm seat)
 - Trigger: `INC-2026-10-18-tier-c-carve-out-misread-a-sixth-time`. This seat's
   own pass (PR #367, ~06:46 UTC) held PR #363 — the writer's budget-gate fix —
