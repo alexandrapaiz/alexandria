@@ -254,11 +254,44 @@ toward a number that does not exist yet, which is the move the ledger entry of
 own evidence. The next print is what this seat is waiting on, and the waiting
 is the correct state rather than a stall.
 
-Both diffs this run does carry are instruments rather than prose, and both
-exist because a rule was already right and unreadable at the point of use. The
-`reading` law was right and pointed at the wrong files. The colon rule was
+Every diff this run does carry is an instrument rather than prose, and each
+exists because a rule was already right and unreadable at the point of use.
+The `reading` law was right and pointed at the wrong files. The colon rule was
 right and arrived at a grade as punctuation. That is the shape of this seat's
 work when the prompt is no longer the weak link.
+
+## The sweep that found a second one in the same file
+
+Ban list 131 says the generalisable half of the archive finding is the surface
+list rather than the string, so I ran L-A21's test over the rest of this
+seat's gates. It takes one question per gate. Name a change that would break
+what this gate governs, then ask whether the gate would have seen it.
+
+`candidates` is the gate that stops a run redrafting a surface another run has
+already drafted. Its `SURFACE` regex matched `site/**.{jsx,js,txt}`. The
+archive is `.md`.
+
+So the gate built to stop a surface being redrafted could not see an archive
+candidate at all, and what it would have printed is the sentence a later run
+would have trusted.
+
+```
+no candidate here redrafts a surface already awaiting her word
+```
+
+Two gates in one file, the same error, and the second was found by applying a
+test to the first rather than by anything noticing. `claims` is the third and
+stays pointed where it is, with the reason filed for the seat whose register
+it is.
+
+Widening it then surfaced the opposite failure, which is worth recording
+because it is evidence about widening rather than about this file. With `.md`
+matching, `candidates` accused this run of redrafting its own candidate and
+named the file in the accusation. A surface held only by the file being
+checked is not a clash. It is the normal shape of a first draft, where the
+register row and the candidate land in one diff, and the bug was latent since
+the gate was written because it only fires when both arrive together. Fixed,
+and a probe confirmed a real clash still fires.
 
 ## Sources
 

@@ -1614,7 +1614,19 @@ def taste():
 AWAITING = ROOT / "docs/voice/awaiting-her-word.md"
 # A path inside backticks, which is how every row of the register and every
 # candidate file names the surface it is about.
-SURFACE = re.compile(r"`(site/[A-Za-z0-9_./-]+\.(?:jsx|js|txt))")
+#
+# `md` is in the list because the archive is a surface, which this run learned
+# the expensive way one function over: `reading` held the module that writes
+# the next issue and no issue it had already written. The same scope error was
+# here, and its cost is worse rather than better. Without `md` a candidate for
+# `site/content/issues/<week>.md` matches nothing in the register, so the one
+# gate built to stop a surface being redrafted reports "no candidate here
+# redrafts a surface already awaiting her word" about a surface it cannot see.
+# That is the sentence a later run would have trusted. L-A21 of
+# docs/standards/lessons.md is the standard and its test is the one that found
+# this: name a change that would break what the gate governs, then ask whether
+# the gate would have SEEN it.
+SURFACE = re.compile(r"`(site/[A-Za-z0-9_./-]+\.(?:jsx|js|txt|md))")
 CANDIDATE_FILE = re.compile(r"`([a-z0-9][A-Za-z0-9_.-]*\.md)`")
 
 
@@ -1683,6 +1695,15 @@ def candidates(ref=None):
             r"([a-z0-9][A-Za-z0-9_.-]*\.md)", body)}
         for surface in sorted(set(SURFACE.findall(body))):
             held = rows.get(surface, set())
+            # A surface held only by THIS candidate is not a clash, it is this
+            # run doing the bookkeeping correctly: the row in the register and
+            # the file it points at land in one diff, which is the normal shape
+            # of a first draft for a new surface. Without this the gate accuses
+            # a run of redrafting its own candidate, and the accusation names
+            # the file it is being made about, which is how it was found.
+            # Latent until now because `new` holds only files the diff ADDS, so
+            # it needs a row and its candidate in the same pull request.
+            held = held - {pathlib.Path(path).name}
             if held and not (held & named):
                 clashes.append((path, surface, sorted(held)))
     print(f"candidate files this diff adds under docs/voice/   {len(new)}")

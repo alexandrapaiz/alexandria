@@ -3358,6 +3358,28 @@ gap that the same collision had left empty (incident 25).
     `site/emails` and two pipeline modules. The archive was on none of their
     lists, and the archive is the only surface where a repair cannot reach
     backwards.
+    **The surface-list sweep, run in the same session, and it found a second
+    one immediately.** `SURFACE` in the same file matched
+    `site/**.{jsx,js,txt}` and not `.md`, so the gate built to stop a surface
+    being redrafted could not see an archive candidate at all. It would have
+    printed "no candidate here redrafts a surface already awaiting her word"
+    about a surface outside its own regex, which is the one sentence a later
+    run would have trusted. Two gates in one file, same error, and the second
+    was found by applying L-A21's test to the first rather than by anything
+    noticing. `claims` is the third and is left pointed where it is, with the
+    reason in `docs/ideas.md` for the seat whose register it is. **So the count
+    on the surface-list half is two fixed and one deliberately open**, and the
+    lesson is that a gate's scope is reviewed when its law is, because they
+    were written in the same breath and inherit the same blind spot.
+    One more fell out of widening it, worth a line because it is the opposite
+    failure. With `.md` matching, `candidates` accused this run of redrafting
+    its own candidate, naming the file in the accusation. A surface held only
+    by the file being checked is not a clash, it is the normal shape of a first
+    draft, where the register row and the candidate land in one diff. Latent
+    since the gate was written, because it only fires when both arrive
+    together. **Widening a gate's scope surfaces its false positives as well as
+    its blind spots, and the first firing after a widening is evidence about
+    the gate rather than about the artifact.**
     Added 2026-10-23, writer run 44. Enforced the same day in
     `docs/voice/check_voice.py`, where `reading` takes `ARCHIVE_GLOBS` on top
     of the surface list and the cadence form is a branch of `READING`. The
@@ -3369,6 +3391,8 @@ gap that the same collision had left empty (incident 25).
     ```
     LANDED docs/voice/check_voice.py: "The archive, which `reading` adds to the list above and no other check does."
     LANDED docs/voice/check_voice.py: "Attached to a count it"
+    LANDED docs/voice/check_voice.py: "`md` is in the list because the archive is a surface"
+    LANDED docs/voice/check_voice.py: "A surface held only by THIS candidate is not a clash"
     ```
 
 132. The count that reaches a grade as punctuation when the law it detects is
