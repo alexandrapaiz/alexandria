@@ -15861,3 +15861,71 @@ existing entries on board 503s, `INC-2026-09-28-board-run-reports-still-503`
 and `INC-2026-09-29-board-run-reports-503-third-run`, are both about
 `POST /api/runs` refusing writes across many hours. This was a GET, it
 recovered on its own, and it is filed here only so the count is complete.
+
+## INC-2026-10-23-the-generator-is-not-on-the-list-of-files-checked-for-edit-damage — a file carried four blocks of its own text twice, and the checker built for exactly that damage does not read it and would not have caught this form of it (2026-10-23, writer seat, run 43)
+
+**What happened.** `prompts/digest.md` on main was carrying four blocks of its
+own text twice: two rule bullets, one slot instruction and one single line,
+each written in beside the copy the file already held. Three of the four first
+copies end in the middle of a sentence, which is what identifies the cause as
+an edit that inserted replacement text and did not remove what it replaced.
+
+One of the four was not cosmetic. The duplicated slot instruction opened a
+second curly brace, so the file's brace depth never returned to zero after
+line 1145. Every slot from the reading list to the sign-off was nested inside
+an instruction block that never closed, including the closing line canon law 10
+requires to print verbatim and last, in a file whose own line 502 tells the
+model that text in curly braces is an instruction to it and is replaced by its
+own words.
+
+**Why it is a repeat and not a finding.** This is the same class as the
+2026-09-24 damage in this register, recorded in this file's own header note:
+"this file carried two verbatim copies of incidents 19 and 20, from a merge
+that appended entries the file already held." `tools/check_registers.py` was
+built in answer to it. Two things about that answer are the actual incident.
+
+1. **The criterion is met and the file is not on the list.** That checker's own
+   comment says the criterion for inclusion is not that a file is famous, it is
+   "that more than one seat appends to it, because that is what produces the
+   anchor contention". The list has grown to sixteen files. `prompts/digest.md`
+   is the most-appended file in the writer seat's custody, 101 commits in forty
+   days by the canon's own count, and it is not on it.
+2. **The damage test is narrower than the damage it was built for.** The test
+   is `CONFLICT`, seven characters of git marker at the start of a line. The
+   2026-09-24 damage was not a conflict marker. It was clean duplicated text.
+   So the gate built in response to that incident catches the loud form of the
+   failure and never the form that caused it, and has been green over this
+   class of damage in sixteen files for twenty-nine days.
+
+**Why nothing else saw it.** Three gates read this file every time this seat
+runs and all three read past it. The weighing gate measures its token cost and
+passed it. The taste gate finds every one of her rulings present in it and
+scored 27 of 31 green. The enforcements command verifies forty-six quoted
+anchors inside it and reported zero missing. Every one of them was reading a
+file that disagreed with itself about where its own instructions ended, because
+each asks a question about the file's contents and none asks whether the file
+is well formed.
+
+**Blameless postmortem.** No seat did anything the loop told it not to. The
+trimming edit that produced the pair at line 1946 was following the weighing
+gate's own rule that dates are this seat's notes rather than the model's
+instructions, and it wrote the trimmed sentence in correctly. What was missing
+is the step after an edit: every charter warns the seat that is about to
+append, and the thing that reads the result afterwards exists for sixteen files
+and not for this one. The 2026-09-24 entry made this exact observation in its
+own words, "what is missing is not the fix but the looking", and then added a
+checker whose list this file never joined.
+
+**Fixed in this pull request.** The four blocks are removed, no operative
+clause among them, brace depth back to zero, 34,364 tokens to 34,043, and the
+per-issue worst case from $0.1479 to $0.1476 against a $0.15 ceiling the build
+fails over. `docs/voice/check_voice.py generator` is the instrument, with three
+detectors and six named fixtures: green on the repaired file and a clean
+fixture, red on the file as main carried it naming all four blocks with their
+line numbers, and red on three fixtures holding one defect each.
+
+**Open, and it is the engineer's edit rather than this seat's.** Adding
+`prompts/digest.md` to `REGISTERS` in `tools/check_registers.py`, and widening
+that checker's damage test past the git marker to the duplicated block so the
+other sixteen files get the same cover, is filed in the ledger with the
+measured finding. The writer seat does not write pipeline or tools code.
