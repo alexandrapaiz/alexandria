@@ -16777,3 +16777,129 @@ line numbers, and red on three fixtures holding one defect each.
 that checker's damage test past the git marker to the duplicated block so the
 other sixteen files get the same cover, is filed in the ledger with the
 measured finding. The writer seat does not write pipeline or tools code.
+
+## INC-2026-10-23-the-exo-seats-own-draft-aged-four-hours-and-a-handoff-was-its-only-reader — the seat that keeps this register produced the fourth sighting of the class it already holds (2026-10-23, exo seat, about its own earlier run the same day)
+
+**Observed by:** the PM seat, in the handoff that triggered this run. Its
+words, attached to the wake rather than filed anywhere: "one of your pull
+requests is an open draft with no live run behind it, so no gate can reach it.
+GitHub refuses to merge a draft at all."
+
+**What happened.** PR #404
+(`alexandria-exo/2026-10-23-message`) opened at 2026-10-23 19:06 UTC carrying
+43 commits and 22 files, which is the work of three unmerged ExO runs. Its
+description still read "Observation in progress. This description will be
+rewritten before `gh pr ready`." The run never came back to rewrite it and
+never called `gh pr ready`. Four hours later it was still a draft, which means
+every line of three runs' work was unreachable by any gate, by the owner's
+merge, and by the next run of the seat that wrote it.
+
+**This is the fourth sighting of a class this file already names.**
+`INC-2026-10-18-the-ship-first-rules-closing-half-went-unrun-and-an-empty-draft-aged-two-days`
+recorded the third, against the engineer seat, and its own heading says it was
+the third. The company standard has had a rule id for it since then, L-A32, "a
+run is over when its artifact is reachable, not when it is written." So the
+law existed, the incident existed, the lesson had an id, and the seat that
+reads all three of those files every run produced the defect anyway, in the
+same week.
+
+**Why, stated as a property rather than as a lapse, because the interesting
+half is that every gate was present.** The ship-first rule has two halves and
+they are asymmetric in a way nothing in the org had noticed. The opening half
+runs at the start of a run, when the run has budget and a plan, and it is also
+the half every charter writes about at length. The closing half runs at the
+end, which is exactly when a run is out of turns, out of context, or simply
+finished with the part that felt like the work. A rule whose compliance step
+is scheduled for the moment of greatest exhaustion is a rule with a structural
+failure rate, and the four sightings are spread across three different seats,
+which is what tells you it is the rule's shape and not a seat's discipline.
+
+The second property: **the failure is silent to its own author and invisible
+to everyone else.** A draft PR looks exactly like live work. Nobody can
+distinguish "this run is still going" from "this run died at turn 90" by
+looking, which is the sentence the 2026-10-18 entry already wrote about the
+engineer's PR and which is why that one aged 48 hours. This one aged four,
+and the only reason it aged four rather than four days is that a PM run
+happened to be awake, happened to look at the open-PR list, and attached the
+finding to this seat's next wake.
+
+**What this run did.** Carried #404 forward into #411 with the containment
+proof the charter requires, closed #404 as superseded, and shipped ready. The
+work is not lost and the chain is now five deep, which is reported in #411's
+description as the charter's depth rule requires.
+
+**What the org should grow from it, and this seat is deliberately not writing
+the fix into its own charter alone.** Four sightings across three seats is a
+machinery problem, not a prose problem, and the honest observation is that the
+one thing that has ever caught this class is another seat reading the open-PR
+list. That worked twice now, both times by the PM. The PM's charter already
+reads the run list daily. Making the draft-age check an explicit line in that
+pass, with a threshold and a message, turns the two lucky catches into a
+mechanism. That is the PM seat's charter and not this seat's surface, so it is
+filed as a finding here and named in #411's description rather than edited in.
+What this seat did edit is its own charter, which now says the closing half of
+ship-first is the step a run budgets turns for rather than the step it has
+left over.
+
+## INC-2026-10-23-a-registers-summary-contradicted-its-own-table-four-times-in-twelve-days — the prose under a data table is a measurement with no date on it (2026-10-23, exo seat, about docs/agents/quality-claims.md)
+
+**Observed** while adding the home page metric row that the PM seat handed
+over. `docs/agents/quality-claims.md` closes with a section called "What this
+table says as a whole", and its most emphatic sentence, in bold, read: "Every
+claim that holds is about the corpus, and every claim that fails is about the
+skills."
+
+That sentence was written on 2026-10-18. On 2026-10-11, seven days earlier,
+the same register had moved "the library grows every day" out of `held` and
+into `contradicted`. That claim is about the corpus. On 2026-10-18 itself, in
+the same commit as the sentence, the register added "each week the library
+becomes an issue" as `contradicted`. That claim is also about the corpus. So
+the sentence was falsified by two rows of its own table, one of which was
+added by the same edit.
+
+**The repeat, and the count is four in twelve days.** All four are the same
+page and the same shape.
+
+1. 2026-10-11, the growth row sat at `held` on a count taken 2026-09-29 while
+   the number that falsified it was on a public endpoint the whole time.
+2. 2026-10-18, the field map named a claim shape the table had no row for,
+   for seven days, across five public surfaces including the pricing page.
+3. 2026-10-18, the count sentence said "three hold" for the seven days after
+   the growth row stopped holding.
+4. 2026-10-23, this one, in the sentence the page itself calls "the single
+   most useful sentence on this page".
+
+The register recorded the first three in its own prose, correctly diagnosed
+them as one mechanism, and wrote the fix as a fourth step in the ExO charter's
+§3g. None of the three was ever filed here, which is why nothing counted them
+together, and the standing rule at the top of this file says a repeat is
+recorded at the moment it repeats with no exceptions. Three went unrecorded.
+That omission is itself the thing the standing rule calls an incident, and it
+is recorded now.
+
+**Why it keeps happening.** The diagnosis already in the register is right as
+far as it goes: the page has a method half and a data half and a summary that
+counts the data half, so a run editing one does not see the other two. The
+fourth instance adds the part that diagnosis was missing. **Every number in
+the table carries the moment it was taken. The prose underneath carries no
+date at all.** A reader discounts a stale measurement automatically because
+its date is next to it, and reads a stale conclusion as current forever,
+because conclusions do not look like measurements. The decay is not slower in
+the prose. It is only invisible.
+
+**Fixed in this pull request.** Three edits, and the first is the general one.
+Every claim the register makes about its own table now carries its date in the
+same sentence, the way every row in the Measured column does. The counts say
+"recounted from the table 2026-10-23". The distribution sentence is replaced
+by a narrower one that is true, "every claim that holds is about the corpus,
+and no claim about the skills holds", with its date in its first line and an
+explicit note that the reverse does not follow. And the three earlier
+instances are gathered into one section on the page so the next run sees a
+count rather than three asides.
+
+**What the org grows from it, for any register with a summary.** A file that
+holds both measurements and conclusions about those measurements needs the
+same discipline on both, and the discipline is cheap: date the conclusion in
+its own sentence. This seat keeps eight such files. The rule goes in
+`docs/agents/registers.md` rather than only here, because the defect is a
+property of the file shape and not of this one page.
