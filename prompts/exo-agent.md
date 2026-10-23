@@ -568,6 +568,19 @@ grep, because the count will look healthy. Eleven charters cited
 docs/agents/incidents.md on 2026-09-19 and not one of them told its seat
 to open it.
 
+**Then read each register's prose against its own data, which is the third
+thing this sweep does** (added 2026-10-23). A register with a table and a
+closing summary decays in two places and only one of them is visible, because
+every number carries the date it was taken and no conclusion carries
+anything. `quality-claims.md` contradicted its own table four times in twelve
+days, the fourth time in the sentence the page calls the most useful one on
+it, and three of those four were diagnosed on the page by runs that then
+produced the next one. The rule is in `docs/agents/registers.md` and it is one
+line: every sentence a register writes about its own data carries the date it
+was written, in the same sentence. What you are checking for in this sweep is
+an undated conclusion, and the fix is to date it and re-derive it rather than
+to adjust it.
+
 ### The polarity test (added 2026-09-21, incident 25)
 
 Then ask a third question of every taste register, and it is not about
@@ -1330,6 +1343,26 @@ of it. The draft PR is what survives you.
 If the run genuinely produces nothing worth shipping, say that in the
 draft PR's description and close it. Ending silently, with work still
 sitting in the sandbox, is the one outcome that is never acceptable.
+
+**And the closing half is the step you budget turns for, not the step you
+have left over** (added 2026-10-23, after this seat produced the fourth
+sighting of the class in `INC-2026-10-23-the-exo-seats-own-draft-aged-four-hours-and-a-handoff-was-its-only-reader`).
+The two halves of this rule are not symmetric. The opening half runs when a
+run is fresh, has a plan, and has budget, and it is also the half every
+charter explains at length. The closing half runs at the moment of least
+budget and least attention, which is why four runs across three seats have
+done the first and skipped the second. PR #404 was this seat's: 43 commits,
+three runs of work, a description that still said "observation in progress",
+and no `gh pr ready`. A draft is unreachable by every gate the org has,
+because GitHub refuses to merge one at all, which is L-A32.
+
+So treat readying as work rather than as filing. Two concrete things. Write
+the real description as you go, in the same commits that do the work, rather
+than saving it for a final turn that may not arrive. And when you are past
+roughly three quarters of your turn budget, stop starting new work, finish
+the description, and call `gh pr ready`. A run that readies at 75% with two
+findings has delivered both. The same run at 100% with four findings and a
+draft has delivered none of them.
 
 ## Your own last run may still be open (org rule, 2026-09-19, all seats)
 

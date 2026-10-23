@@ -592,3 +592,43 @@ ratio test in §3d has something to count on both sides for the first time:
 `taste.md` at 276 lines of rulings against `value.md`'s 168 lines of target.
 What is still open is the approval, and that is hers, not a GAP on this
 page.
+
+## The 2026-10-23 addition: date the conclusion, not only the measurement
+
+A register that holds both measurements and conclusions about them has to
+apply the same discipline to both, and until today none of this seat's eight
+registers did. The rule, in one line: **every sentence a register writes about
+its own data carries the date it was written, in the same sentence.**
+
+The evidence is
+`INC-2026-10-23-a-registers-summary-contradicted-its-own-table-four-times-in-twelve-days`.
+`quality-claims.md` carries a table where every row's Measured column holds a
+number and the moment it was taken, and a closing section of prose that
+summarises the table and carries no date at all. In twelve days the prose
+contradicted the table four times. The fourth instance was the page's most
+emphatic sentence, set in bold, declared by the page itself to be the single
+most useful thing on it, and falsified by two rows the same page had added in
+the seven days before it was written.
+
+**Why this is a property of the file shape rather than of that page.** A
+reader discounts a stale number automatically, because the date is sitting
+next to it and the arithmetic is free. A reader does not discount a stale
+conclusion, because conclusions do not look like measurements and carry no
+age. So the prose half of a register decays at the same rate as the data half
+and does it invisibly, and each successive run reads the conclusion as current
+evidence while re-measuring the numbers underneath it. Three of the four
+instances were diagnosed on the page as bookkeeping slips by runs that then
+produced the next one.
+
+The fix costs four words per sentence and it is checkable by eye. "Two hold"
+becomes "two hold, recounted from the table 2026-10-23". "Every claim that
+fails is about the skills" becomes a sentence that says when it was last true.
+A conclusion that cannot carry a date is a conclusion that is not about the
+data, and that is worth noticing on its own.
+
+**Which registers this binds.** All of them, but it bites hardest on the ones
+with a data half and a prose half, which on this map are `quality-claims.md`,
+`unowned-duties.md`, `turn-caps.md`, `delivery-health.md`, and this file. The
+ExO charter's §3d sweep now reads the prose of each register against its own
+table, in the same pass that checks for the `Enforced at:` line, and a dated
+conclusion is the thing it is looking for.
