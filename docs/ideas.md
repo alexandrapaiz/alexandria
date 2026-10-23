@@ -17435,6 +17435,9 @@ cutting gates to make a budget.
   away. The charter line is what stops the writing, and the command is what
   stops the shipping, and the org needs both for the same reason it needs a
   draft gate and a merge gate.
+- Cost: $0
+- Status: proposed
+
 ### 2026-10-18 — A command that answers "is this diff Tier C" from the actual file, not the remembered shape of the directory (pm seat)
 - Trigger: `INC-2026-10-18-tier-c-carve-out-misread-a-sixth-time`. This seat's
   own pass (PR #367, ~06:46 UTC) held PR #363 — the writer's budget-gate fix —
@@ -17529,6 +17532,137 @@ cutting gates to make a budget.
   a weaker copy of one, which is the exception `L-A22` leaves room for.
 - Cost: $0, one charter line.
 - Status: proposed
+
+### 2026-10-23 — URGENT: the Modal workspace is disabled, so every cron and the MCP server are down (engineer seat, scheduled run)
+- Trigger: `python3 tools/delivery_health.py` at 23:08 UTC today, then one
+  `curl` of the URL it was already fetching. The report said `FAILING mcp
+  /mcp returned an unexpected HTTP 404`. The body behind that 404 is one line,
+  `modal-http: workspace <id> is disabled`, and the same edge fronts every app
+  in the workspace. So this is not the MCP server. It is the whole compute
+  layer.
+- What: every cron in `pipeline/` runs as a Modal app in that one workspace,
+  and so does the MCP server. The deploy surface's own evidence dates the
+  outage without a log. `ingest` ran normally at 11:02 UTC today and `triage`
+  at 12:00 UTC. `interpret` is scheduled at 14:00 and last ran 2026-10-22.
+  `distill` is scheduled at 15:00 and last ran 2026-10-22. The workspace was
+  therefore serving at 12:00 and gone by 14:00, two scheduled jobs have already
+  been missed, and `distill_pending` stands at 3,680 and will grow by a day's
+  ingest every day this lasts.
+- Nothing is lost yet, and that is a statement about today rather than about
+  the week. The corpus is intact, 2026-W42 printed on Monday and is live on
+  `/library`, and the two missed jobs are daily ones that catch up. The press
+  is the surface with a deadline: its cron is Monday 09:00 UTC, and if the
+  workspace is still disabled then, the week gets no issue and the fix after
+  that is a hand on a Modal token, which is the same place
+  `INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue`
+  ended up.
+- Why no agent can do this one: a disabled workspace is an account state on
+  Modal's side, not a deploy. Re-enabling it needs the owner signed in to
+  Modal. The usual causes are billing and a usage limit, and this org's
+  steady-state cost is meant to be $0, so the first thing worth reading is
+  whichever of those the dashboard names.
+- First step: open the Modal dashboard and re-enable the workspace, then run
+  `python3 tools/delivery_health.py` and read the `compute` surface, which is
+  new in this pull request and answers the question in one line. If the cause
+  turns out to be spend, that is a finding for the owner and the finance seat
+  rather than something to work around.
+- Cost: $0 to diagnose. Unknown to fix, and the amount is the finding.
+- Status: urgent
+
+### 2026-10-23 — A missing dev dependency reads exactly like a red main, and a fresh seat cannot tell them apart (engineer seat, scheduled run)
+- Trigger: this run, measured. `python3 -m pytest tests/ -q` in this sandbox
+  reported `10 failed, 1605 passed, 67 skipped, 41 errors`. Every one of the
+  41 errors was `Form data requires "python-multipart" to be installed`, and
+  three of the ten failures were `tests/test_email_template.py` asserting that
+  the fallback email strips a `javascript:` href. That test was not wrong. The
+  `markdown` library was absent, so `legacy_html` took its own last-resort
+  branch, which escapes the body and wraps it in a `<pre>`, and the literal
+  text of the link survived as inert escaped characters. After
+  `pip install -r requirements-dev.txt` the same command reported three
+  failures, all of them one real defect in the ledger.
+- What: `requirements-dev.txt` is not installed in the seat sandbox, and
+  `checks.yml` installs it, so CI has never seen this. The cost falls entirely
+  on the agent seats. A seat runs for the first time with no memory, runs the
+  command the repository's own files prescribe, and reads ten failures and 41
+  errors in files it has never touched. The honest response is to find out
+  whether they are its own, and that is what this run spent turns on. The
+  dishonest responses are both worse: report a red main that is not red, or
+  decide the suite is noisy and stop reading it. A guard a seat learns to
+  discount is the subject of
+  `INC-2026-09-30-the-guard-went-red-and-nobody-read-it`.
+- Why a dependency check beats installing the packages: the sandbox may have no
+  network, and `pip install` is not always available. One failure that says
+  "these libraries are missing, so this run cannot tell you whether main is
+  green" is a true answer. Forty-one errors that name a form parser are a true
+  answer too, and nobody reads them as one.
+- First step: `tests/conftest.py` already runs before collection and already
+  exists to stop exactly this class of confusion, which is a suite that
+  reports something other than what it means. Add a check there that imports
+  each library `requirements-dev.txt` names and fails collection once, with the
+  missing names and the install command, rather than letting each absence
+  surface as somebody else's broken test. That is one function in a file whose
+  docstring is already about this problem.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-23 — The only observer that can see a compute outage is the one that does not run on that compute (engineer seat, scheduled run)
+- Trigger: today's outage, and the question of who was ever going to notice it.
+  The answer is nobody. The daily standup reads
+  `tools/delivery_health.py`, and until this pull request that command reported
+  the pipeline green, because its unit is how recently a row arrived and its
+  window is two days. The first surface that would have turned red on its own
+  is `press`, next Monday, by which point the week has no issue.
+- What: this is not the same gap as the three guardrails already filed as built
+  and unscheduled, and it should not be merged into them. The existing entry,
+  "Nothing runs the buyer-path reader, which is the third guardrail this org
+  has built and not scheduled", is about a reader nobody calls. This is about
+  where a reader is allowed to live. Every job that could plausibly watch the
+  pipeline runs on Modal, and a Modal app cannot report that Modal is off. The
+  agent seats run on GitHub Actions, which is a different provider, and that
+  is the only reason today's outage was seen at all. So the placement is the
+  requirement rather than an implementation detail: the compute probe has to
+  run somewhere that is not the thing it watches, and the deploy-time
+  availability check in guardrail 1 of `docs/agents/delivery-health.md` cannot
+  cover it, because a deploy to a disabled workspace does not happen either.
+- First step: give the `compute` surface a scheduled caller on GitHub Actions
+  that is not a seat run, so that it fires on its own clock rather than when an
+  agent happens to look. That is a workflow file, which no seat can write, so
+  the step is a proposal to the owner and not a build item. Until it exists,
+  the daily engineer run is the de facto watch, and it catches an outage within
+  a day by luck of the schedule rather than by design.
+- Cost: $0, inside the free Actions allowance for a public repository.
+- Status: proposed
+
+### 2026-10-23 — Craft scan: Modal's status page said all services online while this workspace was switched off (engineer seat, scheduled run)
+- Trigger: today's outage. The obvious next move after finding a platform down
+  is to read the platform's status page, so this run read it. At
+  `status.modal.com`, the headline was "All services are online". Applications,
+  Functions, Sandboxes, Web Functions, Servers, Dashboard, Storage and
+  Dedicated Endpoints were all listed operational, with no active incident. The
+  only degradation shown was a shared inference endpoint at 99.937% over thirty
+  days. Every word of that was accurate, and it was useless, because a status
+  page reports the platform and an outage can be scoped to one account.
+- What is worth stealing: the per-component uptime figure. Modal publishes a
+  rolling thirty-day percentage next to each component, so a reader sees
+  direction and not just today's colour. This org's delivery report is binary
+  per surface, which means a surface that fails for two hours every night reads
+  identically to one that has never failed, and nothing in the report would
+  show the difference. The receipt already stores the rows a rolling number
+  could be computed from. That is a real idea and it is not filed as one today,
+  because the surfaces it would measure are the ones this run just changed and
+  measuring them should wait until the new shape has settled.
+- What alexandria does better, and it is the whole lesson of the day: our
+  report names the account it is asking about, because it asks by requesting
+  our own URL. A status page answers "is the vendor healthy" and the question a
+  reader actually has is "is my thing running". Those came apart completely
+  today, in the direction that is hardest to catch, which is the vendor
+  reporting green. So the craft note is a warning rather than a borrowing: a
+  dependency's status page is not a substitute for probing your own deployment,
+  and a health check that reads one would have signed off on a dead pipeline
+  this afternoon.
+- Cost: $0
+- Status: proposed
+
 ### 2026-10-23 — The generator belongs on the list of files checked for edit damage, and that check should catch the quiet form (writer seat, run 43)
 - Trigger: `INC-2026-10-23-the-generator-is-not-on-the-list-of-files-checked-for-edit-damage`.
   `prompts/digest.md` on main was carrying four blocks of its own text twice,

@@ -49,7 +49,9 @@ prose:
 | press    | newest row in `digests`, against the week it | nothing  |
 |          | owes by now, which on a Monday is not the    |          |
 |          | week that has just ended until the cron runs |          |
-| pipeline | newest rows in `papers` and `claims`, and the queue depth behind each | nothing  |
+| compute  | one probe of Modal's HTTP edge, which fronts  | nothing  |
+|          | every cron and the MCP server alike           |          |
+| pipeline | newest rows in `papers` and `claims`, and the queue depth behind each, plus whether `compute` is answering | nothing  |
 | site     | the issues `/library` actually publishes    | nothing  |
 | mcp      | an unauthenticated probe of `/mcp`          | nothing  |
 | deploy   | `deploy_runtime` against the trunk, never   | git      |
@@ -558,6 +560,75 @@ def judge_archive(press: Surface | None, site: Surface | None,
                    "failure", evidence)
 
 
+# Modal's HTTP edge answers for every app in the workspace, including the ones
+# it will not route. It replies in plain text on one line, prefixed `modal-http:`,
+# and that line is the only place the real cause is written down. The probe below
+# used to read the status code and drop the body, which turned the most
+# consequential outage this pipeline can have into an unexplained 404 on one
+# surface.
+MODAL_EDGE_PREFIX = "modal-http:"
+
+
+def modal_edge_outage(status: int, body: str) -> str | None:
+    """Modal's own explanation for a request it refused to route, or None.
+
+    None for anything that is not the edge talking, which includes a 404 from a
+    server that is genuinely up and merely has no route at that path. A string
+    only when Modal itself says it will not route, and the string is Modal's
+    reason rendered as a sentence.
+
+    The workspace case is singled out because its blast radius is the whole
+    company and not the one surface that happened to be probed. Every cron in
+    `pipeline/` and the MCP server are apps in one workspace, so a workspace
+    that is disabled is a total compute outage however many surfaces notice.
+    """
+    if status == 0 or not body:
+        return None
+    line = body.strip().splitlines()[0].strip() if body.strip() else ""
+    if not line.lower().startswith(MODAL_EDGE_PREFIX):
+        return None
+    reason = line[len(MODAL_EDGE_PREFIX):].strip()
+    if "disabled" in reason.lower():
+        return (f"Modal's edge says {reason}, which takes down every cron in "
+                "this pipeline and the MCP server together")
+    return f"Modal's edge will not route this app: {reason}"
+
+
+def check_compute() -> Surface:
+    """Is the platform every scheduled job runs on accepting requests at all.
+
+    This surface exists because the two that would notice an outage cannot see
+    one. `pipeline` reads how recently rows arrived, over a two-day window, so
+    it reports green for up to two days after the last cron that will ever run.
+    `deploy` reads what the last run recorded, which an outage freezes rather
+    than changes. Both were green on 2026-10-23 at 23:08 UTC, with the whole
+    workspace switched off since some time between 12:00 and 14:00 that day.
+
+    The one Modal URL this repository knows is the MCP server's, and it is
+    enough: the edge that refuses it is the same edge in front of every app in
+    the workspace, so one probe answers for all of them.
+
+    Guardrail 1 in docs/agents/delivery-health.md draws the line this follows.
+    A request that never arrived and an answer that says everything is gone are
+    the same silence and very different facts, so a network failure here is
+    `unknown` and never `failing`.
+    """
+    status, body, _ = fetch(f"{MCP_URL}/mcp")
+    evidence = {"probed": f"{MCP_URL}/mcp", "status": status,
+                "body": body.strip().splitlines()[0].strip() if body.strip() else ""}
+    if status == 0:
+        return Surface("compute", UNKNOWN,
+                       "the Modal edge could not be reached from here, which "
+                       f"is this checkout's network and not a verdict: {body}",
+                       evidence)
+    outage = modal_edge_outage(status, body)
+    if outage:
+        return Surface("compute", FAILING, outage, evidence)
+    return Surface("compute", OK,
+                   "the Modal edge is routing, so the platform every cron runs "
+                   "on is answering", evidence)
+
+
 def check_mcp() -> Surface:
     """Alive and still guarded, in one unauthenticated request.
 
@@ -571,6 +642,18 @@ def check_mcp() -> Surface:
                 "www_authenticate": headers.get("www-authenticate", "")}
     if status == 0:
         return Surface("mcp", FAILING, f"the MCP server did not answer: {body}", evidence)
+    # Before any judgement about this server, ask whether the platform under it
+    # is routing at all. The edge answers for an app it will not serve, so a
+    # workspace that has been switched off reads here as a plain 404 from a
+    # server that is in fact running fine wherever it is. On 2026-10-23 that is
+    # what this probe said, in those words, while every cron in the pipeline was
+    # equally gone and nothing in the report named the cause.
+    outage = modal_edge_outage(status, body)
+    if outage:
+        evidence["modal_edge"] = outage
+        return Surface("mcp", FAILING,
+                       f"{outage}, so this server is unreachable for a reason "
+                       "that has nothing to do with it", evidence)
     if status == 401:
         if not evidence["www_authenticate"]:
             return Surface("mcp", FAILING,
@@ -1144,12 +1227,18 @@ def _on(model: str | None) -> str:
 
 
 def judge_pipeline(facts: dict, now: datetime | None = None,
-                   source: str = DIRECT) -> Surface:
+                   source: str = DIRECT, compute: str | None = None) -> Surface:
     """The daily crons, read through the rows they leave behind.
 
     delivery-health.md's own table calls this the next gap and says why it
     matters most: it is the surface that feeds every other one. A press that
     prints on an empty corpus prints an empty issue.
+
+    `compute` is the one thing the rows cannot say. Every judgement below is
+    about how long ago a row arrived, and the window is two days, so a pipeline
+    whose platform was switched off an hour ago is indistinguishable here from
+    one that is running perfectly. It is passed in as a fact rather than probed
+    for, so this stays a function of what it is given and keeps its tests.
     """
     now = now or datetime.now(timezone.utc)
     rows = dict(facts)
@@ -1203,14 +1292,23 @@ def judge_pipeline(facts: dict, now: datetime | None = None,
     evidence["siblings"] = (None if siblings is None else
                             {stage: _sibling_evidence(siblings.get(stage))
                              for stage, _ in SIBLING_STAGES})
+    # On every path, judged on one. A reader looking at fresh rows deserves to
+    # see whether the thing that produced them can still run.
+    evidence["compute"] = compute
     if stale:
         return Surface("pipeline", FAILING, "; ".join(stale), evidence)
+    if compute:
+        return Surface("pipeline", FAILING,
+                       f"every row above predates an outage that is still "
+                       f"running: {compute}. Nothing reads as stale yet because "
+                       f"staleness takes {PIPELINE_STALE_DAYS} days to show and "
+                       "the crons stopped hours ago", evidence)
     return Surface("pipeline", OK,
                    f"ingesting and distilling within {PIPELINE_STALE_DAYS} days", evidence)
 
 
-def check_pipeline(conn) -> Surface:
-    return judge_pipeline(pipeline_facts(conn))
+def check_pipeline(conn, compute: str | None = None) -> Surface:
+    return judge_pipeline(pipeline_facts(conn), compute=compute)
 
 
 def _git(repo_root: Path, *args: str) -> tuple[int, str]:
@@ -2221,7 +2319,7 @@ def receipt_facts(payload: dict) -> tuple[dict | None, dict, dict | str, dict | 
 # ------------------------------------------------------------------ driver
 
 def database_surfaces(today: date | None = None, repo_root: Path | None = None,
-                      notify: bool = True) -> list[Surface]:
+                      notify: bool = True, compute: str | None = None) -> list[Surface]:
     """`press`, `pipeline`, `payments` and `deploy`, by the best reader available.
 
     Two readers, in order. A direct connection when this environment holds
@@ -2236,7 +2334,7 @@ def database_surfaces(today: date | None = None, repo_root: Path | None = None,
     url = os.environ.get("DATABASE_URL", "").strip()
     direct_why = "no DATABASE_URL in this environment"
     if url:
-        surfaces, direct_why = _from_database(url, today, repo_root, notify)
+        surfaces, direct_why = _from_database(url, today, repo_root, notify, compute)
         if surfaces is not None:
             return surfaces
 
@@ -2244,7 +2342,7 @@ def database_surfaces(today: date | None = None, repo_root: Path | None = None,
     if payload is not None:
         press, pipeline, deploy, payments = receipt_facts(payload)
         return [judge_press(press, today, RECEIPT_URL),
-                judge_pipeline(pipeline, source=RECEIPT_URL),
+                judge_pipeline(pipeline, source=RECEIPT_URL, compute=compute),
                 judge_payments(payments, source=RECEIPT_URL),
                 judge_deploy(deploy, repo_root, source=RECEIPT_URL)]
 
@@ -2257,7 +2355,7 @@ def database_surfaces(today: date | None = None, repo_root: Path | None = None,
 
 
 def _from_database(url: str, today: date | None, repo_root: Path | None,
-                   notify: bool) -> tuple[list[Surface] | None, str]:
+                   notify: bool, compute: str | None = None) -> tuple[list[Surface] | None, str]:
     """The four surfaces over a real connection, or None and why not.
 
     None rather than four `unknown` surfaces, so the caller can fall through to
@@ -2270,7 +2368,7 @@ def _from_database(url: str, today: date | None, repo_root: Path | None,
         return None, "psycopg is not installed here (pip install 'psycopg[binary]')"
     try:
         with psycopg.connect(url, connect_timeout=15) as conn:
-            return [check_press(conn, today), check_pipeline(conn),
+            return [check_press(conn, today), check_pipeline(conn, compute),
                     check_payments(conn),
                     check_deploy(conn, repo_root, notify=notify)], ""
     except Exception as exc:
@@ -2280,8 +2378,8 @@ def _from_database(url: str, today: date | None, repo_root: Path | None,
 # `checkout` sits next to `payments` on purpose. One asks whether a sale can
 # happen and the other whether a sale that happened became access, and a reader
 # scanning this report for the state of the till should meet both in one glance.
-ORDER = ["press", "pipeline", "payments", "checkout", "deploy", "site",
-         "archive", "mcp"]
+ORDER = ["press", "compute", "pipeline", "payments", "checkout", "deploy",
+         "site", "archive", "mcp"]
 
 
 def run(surfaces: list[str], today: date | None = None,
@@ -2295,9 +2393,20 @@ def run(surfaces: list[str], today: date | None = None,
     # is testable as one.
     needed = asked | ({"press", "site"} if "archive" in asked else set())
 
+    # One probe, two readers. `pipeline` needs the answer as a fact and cannot
+    # go and get it, so the platform is checked here even when only `pipeline`
+    # was asked for, and the extra surface is dropped by the filter at the end.
+    compute = None
+    outage = None
+    if {"compute", "pipeline"} & needed:
+        compute = check_compute()
+        outage = compute.headline if compute.state == FAILING else None
+
     out: list[Surface] = []
+    if compute is not None:
+        out.append(compute)
     if {"press", "pipeline", "payments", "deploy"} & needed:
-        out += [s for s in database_surfaces(today, repo_root, notify)
+        out += [s for s in database_surfaces(today, repo_root, notify, outage)
                 if s.name in needed]
     if "site" in needed:
         out.append(check_site(today))
@@ -2361,7 +2470,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--surface", action="append", dest="surfaces",
                         choices=ORDER,
-                        help="check one surface; repeatable, default is all eight")
+                        help="check one surface; repeatable, default is all nine")
     parser.add_argument("--no-notify", action="store_true",
                         help="find a stale deploy and do not mail the owner about it")
     parser.add_argument("--json", action="store_true",

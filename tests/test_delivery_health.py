@@ -628,7 +628,120 @@ def test_the_checkout_surface_is_in_the_default_run():
     check("run() reaches it", 'if "checkout" in asked' in source)
     check("and the default is every surface", "args.surfaces or ORDER" in source)
     check("and the help text counts them all",
-          "all eight" in source, "the --surface help text is out of date")
+          "all nine" in source, "the --surface help text is out of date")
+
+
+def test_the_edge_explanation_is_read_and_not_dropped():
+    """The cause of a total outage arrives in the response body, not the code.
+
+    On 2026-10-23 the whole Modal workspace was switched off between 12:00 and
+    14:00 UTC. The MCP probe fetched the body that said so, kept it in a local
+    variable, and reported "an unexpected HTTP 404", which reads as one broken
+    route on one surface rather than as every cron in the company being gone.
+    """
+    workspace = "modal-http: workspace ac-example is disabled"
+    said = dh.modal_edge_outage(404, workspace)
+    check("a disabled workspace is recognised", said is not None)
+    check("and the sentence says it is not one surface's problem",
+          said is not None and "every cron" in said, str(said))
+    check("and it quotes Modal rather than paraphrasing it",
+          said is not None and "workspace ac-example is disabled" in said,
+          str(said))
+
+    other = dh.modal_edge_outage(404, "modal-http: app not found")
+    check("an app the edge will not route is still an outage", other is not None)
+    check("but it is not claimed to be the whole workspace",
+          other is not None and "every cron" not in other, str(other))
+
+
+def test_a_plain_404_from_a_live_server_is_not_an_outage():
+    """The classifier must not turn every 404 into a platform failure.
+
+    A server that is up and has no route at the path answers 404 with its own
+    body. Reading that as a disabled workspace would be the same error in the
+    opposite direction, and it would cost the alarm its credibility.
+    """
+    for body in ["Not Found", '{"detail":"Not Found"}', "",
+                 "<html><body>404</body></html>"]:
+        check(f"a 404 body of {body[:20]!r} is not an edge outage",
+              dh.modal_edge_outage(404, body) is None)
+    check("and neither is a 401 from the server this probe wants",
+          dh.modal_edge_outage(401, "Unauthorized") is None)
+
+
+def test_a_request_that_never_arrived_is_unknown_not_failing():
+    """Guardrail 1's distinction, in the words docs/agents/delivery-health.md uses.
+
+    "The request failed" and "everything is gone" are the same silence and very
+    different facts. A seat sandbox with no egress must not report the company's
+    compute as down, because an alarm that cries wolf about its own network is
+    one nobody reads the day it is right.
+    """
+    real_fetch = dh.fetch
+    try:
+        dh.fetch = lambda url, timeout=25: (0, "nothing is listening", {})
+        surface = dh.check_compute()
+        check("a dead socket is unknown", surface.state == dh.UNKNOWN,
+              surface.state)
+        check("and the headline blames this checkout, not the platform",
+              "not a verdict" in surface.headline, surface.headline)
+
+        dh.fetch = lambda url, timeout=25: (404, "modal-http: workspace ac-x is disabled", {})
+        surface = dh.check_compute()
+        check("a disabled workspace is failing", surface.state == dh.FAILING,
+              surface.state)
+
+        dh.fetch = lambda url, timeout=25: (401, "Unauthorized", {})
+        surface = dh.check_compute()
+        check("an edge that routes to a guarded server is ok",
+              surface.state == dh.OK, surface.headline)
+    finally:
+        dh.fetch = real_fetch
+
+
+def test_fresh_rows_do_not_read_green_through_an_outage():
+    """The lie this change exists to stop.
+
+    Every row the pipeline surface judges was written before the outage began,
+    and its window is two days, so for two days a pipeline with no compute at
+    all reports "ingesting and distilling within 2 days". That is what it said
+    at 23:08 UTC on 2026-10-23, nine hours into a total outage.
+    """
+    now = datetime(2026, 10, 23, 23, 8, tzinfo=timezone.utc)
+    fresh = {"papers": now - timedelta(hours=12),
+             "claims": now - timedelta(hours=32),
+             "queues": {"distill_pending": 3680}}
+
+    green = dh.judge_pipeline(dict(fresh), now=now)
+    check("with no outage known, fresh rows are still green",
+          green.state == dh.OK, green.headline)
+
+    outage = "Modal's edge says workspace ac-x is disabled"
+    judged = dh.judge_pipeline(dict(fresh), now=now, compute=outage)
+    check("the same rows are failing once the outage is a fact",
+          judged.state == dh.FAILING, judged.headline)
+    check("and the headline carries the cause rather than a date",
+          outage in judged.headline, judged.headline)
+    check("and it says why nothing looked stale",
+          "staleness takes" in judged.headline, judged.headline)
+    check("the outage is in the evidence on the green path too",
+          "compute" in green.evidence and green.evidence["compute"] is None,
+          str(green.evidence.get("compute")))
+
+
+def test_the_compute_surface_is_in_the_default_run():
+    source = (Path(__file__).resolve().parents[1]
+              / "tools" / "delivery_health.py").read_text()
+    check("compute is one of the surfaces", "compute" in dh.ORDER, str(dh.ORDER))
+    check("and it reads immediately before the surface it explains",
+          dh.ORDER.index("compute") == dh.ORDER.index("pipeline") - 1,
+          str(dh.ORDER))
+    check("asking for the pipeline alone still probes the platform",
+          '{"compute", "pipeline"} & needed' in source,
+          "pipeline would be judged without the one fact it cannot read")
+    check("and the help text counts them all",
+          "all nine" in source, "the --surface help text is out of date")
+
 
 def main() -> int:
     for fn in [
@@ -661,6 +774,11 @@ def main() -> int:
         test_every_offer_linked_and_opening_is_the_only_green,
         test_the_offers_are_read_from_the_site_and_not_copied,
         test_the_checkout_surface_is_in_the_default_run,
+        test_the_edge_explanation_is_read_and_not_dropped,
+        test_a_plain_404_from_a_live_server_is_not_an_outage,
+        test_a_request_that_never_arrived_is_unknown_not_failing,
+        test_fresh_rows_do_not_read_green_through_an_outage,
+        test_the_compute_surface_is_in_the_default_run,
     ]:
         print(f"\n{fn.__name__}")
         fn()
