@@ -1,3 +1,76 @@
+## Updated 2026-10-23, ~17:40-17:50 UTC (message pass): PR #398 (writer, the outsider-cap instrument) checked against the merge rule and merged under Tier B
+
+**Trigger.** Event: a pull request opened by the writer seat, "Writer
+2026-10-23: the one law the generator has never held, counted for the
+first time, 24 terms of art against its own cap of five"
+(`alexandrapaiz/alexandria#398`). Instruction: review it against the
+merge rule, merge it, or say on the board what it still needs and hand
+that to its seat.
+
+**Own prior open PR, resolved first.** `#397` (this seat's own earlier
+message pass this run, "back from five days dark") folds into this PR.
+This entry lands in the same file #397 wrote, so this run built on the
+open branch rather than starting from main again.
+`git log --oneline origin/alexandria-pm/2026-10-23-message ^HEAD`
+printed nothing, confirming containment. Then `#397` was closed as
+superseded by `#399` (this PR). Chain depth 2, not at the bold-warning
+threshold.
+
+**PR #398 checked against the merge rule (`docs/standards/pm.md` §10,
+Tier B) and merged.** All six conditions held. Not the PM's own PR. Not
+a draft, no `hold` label, zero comments since the single push. No CI
+checks defined on the branch at all (`gh pr checks 398`: "no checks
+reported"), which the rule treats the same as green. `gh pr diff
+--name-only` showed only `docs/agents/incidents.md`, `docs/ideas.md`,
+`docs/voice/awaiting-her-word.md`, `docs/voice/ban-list.md`,
+`docs/voice/check_voice.py` and `docs/voice/reviews/2026-10-23.md`, no
+Tier C path at all (no `prompts/`, no `company.yaml`, no secret, no
+spend). `mergeStateStatus` read `CLEAN`. Opened today.
+
+**Verified rather than trusted, because a false green is the exact
+incident this PR itself files.** Checked out the branch in a worktree
+and ran the new command directly instead of taking its own grade at its
+word. `python3 -I docs/voice/check_voice.py firstuse` on the branch
+exits 1, and the printed counts match the PR's claim exactly.
+`site/content/issues/2026-W39.md` carries 24 terms of art against the
+generator's own cap of 5, 22 bare, 2 bare title nouns (`harness`,
+`distillation`). A hand-built clean fixture with one glossed term and no
+bare title exits 0, which proves green is reachable and this is not a
+gate that can only ever fail. `python3 -I docs/voice/check_voice.py all`
+on the branch also exits 1 for the same reason, confirming the new
+command is wired into `all` and not into CI. That matches the PR's own
+point that `firstuse` belongs in the press's pre-send pass rather than
+`.github/workflows/checks.yml`, since it stays red on the one archived
+issue nobody is going to rewrite. `tools/check_registers.py` reproduces
+the same "63 entries carry no readable status" BLOCKING line on `main`
+itself and on the PR branch alike, confirming the PR's own claim that
+this is pre-existing and not caused by this diff. `prompts/digest.md` is
+byte-identical to main, as claimed. This is the eighth attempt at a
+structural fix, well past the charter's own threshold of two failed
+prompt rewrites before the fix moves to a command.
+
+**Three things the PR hands onward, carried here rather than
+re-litigated.**
+1. **Owner.** `docs/voice/awaiting-her-word.md`'s nine candidates,
+   oldest 27 days, re-confirmed by command this run and still live.
+   Already tracked below under "Owed to the owner."
+2. **Engineer, next grooming pass.** Wire `firstuse` into the press's
+   pre-send pass in `pipeline/weekly.py`, explicitly not CI, because CI
+   would redden every build on a pilot issue nobody may edit. Filed as a
+   `proposed` ledger entry by the PR itself. This is a sprint item for a
+   future planning pass, not a dispatch. The current sprint
+   (`sprint-2026-10-19.md`) already carries two conditions toward
+   Wednesday.
+3. **ExO.** One charter line for the writer seat. A run that ships a
+   new `docs/voice/check_voice.py` command should name, in its review,
+   the fixture it built that the command was meant to fail and the exit
+   code it got. Filed as a `proposed` ledger entry, not self-applied,
+   per the `L-A22` exception for charter-only enforcement. The PR's own
+   incident
+   (`INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason`)
+   already names the standards that cover the repeat (`L-A39`, `L-A21`),
+   so no new register entry was needed here.
+
 ## Updated 2026-10-23, ~17:00-18:00 UTC (message run, first wake after the five-day host outage): the queue checked PR by PR, two merged, one incident class repeated a seventh time, the sprint reopened toward Wednesday
 
 **Trigger.** A handoff from `alexandra-systems/chair:hq-console` (board
