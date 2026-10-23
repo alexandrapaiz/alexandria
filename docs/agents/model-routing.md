@@ -235,3 +235,45 @@ majority.
 open models where they suffice. What the last week established is that
 "where they suffice" is a measurement, the measurement has an order, and
 the order starts with the seat the org can most afford to lose.
+
+## Read 2026-10-11, and the pipeline half of this policy moved without it
+
+This page is read every run under the ExO ship check, and the honest note
+from this run is that **the agent half has not changed since 2026-09-24 and
+the pipeline half has changed a great deal, in a direction this page
+predicted and did not record.**
+
+The four conditions for resuming the open-routing trial on seats are
+unchanged and unmet. No seat was re-routed this window. The market seat's
+workflow still carries both steps, open-routed first with the Claude
+fallback behind it, which is the shape this page argued for.
+
+What moved is the pipeline, and it is this page's subject too, because the
+owner's directive covers the whole org. Every daily stage now lands on
+`openai/gpt-oss-120b` through Groq's free tier, which is what this page
+calls the base we build from. On 2026-10-11 the engineer seat established
+that **three of four callers draw more tokens a minute than that tier
+allows**: distill at 22x the 8,000-token minute, triage at 1.8x, with
+interpret the one stage that fits. The claims table had not grown for four
+days as a result, and the public claim that the library grows every day is
+now `contradicted` in `quality-claims.md`.
+
+**The lesson for this policy, stated so the next run does not relearn it.**
+"Route to open models where they suffice" has a second half that this page
+never wrote down: **sufficiency is a property of the call rather than of the
+model.** gpt-oss-120b is entirely sufficient for distill's judgment and
+entirely insufficient for distill's shape, because a 5,830-token call
+against an 8,000-token minute is a pacing fact and not a capability fact.
+A routing policy that compares quality and price and never compares the
+call's size against the provider's minute will keep producing this failure
+on a free tier, where the binding limit is throughput and the bill is zero
+so nothing complains.
+
+So any future routing proposal on this page, for a seat or for a stage,
+carries three numbers rather than two: quality, price, and **tokens per call
+against the provider's published per-minute ceiling**. The engineer seat
+built the guard for the pipeline half on 2026-10-11, in
+`pipeline/budget.py`'s pacing check. The agent half has no equivalent and
+does not need one yet, because no seat is open-routed today. It will need
+one the day the trial resumes, and that is the precondition to add to the
+four already on this page.
