@@ -1061,6 +1061,101 @@ and it exits non-zero, so the run either strikes the mark or the review says in
 one line why it stands. Run it before `gh pr ready`, in the same step as the
 sixth question's grep.
 
+## The generator has a weight, and the run that adds to it weighs it (added 2026-10-18)
+
+`prompts/digest.md` is a cost. Every issue pays for every token in it, at the
+primary model's input price, and the press has a hard per-issue ceiling that
+`tests/test_press_resilience.py` fails the build over. The file grew on 101
+commits in forty days, nine of which subtracted anything, and on 2026-10-18 it
+crossed the ceiling on this seat's own commit. Nothing in this seat's loop had
+ever weighed it, because step 3 of the charter says translate every failed
+grade into the smallest prompt change that would have prevented it and there is
+no step that removes one.
+
+So two gates, and they are cheap.
+
+**Weigh the change before you commit it, not after CI tells you.**
+
+```
+pip install tiktoken && python3 pipeline/budget.py
+```
+
+The line to read is the weekly digest's `cost at list price, worst case`. It is
+exact when tiktoken is installed and a pessimistic estimate when it is not, so
+install it or do not believe the number.
+
+**A run that adds tokens removes at least as many.** This is the rule that
+stops the ceiling being a cliff nobody picked the date of. The headroom is a
+shared resource and the run that spends the last of it is not the run that
+caused the problem. Where a run genuinely cannot pay for what it adds, it says
+so in its pull request with the measured number, rather than spending the
+margin and leaving the next run to find it.
+
+What the trimming is allowed to take is settled, because two runs have now done
+it and the principle holds: the generator gets the rule and the fix, never the
+argument for the rule. Dates, specimens the gates already hold, the account of
+which print produced which clause, and the same principle stated a second and
+third time are all this seat's notes to the next editor, and they belong in
+docs/voice/reviews/ where they already are. An operative clause never goes, a
+disambiguation never goes, and a specimen the ban list records as enforcement
+never goes. Where a case is load-bearing, the failure shape stays and the date
+goes.
+
+And know the floor before you promise headroom. At the reservation of
+2026-09-24 the output alone is about two thirds of the per-issue cost, so
+deleting every word of this generator still lands well above what ADR-32 books.
+This seat cannot hold the ceiling by writing less. It can stop being the seat
+that breaks it.
+
+## The taste gate has a machine, and the gate before it (added 2026-10-18)
+
+Pass 2 of the grading procedure has said "docs/voice/taste.md, ruling by
+ruling, against the issue and against the generator" since it was written, and
+it cited incident 20 while it said it. Nothing ever re-ran it. Her title
+ruling of 2026-10-04 names this seat and `prompts/digest.md` in its own last
+sentence and the prompt did not carry it fourteen days later, because a check
+written as a check against the artifact in front of you is blind on a day the
+artifact is not the generator.
+
+```
+python3 docs/voice/check_voice.py taste
+```
+
+Every one of her rulings is mapped to the text that enforces it, or filed with
+the reason no file can, or marked as replaced by a later ruling, and the key is
+her own words copied out of her register. That inversion is forced: this seat
+may not edit `taste.md`, so the anchor convention the ban list uses cannot be
+used here and the quote has to live on the checker's side and reach across. A
+ruling she rewords breaks its own row, which is correct, because a reworded
+ruling is a ruling to re-read.
+
+Two things it does not do, and both matter more than the pass it reports. A
+quote proves the enforcement is present and never that it is as wide as the
+ruling, so the width is still a reading and still belongs to the grade. And a
+ruling with several numbered verdicts can show green on one verdict's quote
+while another is being broken on a live page, which is not a hypothetical: the
+first green run of this command was false, on her 2026-09-29 ruling, whose
+sixth verdict was being broken on three reader-facing surfaces at that moment.
+Where a verdict has a command of its own, the row inherits that command's
+verdict rather than a quote, and the red is the true state.
+
+**And the gate that runs before any of it.** `docs/voice/awaiting-her-word.md`
+is the first file a run opens, ahead of this canon and ahead of her register,
+because it answers the one question no register here can: has this surface
+already been written for. Two runs of 2026-10-18 drafted candidates for
+surfaces that already had open rows, the second of them four runs after the
+register was created to stop exactly that, having read every register its
+charter names. So the duty is a command too.
+
+```
+python3 docs/voice/check_voice.py candidates
+```
+
+It reads the register's open table against the candidate files the run's own
+diff adds, and a run may still draft for a listed surface as long as it names
+the candidate already open on it. That is the register's own rule, and it is
+the difference between superseding a draft and not knowing it exists.
+
 ## Maintenance
 
 The writer seat proposes canon changes in the ledger. The laws

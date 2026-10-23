@@ -17337,6 +17337,104 @@ cutting gates to make a budget.
 
 - Status: proposed
 
+### 2026-10-18 — The generator's trim has a floor, and it is measured now (writer seat, eighth run)
+
+- Trigger: the PM seat held PR #366 and asked for real headroom under the
+  $0.15 per-issue ceiling rather than a margin that just clears it. This entry
+  reports what a second full editing pass actually bought, so the two
+  proposals in the entry above are costed rather than asserted.
+
+- The measurement, every figure from `pipeline/budget.py` with the exact
+  tokenizer, taken at each branch head:
+
+  | | prompt tokens | cost an issue | headroom |
+  |---|---|---|---|
+  | main, before #366 merged | 36,582 | $0.149962 | 40 tokens |
+  | the sixth run, red in CI | 38,634 | $0.151911 | over by 2,011 |
+  | the seventh run, now main | 36,411 | $0.149799 | 211 tokens |
+  | the eighth run, this branch | 34,396 | $0.147885 | 2,226 tokens |
+
+- **Main carried a 40-token margin for most of today and nothing watched it.**
+  That is one sentence of prompt. #366 merged at 07:09:30Z and took it to 211,
+  which is still less than a tenth of what a single writer run added this
+  morning. Any merge that touches `prompts/digest.md` from a branch cut before
+  this one turns the build red, and the branch that does it will not be the
+  branch that caused it.
+
+- What two runs of careful editing bought: 4,238 tokens cut, $0.0040 of a
+  $0.15 ceiling, about 2.7% of it. The first run cut the prompt's case
+  history. The second cut the argument under each rule, which is the layer
+  below, and stopped there because what is left is operative text. A third
+  pass has nothing of this kind to take.
+
+- So the floor is now a number rather than a claim. 65% of the per-issue cost
+  is the 24,000-token output reservation and 13% is the worst-case payload, so
+  the writer seat's entire file is 22% of the ceiling. Deleting every word of
+  it lands at $0.1152, which is still more than double what ADR-32 books.
+
+- What changes if the two proposals above land: nothing about this arithmetic
+  improves without them. Proposal two is the one that moves the number, because
+  42% of the prompt is a checking procedure sent before the text it checks
+  exists. Proposal one only stops this seat discovering the ceiling by hitting
+  it, which is cheap and worth doing anyway.
+
+- What this seat did instead of waiting: `docs/voice/canon.md` now carries the
+  weighing gate, so a writer run that adds tokens removes at least as many or
+  says in its pull request, with the number, that it could not. That holds the
+  margin. It does not create one.
+
+- Status: proposed
+
+### 2026-10-18 — The same missing caller, now with four commands behind it, and one of them is honestly red (writer seat, ninth run)
+
+- Trigger: this run added two more checks to `docs/voice/check_voice.py` and
+  both found live defects on their first firing. `taste` maps all 31 of the
+  owner's rulings to the text that enforces each one and reports red, because
+  her site-copy ruling of 2026-09-29 carries six numbered verdicts and the
+  sixth is being broken on three reader-facing surfaces. `candidates` reads
+  `docs/voice/awaiting-her-word.md` against the candidate files a run's own
+  diff adds, and it fires on this run's own withdrawn draft.
+- This is not a new ask. It is the ask of 2026-10-04 and of the fifth run of
+  2026-10-18, with two more commands behind it: move
+  `docs/voice/check_voice.py` to `tools/` and call it from
+  `.github/workflows/checks.yml`. Nothing here is a diff this seat can write.
+  Filed as an addition so the engineer costs one job rather than four asks.
+- The scoping note the earlier entry made matters more now, because a second
+  command is red for a true reason. `taste` will stay red until the four law-15
+  lines are repaired on the site, which needs the owner's ruling on
+  `docs/voice/llms-txt-2026-10-18.md`, `docs/voice/claim-repairs-2026-10-18.md`
+  and `docs/voice/home-metric-line-2026-09-26.md` and then the frontend seat's
+  diff. So the order is: she rules, the frontend sets, then the wiring lands.
+  Switching it on first puts CI red on work the engineer cannot do, which
+  teaches every seat to route around the job.
+- Smallest useful version if the full move is too large: one job that runs
+  `python3 -I docs/voice/check_voice.py enforcements sweep taste candidates`,
+  the four checks that read a register against a file and need no live surface.
+  Those four are green on this branch today and stay green without anyone
+  ruling on anything, so they can be wired now and the surface checks wired
+  after the repairs land.
+- Status: proposed
+
+### 2026-10-18 — The charter's register list is checked after the work, and one of its entries is a precondition (writer seat, ninth run)
+
+- Trigger: `INC-2026-10-18-the-duplicate-candidate-register-is-not-in-the-charters-read-list`.
+  This seat's charter puts its register checks at the shipping step, under the
+  heading "Check the register before you ship". That ordering is right for a
+  check and wrong for a precondition, and
+  `docs/voice/awaiting-her-word.md` is a precondition: its whole value is
+  answering "has this surface already been written for" BEFORE a candidate is
+  drafted. Read at the shipping step it reports a duplicate that already
+  exists.
+- The ask, for the ExO seat, because a charter is not this seat's surface: add
+  `docs/voice/awaiting-her-word.md` to the writer charter's "Every run reads
+  first" list rather than to its shipping step, and say in one clause that a
+  candidate for a surface already listed there names that candidate.
+- Why it is worth a charter line when the command exists. The command catches
+  the duplicate at the end of the run, which saves the owner a review and does
+  not save the run its work. This run wrote four candidates and threw all four
+  away. The charter line is what stops the writing, and the command is what
+  stops the shipping, and the org needs both for the same reason it needs a
+  draft gate and a merge gate.
 ### 2026-10-18 — A command that answers "is this diff Tier C" from the actual file, not the remembered shape of the directory (pm seat)
 - Trigger: `INC-2026-10-18-tier-c-carve-out-misread-a-sixth-time`. This seat's
   own pass (PR #367, ~06:46 UTC) held PR #363 — the writer's budget-gate fix —

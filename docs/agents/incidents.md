@@ -15577,6 +15577,63 @@ is noted in the ledger entry this run filed.
 
 ---
 
+## INC-2026-10-18-the-duplicate-candidate-register-is-not-in-the-charters-read-list — the register built to stop redrafting was four runs old and the ninth run redrafted anyway (2026-10-18, writer seat, ninth run)
+
+**Observed** in this seat's own output. This run drafted
+`docs/voice/2026-10-18-law-15-repairs.md`, four candidates for four
+reader-facing lines that break canon law 15. Every one of the four surfaces
+already had an open candidate: the home metric line in
+`home-metric-line-2026-09-26.md`, twenty-two days old, the terms page in
+`claim-repairs-2026-10-18.md`, and both llms.txt lines in
+`llms-txt-2026-10-18.md`. All three earlier candidates are better. The home
+one prints both numbers, what arrived and what was read in full, which is the
+form law 15 explicitly asks a scale sentence to take, and this run's version
+dropped the second number.
+
+**Repeat.** Second occurrence of
+`INC-2026-10-18-three-candidates-for-two-surfaces-in-one-day`, filed four runs
+earlier the same day. The draft is withdrawn in the pull request that found
+it.
+
+**Why it repeated, and the answer is one line of a charter.** The fix for the
+first occurrence was correct and it shipped:
+`docs/voice/awaiting-her-word.md`, one row per open candidate, which says in
+its own second paragraph that it is the first file a writer run opens, ahead
+of the taste register. That sentence is in the file the run was supposed to
+open. The run's charter names seven things to read before a candidate leaves
+it, and that file is not among them, so a seat following its charter exactly
+reads seven registers and not the eighth. The fix's own pull request said so
+in its own words: "The charter's own list of what to read is a charter edit
+and not this seat's to make, so the file names the duty in its own first
+paragraph and the pull request asks for the charter line."
+
+That is the fourth time this org has written a register whose only reader is
+the register. Incident 20 is the shape, the claims register is the shape
+pointed at surfaces, this is the shape pointed at a handoff, and the common
+property is that the duty was written in the artifact that the duty was meant
+to protect.
+
+**Fix, in this pull request.** `docs/voice/check_voice.py candidates` reads
+the register's open table against the candidate files the run's own diff adds,
+and fails where a new candidate is for a surface already awaiting her word
+without naming the candidate open on it. Naming it is the escape and it is the
+register's own rule rather than a new one, because that is the difference
+between superseding a draft and not knowing it exists. Proven both ways on the
+withdrawn draft: it fired on all three surfaces, and passed once the draft
+named the three files.
+
+**Still open and not this seat's to close.** The charter line. A command the
+run types is better than a sentence the run reads, and it is still enforced at
+the reliability of a seat typing it until the wiring lands, which is the
+ledger entry filed again in this pull request. The charter edit belongs to the
+ExO seat and is asked for here rather than made.
+
+**The honest part.** This run read the incident register, which is the
+register that names `awaiting-her-word.md`, and read it after drafting rather
+than before. The charter puts the register checks at the shipping step, which
+is after the work by construction. That ordering is correct for a check and
+wrong for a precondition, and it is why the fix here is a command on the diff
+rather than another sentence telling a seat to read something first.
 ## INC-2026-10-18-press-recovery-content-anchor — the label and the date range were fixed to agree with each other, and nobody checked whether either agreed with the query that fills the body (2026-10-18, pm seat, found by alexandra-systems/mba)
 
 **What happened.** This seat posted an urgent ask to the owner recommending
