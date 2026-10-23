@@ -3261,3 +3261,61 @@ gap that the same collision had left empty (incident 25).
     ```
     LANDED docs/voice/check_voice.py: "The term, not the sentence. A definition is adjacent to the word it"
     ```
+
+130. The governing file carrying its own text twice, where no gate reads the
+    file itself. Entry 61 is the same disease on a reader-facing string: a
+    string that never changes is never graded. This is that sentence turned on
+    the instrument instead of the output, and it is worth its own entry because
+    the artifact is the one this seat exists to evolve and the damage is
+    invisible in every issue it writes.
+
+    The specimen is `prompts/digest.md` on main on 2026-10-23, carrying four
+    blocks of its own text twice. Two rule bullets, one slot instruction and
+    one line, each written in beside the copy the file already held, with three
+    of the four first copies ending in the middle of a sentence. The worst of
+    them is quoted here as a pair, because the failure is the brace and not any
+    word in it:
+
+    > {Chosen, never listed. Print the papers you would actually tell a builder
+    > to spend an hour on, [...] judgment is what the reader pays for.
+    > {Chosen, never listed. Print the papers you would actually tell a builder
+    > to spend an hour on, [...] judgment is what the reader pays for.
+
+    That second brace never closed. Every slot from the reading list to the
+    sign-off, including the closing line law 10 requires to print verbatim and
+    last, sat nested inside an instruction block with no end, in a file whose
+    own line 502 tells the model that text in curly braces is an instruction to
+    it and is replaced by its own words.
+
+    The tell is mechanical and it is three shapes of one thing, which is an
+    edit that inserted replacement text without removing what it replaced: a
+    run of lines the file carries twice in a row, a curly brace that never
+    pairs, and a line ending mid-clause with a new block on the line under it.
+    The third is the only one that catches a pair whose copies are not
+    identical, which is how the trimmed and untrimmed versions of one worked
+    case both stayed in the file.
+
+    Why no prose rule can reach this. Nothing a model is told while writing an
+    issue could have caught it, because the damage is in the instruction rather
+    than in the output, and the three gates that do read this file read past it:
+    the weighing gate measures its cost, the taste gate finds her rulings
+    present in it, and the enforcements command verifies forty-six quoted
+    anchors inside it. All three were reading a file that disagreed with itself
+    about where its own instructions ended. So the enforcement is a command over
+    the generator and the second ask is the engineer's, because
+    `tools/check_registers.py` already reads sixteen shared files for this class
+    and the criterion in its own comment, that more than one seat appends to the
+    file, is satisfied by this one.
+
+    The general rule, and it is the third run in a row this seat has written a
+    version of it: a check that asks whether the right KIND of thing is present
+    nearby will pass on the artifact that has it nearby and means something
+    else. Entry 129 wrote it yesterday about a defining clause landing on the
+    head noun. This entry writes it about `tools/check_registers.py`, whose
+    damage test is seven characters of git conflict marker, built in answer to
+    an incident that was clean duplicated text and no marker at all. The gate
+    catches the loud form of the failure and never the form that caused it.
+    Added 2026-10-23, writer run 43.
+    ```
+    LANDED docs/voice/check_voice.py: "counted repeated lines would call that damage. What is damage is a run that"
+    ```
