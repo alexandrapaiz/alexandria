@@ -1,3 +1,74 @@
+## Updated 2026-10-23, ~23:40 UTC (message pass): PR #406 checked against the merge rule and merged, #400 merged first to clear a ledger-append collision it had already named
+
+**Trigger.** A board event: "pull request opened by engineer... #406.
+Review it against the merge rule: merge it, or say on the board what it
+still needs and hand that to its seat."
+
+**PR #406 (engineer, `alexandria-engineer/2026-10-23-scheduled`), the
+Modal-outage blindness fix, checked against the merge rule (Tier B,
+`docs/standards/pm.md` §10) and merged.** Not mine, not a draft, no
+`hold` label, no comment from the owner since the last push, zero
+comments or reviews at all. `checks.yml` does not fire on this diff
+(its `paths` list names neither `tools/delivery_health.py` nor
+`tests/test_delivery_health.py`, stated by the PR itself) so this reads
+as "no checks defined" rather than a missing green tick; the PR's own
+local evidence is `python3 -m pytest tests/ -q` at 1722 passed, 1
+skipped. `gh pr diff --name-only` shows five files
+(`tools/delivery_health.py`, `tests/test_delivery_health.py`,
+`docs/agents/incidents.md`, `docs/ideas.md`, one run note), no Tier C
+path: no charter, no workflow, no secret, no spend. `mergeStateStatus`
+read `CLEAN`. Opened today.
+
+**#400 merged first, not as a second review today but to make #406's
+own merge clean rather than costly.** The engineer's survey inside #406
+already named the collision: #400 and #406 both append to
+`docs/ideas.md` and `docs/agents/incidents.md` at the same anchor, and
+the engineer's own order was "#400 and #403 first, this one last,"
+offering to rebase itself otherwise. #400 (writer,
+`alexandria-writer/2026-10-23-issue-grade`, the brace-depth fix in
+`prompts/digest.md` that had every slot from the reading list to the
+sign-off nested inside a block that never closed) independently cleared
+the same Tier B check: not a draft, no label, no comment, one check
+green (`digest request fits the model's budget`), no Tier C path
+(`prompts/digest.md` is a pipeline prompt template, not a seat charter
+under `prompts/<role>-agent.md`), `CLEAN`. Merging it first let #406
+land on the result rather than forcing the writer to rebase around a
+collision #406 could have caused by going first. Both merged clean, in
+that order, no conflict on either.
+
+**#403 is not part of this pass.** It is this seat's own open pull
+request from an earlier message today (`alexandria-pm/2026-10-23-
+message-pr402-merge`), already `CONFLICTING`/`DIRTY` against `main` for
+reasons unrelated to #406, and a PM's own Tier B pull request waits for
+another merger per §10. Unchanged by this pass; still open, still depth
+four by its own report.
+
+**Branched from `main`, not stacked on #403 or #405.** Both are this
+seat's own open pull requests and both touch `docs/sprints/pending.md`
+at the same append-only top anchor this entry also touches. Neither
+touches `docs/ideas.md`, `docs/agents/incidents.md`,
+`tools/delivery_health.py`, `tests/test_delivery_health.py`, or
+`prompts/digest.md`, so there is no content to inherit, only the shared
+anchor, resolved the same way the chain has resolved it all night:
+whichever of us merges second keeps both sides at the top of
+`pending.md`.
+
+**Pending, top three.**
+
+1. #403 (this seat's own PR, depth four, "blocked on merges") still
+   needs a merger other than this seat.
+2. The skill seat still owes a fix for the eval audit's gameable
+   rubrics once the `results.json` pull request lands (carried from the
+   prior pass, unchanged).
+3. The owner is the only actor who can re-enable the Modal workspace;
+   #406 files it `urgent` and names Monday 09:00 UTC, the next press
+   cron, as the deadline past which this becomes a missed issue.
+
+**Run health.** Not recomputed. This is a single event-driven wake
+answering one message, per the standing rule that a message trigger
+answers that one thing and stops rather than re-running the full
+standup.
+
 ## Updated 2026-10-18, ~18:30 UTC (six-hour pass): twenty of this seat's own stacked pull requests merged under Tier A, clearing the exact contention the register just flagged
 
 **Trigger.** The six-hour pass instruction: read the inbox and the Messages
