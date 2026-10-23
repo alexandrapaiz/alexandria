@@ -15929,3 +15929,84 @@ line numbers, and red on three fixtures holding one defect each.
 that checker's damage test past the git marker to the duplicated block so the
 other sixteen files get the same cover, is filed in the ledger with the
 measured finding. The writer seat does not write pipeline or tools code.
+
+## INC-2026-10-23-the-law-quoted-its-own-evidence-and-the-gate-could-not-read-it — canon law 15's cited string is the first line of the public archive, twenty-eight days after the masthead was repaired (2026-10-23, writer seat, run 44)
+
+**What happened.** Canon law 15, her ruling of 2026-09-25, cites exactly one
+string as its evidence and names it as a masthead: "read in full and distilled
+weekly" on every issue ever sent, against 166 full reads out of 8,956 papers
+held. `MASTHEAD` in `pipeline/weekly.py` was repaired. On 2026-10-23 the third
+line of `site/content/issues/2026-W39.md` still said it, and
+`site/lib/issues-core.js` makes that file the live public text of the one week
+the archive publishes: "the record decides which weeks exist, the committed
+file decides the text of any week that has one."
+
+So the sentence the law quotes as the thing that must never happen is the first
+line a reader of the public archive meets, and has been for twenty-eight days.
+
+**Why it is a repeat, and of what.** `docs/standards/lessons.md` L-A21 is the
+company law for this exact failure and it is a vendored copy, so it was written
+from a defect that had already happened elsewhere. Its words: "its scope is
+narrower than its subject: a law can fire on schedule, pass its own audit, and
+miss, because it is pointed at the wrong place." It then gives the test. "Name
+one change that would break what this gate governs, then ask whether the gate
+would have seen that change, not whether it would have fired on it."
+
+`docs/voice/check_voice.py reading` was built for law 15. Its surface list held
+`pipeline/weekly.py`, the module that writes the NEXT issue, and held no issue
+that module had already produced. A masthead repaired in the module is repaired
+for every week the press has not written yet and for no week it already did.
+The gate was red on four `site/app` lines the whole time, so it never looked
+like a gate that was passing, which is how it kept attention off its scope.
+
+Three further links, each a seat already knowing the half it was holding.
+
+- The hole was written into the check's own docstring on the day it was built:
+  "a sentence that says read in full over a number that came from the ingest
+  field passes here and is a worse version of the same lie." It was not a
+  hypothetical. It was already in print when the sentence predicting it was
+  typed. **A known gap recorded beside the gate that has it is a gap nothing
+  closes, because the record reads as handled.** That is L-A9 with the register
+  and the gate in one file.
+- `INC-2026-10-18-a-drafted-copy-repair-sat-unset-for-twenty-two-days` is the
+  same law, the same word and the same month on a different surface. That one
+  was drafted and unset. This one was never drafted, because nothing saw it.
+- L-A24's stated consequence is the mechanism here in one line: "only an
+  outside observer reading the artifact catches the missing run, because a
+  scheduler reports its own intentions." Swap run for string. The module
+  reports its own intention and the archive holds the outcome.
+
+**The second blindness, which compounded with the first.** `READING` exempts
+"read in full", and it must: that is the one act the word may name, and "164
+papers read in full" is both true and the sentence the law asks for. Between a
+surface list that excluded the archive and a regex that excluded the phrase,
+the check built for law 15 could not see the words law 15 quotes.
+
+**Fixed in this pull request, in `docs/voice/check_voice.py`.** `reading` takes
+`ARCHIVE_GLOBS` on top of the surface list, so it reads 63 surfaces where it
+read 61, and the first firing reported the line. The exemption now holds for
+the count form and not the cadence form: attached to a count, read in full is a
+fact, and attached to a cadence it is a claim about everything that arrived
+that week. The globs go to `reading` alone, because `claims` reads the same
+list and an issue body's sentences are claims about the research rather than
+about our artifact.
+
+**Not fixed here, and named rather than left.** The line itself is drafted at
+`docs/voice/archive-masthead-2026-10-23.md` and is the frontend seat's to set,
+because `site/` is not the writer seat's surface. Until it is set the archive
+carries the sentence and the gate is red about it, which is the correct state
+of both.
+
+**The generalisable half, which is a scope question rather than a string
+question.** Every gate this seat owns reads `site/app`, `site/lib`,
+`site/emails` and two pipeline modules. The archive was on none of their lists,
+and the archive is the only surface in the product where a repair cannot reach
+backwards. L-A21's test applied to the rest of them is work this run did for
+`reading` and did not do for `claims`, deliberately and with the reason filed,
+and `docs/ideas.md` carries the question for the ExO seat whose register it is.
+
+**Blameless note.** No seat skipped a step. The masthead repair was correct and
+complete for the file it was in. The gate was built after the repair and
+pointed at the file the repair had touched, which is the natural place to point
+it and is the trap: a gate written in the same breath as a fix inherits the
+fix's scope, and the fix's scope was the module. Ban list 131 and 132.

@@ -17435,6 +17435,7 @@ cutting gates to make a budget.
   away. The charter line is what stops the writing, and the command is what
   stops the shipping, and the org needs both for the same reason it needs a
   draft gate and a merge gate.
+- Status: proposed
 ### 2026-10-18 — A command that answers "is this diff Tier C" from the actual file, not the remembered shape of the directory (pm seat)
 - Trigger: `INC-2026-10-18-tier-c-carve-out-misread-a-sixth-time`. This seat's
   own pass (PR #367, ~06:46 UTC) held PR #363 — the writer's budget-gate fix —
@@ -17560,4 +17561,60 @@ cutting gates to make a budget.
 - First step: the one line in `REGISTERS`, which would have caught nothing here
   and catches the next conflict marker in this file.
 - Cost: $0 of model spend. Local text passes, engineer time only.
+- Status: proposed
+
+### 2026-10-23 — The print that would close the enjoyability card has to come from main, and the deploy is pinned (writer seat, run 44, for the engineer)
+- Trigger: the sprint's head card asks for a pick and for "the next issue held
+  to it". This run measured how much of that bar has ever been in force for an
+  issue the press made, and the answer is one gate of five.
+- The measurement, reproducible: `python3 -I docs/voice/check_voice.py measure`
+  over the three reachable prints and over the hand rewrite, with the rule
+  dates taken from the `Added` lines of `docs/voice/ban-list.md`. The rewrite
+  the benchmark picked passes eight gates of eight. No print of this generator
+  passes all eight, and of the five gates the newest print fails, three are
+  governed by rules written after that print and one of those rules was
+  written out of it. Entries 95 (2026-10-05), 98 (2026-10-06) and 116
+  (2026-10-16) against a newest print of 2026-10-05. The full table is in
+  `docs/voice/reviews/2026-10-23-enjoyability-generator.md`.
+- The ask, and it is a which rather than a whether. Two board cards already
+  carry the work, `Press: no issue for 2026-W41` and `Deploy: weekly is not
+  running main, still on 0cbc51a0e248`. The second is the one this card needs.
+  A print made from a pinned commit from before those three rules tests the
+  generator that commit holds, which closes zero rows of the table, and it
+  would arrive looking exactly like the measurement everybody is waiting for.
+  So the ask is that the recovery print run main, and that the run record the
+  `prompt_sha` it used, which `compare` already needs and which is the only
+  way a later grade can tell the two apart.
+- Why this seat cannot do it and is not going to patch around it. Four of the
+  five gates have rules younger than the newest print, so a further wording of
+  any of them is aimed at a number that does not exist. That is the move the
+  ledger entry of 2026-10-15 named and `compare` was built to stop.
+  `prompts/digest.md` is byte-identical to main in this pull request.
+- Cost: $0 to this seat. One press run at the usual per-issue cost.
+- Status: proposed
+
+### 2026-10-23 — Whether the claims register's net belongs over the archive (writer seat, run 44, for the ExO seat)
+- Trigger: `INC-2026-10-23-the-law-quoted-its-own-evidence-and-the-gate-could-not-read-it`.
+  `docs/voice/check_voice.py reading` now reads `site/content/issues/*.md`,
+  because canon law 15's own cited string was live in the public archive and
+  the gate built for the law held the module that writes the next issue and no
+  issue that module had produced.
+- The question, which is deliberately not answered in that change. `claims`
+  reads the same `SURFACE_GLOBS` and the archive was added to `reading` alone.
+  The reason is the distinction the writer charter's claims gate turns on: is
+  this sentence about the research or about our artifact? An issue body is
+  almost entirely the former, so pointing a gate that FAILS on unhedged claims
+  at eighteen hundred lines of research prose would redden the tree over work
+  nobody can fix, which the ledger entry of 2026-10-18 already warns teaches
+  everyone to add `|| true`.
+- But the honest other half: an issue body is not entirely the former. The
+  masthead, the standing subtitle and any sentence an issue writes about the
+  library are claims about our artifact, they print on a public page, and a
+  repair to the module cannot reach them. Those are exactly the rows
+  `docs/agents/quality-claims.md` exists for.
+- The ask, for the ExO seat because the register is that seat's file: decide
+  whether the archive is in the register's scope, and if it is, whether the
+  scoped unit is the issue file or the furniture inside it. A glob is one line
+  either way and the judgment is not this seat's.
+- Cost: $0, a decision and one line.
 - Status: proposed
