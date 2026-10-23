@@ -16019,3 +16019,110 @@ line numbers, and red on three fixtures holding one defect each.
 that checker's damage test past the git marker to the duplicated block so the
 other sixteen files get the same cover, is filed in the ledger with the
 measured finding. The writer seat does not write pipeline or tools code.
+
+## INC-2026-10-23-the-drift-guard-answered-green-from-a-checkout-that-could-not-see — every agent seat clones one commit deep, so the alarm for a production image eight days stale read "pending, inside the window" for all of them (2026-10-23, engineer seat, message run)
+
+Recorded under the standing rule. This is the third entry on one shape: a
+guard that could not measure something reported a verdict instead of saying
+so. `INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see` is the same
+surface reading "unmeasured" where it should have read "behind", and company
+standard L-A21 is the general rule, that a gate which saw nothing must not
+read as a quiet pass. Today it is the same surface again, in the opposite
+direction, reading "fine" where it should have read "I cannot tell".
+
+**What happened, measured rather than reasoned.** The same tree, the same
+`deploy_runtime` rows, the same minute. Run against a `git clone --depth 1`
+checkout, `tools/delivery_health.py --surface deploy` answered:
+
+    ok  deploy  a deploy is pending and still inside the 24h window:
+                distill (0.1h), ingest (0.1h), weekly (0.1h)
+
+Run against the same checkout after `git fetch --unshallow`, it answered:
+
+    FAILING  deploy  the deployed code is not origin/main: distill is 7.9 days
+                     behind; ingest is 7.3 days behind; weekly is 8.2 days behind
+
+`weekly` is the press. The reproduction is two commands and it is in
+`tests/test_deploy_drift.py` as
+`test_a_checkout_that_cannot_place_the_image_is_not_a_green_deploy`.
+
+**The mechanism, in one paragraph.** `undeployed_commits` recovers the
+deployed commit by replaying each app's file digest backwards over history
+until one matches the digest the container reported. A shallow clone has one
+commit, so the replay matches nothing and returns a `why` with no commits.
+`drift_began` then falls back to `changed_at`, the newest commit to the app's
+files, which in a one-commit clone is that single commit and is minutes old.
+The age comes out near zero, the age is inside the 24 hour grace window, and
+the app is filed as a pending deploy.
+
+**Why nobody caught it.** The fallback itself is deliberate and its docstring
+argues for it correctly: a guard that cannot date a drift should under-report
+rather than invent one. That argument is about the number. Nothing in it is
+about the state, and the state is what every reader reads. The fixture that
+covers the pending-deploy case recorded a digest matching no commit
+(`"0ldc0dec0de"`), which is the shallow-clone shape rather than the
+recent-merge shape, so the test that should have caught this was asserting the
+bug. It has been rewritten to record the digest of the commit before the edit,
+which is what a real deploy's row holds an hour after somebody merges.
+
+**What it cost.** `tools/drift_watch.py` exists to put this alarm on the board
+because the email path could not. It reads `state`, correctly, and filters to
+`failing`. So from the day it shipped on 2026-10-17 it has run only from
+sandboxes that clone one commit deep, found nothing failing, exited 0 green,
+and posted no card, while three production jobs drifted past a week. The two
+guardrails were each right about what they measured and the pair was blind.
+
+**The fix.** An undated drift whose fallback clock lands inside the window is
+`unknown`, not `ok`. One past the window still alarms, which is the old
+under-reporting behaviour and is unchanged. `drift_watch` already exits 2 and
+posts nothing on an `unknown` surface, so a shallow run now goes red and says
+the comparison is what failed.
+
+**The same reading, found in the same run on the till.** `check_checkout`
+returned `failing` when the pricing page could not be reached at all, so any
+sandbox with no egress would have posted a card saying the shop was shut on a
+morning it was open. `check_compute` had read the identical silence as
+`unknown` since the day before, with a test named
+`test_a_request_that_never_arrived_is_unknown_not_failing`. The rule existed,
+in this file, one function away, and the surface next to it did the opposite.
+Fixed in the same pull request.
+
+**What the org should take from it.** Both halves here are a guard reporting
+a verdict about production from a checkout that could not reach the evidence.
+The cheap question nobody asks of a new guard is which of its inputs the
+runtime actually has. Every seat runs shallow, and no guard in this repository
+says anywhere what depth of history it needs.
+
+## INC-2026-10-23-the-ship-first-rules-closing-half-went-unrun-for-the-second-time — the same empty draft, five days old instead of two, and only a standing message in the wake remembered it (2026-10-23, engineer seat, message run)
+
+Recorded under the standing rule. The first entry is
+`INC-2026-10-18-the-ship-first-rules-closing-half-went-unrun-and-an-empty-draft-aged-two-days`
+and this is the identical pull request, three days further on.
+
+**What happened.** #358 opened at 02:26 UTC on 2026-10-18 with six lines, a
+run note stub, and a body saying it would be filled in before `gh pr ready`.
+It never was. The run that opened it ended without readying it and without
+closing it. It was still open, still draft, still six lines, at 23:30 UTC on
+2026-10-23, and GitHub will not merge a draft at all, so no gate could reach
+it and no amount of review queue grooming could have moved it.
+
+**What actually remembered it.** Not the repository, which holds no liveness
+for a pull request. Not the board, although a card was opened about it on
+2026-10-18 and sat in Review for five days. The thing that brought it back was
+the standing paragraph appended to this seat's wake message, which is a
+mechanism outside the repository entirely and which says so in its own words:
+"this message is the only thing that remembers."
+
+**Why the first entry's fix did not fire.** It proposed `tools/stale_drafts.py`
+and that proposal is in the ledger at status `proposed`, which means no seat
+may pick it up. The correction was written down and the thing that would
+enforce it was gated behind an approval, which is incident 20's shape: a
+register with a gate that decides something gets written and no gate that
+decides it gets checked.
+
+**Resolved rather than only filed.** The stub was merged into this run's
+branch, the work it owed was built, and the older pull request was closed by
+its own author with the containment proof the charter requires. The board card
+was commented on and moved to Done. What remains open is the detector, and it
+remains open because it needs the owner to move one ledger entry from
+`proposed` to `accepted`.

@@ -29,7 +29,7 @@ checkout link, so probing the route alone answers the same way whether an
 offer is configured or not. The page is the artifact. This file only decides
 where that verdict goes.
 
-Where it goes is the board, which `docs/standards/pm.md` §14 makes the state
+Where it goes is the board, which `docs/standards/pm.md` section 14 makes the state
 of the work and the one surface the owner and every seat already read. The
 mechanics of putting it there are `tools/board_alarm.py`, shared with the two
 watchers that worked them out first.
