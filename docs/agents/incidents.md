@@ -15779,3 +15779,85 @@ already does per the 2026-10-09 entry's own account of PR #253, would stop
 this from costing a sixth pass. This repo has no such script yet
 (`ls tools/` shows no `check-tier.sh` or equivalent); filed in `docs/ideas.md`
 is the engineer's to size, not this seat's to build.
+
+## INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason — two consecutive runs built a check that passed on an artifact violating the rule it checks, and both passes were caught by one more reading rather than by anything in the loop (2026-10-23, writer seat, run 42)
+
+**The repeat.** On 2026-10-18 the writer seat shipped
+`docs/voice/check_voice.py taste` and it passed on its first firing, 31 of 31
+rulings green. The run nearly shipped it. Her 2026-09-29 ruling was green
+because two of its six verdicts are anchored to headings she approved herself
+and both quotes resolved, while the sixth verdict of that same ruling was
+being broken on three live reader-facing surfaces at that moment. That is
+recorded inside the review of that day as "the first green run was false, and
+that is the finding worth keeping" and it was never filed here.
+
+On 2026-10-23 the same seat shipped `check_voice.py firstuse` and its first
+cut cleared three real violations in one sentence of
+`site/content/issues/2026-W39.md`:
+
+> The newer work shows that an on-policy expert-correction pipeline, which
+> rewrites only the failing turn in the weaker model's rollout, preserves its
+> planning style and restores performance where imitation alone fails.
+
+Three club words, one relative clause, and the clause defines the pipeline.
+The check asked whether a gloss marker appeared anywhere in the term's first
+sentence, so all three passed. The issue defines none of the three anywhere.
+
+**Why it is one incident and not two coincidences.** Both checks failed the
+same way, and the way is structural rather than careless. Each one asked
+whether the right KIND of evidence was present in the right NEIGHBOURHOOD,
+and each one then passed on an artifact that had such evidence nearby meaning
+something else. The taste gate found a quote in the generator and concluded a
+ruling was held. The first-use gate found a clause in the sentence and
+concluded a term was glossed. Neither had bound its evidence to the subject it
+was making a claim about.
+
+**What caught it, both times.** A seat reading the output and disbelieving it.
+Nothing in the loop. Both runs had a passing gate, a clean selfcheck and a
+green suite, and in both cases the only thing between a false green and a
+shipped false green was one more reading by the run that wrote it. That is the
+part worth fixing and this entry does not fix it.
+
+**The repair that did land, both times.** Bind the evidence to the subject.
+The taste gate's rows can now inherit a command's verdict on the artifact
+instead of resting on a quote of the rule. The first-use gate now reads the
+window from the term onward and asks only about the next few characters,
+because a definition arrives adjacent to the word it defines. Both repairs
+turned a green gate red for a true reason.
+
+**The standards already say this, and that is the finding rather than a
+proposal.** The reflex here is to ask HQ for a new rule, and checking first
+shows two that already cover it, both in the `any` section every seat is told
+to read before working.
+
+`L-A39` is the class: "A freshness check that tests for presence answers a
+different question." Both gates tested for presence. The taste gate asked
+whether a quote of a ruling was present in the generator and answered a
+question about the generator instead of about the issue. The first-use gate
+asked whether a gloss marker was present in a sentence and answered a question
+about the sentence instead of about the term.
+
+`L-A21` is the procedure: "every gate is tested against an artifact known to
+fail it before the gate is trusted." That clause, followed, catches both. It
+was followed on `firstuse`, which is why three fixtures exist and why green
+was proved before red. It was not followed on `taste` five days earlier, where
+the first firing was green and believed until a second reading.
+
+So this seat does not need a new standard. It had two and read neither before
+working, which is what `L-A4` calls a register defect and what `L-A9` has
+already been written about twice. The concrete duty that would have changed
+both runs is one line in this seat's charter, which is not this seat's surface
+and is filed in `docs/ideas.md` for the ExO seat: a writer run that adds or
+changes a command in `docs/voice/check_voice.py` names, in its review, the
+artifact it constructed that the new check SHOULD fail, and the exit code it
+got. Green with no such artifact named is not a result.
+
+**Not a repeat, recorded because the standing rule admits no judgment call.**
+`python3 tools/board.py show --seat writer` answered
+`503 the board's database is unreachable` on this run's first call and
+succeeded on the retry a few minutes later. The run read its lane off
+`docs/voice/awaiting-her-word.md` in the interval and lost nothing. The
+existing entries on board 503s, `INC-2026-09-28-board-run-reports-still-503`
+and `INC-2026-09-29-board-run-reports-503-third-run`, are both about
+`POST /api/runs` refusing writes across many hours. This was a GET, it
+recovered on its own, and it is filed here only so the count is complete.

@@ -50,8 +50,21 @@ The stronger form of check 4 needs the corpus and is filed with it.
    that is not held ships without a hedge, or ships somewhere the row does not
    name.
 
+8. `firstuse`, canon law 12a and her outsider ruling of 2026-09-19. The
+   ruling is that every term of art carries its plain-words clause the first
+   time it appears. `prompts/digest.md` carries it in seven places across
+   about a hundred lines and the last archived issue breaks it in twenty-two,
+   because the one class the pass says it exists to catch is defined by not
+   looking like jargon, and finding those words in your own prose is a
+   judgment about what you know made by the thing that knows it. This builds
+   the inventory outside the model: every term of art in an issue, its count,
+   and the sentence where the reader first meets it, counting the title, the
+   masthead, the headings and the bold leads. The inventory is mechanical.
+   Whether a clause defines its term is a reading and stays in the grade.
+
 Usage:  python3 docs/voice/check_voice.py
-          [enforcements|stale|measure|links|delivery|sweep|claims|all] [path...]
+          [enforcements|stale|measure|links|delivery|sweep|claims|
+           reading|taste|candidates|firstuse|all] [path...]
         python3 docs/voice/check_voice.py enforcements <git-ref>
         python3 docs/voice/check_voice.py selfcheck <git-ref-or-range>
 Exit:   1 if any check reports a finding, 0 if clean.
@@ -1622,6 +1635,378 @@ def candidates(ref=None):
     return 1 if clashes else 0
 
 
+# ---- firstuse ----------------------------------------------------------
+#
+# Her outsider ruling of 2026-09-19, and the half of it no command could see.
+#
+# The ruling is that every term of art gets its plain-words clause the FIRST
+# time it appears. `prompts/digest.md` carries it in seven places across about
+# a hundred lines, one of which orders the model to build the list
+# mechanically before judging anything, and the last archived issue breaks it
+# roughly twenty times. The taste gate scores that ruling by quoting the rule,
+# so it is green on a rule that is present and failing.
+#
+# The structural reason the prompt cannot hold it is in the prompt's own
+# words: the class this pass exists to catch is the one that "does not look
+# like jargon on the page". Finding those words in your own prose is a
+# judgment about what you know, made by the thing that knows it. So the
+# inventory moves out of the model.
+#
+# What is mechanical here and what is not, stated before the output rather
+# than discovered in a grade:
+#
+#   The INVENTORY is mechanical. Which words are terms of art, how many there
+#   are, and where each one first reaches the reader, counting the title, the
+#   masthead, the headings and the bold leads. That is the width, and the
+#   width is what no eye in this seat's loop had ever counted.
+#
+#   The ADEQUACY is a reading. Whether a clause actually defines its term is
+#   not a thing a regex knows, and the taste gate's lesson is that a quote
+#   proves a rule is present and says nothing about the artifact. So a gloss
+#   marker is reported as presence and never scored as a pass.
+#
+# The two gates below are therefore both counts rather than judgments, and
+# both numbers are the generator's own.
+
+# The class the first-use pass says it exists to catch: ordinary English doing
+# a technical job. Six of these are quoted in her rulings or in the
+# generator's own list of examples. The rest came off the archived issues and
+# the grades in docs/voice/reviews/. A word here is not banned. It needs a
+# clause the first time a reader meets it.
+CLUB = set("""
+alignment anneal annealed annealing ablation attention bootstrapping
+checkpoint checkpoints chain-of-thought distil distill distilled distillation
+distills embedding embeddings few-shot fine-tune fine-tuned fine-tunes
+fine-tuning gradient gradients hallucination harness harnesses held-out
+imitation inference latent logits macro-average mixture-of-experts off-policy
+on-policy overfit overfits overfitting perplexity post-training pretraining
+pre-training prior priors quantization regularize regularized regularizes
+regularization reward rewards rollout rollouts scaffold scaffolding self-play
+sparsity student supervision supervised teacher test-time token tokens
+trajectory trajectories zero-shot
+""".split())
+
+# Ruled ordinary for this reader, so the frequency class below stops
+# reporting them. A builder outside the research world holds these. Each one
+# is a ruling this seat made in a grade, and the place to argue one is the
+# grade rather than the code.
+ORDINARY_TERMS = set("""
+agent agents api benchmark benchmarks ceiling cpu deployment gpu latency model
+models pipeline prompt prompts reasoning repository runtime text training url
+""".split())
+# "ceiling" and "text" were the first two rows the frequency class produced
+# and the grade of 2026-10-23 ruled both ordinary: the first is plain English
+# used plainly, the second is the link furniture of every citation line.
+
+# Institutions and their abbreviations. Law 11 requires the attribution, so
+# the name is not the writer's choice and reporting it as a club word would
+# ask the issue to break one law to hold another. Reported apart, because an
+# outsider does not hold "HKUST" either and that is a real cost the grade
+# should see rather than a violation the generator can fix.
+INSTITUTION = set("""
+ai2 aist alibaba baidu berkeley bytedance caltech cmu cnrs deepmind epfl eth
+fair hkust huggingface ibm inria kaist meta microsoft mila mit nus ntu nvidia
+nyu openai oxford peking riken stanford tencent tsinghua tu ucla ucsd uiuc
+us ut usc washu
+""".split())
+
+# Capitalised forms a builder reads without help.
+ORDINARY_CAPS = set("""
+ai api cpu eu gpt gpu i ml llm llms ok pdf sdk uk url us
+""".split())
+
+# Ordinary English, for the frequency class only. Short and deliberately
+# incomplete: a word this list misses is reported as a CANDIDATE for the grade
+# to rule, which is the failure mode worth having. A word it wrongly contains
+# is a term of art that never reaches the inventory, and that is the failure
+# this whole command exists to stop.
+ORDINARY = set("""
+able about above across after again against all already also although always
+among amount and another answer any anyone anything approach are around as
+ask asked at back bad based be because become been before begin behind being
+below best better between both break builder builders build building built but
+by call called can cannot carry case cases change changed changes cheaper
+choice choose claim claims clear close collect come common cost costs could
+course cut day days decide decision decisions deep different direction
+directions discard do does doing done down drop each early easy edge effect
+either else end enough even eventually every everything evidence exactly
+example experiments fail fails failing far fast faster few field final finally
+find first fit five fix follow for found four from full further gain gap get
+gets getting give given go going good got group groups had half hand happens
+hard has have having heavy held help high hit hold holds hour hours how
+however idea if important in instead into is it its itself just keep keeps
+kept kind kinds know known large largest last late later latest lead leads
+learn learned least leave leaving left less let level like likely limit line
+little local long longer look looks lose lost lot low made make makes making
+many matter matters may mean means measure measured measures method methods
+middle might mind minimal month months more most move moved much must name
+named names need needs never new newer next no none nor not nothing now number
+numbers of off offer often old older on once one ones only open or order other
+others our out over own paper papers part parts pass passed past pay people
+per percent place places point points possibility possible practice present
+preserve prevent problem problems process produce progress proposal proposes
+propose put question questions raise rate rather reach reaches read reader
+readers real really reason reasons recover recovers region regions
+replacement replace replaces report reports reserves rest restores result
+results review reviewing reviews rewrite rewrites right rise room run runs
+said same save saves saw say says scale score scores search second see seen
+sense sequential set sets settled several share shares shift ship shipped
+shop short should show showed shown shows side simple simpler simply since
+single six size slow slower small so software some something sometimes soon
+sort sources space specific spent stack stage stages stall stalls stand
+standing start started state states stay stays step steps still stop
+strongest style such suggests support supports sure system systems take taken
+takes target team teams tell ten test tests than that the their them then
+there these they thing things think this those though three through time times
+to today together told too took top toward trace traced treat trick true try
+turn turned turns two under understood until up update upon us use used uses
+using usually very wall want was watch watching way ways we week weeks well
+went were what whatever when where whether which while who whole why will win
+with within without word words work worked works worse worth would write
+writes wrong wrote year years yet you your
+""".split()) | CLAIM_STOP
+
+# Presence of a clause, never its adequacy.
+#
+# Tested relative to the term rather than across the whole sentence, which is
+# what makes the loose markers safe to include. An appositive arrives directly
+# after the word it defines, so ", a" and ", the" mean something a few
+# characters past the term and nothing at all somewhere else in a long
+# sentence. The first cut searched the sentence, so it had to leave the
+# appositive out to avoid matching every comma, and then reported a correctly
+# glossed term as bare.
+GLOSS = re.compile(r"^.{0,3}(?:'s|s)?\s*(?:,|\(|\u2014|:)\s*"
+                   r"(?:which|meaning|where|that is|i\.e\.|one|a|an|the|two)\b"
+                   r"|^.{0,24}\b(?:is|are|means|is called|called)\s+"
+                   r"(?:the\s+)?(?:plain|name|one|a|an)\b"
+                   r"|^.{0,40}\bworks like this\b"
+                   r"|^.{0,40}\bin other words\b", re.I)
+
+
+def glossed(term, window):
+    """Is a clause present directly after the term's first appearance here?
+
+    The term, not the sentence. A definition is adjacent to the word it
+    defines, so this reads the window from the term onward and asks only
+    about the next few characters. Where a term is an inflected family, any
+    of its surface forms satisfies the search.
+    """
+    low = window.lower()
+    for form in sorted(term, key=len, reverse=True):
+        i = low.find(form)
+        while i != -1:
+            if GLOSS.match(window[i + len(form):]):
+                return True
+            i = low.find(form, i + 1)
+    return False
+
+
+SENT = re.compile(r"(?<=[.!?])\s+(?=[A-Z(\"'])")
+WORD = re.compile(r"[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*")
+
+# The citation line, which is the paper's own title in italic followed by the
+# link (law 8 and the generator's title rule). Words that appear ONLY here are
+# not the writer's choice, the same way an institution's name is not, so
+# reporting them as violations would ask the issue to break one law to hold
+# another. A term used in a citation AND in the prose is still caught, at its
+# first use in the prose, which is where the ruling bites.
+CITATION = re.compile(r"^\s*\*.+\*\s*[-–]\s*\[")
+
+
+def issue_sentences(path):
+    """One issue's sentences in reading order, each with its line and source.
+
+    The title, the masthead, every heading and every bold lead are sentences
+    here, because her ruling counts the term the reader MEETS. A pass reading
+    body prose only once cleared a title term carried bare through eight
+    appearances, a heading and the closing line.
+
+    Split per line and then per sentence, so a line number never drifts and a
+    figure like 44.3% is not read as the end of a sentence.
+    """
+    out = []
+    for n, raw in enumerate(path.read_text(encoding="utf-8").split("\n"), 1):
+        source = "citation" if CITATION.match(raw) else "written"
+        line = re.sub(r"\]\([^)]*\)", "]", raw)         # the text, not the url
+        line = re.sub(r"^\s*(?:#+|>|[-*+])\s+", "", line)
+        line = norm(line.replace("**", "").replace("*", "").replace("`", ""))
+        if not line or set(line) <= set("-|= "):
+            continue
+        for s in SENT.split(line):
+            if s.strip():
+                out.append((n, s.strip(), source))
+    return out
+
+
+def coined(tok):
+    """A method name, a benchmark name or an acronym, by its shape alone."""
+    bare = tok.replace("-", "")
+    if len(bare) < 2 or not bare.isalnum():
+        return False
+    if bare.isupper():
+        return True
+    return any(c.isupper() for c in bare[1:])
+
+
+def family(low):
+    """The idea a club word belongs to, so inflections count as one term.
+
+    Her ruling and the generator both say one idea, one word: "distillation",
+    "distilled", "distills" and "distil" are four rows in a naive inventory
+    and one term to a reader, and an inventory that prints them four times
+    overstates the width it exists to measure. Grouped on five characters,
+    which separates every pair on the CLUB list, and the surface forms are
+    printed beside the row so a grade can see the grouping it is trusting.
+    """
+    return low[:5]
+
+
+def terms_of(sentences):
+    """Every term of art in one issue, with its count and its first sentence.
+
+    Four classes, and the fourth is why this is a command. The first three
+    are lists, so a model could have followed them. The fourth is the
+    generator's own rule, which is that the list is built by frequency and
+    not by what looks like jargon, and it is the rule that produces the words
+    nobody would have thought to list.
+
+    Order matters in one place. CLUB is tested before the capital-letter
+    shape, because "On-Policy" inside a paper's title is the same club word
+    as "on-policy" in the prose, and the first cut of this counted it twice
+    under two classes and reported one of them as clean.
+    """
+    seen, counts, forms = {}, collections.Counter(), collections.defaultdict(set)
+    for n, s, source in sentences:
+        for i, m in enumerate(WORD.finditer(s)):
+            tok, low = m.group(), m.group().lower()
+            if low in ORDINARY_TERMS or low in ORDINARY_CAPS:
+                continue
+            if low in CLUB:
+                kind, key = "club", family(low)
+            elif low in INSTITUTION:
+                kind, key = "institution", low
+            elif coined(tok):
+                kind, key = "coined", low
+            elif tok[0].isupper() and i > 0:
+                # A proper noun: a person or an institution as the payload
+                # spells it. Law 11 requires the attribution and ban list 117
+                # says the name is copied character for character, so it is
+                # not a word the writer chose. The first cut read "Google"
+                # and "University" as club words by frequency alone.
+                kind, key = "name", low
+            elif low not in ORDINARY and len(low) > 3:
+                kind, key = "frequency", low
+            else:
+                continue
+            counts[(key, kind)] += 1
+            forms[(key, kind)].add(low)
+            if (key, kind) not in seen or (seen[(key, kind)][2] == "citation"
+                                           and source == "written"):
+                seen[(key, kind)] = (n, s, source)
+    out = {}
+    for k, c in counts.items():
+        if k[1] == "frequency" and c < 3:
+            continue          # the generator's own threshold, three or more
+        out[k] = (c, seen[k][0], seen[k][1], seen[k][2], sorted(forms[k]))
+    return out
+
+
+def firstuse(paths=None):
+    retired = hidden_weeks()
+    paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    rc = 0
+    for p in paths:
+        p = pathlib.Path(p)
+        if not p.exists():
+            print(f"{p}: missing")
+            continue
+        try:
+            shown = p.resolve().relative_to(ROOT)
+        except ValueError:
+            shown = p.resolve()
+        off = p.stem in retired
+        sents = issue_sentences(p)
+        found = terms_of(sents)
+        print(f"{shown}" + ("   [retired, not served]" if off else ""))
+
+        # The title gate, first and separately, because the title is a closed
+        # list and the rest of this pass is not. The generator says so in its
+        # own words and says it has already failed twice. A title term is
+        # defined in the title's own sentence or in the first sentence of the
+        # opening, and nowhere later, because the reader met it before they
+        # had any reason to keep reading.
+        title = sents[0][1] if sents else ""
+        opening = next((s for n, s, src in sents[2:] if len(s) > 60), "")
+        onramp = f"{title} {opening}"
+        bare_title = []
+        for i, m in enumerate(WORD.finditer(title)):
+            tok, low = m.group(), m.group().lower()
+            if low in ORDINARY_TERMS or low in ORDINARY_CAPS:
+                continue
+            if low in INSTITUTION or (low not in CLUB and not coined(tok)
+                                      and not (tok[0].isupper() and i > 0)):
+                continue
+            if low not in CLUB and not coined(tok):
+                continue
+            if not glossed([low], onramp):
+                bare_title.append(tok)
+        bare_title = list(dict.fromkeys(x.lower() for x in bare_title))
+        print(f"  title terms a reader cannot define            {len(bare_title)}")
+        for w in bare_title:
+            print(f"    BARE    {w!r} in the title, and no clause in the title's own")
+            print( "            sentence or in the opening's first sentence")
+
+        rows = [(k, v) for k, v in found.items()
+                if k[1] in ("club", "coined", "frequency")]
+        rows.sort(key=lambda kv: (kv[1][1], kv[0][0]))
+        own = [r for r in rows if r[1][3] == "written"]
+        quoted = [r for r in rows if r[1][3] == "citation"]
+        print(f"  terms of art the issue chose for itself       {len(own)}")
+        for (key, kind), (count, line, sent, _src, surface) in own:
+            window = onramp if line == 1 else sent
+            mark = "CLAUSE " if glossed(surface, window) else "BARE   "
+            label = "/".join(surface)
+            shownkind = "candidate" if kind == "frequency" else kind
+            print(f"    {mark} {shownkind:<9} x{count:<3} {label!r}")
+            print(f"            {shown}:{line}  {sent[:92]}")
+
+        # Two buckets that are not findings, and both are reported because an
+        # outsider pays for them anyway. A grade reads them; the generator
+        # cannot fix them without breaking the law that put them there.
+        if quoted:
+            print(f"  terms only inside a paper's own title         {len(quoted)}")
+            print("    " + ", ".join(sorted("/".join(v[4]) for _, v in quoted)))
+        named = sorted(k[0] for k, v in found.items()
+                       if k[1] == "institution"
+                       or (k[1] == "name" and v[3] == "written"))
+        if named:
+            print(f"  names law 11 requires, spelled as they arrive {len(named)}")
+            print("    " + ", ".join(named))
+
+        # The second gate, and the number is the generator's own: more than
+        # about five terms needing a definition means the issue is carrying
+        # too much, not that it needs more explaining. The repair named there
+        # is to cut an item and run the pass again.
+        bare = [r for r in own if not
+                glossed(r[1][4], onramp if r[1][1] == 1 else r[1][2])]
+        named_art = [r for r in own if r[0][1] in ("club", "coined")]
+        bare_art = [r for r in bare if r[0][1] in ("club", "coined")]
+        print(f"  the generator's cap is five, this issue has   "
+              f"{len(named_art)}, {len(bare_art)} of them bare")
+        if len(own) != len(named_art):
+            print(f"    and {len(own) - len(named_art)} candidate(s) above, "
+                  "which the grade rules and the cap does not count")
+        if not off and (bare_title or bare_art or len(named_art) > 5):
+            rc = 1
+    print()
+    print("The inventory is the check. A CLAUSE row says a marker sits in the")
+    print("same sentence and says nothing about whether it defines the term,")
+    print("which is the taste gate's lesson in a second place. A BARE row has")
+    print("no marker at all and is the finding. A frequency row a grade rules")
+    print("ordinary goes in ORDINARY_TERMS, with the grade that ruled it.")
+    return rc
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -1631,7 +2016,7 @@ def main():
     # prevent (ban list 91, fixed 2026-10-06).
     paths = sys.argv[2:]
     rc = 0
-    takes_paths = {"measure", "links", "delivery", "compare"}
+    takes_paths = {"measure", "links", "delivery", "compare", "firstuse"}
     # `enforcements` takes a git ref rather than a path, because ban list 105
     # is about the file the press runs and that file is only reachable through
     # the commit the deploy was built from.
@@ -1646,6 +2031,7 @@ def main():
                      ("delivery", delivery), ("claims", claims),
                      ("reading", reading),
                      ("candidates", candidates),
+                     ("firstuse", firstuse),
                      ("compare", compare), ("selfcheck", selfcheck)):
         if which == name or (which == "all"
                              and name not in ("selfcheck", "compare")):

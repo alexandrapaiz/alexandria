@@ -37,6 +37,15 @@ a command was written to look.
 
 ## Open, newest first
 
+**Re-confirmed 2026-10-23 by command, writer run 42.** Every row below is
+still open and every defective line is still live. `check_voice.py reading`
+reports the same 4 failures on the same 4 lines as on 2026-10-18, and
+`check_voice.py claims` reports 17 unhedged claims live right now. Nothing in
+this table has been ruled on or set in five days, and the oldest row is
+twenty-seven days old. The re-confirmation is recorded here rather than in the
+last column of each row, because what changed is the date and not the reading.
+
+
 | Surface | Candidate | Drafted | Is the defective line still live? |
 |---|---|---|---|
 | `site/app/mission/page.jsx`, third paragraph | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. Three unheld claims in one sentence, confirmed by `check_voice.py claims` on 2026-10-18 |
