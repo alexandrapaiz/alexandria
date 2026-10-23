@@ -10,11 +10,11 @@ per run. Seeded 2026-09-18 by the chair; the PM keeps it current.
 
 | Seat | Charter | Cadence | Lane | Current initiative |
 |---|---|---|---|---|
-| engineer | prompts/engineer-agent.md | daily 7:06 ET | product code, pipeline | launch runway; architecture evolution |
-| skill | prompts/skill-agent.md | Tue 8:00 ET | skills/ gold production | skills-with-receipts (O2) |
-| frontend | prompts/frontend-agent.md | Wed 8:00 ET | site UI, visual quality | visual audit; mission on site |
-| market | prompts/market-agent.md | Fri 7:00 ET | docs/market/ | positioning under free+$20 |
-| pm | prompts/pm-agent.md | daily (Mon: ceremony, Tue-Sun: standup) | sprints, backlog, board, org chart, dispatch queue | Oct 13 launch runway |
+| engineer | prompts/engineer-agent.md | daily 7:06 ET | product code, pipeline | launch runway; architecture evolution; skills sellable — install line + plugin marketplace, buyer-path measurement |
+| skill | prompts/skill-agent.md | Tue 8:00 ET | skills/ gold production | skills-with-receipts (O2); skills sellable — proof inside the first session |
+| frontend | prompts/frontend-agent.md | Wed 8:00 ET | site UI, visual quality | visual audit; mission on site; skills sellable — catalog page, pricing reframe |
+| market | prompts/market-agent.md | Fri 7:00 ET | docs/market/ | positioning under free+$20; skills sellable — pricing-page copy advisory |
+| pm | prompts/pm-agent.md | daily (Mon: ceremony, Tue-Sun: standup) | sprints, backlog, board, org chart, dispatch queue | Oct 13 launch runway; skills sellable regroom (owner directive, 2026-10-17) |
 | research | prompts/research-agent.md | Mon 16:30 UTC | input curation: digest review, curation brief, meta-review | what deserves attention; source discovery |
 | exo | prompts/exo-agent.md | Sun 10:00 ET | charters, workflows, org | org learning; GitHub upkeep |
 | security | prompts/security-agent.md | 1st + 15th | debug + defensive audits | pre-launch hardening |
@@ -48,7 +48,7 @@ is a live question for the owner regardless (see pending.md).
 ## Company initiatives
 
 1. **Launch Oct 13** — pm leads; engineer, frontend, skill execute; sales activates near launch.
-2. **Skills as the product** — skill leads; engineer (receipts rendering), market (positioning) support.
+2. **Skills as the product** — skill leads; engineer (receipts rendering), market (positioning) support. Sharpened 2026-10-17 by the owner's own directive into five sellable conditions, one seat per condition, done defined as a URL and an install line she runs herself by Wednesday's brief: engineer (install line + plugin marketplace, buyer-path measurement), skill (proof inside the first session), frontend (catalog page, pricing reframe), market (pricing-copy advisory). Full detail in docs/sprints/sprint-2026-10-12.md's "Regroom" section and docs/prfaq/skills-sellable.md. The checkout's mechanical completion needs no seat — it is an owner-only sandbox walkthrough, docs/product/polar-go-live.md, overdue 21 days.
 3. **Digest worth reading** — writer leads (voice, structure, ADR-28);
    research (curation, meta-review, ADR-25 renamed the old "weekly"
    seat); engineer (prompt plumbing); market (prose benchmark) support.
