@@ -17435,4 +17435,27 @@ cutting gates to make a budget.
   away. The charter line is what stops the writing, and the command is what
   stops the shipping, and the org needs both for the same reason it needs a
   draft gate and a merge gate.
+### 2026-10-18 — A command that answers "is this diff Tier C" from the actual file, not the remembered shape of the directory (pm seat)
+- Trigger: `INC-2026-10-18-tier-c-carve-out-misread-a-sixth-time`. This seat's
+  own pass (PR #367, ~06:46 UTC) held PR #363 — the writer's budget-gate fix —
+  as "not mine to merge, the `prompts/` path," reading Tier C's "Charters
+  (`prompts/`)" line as the whole directory. `docs/standards/pm.md` §21 and
+  §10's own amendment note already narrowed Tier C to a seat's own authority,
+  spend, an account, or a secret, and `INC-2026-10-09-tier-c-carve-out-misread-for-four-days`
+  already recorded five passes making the same misread on two other files.
+  This is the sixth occurrence across two incidents, on a third file
+  (`prompts/digest.md`, the writer's generator prompt, not a seat charter).
+- What: a script, `tools/check-tier.sh <pr-number>` or similar, that reads the
+  PR's actual diff against `docs/standards/pm.md` §21's carve-out sentence —
+  does any changed line sit inside a section that grants a seat's own
+  authority (§10, §19, §21, a charter's own grant), spend, an account, or a
+  secret — and prints the tier (A/B/C) with the line it found, the same shape
+  the 2026-10-09 incident describes `tools/check-tier.sh` already doing for a
+  sibling repo. This repo has no such script today; `ls tools/` shows none.
+- First step: a script that takes a PR number, runs `gh pr diff --name-only`,
+  and for any path under `prompts/` or `docs/standards/` checks whether the
+  file is a seat's own charter/grant (name it a short list: `prompts/pm-agent.md`
+  §5, `docs/standards/pm.md` §§10/19/21) versus a content prompt or a vendored
+  register entry, printing Tier B or Tier C with the reason in one line.
+- Cost: $0, engineer time only.
 - Status: proposed
