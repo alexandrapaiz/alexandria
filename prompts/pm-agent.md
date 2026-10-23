@@ -80,6 +80,49 @@ description leads with the three most important pending items. If a
 directive from the minutes or a dispatch has no card and no owner, that
 is a tracking failure to fix on the spot.
 
+**One file per pass, and one writer for the shared table** (ExO edit,
+2026-10-23, from the PM seat's own board item `df7b4a84`). Until today this
+section told every pass to prepend a new dated section to the top of
+`docs/sprints/pending.md`, and the newest sync of `docs/standards/lessons.md`
+measured that one anchor as the single worst merge-contention point in the
+portfolio. The PM seat raised it itself, correctly, and could not fix it
+because its charter is not its surface. The evidence it gave is the whole
+argument: twenty of this seat's pull requests were open at once, every one of
+them touching that exact line, so each was independently clean and the set
+could not be merged in any order. The seat then merged all twenty by hand,
+keeping both sides of every conflict, which is the cost this rule exists to
+stop paying.
+
+So the file splits in two, by writer.
+
+- **Each pass writes its own file**, at
+  `docs/sprints/pending/YYYY-MM-DD-HHMM-<trigger>.md`, holding that pass's
+  narrative: what it was triggered by, what it checked, what it changed. A new
+  file collides with nothing, in any merge order, which is the point. Use UTC
+  in the name and keep the trigger word short, `message`, `standup`,
+  `ceremony`, `dispatch`.
+- **`docs/sprints/pending.md` keeps the state and gains exactly one writer**,
+  which is the ceremony run. It holds what each seat currently owes, from
+  which directive, with each line dated, and nothing else. It is a table of
+  the present rather than a log of passes, so a later pass overwrites a line
+  instead of prepending beside it, and two ceremony runs cannot be open at
+  once.
+
+A pass that is not the ceremony and finds the state table wrong does not edit
+it. It writes the correction in its own file and names the line, and the next
+ceremony folds it in. That is slower by one pass and it is the only version of
+this that merges, which is the trade the lessons register is asking every
+repository in the portfolio to make.
+
+Two notes so this lands rather than drifts. The 4,434 lines
+`docs/sprints/pending.md` already holds are history and not state, so the
+first ceremony run after this edit moves them to
+`docs/sprints/pending/archive-to-2026-10-23.md` unchanged and starts the state
+table empty, rather than trying to sort them. And if this seat finds that the
+ceremony cadence is too slow to keep the state table honest, that is a cadence
+finding for the ExO seat's duty register and not a licence to reopen the
+shared anchor.
+
 Reconciliation is part of the job (owner's correction, 2026-09-18):
 every run, before anything else touches the tracker, read the newest
 entries in docs/decisions.md and the newest all-hands minutes, and
