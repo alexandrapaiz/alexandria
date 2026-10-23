@@ -8,18 +8,38 @@ per run. Seeded 2026-09-18 by the chair; the PM keeps it current.
 
 ## Active seats
 
-| Seat | Charter | Cadence | Lane | Current initiative |
+**Cadence column changed 2026-10-23.** PR #334 (merged 2026-10-17T21:07:40Z,
+"Every seat's clock leaves GitHub: schedule blocks removed, the host
+manifest keeps the cadence") removed every cron from
+`.github/workflows/agent-*.yml`; the times below are no longer what
+wakes a seat. Per that PR's own body, each seat's cadence now lives in
+"the host roster in the HQ repository" (HQ decision 056), outside this
+repo and outside this run's reach, and a seat is woken by the board's
+event bus instead (pm.md §17). The column below is kept as the
+**last-known cadence intent** rather than deleted outright, since it is
+the only record of it this repo still holds, but it is a historical note
+from here on, not a live fact. This edit was queued by name in
+`docs/sprints/pending.md`'s 2026-10-17 ~21:00 UTC entry for "the run
+after #334 lands," which is this one. **Still open, and not this seat's
+to close:** no entry in `docs/decisions.md` names HQ decision 056 or the
+local cadence law it overrides, which `docs/agents/cross-repo-law.md`
+rule 1 requires and assigns to the ExO seat's §3e, not the PM's; exo's
+own PR #381 (open, Tier C) already found this same gap on 2026-10-18 and
+it is still unfixed five days later for the reason everything else was,
+the host being dark.
+
+| Seat | Charter | Cadence (pre-2026-10-17, historical) | Lane | Current initiative |
 |---|---|---|---|---|
-| engineer | prompts/engineer-agent.md | daily 7:06 ET | product code, pipeline | launch runway; architecture evolution; skills sellable — install line + plugin marketplace, buyer-path measurement |
-| skill | prompts/skill-agent.md | Tue 8:00 ET | skills/ gold production | skills-with-receipts (O2); skills sellable — proof inside the first session |
-| frontend | prompts/frontend-agent.md | Wed 8:00 ET | site UI, visual quality | visual audit; mission on site; skills sellable — catalog page, pricing reframe |
-| market | prompts/market-agent.md | Fri 7:00 ET | docs/market/ | positioning under free+$20; skills sellable — pricing-page copy advisory |
-| pm | prompts/pm-agent.md | daily (Mon: ceremony, Tue-Sun: standup) | sprints, backlog, board, org chart, dispatch queue | Oct 13 launch runway; skills sellable regroom (owner directive, 2026-10-17) |
-| research | prompts/research-agent.md | Mon 16:30 UTC | input curation: digest review, curation brief, meta-review | what deserves attention; source discovery |
-| exo | prompts/exo-agent.md | Sun 10:00 ET | charters, workflows, org | org learning; GitHub upkeep |
-| security | prompts/security-agent.md | 1st + 15th | debug + defensive audits | pre-launch hardening |
-| okr | prompts/okr-agent.md | 1st monthly | docs/okrs/ | Q4 OKRs; benchmark trendline |
-| writer | prompts/writer-agent.md | daily 16:00 UTC | newsletter voice: prompts/digest.md, docs/voice/, editorial structure | digest worth reading (O1) |
+| engineer | prompts/engineer-agent.md | was daily 7:06 ET | product code, pipeline | launch runway; architecture evolution; skills sellable — install line + plugin marketplace, buyer-path measurement |
+| skill | prompts/skill-agent.md | was Tue 8:00 ET | skills/ gold production | skills-with-receipts (O2); skills sellable — proof inside the first session |
+| frontend | prompts/frontend-agent.md | was Wed 8:00 ET | site UI, visual quality | visual audit; mission on site; skills sellable — catalog page, pricing reframe |
+| market | prompts/market-agent.md | was Fri 7:00 ET | docs/market/ | positioning under free+$20; skills sellable — pricing-page copy advisory |
+| pm | prompts/pm-agent.md | was daily (Mon: ceremony, Tue-Sun: standup) | sprints, backlog, board, org chart, dispatch queue | recovery from the 2026-10-18 to 2026-10-23 host outage; skills sellable regroom re-targeted to Wednesday 2026-10-28 |
+| research | prompts/research-agent.md | was Mon 16:30 UTC | input curation: digest review, curation brief, meta-review | what deserves attention; source discovery |
+| exo | prompts/exo-agent.md | was Sun 10:00 ET | charters, workflows, org | org learning; GitHub upkeep |
+| security | prompts/security-agent.md | was 1st + 15th | debug + defensive audits | pre-launch hardening |
+| okr | prompts/okr-agent.md | was 1st monthly | docs/okrs/ | Q4 OKRs; benchmark trendline |
+| writer | prompts/writer-agent.md | was daily 16:00 UTC | newsletter voice: prompts/digest.md, docs/voice/, editorial structure | digest worth reading (O1) |
 
 **Gap closed 2026-09-24 (ceremony-lite sync).** The writer seat
 (ADR-28, editor-in-chief, owner's decision 2026-09-19) has run
