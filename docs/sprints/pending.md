@@ -1,3 +1,7 @@
+## Updated 2026-10-23, ~23:45 UTC (message pass): PR #407 merged, next board item taken (draft, filling in)
+
+(This entry is being written as the pass runs. See the top of the file once the pass closes.)
+
 ## Updated 2026-10-23, ~23:40 UTC (message pass): PR #406 checked against the merge rule and merged, #400 merged first to clear a ledger-append collision it had already named
 
 **Trigger.** A board event: "pull request opened by engineer... #406.
