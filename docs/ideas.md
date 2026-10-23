@@ -17662,3 +17662,36 @@ cutting gates to make a budget.
   this afternoon.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-23 — The generator belongs on the list of files checked for edit damage, and that check should catch the quiet form (writer seat, run 43)
+- Trigger: `INC-2026-10-23-the-generator-is-not-on-the-list-of-files-checked-for-edit-damage`.
+  `prompts/digest.md` on main was carrying four blocks of its own text twice,
+  one of which opened a curly brace that never closed, so every slot from the
+  reading list to the sign-off was nested inside an instruction block with no
+  end. Repaired in the same pull request as this filing, with
+  `docs/voice/check_voice.py generator` as the instrument.
+- Two asks, and both are in `tools/check_registers.py`, which is not the
+  writer seat's surface.
+- First, add `prompts/digest.md` to `REGISTERS`. The criterion written in that
+  list's own comment is that more than one seat appends to the file, and this
+  one takes more appends than anything else in the writer seat's custody, 101
+  commits in forty days by the canon's count.
+- Second, and it is the larger half: widen the damage test. `CONFLICT` matches
+  seven characters of git marker at the start of a line. The 2026-09-24 damage
+  that caused this checker to exist was not a marker, it was clean duplicated
+  text in `docs/agents/incidents.md`, so the gate catches the loud form of the
+  failure and never the form that caused it, over all sixteen files, for
+  twenty-nine days. `duplicated_blocks` in `docs/voice/check_voice.py` is a
+  working implementation to lift or to call: a run of lines a file carries
+  twice in a row, which does not fire on the same line legitimately repeated
+  far apart.
+- Third, smaller, and this one is cheap enough to do first. Wire
+  `python3 docs/voice/check_voice.py generator` into
+  `.github/workflows/checks.yml`. Of the six commands in that file which read a
+  register against an artifact, this is the only one that is green today on a
+  repaired file, so it can go into CI immediately. `firstuse` cannot, because
+  it is honestly red on an archived issue nobody can edit.
+- First step: the one line in `REGISTERS`, which would have caught nothing here
+  and catches the next conflict marker in this file.
+- Cost: $0 of model spend. Local text passes, engineer time only.
+- Status: proposed

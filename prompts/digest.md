@@ -1142,11 +1142,6 @@ spend an hour on, which on a rich day is a handful and on a thin day is one or
 two. Rarely more than five, and never five because five was the number.
 Printing everything `deep_reads` returned is the opposite of judgment, and
 judgment is what the reader pays for.
-{Chosen, never listed. Print the papers you would actually tell a builder to
-spend an hour on, which on a rich day is a handful and on a thin day is one or
-two. Rarely more than five, and never five because five was the number.
-Printing everything `deep_reads` returned is the opposite of judgment, and
-judgment is what the reader pays for.
 A paper this issue has already covered at length is not a pick. The reader
 just read it here, so the line would send them to what they were handed.
 **The check is a comparison against a list and never a reading of the
@@ -1943,9 +1938,6 @@ the rule's question to the thing in front of you.
   bets, two labs, both results. For each one, count what actually appears under
   it. The number said and the number present are the same number, or the
   sentence is rewritten to the number present.
-  One section of 2026-09-28 failed this three ways at once. Its heading said
-  two. Its first sentence said two and then listed three, one of which was the
-  previous section's whole subject. Two items followed. Nothing there was a
   One section failed this three ways at once. Its heading said two. Its first
   sentence said two and then listed three, one of which was the previous
   section's whole subject. Two items followed. Each sentence was correct
@@ -1963,7 +1955,6 @@ the rule's question to the thing in front of you.
   reader sees under the sentence, one for every bold lead, bullet or paragraph
   carrying its own piece of work, whatever noun your sentence happened to use.
   The sentence's number is that count. Then the noun goes to every block you
-  just counted, which is the next paragraph.
   just counted, which is the next paragraph.
   A heading is one of those places and so is a bold lead, so read this
   paragraph with the word "sentence" meaning whichever of them said the number.
@@ -2023,16 +2014,6 @@ the rule's question to the thing in front of you.
   where a negative replication clause collects. Then each line's sequence of
   parts, and no two are the same sequence. Rewrite the later of any pair,
   because a frame is a sentence the first time and furniture the second.
-- **Then check who the issue says did the research. A hard gate, and it is
-  grammar rather than judgment.** The attribution rule above allows two forms,
-  the institution and the named author, and says there is no third. The third
-  one gets invented anyway, halfway down a paragraph, where the rule is not
-  being read because the item's attribution was settled in its first sentence.
-  So run it on the finished issue the way the tense check runs. Find every
-  sentence whose subject is a benchmark, a method, a pipeline, a system, a
-  dataset or a paper title, and whose verb is a verb of research or reporting:
-  reports, finds, shows, achieves, demonstrates, claims, measures. None of
-  those subjects is anybody, so every one of those sentences is telling the
 - **Then check who the issue says did the research. A hard gate, and it is
   grammar rather than judgment.** The attribution rule above allows two forms,
   the institution and the named author, and says there is no third. The third
