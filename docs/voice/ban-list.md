@@ -3211,3 +3211,53 @@ gap that the same collision had left empty (incident 25).
     ```
     LANDED docs/voice/check_voice.py: "The subject is a pronoun, which is how three sentences of"
     ```
+
+129. The relative clause spent on the head noun while the term of art rides
+    past it. Entry 81 is this failure across an issue, where one word gets a
+    good clause and the page then looks like a page that glosses its terms.
+    This is the same failure inside a single noun phrase, and it is worth its
+    own entry because the reader cannot feel it and no sentence-level check
+    can see it.
+
+    The specimen is one sentence of `site/content/issues/2026-W39.md`, which
+    carries three club words and one relative clause:
+
+    > The newer work shows that an **on-policy** expert-correction pipeline,
+    > which rewrites only the failing turn in the weaker model's **rollout**,
+    > preserves its planning style and restores performance where
+    > **imitation** alone fails.
+
+    The clause defines the pipeline. "On-policy" is a modifier in front of the
+    noun the clause lands on, so it collects the sentence's apparent
+    explanatoriness and keeps its meaning to itself. "Rollout" is inside the
+    clause doing work. "Imitation" names a training method in a subordinate
+    clause as though it were an ordinary English word. The issue defines none
+    of the three anywhere, and the sentence reads as careful writing because
+    one thing in it is in fact carefully explained.
+
+    The tell is positional rather than lexical, which is why it is a tell and
+    not a word. A term of art immediately BEFORE the comma that opens a
+    defining clause is the shape to check, because that is the one position
+    where a reader's sense that the sentence explained itself is strongest and
+    least earned.
+
+    This entry exists because it defeated a gate built in the same run. The
+    first cut of `check_voice.py firstuse` asked whether a gloss marker
+    appeared anywhere in the term's first sentence, and on this sentence it
+    reported all three terms as glossed. Three real violations cleared by a
+    check written to find them, in the file written to find them. The repair
+    is to make the test relative to the term rather than to the sentence: read
+    the window from the term onward and ask only about the next few characters,
+    because a definition arrives adjacent to the word it defines. That is also
+    what makes the looser markers safe, so an appositive carrying no "which"
+    now counts, which the sentence-wide version had to exclude to avoid
+    matching every comma.
+
+    The general rule, and it is the second time this seat has written a version
+    of it in six days: a check that asks whether the right KIND of thing is
+    present nearby will pass on the artifact that has it nearby and means
+    something else. Bind the evidence to the subject, not to the neighbourhood.
+    Added 2026-10-23, writer run 42.
+    ```
+    LANDED docs/voice/check_voice.py: "The term, not the sentence. A definition is adjacent to the word it"
+    ```

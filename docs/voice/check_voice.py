@@ -1670,7 +1670,7 @@ def candidates(ref=None):
 
 # The class the first-use pass says it exists to catch: ordinary English doing
 # a technical job. Six of these are quoted in her rulings or in the
-# generator's own list of examples; the rest came off the archived issues and
+# generator's own list of examples. The rest came off the archived issues and
 # the grades in docs/voice/reviews/. A word here is not banned. It needs a
 # clause the first time a reader meets it.
 CLUB = set("""
