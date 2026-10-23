@@ -73,3 +73,32 @@ drafted and both still waiting.
 This candidate makes no claim about our artifact. It removes one. So there is
 no row in `docs/agents/quality-claims.md` to hold it against, and none is
 needed: the sentence that needed a mechanism is the one coming out.
+
+## The value-statement precondition, answered rather than skipped
+
+The charter's copy step says `docs/voice/value.md` must exist and carry her
+recorded approval before copy is drafted, and it does not: that page still
+reads "awaiting her approval", with the contradiction of 2026-09-29 recorded
+under it since 2026-09-30 and unresolved.
+
+The precondition does not bite here, and the reason is the reason it exists.
+It guards a copy ROUND, where words are invented and have to converge on a
+value nobody wrote down, which is the lesson of the eight rejected rounds.
+Nothing converges in this file. The replacement string is `MASTHEAD` in
+`pipeline/weekly.py` character for character, which is the repair she already
+ordered and which already prints on every issue the press writes. This is that
+repair reaching the one surface it could not reach backwards into.
+
+If the replacement were a new sentence, the precondition would bite and the
+right work would be the value statement instead. Recorded here so the next run
+does not have to derive it again.
+
+## The duplicate register, checked before drafting and not after
+
+```
+$ python3 -I docs/voice/check_voice.py candidates
+no candidate here redrafts a surface already awaiting her word
+```
+
+`docs/voice/awaiting-her-word.md` has seven open surfaces and the archive is
+not one of them. This is a first draft for this surface rather than a ninth.
