@@ -3821,3 +3821,110 @@ that 27**, which is why §3e should keep measuring it: the throughput
 bottleneck is no longer a missing seat, it is one human's evening. That is
 hers to solve and the honest thing this seat can do about it is keep the
 number in front of her and keep its own diffs reviewable.
+
+## Run 2026-10-23 (message, triggered by a handoff from the PM seat)
+
+Branched from `main` as `alexandria-exo/2026-10-23-message-papers-read-row`,
+because the obvious name was taken by this seat's own earlier run the same day.
+**Fifth in a chain: #272 to #331 to #381 to #404 to this one. This seat is
+blocked on merges**, and that number has grown by one link per run for four
+runs.
+
+### What triggered this run, and the handoff worked
+
+The PM seat found that the home page's metric line, the papers-read count, had
+no row in `docs/agents/quality-claims.md`. It did not write the row, because
+that file names itself as this seat's. It wrote the finding on board card
+`d69a5c1a`, checked the mechanism so this run would not start from zero, and
+said in plain words the one thing it could not check: whether
+`INGEST_COUNT_URL` is configured and answering in the live deploy, which is
+runtime state outside a checkout.
+
+**Write that down as the good case, because this log mostly records the other
+kind.** A seat stayed in its lane, did the part of the work it could reach,
+named the boundary of what it could see, and attached the rest to the next
+wake of the seat that owns it. The register row exists today because of that
+and not because of any sweep.
+
+### The thing the handoff could not see was the whole finding
+
+One command answers it:
+
+```bash
+curl -s https://libraryofalexandria.dev/ | grep -c 'metric-line'
+```
+
+It returns `0`. The page is served, the paragraph directly above the metric
+renders, and the metric element is absent, so `weeklyIngestCount()` is
+returning null in production. **The claim is in the repository and it is not on
+the internet.**
+
+That is a third way a public claim can fail and the register modelled two. A
+row could fail because there is no mechanism, or because the mechanism's result
+contradicts the claim. Both are properties of the repository, and all twelve
+existing rows were scored by reading two halves of the repository against each
+other. A claim can also fail because the surface meant to carry it is dark, and
+no amount of reading the repository detects that. §3g of this charter gains a
+fifth step for it, and the lesson already had a company id: **L-A16, configured
+is not in effect**, which this register had gone 24 days without applying.
+
+The sales seat reached the edge of this on 2026-10-18 in
+`docs/sales/launch-gate.md`, wrote that a reading taken from the repo cannot
+tell us which, and stopped there. It was right to stop. Taking the other
+reading is this seat's duty and no charter had said so until today.
+
+**The ordering matters and the row now says so.** The line reads "papers read"
+over a count of papers that arrived, which is canon law 15, and the repair has
+been drafted since 2026-09-26 and unset for 27 days. So the dark surface is
+currently load-bearing: whoever sets the variable publishes a false sentence on
+the first screen a stranger sees, while believing they are turning on
+telemetry. Words first, then configuration.
+
+### Three improvements, and the second one found the third
+
+1. **§3g step 5, measure the live surface.** Above.
+2. **The dated-conclusion rule**, in `docs/agents/registers.md` and in §3d.
+   Every sentence a register writes about its own data carries the date it was
+   written, in the same sentence. `quality-claims.md` contradicted its own
+   table four times in twelve days, and the fourth was the sentence the page
+   itself calls the single most useful one on it. The diagnosis the page had
+   already written was right and incomplete: it is not only that a method half
+   and a data half drift. It is that **every number carries its date and no
+   conclusion carries anything**, so a reader discounts a stale measurement for
+   free and reads a stale conclusion as current forever.
+3. **`model-routing.md` corrected**, which is what running improvement 2 across
+   this seat's own registers turned up in the same run. The table was headed
+   "current policy", carried no date for 36 days, and its first row said
+   gpt-oss-120b on Groq at $0 for a pipeline that ADR-32 moved to paid Kimi on
+   Moonshot. The receipt has published the true model hourly the whole time.
+
+### The number to carry forward
+
+**Three times now, a register of this seat's has been found contradicted by a
+receipt of this seat's.** The growth row on 2026-10-11, the missing weekly row
+on 2026-10-18, the routing table today. The register wrote that sentence about
+itself on the first occasion and the lesson did not travel one file sideways.
+The next run should assume the fourth exists and go looking for it rather than
+wait to trip over it. The cheapest sweep: for every register this seat keeps,
+list the facts it asserts about running systems, and check each against
+`curl -s https://libraryofalexandria.dev/api/delivery` and against the code.
+
+### What the next run must check first
+
+1. **Did #411 merge.** If not, the chain is six deep and the thing to report is
+   the merge throughput rather than the work.
+2. **Is the home page metric still dark**, and did the words land before the
+   variable. One curl answers the first. The second is the frontend seat's
+   artifact and the order is the finding.
+3. **Is the reviewer-panel row in `model-routing.md` still undated.** This run
+   left it so on purpose, as the first worked example of a row the page is not
+   claiming. Verify it against `pipeline/panel*.py` or delete it.
+4. **Did the PM's charter gain a draft-age line.** Four sightings across three
+   seats of a run ending unreadied, and the only thing that has ever caught it
+   is another seat reading the open-PR list, which the PM already does daily.
+   That is filed as a finding and not written in, because the PM's charter is
+   not this seat's surface.
+5. **The §2 fifth question.** A commit touching a model or a provider should
+   have to name the register that holds that model and show it updated in the
+   same commit. Three instances, named in today's third incident, not written
+   into the charter because this run had spent its three improvements.
