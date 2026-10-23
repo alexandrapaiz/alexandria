@@ -749,7 +749,10 @@ claim a public surface makes about the quality of what we ship, with the
 mechanism that would have to run for the claim to hold, its state, and the
 number with the date it was measured.
 
-Every run, three things.
+Every run, five things. **This line said "three things" on 2026-10-18, the
+day a run added step 4 below it and did not count it**, which is the same
+defect the register's own summary paragraph keeps producing and is recorded
+there. A list with a number in its stem has two places to edit.
 
 1. **Read the surfaces for claims added since your last run.** `site/app/`
    including `site/app/llms.txt/route.js`, `site/emails/`, and any launch
@@ -818,6 +821,38 @@ Every run, three things.
    the day it was written. The general shape, for any register this seat
    keeps: **a file with a method half and a data half grows a gap between
    them**, because a run reading for one does not scroll to the other.
+5. **Measure the live surface, not the source that should produce it** (added
+   2026-10-23). Steps 1 through 4 all read the repository, which means all
+   four score a claim that no reader ever receives exactly as if it were
+   published. On 2026-10-23 the home page's one piece of telemetry, the
+   papers-read metric line, was found to render nowhere: the page returns 200
+   with the paragraph directly above the metric present and no `metric-line`
+   element at all, because `INGEST_COUNT_URL` is unset in production and
+   `weeklyIngestCount()` fails safe to null. The claim is in `site/app/page.jsx`
+   and it is not on the internet.
+
+   So for every row whose Where column names a page, fetch the page and
+   confirm the claim is in the bytes a reader gets.
+
+   ```bash
+   curl -s https://libraryofalexandria.dev/<path> | grep -c '<the claim>'
+   ```
+
+   A zero is recorded in the Measured column before anything else in that
+   cell, because the severity runs in both directions and the direction is not
+   obvious. A false claim nobody can see is not urgent. A true claim nobody
+   can see is a shipped feature that is not shipping. And a claim that is
+   currently false and currently dark is the dangerous one, because whoever
+   repairs the configuration publishes the falsehood while believing they are
+   turning on telemetry, which is the exact state the home page metric is in
+   today.
+
+   The lesson has a number in the company standards and this register had gone
+   24 days without applying it: **L-A16, configured is not in effect.** The
+   sales seat reached the edge of this in `docs/sales/launch-gate.md` on
+   2026-10-18, wrote that a reading taken from the repo cannot tell us which,
+   and stopped there, correctly, because taking the other reading is this
+   seat's duty and no charter had said so.
 
 The two failures behind this, because the pattern is worth stating once.
 On 2026-09-18 the site said a skill is revised when the research moves.

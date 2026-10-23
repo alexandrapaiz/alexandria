@@ -109,8 +109,9 @@ from the receipt says which run measured it. Never both.
 | "every finding in it carries its evidence" | `site/app/page.jsx:40` | the `claims`-to-`papers` foreign key, and the provenance block on every skill | **held** | every claim row has a paper. This one is sound and worth saying plainly |
 | "replaced when newer work overturns it" (findings) | `site/app/page.jsx:40` | `pipeline/weekly.py` computes a `deprecated` section per issue from `contradicts` edges | **reports, does not replace** | 7 deprecated claims known. The issue tells the reader. Nothing changes the finding in the corpus |
 | "the last trigger test that judged it", "when it was last checked" | `site/app/components/SkillLibrary.jsx`, `site/lib/skill-provenance.js` | `skills/_validation/trigger_test.py`, bundles sha256-matched to the skill text | **held** | 27 of 27 cases, 2026-09-30 bundle. The strongest receipt on the site, and the one that is easiest to mistake for evidence of value |
-| "the library grows every day" | `site/app/page.jsx:40` | the daily distill cron | **contradicted**, moved from `held` 2026-10-11, **gap narrowing** | re-measured 2026-10-18T12:07:22Z: `claims_newest` 2026-10-17T15:16:05Z, so 0.87 days with no new claim, against 4.1 days a week ago. `distill_pending` 2,559, up from 2,132. The gap closed and the backlog grew, which is the distill job running again without catching up |
-| **"Each week the library becomes an issue"** | `site/app/page.jsx:40`, `site/app/library/page.jsx:29`, `site/app/llms.txt/route.js:10`, `site/app/pricing/page.jsx:29` and `:39` | `pipeline/weekly.py` on its Modal schedule | **contradicted** | first measured 2026-10-18T12:07:22Z: `press.newest_week` is `2026-W40`, `created_at` 2026-10-05T09:01:04Z, so **13.1 days since the last issue and one scheduled issue missed**. The `weekly` app reported at 2026-10-12T09:00:07Z and produced no row, which is `INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue`. Next due 2026-10-19 09:00Z |
+| "the library grows every day" | `site/app/page.jsx:40` | the daily distill cron | **contradicted**, moved from `held` 2026-10-11, **gap widening again** | re-measured 2026-10-23T23:44:17Z: `claims_newest` 2026-10-22T15:15:02Z, so 1.35 days with no new claim, against 0.87 days five days ago. `distill_pending` 3,680, up from 2,559. Both numbers moved the wrong way, so the narrowing recorded on 2026-10-18 did not hold and the backlog is now 44% larger than it was then |
+| **"Each week the library becomes an issue"** | `site/app/page.jsx:40`, `site/app/library/page.jsx:29`, `site/app/llms.txt/route.js:10`, `site/app/pricing/page.jsx:29` and `:39` | `pipeline/weekly.py` on its Modal schedule | **contradicted on the record, cadence resumed** | re-measured 2026-10-23T23:44:17Z: `press.newest_week` is `2026-W42`, `created_at` 2026-10-19T09:02:52Z, which is two minutes after its schedule. The press fired on time for the first week since `INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue`, and 4.6 days have passed since that issue with the next due 2026-10-26 09:00Z. The row stays contradicted because 2026-W41 was missed and was never made up, so the claim is false about the record even though it is currently true about the clock. First measured 2026-10-18T12:07:22Z at 13.1 days |
+| **"N papers read this week"**, the home page metric line | `site/app/page.jsx:43`, number from `site/lib/metrics.js` | `weeklyIngestCount()` over `INGEST_COUNT_URL`, whose `papers_ingested` field is `count(*) from papers where fetched_at > now() - interval '7 days'`, the same statement `pipeline/weekly.py` `gather()` uses | **contradicted on the verb, and dark on the live site** | measured 2026-10-23T23:44Z against the deployed page, not against the source: `curl -s https://libraryofalexandria.dev/` returns 200 with the paragraph directly above the metric present and **no `metric-line` element at all**, so `weeklyIngestCount()` is returning null in production and no reader is being shown this claim. The last reading with a number is 2026-09-26: 4,243 papers arrived in seven days against 55 read in full. The repair has been drafted since that day in `docs/voice/home-metric-line-2026-09-26.md` and is 27 days unset, which is `INC-2026-10-18-a-drafted-copy-repair-sat-unset-for-twenty-two-days` |
 
 ## The row this register promised itself and did not have, added 2026-10-18
 
@@ -138,32 +139,131 @@ in eight days is a pattern rather than an oversight, and the pattern is that
 them**, because a run reading for claims reads the table and a run reading for
 numbers reads the map.
 
+## The claim nobody can see, added 2026-10-23
+
+The home page's metric line came to this register as a handoff from the PM
+seat, which found it while checking the writer's taste-gate pull request and
+could not fill the row because this file is not its surface. That part worked
+exactly as the org intends. The seat that saw the gap wrote it on the board,
+named the mechanism it had checked, named the one thing it could not check,
+and handed it here.
+
+The one thing it could not check is the whole finding. Its words were that
+`INGEST_COUNT_URL` might not be configured in the live deploy, and that this
+is runtime state outside the checkout. It is, and it costs one command to
+read:
+
+```bash
+curl -s https://libraryofalexandria.dev/ | grep -c 'metric-line'
+```
+
+It returns `0`. The page is served, the paragraph immediately above the metric
+renders, and the metric does not, which means `weeklyIngestCount()` is
+returning null in production and has been doing so for as long as anyone has
+looked. The claim is in the repository and it is not on the internet.
+
+**This is a third place a claim can fail, and the register only modelled two.**
+A row until today could fail because the mechanism does not exist, or because
+the mechanism exists and its result does not support the claim. Both of those
+are properties of the repository, and every one of the twelve rows before this
+one was scored by reading two halves of the repository against each other. A
+claim can also fail because the surface that is supposed to carry it is dark,
+and no amount of reading the repository detects that. `site/app/page.jsx`
+contains the sentence. A reader does not receive it.
+
+The lesson already has a number in the company standards and this register had
+never applied it. **L-A16, configured is not in effect.** The sales seat's
+`docs/sales/launch-gate.md` reached the edge of this on 2026-10-18 and stopped
+in the right place, writing that if the variable is unset in production the
+false verb is invisible, which is luck rather than a fix, and that a reading
+taken from the repo cannot tell us which. It cannot. A reading taken from the
+deployed page can, and nothing in this register told anyone to take one.
+
+So §3g of `prompts/exo-agent.md` gains a fifth step, and like the fourth it is
+the cheapest one on the list: **measure the live surface, not the source that
+should produce it.** For every row whose Where column names a page, fetch that
+page and confirm the claim is actually in the bytes a reader gets. Where it is
+not, the row says so in the Measured column before it says anything else,
+because the severity is different in both directions. A false claim nobody can
+see is not urgent. A true claim nobody can see is a feature that is not
+shipping, and the home page's one piece of telemetry is in the second category
+once its verb is repaired.
+
+**And the verb is still wrong, so the dark surface is currently load-bearing.**
+The line says "read" over a count of papers that arrived, which is canon law
+15, the owner's ruling of 2026-09-25. The repair was drafted the next day in
+`docs/voice/home-metric-line-2026-09-26.md`, it is good, and it is 27 days
+unset. If the variable were set tomorrow by someone fixing the metric, a false
+sentence would go live on the first screen a stranger sees, and the person
+setting the variable would reasonably believe they were turning on telemetry
+rather than publishing a claim. That ordering is worth saying out loud in the
+row and it is why this run did not simply file the finding as low severity.
+
+Both halves belong to other seats. The words are the writer's to draft and the
+frontend's to set, and the draft already exists. The variable is runtime
+configuration and belongs to the engineer seat and the owner. This register
+holds neither. What it holds is the sentence that says the two must land in
+that order, and that sentence did not exist until today.
+
 ## What this table says as a whole
 
-Twelve claims, recounted 2026-10-18. **Two hold.** Three are contradicted
-outright by our own measurement and two more are contradicted on their
-universal reading. Three have no mechanism at all. One is waiting on code
-that is written and not merged, and one reports a problem instead of acting
-on it.
+Thirteen claims, recounted from the table 2026-10-23. **Two hold.** Four are
+contradicted outright by our own measurement and two more are contradicted on
+their universal reading. Three have no mechanism at all. One is waiting on
+code that is written and not merged, and one reports a problem instead of
+acting on it.
 
-**This paragraph said "three hold" until today, and it had been wrong since
-2026-10-11**, because the run that moved the growth row out of `held` updated
-the row and not the count. That is the third instance in eight days of the
-same gap, after the growth row's stale number and the missing weekly row, and
-all three are the same mechanism: this page has a method half and a data half
-and a summary that counts the data half, so a run editing one of the three
-does not see the other two. The fix is the fourth step added to §3g above,
-and the fix for this specific sentence is to recount from the table every run
-rather than to adjust it.
+**This paragraph said "three hold" until 2026-10-18, and it had been wrong
+since 2026-10-11**, because the run that moved the growth row out of `held`
+updated the row and not the count. That was the third instance in eight days
+of the same gap, after the growth row's stale number and the missing weekly
+row, and all three are the same mechanism: this page has a method half and a
+data half and a summary that counts the data half, so a run editing one of the
+three does not see the other two. The fix is the fourth step added to §3g
+above, and the fix for this specific sentence is to recount from the table
+every run rather than to adjust it.
 
-And the distribution is not random. **Every claim that holds is about the
-corpus, and every claim that fails is about the skills.** The library's
-machinery is real and measured. The product the owner decided to sell is the
-one whose promises have the least under them. That is the single most useful
-sentence on this page and no seat could have produced it from inside its own
-lane, because the writer sees copy, the skill seat sees skills, and only a
-pass over the claims together shows which half of the product is carrying
-the other.
+### The distribution sentence was the fourth instance of the same gap
+
+Added 2026-10-23. Until today the paragraph below this one read, in bold,
+**"every claim that holds is about the corpus, and every claim that fails is
+about the skills."** It was written on 2026-10-18 and the table it claims to
+summarise already falsified it on the day it was written. The growth row was
+moved out of `held` on 2026-10-11 and the weekly-issue row was added as
+`contradicted` on 2026-10-18 itself, and both of those claims are about the
+corpus. The new row added today is about the corpus too, and it fails.
+
+So the page has now produced the same defect four times in twelve days, and
+the fourth time it was in the sentence the page itself calls the single most
+useful one on it. That is worth stating as a property rather than as a lapse.
+**A summary sentence is a measurement with no date on it.** Every number in
+the table carries the moment it was taken, which is what lets a reader
+discount a stale one. The prose underneath carries no date at all, so it reads
+as current forever and it decays silently from the day it is written. The
+three earlier instances were all read as bookkeeping slips. Four is the shape.
+
+The fix is not another reminder to recount. It is that **every claim this page
+makes about its own table is dated in the same sentence**, the way every row
+in the Measured column is, so a reader can see the age of a conclusion without
+re-deriving it. The counts above now say "recounted from the table
+2026-10-23". The replacement for the distribution sentence says its date in
+its own first line.
+
+### What the distribution actually shows, 2026-10-23
+
+The honest version is narrower and it is still worth having. **Every claim
+that holds is about the corpus, and no claim about the skills holds.** The
+reverse does not follow: three corpus claims fail as well, and the newest of
+them fails at the surface rather than in the machinery. The skills half has no
+claim in `held` and five of its six claims have either no mechanism or a
+mechanism that contradicts them, which is the original finding and it survives.
+What does not survive is the implication that the corpus half is sound. It is
+measured, which is a different thing, and the measurements have been going the
+wrong way for two weeks.
+
+That is still a finding no seat could produce from inside its own lane,
+because the writer sees copy, the skill seat sees skills, and only a pass over
+the claims together shows which half of the product is carrying the other.
 
 ## The rule this register enforces
 
@@ -173,17 +273,29 @@ honestly hedged the way `routines/page.jsx` hedges "once they ship". What is
 not acceptable is a flat present-tense claim with an empty mechanism column,
 because that is the 2026-09-18 skills copy again.
 
-Three things follow each ExO run.
+Five things follow each ExO run. The authoritative list is §3g of
+`prompts/exo-agent.md` and this is its summary, so when the two disagree the
+charter wins and the run that noticed fixes this copy in the same pull
+request. **It said "three things" until 2026-10-23**, by which date the
+charter had four and this run made five, which is the method-half-and-data-half
+gap this page keeps producing, this time across two files instead of within
+one.
 
 1. Re-read the surfaces for claims added since the last run. `site/app/`,
    `site/app/llms.txt/route.js`, the emails under `site/emails/`, and any
    launch copy the sales seat has drafted.
-2. Re-measure the numbers in the Measured column, or say which one could not
-   be re-measured and why. A number with no date is the beginning of the same
-   failure.
+2. Re-measure the numbers in the Measured column from the delivery receipt,
+   or say which one could not be re-measured and why. A number with no date
+   is the beginning of the same failure.
 3. Move any row whose mechanism landed, and say in the learning log which
    way it moved. A row going from `queued` to `held` is the org paying a debt
-   and it should be visible.
+   and it should be visible. Recount the summary paragraph from the table in
+   the same edit.
+4. Read the field map above against the table. Every claim shape the map can
+   measure needs a row.
+5. Fetch the live page for every row whose Where column names one, and
+   confirm the claim is in the bytes a reader gets. L-A16, configured is not
+   in effect.
 
 ## What is deliberately not here
 
