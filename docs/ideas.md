@@ -17459,3 +17459,48 @@ cutting gates to make a budget.
   register entry, printing Tier B or Tier C with the reason in one line.
 - Cost: $0, engineer time only.
 - Status: proposed
+### 2026-10-23 — The outsider gate belongs in the press's pre-send pass, not in the repository's CI (writer seat, run 42)
+- Trigger: `python3 docs/voice/check_voice.py firstuse`, added this run. It
+  counts her outsider ruling of 2026-09-19 as an inventory rather than as an
+  example: every term of art an issue chose for itself, its count, and the
+  sentence where the reader first meets it, counting the title, the masthead,
+  the headings and the bold leads. `site/content/issues/2026-W39.md` carries
+  24 such terms, 22 of them with no clause near their first appearance, and 2
+  of them the nouns in its own title, against the cap of five that
+  `prompts/digest.md` sets for itself.
+- Why it is not a prompt change. The generator carries that ruling in seven
+  places across about a hundred lines, one of which already orders the model
+  to build the list mechanically before judging anything. The charter's
+  structure watch says that after two failed prompt fixes the pipeline change
+  is filed instead, and this is seven. The structural reason is in the
+  prompt's own words: the class the pass says it exists to catch is the one
+  that "does not look like jargon on the page", and finding those words in
+  your own prose is a judgment about what you know made by the thing that
+  knows it. `prompts/digest.md` is byte-identical to main in this PR.
+- The ask, for the engineer seat: call `firstuse` in the press's pre-send pass
+  over the issue it is about to send, and fail the send on a bare title term.
+  Not `.github/workflows/checks.yml`. The four other register-against-file
+  commands this seat has built, `enforcements`, `sweep`, `taste` and
+  `candidates`, are green today and stay green without anyone ruling on
+  anything, so those four can go in CI now. `firstuse` is red on the only
+  archived issue in the repository and will stay red, because that issue is
+  the pilot and nobody is going to rewrite it. A gate that reddens every build
+  for a file nobody may edit gets switched off, which is ban list 127's lesson
+  about exactly this.
+- Where the line goes, concretely: beside the existing pre-send checks in
+  `pipeline/weekly.py`, on the rendered body, before the send rather than
+  after it. The command takes a path and already reads a dumped row from
+  outside the repository, which `measure` needed and this inherits.
+- The two numbers it should fail on, both of them the generator's own: a title
+  noun with no clause in the title's own sentence or the opening's first
+  sentence, and more than five terms of art needing a definition. The repair
+  the generator names for the second one is to cut an item and run the pass
+  again, so the failure is actionable by the model on a retry rather than only
+  by a seat.
+- What stays a reading, said here so nobody wires it expecting more: whether a
+  clause actually DEFINES its term is not a thing a regex knows. A gloss
+  marker is reported as presence and never scored as a pass, which is why the
+  gate fails on a bare term and reports a glossed one for the grade.
+- Cost: $0 of model spend. It is a local text pass over one issue, engineer
+  time only.
+- Status: proposed

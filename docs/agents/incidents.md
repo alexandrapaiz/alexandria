@@ -15779,3 +15779,67 @@ already does per the 2026-10-09 entry's own account of PR #253, would stop
 this from costing a sixth pass. This repo has no such script yet
 (`ls tools/` shows no `check-tier.sh` or equivalent); filed in `docs/ideas.md`
 is the engineer's to size, not this seat's to build.
+
+## INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason — two consecutive runs built a check that passed on an artifact violating the rule it checks, and both passes were caught by one more reading rather than by anything in the loop (2026-10-23, writer seat, run 42)
+
+**The repeat.** On 2026-10-18 the writer seat shipped
+`docs/voice/check_voice.py taste` and it passed on its first firing, 31 of 31
+rulings green. The run nearly shipped it. Her 2026-09-29 ruling was green
+because two of its six verdicts are anchored to headings she approved herself
+and both quotes resolved, while the sixth verdict of that same ruling was
+being broken on three live reader-facing surfaces at that moment. That is
+recorded inside the review of that day as "the first green run was false, and
+that is the finding worth keeping" and it was never filed here.
+
+On 2026-10-23 the same seat shipped `check_voice.py firstuse` and its first
+cut cleared three real violations in one sentence of
+`site/content/issues/2026-W39.md`:
+
+> The newer work shows that an on-policy expert-correction pipeline, which
+> rewrites only the failing turn in the weaker model's rollout, preserves its
+> planning style and restores performance where imitation alone fails.
+
+Three club words, one relative clause, and the clause defines the pipeline.
+The check asked whether a gloss marker appeared anywhere in the term's first
+sentence, so all three passed. The issue defines none of the three anywhere.
+
+**Why it is one incident and not two coincidences.** Both checks failed the
+same way, and the way is structural rather than careless. Each one asked
+whether the right KIND of evidence was present in the right NEIGHBOURHOOD,
+and each one then passed on an artifact that had such evidence nearby meaning
+something else. The taste gate found a quote in the generator and concluded a
+ruling was held. The first-use gate found a clause in the sentence and
+concluded a term was glossed. Neither had bound its evidence to the subject it
+was making a claim about.
+
+**What caught it, both times.** A seat reading the output and disbelieving it.
+Nothing in the loop. Both runs had a passing gate, a clean selfcheck and a
+green suite, and in both cases the only thing between a false green and a
+shipped false green was one more reading by the run that wrote it. That is the
+part worth fixing and this entry does not fix it.
+
+**The repair that did land, both times.** Bind the evidence to the subject.
+The taste gate's rows can now inherit a command's verdict on the artifact
+instead of resting on a quote of the rule. The first-use gate now reads the
+window from the term onward and asks only about the next few characters,
+because a definition arrives adjacent to the word it defines. Both repairs
+turned a green gate red for a true reason.
+
+**For the ExO seat, since this is the pattern and not the instance.** This
+seat has now shipped four register-against-file commands and two of them
+passed their first firing on a violating artifact. The design rule that falls
+out is worth a standard rather than a third rediscovery: a new gate's first
+run is assumed false until the run has constructed an artifact that SHOULD
+fail it and watched it fail. Green was proved first on `firstuse` by a
+four-paragraph fixture precisely because of the taste gate five days earlier,
+and that is the only reason the sentence above was looked at twice.
+
+**Not a repeat, recorded because the standing rule admits no judgment call.**
+`python3 tools/board.py show --seat writer` answered
+`503 the board's database is unreachable` on this run's first call and
+succeeded on the retry a few minutes later. The run read its lane off
+`docs/voice/awaiting-her-word.md` in the interval and lost nothing. The
+existing entries on board 503s, `INC-2026-09-28-board-run-reports-still-503`
+and `INC-2026-09-29-board-run-reports-503-third-run`, are both about
+`POST /api/runs` refusing writes across many hours. This was a GET, it
+recovered on its own, and it is filed here only so the count is complete.
