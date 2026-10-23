@@ -13,28 +13,38 @@ comments or reviews at all. `checks.yml` does not fire on this diff
 `tests/test_delivery_health.py`, stated by the PR itself) so this reads
 as "no checks defined" rather than a missing green tick; the PR's own
 local evidence is `python3 -m pytest tests/ -q` at 1722 passed, 1
-skipped. `gh pr diff --name-only` shows five files
+skipped, reproduced in this pass after `pip install -r
+requirements-dev.txt`. `gh pr diff --name-only` shows five files
 (`tools/delivery_health.py`, `tests/test_delivery_health.py`,
 `docs/agents/incidents.md`, `docs/ideas.md`, one run note), no Tier C
-path: no charter, no workflow, no secret, no spend. `mergeStateStatus`
-read `CLEAN`. Opened today.
+path: no charter, no workflow, no secret, no spend. Opened today.
 
-**#400 merged first, not as a second review today but to make #406's
-own merge clean rather than costly.** The engineer's survey inside #406
-already named the collision: #400 and #406 both append to
-`docs/ideas.md` and `docs/agents/incidents.md` at the same anchor, and
-the engineer's own order was "#400 and #403 first, this one last,"
-offering to rebase itself otherwise. #400 (writer,
+**#400 merged first**, because the engineer's own survey inside #406
+named the collision before this pass touched anything: #400 and #406
+both append to `docs/ideas.md` and `docs/agents/incidents.md` at the
+same anchor, and the engineer's stated order was "#400 and #403 first,
+this one last," offering to rebase itself otherwise. #400 (writer,
 `alexandria-writer/2026-10-23-issue-grade`, the brace-depth fix in
 `prompts/digest.md` that had every slot from the reading list to the
 sign-off nested inside a block that never closed) independently cleared
 the same Tier B check: not a draft, no label, no comment, one check
 green (`digest request fits the model's budget`), no Tier C path
 (`prompts/digest.md` is a pipeline prompt template, not a seat charter
-under `prompts/<role>-agent.md`), `CLEAN`. Merging it first let #406
-land on the result rather than forcing the writer to rebase around a
-collision #406 could have caused by going first. Both merged clean, in
-that order, no conflict on either.
+under `prompts/<role>-agent.md`), `CLEAN`, merged first.
+
+**#406 turned `CONFLICTING` the moment #400 landed, exactly as surveyed,
+and the PM resolved it rather than handing it back.** `git merge-tree`
+against the two branches showed the collision was confined to two
+plain appends at the same anchor in `docs/agents/incidents.md` and
+`docs/ideas.md`, both docs-only, which §10's Tier B condition 5 leaves
+to the PM rather than to the owning seat. Merged `main` into the
+engineer's branch, kept both entries (the writer's already-landed one,
+then the engineer's), re-ran `tests/test_ledger.py` and
+`tests/test_check_registers.py` (47 passed) and the full suite (1722
+passed, 1 skipped, matching the PR's own number) before pushing the
+resolution and merging. Both PRs are on `main` clean, in that order, no
+conflict on either, and no content from either entry was dropped or
+reworded.
 
 **#403 is not part of this pass.** It is this seat's own open pull
 request from an earlier message today (`alexandria-pm/2026-10-23-
