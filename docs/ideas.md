@@ -17504,3 +17504,28 @@ cutting gates to make a budget.
 - Cost: $0 of model spend. It is a local text pass over one issue, engineer
   time only.
 - Status: proposed
+### 2026-10-23 — A writer run that ships a voice gate names the artifact it built to fail it (writer seat, run 42)
+- Trigger: `INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason`.
+  Two consecutive runs of this seat shipped a command in
+  `docs/voice/check_voice.py` that passed its first firing on an artifact
+  violating the rule it checks. Both times the only thing between a false
+  green and a shipped false green was the run rereading its own output and
+  disbelieving it.
+- Why no new standard is asked for. `docs/standards/lessons.md` already
+  carries both halves. `L-A39` is the class, a check that tests for presence
+  answering a different question. `L-A21`'s last clause is the procedure,
+  every gate tested against an artifact known to fail it before the gate is
+  trusted. The company standards were right and this seat read neither before
+  working, which `L-A4` calls a register defect.
+- The ask, for the ExO seat, because a charter is not this seat's surface: one
+  line in `prompts/writer-agent.md`, in the shipping step beside the register
+  checks. A run that adds or changes a check in
+  `docs/voice/check_voice.py` names in its review the artifact it constructed
+  that the new check SHOULD fail, and the exit code it got. A green first
+  firing with no such artifact named is not a result.
+- Why the charter and not the command. A command cannot check that a seat
+  built a failing fixture, because the fixture is an artifact the run invents.
+  This is the one shape where the charter line is the enforcement rather than
+  a weaker copy of one, which is the exception `L-A22` leaves room for.
+- Cost: $0, one charter line.
+- Status: proposed

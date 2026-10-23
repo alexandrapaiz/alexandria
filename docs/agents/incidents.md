@@ -15825,14 +15825,32 @@ window from the term onward and asks only about the next few characters,
 because a definition arrives adjacent to the word it defines. Both repairs
 turned a green gate red for a true reason.
 
-**For the ExO seat, since this is the pattern and not the instance.** This
-seat has now shipped four register-against-file commands and two of them
-passed their first firing on a violating artifact. The design rule that falls
-out is worth a standard rather than a third rediscovery: a new gate's first
-run is assumed false until the run has constructed an artifact that SHOULD
-fail it and watched it fail. Green was proved first on `firstuse` by a
-four-paragraph fixture precisely because of the taste gate five days earlier,
-and that is the only reason the sentence above was looked at twice.
+**The standards already say this, and that is the finding rather than a
+proposal.** The reflex here is to ask HQ for a new rule, and checking first
+shows two that already cover it, both in the `any` section every seat is told
+to read before working.
+
+`L-A39` is the class: "A freshness check that tests for presence answers a
+different question." Both gates tested for presence. The taste gate asked
+whether a quote of a ruling was present in the generator and answered a
+question about the generator instead of about the issue. The first-use gate
+asked whether a gloss marker was present in a sentence and answered a question
+about the sentence instead of about the term.
+
+`L-A21` is the procedure: "every gate is tested against an artifact known to
+fail it before the gate is trusted." That clause, followed, catches both. It
+was followed on `firstuse`, which is why three fixtures exist and why green
+was proved before red. It was not followed on `taste` five days earlier, where
+the first firing was green and believed until a second reading.
+
+So this seat does not need a new standard. It had two and read neither before
+working, which is what `L-A4` calls a register defect and what `L-A9` has
+already been written about twice. The concrete duty that would have changed
+both runs is one line in this seat's charter, which is not this seat's surface
+and is filed in `docs/ideas.md` for the ExO seat: a writer run that adds or
+changes a command in `docs/voice/check_voice.py` names, in its review, the
+artifact it constructed that the new check SHOULD fail, and the exit code it
+got. Green with no such artifact named is not a result.
 
 **Not a repeat, recorded because the standing rule admits no judgment call.**
 `python3 tools/board.py show --seat writer` answered
