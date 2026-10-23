@@ -6,6 +6,13 @@
   "adr": "ADR-36",
   "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
   "judge": "a model other than the subject; rubric tasks only",
+  "policy": {
+    "repetitions": 3,
+    "subject": "kimi-k2.6",
+    "judge": "openai/gpt-oss-120b",
+    "min_delta": 0.2,
+    "pre_registered": "2026-10-23, by the alexandria chair before either arm ran on this suite: no results.json has ever been written for it. The numbers copy the three suites that already registered them, so every suite in the library is measured under one policy. The first run is on qwen/qwen3.8-27b with the subject overridden on the command line and recorded in the result, because the host that can run it holds a Groq key and no Moonshot key, and the Modal workspace is at its spend limit."
+  },
   "note": "Nine treatment tasks and two controls from the five cited papers (ADR-35). This skill's own strongest finding is that a hand-written skill can go net negative, so its eval is the one with the most at stake: if any suite in the library should be believed over its author, it is this one. Revised 2026-09-30 (ADR-38 retrofit): every task gained a `sections` list naming the SKILL.md headings it exercises, so the per-section Validation tags are checkable by string comparison rather than by trusting `source.claims`. Contract in skills/_validation/evals/README.md.",
   "tasks": [
     {
