@@ -556,6 +556,19 @@ def measure(paths=None):
               + "  ".join(f"{k} {v}" for k, v in sorted(body.items())))
         if len(body) < 2:
             print("    one kind of block is a failing issue (canon law 14)")
+        # The colon count, with its specimen and the law it detects. `axes`
+        # returns this as a bare number and `measure` printed nothing at all,
+        # so the one ruling the owner has had to give TWICE arrived at a grade
+        # as "headings carrying a colon: 1" and read as punctuation. 2026-W40
+        # printed "What is gaining ground: recursive self-improvement with
+        # fewer guardrails", which is the framework's internal name, a colon,
+        # and the day's news. The construction is what the count is for.
+        for h in [h for h in re.findall(r"^#{1,3} .*$", t, re.M) if ":" in h]:
+            print(f"    colon heading, canon law 12 and incident 20: "
+                  f"{h.strip()[:72]}")
+            print("      the internal names are never printed. Strike the "
+                  "label and the colon,")
+            print("      and check whether what is left is the heading.")
         unruled = 0
         for c, k in na.most_common():
             word = next((w for w in re.findall(r"\S*" + re.escape(c) + r"\S*", t)), "")
