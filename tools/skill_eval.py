@@ -144,7 +144,15 @@ CAP_USD = 0.75
 # The subject's answer budget. Long enough for a considered answer to a design
 # question, short enough that a model that starts writing an essay is stopped.
 SUBJECT_MAX_TOKENS = 1200
-JUDGE_MAX_TOKENS = 700
+# The judge's budget was 700 until 2026-10-23. openai/gpt-oss-120b counts its
+# hidden reasoning against max_completion_tokens, and on a twelve-criterion
+# rubric the reasoning alone ate the 700, so Groq returned 400
+# json_validate_failed with an empty generation, the walk had no other judge to
+# move to, and the whole run stopped before a single task was scored (first host
+# run, all nine suites). 2000 leaves the verdicts room under the reasoning; the
+# judge's answer is a short JSON object either way, so the number is a ceiling
+# the judge rarely approaches, not a budget it spends.
+JUDGE_MAX_TOKENS = 2000
 
 # Fixed, so a result is replayable. The bootstrap below is the only place
 # randomness enters a number this file prints.
@@ -1989,12 +1997,27 @@ class Subject:
         # omits the key entirely when it is None, so a Moonshot call is byte for
         # byte the call it was before ADR-40, which is what keeps this change
         # out of docs/agents/runtime-changes.md's blast radius.
-        answer, _ = self.llm.ask_json([self.model], system, user, self.env,
-                                      self.cap, max_completion=max_tokens,
-                                      temperature=EVAL_TEMPERATURE,
-                                      available=self.available,
-                                      seed=SUBJECT_SEED
-                                      if seedable(self.model) else None)
+        seed = SUBJECT_SEED if seedable(self.model) else None
+        try:
+            answer, _ = self.llm.ask_json([self.model], system, user, self.env,
+                                          self.cap, max_completion=max_tokens,
+                                          temperature=EVAL_TEMPERATURE,
+                                          available=self.available, seed=seed)
+        except self.llm.NoModelAnswered as exc:
+            # One model, one list, so "no model answered" here means this one
+            # call came back empty or malformed (a reasoning model that spent
+            # the whole reservation thinking, or one bad generation). On the
+            # free tier that is one call in a few hundred, and before
+            # 2026-10-23 it ended the run. Ask once more with twice the room;
+            # a second failure is the real thing and propagates as before.
+            print(f"  {self.model}: retrying once with {2 * max_tokens} tokens "
+                  f"after: {str(exc).splitlines()[-1][:160]}")
+            time.sleep(20)
+            answer, _ = self.llm.ask_json([self.model], system, user, self.env,
+                                          self.cap,
+                                          max_completion=2 * max_tokens,
+                                          temperature=EVAL_TEMPERATURE,
+                                          available=self.available, seed=seed)
         return answer
 
 
