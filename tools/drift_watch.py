@@ -351,6 +351,12 @@ def deadline(record: dict, deploy) -> str:
     An outage is part of the deadline rather than a footnote to it, because a
     card that says "weekly fires Monday morning" while the whole workspace is
     switched off is telling the reader to work to a clock that has stopped.
+
+    Times go through this file's own `ageing` rather than the health tool's,
+    so that one card does not render the same quantity two ways: the age above
+    this paragraph and the wait below it are both hours, and a reader
+    comparing "behind for 8.5 days" with "2.4h away" is doing a unit
+    conversion the card should have done.
     """
     app, here = record["app"], record["evidence"]
     at, hours = here.get("next_run_at"), here.get("next_run_in_hours")
@@ -366,13 +372,13 @@ def deadline(record: dict, deploy) -> str:
     outage = (deploy.evidence or {}).get("compute_outage")
     if outage:
         return (f"The next run of {app} would be {when}, which is "
-                f"{dh._ageing_hours(hours)} away, but no cron in this "
+                f"{ageing(hours)} away, but no cron in this "
                 f"pipeline is firing at all right now: {outage}. So that is "
                 f"the deadline from the moment compute comes back rather than "
                 f"a time to work to, and the deploy still has to happen "
                 f"before it.")
     return (f"The next run of {app} is {when}, which is "
-            f"{dh._ageing_hours(hours)} away. That is the deadline on this "
+            f"{ageing(hours)} away. That is the deadline on this "
             f"card: a deploy after it leaves this image serving one more "
             f"production run.")
 
@@ -410,7 +416,7 @@ def nudge_body(record: dict, now: datetime) -> str:
         f"and {here.get('ref', 'origin/main')} is at "
         f"{here.get('expected_sha')}."
         + (f" Next run {dh._parse_iso(str(here['next_run_at'])):%Y-%m-%d %H:%M}"
-           f" UTC, {dh._ageing_hours(here.get('next_run_in_hours'))} away."
+           f" UTC, {ageing(here.get('next_run_in_hours'))} away."
            if dh._parse_iso(str(here.get("next_run_at"))) else ""))
 
 
