@@ -17752,6 +17752,85 @@ cutting gates to make a budget.
 - Cost: $0, a decision and one line.
 - Status: proposed
 
+### 2026-10-23 — A guard that cannot reach its evidence should name the thing it is missing, not describe the symptom (engineer seat, message run)
+- Trigger: today's break-fix. `judge_deploy` read three production jobs eight
+  days stale as "pending, inside the 24h window" because every agent seat
+  clones one commit deep and the replay that recovers the deployed commit
+  cannot run without history. The fix makes that `unknown`, which is honest
+  and is still not useful: the evidence line now reads "the drift cannot be
+  dated from this checkout", and a reader has to know how the replay works to
+  turn that into "run git fetch --unshallow". The same shape is everywhere in
+  this file. Three surfaces say "could not be read" when what they mean is
+  "nobody handed this process DATABASE_URL".
+- What: every guard in `tools/` that can be blinded by its runtime should
+  detect the specific blindness and name it with the command that lifts it.
+  `git rev-parse --is-shallow-repository` is one word and answers the deploy
+  case exactly, so the evidence can say "this is a shallow clone, so the
+  deployed commit cannot be recovered: git fetch --unshallow". The credential
+  cases already know which variable is unset and only have to say the name.
+  The general form is that an `unknown` carries a cause and a remedy, the way
+  a `failing` already carries the deploy command.
+- First step: one helper in `tools/delivery_health.py` that answers whether a
+  repo root is a shallow checkout, wired into the undated-drift branch added
+  today, with one test that a shallow fixture names itself. Half a day. The
+  credential surfaces are a second pass.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-23 — A board card is keyed on an English sentence, so rewording the alarm orphans every card it already opened (engineer seat, message run)
+- Trigger: today's craft scan of Sentry, below, read against the watcher this
+  run shipped. Sentry's grouping is explicit that a change to the grouping
+  algorithm "is only applied to new events going forward" and that existing
+  issues keep their original fingerprints. All three watchers in this
+  repository do the opposite by accident. The card's key is a phrase built in
+  Python and matched by substring against the title: "no offer on the pricing
+  page can be bought", "Press: no issue for 2026-W41", the running image's
+  sha. The sha is stable. The two sentences are not, and the day somebody
+  improves that wording every open card stops matching, the watcher posts a
+  duplicate, and the original sits in the working column forever with no
+  writer.
+- What: separate the key from the prose. The title keeps a short stable code
+  that nothing rewords, and the sentence is the rest of the title or the body.
+  The cheaper half, worth doing first and on its own: a test that pins the
+  exact fault strings, so a rewording is a red test with a sentence explaining
+  that the open cards will be orphaned, rather than a silent duplicate a week
+  later. `tests/test_checkout_watch.py` already asserts two of the four
+  strings, by accident rather than as the rule.
+- First step: the pinning test across all three watchers, one file, an hour.
+  The stable-code redesign is a second day and needs a decision about what a
+  board reader should see in a list view.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-23 — Craft scan: Sentry groups by fingerprint first and freezes the fingerprint when the algorithm changes (engineer seat, message run)
+- Trigger: the charter's daily craft scan, pointed at the product whose whole
+  job is the problem this run spent the day on, which is an alarm that fires
+  repeatedly about one fact and must not become noise. Read
+  Sentry's own event-grouping concept page directly rather
+  than from memory.
+- **The thing worth stealing.** Sentry evaluates grouping candidates in a
+  fixed order and says the order out loud: "fingerprint first, the stack trace
+  next, then the exception, and then finally the message". The ordering is the
+  design, not an implementation detail, because each rung is more specific
+  than the one below and the fallback is what keeps an unrecognised event from
+  being dropped. `fault()` in `tools/checkout_watch.py` has the same ladder by
+  instinct, four specific cases and then the headline, and it should say so
+  the way Sentry does. The second and larger borrowing is the sentence that
+  became the ledger entry above: changing the grouping rule does not regroup
+  existing issues. That is a promise about continuity of identity, and this
+  org has three alarms with no such promise.
+- **The thing alexandria does better.** A Sentry issue tells you what broke
+  and leaves what to do about it to the reader. The card this run shipped
+  names the three environment variables that would close it, read out of the
+  site's own offer list rather than written by hand, so a tier the owner stops
+  selling leaves the alarm with it. The alarm knows what action ends it and
+  where that action has to happen, which for the till is at the seller and not
+  in this repository. That is the difference between a monitor and a handoff,
+  and for a one-person company with twelve agent seats the handoff is the
+  valuable half.
+- Cost: $0.
+- Status: proposed
+
 ### 2026-10-24 — No standard says a file with a reading contract is read through its reader (writer seat, run 45, for the ExO seat's relay)
 - Trigger: `INC-2026-10-24-the-entry-about-hiding-is-hidden-from-the-owners-console`.
   `docs/ideas.md` has a published entry contract, a purpose-built reader in

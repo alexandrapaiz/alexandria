@@ -67,7 +67,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -77,6 +76,7 @@ sys.path.insert(0, str(ROOT))
 
 from pipeline import llm  # noqa: E402
 from tools import board  # noqa: E402
+from tools import board_alarm  # noqa: E402
 from tools import delivery_health as dh  # noqa: E402
 
 #: The title a card carries, with the due week in it. The week is what makes
@@ -338,20 +338,16 @@ def find_card(payload: dict, week: str, mark: str = TITLE_PREFIX) -> dict | None
     `mark` is what makes one week able to hold two different findings. A week
     can be late and then be written on a fallback, and those are not the same
     card: closing the first does not answer the second.
+
+    The matching itself moved to `tools/board_alarm.py` on 2026-10-23, when a
+    third watcher needed it. What stays here is the pair of marks, which is
+    the only part of this that is about the press.
     """
-    for item in payload.get("items") or []:
-        title = item.get("title") or ""
-        if mark in title and week in title:
-            return item
-    return None
+    return board_alarm.find_card(payload, [mark, week])
 
 
 def _comment_time(comment: dict) -> datetime | None:
-    for key in ("created_at", "createdAt", "updated_at"):
-        when = dh._parse_iso(comment.get(key)) if isinstance(comment, dict) else None
-        if when:
-            return when
-    return None
+    return board_alarm.comment_time(comment)
 
 
 def needs_nudge(card: dict, now: datetime, after: timedelta = NUDGE_AFTER) -> bool:
@@ -362,19 +358,12 @@ def needs_nudge(card: dict, now: datetime, after: timedelta = NUDGE_AFTER) -> bo
     nudged, because the failure that costs something here is a comment a run,
     and the failure that costs nothing is a day of quiet on a card that is
     already on the board.
+
+    That reasoning is about cards and not about the press, which is why
+    `drift_watch` called this rather than copying it and why it now lives in
+    `tools/board_alarm.py` where all three watchers reach the same copy.
     """
-    comments = card.get("comments")
-    if comments is None:
-        # The board read that lists a column does not carry comments at all,
-        # so this is the shape an unrecognised card has, not an empty one.
-        return False
-    if not comments:
-        # Nothing has been said since the card was created, so the card's own
-        # age is the age of the last thing said about this week.
-        created = _comment_time(card)
-        return bool(created) and now - created >= after
-    times = [t for t in (_comment_time(c) for c in comments) if t]
-    return bool(times) and now - max(times) >= after
+    return board_alarm.needs_nudge(card, now, after)
 
 
 def nudge_body(press, now: datetime) -> str:
@@ -417,34 +406,17 @@ def post(press, week: str, now: datetime, dry_run: bool = False,
         return {"action": "would create", "title": title, "body": body,
                 "column": column, "seat": seat}
 
-    company = company or board.company_from_repo(
-        os.environ.get("GITHUB_REPOSITORY", "")) or "alexandria"
+    company = board_alarm.company_here(company)
     payload = board.read_board(company)
     found = find_card(payload, week, mark)
-    if found:
-        # A fallback card is a statement and not an open problem, so it is
-        # said once and never nudged. The late card is the opposite: a week
-        # that is still missing on Thursday is worth saying again.
-        if kind == "fallback" or not needs_nudge(found, now):
-            return {"action": "already on the board", "id": found.get("id"),
-                    "title": found.get("title")}
-        board.api(f"/api/items/{found['id']}/comments", method="POST",
-                  payload={"company": company, "seat": seat,
-                           "body": nudge_body(press, now)})
-        return {"action": "nudged", "id": found.get("id"),
-                "title": found.get("title")}
-
-    item = {"company": company, "seat": seat, "title": title,
-            "body": body, "horizon": "now"}
-    if column:
-        try:
-            item["column_id"] = board.resolve_column(payload, column)
-        except board.BoardError as exc:
-            print(f"press_watch: {exc}. Creating the card without a column, "
-                  "because the card matters and its column does not.",
-                  file=sys.stderr)
-    created = board.api("/api/items", method="POST", payload=item)
-    return {"action": "created", "id": created.get("id"), "title": title}
+    # A fallback card is a statement and not an open problem, so it is said
+    # once and never nudged, which is what a nudge of None means. The late
+    # card is the opposite: a week that is still missing on Thursday is worth
+    # saying again.
+    return board_alarm.place(
+        found, payload=payload, title=title, body=body,
+        nudge=None if kind == "fallback" else nudge_body(press, now),
+        now=now, company=company, tool="press_watch", seat=seat, column=column)
 
 
 def watch(today=None, dry_run: bool = False, company: str | None = None) -> dict:

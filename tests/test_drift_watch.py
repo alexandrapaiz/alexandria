@@ -108,13 +108,33 @@ def test_a_fully_deployed_fleet_posts_nothing(stale_repo):
 def test_a_drift_still_inside_the_grace_window_posts_nothing(fresh_repo):
     """A merge at noon is not an alarm at one, which is the window's whole job.
 
-    `judge_deploy` calls this app `ok` and names it as pending in the
-    headline, so a guardrail that read the headline would alarm on it. This
-    one reads the state.
+    `judge_deploy` names the app as pending in the headline, so a guardrail
+    that read the headline would alarm on it. This one reads the state.
+
+    Two fixtures rather than one, because on 2026-10-23 they stopped giving
+    the same answer and the difference is the point. `fresh_repo` records a
+    digest that matches no commit, which is what a shallow clone looks like
+    from inside, and that is now `unknown`: the drift could not be dated, so
+    calling it fine was a claim the checkout could not support. The history
+    fixture below records the digest of the commit before the edit, which is
+    what a real deploy's row holds an hour after somebody merges, and that is
+    still `ok`. Either way this guardrail posts nothing, which is what the
+    test is really about.
     """
     deploy = surface({"weekly": "0000stale000"}, days_ago=1 / 24, repo=fresh_repo)
-    assert deploy.state == dh.OK
+    assert deploy.state == dh.UNKNOWN
     assert dw.behind(deploy) == []
+
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = drift.fixture_history(Path(tmp), [
+            ("pipeline/llm.py", "A change merged two hours ago"),
+        ], base_days_ago=1.1)
+        placeable = {app: dh._digest_at(repo, app, "HEAD~1", {})
+                     for app in drift.rs.APPS}
+        deploy = surface(placeable, days_ago=1.1, repo=repo)
+        assert deploy.state == dh.OK
+        assert "pending" in deploy.headline
+        assert dw.behind(deploy) == []
 
 
 def test_the_scalar_evidence_keys_are_not_mistaken_for_apps(stale_repo):

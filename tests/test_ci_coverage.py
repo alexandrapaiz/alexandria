@@ -287,6 +287,24 @@ UNCOVERED = {
     # would notice, and today they notice on no pull request.
     "tests/path.test.mjs",
     "tests/test_buyer_path.py",
+    # Added 2026-10-23 with the till's alarm, and pinned for the same
+    # structural reason as every line above: the step that would run it goes
+    # in `.github/workflows/checks.yml`, which no seat's token may write, and
+    # `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words not
+    # to attempt that file again. This is the twelfth line added in fifteen
+    # days. `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # is already that finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern.
+    #
+    # What it guards is the only surface in this product that takes money and
+    # the only reader that surface has. The checkout probe has been correct
+    # since 2026-10-18 and has raised an alarm to nobody, because printing to
+    # a terminal nobody is sitting at is not a channel. The alarm this file
+    # covers is what turns it into one, and it also covers
+    # `tools/board_alarm.py`, which is the create-or-nudge mechanic all three
+    # watchers now share and has no command of its own: a regression there is
+    # silent in every one of them at once.
+    "tests/test_checkout_watch.py",
     "tests/delivery.test.mjs",
     "tests/issues.test.mjs",
     "tests/markdown.test.mjs",
