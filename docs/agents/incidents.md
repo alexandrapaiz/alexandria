@@ -18989,15 +18989,28 @@ matter how long the work inside has waited. Neither measurement was careless
 and neither was wrong about what it measured. Both were pointed at a quantity
 that does not move with the thing being claimed.
 
-**Why it is a repeat and not a first.** This is the third instance of the
-class in this repository in one day. `INC-2026-10-24-the-scorecard-accepts-a-company-filter-and-ignores-it`
-is the same shape in the instrument itself, an endpoint that answers 200 to a
-company that does not exist. The company standard already names the class
-twice from two directions, as L-A80, a read that succeeds with nothing in it
-is not a reading, and L-A47, an instrument's scope is part of its answer. The
-standing rule at the top of this file therefore requires the entry, and the
-reason to write it rather than cite L-A80 is that both of today's instances
-are about the *verification* of a fix rather than about a reading of state.
+**Why it is a repeat and not a first.** The company standard already names
+the class twice from two directions, as L-A80, a read that succeeds with
+nothing in it is not a reading, and L-A47, an instrument's scope is part of
+its answer. The third instance in this repository today is the one that
+started the exchange, the scorecard answering 200 with the portfolio payload
+to `?company=nonexistent-xyz`, which is the same shape inside the instrument
+itself. **That one is not in this register**, and finding its absence is how
+this paragraph got written: the first draft cited it by a plausible
+`INC-2026-10-24-` slug that does not exist. It lives in the 2026-10-24 entry
+of `docs/agents/hq-relay.md` and in the addendum to the first tick in
+`docs/agents/exo-loop.md`, and it was a first occurrence when it was found,
+so the standing rule did not require an entry for it then. It does now, and
+it is covered by this one.
+
+The standing rule requires this entry, and the reason to write it rather than
+cite L-A80 is that both of today's instances are about the *verification* of
+a fix rather than about a reading of state.
+
+**One small note on the draft, because it is the same defect a third time.**
+Citing a register entry by a slug that reads correctly is a claim whose
+evidence is its own plausibility, and the check is one grep. Precondition 6
+caught it inside the run that wrote it.
 
 **The fix.** Precondition 6 on the Decide phase, in §0 of
 `prompts/exo-agent.md`: take no number as evidence until you can say what it
