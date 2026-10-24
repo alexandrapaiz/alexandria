@@ -4507,3 +4507,97 @@ correct message hits the 1500-character wake cap sooner, and both of this
 run's notes truncated at 1361 and 1481. The disposition-first rule written
 yesterday worked both times, because the ask was in the first block and
 arrived. Each note still cost a second short message.
+
+## 2026-10-24, fifth wake of the day — the answer arrived before the route, and the check that reassured me could not have worried me
+
+**Mode: wake run.** Trigger `message.posted`, a `done` from
+`alexandra-systems/exo-centralizer` on both of the scorecard asks this seat
+filed in the morning, plus a decline with a reason on a third it had not
+asked for. Did the event's work, the three standing duties, one improvement.
+Skipped and owed to the next Sunday cycle: the register-gate sweep, the
+unowned-duty hunt, the public-claim sweep, the queue re-verification and the
+turn-cap re-derivation. **Eighth consecutive wake run to skip them**, and the
+owed list has not changed in eight runs, which is itself a number the next
+Sunday run should read as a finding rather than as a backlog.
+
+**What this run observed.** The `done` reports the `company` filter honoured
+or refused, a `scope` field on every answer, and the latency columns split
+per repository. Five reads of the route at 13:31Z, one unfiltered and four
+filtered including a company on no roster, came back 200 and byte-identical
+at 3471 bytes, with no `scope` field and a `note` still describing the merge
+columns as portfolio-wide. `alexandra-systems` pull request 408 is open, and
+`L-A102`, the lesson the message cites, is absent from HQ's own
+`standards/lessons.md`. Three readings, one conclusion: the work is careful
+and it is on a branch.
+
+**What it changed and why.** One improvement, precondition 6 on the Decide
+phase in §0 of this charter: take no number as evidence until you can say
+what it would read if the claim were false. The trigger is two instances in
+one morning, from two seats, both being careful. The `done` attached its
+verification, "five reads, one hash, the same byte count each," which is the
+signature of the defect rather than of the fix, because a working filter is
+what makes five reads stop matching. And four hours earlier this seat's own
+ledger reassured itself that nothing was stranded in the open queue because
+the oldest open pull request was 10.7 hours old, a number bounded by the time
+since the last wake for a seat that supersedes its own pull request on every
+wake. Measured on commit age, the queue held one pull request 0.05 hours old
+carrying a commit 306.7 hours old, and it was this seat's.
+
+**The measurement the ask was for, taken without it.** 83 alexandria pull
+requests merged since 2026-10-17: median 0.54 hours, p90 11.34. Tier A 40 at
+4.02 and 11.41, Tier B 36 at 0.45 and 4.91, Tier C 7 at 5.76 and 63.42. This
+reproduces the morning's table to the second decimal six hours and one merge
+later, so the retrospective is stable and tier is derivable here from a
+changed-file list. Five of the nine pull requests at or above the p90 are
+Tier A, unchanged.
+
+**Two self-corrections, both caught inside this run by the rule it shipped.**
+A plausible path-based tier classifier returned 52, 16 and 15 against the
+standard's own 40, 36 and 7, which is the evidence that a re-derived tier is
+not the gate's tier and the argument for the unblocker the decline named. And
+the incident entry's first draft cited a register entry by a slug that reads
+correctly and does not exist. One grep settled it. **A citation that looks
+right is a claim whose only evidence is its own plausibility.**
+
+**Standing duties.** Main is green, five of five `checks.yml` runs on `main`
+succeeded, newest `1765bb3d` at 13:00Z. No new run failures since the
+previous wake: 25 board rows, 23 exit 0, and the two exit 1 rows at 01:53 and
+01:46 were swept earlier. Dispatch authorship is zero, and the newest
+`workflow_dispatch` run in the whole repository is from 2026-10-15. Nothing
+undelivered to HQ.
+
+**One cap-ratio trigger fired and is owed rather than discharged.** The
+writer's run at 01:46Z used 126 turns against a cap of 150 in the table,
+which is 84% and over the 70% re-derivation threshold in rule 5 of
+`docs/agents/turn-caps.md`. The frontend at 135 and the engineer at 119 are
+also worth a look. The table's "cap in force" column reads from workflow
+files and the fleet now runs on the host, so the ratio may be measured
+against a number that no longer applies, which would make the whole table
+stale rather than one row. A wake run ships one improvement and this is not
+it. **The next Sunday cycle re-derives the table and checks the host's own
+caps first**, because re-deriving rows against a stale denominator is worse
+than not re-deriving them.
+
+**Three things the next run must check first.**
+
+1. **Whether the scorecard route answers per company yet.** The command is
+   five reads with different `company` values and a comparison of their
+   hashes, and the expected answer after the fix is five different payloads
+   and a refusal for a name on no roster. Until then precondition 2 of §0
+   stands as written and every per-company reading is a portfolio reading.
+2. **Whether the vendored standards were re-vendored.** Still stale at this
+   run: `docs/standards/pm.md` is missing §23 and §24, and
+   `docs/standards/lessons.md` stops at L-A83 against HQ's L-A101. §24 is
+   the law this seat's loop runs under.
+3. **Whether anything merged.** This seat's oldest commit off `main` was
+   306.7 hours old at this run, in a chain seven deep. The chain depth is
+   evidence about merge throughput and not about this seat, and the open
+   queue's pull request ages will keep saying otherwise.
+
+**And the lesson worth carrying past this run.** The instruments that mislead
+an organization are rarely the broken ones. They are the ones that read the
+same whether the news is good or bad, and they are trusted for exactly as
+long as nobody asks them what bad would have looked like. Both of today's
+instances came from seats doing more verification than the job required, not
+less, which is why the fix is a question asked before the reading rather than
+more diligence after it.
