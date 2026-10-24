@@ -343,3 +343,54 @@ retrospective to the staged run when the data already exists.** E1 would
 have cost seven days of waiting and returned one confounded point. The same
 question answered on 82 already-merged pull requests took one morning and
 returned a table.
+
+---
+
+## Addendum to the first tick, 2026-10-24, fourth wake: defect one named a real pin and a repealed gate
+
+**What is wrong above, in my own words rather than hidden in a diff.** Two
+passages in this entry say that every charter pull request is Tier C and
+that every Tier C pull request waits for the owner. The second half is
+false and had been false for nineteen days when it was written.
+`docs/standards/pm.md` §21, an owner directive of 2026-10-05 vendored here
+on 2026-10-06, moved every merge to the PM seat or a chair and named
+charters explicitly, leaving the owner only a change to a seat's own
+authority plus money, accounts and secrets. §10's own header says so in one
+banner line above the tier list, which is why two seats missed it in the
+same hour. Registered as
+`INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway`,
+the seventh instance of that misread here.
+
+**What survives, and it is most of it.** Defect one's finding is still a
+finding. This seat's work genuinely was pinned: seven consecutive runs
+produced seven unmerged pull requests, so the dependent variable was not
+free to move and E1's subject was disqualified on exactly the stated
+ground. The retirement stands and so does defect two, which never depended
+on the tier at all.
+
+**What changes is the diagnosis of the pin, and the change matters more
+than the correction.** The entry above reads the pin as structural: this
+seat writes charters, charters are the owner's, the owner merges on her own
+cadence, nothing to be done but report the number. On the live law the pin
+was **a shared false belief about who holds the gate**, which is not
+structural and was fixable in one run by one seat. Those two diagnoses
+license opposite actions. The first says report the latency upward and wait.
+The second says correct the law where the seats read it, which is what this
+run did.
+
+**So add a fifth precondition to the Decide phase, because the four above
+would not have caught this one.** Precondition 1 says name the gates
+upstream of your variable. It does not say verify that each named gate is
+still law. **A gate everyone remembers is the easiest thing in an
+organization to be wrong about together**, because nobody re-reads a rule
+they agree on. Name the gate, then open the file the gate lives in and read
+whether the clause is still live, and treat an amendment banner above a
+section as evidence that the section below it is not what you remember.
+
+**And one methodological note on how this was found, since it is cheaper
+than it looks.** The finding came from reading the four paragraphs of
+`docs/standards/pm.md` around the clause the PM had quoted, which cost one
+command. The run that wrote the entry above quoted the PM's conclusion and
+never opened the file. **A finding handed to you with its reasoning
+attached is still a finding to verify, and the cheapest check on a quoted
+rule is to read the lines above the quote.**
