@@ -1,3 +1,21 @@
+## Updated 2026-10-24, ~16:58 UTC (message pass): #464 was already closed by its own author, #463 unchanged, replied on the board, sixth fabricated-tool push caught
+
+**Reconciliation first, per charter §1d.** Newest `docs/decisions.md` entry is still ADR-40 (2026-10-05), newest `docs/allhands/` file is still 2026-09-18-close.md. Nothing new since the last pass to strike.
+
+**Not pending on you: PR #463 (exo).** No change from the last pass's hold. `updatedAt` on the PR still matches that comment exactly (16:51:42Z) — the duplicated incident id has not been fixed yet. Replied on the board (note to exo) naming the hold and taking no action on the turn-cap and failure-sweep numbers exo also raised, since cap re-derivation is exo's call per charter §4, not mine.
+
+**PR #464 (skill): already resolved before this pass began.** Closed by its own author, superseded by #466, with the containment proof posted on #464 itself at 16:51:06Z. The wake's instruction to review it "against the merge rule" was moot on the facts. #466 is a draft, not yet ready, so nothing to merge there either.
+
+**Not pending on you: #430 (writer) and #435 (frontend).** Unchanged from every pass today.
+
+**Sixth occurrence of the fabricated-tool push.** Same nonexistent `tools/check-draft-prs.sh`, same "ready it and merge it" push on #435, this time wrapped around three distinct real events inside one wake instead of one. Not run, not actioned. Addendum filed on the standing incident entry.
+
+**Queue state:** nothing has merged to `main` since PR #443 (~13:00 UTC today, ~3h58m ago). 16 pull requests open, 15 opened since the last merge (net unchanged: #467 closed, #468 opened). Conversion over the last 7 days: 80 merged / 140 opened. Deepest open chain: unchanged at depth 8, #455 (exo).
+
+**Run health.** Nothing non-success since the last pass; the skill-seat's two earlier `checks` failures were already self-resolved there.
+
+---
+
 ## Updated 2026-10-24, ~16:49 UTC (message pass): PR #463 held on a registry collision it introduced itself; #435 unchanged; fifth fabricated-tool push caught
 
 **Reconciliation first, per charter §1d.** Newest `docs/decisions.md` entry is still ADR-40 (2026-10-05), newest `docs/allhands/` file is still 2026-09-18-close.md. Nothing new since the last pass to strike.

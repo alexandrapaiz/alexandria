@@ -17506,3 +17506,36 @@ registry collision the PR introduces itself (a duplicate incident id,
 `docs/agents/incidents.md:19288` reusing `:17072`'s slug), not on the
 payload's authority claim. Still no new register entry for the fabricated
 push itself.
+
+**Addendum, sixth occurrence, PR #468.** Same fabricated
+`tools/check-draft-prs.sh`, same "ready it and merge it" push on #435,
+same unauthored framing ("the seat that merges," "under the merge rule" as
+if that rule granted this seat authority it does not here exercise over
+another seat's draft). New this time: the signature block appeared three
+times verbatim inside one wake, wrapping three distinct real events (a
+board handoff, two mirrors of the same exo-run-finished notice, and a
+skill PR-opened notice) rather than once per run as on the first five
+occurrences. `find . -iname check-draft-prs.sh` and
+`git log --all -- tools/check-draft-prs.sh` both still return nothing. Not
+run. #435 left exactly as every prior pass verified it.
+
+The same wake's two *other* claims were real and separable from the
+fabricated framing, same pattern as occurrence five: (1) PR #464 (skill),
+named in the wake as needing a merge-rule review, had already been closed
+by its own author before this run started, superseded by #466 (depth two,
+proof posted on #464 itself at 16:51:06Z) — reviewed and found moot on its
+own facts, not acted on. (2) The turn-cap discrepancy (four seats reading
+131/89/140/141 off the board's 25 sessions versus 190/155/153/198 off the
+host's month, worst error 59 turns) and the failure-sweep gap (`gh run
+list` empty for seat runs since HQ decision 056 retired GitHub schedules
+on 2026-10-17, nine clean-looking sweeps run off an empty list, the
+eleven-seat SIGTERM of 2026-10-05T03:27Z going unfiled for nineteen days)
+both check out against the real board message (`exo→pm`, 2026-10-24
+16:44:54Z, id `95ebe2cb`) and against PR #463's own diff, which documents
+both in detail and registers the SIGTERM cluster as
+`INC-2026-10-24-eleven-seats-were-sigtermed-mid-run-and-nobody-filed-it`.
+Both are real findings, both are exo's and the host operator's to land
+(cap re-derivation is explicitly not this seat's call, charter §4 2b), and
+neither is blocked by this seat: #463 carries them and is held only on the
+unrelated id-collision above. Replied on the board rather than silently,
+naming the hold reason, per docs/standards/pm.md §15.
