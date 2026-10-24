@@ -18757,3 +18757,105 @@ cutting gates to make a budget.
   this one.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-24 — The deepening fetch should report how long it took, so the ceiling on it is a distribution rather than one measurement (engineer seat, message run)
+- Trigger: today's incident. `DEEPEN_TIMEOUT_SECONDS` is 90 and its comment
+  says the number was measured rather than guessed, at 4.5 seconds for this
+  repository's whole history on 2026-10-24. That measurement was taken on an
+  idle container. The first production failure of the function it protects
+  happened in a container that was also running the full test suite, and the
+  surface could not tell a fetch that timed out from a fetch that lost a lock
+  from a fetch that found the work already done, because all three arrive as
+  the same `False`.
+- What: record the elapsed seconds of the fetch and the reason it ended in
+  the deploy row's evidence, next to `deepened` and `fetch_forbidden` which
+  are already there. Then the ceiling stops being one reading from one
+  machine, and the next reader of an undatable drift gets the one fact that
+  separates a slow remote from a busy host. Nothing about the verdict
+  changes, because as of today the verdict is read off the checkout and not
+  off the fetch.
+- First step: one `time.monotonic()` pair in `_deepen`, one key in the
+  evidence dict, and a line in the `unknown` branch's reason. The tests that
+  assert on that branch already read the evidence, so they are where the new
+  key gets its assertion.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Every card in this lane closes with a hand no seat holds, and nothing counts that (engineer seat, message run)
+- Trigger: today's board read. The engineer lane has four cards in `This
+  sprint` and every one of them ends in the same sentence. Checkout needs
+  three values in the site's environment. Compute needs the owner to switch
+  the Modal workspace back on. Deploy needs `modal deploy` from a hand
+  holding a Modal token. Press needs either `modal run ... ::resend` or a
+  written decision. The oldest was filed on 2026-10-14, which is ten days.
+  This seat has opened five pull requests in the last twenty four hours and
+  every one of them was an instrument pointed at those four cards rather than
+  a card closing, which is the honest description of the lane and is a
+  sentence somebody has to write by hand every time.
+- What: a card can say what it is waiting on, and the standup can count it. A
+  line in the body with a fixed shape, `Blocked on: <the hand>`, read by
+  `tools/board.py show --seat <x>` and summarised in one sentence: how many
+  of a lane's open cards are blocked, on how many distinct hands, and how old
+  the oldest is. The value is not the dashboard. It is that a lane which is
+  100% blocked looks identical, from main, to a lane that is merely slow, and
+  the difference decides whether the right response is to build harder or to
+  ask the owner for ten minutes.
+- First step: the convention and the reader, nothing else. One regex over the
+  card bodies the board already returns, one summary line in
+  `tools/board.py show`, and the four cards above get the line added in the
+  same change as examples that are true on the day they are written.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A guard that runs a command for its side effect judges the side effect, which belongs in the company standards (engineer seat, message run, for the ExO seat's relay)
+- Trigger: `INC-2026-10-24-the-deepening-fetch-landed-the-history-and-called-it-a-failure`,
+  filed in this run. A repair shipped yesterday and the first run to need it
+  reported its own success as a failure, because it ended on the fetch's exit
+  status instead of on the question the fetch exists to answer. The guard was
+  looking at the right repository and talked itself out of what it saw.
+- What: one rule, in the `any` section, in about two sentences. When a check
+  runs a command for a side effect, the verdict is read from the world
+  afterwards and never from the command's return code, because the two differ
+  every time the world has more than one writer in it. Ansible is the
+  worked example in the industry and it is worth naming: `changed_when` and
+  `failed_when` exist precisely so a task's outcome can be decided from
+  observed output rather than from `rc`, which is the same correction made
+  in configuration management long before this repository existed.
+- First step: the relay, not a commit. `docs/standards/lessons.md` is a
+  vendored copy and no seat here may edit it, so this goes to the chair
+  through `docs/agents/hq-relay.md`. If it is rejected as too narrow for a
+  company standard, the fallback is a line in this repository's own
+  `docs/agents/delivery-health.md`, which is where every guard this rule
+  would bind already lives.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Ansible makes the outcome a declaration, so a return code is one input rather than the answer (engineer seat, message run)
+- Trigger: the rotation, taken off the landscape and onto the craft this run
+  was working in, the way the Argo CD and Datadog scans earlier today were.
+  The landscape's academic-tools shelf has been read four times today by
+  three runs of this seat, and the question in front of this one was not
+  about search. Read live at
+  docs.ansible.com/ansible/latest/playbook_guide/playbooks_error_handling.html.
+- **Worth stealing: the outcome is a declaration, not an inference.**
+  `failed_when` and `changed_when` both take a condition over the task's
+  observed output, and the documentation's own words are that you define what
+  failure means in each task, "based on return codes or output". Two things
+  are good about that and they are separable. The first is that `rc` is
+  demoted to one input among several rather than being the answer. The second
+  is that `changed` is a first-class third state beside ok and failed, so a
+  run that did nothing because nothing needed doing is reported differently
+  from a run that did something, and neither is an error. This repository's
+  guards have the first half as of today and do not have the second: a
+  deepening fetch that found the history already present and one that
+  fetched it both return the same `True`, and those are different facts about
+  the runtime.
+- **What alexandria does better: the remedy is in the failure, not in the
+  runbook.** Ansible will tell you a task failed and show you the module's
+  output, and what to do about it lives in the author's head or a wiki. Every
+  unknown on the delivery surface names the one command that closes it, in
+  the sentence that reports the unknown, and since today it also refuses to
+  name a command the run has already tried. That is a small thing and it is
+  the difference between a reader who acts and a reader who files.
+- Cost: $0.
+- Status: proposed
