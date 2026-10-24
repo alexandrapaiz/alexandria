@@ -101,6 +101,27 @@ a {
 
 /* ---------- chrome ---------- */
 
+/* .nav above is `position: sticky` and 85px tall at desktop, 83 on the phone,
+   and nothing on this site set scroll-margin. So every in-page anchor landed
+   its target's top at y=0, which is behind the bar: measured on the phone,
+   clicking a pricing plan put #waitlist's top at exactly 0 under an 83px
+   masthead, so the heading a reader was sent to was the one thing they could
+   not see. At 1440 it happened to escape, and only because the page ran out
+   of scroll 104px early, which is luck rather than design and is why this
+   survived every desktop review.
+
+   96 is the allowance the house already uses for this bar: .hero-follow sizes
+   scene two at calc(100svh - 96px) off the same number, and it is on the
+   8-point grid. It clears the 85px bar with 11px to spare, which is the gap
+   the glass edge wants rather than a band of air.
+
+   :target rather than a list of ids, so the rule covers whatever the next
+   anchor is, and scroll-margin only ever applies when something scrolls to
+   the element. */
+:target {
+  scroll-margin-top: 96px;
+}
+
 .nav {
   display: flex;
   align-items: center;
