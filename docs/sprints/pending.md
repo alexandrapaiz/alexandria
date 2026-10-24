@@ -1,3 +1,94 @@
+## Updated 2026-10-24, ~01:27 UTC (message pass): PR #420 checked against the merge rule, resolved a docs-only conflict, and merged
+
+**Trigger.** Two board events naming the same pull request: "pull request
+opened by engineer... #420. Review it against the merge rule: merge it, or
+say on the board what it still needs" and "the engineer seat's run
+finished. #420. Read its report, merge what is yours under the merge rule,
+close what is superseded, and hand the next thing to a seat."
+
+**Housekeeping first.** `gh pr list --state open` found this seat's own
+#423 (`alexandria-pm/2026-10-24-message-pr419`), touching only
+`docs/sprints/dispatch-queue.md` and `docs/sprints/pending.md`, both Tier A
+knowledge surfaces. Self-merged under Tier A before branching, so this
+pass starts from a clean `main` rather than stacking on itself.
+
+**PR #420 (engineer, `alexandria-engineer/2026-10-24-message`), the receipt
+classifying its own fail-soft nulls so the till's `unknown` names the
+schema command that closes it, checked against the merge rule (Tier B,
+`docs/standards/pm.md` §10) and merged.** Not mine, not a draft, no `hold`
+label, zero comments or reviews since the last push. `gh pr diff
+--name-only` showed seven files (`docs/agents/incidents.md`,
+`docs/ideas.md`, `site/lib/delivery-core.js`, `site/lib/delivery.js`,
+`tests/delivery.test.mjs`, `tests/test_delivery_receipt.py`,
+`tools/delivery_health.py`), no Tier C path. `statusCheckRollup` empty,
+confirmed against `.github/workflows/checks.yml`'s own `paths:` list as
+"no checks defined for these paths" rather than a missing green tick, the
+same read the PR body gave.
+
+**`mergeable: CONFLICTING` on open, and the collision was docs-only, which
+§10 condition 5 leaves to the PM.** `git merge-tree` against the merge
+base showed two conflicts, both in append-only ledgers
+(`docs/agents/incidents.md` and `docs/ideas.md`), each one two sets of
+same-day entries landing at the same anchor with no overlapping content.
+Merged `main` into the engineer's own branch, kept both sides of each
+conflict in full, lost nothing, and pushed the resolution back to that
+branch rather than resolving around it, the same shape this seat used for
+PR #408 yesterday.
+
+**Verified rather than trusted.** Ran the suite on the merged tree myself:
+`tests/test_delivery_receipt.py` 36 passed, `node --test
+tests/delivery.test.mjs` 28 passed, `tools/check_registers.py` 0 blocking,
+and the full `python3 -m pytest tests/ -q` gave **1755 passed, 1 skipped**,
+matching the PR's own claim exactly. `gh pr view 420` read `MERGEABLE`
+after the push, confirming the conflict was gone before merging.
+
+**Merged:** #420, normal merge, now on `main` at `6baf03d`.
+
+**Checked the three pull requests the PR itself named as its expected
+merge order (#403, #416, then this one) rather than trusting the PR's own
+account.** #419 was already merged (this seat's own prior pass). #416 is
+closed, not merged, so it supersedes nothing. #403 (this seat's own, depth
+four) is still open and still waiting on a merger other than this seat.
+Merging #420 first does not block it, and a future merge of #403 may need
+its own one-line keep-both against the same two ledger files, the same
+pattern this chain has used all night.
+
+**The board, not a dispatch, carries the "hand the next thing" half.**
+Moved the till's Review card to Done with the merge reasoning on it. While
+reading the engineer's lane, found a Backlog card ("Wire Polar's three
+products end to end") that the PR's own L-E10 survey had already shown
+built three pull requests ago (#285, #301, #352). Moved that to Done too,
+leaving only the owner-only checkout-secrets card where it was. Posted one
+`done` message on the board rather than opening a new dispatch: every
+remaining open card in the engineer's lane waits on the same two owner-only
+hands (the Modal workspace, the three `POLAR_CHECKOUT_*` secrets), and the
+frontend and writer seats both carry live runs on their own open drafts
+right now, so taking either seat's open work would be the seizure the
+standing note warns against, not a handoff.
+
+**Checked the inbox before anything else, per §15.** Two items addressed
+to this seat. The exo centralizer's handoff on the lessons-register sync
+(PR #417) was already merged, by the owner's own account, a minute before
+the handoff was even posted, so nothing to do there beyond verifying the
+fact. The chair's "drain Saturday's queue and name Wednesday" handoff from
+17:04 UTC was already answered by this seat's own pass twenty minutes
+later ("Queue drained... Wednesday reset"), so it is closed, not stale.
+
+**Three new ledger proposals filed inside PR #420, all dated today, all
+`proposed`, none acted on this pass** because an unverdicted proposal from
+today is not yet a grooming finding: a `closes_with` field so every
+`unknown` surface names its own next step, an outage alarm that counts
+down to the press deadline instead of only naming the outage, and a craft
+scan comparing this org's derived remediation to Datadog's and Sentry's.
+They wait for the next grooming pass.
+
+**Run health, delivery health, the queue gauge, the cap ratio, the board
+walk.** Not recomputed this pass, per the same standing rule the prior
+entry below cites: a message trigger answers the thing it names and stops
+rather than re-running the full standup. Nothing in merging #420 changes
+the engineer-lane facts the prior passes already recorded tonight, except
+the open-PR count (one fewer) and the Done column (two cards fuller).
+
 ## Updated 2026-10-24, ~01:15 UTC (message pass): PR #419 checked against the merge rule and merged
 
 **Trigger.** A board event: "pull request opened by writer... #419.
