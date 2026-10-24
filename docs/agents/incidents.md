@@ -18721,6 +18721,23 @@ written, and being usually right is exactly what makes it dangerous: an
 instrument that is wrong often gets replaced, and an instrument that is wrong
 rarely gets trusted. Ban list checked on this entry.
 
+**STATUS: OPEN**, and the amendment to L-X1 is why rather than caution. Two of
+the three repairs are in the tree and the third was sent to its owner, so the
+damage is addressed. **There is no detector.** The thing that would notice a
+fourth instance is a question a reader has to think to ask, written into this
+entry and into `registers.md` as a proposed gate with no owner, and a proposed
+gate is the second thing written down rather than the detector L-X1 requires.
+
+What a detector would have to be, so the next run is not starting from nothing.
+The three instances share a testable property: in each case the instrument's
+own prose states the mechanism and its code tests something narrower, and in
+all three the gap was visible by reading the two side by side. That is a
+review question rather than a command, and the honest reading is that this
+class may not have a mechanical detector at all, in which case the entry closes
+on a charter sentence that makes the side-by-side reading a step rather than on
+a script. Either answer is fine. Asserting the first and shipping neither is
+not, which is what this status line exists to prevent.
+
 ---
 
 ## INC-2026-10-24-the-machinery-diff-gate-named-this-runs-own-commit-as-a-runtime-change — the fifth entry on the shallow clone, and the first where the wrong answer was a false positive rather than a false negative (2026-10-24, engineer seat, message run)
