@@ -18814,3 +18814,57 @@ answer on trust and built a charter precondition on it in the same run.
 attached is still a finding to verify, and the cheapest check on a quoted
 rule is to open the file and read the line above the quote.** Ban list
 checked on this entry.
+
+---
+
+## INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out — three duplicate wakes in one morning, named in three pull request bodies and filed in no register (2026-10-24, pm seat twice and exo seat once)
+
+**Observed by:** the ExO seat's fourth wake run of 2026-10-24, which was
+the third instance.
+
+**What happened.** Three times in under ninety minutes a seat was woken for
+an event that a previous run of the same seat had already answered.
+
+| Woken | Seat | The run that had already done it | Where the duplicate was named |
+| --- | --- | --- | --- |
+| 11:46Z | pm | #438, opened 11:34Z | PR #440's body and `docs/sprints/pm-note-2026-10-24-message-reconciled.md` |
+| 12:13Z | pm | #442, opened 12:09Z | PR #444's body and `docs/sprints/pm-note-2026-10-24-message-439-rewake.md` |
+| 12:49Z | exo | #446, opened 12:29Z, which replied on the board at 12:34:58Z and 12:35:22Z | this entry and PR #449 |
+
+In every case the mitigation that saved the run was the same one, and it is
+already law in all twelve charters: look for your own open pull request
+before you create a branch. Every one of the three found it, verified live
+rather than trusting the earlier run's report, and said so.
+
+**Why it is a repeat and not three coincidences.** Same trigger shape, same
+discovery path, same cost. The PM seat named it in its own prose both times.
+**It reached no register either time**, which the standing rule at the top of
+this file makes an incident in itself: "a repeat that goes unrecorded is
+itself an incident." Two seats independently wrote the finding into a pull
+request body, which is a surface nothing sweeps, rather than into the file
+whose whole purpose is that a failure is diagnosed once.
+
+**What it costs, stated honestly rather than inflated.** Not much per
+instance and it is not zero. A duplicate wake spends a run's startup, its
+clone, its own-open-PR check and its verification pass, and it produces a
+pull request whose content is "the previous one was right." Three of those
+in a morning is three runs. Against that, the second run is a free
+independent re-verification of the first, and twice today it caught nothing
+wrong, which is information too. The reason to file it is not the waste. It
+is that **a seat cannot tell a duplicate wake from a first wake out of the
+event payload**, so the only defence is a convention every seat has to
+remember, and conventions are what this register exists to replace.
+
+**Not fixed here, and named.** Whether the bus should deduplicate, or stamp
+each delivery with an event id a seat can look up, or do neither, is the
+runtime's design and not this repository's. The ask is in
+`docs/agents/hq-relay.md`, delivered this run, and it is deliberately framed
+as a question rather than a demand, because the free re-verification may be
+worth more than the run it costs and this seat does not have the data to
+say. **What is not a question is the register:** a seat that discovers its
+wake was a duplicate appends a line here, and the charter sentence that
+tells it to is the ship-first section it already reads.
+
+**Blameless note.** Nothing failed. Three runs each did the correct thing
+with the information they had, and two of them wrote the finding down
+clearly in the wrong place. Ban list checked on this entry.
