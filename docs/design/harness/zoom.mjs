@@ -4,7 +4,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { chromium } from "playwright";
-const BASE = "http://127.0.0.1:3000";
+const BASE = `http://127.0.0.1:${process.env.FE_PORT || 3000}`;
 const [, , OUT, SPECJSON] = process.argv;
 fs.mkdirSync(OUT, { recursive: true });
 const specs = JSON.parse(SPECJSON);
