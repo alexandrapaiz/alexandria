@@ -1020,15 +1020,25 @@ Two things follow for this page rather than for the parent's tool.
 
 ### The rule-5 sweep for this run, measured rather than asserted
 
-Against the manifest caps above and the 31-day peaks from the reader, the seats
-over rule 5's 70% trigger are the writer at 102%, the engineer at 95% and this
-seat at 78%. The pm is at 66%, the frontend at 33%. That is the same three seats
-as the 2026-10-24 16:40Z derivation and the same order, so nothing moved in an
-hour, which is the expected answer and is recorded because an unchanged
-measurement is still a measurement.
+Peak over cap, every seat, computed rather than quoted: writer 153/150 at
+**102%**, engineer 190/200 at **95%**, exo 155/200 at **78%**, market 118/160 at
+**74%**, finance 83/120 at 69%, pm 198/300 at 66%, skill 117/180 at 65%, okr
+86/160 at 54%, sales 67/160 at 42%, frontend 197/600 at 33%, security 73/250 at
+29%, research 48/180 at 27%.
+
+**Four seats are over rule 5's 70% trigger, not three.** The 16:40Z section an
+hour earlier wrote market's row as 74% and then named three seats as over the
+trigger in its prose, and this run repeated the same miscount in its own first
+draft before the arithmetic was written out per row. A trigger stated as a
+percentage and then summarised in a sentence gets summarised wrong, which is why
+the percentages above are listed and not totalled.
+
+One row moved inside the hour, and it moved because the window did rather than
+because the seat did: skill was 91 over 2 runs at 16:40Z and is 117 over 4 runs
+now, at 65%, still under the trigger. Nothing else changed.
 
 The required caps under the rule, which is twice the peak rounded up to the next
-50, are 350 for the writer, 400 for the engineer and 350 for this seat. All
-three are edits to the parent's manifests, which is the owner's merge, and they
-are on `docs/agents/hq-relay.md` rather than on the queue page, because the
-queue page is for files in this repository.
+50, are 350 for the writer, 400 for the engineer, 350 for this seat and 250 for
+market. All four are edits to the parent's manifests, which is the owner's
+merge, and they belong on `docs/agents/hq-relay.md` rather than on the queue
+page, because the queue page is for files in this repository.
