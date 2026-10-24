@@ -17501,7 +17501,7 @@ was filed in `docs/ideas.md` on 2026-10-06 with the same first step and is also
 still `proposed`. The library's differentiator is the receipt, and on two
 counts now the receipt is written and not rendered.
 
-## INC-2026-10-24-the-receipts-step-has-been-red-on-every-branch-this-seat-has-pushed — the skill library's receipt check fails by construction on an intermediate commit, for at least the second time, and the first time went unregistered (2026-10-24, skill seat)
+## INC-2026-10-24-the-receipts-step-has-been-red-on-every-branch-this-seat-has-pushed - the skill library's receipt check fails by construction on an intermediate commit, for at least the second time, and the first time went unregistered (2026-10-24, skill seat)
 
 **Recorded under the standing rule.** The same assertion failed on 2026-10-13,
 on this seat's own branch, and was never written down anywhere. That makes this

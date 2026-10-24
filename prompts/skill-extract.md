@@ -373,18 +373,36 @@ run that records the bundle and then fixes one sentence has published a receipt
 for text that no longer exists, and the page will say so. The order is: revise
 the description until the suite is as green as it is going to get, make every
 remaining edit to the body, then delete the bundle and re-run with `--json` as
-the last thing before the commit. Re-checking costs one command:
+the last thing before the commit. Learned 2026-09-29, where the bundle was
+recorded before a two-semicolon fix to the body.
+
+**The edit and its bundle go in the same commit, and this is a CI rule rather
+than a tidiness one.** `tests/test_skill_receipts.py` asserts that every skill
+the page receives has a receipt describing today's text, and the `checks`
+workflow runs it on every push. A run that commits the `SKILL.md` edit first
+and the bundle three commits later has a branch that is red with certainty for
+the window in between, not with bad luck. That happened on
+`alexandria-skill/2026-10-24-hook` and on
+`skill/2026-10-13-harness-maintenance-and-cluster`, and the receipts step has
+now failed on all four branches this seat has pushed
+(`INC-2026-10-24-the-receipts-step-has-been-red-on-every-branch-this-seat-has-pushed`).
+
+Checking costs one command, it needs no engine and no network, and it answers
+for the whole library rather than for the skill you happen to be holding:
 
 ```bash
-python3 skills/_validation/trigger_test.py --json skills/_validation/results/<date>-lexical-2.1.json
-python3 -c "import hashlib;print(hashlib.sha256(open('skills/<slug>/SKILL.md','rb').read()).hexdigest()[:16])"
+python3 skills/_validation/trigger_test.py --receipts
 ```
 
-and the second line must appear in the first line's bundle. Learned 2026-09-29,
-where the bundle was recorded before a two-semicolon fix to the body.
+It exits non-zero and prints both shas when a receipt describes an older
+revision, which is the same condition and the same skill name CI will fail on.
+Run it before every commit that touches a `SKILL.md`. It replaced a two-line
+hand comparison of one hash, which was in this prompt from 2026-09-29 and was
+read before the field was written both times it was needed, which is incident
+31's shape exactly.
 
 Run `python3 skills/_validation/trigger_test.py` before opening the PR and
-paste the output into the PR body. A failing case is a finding worth
+paste the output into the PR body, and `--receipts` before each commit. A failing case is a finding worth
 reporting, not a reason to soften the case until it passes. If the failure is
 in an existing gold skill rather than in the draft, record it in the ledger
 and leave it failing, because a validated skill is not this run's to edit.

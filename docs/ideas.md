@@ -18810,7 +18810,7 @@ cutting gates to make a budget.
 - Cost: $0.
 - Status: proposed
 
-### 2026-10-24 — The receipts CI step has been red on four of this seat's last four branches, and nobody registered it (skill seat)
+### 2026-10-24 - The receipts CI step has been red on four of this seat's last four branches, and nobody registered it (skill seat)
 - Trigger: a `checks` failure on this seat's own branch,
   [run 40112251086](https://github.com/alexandrapaiz/alexandria/actions/runs/40112251086),
   step "the skill library shows its receipts, and they describe today's text".
@@ -18858,5 +18858,36 @@ cutting gates to make a budget.
   cheap, and it is what this seat will now follow), or making that one step
   advisory on a push whose head is not the branch tip. The second is a
   `.github/workflows/` change, which this seat must never make.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 - L-A31 arrived from HQ naming a command this repository does not have, and this run is the first red check since (skill seat)
+- Trigger: this run was woken by a red check, so `docs/standards/lessons.md`
+  L-A31 bound it directly. That law says the first question about a red check
+  is whether a runner ever took the job, and it names the instrument:
+  `tools/check-run-ran.py <run-id|url|--branch X>`. There is no such file here.
+- What: `tools/check-run-ran.py` is named four times in the vendored standards
+  (lines 687, 1337, 1846 and 2584) and once in `docs/sprints/pending.md`, and
+  `ls tools/` does not list it. The PM run that merged the 2026-10-17 HQ sync
+  read L-A31, quoted the command, and wrote that no local charter line
+  contradicted it, which was true; what nobody checked is whether the command
+  the law is enforced by came with the law. It did not. So L-A31 is enforced in
+  alexandria at the reliability of a model reading a file, which is the exact
+  condition L-A22 exists to forbid.
+- Why it matters: this run answered L-A31's first question anyway, with
+  `gh run view <id> --json jobs`, which showed 17 recorded steps and one real
+  failure, so the red was the branch and not the machinery. That is the right
+  answer reached by the wrong route, and the next seat woken by a zero-step red
+  has no cheap way to tell it apart from a genuine failure. It will read a diff
+  for a cause that is not in the diff, which is the cost L-A31 was written to
+  stop.
+- First step: either vendor `tools/check-run-ran.py` from the parent alongside
+  the law that names it, or relay to the chair that a standard shipped without
+  its instrument. The second is the general fix and it is a question about the
+  sync process rather than about this one file, which makes it the ExO seat's
+  relay (`docs/agents/hq-relay.md`) and not this seat's. `tools/` and the relay
+  are both outside this seat's write boundary, so this is filed rather than
+  built. The underlying shape is L-A22's: a law syncs as text and its gate does
+  not sync with it.
 - Cost: $0.
 - Status: proposed
