@@ -150,9 +150,56 @@ recommendation) or record the abandonment and nothing else changes.
 
 ## 1f. Run health (owner's order, 2026-09-19)
 
-You are on top of the runs. Every run of yours begins with
-`gh run list --limit 30` across all agent workflows, and you account
-for every non-success since your last run: which seat, which failure
+**Read this correction first, because the command below has been blind since
+2026-10-17** (added 2026-10-24 by the ExO seat). HQ decision 056 moved every
+seat's clock off GitHub, so `gh run list` has not seen one agent run in this
+repository since 2026-10-17 17:59:54Z. It still exits zero and returns rows
+for `checks` and `deploy-main`, which is why nothing announced it: the list
+is not empty, it just no longer contains any seat. For seven days this
+section has been asking you to account for non-successes in a list that
+cannot hold one.
+
+The cost is two failures nobody wrote down. On 2026-10-23 the exo seat
+crashed at 19:04:14Z with `exit: 1` after 48 turns, and at 19:09:06Z a run
+of **this** seat, woken by that failure, died at turn 1 with `exit: 1`.
+Neither is in `docs/agents/incidents.md`, neither is in any standup, and the
+only entry the register did get named the wrong cause, because the seat
+writing it could not see an exit code either.
+
+**So the agent-run half of this section reads the board.** The host writes
+every session's outcome there, and it is one call with the two variables
+your run already has:
+
+```bash
+curl -s "$BOARD_API_URL/api/board/alexandria" \
+  -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN" \
+  | python3 -c 'import json,sys
+for r in json.load(sys.stdin)["runs"]:
+    print(r["started_at"][:19], r["seat"], r["trigger"], "turns", r["turns"],
+          "exit", r["exit"], r["model"], r["pr_url"] or "no-pr")'
+```
+
+Three things count as a non-success in that list, and only the first
+announces itself. `exit` non-zero. **A run of one turn, whatever its exit
+code**, because a run that managed one turn did nothing and one of them
+exited zero after 52 minutes on 2026-10-18. And a non-null `refusal`, which
+is the provider declining rather than the seat failing.
+
+Two cautions. The route accepts **no query string** — any parameter returns
+`{"error": "no such route"}` — and it returns a fixed count of recent runs,
+25 on 2026-10-24, which on a busy day reaches back under two. Say in your
+standup how far back the rows went. And `pr_url` and `report` describe what
+the host saw: the crashed exo run above is recorded as "no pull request" and
+it had opened #404 two minutes earlier, so check `pr_url` against
+`gh pr list` before you report on it.
+
+`gh run list --workflow=checks.yml --branch=main` is still live and still
+yours, because pushes and pull requests do trigger Actions. It is the
+red-main check and nothing more.
+
+You are on top of the runs. Every run of yours begins with the board read
+above, plus `gh run list --limit 30` for `checks` and `deploy-main`, and you
+account for every non-success since your last run: which seat, which failure
 class (cap, timeout, environment, permission, or genuinely new),
 whether it is already in docs/agents/incidents.md, and whether the
 work survived via ship-first. A failure already registered gets one
@@ -344,9 +391,22 @@ infer, from twelve green runs, that none of their output exists yet.
 
 ### The cap ratio (added 2026-10-04)
 
-While you are reading `gh run list` for section 1f, read one more thing off
-it. For every run in the lookback window below, report any seat whose
-`num_turns` exceeded **70% of its `--max-turns`**, with both numbers.
+While you are reading the run list for section 1f, read one more thing off
+it. For every run in the lookback window below, report any seat whose turn
+count exceeded **70% of its cap**, with both numbers.
+
+**Both numbers are easier to get than they were** (added 2026-10-24 by the
+ExO seat). The board's run record carries `turns` and `model` per run, so
+the numerator needs no log fetch. The denominator is no longer
+`--max-turns` in a workflow file; it is `max_turns` in the seat's manifest
+on the host, and a seat can read it:
+
+```bash
+gh api repos/alexandrapaiz/alexandria-systems/contents/runtime/agents/alexandria/<seat>/agent.toml \
+  --jq .content | base64 -d | grep -E '^cron|^max_turns|^model'
+```
+
+On 2026-10-24 the caps were exo 200, engineer 200, pm 300, writer 150.
 
 **The window is 24 hours or since your last standup, whichever is longer**
 (added 2026-10-11 by the ExO seat, and it applies to §1f's failure report

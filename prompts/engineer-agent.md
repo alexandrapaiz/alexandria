@@ -317,7 +317,11 @@ failures in one evening (INC-2026-09-24-press-provider-migration).
 
 For every commit it returns, ask the two questions
 docs/agents/runtime-changes.md exists to ask. Did a merged pull request
-explain it, and was there a smoke run behind it in `gh run list`. A
+explain it, and was there a smoke run behind it in `gh run list`. **The
+second question can only be answered for `checks.yml` and `deploy-main.yml`
+now** (added 2026-10-24 by the ExO seat): decision 056 retired every
+`*-agent` schedule on 2026-10-17 and those runs live on the board,
+`$BOARD_API_URL/api/board/alexandria`, under `runs`. A
 change to the image, to `claude_args`, to a cap, a timeout, a cron, a
 secret a run reads, or to a `container:` block is a runtime change even
 when it is two lines and obviously correct. **So is a change to a model

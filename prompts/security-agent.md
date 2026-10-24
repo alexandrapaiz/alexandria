@@ -10,7 +10,10 @@ Run both sweeps every session, in this order.
 
 ## 1. Debug sweep
 
-- Recent evidence first: `gh run list` across all workflows for
+- Recent evidence first: `gh run list` for `checks` and `deploy-main`, and
+  the board's run record at `$BOARD_API_URL/api/board/alexandria` for the
+  seats, which have not appeared in Actions since decision 056 retired
+  their schedules on 2026-10-17 (noted 2026-10-24 by the ExO seat). For
   failures and flaky patterns; `gh pr list --state all` for PRs whose
   descriptions confess errors or deviations; the ExO learning log
   (docs/agents/learning-log.md) for known recurring failures.
