@@ -2019,7 +2019,8 @@ def next_fire(expr: str, now: datetime) -> datetime | None:
     return None
 
 
-def next_run(app: str, repo_root: Path, now: datetime) -> dict:
+def next_run(app: str, repo_root: Path, now: datetime,
+             ref: str = "HEAD") -> dict:
     """When this app's cron next fires, as the deploy surface reports it.
 
     Returns `{"cron": ..., "at": ..., "hours": ...}` or `{"why": ...}`. The
@@ -2029,20 +2030,53 @@ def next_run(app: str, repo_root: Path, now: datetime) -> dict:
     tomorrow is in time. The ExO seat wrote that sentence onto the compute
     card by hand on 2026-10-24, having worked out the press cron from the
     docstring, which is the work this function is here to stop repeating.
+
+    Read at `ref` and not off the disk, for the same reason every other half
+    of this surface is: a seat runs on a branch, and a branch that edits a
+    cron would otherwise report its own deadline as production's. Falls back
+    to the working tree when `ref` holds no readable copy, which is how this
+    tool arrives anywhere that is not a checkout.
+
+    The honest limit, and it is company standard L-A72: this is the trunk's
+    schedule, not the running image's. For an app that is behind, the deployed
+    image could be carrying a different cron, and the only reading that would
+    settle it is one from inside the container. So the deadline is what the
+    code *should* be running on, which is the right thing to plan a deploy
+    against and is not a measurement of production. `read_from` says which it
+    is, and the surface's own words say so where a reader meets them.
     """
     try:
         from pipeline import runtime_sha
     except Exception as exc:
         return {"why": f"pipeline/runtime_sha.py could not be read here: {exc}"}
-    found = runtime_sha.schedule_of(app, repo_root)
+    module = runtime_sha.APPS[app]
+    status, body = _git_bytes(repo_root, "show", f"{ref}:{module}")
+    source, read_from = None, ref
+    if status == 0:
+        try:
+            source = body.decode("utf-8")
+        except UnicodeDecodeError:
+            source = None
+    if source is None:
+        found, read_from = runtime_sha.schedule_of(app, repo_root), "the disk"
+    else:
+        got = runtime_sha.schedules(source)
+        if not got:
+            found = {"why": f"{module} puts nothing on a modal.Cron schedule"}
+        elif len(got) > 1:
+            found = {"why": f"{module} carries {len(got)} cron schedules "
+                            f"({', '.join(got)}), so it has no single next run"}
+        else:
+            found = {"cron": got[0]}
+    found = {**found, "read_from": read_from}
     if "cron" not in found:
         return found
     when = next_fire(found["cron"], now)
     if when is None:
-        return {"cron": found["cron"],
+        return {**found,
                 "why": f"this cron expression cannot be read here: "
                        f"{found['cron']}"}
-    return {"cron": found["cron"], "at": when,
+    return {**found, "at": when,
             "hours": round((when - now).total_seconds() / 3600, 1)}
 
 
@@ -2081,16 +2115,30 @@ def _soonest(apps: list[str], deadlines: dict,
     dated = [(deadlines[app]["at"], app) for app in apps
              if "at" in (deadlines.get(app) or {})]
     if not dated:
-        return ""
+        # Company standard L-A21: a gate that saw nothing must not read as a
+        # quiet pass. An empty string here would drop the deadline out of the
+        # headline with no trace, and a reader who has learned to expect one
+        # would read its absence as "nothing is due soon". So the silence is
+        # named, with one `why` rather than all of them, because the per-app
+        # evidence carries the rest.
+        why = next((deadlines[app].get("why") for app in apps
+                    if (deadlines.get(app) or {}).get("why")), None)
+        return ("I cannot say which of these serves a run first"
+                + (f", because {why}" if why else "") + ". ")
     when, app = min(dated)
+    # The trunk's schedule and not the image's, which is the limit L-A72
+    # names. Said once, in the sentence that hands over the number, rather
+    # than left in the evidence for a reader who will not look.
+    trunk = (" on the schedule the trunk declares, which a behind image may "
+             "not be the one carrying")
     if compute:
         return (f"On the schedule the first of these to serve a run would be "
                 f"{app}, {deadline_phrase(deadlines[app])}, but nothing is "
                 f"firing at all: {compute}. So that is the deadline from the "
                 f"moment compute is back rather than a time to work to. ")
     return (f"The first of these to serve a real run is {app}, which fires "
-            f"{deadline_phrase(deadlines[app])}, so a deploy after that is a "
-            f"run too late. ")
+            f"{deadline_phrase(deadlines[app])}{trunk}, so a deploy after "
+            f"that is a run too late. ")
 
 
 def deploy_facts(conn) -> dict | str:
@@ -2197,7 +2245,8 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
     # has never recorded and an app eight days behind have the same deadline,
     # which is the next time its cron fires. Five file reads and some
     # arithmetic, no network, no git.
-    deadlines = {app: next_run(app, root, now) for app in sorted(runtime_sha.APPS)}
+    deadlines = {app: next_run(app, root, now, ref)
+                 for app in sorted(runtime_sha.APPS)}
     evidence["schedules"] = {
         app: (entry.get("cron") or entry.get("why"))
         for app, entry in deadlines.items()}
@@ -2243,6 +2292,7 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
                 "cron": due.get("cron"),
                 "next_run_at": str(due["at"]) if "at" in due else None,
                 "next_run_in_hours": due.get("hours"),
+                "next_run_read_from": due.get("read_from"),
                 "next_run_why": due.get("why")}
 
         # Never recorded is a third state, and the question it turns on is

@@ -40,6 +40,7 @@ Run with `python3 tests/test_deploy_drift.py` or under pytest.
 
 import contextlib
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -1628,7 +1629,11 @@ def test_a_cron_this_evaluator_cannot_read_is_a_why_and_never_a_guess():
             target.read_text(encoding="utf-8").replace(
                 'schedule=modal.Cron("0 9 * * 1")', "# unscheduled"),
             encoding="utf-8")
-        found = dh.next_run("weekly", repo, now)
+        # Committed, because the deadline is read at the ref and not off the
+        # disk, which is the subject of the next test.
+        _commit(repo, "the schedule is taken off weekly",
+                datetime.now(timezone.utc))
+        found = dh.next_run("weekly", repo, now, ref="HEAD")
         check("an app on no schedule answers with a why and no deadline",
               "at" not in found and "why" in found, str(found))
 
@@ -1676,6 +1681,89 @@ def test_the_next_fire_is_the_next_one_and_never_one_that_has_passed():
           "Saturday the 3rd matches on the day of month alone")
 
 
+def test_a_seat_s_own_branch_does_not_move_the_deadline():
+    """Company standard L-A72, and the same defect the drift clock had.
+
+    The schedule is a declaration in a repository, and the repository a seat
+    is standing in is its own branch. A branch that edits a cron would
+    otherwise report its own deadline as production's, which is exactly
+    `INC-2026-10-09-the-deploy-guard-judged-the-branch-it-ran-from` one field
+    along. So the cron is read at the ref the rest of this surface judges
+    against.
+
+    The limit that remains, and it is stated in the surface's own words
+    because no code here can close it: this is the trunk's schedule, not the
+    running image's. An app that is behind could be carrying a different cron,
+    and only a reading from inside the container would settle it.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_history(Path(tmp),
+                               [("pipeline/triage.py", "A merged change")],
+                               base_days_ago=5.0)
+        on_main = dh.next_run("weekly", repo, datetime.now(timezone.utc),
+                              ref="main")
+        subprocess.run(["git", "-C", str(repo), "checkout", "-q", "-b",
+                        "engineer/today"], check=True, capture_output=True)
+        target = repo / rs.APPS["weekly"]
+        target.write_text(
+            target.read_text(encoding="utf-8").replace(
+                'schedule=modal.Cron("0 9 * * 1")',
+                'schedule=modal.Cron("0 3 * * *")'),
+            encoding="utf-8")
+        check("an uncommitted edit to the cron does not move the deadline",
+              dh.next_run("weekly", repo, datetime.now(timezone.utc),
+                          ref="main")["cron"] == on_main["cron"],
+              str(dh.next_run("weekly", repo, datetime.now(timezone.utc),
+                              ref="main")))
+        _commit(repo, "the branch reschedules the press",
+                datetime.now(timezone.utc))
+        after = dh.next_run("weekly", repo, datetime.now(timezone.utc),
+                            ref="main")
+        check("and nor does committing it on a branch",
+              after["cron"] == "0 9 * * 1", str(after))
+        check("and the surface says which ref the schedule came from",
+              after["read_from"] == "main", str(after.get("read_from")))
+
+        rows = [row_for(app, repo, sha="0ldc0dec0de") for app in rs.APPS]
+        surface = dh.check_deploy(FakeConn(rows), repo, notify=False)
+        check("and the headline says the trunk's schedule is not the image's",
+              "which a behind image may not be the one carrying"
+              in surface.headline, surface.headline)
+
+
+def test_a_deadline_nobody_can_compute_is_said_and_not_omitted():
+    """Company standard L-A21: a gate that saw nothing is not a quiet pass.
+
+    The deadline sentence was an empty string when no app had a readable
+    schedule, which drops it out of the headline with no trace. A reader who
+    has learned to expect a deadline reads its absence as "nothing is due
+    soon", and that is the one wrong answer this sentence can give.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_repo(Path(tmp), days_ago=9)
+        for app in rs.APPS:
+            target = repo / rs.APPS[app]
+            target.write_text(
+                re.sub(r"schedule=modal\.Cron\([^)]*\)", "# unscheduled",
+                       target.read_text(encoding="utf-8")),
+                encoding="utf-8")
+        # Dated with the fixture rather than now, so this stays a nine-day
+        # drift: a fresh commit resets the clock and the surface would answer
+        # `unknown` about the dating instead of FAILING about the deploy.
+        _commit(repo, "every schedule taken off",
+                datetime.now(timezone.utc) - timedelta(days=9))
+        rows = [row_for(app, repo, sha="0ldc0dec0de") for app in rs.APPS]
+        surface = dh.check_deploy(FakeConn(rows), repo, notify=False)
+        check("the missing deadline is named rather than dropped",
+              "I cannot say which of these serves a run first"
+              in surface.headline, surface.headline)
+        check("and it names one cause rather than none",
+              "puts nothing on a modal.Cron schedule" in surface.headline,
+              surface.headline)
+        check("and it is still a failing deploy",
+              surface.state == dh.FAILING, surface.state)
+
+
 def test_a_stale_deploy_names_the_first_app_to_serve_a_run_with_it():
     """The deadline, in the headline a seat reads every day.
 
@@ -1689,7 +1777,8 @@ def test_a_stale_deploy_names_the_first_app_to_serve_a_run_with_it():
         now = datetime.now(timezone.utc)
         conn = FakeConn([row_for(app, repo, sha="0ldc0dec0de") for app in rs.APPS])
         surface = dh.check_deploy(conn, repo, now=now, notify=False)
-        due = {app: dh.next_run(app, repo, now) for app in rs.APPS}
+        due = {app: dh.next_run(app, repo, now, surface.evidence["ref"])
+               for app in rs.APPS}
         first = min(due, key=lambda app: due[app]["at"])
         check("the headline names the first stale app to get its turn",
               f"first of these to serve a real run is {first}"
@@ -1697,6 +1786,11 @@ def test_a_stale_deploy_names_the_first_app_to_serve_a_run_with_it():
         check("and says a deploy after it is too late",
               "a deploy after that is a run too late" in surface.headline,
               surface.headline)
+        check("and says which ref the schedule was read at",
+              all(surface.evidence[app]["next_run_read_from"]
+                  == surface.evidence["ref"] for app in rs.APPS),
+              str({app: surface.evidence[app].get("next_run_read_from")
+                   for app in rs.APPS}))
         check("and every app carries its own deadline in the evidence",
               all(surface.evidence[app]["next_run_at"]
                   and surface.evidence[app]["next_run_in_hours"] is not None
