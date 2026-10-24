@@ -166,7 +166,10 @@ which is the fourth test in `docs/agents/unowned-duties.md`.
 
 Two things to carry past this instance. The scheduler is not broken: in the
 twenty-two hours since it started, every company cron that came due fired,
-four for four by a per-slot derivation. What was broken was the six-day gap, and nothing in the org
+nine for nine across the portfolio and four for four in this company. Those
+two numbers are the same finding at two scopes and both are worth carrying,
+because the nine is the one that says the scheduler works and the four is
+the only one a reading of this company may claim. What was broken was the six-day gap, and nothing in the org
 reported it, because **a cron that does not fire leaves no row, and this
 charter's only test for a cron was whether the manifest named one.** §3b's
 cadence test reads the manifest and stops there, which is the same mistake
