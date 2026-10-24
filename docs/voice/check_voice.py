@@ -556,6 +556,19 @@ def measure(paths=None):
               + "  ".join(f"{k} {v}" for k, v in sorted(body.items())))
         if len(body) < 2:
             print("    one kind of block is a failing issue (canon law 14)")
+        # The colon count, with its specimen and the law it detects. `axes`
+        # returns this as a bare number and `measure` printed nothing at all,
+        # so the one ruling the owner has had to give TWICE arrived at a grade
+        # as "headings carrying a colon: 1" and read as punctuation. 2026-W40
+        # printed "What is gaining ground: recursive self-improvement with
+        # fewer guardrails", which is the framework's internal name, a colon,
+        # and the day's news. The construction is what the count is for.
+        for h in [h for h in re.findall(r"^#{1,3} .*$", t, re.M) if ":" in h]:
+            print(f"    colon heading, canon law 12 and incident 20: "
+                  f"{h.strip()[:72]}")
+            print("      the internal names are never printed. Strike the "
+                  "label and the colon,")
+            print("      and check whether what is left is the heading.")
         unruled = 0
         for c, k in na.most_common():
             word = next((w for w in re.findall(r"\S*" + re.escape(c) + r"\S*", t)), "")
@@ -957,6 +970,24 @@ SURFACE_GLOBS = ("site/app/**/*.jsx", "site/app/**/*.js", "site/lib/*.js",
                  "site/emails/*.html", "pipeline/weekly.py",
                  "pipeline/email_render.py")
 
+# The archive, which `reading` adds to the list above and no other check does.
+# `pipeline/weekly.py` is the string that will print on the NEXT issue. The
+# committed issue is the string printing on a published one right now, and
+# `site/lib/issues-core.js` says which of the two a reader gets: "the record
+# decides which weeks exist, the committed file decides the text of any week
+# that has one." So a masthead repaired in the module is repaired for every
+# week the press has not written yet, and for no week it already did.
+#
+# Only `reading` takes these. `claims` reads the same globs and must not: an
+# issue body's sentences are claims about the research rather than about our
+# artifact, which is the one distinction the writer charter's claims gate turns
+# on, and pointing a gate that FAILS on unhedged claims at eighteen hundred
+# lines of research prose would redden the tree over work nobody can fix.
+# Whether the register's net belongs over the archive is the ExO seat's call on
+# its own file, and the ledger entry filed with this change asks it rather than
+# answering it here.
+ARCHIVE_GLOBS = ("site/content/issues/*.md",)
+
 # Words that carry no claim. Overlap is scored on the rest, because the claim
 # in the register and the claim on the page are rarely the same string: the
 # register holds "revised when the research sharpens it" and /llms.txt prints
@@ -1206,7 +1237,21 @@ READING = re.compile(
     # reach. Her 2026-09-20 ruling rejects "it" as the subject of a
     # mechanism sentence anyway, so the form is wrong twice over.
     r"|\bit reads\b[^.]{0,40}"
-    r"\b(?:research|papers?|literature|abstracts?)\b", re.I)
+    r"\b(?:research|papers?|literature|abstracts?)\b"
+    # "read in full" is exempted above, and it has to be: it is the one act
+    # the law permits the word to name, and "164 papers read in full" is both
+    # true and the sentence the law asks for. The exemption is wrong for
+    # exactly one form, and that form is the string canon law 15 quotes as its
+    # own evidence: 'read in full and distilled weekly'. Attached to a count it
+    # is a fact. Attached to a cadence it is a claim about everything that
+    # arrives in a week, which is the ingest number wearing the read number's
+    # verb, and it is the defect the law was written for.
+    # This is the hole the first draft of this check wrote down and left open:
+    # "a sentence that says read in full over a number that came from the
+    # ingest field passes here". Narrowed to the cadence form, it closes
+    # without touching the true sentence. Added 2026-10-23.
+    r"|\bread in full\b[^.]{0,40}\b(?:weekly|every week|each week|a week)\b",
+    re.I)
 
 
 def reading(paths=None):
@@ -1239,6 +1284,14 @@ def reading(paths=None):
     that only looks at sentences cannot see the one line this check exists to
     catch.
 
+    It reads the archive as well as the code, added 2026-10-23, and the first
+    firing found the law's own evidence still in print. Canon law 15 cites one
+    string: 'The masthead said "read in full and distilled weekly" on every
+    issue ever sent.' `pipeline/weekly.py` was repaired. The third line of
+    `site/content/issues/2026-W39.md` still says it, and that file is the live
+    public text of the one week the archive publishes. Twenty-eight days, on a
+    page anybody can open, under a law that quotes the sentence.
+
     What it cannot see. The verb is checkable and the count behind it is not:
     "papers read this week" is caught by the word, while a sentence that says
     read in full over a number that came from the ingest field passes here and
@@ -1247,7 +1300,7 @@ def reading(paths=None):
     """
     targets = [ROOT / p for p in paths] if paths else []
     if not targets:
-        for glob in SURFACE_GLOBS:
+        for glob in SURFACE_GLOBS + ARCHIVE_GLOBS:
             targets += sorted(ROOT.glob(glob))
     hits = []
     for path in [t for t in targets if t.is_file()]:
@@ -1561,7 +1614,19 @@ def taste():
 AWAITING = ROOT / "docs/voice/awaiting-her-word.md"
 # A path inside backticks, which is how every row of the register and every
 # candidate file names the surface it is about.
-SURFACE = re.compile(r"`(site/[A-Za-z0-9_./-]+\.(?:jsx|js|txt))")
+#
+# `md` is in the list because the archive is a surface, which this run learned
+# the expensive way one function over: `reading` held the module that writes
+# the next issue and no issue it had already written. The same scope error was
+# here, and its cost is worse rather than better. Without `md` a candidate for
+# `site/content/issues/<week>.md` matches nothing in the register, so the one
+# gate built to stop a surface being redrafted reports "no candidate here
+# redrafts a surface already awaiting her word" about a surface it cannot see.
+# That is the sentence a later run would have trusted. L-A21 of
+# docs/standards/lessons.md is the standard and its test is the one that found
+# this: name a change that would break what the gate governs, then ask whether
+# the gate would have SEEN it.
+SURFACE = re.compile(r"`(site/[A-Za-z0-9_./-]+\.(?:jsx|js|txt|md))")
 CANDIDATE_FILE = re.compile(r"`([a-z0-9][A-Za-z0-9_.-]*\.md)`")
 
 
@@ -1630,6 +1695,15 @@ def candidates(ref=None):
             r"([a-z0-9][A-Za-z0-9_.-]*\.md)", body)}
         for surface in sorted(set(SURFACE.findall(body))):
             held = rows.get(surface, set())
+            # A surface held only by THIS candidate is not a clash, it is this
+            # run doing the bookkeeping correctly: the row in the register and
+            # the file it points at land in one diff, which is the normal shape
+            # of a first draft for a new surface. Without this the gate accuses
+            # a run of redrafting its own candidate, and the accusation names
+            # the file it is being made about, which is how it was found.
+            # Latent until now because `new` holds only files the diff ADDS, so
+            # it needs a row and its candidate in the same pull request.
+            held = held - {pathlib.Path(path).name}
             if held and not (held & named):
                 clashes.append((path, surface, sorted(held)))
     print(f"candidate files this diff adds under docs/voice/   {len(new)}")
