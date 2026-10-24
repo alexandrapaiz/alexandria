@@ -293,9 +293,9 @@ ExO and engineer seats. Queued in `docs/agents/hq-relay.md`, 2026-10-18.
 
 | Duty | Owner | Trigger rate | Cadence | State |
 |---|---|---|---|---|
-| The org knows what the world knows | market (§5, named 2026-09-19) | weekly | weekly Fri | assigned |
-| Ecosystem events steer what we ingest | research (signal read) | weekly | weekly Mon | consuming |
-| Upstream compromise is in the threat model | security (§2, words added 2026-09-20) | continuous, acted on in sweeps | biweekly | assigned, accepted lag. **Was false from 2026-09-19 to 2026-09-20**, see below |
+| The org knows what the world knows | market (§5, named 2026-09-19) | weekly | weekly Fri | **assigned on paper only, measured 2026-10-24**: the seat has not run since the clock moved on 2026-10-17, 0 runs and 0 pull requests, see the class-A proposal below |
+| Ecosystem events steer what we ingest | research (signal read) | weekly | weekly Mon | **consuming on paper only, measured 2026-10-24**: the seat has not run since 2026-10-17, 0 runs and 0 pull requests, see the class-A proposal below |
+| Upstream compromise is in the threat model | security (§2, words added 2026-09-20) | continuous, acted on in sweeps | biweekly | assigned, accepted lag. **Was false from 2026-09-19 to 2026-09-20**, see below. **And assigned on paper only since 2026-10-17, measured 2026-10-24**: 0 runs and 0 pull requests, see the class-A proposal below |
 | Legal and compliance posture | **none** | once, before launch | n/a | owner decision |
 | Free-tier and quota headroom | finance, dormant | monthly | dormant | owner decision |
 | The corpus survives losing its database | **none** | continuous | n/a | owner decision |
@@ -328,9 +328,9 @@ done.
 
 | Duty | Naming seat's cron | Last firing ever | Firing state |
 |---|---|---|---|
-| The org knows what the world knows | market, `0 11 * * 5` | never | **unevidenced** |
-| Ecosystem events steer what we ingest | research, `30 16 * * 1` | never | **unevidenced** |
-| Upstream compromise is in the threat model | security, `0 13 1,15 * *` | never | **unevidenced** |
+| The org knows what the world knows | market, `0 11 * * 5` | never | **unevidenced**, and class A: the seat itself has not run since 2026-10-17 |
+| Ecosystem events steer what we ingest | research, `30 16 * * 1` | never | **unevidenced**, and class A: the seat itself has not run since 2026-10-17 |
+| Upstream compromise is in the threat model | security, `0 13 1,15 * *` | never | **unevidenced**, and class A: the seat itself has not run since 2026-10-17 |
 | The repo describes the system it is | exo, `0 14 * * 0` | never | **unevidenced** |
 | Approved copy reaches the live site | frontend, `0 12 * * 3` | never | **unevidenced**, on top of the lag this page already accepts |
 | An HQ decision is read against local law | exo, `0 14 * * 0` | never | **unevidenced**, on top of the cadence gap already recorded |
@@ -1373,3 +1373,134 @@ something its wake asked for. That is a `prompts/` edit in the owner's tier
 and it is queued rather than shipped, for the reason named in the pull
 request: the upstream path fix removes the defect for five companies, and a
 twelfth charter sentence here removes it for one.
+
+## 2026-10-24: the proposal the nine unevidenced rows were owed, and the thing the remedy sentence got wrong
+
+The fourth test, added to this page this morning, ended with a remedy and no
+proposal: "either the duty moves to a seat with an observed clock, or its
+trigger moves to an event the seat subscribes to, and the second is cheaper
+for most of the nine." The learning log carried it forward as the next thing
+this register needed. This is that proposal, and deriving it found that the
+remedy sentence is wrong for a third of the rows it was written about, for a
+reason the sentence could not see.
+
+**Both halves of the remedy assume the seat runs.** Moving a duty to a seat
+with an observed clock works if such a seat will take it. Moving the trigger
+to a subscribed event works if the event reaches the seat. Neither is a
+statement about the seat's own aliveness, and for three of the nine rows that
+is the only question that matters.
+
+### What the four subscribed events actually route, read from the bus and not inferred
+
+Every alexandria manifest lists the same four, and the PM and this seat add
+more. The routing is in `alexandra-systems`, in `runtime/board/api.py` and
+pinned by `runtime/board/tests/test_bus_targets.py`:
+
+| Event | Who it wakes | What has to happen first |
+|---|---|---|
+| `message.posted` | the addressee, by `to_seat` and `to_company` | another seat or a chair chooses to address this one |
+| `item.moved` | the card's seat, and only on a move **into an in-progress column** | another seat moves a card into this one's lane |
+| `pr.merged` | the seat named by the **merged branch's prefix** | this seat opened a pull request and somebody merged it |
+| `check.failed` | the branch-prefix seat, plus HQ's engineer, never cadence-gated | this seat has a branch and it went red |
+
+**None of the four can be produced by the passage of time.** Two are
+downstream of the seat's own prior work, and two require a different seat to
+act on it. So the subscription list is a continuation mechanism, not a
+starter: it keeps a working seat working, and it has no way to start a seat
+that has stopped. The cron is the only trigger in the manifest that does not
+require somebody already awake, and for nine of the twelve seats here the
+cron has never been observed to fire.
+
+That is why the fourth test's "unevidenced" state matters more than it looked
+this morning. It was presented as a gap in the evidence for a cadence. It is
+also a gap in the only mechanism that can begin a cadence at all.
+
+### The nine rows split into three classes, and only one of them is cheap
+
+**Class A, three rows: the naming seat is not running.** `market`,
+`research` and `security`. Since the clock moved to the host on 2026-10-17,
+the host's audit log records **zero** `run.start` rows for each of the three,
+and GitHub records **zero** pull requests from each of the three. The last
+pull request of any kind is `#316` on 2026-10-16 for market, `#284` on
+2026-10-12 for research and `#196` on 2026-10-05 for security. Two
+independent sources, one on this filesystem and one on GitHub, agree.
+
+Neither remedy reaches these. Their crons have never fired and no event has
+ever been addressed to them, which is the loop above closing: a seat with no
+branch gets no `pr.merged` and no `check.failed`, and a seat nobody is
+thinking about gets no `message.posted` and no `item.moved`. **Three seats
+declare a weekly or biweekly cadence and are, on the evidence, indistinguishable
+from the two this page already calls dormant.** `finance` and `sales` at
+least say so in their manifests, which carry no cron at all.
+
+*Recommendation.* Say what is true on this page first, because the register
+currently reports these three rows as `assigned` at a weekly or biweekly
+cadence and that reading is eight days stale. Then one of two things, and the
+choice is the owner's under §22: either the three seats are woken and kept
+woken, which is a manifest change in `alexandra-systems` and a decision §22
+names explicitly as proceeding on silence, or the three duties move to a seat
+that demonstrably runs and the three seats are marked dormant like the other
+two. **What should not continue is the third option, which is the current
+one: a duty recorded as owned, at cadence, by a seat that has not run in
+eight days.**
+
+**Class B, four rows: the seat runs constantly and the duty is in a section
+its runs are told to skip.** All four rows that name this seat — the repo
+describes the system it is (§5b), an HQ decision is read against local law
+(§3f's reading half), evidence from here reaches HQ, and a seat's cap and
+model are what the evidence says they are. This seat ran twenty times since
+2026-10-17 and nineteen of those were doorbell wakes, so no trigger change
+would add anything: the events already arrive, in volume. §0 of the charter
+tells a wake run to do the event's work, the failure sweep, the undelivered
+heading and the learning log, **and to skip exactly the sweeps these four
+duties live in.** The learning log has carried that owed list for thirteen
+consecutive wake runs.
+
+So for class B the trigger is not the variable. The budget is. Moving these
+duties to another seat moves the same problem to a seat with less context,
+and moving their trigger to an event changes nothing, because the events are
+already here and the charter declines them.
+
+*Recommendation.* A rotation rather than a trigger. When no cron slot of this
+seat has come due inside a covered window — which, per the fourth test, has
+been true every day since the seat existed — a wake run takes **one** item
+from the owed list in addition to its one improvement, oldest first, and
+records which one it took. That bounds the cost at one sweep per wake and
+clears a six-item list in six wakes, which at nineteen doorbell wakes in
+eight days is under a day. It is a `prompts/` edit, so it is proposed here
+and not shipped here; this run's one improvement is the proposal itself.
+
+**Class C, two rows: the remedy sentence is right, and this is the cheap
+case it was written for.** `frontend`'s "approved copy reaches the live site"
+and `skill`'s "a skill's measured effect". Both seats run — eight and three
+host-started runs since 2026-10-17 — and both duties are genuinely
+event-shaped rather than calendar-shaped: the first falls due when the owner
+approves copy, the second when a skill ships or is revised. A Wednesday and a
+Tuesday are arbitrary dates attached to work that arrives when it arrives.
+
+*The obstacle, which the morning's sentence did not have.* The event these
+two duties want is **another seat's merge**, and `pr.merged` is routed by the
+merged branch's prefix. The writer's copy branch wakes the writer. The skill
+seat's own ship wakes the skill seat, so that half works today; the frontend
+half does not, and no subscription in any manifest can express "wake me when
+somebody else's branch merges."
+
+*Recommendation.* The cheap route needs no new event type. The duty becomes
+a handoff: the seat whose merge creates the obligation addresses the seat
+that owes it, which is `message.posted`, already subscribed by all twelve and
+already the busiest door on the bus. For frontend that is one sentence in the
+writer's ship check. It is somebody else's charter, so it goes on the board
+as the ask below rather than being written here.
+
+### Where this leaves the table
+
+No row's state changes in this run, because a proposal is not a change and
+this page's own rule is that a register entry is not an owner. What changes
+is that the nine are no longer one undifferentiated number. Three are a
+liveness finding that the word `unevidenced` understates, four are a budget
+finding about this seat that no trigger change touches, and two are the
+ordinary case. **A count of nine invited one remedy; the three classes want
+three, and two of them are not the one the morning's sentence named.**
+
+The ask carrying all three is on the board, addressed to the owner, with the
+recommendation above, under §22 of the PM standard.
