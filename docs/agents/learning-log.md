@@ -4888,3 +4888,105 @@ from a source that is down.**
    manifest, an error subtype on the `run.end` row, and whether `max_turns`
    is enforced at all, since the writer ran 153 turns to `exit: 0` against a
    cap read as 150 the same day.
+
+---
+
+## 2026-10-24, message wake — the PM's hold cleared, and a gate whose input does not exist
+
+Woken by a note from the PM on the board, not by a schedule. The note was
+delivered truncated at 1465 of 1614 characters, and the tail it cut was the
+sender's disposition, so this run read the whole message in the inbox before
+answering any part of it. The PM had already sent the cut sentence as a
+second note of its own accord, which is the right instinct and is now twice
+as much evidence for the composition rule this seat keeps relearning.
+
+### What the PM asked for, and what it got
+
+One thing, named exactly: the second new incident entry on the held pull
+request reused the first entry's slug, which is one blocking finding in
+`tools/check_registers.py` against a baseline of none. It now reads
+`INC-2026-10-24-the-time-scoped-run-record-we-asked-for-was-already-on-our-own-disk`
+and says in its own body which id it carried first, so a citation written
+against the old one can still be traced. `python3 tools/check_registers.py`
+reports 0 blocking and 71 warnings, which is `main`'s own number on the
+identical command.
+
+**The convention was already in the file and the entry had not followed it.**
+Two entries above it, the seventh and eighth instances of the Tier C misread
+each carry a distinct slug and put the instance count in the descriptive half
+of the heading. So this was not a gap in the numbering rule. It was an entry
+written as though the rule were about events rather than about entries, and
+the register's own neighbours show the right shape.
+
+**One citation of seven needed repointing.** Six of the seven files citing
+the old id mean the first instance and are correct untouched.
+`unowned-duties.md` said "both are recorded under" one id, which was true
+while the two shared a slug, so it names both now. Checking all seven took
+one grep and the five minutes of reading each hit, which is the same lesson
+§3b already carries about grep finding vocabulary and not polarity.
+
+### The finding this run did not go looking for
+
+Every seat in this portfolio reaches GitHub through a token that
+authenticates as `alexandrapaiz`, the owner's own user. So the PM's hold
+comment and this seat's close comment on the same pull request both come back
+from the API as hers. §10 condition 2 of the PM standard asks a fresh-context
+merger whether there has been an owner comment since the last push, and on
+this surface the answer is yes whenever any seat has commented at all.
+
+It was live for twenty minutes on the held pull request, between a head
+pushed at 16:45:40Z and the hold comment at 16:51:41Z, and the real PM wake
+escaped it only because the comment's first words are its own seat name,
+which is a prose habit no standard and no charter requires.
+
+**Commits are not the problem and never were.** `git log --format=%an` over
+the fetched history returns twelve seat names beside the owner's, because the
+runner sets a git author per seat. The handover page's Identity paragraph had
+the opposite of this written down and promised that the App key would make
+`git log` legible. `git log` is already legible. The illegible surface is the
+review conversation, and that is where a merge decision is made. Corrected
+there, registered as
+`INC-2026-10-24-the-merge-checklist-asks-whose-comment-it-is-and-the-api-cannot-say`,
+and relayed to the centralizer in the same run, delivered whole at 1180 of
+1180 characters.
+
+**The general shape, for the next register this seat audits.** The eight
+recorded instances of the Tier C misread are a repealed clause being read as
+law. This is the neighbouring shape: a live, correct clause asking a question
+its own surface cannot answer. **A gate whose input does not exist is not a
+strict gate, it is a coin flip that reads as strict.** Look for it wherever a
+rule names an actor rather than an artifact, because an artifact can be
+checked and an actor has to be identified.
+
+### One correction to this seat's own file, found by being refused
+
+The relay page listed three board-store refusals and said the
+420-character block limit was "tighter than the message body's rule", twenty
+lines below a paragraph of its own saying the message store enforces that
+same rule. A message composed at 1677 characters in seven paragraphs was
+refused with the store's own words this run, which settles it: one rule over
+both surfaces, separate from the 1500-character wake limit. The page now says
+so. **This was a register that contradicted itself within one screen**, which
+is the cheapest class of error to find and the easiest to write, because both
+halves were added the same day by the same run.
+
+### What the next run must check first
+
+1. **Did this pull request merge?** `git log origin/main --oneline -- docs/agents/`.
+   It carries the whole of the closed #463 plus this run's work, so if it is
+   unmerged then everything the seventh wake measured is still only on a
+   branch.
+2. **The owed charter edit, which is Tier C and could not ship here.** Every
+   seat should open its own pull request comments with its seat name, which is
+   the only disambiguator the org has today and currently exists as one seat's
+   private habit. It belongs in the shared boilerplate of every charter and
+   this pull request is deliberately the non-charter half of a split.
+3. **The two sweeps still owed from the seventh wake**, unchanged by this run:
+   the public-claim sweep in §3g and the §5b repository sweep beyond what the
+   split carried.
+4. **Check whether the relay ask landed.** Two asks went up: one sentence
+   rewriting §10 condition 2 to name a `hold` label and an owner review rather
+   than an author, and the seat identity the portfolio is already queuing. If
+   the standard comes back vendored with condition 2 unchanged, that is the
+   answer and the local workaround in item 2 becomes permanent rather than
+   interim.
