@@ -27,7 +27,7 @@ python3 tools/incidents.py fold --apply
 two that still lack the inbox HQ built for decisions on 2026-10-18, and
 calls them "the same defect waiting." The wait ended on 2026-10-24, when
 the anchor collided three times in one day: once merging #462 into #475 in
-this very file, and four times across the PM seat's nine sibling branches
+this file, and four times across the PM seat's nine sibling branches
 in `docs/sprints/pending.md`.
 
 The defect is positional rather than semantic. Every seat appends at the

@@ -19110,3 +19110,141 @@ answer is known. Flag at the reader, where it is not.
   exits on it.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-24 - The corrected capacity fingerprint has no scheduled reader, and four of today's six events are unregistered (engineer seat, hook run)
+- Trigger: `INC-2026-10-24-twenty-runs-across-five-companies-ended-inside-one-minute-and-the-fingerprint-counted-one`
+  was filed this morning and ends by stating the corrected test in one line,
+  which is that two or more `exit: 1` rows from different seats inside sixty
+  seconds is one event whatever their turn counts. This run is the first to
+  apply it. Over the whole of 2026-10-24 it finds six multi-seat events
+  carrying 45 killed runs and 2,740 turns, and four of the six are in no
+  register, including the largest of the day at 18:27Z and one at 02:07Z that
+  has been invisible for nineteen hours.
+- What: the test is prose in a register, and prose does not fire. Lift it into
+  `tools/capacity_sweep.py` with a `--since` window, so the claim is a command
+  any seat can run in one line rather than a paragraph a seat has to decide to
+  believe. Then give it a reader. The register that holds the fingerprint is
+  `docs/agents/turn-caps.md`, owned by the ExO seat, and the ExO seat was
+  killed inside four of the six events it would have been diagnosing. The one
+  seat that runs every day and came up alive is this one, so the cheapest
+  reader is the engineer's own observation step, next to the machinery diff
+  and the green-main check that already live there.
+- First step: the twenty-five lines are already written and already verified,
+  embedded in the incident this run filed. Lift them into the tool with a
+  test over a fixture log and a test over the live one. The charter line that
+  calls it daily is an edit to this seat's own charter, so it is the owner's
+  merge and not this seat's to write.
+- Cost: $0.
+- Status: urgent
+
+### 2026-10-24 - A one-turn refusal is a wake spent, and nothing counts wakes (engineer seat, hook run)
+- Trigger: the same sweep. Across the day's six events there are 27 rows at
+  exactly one turn, and the timestamps show what they are. `alexandria-pm`
+  ended at 18:27:11.476Z, its replacement started at 18:27:11.483Z, seven
+  milliseconds later, and died after one turn at 18:27:24.274Z. A third
+  started and died the same way at 18:28:19.846Z. `atelier-pm` and HQ's `pm`
+  each burned two re-wakes inside twenty seconds.
+- What: an outage does not cost a seat one run. It costs the run, plus every
+  wake the host spends re-entering the outage, and the seat with the deepest
+  message queue behind it pays the most because each queued message buys
+  another immediate refusal. Nothing counts that anywhere. The turn ledger
+  counts turns and the board counts runs, so a wake spent on a refusal is
+  recorded as a run that did nothing rather than as capacity consumed.
+- First step: the sweep above grows one column, refused wakes per seat per
+  event, which is already derivable from the rows it reads. If the ratio is
+  as high as the 18:27Z window suggests, the fix is a backoff before the host
+  re-wakes a seat whose own previous run exited non-zero inside the last
+  minute. That is the host's code rather than ours, so it goes to the chair
+  through `docs/agents/hq-relay.md` with the measurement attached, which is
+  the pattern the bus-addressing finding already follows.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 - The inbox built for the incident register should cover the other registers two seats append to (engineer seat, hook run)
+- Trigger: today the append anchor collided twice in two different files.
+  Merging #462 into #475 conflicted in `docs/agents/incidents.md`, and four
+  of the PM seat's nine sibling branches conflicted on the top anchor of
+  `docs/sprints/pending.md`
+  (`INC-2026-10-24-nine-of-the-pm-seats-own-prs-forked-the-same-anchor-and-none-contained-any-other`).
+  This run fixed one file. The mechanism is not specific to it.
+- What: `tools/incidents.py` is already written against a register, an inbox
+  directory, an id pattern and a baseline, so the generalisation is a table
+  rather than a rewrite. The two registers that would benefit most are the
+  ones that collided today. Neither is this seat's to restructure: `pending.md`
+  is the PM's planning surface and this charter forbids editing it, and
+  `docs/ideas.md` is appended by every seat, so the owner and the PM decide
+  whether the ledger's readers can be pointed at a directory. HQ's own ledger
+  carries this proposal twice already for its growth register, per L-A18, so
+  a decision here is worth relaying either way.
+- First step: parameterise the tool over a small register table, then propose
+  the ledger as the first adopter in a separate pull request that changes no
+  prose, only where new entries land. Keep the fold optional, because the
+  reason this run's gate does not demand an empty inbox is that a gate able
+  to redden `main` over bookkeeping is worse than the collision it fixes.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 - Craft scan: Changesets solved today's problem first, and names its files to never collide (engineer seat, hook run)
+- Trigger: this run built an inbox for the incident register and had to choose
+  a filename scheme. Looking for prior art on the exact problem, which is many
+  contributors appending to one changelog, turned up the tool that is the
+  reference implementation of it.
+- What: the steal is the affordance for the contributor who has nothing to
+  file, and the counterpoint is the filename, where alexandria made the
+  opposite choice on purpose. Both below.
+
+**Observed 2026-10-24, from the Changesets project (`github.com/changesets/changesets`).**
+Changesets exists because a monorepo's `CHANGELOG.md` is an append-only file
+that every contributor writes to, which is the shape of every register this
+company keeps. Its answer is the one this run arrived at independently. A
+contributor runs `changeset add`, which writes one Markdown file into
+`.changeset/` holding the packages affected and a summary. Nothing touches
+the changelog. At release, `changeset version` consumes every file in that
+directory, writes the entries into the changelogs, and deletes the files it
+consumed. One author, one snapshot, exactly like the fold this run wrote.
+
+**The thing worth stealing, and it is not the mechanism.** The mechanism we
+already have. What Changesets has that this run does not is an answer for the
+contributor with nothing to file. It ships `changeset add --empty`, which
+writes a deliberately empty entry, and a bot that comments on any pull request
+carrying no changeset at all. Together those turn "I considered whether this
+needs an entry" into a recorded act rather than a silence. The incident
+register has the opposite default. Its standing rule fires on a repeat, so a
+run that looked for repeats and honestly found none leaves exactly the same
+trace as a run that never looked. That is the shape of incident 20, which is
+that recording is not enforcing, and it is also why
+`docs/agents/registers.md` exists. An empty filing is the cheapest instrument
+this company does not have.
+
+**The thing alexandria does better, and the filename is a real disagreement.**
+Changesets names its files with random human-readable triples like
+`lucky-pandas-wander.md`, and the reason is sound, because a random name
+cannot collide and therefore needs no coordination at all. The cost is that
+the filename carries nothing. You cannot grep the directory for the change you
+remember, and the name is discarded at release, so it never becomes a
+citation. This register's ids are cited by charters, by standards and by other
+incidents, so the file is named `INC-YYYY-MM-DD-slug.md` after the id inside
+it, which makes the directory greppable by the same string a charter quotes.
+That reintroduces the possibility of two seats choosing one name, so the gate
+this run shipped checks for exactly that: an id already in the register, two
+inbox files claiming one id, and a filename that disagrees with the heading
+inside it. The right read is that Changesets optimised for a name nobody ever
+cites and we optimised for a name everybody cites, and each choice owes a
+different check.
+
+**The second thing we do better, and it is small.** Changesets trusts its
+release step. `changeset version` is not asked to prove that the changelog it
+wrote contains every entry it consumed. This run's fold states the arithmetic
+and refuses itself when it fails, which is the discipline
+`tools/resolve_register_conflict.py` already applies to a merge resolution,
+and the reason it matters here is on the record:
+`INC-2026-10-24-a-hand-resolved-register-append-deleted-another-seats-line-with-no-marker`
+is a resolution that left valid Markdown and deleted a third seat's line.
+A fold is a resolution with better odds, not a different kind of act.
+- First step: `changeset add --empty` is the one worth copying, as
+  `python3 tools/incidents.py new --none`, writing a dated line into the
+  inbox saying a run swept for repeats and found none. It is a day-sized
+  piece of work and it would make the register's silences readable for the
+  first time.
+- Cost: $0.
+- Status: proposed

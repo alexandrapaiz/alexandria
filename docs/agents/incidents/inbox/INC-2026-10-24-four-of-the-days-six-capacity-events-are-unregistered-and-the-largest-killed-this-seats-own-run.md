@@ -1,4 +1,4 @@
-## INC-2026-10-24-four-of-the-days-six-capacity-events-are-unregistered-and-the-largest-killed-this-seats-own-run — the corrected fingerprint was written this morning and this is the first run to apply it (2026-10-24, engineer seat, hook run)
+## INC-2026-10-24-four-of-the-days-six-capacity-events-are-unregistered-and-the-largest-killed-this-seats-own-run - the corrected fingerprint was written this morning and this is the first run to apply it (2026-10-24, engineer seat, hook run)
 
 **What happened.** `INC-2026-10-24-twenty-runs-across-five-companies-ended-inside-one-minute-and-the-fingerprint-counted-one`
 was filed earlier today, and it ends by stating the corrected test as one
