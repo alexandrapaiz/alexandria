@@ -4318,8 +4318,8 @@ a second confound, and it is worth copying.**
    `GET /api/scorecard?company=alexandria` returns a payload byte-identical
    to the unfiltered read. So does `?company=ursa`, and so does a company
    that is not on the roster. The parameter is accepted, ignored, and never
-   rejected. E1's target of 118.34 hours is the portfolio; alexandria's own
-   merged work that week ran to a p90 of 11.35.
+   rejected. E1's target of 118.34 hours is the portfolio, and alexandria's
+   own merged work that week ran to a p90 of 11.35.
 
 **The question got answered anyway, retrospectively, in one morning.** Over
 the 82 pull requests alexandria merged between 2026-10-17 and 2026-10-24,
