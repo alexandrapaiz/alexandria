@@ -110,6 +110,89 @@ that stretch from cron rows of *any* seat of *any* company, plus the
 came due inside it. A due slot outside it is not a miss. It is a slot nobody
 was watching, and the correct reading of it is nothing at all.
 
+**The fifth test, added 2026-10-24: was the machine holding that clock when
+the slot passed.** The covered window says the scheduler was awake. It does
+not say the scheduler had been given the cron, and a scheduler that never
+heard of a clock leaves the same empty record as one that was switched off.
+
+A cadence has two histories. The declared one is a `git log` over the
+manifest. The deployed one is the history of the copy the host loads, and
+`/srv/asc/roster` is a symlink into a working clone of the parent that the
+host moves with `git reset --hard`, so the clone's reflog **is** that history:
+
+```bash
+git -C /srv/asc/repos/alexandra-systems reflog --date=iso | tail -20
+git -C /srv/asc/repos/alexandra-systems show <sha>:runtime/agents/<company>/<seat>/agent.toml \
+  | sed -n '/\[trigger\]/,/^$/p'
+```
+
+Judge a past slot against the deployed history, never the declared one.
+Where the two disagree the deployed one governs, because it is the only one
+the daemon ever read.
+
+### The 39 in the table above is zero, measured against the clock the host held
+
+The row under "the host was off for part of the gap" reads **39 / 0** for
+company slots in the window 10-17 00:00 to 10-20 12:07, and the 39 is a count
+of slots on the declared clock. Measured on the deployed clock it is zero, and
+the measurement is three commits and a reflog.
+
+| Host's copy | Loaded from | Company crons it held | HQ crons it held |
+|---|---|---|---|
+| `4d35d9b` | 2026-10-16T14:52Z | 0 | 4 |
+| `0a969af` | 2026-10-17T19:49Z | 1 (`epitome-frontend`) | 4 |
+| `fc4e885` | 2026-10-17T20:05Z | 1 (`epitome-frontend`) | 4 |
+| `b843ac8` | 2026-10-23T17:03Z | 25 | 5 |
+
+Decision 056's manifest commit is 2026-10-17T21:07:16Z, **one hour after the
+host's copy last moved**, and the copy did not move again for five days and
+twenty-one hours. So every company clock except `epitome-frontend`'s was a
+declaration the daemon had never been shown. HQ's nine-for-nine in the same
+window is the control: HQ's four clocks were loaded, and they fired.
+
+`epitome-frontend`'s only slot in the whole gap was Tuesday 2026-10-20T15:00Z,
+which falls inside the stretch the audit log was silent through, so it is
+unjudged rather than missed under the fourth test.
+
+**Both numbers in the table are therefore right about the wrong clock**, and
+the corrected reading of the gap is that no company slot came due, on a clock
+the host was holding, inside a window the host was covering. The gap's real
+defect is not a scheduler that omitted the companies. It is a roster deploy
+that lagged its own manifest commit by five days and twenty-one hours, with
+nothing watching the lag.
+
+### And the way this was found is a test in its own right
+
+HQ's cron instrument reported this end **40 company slots missed across 13
+seats**, which agrees with the 39 here and identifies the same set: 34 slots
+across 13 seats re-derived locally over a slightly narrower window. The same
+`done` also explained away a *different* finding of the same instrument, an
+off-slot `okr` firing on 2026-10-18, by reading the copy the host loads and the
+date it was rewritten, and that explanation is correct: HQ `okr` held
+`0 16 * * 0` in `fc4e885` and the firing at 16:00:20 was exactly on slot.
+
+The explanation needed an input the instrument does not have. `declared_at` in
+`tools/check-cron-slots.py` resolves a past clock from `git log --format=%cI`
+on the manifest, and the deployed copy enters the report only as "the clock the
+daemon would load if it restarted now." So one row was corrected by hand and
+thirteen seats' worth of the same error was reported as fact in the same
+message.
+
+**When you have to consult a surface your instrument cannot read in order to
+accept or dismiss one of its findings, every finding it produced is suspect in
+the same way.** The hand-correction is the bug report. This costs nothing to
+run, because it needs no re-derivation at all: you only have to notice which
+input the explanation used.
+
+### A firing is not a cycle
+
+One more thing the fourth test's record cannot say. `alexandria-writer`'s cron
+fired on slot at 2026-10-24T16:00:13Z and the run was refused by the provider
+at 16:00:20Z after one turn. The audit log holds the `cron` row either way, so
+"11 slots due, 11 fired" is true and "11 cycles delivered" is not. A cadence
+judgement that rests on a clock needs the firing **and** the run's exit, which
+§2b now reads off each run's own log.
+
 ```bash
 # the firing record, every alexandria seat: declared, due, fired, last
 python3 - <<'PY_FIRING'

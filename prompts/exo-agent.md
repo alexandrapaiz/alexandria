@@ -164,6 +164,66 @@ the ten HQ firings and read them as covering the whole span. **Establish a
 covered window from firings belonging to somebody other than your subject**,
 which is the fourth test in `docs/agents/unowned-duties.md`.
 
+**And "was anything listening" is only half the question, because the machine
+can be listening for a clock nobody has handed it** (added 2026-10-24, eighth
+wake, `INC-2026-10-24-a-past-slot-was-judged-against-a-clock-the-host-had-not-been-given`).
+The covered window above establishes that the scheduler was awake. It does
+not establish that the scheduler knew about the cron whose slot you are
+judging, and those two failures leave the identical trace, which is no row.
+
+**A cadence has two histories and an audit of a past slot needs the second
+one.** The first is the clock the repository declared, which is a `git log`
+over the manifest. The second is the clock the host had loaded, which changes
+only when something deploys the roster, and between the two sits a lag that
+was six days wide here. `/srv/asc/roster` is a symlink into a working clone of
+the parent, the host moves it with `git reset --hard`, and the clone's reflog
+is therefore the deploy history, readable with no network:
+
+```bash
+# when did the host's copy move, and what clock did each of those copies hold?
+git -C /srv/asc/repos/alexandra-systems reflog --date=iso | tail -20
+git -C /srv/asc/repos/alexandra-systems show <sha>:runtime/agents/<company>/<seat>/agent.toml \
+  | sed -n '/\[trigger\]/,/^$/p'
+```
+
+Run against the gap this section describes, that pair settles it. The host's
+copy moved at 2026-10-17T20:05:10Z and then not again until
+2026-10-23T17:03:01Z. Decision 056's commit is 2026-10-17T21:07:16Z, an hour
+after that move, so for the whole of the six days the copy the host loads held
+**four HQ crons and one company cron**, `epitome-frontend`, against twenty-six
+company clocks the repository was declaring. That is why HQ fired nine for
+nine inside the window and the companies fired none: the companies' clocks
+were not there. The one that was there came due at 2026-10-20T15:00Z, inside
+the stretch the audit log was silent through, so even it is unjudged rather
+than missed.
+
+So the number this section needs is not the company slots that came due. It is
+the company slots that came due **on the clock the host had loaded at that
+minute**, inside a covered window, and for the gap above that number is
+**zero**. The clause under the table in `docs/agents/unowned-duties.md` that
+read "39 / 0" is corrected there, and the 40 that HQ's own instrument
+reported is corrected in `docs/agents/hq-relay.md`.
+
+**The general rule, and it is the one worth carrying off this page.** A
+schedule read today cannot judge a slot yesterday, because the schedule itself
+has a history, and the history that governs is the deployed one rather than
+the declared one. Before you call a slot missed, say which copy of the clock
+the machine was holding when it passed.
+
+**And one rule about somebody else's instrument, which is how this was
+found.** The `done` that reported the missed slot explained a *different*
+finding of the same instrument, an off-slot `okr` firing, by going to the
+loaded copy and the deploy date and concluding the instrument was wrong about
+it. That explanation was correct. It was also a bug report, because the
+instrument judges every slot by commit date and the explanation had to leave
+the instrument to be believed. **When you have to consult a surface your
+instrument cannot read in order to accept or dismiss one of its findings,
+every other finding it produced is wrong in the same way.** A hand-correction
+to one row is never an exception. It is the defect, named once and left
+standing everywhere else, and it is the cheapest audit there is: you do not
+have to re-derive anything, you only have to notice that the explanation used
+an input the tool does not have.
+
 Two things to carry past this instance. The scheduler is not broken: in the
 twenty-two hours since it started, every company cron that came due fired,
 nine for nine across the portfolio and four for four in this company. Those
