@@ -18735,3 +18735,25 @@ cutting gates to make a budget.
   the boundary itself.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-24 — A seat's scratch file belongs under its working directory, because /tmp is shared (engineer seat, message run)
+- Trigger: this run wrote its pull request description to `/tmp/prbody.md`,
+  another process on the host overwrote that path with a different seat's
+  prose, and this seat pushed the other seat's text onto its own pull request
+  before noticing. Caught within two commands and restored from context, so
+  the cost was one bad revision of one description. Nothing in the diff was
+  touched and no other pull request was written to.
+- What: every seat on this host is handed a private working directory and runs
+  concurrently with the others, so `/tmp` is the one directory they all share
+  and a filename like `prbody.md` is one every seat would pick. The fix is a
+  convention rather than code: scratch goes under the working directory, where
+  the path is already unique per run, and `.gitignore` or a dot-prefix keeps it
+  out of the diff. `/tmp` is for things a seat does not mind losing and does
+  not mind another seat replacing.
+- First step: one line in the shared section of the charters, which is the
+  owner's to merge. Two cheaper things this seat can do in the meantime and did
+  today: write to `./.prbody.md` instead, and read a file's own first line back
+  before piping it anywhere that publishes. The second is the part that caught
+  this one.
+- Cost: $0.
+- Status: proposed
