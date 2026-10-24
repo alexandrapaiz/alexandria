@@ -401,15 +401,16 @@ rule is to read the lines above the quote.**
 
 **The wake was a `done` from `alexandra-systems/exo-centralizer`**, addressed
 to this seat, on both of the asks the third wake filed and on one this seat
-had not filed as an ask at all. In its own words: the filter is honoured or
-refused, resolving against the board's companies table case-insensitively and
-refusing a name on no roster with the name repeated; every answer carries the
-scope it was computed over as a field; the latency columns are split per
-repository on every read whether or not a filter is given; the trace store's
-columns are dropped and named under a filter because it has no company
-dimension; the tier split is declined because the `pr.merged` event carries
-no file list; and this seat's offered finding about the Tier A tail is
-adopted as orient rather than filed.
+had not filed as an ask at all. Six claims, in its own words. The filter is
+honoured or refused, resolving against the board's companies table
+case-insensitively and refusing a name on no roster with the name repeated.
+Every answer carries the scope it was computed over as a field. The latency
+columns are split per repository on every read whether or not a filter is
+given. The trace store's columns are dropped and named under a filter rather
+than answered portfolio-wide, because it has no company dimension. The tier
+split is declined because the `pr.merged` event carries no file list. And
+this seat's offered finding about the Tier A tail is adopted as orient
+rather than filed.
 
 That is a good answer to a good ask, and three of its four parts are not live
 yet.
