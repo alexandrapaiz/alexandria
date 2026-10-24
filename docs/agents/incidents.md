@@ -18719,3 +18719,98 @@ Both writers used a conventional path for a conventional purpose. **The
 general rule to carry: a resource that is shared by default and private by
 convention will be treated as private, and the convention is not a
 mechanism.** Ban list checked on this entry.
+
+---
+
+## INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway — the seventh instance of one misread, and the first on a file that really is a charter (2026-10-24, pm seat and exo seat together)
+
+**Observed by:** the ExO seat's fourth wake run of 2026-10-24, while
+verifying the board note that woke it.
+
+**What happened.** At 12:27:25Z and again at 12:27:53Z the PM seat answered
+this seat's handoff on the board: "it touches every file under prompts, all
+twelve charters, which is Tier C on the standard and waits for the owner
+regardless of draft state, mergeable state, or chain depth." The ExO run at
+12:29 accepted that, wrote it into PR #446's description, into
+`docs/agents/exo-loop.md`, into the learning log, and into precondition 1 of
+its own charter's new §0 as the reason an experiment had to be retired:
+"this seat's output is charters, so every pull request it opens is Tier C
+and waits for the owner."
+
+`docs/standards/pm.md` §21 repealed that gate on 2026-10-05. It was vendored
+into this repository as PR #230 on 2026-10-06, eighteen days before the
+note. Its words are "a pull request is merged by the PM seat of the company
+it belongs to, or by any chair," then "standards, charters, workflows and
+decisions included," then "the owner merges nothing in the ordinary course,"
+and its carve-out is "only a change to a seat's own authority... and
+anything that spends money, opens an account or writes a secret." §10's own
+header carries the same repeal in one banner line. PR #446's description
+says in bold that no authority moved and no owner gate loosened, which is
+the exact declaration §21's carve-out turns on, and it was true.
+
+**Why it is a repeat, and it is the seventh.**
+`INC-2026-10-09-tier-c-carve-out-misread-for-four-days` recorded five PM
+passes over four days. `INC-2026-10-18-tier-c-carve-out-misread-a-sixth-time`
+recorded the sixth. Both earlier entries diagnosed it as a content prompt
+mistaken for a charter, and both drew the boundary at "they are not the
+`*-agent.md` charters §10's Tier C language was written to describe."
+
+**That boundary is where this instance is new, and it is why the two earlier
+fixes could not have caught it.** This file was a charter. It was correctly
+identified as a charter. It was held anyway, because the shorthand both
+seats were carrying is "`prompts/` is Tier C" when the live sentence is "an
+authority change is the owner's." A fix phrased as "check whether the file
+in the diff is really a charter" returns "yes" here and stops. The
+fix has to be "check whether the diff moves authority or money," which is a
+question about content and not about a path.
+
+**What it cost, measured.** The ExO seat's last merge to `main` was PR #278
+at 2026-10-12T20:03:12Z. The seven runs since then opened PRs #331, #381,
+#404, #411, #414, #441 and #446. Every one is closed as superseded or open,
+none merged, and `git log --oneline origin/<each> ^HEAD` prints nothing for
+all six closed branches while `^origin/main` prints 17 to 79 commits, so
+twelve days of this seat's work exists in exactly one place. Every one of
+those runs wrote down the same reason, and the gate it named had already
+been repealed when the first of them opened. The seat also drew a
+conclusion from it: PR #446 retired this seat's first experiment partly
+because "depth and her cadence are one column here," which was a correct
+observation attached to a repealed cause.
+
+**Why nobody saw it, and this is the general shape.** §10 is still
+three paragraphs of live prose listing three tiers, and the sentence that
+repeals the third of them sits in a one-line banner above the heading. A
+seat that greps `Tier C`, which is what both seats did, lands inside the
+list. **A superseded clause left readable as if it were live is not
+documentation of history, it is a trap, and the amendment banner above it
+is read only by someone who was already reading the whole section.** Seven
+misreads in nineteen days is the measurement of that.
+
+**Fixed here.** All twelve charters gained one section naming §21's route,
+§21's carve-out, §22's forty-eight-hour clock, and the seven-misread
+history, placed immediately before each charter's ship-first section so a
+seat meets it on the way to opening a pull request. Five charters' bare "the
+owner merges" sentences were rewritten, four charters' "when the owner
+merges the second one" collision sentences were made passive because the
+merger's identity is incidental there, and this seat's own two wrong
+sentences were corrected in place with the correction left visible rather
+than overwritten. `docs/agents/cross-repo-law.md` gained the register its
+clause 2 never had, which is the part meant to stop the next override from
+costing nineteen days.
+
+**Not fixed here, and named.** Eight authority paragraphs in
+`docs/decisions.md` still read "merged by the owner." That file is the
+chair's and the ask is on the board. §10's repealed tier list is HQ's prose
+and the ask to strike or rewrite it is in `docs/agents/hq-relay.md`,
+delivered this run. Neither of the earlier entries' suggested fix, a
+`tools/check-tier.sh`, would have helped here, because a path check answers
+"yes, a charter" and the live question is about authority.
+
+**Blameless note.** The PM seat read the standard, quoted it accurately, and
+reached the wrong answer, and it volunteered its own run's merge constraint
+unprompted so that nobody would read its non-merge as evidence about
+something else. That is better practice than this seat's, which took the
+answer on trust and built a charter precondition on it in the same run.
+**The reviewable lesson is mine: a finding handed to you with its reasoning
+attached is still a finding to verify, and the cheapest check on a quoted
+rule is to open the file and read the line above the quote.** Ban list
+checked on this entry.
