@@ -18780,14 +18780,36 @@ cutting gates to make a budget.
   correction had only ever been written into the rendered archive and never
   into the record the archive renders from. A fifth prompt paragraph does not
   reach that.
-- The second half, and it is the larger one: a correction applied to
-  `site/content/issues/` is lost the next time that issue is re-rendered from
-  the `digests` record. Either a correction goes upstream into the record, or
-  re-rendering an issue the owner has corrected needs to refuse and say so.
-  This is the engineer's call on which, and it is worth more than the gate,
-  because the gate only notices after the issue has been public for a month.
-- First step: the BLOCK rule, which is small and tested. The re-render
-  question is the design one.
+- The second half, and it is the larger one, stated as a question because this
+  seat cannot answer it: **is `site/content/issues/` a faithful record of what
+  subscribers received, or a maintained product surface?** `820df48` assumed
+  the first and was right to, which is why it replaced the file with Monday's
+  actual print. Every repair to a published issue's prose assumes the second.
+  The two readings cannot both hold, and nothing in the repository says which
+  it is.
+  - If it is a **record**, the sentence stays, this gate's verdict should
+    become a report rather than a failure, and the whole fix is the pre-send
+    rule above so that no future send carries the shape.
+  - If it is a **surface**, a correction has to go upstream into the `digests`
+    record or the render has to refuse to overwrite a corrected issue, and the
+    replacement line is a copy candidate this seat drafts.
+- Every hand this needs, per `L-A41`, because the first draft of this entry
+  named one of three and read as complete:
+  1. **The engineer**, for the pre-send BLOCK rule. After that lands, no
+     future issue ships the shape, and the live archive is unchanged.
+  2. **The owner, or the engineer as a design call**, for the record-or-surface
+     question above. Nothing else can be sequenced until this is answered,
+     which is why it is the first step and not the second.
+  3. **This seat, and only if the answer is "surface"**, for the replacement
+     line, with the frontend seat setting it. This run deliberately drafted no
+     candidate. `docs/voice/value.md` still reads "Status: awaiting her
+     approval" and the copy pipeline's phase 0 gates drafting on it, and the
+     stronger reason is that a replacement line is the wrong artifact until
+     question 2 is answered. Restoring `b7d6929`'s paragraph verbatim is not
+     available either: it describes Thursday's preview, a different set of
+     papers, so a repair here is new prose and not a restoration.
+- First step: question 2. The BLOCK rule is small and tested and can go in
+  parallel.
 - Blocked by: nothing.
 - Cost: $0.
 - Status: proposed
@@ -18828,8 +18850,26 @@ cutting gates to make a budget.
   four characters where ban list 13 is the class of every non-ASCII character,
   and `pipeline/weekly.py` builds the payload's `dates` with an en dash the
   check passes, every week, by construction.
+- The blast radius, swept this run rather than assumed, because calling this a
+  class and fixing one instance would be the same mistake again. Every entry in
+  `SLOP_ALWAYS`, `SLOP_MAYBE`, `HEDGES` and `INTENSIFIERS` is matched with
+  `if word in low`, so none of them is anchored on its left edge. Most collide
+  with nothing real. `INTENSIFIERS` collides with ordinary research English:
+
+  ```
+  'every'      -> fires on 'very '
+  'delivery'   -> fires on 'very '
+  'discovery'  -> fires on 'very '
+  'recovery'   -> fires on 'very '
+  ```
+
+  A newsletter about research discoveries raises a false finding on the word
+  "discovery". Under `\b` word boundaries all four clear and "very" and "truly"
+  still fire, which is the one-line fix.
 - First step: word boundaries on `INTENSIFIERS`, which is one line, and the
   ASCII class question on `TYPESETTER`, which is a few. Both were specified in
-  the 2026-09-24 entry.
+  the 2026-09-24 entry. The other three lists need the same anchor for
+  correctness even though nothing in them collides today, because the next word
+  added to one of them is where it would show up.
 - Cost: $0.
 - Status: urgent

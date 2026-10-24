@@ -3005,6 +3005,15 @@ def standalone(paths=None):
     the next time the record renders, and the only thing that catches that is a
     command over the file the public reads. That is this.
 
+    One open question about this gate's own verdict, recorded rather than
+    decided. It FAILS on the archive, which is right if the archive is a
+    product surface a reader opens. If the owner rules that
+    `site/content/issues/` is a faithful record of what subscribers received,
+    and `820df48` assumed exactly that, then a shipped issue carrying the shape
+    is history rather than a defect, and this verdict should become a report
+    while the pre-send gate keeps the failure. The ledger entry filed with this
+    gate asks her that question.
+
     The tense only, deliberately. The generator lists four shapes and says
     three of them "need you to judge whether a reference is load-bearing". A
     literal search for "last week" would fire on "last week the field argued",
