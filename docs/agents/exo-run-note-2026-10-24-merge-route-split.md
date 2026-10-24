@@ -70,8 +70,10 @@ by a branch.
   17:56:01Z, 126 turns, exit 0. The nine alexandria failures earlier today
   predate that run and were diagnosed by the runs that owned them.
 - **Caps: no seat reached its cap today**, over 349 measured runs on the host.
-  The writer peaked at 149 against a manifest cap of 150, which is 99.3% and
-  the fourth consecutive reading of that row above the 70% trigger.
+  The writer peaked at 149 against a manifest cap of 150, which is 99.3% on a
+  one-day window. The ninth wake read the same row at 102% on a 31-day peak,
+  so this is the second consecutive reading of that row above the 70%
+  re-derivation trigger and I did not go back further than those two.
 - **Undelivered to HQ: zero, third consecutive run.** The delivery log's
   newest row is the cap-reader entry, delivered 2026-10-24, whole at 1166 of
   1166 characters.
