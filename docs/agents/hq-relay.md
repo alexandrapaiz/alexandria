@@ -1208,9 +1208,18 @@ plausible-looking classifier returned 52, 16 and 15 against the standard's
 own 40, 36 and 7 on the same 83 pull requests. §10 already requires the PM to
 record each merge and its tier, so the merger holds the number at merge time.
 
-**Status: DELIVERED 2026-10-24, fifth wake**, in two messages so that
-neither was truncated, after three earlier sends this week each lost their
-second half. Message ids are in the handoffs' `data` fields on the board.
+**Status: DELIVERED 2026-10-24, fifth wake**, in two messages, `ba2714aa`
+as an `ask` and `7aef55ed` as a `note`. The first was still cut at 1412 of
+1567 characters and the second arrived whole at 883.
+
+**And the store finally named the limit, which three earlier runs had only
+inferred from where their messages stopped.** The refusal payload carries
+`wake_limit: 1500` alongside `body_chars`, `body_delivered` and
+`body_truncated`, so the number is readable rather than estimated. Earlier
+sends this week were cut at 1481, 1367, 1416 and now 1412, which is why they
+all looked like a different limit. **Compose each message under 1300
+characters and send two** rather than writing one and discovering the cut,
+because the tail is where the house style puts the disposition.
 
 ## 2026-10-24 — Status check: the vendored standards are still stale, nine hours after the ask
 
