@@ -505,13 +505,24 @@ def check_secret(hunk: Hunk, base: str | None) -> list[Finding]:
         if not m:
             continue
         value = m.group("value").strip().strip("'\",")
-        if SECRET_READ.search(value) or SETTING_VALUE.fullmatch(value):
+        if SECRET_READ.search(value):
             continue
+        # The setting exemption runs AFTER the credential shape, never before
+        # it. `SETTING_VALUE` is case-insensitive and its last alternative is
+        # `[A-Z][A-Z0-9_]{2,}`, so it fullmatches any single word of letters,
+        # digits and underscores at any length: a forty-character hex token
+        # assigned to `*_API_KEY` read as a setting and cleared. That is a false
+        # `clear`, which is the one error this command says it is not allowed to
+        # make. Checked the other way, a long constant like
+        # `READ_WRITE_ALL_THINGS_HERE` now reads reserved, and a false reserved
+        # costs one merge of waiting. The cheap error is the one to keep.
         sid, title = section_of(hunk, i, base)
         if CREDENTIAL_SHAPE.fullmatch(value):
             out.append(Finding("secret", RESERVED, hunk.path, line.lineno, title, line.text,
                                "an added line assigns a credential-shaped value to a "
                                "secret-shaped name, and the value is not a read of one"))
+        elif SETTING_VALUE.fullmatch(value):
+            continue
         elif is_effectful(hunk.path):
             out.append(Finding("secret", UNDECIDED, hunk.path, line.lineno, title, line.text,
                                "a file that can act assigns something to a secret-shaped name, "
