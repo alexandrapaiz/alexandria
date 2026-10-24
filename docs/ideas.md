@@ -18970,3 +18970,131 @@ cutting gates to make a budget.
   put nine unrelated files in a diff whose point is one helper.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-24 — The bus should fill the recipient's company in from the sender's, because a blank half is a fan-out (engineer seat, message run)
+
+- Trigger: this run was woken by a `done` the dispatch described as "addressed
+  to you". The bus disagreed. The message carried `to_seat: engineer` and
+  `to_company: null`, it was answering a handoff sent nine minutes earlier by
+  `alexandra-systems/engineer`, and its reference was a pull request in the HQ
+  repository. A second message in the same inbox, from `Ursa/exo`, had the
+  identical shape and belonged to the Ursa engineer. Measured over the 500 rows
+  the bus returns: 374 carry both address fields, 108 carry neither, 15 carry a
+  seat with no company, 3 carry a company with no seat.
+- What: `POST /api/messages` defaults `to_company` to the sender's company
+  whenever `to_seat` is set and `to_company` is not, and stores the filled-in
+  value rather than the blank. Both of today's mis-deliveries were a seat
+  writing to its own company's counterpart and omitting a field it never
+  thought about, so the sender's own company is the right default in both,
+  and it is the right default in the general case for the same reason: a seat
+  that means to cross a company boundary is doing a deliberate thing and will
+  name it. The seats that genuinely have no company, `owner` and `everyone`,
+  are the exception the default skips.
+- Why this rather than a rejection: a rejection turns every existing client
+  into a broken one on the day it ships, and three of the four clients that
+  post to this bus are not ours to update. A default is invisible to a correct
+  caller and corrects an incorrect one.
+- Why it is the owner's and not mine: it is her server, and a rule there binds
+  twelve seats in five companies at once. `tools/board.py` now refuses to send
+  the bare row and `tools/board.py inbox` exits non-zero on one it receives,
+  which is the client half and the only half this repository owns.
+- First step: the measurement above, which is done, and one question to the
+  owner through the ExO relay: default it, reject it, or leave it and let each
+  client guard itself. The code behind any of the three is an afternoon.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A dispatch that paraphrases a board message drops the field that says whose it is (engineer seat, message run)
+
+- Trigger: the event payload for this run quoted the body of the `done` in
+  full and introduced it as "a done from alexandra-systems/pm addressed to
+  you". Every word of the body was accurate. The addressing was not, and the
+  payload could not have said so, because the prose of a message does not
+  carry `to_company` and the paraphrase had no field left to put it in. The
+  run spent its first twenty turns re-deriving from the bus what one field
+  would have said.
+- What: the wake payload carries the message's `id`, `to_seat` and
+  `to_company` verbatim alongside the prose, and says "addressed to
+  `<company>/<seat>`" rather than "addressed to you" when the company is
+  blank. A seat reading "addressed to `engineer`, company not set" knows in
+  one line what this run measured in twenty turns.
+- Why it is worth more than the twenty turns: the four other seats named
+  `engineer` get the same payload with the same "addressed to you", and the
+  one most likely to act on a `done` is the one whose recent work rhymes with
+  the subject line. The payload is the last place the ambiguity could be
+  surfaced before a seat acts on it.
+- First step: this is the host runtime's payload builder and not this
+  repository's, so the first step is the ExO relay rather than a commit. The
+  evidence to send with it is this run's inbox read, which is three directed
+  messages of which one was ours.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A proposal that carries a measurement should carry the date the measurement expires (engineer seat, message run)
+
+- Trigger: the 2026-10-18 entry that proposed this run's own work is still
+  `proposed`, and two of its three measurements are now false. It recorded
+  that the bus has five kinds and that `handoff` is not one of them, and the
+  bus has six with `handoff` among them. It recorded that every message
+  carries a null `to_seat`, and 374 of 500 now carry both address fields. The
+  addressing was built in the six days between. Nothing read the entry in
+  those six days, so nothing noticed.
+- What: `tools/ledger.py` learns to spot an entry whose body contains a
+  measurement, which is a number next to a noun, and reports any such entry
+  still `proposed` after thirty days as stale rather than as pending. Not a
+  failure, a separate count in `--census`, because a stale measurement is a
+  different thing from a backlog and the owner triages them differently.
+- Why: the ledger's whole claim is that an observation written down is an
+  observation kept. A measurement decays on a schedule the prose never states,
+  and an entry whose numbers are wrong argues for the wrong fix with the
+  authority of having been checked. That is worse than an entry with no
+  numbers at all.
+- First step: count how many `proposed` entries older than thirty days carry a
+  number, on the live file, before writing anything. If the answer is three the
+  idea is not worth a command.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Temporal makes the second half of an address impossible to omit, and pays for it with a silent default (engineer seat, message run)
+
+Today's scan is an adjacency pick rather than a rotation through
+`docs/market/landscape.md`, because the run's finding is about addressing
+between agents and the landscape's entries are research tools and newsletters.
+Temporal is named in `docs/agents/durable-execution.md` and it is the engine
+the host runs these seats on, so it is the nearest system that has already
+solved the problem this run found.
+
+**Observed 2026-10-24, from `docs.temporal.io/namespaces`.** Temporal has the
+identical structure to the board's bus. A workflow is addressed by a workflow
+id inside a namespace, and in its own words, "Temporal guarantees a unique
+Workflow Id within a Namespace. Workflow Executions may have the same Workflow
+Id if they are in different Namespaces." So the id alone is ambiguous across
+namespaces, exactly as `engineer` is ambiguous across companies.
+
+**The thing worth stealing.** Temporal never lets the second half be empty.
+"If no Namespace is specified, the Temporal Service uses the Namespace
+`default` for all Temporal SDKs and the Temporal CLI." The address is
+completed at the client, so nothing ambiguous ever reaches the wire, and the
+namespace has to exist first: "You must create a Namespace before using it in
+your Client." You cannot address a namespace into being. The board's bus does
+the opposite. It stores the blank, and the blank becomes a delivery to five
+seats. The proposal above is this steal with one change, which is that the
+sensible default here is the sender's own company rather than a literal named
+`default`, because both of today's mis-deliveries were a seat writing to its
+own company's counterpart.
+
+**The thing alexandria does better, and it is the half Temporal gets wrong.** A
+default that is wrong is harder to see than a blank that is flagged. A
+Temporal client that forgot its namespace does not fail, it addresses the
+`default` namespace successfully and silently, and the operator finds out when
+the workflow is not where they looked. `tools/board.py inbox` as of today
+refuses to resolve the ambiguity on the reader's behalf: it prints the message
+in a bucket named for its uncertainty and exits non-zero. The right shape is
+both halves and they are not the same half. Default at the sender, where the
+answer is known. Flag at the reader, where it is not.
+- First step: the steal is already filed as the first proposal of this run,
+  which is the one the owner answers. What is left over is the reader half,
+  and that shipped today: `tools/board.py inbox` names its own uncertainty and
+  exits on it.
+- Cost: $0.
+- Status: proposed
