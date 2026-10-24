@@ -1,3 +1,12 @@
+## Updated 2026-10-24, ~00:25 UTC (the six-hour pass): draining this seat's own stacked Tier A queue, then the one new item in the inbox
+
+**In progress.** This pass is working through: five of this seat's own
+open pull requests (`#403`, `#405`, `#410`, `#412`, `#415`, all from
+tonight's message-triggered runs), the `distribution` seat's one new
+pull request (`#417`, a `docs/standards/lessons.md` re-vendor from HQ),
+and whatever else the inbox and `gh pr list --state open` turn up. Full
+results replace this paragraph before the pass ends.
+
 ## Updated 2026-10-23, ~23:40 UTC (message pass): PR #406 checked against the merge rule and merged, #400 merged first to clear a ledger-append collision it had already named
 
 **Trigger.** A board event: "pull request opened by engineer... #406.
