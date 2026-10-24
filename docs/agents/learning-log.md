@@ -3928,3 +3928,150 @@ list the facts it asserts about running systems, and check each against
    have to name the register that holds that model and show it updated in the
    same commit. Three instances, named in today's third incident, not written
    into the charter because this run had spent its three improvements.
+
+## Run 2026-10-24 (message, triggered by `brief.sent` — the daily brief)
+
+Branched from `main` as `alexandria-exo/2026-10-24-message`. **Sixth in a
+chain: #272 to #331 to #381 to #404 to #411 to this one. This seat is blocked
+on merges**, and the chain has now grown by one link per run for five
+consecutive runs.
+
+### What the chain actually cost this run, measured rather than complained about
+
+The charter on `main` is **553 lines shorter** than the charter on this
+branch. Five runs of this seat's edits are unmerged, and a run reads its
+instructions from the checkout, which starts at `main`. So this run began by
+re-deriving two findings that four of its predecessors had already written
+down: the shallow-clone trap (already in §5b of the branch version) and the
+`gh run list` blind spot for bus-started runs (already in §2b's 2026-10-11
+clause). It cost perhaps fifteen turns and it would have cost the whole run
+if the merge had been skipped.
+
+**Write that down as the concrete mechanism of merge debt, because "blocked
+on merges" sounds like a complaint and this is arithmetic.** A seat whose
+charter edits do not merge is a seat whose next run is governed by an older
+charter than the one it wrote. The work is not merely delayed; it is
+**unavailable to the author**. The first thing any run of this seat should do
+after the ship-first push is `git diff origin/main..HEAD -- prompts/exo-agent.md`
+and read its own unmerged instructions, before deciding what to look at.
+
+### The finding of the run: an ask was granted and no charter was pointed at it
+
+On 2026-10-11 this seat asked HQ, through `hq-relay.md`, to have the event
+bus report run outcomes somewhere this repository can read, and listed four
+acceptable answers. **HQ built the fourth one on 2026-10-18**: the board read
+at `$BOARD_API_URL/api/board/<company>` now returns a `runs` array with
+`seat`, `trigger`, `turns`, `model`, `exit`, `refusal`, `pr_url` and
+`report`, one row per host session.
+
+Nobody here changed anything. The relay entry still said undelivered. The
+duty row in `unowned-duties.md` still said unowned "because the evidence
+does not exist." `turn-caps.md` still said it was frozen for want of exactly
+that field. Four charters still read `gh run list`, which decision 056 had
+emptied on 2026-10-17.
+
+**What it cost, and this is the part to carry forward.**
+
+1. `alexandria-exo`, 2026-10-23T19:04Z, **exit 1 at 48 turns of 200**.
+   Unrecorded for a day.
+2. `alexandria-pm`, 2026-10-23T19:09Z, **exit 1 at turn 1**, seven seconds,
+   starting one second after the exo run ended. The PM subscribes to
+   `run.failed`. **The triage run for the failure died on the failure**, and
+   that is why the next item happened.
+3. This seat, four hours later, wrote
+   `INC-2026-10-23-the-exo-seats-own-draft-aged-four-hours...` about item 1
+   and attributed it to a run that chose not to return at the end of its
+   budget. There was no choice. A correction is now inside that entry.
+
+Item 3 is the one that should sting. That entry contains the sentence
+"nobody can distinguish 'this run is still going' from 'this run died at turn
+90' by looking" — and then confidently asserted one of the two sides. **A
+register that records an unavailable distinction must not then depend on
+either side of it.** The distinction was available, in a field called `exit`,
+on the surface the handoff that triggered the run had come from.
+
+### Three improvements
+
+1. **§2a-0, §2b and §2c re-pointed at the board's run record**, with the
+   three shapes a host run fails in (non-zero `exit`; one turn, which can
+   carry `exit: 0`; non-null `refusal`) and the two limits of the new surface
+   stated rather than inherited.
+2. **§0: this seat is not weekly and has two modes.** The manifest says
+   `cron = "0 14 * * 0"` and five subscriptions including `brief.sent`. The
+   last five runs were all doorbell runs and none was the Sunday cycle. A
+   wake run now does the event's work plus three standing duties and says
+   what it skipped; the weekly cycle does everything. §3b has known since
+   2026-10-17 that a weekly cron plus a subscription is not a weekly seat,
+   and had only ever aimed that test at other seats.
+3. **The PM charter's §1f re-pointed at the same record.** That seat owns
+   daily failure triage and its charter sent it to `gh run list` too, which
+   is why both failures above went unrecorded. Engineer and security
+   charters corrected in a line each. Eleven references across twelve
+   charters, four of them live instructions.
+
+### Duty work, in brief
+
+- **The one urgent queue item was rotted and overtaken twice.**
+  `2026-10-11-writers-cap` patches `--max-turns 150` in
+  `agent-writer.yml`; the live line has said 225 since 2026-10-12, and since
+  decision 056 that file governs only manual dispatches. Cancelled, pointing
+  at Ask 4 on the relay page, which is a one-line manifest diff. **The
+  2026-10-18 run added a whole new section to that page and re-grepped no
+  item.** A run editing a page is not auditing it.
+- **The anchor check, run mechanically across the page for the first time.**
+  20 anchors: 16 match exactly once in their named file, 2 belong to the
+  cancelled item, 2 appear twice in `agent-pm.yml` and item 15 had already
+  documented why. A zero is a verdict; any other non-one is a question.
+- **Turn caps re-derived** from `turns` on the run record, after thirteen
+  days frozen. Writer **140 of 150, 93%**, third consecutive measurement over
+  the 70% trigger. pm 141/300, engineer 131/200, exo 89/200. Four seats of
+  twelve, because the run route is scoped by count.
+- **32 remote branches deleted**, each passing both tests: every pull
+  request for the name merged or closed, and nothing on the branch missing
+  from `main`. 102 down to 70.
+- **Zero branch-name reuse across 153 host-convention branches.** The
+  `alexandria-<seat>/<date>-<trigger>` naming the host generates has
+  structurally ended the collision that six names and five seats used to
+  produce. Record that as solved rather than watched.
+- **Quality claims:** the home page metric is still dark, re-measured
+  2026-10-24T00:14Z, `grep -c metric-line` returns 0.
+
+### The numbers to carry forward
+
+**The presence gradient has a live source again.** The old one, owner
+`workflow_dispatch` runs, died on 2026-10-15 and read as a perfect score
+from then on. Replacements: trigger mix on the board, **24 `window:message`
+against 1 `window:cron`** in the last 25 alexandria runs, zero owner
+dispatches. And the brief's own pair, **five "Decided in your name" against
+four "Needs you"**, with all four of the asks genuinely hers: a spend limit,
+a licence, a package name, a permission. That is the healthy shape and the
+old metric could not have shown it.
+
+**58 of 102 branches could not be deleted** because their only pull request
+is closed and they hold at least one commit that is on no other ref. The
+2026-10-04 containment clause is doing its job and the consequence is that
+the branch list cannot shrink below the count of superseded runs. That is a
+side effect of the supersession practice rather than a defect, and it is
+worth one look a month rather than a rule.
+
+### What the next run must check first
+
+1. **Which mode you are in.** Read the trigger. If it is an event, §0 says
+   one improvement and three duties, and say what you skipped.
+2. **Read your own unmerged charter before you plan.**
+   `git diff origin/main..HEAD -- prompts/exo-agent.md` after the merge. Six
+   runs of edits is enough that re-derivation is the default failure.
+3. **Did #414 merge, and is the chain seven deep.** If it is, the thing to
+   report is merge throughput and not the work.
+4. **Probe every blocker on `unowned-duties.md` rather than re-reading it.**
+   One row was wrong for six days because HQ closed its gap silently. The
+   two still open are `NEON_RO_URL` on the PM's runtime and a provider route
+   for the skill benchmark.
+5. **The press is due 2026-10-26 09:00Z on a disabled Modal schedule.** If
+   the spend limit was not raised, the "each week the library becomes an
+   issue" claim fails a second time and `quality-claims.md` predicted it on
+   2026-10-24. Check whether the prediction was read.
+6. **Ask 3 and Ask 4 of the 2026-10-18 relay entry.** Ask 3 is answered.
+   Ask 4, the writer's `max_turns` 150 to 225, is one line in a manifest and
+   the seat ran at 93% again. If it is still unapplied, that is the fourth
+   measurement and it belongs in the incident register.
