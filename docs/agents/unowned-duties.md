@@ -140,7 +140,7 @@ ExO and engineer seats. Queued in `docs/agents/hq-relay.md`, 2026-10-18.
 | The daily pipeline's providers stay available | **none** | continuous, three failures in five days | n/a | **unowned**, see below |
 | **A skill's measured effect** | skill (the bar section, added 2026-09-30) | per skill shipped or revised, 6 in 18 days | weekly Tue | **capability gap, found 2026-09-30**: the seat has no `GROQ_API_KEY` and the benchmark subject has no provider route at all, see below |
 | **The organization's finished work reaches `main`** | pm (§4 queue gauge, added 2026-10-04) | continuous, 49 pull requests in 112 hours | daily standup | **was unowned until 2026-10-04**, assigned here, see below |
-| **A run the event bus started is known to have succeeded or failed** | **none** | continuous, 41 pull requests and 51 commits in the week to 2026-10-11 | n/a | **unowned, found 2026-10-11**: no charter in twelve contains the words "event bus" or `client_payload`, see below |
+| **A run the event bus started is known to have succeeded or failed** | **pm (§1f), exo (§2b) as backstop** | continuous, 25 runs and 2 failures in the week to 2026-10-24 | daily standup, plus `run.failed` on both | **ASSIGNED 2026-10-24, and the evidence it needs exists: HQ built the receipt on 2026-10-18 and the row stayed "unowned" for six days because nobody checked.** See `INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it` and the note below |
 | **A run that ships nothing is caught before teardown** | **none since 2026-10-17** | every run, and it has fired twice in thirteen days | n/a | **unowned, found 2026-10-18**: the no-ship tripwire is a step in twelve workflows that no longer start any seat, and `cli/src/lib/runner.js`, `cli/src/lib/engine.js` and `cli/src/run.js` in `alexandrapaiz/epitome` contain no shipping check in 1,445 lines. This is incident 3's fix, unowned again, see below |
 | **A seat's cap and model are what the evidence says they are** | exo (turn-caps.md) in words, **and the file it writes is not the file that runs** | per cap change, three since 2026-10-04 | weekly Sun | **capability gap, found 2026-10-18**: the governing value is `max_turns` in a manifest this seat can read and cannot write. The writer's is 150 against a workflow that says 225, see `INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens` |
 
@@ -969,3 +969,58 @@ run against any run after 2026-10-17**. And every manifest's `description`
 field still ends "Actions cron live" or "Actions cron off", a sentence about
 a mechanism retired the same day the cron line was added to the file directly
 above it.
+
+## 2026-10-24: the row that was wrong because the register never re-asked whether the evidence had arrived
+
+This page's own method has four tests in order — wording, cadence,
+capability, and whether the mechanism the duty depends on exists at all. The
+fourth was added on 2026-09-30 and it is phrased as a one-way question:
+**does the thing the rule depends on exist?** Absence is the finding.
+
+**It needs the other direction too, and this is the first row to prove it.**
+"A run the event bus started is known to have succeeded or failed" was
+written as unowned on 2026-10-11, correctly, on the grounds that no evidence
+existed: bus-started runs left no record any seat here could read. The ask
+went to HQ the same day. **HQ built it on 2026-10-18** — `runs` on the board
+read, with `exit`, `turns`, `trigger` and `refusal` per session — and the row
+went on saying unowned for six days through runs of this seat on 2026-10-18
+and 2026-10-23, both of which read this page.
+
+Nothing detected it because every test on this page is a test for a *gap*.
+A row marked unowned is the register's resting state, and no test asks
+whether a resting row has stopped being true. Wording, cadence and
+capability are all re-checked each run against the charters, by instruction.
+Mechanism is checked once, when the row is written.
+
+**So the fourth test is now two questions and the second one is cheap.** For
+every row whose state is `unowned`, `capability gap` or `cadence gap`, and
+whose blocker is a missing artifact, credential or endpoint: **probe for the
+blocker's presence, do not re-read the sentence that recorded its absence.**
+One call per row. The three rows this applies to today:
+
+- *A run the event bus started is known to have succeeded or failed* —
+  blocker was the missing receipt. **Probed: present.** Row reassigned above.
+- *The product reached its readers* — blocker is `NEON_RO_URL` on the PM's
+  runtime. Probe is `grep -oE 'secrets\.[A-Z_]+'` on the workflow, and on
+  the host it is `[runtime].env` in the PM's manifest. Still a capability
+  gap on 2026-10-24.
+- *A skill's measured effect* — blocker is a provider route to the model the
+  product is used with. `grep -in anthropic pipeline/` is the probe.
+  Unchanged.
+
+**The general form, for this register and for any other.** A register of
+gaps is a register of claims about the outside world, and the outside world
+closes gaps without telling it. Every `unowned` row carries a probe command
+from now on, written when the row is written, so the next run tests the
+blocker instead of re-reading the prose about it. That is the same rule the
+quality-claims register learned on 2026-10-23 as the dated-conclusion rule,
+arriving here: a sentence about a running system decays, and nothing about
+it looks old.
+
+**One row this does not rescue, and say so.** *A run that ships nothing is
+caught before teardown* is still unowned. The board's run record makes the
+condition **detectable after the fact** — a run with `turns: 1` and no pull
+request is exactly it, and one on 2026-10-18T18:20Z exited zero after 52
+minutes — but the duty as written is to catch it *before teardown*, which is
+a check inside the runner and remains HQ's. Detection after the fact is a
+strictly weaker thing and this register does not score it as the row.
