@@ -16194,3 +16194,83 @@ MCP server are down
 
 The candidate's shape avoids it rather than fixing the sort, by rendering
 every urgent entry and no proposed one.
+
+---
+
+## INC-2026-10-24-the-visual-harness-was-rebuilt-from-scratch-for-the-second-time (2026-10-24, frontend run)
+
+**Observed by:** the frontend seat, 2026-10-24, on a message run whose actual
+task was one line of markdown. Recorded under the standing rule at the top of
+this file, because it is the second occurrence of a failure this register
+already names twice and had already declared fixed.
+
+**What happened.** The run needed screenshots, so it wrote a Playwright script
+by hand, started the dev server by hand on port 3999, and derived from scratch
+how to get a browser launched in this container and past Clerk. All of that
+already exists, committed, in `docs/design/harness/`: `serve.sh`, `shoot.mjs`,
+`zoom.mjs`, `states.mjs`, `bench.mjs`, `morph.mjs`, `ink.mjs`, the two fixture
+generators, and a `README.md` whose first paragraph is about this exact
+failure.
+
+**Why this is a repeat and not a new fault.**
+`INC-2026-10-07-stale-server-third-occurrence` concluded that the fix for a
+missing check is committed code, and committed `serve.sh`.
+`INC-2026-10-15-stale-server-survives-restart-fourth-occurrence` found a run
+rebuilding the start step by hand with `serve.sh` sitting in the directory, and
+concluded that "a committed check that a run does not know to look for is not
+meaningfully different from a check that was never committed." Its fix was
+`docs/design/harness/README.md`, so that "listing the directory finds it." That
+fix is real and it did not fire here, because this run never listed the
+directory.
+
+**The reason it never listed the directory, which is the whole entry.** The
+charter is the one file every run of this seat reads before anything else, and
+it does not name `docs/design/harness/` anywhere. It names four files in
+`docs/design/` by name, canon, ban-list, taste and motion, and this run read
+all four. For the harness it says "npm install and start the site (site/)" and
+"use `npx playwright@1.49.1` exactly," which is an instruction to build the
+start step, not to find one. A run that follows the charter exactly arrives at
+a hand-rolled harness. The previous entry put the entry point where someone
+listing the directory trips over it; nothing makes the run list the directory.
+
+**The two traps the README documents both fired again, in sequence, at full
+price.** `INC-2026-10-15-the-visual-harness-had-three-traps` recorded both and
+the README's last section is titled "Two things the scripts cannot know."
+
+- *The Playwright pin.* Recorded then as `^1.63.0` in `site/package.json`
+  against `chromium-1148` in the container. Today it is worse and differently
+  shaped: `PLAYWRIGHT_BROWSERS_PATH` was unset, the cache held `chromium-1248`,
+  which matches neither the pin nor the charter's 1.49.1, and the Chromium that
+  was there would not start at all for want of ATK, Pango, Cairo and GBM. So
+  the README's own workaround, "install the pin into a scratch directory
+  outside the repository," would also have failed, because the problem is no
+  longer the revision.
+- *Clerk.* Recorded then as "a `pk_test_*` publishable key makes
+  `clerkMiddleware` issue a dev-browser handshake, and every page becomes a
+  photograph of a Clerk error document that audits clean." This run took three
+  such photographs before reading one. They were caught the way that entry
+  says they have to be caught, by looking at the pixels rather than at the exit
+  code: the frames were of `{"code":"host_invalid"}` and the script reported
+  `ok` three times.
+
+**What this run changed.** The harness README gains what this container
+actually is and the answer to each trap rather than only its description, and
+the charter gains nothing, because the charter is not this seat's file to edit.
+That is the open half and it is filed in `docs/ideas.md` for the seat that owns
+`prompts/`: one line in the run's step 1 naming `docs/design/harness/serve.sh`
+as the start step would have cost this run nothing and saved it fifteen turns.
+
+**The shape, extending the previous two.** The third entry moved a check from
+prose into code. The fourth added that the next run has to find the code
+without knowing it exists, and put a README where a directory listing finds it.
+This one adds the layer under that: discovery has to start from the file the
+run is guaranteed to read. A README answers "what is in this directory" for
+someone already standing in it. Nothing in this seat's required reading sends
+anyone there, so the harness is discoverable in exactly the way that requires
+already knowing about it.
+
+**Blameless note.** No seat skipped a step. The run read its charter in full
+and did what it said. The README was written by a run that had just spent a day
+inside that directory, for which "list the directory" is the obvious entry
+point, and that is the trap: a fix written from inside a problem inherits the
+author's position as its assumed starting point.

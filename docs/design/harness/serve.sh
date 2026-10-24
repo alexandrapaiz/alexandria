@@ -29,11 +29,33 @@ PORT_FE="${FE_PORT:-3000}"
 BASE_FE="http://127.0.0.1:${PORT_FE}"
 echo "== port ${PORT_FE} =="
 
+# Narrowed 2026-10-24, and this one is not about a stale server of ours. It is
+# about somebody else's live one. The agent container is SHARED between
+# companies: this run found a `next-server` serving
+# /tmp/epito-ursa-frontend-.../ursa-minor alive beside ours, which is another
+# company's frontend seat mid-run. The loop below asked `ps` for every
+# next-server on the machine and killed each one unconditionally, so a visual
+# run of this seat takes a sibling company's server down as its first act and
+# reports nothing. Nothing downstream can notice, because everything this
+# script verifies afterwards is about OUR port.
+#
+# A process's /proc/<pid>/cwd is the directory it was started in, and
+# `next start` runs in `site/`, so a next-server whose cwd is another tree is
+# not ours. `pwd -P` is read inline rather than into a variable at the top,
+# because the stray check further down defines its own and one definition is
+# better than two that can drift.
 echo "== stopping any server from a previous build =="
 for pid in $(ps -eo pid=,args= | awk '$2=="next-server"{print $1}'); do
+  cwd=$(readlink -f "/proc/$pid/cwd" 2>/dev/null || true)
+  if [ "$cwd" != "$(pwd -P)" ]; then
+    echo "   leaving next-server $pid alone, it serves ${cwd:-an unreadable cwd}"
+    continue
+  fi
   echo "   killing next-server $pid"; kill "$pid" 2>/dev/null || true
 done
 for pid in $(ps -eo pid=,args= | awk '/next start/ && !/awk/{print $1}'); do
+  cwd=$(readlink -f "/proc/$pid/cwd" 2>/dev/null || true)
+  [ "$cwd" = "$(pwd -P)" ] || continue
   kill "$pid" 2>/dev/null || true
 done
 sleep 2
