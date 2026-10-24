@@ -60,7 +60,7 @@ order did not decide the day. Three things pointed at the same surface.
 
 ## What shipped
 
-`tools/incidents.py`, `docs/agents/incidents/inbox/`, and 32 tests.
+`tools/incidents.py`, `docs/agents/incidents/inbox/`, and 31 tests.
 
 The prevention is the point. `tools/check_registers.py` finds a conflict
 marker that reached `main` and `tools/resolve_register_conflict.py` repairs a
