@@ -790,12 +790,26 @@ of by turn count and it is not one row. It is **twenty**.
 # the test that finds the event: cluster on time, across seats, at any turn count
 python3 - <<'PY2'
 import json
-rows=[json.loads(l) for l in open('/srv/asc/state/.epito/audit.jsonl') if l.strip()[:1]=='{']
-w=[r for r in rows if r.get('action')=='run.end' and r.get('exit')==1
-   and '2026-10-24T13:49' <= r['ts'] <= '2026-10-24T13:52']
+rows = []
+for line in open('/srv/asc/state/.epito/audit.jsonl'):
+    try: rows.append(json.loads(line))
+    except Exception: pass          # see the torn line below; do not drop this guard
+w = [r for r in rows if r.get('action') == 'run.end' and r.get('exit') == 1
+     and '2026-10-24T13:49' <= r['ts'] <= '2026-10-24T13:52']
 print(len(w), [(r['agent'], r.get('turns')) for r in w])
 PY2
 ```
+
+**The `try` is not defensive habit and the first version of this command did
+not have it.** The log holds one torn line, 4209 of 5639, where a `message`
+row from 2026-10-20T12:20Z is truncated mid-key at 124 characters and a
+second row from 2026-10-23T15:26Z is written over the remainder. A strict
+parse raises on it and the whole sweep returns nothing, which is how this
+command failed the first time it was run after being written. The lost record
+is a `message` action and not a `run.end`, so this page's numerators are
+intact, and rule 7 says to quote the source rather than trust it: an
+append-only file written non-atomically loses a record about every 5,600 and
+gives no sign of which one.
 
 `2026-10-24T13:49:23.944Z` through `13:51:37.170Z`, a span of 133 seconds,
 twenty `run.end` rows with `exit: 1`, across all five companies: Ursa 10,
