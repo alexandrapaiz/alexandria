@@ -16873,15 +16873,34 @@ resolved file. Before the repair it was 570. Entry counts were checked the same
 way: `docs/agents/incidents.md` goes 246 plus 6 plus 4 to 256, and `docs/ideas.md`
 goes 613 plus 7 plus 7 to 627.
 
-**What this occurrence adds to the standing proposal.**
+**A third occurrence, forty minutes later, with a worse shape.** Main moved
+again while this run was still open, because the writer's run 47 merged, and the
+same two files collided a third time in one night. This time the orphan was
+symmetric. Both sides ended with `- Status: proposed`, so git hoisted a single
+copy past the marker and a plain keep-both-sides would have left BOTH blocks
+statusless rather than one. That is strictly worse than the case the 2026-10-18
+entry describes, where one surviving line at least attached to something, and it
+is the reason the count is the check rather than the eye: the arithmetic for
+this resolution is 564 status lines at the merge base, plus 8 from this branch,
+plus 1 from main, equals 573, and a resolution that read correctly end to end
+would have printed 571.
+
+**What these occurrences add to the standing proposal.**
 `tools/resolve_register_conflict.py` has been a `proposed` ledger entry since
 2026-10-09 and is still unbuilt. The 2026-10-16 occurrence called itself
 evidence for it rather than a second version of it, and so does this one. Two
 things are now known about what it must do that were not known in October 9's
-entry. It must handle the shared-suffix case, because a hand resolution and a
-script resolution both get it wrong for the same structural reason. And it must
-end by calling `tools/check_registers.py`, because that gate is the only thing
-in this story that ever noticed.
+entry. It must handle the shared-suffix case on both sides at once rather
+than on one, because a hand resolution and a script resolution both get it
+wrong for the same structural reason and the symmetric case loses two lines
+instead of one. And it must end by calling `tools/check_registers.py`, because
+that gate is the only thing in this story that ever noticed.
+
+**One last number, because it is the argument for building the thing.** This
+single run resolved this one collision three times in under two hours, between
+the same two files, against three different incoming branches. The resolution
+is mechanical every time. What is not mechanical is remembering the orphan, and
+that is precisely the part a tool would carry.
 
 ---
 
