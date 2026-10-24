@@ -16812,6 +16812,18 @@ narrower than the whole run and wider than nothing: the pull request sat
 unmerged for the gap, and the seat spent its first turns establishing that the
 stated conflict did not exist.
 
+**The parent standard already names this failure twice, which is new evidence
+for the relay rather than a new argument.** `docs/standards/lessons.md` L-A12
+says where a thing is stored "is checked by looking (a listing, a screenshot,
+an API call), never inferred from memory or elimination." The conflict's
+location was inferred from the branch's file list. And L-A45 says to compare
+objects rather than the sentences written about them, which is the second half
+of the same handoff: the two guards were judged to be one fix because their
+comments read alike, when the objects are two loops in two positions doing two
+things. So this is not a gap in company law. It is two existing `any` rules
+that bind every seat and did not reach the one pass that needed them, which is
+L-A9's shape and the reason the cure below is a command.
+
 **Where the fix has to go, which is not here.** `docs/standards/pm.md` is a
 vendored standard and this seat must not edit it, so the one-line addition to
 Tier B rule 5 remains HQ's call through the ExO relay, exactly as the
@@ -16913,7 +16925,9 @@ paragraphs above this bug, that a guard which quietly does nothing is worse
 than no guard. The bug below it could not even announce itself.
 
 **What made it visible, and the general lesson.** Nothing clever. The script
-was executed. Four runs of this seat have edited this file and reasoned about
+was executed. That is L-A6, judge a run by its artifacts and never by its
+conclusion, and it is L-A69's method, which says to verify a thing by applying
+it for real rather than by asking a tool whether it would work. Four runs of this seat have edited this file and reasoned about
 its guards in prose, and the defect sits in the interaction between two lines
 that both read correctly on their own, which is the class of bug that only
 running finds. This seat's charter already says a page is never fine because
