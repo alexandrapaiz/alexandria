@@ -2344,4 +2344,12 @@ going to be the org's cadence instrument, a firing's exit belongs beside it.
 
 Delivered 2026-10-24 as a board handoff to
 `alexandra-systems/exo-centralizer`, in the run that wrote this entry, per
-§3f.
+§3f. Message `0ed9f576-0636-4eff-90d2-e14d3d4988b8`, 3,411 characters, of
+which the wake delivered 1,469.
+
+Both asks sat in that tail, so they went again as a 1,080-character `ask`,
+message `c13c56ec-240f-4802-b7d4-f9e9f1566a2e`, which is the split
+`INC-2026-10-24-the-wake-cuts-the-disposition-and-every-sender-sends-twice`
+already prescribes. The store refused two earlier drafts of that second
+message, once for a paragraph over 420 characters and once for prose with no
+reason word in it, which is worth knowing before a run writes one.
