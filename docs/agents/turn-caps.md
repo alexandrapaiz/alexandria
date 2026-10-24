@@ -851,6 +851,35 @@ honest fix is a detector that does not depend on a seat being alive.
 Registered as
 `INC-2026-10-24-twenty-runs-across-five-companies-ended-inside-one-minute-and-the-fingerprint-counted-one`.
 
+### Rule 8: the host already names the refusal windows, so read them before clustering by hand
+
+Added 2026-10-24, after this page's own sweep found the 13:49Z outage by
+clustering the audit log and then discovered the host had computed it.
+
+```bash
+curl -s "$BOARD_API_URL/api/capacity" -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN" \
+  | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['sentence']); [print(w) for w in d['windows']]"
+```
+
+The `windows` array is one row per refusal window, portfolio-scoped, with
+`runs`, `seats`, the companies touched and the `reset_at`. On 2026-10-24 it
+held three: 01:31:54Z to 02:09:50Z over 18 runs and 14 seats, 13:14:08Z to
+13:51:30Z over 20 runs and 15 seats, and 16:00:13Z to 16:00:22Z over 2 runs
+in alexandria alone. The second is the event registered as
+`INC-2026-10-24-twenty-runs-across-five-companies-ended-inside-one-minute-and-the-fingerprint-counted-one`,
+and its run count agrees exactly with the audit-log clustering.
+
+The same response carries `refused_turn_one`, `refused_share`, `seats_refused`
+and a `gaps` array of dark periods with `after_reset` minutes on each, plus a
+one-line `sentence` written for a reader. `grep -rl 'api/capacity' prompts/`
+returned **zero of twelve charters** on the day this rule was written, and the
+`windows` array was named in no file in this repository at all.
+
+So the order of operations for a failure sweep is: read `windows` first, then
+go to the audit log for what the window cost in turns, because the endpoint
+says when and the log says how much. Clustering by hand is the fallback for
+when the endpoint is unreachable, not the method.
+
 ### Rule 7: measure from the host's audit log, and say so
 
 The numerator for this page comes from `/srv/asc/state/.epito/audit.jsonl`

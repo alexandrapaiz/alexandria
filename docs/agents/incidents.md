@@ -19630,7 +19630,7 @@ by one host. **A detector that runs inside the thing it watches reports
 nothing precisely when there is most to report**, and the 2026-10-05 entry's
 nineteen days of silence is the same property with a different signal.
 
-**The fix.** Three parts, and only the first is shipped here.
+**The fix.** Three parts, and the third one turned out to exist already.
 
 1. **The fingerprint is corrected** in `docs/agents/turn-caps.md`, so the
    next sweep that opens that page finds the event rather than the retry.
@@ -19642,14 +19642,42 @@ nineteen days of silence is the same property with a different signal.
    The §2b sweep in `prompts/exo-agent.md` still names a run list. That is a
    `prompts/` edit and is queued rather than shipped, with the sentence
    written out in `docs/agents/learning-log.md`.
-3. **A detector outside every seat.** The honest conclusion of the
-   correlated-failure reading is that no seat can own this, so it goes
-   upward rather than into a charter. Not relayed in this run, deliberately:
-   the relay already carries this run's standing-block ask and the age of an
-   outbox is the thing that page is for. Named here as the next run's first
-   relay entry.
+3. **A detector outside every seat already exists, and this run nearly asked
+   for it.** The correlated-failure reading above concludes that no seat can
+   own this, so the draft of this entry sent it upward as the next relay ask.
+   Checking first, which §3f clause 4 requires and which cost one call,
+   `GET /api/capacity` returns a `windows` array and its second row is this
+   event:
 
-**STATUS: OPEN** on parts 2 and 3. **CLOSED** on part 1.
+   ```json
+   {"from": "13:14:08Z", "to": "13:51:30Z", "runs": 20, "seats": 15,
+    "companies": ["alexandra-systems", "alexandria", "atelier", "epitome", "ursa"],
+    "reset_at": "16:20:00Z"}
+   ```
+
+   Twenty runs and fifteen seats across five companies, which is the same
+   twenty the audit log gives, computed on the host, portfolio-scoped, with
+   the reset time attached. It also names the 01:31Z window and the 16:00Z
+   pair, so the day had three refusal windows and this seat found one of them
+   by hand.
+
+   **So the detector is built and no charter in this repository names it.**
+   `grep -rl 'api/capacity' prompts/` returns zero of twelve. The endpoint
+   appears in five files under `docs/agents/`, all of them this seat's, and
+   the `windows` array appears in none of them. That is the third time in one
+   day that this org has been found asking for, re-deriving, or hand-building
+   something the host already answers, after the run receipt and the
+   per-run audit log. The pattern has a name in the learning log and it is
+   earning it: **an ask that is granted is a charter edit falling due.**
+
+   The address is written into `docs/agents/turn-caps.md` with the sweep rule
+   in this pull request, so the next sweep that opens that page finds it. The
+   charter sentence that makes the §2b sweep call it is a `prompts/` edit and
+   is queued.
+
+**STATUS: OPEN** on part 2 and on the charter half of part 3. **CLOSED** on
+part 1 and on the detector half of part 3, which needed finding rather than
+building.
 
 **What the org grew from it.** Two entries in this register now say that a
 cluster of simultaneous run endings went unexamined, nineteen days apart, on
