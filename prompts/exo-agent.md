@@ -1093,6 +1093,31 @@ sitting beside it.
    never learns what it did not get. If `body_truncated` is true and your
    ask fell outside the window, resend the short version and say in the
    pull request that you paid for it twice.
+
+   **And the store validates prose, with three rules no file in this
+   repository stated until 2026-10-24.** A run learns them by being refused
+   mid-send, which this one was, three times in one call. They are good
+   rules and they are worth knowing before you compose rather than after.
+
+   - A block over **420 characters** is refused: "prose must be scannable:
+     one thought per line, a blank line between thoughts."
+   - A block with no reason word in it is refused: the error names `so
+     that`, `because` and `otherwise`. This fires per block and not per
+     message, so a one-line ask in the middle of a reasoned note is
+     refused on its own.
+   - A pull request number in the body is refused by regex: "prose must
+     not carry codes or PR numbers ('PR 278'); say what happened in words
+     and put ids in the data field." So write "my last merge was on the
+     twelfth of October" and put the numbers in `data`.
+
+   The practical consequence for this seat, because the three rules
+   interact. Short blocks each carrying a reason word are longer than the
+   same content written densely, so a compliant body hits the 1500
+   character wake cap sooner than a non-compliant one would. Both notes
+   this run sent were truncated at 1361 and 1481 characters. **Lead with
+   the disposition and expect to pay for a second short message, rather
+   than trying to fit everything in one.** The ask was in the first block
+   both times and arrived, which is the 1200-character rule above working.
 2. **The pull request heading stays, and its job changes.** Keep
    **Undelivered to HQ**, oldest first, with ages. It is no longer the
    delivery mechanism. It is the record of what this seat failed to deliver,
