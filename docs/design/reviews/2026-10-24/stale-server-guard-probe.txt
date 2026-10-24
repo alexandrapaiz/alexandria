@@ -1,0 +1,35 @@
+The kill-loop guard, probed live on 2026-10-24 during the rebase of #421.
+
+Read-only. This probe reads /proc and kills nothing. It asks each live
+next-server on the machine which directory it was started in, and reports what
+main's kill loop would do to it against what this branch's does.
+
+  $ cd site && SITE_DIR="$(pwd -P)"
+  This harness's site dir: /tmp/epito-alexandria-frontend-jQhHa3/site
+
+  PID        main     this branch   cwd
+  3259468    KILL     spare         <unreadable>
+  3483784    KILL     spare         <unreadable>
+  3563173    KILL     spare         <unreadable>
+  3655653    KILL     spare         <unreadable>
+  3835165    KILL     spare         /tmp/epito-ursa-frontend-WUyUPZ/ursa-minor
+
+Five live next-server processes, and not one of them is ours. This harness had
+not started a server yet when the probe ran.
+
+The last row is the whole argument. /tmp/epito-ursa-frontend-WUyUPZ/ursa-minor
+is another company's frontend seat, mid-run, on this machine, at the moment of
+the probe. On main, the first act of `serve.sh` is to send that process a
+signal, and the script says nothing about it afterwards because everything it
+verifies from that line on is about our own port.
+
+The four unreadable rows are other users' processes, which is why the readlink
+fails, and sparing them is correct for the same reason it is correct to spare
+the fifth.
+
+The guard already on main is dated 2026-10-17 and it does not cover this. It
+sits on the post-start stray check, which decides whether the script exits 1.
+It kills nothing. The two guards read the same property of the same set and do
+different things with the answer, which is why both comments stay in the file
+and why the mechanism is now explained once, at the first of the two in reading
+order, with the second pointing back at it.

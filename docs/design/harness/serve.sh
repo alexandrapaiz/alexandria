@@ -18,6 +18,11 @@
 set -euo pipefail
 cd "$(dirname "$0")/../../../site"
 
+# Where this harness's own server runs, read once because both guards below
+# compare a process's `/proc/<pid>/cwd` against it, and two definitions of one
+# directory is the kind of pair that drifts.
+SITE_DIR="$(pwd -P)"
+
 # The port is read from the environment, because 3000 is not ours to assume.
 # On 2026-10-17 the agent container had an unrelated service listening on it,
 # and this script's own stale-server check reported "an older one is still on
@@ -29,25 +34,32 @@ PORT_FE="${FE_PORT:-3000}"
 BASE_FE="http://127.0.0.1:${PORT_FE}"
 echo "== port ${PORT_FE} =="
 
-# Narrowed 2026-10-24, and this one is not about a stale server of ours. It is
-# about somebody else's live one. The agent container is SHARED between
+# Narrowed 2026-10-24, and this narrowing is not about a stale server of ours.
+# It is about somebody else's live one. The agent container is SHARED between
 # companies: this run found a `next-server` serving
 # /tmp/epito-ursa-frontend-.../ursa-minor alive beside ours, which is another
-# company's frontend seat mid-run. The loop below asked `ps` for every
-# next-server on the machine and killed each one unconditionally, so a visual
-# run of this seat takes a sibling company's server down as its first act and
-# reports nothing. Nothing downstream can notice, because everything this
-# script verifies afterwards is about OUR port.
+# company's frontend seat mid-run. This loop asked `ps` for every next-server
+# on the machine and killed each one unconditionally, so a visual run of this
+# seat takes a sibling company's server down as its first act and reports
+# nothing. Nothing downstream can notice, because everything this script
+# verifies afterwards is about OUR port.
 #
-# A process's /proc/<pid>/cwd is the directory it was started in, and
-# `next start` runs in `site/`, so a next-server whose cwd is another tree is
-# not ours. `pwd -P` is read inline rather than into a variable at the top,
-# because the stray check further down defines its own and one definition is
-# better than two that can drift.
+# A process's /proc/<pid>/cwd is the directory it was started in and
+# `next start` runs in `site/`, so a next-server whose cwd is another tree was
+# started by somebody else. /proc is present wherever this script can run at
+# all. The stray check further down tests the same thing on the same set, and
+# the two guards are both here on purpose: this one decides what to KILL,
+# that one decides whether to FAIL.
+#
+# An unreadable cwd is spared, which is the right default for the right
+# reason: `/proc/<pid>/cwd` resolves for the user who owns the process, so a
+# next-server we cannot read is a next-server we did not start. If one of ours
+# ever did become unreadable and held the port, the EADDRINUSE check below
+# fails the run loudly rather than letting it photograph a stale build.
 echo "== stopping any server from a previous build =="
 for pid in $(ps -eo pid=,args= | awk '$2=="next-server"{print $1}'); do
   cwd=$(readlink -f "/proc/$pid/cwd" 2>/dev/null || true)
-  if [ "$cwd" != "$(pwd -P)" ]; then
+  if [ "$cwd" != "$SITE_DIR" ]; then
     echo "   leaving next-server $pid alone, it serves ${cwd:-an unreadable cwd}"
     continue
   fi
@@ -55,7 +67,7 @@ for pid in $(ps -eo pid=,args= | awk '$2=="next-server"{print $1}'); do
 done
 for pid in $(ps -eo pid=,args= | awk '/next start/ && !/awk/{print $1}'); do
   cwd=$(readlink -f "/proc/$pid/cwd" 2>/dev/null || true)
-  [ "$cwd" = "$(pwd -P)" ] || continue
+  [ "$cwd" = "$SITE_DIR" ] || continue
   kill "$pid" 2>/dev/null || true
 done
 sleep 2
@@ -109,12 +121,10 @@ fi
 # on the machine, which assumes every Next app on the box is ours. The agent
 # container is shared, and on 2026-10-17 it ran an unrelated Next service that
 # this check reported as our stale server, with a pid no run of this seat could
-# have started and must not kill. So the set is cut to the servers serving THIS
-# site: a process's `/proc/<pid>/cwd` is where it was started, `next start`
-# runs in `site/`, and /proc is present wherever this script can run at all. A
-# next-server whose cwd is some other tree is somebody else's and is none of
-# this harness's business.
-SITE_DIR="$(pwd -P)"
+# have started and must not kill. So the set is cut to the servers whose cwd is
+# $SITE_DIR, by the test the kill loop at the top of this file explains. What
+# this check does with the answer is the other half: it reports a stale server
+# of ours rather than killing anything.
 strays=
 for srv in $(ps -eo pid=,args= | awk '$2=="next-server"{print $1}'); do
   cwd=$(readlink -f "/proc/$srv/cwd" 2>/dev/null || true)
