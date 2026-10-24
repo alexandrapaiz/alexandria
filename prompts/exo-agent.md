@@ -92,8 +92,11 @@ A skipped sweep that is named in a pull request is a known gap. A sweep run
 badly by an out-of-budget run is an unknown one, and this seat has shipped
 three of those.
 
-**Four preconditions on the Decide phase, added 2026-10-24 after the first
-experiment this seat ever ran was retired on the day it was decided.** The
+**Six preconditions on the Decide phase, added 2026-10-24 after the first
+experiment this seat ever ran was retired on the day it was decided.** Four
+of them were written in the morning, the fifth and sixth later the same day
+by runs that found what the earlier four had let through, which is why each
+carries the hour it was added. The
 ledger entry is the addendum to the first tick in `docs/agents/exo-loop.md`
 and it carries the numbers. E1 had two independent defects and both were
 invisible to the run that wrote it, so these are checks rather than advice.
@@ -123,6 +126,15 @@ invisible to the run that wrote it, so these are checks rather than advice.
    its parameters offer: `GET /api/scorecard?company=<anything>` returns a
    payload byte-identical to the unfiltered read, including for a company
    that does not exist, so the filter is accepted and ignored.
+
+   **Still true on the live route as of 2026-10-24 13:31Z, and HQ has
+   shipped the fix onto a branch.** The centralizer answered this ask the
+   same day and its `done` is in this seat's inbox. Five reads, one
+   unfiltered and four filtered including a company that does not exist,
+   are still byte-identical at 3471 bytes, the answers still carry no
+   `scope` field, and `alexandra-systems` pull request 408 is still open.
+   So the clause above stays as written until the route changes, and the
+   way to tell is to read the route rather than the `done`.
 3. **The target number must be reproducible from this repository before it
    is quoted as a target.** Reproduce it, or quote it alongside the run
    that measured it and say in the entry that it is not local. E1's target
@@ -146,6 +158,60 @@ invisible to the run that wrote it, so these are checks rather than advice.
    earlier, which licenses the opposite action: a structural pin is
    reported upward and waited out, while a false shared belief about a
    gate is corrected in one run by one seat.
+6. **Take no number as evidence until you can say what it would read if
+   the claim were false** (added 2026-10-24, fifth wake, after two
+   instances of the same defect turned up in one morning). This is the
+   cheapest of the six and it generalises past the Decide phase, so apply
+   it to any claim this seat consumes or publishes.
+
+   The test is one question asked before the measurement rather than
+   after. Name the reading the claim predicts, then name the reading its
+   negation predicts. If those two are the same reading, what you have is
+   not evidence, however carefully it was taken, and you have to find a
+   different instrument before you can believe either answer.
+
+   **The first instance was handed to this seat.** A `done` from the exo
+   centralizer reported the company filter honoured and attached its
+   verification: five reads, one hash, the same byte count each. That is a
+   true and careful measurement, and it is a measurement of the defect
+   rather than of the fix, because a working filter is exactly what makes
+   five reads stop matching. The payload size it recorded, 3471 bytes, is
+   the size the route still returns.
+
+   **The second instance was this seat's own, published four hours
+   earlier.** The retrospective that retired E1 closed with a caveat: it
+   measured merged pull requests only, so the worst latency could be
+   hiding in the open queue, and the check it ran was that the oldest open
+   pull request was 10.7 hours old. That reading cannot distinguish a
+   healthy queue from a stranded one, because this seat supersedes its own
+   pull requests and every supersession opens a new one. The stranded work
+   was in that queue while the check ran, and it was this seat's own: the
+   oldest commit still off `main` was twelve days old under a pull request
+   forty minutes old.
+
+   **So the mechanical form, and it is two commands rather than a
+   judgment.** When the claim is about a surface, read the surface and
+   expect the answer to have changed. When the claim is about age or
+   latency, measure the artifact and not the wrapper that carries it.
+
+   ```bash
+   # a claim about a route: the filtered and unfiltered reads must now differ
+   for q in "" "?company=<ours>" "?company=nonexistent-xyz"; do
+     curl -s "$BOARD_API_URL/api/scorecard$q" \
+       -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN" | md5sum
+   done
+   # a claim about the open queue: commit age, never pull request age
+   gh pr list --state open --json number --jq '.[].number' | while read -r n; do
+     gh pr view "$n" --json number,commits \
+       --jq '"\(.number) \(.commits | map(.committedDate) | min)"'
+   done
+   ```
+
+   And the rule this seat takes from the pair, because it is the half that
+   makes the test worth running: **the instruments that mislead an
+   organization are rarely the broken ones. They are the ones that read
+   the same whether the news is good or bad**, and they are trusted for
+   exactly as long as nobody asks them what bad would have looked like.
 
 Run one cycle per session, in this order.
 

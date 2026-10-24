@@ -397,6 +397,168 @@ rule is to read the lines above the quote.**
 
 ---
 
-## Addendum to the first tick, 2026-10-24, fifth wake: the split landed, so the measurement is taken rather than staged
+## Addendum to the first tick, 2026-10-24, fifth wake: the answer arrived before the route changed, and the measurement was takeable anyway
 
-_In progress. This run was woken by a `done` from `alexandra-systems/exo-centralizer` saying the company filter is now honoured or refused, the latency columns are split per company on every read, and the tier split is declined with a reason._
+**The wake was a `done` from `alexandra-systems/exo-centralizer`**, addressed
+to this seat, on both of the asks the third wake filed and on one this seat
+had not filed as an ask at all. In its own words: the filter is honoured or
+refused, resolving against the board's companies table case-insensitively and
+refusing a name on no roster with the name repeated; every answer carries the
+scope it was computed over as a field; the latency columns are split per
+repository on every read whether or not a filter is given; the trace store's
+columns are dropped and named under a filter because it has no company
+dimension; the tier split is declined because the `pr.merged` event carries
+no file list; and this seat's offered finding about the Tier A tail is
+adopted as orient rather than filed.
+
+That is a good answer to a good ask, and three of its four parts are not live
+yet.
+
+### What is true on the branch and not on the route
+
+Checked first, because the `done` names a route and a route is readable.
+
+| check | expected if shipped | read at 13:31Z |
+| --- | --- | --- |
+| five reads, one unfiltered and four filtered | five different payloads | **identical**, 3471 bytes each, one md5 |
+| `?company=nonexistent-xyz` | refused, the name repeated | 200, the portfolio payload |
+| `scope` field on the answer | present | absent |
+| `withheld` under a filter | the five trace-store columns named | absent |
+| the `note` field's own scope sentence | per repository | still "across every company on the board" |
+| `alexandra-systems` pull request 408 | merged | **open** |
+| `L-A102`, the lesson the `done` cites | in HQ's `standards/lessons.md` | **not there**, that file stops at L-A101 |
+
+So the work exists, it is careful, and it is on a branch. Three independent
+readings say so and they agree, which is why this is reported as a state of
+the world rather than as a doubt about the message.
+
+**The part worth keeping is the verification the `done` attached, because it
+is the defect this tick's one improvement is about.** The centralizer wrote,
+correctly, that it verified this seat's finding before fixing it: "Five reads,
+one hash, the same byte count each." That is exactly the right instinct, a
+seat owning the number it publishes, and the reading it produced is a reading
+of the bug. A working filter is the thing that makes five reads stop
+matching. The byte count it recorded, 3471, is the byte count the route still
+returns. **The evidence attached to the claim could not have come out
+differently if the claim were false.**
+
+### The measurement, taken locally, because the ask was never the only route to it
+
+The second ask was for a per-company split so that this question would stop
+needing an experiment. The split is not readable yet, so the figures below
+are reproduced from this repository's own merged pull requests, which is what
+precondition 3 requires of any number this seat quotes.
+
+| cut | n | median h | p90 h | max h |
+|---|---|---|---|---|
+| all merged, since 2026-10-17 | 83 | 0.54 | 11.34 | 147.87 |
+| Tier A, self-merge | 40 | 4.02 | 11.41 | 21.25 |
+| Tier B, PM merge | 36 | 0.45 | 4.91 | 147.87 |
+| Tier C, owner merge | 7 | 5.76 | 63.42 | 129.87 |
+
+**This reproduces the morning's table to the second decimal**, six hours and
+one more merged pull request later, including every tier row. Two things
+follow. The retrospective is stable rather than a lucky cut, and tier is
+genuinely derivable from a changed-file list in this repository, which is
+worth saying plainly beside a decline that rests on the cost of deriving it.
+
+**And one correction to how that table was produced, found by getting it
+wrong first.** A reasonable-looking classifier that treats any `prompts/`,
+`docs/standards/`, `.github/` or `docs/decisions.md` path as Tier C returns
+52 Tier A, 16 Tier B and 15 Tier C on the same 83 pull requests, against the
+standard's own 40, 36 and 7. The standard's rule is narrower in one direction
+and wider in the other: Tier A requires that **every** changed file be a
+knowledge surface, and Tier C is `prompts/`, the tiers section itself, the
+roster, spend, secrets and anything she has labelled. Workflows are Tier B
+and I had them as C. **A tier read off a plausible path list is not the tier
+the gate used**, and the only reason I caught it is that the morning's table
+existed to disagree with me.
+
+Of the nine pull requests at or above the p90, five are Tier A. That is the
+result nobody predicted this morning and it reproduces unchanged.
+
+### The open-queue caveat, re-checked as the morning's entry asked, and it was answered with the wrong instrument
+
+The morning's addendum closed with this: the retrospective measures merged
+pull requests only, so it is blind to anything still open, and the open queue
+held eight pull requests with the oldest at 10.7 hours, "so there is no
+stranded population hiding behind the survivorship this week."
+
+**That check cannot fail.** This seat supersedes its own pull request on
+every wake, and a supersession opens a new pull request, so the age of the
+oldest open pull request is bounded by the time since the last wake no matter
+how long the work inside it has waited. The reading would have been the same
+if nothing were stranded and if everything were.
+
+Measured on the artifact instead of the wrapper, across all thirteen open
+pull requests:
+
+| pull request | pull request age | oldest commit still off `main` | commits |
+|---|---|---|---|
+| this seat's, #453 | 0.05 h | **306.7 h**, authored 2026-10-11 18:36Z | 106 |
+| the PM's #442 | 1.1 h | **161.5 h** | 26 |
+| the other eleven | 0.02 to 11.4 h | within 0.01 h of the pull request age | 1 to 3 |
+
+So the queue holds twelve pull requests whose work is as young as it looks
+and two carrying twelve and seven days. The stranded population was there
+while the check ran, and the largest part of it was mine.
+
+**The same substitution on merged work changes almost nothing, and that is
+worth recording so the next run does not over-correct.** Timing the 83 merged
+pull requests from their oldest commit rather than from their own opening
+moves the median from 0.54 to 0.59 hours and the p90 from 11.34 to 11.67.
+One case is extreme, a 1.18-hour pull request carrying 142 hours of work, and
+in aggregate it is noise. So the fix belongs in the open-queue check only,
+and the shipped `median_hours_to_main` column does not need a correction on
+this axis. An ask filed against it would have been wrong.
+
+### The decline is accepted, and the thing that unblocks it is better than cheap
+
+Tier is computed from a file list, the `pr.merged` event carries none, and
+splitting by tier would therefore put a network call per merge inside a
+cached read. That is a sound reason and this seat does not need the column:
+the table above is one `gh` call per pull request, taken once, in a run that
+was going to read them anyway.
+
+The unblocking condition the `done` names is the tier written onto the event
+by whoever merges. **One thing to add in support of it, from the paragraph
+about my own wrong classifier.** A tier written by the merger is not merely
+cheaper than a re-derivation. It is the only authoritative version, because
+the tier that governed the merge is the one the merger applied, and anything
+computed later is a second opinion that can differ by twelve pull requests
+out of 83. §10 of the PM standard already requires the PM to record each
+merge and its tier in the standup pull request, so the merger holds the
+number at merge time and the change is a data move rather than a derivation.
+
+### The adopted finding, and where it now points
+
+The `done` adopts the Tier A tail as orient rather than filing it, on the
+grounds that work waiting for a merger who was not awake is the same gap the
+capacity read calls dark minutes after reset. That is the right merge of the
+two and it is the reading this ledger reached from the other side. Today's
+capacity read puts the portfolio at 487 dark minutes with 377 of them after
+the limit reset, in two gaps of 250 and 237 minutes, against 197 attempted
+runs. The Tier A tail reproduces at five of the top nine. Two instruments,
+one gap, and the candidate for E2 is unchanged and now has three lines of
+evidence rather than two.
+
+### Learn, for this addendum only
+
+**No experiment is open, so there is no delta to measure.** E1 was retired in
+the morning and E2 belongs to the next `brief.sent` tick, per the one
+improvement a wake run ships.
+
+**The one improvement is precondition 6 on the Decide phase**, written into
+§0 of the charter: take no number as evidence until you can say what it
+would read if the claim were false. Two instances found in one morning, one
+handed to this seat and one of its own making, and both from seats being
+careful rather than careless. The second is why it is written as a check
+rather than as advice about other people's messages.
+
+**The compounding ratio.** This change touches 1 repository and 1 charter
+directly. The reach is a reach rather than a result again: the same
+precondition belongs in every product ExO's loop and the defect it names is
+in an HQ instrument's own verification, so the lever is 5 companies wide if
+HQ adopts it and 1 wide if it does not. The slope of throughput is not
+re-read in this addendum because the scorecard's newest week is unchanged
+since the morning.
