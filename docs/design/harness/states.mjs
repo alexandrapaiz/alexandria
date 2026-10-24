@@ -3,6 +3,7 @@
 // start and end, reduced motion, and hover under a real pointer profile.
 import fs from "node:fs";
 import { chromium } from "playwright";
+import { ourContext } from "./local-context.mjs";
 const BASE = `http://127.0.0.1:${process.env.FE_PORT || 3000}`;
 const OUT = process.argv[2];
 fs.mkdirSync(OUT, { recursive: true });
@@ -16,8 +17,7 @@ const VPS = [
 // 1. The scene-two reveal, measured at rest and after scrolling, every viewport.
 console.log("== scene two: computed opacity at rest -> after scroll ==");
 for (const vp of VPS) {
-  const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, hasTouch: vp.touch, isMobile: vp.touch, deviceScaleFactor: 1 });
-  await ctx.route("**/*", (r) => { const u = new URL(r.request().url()); return (u.hostname === "127.0.0.1" || u.hostname === "localhost") ? r.continue() : r.abort(); });
+  const ctx = await ourContext(browser, { viewport: { width: vp.width, height: vp.height }, hasTouch: vp.touch, isMobile: vp.touch });
   const page = await ctx.newPage();
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   const sel = [".statement", ".hero-act", ".about-inline"];
@@ -37,8 +37,7 @@ for (const vp of VPS) {
 // 2. The morph. On desktop it is driven by wheel; on touch it autoplays.
 console.log("== morph ==");
 {
-  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
-  await ctx.route("**/*", (r) => { const u = new URL(r.request().url()); return (u.hostname === "127.0.0.1" || u.hostname === "localhost") ? r.continue() : r.abort(); });
+  const ctx = await ourContext(browser, { viewport: { width: 1440, height: 900 } });
   const page = await ctx.newPage();
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.waitForTimeout(400);
@@ -52,8 +51,7 @@ console.log("== morph ==");
   await ctx.close();
 }
 {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 });
-  await ctx.route("**/*", (r) => { const u = new URL(r.request().url()); return (u.hostname === "127.0.0.1" || u.hostname === "localhost") ? r.continue() : r.abort(); });
+  const ctx = await ourContext(browser, { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
   const page = await ctx.newPage();
   await page.goto(BASE + "/", { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(250);
@@ -68,8 +66,7 @@ console.log("== morph ==");
 //    broken one, which means everything legible at rest.
 console.log("== prefers-reduced-motion ==");
 for (const vp of VPS) {
-  const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, hasTouch: vp.touch, isMobile: vp.touch, reducedMotion: "reduce", deviceScaleFactor: 1 });
-  await ctx.route("**/*", (r) => { const u = new URL(r.request().url()); return (u.hostname === "127.0.0.1" || u.hostname === "localhost") ? r.continue() : r.abort(); });
+  const ctx = await ourContext(browser, { viewport: { width: vp.width, height: vp.height }, hasTouch: vp.touch, isMobile: vp.touch, reducedMotion: "reduce" });
   const page = await ctx.newPage();
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.waitForTimeout(600);

@@ -13,6 +13,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { chromium } from "playwright";
+import { ourContext } from "./local-context.mjs";
 
 const BASE = `http://127.0.0.1:${process.env.FE_PORT || 3000}`;
 const OUT = process.argv[2];
@@ -46,47 +47,15 @@ const report = [];
 const browser = await chromium.launch();
 
 for (const vp of VIEWPORTS) {
-  const ctx = await browser.newContext({
+  // Guard 1 (nothing leaves localhost) and the Clerk dev-browser cookie both
+  // live in local-context.mjs now, because on 2026-10-24 this script was the
+  // only one of four that had the cookie.
+  const ctx = await ourContext(browser, {
     viewport: { width: vp.width, height: vp.height },
     deviceScaleFactor: vp.dsf,
     hasTouch: vp.touch,
     isMobile: vp.touch,
     reducedMotion: "no-preference",
-  });
-
-  // The answer to guard 1, added 2026-10-24. The guard below is correct and it
-  // has never had a cure next to it, so every run that meets it derives one:
-  // `INC-2026-10-15-the-visual-harness-had-three-traps` recorded the failure,
-  // the README recorded the failure, and the run of 2026-10-24 photographed
-  // three frames of `{"code":"host_invalid"}` before reading one.
-  //
-  // `clerkMiddleware` answers a browser navigation with 307 to the dev-browser
-  // handshake whenever this cookie is absent, and the reason is literally in
-  // the response header: `x-clerk-auth-reason: dev-browser-missing`. Present
-  // it and the middleware stops redirecting, so the pages render and guard 1
-  // keeps doing its job for everything else.
-  //
-  // This is not a credential and it is not a sign-in. The value is never
-  // validated, because the redirect is decided on the cookie's presence; every
-  // page the sweep photographs is a signed-out page, which is what the sweep
-  // wants. The alternative the README suggests, a production-shaped
-  // publishable key, needs a real key in the environment and reaches the real
-  // Clerk, which guard 1 exists to prevent.
-  await ctx.addCookies(
-    ["127.0.0.1", "localhost"].map((domain) => ({
-      name: "__clerk_db_jwt",
-      value: "dvb_visual_harness",
-      domain,
-      path: "/",
-    }))
-  );
-
-  // Guard 1: nothing leaves localhost. A handshake redirect to a Clerk host
-  // cannot succeed, so it surfaces as a failure instead of as a clean report.
-  await ctx.route("**/*", (route) => {
-    const u = new URL(route.request().url());
-    if (u.hostname === "127.0.0.1" || u.hostname === "localhost") return route.continue();
-    return route.abort();
   });
 
   for (const pg of PAGES) {

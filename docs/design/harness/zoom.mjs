@@ -4,6 +4,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { chromium } from "playwright";
+import { ourContext } from "./local-context.mjs";
 const BASE = `http://127.0.0.1:${process.env.FE_PORT || 3000}`;
 const [, , OUT, SPECJSON] = process.argv;
 fs.mkdirSync(OUT, { recursive: true });
@@ -26,14 +27,10 @@ const call = (src) =>
 const browser = await chromium.launch();
 for (const s of specs) {
   const vp = s.vp || { width: 1440, height: 900 };
-  const ctx = await browser.newContext({
-    viewport: vp, deviceScaleFactor: 1,
+  const ctx = await ourContext(browser, {
+    viewport: vp,
     hasTouch: !!s.touch, isMobile: !!s.touch,
     reducedMotion: s.reducedMotion || "no-preference",
-  });
-  await ctx.route("**/*", (r) => {
-    const u = new URL(r.request().url());
-    return (u.hostname === "127.0.0.1" || u.hostname === "localhost") ? r.continue() : r.abort();
   });
   const page = await ctx.newPage();
   if (s.touch) {
