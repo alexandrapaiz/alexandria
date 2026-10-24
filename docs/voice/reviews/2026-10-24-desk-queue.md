@@ -67,7 +67,13 @@ and say both numbers above the rows rather than below them. 39 rows instead of
 524, nothing hidden that was not already unreachable, and no judgment about
 which urgent entry matters.
 
-## The numbers, measured today
+## The numbers, measured at `origin/main`
+
+The ref matters and it is the kind of thing this seat has got wrong before. The
+page fetches `docs/ideas.md` from `main` over raw.githubusercontent, so the
+figure she reads is main's figure. This run appended three ledger entries, which
+moved the working tree to 527 against 528 and left the live surface where it
+was. `check_voice.py ledger` takes a ref and prints which one it read.
 
 | | |
 |---|---|

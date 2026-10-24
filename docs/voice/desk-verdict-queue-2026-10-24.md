@@ -22,7 +22,12 @@ hidden today's outage.
 Awaiting your verdict   524
 ```
 
-Measured today by running the page's own parser over `docs/ideas.md`:
+Measured by running the page's own parser over `docs/ideas.md` **at
+`origin/main`**, because that is the file the page reads: it fetches
+`raw.githubusercontent.com/alexandrapaiz/alexandria/main/docs/ideas.md`, so the
+checkout a run is standing in is not the surface. This run appended three
+ledger entries of its own and the working tree reads 527 against 528 because of
+them, which is the figure to ignore.
 
 | | count |
 |---|---|
@@ -213,6 +218,10 @@ Measured both ways over the live file:
 | `/- Status:\s*(\w+)/` (today) | 524 | 39 | 485 |
 | `/^-\s+Status:\s*(\w+)/m` | 525 | 39 | 486 |
 
+Both rows read `docs/ideas.md` at `origin/main`, which is where the page reads
+it from. `check_voice.py ledger` takes the ref for that reason and prints which
+one it read either way.
+
 The second agrees with `tools/ledger.py` exactly. `docs/voice/check_voice.py
 ledger` fails until it does, and goes green on that one-character diff.
 
@@ -236,7 +245,7 @@ removed, which is why `closed`, `done` and `built` all appear in it today.
 
 ```
 $ python3 -I docs/voice/check_voice.py candidates
-$ python3 -I docs/voice/check_voice.py ledger
+$ python3 -I docs/voice/check_voice.py ledger origin/main
 $ python3 -I docs/voice/check_voice.py reading
 ```
 

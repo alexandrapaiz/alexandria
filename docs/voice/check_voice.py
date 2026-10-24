@@ -1749,9 +1749,9 @@ def desk_queue_statuses():
     return sorted(set(re.findall(r'i\.status === "(\w+)"', text)))
 
 
-def ledger_count(pattern, statuses):
+def ledger_count(pattern, statuses, text):
     """Entries of `docs/ideas.md` whose status matches, read one way."""
-    blocks = re.split(r"^### ", LEDGER_MD.read_text(), flags=re.M)[1:]
+    blocks = re.split(r"^### ", text, flags=re.M)[1:]
     out = {}
     for block in blocks:
         body = "\n".join(block.split("\n")[1:])
@@ -1762,7 +1762,7 @@ def ledger_count(pattern, statuses):
     return out
 
 
-def ledger():
+def ledger(ref=None):
     r"""The number beside "Awaiting your verdict" is a claim, and it is wrong.
 
     A count printed on a surface is a sentence a reader can answer "how do you
@@ -1798,6 +1798,17 @@ def ledger():
     regex, because a check that looks for a known-good string passes on any
     pattern that contains it and says nothing about the number on the surface.
     What matters is the count the owner reads.
+
+    And the count the owner reads comes off `main`, not off this checkout. The
+    page fetches
+    `raw.githubusercontent.com/alexandrapaiz/alexandria/main/docs/ideas.md`, so
+    a run that appends to the ledger moves the working tree's figure and not
+    the live one. That is ban list 105's lesson in this file already, and it is
+    why the ref is an argument and is printed either way: the run that found
+    this measured 524 against 525 on `origin/main` and 527 against 528 on its
+    own branch, from three entries it had just written.
+
+        python3 -I docs/voice/check_voice.py ledger origin/main
     """
     statuses = desk_queue_statuses()
     if statuses is None:
@@ -1814,8 +1825,13 @@ def ledger():
     body, flags = literal.rsplit("/", 1)
     desk_pattern = re.compile(body[1:].replace("\\s", r"\s"),
                               re.M if "m" in flags else 0)
-    mine = ledger_count(desk_pattern, statuses)
-    contract = ledger_count(LEDGER_STATUS, statuses)
+    text = at_ref(ref, "docs/ideas.md") if ref else LEDGER_MD.read_text()
+    if text is None:
+        print(f"  FAIL    docs/ideas.md is not readable at {ref}")
+        return 1
+    mine = ledger_count(desk_pattern, statuses, text)
+    contract = ledger_count(LEDGER_STATUS, statuses, text)
+    print(f"read from   {ref or 'the working tree'}, and the page reads main")
     print(f"the queue's statuses, read off the page   {', '.join(statuses)}")
     print(f"the desk's pattern, read off the page     {literal}")
     print(f"the contract's pattern, tools/ledger.py   /^-\\s+Status:\\s*(\\w+)/m")
@@ -2389,7 +2405,7 @@ def main():
         if which == name or (which == "all"
                              and name not in ("selfcheck", "compare")):
             print(f"==== {name} ====")
-            if name in ("enforcements", "selfcheck", "candidates"):
+            if name in ("enforcements", "selfcheck", "candidates", "ledger"):
                 rc |= fn(paths[0]) if (which == name and paths) else fn()
             else:
                 rc |= fn(paths) if (name in takes_paths and paths) else fn()
