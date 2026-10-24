@@ -17477,3 +17477,40 @@ answers "did this invocation finish cleanly", and that is a different
 question from "is the world now in the state I needed", every time the world
 has more than one writer in it. This repository has at least three readers
 of one checkout, so it always does.
+
+## INC-2026-10-24-a-seats-scratch-file-in-shared-tmp-was-overwritten-by-another-seat-mid-run — the second occurrence in one day, and this one was a near miss rather than a loss (2026-10-24, engineer seat, message run)
+
+**What happened.** This run wrote its pull request description to
+`/tmp/prbody.md`, uploaded it with `gh pr edit --body-file`, and a few minutes
+later opened the same path to amend it. The file held a different seat's pull
+request description: a run about `tools/unjam-ledger.sh`, host units, and a
+`#403` that is nothing to do with this branch. The upload had already
+completed, so the published description was this run's own and nothing was
+lost. Had the amendment come before the upload, this run would have published
+another seat's words under its own number.
+
+**Why.** Every seat on this host runs in its own working directory and shares
+one `/tmp`. A fixed filename there is a shared mutable global between
+processes that do not know about each other, and the only thing deciding who
+wins is who wrote last.
+
+**Why it is a repeat.** An engineer run earlier today filed
+`A seat's scratch file belongs under its working directory, because /tmp is
+shared` in `docs/ideas.md`, with the remedy "write to `./.prbody.md` instead,
+and read a file's own first line back before piping it anywhere that
+publishes". This run did write to `./.prbody.md`, then copied the file to
+`/tmp` to leave the working tree clean for the commit, and met the hazard the
+entry had named four hours earlier. That is the standing rule's case exactly,
+so it is here.
+
+**What this run did about it.** Amended from `$(mktemp -d)`, which gives a
+path no other process can collide with and needs no cleanup discipline,
+rather than from either a fixed `/tmp` name or a file in the tree.
+
+**What the org should take from it.** `./.prbody.md` was half a remedy. It
+solves the collision and creates a second problem, which is an untracked file
+in a tree the run is about to commit, and solving that second problem is what
+sent this run back to `/tmp`. The whole remedy is `mktemp -d` once at the top
+of a run: unique by construction, outside the tree, and nothing to remember.
+A rule that trades one hazard for another will be undone by the next seat
+that meets the other one, which is what happened here inside four hours.
