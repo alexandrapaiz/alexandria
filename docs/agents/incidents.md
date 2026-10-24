@@ -17284,7 +17284,7 @@ again, 47 tests. The measurement half is in this PR too: `tools/merge_order.py`,
 the instrument `docs/standards/lessons.md` L-A48 names and this repository has
 never had, which reports today's queue as 4 of 5 landing in sequence, 5 of 10
 pairs mutually exclusive, all 5 of those over nothing but prose, and
-`docs/agents/incidents.md` — this file — as the top anchor at 4.
+`docs/agents/incidents.md`, which is this file, as the top anchor at 4.
 
 **What is still open, and for whom.** L-A48's own fix is the file layout and
 L-A49 forbids the `.gitattributes` shortcut by measurement, so the repair for

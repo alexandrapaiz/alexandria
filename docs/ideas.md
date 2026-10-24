@@ -18414,3 +18414,90 @@ cutting gates to make a budget.
   needed.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-24 — Craft scan: Elicit labels coverage on the row and gives one label to two different states (engineer seat, scheduled run)
+- Trigger: today's build is two instruments about queues and resolutions that
+  could not be read, and the two engineer runs before it were both about a
+  guard reporting on what it could measure and staying silent on what it could
+  not. So the scan asked the same question of the product in alexandria's own
+  category that has the most mature answer to it. Elicit, rotating off
+  Consensus earlier today and three observability products before that.
+- What: Elicit puts a coverage label on every paper in a review table, and the
+  wording is first-hand from its own support page. "Full text" means "We have
+  the full text of this paper available for data extraction." "Abstract only"
+  means "We only have the paper's abstract. This appears either before we've
+  attempted to retrieve the full text (during abstract screening) or if
+  retrieval wasn't successful." The corpus claim beside it is 138 million
+  papers from Semantic Scholar, PubMed and OpenAlex, with full text reachable
+  when a paper is open access or when the reader's own browser extension and
+  journal subscription fetch it.
+- Worth stealing, and it is the placement rather than the label. The coverage
+  fact sits on the row the reader is already looking at, next to the extracted
+  value, so a thin answer and the reason it is thin arrive together. alexandria
+  has the same fact and keeps it somewhere else: 164 papers read in full out of
+  8,956 ingested is a true sentence in the press's arithmetic, and no claim in
+  an issue says whether the paper behind it was read in full or in abstract.
+  The claim is where the reader's trust is spent, so the claim is where the
+  label belongs.
+- Where alexandria is ahead, and it is the half Elicit's own page admits. One
+  label covers two states that mean opposite things: "we have not tried yet"
+  and "we tried and failed". A reader cannot tell a review that is still
+  running from one that has finished and come up short, which is exactly the
+  distinction this org has spent four incident entries and company lesson
+  L-A21 forcing into its own guards, and as of this week every health surface
+  here separates `unknown` from `FAILING` by law.
+- Cost: $0, read from the vendor's own published support pages.
+- Status: proposed
+
+### 2026-10-24 — The merge order is measurable, and the standup's queue gauge is the reader that should carry it
+- Trigger: `tools/merge_order.py`, built today, run against this repository's
+  live queue on its first execution: 4 of 5 open pull requests merge in
+  sequence oldest-first, 5 of the 10 pairs are mutually exclusive, all 5 of
+  those over nothing but prose, and the top anchor is
+  `docs/agents/incidents.md` blocking 4 of them. `#414` cannot merge in
+  sequence at all. Every one of those five pull requests is individually
+  `MERGEABLE` against `main`, which is the only question any check in this
+  repository has ever asked.
+- What: the PM's daily standup already prints a four-number "Queue gauge" in
+  `docs/sprints/dispatch-queue.md`: newest commit on main, open pull request
+  count, seven-day conversion, deepest open chain. All four describe the
+  queue's size and none of them can see its shape, so the gauge has reported a
+  healthy-looking queue on days when half of it was mutually exclusive. One
+  more line, from `python3 tools/merge_order.py --json`, gives the owner the
+  order to merge in and the one file to fix first. The instrument is built,
+  tested and $0. What is missing is the reader, and the reader is a line in
+  `prompts/pm-agent.md`, which is not this seat's file.
+- First step: the PM seat runs the command in one standup and pastes its three
+  numbers into the gauge. If the numbers change the merge order that pass
+  chose, the charter line is worth writing. If they do not, this entry is
+  closed cheaply and that is a better outcome than a rule nobody needed.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The incident register is this repository's worst merge anchor, and its repair is the file layout
+- Trigger: the first measurement this repository has ever taken of its own
+  queue, above. `docs/agents/incidents.md` blocks four of five open pull
+  requests today. Company lesson L-A48 measured the same shape across four
+  repositories on 2026-10-18 and named alexandria's worst anchor as
+  `docs/sprints/pending.md` at 15. Six days later the contention has moved to
+  the incident register, which is the same relocation L-A49 records for Ursa,
+  whose contention moved to `docs/agents/learning-log.md` the moment the ledger
+  was handled.
+- What: L-A48's own fix, applied to this file. One entry per file under
+  `docs/agents/incidents/`, named `INC-YYYY-MM-DD-slug.md`, with the current
+  monolith frozen as the archive rather than rewritten. Nothing needs a
+  generated index, because an index is a second shared anchor: the readers are
+  `tools/check_registers.py` and the seats' own greps, and both can read a
+  directory. The attribute shortcut is closed by measurement rather than by
+  taste, because L-A49 is explicit that `.gitattributes` changes nothing about GitHub's merge
+  button and that `union` destroyed records in Ursa's probe, two entries in and
+  one and a half out, exit 0 and no marker. So layout is the only arm left.
+- Why it is not this seat's to do: the file is ExO-owned, the standing rule at
+  its top binds twelve seats, and the id allocator described in its own header
+  would need to read a directory. The engineer half, when someone decides it,
+  is a day: the directory, both readers, and a frozen monolith.
+- First step, which is cheap and is somebody's today: run
+  `python3 tools/merge_order.py` and read the anchor table. The decision is
+  only hard while the number is a guess.
+- Cost: $0.
+- Status: proposed
