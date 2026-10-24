@@ -42,6 +42,12 @@
     .ink, .ink a { color: #ffffff !important; }
     .quiet, .quiet a { color: #86868b !important; }
     .mid { color: #86868b !important; }
+    /* A procedure point is the one text block that carries links and is not
+       .ink, and the renderer hard-codes #0a0a0a on every anchor it writes, so
+       without this line a cited paper inside a bullet is black on black. The
+       colour mirrors light mode, where the link is stronger than the #4a4a4a
+       it sits in rather than equal to it. */
+    .mid a { color: #ffffff !important; }
     .rule { background-color: #4a4a4a !important; }
   }
 </style>

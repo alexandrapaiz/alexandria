@@ -1,0 +1,89 @@
+{
+  "mail-FIXTURE-light-iphone": {
+    "overflow": 0,
+    "widest": 390,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-FIXTURE-light-ipad": {
+    "overflow": 0,
+    "widest": 820,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-FIXTURE-light-desktop": {
+    "overflow": 0,
+    "widest": 1440,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-FIXTURE-dark-iphone": {
+    "overflow": 0,
+    "widest": 390,
+    "tiny": [],
+    "invisible": [
+      {
+        "text": "the paper itself",
+        "tag": "A",
+        "cls": "",
+        "color": "rgb(10, 10, 10)",
+        "paper": "rgb(10, 10, 10)",
+        "ratio": 1
+      },
+      {
+        "text": "a second source",
+        "tag": "A",
+        "cls": "",
+        "color": "rgb(10, 10, 10)",
+        "paper": "rgb(10, 10, 10)",
+        "ratio": 1
+      }
+    ]
+  },
+  "mail-FIXTURE-dark-ipad": {
+    "overflow": 0,
+    "widest": 820,
+    "tiny": [],
+    "invisible": [
+      {
+        "text": "the paper itself",
+        "tag": "A",
+        "cls": "",
+        "color": "rgb(10, 10, 10)",
+        "paper": "rgb(10, 10, 10)",
+        "ratio": 1
+      },
+      {
+        "text": "a second source",
+        "tag": "A",
+        "cls": "",
+        "color": "rgb(10, 10, 10)",
+        "paper": "rgb(10, 10, 10)",
+        "ratio": 1
+      }
+    ]
+  },
+  "mail-FIXTURE-dark-desktop": {
+    "overflow": 0,
+    "widest": 1440,
+    "tiny": [],
+    "invisible": [
+      {
+        "text": "the paper itself",
+        "tag": "A",
+        "cls": "",
+        "color": "rgb(10, 10, 10)",
+        "paper": "rgb(10, 10, 10)",
+        "ratio": 1
+      },
+      {
+        "text": "a second source",
+        "tag": "A",
+        "cls": "",
+        "color": "rgb(10, 10, 10)",
+        "paper": "rgb(10, 10, 10)",
+        "ratio": 1
+      }
+    ]
+  }
+}

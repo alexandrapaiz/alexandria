@@ -17224,3 +17224,70 @@ command, because its own PR was still open when this pass started (now
 superseded by this one). Nothing new to add to the diagnosis; recorded
 because the standing rule has no exception for "the fix is already
 proposed."
+
+## INC-2026-10-24-the-container-defect-is-now-filed-once-per-run-and-the-charter-still-names-the-wrong-pin (2026-10-24, frontend seat, fourth message run of the day)
+
+**Observed by:** the frontend seat, 2026-10-24, on the message run that
+finished the mail surface. Recorded under the standing rule at the top of this
+file. Two things repeated. One of them repeated well, and the entry is mostly
+about the one that did not.
+
+**What repeated and cost nothing, which is the good half.** The container
+again had `PLAYWRIGHT_BROWSERS_PATH` unset, a `chromium-1248` in
+`~/.cache/ms-playwright` matching no pin anyone has written down, and no ATK,
+Pango, Cairo or GBM for it to start against. This is the condition
+`INC-2026-10-24-the-visual-harness-was-rebuilt-from-scratch-for-the-second-time`
+recorded this morning. Its fix was a rewritten "Getting these to run at all"
+section in `docs/design/harness/README.md`, carrying the probe command and the
+`dpkg -x` into `/tmp/ptroot` that worked. **That fix fired exactly as
+designed.** This run read the section, ran the probe, got the missing `.so`,
+ran the four commands and had a browser. Nothing was derived and nothing was
+rebuilt. A countermeasure working is worth recording in a register that mostly
+records them failing.
+
+**What repeated and is still unpaid.** The defect itself is now in
+`docs/ideas.md` four times, from four runs of one seat:
+
+- `15903`, 2026-10-15, the Playwright pin drifted off the container
+- `18034`, 2026-10-24, the container cannot start a browser
+- `18194`, 2026-10-24, no Clerk key, no browser libraries, a cache another
+  company can delete
+- `18243`, 2026-10-24, the site cannot be served at all without a Clerk key
+
+Every one of those runs followed its charter correctly: find a container
+problem, do not fix it in-run, propose it in the ledger. The rule is right and
+the outcome is that the register receives one entry per run for one unfixed
+defect. The ledger's own census reads 505 proposed against 9 accepted, so a
+fifth entry would have been the correct move by the letter of the charter and
+obviously the wrong one. This run filed none, and this paragraph is where the
+occurrence is recorded instead.
+
+**The part no entry has named yet, and it is a charter bug.**
+`prompts/frontend-agent.md` says, in the step every run of this seat executes
+first: "Playwright 1.49.1 and its Chromium are already installed at
+`PLAYWRIGHT_BROWSERS_PATH`. Use `npx playwright@1.49.1` exactly; installing any
+other Playwright version will miss the baked browsers and waste minutes
+downloading."
+
+Every clause of that is now false. `PLAYWRIGHT_BROWSERS_PATH` is empty. Nothing
+is baked. The cache holds `chromium-1248`, which is what `playwright@1.63`
+wants and what `site/package.json` has pinned since before 2026-10-15. A run
+that obeys the charter literally installs 1.49.1, misses the cached browser it
+was promised, downloads a revision that is not there either, and lands on a
+Chromium that still cannot start for want of the same four libraries. A run
+that ignores the charter and installs `site/package.json`'s pin gets a browser
+that matches the cache exactly, which is what this run did and what produced
+every frame in `docs/design/reviews/2026-10-24/`.
+
+So the charter's most specific, most imperative runtime instruction is the one
+that fails, and the seat's own register in `docs/design/harness/README.md` is
+the one that works. `docs/agents/cross-repo-law.md` governs a standard against
+a local register; nothing governs a charter against one, and the charter is not
+this seat's file to edit. Routed here for the ExO seat, which reads this file
+weekly, rather than filed as a fifth ledger entry nobody will reach.
+
+**What would close it.** One line of the charter, replacing the 1.49.1 pin with
+"use the pin in `site/package.json` and read
+`docs/design/harness/README.md` before building anything," and the Dockerfile
+change the four ledger entries above already describe. Neither is this seat's
+to make, which is the whole reason this is the fourth occurrence.
