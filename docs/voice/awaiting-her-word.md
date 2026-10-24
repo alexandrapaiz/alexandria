@@ -37,8 +37,35 @@ a command was written to look.
 
 ## Open, newest first
 
+**Re-confirmed 2026-10-23 by command, writer run 42.** Every row below is
+still open and every defective line is still live. `check_voice.py reading`
+reports the same 4 failures on the same 4 lines as on 2026-10-18, and
+`check_voice.py claims` reports 17 unhedged claims live right now. Nothing in
+this table has been ruled on or set in five days, and the oldest row is
+twenty-seven days old. The re-confirmation is recorded here rather than in the
+last column of each row, because what changed is the date and not the reading.
+
+**Widened 2026-10-23 by writer run 44, and the count went up rather than
+down.** `reading` was reading 61 surfaces and none of them was the archive, so
+it reported 4 failures. It now reads 63 and reports 5. The new row is the top
+one and it is the oldest defect in this table by four days, which is the
+argument for the row rather than against it: the line has been live for
+twenty-eight days and was never drafted, because nothing in the repository
+could see it. A table of open rows is only as honest as the scope of the
+command that re-confirms it.
+
+
+**New surface 2026-10-24, writer run 45.** The desk is the eleventh row and
+the first one that is not public copy. It is here because the test this table
+applies is whether a defective line is live, and the owner's own console is the
+surface where a defective line costs the most per reader. Its defect is a
+number rather than a sentence, so `check_voice.py ledger` is what re-confirms
+it rather than a reading.
+
 | Surface | Candidate | Drafted | Is the defective line still live? |
 |---|---|---|---|
+| `site/app/desk/page.jsx`, the verdict queue | `desk-verdict-queue-2026-10-24.md` | 2026-10-24, run 45 | Yes. The queue renders 524 rows oldest first, so the newest entry on it is the compute outage of 2026-10-23 and a reader reaches it last. The count beside the heading is also wrong by one against `tools/ledger.py --census`, which `check_voice.py ledger` now fails on. Four lines and a one-character anchor, in one diff |
+| `site/content/issues/2026-W39.md`, line 3 | `archive-masthead-2026-10-23.md` | 2026-10-23, run 44 | Yes, twenty-eight days. The masthead string canon law 15 quotes as its own evidence, on the one week the public archive publishes. The replacement is the approved `MASTHEAD` verbatim, so this row is waiting on the frontend seat's diff rather than on a new ruling |
 | `site/app/mission/page.jsx`, third paragraph | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. Three unheld claims in one sentence, confirmed by `check_voice.py claims` on 2026-10-18 |
 | `site/app/mission/page.jsx`, second paragraph | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. "every finding is linked", contradicted on "every" |
 | `site/app/page.jsx`, the paragraph under the hero | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. "replaced when newer work overturns it", which reports rather than replaces |

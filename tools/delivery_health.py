@@ -49,7 +49,9 @@ prose:
 | press    | newest row in `digests`, against the week it | nothing  |
 |          | owes by now, which on a Monday is not the    |          |
 |          | week that has just ended until the cron runs |          |
-| pipeline | newest rows in `papers` and `claims`, and the queue depth behind each | nothing  |
+| compute  | one probe of Modal's HTTP edge, which fronts  | nothing  |
+|          | every cron and the MCP server alike           |          |
+| pipeline | newest rows in `papers` and `claims`, and the queue depth behind each, plus whether `compute` is answering | nothing  |
 | site     | the issues `/library` actually publishes    | nothing  |
 | mcp      | an unauthenticated probe of `/mcp`          | nothing  |
 | deploy   | `deploy_runtime` against the trunk, never   | git      |
@@ -147,7 +149,7 @@ PRICING_URL = f"{SITE_URL}/pricing"
 # publishes the rows this command judges and no seat needs a credential to read
 # them. Facts only: the judgement below is the single copy.
 RECEIPT_URL = f"{SITE_URL}/api/delivery"
-RECEIPT_VERSION = 5  # must match site/lib/delivery-core.js RECEIPT_VERSION
+RECEIPT_VERSION = 6  # must match site/lib/delivery-core.js RECEIPT_VERSION
 
 # And the versions this reader can still read. Exact-match was the rule until
 # 2026-10-10 and it made every additive field an outage: the site deploys on a
@@ -163,9 +165,68 @@ RECEIPT_VERSION = 5  # must match site/lib/delivery-core.js RECEIPT_VERSION
 # readable too, and version 4 added the two sibling-stage markers on the same
 # terms again, and version 5 added the `payments` block on the same terms once
 # more: an absent block is a till this reader cannot see, which is `unknown`,
-# and never a till with nothing wrong. A version that removed or renamed a
-# field would not be added to this tuple.
-READABLE_VERSIONS = (1, 2, 3, 4, 5)
+# and never a till with nothing wrong. Version 6 added the `unreadable` block
+# on the same terms a fifth time, and it is the easiest of the six to justify:
+# the block says why another block is null, so a receipt without it is one that
+# gives no reason, which is exactly what every receipt before it did. A version
+# that removed or renamed a field would not be added to this tuple.
+READABLE_VERSIONS = (1, 2, 3, 4, 5, 6)
+
+# Why a fail-soft block could not be read, and what closes it.
+#
+# The three strings are site/lib/delivery-core.js's `UNREADABLE_REASONS`, which
+# the receipt publishes in its version 6 `unreadable` block, and this file
+# classifies a direct psycopg failure into the same three so the two readers
+# stay interchangeable. That interchangeability is the contract the whole
+# credential-free half of this file rests on: a receipt and a connection must
+# not be able to reach different first steps from the same database.
+#
+# The second half is the point. A surface that says it could not look is honest
+# and it is not actionable, and `payments` proved how far that goes: it answered
+# `unknown` in every standup from the day the block shipped, because
+# `payment_exceptions` is newer than every other table here and `apply_schema`
+# is a hand-run step. One command closed it the entire time and no report said
+# so. So a reason this file recognises carries its own next step.
+NO_TABLE, NO_COLUMN, QUERY_FAILED = ("no such table", "no such column",
+                                     "query failed")
+
+UNREADABLE_HANDS = {
+    NO_TABLE: ("this database is behind db/schema.sql, so one hand-run "
+               "`modal run pipeline/db_setup.py::apply_schema` closes it"),
+    NO_COLUMN: ("this database is behind db/schema.sql by a column, so one "
+                "hand-run `modal run pipeline/db_setup.py::apply_schema` "
+                "closes it"),
+    QUERY_FAILED: ("the table is there and the query broke, so this one needs "
+                   "a log read rather than a migration"),
+}
+
+
+def unreadable_reason(value) -> str | None:
+    """One of the three reasons, or None for anything this reader does not know.
+
+    None rather than `query failed` for an unrecognised string, because a newer
+    receipt inventing a fourth reason is a fact this reader does not have, and
+    guessing at it would put a first step in a report on no evidence. The
+    generic `unknown` sentence is the honest answer there.
+    """
+    return value if value in UNREADABLE_HANDS else None
+
+
+def why_unreadable(exc: BaseException) -> str:
+    """A psycopg failure as one of the three reasons the receipt publishes.
+
+    `sqlstate` and never the message. 42P01 is undefined_table and 42703 is
+    undefined_column, and both of those mean the schema is behind rather than
+    the query being wrong. Everything else is `query failed`, which is the
+    state whose first step is a log.
+    """
+    state = getattr(exc, "sqlstate", None)
+    if state == "42P01":
+        return NO_TABLE
+    if state == "42703":
+        return NO_COLUMN
+    return QUERY_FAILED
+
 
 # Which reader answered. It goes in every surface's evidence as `read_via`,
 # because "the press printed" and "a second-hand record says the press printed"
@@ -558,6 +619,75 @@ def judge_archive(press: Surface | None, site: Surface | None,
                    "failure", evidence)
 
 
+# Modal's HTTP edge answers for every app in the workspace, including the ones
+# it will not route. It replies in plain text on one line, prefixed `modal-http:`,
+# and that line is the only place the real cause is written down. The probe below
+# used to read the status code and drop the body, which turned the most
+# consequential outage this pipeline can have into an unexplained 404 on one
+# surface.
+MODAL_EDGE_PREFIX = "modal-http:"
+
+
+def modal_edge_outage(status: int, body: str) -> str | None:
+    """Modal's own explanation for a request it refused to route, or None.
+
+    None for anything that is not the edge talking, which includes a 404 from a
+    server that is genuinely up and merely has no route at that path. A string
+    only when Modal itself says it will not route, and the string is Modal's
+    reason rendered as a sentence.
+
+    The workspace case is singled out because its blast radius is the whole
+    company and not the one surface that happened to be probed. Every cron in
+    `pipeline/` and the MCP server are apps in one workspace, so a workspace
+    that is disabled is a total compute outage however many surfaces notice.
+    """
+    if status == 0 or not body:
+        return None
+    line = body.strip().splitlines()[0].strip() if body.strip() else ""
+    if not line.lower().startswith(MODAL_EDGE_PREFIX):
+        return None
+    reason = line[len(MODAL_EDGE_PREFIX):].strip()
+    if "disabled" in reason.lower():
+        return (f"Modal's edge says {reason}, which takes down every cron in "
+                "this pipeline and the MCP server together")
+    return f"Modal's edge will not route this app: {reason}"
+
+
+def check_compute() -> Surface:
+    """Is the platform every scheduled job runs on accepting requests at all.
+
+    This surface exists because the two that would notice an outage cannot see
+    one. `pipeline` reads how recently rows arrived, over a two-day window, so
+    it reports green for up to two days after the last cron that will ever run.
+    `deploy` reads what the last run recorded, which an outage freezes rather
+    than changes. Both were green on 2026-10-23 at 23:08 UTC, with the whole
+    workspace switched off since some time between 12:00 and 14:00 that day.
+
+    The one Modal URL this repository knows is the MCP server's, and it is
+    enough: the edge that refuses it is the same edge in front of every app in
+    the workspace, so one probe answers for all of them.
+
+    Guardrail 1 in docs/agents/delivery-health.md draws the line this follows.
+    A request that never arrived and an answer that says everything is gone are
+    the same silence and very different facts, so a network failure here is
+    `unknown` and never `failing`.
+    """
+    status, body, _ = fetch(f"{MCP_URL}/mcp")
+    evidence = {"probed": f"{MCP_URL}/mcp", "status": status,
+                "body": body.strip().splitlines()[0].strip() if body.strip() else ""}
+    if status == 0:
+        return Surface("compute", UNKNOWN,
+                       "the Modal edge could not be reached from here, which "
+                       f"is this checkout's network and not a verdict: {body}",
+                       evidence)
+    outage = modal_edge_outage(status, body)
+    if outage:
+        return Surface("compute", FAILING, outage, evidence)
+    return Surface("compute", OK,
+                   "the Modal edge is routing, so the platform every cron runs "
+                   "on is answering", evidence)
+
+
 def check_mcp() -> Surface:
     """Alive and still guarded, in one unauthenticated request.
 
@@ -571,6 +701,18 @@ def check_mcp() -> Surface:
                 "www_authenticate": headers.get("www-authenticate", "")}
     if status == 0:
         return Surface("mcp", FAILING, f"the MCP server did not answer: {body}", evidence)
+    # Before any judgement about this server, ask whether the platform under it
+    # is routing at all. The edge answers for an app it will not serve, so a
+    # workspace that has been switched off reads here as a plain 404 from a
+    # server that is in fact running fine wherever it is. On 2026-10-23 that is
+    # what this probe said, in those words, while every cron in the pipeline was
+    # equally gone and nothing in the report named the cause.
+    outage = modal_edge_outage(status, body)
+    if outage:
+        evidence["modal_edge"] = outage
+        return Surface("mcp", FAILING,
+                       f"{outage}, so this server is unreachable for a reason "
+                       "that has nothing to do with it", evidence)
     if status == 401:
         if not evidence["www_authenticate"]:
             return Surface("mcp", FAILING,
@@ -714,8 +856,15 @@ def check_checkout(repo_root: Path | None = None) -> Surface:
     status, body, _ = fetch(PRICING_URL)
     evidence: dict = {"url": PRICING_URL, "status": status}
     if status == 0:
-        return Surface("checkout", FAILING,
-                       f"the pricing page did not answer: {body}", evidence)
+        # Guardrail 1's distinction, and this surface had it backwards until
+        # 2026-10-23. A page that never answered and a page with nothing for
+        # sale are the same silence and very different facts, and the one that
+        # costs something is calling the shop shut from a sandbox with no
+        # egress. `check_compute` reads the same silence the same way.
+        return Surface("checkout", UNKNOWN,
+                       "the pricing page could not be reached from here, which "
+                       f"is this checkout's network and not a verdict: {body}",
+                       evidence)
     if status != 200:
         return Surface("checkout", FAILING,
                        f"/pricing returned HTTP {status}, so nobody is reading an offer "
@@ -1144,12 +1293,18 @@ def _on(model: str | None) -> str:
 
 
 def judge_pipeline(facts: dict, now: datetime | None = None,
-                   source: str = DIRECT) -> Surface:
+                   source: str = DIRECT, compute: str | None = None) -> Surface:
     """The daily crons, read through the rows they leave behind.
 
     delivery-health.md's own table calls this the next gap and says why it
     matters most: it is the surface that feeds every other one. A press that
     prints on an empty corpus prints an empty issue.
+
+    `compute` is the one thing the rows cannot say. Every judgement below is
+    about how long ago a row arrived, and the window is two days, so a pipeline
+    whose platform was switched off an hour ago is indistinguishable here from
+    one that is running perfectly. It is passed in as a fact rather than probed
+    for, so this stays a function of what it is given and keeps its tests.
     """
     now = now or datetime.now(timezone.utc)
     rows = dict(facts)
@@ -1203,14 +1358,23 @@ def judge_pipeline(facts: dict, now: datetime | None = None,
     evidence["siblings"] = (None if siblings is None else
                             {stage: _sibling_evidence(siblings.get(stage))
                              for stage, _ in SIBLING_STAGES})
+    # On every path, judged on one. A reader looking at fresh rows deserves to
+    # see whether the thing that produced them can still run.
+    evidence["compute"] = compute
     if stale:
         return Surface("pipeline", FAILING, "; ".join(stale), evidence)
+    if compute:
+        return Surface("pipeline", FAILING,
+                       f"every row above predates an outage that is still "
+                       f"running: {compute}. Nothing reads as stale yet because "
+                       f"staleness takes {PIPELINE_STALE_DAYS} days to show and "
+                       "the crons stopped hours ago", evidence)
     return Surface("pipeline", OK,
                    f"ingesting and distilling within {PIPELINE_STALE_DAYS} days", evidence)
 
 
-def check_pipeline(conn) -> Surface:
-    return judge_pipeline(pipeline_facts(conn))
+def check_pipeline(conn, compute: str | None = None) -> Surface:
+    return judge_pipeline(pipeline_facts(conn), compute=compute)
 
 
 def _git(repo_root: Path, *args: str) -> tuple[int, str]:
@@ -1823,6 +1987,43 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
         named = name_undeployed(found)
         since, anchor = drift_began(found, changed_at)
         age_hours = (now - since).total_seconds() / 3600
+
+        # A drift the replay could not date, measured from the wrong end and
+        # landing inside the window, is not a green app. It is an unanswered
+        # question, and until 2026-10-23 it answered OK.
+        #
+        # The cost was total and it was invisible. Every agent seat runs from
+        # a shallow clone, `git clone --depth 1`, which has one commit of
+        # history, so `undeployed_commits` can never match the running digest
+        # and `drift_began` always falls back to the newest commit to the
+        # app's files, which in a shallow clone is that single commit and is
+        # therefore hours old. The same tree, the same rows, the same moment:
+        # shallow read `ok, a deploy is pending and still inside the 24h
+        # window: distill (0.1h), ingest (0.1h), weekly (0.1h)`, and the same
+        # checkout after `git fetch --unshallow` read three apps between 7.3
+        # and 8.2 days behind. So the drift alarm was silent for every reader
+        # it has, which is every seat, and `tools/drift_watch.py` exited 0 on
+        # a press job eight days behind.
+        #
+        # `drift_began` is right that a guard which cannot date a drift should
+        # under-report rather than invent one. That argument is about the
+        # number. This is about the state: an undated app whose fallback clock
+        # already puts it past the window still alarms, exactly as before, and
+        # only the one that would have been called fine on a clock it cannot
+        # trust goes to `unknown`.
+        if age_hours <= DEPLOY_GRACE_HOURS and "commits" not in found:
+            here.update(state=UNKNOWN, merged_at=str(changed_at),
+                        drift_began=str(since), drift_anchor=anchor,
+                        drift_hours=round(age_hours, 1), undeployed=found,
+                        why=("the running image matches no commit this "
+                             "checkout can see, so the only clock left is the "
+                             "newest commit to this app's files and that says "
+                             "nothing about how far behind production is: "
+                             + str(found.get("why", ""))))
+            unknowns.append(f"{app} (the drift cannot be dated from this checkout)")
+            evidence[app] = here
+            continue
+
         here.update(state=FAILING if age_hours > DEPLOY_GRACE_HOURS else OK,
                     merged_at=str(changed_at), drift_began=str(since),
                     drift_anchor=anchor, drift_hours=round(age_hours, 1),
@@ -1965,8 +2166,13 @@ PAYMENT_CODES = """
 """
 
 
-def payment_facts(conn) -> dict | None:
-    """The open exceptions, or None when the table cannot be read.
+def payment_facts(conn) -> dict | str | None:
+    """The open exceptions, or why they could not be read.
+
+    A dict of counts, or one of the three reasons in `UNREADABLE_HANDS` when
+    the read failed, which is the same shape `deploy_facts` has always had and
+    for the same reason. None stays reachable for the one case that is neither:
+    a read that worked and returned no row at all.
 
     None rather than zeroes, the same contract `queue_facts` keeps and for the
     same reason: `payment_exceptions` is newer than every other table this file
@@ -1986,8 +2192,11 @@ def payment_facts(conn) -> dict | None:
         with conn.transaction():
             total = conn.execute(PAYMENT_TOTALS).fetchone()
             codes = conn.execute(PAYMENT_CODES).fetchall()
-    except Exception:
-        return None
+    except Exception as exc:
+        # The reason and not a bare None, so this reader reaches the same first
+        # step the receipt's `unreadable.payments` gives the credential-free
+        # one. `why_unreadable` reads the sqlstate and never the message.
+        return why_unreadable(exc)
     if total is None:
         return None
     return {"unresolved": total[0], "needs_a_hand": total[1],
@@ -2009,7 +2218,7 @@ def _name_codes(codes: list | None) -> str:
     return ", ".join(named)
 
 
-def judge_payments(facts: dict | None, now: datetime | None = None,
+def judge_payments(facts: dict | str | None, now: datetime | None = None,
                    source: str = DIRECT) -> Surface:
     """Open payment exceptions, against what will clear itself.
 
@@ -2033,11 +2242,23 @@ def judge_payments(facts: dict | None, now: datetime | None = None,
     """
     now = now or datetime.now(timezone.utc)
     read = {"read_via": source}
-    if facts is None:
+    if facts is None or isinstance(facts, str):
+        # `unknown` either way, because an unread till is not a clear one. What
+        # changes with a reason is whether the report ends at "could not look".
+        # It answered exactly that for the nine days since it shipped while one
+        # hand-run migration was all it ever needed, which is the gap the
+        # version 6 receipt and `why_unreadable` exist to close.
+        why = unreadable_reason(facts)
+        if why is None:
+            return Surface("payments", UNKNOWN,
+                           "payment_exceptions could not be read, so whether a "
+                           "verified payment reached an account is unknown here",
+                           read)
         return Surface("payments", UNKNOWN,
-                       "payment_exceptions could not be read, so whether a "
-                       "verified payment reached an account is unknown here",
-                       read)
+                       f"payment_exceptions could not be read ({why}), so "
+                       f"whether a verified payment reached an account is "
+                       f"unknown here: {UNREADABLE_HANDS[why]}",
+                       {"unreadable": why, **read})
 
     open_rows = int(facts.get("unresolved") or 0)
     stuck = int(facts.get("needs_a_hand") or 0)
@@ -2182,14 +2403,26 @@ def receipt_facts(payload: dict) -> tuple[dict | None, dict, dict | str, dict | 
                     "queues": queues if isinstance(queues, dict) else None,
                     "siblings": siblings}
 
+    # Version 6's reasons for the blocks that are null, keyed by block name.
+    # Absent on versions 1 to 5 and on any receipt where everything read, and
+    # `unreadable_reason` turns anything this reader does not recognise back
+    # into None, so an older site and a newer one both land on the sentence
+    # that claims nothing.
+    unreadable = payload.get("unreadable")
+    if not isinstance(unreadable, dict):
+        unreadable = {}
+
     deploy = payload.get("deploy")
     if deploy is None:
         # The route sends null when it could not run that query at all, and an
         # empty list when the table is really empty. Collapsing the two would
         # make a missing table look like three jobs that never reported, which
         # is the drift alarm firing on a schema step.
+        why = unreadable_reason(unreadable.get("deploy"))
         deploy_rows: dict | str = ("deploy_runtime could not be read by the site "
                                    "either, so the receipt carries no deploy rows")
+        if why is not None:
+            deploy_rows += f" ({why}): {UNREADABLE_HANDS[why]}"
     else:
         deploy_rows = {row["app"]: {"runtime_sha": row.get("runtime_sha"),
                                     "recorded_at": _parse_iso(row.get("recorded_at")),
@@ -2203,7 +2436,10 @@ def receipt_facts(payload: dict) -> tuple[dict | None, dict, dict | str, dict | 
     # hand the judgement the same thing and neither can call the till clear on
     # evidence the other would call unknown.
     published = payload.get("payments")
-    payments = None
+    # A version 6 receipt says why, and the reason is what gives the verdict a
+    # next step instead of a shrug. On an older receipt there is no reason to
+    # carry and None is the same unknown it has always been.
+    payments: dict | str | None = unreadable_reason(unreadable.get("payments"))
     if isinstance(published, dict):
         codes = published.get("codes")
         payments = {
@@ -2221,7 +2457,7 @@ def receipt_facts(payload: dict) -> tuple[dict | None, dict, dict | str, dict | 
 # ------------------------------------------------------------------ driver
 
 def database_surfaces(today: date | None = None, repo_root: Path | None = None,
-                      notify: bool = True) -> list[Surface]:
+                      notify: bool = True, compute: str | None = None) -> list[Surface]:
     """`press`, `pipeline`, `payments` and `deploy`, by the best reader available.
 
     Two readers, in order. A direct connection when this environment holds
@@ -2236,7 +2472,7 @@ def database_surfaces(today: date | None = None, repo_root: Path | None = None,
     url = os.environ.get("DATABASE_URL", "").strip()
     direct_why = "no DATABASE_URL in this environment"
     if url:
-        surfaces, direct_why = _from_database(url, today, repo_root, notify)
+        surfaces, direct_why = _from_database(url, today, repo_root, notify, compute)
         if surfaces is not None:
             return surfaces
 
@@ -2244,7 +2480,7 @@ def database_surfaces(today: date | None = None, repo_root: Path | None = None,
     if payload is not None:
         press, pipeline, deploy, payments = receipt_facts(payload)
         return [judge_press(press, today, RECEIPT_URL),
-                judge_pipeline(pipeline, source=RECEIPT_URL),
+                judge_pipeline(pipeline, source=RECEIPT_URL, compute=compute),
                 judge_payments(payments, source=RECEIPT_URL),
                 judge_deploy(deploy, repo_root, source=RECEIPT_URL)]
 
@@ -2257,7 +2493,7 @@ def database_surfaces(today: date | None = None, repo_root: Path | None = None,
 
 
 def _from_database(url: str, today: date | None, repo_root: Path | None,
-                   notify: bool) -> tuple[list[Surface] | None, str]:
+                   notify: bool, compute: str | None = None) -> tuple[list[Surface] | None, str]:
     """The four surfaces over a real connection, or None and why not.
 
     None rather than four `unknown` surfaces, so the caller can fall through to
@@ -2270,7 +2506,7 @@ def _from_database(url: str, today: date | None, repo_root: Path | None,
         return None, "psycopg is not installed here (pip install 'psycopg[binary]')"
     try:
         with psycopg.connect(url, connect_timeout=15) as conn:
-            return [check_press(conn, today), check_pipeline(conn),
+            return [check_press(conn, today), check_pipeline(conn, compute),
                     check_payments(conn),
                     check_deploy(conn, repo_root, notify=notify)], ""
     except Exception as exc:
@@ -2280,8 +2516,8 @@ def _from_database(url: str, today: date | None, repo_root: Path | None,
 # `checkout` sits next to `payments` on purpose. One asks whether a sale can
 # happen and the other whether a sale that happened became access, and a reader
 # scanning this report for the state of the till should meet both in one glance.
-ORDER = ["press", "pipeline", "payments", "checkout", "deploy", "site",
-         "archive", "mcp"]
+ORDER = ["press", "compute", "pipeline", "payments", "checkout", "deploy",
+         "site", "archive", "mcp"]
 
 
 def run(surfaces: list[str], today: date | None = None,
@@ -2295,9 +2531,20 @@ def run(surfaces: list[str], today: date | None = None,
     # is testable as one.
     needed = asked | ({"press", "site"} if "archive" in asked else set())
 
+    # One probe, two readers. `pipeline` needs the answer as a fact and cannot
+    # go and get it, so the platform is checked here even when only `pipeline`
+    # was asked for, and the extra surface is dropped by the filter at the end.
+    compute = None
+    outage = None
+    if {"compute", "pipeline"} & needed:
+        compute = check_compute()
+        outage = compute.headline if compute.state == FAILING else None
+
     out: list[Surface] = []
+    if compute is not None:
+        out.append(compute)
     if {"press", "pipeline", "payments", "deploy"} & needed:
-        out += [s for s in database_surfaces(today, repo_root, notify)
+        out += [s for s in database_surfaces(today, repo_root, notify, outage)
                 if s.name in needed]
     if "site" in needed:
         out.append(check_site(today))
@@ -2361,7 +2608,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--surface", action="append", dest="surfaces",
                         choices=ORDER,
-                        help="check one surface; repeatable, default is all eight")
+                        help="check one surface; repeatable, default is all nine")
     parser.add_argument("--no-notify", action="store_true",
                         help="find a stale deploy and do not mail the owner about it")
     parser.add_argument("--json", action="store_true",

@@ -14,7 +14,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { chromium } from "playwright";
 
-const BASE = "http://127.0.0.1:3000";
+const BASE = `http://127.0.0.1:${process.env.FE_PORT || 3000}`;
 const OUT = process.argv[2];
 const TAG = process.argv[3] || "after";
 const ONLY = process.argv[4] || null;

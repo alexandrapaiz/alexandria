@@ -1,3 +1,762 @@
+## Updated 2026-10-24, ~01:27 UTC (message pass): PR #420 checked against the merge rule, resolved a docs-only conflict, and merged
+
+**Trigger.** Two board events naming the same pull request: "pull request
+opened by engineer... #420. Review it against the merge rule: merge it, or
+say on the board what it still needs" and "the engineer seat's run
+finished. #420. Read its report, merge what is yours under the merge rule,
+close what is superseded, and hand the next thing to a seat."
+
+**Housekeeping first.** `gh pr list --state open` found this seat's own
+#423 (`alexandria-pm/2026-10-24-message-pr419`), touching only
+`docs/sprints/dispatch-queue.md` and `docs/sprints/pending.md`, both Tier A
+knowledge surfaces. Self-merged under Tier A before branching, so this
+pass starts from a clean `main` rather than stacking on itself.
+
+**PR #420 (engineer, `alexandria-engineer/2026-10-24-message`), the receipt
+classifying its own fail-soft nulls so the till's `unknown` names the
+schema command that closes it, checked against the merge rule (Tier B,
+`docs/standards/pm.md` §10) and merged.** Not mine, not a draft, no `hold`
+label, zero comments or reviews since the last push. `gh pr diff
+--name-only` showed seven files (`docs/agents/incidents.md`,
+`docs/ideas.md`, `site/lib/delivery-core.js`, `site/lib/delivery.js`,
+`tests/delivery.test.mjs`, `tests/test_delivery_receipt.py`,
+`tools/delivery_health.py`), no Tier C path. `statusCheckRollup` empty,
+confirmed against `.github/workflows/checks.yml`'s own `paths:` list as
+"no checks defined for these paths" rather than a missing green tick, the
+same read the PR body gave.
+
+**`mergeable: CONFLICTING` on open, and the collision was docs-only, which
+§10 condition 5 leaves to the PM.** `git merge-tree` against the merge
+base showed two conflicts, both in append-only ledgers
+(`docs/agents/incidents.md` and `docs/ideas.md`), each one two sets of
+same-day entries landing at the same anchor with no overlapping content.
+Merged `main` into the engineer's own branch, kept both sides of each
+conflict in full, lost nothing, and pushed the resolution back to that
+branch rather than resolving around it, the same shape this seat used for
+PR #408 yesterday.
+
+**Verified rather than trusted.** Ran the suite on the merged tree myself:
+`tests/test_delivery_receipt.py` 36 passed, `node --test
+tests/delivery.test.mjs` 28 passed, `tools/check_registers.py` 0 blocking,
+and the full `python3 -m pytest tests/ -q` gave **1755 passed, 1 skipped**,
+matching the PR's own claim exactly. `gh pr view 420` read `MERGEABLE`
+after the push, confirming the conflict was gone before merging.
+
+**Merged:** #420, normal merge, now on `main` at `6baf03d`.
+
+**Checked the three pull requests the PR itself named as its expected
+merge order (#403, #416, then this one) rather than trusting the PR's own
+account.** #419 was already merged (this seat's own prior pass). #416 is
+closed, not merged, so it supersedes nothing. #403 (this seat's own, depth
+four) is still open and still waiting on a merger other than this seat.
+Merging #420 first does not block it, and a future merge of #403 may need
+its own one-line keep-both against the same two ledger files, the same
+pattern this chain has used all night.
+
+**The board, not a dispatch, carries the "hand the next thing" half.**
+Moved the till's Review card to Done with the merge reasoning on it. While
+reading the engineer's lane, found a Backlog card ("Wire Polar's three
+products end to end") that the PR's own L-E10 survey had already shown
+built three pull requests ago (#285, #301, #352). Moved that to Done too,
+leaving only the owner-only checkout-secrets card where it was. Posted one
+`done` message on the board rather than opening a new dispatch: every
+remaining open card in the engineer's lane waits on the same two owner-only
+hands (the Modal workspace, the three `POLAR_CHECKOUT_*` secrets), and the
+frontend and writer seats both carry live runs on their own open drafts
+right now, so taking either seat's open work would be the seizure the
+standing note warns against, not a handoff.
+
+**Checked the inbox before anything else, per §15.** Two items addressed
+to this seat. The exo centralizer's handoff on the lessons-register sync
+(PR #417) was already merged, by the owner's own account, a minute before
+the handoff was even posted, so nothing to do there beyond verifying the
+fact. The chair's "drain Saturday's queue and name Wednesday" handoff from
+17:04 UTC was already answered by this seat's own pass twenty minutes
+later ("Queue drained... Wednesday reset"), so it is closed, not stale.
+
+**Three new ledger proposals filed inside PR #420, all dated today, all
+`proposed`, none acted on this pass** because an unverdicted proposal from
+today is not yet a grooming finding: a `closes_with` field so every
+`unknown` surface names its own next step, an outage alarm that counts
+down to the press deadline instead of only naming the outage, and a craft
+scan comparing this org's derived remediation to Datadog's and Sentry's.
+They wait for the next grooming pass.
+
+**Run health, delivery health, the queue gauge, the cap ratio, the board
+walk.** Not recomputed this pass, per the same standing rule the prior
+entry below cites: a message trigger answers the thing it names and stops
+rather than re-running the full standup. Nothing in merging #420 changes
+the engineer-lane facts the prior passes already recorded tonight, except
+the open-PR count (one fewer) and the Done column (two cards fuller).
+
+## Updated 2026-10-24, ~01:15 UTC (message pass): PR #419 checked against the merge rule and merged
+
+**Trigger.** A board event: "pull request opened by writer... #419.
+Review it against the merge rule: merge it, or say on the board what it
+still needs and hand that to its seat."
+
+**PR #419 (writer, `alexandria-writer/2026-10-24-message-firstuse`),
+'harness' bare in every issue the press has sent, checked against the
+merge rule (Tier B, `docs/standards/pm.md` §10) and merged.** Not mine,
+not a draft, no `hold` label, zero comments or reviews. No checks
+reported on the branch, read as "no checks defined" rather than a
+missing tick. `gh pr diff --name-only` shows five files
+(`docs/agents/incidents.md`, `docs/ideas.md`, `docs/voice/ban-list.md`,
+`docs/voice/check_voice.py`, `docs/voice/reviews/2026-10-24-firstuse.md`)
+and 615 insertions, 0 deletions — no `prompts/`, no `company.yaml`, no
+secret, no Tier C path. `mergeStateStatus` read `CLEAN`/`MERGEABLE`.
+Opened today.
+
+**Verified rather than trusted, same as every merge this seat logs
+here.** Merged `main` into a scratch worktree with the PR's branch to
+confirm the clean merge GitHub reported (no conflicts, 615 insertions
+matching the PR's own stat exactly). Ran the new `check_voice.py
+firstuse` against the merged tree: it now prints a scope line before any
+count ("read from site/content/issues, 1 served... NOT read the send
+record...") exactly as the diff and the PR body describe, and the
+underlying BARE findings are unchanged. Reproduced the two self-correction
+counts the PR's own incident entry cites (`ls docs/voice/reviews/*.md |
+wc -l` → 49, `grep -l 2026-W39 docs/voice/reviews/*.md | wc -l` → 37, `ls
+docs/voice/reviews/ | grep -c 2026-10-18` → 5): all three match what the
+PR says it corrected to. `docs/ideas.md`'s new entry is filed `proposed`,
+an owner-controlled status this pass left untouched.
+
+**Merged:** #419, normal merge, now on `main`.
+
+**Branched from this seat's own prior run, not from `main`, because the
+prior run touches the same two files this pass writes.** `gh pr list
+--state open` at the start showed two of this seat's own open pull
+requests: `#422` (`alexandria-pm/2026-10-24-message-exo414`, touching
+`pending.md` and `dispatch-queue.md`, the exact files this pass writes)
+and `#403` (depth 4, untouched by this pass's file list). Built on `#422`
+(`git log --oneline origin/alexandria-pm/2026-10-24-message-exo414 ^HEAD`
+printed nothing, confirming containment), opened this pull request
+superseding it, then closed `#422` with a pointer here. `#403` stays
+open, untouched, still blocked on a merger other than this seat (the
+owner or a chair), exactly as the prior two passes found it.
+
+**Third in a chain, and this seat's own merges are the thing stalling
+now: `#418` to `#422` to this one.** `#418` was itself closed as
+superseded by `#422` an hour earlier, and `#422` is now closed as
+superseded by this pull request, with neither ever reaching `main`.
+**At depth three the charter says to report this plainly rather than
+route around it: this seat is blocked on merges of its own output**,
+specifically of `docs/sprints/pending.md` and `docs/sprints/dispatch-
+queue.md`, which keeps restating the same board state across three
+unmerged pull requests instead of landing it once. None of the three
+pull requests' content is lost (each supersedes cleanly, verified by the
+empty `git log` check above), so nothing here is at risk, but the next
+reader of this file on `main` is still reading content from before
+tonight's last several passes until one of this chain merges.
+
+**Pending, top three, carried from the prior pass and not re-derived
+this pass.** (1) `#403` (this seat's own, depth 4) still carries the
+recovery sprint and the skills-sellable PR/FAQ, unmerged. (2) `#414`
+(the ExO seat's, depth 6) stays held per the open question in the prior
+entry below: does §10's amendment's authority carve-out leave "Charters
+(`prompts/`)" itself an owner/chair line regardless of content, or only
+the clauses that grant or limit a seat's power. (3) The Modal workspace
+is still disabled (`#406`, urgent, 2026-10-26 09:00 UTC deadline,
+owner-only).
+
+**Run health, delivery health, the queue gauge, the cap ratio, the
+board walk.** Not recomputed this pass. This is a single event-driven
+wake answering one message, per the standing rule that a message
+trigger answers that one thing and stops rather than re-running the full
+standup. The prior entry below (~01:05 UTC) carries the last full read
+of all of these; nothing in merging #419 changes any of those readings
+except the open-PR count and the deepest chain, both named above.
+
+## Updated 2026-10-24, ~01:05 UTC (message pass): PR #414 read and held for you, not self-merged, and the board's own ask on it answered
+
+**Trigger.** Three board events in one wake: PR #408 and PR #405 (this
+seat's own, from earlier tonight) confirmed merged, with the instruction
+to continue the next item in this seat's lane; and the ExO seat's run
+finished (PR #414), with the instruction to read its report, merge what
+is mine under the merge rule, close what is superseded, and hand the
+next thing to a seat on the board.
+
+**Branched from this seat's own prior run, not from `main`.** `gh pr
+list --state open` found `#418` (this seat's own six-hour pass, still
+open) and `#403` (depth 4, still open) at the start. `#418` touches the
+exact two files this pass writes (`pending.md`, `dispatch-queue.md`);
+`#403` does not. Built on `#418` (`git log --oneline
+origin/alexandria-pm/2026-10-24-message-6h ^HEAD` printed nothing,
+confirming containment), opened this PR (#422) superseding it, then
+closed `#418` with a pointer to #422. `#403` stays open, untouched, and
+still blocked on a merger other than this seat: it carries the real
+current sprint (`sprint-2026-10-19.md`) and the skills-sellable PR/FAQ,
+not just old reports, exactly as #418 found.
+
+**#414 is not merged, and the reason is worth stating plainly rather
+than silently repeating the prior pass's call.** `gh pr diff
+--name-only` shows 23 files: eleven are `docs/agents/*` knowledge
+surfaces (Tier A territory), but twelve are `prompts/*-agent.md`, one
+per seat including this seat's own charter. `docs/standards/pm.md` §10's
+amendment says the PM merges every tier in its own company now, "except
+a change to a seat's own authority," so this pass read the full diff
+rather than assume the old Tier C line still binds. None of the twelve
+charter diffs changes who may dispatch whom, a dispatch ceiling, or a
+merge-tier definition; every change is mechanical (reading the board
+API instead of the blind `gh run list`, the shallow-clone and `/tmp`-
+scratch cautions, the `pending.md` writer split). So this is arguably
+not "a change to a seat's own authority" by the amendment's own test.
+
+Even so, this pass is holding it rather than merging it, for three
+reasons that outweigh that reading. First, this seat's own immediately
+prior run (#418, forty minutes earlier) read the same diff and called it
+"not this seat's to self-merge," and reversing that within the same
+session with no new fact on the table is not applying the merge rule,
+it is re-litigating it. Second, `docs/standards/pm.md` §9 and §10 both
+still name "Charters (`prompts/`)" as their own enumerated Tier C
+category, separately from "a change to a seat's own authority," and the
+amendment's one sentence does not say which of the two readings is
+meant: that the authority carve-out is the only thing still hers, or
+that the whole "Charters" line is swallowed by "authority" because a
+charter is what grants authority. Third, the blast radius is every
+seat's next run, all at once, and the cost of holding one more cycle is
+cheap while the cost of a wrong charter merge is not. **Asking rather
+than guessing: does §10's amendment's authority carve-out leave
+"Charters (`prompts/`)" itself still an owner/chair line regardless of
+content, or does it only protect the specific clauses that grant or
+limit a seat's power?** Until that is answered, this pass is treating
+charter PRs as Tier C.
+
+**Nothing to close.** #414's own chain (`#272` to `#331` to `#381` to
+`#404` to `#411` to `#414`) is already fully closed by the ExO seat
+itself; checked all five and every one reads `CLOSED`. No other open
+pull request duplicates or is invalidated by #414's unmerged content.
+
+**The board's own ask on this answered, not just the PR.** Card
+`df7b4a84` (Review column) is this seat's own 2026-10-18 ask to the ExO
+seat, asking for exactly the charter edit #414 now carries, because this
+seat's charter could not edit itself. Commented on the card: the edit is
+built, correctly scoped to what was asked, and this seat is holding the
+merge for the reason above rather than treating "I asked for this" as
+licence to also be the one who lands it. Left in Review, not moved to
+Done, because the code is not on `main` yet.
+
+**Hand the next thing to a seat: checked, and there is nothing new to
+hand.** Walked the whole board (Backlog, This sprint, In progress,
+Review) rather than only the cards this pass already knew about. The one
+candidate that looked like an orphan, the issue dek's two-word widow on
+tablet and desktop that the frontend seat's own comment on card
+`d79bfd44` said deserved "a card of its own," already has one
+(`b37a342a`, frontend, Backlog, filed before today). Every other
+dispatchable seat (engineer `#420`, writer `#419`, frontend `#421`) has
+an open pull request from its own last run right now, which is the hard
+stop on proposing anything new for them, and all three are visibly still
+working (draft, "filling in" sections). `research`'s idle card
+(`50f9a0f3`) explicitly says fresh work needs the owner's word first, so
+it is named, not queued. `market`, `skill`, and `security` last opened a
+pull request on 2026-10-05, nineteen days ago, and `okr` on 2026-10-18;
+none of that has a sprint item naming it this week to point to (the real
+current sprint is the one stuck inside #403), so there is no evidenced
+trigger to act on rather than a cadence question for the ExO's weekly
+re-derivation. Reported rather than acted on.
+
+**Run health, read from the board** (`gh run list` is blind to every
+agent seat's run since 2026-10-17, confirmed again this pass: the newest
+30 rows are all `checks`/`deploy-main` merge pushes, zero agent
+workflows). `GET /api/board/alexandria` returns 25 rows, back to
+2026-10-18T14:33Z. Two non-successes in the window, both already known
+and both still unregistered on `main`: `exo` at 2026-10-23T19:04:14Z,
+exit 1 at 48 of 200 turns, and `pm` at 2026-10-23T19:09:06Z, exit 1 at
+turn 1, seven seconds after. #414 already drafts the incident entry for
+both (`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-
+was-pointed-at-it`), so this pass is not adding a second, differently-
+named entry for the same two failures while that one sits one merge
+away: duplicating it would be the allocator collision the charter
+already warns about, for no gain. If #414 is still unmerged by the next
+ceremony, that registration still has to land, by whichever seat opens
+next.
+
+**Cap ratio.** `exo`'s own run on this PR: 155 of a 200 cap (workflow
+file and #414's own host-manifest reading agree on 200), 77.5%, over the
+70% line. `writer`'s two most recent runs, 140 and 113 turns: the
+workflow file still says `--max-turns 225` (113/225 = 50%, 140/225 =
+62%, both under), but #414 reports that number is stale since decision
+056 moved cadence to host manifests, and reads the live manifest cap as
+150 (140/150 = 93%, 113/150 = 75%, both over, and 93% would be a third
+consecutive measurement over the line per #414). Could not independently
+confirm 150: `gh api repos/alexandrapaiz/alexandria-systems/...` 404s for
+this seat's token. Reporting both readings rather than picking one
+silently.
+
+**Delivery health, `tools/delivery_health.py` direct.** `ok`: press
+(2026-W42, caught up), site, archive. **FAILING, unchanged:** compute /
+pipeline / mcp (Modal workspace disabled, `#406` urgent, 2026-10-26
+09:00Z deadline, owner-only); checkout (the three Polar env vars still
+unset, owner-only); deploy (distill 8.0 days, ingest 7.4 days, weekly 8.2
+days undeployed behind `origin/main`). **unknown:** payments.
+
+**Queue gauge, four numbers.** `main`'s newest commit is the merge of
+`#409`, 2026-10-24T00:47:16Z, about fourteen minutes old at this writing.
+`checks.yml` on `main` fires only on changes to specific paths (pipeline,
+digest/daily prompts, named tests, `skills/**`); its newest matching run
+is `success` from the merge of `#400` at 2026-10-23T23:31:12Z, and no
+merge since has touched one of its paths, which is why nothing newer
+shows and that is not a gap. Open pull requests: 6 total (`#403`, `#414`,
+`#419`, `#420`, `#421`, `#422`), 3 opened since the last merge to `main`
+(`#420`, `#421`, `#422`). 7-day conversion: 73 merged / 100 opened
+(0.73). Deepest open chain: 6 (`#414`), unchanged, and already reported
+bold per the charter at that depth by #414 itself.
+
+**Linear trial.** Not checked this pass; nothing in this run's inputs
+bears on it.
+
+## Updated 2026-10-24, ~00:50 UTC (the six-hour pass): the stacked queue drained, two chains correctly left for you, the inbox answered
+
+**Trigger.** The six-hour pass instruction: read the inbox and the Messages
+hub, answer every ask and handoff addressed to this seat, triage the last
+six hours of failed runs, merge what qualifies under Tier B if the
+authority change has landed here, say what waits on the owner otherwise,
+move the sprint, and post one board note in first person.
+
+**Own last run was wide open, not just one PR.** Five of this seat's own
+pull requests were open at the start (`#403`, `#405`, `#410`, `#412`,
+`#415`), each from a message-triggered run tonight that branched from
+`main` rather than stacking, per the standing rule, and each noted the same
+append-only collision in `pending.md`. Rather than add a sixth, this pass
+drained the pile the way the 2026-10-18 six-hour pass did: merged `#410`,
+`#412`, `#415` and `#405` in that order, resolving the top-anchor
+collision by keeping both sides at each step, confirmed clean with
+`gh pr diff --name-only` (every one touched only this file) before
+touching any of them.
+
+**Inbox, checked first.** `to_seat=pm&to_company=alexandria` across the
+newest 100 board messages showed everything addressed to this seat by name
+already answered by tonight's own chain, except one thing that arrived
+after the last pass closed: `distribution`'s re-vendor of
+`docs/standards/lessons.md` from HQ. Single file, clean, no comment, no
+review, no label, opened ready — merged.
+
+**The authority change has landed here, and this pass used it beyond its
+own queue.** This repository's vendored `docs/standards/pm.md` carries
+§10's amendment and §21 ("Merges belong to the PMs and the chairs, not to
+the owner"), so Tier A and Tier B merge authority are both active, not
+pending. Checked every open pull request's actual diff rather than its
+title before touching it:
+
+- **`#333`** (frontend, the visual harness's stale-server check, narrowed
+  to a server whose `cwd` is actually this site) — clean, no draft, no
+  comment, no Tier C path. Merged.
+- **`#413`** (writer, the desk's ledger reader missing a line anchor and
+  silently miscounting the owner's own verdict queue) — clean, no Tier C
+  path, local evidence reproduced. Merged.
+- **`#409`** (engineer, the till's checkout watcher and the drift guard's
+  shallow-clone blindness) — the largest diff of the pass, product code
+  and tests. Conflicted twice against a moving `main` (`docs/ideas.md` and
+  `docs/agents/incidents.md`, both pure appends at a shared anchor,
+  §10's condition 5). Resolving the first collision by reordering exposed
+  a real gotcha, not just a textual one: two branches that both append
+  before the same single trailing `- Status: proposed` line can each rely
+  on it for their own last entry, and reordering silently drops it from
+  whichever entry no longer sits next to it. `tests/test_ledger.py`'s
+  baseline check caught it before this pass pushed anything (63 unreadable
+  entries against a baseline of 62), so a dropped status line never
+  reached `main`. Fixed both times it recurred (the branch picked up a
+  second `main` move mid-resolution), ran the full suite at 1741 passed
+  each time, then merged.
+- **`#417`** (distribution, the lessons re-vendor above) — merged.
+
+**One pull request handed back rather than resolved.** `#416` (frontend,
+the masthead fix) conflicts with `#333` in `docs/design/harness/serve.sh`
+and `shoot.mjs`, and the collision is in the script's own logic, not only
+in prose: both add a `cwd`-based guard to the same kill loop, for two
+related but distinct reasons. §10's condition 5 leaves a docs-only
+conflict to this seat; this one is not that, so it went back to the
+frontend seat as a `handoff` on the board rather than a PM resolution of
+code the PM did not write.
+
+**Two chains correctly left for you, posted as an `ask` rather than left
+implicit in this file a sixth time.** `#403` (this seat's own, depth 4,
+`#397`→`#399`→`#401`→`#403`) and `#414` (the ExO seat's, depth 6,
+`#272`→`#331`→`#381`→`#404`→`#411`→`#414`, every seat's charter file in
+one diff) both cross outside what their own author may self-merge, and
+neither had been explicitly escalated before now, only named in this
+file's top three across several passes. Asked you or a chair on the board
+this pass, naming both and their depth, then corrected that ask once this
+pass actually read what `#403` carries rather than just its file list.
+
+**What `#403` actually is, read in full this pass rather than left as a
+name in a list a sixth time.** It is not only this seat's own small
+merge-report commits. Stacked underneath, still unmerged and unread by
+anyone but this pass: `docs/sprints/sprint-2026-10-19.md`, the recovery
+sprint that should have opened the Monday that fell inside the five-day
+disk-full outage (`INC-2026-10-23-the-disk-filled-and-the-org-wrote-
+nothing-for-five-days`, also stuck in this same chain and also not on
+`main` yet); and `docs/prfaq/skills-sellable.md`, the press release and
+FAQ for the skills-become-sellable initiative, the go-decision document
+company standard §2c requires before that work enters a sprint. The
+board's own sprint object still reads `sprint-2026-10-05` because the
+real current sprint has never reached it. None of this is busywork; all
+of it waits on the same one pull request.
+
+**Failed runs, last six hours.** Two clusters, both already fully
+triaged by tonight's own chain before this pass started: a burst of
+one-turn, zero-pull-request exits across `pm`, `engineer`, `exo` and
+`exo-centralizer` in three companies at 19:09 UTC, and two longer ones at
+18:22 and earlier. Both tie to the same event the chair's own board notes
+name directly: the host went down and was recovered between roughly 17:00
+and 19:05 UTC, Langfuse stopped, and the chair called the PMs in. Every
+one of tonight's "wake" passes (second through sixth) already closed out
+the specific pull requests those runs were mid-flight on, and the ExO
+centralizer separately graded the outage itself. Nothing in this window
+is a new, untriaged class; `gh run list --status failure` over the same
+window returns empty, because these are host-window runs, not Actions
+runs.
+
+**Delivery health, read from the artifact.** `tools/delivery_health.py`
+right now: **ok** press (2026-W42 is the newest issue, written), site,
+archive. **FAILING** compute, pipeline and mcp, all one cause, Modal's
+workspace is still disabled — already filed `urgent` by `#406` with
+Monday 09:00 UTC as the deadline, unchanged by this pass, owner-only.
+**FAILING** checkout, the three Polar env vars are still unset, owner-only,
+unchanged. **unknown** payments and deploy, both for reasons this sandbox
+cannot see past (no database credential; no unshallowed clone), not new.
+
+**Queue gauge, four numbers.** `main`'s newest commit is this pass's own
+chain of merges, effectively now; the newest `checks.yml` run on `main`
+(before this pass's docs-only merges, which do not touch its path filter)
+is `success`. 5 pull requests open (down from 11 at the start of this
+pass): `#403`, `#414` (both named above), `#416` (handed back to
+frontend), and two drafts in progress from their own seats (`#419`
+writer, this seat's own `#418`). 7-day conversion: 72 merged of 97
+opened. Deepest open chain: 6 (`#414`).
+
+**What shipped since the last report.** The checkout page now has a
+reader instead of a silent terminal print; two guardrails (`drift_watch`,
+`check_checkout`) that were answering a confident verdict from evidence
+they could not see now answer `unknown` and say why; the owner's desk
+stopped silently miscounting her own verdict queue; the visual harness
+stopped killing a sibling company's dev server; and the lessons register
+is current with HQ again.
+
+**What moves today.** The sprint goal the board still shows
+(`sprint-2026-10-05`, "skills are the product, the press is the funnel")
+is stale and not this seat's to replace by fiat: the real current sprint
+("The lights back on", opened late on 2026-10-23 for the recovery) is
+written and sitting inside `#403`, unmerged, so the board's object is
+wrong until that lands rather than until this pass writes a new file out
+from under it. Of its own five items, two have an owner-only dependency
+named inside it already (the Polar sandbox signup, 27 days overdue) and
+one, the press's 2026-W41 anchor bug, is unaffected by the press having
+since moved on to 2026-W42 on its own schedule, because the fix is about
+the next recovery, not this one. Next, once the owner or a chair merges
+`#403`: this seat opens the real sprint file for real and the engineer
+has a named, acceptance-criteria'd item waiting.
+
+**Handed off.** `#403`, `#414` to the owner or a chair, by name, as an
+`ask`. `#416` to the frontend seat, by name, as a `handoff`, to rebase
+its own fix against `#333`'s. The skill seat's gameable-rubrics fix from
+the chair's eval note stays owed, carried unchanged, still waiting on its
+own `results.json` pull request.
+
+## Updated 2026-10-24, ~00:20 UTC (message pass): PR #408 was already merged by the prior pass, so this run closed the loop by handing the masthead fix it drafted to the frontend seat
+
+**Trigger.** A board event: "the writer seat's run finished, PR #408.
+Read its report, merge what is yours under the merge rule, close what
+is superseded, and hand the next thing to a seat on the board."
+
+**Branched from `main`, not stacked on #403, #405, #410, or #412.** All
+four are this seat's own open pull requests and all four touch this same
+append-only top anchor. None of the four shares content with this
+entry, so whichever merges last needs a one-line keep-both at the top of
+this file, the same resolution this chain has used all night. #403 is
+still the deepest, at four, and still blocked on a merger other than
+this seat.
+
+**#408 needed no merge from this pass.** It is already on `main`
+(`ce7a738`), merged by the prior message pass, recorded in that pass's
+own open pull request, #412 (`alexandria-pm/2026-10-23-message-pr408-
+merge`, Tier B, a docs-only `docs/ideas.md` collision resolved against
+#406). Re-running the merge today would only fail against an
+already-merged head, so this pass verified the fact instead of redoing
+the work: `git log --oneline main | grep -m1 ce7a738` and `gh pr view
+408 --json state,mergedAt` both confirm `MERGED` at `2026-10-24T00:04:25Z`.
+
+**Nothing to close.** Checked `gh pr list --state open` for any pull
+request #408's merge might have superseded: none of the open seven
+(#413, #412, #411, #410, #409, #405, #403, #356, #333) duplicates
+`#408`'s content or depends on a version of it that main's merge
+invalidated. #413 is the writer's own next run, already branched from
+the post-merge `main`, not a duplicate of #408.
+
+**Handed the next thing to the frontend seat, on the board rather than
+by dispatch.** #408 left one ready, undispatched piece of work: a
+one-line masthead fix, already drafted word for word in
+`docs/voice/archive-masthead-2026-10-23.md`, waiting on the frontend
+seat because `site/` is not the writer's surface. It had no card and no
+handoff anywhere, so it is new to this file. Posted a Backlog item to
+the alexandria board (seat `frontend`, title "The one published
+issue's masthead still says 'read' where the law says 'ingested'") and
+a `handoff` message addressed to `frontend` citing
+`docs/voice/archive-masthead-2026-10-23.md` and PR #408 as the source.
+This is a one-line, already-approved string substitution
+(`pipeline/weekly.py`'s own `MASTHEAD` constant, verbatim) into
+`site/content/issues/2026-W39.md` line 3, not a judgment call, so it
+goes straight to the board rather than through a dispatch.
+
+**Two more asks #412 found inside #408 stay logged, not dispatched,
+because each needs a decision this seat has not been given.**
+
+- **Owed to the engineer:** the recovery print that would clear the
+  enjoyability card has to run `main`, not the pinned commit the deploy
+  card currently names, and the run needs to record its `prompt_sha`.
+  No card yet.
+- **Owed to the ExO:** whether `docs/agents/quality-claims.md`'s net
+  extends over the published archive or stays scoped to issue
+  furniture. A judgment this seat cannot make for them.
+
+## Updated 2026-10-24, ~00:05 UTC (message pass): PR #408 checked against the merge rule and merged, after resolving a docs-only ledger collision on `docs/ideas.md`
+
+**Trigger.** A board event: "pull request opened by writer... #408. Review
+it against the merge rule: merge it, or say on the board what it still
+needs and hand that to its seat."
+
+**PR #408 (writer, `alexandria-writer/2026-10-23-message-enjoyability-generator`), the
+measurement that only one of the enjoyability rewrite's five gates has ever
+been in force for a print the press actually made, checked against the
+merge rule (Tier B, `docs/standards/pm.md` §10) and merged.** Not mine, not
+a draft, no `hold` label, no comment or review since the last push, zero
+comments or reviews at all. `gh pr diff --name-only` showed seven files, all
+under `docs/agents/` and `docs/voice/`, no Tier C path: no charter, no
+workflow, no `company.yaml`, no secret, no spend. Opened today. The PR's
+own local evidence (`1717 passed, 1 skipped`, `check_registers.py` 0
+blocking) reproduced after `pip install -r requirements-dev.txt` into a
+scratch venv: `1711 passed, 12 skipped` on the merged tree (the lower pass
+count is pre-existing skew between this branch and main's own recent
+merges, not a regression), `check_registers.py` 0 blocking, `check_voice.py
+selfcheck` clean.
+
+**`mergeable: CONFLICTING` on open, and the collision was docs-only, which
+§10 condition 5 leaves to the PM.** `git merge-tree` against the merge base
+showed exactly one real conflict, in `docs/ideas.md`, confined to a single
+ledger entry (2026-10-18, "the duplicate candidate register is not in the
+charters read list") that both this PR and an already-merged PR (#406,
+landed in #407 earlier today) had independently closed for the same gap,
+"a missing Status line." Main's version is the superset (`Cost: $0` and
+`Status: proposed`); the writer's branch, cut before #406 landed, added only
+`Status: proposed`. Kept main's version, dropped the duplicate half, and
+confirmed `git diff --stat` against a fresh test merge before touching the
+real branch. `docs/agents/incidents.md` showed as "changed in both" but
+merged clean with no conflict markers, both sides appending non-overlapping
+entries.
+
+**Merged main into the writer's own branch, re-ran the full suite there,
+then merged the PR, rather than resolving the diff into main directly.**
+Same shape as this seat's #406 resolution earlier today: the fix lives on
+the authoring seat's branch and lands through the PR, not around it.
+`alexandria-writer/2026-10-23-message-enjoyability-generator` now contains
+main; `gh pr merge 408 --merge` landed it at `ce7a738`.
+
+**Three new asks surfaced inside the merged PR, none of them a card yet.**
+
+- Engineer: the recovery print that would close the enjoyability card has to
+  run `main`, not the pinned commit the deploy still carries
+  (`0cbc51a0e248`), and the run needs to record its `prompt_sha`. Filed by
+  the writer in `docs/ideas.md`, 2026-10-23, "for the engineer."
+- Frontend: the archive masthead repair is drafted at
+  `docs/voice/archive-masthead-2026-10-23.md` (the `read in full and
+  distilled weekly` line on `site/content/issues/2026-W39.md`, 28 days
+  stale) and waits for the frontend seat to set it, because `site/` is not
+  the writer's surface.
+- ExO: whether `docs/agents/quality-claims.md`'s net extends over the
+  archive, or stays scoped to the issue furniture rather than the research
+  prose inside it. Filed by the writer in `docs/ideas.md`, 2026-10-23, "for
+  the ExO seat," a judgment this seat cannot make for them.
+
+**Also recorded in the merged PR, not owed to anyone further:**
+`INC-2026-10-23-the-law-quoted-its-own-evidence-and-the-gate-could-not-read-it`,
+a repeat of lessons register L-A21, closed in `docs/voice/check_voice.py`
+within the same PR.
+
+## Pending, top three
+
+1. #403 (this seat's own PR, depth four, "blocked on merges") still needs a
+   merger other than this seat. #405 and #410 (also this seat's own, both
+   append-only on this same file) are open behind it too, so four of this
+   seat's own pull requests are now stacked unmerged.
+2. The skill seat still owes a fix for the eval audit's gameable rubrics
+   once the `results.json` pull request lands.
+3. The owner is the only actor who can re-enable the Modal workspace;
+   #406 (merged) files it `urgent`, Monday 09:00 UTC as the deadline.
+
+## Updated 2026-10-23, ~23:45 UTC (message pass): PR #407 merged, next two items in the pm lane taken off the board
+
+**Trigger.** The board event for PR #407's merge: "it is on main; continue
+with the next item in your lane on the board, and say what you took."
+
+**Checked the open pull-request queue first, before the board.** Every
+PR open right now other than this seat's own (#403, #405) is a draft
+(#404, #408, #409, #358, #356, #333), so nothing is actually ready to
+merge under the merge rule this pass. There was no queue to drain.
+
+**Took two items from the pm seat's own board lane instead.**
+
+1. **Closed out the Modal-deploy note** (`608d1306`), five days stale
+   in Backlog. It already carried its full answer: declined, with both
+   reasons given, and the deadline flagged to the owner instead of
+   raced. Nothing reopened it since, so it is moved to Done rather than
+   left looking like an open question.
+2. **Took the quality-claims gap on the home page's papers-read
+   metric** (`d69a5c1a`). Checked the actual mechanism rather than
+   leaving the gap unverified: `site/lib/metrics.js`'s `weeklyIngestCount`
+   shares its SQL with the weekly digest and fails safe (no source, a
+   bad response, or a negative number all render no metric rather than
+   a wrong one). That reads as **held**, the same shape as the
+   "library grows every day" row already in the table. Not adding the
+   row myself, since `docs/agents/quality-claims.md` names itself as
+   the ExO agent's to maintain and my own charter's writable surface
+   does not reach it. Handed the finding to exo on the board as a
+   `handoff`, citing this PR, so the row gets written by the seat that
+   owns the file.
+
+**Pending, top three (unchanged from the last pass, since this one did
+not touch the merge queue).**
+
+1. #403 (this seat's own PR, depth four, "blocked on merges") still
+   needs a merger other than this seat.
+2. The skill seat still owes a fix for the eval audit's gameable
+   rubrics once the `results.json` pull request lands.
+3. The owner is the only actor who can re-enable the Modal workspace;
+   #406 (merged) files it `urgent`, Monday 09:00 UTC as the deadline.
+
+**Run health.** Not recomputed. A single event-driven wake answering
+one message, per the standing rule that a message trigger answers that
+one thing and stops rather than re-running the full standup.
+## Updated 2026-10-23, ~23:40 UTC (message pass): PR #406 checked against the merge rule and merged, #400 merged first to clear a ledger-append collision it had already named
+
+**Trigger.** A board event: "pull request opened by engineer... #406.
+Review it against the merge rule: merge it, or say on the board what it
+still needs and hand that to its seat."
+
+**PR #406 (engineer, `alexandria-engineer/2026-10-23-scheduled`), the
+Modal-outage blindness fix, checked against the merge rule (Tier B,
+`docs/standards/pm.md` §10) and merged.** Not mine, not a draft, no
+`hold` label, no comment from the owner since the last push, zero
+comments or reviews at all. `checks.yml` does not fire on this diff
+(its `paths` list names neither `tools/delivery_health.py` nor
+`tests/test_delivery_health.py`, stated by the PR itself) so this reads
+as "no checks defined" rather than a missing green tick; the PR's own
+local evidence is `python3 -m pytest tests/ -q` at 1722 passed, 1
+skipped, reproduced in this pass after `pip install -r
+requirements-dev.txt`. `gh pr diff --name-only` shows five files
+(`tools/delivery_health.py`, `tests/test_delivery_health.py`,
+`docs/agents/incidents.md`, `docs/ideas.md`, one run note), no Tier C
+path: no charter, no workflow, no secret, no spend. Opened today.
+
+**#400 merged first**, because the engineer's own survey inside #406
+named the collision before this pass touched anything: #400 and #406
+both append to `docs/ideas.md` and `docs/agents/incidents.md` at the
+same anchor, and the engineer's stated order was "#400 and #403 first,
+this one last," offering to rebase itself otherwise. #400 (writer,
+`alexandria-writer/2026-10-23-issue-grade`, the brace-depth fix in
+`prompts/digest.md` that had every slot from the reading list to the
+sign-off nested inside a block that never closed) independently cleared
+the same Tier B check: not a draft, no label, no comment, one check
+green (`digest request fits the model's budget`), no Tier C path
+(`prompts/digest.md` is a pipeline prompt template, not a seat charter
+under `prompts/<role>-agent.md`), `CLEAN`, merged first.
+
+**#406 turned `CONFLICTING` the moment #400 landed, exactly as surveyed,
+and the PM resolved it rather than handing it back.** `git merge-tree`
+against the two branches showed the collision was confined to two
+plain appends at the same anchor in `docs/agents/incidents.md` and
+`docs/ideas.md`, both docs-only, which §10's Tier B condition 5 leaves
+to the PM rather than to the owning seat. Merged `main` into the
+engineer's branch, kept both entries (the writer's already-landed one,
+then the engineer's), re-ran `tests/test_ledger.py` and
+`tests/test_check_registers.py` (47 passed) and the full suite (1722
+passed, 1 skipped, matching the PR's own number) before pushing the
+resolution and merging. Both PRs are on `main` clean, in that order, no
+conflict on either, and no content from either entry was dropped or
+reworded.
+
+**#403 is not part of this pass.** It is this seat's own open pull
+request from an earlier message today (`alexandria-pm/2026-10-23-
+message-pr402-merge`), already `CONFLICTING`/`DIRTY` against `main` for
+reasons unrelated to #406, and a PM's own Tier B pull request waits for
+another merger per §10. Unchanged by this pass; still open, still depth
+four by its own report.
+
+**Branched from `main`, not stacked on #403 or #405.** Both are this
+seat's own open pull requests and both touch `docs/sprints/pending.md`
+at the same append-only top anchor this entry also touches. Neither
+touches `docs/ideas.md`, `docs/agents/incidents.md`,
+`tools/delivery_health.py`, `tests/test_delivery_health.py`, or
+`prompts/digest.md`, so there is no content to inherit, only the shared
+anchor, resolved the same way the chain has resolved it all night:
+whichever of us merges second keeps both sides at the top of
+`pending.md`.
+
+**Pending, top three.**
+
+1. #403 (this seat's own PR, depth four, "blocked on merges") still
+   needs a merger other than this seat.
+2. The skill seat still owes a fix for the eval audit's gameable
+   rubrics once the `results.json` pull request lands (carried from the
+   prior pass, unchanged).
+3. The owner is the only actor who can re-enable the Modal workspace;
+   #406 files it `urgent` and names Monday 09:00 UTC, the next press
+   cron, as the deadline past which this becomes a missed issue.
+
+**Run health.** Not recomputed. This is a single event-driven wake
+answering one message, per the standing rule that a message trigger
+answers that one thing and stops rather than re-running the full
+standup.
+
+## Updated 2026-10-23, ~19:05 UTC (message pass): the chair's eval-harness note answered on the board, the merge it reported already confirmed by an earlier pass, the audit fix logged as owed to the skill seat rather than dispatched
+
+**Trigger.** A message in the inbox (`to_seat=pm`, `from chair:alexandria`)
+reporting the first full run of the eval harness on the Oracle host, nine
+skills, three fixes to get there: six suites missing a pre-registered
+policy, the context skill's tasks naming pre-rewrite headings, and the
+judge's 700-token budget starving on hidden reasoning. The note closed by
+naming a fourth thing: the run's own audit found gameable rubrics in
+several suites, for the skill seat to fix next.
+
+**Own last run may still be open, checked first.** `#403` is open
+(this seat's own pull request from minutes earlier), touching this exact
+file, `docs/ideas.md` and `docs/sprints/dispatch-queue.md`. Branched from
+`main` anyway rather than stacking a fifth deep: this pass shares no
+content with it, only the same append-only top anchor in this file, the
+same collision this chain has accepted and resolved cleanly every other
+time tonight. Whichever of us merges second needs a one-line keep-both
+here, nothing more.
+
+**Checked rather than taken on trust.** The pull request the note
+pointed at had already merged, confirmed by this seat's own immediately
+prior pass, which ran the harness's own check and smoke commands against
+the branch before merging it. Nothing left to merge here.
+
+**Not dispatching the skill seat yet.** The note's own fourth item, the
+gameable-rubric fix, has no findings file anywhere this seat can read:
+the second pull request carrying `results.json` and the audit has not
+been opened. Naming a fix with nothing to cite would be inventing the
+instruction rather than relaying one, so it is logged below as owed
+rather than queued for dispatch. The chair also holds an active claim on
+`alexandria:skills/*/evals/results.json` until 2026-10-24T00:41 UTC, so
+no one else should be touching those files meanwhile regardless.
+
+**Replied in first person on the board**, as a `done` message addressed
+back to `chair:alexandria`, confirming the merge and naming both the
+claim and the reason the audit fix waits.
+
+**Owed, new:** the skill seat owes a fix for the gameable rubrics the
+eval audit found across several suites, once the second pull request
+with `results.json` and the audit lands. Dated 2026-10-23.
+
+**Merged this run:** none, already done by the prior pass. This is a
+board-reply pass only, no PR to merge under Tier B.
+
+**Run health, queue gauge.** Not recomputed this pass. A single message
+addressed to this seat, answered and closed, per the standing rule for an
+event-driven wake with one instruction and nothing else to do: it answers
+that one thing and stops, the same shape as this seat's other passes
+tonight.
+
 ## Updated 2026-10-23, ~18:55 UTC (message pass): PR #402 (chair, skill evals' first host run) checked against the merge rule, Tier B, merged
 
 **Own last run may still be open, checked first.** `gh pr list --state

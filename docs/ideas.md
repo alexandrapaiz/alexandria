@@ -17435,6 +17435,9 @@ cutting gates to make a budget.
   away. The charter line is what stops the writing, and the command is what
   stops the shipping, and the org needs both for the same reason it needs a
   draft gate and a merge gate.
+- Cost: $0
+- Status: proposed
+
 ### 2026-10-18 — A command that answers "is this diff Tier C" from the actual file, not the remembered shape of the directory (pm seat)
 - Trigger: `INC-2026-10-18-tier-c-carve-out-misread-a-sixth-time`. This seat's
   own pass (PR #367, ~06:46 UTC) held PR #363 — the writer's budget-gate fix —
@@ -17459,6 +17462,7 @@ cutting gates to make a budget.
   register entry, printing Tier B or Tier C with the reason in one line.
 - Cost: $0, engineer time only.
 - Status: proposed
+
 ### 2026-10-17 — Grooming note: the sprint regrooms to five sellable conditions (PM agent, message run)
 - Trigger: a handoff from `asc/chair:hq-console` relaying the owner's
   product reset of 2026-10-17 (board item `6e946000`): skills are the
@@ -17484,3 +17488,572 @@ cutting gates to make a budget.
   `6e946000`'s own words), not yet an ADR in `docs/decisions.md`. Recording
   it there is the chair's surface, not this seat's (docs/agents/registers.md);
   named here so the gap is tracked rather than assumed closed.
+
+### 2026-10-23 — The outsider gate belongs in the press's pre-send pass, not in the repository's CI (writer seat, run 42)
+- Trigger: `python3 docs/voice/check_voice.py firstuse`, added this run. It
+  counts her outsider ruling of 2026-09-19 as an inventory rather than as an
+  example: every term of art an issue chose for itself, its count, and the
+  sentence where the reader first meets it, counting the title, the masthead,
+  the headings and the bold leads. `site/content/issues/2026-W39.md` carries
+  24 such terms, 22 of them with no clause near their first appearance, and 2
+  of them the nouns in its own title, against the cap of five that
+  `prompts/digest.md` sets for itself.
+- Why it is not a prompt change. The generator carries that ruling in seven
+  places across about a hundred lines, one of which already orders the model
+  to build the list mechanically before judging anything. The charter's
+  structure watch says that after two failed prompt fixes the pipeline change
+  is filed instead, and this is seven. The structural reason is in the
+  prompt's own words: the class the pass says it exists to catch is the one
+  that "does not look like jargon on the page", and finding those words in
+  your own prose is a judgment about what you know made by the thing that
+  knows it. `prompts/digest.md` is byte-identical to main in this PR.
+- The ask, for the engineer seat: call `firstuse` in the press's pre-send pass
+  over the issue it is about to send, and fail the send on a bare title term.
+  Not `.github/workflows/checks.yml`. The four other register-against-file
+  commands this seat has built, `enforcements`, `sweep`, `taste` and
+  `candidates`, are green today and stay green without anyone ruling on
+  anything, so those four can go in CI now. `firstuse` is red on the only
+  archived issue in the repository and will stay red, because that issue is
+  the pilot and nobody is going to rewrite it. A gate that reddens every build
+  for a file nobody may edit gets switched off, which is ban list 127's lesson
+  about exactly this.
+- Where the line goes, concretely: beside the existing pre-send checks in
+  `pipeline/weekly.py`, on the rendered body, before the send rather than
+  after it. The command takes a path and already reads a dumped row from
+  outside the repository, which `measure` needed and this inherits.
+- The two numbers it should fail on, both of them the generator's own: a title
+  noun with no clause in the title's own sentence or the opening's first
+  sentence, and more than five terms of art needing a definition. The repair
+  the generator names for the second one is to cut an item and run the pass
+  again, so the failure is actionable by the model on a retry rather than only
+  by a seat.
+- What stays a reading, said here so nobody wires it expecting more: whether a
+  clause actually DEFINES its term is not a thing a regex knows. A gloss
+  marker is reported as presence and never scored as a pass, which is why the
+  gate fails on a bare term and reports a glossed one for the grade.
+- Cost: $0 of model spend. It is a local text pass over one issue, engineer
+  time only.
+- Status: proposed
+### 2026-10-23 — A writer run that ships a voice gate names the artifact it built to fail it (writer seat, run 42)
+- Trigger: `INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason`.
+  Two consecutive runs of this seat shipped a command in
+  `docs/voice/check_voice.py` that passed its first firing on an artifact
+  violating the rule it checks. Both times the only thing between a false
+  green and a shipped false green was the run rereading its own output and
+  disbelieving it.
+- Why no new standard is asked for. `docs/standards/lessons.md` already
+  carries both halves. `L-A39` is the class, a check that tests for presence
+  answering a different question. `L-A21`'s last clause is the procedure,
+  every gate tested against an artifact known to fail it before the gate is
+  trusted. The company standards were right and this seat read neither before
+  working, which `L-A4` calls a register defect.
+- The ask, for the ExO seat, because a charter is not this seat's surface: one
+  line in `prompts/writer-agent.md`, in the shipping step beside the register
+  checks. A run that adds or changes a check in
+  `docs/voice/check_voice.py` names in its review the artifact it constructed
+  that the new check SHOULD fail, and the exit code it got. A green first
+  firing with no such artifact named is not a result.
+- Why the charter and not the command. A command cannot check that a seat
+  built a failing fixture, because the fixture is an artifact the run invents.
+  This is the one shape where the charter line is the enforcement rather than
+  a weaker copy of one, which is the exception `L-A22` leaves room for.
+- Cost: $0, one charter line.
+- Status: proposed
+
+### 2026-10-23 — URGENT: the Modal workspace is disabled, so every cron and the MCP server are down (engineer seat, scheduled run)
+- Trigger: `python3 tools/delivery_health.py` at 23:08 UTC today, then one
+  `curl` of the URL it was already fetching. The report said `FAILING mcp
+  /mcp returned an unexpected HTTP 404`. The body behind that 404 is one line,
+  `modal-http: workspace <id> is disabled`, and the same edge fronts every app
+  in the workspace. So this is not the MCP server. It is the whole compute
+  layer.
+- What: every cron in `pipeline/` runs as a Modal app in that one workspace,
+  and so does the MCP server. The deploy surface's own evidence dates the
+  outage without a log. `ingest` ran normally at 11:02 UTC today and `triage`
+  at 12:00 UTC. `interpret` is scheduled at 14:00 and last ran 2026-10-22.
+  `distill` is scheduled at 15:00 and last ran 2026-10-22. The workspace was
+  therefore serving at 12:00 and gone by 14:00, two scheduled jobs have already
+  been missed, and `distill_pending` stands at 3,680 and will grow by a day's
+  ingest every day this lasts.
+- Nothing is lost yet, and that is a statement about today rather than about
+  the week. The corpus is intact, 2026-W42 printed on Monday and is live on
+  `/library`, and the two missed jobs are daily ones that catch up. The press
+  is the surface with a deadline: its cron is Monday 09:00 UTC, and if the
+  workspace is still disabled then, the week gets no issue and the fix after
+  that is a hand on a Modal token, which is the same place
+  `INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue`
+  ended up.
+- Why no agent can do this one: a disabled workspace is an account state on
+  Modal's side, not a deploy. Re-enabling it needs the owner signed in to
+  Modal. The usual causes are billing and a usage limit, and this org's
+  steady-state cost is meant to be $0, so the first thing worth reading is
+  whichever of those the dashboard names.
+- First step: open the Modal dashboard and re-enable the workspace, then run
+  `python3 tools/delivery_health.py` and read the `compute` surface, which is
+  new in this pull request and answers the question in one line. If the cause
+  turns out to be spend, that is a finding for the owner and the finance seat
+  rather than something to work around.
+- Cost: $0 to diagnose. Unknown to fix, and the amount is the finding.
+- Status: urgent
+
+### 2026-10-23 — A missing dev dependency reads exactly like a red main, and a fresh seat cannot tell them apart (engineer seat, scheduled run)
+- Trigger: this run, measured. `python3 -m pytest tests/ -q` in this sandbox
+  reported `10 failed, 1605 passed, 67 skipped, 41 errors`. Every one of the
+  41 errors was `Form data requires "python-multipart" to be installed`, and
+  three of the ten failures were `tests/test_email_template.py` asserting that
+  the fallback email strips a `javascript:` href. That test was not wrong. The
+  `markdown` library was absent, so `legacy_html` took its own last-resort
+  branch, which escapes the body and wraps it in a `<pre>`, and the literal
+  text of the link survived as inert escaped characters. After
+  `pip install -r requirements-dev.txt` the same command reported three
+  failures, all of them one real defect in the ledger.
+- What: `requirements-dev.txt` is not installed in the seat sandbox, and
+  `checks.yml` installs it, so CI has never seen this. The cost falls entirely
+  on the agent seats. A seat runs for the first time with no memory, runs the
+  command the repository's own files prescribe, and reads ten failures and 41
+  errors in files it has never touched. The honest response is to find out
+  whether they are its own, and that is what this run spent turns on. The
+  dishonest responses are both worse: report a red main that is not red, or
+  decide the suite is noisy and stop reading it. A guard a seat learns to
+  discount is the subject of
+  `INC-2026-09-30-the-guard-went-red-and-nobody-read-it`.
+- Why a dependency check beats installing the packages: the sandbox may have no
+  network, and `pip install` is not always available. One failure that says
+  "these libraries are missing, so this run cannot tell you whether main is
+  green" is a true answer. Forty-one errors that name a form parser are a true
+  answer too, and nobody reads them as one.
+- First step: `tests/conftest.py` already runs before collection and already
+  exists to stop exactly this class of confusion, which is a suite that
+  reports something other than what it means. Add a check there that imports
+  each library `requirements-dev.txt` names and fails collection once, with the
+  missing names and the install command, rather than letting each absence
+  surface as somebody else's broken test. That is one function in a file whose
+  docstring is already about this problem.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-23 — The only observer that can see a compute outage is the one that does not run on that compute (engineer seat, scheduled run)
+- Trigger: today's outage, and the question of who was ever going to notice it.
+  The answer is nobody. The daily standup reads
+  `tools/delivery_health.py`, and until this pull request that command reported
+  the pipeline green, because its unit is how recently a row arrived and its
+  window is two days. The first surface that would have turned red on its own
+  is `press`, next Monday, by which point the week has no issue.
+- What: this is not the same gap as the three guardrails already filed as built
+  and unscheduled, and it should not be merged into them. The existing entry,
+  "Nothing runs the buyer-path reader, which is the third guardrail this org
+  has built and not scheduled", is about a reader nobody calls. This is about
+  where a reader is allowed to live. Every job that could plausibly watch the
+  pipeline runs on Modal, and a Modal app cannot report that Modal is off. The
+  agent seats run on GitHub Actions, which is a different provider, and that
+  is the only reason today's outage was seen at all. So the placement is the
+  requirement rather than an implementation detail: the compute probe has to
+  run somewhere that is not the thing it watches, and the deploy-time
+  availability check in guardrail 1 of `docs/agents/delivery-health.md` cannot
+  cover it, because a deploy to a disabled workspace does not happen either.
+- First step: give the `compute` surface a scheduled caller on GitHub Actions
+  that is not a seat run, so that it fires on its own clock rather than when an
+  agent happens to look. That is a workflow file, which no seat can write, so
+  the step is a proposal to the owner and not a build item. Until it exists,
+  the daily engineer run is the de facto watch, and it catches an outage within
+  a day by luck of the schedule rather than by design.
+- Cost: $0, inside the free Actions allowance for a public repository.
+- Status: proposed
+
+### 2026-10-23 — Craft scan: Modal's status page said all services online while this workspace was switched off (engineer seat, scheduled run)
+- Trigger: today's outage. The obvious next move after finding a platform down
+  is to read the platform's status page, so this run read it. At
+  `status.modal.com`, the headline was "All services are online". Applications,
+  Functions, Sandboxes, Web Functions, Servers, Dashboard, Storage and
+  Dedicated Endpoints were all listed operational, with no active incident. The
+  only degradation shown was a shared inference endpoint at 99.937% over thirty
+  days. Every word of that was accurate, and it was useless, because a status
+  page reports the platform and an outage can be scoped to one account.
+- What is worth stealing: the per-component uptime figure. Modal publishes a
+  rolling thirty-day percentage next to each component, so a reader sees
+  direction and not just today's colour. This org's delivery report is binary
+  per surface, which means a surface that fails for two hours every night reads
+  identically to one that has never failed, and nothing in the report would
+  show the difference. The receipt already stores the rows a rolling number
+  could be computed from. That is a real idea and it is not filed as one today,
+  because the surfaces it would measure are the ones this run just changed and
+  measuring them should wait until the new shape has settled.
+- What alexandria does better, and it is the whole lesson of the day: our
+  report names the account it is asking about, because it asks by requesting
+  our own URL. A status page answers "is the vendor healthy" and the question a
+  reader actually has is "is my thing running". Those came apart completely
+  today, in the direction that is hardest to catch, which is the vendor
+  reporting green. So the craft note is a warning rather than a borrowing: a
+  dependency's status page is not a substitute for probing your own deployment,
+  and a health check that reads one would have signed off on a dead pipeline
+  this afternoon.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-23 — The generator belongs on the list of files checked for edit damage, and that check should catch the quiet form (writer seat, run 43)
+- Trigger: `INC-2026-10-23-the-generator-is-not-on-the-list-of-files-checked-for-edit-damage`.
+  `prompts/digest.md` on main was carrying four blocks of its own text twice,
+  one of which opened a curly brace that never closed, so every slot from the
+  reading list to the sign-off was nested inside an instruction block with no
+  end. Repaired in the same pull request as this filing, with
+  `docs/voice/check_voice.py generator` as the instrument.
+- Two asks, and both are in `tools/check_registers.py`, which is not the
+  writer seat's surface.
+- First, add `prompts/digest.md` to `REGISTERS`. The criterion written in that
+  list's own comment is that more than one seat appends to the file, and this
+  one takes more appends than anything else in the writer seat's custody, 101
+  commits in forty days by the canon's count.
+- Second, and it is the larger half: widen the damage test. `CONFLICT` matches
+  seven characters of git marker at the start of a line. The 2026-09-24 damage
+  that caused this checker to exist was not a marker, it was clean duplicated
+  text in `docs/agents/incidents.md`, so the gate catches the loud form of the
+  failure and never the form that caused it, over all sixteen files, for
+  twenty-nine days. `duplicated_blocks` in `docs/voice/check_voice.py` is a
+  working implementation to lift or to call: a run of lines a file carries
+  twice in a row, which does not fire on the same line legitimately repeated
+  far apart.
+- Third, smaller, and this one is cheap enough to do first. Wire
+  `python3 docs/voice/check_voice.py generator` into
+  `.github/workflows/checks.yml`. Of the six commands in that file which read a
+  register against an artifact, this is the only one that is green today on a
+  repaired file, so it can go into CI immediately. `firstuse` cannot, because
+  it is honestly red on an archived issue nobody can edit.
+- First step: the one line in `REGISTERS`, which would have caught nothing here
+  and catches the next conflict marker in this file.
+- Cost: $0 of model spend. Local text passes, engineer time only.
+- Status: proposed
+
+### 2026-10-23 — The print that would close the enjoyability card has to come from main, and the deploy is pinned (writer seat, run 44, for the engineer)
+- Trigger: the sprint's head card asks for a pick and for "the next issue held
+  to it". This run measured how much of that bar has ever been in force for an
+  issue the press made, and the answer is one gate of five.
+- The measurement, reproducible: `python3 -I docs/voice/check_voice.py measure`
+  over the three reachable prints and over the hand rewrite, with the rule
+  dates taken from the `Added` lines of `docs/voice/ban-list.md`. The rewrite
+  the benchmark picked passes eight gates of eight. No print of this generator
+  passes all eight, and of the five gates the newest print fails, three are
+  governed by rules written after that print and one of those rules was
+  written out of it. Entries 95 (2026-10-05), 98 (2026-10-06) and 116
+  (2026-10-16) against a newest print of 2026-10-05. The full table is in
+  `docs/voice/reviews/2026-10-23-enjoyability-generator.md`.
+- The ask, and it is a which rather than a whether. Two board cards already
+  carry the work, `Press: no issue for 2026-W41` and `Deploy: weekly is not
+  running main, still on 0cbc51a0e248`. The second is the one this card needs.
+  A print made from a pinned commit from before those three rules tests the
+  generator that commit holds, which closes zero rows of the table, and it
+  would arrive looking exactly like the measurement everybody is waiting for.
+  So the ask is that the recovery print run main, and that the run record the
+  `prompt_sha` it used, which `compare` already needs and which is the only
+  way a later grade can tell the two apart.
+- Why this seat cannot do it and is not going to patch around it. Four of the
+  five gates have rules younger than the newest print, so a further wording of
+  any of them is aimed at a number that does not exist. That is the move the
+  ledger entry of 2026-10-15 named and `compare` was built to stop.
+  `prompts/digest.md` is byte-identical to main in this pull request.
+- Cost: $0 to this seat. One press run at the usual per-issue cost.
+- Status: proposed
+
+### 2026-10-23 — Whether the claims register's net belongs over the archive (writer seat, run 44, for the ExO seat)
+- Trigger: `INC-2026-10-23-the-law-quoted-its-own-evidence-and-the-gate-could-not-read-it`.
+  `docs/voice/check_voice.py reading` now reads `site/content/issues/*.md`,
+  because canon law 15's own cited string was live in the public archive and
+  the gate built for the law held the module that writes the next issue and no
+  issue that module had produced.
+- The question, which is deliberately not answered in that change. `claims`
+  reads the same `SURFACE_GLOBS` and the archive was added to `reading` alone.
+  The reason is the distinction the writer charter's claims gate turns on: is
+  this sentence about the research or about our artifact? An issue body is
+  almost entirely the former, so pointing a gate that FAILS on unhedged claims
+  at eighteen hundred lines of research prose would redden the tree over work
+  nobody can fix, which the ledger entry of 2026-10-18 already warns teaches
+  everyone to add `|| true`.
+- But the honest other half: an issue body is not entirely the former. The
+  masthead, the standing subtitle and any sentence an issue writes about the
+  library are claims about our artifact, they print on a public page, and a
+  repair to the module cannot reach them. Those are exactly the rows
+  `docs/agents/quality-claims.md` exists for.
+- The ask, for the ExO seat because the register is that seat's file: decide
+  whether the archive is in the register's scope, and if it is, whether the
+  scoped unit is the issue file or the furniture inside it. A glob is one line
+  either way and the judgment is not this seat's.
+- Cost: $0, a decision and one line.
+- Status: proposed
+
+### 2026-10-23 — A guard that cannot reach its evidence should name the thing it is missing, not describe the symptom (engineer seat, message run)
+- Trigger: today's break-fix. `judge_deploy` read three production jobs eight
+  days stale as "pending, inside the 24h window" because every agent seat
+  clones one commit deep and the replay that recovers the deployed commit
+  cannot run without history. The fix makes that `unknown`, which is honest
+  and is still not useful: the evidence line now reads "the drift cannot be
+  dated from this checkout", and a reader has to know how the replay works to
+  turn that into "run git fetch --unshallow". The same shape is everywhere in
+  this file. Three surfaces say "could not be read" when what they mean is
+  "nobody handed this process DATABASE_URL".
+- What: every guard in `tools/` that can be blinded by its runtime should
+  detect the specific blindness and name it with the command that lifts it.
+  `git rev-parse --is-shallow-repository` is one word and answers the deploy
+  case exactly, so the evidence can say "this is a shallow clone, so the
+  deployed commit cannot be recovered: git fetch --unshallow". The credential
+  cases already know which variable is unset and only have to say the name.
+  The general form is that an `unknown` carries a cause and a remedy, the way
+  a `failing` already carries the deploy command.
+- First step: one helper in `tools/delivery_health.py` that answers whether a
+  repo root is a shallow checkout, wired into the undated-drift branch added
+  today, with one test that a shallow fixture names itself. Half a day. The
+  credential surfaces are a second pass.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-23 — A board card is keyed on an English sentence, so rewording the alarm orphans every card it already opened (engineer seat, message run)
+- Trigger: today's craft scan of Sentry, below, read against the watcher this
+  run shipped. Sentry's grouping is explicit that a change to the grouping
+  algorithm "is only applied to new events going forward" and that existing
+  issues keep their original fingerprints. All three watchers in this
+  repository do the opposite by accident. The card's key is a phrase built in
+  Python and matched by substring against the title: "no offer on the pricing
+  page can be bought", "Press: no issue for 2026-W41", the running image's
+  sha. The sha is stable. The two sentences are not, and the day somebody
+  improves that wording every open card stops matching, the watcher posts a
+  duplicate, and the original sits in the working column forever with no
+  writer.
+- What: separate the key from the prose. The title keeps a short stable code
+  that nothing rewords, and the sentence is the rest of the title or the body.
+  The cheaper half, worth doing first and on its own: a test that pins the
+  exact fault strings, so a rewording is a red test with a sentence explaining
+  that the open cards will be orphaned, rather than a silent duplicate a week
+  later. `tests/test_checkout_watch.py` already asserts two of the four
+  strings, by accident rather than as the rule.
+- First step: the pinning test across all three watchers, one file, an hour.
+  The stable-code redesign is a second day and needs a decision about what a
+  board reader should see in a list view.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-23 — Craft scan: Sentry groups by fingerprint first and freezes the fingerprint when the algorithm changes (engineer seat, message run)
+- Trigger: the charter's daily craft scan, pointed at the product whose whole
+  job is the problem this run spent the day on, which is an alarm that fires
+  repeatedly about one fact and must not become noise. Read
+  Sentry's own event-grouping concept page directly rather
+  than from memory.
+- **The thing worth stealing.** Sentry evaluates grouping candidates in a
+  fixed order and says the order out loud: "fingerprint first, the stack trace
+  next, then the exception, and then finally the message". The ordering is the
+  design, not an implementation detail, because each rung is more specific
+  than the one below and the fallback is what keeps an unrecognised event from
+  being dropped. `fault()` in `tools/checkout_watch.py` has the same ladder by
+  instinct, four specific cases and then the headline, and it should say so
+  the way Sentry does. The second and larger borrowing is the sentence that
+  became the ledger entry above: changing the grouping rule does not regroup
+  existing issues. That is a promise about continuity of identity, and this
+  org has three alarms with no such promise.
+- **The thing alexandria does better.** A Sentry issue tells you what broke
+  and leaves what to do about it to the reader. The card this run shipped
+  names the three environment variables that would close it, read out of the
+  site's own offer list rather than written by hand, so a tier the owner stops
+  selling leaves the alarm with it. The alarm knows what action ends it and
+  where that action has to happen, which for the till is at the seller and not
+  in this repository. That is the difference between a monitor and a handoff,
+  and for a one-person company with twelve agent seats the handoff is the
+  valuable half.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — No standard says a file with a reading contract is read through its reader (writer seat, run 45, for the ExO seat's relay)
+- Trigger: `INC-2026-10-24-the-entry-about-hiding-is-hidden-from-the-owners-console`.
+  `docs/ideas.md` has a published entry contract, a purpose-built reader in
+  `tools/ledger.py` written because grepping it loses entries, and four readers
+  in total. The fourth is `parseIdeas` in `site/app/desk/page.jsx`, which
+  misses one entry, and the entry it misses is the one warning that an entry
+  can hide from every consumer that reads statuses by grep.
+- The gap: L-A21 in `docs/standards/lessons.md` is the test that would have
+  caught it, "name one change that would break what this gate governs, then
+  ask whether the gate would have seen that change". A status written as prose
+  is that change and the ledger register recorded it a month ago. But L-A21 is
+  written about gates and the desk is a surface, so nothing in the `any`
+  section reaches it.
+- The rule the gap wants, stated so the chair can accept or refuse it rather
+  than compose it: a file whose shape is published as a contract is read
+  through the reader that implements it, and a second parse of it is a defect
+  whether or not it is currently wrong. The second parse is almost always
+  right on the day it is written, which is what makes it survive review.
+- Why this is a relay and not a local edit: `docs/standards/lessons.md` is a
+  vendored copy and the writer charter forbids editing it here. The local half
+  is already done, which is ban list 133 and
+  `python3 -I docs/voice/check_voice.py ledger`.
+- Cost: $0, a decision and one paragraph in the parent.
+- Status: proposed
+
+### 2026-10-24 — The claims register has rows for sentences and the surfaces also print figures (writer seat, run 45, for the ExO seat)
+- Trigger: the same incident. `docs/agents/quality-claims.md` is the one place
+  a reader-facing assertion is checked against a mechanism, and the writer
+  charter's own test for what belongs in it is "list the sentences in it that a
+  reader could answer 'how do you know that'".
+- A count printed beside a heading is one of those, and it has no row. "Awaiting
+  your verdict 524" is correct English over a wrong number, so no prose gate
+  this seat owns can be wrong about it, and no claims row exists to point at
+  because the figure is computed on the page rather than written into it.
+- Four counts the public site prints today that a reader can ask that question
+  of: the home page's papers-read-this-week metric, which already has a board
+  card of its own, and the desk's two queue counts and its merged count.
+- The ask, for the ExO seat because the register is that seat's file: decide
+  whether a computed figure takes a row, and if it does, whether the row names
+  the figure or the reader that derives it. The second is the more useful
+  shape, because a row naming `tools/ledger.py` as the authority is checkable
+  by a command and a row naming "524" is stale the day it is written.
+- Cost: $0, a decision.
+- Status: proposed
+
+### 2026-10-24 — Whether GitHub's heading slug resolves for a ledger entry, which decides one affordance (writer seat, run 45, for the frontend seat)
+- Trigger: board card `8787a154`'s second finding, that the verdict queue's
+  `open →` appears on every row and every one points at `docs/ideas.md`. That
+  is wallpaper rather than an offer, and the candidate removes the affordance
+  for that reason.
+- One condition returns it. Ledger entries open with `### 2026-09-18 — name`,
+  and a heading GitHub renders is a heading GitHub anchors, so a row could link
+  to its own entry and no two rows would point at the same place. Then `open →`
+  is an offer and should stay.
+- Not asserted here, deliberately. These headings carry em dashes, colons and
+  parentheses, and whether GitHub's slug survives all three is a thing to
+  verify by opening one rather than by reasoning about it. Asserting a URL
+  nobody opened is what L-A12 is about.
+- Cost: $0 to check, one line either way.
+- Status: proposed
+
+### 2026-10-24 — Every `unknown` surface names a hand or says there is none (engineer seat, message run)
+- Trigger: `payments` answered `unknown` in every standup from the day the
+  block shipped to this run, with the sentence "payment_exceptions could not be
+  read, so whether a verified payment reached an account is unknown here." The
+  sentence was true. What it was waiting for was one hand-run
+  `modal run pipeline/db_setup.py::apply_schema`, and no report ever said so,
+  so the PM's standup copied "the same named gap as every prior standup"
+  forward for nine days instead, and named the wrong cause while it did.
+- What: this run fixed the till. The shape it fixed is not specific to the
+  till. `tools/delivery_health.py` has three other ways to answer `unknown`
+  and none of them is obliged to say what closes it: `compute` when Modal's
+  edge is unreachable for a reason that is not a disabled workspace, `mcp`
+  behind it, and all four database surfaces when neither reader answers. The
+  structural version is a field on `Surface` rather than four more sentences:
+  an `unknown` carries `closes_with`, prose or an explicit "nobody knows yet",
+  and a test over `ORDER` holds every `unknown` path to having one. Then a
+  surface that cannot name its own next step is a test failure at the moment
+  it is written rather than a line somebody rereads for nine days.
+- First step: the `Surface` field and the test, with the till's own sentence
+  as the first filled one, which this run already wrote the hand text for.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — The outage alarm knows the cron and does not count down to it (engineer seat, message run)
+- Trigger: the Modal workspace has been disabled since some time between
+  12:20 and 14:00 UTC on 2026-10-23, read from the edge by
+  `tools/delivery_health.py` in this run. The board card for it says, in
+  words, "a workspace that is still off then is a week with no issue," where
+  "then" is Monday's 09:00 UTC press cron. Nothing computes that distance. The
+  guard holds `PRESS_CRON`, it holds `press_deadline`, and the compute surface
+  it prints beside them says only that the workspace is off.
+- What: the compute surface names the next scheduled thing it will cost and
+  how long there is. "The workspace is off and the press runs in 56 hours" is
+  a different message from "the workspace is off," and it is the one that
+  decides whether the owner opens Modal tonight or on Sunday. Same arithmetic
+  for the four daily corpus crons, which have already each missed a run. All
+  the inputs are in the file and none of them are joined.
+- First step: one function taking the outage's observed start and the cron
+  table, returning the next deadline each disabled app will miss, called from
+  `check_compute` and printed in its headline.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Datadog writes the fix into the alert, and Sentry gives it nowhere to go (engineer seat, message run)
+- Both read this run against the question today's work raised, which is whether
+  a monitor is supposed to carry its own remediation or only its condition.
+  They answer it opposite ways and the disagreement is the finding.
+- **The thing worth stealing, from Datadog.** A monitor's `message` is a
+  Markdown field the product's own documentation fills with remediation, and
+  its example is a numbered list of commands ("Steps to free up disk space on
+  {{host.name}}: 1. Remove unused packages 2. Clear APT cache ..."). It is
+  templated, so the text can name the host that is actually full, and it is
+  conditional per state: `{{#is_alert}}`, `{{#is_warning}}` and
+  `{{#is_renotify}}` are different blocks, so the first page and the third
+  page about one condition can say different things. The renotify block is the
+  half this product has no answer to at all. Our guards repeat one sentence
+  forever, and the till's repeated for nine days.
+- **What Sentry does not have, read from the alert-creation docs in the same
+  pass.** An alert is "When" (triggers), "If" (filters) and "Then" (actions,
+  meaning destinations and tickets). There is no remediation field anywhere in
+  that flow, so the fix for a Sentry alert lives in a wiki somebody has to
+  already know about. Sentry's own answer to the routing half is Ownership
+  Rules, `path:src/javascript/*.[tj]sx #team`, which auto-assigns by stack
+  trace, and the last matching rule wins. That is routing a condition to a
+  person, which is a real thing and is not the same as telling the person what
+  to do.
+- **One thing alexandria does better, as of this run.** The hand our guard
+  names is derived rather than typed. A Datadog message is prose a human wrote
+  once, so it can be confidently wrong forever and nothing notices. Our
+  `apply_schema` sentence is reachable only when the database answered sqlstate
+  42P01, and when it answers anything else the guard says to read a log
+  instead. A remediation that can only fire on the evidence that justifies it
+  is the version that does not rot.
+- The proposal inside it, so this note is one: our guards say the same sentence
+  on the first reading and the ninth, and the till's said it for nine days.
+  Give a repeated finding a second sentence that names how long it has been
+  saying the first one, which is Datadog's renotify block without the
+  templating language. `payment_exceptions`'s own `first_seen_at` column is
+  the shape the deploy surface already uses for exactly this.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — Law 12a is the only hard voice law with no pre-send gate, and the word it was written for is bare in every issue the press has ever sent (writer seat, run 46, for the engineer)
+- Trigger: writer run 46's grade of canon law 12a, her outsider ruling of
+  2026-09-19, scored against all three prints rather than against the newest
+  file in the repository. `docs/voice/reviews/2026-10-24-firstuse.md` carries
+  the measurement.
+- The finding in one line: `harness` is carried bare in 2026-W37, in
+  2026-W39 and in 2026-W40, which is every issue the library has sent.
+- Why this is not another prompt patch, which is the part that matters.
+  `prompts/digest.md` holds five rules in its first-use pass, added 2026-09-19,
+  2026-09-28, 2026-10-01, 2026-10-01 and 2026-10-14. Four of the five were in
+  force when W40 printed on 2026-10-05, and W40's opening and first section
+  alone carried 13 bare terms of art against the generator's own whole-issue
+  cap of five. A rule that is live, four deep, specific, and quoting its own
+  earlier failures did not hold. The writer charter's step 4 says a structural
+  fix that has failed twice through prompt changes goes to the ledger instead
+  of a third rewrite, so this is the filing and there is deliberately no
+  generator diff in the pull request that made it.
+- The ask, and it is one rule in one file: a blocking `term-of-art-cap` finding
+  in `tools/check_digest_quality.py`. That file already runs inside the press
+  at `pipeline/weekly.py:1350`, is shipped into the Modal image at
+  `pipeline/weekly.py:209`, can hold an issue before it sends, and feeds a
+  corrections pass at `pipeline/weekly.py:822`. It carries 17 rules and 8 of
+  them block. None of the 17 is law 12a.
+- The pairing that makes the gap hard to argue with. She gave law 12 and law
+  12a on the same day, out of the same read of the same issue. Law 12 has a
+  blocking pre-send rule, `skeleton-heading`, citing the incidents behind it.
+  Law 12a has five sentences in a prompt and no command between the model and
+  the reader.
+- Why CI is the wrong gate, and this is the correction to the 2026-10-04 filing
+  rather than a restatement of it. That filing asks for
+  `docs/voice/check_voice.py` to be wired into `.github/workflows/checks.yml`
+  and is still `proposed` twenty days later. CI reads the repository, and an
+  issue is not in the repository when it sends. W40 is the proof: it reached
+  readers on 2026-10-05 and never became a file here, so a CI check would have
+  had nothing to look at. Both filings are worth doing and they do not
+  substitute for each other.
+- What already exists, so the estimate is small. The inventory is written and
+  mechanical in `docs/voice/check_voice.py`: `issue_sentences` at line 2035,
+  `terms_of` at 2083, `glossed` at 2005, `coined` at 2060, and the `CLUB`,
+  `ORDINARY_TERMS` and `INSTITUTION` vocabularies at 1895, 1912 and 1925. It
+  already exits 1 on a finding. The move is to import or vendor the inventory
+  and add one `add(BLOCK, "term-of-art-cap", ...)` where the count of terms the
+  issue chose for itself exceeds the generator's five.
+- The honest limit on what can block, stated so nobody builds the wrong half.
+  The CAP is mechanical and is the blockable rule. Whether a clause actually
+  defines its term is a reading and stays in the grade, which is what
+  `check_voice.py`'s own header already says. A gate that tried to decide the
+  clause would be the false-green shape of
+  `INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason`.
+- Probe before trusting it, per L-A21. The two artifacts in the repository are
+  a known failure and a known near-miss: `2026-W39.md` at 24 and
+  `2026-W37.md` at 31 must both fail, and no synthetic fixture is needed.
+- Cost: one rule in one file, no new dependency, no schema change. The press
+  already handles a held issue and already has the alarm subject for it at
+  `pipeline/weekly.py:597`.
+- Status: proposed
