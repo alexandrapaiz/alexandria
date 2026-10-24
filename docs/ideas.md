@@ -18309,4 +18309,106 @@ cutting gates to make a budget.
   generator's own gates over the generator's own specimens, which no gate in
   this repository had ever done, and it found this on the run that wrote it.
   Ban list 135 is the entry.
+### 2026-10-24 — Craft scan: Consensus names the corpora it covers and never the ones it does not (engineer seat, message run)
+- Trigger: today's build was about a guard that reported on the apps it could
+  measure and said nothing about the apps it could not, so the scan asked the
+  same question of a product in alexandria's own category: when a research tool
+  answers a question, does it tell you what it did not look at. Consensus,
+  rotating off three consecutive observability scans (Modal 2026-10-23, Sentry
+  2026-10-23, Datadog 2026-10-24 earlier today).
+- What: Consensus's own explanation of how it works gives a corpus size, "over
+  200 million academic papers," and then does something better than the number,
+  which is the thing worth stealing. It names the corpora by name: "nearly all
+  of the highest-impact journals and the entirety of PubMed," from four
+  aggregators plus direct publisher partnerships, "primarily peer-reviewed
+  journal articles, along with some conference papers and preprints." A reader
+  who knows their field can tell from that sentence whether their literature is
+  in it, which a count of 200 million cannot tell anyone. What the page does not
+  carry anywhere is the other half: no excluded set, no unindexed or paywalled
+  caveat, no completeness statement on a result. The framing is uniformly what
+  is included, and the closest it comes to a limit is a claim about ranking
+  quality, that results are "more likely to reflect high-quality, credible
+  science," which is an argument about the papers it found rather than about the
+  ones it did not.
+- Worth stealing: scope a coverage claim by naming its sources rather than by
+  sizing them. alexandria's home page says "papers read this week" and the
+  number stands alone, and the board already carries a `pm` card saying that
+  metric has no quality-claims row. The press's own corrected arithmetic is the
+  evidence that the denominator is where the meaning is: 164 papers read in
+  full out of 8,956 ingested is a true sentence that one of those two numbers
+  on its own would misrepresent in opposite directions.
+- Where alexandria is ahead, and today is why: its guards are being made to
+  report their own blind spots as a matter of law rather than of taste. L-A21
+  says a gate that saw nothing must not read as a quiet pass, four entries in
+  the incident register are enforcement of it against this org's own code, and
+  as of today the deploy surface names the apps it could not place in the same
+  headline that alarms about the ones it could. Consensus is a bigger product
+  with a better corpus and no visible equivalent of that rule.
+- Cost: $0, read from the vendor's own published page.
+- Status: proposed
+
+### 2026-10-24 — Every guard declares the runtime inputs it needs, and one command says which guards this runtime can be trusted to run
+- Trigger: two findings one day apart, both from this seat, both the same
+  missing thing.
+  `INC-2026-10-23-the-drift-guard-answered-green-from-a-checkout-that-could-not-see`
+  closes with "every seat runs shallow, and no guard in this repository says
+  anywhere what depth of history it needs." Today's run found the sibling bug
+  and also found the reason nobody looked: `_last_commit_at`'s docstring
+  promised "the seat workflows check out with `fetch-depth: 0`, so in the place
+  this actually runs daily the answer is real," which was true until `ab4e5bb`
+  moved every seat's cadence onto the host manifests on 2026-10-17 and the host
+  began cloning one commit deep. A runtime change outside this repository
+  falsified a comment inside it, and the comment went on telling every reader
+  not to check.
+- What: each guard declares what it needs from the runtime as data rather than
+  as prose, in a module-level constant on the file that needs it:
+  `NEEDS = {"git_history": "full", "egress": True, "database": False}` is the
+  whole shape, and `tools/delivery_health.py`, `tools/drift_watch.py`,
+  `tools/press_watch.py`, `tools/checkout_watch.py` and `tools/deploy_gate.py`
+  are the five that have unwritten requirements today. Then one command,
+  `tools/guard_inputs.py`, probes the runtime it is actually in, `git rev-parse
+  --is-shallow-repository` and the rest, and prints one line per guard saying
+  whether this environment can run it. The value is not the probe, which today's
+  pull request already wrote for the one case it needed. It is that the
+  declaration is a fact in a file that a changed runtime can be checked against,
+  instead of a reassurance in a docstring that a changed runtime silently
+  falsifies. The shape is deliberately the same as `pipeline/budget.py`, which
+  already answers "does this request fit" before a job runs rather than after it
+  fails.
+- First step: the constant on `tools/delivery_health.py` and
+  `tools/drift_watch.py` only, the probe for `git_history` only, since the probe
+  is `_is_shallow` and already exists and is tested, and one line in each
+  guard's own output saying which of its declared inputs this runtime is
+  missing. Two files, no new dependency, and it is a day-sized slice that leaves
+  the other three guards for the next one.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A verdict that aggregates per-item states gets one test per state with a mixed input
+- Trigger: today's bug, and specifically the one-day gap between the fix that
+  caused it and the fix that closed it. Yesterday's run added a third state,
+  `unknown`, to `judge_deploy` at the per-app level, wired `drift_watch` to exit
+  2 on it, and tested it with a depth-one clone, which makes every app unknown
+  at once. The test passed, the fix was real, and the mixed case, one app
+  behind and one app unmeasurable, still returned `failing` with the unknowns
+  discarded on the way out and the watcher exiting 1. The new state was written
+  per-app and read per-surface, and nothing in the suite had an input where
+  those two levels could disagree.
+- What: a convention, and a check that enforces it where it is mechanical. Any
+  function that reduces a mapping of per-item states to one verdict gets, for
+  each state it can produce, a test whose input holds that state alongside a
+  different one, because a reducer's branch order is only observable on a mixed
+  input and a uniform input tests the item and not the reduction. This
+  repository has at least four such reducers:
+  `delivery_health.judge_deploy`, `judge_pipeline`, `tools/panel.py`'s verdict
+  roll-up, and `tools/skill_gate.py`. The mechanical half is a test that reads
+  each reducer's state constants and asserts a named test exists per state. The
+  judgement half, whether the mixed input is a real one, stays with the author.
+- First step: write the four mixed-input tests by hand against the reducers
+  named above and record which of them already drop a state, before building
+  anything that enforces the convention. If none of the other three has the bug,
+  this is a lesson for `docs/standards/lessons.md` through the ExO relay rather
+  than a gate, and that is a cheaper and better outcome than a check nobody
+  needed.
+- Cost: $0.
 - Status: proposed
