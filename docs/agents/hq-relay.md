@@ -1842,7 +1842,7 @@ boundary into a censored cell.
 `turns == cap + 1` and treat `turns > cap + 1` as a third class, reported
 with its exit code. Or carry the host's own error subtype on the row if the
 daemon records one, which would end the guessing for every reader rather than
-for this one. The second needs a field the audit log may not have; the first
+for this one. The second needs a field the audit log may not have. The first
 needs one comparison.
 
 **And one thing this is not.** It is not an argument against the tool or

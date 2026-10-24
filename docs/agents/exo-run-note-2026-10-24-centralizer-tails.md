@@ -34,7 +34,7 @@ on the board, delivered whole at 1166 of 1166 characters.
    All three now read the host's run record, with the capacity endpoint first
    for refusal windows and the manifest for caps.
 2. **The denominator is measured.** All twelve manifest caps read from the
-   parent repository. Eleven match their workflow; the writer does not, and the
+   parent repository. Eleven match their workflow and the writer does not, and the
    writer is the one seat the org deliberately changed.
 3. **The overlap sweep can see `agent-*.yml`.** It could not, for thirteen
    days, so three items editing all twelve seat workflows were attributed to
