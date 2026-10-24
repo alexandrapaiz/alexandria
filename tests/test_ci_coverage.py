@@ -383,6 +383,26 @@ UNCOVERED = {
     # thing in this repository that would notice the next one.
     "tests/test_merge_order.py",
     "tests/test_resolve_register_conflict.py",
+    # Added 2026-10-24 with the authority gate's tests, and pinned for the one
+    # structural reason every line above is pinned: the step that would run it
+    # goes in `.github/workflows/checks.yml`, no seat's token may write that
+    # file (`docs/agents/pending-workflow-changes.md`), and
+    # `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words not
+    # to attempt it again. Counted at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # rather than opening a second incident on one pattern. Fifteenth line in
+    # seventeen days.
+    #
+    # What it guards is `tools/check_authority.py`, which decides whether a
+    # diff is the owner's to merge. That tool is itself a gate, so the exit
+    # status is its whole interface, and L-A9's 2026-10-05 amendment is
+    # explicit that a gate is real only when the command is named and its exit
+    # status means something. The tests pin that mapping and the four questions
+    # behind it, including the three verdicts the tool may not confuse: a
+    # charter line that rules the owner, a secret NAME in prose and a price in
+    # prose all read `clear`, and each of those three is a false `reserved`
+    # away from making the gate useless.
+    "tests/test_check_authority.py",
 }
 
 

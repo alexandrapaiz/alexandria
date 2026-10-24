@@ -1515,6 +1515,135 @@ def test_the_fetch_is_attempted_once_per_checkout_per_process():
             dh._deepen_attempted.clear()
 
 
+def test_history_that_arrived_another_way_is_not_reported_as_a_failed_fetch():
+    """The checkout decides this, not the fetch's exit status.
+
+    `INC-2026-10-24-the-deepening-fetch-landed-the-history-and-called-it-a-failure`.
+    The deepening fetch shipped on 2026-10-24 and the very next run of this
+    seat read `the drift cannot be dated from this checkout, which is
+    shallow: git fetch --unshallow could not complete here` out of a clone
+    that held all 2,346 commits one command later. `_deepen` returned
+    `ok and not _is_shallow(...)`, so a non-zero exit overruled the look.
+
+    Three ordinary things produce that exit with the objects already landed:
+    the 90 second timeout killing git after `.git/shallow` is gone, a lock on
+    `.git` held by something else in the runtime, and the case modelled here,
+    which is a second reader deepening the same checkout first. The last one
+    is deterministic and needs no clock, so it is the one with a test:
+    `judge_deploy` reads the checkout as shallow, something else deepens it,
+    and the `--unshallow` this process then runs exits 128 with `fatal:
+    --unshallow on a complete repository does not make sense`.
+
+    The assertion is not about the return code. It is that the row reaches a
+    verdict, because an `unknown` printed over history the guard is standing
+    on is the failure this whole fetch exists to stop.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        dh._deepen_attempted.clear()
+        try:
+            repo = fixture_shallow(Path(tmp), days_ago=0.1)
+            check("the fixture starts shallow", dh._is_shallow(repo))
+
+            # The other reader, finishing first. Real git, not a stub: the
+            # exit code this test is about is one only git produces.
+            subprocess.run(["git", "-C", str(repo), "fetch", "--unshallow",
+                            "--quiet"], check=True, capture_output=True)
+            check("the history is here now", not dh._is_shallow(repo))
+            after = subprocess.run(
+                ["git", "-C", str(repo), "fetch", "--unshallow", "--quiet"],
+                capture_output=True, text=True)
+            check("and a second --unshallow does fail, which is the premise",
+                  after.returncode != 0, after.stderr)
+
+            check("so the deepening answers for the checkout it is looking at",
+                  dh._deepen(repo) is True)
+
+            dh._deepen_attempted.clear()
+            rows = {app: {"runtime_sha": "0ldc0dec0de", "recorded_at": None,
+                          "first_seen_at": None, "notified_at": None}
+                    for app in rs.APPS}
+            surface = dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+
+            check("the row does not call itself shallow over its own history",
+                  surface.evidence.get("shallow_checkout") is False,
+                  surface.evidence)
+            check("and it reaches a verdict", surface.state == dh.FAILING,
+                  surface.headline)
+            check("dated from the real commit", "30.0 days behind" in surface.headline,
+                  surface.headline)
+            check("so it never advises the command it could not run",
+                  "could not complete here" not in surface.headline,
+                  surface.headline)
+        finally:
+            dh._deepen_attempted.clear()
+
+
+def test_a_remembered_failure_does_not_outlive_the_checkout_it_described():
+    """One attempt per process is a budget, not a verdict with a memory.
+
+    The memo exists so a slow or missing remote is not paid for on every one
+    of the three doors into `judge_deploy`. It must not go on answering
+    `still shallow` after the history has arrived, because the second door is
+    often the one that matters: `tools/drift_watch.py` writes the board card
+    that a seat's `delivery_health` run only printed.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        dh._deepen_attempted.clear()
+        try:
+            repo = fixture_shallow(Path(tmp), days_ago=40)
+            # The switch is set by hand rather than through `no_fetch()`,
+            # because that helper clears the memo on the way out and the memo
+            # surviving the block is the thing under test.
+            before = os.environ.get(dh.NO_FETCH_ENV)
+            os.environ[dh.NO_FETCH_ENV] = "1"
+            try:
+                check("forbidden, so this attempt fails and is remembered",
+                      dh._deepen(repo) is False)
+                check("and it was remembered as a failure",
+                      dh._deepen_attempted.get(str(repo)) is False,
+                      str(dh._deepen_attempted))
+            finally:
+                if before is None:
+                    os.environ.pop(dh.NO_FETCH_ENV, None)
+                else:
+                    os.environ[dh.NO_FETCH_ENV] = before
+
+            subprocess.run(["git", "-C", str(repo), "fetch", "--unshallow",
+                            "--quiet"], check=True, capture_output=True)
+            check("the next call looks rather than quotes itself",
+                  dh._deepen(repo) is True)
+        finally:
+            dh._deepen_attempted.clear()
+
+
+def test_a_git_that_cannot_answer_is_not_read_as_a_landed_history():
+    """"Cannot say" must not collapse into "yes" on the way back.
+
+    `_is_shallow` folds an unanswerable `rev-parse` into `False`, which is
+    right for a caller deciding whether to print the shallow hint and wrong
+    for a caller asking whether the history arrived. `_shallow_state` keeps
+    the third answer so `_deepen` can refuse it.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        not_a_repo = Path(tmp) / "nothing"
+        not_a_repo.mkdir()
+        check("git cannot answer here", dh._shallow_state(not_a_repo) is None)
+        check("and the hint-printing caller still reads False",
+              dh._is_shallow(not_a_repo) is False)
+
+        dh._deepen_attempted.clear()
+        try:
+            # The fetch is allowed to run here and touches no network: git
+            # refuses a directory that is not a repository before it opens a
+            # transport. So this exercises the real post-fetch read rather
+            # than the off switch, which is a different branch with its own
+            # test above.
+            check("so the deepening does not claim success",
+                  dh._deepen(not_a_repo) is False)
+        finally:
+            dh._deepen_attempted.clear()
+
+
 def test_a_full_clone_is_never_fetched():
     """The fetch is a repair, so it only runs where there is damage.
 

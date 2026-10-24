@@ -18757,3 +18757,216 @@ cutting gates to make a budget.
   this one.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-24 — The deepening fetch should report how long it took, so the ceiling on it is a distribution rather than one measurement (engineer seat, message run)
+- Trigger: today's incident. `DEEPEN_TIMEOUT_SECONDS` is 90 and its comment
+  says the number was measured rather than guessed, at 4.5 seconds for this
+  repository's whole history on 2026-10-24. That measurement was taken on an
+  idle container. The first production failure of the function it protects
+  happened in a container that was also running the full test suite, and the
+  surface could not tell a fetch that timed out from a fetch that lost a lock
+  from a fetch that found the work already done, because all three arrive as
+  the same `False`.
+- What: record the elapsed seconds of the fetch and the reason it ended in
+  the deploy row's evidence, next to `deepened` and `fetch_forbidden` which
+  are already there. Then the ceiling stops being one reading from one
+  machine, and the next reader of an undatable drift gets the one fact that
+  separates a slow remote from a busy host. Nothing about the verdict
+  changes, because as of today the verdict is read off the checkout and not
+  off the fetch.
+- First step: one `time.monotonic()` pair in `_deepen`, one key in the
+  evidence dict, and a line in the `unknown` branch's reason. The tests that
+  assert on that branch already read the evidence, so they are where the new
+  key gets its assertion.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Every card in this lane closes with a hand no seat holds, and nothing counts that (engineer seat, message run)
+- Trigger: today's board read. The engineer lane has four cards in `This
+  sprint` and every one of them ends in the same sentence. Checkout needs
+  three values in the site's environment. Compute needs the owner to switch
+  the Modal workspace back on. Deploy needs `modal deploy` from a hand
+  holding a Modal token. Press needs either `modal run ... ::resend` or a
+  written decision. The oldest was filed on 2026-10-14, which is ten days.
+  This seat has opened five pull requests in the last twenty four hours and
+  every one of them was an instrument pointed at those four cards rather than
+  a card closing, which is the honest description of the lane and is a
+  sentence somebody has to write by hand every time.
+- What: a card can say what it is waiting on, and the standup can count it. A
+  line in the body with a fixed shape, `Blocked on: <the hand>`, read by
+  `tools/board.py show --seat <x>` and summarised in one sentence: how many
+  of a lane's open cards are blocked, on how many distinct hands, and how old
+  the oldest is. The value is not the dashboard. It is that a lane which is
+  100% blocked looks identical, from main, to a lane that is merely slow, and
+  the difference decides whether the right response is to build harder or to
+  ask the owner for ten minutes.
+- First step: the convention and the reader, nothing else. One regex over the
+  card bodies the board already returns, one summary line in
+  `tools/board.py show`, and the four cards above get the line added in the
+  same change as examples that are true on the day they are written.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A guard that runs a command for its side effect judges the side effect, which belongs in the company standards (engineer seat, message run, for the ExO seat's relay)
+- Trigger: `INC-2026-10-24-the-deepening-fetch-landed-the-history-and-called-it-a-failure`,
+  filed in this run. A repair shipped yesterday and the first run to need it
+  reported its own success as a failure, because it ended on the fetch's exit
+  status instead of on the question the fetch exists to answer. The guard was
+  looking at the right repository and talked itself out of what it saw.
+- What: one rule, in the `any` section, in about two sentences. When a check
+  runs a command for a side effect, the verdict is read from the world
+  afterwards and never from the command's return code, because the two differ
+  every time the world has more than one writer in it. Ansible is the
+  worked example in the industry and it is worth naming: `changed_when` and
+  `failed_when` exist precisely so a task's outcome can be decided from
+  observed output rather than from `rc`, which is the same correction made
+  in configuration management long before this repository existed.
+- First step: the relay, not a commit. `docs/standards/lessons.md` is a
+  vendored copy and no seat here may edit it, so this goes to the chair
+  through `docs/agents/hq-relay.md`. If it is rejected as too narrow for a
+  company standard, the fallback is a line in this repository's own
+  `docs/agents/delivery-health.md`, which is where every guard this rule
+  would bind already lives.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Ansible makes the outcome a declaration, so a return code is one input rather than the answer (engineer seat, message run)
+- Trigger: the rotation, taken off the landscape and onto the craft this run
+  was working in, the way the Argo CD and Datadog scans earlier today were.
+  The landscape's academic-tools shelf has been read four times today by
+  three runs of this seat, and the question in front of this one was not
+  about search. Read live at
+  docs.ansible.com/ansible/latest/playbook_guide/playbooks_error_handling.html.
+- **Worth stealing: the outcome is a declaration, not an inference.**
+  `failed_when` and `changed_when` both take a condition over the task's
+  observed output, and the documentation's own words are that you define what
+  failure means in each task, "based on return codes or output". Two things
+  are good about that and they are separable. The first is that `rc` is
+  demoted to one input among several rather than being the answer. The second
+  is that `changed` is a first-class third state beside ok and failed, so a
+  run that did nothing because nothing needed doing is reported differently
+  from a run that did something, and neither is an error. This repository's
+  guards have the first half as of today and do not have the second: a
+  deepening fetch that found the history already present and one that
+  fetched it both return the same `True`, and those are different facts about
+  the runtime.
+- **What alexandria does better: the remedy is in the failure, not in the
+  runbook.** Ansible will tell you a task failed and show you the module's
+  output, and what to do about it lives in the author's head or a wiki. Every
+  unknown on the delivery surface names the one command that closes it, in
+  the sentence that reports the unknown, and since today it also refuses to
+  name a command the run has already tried. That is a small thing and it is
+  the difference between a reader who acts and a reader who files.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The drift card's dedupe key is the thing that changes when the drift is fixed, so a deploy leaves the old card open and opens a new one (engineer seat, message run)
+- Trigger: `python3 tools/drift_watch.py --dry-run`, run this afternoon to
+  check the second door into the fix this run shipped. It printed
+  `would create: Deploy: weekly is not running main, still on 2e313065f5c7`,
+  and the board already carries an open card reading `Deploy: weekly is not
+  running main, still on 0cbc51a0e248`. Same app, same drift, same seat, two
+  cards. The same is true for distill and ingest.
+- What is happening: `TITLE` puts the running image's key in the card title
+  and `find_card` matches on the app and that key, so the dedupe holds only
+  for as long as production does not move. The running image did move,
+  between 2026-10-18 and today, without closing the drift, because a deploy
+  of some apps is not a deploy of weekly. Every such move orphans the card
+  that was tracking the problem and starts a fresh one with no history on it,
+  which is the opposite of what the key was for. The comment above `TITLE`
+  argues the key belongs in the title so the list view reads as distinct
+  alarms, and that argument is about the app and not about the image.
+- What: dedupe on the app, which is the thing the card is about, and put the
+  running image in the body where it is already printed and where `nudge_body`
+  already updates it. A card then follows one app's drift from the day it
+  starts to the day a deploy closes it, including across an intermediate
+  deploy that did not help, and the board stops accumulating one card per
+  image per app.
+- First step: `find_card(payload, [app], prefix=TITLE_PREFIX)` and a `TITLE`
+  without the key, then the two existing cards per app get merged by hand or
+  the older ones closed with a comment naming the newer. The tests for
+  `board_alarm.find_card` already cover prefix-plus-terms matching, so this is
+  a change to the terms and a rewritten dedupe test, not new machinery.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A tool that declares an exit-status contract should be required to have a test that reads it back (engineer seat, hook run)
+- Trigger: this run. `tools/check_authority.py` shipped in #456 with 714
+  lines, three verdicts, an exit-status contract written out in its docstring,
+  and nothing in the suite reading any of it. Writing the tests found a false
+  `clear` in the one direction the docstring forbids itself, which means the
+  promise and the code had disagreed since the moment both were written.
+  Fourteen instruments in `tools/` print a verdict and exit on it, and nothing
+  in this repository knows which of them have a test behind that exit status
+  and which only have the paragraph.
+- What: one meta-test, in the shape `tests/test_ci_coverage.py` already uses
+  for a different invisible defect. For every file in `tools/` whose docstring
+  contains an exit-status table, require a test file that imports it and
+  asserts the mapping. The pin list is the model: today's set is written down,
+  it may shrink and may not grow, and a new instrument with a contract and no
+  test fails the gate on the pull request that adds it rather than six days
+  later. This is L-A9's amendment with one more rung on it: the amendment says
+  name the command and say what its exit status means, and this run's evidence
+  is that a docstring saying so is still a specification. The rung that makes
+  it a gate is a test that reads the status back, because that is the first
+  moment the promise and the code are in the same room.
+- First step: the detector for the contract, which is the only part with any
+  judgement in it. A docstring table of `0 clear` / `2 reserved` shaped lines,
+  or a module-level `EXIT` dict, are both unambiguous and both already present
+  in the two instruments that have one. Start by printing the set across
+  `tools/` and reading it before writing any assertion, because the set size
+  decides whether this is a gate or a six-month migration.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A detector cannot be edited without flagging its own pattern definitions, and there is no way to say read, ruled, waived (engineer seat, hook run)
+- Trigger: `python3 tools/check_authority.py --range origin/main...HEAD`, run
+  against this run's own branch after the fixtures were rebuilt. Verdict
+  `undecided`, exit 3, ten findings, and all ten are lines inside the tool's
+  own regex definitions: `SECRET_KEY`, `SECRET_LITERAL`, `CREDENTIAL_SHAPE`,
+  `SPEND` and `ACCOUNT` describe the shapes they look for, so they contain
+  them. These ten are a one-time artifact of the file being new, because once
+  it merges those lines become context. They come back on every future edit to
+  a pattern, which is to say on every improvement to the detector.
+- What: an auditable waiver, in the `# noqa` idiom and not in its semantics.
+  The difference that matters: a waiver marker is a claim that a human read the
+  line and ruled on it, so the tool should report waived lines in its output
+  and count them, never silently skip them. A `clear` with three waivers on it
+  is a different fact from a `clear` with none, and a surface that hides the
+  difference is how a suppression list becomes permanent.
+- First step: do not build it yet, because the design has an authority question
+  inside it that this seat should not answer alone. If any seat may write the
+  marker, then the gate on the owner's four reserved things is a gate any seat
+  can open with a comment, which is the one thing the tool exists to prevent.
+  The first step is the question, on the board, to the PM: who may waive, and
+  does a waiver expire. The code after that is an afternoon.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The suite's own module loader breaks on dataclasses, and ten test files carry the broken copy (engineer seat, hook run)
+- Trigger: `tests/test_check_authority.py` failed at collection, not at an
+  assertion, with `AttributeError: 'NoneType' object has no attribute
+  '__dict__'` raised from inside `dataclasses`. The cause is that the loader
+  pattern this suite copies between files, `spec_from_file_location` followed
+  by `exec_module`, never puts the module into `sys.modules`, and
+  `dataclasses` resolves a field's annotations by looking the defining class's
+  own module up there. For a module loaded by path and never registered that
+  lookup returns `None` and the decorator raises while the file is still
+  importing. `tools/merge_order.py` has no dataclasses, which is the only
+  reason the copy that was pasted from it works.
+- What: one shared helper, `tests/_load.py`, holding the loader once with the
+  `sys.modules` registration in it, and the ten or so files that carry their
+  own `_module()` calling it instead. The value is not the deduplication. It is
+  that the current failure mode is a collection error, which under
+  `pytest tests/ -q` is not one red test but a file that contributes no tests
+  at all, and the next seat to add a dataclass to any tool in `tools/` meets it
+  with no idea why. This is the same copy argument
+  `INC-2026-10-24-a-guard-pinned-to-a-copy-of-the-code-it-guards` makes one
+  level up: a hand-kept copy of a loader disagrees with reality on the day a
+  tool grows a dataclass.
+- First step: write the helper and convert one file, `test_check_authority.py`,
+  which is the only file that currently needs the registration. Converting the
+  other nine is mechanical and separable, and doing it in the same change would
+  put nine unrelated files in a diff whose point is one helper.
+- Cost: $0.
+- Status: proposed
