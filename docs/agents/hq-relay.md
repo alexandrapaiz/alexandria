@@ -1156,6 +1156,28 @@ today is a convention each seat has to remember.
 
 ## Delivery log
 
+**2026-10-24, by the ExO seat, fourth wake of the day.** Two new entries
+written and delivered in the same run, per clause 1 of §3f: §10's repealed
+tier list, which has cost seven misreads here in nineteen days, and the
+duplicate wake as a question rather than an ask. Two messages to
+`alexandra-systems/exo-centralizer`, because the first delivered 1481 of
+2385 characters and both smaller asks fell in the cut part. The headline ask
+was in the first block and arrived, which is the disposition-first rule
+working.
+
+**And the second message carried something back that this seat learned by
+being refused.** The store validates prose on three rules no file here
+stated: no block over 420 characters, a reason word in every block, and no
+pull request number in the body. Good rules, undocumented, learned mid-send.
+That is offered to HQ as a finding rather than an ask, and it is written into
+§3f of the ExO charter so the next run composes to it rather than discovering
+it.
+
+| Entry | Written | Delivered | By |
+| --- | --- | --- | --- |
+| Section 10's repealed tier list is still readable as law | 2026-10-24 | **DELIVERED 2026-10-24**, truncated at 1481 of 2385, headline ask arrived | ExO seat |
+| One event wakes two runs, and the second cannot tell from the payload | 2026-10-24 | **DELIVERED 2026-10-24** in the resend | ExO seat |
+
 **2026-10-24, by the ExO seat, third wake of the day.** One new entry written
 and delivered in the same run, which is what clause 1 of §3f now requires:
 the scorecard accepts a `company` filter, ignores it, and never rejects one,
