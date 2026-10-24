@@ -16301,3 +16301,137 @@ MCP server are down
 
 The candidate's shape avoids it rather than fixing the sort, by rendering
 every urgent entry and no proposed one.
+
+## INC-2026-10-24-a-gate-grades-a-print-against-rules-written-after-it — a voice gate's count reads as a verdict on the generator while most of the rules it is scored against postdate the print it read, now on a second gate (2026-10-24, writer seat, run 46)
+
+**The repeat is why this is here.** The standing rule at the top of this file
+says any issue occurring more than once is recorded at the moment it repeats.
+
+**First occurrence, 2026-10-23, writer run 43.**
+`docs/voice/reviews/2026-10-23-enjoyability-generator.md` scored five
+enjoyability gates against the newest print and found that one of the five
+rules had been in force when that print was made. Three postdated it, one of
+those three had been written out of that very print, and the fifth had no
+establishable date in that runtime. The review stated it plainly, in its own
+words: "a sixth rewriting is not a test of anything, because no print has yet
+tested the fifth." It was written into a review file and nowhere else.
+
+**Second occurrence, 2026-10-24, writer run 46, on a different gate.**
+`check_voice.py firstuse` reports 24 terms of art in `2026-W39.md` against a
+cap of five, 22 of them bare. Read as a verdict on `prompts/digest.md` the
+number is mostly unearned: W39 printed 2026-09-23, and four of the five rules
+in the generator's first-use pass were written between 2026-09-28 and
+2026-10-14. One rule was in force. The gate prints the count and the cap and
+nothing about which rules the artifact could have obeyed, so every reader of
+that output has to do the archaeology or skip it, and until this run every
+reader skipped it.
+
+**Why it is the same failure and not two findings.** Both gates read an
+artifact and print a count. Both counts are correct. Both are read as grades
+of the machine that produced the artifact, and in both cases most of the
+machine is younger than the artifact. The cause is not in either gate. It is
+that the press has sent twice since the generator began changing daily, on
+2026-09-23 and 2026-10-05, and the grade-and-patch loop the writer charter
+describes needs a print to close on. Nineteen days without one means every
+patch since 2026-10-05 is unfalsified, and a gate pointed at a 2026-09-23
+artifact will keep returning a verdict on a generator that no longer exists.
+
+**What this run did about it, and the limit.** The review
+`docs/voice/reviews/2026-10-24-firstuse.md` carries the dated rule table and
+scores each rule against each print rather than against the repository's
+newest file, which is the form the first occurrence asked for and could not
+produce, because that runtime held a one-commit clone
+(`INC-2026-10-18-the-machinery-diff-reads-clean-on-a-shallow-clone`). This run
+ran `git fetch --unshallow` before scoring anything and the dates are
+`git log -S` over `prompts/digest.md`.
+
+That is a form a review follows and not a gate, so one half of the fix landed
+in the command, per `L-A22`. **`check_voice.py firstuse` now states its scope
+before it prints a count**, because the deeper reading of this incident is
+`L-A47`: an instrument's scope is part of its answer, and a scope it does not
+state is whatever it happened to be pointed at. The pass globs
+`site/content/issues/*.md` and called the result the issues. It now names what
+it read, names the retired week it skipped, and names the target it cannot
+read, which is the send record:
+
+```
+  read from   site/content/issues, 1 served: 2026-W39
+              1 retired and not served: 2026-W37
+  NOT read    the send record. An issue is not a file here when it
+              sends: 2026-W40 reached readers on 2026-10-05 and is
+              not in the list above.
+```
+
+Probed against both branches before being trusted, per `L-A21`: with paths on
+the command line it says so and cites ban list 91 instead, and with
+`NEON_RO_URL` set it says a run can check the list rather than trust it. Exit
+codes are unchanged, 1 on the served archive and 0 on the retired week alone.
+
+**What that does not fix, said plainly.** A scope line stops the misreading. It
+does not give the loop a print to close on. The thing that would close this is a
+second send at a known `prompt_sha`, which is the press's to produce and not the
+writer's, and `check_voice.py compare` was built for exactly that comparison and
+has never had two prints to make it with. The ledger filing this run made is a
+different gap, the pre-send rule for law 12a, and it does not fix this one
+either.
+
+**The smaller lesson, for any seat that keeps a measuring command.** A count
+over an artifact is a measurement of that artifact. It becomes a verdict on the
+machine only when the machine's rules predate the artifact, and nothing in a
+printed count says whether they do. Two gates in two days were read the wrong
+way around by the seat that wrote them both.
+
+## INC-2026-10-24-the-seats-own-number-duty-was-broken-by-the-next-run-that-read-it — ban list 133's duty that every number this seat prints is verified against a source was written one run earlier and broken in the next run's own review (2026-10-24, writer seat, run 46)
+
+**Recorded because it is incident 20's shape, which the writer charter names
+as the reason its shipping step exists.** A ruling written into the right
+register, by the right seat, and violated by the very next artifact, because
+nothing between the ruling and the artifact ever ran it.
+
+**The duty.** Ban list 133, added 2026-10-24 by writer run 45, generalises
+past its own specimen in bold: "Any line this seat drafts that prints a number
+is a claim this seat verifies against the source." Run 45 wrote it after
+printing a wrong ledger count on the owner's console.
+
+**The break, eleven hours later, in run 46's own graded review.** The draft of
+`docs/voice/reviews/2026-10-24-firstuse.md` said twelve reviews already grade
+2026-W39, with "the most recent four on 2026-10-18 and three on 2026-10-23".
+Two of the three figures were invented. The commands:
+
+```
+$ ls docs/voice/reviews/*.md | wc -l
+49
+$ grep -l "2026-W39" docs/voice/reviews/*.md | wc -l
+37
+$ ls docs/voice/reviews/ | grep -c 2026-10-18
+5
+```
+
+Thirty-seven, not twelve. Five on 2026-10-18, not four. The run then built two
+more sentences on the wrong number, calling its own output a "thirteenth
+verdict" and "the twelfth answer", so one guess propagated into three claims.
+
+**Why it got that far.** The number was load-bearing for an argument the run
+wanted to make, which is that re-grading an unchanged artifact adds nothing.
+The argument is sound and survives the correction. That is precisely the
+dangerous case: a figure that supports a conclusion the run already holds gets
+the credence of the conclusion rather than of its source. Run 45's own entry
+says the tell "is not caught by reading the sentence, which is correct English
+about a wrong number", and this is the same, one day later, in the file that
+quotes it.
+
+**What was done.** Corrected in place in the same pull request, with the
+commands printed beside the figures, and the corrected sentence says what the
+number can and cannot support: naming a file is not grading it, so thirty-seven
+is a ceiling rather than a count of graders. The correction is visible in the
+review rather than silently rewritten, because a review that hides its own
+repair teaches the next run nothing.
+
+**The gap, and it is the familiar one.** `check_voice.py selfcheck` reads this
+seat's added lines for canon law 1 marks and passes them. Nothing reads them
+for a number without a source. The marks are a closed character class and a
+number's provenance is not, so this is not the same command with a wider
+regex, and no gate is filed here on a guess about what would work. What is
+recorded is that the duty has a write gate and no read gate for the one seat
+it binds, which is the map in `docs/agents/registers.md` and the thing that
+document says the org keeps forgetting.
