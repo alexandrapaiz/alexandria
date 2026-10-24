@@ -146,6 +146,113 @@ ACCOUNT = re.compile(
 
 PROSE = re.compile(r"\.(md|txt|rst)$")
 
+# ------------------------------------------------ where a match is written down
+
+# A gate that hunts for strings is written out of the strings it hunts for, so
+# its own source is the one diff it is guaranteed to match. This command shipped
+# on 2026-10-24 and answered `undecided` on the commit that added it: ten
+# findings, every one of them a line of its own patterns, and nothing from the
+# run's actual work
+# (`INC-2026-10-24-the-authority-gate-declines-to-answer-on-any-diff-that-touches-the-authority-gate`).
+# The standing cost is worse than the one wrong answer, because the file cannot
+# stop containing the strings it hunts for: every future improvement to the
+# authority detector was routed to the owner by the authority detector, and she
+# is the one person §21 says merges nothing in the ordinary course.
+#
+# The exemption below is a position and deliberately not a path. Excluding
+# `tools/check_authority.py` by name is one line, and it blinds this command to
+# a real credential pasted into that file, and the same hole has to be reopened
+# for every other gate that grows the same self-reference. What is exempt
+# instead is a match that lands inside a pattern DEFINITION, or on a line that
+# is nothing but a comment. Neither of those can write a secret, spend money or
+# open an account, so the exemption carries no file name and holds the same way
+# in `pipeline/` and in `tests/`.
+#
+# The limit is kept narrow in the direction the docstring commits to. A pattern
+# definition still has to look like a regex, so `API_KEY = r"sk-proj-..."` is a
+# credential in a raw string and is read as one. And a comment exempts only the
+# `undecided` branch: `check_secret`'s two `reserved` branches run first and run
+# everywhere, because a credential commented out is a credential committed.
+
+REGEX_SYNTAX = re.compile(r"\(\?|\\[bdswWSDAZ]|\[\^?[A-Za-z0-9]|\{\d+,|\|")
+PATTERN_CALL = re.compile(
+    r"\b(?:re|regex|regexp)\.(?:compile|match|search|fullmatch|sub|subn|split|"
+    r"findall|finditer)\s*\(|\bnew RegExp\s*\(|\bPattern\.compile\s*\(")
+COMMENT_ONLY = re.compile(r"\s*(#|//|/\*|\*/|--\s|<!--)")
+QUOTE_OPEN = re.compile(r"(?P<prefix>[A-Za-z]{0,2})(?P<q>'''|\"\"\"|\"|')")
+# Everything a right-hand side may carry before the literal it opens with.
+OPENS_A_LITERAL = re.compile(r"[\s(]*[A-Za-z]{0,2}['\"]{1,3}")
+
+
+def string_spans(text: str) -> list[tuple[int, int, str]]:
+    """Every string literal on one line, as (body_start, body_end, prefix).
+
+    A literal the line leaves open counts and runs to the end of the line. That
+    is not an edge case here: a hard-wrapped pattern is written as one implicit
+    concatenation per line, and `SECRET_KEY`'s own definition spans two.
+    """
+    out: list[tuple[int, int, str]] = []
+    i, n = 0, len(text)
+    while i < n:
+        m = QUOTE_OPEN.search(text, i)
+        if not m:
+            break
+        quote = m.group("q")
+        start = m.end()
+        j = start
+        while j < n and not text.startswith(quote, j):
+            j += 2 if text[j] == "\\" else 1
+        out.append((start, min(j, n), m.group("prefix").lower()))
+        i = min(j + len(quote), n) if j < n else n
+    return out
+
+
+def pattern_spans(text: str) -> list[tuple[int, int]]:
+    """The ranges on one line that define a pattern rather than carry a value.
+
+    Two ways a string says it is a pattern. A raw prefix, which is the notation
+    Python keeps for exactly this, and a position inside a call to a pattern
+    constructor. Either way it must also read as a regex, which is what keeps a
+    credential written as `r"..."` visible.
+    """
+    call = PATTERN_CALL.search(text)
+    spans = []
+    for start, end, prefix in string_spans(text):
+        if not REGEX_SYNTAX.search(text[start:end]):
+            continue
+        if "r" in prefix or (call and call.end() <= start):
+            spans.append((start, end))
+    return spans
+
+
+def inside_pattern(text: str, span: tuple[int, int]) -> bool:
+    """Whether this match landed inside a pattern definition on its own line."""
+    return any(s <= span[0] and span[1] <= e for s, e in pattern_spans(text))
+
+
+def comment_only(text: str) -> bool:
+    """The line is a comment and nothing else, so it assigns nothing, spends
+    nothing and opens nothing."""
+    return bool(COMMENT_ONLY.match(text))
+
+
+def defines_a_pattern(text: str, value_at: int) -> bool:
+    """Whether the right-hand side of an assignment is a pattern definition.
+
+    `SECRET_READ = re.compile(` and `SECRET_KEY = (r"...TOKEN|SECRET..."` both
+    name the secrets this command hunts for. Neither holds one.
+
+    The right-hand side has to BE a pattern and not merely contain one, which is
+    the difference between this and a one-line `search`. A credential followed by
+    a trailing comment that happens to mention `re.compile` is still a credential,
+    and a looser version of this function cleared it.
+    """
+    rhs = text[value_at:]
+    if PATTERN_CALL.match(rhs.lstrip("( \t")):
+        return True
+    return any(s >= value_at and OPENS_A_LITERAL.fullmatch(rhs[:s - value_at])
+               for s, _ in pattern_spans(text))
+
 
 @dataclass
 class Finding:
@@ -523,6 +630,8 @@ def check_secret(hunk: Hunk, base: str | None) -> list[Finding]:
                                "secret-shaped name, and the value is not a read of one"))
         elif SETTING_VALUE.fullmatch(value):
             continue
+        elif defines_a_pattern(line.text, m.start("value")) or comment_only(line.text):
+            continue  # a pattern names secrets, and a comment writes none
         elif is_effectful(hunk.path):
             out.append(Finding("secret", UNDECIDED, hunk.path, line.lineno, title, line.text,
                                "a file that can act assigns something to a secret-shaped name, "
@@ -537,6 +646,8 @@ def check_spend_and_account(hunk: Hunk, base: str | None) -> list[Finding]:
     for i, line in enumerate(hunk.lines):
         if line.kind != "+":
             continue
+        if comment_only(line.text):
+            continue  # a comment in a file that can act still acts on nothing
         for question, pattern, because in (
             ("spend", SPEND, "an added line in a file that can act carries a price, a plan or a "
                              "payment identifier, and this command cannot tell a configured "
@@ -545,7 +656,8 @@ def check_spend_and_account(hunk: Hunk, base: str | None) -> list[Finding]:
                                  "account, and this command cannot tell a new one from an "
                                  "existing one"),
         ):
-            if pattern.search(line.text):
+            m = pattern.search(line.text)
+            if m and not inside_pattern(line.text, m.span()):
                 sid, title = section_of(hunk, i, base)
                 out.append(Finding(question, UNDECIDED, hunk.path, line.lineno, title,
                                    line.text, because))
@@ -636,6 +748,13 @@ How this command answers them, from the diff and not from the path
   spend      A price, a plan or a payment identifier in an added line, in a file
              that can act rather than describe.
   account    An account opened or named in the same position.
+
+  Three of those four hunt for strings, and this file is written out of the
+  strings they hunt for, so two positions are exempt by position and never by
+  path: a match inside a pattern DEFINITION, and the `undecided` branch on a
+  line that is nothing but a comment. A pattern definition has to read as a
+  regex, so a credential pasted as `r"..."` is still a credential, and the two
+  `reserved` branches read a comment exactly as they read code.
 
 What the exit status means
 

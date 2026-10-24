@@ -19248,3 +19248,120 @@ A fold is a resolution with better odds, not a different kind of act.
   first time.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-24 — The deepening needs a third command, and the containment proof needs its exit status read (engineer seat, message run)
+- Trigger: this run ran the charter's two shallow-clone commands at turn six,
+  exactly as written. `git fetch --unshallow` succeeded,
+  `git rev-parse --is-shallow-repository` then printed `false`, and the next
+  `git push -u origin HEAD` failed because the clone still held
+  `+refs/heads/main:refs/remotes/origin/main` and could not store a
+  remote-tracking branch. Reproduced on a fresh clone and filed as
+  `INC-2026-10-24-the-unshallow-remedy-leaves-the-single-branch-refspec-so-the-containment-proof-cannot-see-the-branch-it-proves`,
+  the eighth entry on the shallow clone and the first where the written remedy
+  is the defect.
+- What: `--depth 1` implies `--single-branch`, which writes a refspec, and
+  `--unshallow` deepens history without touching it. So a seat can hold a
+  complete history of `main`, get a true `false` from the check it was told to
+  trust, and still be unable to name any other branch in the repository. The
+  expensive consequence is not the failed push. It is the charter's containment
+  proof, `git log --oneline origin/<the-older-branch> ^HEAD   # must print
+  nothing`, which in that state prints nothing to stdout and exits 128. The one
+  proof standing between a seat and closing another run's pull request reads as
+  passed at the exact moment it cannot see that run's work.
+- First step: two charter lines in `prompts/engineer-agent.md`, which is why
+  this is a ledger entry and not a commit. Add
+  `git config --replace-all remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*' && git fetch origin`
+  as the third command beside the two already there, and give the containment
+  proof a `|| exit 1`. Every other seat's charter carries the same two-command
+  clause, so the same edit applies twelve times.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Entropy is the discriminator the secret gate is missing, and `regexTarget` is the name for what it hardcodes (engineer seat, message run)
+- Trigger: today's fix to `tools/check_authority.py` had to invent, in code,
+  the distinction between "the line matched" and "the matched span sits inside
+  a pattern definition". The craft scan below found that gitleaks ships that
+  distinction as a named config field, and ships a second discriminator this
+  gate does not have at all.
+- What: `CREDENTIAL_SHAPE` is `[A-Za-z0-9_\-+/=.]{20,}`, which is length and
+  charset and nothing else. The tool's own comment already concedes the cost:
+  "a long constant like `READ_WRITE_ALL_THINGS_HERE` now reads reserved", and
+  it keeps that because a false `reserved` is the cheap error. Minimum Shannon
+  entropy on the matched value separates a long English constant from a real
+  token without giving up the fail-closed direction, because a credential that
+  is genuinely low-entropy still fails the threshold and still reads reserved.
+  Roughly fifteen lines and no new dependency.
+- First step: add `shannon(value)` beside `CREDENTIAL_SHAPE` and a threshold,
+  then measure it against the fixtures `tests/test_check_authority.py` already
+  carries before changing any verdict, since those fixtures are the only real
+  labelled set of credential-shaped and setting-shaped values in the tree.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Four items in one lane, every one of them closing with a hand the seat does not have (engineer seat, message run)
+- Trigger: this run was told to take the next item in its lane on the board.
+  All four engineer items in `This sprint` say in their own bodies that they
+  close with a hand on a Modal token or on the site's environment: the weekly
+  deploy drift, the disabled Modal workspace, the missing 2026-W41 issue, and
+  the three unset `POLAR_CHECKOUT_*` values. The oldest has sat there since
+  2026-10-14. Finding that out cost this run five turns of reading, and it will
+  cost the next run the same five.
+- What: these cards are correct, they are well written, and they are in the
+  wrong place. A card in a seat's lane is a promise that the seat can act on
+  it, and a card that names its own blocker in paragraph four is not that. The
+  cards already know the answer, so the board could read it: a lane with an
+  owner-handed blocker belongs in a column of its own, where the owner reads
+  four asks in one screen rather than four seats rediscovering them one run at
+  a time.
+- First step: not a column, which is the board owner's call, but the cheap half
+  that belongs to this seat. `tools/board.py show` already prints a lane; have
+  it mark an item whose body names an owner-handed blocker, using the same
+  phrases the four cards independently chose ("needs your hand", "it is not
+  mine", "no agent seat"). A seat then sees the blocked ones before it reads
+  them, and the count is evidence for the PM's Monday about how much of this
+  lane is actually workable.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Craft scan: gitleaks names the thing this run hardcoded, and hands every escape hatch to the author (engineer seat, message run)
+- Trigger: today's item was a pattern-matching gate that matched its own
+  patterns. Secret scanners have had that exact problem for years, so the scan
+  went to the one with the largest installed base rather than to another
+  research product.
+- What: one field worth stealing, one design this repository already does
+  better. Both below.
+
+**Observed 2026-10-24, from gitleaks (`github.com/gitleaks/gitleaks`, README on
+`master`).** A gitleaks rule carries an allowlist, and the allowlist has five
+criteria: `paths`, `regexes`, `stopwords`, `commits`, and a `condition` of
+`"OR"` or `"AND"` over them. A rule may also carry an `entropy` field, which
+sets a minimum Shannon entropy the matched secret has to clear before it is
+reported. Outside the config there are two more hatches: a `gitleaks:allow`
+comment on a line, and a `.gitleaksignore` file listing findings by
+fingerprint.
+
+**The thing worth stealing is one field name, `regexTarget`.** It takes
+`"secret"`, `"match"` or `"line"`, and it says which of those three texts the
+allowlist is tested against. Today's run spent most of its thinking on exactly
+that choice and then hardcoded one answer per question: span containment for
+spend and account, the right-hand side for a secret assignment, the whole line
+for a comment. Gitleaks learned the same lesson and lifted it into
+vocabulary, which is what makes it reviewable. A reader of
+`tools/check_authority.py` cannot today ask "what is this exemption matched
+against" and get an answer shorter than the function. That is a refactor rather
+than a fix, and it is cheap: three call sites.
+
+**What alexandria does better, and it is the half gitleaks got wrong.** Every
+one of those five hatches is author-asserted and nothing re-reads it. A `paths`
+entry blinds the scanner to that path forever, silently, and a
+`.gitleaksignore` fingerprint survives the rewrite of the code it was granted
+for. The 2026-10-24 incident on this gate named both candidate fixes and chose
+against the gitleaks one deliberately: excluding
+`tools/check_authority.py` by path is one line, and it blinds the gate to a
+real credential pasted into the one file a reader would least expect to be
+unwatched. What shipped instead exempts a position, carries no file name, and
+is pinned by a test that reads the gate's live source rather than a fixture
+copied out of it. An exemption that grows too broad goes red on the next run of
+the suite. Gitleaks has no equivalent, because an allowlist in a config file
+has nothing to go red against.
+- Status: proposed
