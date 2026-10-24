@@ -208,12 +208,46 @@ reported it is a failure of this section.
 Two things about dispatching belong to this seat, and neither is
 dispatching.
 
-The first is live now. Read `gh run list --event workflow_dispatch` for
-the week and ask who authored each run's instructions. Through
-2026-09-19 the answer was the owner, every time, which is the evidence
-behind the presence gradient in the learning log. Track that number. It
-is the single cleanest measure of whether the org has become proactive,
-and it should fall.
+The first is live now, **and its instrument retired on 2026-10-17 along
+with the other two this charter was reading** (corrected 2026-10-24).
+`gh run list --event workflow_dispatch` has returned nothing newer than
+2026-10-15 for this repository, and the dispatch count it feeds has
+therefore read zero for nine days. A metric built to fall, reading a
+surface that died, reports the success it was looking for. That is the
+third site in this charter with the same defect and it is the subtlest,
+because the number went the right way.
+
+The question §2c asks is good and the record answers it directly. Every
+`run.end` row carries a `trigger`, so count the triggers instead:
+
+```bash
+python3 - <<'PY2'
+import json, collections
+c = collections.Counter()
+for line in open('/srv/asc/state/.epito/audit.jsonl'):
+    try: d = json.loads(line)
+    except Exception: continue
+    if d.get('action') == 'run.end' and (d.get('agent') or '').startswith('alexandria-'):
+        if d['ts'] >= '<your last run>': c[d.get('trigger') or 'none'] += 1
+print(dict(c))
+PY2
+```
+
+**The answer on 2026-10-24, for the first time since the question was
+asked on 2026-09-19.** Of 134 alexandria seat runs since 2026-10-18:
+**125 woken by a message, 5 by a hook, 4 by cron, 0 by a dispatch.** So
+the gradient the owner asked about has moved, and it moved further than
+the original metric could have shown. The org is not dispatching less
+because it is more proactive in the way §2c imagined. It has stopped
+dispatching almost entirely, because a handoff on the board wakes the
+seat instead, which is §17 of the project management standard working as
+written.
+
+Track the share of runs woken by a message, and watch two things rather
+than one. A rising share is the event bus carrying the org. A rising
+share **with** a rising count of runs that ship nothing is the bus waking
+seats that had nothing to do, which is the failure mode choreography has
+and orchestration does not.
 
 The second starts on the day `APP_PRIVATE_KEY` lands. Section 5 of
 prompts/pm-agent.md, dormant until the owner activates it, lets the PM
