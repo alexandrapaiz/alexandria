@@ -18393,3 +18393,145 @@ this file is one entry per file under a directory, and this file is ExO-owned.
 Filed in `docs/ideas.md` on the same branch rather than acted on. The narrower
 repair, a check that a merge of an append-only register cannot have fewer lines
 than either parent, is engineer-sized and is also in the ledger as of today.
+
+---
+
+## INC-2026-10-24-the-hq-outbox-had-a-channel-and-the-charter-named-a-courier — thirty days of evidence sat in a file waiting for a human to carry it, while the standard specified a channel the seat already had the credential for (2026-10-24, exo seat, second wake)
+
+**Observed by:** this seat, reading `docs/standards/pm.md` §15 for the board
+message contract while doing something else entirely.
+
+**What happened.** `docs/agents/hq-relay.md` is the ExO seat's outbox to HQ.
+On 2026-10-24 it held nine entries, eight of them marked undelivered and one
+with no status line at all. The oldest was written 2026-09-24, thirty days
+earlier. Two of the undelivered entries described asks that HQ had already
+granted.
+
+The ExO charter's §3f told the seat to write each entry "so the chair can
+carry it with no editing", and on 2026-10-04 a run had noticed the file was a
+drawer and responded by attaching it to the pull request description, on the
+stated ground that this was "the one surface the owner provably reads". That
+reasoning is sound and its premise was false. §15 of the PM standard, law
+since 2026-09-30, says a product seat which finds a fix "files the lesson and
+hands it to HQ (`handoff` to `alexandra-systems/exo-centralizer`)". The seat
+holds `BOARD_RUNTIME_TOKEN`, which is the only credential that takes.
+
+**The measurement, because the charter's own rule is that a repeat is proved
+and not asserted.** `GET /api/messages?from_company=alexandria&since_hours=720&limit=200`
+returned 91 messages with `saturated: false`, so it is the whole traffic and
+not a sample. The PM seat of this company posted to
+`alexandra-systems/exo-centralizer` seven times in those thirty days, five
+notes and two handoffs, and to HQ's other seats nine times besides. This
+seat posted **one message in thirty days**, a `done` addressed to nobody.
+The channel was not theoretical, it was in daily use by the seat next door.
+
+**Why it is a new shape and not an instance of an old one.** §3b of the ExO
+charter tests an assigned duty three ways, and this duty passed all three.
+The wording was there, in §3f, in words a run could act on. The cadence was
+there, since the duty fires on the same wake that writes the entry. The
+capability was there, and that is the part worth staring at: the seat held
+the credential the whole time. What failed is a fourth thing the register
+does not test, which is that **the charter pointed the duty at an actor who
+was never told, when a channel the seat could reach itself was already
+specified in a standard this repository vendors.**
+
+**What made it invisible.** A courier clause reads as diligence. Every audit
+of this page since 2026-10-04 checked that the entries were correctly
+written, correctly dated and correctly quoted in a pull request, and all of
+those were true. Correctly written is exactly what an undelivered entry
+looks like. The 2026-10-04 run even wrote "the outbox is not a channel until
+something carries it", diagnosed the problem precisely, and then solved it
+by improving the record rather than by asking whether a channel existed.
+
+**The fix, shipped in the same run.** §3f rewritten: an entry is delivered
+by this seat, as a board handoff, in the run that writes it, with the command
+in the charter. The pull request heading survives with a changed job, which
+is to record what was *not* delivered. An entry now has three states rather
+than two, since a granted ask needs somewhere to be recorded. And the whole
+backlog went up on 2026-10-24 in three messages.
+
+**Blameless note.** No run skipped a step and the 2026-10-04 reasoning was
+careful. The defect is that a charter can specify a duty's mechanism, and
+when it specifies the wrong one, every audit downstream measures compliance
+with the wrong mechanism. Add to §3b: for an assigned row, ask not only
+whether the seat can reach the evidence, but whether the delivery path the
+charter names is the one the standards specify. Ban list checked on this
+entry.
+
+---
+
+## INC-2026-10-24-the-law-this-run-ran-under-was-not-in-the-repository — the vendored PM standard stopped at section 22 for eight days, and sections 23 and 24 name duties for two seats here (2026-10-24, exo seat, second wake)
+
+**Observed by:** this seat, when the wake text cited "standard section 24"
+as the authority for the run and `grep -n "^## 24" docs/standards/*.md`
+returned nothing.
+
+**What happened.** The run was dispatched to perform "the learning loop's
+tick (standard section 24)". `docs/standards/pm.md` in this repository ends
+at §22. The section the run was ordered to execute was not in the
+repository, and neither was §23.
+
+Fetched from HQ, the two missing sections are **§23, the engineer's duty to
+review and propose the agentic system, law since 2026-10-17**, and **§24, the
+learning loop as a team doing OODAL on the bus, law since 2026-10-18**. The
+local copy was last vendored 2026-10-16, by the owner's own hand. HQ has
+committed to `standards/pm.md` four times since.
+
+**What six days cost, measured by §3b's own method.** §24 requires five
+phases on every brief event, one experiment a week with a hypothesis and a
+metric and a date, three ideas a week posted to the owner, and a compounding
+ratio. A grep of every charter in `prompts/` and every document in
+`docs/agents/` for the ten ExO attributes, for "OODAL" and for "compounding
+ratio" returned **no hit anywhere**. The ExO charter is 1,805 lines and
+contained the word "experiment" once, in an unrelated sentence about HQ. Five
+runs of this seat happened inside those six days and every one of them was
+woken by the event §24 describes.
+
+So the vocabulary of the duty was absent from every charter, which is §3b's
+test, and its answer is that the duty was unowned. The seat that keeps the
+unowned-duty register is the seat whose own duty had gone missing, which is
+§0's lesson restated: an audit written to be aimed outward does not fire on
+its author.
+
+**The two things that made it invisible, and both are cheap.** The copy
+**carries no vendored header**, because `vendor.sh` writes that header and a
+hand copy does not. So §3f's own dating command, `head -8
+docs/standards/*.md`, returns prose for `pm.md` and a source commit for
+`lessons.md`, and the file that cannot be dated is the stale one. And
+**nothing in any product repository names the drift check**: HQ wrote
+`standards/vendor.sh --check`, whose own comments say it exists to give the
+exo centralizer a drift check instead of eyeballing copies, and a grep of
+`prompts/` for `vendor.sh` returns zero charters.
+
+**It is a repeat, which is why it is here rather than in a note.** The class
+is a parent decision that governs here and is not readable here, and the
+register already holds `INC-2026-09-27` for an HQ incident that arrived as a
+commit subject and `INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`
+for a granted ask nobody pointed a charter at. This is the third. The
+sharper form, and the reason it kept recurring: all three are about the
+*arrival* of parent law rather than its content, and §3f's three questions
+all assume the text has arrived.
+
+**One detail that is almost funny and is worth keeping.** Two of the ten
+lessons missing from the local `lessons.md`, which was re-vendored the same
+day and is already ten behind, are the laws that name this run's two
+findings. L-A87 is the capped read. **L-A90 is "a law binds where the seat
+reads, not where the register keeps it."** Neither could be cited from this
+repository, which is the thing L-A90 says.
+
+**The fix.** §3f gains a drift check that runs from here with no HQ
+checkout, using `gh api` and a diff of the section headings, and it was run
+across both vendored standards before shipping: `pm` STALE with two missing
+sections, `lessons` STALE with ten missing lessons and no section diff. §0 of
+the ExO charter now carries §24's five phases and the ten attributes in
+full, so the seat can read its own law without leaving the repository, and
+`docs/agents/exo-loop.md` is the ledger §24 requires. The re-vendor itself
+is an ask to HQ and not an edit here, because the copy is not this seat's and
+hand-editing it is how the header was lost.
+
+**Blameless note.** The owner vendoring a standard by hand on 2026-10-16 is
+the owner-as-seat class of §3e rather than a mistake: `vendor.sh` is HQ's
+tool and nothing in this repository told any seat to run it. The general
+rule to carry: **a vendored copy with no header is a copy with no expiry
+date**, and the absence of the header is what hid the absence of the
+sections. Ban list checked on this entry.
