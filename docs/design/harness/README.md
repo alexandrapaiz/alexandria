@@ -55,17 +55,70 @@ photographed the state it had asked to change. Read a probe's output before
 trusting a frame that was supposed to show an injected state
 (`INC-2026-10-15-the-visual-harness-had-three-traps`).
 
-## Two things the scripts cannot know
+## Getting these to run at all (rewritten 2026-10-24, from a run that did)
 
-**Playwright.** The container bakes the browsers for the pin the charter
-names, `1.49.1`. `site/package.json` currently asks for `^1.63.0`, which looks
-for a browser build that is not in the container, so these scripts cannot be
-run from `site/node_modules` until the two numbers agree. Ledger entry
-2026-10-15. Until then, install the pin into a scratch directory outside the
-repository and run the scripts from there.
+The previous version of this section named two things the scripts cannot know
+and gave a workaround for neither that still worked. Both are answered here,
+and each answer was executed rather than reasoned about
+(`INC-2026-10-24-the-visual-harness-was-rebuilt-from-scratch-for-the-second-time`).
 
-**Clerk.** A `pk_test_*` publishable key makes `clerkMiddleware` issue a
-dev-browser handshake, and every page becomes a photograph of a Clerk error
-document that audits clean. `shoot.mjs` blocks it and fails loudly. Give the
-server a production-shaped key instead, which skips that path, and let the
-harness's own route blocking stop anything from leaving localhost.
+**Clerk is solved in the script now.** `shoot.mjs` sets a `__clerk_db_jwt`
+cookie on every context, which is what `clerkMiddleware` looks for before it
+issues a dev-browser handshake, so the pages render and guard 1 still blocks
+everything else. Nothing is validated and nobody is signed in, because the
+redirect turns on the cookie's presence. The old advice, a production-shaped
+publishable key, is worse: it needs a real key in the environment and reaches
+the real Clerk, which guard 1 exists to prevent. If you write a new script in
+this directory, copy the `addCookies` block or your frames will be photographs
+of `{"code":"host_invalid"}` that audit clean.
+
+**The browser is not solved and may need the whole dance.** What the run of
+2026-10-24 found, which is not what the previous version of this file
+described: `PLAYWRIGHT_BROWSERS_PATH` was unset, `~/.cache/ms-playwright` held
+`chromium-1248`, which matches neither `site/package.json`'s `^1.63.0` nor the
+charter's `1.49.1`, and that Chromium would not start at all for want of ATK,
+Pango, Cairo and GBM. Ask the one question first, because it answers all of
+this in a second:
+
+```bash
+~/.cache/ms-playwright/chromium-*/chrome-linux*/chrome --version
+```
+
+If it prints a version, point `executablePath` at it. If it prints a missing
+`.so`, the image has no browser libraries and this worked, with no root:
+
+```bash
+mkdir -p /tmp/ptdeps && cd /tmp/ptdeps
+apt-get install --print-uris -y libasound2t64 libatk-bridge2.0-0t64   libatk1.0-0t64 libatspi2.0-0t64 libcairo2 libcups2t64 libdbus-1-3 libdrm2   libgbm1 libglib2.0-0t64 libnspr4 libnss3 libpango-1.0-0 libpangocairo-1.0-0   libx11-6 libxcb1 libxcomposite1 libxdamage1 libxext6 libxfixes3   libxkbcommon0 libxrandr2 libexpat1 libxcursor1 libxi6 libxtst6   2>/dev/null | grep -oP "(?<=')http[^']+" > urls.txt
+xargs -n1 -P8 curl -sSLO < urls.txt
+for f in *.deb; do dpkg -x "$f" /tmp/ptroot; done
+export LD_LIBRARY_PATH=/tmp/ptroot/usr/lib/$(uname -m)-linux-gnu
+```
+
+Then, if the cached revision does not match the pin, symlink rather than
+download: `ln -sfn ~/.cache/ms-playwright/chromium-1248 ~/.cache/ms-playwright/chromium-1243`. A newer Chromium driven by an older
+Playwright is fine over CDP; that is how the frames of 2026-10-24 were taken.
+None of this belongs in the repository and none of it was committed. It is a
+Dockerfile question and it is in the ledger as one.
+
+**One more thing no incident had recorded.** These scripts `import { chromium }
+from "playwright"`, and ESM resolves that from the SCRIPT's directory, not the
+working directory, so running them in place can never see `site/node_modules`.
+Copy them out and link the modules in:
+
+```bash
+mkdir -p /tmp/harness && cp docs/design/harness/*.mjs /tmp/harness/
+ln -sfn "$PWD/site/node_modules" /tmp/harness/node_modules
+node /tmp/harness/shoot.mjs /tmp/shots after issue
+```
+
+## Guard 3 and the `only` filter
+
+`shoot.mjs`'s third guard fails a sweep whose frames are all within 5% of one
+size, because two different pages rendering to the same size are the same
+render. Until 2026-10-24 it computed that over every frame in the report, so a
+run with `only` set, which is one page at three viewports, failed with three
+correct frames on disk: full-page shots of the same article reflowed to three
+widths weigh about the same, measured at 3.8%. The guard now asks nothing when
+the sweep covers one page and says so. It still fires for two, verified at
+79.6% spread across the issue and mission pages.

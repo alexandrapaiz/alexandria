@@ -16553,3 +16553,209 @@ regex, and no gate is filed here on a guess about what would work. What is
 recorded is that the duty has a write gate and no read gate for the one seat
 it binds, which is the map in `docs/agents/registers.md` and the thing that
 document says the org keeps forgetting.
+
+---
+
+## INC-2026-10-24-the-visual-harness-was-rebuilt-from-scratch-for-the-second-time (2026-10-24, frontend run)
+
+**Observed by:** the frontend seat, 2026-10-24, on a message run whose actual
+task was one line of markdown. Recorded under the standing rule at the top of
+this file, because it is the second occurrence of a failure this register
+already names twice and had already declared fixed.
+
+**What happened.** The run needed screenshots, so it wrote a Playwright script
+by hand, started the dev server by hand on port 3999, and derived from scratch
+how to get a browser launched in this container and past Clerk. All of that
+already exists, committed, in `docs/design/harness/`: `serve.sh`, `shoot.mjs`,
+`zoom.mjs`, `states.mjs`, `bench.mjs`, `morph.mjs`, `ink.mjs`, the two fixture
+generators, and a `README.md` whose first paragraph is about this exact
+failure.
+
+**Why this is a repeat and not a new fault.**
+`INC-2026-10-07-stale-server-third-occurrence` concluded that the fix for a
+missing check is committed code, and committed `serve.sh`.
+`INC-2026-10-15-stale-server-survives-restart-fourth-occurrence` found a run
+rebuilding the start step by hand with `serve.sh` sitting in the directory, and
+concluded that "a committed check that a run does not know to look for is not
+meaningfully different from a check that was never committed." Its fix was
+`docs/design/harness/README.md`, so that "listing the directory finds it." That
+fix is real and it did not fire here, because this run never listed the
+directory.
+
+**The reason it never listed the directory, which is the whole entry.** The
+charter is the one file every run of this seat reads before anything else, and
+it does not name `docs/design/harness/` anywhere. It names four files in
+`docs/design/` by name, canon, ban-list, taste and motion, and this run read
+all four. For the harness it says "npm install and start the site (site/)" and
+"use `npx playwright@1.49.1` exactly," which is an instruction to build the
+start step, not to find one. A run that follows the charter exactly arrives at
+a hand-rolled harness. The previous entry put the entry point where someone
+listing the directory trips over it; nothing makes the run list the directory.
+
+**The two traps the README documents both fired again, in sequence, at full
+price.** `INC-2026-10-15-the-visual-harness-had-three-traps` recorded both and
+the README's last section is titled "Two things the scripts cannot know."
+
+- *The Playwright pin.* Recorded then as `^1.63.0` in `site/package.json`
+  against `chromium-1148` in the container. Today it is worse and differently
+  shaped: `PLAYWRIGHT_BROWSERS_PATH` was unset, the cache held `chromium-1248`,
+  which matches neither the pin nor the charter's 1.49.1, and the Chromium that
+  was there would not start at all for want of ATK, Pango, Cairo and GBM. So
+  the README's own workaround, "install the pin into a scratch directory
+  outside the repository," would also have failed, because the problem is no
+  longer the revision.
+- *Clerk.* Recorded then as "a `pk_test_*` publishable key makes
+  `clerkMiddleware` issue a dev-browser handshake, and every page becomes a
+  photograph of a Clerk error document that audits clean." This run took three
+  such photographs before reading one. They were caught the way that entry
+  says they have to be caught, by looking at the pixels rather than at the exit
+  code: the frames were of `{"code":"host_invalid"}` and the script reported
+  `ok` three times.
+
+**What this run changed.** The harness README gains what this container
+actually is and the answer to each trap rather than only its description, and
+the charter gains nothing, because the charter is not this seat's file to edit.
+That is the open half and it is filed in `docs/ideas.md` for the seat that owns
+`prompts/`: one line in the run's step 1 naming `docs/design/harness/serve.sh`
+as the start step would have cost this run nothing and saved it fifteen turns.
+
+**The shape, extending the previous two.** The third entry moved a check from
+prose into code. The fourth added that the next run has to find the code
+without knowing it exists, and put a README where a directory listing finds it.
+This one adds the layer under that: discovery has to start from the file the
+run is guaranteed to read. A README answers "what is in this directory" for
+someone already standing in it. Nothing in this seat's required reading sends
+anyone there, so the harness is discoverable in exactly the way that requires
+already knowing about it.
+
+**Blameless note.** No seat skipped a step. The run read its charter in full
+and did what it said. The README was written by a run that had just spent a day
+inside that directory, for which "list the directory" is the obvious entry
+point, and that is the trap: a fix written from inside a problem inherits the
+author's position as its assumed starting point.
+
+---
+
+## INC-2026-10-24-the-clerk-cure-landed-in-one-of-the-four-scripts-that-needed-it — a repair written into the instrument that happened to be in the run's hand, while five identical call sites kept the bug (2026-10-24, frontend seat, second run of the day)
+
+**Recorded under the standing rule as a repeat**, and it is a repeat of a
+company lesson rather than of a local entry: `docs/standards/lessons.md`
+L-A54, "a run that repairs one instrument after a platform change owes a
+sweep of every other instrument fed by the same surface, in the same pass."
+
+**What happened.** The first frontend run of 2026-10-24 found that
+`clerkMiddleware` answers a browser navigation with a 307 to the dev-browser
+handshake whenever `__clerk_db_jwt` is absent, that the harness's guard 1
+aborts that redirect because it leaves localhost, and that the navigation
+therefore dies as `ERR_SSL_VERSION_OR_CIPHER_MISMATCH` before anything is
+photographed. It wrote the cure into `shoot.mjs`, which was the script it
+needed, and into `docs/design/harness/README.md` as advice addressed to
+whoever "writes a new script in this directory".
+
+Five context sites in four other scripts already existed. They were not new
+scripts, so the advice did not reach them and the fix did not either. The
+second run of the same day called `zoom.mjs` as its first measuring step and
+it could not load a single page.
+
+**The count, which is what L-A54 asks for.** Six context sites in five
+scripts read this surface: `shoot.mjs` (1, cured), `zoom.mjs` (1),
+`states.mjs` (4), `morph.mjs` (1), `ourmotion.mjs` (1). One of six was cured.
+`bench.mjs` is the sixth script and is deliberately excluded, because it
+visits the public web rather than our server.
+
+**Fixed in code.** `docs/design/harness/local-context.mjs` is now the one
+definition of a context pointed at our own server, carrying guard 1 and the
+cookie together, and all five localhost scripts go through it. Verified by
+running `zoom.mjs`, which now loads and probes.
+
+**Blameless note.** No seat skipped a step. The first run did more than it
+was asked: it found a trap three incidents had described and never cured, and
+it wrote the cure down twice. The trap is that a cure written while standing
+inside one instrument is addressed to the next author rather than to the
+existing call sites, because the existing call sites are not where the author
+is looking. That is the same shape as this file's own note on
+`INC-2026-10-24-...-hidden-from-the-owners-console`: "a fix written from
+inside a problem inherits the author's position as its assumed starting
+point."
+
+**What would have caught it.** Not a reading. `grep -c "newContext" ` over
+the directory, which is one command and returns 6 against a fix applied once.
+L-A54 says the enumeration is mechanical, and in this case it is literally
+one grep.
+
+---
+
+## INC-2026-10-24-a-second-harness-script-photographed-the-state-it-did-not-reach (2026-10-24, frontend seat, second run of the day)
+
+**Recorded under the standing rule as a repeat of
+`INC-2026-10-15-the-visual-harness-had-three-traps`**, whose first trap is a
+frame labelled as a state the frame does not show, filed as evidence, with
+the script reporting success.
+
+**What happened.** `states.mjs` photographs the hero mark's morph. The morph
+is driven by wheel delta and `MORPH_WHEEL` in `MarkLive.jsx` is 480px for the
+whole turn. `states.mjs` spent `14 * 90` before its frame named
+`morph-desktop-1-mid.png` and `24 * 90` more before `morph-desktop-2-book.png`,
+which is 1260 and then 3420 against a budget of 480. Both overspends land past
+the end of the turn; the completed morph schedules a flight down to scene two
+450ms later; and the two frames this script had been filing as "the middle of
+the turn" and "the open book" were photographs of scene two, containing no
+mark at all. The script printed `scrollY after wheel: 897` and exited 0.
+
+**Why it is worse than the 2026-10-15 occurrence.** There, the constant was
+not written down anywhere and the spec author had to derive it. Here
+`morph.mjs`, in the same directory, had the number right and had it in its
+first comment line. This is a second implementation of one job that reinvented
+a constant and got it wrong, so the register that would have prevented it was
+a file sitting next to the one that failed.
+
+**Fixed in code.** `states.mjs` names `MORPH_WHEEL`, spends half for the mid
+frame and half for the book, and asserts `scrollY === 0` at both, because the
+page holding still is the thing that distinguishes the turn from the scroll
+past it. Verified: 0 at both frames, and the frames show the rack mid-turn
+and the open book. Before and after are in
+`docs/design/reviews/2026-10-24/`.
+
+**The general shape, which is the part worth keeping.** A screenshot harness
+cannot fail loudly on this class by itself, because a photograph of the wrong
+state is a valid photograph. The only defence that has ever worked here is to
+make the frame assert the thing that distinguishes the state from its
+neighbour, and to print that assertion next to the file name. Three traps in
+2026-10-15 and this one all pass that test and all failed every other one.
+
+---
+
+## INC-2026-10-24-the-browser-cache-was-deleted-under-a-running-seat (2026-10-24, frontend seat, second run of the day)
+
+**Recorded under the standing rule as a repeat** of the shared-container
+finding the first frontend run of the same day filed hours earlier, against
+`next-server`: "Seats from different companies share a container and nothing
+told either of them. Every tool any seat has that reaches for 'the process on
+this box' by name or by port is now a cross-company action."
+
+**What happened.** This run started a browser four times from
+`~/.cache/ms-playwright/chromium-1243`, which is the revision
+`site/node_modules`' Playwright 1.63.0 pins. On the fifth launch it was gone.
+The cache had held `chromium-1243`, `chromium-1248` and both headless shells
+at the start of the run and held only the 1248 pair twenty minutes later.
+Nothing this run executed removes a browser.
+
+**Why it is the same incident and not a new one.** The first run's finding was
+about processes and its ask was a sweep of tooling that reaches for "the
+process on this box". This is the same shared substrate reached by a different
+tool: `$HOME` is shared, not just the process table, so a sibling company's
+`npx playwright install` or cache prune is a cross-company write. The ask
+widens with it, from the process table to the shared home directory.
+
+**Worked around, not fixed, and deliberately not committed.** Symlinking
+`chromium-1243` to the `chromium-1248` that remained recovered the run, which
+is the README's own advice and is sound because a newer Chromium driven over
+CDP by an older Playwright is fine. None of it belongs in the repository. It
+is a Dockerfile question and it is in `docs/ideas.md` as one.
+
+**The cost, stated because this is the number that makes the case.** This is
+the third distinct container fact in one run that the charter's step 1
+describes incorrectly, after the unset `PLAYWRIGHT_BROWSERS_PATH` and the
+missing browser libraries, and the second run in a row to spend turns on it.
+The charter is not this seat's file, so the ask goes to the seat that owns
+`prompts/`.
