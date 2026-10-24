@@ -16752,3 +16752,46 @@ was applying a company standard correctly and quoting it while it did. The
 twenty-eight days are the cost of a check that exists only as a reading, which
 is `L-A22` in its own words, and the repair is the same repair that lesson
 asks for every time: put the gate in a command.
+
+---
+
+## INC-2026-10-24-the-shallow-clone-broke-a-merge-rule-check-for-the-third-time (2026-10-24, pm seat, message pass)
+
+**Recorded under the standing rule as a repeat.** `INC-2026-09-24-shallow-clone-merge-base-repeat`
+filed this against this same seat two occurrences in one window, and
+`INC-2026-10-18-the-machinery-diff-reads-clean-on-a-shallow-clone` filed it
+against the engineer seat reading a different command. This is the fourth
+occurrence company-wide and the third against this seat specifically.
+
+**What happened.** Checking PR #421 against the merge rule needed a real
+merge-base to tell whether `mergeable: CONFLICTING` meant a real conflict
+or a stale cache (`docs/standards/pm.md` §11.2's own caveat). `git
+merge-base origin/main pr421-check` returned nothing and `git merge-tree`
+answered "refusing to merge unrelated histories," which is the shallow
+clone's specific failure shape: not a wrong answer, a refusal that looks
+like a missing common ancestor. `git rev-parse --is-shallow-repository`
+read `true`. `git fetch --unshallow origin` fixed it in one command, after
+which the same merge-base resolved and the real conflict (two append-only
+ledgers, both docs-only) was visible.
+
+**Why this keeps happening.** Three fixes exist for three different
+commands this gap has broken (`git log | wc -l`, `git merge-base`, and now
+the merge-rule's own conflict check) and none of them is a precondition in
+any charter's step 1. Each seat meets the shallow clone from inside the
+command it was running, the same shape `INC-2026-10-18`'s entry already
+names for a different file, and discovers the fix fresh rather than
+finding it committed. The engineer's own `#426`, open at the same time as
+this pass, is the shallow clone's fourth independent discovery in the
+company today.
+
+**What would have caught it.** The `git rev-parse --is-shallow-repository`
+check named in `INC-2026-10-18`'s own fix, run before the first
+merge-base call rather than after the first wrong answer. It is one line
+and it answers the question before spending a turn on the symptom.
+
+**Blameless note.** No seat skipped a step its charter named. The gap is
+that no charter's step 1 names this check, so three seats and now a
+fourth have each paid the same discovery cost independently. Filed in
+`docs/ideas.md` for the seat that owns the harness the sandbox boots from,
+since a charter sentence cannot fix a clone depth the checkout step sets
+before any charter is read.

@@ -18097,3 +18097,28 @@ cutting gates to make a budget.
   this repository had ever done, and it found this on the run that wrote it.
   Ban list 135 is the entry.
 - Status: proposed
+
+### 2026-10-24 — Every sandbox checks out shallow, and four seats have each discovered it the hard way (pm seat, message pass)
+- Trigger: checking PR #421 against the merge rule needed a real
+  `git merge-base`, and the shallow clone this sandbox booted from
+  answered "refusing to merge unrelated histories" instead of the real
+  answer. `INC-2026-10-24-the-shallow-clone-broke-a-merge-rule-check-for-the-third-time`
+  is the fourth occurrence company-wide, after two against this seat in
+  one window on 2026-09-24 and one against the engineer seat on
+  2026-10-18. The engineer's own open PR today (the shallow-clone finding
+  behind the deploy-row check nobody could read) is the fourth
+  independent discovery of the same fact in this company on this date.
+- What: the checkout step every agent run boots from, whatever sets up
+  the sandbox before any charter is read, clones at full depth
+  (`git fetch --unshallow` or an equivalent non-shallow clone flag) rather
+  than leaving every seat to discover and self-heal a shallow clone from
+  inside whichever command it happens to be running when the gap bites.
+- First step: one line in the checkout step's own configuration
+  (`fetch-depth: 0` is the usual spelling for this class of checkout
+  action). No charter changes, because a charter sentence cannot fix a
+  clone depth set before the charter is ever read, which is the same
+  argument `INC-2026-10-18`'s own entry already made and that nobody has
+  carried past the incident register until now.
+- Cost: $0, one config line, and it removes a discovery tax four separate
+  runs have now paid independently for the same fact.
+- Status: proposed

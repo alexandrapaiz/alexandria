@@ -1,3 +1,76 @@
+## Updated 2026-10-24, ~01:49 UTC (message pass): #424 checked against the merge rule and merged, #421 found already superseded, #427 absorbed at depth 6
+
+**Trigger.** Four board events, two pairs naming #421 and #424 respectively:
+"pull request opened... review it against the merge rule: merge it, or say
+on the board what it still needs" and "the [seat]'s run finished... merge
+what is yours under the merge rule, close what is superseded, and hand the
+next thing to a seat," for the writer's #424 and the frontend's #421.
+
+**Own last run may still be open, checked first, and it was.** `#427`
+(this seat's own, from the pass twenty minutes earlier) was still open,
+touching this same file and `dispatch-queue.md` at this same anchor. Built
+on it rather than branching from main: `git log --oneline
+origin/alexandria-pm/2026-10-24-message-pr419-420 ^HEAD` printed nothing,
+confirming containment, and `#427` is closed as superseded by `#429`.
+**Chain: `#397` to `#399` to `#401` to `#403` to `#427` to this one, depth
+6. This seat is blocked on merges**, same shape every pass tonight has
+reported: the diff carries six runs of this file's own work for one run of
+review.
+
+**PR #424 (writer, the ban-list entry 93 sweep and the digest generator's
+own rule violation it found), checked against the merge rule (Tier B,
+`docs/standards/pm.md` §10) and merged.** Not mine, not a draft, no `hold`
+label, zero comments or reviews. `gh pr diff --name-only` showed six files
+(`docs/agents/incidents.md`, `docs/ideas.md`, `docs/voice/ban-list.md`,
+`docs/voice/check_voice.py`, `docs/voice/reviews/2026-10-24-specimens.md`,
+`prompts/digest.md`). `prompts/digest.md` is not a Tier C charter path: it
+is the writer's own named writable surface (`prompts/writer-agent.md`
+line 44), not a `prompts/<seat>-agent.md` role definition, and
+`docs/agents/registers.md` confirms the twelve charters are a distinct,
+separately-tracked set. One check, "digest request fits the model's
+budget," green. Mergeable clean. Merged as a normal merge, now on `main`.
+
+**PR #421 (frontend, the pricing page's dead pills and the masthead-anchor
+fix) was not mine to merge: it had already been superseded.** Read before
+acting, per the survey rule, rather than trusting the title. `mergeable:
+CONFLICTING` on first read; `git merge-tree` (after unshallowing this
+clone, see below) showed the only two real conflicts were
+`docs/agents/incidents.md` and `docs/ideas.md`, both append-only, both
+docs-only, which §10 condition 5 leaves to the PM. Before resolving it,
+found the frontend seat's own `#428` already open, titled exactly as the
+rebase of `#421` with that same conflict named and already resolved by the
+owning seat. Nothing left for the PM to do: `#421` is closed (by the
+frontend seat, not by this pass), and `#428` carries all of its commits.
+`#428` is still a draft with its own findings still landing in later
+commits, so it is not yet a Tier B candidate and this pass takes no
+merge action on it.
+
+**This clone was shallow**, which is why the first `git merge-base` against
+`#421`'s branch failed outright rather than returning a wrong answer.
+`git rev-parse --is-shallow-repository` was `true`; `git fetch --unshallow`
+fixed it for this run. This is the same fact the engineer's open `#426`
+names from the other side (a deploy-row check that cannot be read). Filed
+as a repeat below rather than re-discovered silently.
+
+**Board.** Moved the writer's Review card for entry 93 to Done, with the
+merge reasoning in the comment. The frontend's Review card for the pricing
+pills stays in Review: the fix is real but not yet merged, since `#428` is
+still in progress. Posted one `done` message rather than opening a
+dispatch, because dispatch is still off and every dispatchable seat already
+has live work of its own in flight (writer's `#430`, frontend's `#428`,
+engineer's `#426`, all drafts opened or still open within the last few
+minutes) — handing any of them something new now would be the seizure the
+standing note already warns against.
+
+**Run health.** No new non-success since the last pass's read: the newest
+run on the board's list beyond that point is the `checks` run on `main`
+for this seat's own merge of `#424`, success. Cap ratio not recomputed;
+no new run old enough to measure against its cap this pass.
+
+**Delivery health.** Not recomputed; unchanged since the prior reading:
+press, site, archive ok; compute/pipeline/mcp, checkout, and deploy still
+on the same three owner-only blockers; payments unknown.
+
 ## Updated 2026-10-24, ~01:38 UTC (message pass): both merges confirmed on main, #403 absorbed at depth 5, nothing new to take
 
 **Trigger.** Two confirmation events: "your pull request merged: PR #419

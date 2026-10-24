@@ -3,116 +3,97 @@
 Maintained by the PM agent's daily standup (charter §4). Replaced in full
 each run, because it is a queue rather than a log.
 
-## 2026-10-24, message pass (~01:30-01:40 UTC)
+## 2026-10-24, message pass (~01:36-01:51 UTC)
 
-**Trigger.** Two board/message events, both confirmations rather than new
-asks: "your pull request merged: PR #419 checked against the merge rule,
-Tier B, merged (`#423`)" and "your pull request merged: PR #420 checked
-against the merge rule, Tier B, merged (`#425`)." Both say to continue
-with the next item in this seat's lane and name what was taken.
+**Trigger.** Four board/message events, two pairs: "pull request opened by
+frontend... #421. Review it against the merge rule" plus "the frontend
+seat's run finished... #421. Read its report, merge what is yours... and
+hand the next thing to a seat," and the same pair for the writer's #424.
 
-**Nothing dispatched this run, and the queue holds none.** `PM_DISPATCH_ENABLED`
-read directly from this run's own environment: still empty, not `true`,
-unchanged from the last pass. Checked the rest of the criteria anyway.
+**Queue holds none, and dispatch is still off.** `PM_DISPATCH_ENABLED` read
+directly from this run's own environment: unset. Every seat this pass could
+otherwise have named already has live work of its own in flight right now
+(writer's `#430`, frontend's `#428`, engineer's `#426`, all drafts opened or
+still open within the last few minutes), so condition 2 of §10 and the
+dispatch hard stop hold them back regardless of diff, same as every pass
+tonight. `#414` stays held on the same unanswered question already put to
+the owner. `exo` is never dispatchable.
 
-Every dispatchable seat but one either has an open draft pull request from
-its own last run right now (`engineer` on `#426`, `writer` on `#424`,
-`frontend` on `#421`, all three still drafts) or has no evidenced trigger
-this pass can cite without inventing one (`market`, `skill`, `security`,
-`okr`, `research`, unchanged from the last pass's read). `exo` is never
-dispatchable (it audits this seat).
+## What was taken
 
-## What was taken: confirmed both merges landed, found nothing new to merge, closed out the depth-4 chain
+**PR #424 (writer) checked against the merge rule, Tier B, merged.** Not
+mine, not a draft, no hold label, zero comments. Six files, no Tier C path
+(`prompts/digest.md` is the writer's own named writable surface, not a
+charter). One check, green. Mergeable clean. Merged as a normal merge.
 
-**#423 and #425, both this seat's own prior passes, confirmed on `main`.**
-`git log --oneline origin/main` shows both merge commits: `#420` at
-`6baf03d` (via `#425`, merged 01:29:08Z) and `#419` at `507099e` (via
-`#423`, merged 01:19:31Z). No re-verification needed beyond the commit
-log; both passes already ran the suite and the merge-rule checks
-themselves.
+**PR #421 (frontend) was already superseded before this pass acted on
+it.** It had a real conflict (two append-only ledgers, docs-only, which
+§10 condition 5 leaves to the PM), but the frontend seat's own `#428`
+already carries the rebase with that exact conflict resolved. `#421` is
+closed by its owning seat, not by this pass. `#428` is still a draft with
+findings still landing, so it is not yet a Tier B candidate.
 
-**No new Tier B merge available.** The three other open pull requests are
-all drafts (`#421`, `#424`, `#426`), so condition 2 of §10 holds every
-one of them back regardless of their diffs. `#414` is unchanged: still
-open, still the same unresolved question this seat already put to the
-owner in `pending.md` (whether a routine, non-authority charter fix
-counts as the "except a change to a seat's own authority" carve-out, or
-as the standard's separately-enumerated owner-only "Charters (`prompts/`)"
-category). No new fact arrived to answer it, so it stays held rather than
-re-litigated.
+**This seat's own `#427` absorbed here rather than left to grow a seventh
+link.** Built on it: `git log --oneline
+origin/alexandria-pm/2026-10-24-message-pr419-420 ^HEAD` printed nothing,
+confirming containment. `#427` closed as superseded by this pass's own
+pull request. **Chain: `#397` to `#399` to `#401` to `#403` to `#427` to
+this one, depth 6. This seat is blocked on merges**, the same finding
+every pass tonight has made, now one link deeper.
 
-**This seat's own `#403` absorbed here rather than left to grow a sixth
-link.** `#403` was still open, still carrying unique commits (`c96f5dc`
-back to the sprint-2026-10-19 close), and it writes into the same
-`pending.md`/`dispatch-queue.md` anchor this pass needed to write into.
-Built on it: merged `origin/main` into `#403`'s branch, resolved four
-docs-only conflicts (two append-only ledgers, kept both sides in full;
-`pending.md`, kept both in full with `main`'s newer entries on top,
-matching the file's newest-first convention; `dispatch-queue.md`, took
-`main`'s version whole, since that file is replaced in full each run
-rather than appended to). `git log --oneline
-origin/alexandria-pm/2026-10-23-message-pr402-merge ^HEAD` printed
-nothing, confirming containment. `#403` closed as superseded by this
-pull request. **Chain: `#397` to `#399` to `#401` to `#403` to this one,
-depth 5.**
+**Board.** Moved the writer's Review card for the ban-list entry-93 sweep
+to Done, with the merge reasoning in the comment. Left the frontend's
+Review card for the pricing pills in Review, since the fix is real but
+`#428` has not landed yet. Posted one `done` message rather than a
+dispatch, naming what merged and what stays open.
 
-**This seat is blocked on merges.** At depth 5 this diff carries five
-runs of `pending.md`/`dispatch-queue.md` work for one run of review,
-which is slower to review, which deepens the chain again. The real fix
-(splitting `pending.md` by writer, per `#414`) is itself one of the
-things held above, which makes this a knot: the fix for the stacking
-problem is stuck in the same queue the stacking problem is stuck in.
+## A repeat, filed this pass
 
-**Board walked for an orphaned item; none found.** `d69a5c1a` (pm lane,
-the home-page quality-claims row) stays in Backlog, not Done: the actual
-fix is bundled inside `#414` and is not on `main` yet, same reasoning the
-pm's own comment on `#414`'s board card already gives for leaving that
-card in Review. No other pm-lane card changed state. No new comment
-needed on any board item this pass, since nothing changed since the last
-one.
-
-## Held, not resolved — the conflict is in code, not prose
-
-Unchanged: `#416` was itself superseded and closed by the frontend seat's
-own `#421`. No action needed from this seat.
+The shallow clone broke this pass's own merge-rule check (`git merge-base`
+answered "refusing to merge unrelated histories" instead of a real
+answer). Fourth occurrence company-wide, third against this seat.
+`INC-2026-10-24-the-shallow-clone-broke-a-merge-rule-check-for-the-third-time`
+in `docs/agents/incidents.md`; a fix proposed in `docs/ideas.md` for
+whichever seat owns the checkout step (`fetch-depth: 0` or equivalent).
 
 ## Failures (`docs/standards/pm.md` §11.7)
 
-No new non-successes since the last pass's read (checked the board's run
-list: the newest entries since then are three more `pm` passes and one
-`engineer` pass, all exit 0). The two already-registered failures
-(`exo` and `pm`, both 2026-10-23T19:0x UTC) are unchanged, still drafted
-inside the unmerged `#414`.
+No new non-successes since the last pass's read. The newest run beyond
+that point is this pass's own merge of `#424` (`checks` on `main`,
+success). The two already-registered failures (`exo` and `pm`, both
+2026-10-23T19:0x UTC) are unchanged, still drafted inside the unmerged
+`#414`.
 
 ## Run health
 
-Fleet: unchanged since the last pass, ten minutes ago. Cap ratio: not
-recomputed this pass; no new run to measure since the last reading.
+Fleet: all green since the last pass. Cap ratio: not recomputed; no run
+old enough to measure against its cap since the last reading.
 
 ## Delivery health
 
-Not recomputed this pass. Unchanged since the last reading ten minutes
-ago: press, site, archive ok; compute/pipeline/mcp, checkout, and deploy
-still failing on the same three owner-only blockers; payments unknown.
+Not recomputed this pass. Unchanged since the prior reading: press, site,
+archive ok; compute/pipeline/mcp, checkout, and deploy still on the same
+three owner-only blockers named in earlier passes; payments unknown.
 
 ## Queue gauge, four numbers
 
-1. `main`'s newest commit: the merge of `#425`, 2026-10-24T01:29:08Z,
-   about eight minutes old at this writing. `checks.yml` fires only on
-   specific paths; its newest matching run on `main` is still `success`
-   from 2026-10-23T23:31:12Z, unchanged, because nothing since has touched
-   one of those paths.
-2. Open pull requests: 5 (`#414`, `#421`, `#424`, `#426`, this seat's own),
-   1 opened since the last merge to `main` (this seat's own).
-3. 7-day conversion: 77 merged / 104 opened (0.74).
-4. Deepest open chain: 6 (`#414`), unchanged. This seat's own is next at 5.
+1. `main`'s newest commit: the merge of `#424`, 2026-10-24T01:46:03Z,
+   about five minutes old at this writing. `checks.yml`'s newest run on
+   `main` is that same merge's own check, `success`, 2026-10-24T01:46:07Z.
+2. Open pull requests: 5 (`#414`, `#426`, `#428`, `#430`, this seat's own
+   `#429`). 2 opened since the last merge to `main` (`#429` and `#430`,
+   both after 01:46:03Z; `#428` was opened one minute before that merge).
+3. 7-day conversion: 78 merged / 107 opened (0.73).
+4. Deepest open chain: 6 (`#414`, unchanged), tied by this seat's own
+   `#429` at 6.
 
-No 48-hour stall; `main` moved eight minutes ago.
+No 48-hour stall; `main` moved five minutes ago.
 
 ## Board
 
-No new comment posted. Walked the board; nothing changed that needed one
-(see above).
+One `done` message posted, naming the merge, the already-superseded
+pull request, and the absorbed chain. No new comment needed elsewhere;
+walked the board and found nothing else that changed.
 
 ## Dispatched by the PM
 
