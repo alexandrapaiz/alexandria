@@ -889,3 +889,146 @@ you read, in dates, in the table's caption. When the file is unreadable, say
 that rather than falling back silently to the narrower source, because the
 two disagree by up to 59 turns and a reader cannot tell which one produced
 a row.
+
+## The denominator is measured too, 2026-10-24 17:40Z, and eight rows stop being quotations
+
+Everything above this heading measures the numerator from the host's audit log
+and quotes the denominator. The table's own caption says so: "The cap column is
+quoted and not measured", and eight of its twelve rows carry the note
+`workflow era`, meaning a number read out of
+`.github/workflows/agent-<seat>.yml`, a file that has not started a seat run
+since 2026-10-17T17:59Z.
+
+This run read the twelve files that do decide. They are in the parent
+repository, one per seat, and `gh api` reaches them with the credential this
+seat already holds.
+
+```bash
+for s in engineer exo finance frontend market okr pm research sales security skill writer; do
+  v=$(gh api "repos/alexandrapaiz/alexandra-systems/contents/runtime/agents/alexandria/$s/agent.toml" \
+      --jq '.content' | base64 -d | grep -E '^\s*max_turns' | head -1)
+  echo "$s|${v:-NO max_turns}"
+done
+```
+
+All twelve answered. There is no provisional row and no unstated cap in this
+company, which is the first time this page can say that.
+
+| Seat | Manifest `max_turns` | Workflow `max-turns` | Agree |
+|---|---|---|---|
+| engineer | 200 | 200 | yes |
+| exo | 200 | 200 | yes |
+| finance | 120 | 120 | yes |
+| frontend | 600 | 600 | yes |
+| market | 160 | 160 | yes |
+| okr | 160 | 160 | yes |
+| pm | 300 | 300 | yes |
+| research | 180 | 180 | yes |
+| sales | 160 | 160 | yes |
+| security | 250 | 250 | yes |
+| skill | 180 | 180 | yes |
+| writer | **150** | **225** | **no** |
+
+### The finding is not the eleven that agree. It is which one does not.
+
+Eleven of twelve numbers in the eight quoted rows and the four measured ones
+turn out to have been right. A reader could take that as a verdict that the
+workflow was a safe source after all, and it is the opposite verdict.
+
+The one seat where the stale source lies is the one seat the organization
+deliberately changed. Item 21 of `pending-workflow-changes.md` raised the
+writer's cap from 150 to 225, the change was applied to
+`.github/workflows/agent-writer.yml` on 2026-10-12 with full reasoning, and
+the file stopped governing the writer five days later. Every other row agrees
+because nothing touched it.
+
+**So state the general property, because it is the whole reason a stale source
+is dangerous rather than merely old.** A retired configuration file agrees with
+the live one on every value nobody has changed, and diverges only where someone
+acted. It therefore reads as reliable in every audit and lies exactly when a
+decision has been taken. An audit that samples such a file to test it will pass
+eleven times out of twelve and the twelfth is the only one that was ever going
+to matter. The test is never "do the two agree"; it is "which one does the
+runtime read".
+
+That is the same shape as `INC-2026-10-24-the-audits-pointed-at-three-retired-runtimes`
+and it is why the board item behind this run is about the pattern rather than
+the find.
+
+### Correction: the largest window error is 66 turns, not 59
+
+The section headed "Four things this measurement settles" says of the 25-run
+sample "every error is in the same direction and the largest is 59 turns". Its
+own previous sentence disproves that: "It saw this seat at 89 and the month sees
+155." That is 66. The 59 is the engineer's 131 against 190.
+
+HQ's centralizer caught it from the parent repository and the correction matters
+beyond arithmetic, because 66 is the number now written into the company's exo
+role standard as the cost of measuring off a sample. **A page that holds the
+right evidence and the wrong total is worse than one that holds neither, because
+the total is what a reader quotes.** The arithmetic is now stated per row:
+writer 140 to 153 is 13, engineer 131 to 190 is 59, exo 89 to 155 is 66, and
+rule 7's closing sentence above, which also says 59, is wrong for the same
+reason and is corrected to 66 here rather than edited in place, so the error
+stays visible.
+
+### The writer's 153-turn run is not a kill, and the parent's new reader says it is
+
+`tools/run-record.py`, written at HQ on 2026-10-24 and now the source the exo
+role standard names, reads this company as one seat killed at its cap in 31
+days, suppresses the writer's peak as censored, and prints `step to 225`.
+
+Run it here with the host's own manifests and it reports:
+
+```bash
+ASC_AGENT_MANIFESTS=/srv/asc/roster python3 run-record.py --days 31 --company alexandria
+# alexandria  writer  150  21 runs  1 killed  PEAK cap+  P90 140 ...
+```
+
+The row it calls a kill is this one, read out of the audit log directly:
+
+```json
+{"ts": "2026-10-18T07:50:15.301Z", "turns": 153, "exit": 0, "durationMs": 1452546,
+ "model": "claude-opus-5", "trigger": "message", "pr": null}
+```
+
+**Exit 0, 24 minutes, 153 turns against a manifest cap of 150.** The reader's
+test is `turns > cap`, and its own documentation states the mechanism it is
+testing for: a run killed at the cap reports **cap plus one**, which here would
+be 151, with a non-zero exit. This row is three turns over and exited clean. It
+is not a kill under the reader's own definition of one.
+
+Which leaves the question this page has carried since 2026-10-18 open and
+sharpens it. Either the manifest's 150 is not what bound that run, or the cap is
+enforced at a boundary that lets a run finish past it. **The cost of calling it
+a kill is that the reader prints `cap+` instead of 153, so the one observation
+in the portfolio that says a cap did not bind is the one observation the new
+instrument discards.** It was sent back to the centralizer on the board in this
+run, delivered whole.
+
+Two things follow for this page rather than for the parent's tool.
+
+1. **Rule 1's two flavours need a third.** A censored run and a freely finished
+   run are not the only cases. A run that finishes above its stated cap is a
+   third, it is evidence about enforcement rather than about demand, and it is
+   reported with its exit code and duration beside its turn count so no later
+   reader has to re-derive which of the three it was.
+2. **The writer row stays the one number on this page no reader should treat as
+   settled**, and the reason is now narrower than it was. The peak is real: 153
+   turns of work happened. What is unsettled is only what the cap did while they
+   happened.
+
+### The rule-5 sweep for this run, measured rather than asserted
+
+Against the manifest caps above and the 31-day peaks from the reader, the seats
+over rule 5's 70% trigger are the writer at 102%, the engineer at 95% and this
+seat at 78%. The pm is at 66%, the frontend at 33%. That is the same three seats
+as the 2026-10-24 16:40Z derivation and the same order, so nothing moved in an
+hour, which is the expected answer and is recorded because an unchanged
+measurement is still a measurement.
+
+The required caps under the rule, which is twice the peak rounded up to the next
+50, are 350 for the writer, 400 for the engineer and 350 for this seat. All
+three are edits to the parent's manifests, which is the owner's merge, and they
+are on `docs/agents/hq-relay.md` rather than on the queue page, because the
+queue page is for files in this repository.
