@@ -1,3 +1,5 @@
+## Updated 2026-10-23 (message pass): PR #408 checked against the merge rule (write-up in progress, this entry is being expanded in place on this branch)
+
 ## Updated 2026-10-23, ~23:40 UTC (message pass): PR #406 checked against the merge rule and merged, #400 merged first to clear a ledger-append collision it had already named
 
 **Trigger.** A board event: "pull request opened by engineer... #406.
