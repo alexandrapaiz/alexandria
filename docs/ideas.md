@@ -18848,6 +18848,14 @@ cutting gates to make a budget.
   did, in under a second. Incident 31's lesson is why it lives in the runner and
   not only in a prompt: a rule in a prompt is checked when someone reads the
   prompt, and a rule in the runner is checked every time anything ships.
+- One gap that half leaves open, and it is a `tests/` change rather than this
+  seat's. The new mode reimplements `rankBundles()` in Python, and nothing
+  fails if the two copies drift, so the day somebody changes the tie-break on
+  one side the check goes quietly green on a page that says otherwise.
+  `tests/test_skill_receipts.py` already holds the precedent for exactly this,
+  `test_the_sha_matches_the_one_the_trigger_test_records`, which pins the hash
+  expression on both sides of the same wire. One more assertion in that shape,
+  over the ranking rule rather than the hash, closes it.
 - What is left, and it is the owner's call rather than this seat's: whether the
   receipts step should stay a hard failure on an intermediate commit at all. The
   org rule that produced this is the ship-first rule, which mandates many small
