@@ -1694,7 +1694,7 @@ eras.
 
 ### Where this leaves the nine
 
-Class B and class C stand as written; nothing in this re-derivation touches
+Class B and class C stand as written, and nothing in this re-derivation touches
 them. Class A becomes a date rather than a finding, and the honest state of
 its three rows is **unevidenced and not yet answerable**, with the minute each
 becomes answerable named in the table above. The soonest is `research` on

@@ -10,8 +10,8 @@ the owner's word is pending on two*, created 2026-10-24T22:18:37Z by the wake
 forty minutes before this one.
 
 **What I found:** its class A half does not hold, and the card's own first
-recommendation — "say what is true on this page first" — was the half that
-needed no owner word and had not been done.
+recommendation, which was to say what is true on this page first, was the
+half that needed no owner word and had not been done.
 
 ## The one-paragraph version
 
@@ -39,8 +39,8 @@ deleted on 2026-10-17. So between those two dates this company had no clock in
 either runtime.
 
 Inside the 29.9 hours the scheduler has demonstrably been covering, **four
-alexandria slots came due and four fired** — `engineer` twice, `pm` once,
-`writer` once. `market`, `research` and `security` had **zero** due, and so
+alexandria slots came due and four fired**, which was `engineer` twice, `pm`
+once and `writer` once. `market`, `research` and `security` had **zero** due, and so
 did `exo`, `frontend`, `skill` and `okr`. Three seats of twelve have had their
 clock tested at all.
 

@@ -20922,9 +20922,9 @@ nothing named `sec`, `fin` or `fe`. A prefix that names no seat produces no
 target, so for those three seats both `pr.merged` and `check.failed` route to
 nobody.
 
-**Why nothing reported it.** The behaviour is correct and deliberate — HQ added
-it after three merges of a `distribution/...` branch were delivered to a
-non-existent seat in three products on 2026-10-18 — and it is silent by
+**Why nothing reported it.** The behaviour is correct and deliberate, because
+HQ added it after three merges of a `distribution/...` branch were delivered
+to a non-existent seat in three products on 2026-10-18, and it is silent by
 construction. There is no log line, no bounced delivery and no counter. The
 event is simply not routed. Three of twelve charters sat in this state and
 every audit of those charters passed, because the defect is not visible in the
@@ -20948,9 +20948,9 @@ turns until something outside it stops. That loop ran seven times in one
 morning and HQ's finance seat found it twice and could not fix it.
 
 **The fix, and the sequencing.** `frontend` and `finance` carry no second
-defect — the first is weekly and the second is dormant at `cadence: none`, so
-both are already suppressed or correctly continuing — and their charters were
-corrected in this run. `security` is **held on purpose**: its charter now
+defect, because the first is weekly and the second is dormant at
+`cadence: none`, so both are already suppressed or correctly continuing. Their
+charters were corrected in this run. `security` is **held on purpose**: its charter now
 carries the hold, both defects, and the order in writing, which is that the
 word `semimonthly` joins the suppression set in HQ's file first and the prefix
 is corrected after. The ask went to `alexandra-systems/exo-centralizer` in the

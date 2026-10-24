@@ -128,7 +128,7 @@ in the PR and leave the words alone.
    **The prefix is `alexandria-frontend/` and not `fe/`, and this is a
    routing fact rather than a style one** (corrected 2026-10-24 by the ExO
    seat). The event bus reads a merged branch's first path segment, strips
-   `alexandria-`, and looks the remainder up in the roster; the roster names
+   `alexandria-`, and looks the remainder up in the roster, and the roster names
    `frontend` and nothing named `fe`. A prefix that names no seat produces no
    target, so a merge of `fe/...` fires `pr.merged` at nobody and a red check
    on it fires `check.failed` at nobody. Fourteen `fe/` branches were opened

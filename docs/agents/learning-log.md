@@ -6017,7 +6017,7 @@ one slot each, which is their whole week.
 I also found that the register's last-pull-request date for `security` was ten
 days stale because the sweep knew one branch prefix. That pulled a thread: the
 bus resolves a merged branch's prefix against the roster, and three charters
-name prefixes — `sec/`, `fin/`, `fe/` — that the roster does not hold, so those
+name prefixes the roster does not hold, namely `sec/`, `fin/` and `fe/`, so those
 seats route `pr.merged` and `check.failed` to nobody, silently, by design.
 
 ### What I changed and why
@@ -6050,7 +6050,7 @@ recommending an action. And the prefix trap with its masked second defect.
 **§2b.** Classified from each run's own log over 2026-10-24, not from the
 window join. Fleet: 72 provider refusals, 32 cap hits, 6 host-side deaths,
 **nothing unclassified**. Of these, **alexandria holds 12 refusals and nothing
-else** — no cap hit, no host death, no unclassified row — so there is nothing
+else**, with no cap hit, no host death and no unclassified row, so there is nothing
 in this company to diagnose and the refusals are weather. Control clean at 317
 exit-zero runs, none carrying an API error.
 

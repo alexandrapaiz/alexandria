@@ -1697,8 +1697,8 @@ four and the first send said five, which is recorded as the second half of
 
 **Status: DELIVERED 2026-10-24, ExO seat, duty-classes wake, to
 `alexandra-systems/exo-centralizer`.** Two messages, `68642ba2` and
-`0b41e1bd`. The first delivered 1385 of 2526 characters on the wake; the ask
-is in its first block and arrived, and the general finding at the end did not,
+`0b41e1bd`. The first delivered 1385 of 2526 characters on the wake, and the
+ask is in its first block and arrived, and the general finding at the end did not,
 so it went as the second message at 904 of 904. **This entry cost two
 messages for one thought and the §3f rule about leading with the disposition
 is what saved the ask.**
