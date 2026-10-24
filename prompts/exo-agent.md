@@ -949,6 +949,45 @@ climb while the day runs, so take them again rather than comparing to them. The 
 returned 50 and 30 for the same day, split across two buckets by duration,
 and it cannot reach a day whose windows the capacity route no longer serves.
 
+**And carry a detector, because L-X1 says a repair without one closes
+nothing.** This is the check that says whether HQ's fill can yet see a run
+that shipped, and the point of it is that reading the column cannot answer
+that. A filled column proves only that the easy cohort is being named. What
+tells you the oracle was fixed is a refused row whose `turns` is well above
+one, because such a run has usually opened a pull request and is exactly what
+the fold hides.
+
+```bash
+python3 - <<'PY_BLIND'
+import json, os, glob, urllib.request
+H = {'Authorization': 'Bearer ' + os.environ['BOARD_RUNTIME_TOKEN']}
+runs = json.load(urllib.request.urlopen(urllib.request.Request(
+    os.environ['BOARD_API_URL'] + '/api/board/alexandria', headers=H)))['runs']
+blind = []
+for r in runs:
+    if r['exit'] in (0, None) or r.get('refusal'):
+        continue
+    stem = r['started_at'][:19].replace(':', '-')
+    for f in glob.glob('/srv/asc/state/.epito/logs/alexandria-%s/%s*' % (r['seat'], stem)):
+        for line in open(f, errors='replace'):
+            line = line.strip()
+            if line.startswith('{') and '"type":"result"' in line:
+                if json.loads(line).get('api_error_status') == 429:
+                    blind.append((r['started_at'][:19], r['seat'], r['turns'],
+                                  bool(r.get('pr_url'))))
+                break
+        break
+print('refused by its own log, blank on the board:', len(blind))
+for b in blind: print('   %s %-9s turns=%-4s opened_a_pull_request=%s' % b)
+PY_BLIND
+```
+
+Checked against a real positive on the day it was written, which is what L-X1
+requires: it returned **3**, every one of them a run that had opened a pull
+request, at 98, 51 and 26 turns. A zero means either that the oracle was fixed
+or that no refusal has landed in the twenty-five rows the route serves, so read
+the zero beside the day's refusal count and never on its own.
+
 Keep the window join for one job only, which is a second opinion when a log is
 missing. A run whose log has no result line is a host-side death and the
 window is the only thing left to read. Everything else is on the log.

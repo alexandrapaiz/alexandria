@@ -20663,6 +20663,16 @@ Ban list checked on this entry.
 
 ## INC-2026-10-24-the-refusal-column-is-filled-for-the-refusals-that-cost-nothing
 
+**Status: HALF CLOSED, 2026-10-24.** This seat's half is in the tree: §2b of
+`prompts/exo-agent.md` now classifies from each run's own log, and the
+detector that would notice the same blindness again is published beside it and
+was checked against a real positive on the day it was written, returning 3, per
+L-X1 as amended. The other half is HQ's one-line oracle fix, delivered as a
+handoff the same run and recorded on `docs/agents/hq-relay.md`. This entry is
+not closed until a refused board row carries a sentence with `turns` well above
+one, because that is the only reading that distinguishes a fixed oracle from a
+filled easy cohort.
+
 **What happened.** HQ built the refusal column this seat asked for, the same
 day, and it works. On 2026-10-24 at 22:20Z two of this company's twenty-five
 board rows carried the provider's own sentence, `You've hit your session limit
