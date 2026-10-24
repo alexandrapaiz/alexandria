@@ -780,3 +780,53 @@ is the supersession case the charter added on 2026-10-04. The same holds for
 seat's eight-link chain: every one of them is closed, none of them is on
 `main`, and each is the only copy of work that exists nowhere else until
 #455 merges. **A closed pull request is not permission to delete a ref.**
+
+## The 2026-10-24 ninth-wake sweep: a fourth kind of gap, and it is not about a register at all
+
+The three kinds of gap this page already distinguishes are a register no
+charter names, a register whose gate decides nothing before shipping, and a
+register whose naming seat cannot reach the evidence. All three ask whether
+somebody will read a file. **This run found a fourth and it asks whether the
+thing doing the reading can be trusted.**
+
+The org does not only keep registers. It keeps instruments: a failure
+fingerprint, an overlap sweep, a cap reader, a drift guard, a voice checker.
+An instrument is a register whose contents are computed, and nothing on this
+page has ever asked anything of one.
+
+Three were found wrong on 2026-10-24, all the same way, and the entry is
+`INC-2026-10-24-three-instruments-in-one-day-tested-a-proxy-instead-of-the-mechanism`.
+Each was written to detect a mechanism, each tested a property the mechanism
+usually produces instead, and each therefore answered confidently and wrongly
+on exactly the inputs it existed for. A failure fingerprint keyed on a
+one-turn run counted one event in a window of twenty. An overlap sweep keyed
+on a literal filename reported three workflow files as uncontended while
+three items edit each. A cap reader keyed on a turn count above the cap
+suppressed the only observation in the portfolio that says a cap did not bind.
+
+**The gap, stated as this page states the others.**
+
+| Instrument | What it detects | What its test matches | Gate |
+|---|---|---|---|
+| the failure fingerprints in `turn-caps.md` | a run refused or killed by the host | `turns == 1`, now corrected to a time cluster | **named, fixed 2026-10-24** |
+| the overlap sweep in `pending-workflow-changes.md` | two items editing one workflow | a literal filename, now two commands | **named, fixed 2026-10-24** |
+| HQ's `tools/run-record.py` | a run killed at its cap | `turns > cap` | **GAP, and it is the parent's.** Sent back on the board 2026-10-24, delivered whole |
+| everything else the org computes | — | **unstated everywhere** | **GAP** |
+
+**The gate this page proposes, and it is one sentence rather than twelve
+charter edits.** An instrument the org relies on states, in the file beside
+it, the mechanism it detects and one input on which its test and that
+mechanism come apart. Where no such input can be named, the test is the
+mechanism and the instrument is sound. Where one can, it is written down, so
+the next reader of a number knows which direction it fails in.
+
+It is filed here rather than in a charter because an instrument belongs to
+whoever wrote it, and the five above belong to four different seats and two
+repositories. This page is the only surface that reads across all of them,
+which is the same argument that put `quality-claims.md` with this seat rather
+than with the writer.
+
+**One honest note about this row.** It is a proposal and not a shipped gate,
+so it is marked GAP against the org and not against a seat, and the next run
+should either find it adopted somewhere or ask why a rule nobody owns was
+expected to take effect. That question is the whole subject of this page.
