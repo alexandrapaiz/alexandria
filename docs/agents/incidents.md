@@ -17428,3 +17428,150 @@ value out of the source, and never paste the source in. The nearby pattern
 one level up, in its own words, about file lists: a hand-kept copy of a list
 disagrees with reality on the day it matters. A hand-kept copy of a line of
 code is the same copy.
+
+## INC-2026-10-24-the-owners-own-correction-was-re-rendered-away-and-four-prompt-patches-aimed-at-the-generator-instead — the sentence canon law 13 quotes as its named violation has opened the public archive for twenty-five days (2026-10-24, writer seat, run 49)
+
+**Observed** by pointing an existing detector at an artifact for the first
+time. `past_tense_you` has been in `docs/voice/check_voice.py` for weeks with
+exactly one caller, `specimens`, which reads the two generator prompts. Run
+over `site/content/issues` it returns one hit:
+
+```
+site/content/issues/2026-W39.md:6
+You have spent the week watching agents get faster by thinking less at test time.
+```
+
+Canon law 13 quotes `"You have spent the week watching"` and rules that "so is
+every tense of it". The law's named violation is the first sentence a stranger
+reads.
+
+**Why it is an incident and not a grade.** The correction was made, and it was
+correct.
+
+```
+396f4f1  2026-09-23  "You spent last week watching agents get faster by
+                      doing less at test time."     <- the owner struck this
+b7d6929  2026-09-24  "The agent-building world has spent the week arguing
+                      about scaffolding"            <- the repair
+820df48  2026-09-29  "You have spent the week watching agents get faster by
+                      thinking less at test time."  <- gone
+```
+
+`820df48` is "2026-W39 is Monday's print (the digests record), not Thursday's
+preview". It replaced the archived file wholesale with what the press actually
+sent, which was the right call, and it discarded her correction, because the
+correction had only ever been written into the rendered archive and never into
+the `digests` record the archive renders from. Two later commits touched the
+same file and neither re-read the opening.
+
+**Repeat, and this is why it is filed.** Third occurrence of the shape
+`INC-2026-10-23-the-law-quoted-its-own-evidence-and-the-gate-could-not-read-it`
+names, where a law's own cited string is live in the artifact the law governs.
+The first was canon law 15's cited string opening the public archive
+twenty-eight days after the masthead was repaired. This is the same thing on
+law 13, and the common property is that both laws were enforced against the
+generator and neither was ever run over `site/content/issues`.
+
+**What four runs of prompt patching could not do.** `prompts/digest.md` carries
+this law at the writing position, the four shapes at the gate, a worked repair,
+and a note that three specimens of it have shipped. It is the most heavily
+patched rule in the file, and its worked repair is `b7d6929`'s sentence
+verbatim. None of it could reach the archive, because the sentence in the
+archive was not written by the generator being patched. The writer charter's
+step 4 says the pipeline change goes in the ledger when the same structural fix
+has failed twice through prompt changes alone, so run 49 wrote no fifth
+paragraph. The empty prompt diff is the finding.
+
+**Fix, in this pull request.** `check_voice.py standalone`, the grammar
+question over the archive, with the seventeen cases it has to satisfy asserted
+as data in the same file and run before it reads an issue. Proven both ways:
+FAIL on the live archive, green on the same file with `b7d6929`'s line
+restored, and BROKEN with a named regression when the pattern is reverted.
+
+**Still open and not this seat's to close.** Only
+`tools/check_digest_quality.py` can stop a send and it has no rule for this law
+at all, so this gate catches an issue that has already been public for a month.
+Filed as `2026-10-24 — Canon law 13 has a detector in this repository and the
+pre-send gate does not run it`. The larger half of that entry is the re-render
+question: either a correction goes upstream into the record, or re-rendering an
+issue the owner has corrected refuses and says so. That is a design call and it
+is worth more than the gate.
+
+**The honest part.** Pointing the detector at a real artifact found a bug in
+the detector in the same run. Its participle arm read `\w+(?:ed|en|t|ne)\b`
+with no floor on the stem, so `What to read if you have one hour`, a standing
+heading in the archive, fired, because "one" is "o" plus "ne". A gate whose
+first run on the real artifact reports a line the laws permit is a gate nobody
+keeps, which is
+`INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason` from
+the other side. The floor is asserted rather than merely fixed for that reason.
+
+**Second honest part, a boundary this run crossed and corrected.** The cases
+were first written to `tests/test_voice_standalone.py`. `tests/` is the
+engineer's surface and not this seat's, and `tests/test_ci_coverage.py` caught
+it from the other direction by answering that no workflow runs the new file.
+The file was deleted and the cases moved into `docs/voice/check_voice.py`,
+where they run every time the gate runs and need no workflow edit this seat is
+forbidden from making. The test that caught it was right on both counts.
+
+## INC-2026-10-24-a-finding-was-routed-to-the-ledger-that-the-ledger-had-held-for-thirty-days — the fifth register whose only reader is the register, and the first pointed at the ledger (2026-10-24, writer seat, run 49)
+
+**Observed** in this seat's own carried work. Run 48 closed its review with a
+section titled "Two findings in the engineer's file, routed rather than
+patched", about `INTENSIFIERS` matching the substring `"very "` with no word
+boundary and `TYPESETTER` enforcing four characters where ban list 13 is a
+class. Both findings are correct and both are live today.
+
+Both were also filed on 2026-09-24, by this same seat, in `2026-09-24 — The
+quality gate passes the issue the owner rejected (writer seat, for the
+engineer)`, items 2 and 3, status `proposed` ever since. Run 48 did not name
+that entry, and PR #430 appended nothing to `docs/ideas.md`, so the output of
+that work was a second description of a thirty-day-old finding in a file the
+engineer does not read.
+
+**Repeat.** Fifth occurrence of the shape
+`INC-2026-10-18-the-duplicate-candidate-register-is-not-in-the-charters-read-list`
+counts and names, a register written to stop rediscovery whose only reader is
+the register. That entry lists the first three and is the fourth. This is the
+first one pointed at the ledger, and the cause is the same single line: the
+writer charter names seven files to read every run and `docs/ideas.md` is not
+among them, so a seat following its charter exactly files into a register it
+never opens.
+
+**The cost, measured rather than argued.** `tools/check_digest_quality.py` on
+`site/content/issues/2026-W39.md`, the only issue the gate has ever read,
+returns 7 warnings and 2 of the 7 are not real. One of the two fires on
+`"Accelerate every builder and agent to frontier speed."`, which canon law 10
+and her ruling of 2026-09-30 require in every issue, because "every builder"
+contains "very ". It will fire forever and nothing can clear it. Under
+`--strict` it exits 1. Thirty days, one word boundary.
+
+**Fix, in this pull request.** `check_voice.py routed`, over the run's own
+diff, beside `candidates`, which does the same job for copy drafts. The escape
+is the register's own rule rather than a new one: a run may route a finding the
+ledger already holds, and it may not do so without naming the entry, because
+that is the difference between escalating a stale finding and not knowing it
+exists. The 2026-09-24 entry is escalated by name in this pull request rather
+than re-filed, which is what the standing rule at the top of this file asks
+for. Proven both ways, by removing the escalation and re-running.
+
+Two corrections the gate's own first run forced, each a way a check can look
+right and be useless. It read the whole review file, so `NEON_RO_URL`, four
+sections away under "Honest limits of this grade", counted as a routed finding
+and buried the two real rows under fifteen. It now reads only the sections that
+route, and a token sitting in more than two unsettled entries is reported as
+naming a machine rather than failed on. And the escape was matched against the
+raw `git diff`, whose `+` prefix breaks a heading that wraps, so the gate
+failed this run's own correctly-written escalation.
+
+**Still open and not this seat's to close.** The charter line, exactly as the
+2026-10-18 entry left it. A command the run types is better than a sentence the
+run reads, and this is the command, but `docs/ideas.md` still belongs in the
+charter's read list and that edit is the ExO seat's.
+
+**Blameless note.** Run 48's finding was good work. It read an incident entry
+nobody had read in twelve days, measured a token budget by binary search, and
+built the gate that makes the short edition's editorial judgment mechanical.
+The defect is not care. It is that a seat whose entire output is findings had
+no cheap way to ask whether a finding was already filed, against a register of
+636 unsettled entries that the charter never told it to open.
