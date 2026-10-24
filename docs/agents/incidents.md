@@ -20836,3 +20836,138 @@ audit in the register, because it requires no re-derivation at all: you only
 have to notice which input the explanation used.
 
 Ban list checked on this entry.
+
+## INC-2026-10-24-three-working-seats-were-reported-dead-because-the-sweep-measured-an-absence-against-an-uncovered-window — the third sighting of this class in one day, and the first that reached an owner ask (2026-10-24, ExO seat, duty-classes wake)
+
+**What happened.** The eighth wake of this seat split nine unevidenced duty
+rows into three classes and posted an ask to the owner carrying all three.
+Class A said `market`, `research` and `security` "are not running at all",
+cited zero host `run.start` rows and zero pull requests for each since
+2026-10-17, named a last-pull-request date per seat, and recommended that the
+owner either wake the three or mark them dormant like the two the register
+already calls dead. Forty minutes later the next wake re-derived it and all
+three seats turned out to be working normally.
+
+**Why it happened technically.** Two independent errors, and the entry is
+filed for the first because the second only changed one date.
+
+The window was not a covered window. `/srv/asc/roster` is a symlink into a
+working clone the host moves with `git reset --hard`, so that clone's reflog
+is the deploy history. Over its 77 entries, every deploy before
+2026-10-23T17:03:01Z held all six checked manifests **with no cron line at
+all**, and the one at that minute is the first to carry the crons the
+repository declares. GitHub's `schedule:` blocks were deleted on 2026-10-17.
+So the window class A measured in was a window in which no seat of this
+company had a clock in either runtime, and in the 29.9 covered hours since,
+four alexandria slots came due and four fired while the three accused seats
+had none due at all. Each had in fact run its last covered slot under Actions
+and shipped a pull request that merged: research on 2026-10-12, security on
+2026-10-15, market on 2026-10-16.
+
+The second error is that the pull-request half of the evidence searched one
+branch prefix. `security` ships under `alexandria-security/` on a
+host-started run and `sec/` on a cron run, the latter being what its own
+charter tells it to use, so the sweep put its last pull request on 2026-10-05
+when it is 2026-10-15. A seat with no matching branch reads identically to a
+seat with no output.
+
+**Why this is a repeat and not a new class.** It is the third sighting today
+of "an absence counts as evidence only against a period when the thing would
+have been recorded", after
+`INC-2026-10-24-the-company-seats-had-no-clock-for-seven-days-after-the-clock-moved`
+and `INC-2026-10-24-a-past-slot-was-judged-against-a-clock-the-host-had-not-been-given`.
+Each of the three was found by the run after the one that committed it, and
+each time the finding was published with its numbers reproduced and its
+sources named. **Care is not the control for this defect.** The control is a
+single question, and it is precondition 6 of the charter's §0: name what the
+instrument would read if the claim were false. Class A's reading was zero
+firings. A healthy seat with no due slot also reads zero firings. Those are
+the same reading, so the measurement could not distinguish the two and no
+amount of corroboration was going to help.
+
+**What makes this one worse than its two predecessors.** Both of those were
+registers reporting a wrong number to other agents. This one reached an owner
+ask recommending an action, and the action was to retire three working seats
+or to spend a manifest change waking seats that are already awake. The two
+earlier sightings cost accuracy. This one was one owner decision away from
+costing capacity.
+
+**The fix, shipped in this run.** The register section is withdrawn and
+replaced with the re-derivation, every class A row is restated as *unevidenced
+and not yet answerable* with the minute it becomes answerable named
+(`research` 2026-10-26T16:30Z, `market` 2026-10-30T11:00Z, `security`
+2026-11-01T13:00Z), and the owner ask's class A half was withdrawn on the
+board in the same run, inside the hour, with the withdrawal in its first
+sentence so the wake cap could not cut it. Class B and class C are unaffected
+and still need her word.
+
+**What the org grew from it.** A row's state has to distinguish *unevidenced*,
+meaning nobody looked, from *unanswerable*, meaning no observation was
+possible yet. Nine of the twelve cadence rows are the second and the register
+scored them as the first, which is exactly how a liveness finding came out of
+a clock that had not been switched on. **A state that cannot tell "we did not
+look" from "there was nothing to see" will eventually report the second as the
+first**, and it will do so in the confident register of a sweep that cited two
+sources.
+
+## INC-2026-10-24-three-charters-name-a-branch-prefix-that-routes-to-nobody-and-one-of-them-is-masking-a-second-defect — a correct-looking one-line repair that would have reproduced HQ's finance loop (2026-10-24, ExO seat, duty-classes wake)
+
+**What happened.** While re-deriving the entry above, this seat found that
+`prompts/security-agent.md`, `prompts/finance-agent.md` and
+`prompts/frontend-agent.md` instruct their seats to open pull requests on
+`sec/`, `fin/` and `fe/` branches. The event bus resolves a merged branch's
+first path segment, strips `<company>-`, and requires the remainder to name a
+seat in the roster. The roster holds `security`, `finance` and `frontend`, and
+nothing named `sec`, `fin` or `fe`. A prefix that names no seat produces no
+target, so for those three seats both `pr.merged` and `check.failed` route to
+nobody.
+
+**Why nothing reported it.** The behaviour is correct and deliberate — HQ added
+it after three merges of a `distribution/...` branch were delivered to a
+non-existent seat in three products on 2026-10-18 — and it is silent by
+construction. There is no log line, no bounced delivery and no counter. The
+event is simply not routed. Three of twelve charters sat in this state and
+every audit of those charters passed, because the defect is not visible in the
+charter: it is visible only by resolving the charter's prefix against a roster
+in another repository.
+
+**The second defect, which the first was hiding.** This company declares
+`security` as `cadence: semimonthly` in `company.yaml`, and the bus suppresses
+a seat's own-merge continue-wake only for `monthly`, `quarterly`,
+`dispatch-only` and `none`. Run through the bus's own `seat_cadences` parser
+against this repository's `company.yaml`, `security` is the one row of twelve
+that is slower than a day and still qualifies for a continue-wake. The gate's
+own docstring says only a cadence slower than a day answers no, so this is an
+omission rather than a decision, and `semimonthly` is every fifteen days.
+
+**So correcting the prefix alone would have been actively harmful.** It would
+turn a seat that receives no merge event into a seat that wakes itself on
+every merge, which is HQ's finance loop of 2026-10-18 reproduced exactly: a
+pass finds no work, merges a register line, the merge wakes the seat, the loop
+turns until something outside it stops. That loop ran seven times in one
+morning and HQ's finance seat found it twice and could not fix it.
+
+**The fix, and the sequencing.** `frontend` and `finance` carry no second
+defect — the first is weekly and the second is dormant at `cadence: none`, so
+both are already suppressed or correctly continuing — and their charters were
+corrected in this run. `security` is **held on purpose**: its charter now
+carries the hold, both defects, and the order in writing, which is that the
+word `semimonthly` joins the suppression set in HQ's file first and the prefix
+is corrected after. The ask went to `alexandra-systems/exo-centralizer` in the
+same run with an offer to sequence it the other way if HQ prefers.
+
+**What the org grew from it.** Two things, and the second is the one to carry.
+
+A sweep belongs beside the cron-slot instrument that resolves every charter's
+declared branch prefix against the roster, because this class is invisible in
+both artifacts separately and obvious the moment they are joined. That ask is
+with HQ; a sentence in twelve charters is not maintained and a sweep in one
+place is.
+
+And the general shape: **a one-line repair that reads as obviously correct is
+the place to look for a second defect, because the thing you are about to fix
+may be the only reason the second one has never fired.** The prefix was wrong,
+the fix was one word, the evidence was complete, and shipping it would have
+cost this company a seat spinning on its own merges. L-X1 says a repair
+without a detector closes nothing. This is the neighbouring rule: a repair
+without a check on what it unblocks can open something.
