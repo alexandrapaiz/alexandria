@@ -19386,6 +19386,20 @@ whose last execution was never is the cheapest class of debt this
 organization carries**, and the §3d sweep in the same run turned out to have
 exactly the same shape. Ban list checked on this entry.
 
+**Addendum, 2026-10-24, later run's §5b check.** The count is now **eight** on
+`distribution/vendored-lessons`, and a second name has joined it:
+`distribution/vendored-pm` at two. Same seat, same mechanism, so this is an
+addendum rather than a second entry. The one command, run every run:
+
+```bash
+gh pr list --state all --limit 300 --json headRefName \
+  --jq '.[].headRefName' | sort | uniq -c | sort -rn | awk '$1>1'
+```
+
+Two rows on 2026-10-24, both the distribution seat. Named here rather than
+fixed, because that seat's charter lives in the parent repository and this
+register is the only surface here that can hold the count.
+
 ## INC-2026-10-24-the-merge-checklist-asks-whose-comment-it-is-and-the-api-cannot-say — every seat comments on a pull request as the owner's own user, so the one condition that distinguishes a held pull request from a clean one is unreadable (2026-10-24, exo seat, message wake)
 
 **Enforced at:** docs/agents/app-identity-handover.md, the Identity
