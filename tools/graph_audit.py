@@ -221,7 +221,15 @@ QUERIES = {
     # Every count here should be zero. ADR-10 says from_claim is always the
     # newer claim and ids are a bigserial, so a smaller from_claim is an edge
     # pointing backwards through time. `supports` and `contradicts` on one
-    # ordered pair both fit the primary key and cannot both be true.
+    # ordered pair cannot both be true at once.
+    #
+    # "At once" is doing the work in that sentence since 2026-10-24, and the
+    # grouping below is where it lives. Re-judgment is allowed to change its
+    # mind: a pair that September's prompt called `supports` and October's
+    # calls `contradicts` is the slow loop working, and grouping by the pair
+    # alone would have counted every one of those as corruption. Grouping by
+    # the opinion instead still catches the defect this was written for, which
+    # is one judge asserting both in one breath.
     "integrity": """
         select
             (select count(*) from claim_links where from_claim = to_claim) as self_edges,
@@ -230,7 +238,7 @@ QUERIES = {
             (select count(*) from (
                 select from_claim, to_claim from claim_links
                 where relation in ('supports', 'contradicts')
-                group by from_claim, to_claim
+                group by from_claim, to_claim, coalesce(method, '')
                 having count(distinct relation) > 1
             ) both_ways) as self_contradictory
     """,
@@ -242,12 +250,17 @@ QUERIES = {
         join claims a on a.id = l.from_claim
         join claims b on b.id = l.to_claim
     """,
+    # Current answers, not every answer ever given, because the last number in
+    # here comes from `deprecated_claims` and that view reads `latest_links`.
+    # A withdrawn contradiction counted in the first three and absent from the
+    # fourth is a report whose own numbers do not reconcile, and this metric is
+    # read as evidence for the Left-Behind Index.
     "contradiction": """
         select
-            (select count(*) from claim_links where relation = 'contradicts') as edges,
-            (select count(*) from claim_links
+            (select count(*) from latest_links where relation = 'contradicts') as edges,
+            (select count(*) from latest_links
               where relation = 'contradicts' and coalesce(confidence, 0) >= 0.7) as confident,
-            (select count(distinct to_claim) from claim_links
+            (select count(distinct to_claim) from latest_links
               where relation = 'contradicts') as claims_contradicted,
             (select count(*) from deprecated_claims) as deprecated
     """,

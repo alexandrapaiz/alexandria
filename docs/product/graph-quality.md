@@ -1,6 +1,7 @@
 # The claim graph, measured
 
-**Slice 1 built 2026-09-29** (engineer seat). This is the design record for the
+**Slice 1 built 2026-09-29, slice 5 built 2026-10-24** (engineer seat). This is
+the design record for the
 ledger entry "Knowledge graph upgraded to industry standard" (docs/ideas.md,
 accepted 2026-09-18), whose first step asks for a graph-quality audit with
 metrics and an upgrade design doc. The audit shipped as `tools/graph_audit.py`
@@ -217,15 +218,63 @@ mistake.
 **Done when:** the duplicate rate is under its bound and no claim text appears
 twice in one weekly issue.
 
-**Slice 5, the slow loop ADR-10 promised.** Re-judgment has been the missing
-half of the design since the founding night. Append-only makes it easy rather
-than hard: a second opinion is a second row with a new `method`, nothing is
-edited, and the read path prefers the newest method per pair. That last part is
-the actual work, and it is the same shape as `latest_triage`, which already
-solves this exact problem for `triage_log`. A view named `latest_links` is
-probably the whole change.
+**Slice 5, the slow loop ADR-10 promised. Built 2026-10-24.** Re-judgment has
+been the missing half of the design since the founding night. Append-only makes
+it easy rather than hard: a second opinion is a second row with a new `method`,
+nothing is edited, and the read path prefers the newest method per pair. That
+last part is the actual work, and it is the same shape as `latest_triage`, which
+already solves this exact problem for `triage_log`. A view named `latest_links`
+is probably the whole change.
 **Done when:** a claim judged under two prompts has two rows and exactly one
 current answer, and `deprecated_claims` reads the current one.
+
+**The view was not the whole change, and the sentence above is wrong in a way
+worth keeping.** `claim_links` keyed `(from_claim, to_claim, relation)`, so the
+second row the paragraph assumes could not exist. An October prompt that
+*agreed* with September's hit the key and `pipeline/interpret.py`'s `on conflict
+do nothing` discarded it without a word, which means the design made its most
+useful outcome the one outcome it could not record: a new prompt confirming an
+old verdict is how prompt stability gets measured, and the key threw it away.
+Reproduced on a real server before anything was written, where the insert
+reported `INSERT 0 0`. So slice 5 is a key change and then a view:
+`claim_links_opinion_idx` puts `method` in the key and folds NULL to the empty
+string, because a NULL is never equal to itself in a key and the edges drawn
+before that column existed have to stay insertable.
+
+**And there were more readers than one.** Pointing `deprecated_claims` at the
+view satisfies the done-condition, and it would have left the weekly issue
+wrong, because a read written against a one-verdict-per-pair table does not
+degrade quietly when a pair gains a second. Five reads in `pipeline/weekly.py`
+moved: the relation list beside each new claim, which would have printed both
+verdicts side by side; the 2+ supports list, where two prompts agreeing read as
+the two different supporters the list requires; the `superseded` and
+`deprecated` sections, which date a pair by `created_at` and so would have
+reprinted September's verdict as this week's news; and `links_drawn`, which
+`prompts/digest.md` promises a subscriber counts "the connections drawn between
+findings" and which now counts a pair by its first sighting rather than by its
+rows. That last one is the owner's 2026-09-25 directive on the stats line
+applied to a new way of inflating the same number.
+
+**The instrument had to be corrected against its own measurement.**
+`integrity.self_contradictory` counted a pair holding both `supports` and
+`contradicts` and called it corruption, which is exactly the shape a changed
+mind now leaves behind. It groups by the opinion rather than by the pair, so it
+still catches one judge asserting both at once and no longer reports the slow
+loop as damage. The `contradiction` metric reads `latest_links` too, because its
+last number comes from `deprecated_claims` and a report whose own four numbers
+do not reconcile is worse than one that is merely stale.
+
+**What is left, and it is not in this slice.** Nothing re-queues a judged claim
+yet. `interpreted_at` marks a claim done and the loop needs a trigger that picks
+claims whose newest opinion predates the current prompt sha, which is a job
+rather than a read path and is the natural next day of work here. Until it runs,
+everything above is correct and latent: no pair in production has a second
+opinion, so every number in this paragraph's list is unchanged today and right
+tomorrow. The audit's volume metrics (`shape.edges`, `degrees`, `relations`,
+`confidence`) still count every opinion ever given, which is the right question
+for "what has the judge done" and the wrong one for "how dense is the graph".
+That choice belongs with slice 2, which is where density is argued, and it is
+recorded here rather than guessed at now.
 
 **Slice 6, richer relation semantics.** Four verbs may be too few. They may also
 be exactly right, and the honest position today is that nobody knows, because

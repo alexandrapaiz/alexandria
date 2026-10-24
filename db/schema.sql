@@ -155,10 +155,42 @@ create table if not exists claim_links (
     confidence real,
     method     text,                       -- model + prompt sha that produced the edge
     created_at timestamptz not null default now(),
+    -- Dropped a few lines below and replaced by claim_links_opinion_idx. It is
+    -- declared here because this is what fresh databases got until 2026-10-24
+    -- and the migration governs both cases from one place; read the end state
+    -- there rather than here.
     primary key (from_claim, to_claim, relation)
 );
 
 create index if not exists claim_links_to_idx on claim_links (to_claim);
+
+-- Re-judgment needs a row to land in, and until 2026-10-24 it had none. The
+-- primary key above was (from_claim, to_claim, relation), so a second opinion
+-- that agreed with the first collided with it and `pipeline/interpret.py`'s
+-- `on conflict do nothing` dropped it without a word. That made the slow loop
+-- ADR-10 promised impossible to record, and it threw away the outcome most
+-- worth keeping: a new prompt confirming what an old prompt already said.
+--
+-- The opinion is the unit, so `method` belongs in the key. It is NULL on every
+-- edge drawn before that column existed, and a NULL is never equal to itself in
+-- a key, so the index folds NULL to the empty string and reads the whole
+-- unattributed era as one opinion. Re-running the same method stays idempotent,
+-- which is the job `on conflict do nothing` is actually there for.
+create unique index if not exists claim_links_opinion_idx
+    on claim_links (from_claim, to_claim, relation, coalesce(method, ''));
+
+-- Then the old key goes, and the order of these two matters. The index above is
+-- strictly finer than the key it replaces, so it cannot fail on rows the key
+-- already accepted, and creating it first leaves no window where the table has
+-- neither. It also carries the (from_claim, to_claim) prefix that the dropped
+-- key was quietly serving as an index.
+do $$
+begin
+    if exists (select 1 from pg_constraint
+                where conrelid = 'claim_links'::regclass and contype = 'p') then
+        alter table claim_links drop constraint claim_links_pkey;
+    end if;
+end $$;
 
 -- ============ gold: promotions (human-approved only) ============
 create table if not exists promotions (
@@ -309,12 +341,33 @@ create or replace view interpret_queue as
     where c.interpreted_at is null
       and c.embedding is not null;
 
+-- The current answer per pair, and the same shape as `latest_triage` above.
+-- Re-judgment appends (see claim_links), so a pair judged `contradicts` under
+-- September's prompt and `supports` under October's has two rows and exactly one
+-- current answer. A read that wants today's verdict reads this view. A read that
+-- wants how a pair has been judged over time reads `claim_links` and says so.
+--
+-- `created_at desc` is the recency. The two sort keys after it only break a tie
+-- inside a single transaction, where `now()` is identical for every row the run
+-- wrote, and they are there so the view answers the same way twice running
+-- rather than to carry a meaning of their own.
+create or replace view latest_links as
+    select distinct on (from_claim, to_claim)
+           from_claim, to_claim, relation, confidence, method, created_at
+    from claim_links
+    order by from_claim, to_claim, created_at desc, method desc, relation desc;
+
 -- a claim is deprecated when a newer claim contradicts it with confidence;
--- this is ADR-8's "deprecated" digest section as a view
+-- this is ADR-8's "deprecated" digest section as a view.
+--
+-- It reads latest_links rather than claim_links because a contradiction that a
+-- later prompt withdrew is not a deprecation. Before 2026-10-24 this view had no
+-- way to tell the two apart, so the older verdict outvoted the newer one for as
+-- long as the row existed.
 create or replace view deprecated_claims as
     select distinct c.*
     from claims c
-    join claim_links l on l.to_claim = c.id
+    join latest_links l on l.to_claim = c.id
         and l.relation = 'contradicts'
         and coalesce(l.confidence, 0) >= 0.7;
 

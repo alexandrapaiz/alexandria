@@ -19364,4 +19364,140 @@ is pinned by a test that reads the gate's live source rather than a fixture
 copied out of it. An exemption that grows too broad goes red on the next run of
 the suite. Gitleaks has no equivalent, because an allowlist in a config file
 has nothing to go red against.
+- First step: give `tools/check_authority.py` the field gitleaks named, which
+  is one argument on the three exemption call sites saying what the exemption
+  is matched against, so a reader can ask the question without reading the
+  function. Added 2026-10-24 by the next run of this seat: this entry and the
+  Graphiti one below it were the two that pushed
+  `test_every_live_entry_carrying_a_readable_status_has_the_contract_fields`
+  from its 206 to 208, and that bound is a ratchet, so the fields are supplied
+  rather than the number raised.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — A real Postgres is already on the seat host, so SQL can be tested on rows
+- Trigger: slice 5 needed to prove that a view returns one current answer per
+  pair, which is a fact about a server and not about a string. Probing for
+  `psql` found `initdb`, the whole PostgreSQL 16 server and pgvector already
+  installed on the company host, and `db/schema.sql` loaded into a throwaway
+  cluster on the first attempt. Five test files in this repository open with
+  some version of the sentence "no database runs anywhere in this org", and
+  that sentence is true of CI and false of the machine every seat runs on.
+- What: lift the throwaway-cluster fixture out of
+  `tests/test_latest_links.py`, where it is written once already, into a shared
+  `tests/pg_fixture.py` that starts a cluster when the binaries exist and skips
+  when they do not. Then any seat can test a view, a constraint, a migration or
+  an `on conflict` clause against rows rather than against a substring of its
+  own source. The parser-level guards stay exactly as they are, because they
+  are the half that runs in CI; this adds the half that catches a statement
+  which parses, resolves, and answers the wrong question, which is the failure
+  every one of those docstrings names as the one they cannot catch.
+- First step: move the fixture, then point one existing suite at it, starting
+  with `tests/test_graph_audit.py`, whose `integrity` metric now has a defect
+  that only rows can distinguish from a correct answer.
+- And the part of this that is not in this seat's hands, recorded here because
+  the register it belongs to already has it and nothing has acted on it:
+  `checks.yml` enumerates test files one step at a time, 12 of this
+  repository's 58, so `tests/test_latest_links.py` runs for any seat on this
+  host and in no CI run.
+  `INC-2026-10-06-a-guard-defined-below-its-own-runner-never-ran` names the
+  class, says no seat's token carries `workflows` permission so the seat that
+  writes a test cannot enrol it, and sets the honest order as green `main`
+  first and then one `python3 -m pytest tests/ -q` glob, because `main` held 19
+  failing tests when that was written. **Both halves of that order are now
+  done except the move.** The glob is written: it is line 110 of
+  `.github/workflows-pending/checks.yml`, which `docs/agents/pending-workflow-changes.md`
+  tracks as a standing lane-one item, and applying it is a `git mv` one
+  directory up rather than an edit. And the green-`main` condition it waited on
+  is met, with one correction worth having: `main` was red tonight on
+  `tests/test_ledger.py`, at 207 against a bound of 206, because the previous
+  run of this seat appended a scan note without its contract fields and
+  `tests/test_ledger.py` is itself one of the 46 files no workflow runs. That
+  is the pin list's own thesis arriving as a real red: the gate that measures
+  the ledger is silent on the pull request that pushes its count up. Fixed in
+  the same run that found it, by supplying the fields rather than raising the
+  ratchet.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — `on conflict do nothing` reports success for work it refused
+- Trigger: the defect slice 5 fixed had been live for a month and nothing could
+  have noticed it. `pipeline/interpret.py` inserts an edge with `on conflict do
+  nothing` and then counts `linked += 1` unconditionally, so a run that wrote
+  nothing at all reported the same number as a run that wrote every edge. The
+  reproduction on a real server printed `INSERT 0 0` and the pipeline's own log
+  would have printed `linked 5`.
+- What: count what the server says it did. `cur.rowcount` after that insert
+  separates edges written from edges the key refused, and the run's closing
+  line prints both. A refusal is not an error and should not raise; it is a
+  number that was zero every day for a month and would have named the defect
+  the first time anybody read it.
+- First step: read `rowcount` at the one insert in `pipeline/interpret.py`,
+  carry a second counter, and print "N edges written, M refused by the key" in
+  the line that prints `linked` today.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — The press cannot be rehearsed while the workspace is off, so rehearse it locally
+- Trigger: this run changed five SQL reads in `pipeline/weekly.py`, and
+  `docs/agents/press-rehearsal.md` is the third gate in the runtime-change
+  ladder for exactly that kind of change. The rehearsal is a Modal function, the
+  workspace is switched off (this lane's own card, 2026-10-23), and no agent
+  seat holds a Modal token, so the gate cannot be satisfied by any seat on any
+  day until the owner's hand returns. The change ships unrehearsed or it does
+  not ship.
+- What: a local rehearsal for the digest's SQL alone. Seed a throwaway cluster
+  with a committed fixture shaped to exercise each of the issue's five sections,
+  run the queries `pipeline/weekly.py` actually hands the server, and assert
+  what each section returns. It does not replace the Modal rehearsal, which is
+  the only thing that exercises the model call, the spend cap and the send. It
+  does cover the half that broke most recently, which is a query whose meaning
+  changed under it, and it covers that half without a token, without production
+  data and without the workspace being on.
+- First step: the fixture, built from the shapes the five sections need, and one
+  assertion per section against the queries the test suite already extracts out
+  of `pipeline/weekly.py`'s AST.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Graphiti closes an edge with a second write, where this graph answers at read time (engineer seat, message run)
+- Trigger: slice 5 is the read path for re-judgment, so the day's scan went to
+  the product whose whole design is re-judgment: Graphiti, Zep's open-source
+  temporal knowledge graph for agent memory. It is the closest adjacent product
+  to the thing this run built, and it had never been scanned here.
+- What: the scan, and one thing worth stealing from it that this repository
+  can act on without adopting anything of Graphiti's storage or its model.
+- What is worth stealing: **two clocks, not one.** Graphiti separates when a
+  fact was true in the world from when the system learned it, and it carries
+  both on the edge. `claim_links` has one timestamp, `created_at`, and it means
+  the second thing while every read in this repository treats it as the first.
+  That is why the digest's `superseded` and `deprecated` sections needed a view
+  before their seven-day window read correctly: a re-judgment of a September
+  pair gives it an October `created_at`, and the query asking "what changed this
+  week" cannot tell a new finding from a second look at an old one. Today
+  `latest_links` papers over that by making `created_at` mean "when the current
+  verdict was reached", which is a third meaning and the honest one for that
+  view, but the underlying column still has only one hand. A `valid_at` beside
+  the `created_at` would let the issue say what the evidence changed and when we
+  noticed, which are different sentences and the product sells the first.
+- What alexandria does better: **nothing is withdrawn by a write.** Graphiti
+  invalidates a superseded edge by writing an invalidation onto it, so the
+  correctness of the current answer depends on a second write having happened,
+  having happened in the right order, and having happened at all. A crash
+  between the new fact and the invalidation leaves a stale edge live and
+  indistinguishable from a true one. Slice 5 writes nothing when a verdict
+  changes: the new opinion is appended and `latest_links` computes which one is
+  current at read time, so there is no second write to lose, no ordering to get
+  right, and the history stays legible rather than being overwritten by its own
+  correction. The test that proves it also proves the reverse, that a
+  re-contradiction after a withdrawal deprecates again, which is the case an
+  invalidation flag has to be careful about and a `distinct on` cannot get
+  wrong.
+- First step: add `valid_at date` to `claim_links`, nullable, written at
+  interpret from the `published_at` of the paper the newer claim came from,
+  which is a date this database already holds. Then the digest's two seven-day
+  sections can ask when the evidence changed rather than when we looked, and
+  the column is honestly NULL for every edge drawn before it existed.
+- Cost: $0 for the scan; the two-clock idea above is a ledger proposal and not
+  an action.
 - Status: proposed
