@@ -4,6 +4,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { chromium } from "playwright";
+import { ourContext } from "./local-context.mjs";
 const BASE = `http://127.0.0.1:${process.env.FE_PORT || 3000}`;
 const [, , OUT, SPECJSON] = process.argv;
 fs.mkdirSync(OUT, { recursive: true });
@@ -26,14 +27,10 @@ const call = (src) =>
 const browser = await chromium.launch();
 for (const s of specs) {
   const vp = s.vp || { width: 1440, height: 900 };
-  const ctx = await browser.newContext({
-    viewport: vp, deviceScaleFactor: 1,
+  const ctx = await ourContext(browser, {
+    viewport: vp,
     hasTouch: !!s.touch, isMobile: !!s.touch,
     reducedMotion: s.reducedMotion || "no-preference",
-  });
-  await ctx.route("**/*", (r) => {
-    const u = new URL(r.request().url());
-    return (u.hostname === "127.0.0.1" || u.hostname === "localhost") ? r.continue() : r.abort();
   });
   const page = await ctx.newPage();
   if (s.touch) {
@@ -62,6 +59,17 @@ for (const s of specs) {
   if (s.wait) await page.waitForTimeout(s.wait);
   const file = path.join(OUT, `${s.id}.png`);
   if (s.clip) {
+    // The clip is viewport-relative, and `height` below is clamped by the
+    // viewport, so a target below the fold used to produce a zero or negative
+    // height and Playwright threw "Expected options.clip.height to be greater
+    // than 0" with nothing naming the real cause. A spec that says "clip this
+    // element" means it wherever the element is, so bring it into view first
+    // unless the spec pinned a scroll offset on purpose. Found 2026-10-24
+    // clipping `.billing-note`, which is 2000px down the pricing page.
+    if (!s.scroll) {
+      await page.locator(s.clip).first().scrollIntoViewIfNeeded();
+      await page.waitForTimeout(400);
+    }
     const box = await page.locator(s.clip).first().boundingBox();
     if (!box) { console.log(`${s.id}: SELECTOR NOT FOUND ${s.clip}`); await ctx.close(); continue; }
     const pad = s.pad ?? 16;

@@ -18031,6 +18031,246 @@ cutting gates to make a budget.
   `pipeline/weekly.py:597`.
 - Status: proposed
 
+### 2026-10-24 — The agent container cannot start a browser, so the one seat whose charter is "look at the pixels" has to build a library path first (frontend seat, message run)
+- Trigger: this run's step 1. The charter says the run executes in the
+  prebaked container of Stage 1, with Playwright 1.49.1 and its Chromium
+  already installed at `PLAYWRIGHT_BROWSERS_PATH`. Three of those four facts
+  were not true where this run executed. `PLAYWRIGHT_BROWSERS_PATH` was unset.
+  The browser under `~/.cache/ms-playwright` was `chromium-1248`, which is not
+  the revision 1.49.1 pins, so `npx playwright@1.49.1` would have downloaded
+  rather than found it, which is the exact waste the pin exists to prevent.
+  And the Chromium that was present would not start: `error while loading
+  shared libraries: libatk-1.0.so.0`.
+- What the run did, because fixing the pin in-run is forbidden and screenshots
+  are the whole job. Resolved Chromium's runtime libraries with `apt-get
+  install --print-uris -y`, fetched the 54 packages, unpacked them to
+  `/tmp/ptroot` with `dpkg -x`, and launched through `LD_LIBRARY_PATH`. Then
+  drove that binary with the `playwright` already in `site/package.json` via
+  `executablePath`, installing no second Playwright. Nothing left the sandbox
+  and nothing entered the repository. It cost roughly fifteen turns of a run
+  whose actual task was one line of markdown.
+- Why it is a proposal and not a fix. Every part of that is outside
+  `.github/docker/`, which is where the answer belongs, and
+  `docs/agents/runtime-changes.md` says a runtime change is proposed with a
+  smoke run behind it rather than improvised by the seat that tripped over it.
+  It also says, in its own general rule, that a rule enforced by a sentence in
+  a charter is enforced at the reliability of a model reading a file. The
+  charter's sentence about the prebaked container is exactly that: a seat
+  reads it, believes it, and discovers otherwise.
+- The ask, for the engineer seat. Either the image this seat runs in gets
+  Chromium's library set and a `PLAYWRIGHT_BROWSERS_PATH` holding the revision
+  the pin names, or the charter's Stage 1 paragraph stops asserting a container
+  this seat does not get. The second is cheaper and worse: a frontend run that
+  cannot render cannot do its defining job, so the failure mode is a seat that
+  reports on code it read instead of pixels it saw.
+- One line worth having either way: a smoke step that launches the baked
+  browser and prints its version. `chrome --version` answered the whole
+  question here in one command, and it would have answered it before the run
+  rather than during it.
+- Cost: $0 to propose. The image change is one `RUN` line of the dependency
+  set Playwright's own `install-deps` installs.
+- Status: proposed
+
+### 2026-10-24 — A Clerk dev instance sends every screenshot to a handshake, so a visual run photographs Clerk's error page unless it knows one cookie (frontend seat, message run)
+- Trigger: the first three screenshots this run took were of
+  `{"errors":[{"message":"Invalid host", … "code":"host_invalid"}]}` at 390px,
+  and they looked like perfectly good screenshots until they were read. A
+  `curl` of the same URL answered `200`, which is why the condition is easy to
+  miss: the server renders, and the browser is redirected.
+- The mechanism, written down so the next run does not spend turns on it.
+  `clerkMiddleware` answers a browser navigation with
+  `307 → …clerk.accounts.dev/v1/client/handshake`, header
+  `x-clerk-auth-reason: dev-browser-missing`, whenever the dev-browser cookie
+  is absent. Setting `__clerk_db_jwt` on the Playwright context and aborting
+  requests to the Clerk hosts renders the real page with no change to any file
+  in `site/`.
+- The wrong fix, recorded because it is the obvious one. Replacing
+  `site/middleware.js` with a pass-through makes the route a 500, not a page:
+  the issue route's layout calls `auth()`, and Clerk refuses to answer it when
+  it cannot detect `clerkMiddleware()`. A seat that stubs the middleware and
+  screenshots the result photographs Next's error overlay instead, which is a
+  different wrong picture.
+- **Corrected later in the same run.** The first version of this entry asked
+  for the screenshot helper to be committed as `site/tools/shoot.mjs`, on the
+  belief that every visual run rebuilds it. It does not need committing,
+  because `docs/design/harness/shoot.mjs` has existed since 2026-10-07 with
+  guards this run did not think of. The ask was wrong and the belief behind it
+  was the actual defect: this run did not know the harness existed, which is
+  `INC-2026-10-24-the-visual-harness-was-rebuilt-from-scratch-for-the-second-time`.
+  The cookie is now in that script, verified against the running site, and the
+  README carries the whole recipe.
+- The ask that remains, and it is for the seat that owns `prompts/` rather
+  than for this one: the frontend charter's step 1 says "npm install and start
+  the site (site/)" and names `npx playwright@1.49.1`, which is an instruction
+  to BUILD a start step. It never names `docs/design/harness/`. A run that
+  follows the charter exactly arrives at a hand-rolled harness, every time,
+  which is twice now. One line in step 1 pointing at
+  `docs/design/harness/serve.sh` closes it.
+- Cost: $0, one line in a charter this seat may not edit.
+- Status: proposed
+
+### 2026-10-24 — The visual harness kills every next-server on the machine, and the machine is shared with other companies (frontend seat, message run)
+- Trigger: `docs/design/harness/serve.sh` refused to start, reporting
+  `next-server(3099797) is alive and did not come from this script's pid`. That
+  process was real and it was not ours:
+  `readlink /proc/3099797/cwd` answered
+  `/tmp/epito-ursa-frontend-68dg0X/ursa-minor`, a different company's frontend
+  seat with its own checkout in this same container, mid-run.
+- The part that is already fixed on a branch: the STRAY CHECK's blindness to
+  cwd, which is what produced that false diagnosis. That is pull request 333's
+  change, readied by this run rather than reimplemented.
+- The part nobody had seen, which is worse and is fixed here. The loop at the
+  TOP of the script, the one that actually kills, was never narrowed. It asks
+  `ps` for every `next-server` on the machine and kills each one
+  unconditionally, so a visual run of this seat takes a sibling company's
+  server down as its first act. Nothing downstream can notice, because
+  everything the script verifies afterwards is about our own port. Narrowed in
+  this pull request by the same `/proc/<pid>/cwd` test, and verified: the run
+  printed `leaving next-server 3099797 alone, it serves
+  /tmp/epito-ursa-frontend-68dg0X/ursa-minor` and killed only ours.
+- What this is really evidence of, and it is the reason this is a ledger entry
+  and not just a diff. Seats from different companies share a container and
+  nothing told either of them. Every tool any seat has that reaches for "the
+  process on this box" by name or by port is now a cross-company action. This
+  one was found because a guard happened to print a pid. The ask, for the ExO
+  seat: a sweep of the tooling for `pkill`, bare `ps` matches and fixed ports,
+  judged against a shared container rather than a private one.
+- Cost: $0 here. The sweep is a seat-hour.
+- Status: proposed
+
+### 2026-10-24 — "Opens shortly" is a status standing in an action slot, and now it is a link (frontend seat, second message run, for the writer seat)
+- Trigger: board card `e0a238b6`. Both paid plans on the pricing page were
+  dead ends, `<span className="pill ghost">` with no href. The destination was
+  settled by the PM on 2026-10-18 in PR #355 and is the waitlist anchor the
+  free tier already uses, so this run wired both controls to it and changed no
+  word a reader sees, because this seat sets approved copy and does not author
+  it.
+- The ask, for the writer seat: a line for this slot. There is no row for it in
+  `docs/voice/awaiting-her-word.md` and no candidate under `docs/voice/`, so it
+  has never been drafted, which is why the live words shipped untouched tonight.
+- What makes it worth a round rather than a shrug. "Opens shortly" is a
+  *status* and the slot is an *action*: the pill now goes somewhere, so its
+  label is the only thing on the card that does not say where. Two of the three
+  plan controls carry identical text to one destination, which the design ban
+  list's entry 21 is the neighbour of rather than an instance.
+- And one register that already bears on it, which is why this is the writer's
+  question and not only a wording preference. `docs/design/taste.md` carries
+  her standing ruling "No coming-soon pages standing in for something being
+  sold (ADR-26)". "Opens shortly" on a priced tier is that sentence's subject
+  in miniature. Making it a door to the waitlist moves against the ruling
+  rather than with it, which is the argument for the change that shipped, and
+  it does not settle the words.
+- Cost: $0, one copy round.
+- Status: proposed
+
+### 2026-10-24 — The Left-Behind Index shows 44 characters of a claim with 380px of empty viewport either side, and the obvious fix makes the page worse (frontend seat, second message run)
+- Trigger: this run's sweep, judged at 50 DUMMY FIXTURE findings. Measured at
+  1440: `main.page` is 680, `.lb-index` is 632, the claim cell is 420, 44
+  characters fit, the sample claim is 73 characters, and 380px of viewport is
+  empty on each side.
+- What was tried: the breakout `.tiers.three` already uses on the pricing page,
+  `margin-inline: -174px` above 1180, which takes 632 to 980 on the same centre
+  axis. It works as a measurement and fails as a page. The index then starts at
+  x=230 under an h1 at x=404, so the column labels and every identifier hang
+  174px past the title and the page has two left edges. Reverted. The frame is
+  `docs/design/reviews/2026-10-24/left-behind-980-breakout-rejected-desktop-1440x900.png`
+  and it is kept precisely because it is the argument.
+- Why pricing gets away with it and this does not: the tiers are a centred band
+  of bordered cards, which reads as a block that is allowed its own width. A
+  hairline-ruled list under a left-aligned title is a column, and a column that
+  starts left of its own heading reads as a mistake.
+- The one version that does not make something else worse, for whoever takes
+  card `eb85b8d1`: `/skills` is the site's other long data list and already
+  uses a 760px shell. Moving `/left-behind` onto 760 gains 80px of claim column,
+  about eight characters, and adds no fourth width to a site that already has
+  four. It is a smaller gain than the measurement wants. That is the trade and
+  it is a judgment rather than a calculation, which is why it is here.
+- One caveat on the measurement itself, under design ban list entry 28: 50
+  generated fixtures are a demo distribution. Real `deprecated_claims` text is
+  the shape that decides this, and nobody has looked at its length distribution.
+- Cost: $0 to decide, one line to apply.
+- Status: proposed
+
+### 2026-10-24 — The container has no Clerk key, no browser libraries, and a browser cache another company can delete (frontend seat, second message run, for the seat that owns prompts/ and the Dockerfile)
+- Trigger: this run's step 1, again. The first run of today filed two of these
+  and the charter still describes none of them. Four facts, each executed
+  rather than reasoned about:
+  - **No Clerk publishable key exists in this container at all.** Not a
+    placeholder, not a `pk_test`: unset. `clerkMiddleware` throws
+    `Missing publishableKey` and every route 500s, so the site cannot be
+    served before any screenshot question arises. The previous run met a
+    `pk_test` key and a handshake redirect, which is a different failure with a
+    different cure, so the README's answer does not cover this one. A locally
+    synthesised test-shaped key gets the server up and is not committed,
+    because a key in the repository is the thing guard 1 exists to prevent.
+  - `PLAYWRIGHT_BROWSERS_PATH` unset, for the second run running.
+  - The cached Chromium will not start for want of ATK, Pango, Cairo and GBM.
+    The README's `apt-get --print-uris` recipe into `/tmp/ptroot` works and
+    costs about a minute.
+  - **The cache was deleted mid-run**, filed as
+    `INC-2026-10-24-the-browser-cache-was-deleted-under-a-running-seat`.
+- The ask, in two parts because they have two owners. For the image: bake the
+  browser libraries and pin one Chromium revision to whatever
+  `site/package.json` resolves, so that none of the above is a run's problem.
+  For `prompts/frontend-agent.md`: step 1 still says Playwright 1.49.1 is
+  installed at `PLAYWRIGHT_BROWSERS_PATH`, which has now been false in three
+  consecutive runs, and it still does not name
+  `docs/design/harness/serve.sh` as the start step.
+- Cost: a Dockerfile change and two sentences. The recurring cost of not doing
+  it is measured: turns at the top of every visual run.
+- Status: proposed
+
+### 2026-10-24 — The company standards have no frontend section, so a UI seat's whole obligation is the `any` list (frontend seat, second message run, for the ExO seat's relay)
+- Trigger: this run's shipping step, which says to read "the `any` section and
+  your seat's section" of `docs/standards/lessons.md`. There is no frontend
+  section. The file's headings are any, engineer, pm, okr, mba, yc,
+  distribution, marketing, exo, security and research.
+- This is an observation and not a complaint: the `any` list is substantial and
+  L-A54 fired usefully on this run, which is recorded as an incident. But every
+  Alexandra Systems product has a surface, the owner's standing order of
+  2026-10-17 was that every UI in the company gets polished, and the register
+  that generalises her corrections across products has nothing in it about
+  surfaces. The lessons this seat keeps learning, that a frame can be a valid
+  photograph of the wrong state and that a measurement can improve while the
+  page gets worse, are not alexandria-shaped.
+- The ask: whether a frontend section is wanted, which is the chair's call
+  through the relay rather than this seat's. If it is, this seat can propose
+  its first entries from the design ban list, which is already the generalised
+  form of her corrections about surfaces.
+- Cost: $0 to decide.
+- Status: proposed
+
+### 2026-10-24 — The site cannot be served in the agent container at all, because clerkMiddleware throws without a publishable key (frontend seat, third message run, for the runtime register)
+- Trigger: this run executed `docs/design/harness/serve.sh` end to end to prove
+  a change to its kill loop. The build succeeded, the server started, the
+  process-descent check passed, and every route then answered 500.
+  `/tmp/next-serve.log` carries the reason on repeat: "@clerk/nextjs: Missing
+  publishableKey", thrown inside the middleware bundle before any page renders.
+- There is no env file in `site/` in a fresh clone and no Clerk key exported in
+  the container, so this is the default state of a visual run here rather than
+  an unlucky one.
+- The harness cannot reach it, and that is the point worth recording. The
+  `__clerk_db_jwt` cookie in `docs/design/harness/local-context.mjs` cures the
+  dev-browser handshake, which is a 307 the middleware issues after it has
+  loaded. What fails here is earlier: the middleware throws while initialising,
+  so there is no handshake to cure and no context setting that helps. The
+  README's note that a placeholder publishable key is "worse" because it
+  reaches the real Clerk is about a different tradeoff than the one in front of
+  a run that cannot render a single page.
+- The ask: a key for the visual run's environment, or a documented way for the
+  harness to run the site with the middleware's Clerk path inert. Which of
+  those is right is a runtime decision rather than a design one, so it belongs
+  in `docs/agents/runtime-changes.md` and to the seat that owns the container.
+  This seat should not be exporting keys or editing `site/middleware.js` to
+  route around auth.
+- What it costs now: a visual run in this container can build and start the
+  site and cannot photograph it. The frames in tonight's review folder are from
+  the run that had a working server earlier in the pass, which is why this run
+  verified the instrument and did not re-shoot the sweep.
+- Cost: $0 to decide. A development key is free, and the alternative is a
+  documented environment variable.
+- Status: proposed
+
 ### 2026-10-24 — A company standard tells every seat to ship a worked example beside a prohibition and never says the example must pass it (writer seat, run 47, for the ExO seat's relay)
 - Trigger: writer run 47's sweep of every worked example at a writing position
   in `prompts/digest.md`, which is ban list entry 93's unenforced half.

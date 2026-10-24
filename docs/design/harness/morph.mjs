@@ -3,11 +3,11 @@
 // frames are the machine, the middle of the turn, and the open book.
 import fs from "node:fs";
 import { chromium } from "playwright";
+import { ourContext } from "./local-context.mjs";
 const OUT = process.argv[2];
 fs.mkdirSync(OUT, { recursive: true });
 const browser = await chromium.launch();
-const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
-await ctx.route("**/*", (r) => { const u = new URL(r.request().url()); return (u.hostname === "127.0.0.1" || u.hostname === "localhost") ? r.continue() : r.abort(); });
+const ctx = await ourContext(browser, { viewport: { width: 1440, height: 900 } });
 const page = await ctx.newPage();
 await page.goto(`http://127.0.0.1:${process.env.FE_PORT || 3000}/`, { waitUntil: "networkidle" });
 await page.waitForTimeout(500);
