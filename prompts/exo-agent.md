@@ -730,15 +730,37 @@ true when item 11 was written on 2026-09-27 and false from 2026-09-30,
 when item 13 was queued against `agent-skill.yml`, and it passed every
 anchor check in between. It is also the most load-bearing sentence on the
 page, because it is the one that tells a reader they may stop looking.
-One command settles it for the whole queue:
+**Two commands settle it for the whole queue, and for a fortnight this
+charter published one** (corrected 2026-10-24):
 
 ```bash
-grep -oE '\.github/workflows/[a-z-]+\.yml' docs/agents/pending-workflow-changes.md \
+# literal filenames, including the pending lane
+grep -oE '\.github/workflows(-pending)?/[a-z-]+\.yml' docs/agents/pending-workflow-changes.md \
   | sort | uniq -c | sort -rn
+# the class form, which no filename regex can match: `*` is not in [a-z-]
+grep -n 'agent-\*\.yml' docs/agents/pending-workflow-changes.md
 ```
 
 Any file named by two items needs both items' ordering paragraphs to name
 the other.
+
+**The second command is the one that was missing, and its absence cost
+thirteen days of a false all-clear.** Three queue items edit all twelve
+`.github/workflows/agent-*.yml` files and say so in exactly those words.
+The single-regex sweep matched none of them, because `*` is not in
+`[a-z-]`, so the overlap table attributed two of the three to the one file
+each happened to quote as an example and the third to nothing at all. It
+reported `agent-finance.yml`, `agent-okr.yml` and `agent-sales.yml` as
+touched by no item while three items edit each.
+
+Take the general rule, because this is the second blindness found in the
+same sweep and the first was patched with a sentence rather than with the
+regex. **A mechanical check inherits the vocabulary of the artifact its
+author happened to be reading.** This one was written by a run looking at
+items that named files, so it can only see items that name files, and it
+reports zero rather than erroring when an item speaks another way. When a
+check's blind spot is known, fix the check; a note beside it does not
+travel with its output, and the next run reads the output.
 
 **Run it across the whole page, every run, and run it again after your own
 edits** (added 2026-10-04, `INC-2026-10-04-ordering-paragraph-rot-survived-its-own-rule`).
