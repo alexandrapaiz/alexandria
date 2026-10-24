@@ -5155,7 +5155,7 @@ being run correctly seven times and once a month respectively.
    the audit log is only for costing it in turns.
 3. **Count the eighth sighting, or its absence.** The PM has been recording
    each one in its pull request title. Zero new ones is the measurement that
-   says the fix landed; it is cheaper than reading the generator and it is
+   says the fix landed. It is cheaper than reading the generator and it is
    not a substitute for it, because the block only rides bus-sent wakes.
 4. **The owed charter edits, now three.** One carried from the last run: every
    seat opens its own pull request comments with its seat name. Two added by
