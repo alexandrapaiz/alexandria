@@ -1939,6 +1939,16 @@ def _cron_field(spec: str, low: int, high: int) -> set[int] | None:
             if not raw.isdigit() or int(raw) < 1:
                 return None
             step = int(raw)
+            # A step is only readable here on `*` or on an explicit range.
+            # Vixie cron reads `5/2` as `5-59/2` and this code would have read
+            # it as the single value 5, which reports a later next run than
+            # the real one. That is the unsafe direction for a deadline, and
+            # the rule this evaluator is built on is that a field it cannot
+            # read produces no deadline rather than a wrong one. The form is
+            # non-standard, no deployed schedule uses it, and refusing it
+            # costs a `why` where misreading it costs a missed run.
+            if part != "*" and "-" not in part.lstrip("-"):
+                return None
         if part == "*":
             first, last = low, high
         elif "-" in part.lstrip("-"):

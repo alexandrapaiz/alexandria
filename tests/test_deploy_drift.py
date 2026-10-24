@@ -1618,7 +1618,11 @@ def test_a_cron_this_evaluator_cannot_read_is_a_why_and_never_a_guess():
     now = datetime(2026, 10, 24, 13, 0, tzinfo=timezone.utc)
     for expr in ["", "nonsense", "0 9 * *", "0 9 * * * *", "0 25 * * *",
                  "0 9 32 * *", "0 9 * 13 *", "@daily", "0 9 * * MON",
-                 "0 9 * * */0"]:
+                 "0 9 * * */0",
+                 # Vixie cron reads this as 5-59/2 and a naive reading takes
+                 # it as the single value 5, which reports a later next run
+                 # than the real one. The unsafe direction, so it is refused.
+                 "5/2 9 * * *"]:
         check(f"{expr!r} is refused rather than guessed at",
               dh.next_fire(expr, now) is None, str(dh.next_fire(expr, now)))
 
@@ -1674,6 +1678,13 @@ def test_the_next_fire_is_the_next_one_and_never_one_that_has_passed():
     # Day-of-month and day-of-week are OR'd when both are restricted, which is
     # crontab's rule and the one piece of this that surprises people. No
     # deployed schedule restricts both; the branch is here to be right.
+    check("a step on an explicit range is still read",
+          dh.next_fire("0 9-17/4 * * *",
+                       datetime(2026, 10, 24, 10, 0, tzinfo=timezone.utc))
+          == datetime(2026, 10, 24, 13, 0, tzinfo=timezone.utc),
+          str(dh.next_fire("0 9-17/4 * * *",
+                           datetime(2026, 10, 24, 10, 0, tzinfo=timezone.utc))))
+
     check("both day fields restricted is an OR and not an AND",
           dh.next_fire("0 9 3 * 1",
                        datetime(2026, 10, 1, 0, 0, tzinfo=timezone.utc))
