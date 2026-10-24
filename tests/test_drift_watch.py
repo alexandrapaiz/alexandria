@@ -620,3 +620,29 @@ def test_the_card_says_why_it_could_not_name_the_commits_rather_than_guessing(
     surface.evidence["shallow_checkout"] = True
     shallow_body = dw.card_body(record, surface, NOW)
     assert dh.UNSHALLOW in shallow_body, shallow_body
+
+
+def test_a_board_that_refuses_the_card_still_reports_the_unmeasured_app(
+        monkeypatch, mixed_repo):
+    """The exit-code rule holds on the path where the board itself fails.
+
+    Three returns in `watch()` can be reached with an unmeasured app in hand,
+    and a rule that is true of two of them is not a rule.
+    """
+    surface = mixed_surface(mixed_repo)
+    monkeypatch.setattr(dw, "read_deploy", lambda today=None: surface)
+    monkeypatch.setattr(board_alarm_module(), "company_here", lambda c: "x")
+    monkeypatch.setattr(dw.board, "read_board",
+                        lambda company: (_ for _ in ()).throw(
+                            board.BoardError("no board here")))
+
+    answer = dw.watch(today=NOW, dry_run=False)
+
+    assert answer["undated"] == ["distill"]
+    assert answer["exit"] == 2, "an unplaced app outranks a board that refused"
+    assert all(a["action"] == "not posted" for a in answer["board"])
+
+
+def board_alarm_module():
+    from tools import board_alarm
+    return board_alarm

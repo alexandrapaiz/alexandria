@@ -442,7 +442,10 @@ def watch(today=None, dry_run: bool = False, company: str | None = None) -> dict
         except board.BoardError as exc:
             answer["board"] = [{"app": r["app"], "action": "not posted",
                                 "why": str(exc)} for r in late]
-            answer["exit"] = 1
+            # Same rule as the success path below, so that "any app this run
+            # could not place makes it exit 2" is true of every return in this
+            # function rather than of most of them.
+            answer["exit"] = 2 if blind else 1
             return answer
 
     done = []
