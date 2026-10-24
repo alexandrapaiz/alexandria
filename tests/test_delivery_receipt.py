@@ -971,7 +971,7 @@ def test_a_missing_payments_table_costs_the_till_and_nothing_else():
     check("so the next surface on the same connection still answers",
           dh.judge_press(dh.press_facts(conn), dh.date(2026, 10, 1)).state == dh.OK)
     # The half this test did not hold until 2026-10-24, which is the whole
-    # reason the till read `unknown` in every standup for a month: the surface
+    # reason the till read `unknown` in every reading of it for nine days: the
     # said it could not look and never said that one hand-run migration was all
     # it was waiting for.
     check("the reason is carried rather than swallowed", why == dh.NO_TABLE, why)

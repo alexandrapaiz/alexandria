@@ -2245,7 +2245,7 @@ def judge_payments(facts: dict | str | None, now: datetime | None = None,
     if facts is None or isinstance(facts, str):
         # `unknown` either way, because an unread till is not a clear one. What
         # changes with a reason is whether the report ends at "could not look".
-        # It answered exactly that in every standup for a month while one
+        # It answered exactly that for the nine days since it shipped while one
         # hand-run migration was all it ever needed, which is the gap the
         # version 6 receipt and `why_unreadable` exist to close.
         why = unreadable_reason(facts)

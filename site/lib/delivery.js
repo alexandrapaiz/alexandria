@@ -7,7 +7,8 @@ import { buildReceipt } from "./delivery-core.js";
 // first steps: the table is not in this database yet, which one hand-run
 // migration closes, or the query broke, which somebody has to go and read. The
 // receipt published the null and swallowed the difference, so the till read
-// `unknown` to every seat for a month with no statement of what would clear it.
+// `unknown` to every seat for the nine days since, with no statement of what
+// would clear it.
 //
 // Postgres sqlstates, off the error's `code`, which the Neon driver carries
 // through from the server. Not a character of the message it carries: a Neon

@@ -17899,7 +17899,7 @@ cutting gates to make a budget.
   sentence was true. What it was waiting for was one hand-run
   `modal run pipeline/db_setup.py::apply_schema`, and no report ever said so,
   so the PM's standup copied "the same named gap as every prior standup"
-  forward for a month instead.
+  forward for nine days instead, and named the wrong cause while it did.
 - What: this run fixed the till. The shape it fixed is not specific to the
   till. `tools/delivery_health.py` has three other ways to answer `unknown`
   and none of them is obliged to say what closes it: `compute` when Modal's
@@ -17909,7 +17909,7 @@ cutting gates to make a budget.
   an `unknown` carries `closes_with`, prose or an explicit "nobody knows yet",
   and a test over `ORDER` holds every `unknown` path to having one. Then a
   surface that cannot name its own next step is a test failure at the moment
-  it is written rather than a line somebody rereads for a month.
+  it is written rather than a line somebody rereads for nine days.
 - First step: the `Surface` field and the test, with the till's own sentence
   as the first filled one, which this run already wrote the hand text for.
 - Cost: $0
@@ -17948,7 +17948,7 @@ cutting gates to make a budget.
   `{{#is_renotify}}` are different blocks, so the first page and the third
   page about one condition can say different things. The renotify block is the
   half this product has no answer to at all. Our guards repeat one sentence
-  forever, and the till's repeated for a month.
+  forever, and the till's repeated for nine days.
 - **What Sentry does not have, read from the alert-creation docs in the same
   pass.** An alert is "When" (triggers), "If" (filters) and "Then" (actions,
   meaning destinations and tickets). There is no remediation field anywhere in
@@ -17966,7 +17966,7 @@ cutting gates to make a budget.
   instead. A remediation that can only fire on the evidence that justifies it
   is the version that does not rot.
 - The proposal inside it, so this note is one: our guards say the same sentence
-  on the first reading and the thirtieth, and the till's said it for a month.
+  on the first reading and the ninth, and the till's said it for nine days.
   Give a repeated finding a second sentence that names how long it has been
   saying the first one, which is Datadog's renotify block without the
   templating language. `payment_exceptions`'s own `first_seen_at` column is

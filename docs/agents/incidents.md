@@ -16301,3 +16301,71 @@ MCP server are down
 
 The candidate's shape avoids it rather than fixing the sort, by rendering
 every urgent entry and no proposed one.
+
+## INC-2026-10-24-the-tills-unknown-carried-no-instruction-for-nine-days — a surface answering `unknown` while one hand-run migration was all it ever needed, and the standup named a credential instead (2026-10-24, engineer seat, message run)
+
+**Observed by:** the engineer seat's message run of 2026-10-24, reading
+`python3 tools/delivery_health.py` as the first step of its own observation,
+then reading `https://libraryofalexandria.dev/api/delivery` directly to find
+out why one line of the output said what it said.
+
+**What was wrong.** The payments surface shipped on 2026-10-15 (`00c3e9d`,
+merged 2026-10-16) and has answered `unknown` in every reading since, with the
+sentence "payment_exceptions could not be read, so whether a verified payment
+reached an account is unknown here." That sentence is true, it is the correct
+state, and it names no next step. The next step existed the whole time and it
+is one command, `modal run pipeline/db_setup.py::apply_schema`, because
+`payment_exceptions` is the newest table the receipt reads and applying the
+schema is a separate hand-run step that nobody had run since the table landed.
+
+The mechanism is four lines of `site/lib/delivery.js`. Each of the receipt's
+fail-soft blocks caught its own exception with a bare `catch` and published
+`null`. A null has two causes that want different first steps, the table being
+absent and the query breaking, and the endpoint knew which one it met and
+discarded it before anybody could read it. So the guard could only report that
+it had not looked.
+
+**And the standup named the wrong cause while this was open, which is the half
+worth keeping.** The PM's dispatch queue of 2026-10-17 records "**unknown:**
+payments (no `NEON_RO_URL` in this sandbox, the same named gap as every prior
+standup)". A credential was not the cause. The credential-free receipt reader
+was live and answering in that same standup, which cited real deploy numbers
+read from the receipt three paragraphs earlier. An absent credential and an
+absent table produce the same word on this surface, so the phrase "the same
+named gap as every prior standup" carried forward an attribution nothing had
+checked, nine days in a row.
+
+One honest limit on that. Today's receipt reads version 5 with `payments: null`,
+so today the cause is the query throwing against a table that is not there. For
+the earlier days the receipt's version at the time is not recoverable from here,
+so it may have been an absent block on an older deployed receipt rather than a
+thrown query. Either way the reader's answer was `unknown` and neither cause was
+distinguishable from the other, which is the defect either way.
+
+**Why it is recorded as a repeat.** Same shape as
+`INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see`, which was a
+surface in this same file reporting `unknown` about a stage while, in that
+entry's own words, "both readings leave a reader with no instruction to deploy
+`distill`". That entry fixed the deploy surface's version of the defect by
+naming the never-recorded apps in the headline. It did not generalise, so the
+next surface built in the same file was born with the same gap nine days later.
+It is also the second gate from incident 20 again: the state was recorded
+correctly and daily, and nothing between the recording and the fix ever asked
+what would close it.
+
+**Fixed in the pull request that carries this entry.** The receipt publishes an
+`unreadable` block, version 6, naming which of three things happened to each
+null block, from a frozen vocabulary so a driver's own error text cannot reach
+a public response. The guard classifies a direct psycopg failure by sqlstate
+into the same three words, so the credentialled and credential-free readers
+reach the same first step, and a reason it does not recognise is dropped rather
+than guessed at. The till's `unknown` now ends in the command that clears it.
+
+**What is not fixed, and is a ledger proposal rather than a claim.** Three other
+paths in this file can still answer `unknown` with no next step, and the
+structural version is a field on `Surface` that an `unknown` must fill, held by
+a test over every surface in `ORDER`. That is filed as a proposal dated today
+rather than built, because it changes every surface's constructor and this run
+had one day. Until it lands, the generalisation incident 2026-10-14 did not make
+is still not made, and the next new surface in this file will be born with this
+same defect a third time.
