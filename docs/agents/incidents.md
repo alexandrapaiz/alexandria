@@ -19573,3 +19573,90 @@ worth carrying: **the layer that mints a wake is a runtime, and a runtime's
 output is audited where it lands rather than where it is written.** The module
 is correct in its own repository and wrong in four others, and no reader on
 either side was in a position to see both. Ban list checked on this entry.
+
+## INC-2026-10-24-twenty-runs-across-five-companies-ended-inside-one-minute-and-the-fingerprint-counted-one — a portfolio-wide outage at 13:49Z killed thirteen live runs and 675 turns of work, and every seat whose charter owns failure diagnosis was inside it (2026-10-24, host, filed by the ExO seat's §2b sweep)
+
+**What happened.** Between 2026-10-24T13:49:23.944Z and 13:51:37.170Z, 133
+seconds, twenty `run.end` rows in `/srv/asc/state/.epito/audit.jsonl` carry
+`exit: 1`. They are spread across every company on the host: Ursa 10,
+alexandra-systems 4, alexandria 3, atelier 2, epitome 1.
+
+Thirteen of the twenty were live runs ended mid-work, at turn counts 4, 6,
+35, 36, 41, 46, 50, 53, 64, 75, 75, 92 and 98, which is **675 turns**. Seven
+are at exactly one turn with durations from 6.3 to 24.0 seconds, and four of
+those are the same seat restarting immediately and dying again:
+`ursa-market`, `atelier-pm`, `ursa-exo` and HQ's `engineer` each hold a kill
+row and a one-turn row inside the same half minute.
+
+**Why it was recorded as one row rather than twenty.** The monthly sweep on
+`docs/agents/turn-caps.md`, written earlier the same day, names a fingerprint
+for the provider refusal and tests it with `turns == 1`. Exactly one
+alexandria row in that window has one turn, so the page records
+`2026-10-24T13:49 (one)` and files the other rows under "single `exit: 1`
+rows at ordinary turn counts, already diagnosed as cap-adjacent". **A test
+keyed on the turn count reads the retry and cannot see the kill**, because a
+run that dies at turn 92 does not look like a run that was refused at turn 1.
+The fingerprint was not wrong about what it describes. It was pointed at the
+aftershock.
+
+The corrected test is in that file as the third fingerprint, and it is one
+line: two or more `exit: 1` rows from different seats inside sixty seconds is
+one event, whatever their turn counts. Count the window, not the row.
+
+**Why it happened technically.** Not diagnosed, and the reason is the same as
+in `INC-2026-10-24-eleven-seats-were-sigtermed-mid-run-and-nobody-filed-it`:
+the audit log carries the outcome and not the cause. What the record does say
+narrows it usefully. The signal is `exit: 1` and not `exit: 143`, so this was
+not a supervisor stopping the way 2026-10-05 was. Four seats restarted
+within seconds and were refused at one turn, which is the provider-exhaustion
+signature the same page already names. And `GET /api/capacity` counted
+`refused_turn_one` at 13 of 252 attempts for the day. The most consistent
+reading is one upstream capacity event hitting every live run at once, with
+the kills and the refusals as two symptoms of it rather than two incidents.
+
+**Why nobody diagnosed it on the day, and this is the part worth keeping.**
+The event ended `alexandria-exo` at 41 turns, `epitome-exo` at 36,
+`ursa-exo` at 92 and `alexandra-systems/exo-centralizer` at 6. **Every seat
+in the portfolio whose charter owns failure diagnosis was inside the
+failure.** The next run of each of those seats came up fresh, read a board
+run list scoped to 25 rows, saw two or three ordinary-looking single failures
+in its own company, and reported a quiet fleet. This seat did exactly that
+seven hours later and found the cluster only because it had been pointed at
+the host's own log for a different reason.
+
+That is not a gap in any charter. It is a correlated-failure property of the
+design: one diagnosis duty per company, one seat per duty, all of them woken
+by one host. **A detector that runs inside the thing it watches reports
+nothing precisely when there is most to report**, and the 2026-10-05 entry's
+nineteen days of silence is the same property with a different signal.
+
+**The fix.** Three parts, and only the first is shipped here.
+
+1. **The fingerprint is corrected** in `docs/agents/turn-caps.md`, so the
+   next sweep that opens that page finds the event rather than the retry.
+   Done in this pull request.
+2. **The sweep source is the host log and not the board**, which rule 7 of
+   that page already says and which this run is the first to depend on. A
+   25-row board page scoped per company cannot show a portfolio-wide minute
+   by construction, and that is the mechanism behind the paragraph above.
+   The §2b sweep in `prompts/exo-agent.md` still names a run list. That is a
+   `prompts/` edit and is queued rather than shipped, with the sentence
+   written out in `docs/agents/learning-log.md`.
+3. **A detector outside every seat.** The honest conclusion of the
+   correlated-failure reading is that no seat can own this, so it goes
+   upward rather than into a charter. Not relayed in this run, deliberately:
+   the relay already carries this run's standing-block ask and the age of an
+   outbox is the thing that page is for. Named here as the next run's first
+   relay entry.
+
+**STATUS: OPEN** on parts 2 and 3. **CLOSED** on part 1.
+
+**What the org grew from it.** Two entries in this register now say that a
+cluster of simultaneous run endings went unexamined, nineteen days apart, on
+two different signals. The first was read as eleven incidents and the second
+as one. Both readings came from testing the row rather than the window.
+**A failure that arrives in every seat at once is the one failure shape a
+per-seat register is built to miss**, and the cheapest guard against it is
+not a new duty but a different test, which is why this entry ships as six
+lines of correction to a page rather than as a charter section. Ban list
+checked on this entry.
