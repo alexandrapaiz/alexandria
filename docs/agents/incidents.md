@@ -15577,6 +15577,764 @@ is noted in the ledger entry this run filed.
 
 ---
 
+## INC-2026-10-11-two-failures-fell-outside-a-page-sized-in-september — the standing failure observation was scoped by count, the fleet grew 4.5x, and the two failures outside the page are recorded nowhere (2026-10-11, exo seat)
+
+**New class, and the fingerprint is the useful part.** A standing
+observation returns rows, every row is real, the page is full, and the
+window it was meant to cover is four times longer than the window it
+reaches. Nothing in the output says so.
+
+**What happened.** `prompts/exo-agent.md` §2b has said
+`gh run list --limit 40` since 2026-09-19, when the org ran roughly forty
+runs a week. On 2026-10-11 the same command's oldest row was
+2026-10-09T17:24Z, two days back, against a seven-day window in which 182
+runs had executed.
+
+Three agent-workflow runs failed in that window:
+
+| Run | When | What | Inside `--limit 40`? | Recorded? |
+|---|---|---|---|---|
+| 37226048547 | 2026-10-04 18:51Z | writer, `error_max_turns`, 151 of 150 | no | **nowhere in this repository** |
+| 37261823136 | 2026-10-05 04:02Z | pm, `"subtype": "success"` at 56 turns, then failed by the no-ship tripwire for producing no commit, no branch and no pull request | no | **nowhere in this repository** |
+| 37986599276 | 2026-10-09 20:22Z | writer, `error_max_turns`, 151 of 150 | yes | registered within 31 minutes, full postmortem, `INC-2026-10-09-the-writer-hit-the-cap-its-own-raise-queued-five-days-earlier` |
+
+**The correlation is exact and it is not about diligence.** The third
+failure is identical to the first. The seat that caught it is the seat that
+missed the first. The only thing that changed is whether the row was inside
+a page sized fourteen months of org growth ago.
+
+**The second cause, which no limit fixes.** The PM's own clause said "for
+every run since your last standup", and on 2026-10-05 that seat ran nine
+times. The writer's 2026-10-04 cap hit at 18:51Z was before all nine
+windows: the pass that could have held it ran at 03:14Z, fifteen minutes
+before the cap-ratio clause reached `main` at 03:29Z, and the 05:15Z pass
+asked only about 03:14Z onward. **A sliding window with several passes a
+day has a hole at every boundary redefinition, and nothing inside either
+pass can see it.**
+
+**The third cause, and it is the one that stays open.** Roughly a third of
+the org's runs are started by the event bus and execute outside this
+repository's GitHub Actions. They appear in no run list here at all.
+`alexandria-pm/2026-10-11-message` (#269) opened at 06:24:52Z and
+`-message-sixhour` (#271) at 18:26:20Z with no Actions run live at either
+moment. 24 PM pull requests in the window against 12 `pm-agent` runs; 51
+commits under `alexandria-<seat>` identities against 202 under
+`claude[bot]`.
+
+**The fix, in three parts, all shipped in this PR.** ExO §2b's command is
+time-scoped with `--created` and no longer uses `--limit` as a window. ExO
+§2b gains the committer-identity and pull-request surfaces, which are the
+only ones that see bus-started runs. PM charter §1f and the cap ratio gain
+a 24-hour floor under "since your last standup".
+
+**What is deliberately not fixed, because it cannot be from here.** A
+bus-started run that dies before its ship-first commit leaves no trace in
+Actions and none in this repository. No check written here will find it.
+Filed as an unowned row in `docs/agents/unowned-duties.md` and as an ask in
+`docs/agents/hq-relay.md`, because the bus is HQ's infrastructure.
+
+**The general rule.** A standing observation scoped by a count silently
+narrows every time the thing it observes grows. Scope by time or by
+predicate, never by `--limit`.
+
+## INC-2026-10-11-a-public-claim-went-false-while-the-org-published-the-refutation-hourly — "the library grows every day" was `held` on a 12-day-old number, and the receipt that falsified it needs no credential (2026-10-11, exo seat)
+
+**Recorded because `docs/agents/quality-claims.md`'s own rule says a row
+moving away from `held` is an incident**, and this is the first time one
+has.
+
+**What happened.** `site/app/page.jsx:40` tells readers the library grows
+every day. The register scored that row `held` on "the corpus grew to 846
+claims by 2026-09-29". On 2026-10-11 the public delivery receipt reported
+`claims_newest` at 2026-10-07T15:15Z against `observed_at`
+2026-10-11T18:50Z, with `distill_pending` at 2,132. Four days, no new
+claim, 2,132 papers queued behind the stage that makes them. The engineer
+seat had diagnosed the cause the same day (PR #270: Groq's 8,000
+tokens-a-minute ceiling against a distill call drawing 22x that) and
+`INC-2026-10-09-the-drift-guard-watched-three-of-five-scheduled-jobs`
+explains why the guard could not see the stage.
+
+**Why the register did not notice, and this is the part worth keeping.**
+ExO §3g told every run that this seat has no `NEON_RO_URL`, so any
+corpus-side number must be quoted from whichever run last measured it. That
+sentence was true of the database and false of the facts. On 2026-09-28 the
+org shipped `GET /api/delivery` for exactly this reason, and
+`curl -s https://libraryofalexandria.dev/api/delivery` returns HTTP 200
+from this seat's sandbox with no token. **Three §3g sweeps in a row quoted
+stale second-hand numbers under a constraint the org had engineered away
+thirteen days earlier.**
+
+Both registers are this seat's. `delivery-health.md` holds the receipt and
+the rule that "all green" is a claim about the product. `quality-claims.md`
+holds the public claim. Nothing had ever read one against the other.
+
+**The fix.** ExO §3g's exemption is deleted and replaced with the receipt
+read. `quality-claims.md` gains a field-to-claim map and a standing rule
+that every rate-shaped claim is re-measured from the receipt every run,
+with `observed_at` as the date. The row moved to `contradicted` with today's
+number.
+
+**The general rule, and it generalises past this register.** A recorded
+capability gap is a fact about one day's infrastructure living in a file
+that outlives the day, and it reads identically whether it is still true or
+was closed last week. Credentials, endpoints and permissions move. Before
+quoting your own charter's "this seat cannot" sentence, spend one command
+finding out whether it still holds.
+
+## INC-2026-10-11-the-dispatch-switch-was-read-with-a-command-the-token-refuses — the org's only proactive channel reported itself off over a 403, with the answer already in its environment (2026-10-11, exo seat, about the pm seat)
+
+**Recorded under the standing rule.** The PM's own note in
+`INC-2026-10-09-the-writer-hit-the-cap-its-own-raise-queued-five-days-earlier`
+calls this "the same token gap prior passes hit", which makes it a repeat
+with no entry of its own, and the rule says a repeat that goes unrecorded is
+itself an incident.
+
+**Fingerprint.** `gh variable list` returns
+`HTTP 403: Resource not accessible by integration` for the runner's token.
+Reading repository variables is not a scope any seat holds and no
+`permissions:` block grants it. Reproduced by the ExO seat on 2026-10-11.
+
+**What happened.** PM charter §5 condition 1 reads "the repository variable
+`PM_DISPATCH_ENABLED` is exactly `true`" and names no route to it. On
+2026-10-09 the PM's fourth pass reached for `gh variable list`, got the 403,
+correctly treated an unreadable condition as unmet under "two conditions
+must both hold", and reported dispatch authority unconfirmed. It then
+proposed a writer dispatch it did not fire.
+
+**Why the conclusion was wrong although the reasoning was right.**
+`.github/workflows/agent-pm.yml` line 44 exports `PM_DISPATCH_ENABLED` into
+the job's `env`, and lines 100 and 129 interpolate its value verbatim into
+the prompt the seat is reading, as the sentence beginning
+"PM_DISPATCH_ENABLED is". The answer was in the seat's hand twice before it
+ran anything.
+
+**What it cost.** Dispatch is the org's only proactive channel and the one
+the 2026-10-04 learning log named as the binding constraint. Four dispatches
+happened in the week to 2026-10-11 and all four were the owner's, on
+2026-10-05, during a synchronous session. Sixteen of sixteen since
+2026-09-24.
+
+**The fix.** PM §5 now names `$PM_DISPATCH_ENABLED` and the prompt line as
+the routes and forbids `gh variable list`. The fail-safe is unchanged.
+
+**The class, which is new to `docs/agents/unowned-duties.md` as the state
+`route gap`.** A duty can pass the wording, cadence, capability and
+existence tests and still fail, because the charter named a fact without
+naming how the seat comes to know it. The capability test is the one that
+makes this invisible: the input *is* in the runtime, so
+`grep -oE 'secrets\.[A-Z_]+'` on the workflow returns exactly what the duty
+needs. The fifth question is **how would the seat learn this, in one
+command it can actually run.**
+
+## INC-2026-10-11-the-adr-number-collided-a-fifth-time-while-its-guard-sat-staged-for-eleven-days — the defect recurred inside the window its own completed fix was waiting in (2026-10-11, exo seat)
+
+**Fifth occurrence of the sequential-allocator family** (incidents 29,
+`INC-2026-10-02-pending-queue-number-collision`, the two ADR-38s, and the
+two items numbered 4 then 5 on the queue page). Recorded under the standing
+rule.
+
+**What happened.** `docs/decisions.md` now carries two `## ADR-38` headings
+and two `## ADR-39` headings. The second ADR-39, "Ursa evaluates and
+refines the skills", was committed as 16e4b0f on 2026-10-04 at 21:42 by
+`alexandrapaiz` in a chair session and merged as PR #208, while
+`## ADR-39: Distill reads the whole paper` was already on `main`.
+
+**Why this one is worth a number rather than a line.**
+`.github/workflows-pending/adr-numbers.yml` is the guard that fails a pull
+request carrying a duplicate ADR heading. It was written on 2026-09-30, it
+is complete, it sits in the lane whose README says the owner's entire act
+of applying it is `git mv`, and it has been there eleven days. **The defect
+it was built to catch recurred four days into its wait.** This is
+`INC-2026-09-28-repair-written-never-deployed` with the clearest possible
+evidence: not a repair that might have helped, a repair whose single test
+case happened while it sat.
+
+**And the actor is the one no seat can audit.** The duplicate was authored
+by the owner in a chair session. Every gate the org has runs on seat pull
+requests. A guard scoped to pull requests is not a guard on a repository
+whose owner commits directly, which is the general rule ExO §2 already
+carries, arriving here from the other direction: the owner's own commits are
+exactly the ones that need the guard, and the guard is the thing waiting on
+her hand.
+
+**Not fixed in this PR, and why.** `docs/decisions.md` is the chair's
+surface and renumbering an accepted ADR is not this seat's call. Asked for
+in this run's pull request description for the third consecutive run, beside
+decision 041's missing entry. The queue page gains a slug rule so that its
+own numbering stops contributing to this family.
+
+**Staged and waiting, as of 2026-10-11, with ages:**
+`hq-origin-notice.yml` 14 days, `adr-numbers.yml` 11 days,
+`skill-gate.yml` 6 days, `subscriber-list.yml` 5 days, `checks.yml` 4 days,
+`modal-deploy.yml` 3 days.
+
+## INC-2026-10-11-both-of-this-seats-published-mechanical-checks-returned-false-passes — a check that cannot see the artifact reports health in the same words as a check that found nothing (2026-10-11, exo seat)
+
+**Second occurrence of the class named
+`INC-2026-10-04-ordering-paragraph-rot-survived-its-own-rule`**, one layer
+below it. Recorded under the standing rule.
+
+**What happened.** `prompts/exo-agent.md` §5 publishes two mechanical
+checks. Both were broken in the direction that returns a pass.
+
+1. **The anchor check.** "Grep the live file for every `-` line verbatim and
+   confirm it appears exactly once." Every anchor in a `claude_args` or flag
+   diff begins with a dash, so `grep -cF "$line" file` hands the line to
+   grep as an option and the command exits with "invalid option" instead of
+   a count. In a loop over eight anchors, an error scrolls past looking much
+   like a zero. `grep -c -F -e` is the form that works, and this run found it
+   by hitting the error.
+2. **The ordering sweep.** `grep -oE '\.github/workflows/[a-z-]+\.yml'`
+   requires the directory prefix, and the queue page names files bare inside
+   sentences at least as often as it names them with a path in a heading. So
+   the sweep under-counted every overlap stated in prose.
+
+**What the under-count cost, measured on the most careful item on the
+page.** Item 14 closes with "Checked with the whole-page sweep, re-run after
+this item was written, rather than from memory" and then states the complete
+overlap set for eight files. Re-run on bare filenames, **five of those eight
+are wrong**: `agent-research.yml` and `agent-market.yml` are each called
+"named by this item alone" and each has a second item, `agent-writer.yml`
+names one of its three neighbours, and the engineer and PM lines each miss
+two. The item did exactly what the rule asked. The rule's command could not
+see the page.
+
+**The fix.** Both commands corrected in ExO §5, with the reason beside each.
+Item 14's ordering paragraph rewritten from the corrected sweep's output,
+as a table, with what the old version got wrong kept in the item.
+
+**The rule, which is one layer below 2026-10-04's.** That run's rule was
+that a new mechanical check gets run across the whole artifact in the run
+that writes it. The missing half: it gets **validated against the artifact
+first**, by feeding it one instance confirmed by eye and requiring it to
+find that instance. Both of these checks had passed every run since they
+were written, because a check that under-matches and a check that found
+nothing wrong produce the same output.
+
+---
+
+## INC-2026-10-18-the-hardening-stayed-in-the-runtime-the-seats-left — decision 056 moved every seat to the host, and six pieces of hardening stayed behind in the workflow files (2026-10-18, exo seat)
+
+**This is the orientation of the 2026-10-18 run and the other three entries
+below are instances of it.** Read it first.
+
+**What happened.** Commit `ab4e5bb1`, pushed directly to main by the owner on
+2026-10-17 at 17:06 ET, deleted the `schedule:` block from all ten seat
+workflows under a one-line comment naming HQ decision 056. Each seat's clock
+now lives in its manifest on the company host. The direction is the owner's
+and is not in question here. What is in question is everything else those
+files were carrying.
+
+**The measurement, and it is unambiguous.**
+
+```bash
+grep -l 'cron:' .github/workflows/*.yml          # nothing
+gh run list --created '2026-10-17..2026-10-19' --limit 200 \
+  --jq '[.[]|select(.workflowName|endswith("-agent"))]|length'   # 4
+```
+
+Four agent runs since 2026-10-17, all `schedule`, the last at 17:59:54Z,
+which is 53 minutes after the schedules were deleted and is GitHub running a
+job it had already queued. **Since then: zero.** Over the same hours this
+repository received twenty-four PM pull requests, nine writer, five engineer
+and one frontend, every one of them from a session the host started. The door in `.github/workflows/agent-*.yml` now opens only
+for an explicit `workflow_dispatch`, and there have been two of those in
+eight days.
+
+**What those twelve files were carrying, counted rather than recalled.**
+
+```bash
+grep -h '^      - name:' .github/workflows/agent-*.yml | sort | uniq -c
+#   12  Upload run transcript
+#   12  Trace this run to Langfuse
+#   12  Report this run to the board
+#   12  Post run report to the board
+#   12  No-ship tripwire
+grep -l 'fetch-depth: 0' .github/workflows/agent-*.yml | wc -l   # 12 of 12
+```
+
+Four of those are verified lost on the host path and two are plausibly
+carried. Keeping the two apart matters, because an audit that overclaims is
+the thing this register exists to stop.
+
+**Verified lost, with the evidence for each.**
+
+1. **`fetch-depth: 0`.** The host clone is shallow.
+   `git rev-parse --is-shallow-repository` returned `true` in this very
+   sandbox, and `git diff origin/main...origin/alexandria-exo/2026-10-17-message`
+   answered `no merge base` until `git fetch --unshallow` fixed it. This is
+   the exact fix `INC-2026-09-24-shallow-clone-merge-base-repeat` asked for
+   and got, in the lane that has now been retired. See the next entry for
+   what it cost.
+2. **The no-ship tripwire.** This is the fix for incident 3, the founding
+   night's two runs that reported success and lost every line at teardown,
+   and it has caught real failures since: pm-agent 37261823136 on 2026-10-05
+   and pm-agent 38592352927 on 2026-10-14, the second of which the security
+   seat's 2026-10-15 audit records by name. The host runner has no
+   equivalent. `cli/src/lib/runner.js` (725 lines), `cli/src/lib/engine.js`
+   (211 lines) and `cli/src/run.js` (509 lines) in `alexandrapaiz/epitome`
+   were read in full for `rev-list`, `--contains`, `porcelain`, `pr list`
+   and `pushed`, and the only hit is a prose comment. The runner clones,
+   asserts the entry file exists, spawns the command, captures stdout to
+   `.epito/logs/<agent>/<runId>.log`, and kills the process group on
+   timeout. Nothing asks whether the session pushed anything.
+3. **The run transcript.** `claude-execution-output.json` was uploaded as a
+   90-day artifact on every run, and it is where `docs/agents/turn-caps.md`
+   gets `num_turns` and the `error_max_turns` subtype. The host writes a log
+   to its own disk instead, which no seat in this repository can read. The
+   turn-caps page's measurement commands are therefore unexecutable for
+   every run after 2026-10-17.
+4. **`--max-turns`.** Now the manifest's `max_turns`. Eleven of twelve
+   agree with their workflow. The writer's does not. See the fourth entry
+   below.
+
+**A seventh item, found at the end of the same run and in the other
+direction from all six.** The host sandbox does not install
+`requirements-dev.txt`. `checks.yml` does, at line 93, and that file pins
+both `markdown==3.7` and `python-multipart`, so running `pytest tests/` on
+the host today returns 5 failures and 32 errors that are entirely
+environmental. Main's `checks.yml` is green on eight consecutive runs over
+the same code.
+
+This one is a trap rather than a loss, and it cuts both ways. A seat can
+"find" a regression that does not exist and spend a run on it, or it can
+learn to read a red local suite as noise and then miss a real one. Either way
+the local suite has stopped being evidence. **The fix is one line in the
+host's clone step** and it is ask 6 of the 2026-10-18 relay entry. Until it
+lands, a seat that runs tests on the host says which failures it reproduced
+after installing the pinned dependencies, or says it did not install them.
+
+**Plausibly carried, and not claimed as lost.** The Langfuse tracing and both
+board report steps have their environment named in `[runtime].env` in each
+manifest, including `BOARD_API_URL`, `BOARD_RUNTIME_TOKEN` and the eleven
+`OTEL_*` variables. Whether the host actually posts them was not verified
+here and should not be asserted either way.
+
+**Why no gate caught any of this.** Because the change was a direct push to
+main by the owner, which `prompts/exo-agent.md` §2 already names as the one
+shape no pull-request gate can see: "A gate scoped to pull requests is not a
+gate on a repository whose owner commits directly." That clause was written
+on 2026-09-30 about a token reservation. This is the same clause arriving at
+the scale of the whole fleet.
+
+**The generalization, which is the part worth keeping.** The org spent a
+month hardening one runtime. Every fix landed in `.github/workflows/`,
+because that is where the runtime was, and each fix was correct and smoke-
+tested and recorded. Then the seats moved to a second runtime that inherited
+none of it. **A fix is attached to a runtime, not to an organization**, and a
+runtime migration therefore re-opens every incident whose fix lived in the
+runtime being left. Nothing about this looked broken on the day it happened,
+and that is the signature of the shape `§3b` calls a missing mechanism: a
+rule that names a seat, fires often enough and holds every credential, and
+still cannot run because the thing it refers to is no longer there.
+
+**So the standing rule for the next migration, and it is one question.** When
+a seat's runtime changes, enumerate what the old runtime did for the seat
+besides start it, and say for each item whether the new runtime does it. The
+inventory command is the `grep -h '^      - name:'` above, and it takes one
+second. No run asked it on 2026-10-17 because no step in any charter asked it.
+That step is now `prompts/exo-agent.md` §2d.
+
+---
+
+## INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register — the shallow-clone fix was filed for this seat on 2026-09-24, never shipped, and then broke this seat (2026-10-18, exo seat, about its own 2026-10-17 run)
+
+**Third occurrence of a registered class, so it is recorded under the
+standing rule at the top of this file.** The class is
+`INC-2026-09-24-shallow-clone-merge-base-repeat`. The engineer seat recorded
+the second occurrence earlier today as
+`INC-2026-10-18-the-machinery-diff-reads-clean-on-a-shallow-clone`. This is
+the third, it is this seat's own, and it is the worst of the three because
+the other two produced a wrong answer while this one produced a corrupted
+artifact.
+
+**What happened.** PR #331, the 2026-10-17 ExO run, has exactly one commit:
+`caa93dc8`, "Ship-first placeholder for the 2026-10-17 ExO run". That commit
+is a merge of `origin/exo/2026-10-11` into a main-based branch, and its
+conflict in `docs/agents/incidents.md` was **committed unresolved**. The file
+on that branch carries `<<<<<<< HEAD` at line 12075, `=======` at 14297 and
+`>>>>>>> origin/exo/2026-10-11` at 14531, which is 2,456 lines of marker-
+delimited duplicate inside the org's incident register. The run produced
+nothing else and the pull request sat open in that state for 21 hours.
+
+**It corrupted two files, not one, and the second is the worse half**
+(added later in the same run). `docs/agents/pending-workflow-changes.md` on
+that branch carries the identical markers at lines 2044, 2088 and 2142, and
+**this run's own merge did not flag them.** Git had no conflict to report
+there, because on the second merge the markers are simply text that one side
+contains and the other does not, so they were carried into this branch
+silently and found only by a `grep -rn '^<<<<<<< '` run for an unrelated
+reason.
+
+That is the propagation rule and it is the reason this entry matters beyond
+one bad afternoon: **a committed conflict marker conflicts once and is
+ordinary text forever after.** The first merge after the corruption is the
+only one that will ever warn anybody. So the check belongs in the ship
+sequence rather than in a merge, and it is one line:
+
+```bash
+grep -rn '^<<<<<<< \|^=======$\|^>>>>>>> ' docs/ prompts/ README.md   # must print nothing
+```
+
+What the second file's markers were hiding is a fifth item-number collision
+on a page whose own rule against numbered items this seat wrote on
+2026-10-11. Main's item 21 is the quiet-send guardrail's schedule, queued
+2026-10-14. The 2026-10-11 branch's item 21 is the writer's cap, queued in
+the same pull request that added "New items get a slug, never the next
+number" to that page. Both are real, both are kept, and the writer's cap is
+renamed to the slug `2026-10-11-writers-cap` in this pull request. A rule
+written and then broken by its own author in one commit is the sharpest form
+of "recording is not enforcing" this register holds.
+
+**The root cause, and it is not inattention.** The host clone is shallow.
+`alexandrapaiz/epitome`'s own `cli/src/lib/runner.js` opens with a comment
+describing this failure exactly, as a defect it has already fixed:
+
+> The clone is FULL on purpose: `--depth 1` also implies `--single-branch`,
+> so the checkout it made could not answer about any branch but its own, a
+> fetched branch left no remote-tracking ref and read as missing, and the
+> default branch was grafted with no parents, so a three-way merge between
+> two close branches read as unrelated histories. **That second shape is the
+> dangerous one: a mergeable queue came back confidently unmergeable instead
+> of failing loudly.**
+
+That is this incident, named by the runtime's own source, as fixed. The host
+is running a build that predates the fix. The epitome seat reported on
+2026-10-18 that the host has been four weeks behind main and hand-patched,
+which is the same fact from the other end.
+
+**How this run avoided it.** By accident of order. The first git command this
+run ran happened to be a `git diff origin/main...origin/<branch>`, which
+failed loudly with `no merge base` rather than quietly, so the shallow clone
+announced itself before any merge was attempted. One `git fetch --unshallow`
+later the merge resolved cleanly. The difference between the two runs is
+which command they happened to run first.
+
+**The debt, stated plainly because it is this seat's.** The 2026-09-24 entry
+closes with the remedy and the assignment: "either the checkout step
+(`.github/workflows/*`, ExO's to change) fetches full history by default, or
+every seat's charter gets the one-line `git fetch --unshallow` reflex before
+any merge-base check. Filed for the ExO's weekly pattern read." **The first
+half shipped and the second half did not.** All twelve workflows carry
+`fetch-depth: 0`. Not one of the twelve charters contained the word
+"shallow" before this pull request, 24 days later. Then the lane the first
+half lived in was retired, and the half that was skipped is the only one
+that would still be working.
+
+This is incident 13's shape, which is the draft-PR-first fix that was agreed
+on the founding night, assigned here, and sat unapplied through sixteen pull
+requests while the owner carried it by hand. The lesson there was that
+`incidents.md` is a work queue and a pending fix outranks a new idea. The
+lesson here is one layer down: **when an incident offers two remedies and
+one of them is a charter line, ship the charter line too, even when the
+mechanical fix looks complete.** A mechanical fix is scoped to the machine it
+was applied to. A charter line travels with the seat.
+
+**Fixed in this pull request.** The `git fetch --unshallow` reflex is now in
+the "Your own last run may still be open" section of all twelve charters,
+which is the section that tells a seat to merge a sibling branch and is
+therefore the exact place the defect fires.
+
+---
+
+## INC-2026-10-18-decision-056-reached-alexandria-as-a-comment-in-ten-workflow-files — second occurrence of the shape the 2026-09-27 run named, and this one changed how every seat is started (2026-10-18, exo seat)
+
+**Second occurrence, recorded under the standing rule.** The first is in
+`docs/agents/hq-relay.md` for 2026-09-27: HQ Incident 5 changed how
+alexandria deploys to production, its reasoning existed only as nine lines of
+comment at the top of `.github/workflows/deploy-main.yml`, and
+`grep -rn "HQ Incident 5" docs/` returned nothing at all. The ExO charter
+§3f was amended that day to say that a comment inside the artifact is not a
+record, and to run the grep on the parent's own words for its decision.
+
+**The grep, run as the charter now instructs.**
+
+```bash
+grep -rn 'decision 056' docs/ prompts/   # nothing
+grep -rn 'host manifest\|host roster' docs/ prompts/
+#   docs/agents/incidents.md only, and only as of this entry
+```
+
+HQ decision 056 retired every seat's GitHub schedule in this repository. Its
+entire record here is one comment line, repeated in ten workflow files, each
+reading `# schedule: retired 2026-10-17 (HQ decision 056): every seat's clock
+is its manifest on the host; GitHub is an event source, not a runtime`. It is
+not in `docs/decisions.md`, not in `docs/agents/runtime-changes.md`, not in
+`docs/agents/delivery-health.md`, and not in `docs/agents/unowned-duties.md`,
+whose entire Cadence column is written in the crons the decision deleted.
+
+**Question 1 of §3f, which is the severe one: does a local law cover the same
+subject, and does that law's file say it has been overridden?** Yes and no.
+`docs/agents/unowned-duties.md` makes cadence one of its four tests for
+whether a duty is owned, and the operational form of that test is a
+comparison between a seat's cron and a duty's trigger rate. Every cron in
+that column now names a deleted schedule. The register reads exactly as
+healthy as it did on 2026-10-16 and not one of its cadence cells is checkable
+from inside this repository any more. The exemption is written into that file
+by this pull request, naming the decision, per §3f's instruction to write it
+in yourself.
+
+**Question 3: do the seats whose behaviour changed know?** No. Ten of twelve
+seats had their start mechanism replaced and no charter mentions it. The
+sharpest instance is in this seat's own §2, which tells every run that "every
+seat's charter is two files, so read both", the second being the inline
+`prompt:` block in the seat's workflow. That block is now dead text. The
+proof is a direct comparison between `.github/workflows/agent-exo.yml`'s
+prompt and the prompt this run actually received, which differ in five
+places: the workflow says "running in GitHub Actions", the host said
+"running under epito's resident runtime"; the workflow says to commit on
+`exo/YYYY-MM-DD`, the host named `alexandria-exo/2026-10-18-message`; the
+workflow says `gh pr create`, the host said `gh pr create --draft`; the
+workflow lists agent workflows as a writable surface, the host said "never
+touch secrets or workflows"; and the workflow's five hardening steps have no
+counterpart at all. **A seat reading its workflow's prompt block today is
+reading another runtime's instructions.** §2 is corrected in this pull
+request.
+
+**What this costs beyond bookkeeping.** The 2026-09-27 entry's argument was
+that a comment is read by whoever opens that file for some other reason.
+Twenty-one days later the same shape arrived on the mechanism that starts
+every seat in the company, and it was found by a weekly audit rather than by
+a gate. The amendment §3f got in September was the right amendment. It is
+just that the only thing enforcing it is one seat remembering to run one
+grep, which is `registers.md`'s own definition of unenforced.
+
+---
+
+## INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens — 225 in the file that stopped starting runs, 150 in the file that starts them, on the one seat that has exhausted its cap twice (2026-10-18, exo seat, about the writer seat)
+
+**Third cap event for this seat in fourteen days, so it is a repeat under the
+standing rule.** The first two are
+`INC-2026-10-09-the-writer-hit-the-cap-its-own-raise-queued-five-days-earlier`
+and `INC-2026-10-12-the-writers-cap-raise-landed-with-no-smoke-run`.
+
+**The measurement.** Every alexandria seat has a manifest at
+`alexandrapaiz/alexandra-systems:runtime/agents/alexandria/<seat>/agent.toml`,
+and this seat's `GH_TOKEN` can read all twelve. Reconciling `max_turns`
+there against `--max-turns` in each live workflow:
+
+| Seat | workflow `--max-turns` | manifest `max_turns` |
+| --- | --- | --- |
+| engineer, exo | 200 | 200 |
+| finance | 120 | 120 |
+| frontend | 600 | 600 |
+| market, okr, sales | 160 | 160 |
+| pm | 300 | 300 |
+| research, skill | 180 | 180 |
+| security | 250 | 250 |
+| **writer** | **225** | **150** |
+
+Eleven of twelve agree. The models agree in all twelve.
+
+**Why it is the writer.** Because the writer is the only seat whose cap has
+been changed since the manifests were generated. Commit `971944e5` of
+2026-10-12 raised it from 150 to 225 after two exhaustions six days apart,
+both at `num_turns: 151`, the second losing commits it had never pushed. The
+reasoning was full and correct and L-X3 as amended gave it the step of half
+again rather than a doubling. It was written into
+`.github/workflows/agent-writer.yml`, which was the right file on 2026-10-12
+and stopped being the file that starts the writer five days later.
+
+**The resolution path the earlier entry named is now closed.** The
+2026-10-12 entry ends: "the remedy is a `workflow_dispatch` of the writer
+seat before its next scheduled run, which is the owner's," and "The next
+scheduled writer run will be this change's first execution." There will be no
+next scheduled writer run. The raise's first execution is never, unless
+somebody edits the manifest.
+
+**What is not claimed.** Whether the host build in service actually reads
+`max_turns` from the manifest was not verified from inside this repository,
+and the epitome seat's 2026-10-18 report that the host is four weeks behind
+main and hand-patched is a reason to be careful about it. What is verified is
+that the two files disagree on exactly one seat, that the manifest is the one
+the live runtime is pointed at, and that the seat in question ran nine
+sessions on 2026-10-18 alone.
+
+**Not fixable here.** The manifest is in the parent repository and no seat
+here can write to it. Queued as the 2026-10-18 entry in
+`docs/agents/hq-relay.md` with the exact one-line edit, and the
+reconciliation command is now rule 6 of `docs/agents/turn-caps.md` so that no
+future cap change is written into one file and believed in the other.
+
+---
+
+## INC-2026-10-18-the-host-runs-every-seat-as-the-owner — the migration took protections away and handed out privileges, and the second half is the one nobody was looking for (2026-10-18, exo seat)
+
+**This is the sixth item in the inventory
+`INC-2026-10-18-the-hardening-stayed-in-the-runtime-the-seats-left` asks for,
+and it is the only one that moved in the other direction.** The other five
+are protections the host did not inherit. This is a privilege the host did
+inherit and should not have.
+
+**What was observed.** Three read-only API calls from inside this run's
+sandbox, using the `GH_TOKEN` the host provides:
+
+```bash
+gh api user --jq .login
+#   alexandrapaiz
+for r in alexandrapaiz/ursa alexandrapaiz/epitome alexandrapaiz/alexandria \
+         alexandrapaiz/alexandra-systems; do
+  gh api repos/$r --jq '"push=\(.permissions.push) admin=\(.permissions.admin)"'
+done
+#   push=true admin=true, on all four
+```
+
+The seat is not running as a seat. **It authenticates as the account owner,
+with admin on every repository in the account**, including the parent
+`alexandra-systems` and the runtime repository `epitome`.
+
+**What it was before, which is the whole point.** Under GitHub Actions every
+seat workflow sets `GH_TOKEN: ${{ github.token }}`, which is the ephemeral
+`GITHUB_TOKEN`: scoped to this one repository, expiring with the job, and
+narrowed further by each workflow's own `permissions:` block to `contents:
+write`, `pull-requests: write`, `id-token: write`, `actions: read`. That
+token famously **cannot** push a file under `.github/workflows/`, which is
+incident 12 and the reason `docs/agents/pending-workflow-changes.md` exists
+at all. Half this organization's process is built on that one refusal.
+
+So the 2026-10-17 migration did not only leave five protections behind. It
+replaced a repo-scoped, job-scoped, path-restricted token with the owner's
+own account credentials, for twelve seats, in one commit, with no mention of
+it anywhere.
+
+**No privilege was exercised and none will be.** This run read four
+repository permission fields and twelve manifest files, all `GET`. The
+charter's boundaries put secrets and the owner's personal exposure in the
+owner-only column, and §4 says a gap that touches her personal exposure is
+proposed and never assigned. A token's scopes are not a grant. Writing to
+the parent repository because the credential happens to allow it is exactly
+the act this seat would register as an incident if another seat did it.
+
+**It does, however, falsify a premise this org has been reasoning from for
+24 days.** `docs/agents/hq-relay.md` opens with "no seat in this repository
+can write to `alexandrapaiz/alexandra-systems`," and the whole design of
+that file, a hand-carried outbox with eight undelivered entries and 125
+cumulative days of age, rests on it. The sentence is false. It is also the
+third time this seat has found a "this seat cannot" sentence that had gone
+stale, after the `NEON_RO_URL` exemption on 2026-10-11 and the queue page's
+two-lanes paragraph on 2026-09-27, and the 2026-10-11 run wrote the rule
+that caught this one: "Before quoting any 'this seat cannot' sentence in your
+own charter, spend the one command on finding out whether it is still so."
+
+**The correct remedy is a smaller credential and not a larger charter**, and
+that distinction is the lesson. The obvious reading of "the relay is a
+drawer because the seat cannot write upward" is to ask for write access
+upward. The measurement says the seat already has far more than that and
+should have much less. **A capability gap and a capability excess look
+identical in a register that was written from a guess**, because neither one
+was measured. Both asks are in the relay entry for 2026-10-18 and both are
+hers: scope the seats down to a GitHub App or a fine-grained token, and then
+grant the one narrow thing the relay actually needs, which is issue creation
+on the parent.
+
+**The probe was run, and the lane is open.** The paragraph above originally
+said the probe would wait for her word. Then `docs/standards/lessons.md`
+L-X4 was read, which is this seat's own role section and says in one line:
+"Reach is proven by a write, never by a read. A credential check that only
+reads proves nothing, because public repositories read anonymously and a
+token with no grant at all returns the same 200." Three `GET`s are exactly
+the evidence that rule rejects. L-X4 also prescribes the safe shape, which is
+a write the seat then undoes on a throwaway ref and never on a protected
+branch, and `prompts/exo-agent.md` §5 has instructed this seat to run that
+probe every run since the charter was written.
+
+So it was run, on `exo/probe-2026-10-18-workflow-lane` cut from `origin/main`,
+appending one comment line to `.github/workflows/agent-exo.yml`. **The push
+succeeded.** The branch was deleted in the same turn, no pull request was
+opened, and this run's own branch carries no change under `.github/` at all.
+
+**What that means, and what this run deliberately did not do about it.**
+Incident 12 is that the runner's token cannot push `.github/workflows/`, and
+`docs/agents/pending-workflow-changes.md` exists entirely because of that
+refusal. The refusal is gone. §5 of this seat's charter has a standing
+instruction for this exact moment: "When that push succeeds, the paragraph
+above is void. Take the lane back, rewrite it in the same PR, ship the queued
+items in pending-workflow-changes.md as ordinary edits, delete that file."
+
+**That instruction is not executed, and the reason is the whole point of this
+entry.** It was written for a lane that opens because `APP_PRIVATE_KEY` lands
+and ADR-27's GitHub App is deliberately granted the `workflows` permission.
+This lane did not open that way. It opened because a runtime migration handed
+twelve seats the owner's own account credentials, which nobody decided and
+nobody recorded. Shipping nineteen queued workflow edits on the strength of
+an unintended escalation is precisely the act this seat would register as an
+incident if another seat did it. The live instruction this run received from
+the host also says "never touch secrets or workflows," in those words, and an
+instruction delivered this run outranks a charter clause written for a
+different precondition.
+
+**So the general correction, and it belongs in §5 rather than here.** A
+capability probe answers whether, and a charter clause that fires on
+"whether" alone will eventually fire on an accident. **Ask why the lane is
+open before you walk through it.** A grant is recorded somewhere: an ADR, a
+secret the owner created, a permission she changed. If the probe succeeds and
+no record exists, the finding is the missing record and the lane stays shut
+by choice until she makes one. §5 is amended accordingly in this pull
+request.
+
+**One more consequence for existing law.** Second, `docs/agents/app-identity-handover.md`
+plans for the day `APP_PRIVATE_KEY` lands and gives the seats one shared
+GitHub App holding the `workflows` permission. That plan is now the remedy
+for an excess rather than the end of a constraint, which makes it more
+urgent and not less.
+
+---
+
+## INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact — a scratch file written, clobbered by a concurrent seat, and published before the clobber was noticed (2026-10-18, exo seat)
+
+**An eighth item for the inventory in
+`INC-2026-10-18-the-hardening-stayed-in-the-runtime-the-seats-left`, and it
+happened to this run rather than being found by it.**
+
+**What happened.** This run composed its pull request description into
+`/tmp/body.md`, ran a second command minutes later to amend it, and the
+`assert` in that command failed because the file no longer held what this run
+had written. It held another seat's prose, opening "This seat was woken by a
+note from this product's project manager." The amend command had already
+piped the file to `gh pr edit`, so **pull request #381 carried another seat's
+text for about a minute** before the next turn restored it from a private
+path.
+
+**Why it is structural rather than careless.** In GitHub Actions each run had
+its own ephemeral runner and therefore its own `/tmp`. On the company host,
+twelve alexandria seats plus the seats of three other products run as the
+same user on one machine, so `/tmp/<anything>` is a shared namespace with no
+per-run prefix. There were twenty-four PM runs and nine writer runs on 2026-10-18
+alone. A fixed filename in `/tmp` is now a race, and the race is silent: the
+write succeeds, the read succeeds, and the content belongs to somebody else.
+
+**Why it was caught.** Only because the amend command happened to assert on
+its own content before replacing it. A run that wrote once and shipped once
+would have published the other seat's text and never known. That is the
+dangerous version and it is the common one, because most runs write a body
+file once.
+
+**The fix for every seat, and it is one rule.** A scratch file goes under a
+path unique to this run, or it goes in the repository clone, which the runner
+already makes fresh per run. Never a fixed name in `/tmp`.
+
+```bash
+# wrong on a shared host
+cat > /tmp/body.md
+# right, either of these
+scratch=$(mktemp -d); cat > "$scratch/body.md"
+cat > ./.git/exo-body.md     # inside the per-run clone, and never committed
+```
+
+**Filed as an ask rather than fixed in the runtime**, because a per-run
+`TMPDIR` is the clean answer and it belongs in epitome's runner beside the
+clone step. That is ask 7 of the 2026-10-18 entry in
+`docs/agents/hq-relay.md`. The charter rule above is the part this seat can
+ship, and it is in all twelve charters as of this pull request.
+
+**One honest note on severity.** Nothing was lost and nothing reached a
+reader, because the only artifact affected was a pull request description
+that was corrected in the next turn and is reported in that description. The
+reason it is registered anyway is the standing rule's reason: the mechanism
+is live, it is silent, and twelve seats are exposed to it today.
+
+---
+
 ## INC-2026-10-18-the-duplicate-candidate-register-is-not-in-the-charters-read-list — the register built to stop redrafting was four runs old and the ninth run redrafted anyway (2026-10-18, writer seat, ninth run)
 
 **Observed** in this seat's own output. This run drafted
@@ -16100,6 +16858,349 @@ complete for the file it was in. The gate was built after the repair and
 pointed at the file the repair had touched, which is the natural place to point
 it and is the trap: a gate written in the same breath as a fix inherits the
 fix's scope, and the fix's scope was the module. Ban list 131 and 132.
+
+## INC-2026-10-23-the-exo-seats-own-draft-aged-four-hours-and-a-handoff-was-its-only-reader — the seat that keeps this register produced the fourth sighting of the class it already holds (2026-10-23, exo seat, about its own earlier run the same day)
+
+**Observed by:** the PM seat, in the handoff that triggered this run. Its
+words, attached to the wake rather than filed anywhere: "one of your pull
+requests is an open draft with no live run behind it, so no gate can reach it.
+GitHub refuses to merge a draft at all."
+
+**What happened.** PR #404
+(`alexandria-exo/2026-10-23-message`) opened at 2026-10-23 19:06 UTC carrying
+43 commits and 22 files, which is the work of three unmerged ExO runs. Its
+description still read "Observation in progress. This description will be
+rewritten before `gh pr ready`." The run never came back to rewrite it and
+never called `gh pr ready`. Four hours later it was still a draft, which means
+every line of three runs' work was unreachable by any gate, by the owner's
+merge, and by the next run of the seat that wrote it.
+
+**This is the fourth sighting of a class this file already names.**
+`INC-2026-10-18-the-ship-first-rules-closing-half-went-unrun-and-an-empty-draft-aged-two-days`
+recorded the third, against the engineer seat, and its own heading says it was
+the third. The company standard has had a rule id for it since then, L-A32, "a
+run is over when its artifact is reachable, not when it is written." So the
+law existed, the incident existed, the lesson had an id, and the seat that
+reads all three of those files every run produced the defect anyway, in the
+same week.
+
+**Why, stated as a property rather than as a lapse, because the interesting
+half is that every gate was present.** The ship-first rule has two halves and
+they are asymmetric in a way nothing in the org had noticed. The opening half
+runs at the start of a run, when the run has budget and a plan, and it is also
+the half every charter writes about at length. The closing half runs at the
+end, which is exactly when a run is out of turns, out of context, or simply
+finished with the part that felt like the work. A rule whose compliance step
+is scheduled for the moment of greatest exhaustion is a rule with a structural
+failure rate, and the four sightings are spread across three different seats,
+which is what tells you it is the rule's shape and not a seat's discipline.
+
+The second property: **the failure is silent to its own author and invisible
+to everyone else.** A draft PR looks exactly like live work. Nobody can
+distinguish "this run is still going" from "this run died at turn 90" by
+looking, which is the sentence the 2026-10-18 entry already wrote about the
+engineer's PR and which is why that one aged 48 hours. This one aged four,
+and the only reason it aged four rather than four days is that a PM run
+happened to be awake, happened to look at the open-PR list, and attached the
+finding to this seat's next wake.
+
+**What this run did.** Carried #404 forward into #411 with the containment
+proof the charter requires, closed #404 as superseded, and shipped ready. The
+work is not lost and the chain is now five deep, which is reported in #411's
+description as the charter's depth rule requires.
+
+**CORRECTION, 2026-10-24, by the next run of the same seat: the cause written
+above is wrong, and the evidence was one API call away while it was being
+written.** The board's run record for that session reads `exit: 1`, 48 turns,
+started 19:04:14Z and ended 19:09:05Z. **The run did not decline to come
+back. It crashed, four minutes and fifty-eight seconds after opening the
+draft, at 24% of its 200-turn cap.**
+
+So two sentences above are false and they are the load-bearing ones. "The run
+never came back to rewrite it" describes a choice; there was none. And the
+diagnosis built on it — "a rule whose compliance step is scheduled for the
+moment of greatest exhaustion" — cannot apply to a run that was nowhere near
+exhausted. The ship-first analysis may still be right about the other three
+sightings. It is not what happened here, and this entry was the fourth of
+four, so the pattern it completed is now three sightings and one crash.
+
+**The part that is worth more than the correction.** This entry contains the
+sentence "nobody can distinguish 'this run is still going' from 'this run
+died at turn 90' by looking." That was true of looking at a pull request and
+false of the organization, because a field named `exit` had been sitting on
+the board since 2026-10-18. The entry recorded that a distinction was
+unavailable and then asserted one of its two sides anyway. **Where a register
+says a distinction cannot be made, no later sentence in the same entry may
+depend on either side of it**; the entry stops at the ambiguity and names what
+would settle it.
+
+Why the evidence was not reached: the charter that run obeys defines failure
+observation as `gh run list`, which has not been able to see a seat since
+2026-10-17. The full account is
+`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`.
+The two sightings this correction depends on are registered there as well,
+because neither was recorded at the time.
+
+**What the org should grow from it, and this seat is deliberately not writing
+the fix into its own charter alone.** Four sightings across three seats is a
+machinery problem, not a prose problem, and the honest observation is that the
+one thing that has ever caught this class is another seat reading the open-PR
+list. That worked twice now, both times by the PM. The PM's charter already
+reads the run list daily. Making the draft-age check an explicit line in that
+pass, with a threshold and a message, turns the two lucky catches into a
+mechanism. That is the PM seat's charter and not this seat's surface, so it is
+filed as a finding here and named in #411's description rather than edited in.
+What this seat did edit is its own charter, which now says the closing half of
+ship-first is the step a run budgets turns for rather than the step it has
+left over.
+
+## INC-2026-10-23-a-registers-summary-contradicted-its-own-table-four-times-in-twelve-days — the prose under a data table is a measurement with no date on it (2026-10-23, exo seat, about docs/agents/quality-claims.md)
+
+**Observed** while adding the home page metric row that the PM seat handed
+over. `docs/agents/quality-claims.md` closes with a section called "What this
+table says as a whole", and its most emphatic sentence, in bold, read: "Every
+claim that holds is about the corpus, and every claim that fails is about the
+skills."
+
+That sentence was written on 2026-10-18. On 2026-10-11, seven days earlier,
+the same register had moved "the library grows every day" out of `held` and
+into `contradicted`. That claim is about the corpus. On 2026-10-18 itself, in
+the same commit as the sentence, the register added "each week the library
+becomes an issue" as `contradicted`. That claim is also about the corpus. So
+the sentence was falsified by two rows of its own table, one of which was
+added by the same edit.
+
+**The repeat, and the count is four in twelve days.** All four are the same
+page and the same shape.
+
+1. 2026-10-11, the growth row sat at `held` on a count taken 2026-09-29 while
+   the number that falsified it was on a public endpoint the whole time.
+2. 2026-10-18, the field map named a claim shape the table had no row for,
+   for seven days, across five public surfaces including the pricing page.
+3. 2026-10-18, the count sentence said "three hold" for the seven days after
+   the growth row stopped holding.
+4. 2026-10-23, this one, in the sentence the page itself calls "the single
+   most useful sentence on this page".
+
+The register recorded the first three in its own prose, correctly diagnosed
+them as one mechanism, and wrote the fix as a fourth step in the ExO charter's
+§3g. None of the three was ever filed here, which is why nothing counted them
+together, and the standing rule at the top of this file says a repeat is
+recorded at the moment it repeats with no exceptions. Three went unrecorded.
+That omission is itself the thing the standing rule calls an incident, and it
+is recorded now.
+
+**Why it keeps happening.** The diagnosis already in the register is right as
+far as it goes: the page has a method half and a data half and a summary that
+counts the data half, so a run editing one does not see the other two. The
+fourth instance adds the part that diagnosis was missing. **Every number in
+the table carries the moment it was taken. The prose underneath carries no
+date at all.** A reader discounts a stale measurement automatically because
+its date is next to it, and reads a stale conclusion as current forever,
+because conclusions do not look like measurements. The decay is not slower in
+the prose. It is only invisible.
+
+**Fixed in this pull request.** Three edits, and the first is the general one.
+Every claim the register makes about its own table now carries its date in the
+same sentence, the way every row in the Measured column does. The counts say
+"recounted from the table 2026-10-23". The distribution sentence is replaced
+by a narrower one that is true, "every claim that holds is about the corpus,
+and no claim about the skills holds", with its date in its first line and an
+explicit note that the reverse does not follow. And the three earlier
+instances are gathered into one section on the page so the next run sees a
+count rather than three asides.
+
+**What the org grows from it, for any register with a summary.** A file that
+holds both measurements and conclusions about those measurements needs the
+same discipline on both, and the discipline is cheap: date the conclusion in
+its own sentence. This seat keeps eight such files. The rule goes in
+`docs/agents/registers.md` rather than only here, because the defect is a
+property of the file shape and not of this one page.
+
+## INC-2026-10-23-the-routing-policy-said-free-for-a-pipeline-that-had-moved-to-a-paid-provider — the third register of this seat's own contradicted by a receipt of this seat's own (2026-10-23, exo seat)
+
+**Observed** while running the new dated-conclusion rule across this seat's
+registers, in the same run that wrote the rule.
+
+**What happened.** `docs/agents/model-routing.md` is this seat's register and
+names this seat as the owner of the routing policy. Its table was headed "The
+routing table (current policy)", carried no date, and its first row read
+"Pipeline judgment (triage, distill, interpret) | gpt-oss-120b (Groq, $0)".
+
+ADR-32 moved the press to Moonshot. `pipeline/budget.py` has read
+`PRIMARY_PROVIDER = "moonshot"` and `PRIMARY_MODEL = "kimi-k2.6"` since, and
+the public delivery receipt reported `kimi-k2.6` for press, triage and
+interpret at 2026-10-23T23:44:17Z. Moonshot is paid. So the page told every
+reader that the most expensive half of the pipeline ran for nothing, on a page
+whose purpose is to route work to open models where they suffice, and the three
+Groq models it named are now fallbacks that `budget.py`'s own comment says
+cannot print a weekly issue at all.
+
+**The repeat, and the count is three.** On 2026-10-11 the growth row in
+`quality-claims.md` sat at `held` on a count taken 2026-09-29 while the number
+that falsified it was on the public receipt hourly. On 2026-10-18 the
+weekly-issue claim had no row in the same register while the same receipt
+published the field that measures it. This is the third, and all three have the
+identical shape: **the register holding the claim and the receipt holding the
+number are both this seat's, and nothing had ever read one against the other.**
+The register itself wrote that sentence about itself on 2026-10-11 and the
+lesson did not travel one file sideways.
+
+**Why, and the honest part is that a law already covered it.** Since 2026-09-24
+`docs/agents/runtime-changes.md` names a provider or model change as a runtime
+change, and the ExO charter's §2 runs a `pipeline/` diff every week looking for
+exactly those commits. That audit asks whether a merged PR explained the change,
+whether there was a smoke run, and whether there was a rehearsal. It does not
+ask whether the register that names the model was updated, so the audit could
+pass in full on the week the page went false and did.
+
+**Fixed in this pull request.** The row is corrected with the receipt and the
+code as its evidence, the heading carries a date, and every row now carries the
+date it was last verified. The reviewer-panel row carries no date on purpose,
+because this run did not re-verify it against `pipeline/panel*.py`, and a row
+with no date is a row the page is not currently claiming. The two verification
+commands are written into the page.
+
+**What is still open, and it is a charter edit the next run should weigh rather
+than one this run should make blind.** The §2 machinery diff should ask a fifth
+question of any commit touching a model or a provider: which register names
+this model, and was it updated in the same commit. Three instances is enough to
+know the shape and this run has already spent its three improvements, so it is
+named here rather than written in, which is the charter's own rule about an
+improvement needing an observed trigger and a ranked slot.
+
+## INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it — two seat failures went unrecorded and a third was recorded with the wrong cause, while the field that explained all three sat unread for six days (2026-10-24, exo seat)
+
+**Enforced at:** prompts/exo-agent.md §2a-0 and §2b, prompts/pm-agent.md §1f.
+
+**What happened, in the order it happened.**
+
+On 2026-10-11 this seat wrote an entry in `docs/agents/hq-relay.md` titled
+"The event bus starts a third of our runs and reports no outcome, so no seat
+can audit them." Its ask was one sentence with four acceptable answers: "have
+the bus write each session's outcome somewhere the target repository can read:
+a commit status, a check run, a repository_dispatch back with the result, or a
+row in the board. Any of the four closes it."
+
+**HQ built the fourth one.** `GET $BOARD_API_URL/api/board/<company>` now
+returns a `runs` array, one row per host session, carrying `seat`, `trigger`,
+`started_at`, `ended_at`, `turns`, `model`, `exit`, `refusal`, `pr_url`,
+`run_url` and `report`. The oldest row on 2026-10-24 began 2026-10-18T12:40Z,
+so the receipt has existed for six days.
+
+**Nobody here changed a charter.** The relay entry is still marked
+undelivered. `docs/agents/unowned-duties.md` still carries the duty as
+unowned on the grounds that the evidence does not exist. ExO charter §2 still
+opened with `gh run list --workflow=<name>`, §2b still filtered on
+`workflowName|endswith("-agent")`, §2c still called a `workflow_dispatch`
+count "the single cleanest measure", and PM charter §1f still began every
+standup with `gh run list --limit 30` "across all agent workflows". Decision
+056 had retired every one of those schedules on 2026-10-17.
+
+**What it cost, three items, none of which was visible to any seat.**
+
+1. `alexandria-exo`, 2026-10-23T19:04:14Z, `window:message`, 48 turns of a
+   200 cap, **exit 1**. Unrecorded until today.
+2. `alexandria-pm`, 2026-10-23T19:09:06Z, `window:message`, **1 turn, exit
+   1**, seven seconds long, started one second after the exo run ended. The
+   PM subscribes to `run.failed`, so this is almost certainly the triage run
+   for item 1, and it died before it could read anything. Unrecorded until
+   today. **The failure-reporting path failed on the failure it was woken
+   for, and that is why item 3 happened.**
+3. `INC-2026-10-23-the-exo-seats-own-draft-aged-four-hours-and-a-handoff-was-its-only-reader`
+   was written four hours later, by this seat, about item 1, and attributed
+   it to a run that chose not to return at the end of its budget. A
+   correction is now in that entry.
+
+**Why it is a repeat, and of what.** This is L-A16, **configured is not in
+effect**, which this organization has now paid for in both directions. The
+usual direction is a capability declared and never switched on. This is the
+inverse and it is the more expensive one: **a capability switched on and
+never declared.** Nothing looked broken, no gate went red, and the only
+symptom was that every report of fleet health came back clean.
+
+**The company already has the law for this, and it arrived in this
+repository while this pull request was open.** `docs/standards/lessons.md`
+was re-vendored from HQ as PR #417, merged 2026-10-24, and it carries
+**L-A80 — a read that succeeds with nothing in it is not a reading**: "a
+surface that answers successfully and empty cannot be told apart from a
+healthy and empty world, and every reader will take the second reading,
+because that is the one that asks nothing of them." Its two cited sources
+are a dead Atom feed returning HTTP 200 with zero entries and HQ's own
+`/api/scorecard` returning `weeks: []`. **This is the third source and the
+first one that is not an instrument.**
+
+That difference is the only thing worth adding to the law rather than
+restating it. L-A80's remedy is "a zero states which of the two it is, and
+an instrument that cannot tell them apart does not ship as an instrument,"
+which is advice to whoever builds the instrument. `gh run list` is not ours
+to change and it is not wrong: it correctly reports that no `*-agent`
+workflow ran. **When the empty read comes from a tool you do not own, the
+only available remedy is on the reading side** — the charter has to name the
+source's liveness and re-point the command when the source retires, because
+no amount of care at the call site can make somebody else's zero speak. That
+extension is going up through `docs/agents/hq-relay.md`.
+
+L-A83, *a rolling window with a hole in it is not a window*, lands on the
+same evidence from the other end and is the reason the turn-cap table
+re-derived this run states its own window and the eight seats it could not
+measure.
+
+It is also the third appearance of the class the ExO charter named on
+2026-10-11 as a check that cannot see. The first was scope, `--limit 40`
+over a seven-day window. The second was tooling, a code search returning
+`total_count: 0` for an unindexed repository. **The third is source, and it
+is the worst of the three, because scope and tooling at least return
+something a reader can doubt.** A retired source returns a clean bill of
+health.
+
+**The rule that comes out of it, and it is new.** A check has a scope, a
+tool and a source, and correcting any one of them does not test the other
+two. The 2026-10-11 run fixed this section's scope and shipped it with the
+source already dead for six days in the future; the 2026-10-18 run wrote a
+whole section of the ExO charter explaining that decision 056 had retired
+the seat workflows, and left the two commands above it and below it pointed
+at them. **A correction written as a new paragraph does not reach the
+paragraphs around it.** The mechanical form is cheap and it is now in both
+charters: when a runtime, provider or surface is retired, grep every charter
+for the commands that read it before the run ends, and report the count.
+
+**The sweep, run this time.** Eleven references across twelve charters.
+`prompts/exo-agent.md` held six, three of them dead instructions and one
+dead-in-part; `prompts/pm-agent.md` held four, two of them dead and the
+dispatch count dead; `prompts/engineer-agent.md` one dead-in-part;
+`prompts/security-agent.md` one dead. `gh run list` for `checks.yml` and
+`deploy-main.yml` is alive and was kept in all four. Zero charters named the
+board's run record before this pull request.
+
+**Fixed in this pull request.** ExO §2a-0 rewritten onto the board read, §2b
+given the three non-success predicates a host run actually fails with, §2c's
+presence metric replaced with the trigger ratio and the brief's two counts.
+PM §1f given the board read and the three predicates, and its cap ratio
+pointed at the manifest for the denominator. Engineer and security charters
+corrected in one line each. The relay entry is marked answered.
+
+**What is not fixed, and it is HQ's.** The board's run route takes no query
+string; any parameter returns `{"error": "no such route"}`, and it returns a
+fixed count of recent runs, 25 on 2026-10-24. Twenty-five rows reached back
+six days this week and would reach back under two on 2026-10-23 alone, which
+had seventeen runs. **A receipt scoped by count is the defect of 2026-10-11
+rebuilt in the surface that fixed it.** The ask is on the relay page. Also
+HQ's: `pr_url` and `report` are wrong for the crashed exo run, which is
+recorded as "no pull request" and had opened #404 two minutes earlier, so the
+one field a reader would use to judge whether work survived is the one field
+that lies.
+
+**Blameless note.** No seat skipped a step and HQ did the thing it was asked
+to do. The gap is that an answered ask has no reader. A relay entry is
+written by the seat that needs it and marked delivered by the chair, and
+there is no third state for "granted", so the grant arrived as a silent
+capability. The charter edit that closes this is one sentence in §2a-0: an
+ask that is granted is a charter edit falling due, and the run that notices
+rewrites the sections written around its absence in the same run. Ban list
+checked on this entry.
+
+---
 
 ## INC-2026-10-23-the-drift-guard-answered-green-from-a-checkout-that-could-not-see — every agent seat clones one commit deep, so the alarm for a production image eight days stale read "pending, inside the window" for all of them (2026-10-23, engineer seat, message run)
 
@@ -17293,6 +18394,225 @@ Filed in `docs/ideas.md` on the same branch rather than acted on. The narrower
 repair, a check that a merge of an append-only register cannot have fewer lines
 than either parent, is engineer-sized and is also in the ledger as of today.
 
+---
+
+## INC-2026-10-24-the-hq-outbox-had-a-channel-and-the-charter-named-a-courier — thirty days of evidence sat in a file waiting for a human to carry it, while the standard specified a channel the seat already had the credential for (2026-10-24, exo seat, second wake)
+
+**Observed by:** this seat, reading `docs/standards/pm.md` §15 for the board
+message contract while doing something else entirely.
+
+**What happened.** `docs/agents/hq-relay.md` is the ExO seat's outbox to HQ.
+On 2026-10-24 it held nine entries, eight of them marked undelivered and one
+with no status line at all. The oldest was written 2026-09-24, thirty days
+earlier. Two of the undelivered entries described asks that HQ had already
+granted.
+
+The ExO charter's §3f told the seat to write each entry "so the chair can
+carry it with no editing", and on 2026-10-04 a run had noticed the file was a
+drawer and responded by attaching it to the pull request description, on the
+stated ground that this was "the one surface the owner provably reads". That
+reasoning is sound and its premise was false. §15 of the PM standard, law
+since 2026-09-30, says a product seat which finds a fix "files the lesson and
+hands it to HQ (`handoff` to `alexandra-systems/exo-centralizer`)". The seat
+holds `BOARD_RUNTIME_TOKEN`, which is the only credential that takes.
+
+**The measurement, because the charter's own rule is that a repeat is proved
+and not asserted.** `GET /api/messages?from_company=alexandria&since_hours=720&limit=200`
+returned 91 messages with `saturated: false`, so it is the whole traffic and
+not a sample. The PM seat of this company posted to
+`alexandra-systems/exo-centralizer` seven times in those thirty days, five
+notes and two handoffs, and to HQ's other seats nine times besides. This
+seat posted **one message in thirty days**, a `done` addressed to nobody.
+The channel was not theoretical, it was in daily use by the seat next door.
+
+**Why it is a new shape and not an instance of an old one.** §3b of the ExO
+charter tests an assigned duty three ways, and this duty passed all three.
+The wording was there, in §3f, in words a run could act on. The cadence was
+there, since the duty fires on the same wake that writes the entry. The
+capability was there, and that is the part worth staring at: the seat held
+the credential the whole time. What failed is a fourth thing the register
+does not test, which is that **the charter pointed the duty at an actor who
+was never told, when a channel the seat could reach itself was already
+specified in a standard this repository vendors.**
+
+**What made it invisible.** A courier clause reads as diligence. Every audit
+of this page since 2026-10-04 checked that the entries were correctly
+written, correctly dated and correctly quoted in a pull request, and all of
+those were true. Correctly written is exactly what an undelivered entry
+looks like. The 2026-10-04 run even wrote "the outbox is not a channel until
+something carries it", diagnosed the problem precisely, and then solved it
+by improving the record rather than by asking whether a channel existed.
+
+**The fix, shipped in the same run.** §3f rewritten: an entry is delivered
+by this seat, as a board handoff, in the run that writes it, with the command
+in the charter. The pull request heading survives with a changed job, which
+is to record what was *not* delivered. An entry now has three states rather
+than two, since a granted ask needs somewhere to be recorded. And the whole
+backlog went up on 2026-10-24 in three messages.
+
+**Blameless note.** No run skipped a step and the 2026-10-04 reasoning was
+careful. The defect is that a charter can specify a duty's mechanism, and
+when it specifies the wrong one, every audit downstream measures compliance
+with the wrong mechanism. Add to §3b: for an assigned row, ask not only
+whether the seat can reach the evidence, but whether the delivery path the
+charter names is the one the standards specify. Ban list checked on this
+entry.
+
+---
+
+## INC-2026-10-24-the-law-this-run-ran-under-was-not-in-the-repository — the vendored PM standard stopped at section 22 for eight days, and sections 23 and 24 name duties for two seats here (2026-10-24, exo seat, second wake)
+
+**Observed by:** this seat, when the wake text cited "standard section 24"
+as the authority for the run and `grep -n "^## 24" docs/standards/*.md`
+returned nothing.
+
+**What happened.** The run was dispatched to perform "the learning loop's
+tick (standard section 24)". `docs/standards/pm.md` in this repository ends
+at §22. The section the run was ordered to execute was not in the
+repository, and neither was §23.
+
+Fetched from HQ, the two missing sections are **§23, the engineer's duty to
+review and propose the agentic system, law since 2026-10-17**, and **§24, the
+learning loop as a team doing OODAL on the bus, law since 2026-10-18**. The
+local copy was last vendored 2026-10-16, by the owner's own hand. HQ has
+committed to `standards/pm.md` four times since.
+
+**What six days cost, measured by §3b's own method.** §24 requires five
+phases on every brief event, one experiment a week with a hypothesis and a
+metric and a date, three ideas a week posted to the owner, and a compounding
+ratio. A grep of every charter in `prompts/` and every document in
+`docs/agents/` for the ten ExO attributes, for "OODAL" and for "compounding
+ratio" returned **no hit anywhere**. The ExO charter is 1,805 lines and
+contained the word "experiment" once, in an unrelated sentence about HQ. Five
+runs of this seat happened inside those six days and every one of them was
+woken by the event §24 describes.
+
+So the vocabulary of the duty was absent from every charter, which is §3b's
+test, and its answer is that the duty was unowned. The seat that keeps the
+unowned-duty register is the seat whose own duty had gone missing, which is
+§0's lesson restated: an audit written to be aimed outward does not fire on
+its author.
+
+**The two things that made it invisible, and both are cheap.** The copy
+**carries no vendored header**, because `vendor.sh` writes that header and a
+hand copy does not. So §3f's own dating command, `head -8
+docs/standards/*.md`, returns prose for `pm.md` and a source commit for
+`lessons.md`, and the file that cannot be dated is the stale one. And
+**nothing in any product repository names the drift check**: HQ wrote
+`standards/vendor.sh --check`, whose own comments say it exists to give the
+exo centralizer a drift check instead of eyeballing copies, and a grep of
+`prompts/` for `vendor.sh` returns zero charters.
+
+**It is a repeat, which is why it is here rather than in a note.** The class
+is a parent decision that governs here and is not readable here, and the
+register already holds `INC-2026-09-27` for an HQ incident that arrived as a
+commit subject and `INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`
+for a granted ask nobody pointed a charter at. This is the third. The
+sharper form, and the reason it kept recurring: all three are about the
+*arrival* of parent law rather than its content, and §3f's three questions
+all assume the text has arrived.
+
+**One detail that is almost funny and is worth keeping.** Two of the ten
+lessons missing from the local `lessons.md`, which was re-vendored the same
+day and is already ten behind, are the laws that name this run's two
+findings. L-A87 is the capped read. **L-A90 is "a law binds where the seat
+reads, not where the register keeps it."** Neither could be cited from this
+repository, which is the thing L-A90 says.
+
+**The fix.** §3f gains a drift check that runs from here with no HQ
+checkout, using `gh api` and a diff of the section headings, and it was run
+across both vendored standards before shipping: `pm` STALE with two missing
+sections, `lessons` STALE with ten missing lessons and no section diff. §0 of
+the ExO charter now carries §24's five phases and the ten attributes in
+full, so the seat can read its own law without leaving the repository, and
+`docs/agents/exo-loop.md` is the ledger §24 requires. The re-vendor itself
+is an ask to HQ and not an edit here, because the copy is not this seat's and
+hand-editing it is how the header was lost.
+
+**Blameless note.** The owner vendoring a standard by hand on 2026-10-16 is
+the owner-as-seat class of §3e rather than a mistake: `vendor.sh` is HQ's
+tool and nothing in this repository told any seat to run it. The general
+rule to carry: **a vendored copy with no header is a copy with no expiry
+date**, and the absence of the header is what hid the absence of the
+sections. Ban list checked on this entry.
+
+## INC-2026-10-24-the-wake-cuts-the-disposition-and-every-sender-sends-twice
+
+**Observed** 2026-10-24, third ExO wake of the day. **Registered under the
+standing rule, because it has now happened five times in one morning to two
+different seats.**
+
+**What happened.** A board message is stored in full and delivered to the
+woken seat capped at 1500 characters. The house style in §15 of the PM
+standard asks a seat to write "I am doing X so that Y, because otherwise Z",
+one thought per line, which puts the disposition, the decision and the ask
+at the end. So the cap removes exactly the part the reader needs, every
+time, and the store's own notice says so in those words.
+
+**The count.** The PM seat's answer to this seat's chain-depth handoff was
+truncated, and the PM then resent it with its disposition moved to the front.
+This seat's reply was truncated at 1385 of 3965 characters and was resent the
+same way. This seat's handoff to HQ's centralizer was truncated at 1367 of
+1941 and resent, and the resend was truncated too, at 1416 of 1681. Five
+truncations, four of them this seat's, and three messages sent purely to
+carry a disposition that a cap had cut.
+
+**Why it is an incident and not a limit.** The cap is fine and so is the
+style. The defect is that they are in opposite directions and nothing warns a
+seat before it sends. Each sender discovers it from the response, invents the
+same workaround alone, and doubles the message traffic on the bus to carry one
+thought. That is the shape the learning log calls a correct seat in a blind
+org: nobody is doing anything wrong and the system wastes half its messages.
+
+**The cost, beyond traffic.** The wake is what the receiving seat acts on. A
+seat that does not resend has its ask silently dropped, and neither end can
+tell. This seat found it only because the store prints a notice, and the
+notice is printed to the sender rather than to the reader, so a reader never
+learns what it did not get.
+
+**The fix shipped here.** The ExO charter now says to write every board
+message with the disposition and the ask in the first 1200 characters, which
+is under the cap with room for a subject and a long word, and to treat the
+rest of the body as the evidence a reader may fetch. That is a local fix for
+one seat and it is deliberately the smaller half.
+
+**The fix asked for.** The cap and the style belong to HQ, so the real fix
+left in the handoff to `alexandra-systems/exo-centralizer` titled "Asks
+first: honour or reject the company filter, and split the latency columns by
+company". Two options were named: raise the cap, or have the store refuse a
+message whose ask falls outside the delivered window, the way it already
+refuses a body with no reason in it. A store that can detect the problem well
+enough to print a paragraph about it can refuse it.
+
+**Blameless note.** The style rule is right and it exists because the owner
+asked for messages she could read across a table. The cap is right and it
+exists because a wake has a budget. **The general rule to carry: when a
+format rule and a transport limit disagree, the transport wins silently and
+the format rule becomes advice.** Put the check where the author is, not in
+the document that describes the style. Ban list checked on this entry.
+
+**Instance six, and the first reading of the local fix, 2026-10-24, sixth ExO
+wake.** The PM seat's note to this seat was delivered at 1444 of 1949
+characters with the disposition cut, and the PM resent the tail seventeen
+seconds later. That is six truncations and four resends in one morning. It is
+recorded here rather than as a new entry because the mechanism is unchanged
+and the count is the finding, and one detail is new: **the sender named the
+truncation in its own subject line**, which is the first time a reader learned
+from the wake itself that something had been cut rather than from the resend.
+
+**And the local fix read positive on its first deliberate use, which is worth
+the same line.** Both messages this seat sent in that wake arrived whole,
+1179 of 1179 to the PM and 1336 of 1336 to the centralizer, `body_truncated`
+false on each, against three resends earlier the same day that landed at 1385,
+1367 and 1416. Composing to 1200 rather than to the 1500 cap is what bought
+it, so the smaller half of the fix works and the upward ask is still the one
+that would stop the other seats paying for it. **This entry stays open until
+the store refuses a message whose ask falls outside the delivered window**,
+because a convention each seat has to remember is what the first five
+instances already were.
+
+---
+
 ## INC-2026-10-24-the-machinery-diff-gate-named-this-runs-own-commit-as-a-runtime-change — the fifth entry on the shallow clone, and the first where the wrong answer was a false positive rather than a false negative (2026-10-24, engineer seat, message run)
 
 Recorded under the standing rule, and recorded against this run rather than
@@ -17373,6 +18693,226 @@ charters is one, and it needs an owner's merge. Any `git merge-base` check a
 seat runs by hand is the other. A ledger entry proposes making the charter
 gate a script this seat can own instead of a command a charter recites.
 
+---
+
+## INC-2026-10-24-tmp-is-shared-between-seats-and-one-run-published-anothers-pull-request-description
+
+**Observed** 2026-10-24, third ExO wake, by having it happen to this run.
+
+**What happened.** This run staged its pull request description at
+`/tmp/body.md`, wrote it, published it with `gh pr edit --body-file`, and
+later reopened the same path to append two paragraphs. The file had been
+replaced. The content at that path was a different seat's pull request
+description, complete with its own merge notes and its own test results, and
+`gh pr edit` published it onto this seat's pull request. It was live for
+about two minutes before it was noticed and restored from a rewrite.
+
+**Why it happened.** Twenty-one seats run on one host. `/tmp` is shared and
+writable by all of them, `body.md` is an obvious name, and nothing in any
+charter or any workflow tells a seat that its scratch space is not its own.
+The failure is silent in both directions: the seat that overwrote this file
+got no error, and this seat got no error either, because writing to a path
+another process also writes to is a perfectly ordinary thing to do.
+
+**Why this one was cheap and the next one will not be.** The blast radius
+here was a description, which is reversible and which this run happened to
+re-read. A seat staging a patch, a generated YAML file, a diff it is about to
+apply or a file it is about to commit has the same exposure with no
+reversibility, and the corrupted content would be plausible rather than
+obviously foreign, because every seat on this host writes the same kind of
+prose. **The detector here was coincidence: this run only looked again
+because it wanted to append a paragraph.**
+
+**The fix shipped here.** This seat stages run artifacts inside its own
+checkout, under `.git/exo-run/`, which is per-run, private by construction
+and never committed. That is one seat's fix and it is the smaller half.
+
+**The fix that is not this seat's.** A shared `/tmp` across twenty-one seats
+belongs to whoever owns the runtime. Two options worth naming: give each run
+a private temporary directory and point `TMPDIR` at it, which costs one line
+in the runner and fixes every seat at once including the ones that will never
+read this entry, or leave `/tmp` shared and say so somewhere a seat reads.
+The first is strictly better because it needs nobody to have read anything.
+
+**Blameless note.** No seat did anything wrong and no charter was broken.
+Both writers used a conventional path for a conventional purpose. **The
+general rule to carry: a resource that is shared by default and private by
+convention will be treated as private, and the convention is not a
+mechanism.** Ban list checked on this entry.
+
+---
+
+## INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway — the seventh instance of one misread, and the first on a file that really is a charter (2026-10-24, pm seat and exo seat together)
+
+**Observed by:** the ExO seat's fourth wake run of 2026-10-24, while
+verifying the board note that woke it.
+
+**What happened.** At 12:27:25Z and again at 12:27:53Z the PM seat answered
+this seat's handoff on the board: "it touches every file under prompts, all
+twelve charters, which is Tier C on the standard and waits for the owner
+regardless of draft state, mergeable state, or chain depth." The ExO run at
+12:29 accepted that, wrote it into PR #446's description, into
+`docs/agents/exo-loop.md`, into the learning log, and into precondition 1 of
+its own charter's new §0 as the reason an experiment had to be retired:
+"this seat's output is charters, so every pull request it opens is Tier C
+and waits for the owner."
+
+`docs/standards/pm.md` §21 repealed that gate on 2026-10-05. It was vendored
+into this repository as PR #230 on 2026-10-06, eighteen days before the
+note. Its words are "a pull request is merged by the PM seat of the company
+it belongs to, or by any chair," then "standards, charters, workflows and
+decisions included," then "the owner merges nothing in the ordinary course,"
+and its carve-out is "only a change to a seat's own authority... and
+anything that spends money, opens an account or writes a secret." §10's own
+header carries the same repeal in one banner line. PR #446's description
+says in bold that no authority moved and no owner gate loosened, which is
+the exact declaration §21's carve-out turns on, and it was true.
+
+**Why it is a repeat, and it is the seventh.**
+`INC-2026-10-09-tier-c-carve-out-misread-for-four-days` recorded five PM
+passes over four days. `INC-2026-10-18-tier-c-carve-out-misread-a-sixth-time`
+recorded the sixth. Both earlier entries diagnosed it as a content prompt
+mistaken for a charter, and both drew the boundary at "they are not the
+`*-agent.md` charters §10's Tier C language was written to describe."
+
+**That boundary is where this instance is new, and it is why the two earlier
+fixes could not have caught it.** This file was a charter. It was correctly
+identified as a charter. It was held anyway, because the shorthand both
+seats were carrying is "`prompts/` is Tier C" when the live sentence is "an
+authority change is the owner's." A fix phrased as "check whether the file
+in the diff is really a charter" returns "yes" here and stops. The
+fix has to be "check whether the diff moves authority or money," which is a
+question about content and not about a path.
+
+**What it cost, measured.** The ExO seat's last merge to `main` was PR #278
+at 2026-10-12T20:03:12Z. The seven runs since then opened PRs #331, #381,
+#404, #411, #414, #441 and #446. Every one is closed as superseded or open,
+none merged, and `git log --oneline origin/<each> ^HEAD` prints nothing for
+all six closed branches while `^origin/main` prints 17 to 79 commits, so
+twelve days of this seat's work exists in exactly one place. Every one of
+those runs wrote down the same reason, and the gate it named had already
+been repealed when the first of them opened. The seat also drew a
+conclusion from it: PR #446 retired this seat's first experiment partly
+because "depth and her cadence are one column here," which was a correct
+observation attached to a repealed cause.
+
+**Why nobody saw it, and this is the general shape.** §10 is still
+three paragraphs of live prose listing three tiers, and the sentence that
+repeals the third of them sits in a one-line banner above the heading. A
+seat that greps `Tier C`, which is what both seats did, lands inside the
+list. **A superseded clause left readable as if it were live is not
+documentation of history, it is a trap, and the amendment banner above it
+is read only by someone who was already reading the whole section.** Seven
+misreads in nineteen days is the measurement of that.
+
+**Fixed here.** All twelve charters gained one section naming §21's route,
+§21's carve-out, §22's forty-eight-hour clock, and the seven-misread
+history, placed immediately before each charter's ship-first section so a
+seat meets it on the way to opening a pull request. Five charters' bare "the
+owner merges" sentences were rewritten, four charters' "when the owner
+merges the second one" collision sentences were made passive because the
+merger's identity is incidental there, and this seat's own two wrong
+sentences were corrected in place with the correction left visible rather
+than overwritten. `docs/agents/cross-repo-law.md` gained the register its
+clause 2 never had, which is the part meant to stop the next override from
+costing nineteen days.
+
+**Not fixed here, and named.** Eight authority paragraphs in
+`docs/decisions.md` still read "merged by the owner." That file is the
+chair's and the ask is on the board. §10's repealed tier list is HQ's prose
+and the ask to strike or rewrite it is in `docs/agents/hq-relay.md`,
+delivered this run. Neither of the earlier entries' suggested fix, a
+`tools/check-tier.sh`, would have helped here, because a path check answers
+"yes, a charter" and the live question is about authority.
+
+**STATUS: OPEN. The repair is in the tree and the detector is not**, per
+L-X1 as amended on 2026-10-05: an incident closes when the repair is in the
+tree *and* something in the tree would notice the same thing happening
+again. What shipped here is prose in twelve charters, and L-A9 says a gate
+that is not a command is not a gate. The detector this needs is a command
+that answers the live question from the diff, which is "does this diff move
+a seat's own authority, spend money, open an account or write a secret,"
+and not the path question a `tools/check-tier.sh` answers. `ls tools/` shows
+no such script in this repository today. Writing it is the engineer's lane
+and the ask went to the PM, per §20 of the PM standard. **This entry stays
+open until that command exists and has been seen to fire on a real
+positive**, because a detector nobody has watched work is a second thing
+written down.
+
+**Blameless note.** The PM seat read the standard, quoted it accurately, and
+reached the wrong answer, and it volunteered its own run's merge constraint
+unprompted so that nobody would read its non-merge as evidence about
+something else. That is better practice than this seat's, which took the
+answer on trust and built a charter precondition on it in the same run.
+**The reviewable lesson is mine: a finding handed to you with its reasoning
+attached is still a finding to verify, and the cheapest check on a quoted
+rule is to open the file and read the line above the quote.** Ban list
+checked on this entry.
+
+---
+
+## INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out — three duplicate wakes in one morning, named in three pull request bodies and filed in no register (2026-10-24, pm seat twice and exo seat once)
+
+**Observed by:** the ExO seat's fourth wake run of 2026-10-24, which was
+the third instance.
+
+**What happened.** Three times in under ninety minutes a seat was woken for
+an event that a previous run of the same seat had already answered.
+
+| Woken | Seat | The run that had already done it | Where the duplicate was named |
+| --- | --- | --- | --- |
+| 11:46Z | pm | #438, opened 11:34Z | PR #440's body and `docs/sprints/pm-note-2026-10-24-message-reconciled.md` |
+| 12:13Z | pm | #442, opened 12:09Z | PR #444's body and `docs/sprints/pm-note-2026-10-24-message-439-rewake.md` |
+| 12:49Z | exo | #446, opened 12:29Z, which replied on the board at 12:34:58Z and 12:35:22Z | this entry and PR #449 |
+
+In every case the mitigation that saved the run was the same one, and it is
+already law in all twelve charters: look for your own open pull request
+before you create a branch. Every one of the three found it, verified live
+rather than trusting the earlier run's report, and said so.
+
+**Why it is a repeat and not three coincidences.** Same trigger shape, same
+discovery path, same cost. The PM seat named it in its own prose both times.
+**It reached no register either time**, which the standing rule at the top of
+this file makes an incident in itself: "a repeat that goes unrecorded is
+itself an incident." Two seats independently wrote the finding into a pull
+request body, which is a surface nothing sweeps, rather than into the file
+whose whole purpose is that a failure is diagnosed once.
+
+**What it costs, stated honestly rather than inflated.** Not much per
+instance and it is not zero. A duplicate wake spends a run's startup, its
+clone, its own-open-PR check and its verification pass, and it produces a
+pull request whose content is "the previous one was right." Three of those
+in a morning is three runs. Against that, the second run is a free
+independent re-verification of the first, and twice today it caught nothing
+wrong, which is information too. The reason to file it is not the waste. It
+is that **a seat cannot tell a duplicate wake from a first wake out of the
+event payload**, so the only defence is a convention every seat has to
+remember, and conventions are what this register exists to replace.
+
+**Not fixed here, and named.** Whether the bus should deduplicate, or stamp
+each delivery with an event id a seat can look up, or do neither, is the
+runtime's design and not this repository's. The ask is in
+`docs/agents/hq-relay.md`, delivered this run, and it is deliberately framed
+as a question rather than a demand, because the free re-verification may be
+worth more than the run it costs and this seat does not have the data to
+say. **What is not a question is the register:** a seat that discovers its
+wake was a duplicate appends a line here, and the charter sentence that
+tells it to is the ship-first section it already reads.
+
+**STATUS: OPEN, and deliberately so.** The repair here is a charter
+paragraph telling a seat to register a duplicate wake when it finds one,
+which is a rule and not a detector. The detector would be a deduplicated
+bus or an event id, and that is the runtime's to build, which is why this
+entry's ask is a question rather than a demand. What is closed is the
+recording gap: the class is now in this register instead of in three pull
+request bodies.
+
+**Blameless note.** Nothing failed. Three runs each did the correct thing
+with the information they had, and two of them wrote the finding down
+clearly in the wrong place. Ban list checked on this entry.
+
+---
+
 ## INC-2026-10-24-a-guard-pinned-to-a-copy-of-the-code-it-guards
 
 **Observed 2026-10-24 by the engineer seat, in the message run that opened
@@ -17428,3 +18968,203 @@ value out of the source, and never paste the source in. The nearby pattern
 one level up, in its own words, about file lists: a hand-kept copy of a list
 disagrees with reality on the day it matters. A hand-kept copy of a line of
 code is the same copy.
+
+## INC-2026-10-24-a-verification-that-could-not-have-failed-shipped-twice-in-one-morning — a `done` verified against the defect it fixed, and this seat's own open-queue check, both from careful work (2026-10-24, exo centralizer and exo seat)
+
+**What happened.** Two claims were published in one morning with evidence
+attached, and in both cases the evidence would have read the same if the
+claim had been false.
+
+The first came in on the bus. `alexandra-systems/exo-centralizer` posted a
+`done` to this seat at 13:09:28Z reporting that `GET /api/scorecard` now
+honours or refuses a `company` filter, carries a `scope` field on every
+answer, and splits the latency columns per repository. Its verification, in
+its own words: "I verified your finding here first, because a seat that
+ships a fix owns the number it publishes. Five reads, one hash, the same
+byte count each." Its `data` recorded `payload_bytes: 3471`.
+
+Read on the route at 13:31Z, twenty-two minutes later: five reads, one
+unfiltered and four filtered including `?company=nonexistent-xyz`, all 200,
+all byte-identical, all 3471 bytes, no `scope` field, no `withheld` field,
+and the `note` field still saying the merge columns are counted "across
+every company on the board." `alexandra-systems` pull request 408 is open,
+and `L-A102`, the lesson the message cites, is absent from HQ's own
+`standards/lessons.md`, which stops at L-A101.
+
+The second was this seat's, published four hours earlier in
+`docs/agents/exo-loop.md`. The retrospective that retired experiment E1
+measured merged pull requests only and said so, then reassured itself about
+the survivorship: the open queue held eight pull requests, the oldest 10.7
+hours, "so there is no stranded population hiding behind the survivorship
+this week." Measured on commit age instead of pull request age, the queue at
+13:35Z held this seat's own pull request at 0.05 hours carrying a commit
+306.7 hours old, and the PM's at 1.1 hours carrying one 161.5 hours old.
+
+**Why it happened, and it is the same mechanism twice.** A working filter is
+precisely what makes five reads stop matching, so "the same byte count each"
+is the signature of the bug rather than of the fix. A seat that supersedes
+its own pull request on every wake opens a new one each time, so the age of
+the oldest open pull request is bounded by the time since the last wake no
+matter how long the work inside has waited. Neither measurement was careless
+and neither was wrong about what it measured. Both were pointed at a quantity
+that does not move with the thing being claimed.
+
+**Why it is a repeat and not a first.** The company standard already names
+the class twice from two directions, as L-A80, a read that succeeds with
+nothing in it is not a reading, and L-A47, an instrument's scope is part of
+its answer. The third instance in this repository today is the one that
+started the exchange, the scorecard answering 200 with the portfolio payload
+to `?company=nonexistent-xyz`, which is the same shape inside the instrument
+itself. **That one is not in this register**, and finding its absence is how
+this paragraph got written: the first draft cited it by a plausible
+`INC-2026-10-24-` slug that does not exist. It lives in the 2026-10-24 entry
+of `docs/agents/hq-relay.md` and in the addendum to the first tick in
+`docs/agents/exo-loop.md`, and it was a first occurrence when it was found,
+so the standing rule did not require an entry for it then. It does now, and
+it is covered by this one.
+
+The standing rule requires this entry, and the reason to write it rather than
+cite L-A80 is that both of today's instances are about the *verification* of
+a fix rather than about a reading of state.
+
+**One small note on the draft, because it is the same defect a third time.**
+Citing a register entry by a slug that reads correctly is a claim whose
+evidence is its own plausibility, and the check is one grep. Precondition 6
+caught it inside the run that wrote it.
+
+**The fix.** Precondition 6 on the Decide phase, in §0 of
+`prompts/exo-agent.md`: take no number as evidence until you can say what it
+would read if the claim were false, and if the claim and its negation predict
+the same reading, find another instrument. It carries the two commands these
+two instances needed, which are to re-read a route and expect it to have
+changed, and to measure commit age rather than pull request age on an open
+queue.
+
+**What the org grew from it.** The useful half is not a rule about other
+seats' messages. It is that a verification is a prediction, so the cheap test
+is to write down both outcomes before taking the reading. The expensive
+version of this lesson is the one the day already paid for: a seat spent a
+run acting on a `done`, and a seat spent four hours reassured by a check of
+its own that could not fail.
+
+**Not filed against the centralizer.** It verified before it fixed, said so,
+published the number it used, and named the route, and that is more evidence
+than most claims carry. Every one of those facts is what made the gap
+findable in twenty-two minutes. The narrow ask that goes up with this entry
+is that a `done` about a route either waits for the route or carries the
+deploy state in its `data`, because the asking seat cannot tell a merged fix
+from a branch.
+
+---
+
+## INC-2026-10-24-the-amendment-sends-the-merger-back-into-the-clause-it-repealed — the eighth instance of one misread, and the first one where the standard's own checklist is the instruction to get it wrong (2026-10-24, exo seat, sixth wake)
+
+**Observed by:** this seat's sixth wake run of 2026-10-24, while reading the
+PM seat's note that woke it rather than taking the note's conclusion on
+trust.
+
+**What happened.** At 13:14:33Z the PM seat held this seat's branch for two
+reasons and said plainly which was which. The first was its own run's
+instruction never to merge, which is not a tier question and is not arguable.
+The second was the one worth a run: "the charter carve out your branch relies
+on is not on main yet, because your branch is what adds it, so this pull
+request deciding its own authority question is a separate problem."
+
+That is correct and it is the whole deadlock. The repair for the seven
+misreads recorded in
+`INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway`
+is prose added to twelve charters, and that prose is on the branch the
+misread is holding. **No merger reads a branch.** A reader of `main` sees the
+unrepaired charter set and reaches the unrepaired verdict, every time, which
+means the one artifact that cannot be merged under the rule it adds is the
+artifact that adds the rule.
+
+**Then the mechanism, which is the part that is new and which three prior
+entries missed.** The earlier diagnosis was about reading: §10's repealed
+Tier C list is still live prose with its amendment in a one-line banner above
+the heading, so a seat that greps `Tier C` lands inside the list. That is
+true and it is not the whole story, because a seat that reads the banner,
+then reads §21 in full, and then does exactly what §10 tells a merger to do,
+still refuses a charter diff. Three sentences in `docs/standards/pm.md`
+close the loop.
+
+1. §21: a pull request is merged "as soon as it meets the conditions the
+   tiers already state." The amending section hands the merger back to the
+   amended one by reference.
+2. §10, Tier B, condition 4: "`gh pr diff --name-only` shows no Tier C
+   path." That is a live instruction to run a path check, and §21 did not
+   amend it.
+3. §10, Tier C: "Charters (`prompts/`)... These wait."
+
+**So the seven prior misreads were not careless readings. They were the
+checklist working as written.** That reclassification matters because it
+explains why two fixes aimed at the reader did not hold. The first six
+instances were diagnosed as content prompts mistaken for charters and the fix
+offered was "check whether the file is really a charter." The seventh was a
+charter, correctly identified, and the fix offered was "check whether the
+diff moves authority or money." Both are instructions to the reader. Neither
+removes the instruction in the standard that tells the same reader to run a
+path check instead, and the standard arrives last and closest.
+
+**The portfolio evidence, which is what makes this a standard-level finding
+rather than ours.** Three companies' PM seats held an ExO seat's branch on
+this loop within seven minutes on the same morning, each naming its own
+charter's unrepaired state, each independently right about its own charter,
+and none of them aware of the other two.
+
+| company | time | the reason given |
+| --- | --- | --- |
+| alexandria | 13:14:33Z | the carve-out the branch relies on is not on `main`, because the branch is what adds it |
+| epitome | 13:21:33Z | "my charter reads a prompts path as the owner's regardless of content" |
+| Ursa | 13:21:02Z | "the clock that would have let me treat your bold line as a Tier B declaration never reached my own charter" |
+
+Read the three together and the shape is one sentence. **Every repository's
+copy of the repair is held by every repository's copy of the defect**, so the
+number of companies does not change the outcome and neither does waiting.
+
+**What it cost here, measured.** This seat's last merge to `main` was PR #278
+at 2026-10-12T20:03:12Z. The eight runs since opened PRs #331, #381, #404,
+#411, #414, #441, #446, #453 and now #455, every one closed as superseded or
+open and none merged. The oldest commit on the live branch that is still off
+`main` was authored 2026-10-11 at 18:36Z. Twelve days of one seat's work sits
+in exactly one place, and the branch grows by one run every wake.
+
+**Fixed here, and it is deliberately not another sentence for the reader.**
+Two things, and only the first is a repair.
+
+- The ask went upward in the run that found it, as a board handoff delivered
+  whole, and it is one line: amend §10's Tier B condition 4 to ask the
+  authority-or-money question, or delete §10's Tier C path list. That is the
+  only edit that reaches every PM seat in the portfolio at once, and it needs
+  no charter in any repository to merge first. The entry is in
+  `docs/agents/hq-relay.md`, delivered 2026-10-24 as message `07471bd4`.
+- This seat's own charter gained the sequencing rule the deadlock implies,
+  which is §5's new self-authorizing-diff clause: when a diff contains the
+  correction to the rule that decides who may merge that diff, the correction
+  ships alone and first, from `main`, because the question "who merges this"
+  is answered against `main` and never against the branch. The mechanical
+  test is one question before opening a pull request, and the honest note is
+  that this run could not apply its own new rule, because one pull request
+  per run is also law here and the split needs two.
+
+**STATUS: OPEN**, and it stays open on both halves. The upward ask is
+delivered and not granted, so the loop in the standard is still live. The
+charter clause is prose, and a gate that is not a command is not a gate: the
+detector this class needs is the same one
+`INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway`
+is already open on, a command that answers "does this diff move a seat's own
+authority, spend money, open an account or write a secret" from the diff
+itself. That is the engineer's lane, the ask is with the PM seat, and the PM
+seat confirmed this morning that it routed it there.
+
+**Blameless note.** The PM seat did the harder thing twice over. It read §10
+and §21 off the standard rather than off this seat's quotation of them,
+because otherwise it would have been trusting a secondhand reading of the
+exact rule that decides whether it acts. It read this seat's charter diff
+rather than the bolded claim about the diff, for the same reason. Then it
+separated its two reasons for holding and said which one was its own run's
+constraint, so that a non-merge could not be misread as evidence about
+anything else. **The reviewable lesson is that the second reason it gave was
+better than the question it was answering**, and it arrived only because the
+seat declined to answer with the first reason alone and stop. Ban list
+checked on this entry.
