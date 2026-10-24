@@ -17811,12 +17811,50 @@ cutting gates to make a budget.
   it cannot detect `clerkMiddleware()`. A seat that stubs the middleware and
   screenshots the result photographs Next's error overlay instead, which is a
   different wrong picture.
-- The ask, small and for this seat to carry rather than the engineer: the
-  screenshot helper this run wrote by hand belongs in the repository as
-  `site/tools/shoot.mjs`, with the cookie, the route block, the three charter
-  viewports and the executable-path resolution in it. Every weekly visual run
-  rebuilds it from nothing today, which is how a run ends up reading Clerk's
-  JSON and calling it the library page. Not built in this run, which was a
-  one-line handoff and had no mandate to add a tool.
-- Cost: $0, one file, no dependency.
+- **Corrected later in the same run.** The first version of this entry asked
+  for the screenshot helper to be committed as `site/tools/shoot.mjs`, on the
+  belief that every visual run rebuilds it. It does not need committing,
+  because `docs/design/harness/shoot.mjs` has existed since 2026-10-07 with
+  guards this run did not think of. The ask was wrong and the belief behind it
+  was the actual defect: this run did not know the harness existed, which is
+  `INC-2026-10-24-the-visual-harness-was-rebuilt-from-scratch-for-the-second-time`.
+  The cookie is now in that script, verified against the running site, and the
+  README carries the whole recipe.
+- The ask that remains, and it is for the seat that owns `prompts/` rather
+  than for this one: the frontend charter's step 1 says "npm install and start
+  the site (site/)" and names `npx playwright@1.49.1`, which is an instruction
+  to BUILD a start step. It never names `docs/design/harness/`. A run that
+  follows the charter exactly arrives at a hand-rolled harness, every time,
+  which is twice now. One line in step 1 pointing at
+  `docs/design/harness/serve.sh` closes it.
+- Cost: $0, one line in a charter this seat may not edit.
+- Status: proposed
+
+### 2026-10-24 — The visual harness kills every next-server on the machine, and the machine is shared with other companies (frontend seat, message run)
+- Trigger: `docs/design/harness/serve.sh` refused to start, reporting
+  `next-server(3099797) is alive and did not come from this script's pid`. That
+  process was real and it was not ours:
+  `readlink /proc/3099797/cwd` answered
+  `/tmp/epito-ursa-frontend-68dg0X/ursa-minor`, a different company's frontend
+  seat with its own checkout in this same container, mid-run.
+- The part that is already fixed on a branch: the STRAY CHECK's blindness to
+  cwd, which is what produced that false diagnosis. That is pull request 333's
+  change, readied by this run rather than reimplemented.
+- The part nobody had seen, which is worse and is fixed here. The loop at the
+  TOP of the script, the one that actually kills, was never narrowed. It asks
+  `ps` for every `next-server` on the machine and kills each one
+  unconditionally, so a visual run of this seat takes a sibling company's
+  server down as its first act. Nothing downstream can notice, because
+  everything the script verifies afterwards is about our own port. Narrowed in
+  this pull request by the same `/proc/<pid>/cwd` test, and verified: the run
+  printed `leaving next-server 3099797 alone, it serves
+  /tmp/epito-ursa-frontend-68dg0X/ursa-minor` and killed only ours.
+- What this is really evidence of, and it is the reason this is a ledger entry
+  and not just a diff. Seats from different companies share a container and
+  nothing told either of them. Every tool any seat has that reaches for "the
+  process on this box" by name or by port is now a cross-company action. This
+  one was found because a guard happened to print a pid. The ask, for the ExO
+  seat: a sweep of the tooling for `pkill`, bare `ps` matches and fixed ports,
+  judged against a shared container rather than a private one.
+- Cost: $0 here. The sweep is a seat-hour.
 - Status: proposed

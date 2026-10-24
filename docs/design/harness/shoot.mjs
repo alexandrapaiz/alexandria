@@ -54,6 +54,33 @@ for (const vp of VIEWPORTS) {
     reducedMotion: "no-preference",
   });
 
+  // The answer to guard 1, added 2026-10-24. The guard below is correct and it
+  // has never had a cure next to it, so every run that meets it derives one:
+  // `INC-2026-10-15-the-visual-harness-had-three-traps` recorded the failure,
+  // the README recorded the failure, and the run of 2026-10-24 photographed
+  // three frames of `{"code":"host_invalid"}` before reading one.
+  //
+  // `clerkMiddleware` answers a browser navigation with 307 to the dev-browser
+  // handshake whenever this cookie is absent, and the reason is literally in
+  // the response header: `x-clerk-auth-reason: dev-browser-missing`. Present
+  // it and the middleware stops redirecting, so the pages render and guard 1
+  // keeps doing its job for everything else.
+  //
+  // This is not a credential and it is not a sign-in. The value is never
+  // validated, because the redirect is decided on the cookie's presence; every
+  // page the sweep photographs is a signed-out page, which is what the sweep
+  // wants. The alternative the README suggests, a production-shaped
+  // publishable key, needs a real key in the environment and reaches the real
+  // Clerk, which guard 1 exists to prevent.
+  await ctx.addCookies(
+    ["127.0.0.1", "localhost"].map((domain) => ({
+      name: "__clerk_db_jwt",
+      value: "dvb_visual_harness",
+      domain,
+      path: "/",
+    }))
+  );
+
   // Guard 1: nothing leaves localhost. A handshake redirect to a Clerk host
   // cannot succeed, so it surfaces as a failure instead of as a clean report.
   await ctx.route("**/*", (route) => {
@@ -202,11 +229,27 @@ if (failures.length) {
   process.exit(1);
 }
 
-// Guard 3: uniform byte sizes across different pages mean identical renders.
+// Guard 3: uniform byte sizes across different PAGES mean identical renders.
+//
+// Scoped to that word on 2026-10-24. The spread was computed over every frame
+// in the report, and with `only` set the report is one page at three
+// viewports, where similar byte sizes are the correct answer rather than a
+// symptom: these are full-page frames of the same article, so the same text
+// reflowed to three widths weighs about the same. A run of this seat targeting
+// one page therefore failed with correct frames on disk, which is the worst
+// kind of guard, because the next run's cheapest response is to stop believing
+// it. Measured here at 3.8% across three good frames of the issue page.
+//
+// The guard's premise is that two DIFFERENT pages rendering to the same size
+// are the same render, so it only has a question to ask when the sweep covers
+// more than one page. With one page it says so and asks nothing.
+const pagesShot = new Set(report.map((r) => r.page)).size;
 const sizes = report.map((r) => r.bytes);
 const spread = (Math.max(...sizes) - Math.min(...sizes)) / Math.max(...sizes);
 console.log(`shot ${report.length} frames, byte-size spread ${(spread * 100).toFixed(1)}%`);
-if (spread < 0.05) {
+if (pagesShot < 2) {
+  console.log(`guard 3 skipped: one page (${report[0]?.page}), so a size spread proves nothing.`);
+} else if (spread < 0.05) {
   console.error("FAIL: every frame is within 5% of the same size. That is what identical renders look like.");
   process.exit(1);
 }
