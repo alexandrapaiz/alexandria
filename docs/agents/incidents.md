@@ -17514,3 +17514,70 @@ sent this run back to `/tmp`. The whole remedy is `mktemp -d` once at the top
 of a run: unique by construction, outside the tree, and nothing to remember.
 A rule that trades one hazard for another will be undone by the next seat
 that meets the other one, which is what happened here inside four hours.
+
+## INC-2026-10-24-the-authority-gate-shipped-with-a-false-clear-in-the-one-direction-it-forbade-itself — L-A9's own 2026-10-05 case, repeating against the instrument that case produced (2026-10-24, engineer seat, hook run)
+
+**Observed 2026-10-24 by the engineer seat, in the hook run that opened
+PR #462, against code the same seat wrote in the message run behind PR #456.
+Caught before either reached `main`, so the entry is about the shape rather
+than about a cost.**
+
+**What happened.** `tools/check_authority.py` decides whether a diff is the
+owner's to merge. Its docstring states the direction of error in its own
+words: a wrong `reserved` costs one merge of waiting, a wrong `clear` costs
+an authority breach, so `undecided` exists, it is non-zero, "and it is the
+error this command is allowed to make." The file shipped with a false `clear`
+in it.
+
+`SETTING_VALUE` exists to keep ordinary configuration out of the secret
+question, so that `id-token: write` is read as a setting rather than as a
+credential. It is compiled with `re.I` and its last alternative is
+`[A-Z][A-Z0-9_]{2,}`, which under that flag fullmatches any single word of
+letters, digits and underscores at any length. It was checked before
+`CREDENTIAL_SHAPE`. So a forty-character hex token assigned to a name ending
+`_API_KEY` matched the setting exemption, returned before the credential
+check it was meant to defer to, and cleared.
+
+**Why it is a repeat.** L-A9's 2026-10-05 amendment is this shape, and this
+instrument is the thing that amendment asked for. Its own worked example is
+`docs/standards/pm.md` §10: the company put a gate on its only self-service
+merge path, made a wrong answer an incident, and implemented the gate as a
+seat reading a paragraph from memory once per run, with nothing in `tools/`
+computing it for two weeks. The amendment's test of a real gate is to name
+the command and say what its exit status means. #456 did both, in a docstring,
+and stopped there. 714 lines, three verdicts, an exit-status contract, and
+nothing in the suite read any of it, so the gate's stated promise and the
+gate's behaviour had never been compared. The promise was wrong about the
+code on the day the code was written.
+
+**The second finding, same run, same cause.** Pointed at its own diff for the
+first time, the gate answered `RESERVED` with eleven findings, and every one
+of the eleven was a fixture inside its own test file: credential-shaped
+strings and secret-shaped assignments written out in full, which is what a
+test for a secret detector is made of. A gate whose first real verdict is on
+itself, and wrong, is a gate people learn to pass with `--no-verify`. The
+tool's own docstring is the argument: `reserved` is the cheap error only while
+it stays rare.
+
+**What this run did about it.** The order is reversed, so `CREDENTIAL_SHAPE`
+is asked before the setting exemption, and a long constant now reads
+`reserved` instead, which is one merge of waiting. 43 tests behind the gate,
+every one through `examine()` on a unified diff, asserting the verdict and the
+exit code rather than any regex, because the verdict is what a caller acts on.
+Every fixture that names a secret, a price or an account is assembled from
+parts, and one test feeds the file to `examine()` as an all-added diff and
+requires `clear`, so the promise is asserted rather than trusted. That test
+caught the last fixture the hand-audit had missed. What the run deliberately
+did not do is exempt `tests/` inside the tool: a real credential committed
+under `tests/` is a leaked credential.
+
+**What the org should take from it.** The gap L-A9 names is between a gate
+that is specified and a gate that is computed, and this run says the ladder
+has one more rung than the amendment describes. A command with an exit-status
+contract in its docstring is still a specification. The rung that makes it a
+gate is a test that reads the exit status back, because that is the first
+moment the promise and the code are in the same room. Fourteen instruments in
+`tools/` print a verdict and exit on it; nothing in this repository knows
+which of them have that test and which only have the paragraph. Until
+something does, the next instrument ships the same way, and it will be the
+author's own docstring that is wrong.

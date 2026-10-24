@@ -18889,3 +18889,84 @@ cutting gates to make a budget.
   a change to the terms and a rewritten dedupe test, not new machinery.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-24 — A tool that declares an exit-status contract should be required to have a test that reads it back (engineer seat, hook run)
+- Trigger: this run. `tools/check_authority.py` shipped in #456 with 714
+  lines, three verdicts, an exit-status contract written out in its docstring,
+  and nothing in the suite reading any of it. Writing the tests found a false
+  `clear` in the one direction the docstring forbids itself, which means the
+  promise and the code had disagreed since the moment both were written.
+  Fourteen instruments in `tools/` print a verdict and exit on it, and nothing
+  in this repository knows which of them have a test behind that exit status
+  and which only have the paragraph.
+- What: one meta-test, in the shape `tests/test_ci_coverage.py` already uses
+  for a different invisible defect. For every file in `tools/` whose docstring
+  contains an exit-status table, require a test file that imports it and
+  asserts the mapping. The pin list is the model: today's set is written down,
+  it may shrink and may not grow, and a new instrument with a contract and no
+  test fails the gate on the pull request that adds it rather than six days
+  later. This is L-A9's amendment with one more rung on it: the amendment says
+  name the command and say what its exit status means, and this run's evidence
+  is that a docstring saying so is still a specification. The rung that makes
+  it a gate is a test that reads the status back, because that is the first
+  moment the promise and the code are in the same room.
+- First step: the detector for the contract, which is the only part with any
+  judgement in it. A docstring table of `0 clear` / `2 reserved` shaped lines,
+  or a module-level `EXIT` dict, are both unambiguous and both already present
+  in the two instruments that have one. Start by printing the set across
+  `tools/` and reading it before writing any assertion, because the set size
+  decides whether this is a gate or a six-month migration.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A detector cannot be edited without flagging its own pattern definitions, and there is no way to say read, ruled, waived (engineer seat, hook run)
+- Trigger: `python3 tools/check_authority.py --range origin/main...HEAD`, run
+  against this run's own branch after the fixtures were rebuilt. Verdict
+  `undecided`, exit 3, ten findings, and all ten are lines inside the tool's
+  own regex definitions: `SECRET_KEY`, `SECRET_LITERAL`, `CREDENTIAL_SHAPE`,
+  `SPEND` and `ACCOUNT` describe the shapes they look for, so they contain
+  them. These ten are a one-time artifact of the file being new, because once
+  it merges those lines become context. They come back on every future edit to
+  a pattern, which is to say on every improvement to the detector.
+- What: an auditable waiver, in the `# noqa` idiom and not in its semantics.
+  The difference that matters: a waiver marker is a claim that a human read the
+  line and ruled on it, so the tool should report waived lines in its output
+  and count them, never silently skip them. A `clear` with three waivers on it
+  is a different fact from a `clear` with none, and a surface that hides the
+  difference is how a suppression list becomes permanent.
+- First step: do not build it yet, because the design has an authority question
+  inside it that this seat should not answer alone. If any seat may write the
+  marker, then the gate on the owner's four reserved things is a gate any seat
+  can open with a comment, which is the one thing the tool exists to prevent.
+  The first step is the question, on the board, to the PM: who may waive, and
+  does a waiver expire. The code after that is an afternoon.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The suite's own module loader breaks on dataclasses, and ten test files carry the broken copy (engineer seat, hook run)
+- Trigger: `tests/test_check_authority.py` failed at collection, not at an
+  assertion, with `AttributeError: 'NoneType' object has no attribute
+  '__dict__'` raised from inside `dataclasses`. The cause is that the loader
+  pattern this suite copies between files, `spec_from_file_location` followed
+  by `exec_module`, never puts the module into `sys.modules`, and
+  `dataclasses` resolves a field's annotations by looking the defining class's
+  own module up there. For a module loaded by path and never registered that
+  lookup returns `None` and the decorator raises while the file is still
+  importing. `tools/merge_order.py` has no dataclasses, which is the only
+  reason the copy that was pasted from it works.
+- What: one shared helper, `tests/_load.py`, holding the loader once with the
+  `sys.modules` registration in it, and the ten or so files that carry their
+  own `_module()` calling it instead. The value is not the deduplication. It is
+  that the current failure mode is a collection error, which under
+  `pytest tests/ -q` is not one red test but a file that contributes no tests
+  at all, and the next seat to add a dataclass to any tool in `tools/` meets it
+  with no idea why. This is the same copy argument
+  `INC-2026-10-24-a-guard-pinned-to-a-copy-of-the-code-it-guards` makes one
+  level up: a hand-kept copy of a loader disagrees with reality on the day a
+  tool grows a dataclass.
+- First step: write the helper and convert one file, `test_check_authority.py`,
+  which is the only file that currently needs the registration. Converting the
+  other nine is mechanical and separable, and doing it in the same change would
+  put nine unrelated files in a diff whose point is one helper.
+- Cost: $0.
+- Status: proposed
