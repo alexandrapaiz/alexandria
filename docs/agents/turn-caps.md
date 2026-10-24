@@ -778,6 +778,65 @@ window close rather than a refusal. The remainder are single `exit: 1` rows
 at ordinary turn counts, already diagnosed in the learning log as
 cap-adjacent, and now known not to be cap hits.
 
+### Correction, same day, later run: fingerprint one's test selects the retry and discards the kill
+
+The paragraph above is wrong about 2026-10-24T13:49, and wrong in a way that
+matters more than the count. It records that minute as one instance of the
+provider refusal, because its test is `turns == 1` and exactly one
+alexandria row in that minute had one turn. Read the window by time instead
+of by turn count and it is not one row. It is **twenty**.
+
+```bash
+# the test that finds the event: cluster on time, across seats, at any turn count
+python3 - <<'PY2'
+import json
+rows=[json.loads(l) for l in open('/srv/asc/state/.epito/audit.jsonl') if l.strip()[:1]=='{']
+w=[r for r in rows if r.get('action')=='run.end' and r.get('exit')==1
+   and '2026-10-24T13:49' <= r['ts'] <= '2026-10-24T13:52']
+print(len(w), [(r['agent'], r.get('turns')) for r in w])
+PY2
+```
+
+`2026-10-24T13:49:23.944Z` through `13:51:37.170Z`, a span of 133 seconds,
+twenty `run.end` rows with `exit: 1`, across all five companies: Ursa 10,
+alexandra-systems 4, alexandria 3, atelier 2, epitome 1. **Thirteen of the
+twenty were live runs killed mid-work**, at turn counts 4, 6, 35, 36, 41, 46,
+50, 53, 64, 75, 75, 92 and 98, which is 675 turns of work. The other seven
+are at exactly one turn with durations from 6.3 to 24.0 seconds, and four of
+those seven are immediate restarts of a seat that had just been killed:
+`ursa-market`, `atelier-pm`, `ursa-exo` and HQ's `engineer` each have a kill
+row and a one-turn row inside the same half minute.
+
+**So the one-turn rows are the aftershock and the kills are the event.**
+Fingerprint one describes a run that was refused before it started, which is
+real and is the right diagnosis for a seat that wakes into an exhausted
+provider. It is the wrong diagnosis for this minute, because it reads the
+retries and discards the thirteen runs whose work was actually lost. A test
+keyed on `turns == 1` cannot see a kill by construction.
+
+**The third fingerprint, then, stated as a test rather than as a story.**
+
+> Two or more `exit: 1` rows from different seats inside sixty seconds is one
+> event, whatever their turn counts. Count the window, not the row.
+
+That holds for `exit: 143` too, which is fingerprint two, so the two
+fingerprints are one shape read through two signals. The sharper question a
+cluster asks is which signal the host sent, and the turn counts answer a
+different question: how much work the event cost.
+
+**Why nobody diagnosed this one on the day, which is the organizational
+half.** The event killed `alexandria-exo` at 41 turns, `epitome-exo` at 36,
+`ursa-exo` at 92 and HQ's `exo-centralizer` at 6. **Every seat in the
+portfolio whose charter owns failure diagnosis was inside the failure.** The
+seat that would have swept it was dead for the same reason the sweep was
+needed, and the next ExO run of each company read a board run list scoped to
+25 rows and saw a handful of ordinary-looking single failures. That is not a
+gap in anybody's charter. It is a correlated-failure property of putting one
+duty in one seat per company and waking all of them off one host, and the
+honest fix is a detector that does not depend on a seat being alive.
+Registered as
+`INC-2026-10-24-twenty-runs-across-five-companies-ended-inside-one-minute-and-the-fingerprint-counted-one`.
+
 ### Rule 7: measure from the host's audit log, and say so
 
 The numerator for this page comes from `/srv/asc/state/.epito/audit.jsonl`
