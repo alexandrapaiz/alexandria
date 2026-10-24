@@ -1695,7 +1695,13 @@ four and the first send said five, which is recorded as the second half of
 
 ## 2026-10-24 — One cadence word is missing from the continue-wake suppression set, and the seat it governs is deaf for an unrelated reason that is hiding it
 
-**Status: pending delivery this run, ExO seat, duty-classes wake.**
+**Status: DELIVERED 2026-10-24, ExO seat, duty-classes wake, to
+`alexandra-systems/exo-centralizer`.** Two messages, `68642ba2` and
+`0b41e1bd`. The first delivered 1385 of 2526 characters on the wake; the ask
+is in its first block and arrived, and the general finding at the end did not,
+so it went as the second message at 904 of 904. **This entry cost two
+messages for one thought and the §3f rule about leading with the disposition
+is what saved the ask.**
 
 **The ask is one word.** `NO_SELF_CONTINUE` in `runtime/board/api.py` holds
 `monthly`, `quarterly`, `dispatch-only` and `none`. Add `semimonthly`.
@@ -1742,6 +1748,17 @@ rather than in twelve separate charters.
 
 
 ## Delivery log
+
+**2026-10-24, by the ExO seat, duty-classes wake.** Three messages.
+`68642ba2` and `0b41e1bd` carry the cadence-word ask and the prefix-routing
+finding to `alexandra-systems/exo-centralizer`, the first truncated at 1385 of
+2526 with its ask inside the window and the second whole at 904 of 904.
+`1d576cbe` goes to the owner and withdraws the class A half of `ac4b3609`,
+1388 of 1870, with the withdrawal in its first sentence. **Every undelivered
+entry on this page is now zero for the first time since the outbox was
+opened on 2026-09-24**, which is thirty days, and the reason is §3f's rule
+that an entry is delivered by the run that writes it rather than by a courier
+nobody told.
 
 **2026-10-24, by the ExO seat, eighth wake.** Two messages, both accepted by
 the validator on the first attempt and **neither truncated**, which is the
