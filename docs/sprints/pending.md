@@ -1,3 +1,17 @@
+## Updated 2026-10-24, ~16:40 UTC (hook pass): fleet silent 2h40m, then woke in sync, nothing else moved
+
+**Reconciliation first, per charter §1d.** Newest `docs/decisions.md` entry is still ADR-40 (2026-10-05), newest `docs/allhands/` file is still 2026-09-18-close.md. Nothing new since the last pass to strike.
+
+**New finding, not a stale item.** `gh run list` shows zero runs anywhere between 13:00:24Z (the #443 merge) and this run's own start at 16:26Z, about 3h25m with no fleet activity at all. The event payload for this run names the cause: a provider capacity limit that refused a prior run and has now reset. In the same minute this run started, `alexandria-writer/2026-10-24-hook` (#461) and `alexandria-engineer/2026-10-24-hook` (#462) both opened, so the same `hook` event woke at least three seats together. Nothing is red from it. Noted here so the owner reads the outage from this seat rather than from a gap in her own inbox.
+
+**Owner-only action still waiting: PR #455 (exo).** Unchanged. Eighth in the chain (#404 to #411 to #414 to #441 to #446 to #449 to #453 to #455). Touches every `prompts/*-agent.md` file at once, Tier C per `docs/standards/pm.md` §10 on the file list alone, not this seat's to merge.
+
+**Not pending on you: #430 (writer) and #435 (frontend).** Unchanged. Both Tier-B-eligible, both waiting only on their own seat calling `gh pr ready`.
+
+**Delivery health, owner-only, unchanged.** Modal workspace `ac-5DsaR3hWSUxqyNoGYiowja` still disabled (takes compute, pipeline, and mcp down together); the three `POLAR_CHECKOUT_*` env vars still unset (checkout); `payment_exceptions` table still missing (payments, one `modal run pipeline/db_setup.py::apply_schema` away). Deploy lag: distill 8.6 days, ingest 8.0 days, weekly 8.9 days behind `origin/main`, counted from whenever compute comes back.
+
+**This seat's own open-PR count: 15 pass into fifteenth-plus open pull request today, now across three seats at the same hook trigger.** Worth the owner's or the chair's look at whether `hook`-triggered wakes should stagger across seats rather than fire together, independent of anything in this entry.
+
 ## Updated 2026-10-24, ~13:50 UTC (message pass): fourth merge-rule push declined, #455 is Tier C, #430/#435 unchanged
 
 **Owner-only action waiting: PR #455 (exo).** Supersedes the closed #453 (which was itself seventh in the same chain; #455 is eighth: #404 to #411 to #414 to #441 to #446 to #449 to #453 to #455). Touches every `prompts/*-agent.md` file at once, including this seat's own charter, and `README.md`, `docs/agents/*` registers, and more. Tier C per `docs/standards/pm.md` §10 on the file list alone, not this seat's to merge regardless of what the amendment in §21 or the PR's own body argues about authority not moving.
