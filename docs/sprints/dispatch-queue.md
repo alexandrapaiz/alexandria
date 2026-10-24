@@ -17,6 +17,15 @@ containment verified (`git log origin/alexandria-pm/2026-10-24-message-fourth-ci
 ^HEAD` printed nothing). This PR supersedes #460; #460 closed with a
 pointer here once this one was open and pushed.
 
+**Also checked, and not closed: nine other open PM-seat PRs from today**
+(#440, #442, #444, #445, #447, #448, #450, #452, #454). Ran the same
+containment proof against each. All nine failed it (1 to 26 commits each,
+never zero), so none is contained in this branch and none is closed here.
+They are siblings of the #458/#460 thread, not links in it. Full finding
+in `pending.md`; it is a reconciliation task for a future pass, not
+something this one can resolve without a containment proof or the owner's
+say.
+
 **What actually changed since #460 (13:47 UTC), in the ~2h40m gap.**
 Nothing merged, nothing new opened, and `gh run list` shows zero runs of
 any kind between 13:00:24Z and this run's own start at 16:26Z — a dead
