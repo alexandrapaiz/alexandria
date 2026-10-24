@@ -56,6 +56,68 @@ the duty's evidence requires. Words are free and crons are free. Inputs
 live in a workflow file no seat can edit. The 2026-09-27 audit added
 this state and the row it was found in is below.
 
+**And from 2026-10-18 the Cadence column means something else, so read this
+before you read it.** HQ decision 056, pushed to main on 2026-10-17, deleted
+every seat's `schedule:` block from `.github/workflows/`. Every cadence cell
+below was written as a GitHub cron and **not one of those crons exists any
+more**. `grep -l 'cron:' .github/workflows/*.yml` returns nothing. The
+exemption is written here, naming the decision, as `prompts/exo-agent.md`
+§3f question 1 requires of a parent decision that overrides a local law by
+not mentioning it.
+
+What replaced them, and the numbers are the same numbers, carried over by the
+decision itself. Each seat's cadence is now `[trigger].cron` in
+`alexandrapaiz/alexandra-systems:runtime/agents/alexandria/<seat>/agent.toml`,
+read on 2026-10-18 with the command in `prompts/exo-agent.md` §3b:
+
+| Seat | `[trigger].cron` | In words |
+|---|---|---|
+| engineer | `6 11,23 * * *` | twice daily, 11:06 and 23:06 UTC |
+| exo | `0 14 * * 0` | weekly, Sunday 14:00 UTC |
+| finance | none | dormant |
+| frontend | `0 12 * * 3` | weekly, Wednesday 12:00 UTC |
+| market | `0 11 * * 5` | weekly, Friday 11:00 UTC |
+| okr | `0 10 1 * *` | monthly, the 1st, 10:00 UTC |
+| pm | `5 11 * * *` | daily, 11:05 UTC |
+| research | `30 16 * * 1` | weekly, Monday 16:30 UTC |
+| sales | none | dormant |
+| security | `0 13 1,15 * *` | the 1st and 15th, 13:00 UTC |
+| skill | `0 12 * * 2` | weekly, Tuesday 12:00 UTC |
+| writer | `0 16 * * *` | daily, 16:00 UTC |
+
+So the Cadence cells below are still right as numbers and wrong as
+references. They are left as written rather than rewritten one by one,
+because the honest correction is the second half of this section and not a
+find-and-replace.
+
+**The cron is no longer the whole cadence, and this is the part that moves
+rows.** Every manifest also carries `[trigger].subscriptions`, and every one
+of the twelve lists `message.posted`, `item.moved`, `pr.merged` and
+`check.failed`. The PM adds `run.failed`, `run.reported` and `pr.opened`. The
+ExO adds `brief.sent`. A seat is awake whenever one of its subscribed events
+arrives, which means **a weekly cron is no longer a weekly seat**, and the
+2026-10-18 run of this seat is the proof: it was started by `brief.sent` on a
+Sunday that its cron would also have covered, after nine host-started writer
+runs and twenty-four PM runs on the same day.
+
+So every cadence judgement now names which of the two it rests on. A duty
+whose trigger is a clock still needs the cron. A duty whose trigger is an
+event passes on the subscription. They fail differently: a wrong cron is
+wrong every week and announces itself in the manifest, while a subscription
+that does not route is silent, and §2b already records that the event bus
+reports no outcome a seat here can audit.
+
+**One gap the subscription list cannot close, and it is the one that
+mattered this week.** None of the four events is a direct push to `main`.
+`pr.merged` does not fire for a commit the owner pushes straight to the
+branch. Decision 056 arrived exactly that way, and so did the two commits
+behind
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it`. The charter's oldest
+structural finding, that a gate scoped to pull requests is not a gate on a
+repository whose owner commits directly, has survived the move to the host
+unchanged and now has a concrete remedy: a `push.main` subscription on the
+ExO and engineer seats. Queued in `docs/agents/hq-relay.md`, 2026-10-18.
+
 | Duty | Owner | Trigger rate | Cadence | State |
 |---|---|---|---|---|
 | The org knows what the world knows | market (§5, named 2026-09-19) | weekly | weekly Fri | assigned |
@@ -65,19 +127,22 @@ this state and the row it was found in is below.
 | Free-tier and quota headroom | finance, dormant | monthly | dormant | owner decision |
 | The corpus survives losing its database | **none** | continuous | n/a | owner decision |
 | The repo describes the system it is | exo (§5b) | weekly | weekly Sun | assigned |
-| Runs that fail get diagnosed | exo (§2b) | daily, 25 runs on 2026-09-19 | weekly Sun | **cadence gap** |
+| Runs that fail get diagnosed | exo (§2b) | daily, 10 failures in the week to 2026-10-18 | weekly Sun cron **plus `check.failed`** | **cadence gap CLOSED 2026-10-18** by the subscription, not by a cron. Open since 2026-09-19 |
 | Runs that fail get reported to the owner | pm (§1f) | daily | **daily 6:35 ET, applied 2026-09-24** | **cadence gap CLOSED 2026-09-27**, see below |
-| The org decides what to do next between Mondays | pm (§5, `PM_DISPATCH_ENABLED` now `true`) | hourly | daily | **assigned and unexercised**: 12 of 12 dispatches since 2026-09-24 were the owner's, see below |
+| The org decides what to do next between Mondays | pm (§5, `PM_DISPATCH_ENABLED` now `true`) | hourly | daily | **route gap, found 2026-10-11**: still unexercised, and 16 of 16 dispatches since 2026-09-24 were the owner's. The seat read its switch with a command its token cannot run, see below |
 | A runtime change is smoke-tested before the next cron fires | engineer (§0, added 2026-09-20), exo (§2) as backstop | twice in the week of 2026-09-14 | daily | assigned 2026-09-20, **and it was true only for `.github/` until 2026-09-24**, see below |
 | Reader-facing site copy gets drafted | writer (§"Site copy is yours to draft", added 2026-09-21) | per copy session, 8 rounds in one day on 2026-09-20 | daily 16:00 UTC | assigned 2026-09-21. **Was worse than unowned from 2026-09-19 to 2026-09-21**, see below |
 | Approved copy reaches the live site | frontend (sets only, §added 2026-09-21) | per approval | weekly Wed | assigned, lag accepted, see below |
 | The owner's rulings become reusable preference data | chair records (pm-agent.md ship check, added 2026-09-21) | whenever she rules in chat | present whenever she is | assigned 2026-09-21, and the chair is the correct owner here, see below |
 | **The product reached its readers** | pm (§1f delivery half, added 2026-09-24) | daily and weekly, whenever the press or the site ships | daily standup | **capability gap, found 2026-09-27**: the seat has no `NEON_RO_URL`, see below |
-| **An HQ decision is read against local law** | exo (§3f, added 2026-09-24) | two HQ decisions in the week of 2026-09-21 | weekly Sun | assigned 2026-09-24, and it is a cadence gap on its face, see below |
+| **An HQ decision is read against local law** | exo (§3f, added 2026-09-24) | three in the week to 2026-10-18, one of them decision 056 | weekly Sun cron, and **no subscription routes a direct push to main** | **cadence gap, still open and now diagnosed**: decision 056 was found 25 hours late by this seat's weekly pass and no event would ever have delivered it. See `INC-2026-10-18-decision-056-reached-alexandria-as-a-comment-in-ten-workflow-files` |
 | **Evidence from here reaches HQ** | exo writes, chair carries (hq-relay.md) | as incidents implicate a parent decision | weekly to write, unbounded to deliver | assigned 2026-09-24, with the delivery half outside any seat's control |
 | The daily pipeline's providers stay available | **none** | continuous, three failures in five days | n/a | **unowned**, see below |
 | **A skill's measured effect** | skill (the bar section, added 2026-09-30) | per skill shipped or revised, 6 in 18 days | weekly Tue | **capability gap, found 2026-09-30**: the seat has no `GROQ_API_KEY` and the benchmark subject has no provider route at all, see below |
 | **The organization's finished work reaches `main`** | pm (§4 queue gauge, added 2026-10-04) | continuous, 49 pull requests in 112 hours | daily standup | **was unowned until 2026-10-04**, assigned here, see below |
+| **A run the event bus started is known to have succeeded or failed** | **none** | continuous, 41 pull requests and 51 commits in the week to 2026-10-11 | n/a | **unowned, found 2026-10-11**: no charter in twelve contains the words "event bus" or `client_payload`, see below |
+| **A run that ships nothing is caught before teardown** | **none since 2026-10-17** | every run, and it has fired twice in thirteen days | n/a | **unowned, found 2026-10-18**: the no-ship tripwire is a step in twelve workflows that no longer start any seat, and `cli/src/lib/runner.js`, `cli/src/lib/engine.js` and `cli/src/run.js` in `alexandrapaiz/epitome` contain no shipping check in 1,445 lines. This is incident 3's fix, unowned again, see below |
+| **A seat's cap and model are what the evidence says they are** | exo (turn-caps.md) in words, **and the file it writes is not the file that runs** | per cap change, three since 2026-10-04 | weekly Sun | **capability gap, found 2026-10-18**: the governing value is `max_turns` in a manifest this seat can read and cannot write. The writer's is 150 against a workflow that says 225, see `INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens` |
 
 ## The 2026-09-21 rows, and the state that is worse than unowned
 
@@ -742,3 +807,165 @@ gate. HQ decision 041 gives the PM seat Tier B merges and it reached this
 repository as PR #147 on 2026-09-30, where it remains open. Until it
 merges, this row buys visibility and not throughput, and saying so is part
 of the row rather than a caveat on it.
+
+## The 2026-10-11 rows, and a fourth shape this register did not have
+
+### Route gap: a duty whose precondition is readable and whose route is not
+
+The register already has four states for a duty that looks owned and is
+not. Wording, where a charter names it in words no run can act on.
+Cadence, where the naming seat is asleep when the trigger arrives.
+Capability, where the seat cannot reach the evidence. Existence, where the
+mechanism the rule depends on was never built. Each of those is a fact
+about the seat or the world.
+
+This one is a fact about the sentence. **The duty is named, the cron fires,
+the mechanism exists, the seat holds the input, and the charter does not
+say which of the seat's inputs carries it.** So the seat picks a route, and
+if the route it picks is refused, a correctly written fail-safe converts
+the refusal into a negative answer.
+
+"The org decides what to do next between Mondays" is the instance. PM
+charter §5 condition 1 reads "the repository variable
+`PM_DISPATCH_ENABLED` is exactly `true`" and names no way to read it. On
+2026-10-09 the PM's fourth pass ran `gh variable list`, which returns
+`HTTP 403: Resource not accessible by integration` for the runner's token
+under every `permissions:` setting, and reported the switch unconfirmed.
+Reading an unreadable condition as unmet is right. The conclusion was still
+wrong: `.github/workflows/agent-pm.yml` exports the variable into the job's
+`env` on line 44 and interpolates its value verbatim into the seat's own
+prompt on lines 100 and 129. The answer was in the seat's hand twice before
+it ran a command.
+
+**Why this is worth a state of its own rather than a note.** It is
+invisible to all four existing tests. A wording audit passes, because the
+sentence is specific and testable. A cadence audit passes. A capability
+audit passes, and this is the one that matters: the input is present in the
+runtime, so the `grep -oE 'secrets\.[A-Z_]+'` check in ExO §3b returns
+exactly what the duty needs. An existence audit passes. The only way to see
+it is to ask the fifth question, which is **how would the seat come to know
+this, in one command it can actually run.**
+
+Fixed in `prompts/pm-agent.md` §5 the same run: the condition now names
+`$PM_DISPATCH_ENABLED` and the prompt line, and forbids `gh variable list`
+as the route. The fail-safe is unchanged and now has one place to look, so
+"unconfirmed" is no longer a state the condition can be in.
+
+**The general form, for every charter this seat edits from here.** When a
+clause makes a seat's behaviour depend on a fact, write the command that
+reads the fact in the clause. A precondition without a route is a
+precondition that will be evaluated by guesswork, and the next run of the
+same seat may guess differently.
+
+### Unowned: the outcome of a run the event bus started
+
+Found by §3b's prescribed method, and it is the cheapest row the register
+has ever gained. Five greps across twelve charters:
+
+```
+grep -ril "event bus"          prompts/*.md   # nothing
+grep -ril "client_payload"     prompts/*.md   # nothing
+grep -ril "message pass"       prompts/*.md   # nothing
+grep -ril "six-hour"           prompts/*.md   # nothing
+grep -ril "repository_dispatch" prompts/*.md  # one hit
+```
+
+The single hit is in `prompts/pm-agent.md` at line 398, and the polarity
+check that §3b requires says it does not count: the sentence is about
+whether `GITHUB_TOKEN` can start a run, not about the event bus as a source
+of runs. So the vocabulary is absent.
+
+What depends on it. In the week to 2026-10-11 the event bus started seat
+sessions that produced 41 pull requests and 51 commits, roughly a third of
+the org's output, under committer identities of the form
+`alexandria-<seat>`. Those sessions run outside this repository's GitHub
+Actions and leave no run record in it. `alexandria-pm/2026-10-11-message`
+(#269) was opened at 06:24:52 and `-message-sixhour` (#271) at 18:26:20,
+and no Actions run was live at either moment; the nearest ones had ended at
+02:12:02 and 16:48:38. Across the window, 24 PM pull requests arrived
+against 12 `pm-agent` runs.
+
+**The shape of the gap, stated precisely, because half of it is closable
+here and half is not.** A bus-started run that gets as far as its
+ship-first commit is observable from the committer identity and from its
+pull request, and ExO §2b now reads both. A bus-started run that dies
+before that commit is observable from nothing: not from Actions, which
+never saw it, and not from this repository, which it never wrote to. There
+is no seat that could notice it and no evidence it could notice.
+
+So this row is deliberately left **unowned** rather than assigned to the
+PM, which is the seat that would otherwise take it. Assigning it would buy
+the appearance of coverage over the observable half and would hide the
+half that matters, which is exactly the substitution §3b's capability
+clause was written about. Closing it needs the bus to report its own run
+outcomes somewhere this repository can read, and the bus is HQ's
+infrastructure. The ask is in `docs/agents/hq-relay.md` and the assignment
+is the owner's.
+
+## The 2026-10-18 rows, and the fifth shape: a duty whose mechanism moved out of the repository
+
+Both rows added on 2026-10-18 come from one event, HQ decision 056, and
+neither is a seat's failure. They are a new shape and it is worth naming,
+because the four tests this page already applies all assume the mechanism is
+somewhere in this repository.
+
+Wording asks whether a charter names the duty. Cadence asks whether the seat
+is awake. Capability asks whether the seat holds the credential. The
+2026-09-30 clause asks whether the mechanism exists at all. **The fifth asks
+where it lives**, and it is the only one of the five that can turn a healthy
+row red without anybody editing anything in this repository.
+
+### A run that ships nothing is caught before teardown
+
+**Unowned since 2026-10-17 17:59Z.** This is incident 3's fix, which is the
+founding night's two runs that reported success, shipped nothing, and lost
+every line at sandbox teardown. The remedy was the no-ship tripwire, a step
+in all twelve seat workflows, and it has earned its place: it caught pm-agent
+37261823136 on 2026-10-05 and pm-agent 38592352927 on 2026-10-14, the second
+of which the security seat's 2026-10-15 audit records by name.
+
+The step is still in all twelve files and all twelve files have stopped
+starting seats. The host runner was read in full for an equivalent, which is
+`cli/src/lib/runner.js` at 725 lines, `cli/src/lib/engine.js` at 211 and
+`cli/src/run.js` at 509, in `alexandrapaiz/epitome`. There is no `rev-list`,
+no `--contains`, no `porcelain`, no `pr list` and no reference to pushing
+anywhere in the 1,445 lines. The runner clones, asserts the entry file
+exists, spawns the command, captures stdout to its own disk, and kills the
+process group on timeout.
+
+So a host run that dies at turn one, or that works for ninety turns and never
+pushes, now ends with no record anywhere that a human or a seat would read.
+That is worse than 2026-09-17, because on the founding night the failure at
+least produced a run page.
+
+**Left unowned rather than assigned, on the same reasoning as the event-bus
+row above.** The PM accounts for runs and could report the ones it can see,
+and the ones it can see are exactly the ones that shipped a pull request. A
+tripwire that only fires when the run succeeded is not a tripwire. Closing
+this needs the check inside the host runner, which is epitome's code, and the
+ask is in `docs/agents/hq-relay.md` for 2026-10-18.
+
+### A seat's cap and model are what the evidence says they are
+
+**Capability gap.** `docs/agents/turn-caps.md` is this seat's file and its
+whole method is to measure a cap from `num_turns` and write the result into
+`claude_args`. Since 2026-10-17 the governing value is `[runtime].max_turns`
+in a manifest in the parent repository. This seat can read all twelve and
+write none of them, which is the capability test exactly: the words are
+right, the cadence is fine, and the input is out of reach.
+
+The cost is already measured. Eleven of twelve manifests agree with their
+workflow. The writer's says 150 where the workflow says 225, because the
+writer is the only seat whose cap changed after the manifests were generated,
+and it changed for the best possible reason, which is two exhaustions in six
+days. See
+`INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens`.
+
+Two smaller facts belong to this row because they will both be the next
+surprise otherwise. The run transcript that `num_turns` is read from was an
+Actions artifact with 90-day retention, and the host writes a log to its own
+disk instead, so **the measurement commands on the turn-caps page cannot be
+run against any run after 2026-10-17**. And every manifest's `description`
+field still ends "Actions cron live" or "Actions cron off", a sentence about
+a mechanism retired the same day the cron line was added to the file directly
+above it.

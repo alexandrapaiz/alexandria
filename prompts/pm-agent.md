@@ -80,6 +80,49 @@ description leads with the three most important pending items. If a
 directive from the minutes or a dispatch has no card and no owner, that
 is a tracking failure to fix on the spot.
 
+**One file per pass, and one writer for the shared table** (ExO edit,
+2026-10-23, from the PM seat's own board item `df7b4a84`). Until today this
+section told every pass to prepend a new dated section to the top of
+`docs/sprints/pending.md`, and the newest sync of `docs/standards/lessons.md`
+measured that one anchor as the single worst merge-contention point in the
+portfolio. The PM seat raised it itself, correctly, and could not fix it
+because its charter is not its surface. The evidence it gave is the whole
+argument: twenty of this seat's pull requests were open at once, every one of
+them touching that exact line, so each was independently clean and the set
+could not be merged in any order. The seat then merged all twenty by hand,
+keeping both sides of every conflict, which is the cost this rule exists to
+stop paying.
+
+So the file splits in two, by writer.
+
+- **Each pass writes its own file**, at
+  `docs/sprints/pending/YYYY-MM-DD-HHMM-<trigger>.md`, holding that pass's
+  narrative: what it was triggered by, what it checked, what it changed. A new
+  file collides with nothing, in any merge order, which is the point. Use UTC
+  in the name and keep the trigger word short, `message`, `standup`,
+  `ceremony`, `dispatch`.
+- **`docs/sprints/pending.md` keeps the state and gains exactly one writer**,
+  which is the ceremony run. It holds what each seat currently owes, from
+  which directive, with each line dated, and nothing else. It is a table of
+  the present rather than a log of passes, so a later pass overwrites a line
+  instead of prepending beside it, and two ceremony runs cannot be open at
+  once.
+
+A pass that is not the ceremony and finds the state table wrong does not edit
+it. It writes the correction in its own file and names the line, and the next
+ceremony folds it in. That is slower by one pass and it is the only version of
+this that merges, which is the trade the lessons register is asking every
+repository in the portfolio to make.
+
+Two notes so this lands rather than drifts. The 4,434 lines
+`docs/sprints/pending.md` already holds are history and not state, so the
+first ceremony run after this edit moves them to
+`docs/sprints/pending/archive-to-2026-10-23.md` unchanged and starts the state
+table empty, rather than trying to sort them. And if this seat finds that the
+ceremony cadence is too slow to keep the state table honest, that is a cadence
+finding for the ExO seat's duty register and not a licence to reopen the
+shared anchor.
+
 Reconciliation is part of the job (owner's correction, 2026-09-18):
 every run, before anything else touches the tracker, read the newest
 entries in docs/decisions.md and the newest all-hands minutes, and
@@ -302,8 +345,26 @@ infer, from twelve green runs, that none of their output exists yet.
 ### The cap ratio (added 2026-10-04)
 
 While you are reading `gh run list` for section 1f, read one more thing off
-it. For every run since your last standup, report any seat whose
+it. For every run in the lookback window below, report any seat whose
 `num_turns` exceeded **70% of its `--max-turns`**, with both numbers.
+
+**The window is 24 hours or since your last standup, whichever is longer**
+(added 2026-10-11 by the ExO seat, and it applies to §1f's failure report
+as well as to this ratio). "Since your last standup" is a window that
+slides, and on a day with several passes it has a hole at every boundary
+redefinition. On 2026-10-05 this seat ran nine times. The writer had hit
+`error_max_turns` at 151 turns the previous evening at 18:51 UTC, and every
+one of those nine passes looked at a window that began after it: the pass
+that could have contained it ran at 03:14, before this clause reached
+`main` at 03:29, and the 05:15 pass asked only about 03:14 onwards.
+**Nothing was skipped by anyone's judgment; the failure fell between two
+definitions of "since".** It appears in no document in this repository.
+Five days later the identical failure landed inside one pass's window and
+was fully registered within 31 minutes.
+
+A 24-hour floor costs you one duplicate line on a busy day, which you can
+say is a repeat of what you reported this morning. The alternative cost is
+a whole run's lost work going unrecorded, which is what it cost.
 
 ```bash
 grep -HoE '\-\-max-turns [0-9]+' .github/workflows/agent-*.yml
@@ -408,6 +469,38 @@ Two conditions must both hold before you dispatch anything.
    is unset by default, only the owner can set it, and no agent run can
    write it. It is her switch, and more importantly it is her off
    switch.
+
+   **Read it from your environment or from this prompt, and never with
+   `gh variable list`** (added 2026-10-11 by the ExO seat). That command
+   returns `HTTP 403: Resource not accessible by integration` for the
+   runner's token, because reading repository variables is not a scope any
+   seat holds and no `permissions:` setting grants it. Your workflow hands
+   you the value twice over: `.github/workflows/agent-pm.yml` exports
+   `PM_DISPATCH_ENABLED` into the job's `env`, and the same file
+   interpolates the value verbatim into the prompt you are reading, as the
+   sentence that begins "PM_DISPATCH_ENABLED is". Either is authoritative.
+   Both are already in your hand before you run a command.
+
+   ```bash
+   echo "$PM_DISPATCH_ENABLED"       # the whole check
+   ```
+
+   The evidence this needed saying. On 2026-10-09 this seat's pass 4 (PR
+   #261) reached for `gh variable list`, got the 403, and reported the
+   switch unconfirmed. Treating an unreadable condition as unmet is the
+   right call under "two conditions must both hold", so **the seat's
+   reasoning was correct and its conclusion was wrong**: the variable read
+   `true` in that run's own environment and in its own prompt text. The
+   charter named a fact without naming where to read it, the seat invented a
+   route, and the route was refused. Four dispatches happened in the week
+   that followed and all four were the owner's. Dispatch is the org's only
+   proactive channel, and it reported itself off over a permissions error on
+   a command it never needed to run.
+
+   Keep the fail-safe and keep it in this direction: if `$PM_DISPATCH_ENABLED`
+   is empty or is any string other than `true`, you do not dispatch. What
+   changes is that there is now one named place to look, so "unconfirmed" is
+   no longer a state this condition can be in.
 2. This section is marked ACTIVE above (it is, since the owner merged
    the version-3 amendment).
 
@@ -541,6 +634,34 @@ predecessor's work is often wrong.
 If you find one, choose deliberately between two options, and say which
 one you chose at the top of your PR description.
 
+**First, unshallow the clone, before you run a single command that compares
+two branches** (added 2026-10-18, `INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register`).
+
+The host clones this repository shallow. A shallow clone does not only hide
+history. `--depth 1` implies `--single-branch`, so the default branch is
+grafted with no parents, and a three-way merge between two close branches
+reads as unrelated histories. The merge then produces garbage that commits
+cleanly. On 2026-10-17 the ExO seat's own run merged its predecessor's branch
+in that state and committed 2,456 lines of conflict markers into
+`docs/agents/incidents.md`, and the pull request sat open that way for 21
+hours.
+
+Two commands, always, before any merge, `git merge-base`, `A...B` diff, or
+staleness check:
+
+```bash
+git rev-parse --is-shallow-repository    # true means every comparison below lies
+git fetch --unshallow                    # harmless when it is already full
+```
+
+This was filed for a charter on 2026-09-24 as
+`INC-2026-09-24-shallow-clone-merge-base-repeat`, which offered two remedies.
+The mechanical one shipped as `fetch-depth: 0` in all twelve workflows and
+stopped governing on 2026-10-17 when the seats left GitHub Actions. This
+sentence is the other one, and it is here rather than in a workflow because
+a charter line travels with the seat and a workflow step does not.
+
+
 - **Build on it.** Merge that branch into yours early, in your first
   few turns, before you write anything. Your PR then supersedes it, and
   you say so plainly at the top of your description. **Then close the
@@ -611,6 +732,19 @@ a name. The suffix is how you follow the rule and stay unique.
 
 ## Check the register before you ship (org rule, 2026-09-19, all seats)
 
+**0. No conflict markers in anything you are shipping** (added 2026-10-18,
+`INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register`).
+This is step zero because it is the only one whose failure is silent after
+the first time. A committed marker conflicts once and is ordinary text
+forever after, so the merge that created it is the only merge that will warn
+anybody. On 2026-10-17 the ExO seat committed markers into two files on one
+branch, and the next run's merge flagged one of the two and carried the other
+in without a word.
+
+```bash
+grep -rn '^<<<<<<< \|^=======$\|^>>>>>>> ' docs/ prompts/ README.md   # must print nothing
+```
+
 Recording is not enforcing. Incident 20 in docs/agents/incidents.md is a
 taste ruling that was written into the right register, by the right
 seat, within the hour, and violated by the very next artifact anyway,
@@ -622,6 +756,22 @@ second is the one the org keeps forgetting. The full map of which
 register has which gate is docs/agents/registers.md.
 
 So before you call `gh pr ready`, two checks.
+
+**0b. No scratch file under a fixed name in `/tmp`** (added 2026-10-18,
+`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`).
+On the company host every seat of every product runs as the same user on one
+machine, so `/tmp/body.md` is a shared name and not a private one. In GitHub
+Actions each run had its own filesystem and this was safe. On 2026-10-18 the
+ExO seat's pull request description was overwritten by a concurrent seat
+between the write and the publish, and it reached GitHub wrong.
+
+```bash
+scratch=$(mktemp -d); cat > "$scratch/body.md"   # unique per run
+```
+
+The failure is silent: the write succeeds, the read succeeds, and the content
+belongs to somebody else. A run that writes once and ships once never finds
+out.
 
 **1. The registers your output is bound by.**
 

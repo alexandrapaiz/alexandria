@@ -22,13 +22,23 @@ changes ship through its weekly PR.
 So the token spend to optimize is the org: seven Claude Code seats on
 the owner's subscription.
 
-## The routing table (current policy)
+## The routing table, as re-derived 2026-10-23
+
+**This heading said "current policy" with no date from 2026-09-17 to
+2026-10-23, and its first row had been false since ADR-32.** The dated-conclusion
+rule in `docs/agents/registers.md` is written from that, together with the
+`quality-claims.md` case that found it. A policy page that calls itself current
+is making a claim about today in a file that is edited on the days somebody
+happens to open it, and this one went 36 days without a reader while the
+pipeline it describes changed provider underneath it.
+
 
 | Work | Model | Why |
 |---|---|---|
-| Pipeline judgment (triage, distill, interpret) | gpt-oss-120b (Groq, $0) | proven by bake-off, golden set guards upgrades |
+| Pipeline judgment (triage, distill, interpret, press) | **kimi-k2.6 (Moonshot, paid)**, corrected 2026-10-23 | ADR-32 moved the press to Moonshot and `pipeline/budget.py` now sets `PRIMARY_PROVIDER = "moonshot"` and `PRIMARY_MODEL = "kimi-k2.6"`. The delivery receipt reports `kimi-k2.6` for press, triage and interpret at 2026-10-23T23:44:17Z |
 | Embeddings | Qwen3-0.6B self-hosted | married, never rented |
-| Reviewer panel (provenance, adversary, validator) | gpt-oss-120b (Groq, $0) | small verifiable steps, fresh contexts |
+| Reviewer panel (provenance, adversary, validator) | gpt-oss-120b (Groq, $0) | small verifiable steps, fresh contexts. Not re-verified by this run against `pipeline/panel*.py`, so this row carries no 2026-10-23 date and the next run owes it one |
+| Fallback for the press | `openai/gpt-oss-120b`, `qwen/qwen3.8-27b`, `openai/gpt-oss-20b` on Groq, all $0 | kept on purpose and **none of the three can currently print a weekly issue**: `pipeline/budget.py` says their context minus the output reservation is below the prompt, and the guard prints that arithmetic every run so nobody has to guess whether that has changed |
 | engineer, security, exo, skill, weekly, frontend seats | Opus (set explicitly; the action DEFAULTS to Sonnet when unset, incident learned 2026-09-18) | agentic coding, gold drafting, audits, visual judgment: errors cost most here |
 | pm, market, okr, finance seats | **Sonnet, since 2026-09-23.** Open routing to `kimi-k2.7-code` (chair, 2026-09-19, HQ ADR-015) is PAUSED: the secrets were removed, so the fallback step is live. The routed step is still in all four workflows | the seats judged Sonnet-shaped were the ones sent open first, and the PM failed twice. Conditions for resuming are in the 2026-09-24 addendum |
 | sales seat | Opus (moved up 2026-09-18, incident 11: creative breadth under open briefs is premium-tier work) | campaigns and creative strategy |
@@ -235,3 +245,86 @@ majority.
 open models where they suffice. What the last week established is that
 "where they suffice" is a measurement, the measurement has an order, and
 the order starts with the seat the org can most afford to lose.
+
+## Read 2026-10-11, and the pipeline half of this policy moved without it
+
+This page is read every run under the ExO ship check, and the honest note
+from this run is that **the agent half has not changed since 2026-09-24 and
+the pipeline half has changed a great deal, in a direction this page
+predicted and did not record.**
+
+The four conditions for resuming the open-routing trial on seats are
+unchanged and unmet. No seat was re-routed this window. The market seat's
+workflow still carries both steps, open-routed first with the Claude
+fallback behind it, which is the shape this page argued for.
+
+What moved is the pipeline, and it is this page's subject too, because the
+owner's directive covers the whole org. Every daily stage now lands on
+`openai/gpt-oss-120b` through Groq's free tier, which is what this page
+calls the base we build from. On 2026-10-11 the engineer seat established
+that **three of four callers draw more tokens a minute than that tier
+allows**: distill at 22x the 8,000-token minute, triage at 1.8x, with
+interpret the one stage that fits. The claims table had not grown for four
+days as a result, and the public claim that the library grows every day is
+now `contradicted` in `quality-claims.md`.
+
+**The lesson for this policy, stated so the next run does not relearn it.**
+"Route to open models where they suffice" has a second half that this page
+never wrote down: **sufficiency is a property of the call rather than of the
+model.** gpt-oss-120b is entirely sufficient for distill's judgment and
+entirely insufficient for distill's shape, because a 5,830-token call
+against an 8,000-token minute is a pacing fact and not a capability fact.
+A routing policy that compares quality and price and never compares the
+call's size against the provider's minute will keep producing this failure
+on a free tier, where the binding limit is throughput and the bill is zero
+so nothing complains.
+
+So any future routing proposal on this page, for a seat or for a stage,
+carries three numbers rather than two: quality, price, and **tokens per call
+against the provider's published per-minute ceiling**. The engineer seat
+built the guard for the pipeline half on 2026-10-11, in
+`pipeline/budget.py`'s pacing check. The agent half has no equivalent and
+does not need one yet, because no seat is open-routed today. It will need
+one the day the trial resumes, and that is the precondition to add to the
+four already on this page.
+
+## The free-tier claim this page carried for 36 days, corrected 2026-10-23
+
+Worth separating from the table edit above, because the stale row was not only
+stale about a model. It said **$0**.
+
+The row read "Pipeline judgment (triage, distill, interpret) | gpt-oss-120b
+(Groq, $0)". ADR-32 moved the press to Moonshot, which is a paid provider, and
+`pipeline/budget.py` carries prices per model for exactly that reason. So the
+org's own routing policy told every reader that the most expensive half of the
+pipeline ran for nothing, on a page whose stated purpose is to route work to
+open models where they suffice. A cost policy that reports the wrong cost is
+worse than no cost policy, because it is read as a measurement.
+
+Three things make this the same failure as the one that produced the
+dated-conclusion rule, and the overlap is the point.
+
+1. **The number was published.** `curl -s https://libraryofalexandria.dev/api/delivery`
+   has reported `press.model` and `siblings.*.model` since the receipt shipped.
+   One command, no credential, and this page's own owner never ran it against
+   this page. That is the third time this seat has found a register of its own
+   contradicted by a receipt of its own.
+2. **The change was a runtime change under the org's own law.** Since
+   2026-09-24 `docs/agents/runtime-changes.md` names a provider or model change
+   as a runtime change, and `INC-2026-09-24-press-provider-migration` is the
+   entry. The audit that law created reads `pipeline/` for commits. Nothing in
+   it reads this page, which is the register the commits are supposed to update.
+3. **No seat was wrong.** ADR-32 was a correct decision, correctly implemented.
+   The gap is that a decision changing a model updates the code and the ADR and
+   has no step that updates the policy page naming the model.
+
+**The fix, and it belongs in this file rather than in a charter.** Every row in
+the table above now carries the date it was last verified, and a row with no
+date is a row this page is not currently claiming. The reviewer-panel row has
+no date on purpose, as the first example of that. The verification itself is
+two commands and they go here so the next run does not have to invent them:
+
+```bash
+curl -s https://libraryofalexandria.dev/api/delivery | grep -o '"model": "[^"]*"' | sort -u
+grep -nE '^(PRIMARY_PROVIDER|PRIMARY_MODEL)' pipeline/budget.py
+```

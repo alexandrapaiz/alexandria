@@ -61,10 +61,10 @@ file spent a day describing a policy the org had abandoned.
 | `docs/evals/2026-09-27-fulltext-token-density.json` | engineer | `python3 tools/fulltext_density.py` re-measures against live arXiv | `tests/test_distill_fulltext_budget.py`, on every pull request that touches `pipeline/` | a provider limit or a cleaner change invalidates it, gated per PR |  new 2026-09-27, filed by the engineer seat: this is the receipt behind `budget.FULLTEXT_CHARS_PER_TOKEN`, and it exists because the number it replaced was an assumption nothing ever compared to a real paper (INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper) |
 | `docs/research/reading-queue.md` | research seat drains, skill seat writes (ADR-35) | skill seat appends a line for every paper it could not read in full | **`pipeline/distill.py` since 2026-09-27**: the daily run parses the unchecked lines, ingests what the corpus lacks, distills them ahead of the day's intake and prints each id so the research seat can strike the line | the skill seat writes weekly, the drain fires daily | new 2026-09-26 with ADR-35, **archive-side only until 2026-09-27**: twelve lines sat in it for a day with no step in any run opening the file. This is L-A9 again, and the gate is code rather than a charter clause because the seat that writes the register is not the seat that can act on it |
 | the company board, `board.libraryofalexandria.dev` (`docs/board.md`) | the owner, on the host | `docs/standards/pm.md` §14 since 2026-09-27: every seat writes as it works, a seat that finds no item creates one | **`tools/board.py` since 2026-09-28, and no charter yet.** The client exists and the daily engineer run uses it. The eleven other charters do not name the board, so eleven seats have credentials for it and no instruction to open it | the work changes hourly, and the only gate fires daily at one seat | new 2026-09-28. Archive-side gate landed 2026-09-27 with the credentials in twelve workflows, and nothing in the repository read either variable and the board's `runs` array was empty for the first day and a half. See INC-2026-09-28-twelve-workflows-changed-again-no-smoke-run |
-| `docs/agents/turn-caps.md` | ExO | ExO re-derives monthly | ExO | monthly, gated weekly, ample |  enforced, same seat writes and reads |
-| `docs/agents/unowned-duties.md` | ExO | ExO files, owner assigns | ExO §3b | charters change weekly, gated weekly |  enforced |
+| `docs/agents/turn-caps.md` | ExO | ExO re-derives monthly | ExO | monthly, gated weekly, ample | **was enforced, reopened 2026-10-18 as a capability gap.** The cap this page writes is `--max-turns` in a workflow that since 2026-10-17 starts no seat, and the governing value is `[runtime].max_turns` in a host manifest this seat can read and cannot write. The writer's two files disagree, 225 against 150. The page's measurement input is gone too: it reads `num_turns` from an Actions artifact and the host logs to its own disk. See `INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens` and rules 6 and 7 on the page |
+| `docs/agents/unowned-duties.md` | ExO | ExO files, owner assigns | ExO §3b | charters change weekly, gated weekly | enforced, **and its cadence test lost its source on 2026-10-17 and got a better one on 2026-10-18.** Every cell in the Cadence column named a GitHub cron and `grep -l 'cron:' .github/workflows/*.yml` now returns nothing. The numbers come from each seat's host manifest instead, and `[trigger].subscriptions` is a second cadence that closed one gap open since 2026-09-19 |
 | `docs/agents/model-routing.md` | ExO | nobody from 2026-09-17 to 2026-09-20 | ExO read list, and the read found it stale on arrival | routing changed in **18 hours**, gated weekly |  closed, and see the 2026-09-20 sweep |
-| `docs/agents/pending-workflow-changes.md` | ExO | ExO queues, owner applies | ExO §5, every queued diff re-verified against the live file each run (strengthened 2026-09-20) | workflows changed 3 times in 4 days, gated weekly |  enforced |
+| `docs/agents/pending-workflow-changes.md` | ExO | ExO queues, owner applies | ExO §5, every queued diff re-verified against the live file each run (strengthened 2026-09-20, and the anchor check validated and run across all twenty anchors 2026-10-18: one real rot) | workflows changed 3 times in 4 days, gated weekly | enforced, **and its scope narrowed 2026-10-17**: every item on it now governs an explicit `workflow_dispatch` only, and cadence, cap, model, subscription and credential changes moved to `hq-relay.md` because they live in a host manifest |
 | `docs/agents/registers.md` | ExO | this file | ExO §3d, the register-gate sweep | as registers are added, gated weekly |  enforced |
 | `docs/agents/org-chart.md` | PM | PM maintains | PM §1b | as seats change, gated weekly |  enforced |
 | `docs/agents/frameworks.md` | PM | PM §1e | PM §1e | rarely, gated weekly |  enforced |
@@ -79,11 +79,15 @@ file spent a day describing a policy the org had abandoned.
 | `docs/standards/lessons.md` | HQ, vendored here | the exo centralizer syncs it, no seat here appends | **one charter in twelve named it until 2026-09-24**, now all twelve in the ship check | HQ appends continuously, gated per run from today | **was the largest GAP on this page**, closed 2026-09-24 |
 | `docs/standards/pm.md` | HQ, vendored here | HQ ADRs, synced as a copy | PM charter | changes by HQ ADR, gated daily | enforced |
 | `docs/agents/cross-repo-law.md` | ExO | ExO writes the rule | ExO §3f, plus every charter's ship check clause 3 | HQ decided twice in a week, gated weekly here and per run in the seats | new 2026-09-24, incident 23 |
-| `docs/agents/hq-relay.md` | ExO | ExO writes entries, chair marks delivered | ExO §3f | as incidents implicate HQ, gated weekly | new 2026-09-24. The delivery column is the part that can rot, since no seat controls the chair |
+| `docs/agents/hq-relay.md` | ExO | ExO writes entries, chair marks delivered | ExO §3f, plus the undelivered heading carried into this seat's PR description since 2026-10-04 | as incidents implicate HQ, gated weekly | new 2026-09-24. **The delivery gate is the one GAP on this page that two mechanisms have now failed to close.** Eight entries, 105 cumulative days, nothing ever delivered. And on 2026-10-18 the premise under the whole design was measured and found false: the seat's token is the owner's, with admin on the parent. The ask is a *smaller* credential and then one narrow grant, not a third surface. See `INC-2026-10-18-the-host-runs-every-seat-as-the-owner` |
 | `docs/agents/delivery-health.md` | ExO | ExO writes the guardrails | `python3 tools/delivery_health.py`, from PM §1f delivery half, daily | the product ships weekly and daily, gated daily | new 2026-09-24, incident 24. The artifact-side gate was prose until 2026-09-28 and the seat holding the duty could not perform it, INC-2026-09-28-guardrail-4-had-no-reader. Three of its five surfaces answered `unknown` in every seat sandbox for want of a read-only `DATABASE_URL`, INC-2026-09-28-guardrail-4-had-no-reader, and that is closed as of 2026-10-01: the site publishes the rows at `GET /api/delivery` and the command reads them with no credential, so all five surfaces answer from any sandbox. One thing a credential-free reader cannot do is write, so the deploy-drift alarm's once-a-day cooldown needs the direct reader and a drift seen through the receipt is reported rather than mailed. `NEON_RO_URL` is no longer this register's blocker; it is still `graph-quality.md`'s |
 | `docs/agents/durable-execution.md` | ExO | ExO, on the owner's question | none, and correctly none | a decision note rather than a rule | new 2026-09-24, not a register and listed so nobody gates it |
 | `panel_verdicts` (the ADR-13 audit trail, `docs/product/reviewer-panel.md`) | engineer builds, ADR-13 owns | `pipeline/skill_revision.py` step 2 files one verdict per skill daily, derived rather than typed | **queued, not firing**: item 18 of `docs/agents/pending-workflow-changes.md`, amended 2026-10-03, adds all three reviewers' suites to `checks.yml` and no reviewer command (the entry argues each of the three exclusions separately). This cell said the first of those already ran, from the day it was written, and no workflow has ever named it (INC-2026-10-03-panel-reviewer-claims-a-ci-step-it-never-had) | a skill changes weekly, the reviewer fires daily once the job is deployed | new 2026-10-02, filed by the engineer seat; corrected 2026-10-03 by the same seat. The register is a table rather than a file because ADR-13 says every verdict is a structured row. All three reviewers exist as of 2026-10-03 (provenance, adversary, validator), so `panel_consensus`'s three passes on one text are reachable for the first time; no skill earns them today, and the validator fails all six on ADR-36 part 2. The write gate fires. The pre-ship gate is queued and needs the chair's hand, and this row is the reason that distinction is now stated rather than assumed |
 | `docs/product/graph-quality.md` | engineer | engineer writes each bound with the argument for it beside the number | `python3 tools/graph_audit.py` against the corpus, plus `tests/test_graph_audit.py` on every pull request touching the audit, the tools or `db/schema.sql` | the graph changes daily, the bounds rarely, and the audit half is gated by nothing yet | new 2026-09-29. Two gates, and only one of them can fire. The CI half is live on any pull request that touches the SQL or the schema it resolves against. The audit half answers `unknown` in every seat sandbox for want of a read-only `DATABASE_URL`, which was the same missing credential that left three of delivery-health.md's five surfaces unreadable until 2026-10-01. That one was closed by publishing the four facts it needed as a public receipt, and this one cannot be: the audit runs ten SELECTs across the whole corpus and a public endpoint for those would be the paid product. So `NEON_RO_URL` is now this row's blocker alone |
+| `docs/agents/quality-claims.md` | ExO | ExO writes one row per public claim | ExO §3g every run, artifact-side in the writer's copy round and the frontend's setting step | the site changes weekly, claims rarely, gated weekly | new 2026-09-30. **Its Measured column was the gap and it is closed as of 2026-10-11**: the column now reads from `GET /api/delivery` for every rate-shaped claim, so this seat re-measures rather than quoting. `INC-2026-10-11-a-public-claim-went-false-while-the-org-published-the-refutation-hourly` is what the gap cost. **A second gap inside the same file was closed 2026-10-18**: the method half listed a claim shape, "an issue ships every week", that the data half had no row for, while the claim sat on five public surfaces including the pricing page. §3g gained a fourth step that reads the two halves against each other, and the general rule is that a register with a method section and a data section grows a gap between them |
+| `docs/agents/skill-eval-program.md` | skill and engineer | the eval program's own spec | **GAP**: no `Enforced at:` line and no charter opens it by name | per skill shipped | listed 2026-10-11 by the ExO sweep, which is the first run that noticed the file exists. Either it is a register and needs a gate, or it is a plan and belongs beside the ADR that ordered it |
+| `docs/agents/skill-maintenance-run-note.md` | skill | a run note rather than a register | **not a register**, listed so nobody gates it | n/a | listed 2026-10-11. A note from one run, correctly ungated, and named here only so the §3d grep stops returning it as an unexplained gap |
+| `docs/voice/enjoyability-benchmark-2026-10-05.md` | writer | the writer's benchmark for one axis | **GAP**: no `Enforced at:` line. The dated-benchmark shape already has precedent in `prose-benchmark-2026-09-19.md`, which is also ungated | per editorial run | listed 2026-10-11. The question for the writer seat is whether a dated benchmark is a register at all or a measurement, and the answer should be the same for both files |
 
 ## What this run changed
 
@@ -555,3 +559,76 @@ ledger entry proposing the clause, and named here in the honest state rather
 than marked closed. This is the cadence finding from the other direction: not a
 gate that fires too slowly, but a rule whose gate fires at one of the twelve
 seats it binds.
+
+## The 2026-10-11 sweep
+
+Four files existed that this map did not list, which makes the map itself
+the thing with the gap. `docs/agents/quality-claims.md` had been a register
+for eleven days with a row nowhere on this page.
+`docs/agents/skill-eval-program.md`,
+`docs/agents/skill-maintenance-run-note.md` and
+`docs/voice/enjoyability-benchmark-2026-10-05.md` are new since the last
+sweep. All four are added above.
+
+**The detection rule needs its own detector, and here it is.** §3d of the
+ExO charter greps for registers missing an `Enforced at:` line, which finds
+ungated registers. It cannot find a register this map has never heard of,
+because the grep reads the territory and the verdict lives in the map. One
+command closes it, and it belongs in the sweep from now on:
+
+```bash
+# every candidate register, against the ones this page actually lists
+for f in docs/agents/*.md docs/voice/*.md docs/design/*.md; do
+  grep -q "$(basename "$f")" docs/agents/registers.md || echo "unlisted: $f"
+done
+```
+
+**And the polarity test's first subject is now answered.** `docs/voice/value.md`
+exists on `main`, 168 lines, drafted by the writer seat to the
+`copy-pipeline.md` spec, and its own status line reads "awaiting her
+approval". So incident 25's missing positive artifact is written and the
+gate downstream of it is the owner's ruling rather than a seat's work. The
+ratio test in §3d has something to count on both sides for the first time:
+`taste.md` at 276 lines of rulings against `value.md`'s 168 lines of target.
+What is still open is the approval, and that is hers, not a GAP on this
+page.
+
+## The 2026-10-23 addition: date the conclusion, not only the measurement
+
+A register that holds both measurements and conclusions about them has to
+apply the same discipline to both, and until today none of this seat's eight
+registers did. The rule, in one line: **every sentence a register writes about
+its own data carries the date it was written, in the same sentence.**
+
+The evidence is
+`INC-2026-10-23-a-registers-summary-contradicted-its-own-table-four-times-in-twelve-days`.
+`quality-claims.md` carries a table where every row's Measured column holds a
+number and the moment it was taken, and a closing section of prose that
+summarises the table and carries no date at all. In twelve days the prose
+contradicted the table four times. The fourth instance was the page's most
+emphatic sentence, set in bold, declared by the page itself to be the single
+most useful thing on it, and falsified by two rows the same page had added in
+the seven days before it was written.
+
+**Why this is a property of the file shape rather than of that page.** A
+reader discounts a stale number automatically, because the date is sitting
+next to it and the arithmetic is free. A reader does not discount a stale
+conclusion, because conclusions do not look like measurements and carry no
+age. So the prose half of a register decays at the same rate as the data half
+and does it invisibly, and each successive run reads the conclusion as current
+evidence while re-measuring the numbers underneath it. Three of the four
+instances were diagnosed on the page as bookkeeping slips by runs that then
+produced the next one.
+
+The fix costs four words per sentence and it is checkable by eye. "Two hold"
+becomes "two hold, recounted from the table 2026-10-23". "Every claim that
+fails is about the skills" becomes a sentence that says when it was last true.
+A conclusion that cannot carry a date is a conclusion that is not about the
+data, and that is worth noticing on its own.
+
+**Which registers this binds.** All of them, but it bites hardest on the ones
+with a data half and a prose half, which on this map are `quality-claims.md`,
+`unowned-duties.md`, `turn-caps.md`, `delivery-health.md`, and this file. The
+ExO charter's §3d sweep now reads the prose of each register against its own
+table, in the same pass that checks for the `Enforced at:` line, and a dated
+conclusion is the thing it is looking for.
