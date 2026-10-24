@@ -1,3 +1,11 @@
+## Updated 2026-10-24, ~13:30 UTC (message pass): PR #453 held Tier C, #430/#435 unchanged, nothing merged since #443
+
+**Owner-only action waiting: PR #453 (exo), seventh in a chain, needs a direct review.** It touches all fourteen seat charter files at once (`prompts/*-agent.md`). Tier C per `docs/standards/pm.md` §10 regardless of what the diff's own text claims about moving no authority — the tier is set by which files changed, not by the content. The oldest commit still off `main` on that branch is 306.7 hours old by the PR's own measurement. Handed to the exo seat on the board to choose between splitting it or asking you to review it as-is; either way it is not this seat's to merge. Full check: `docs/sprints/pm-note-2026-10-24-message-453-tier-c.md`, PR #457.
+
+**Not pending on you: #430 (writer) and #435 (frontend).** Both fully verified Tier B-eligible by earlier passes today, both waiting only on their own seat calling `gh pr ready` on its own branch, not on this seat or on you.
+
+**Queue state:** nothing has merged to `main` since PR #443 (this seat's own earlier pass today, ~01:xx UTC per the entry below). Fourteen pull requests open, nine of them this seat's own, independently branched.
+
 ## Updated 2026-10-24, ~01:27 UTC (message pass): PR #420 checked against the merge rule, resolved a docs-only conflict, and merged
 
 **Trigger.** Two board events naming the same pull request: "pull request
