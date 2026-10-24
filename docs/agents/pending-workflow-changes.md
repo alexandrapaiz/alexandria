@@ -3,6 +3,249 @@
 **Enforced at:** prompts/exo-agent.md §5, which verifies each queued
 item against the live workflow files every run.
 
+## The lane this page exists for is open, and the page stays anyway (added 2026-10-18)
+
+**Read this before the section below.** On 2026-10-18 this seat ran the
+capability probe `prompts/exo-agent.md` §5 prescribes, which is a comment
+appended to `.github/workflows/agent-exo.yml` on a throwaway ref, and **the
+push succeeded.** The ref was deleted in the same turn and no pull request was
+opened. Incident 12, the refusal this entire page is built on, no longer
+applies to the credential the host hands a seat.
+
+**Nothing on this page is being applied as a result, and that is a decision
+rather than caution.** The lane did not open because `APP_PRIVATE_KEY` landed
+and ADR-27's GitHub App was granted the `workflows` permission. It opened
+because the 2026-10-17 runtime migration handed twelve seats the owner's own
+account credentials, with `admin: true` on four repositories, which nobody
+decided and nothing recorded. See
+`INC-2026-10-18-the-host-runs-every-seat-as-the-owner`. Nineteen queued
+workflow edits applied on the strength of an unintended escalation would be
+the worst thing this seat has ever done, and the live instruction the host
+gave this run says "never touch secrets or workflows" in those words.
+
+So this page keeps its purpose until the owner either narrows the credential
+or grants the lane on the record. When she grants it, the items below become
+ordinary edits and this page is deleted, per §5. Until then the only thing
+that changed is that the constraint is now a choice, and a reader should know
+which of the two they are looking at.
+
+## What decision 056 changed on this page, and what it did not (added 2026-10-18, corrected the same run)
+
+**Read this before you apply anything below.** HQ decision 056 deleted every
+seat's `schedule:` block from `.github/workflows/` on 2026-10-17 and moved
+each seat's clock to a manifest on the company host. There have been zero
+`*-agent` runs in this repository's Actions since 2026-10-17 17:59:54Z,
+against dozens of host-started seat pull requests a day.
+
+So a **seat** workflow is now a door that opens for an explicit
+`workflow_dispatch` and nothing else. **Every item on this page that edits a
+`prompt:` block or a `claude_args` line in an `agent-*.yml` file still
+matters, and it matters only for a dispatched run.** Those are items 4a, 7,
+13 and 15 for prompts and items 3, 14 and `2026-10-11-writers-cap` for caps.
+They are marked here rather than deleted, because a dispatch is a real path
+and the owner uses it.
+
+**The first version of this heading said "everything on this page now governs
+dispatches only" and that was wrong, so it is corrected in the same run it
+was written in.** Decision 056 deleted `schedule:` blocks. It touched no
+`pull_request` trigger, no `push` trigger and no `workflow_dispatch` trigger.
+So the majority of this page is **completely unaffected**:
+
+- The eight `checks.yml` items, which is the most contended file here, all
+  run on `pull_request`. Fully live.
+- The `hq-origin-notice.yml` item, which runs on `push` to main. Fully live.
+- Every lane-one item in `.github/workflows-pending/`: `skill-gate.yml`,
+  `adr-numbers.yml`, `subscriber-list.yml` on `pull_request`,
+  `modal-deploy.yml` on `workflow_dispatch`. Fully live.
+- `press-watch.yml` alone is in question, because it is the one staged file
+  that uses `schedule:`. See below.
+
+An over-broad heading on a page nineteen items long is the same defect as a
+rotted ordering paragraph, and it fails in the worse direction, because a
+reader who believes it stops applying eight live items. The §5 rule about
+validating a new mechanical check against the artifact applies to a new
+*claim* about the artifact just as much: this one was written from the seat
+workflows in front of the run and asserted over a page that is mostly not
+seat workflows.
+
+**What has moved off this page entirely** is any change to a cadence, a cap,
+a model, an event subscription or a credential. Those five now live in
+`alexandrapaiz/alexandra-systems:runtime/agents/alexandria/<seat>/agent.toml`,
+which this seat can read and cannot write, so they leave through
+`docs/agents/hq-relay.md` as the exact `[trigger]` or `[runtime]` line
+wanted.
+
+**Corrected 2026-10-24: two of those five are readable from inside the
+sandbox, and the other three are not, so stop treating them as one group.**
+`model` and the cadence are in `/srv/asc/state/.epito/state.json` on this
+host, under `agents.alexandria-<seat>`, together with `repo` and a resolved
+`nextCron`. No credential and no other repository. The cap, the event
+subscriptions and the credentials are not in that file, and `max_turns` in
+particular is only in the parent's `agent.toml`.
+
+The distinction is worth the paragraph because it changes what an audit can
+assert. A reading of the model or the cron is now a measurement taken from
+the thing that decides, and `docs/agents/model-routing.md` and
+`docs/agents/unowned-duties.md` were both re-derived from it on 2026-10-24.
+A reading of a cap is still a quotation from another repository, which is why
+eight of twelve rows on `docs/agents/turn-caps.md` compare a measured peak
+against a cap nobody local can confirm. **Saying "readable but not writable"
+of all five let three audits report a measurement when they held a
+quotation.** The test for which lane a change takes is one question: which
+runtime does the thing you are changing belong to? See
+`prompts/exo-agent.md` §5.
+
+**The cost of getting that wrong is already measured.** Item 21's writer cap
+was applied to `.github/workflows/agent-writer.yml` on 2026-10-12, correctly
+and with full reasoning, and the file stopped governing the writer five days
+later. The manifest still says 150. See
+`INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens`.
+
+**And one item's mechanism is now in question rather than its anchors.**
+`.github/workflows-pending/press-watch.yml`, staged on 2026-10-14, triggers
+on a GitHub `schedule:` with `cron: "0 11 * * *"`. Decision 056's own words
+are "No schedule here means no run starts on GitHub minutes by itself," and
+whether that verdict covers a guard workflow or only a seat workflow is not
+recorded anywhere a reader can check, because the decision's entire record
+in this repository is one comment line repeated in ten files. **That
+ambiguity is the finding, not the schedule.** The question is in the relay
+entry for 2026-10-18 and item 21 should not be installed until it is
+answered, because installing a cron the parent decision retired is worse
+than leaving the guard unbuilt.
+
+## The overlap table, regenerated every run
+
+**Added 2026-10-11, and it replaces the rule that every item restate its own
+neighbours.** That rule produced nineteen paragraphs each claiming to list
+the other items touching its files, each written on a different day, each
+rotting on its own. Four were false on 2026-10-04. Five of item 14's eight
+lines were false on 2026-10-11. Seventeen of the nineteen omit at least one
+neighbour today. **A fact about the whole page cannot be maintained in
+nineteen places**, which is the same lesson as "two readers of one question
+grow two answers" in `delivery-health.md`.
+
+So the overlap lives here, once, and the ExO charter's §5 regenerates it
+every run from the corrected sweep rather than asking each item to remember.
+
+| Workflow file | Items that touch it | What each edits, so the order can be judged |
+|---|---|---|
+| `checks.yml` | 12-CI, 13-CI, 14-CI, 15-CI, 16, 17, 19, 20 | **the only real hazard on this page.** All eight add entries to the same two `paths:` lists and steps to the same job. Apply in ascending order and read each item's own "if item N is applied first" note; several already carry one |
+| `agent-engineer.yml` | 5, 6, 9, 10, 14 | 5 adds a step, 6 adds an `env:` line, 9 adds a concurrency block, 10 replaces a step body, 14 edits `claude_args`. Disjoint; any order |
+| `agent-pm.yml` | 5, 6, 14, 15 | 5 a step, 6 an `env:` line, 14 `claude_args`, 15 a `prompt:` block. Disjoint; any order |
+| `agent-skill.yml` | 6, 12, 13, 14 | 6 and 12 both add to the `env:` block, so whichever lands second appends rather than replaces. 13 a `prompt:` block, 14 `claude_args` |
+| `agent-writer.yml` | 4a, 6, `2026-10-11-writers-cap` | 4a a `prompt:` block, 6 an `env:` line, the slug a `claude_args` line. Disjoint, any order. **The slug was "item 21" until 2026-10-18**, when a second item 21 on main forced the rename |
+| `agent-research.yml` | 6, 14 | an `env:` line and a `claude_args` line. Disjoint |
+| `agent-exo.yml` | 7, 14 | 7 rewrites a prompt paragraph, 14 edits `claude_args`. Disjoint |
+| `agent-market.yml`, `agent-security.yml`, `agent-frontend.yml`, `hq-origin-notice.yml` | one item each (14, 14, 10, 5) | nothing to order |
+
+**The first version of this table, written an hour before this one, had three
+errors in it**, and they are left on the record because they are the argument
+for the table rather than against it. It said `agent-writer.yml` was touched
+by item 20, which does not touch it; it said `agent-market.yml` was touched
+by items 14 and 20, where it is item 14 alone; and it listed
+`agent-finance.yml` and `agent-okr.yml` as having one item each when no item
+names either. All three came from a splitter whose item boundaries ran past
+the last `###` heading into this page's trailing sections, so the final
+items absorbed text that was not theirs.
+
+**Two things follow, and the second is the point.** First, an item-boundary
+bug reads exactly like an overlap: both produce a filename attributed to an
+item that does not contain it, which is why the error survived into a
+published table. Second, **the regeneration rule caught it within the same
+run that made it**, because the table is generated from one command and
+re-checked against that command before shipping, which is precisely what
+nineteen hand-maintained paragraphs could never do. A fact kept in one place
+can be wrong. It cannot be quietly wrong in nineteen different ways.
+
+**Read this table rather than an item's ordering paragraph where the two
+disagree, and when you find a disagreement, delete the paragraph.** The
+paragraphs are being retired as their items are touched rather than in one
+sweep, because rewriting seventeen of them in a single run would be this
+seat editing other seats' queued work on a day none of it is being applied.
+
+**Four things to discount in the raw counts, re-checked 2026-10-18.** The
+sweep over-counts three ways and under-counts one, and all four were present
+the day it was published.
+
+1. **A mention is not an edit.** The sweep finds a filename, not a verb.
+2. **The self-references in this section count.** The paragraph above that
+   lists `agent-finance.yml` and `agent-okr.yml` as the table's own earlier
+   errors is itself two hits on each, which is why the raw sweep reported
+   `agent-okr.yml: 2` and `agent-finance.yml: 2` on 2026-10-18 when no live
+   item names either.
+3. **The "Applied and deleted" section at the bottom counts.** It names four
+   seat workflows, and those items are gone.
+4. **The published regex cannot see the pending lane.** It matches
+   `agent-*`, `checks`, `deploy-main`, `build-agent-image` and
+   `hq-origin-notice` only, so it is blind to `press-watch.yml`,
+   `skill-gate.yml`, `modal-deploy.yml`, `subscriber-list.yml` and
+   `adr-numbers.yml`, which this page names nine times between them. Lane-one
+   items are staged whole files and collide differently, but two items can
+   still touch one staged file. The corrected pattern adds them:
+
+   ```bash
+   grep -oE '(\.github/workflows(-pending)?/)?(agent-[a-z]+|checks|deploy-main|build-agent-image|hq-origin-notice|press-watch|skill-gate|modal-deploy|subscriber-list|adr-numbers)\.yml' \
+     docs/agents/pending-workflow-changes.md | sed 's#.*/##' | sort | uniq -c | sort -rn
+   ```
+
+   This is the **third** correction to this one command, after the full-path
+   bug on 2026-10-11 and the item-boundary bug an hour earlier the same day.
+   A sweep whose output is a table of counts is very hard to read as wrong,
+   because every number looks like a number. The standing answer is the one
+   the 2026-10-11 run wrote: validate the check against an instance confirmed
+   by eye before publishing it. Here the instance is
+   `agent-okr.yml`, which the table says no item touches and the raw sweep
+   says two do. If a future version of this command reports `0` for
+   `agent-okr.yml`, it is reading the page correctly.
+
+**The edit sets in the table above are unchanged on 2026-10-18**, verified
+against the corrected sweep with all four discounts applied. No item has
+been added to this page since the table was generated except the pending
+lane's README note, which touches no workflow.
+
+**One human read is still required, and here is exactly which one.** Item 14 names
+`agent-writer.yml` once, in the sentence saying the writer row moved to item
+21, and the sweep reports it as a fifth item on that file. The table records
+the **edit** set, so item 14 is not in the `agent-writer.yml` row. This is
+§3b's rule that a grep finds vocabulary and not polarity, arriving in the
+one place on this page where it changes an answer. Read each hit before you
+put it in the table, and do not let a later run flip the row back on the raw
+count.
+
+**The command that regenerates it**, which is the corrected sweep from ExO
+charter §5. The old version matched the full path only, so it missed every
+bare filename on the page:
+
+```bash
+grep -oE '(\.github/workflows/)?(agent-[a-z]+|checks|deploy-main|build-agent-image|hq-origin-notice)\.yml' \
+  docs/agents/pending-workflow-changes.md | sed 's#.*/##' | sort | uniq -c | sort -rn
+```
+
+## How to name an item on this page, and how to read the numbers that exist
+
+**New items get a slug, never the next number** (rule added 2026-10-11 by
+the ExO agent). Write `### 2026-10-11-writers-cap: <title>`. The reason is
+`INC-2026-10-02-pending-queue-number-collision` and it is the same reason
+`docs/agents/incidents.md` abandoned sequential numbers after four
+collisions: every seat writes on its own branch, reads a different snapshot
+of this file, and allocates from the highest number it can see. Three open
+pull requests once held thirteen items claiming six numbers.
+
+**The four live collisions, because renumbering them would break twenty-odd
+cross-references written by seats that are no longer running.** Read an
+`item N` reference by what the referring sentence is about, and use this
+table when it is not obvious. Items 12 through 15 each name two different
+changes:
+
+| Number | The seat-workflow item | The `checks.yml` item |
+|---|---|---|
+| 12 | the skill seat's `GROQ_API_KEY` | skill registration checked on the PR |
+| 13 | the skill seat's dispatch prompt | the Modal stub installer's missing check |
+| 14 | the caps that go to the measured rule | the deploy-drift guard runs in CI |
+| 15 | the PM's dispatch prompt | the delivery receipt runs in CI |
+
+Items 21 and up, and every slug, are unique.
+
 ## The one structural blocker, for the owner
 
 **No agent seat can fix the machinery that runs it.** Every cap raise,
@@ -156,46 +399,50 @@ seat's §2 and the charter edit is in this PR. The audit itself is the next
 run's work, because finding a second contradiction is a run's worth of
 reading and this run has one confirmed case to fix.
 
-### 14. Seven caps go to the measured rule, in one item
+### 14. Six caps go to the measured rule. The writer's is item 21 and is urgent.
 
-**Queued 2026-10-04 by the ExO agent, from the October re-derivation in
-[turn-caps.md](turn-caps.md). This item replaces items 4 and 11**, which
-both proposed 200 and are both overtaken: the writer's measured peak is
-now 136 and the skill seat's is 156, so 200 is below the rule for both.
-Applying either of the old items would have looked like a fix and left
-both seats short.
+**Queued 2026-10-04 by the ExO agent, re-derived and split 2026-10-11 by
+the ExO agent. This item replaces items 4 and 11**, which both proposed 200
+and are both overtaken. Items 4 and 11 must not be applied.
 
-**Why one item rather than seven.** Seven items touching seven files would
-need seven ordering paragraphs and would rot independently. These seven
-diffs are one line each, they share one justification, and nothing in the
-org depends on the order they land in. Split it only if the owner applies
-part of it.
+**Split on 2026-10-11, and the reason is the whole lesson of this item.**
+It was written as one item for seven seats on the argument that the diffs
+share a justification and no order matters. Both halves of that were true.
+What it did not account for is that **the seven lines did not share an
+urgency, and bundling made the one line with a live cost wait behind six
+without one.** The writer hit its cap on 2026-10-04, 54 minutes after this
+item was queued, and again on 2026-10-09, losing an unpushed increment both
+times. The owner reading this page five days running saw one item proposing
+seven changes to seven workflow files, which is a sitting, not a keystroke.
+The writer's line is now item 21, alone, with its own evidence. The
+remaining six stay bundled, correctly, because none of them has failed.
 
-**Why now, before anything has failed.** No run has hit a cap. Five seats
-are above 80% of theirs, the writer at 91%. A cap below the rule is a run
-that dies without warning and loses whatever it has not pushed
-(incident 3), and the measurement is what the page exists for.
+**The general rule for this page, and it is new**: an item's grouping is by
+urgency first and by convenience second. The moment one line in a bundle
+acquires a real cost, it leaves the bundle.
 
-| Seat | Peak | Cap now | Cap after |
-|---|---|---|---|
-| writer | 136 | 150 | 300 |
-| skill | 156 | 180 | 350 |
-| engineer | 168 | 200 | 350 |
-| market | 131 | 160 | 300 |
-| research | 145 | 180 | 300 |
-| security | 134 | 250 | 300 |
-| exo | 134 | 200 | 300 |
+**Re-derived 2026-10-11 and two of the seven numbers were already short.**
+This is the same defect this item was created to fix in items 4 and 11,
+arriving in this item in seven days. Peaks move on their own, so a proposed
+cap is a measurement with a shelf life, and every re-verification of this
+page must re-read the numbers and not only the anchors.
+
+| Seat | Peak 2026-10-04 | Peak 2026-10-11 | Cap now | Cap after, revised | Was |
+|---|---|---|---|---|---|
+| skill | 156 | 156 | 180 | 350 | 350, unchanged |
+| engineer | 168 | **184** | 200 | **400** | 350, now below the rule |
+| market | 131 | 131 | 160 | 300 | 300, unchanged |
+| research | 145 | 145 | 180 | 300 | 300, unchanged |
+| security | 134 | 134 | 250 | 300 | 300, unchanged |
+| exo | 134 | 134 | 200 | 300 | 300, unchanged |
+
+The writer's row moved to item 21. The rule is `Required = 2 x peak, rounded
+up to the next 50, floor 100`, from [turn-caps.md](turn-caps.md), and the
+engineer's 184 doubles to 368, which rounds to 400.
 
 **How. Every `-` line below was grepped against the live file in this run
 and appears exactly once, except market, which is two steps and gets two
 diffs.**
-
-`.github/workflows/agent-writer.yml`:
-
-```diff
--          claude_args: "--max-turns 150 --permission-mode bypassPermissions --model claude-opus-5"
-+          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model claude-opus-5"
-```
 
 `.github/workflows/agent-skill.yml`:
 
@@ -208,7 +455,7 @@ diffs.**
 
 ```diff
 -          claude_args: "--max-turns 200 --permission-mode bypassPermissions --model claude-opus-5"
-+          claude_args: "--max-turns 350 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 400 --permission-mode bypassPermissions --model claude-opus-5"
 ```
 
 `.github/workflows/agent-research.yml`:
@@ -248,16 +495,32 @@ a cap that depends on which provider answered.
 +          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model claude-sonnet-5"
 ```
 
-**Ordering.** Checked with the whole-page sweep, re-run after this item
-was written, rather than from memory. The complete overlap list, by file:
-`agent-skill.yml` with items 12 and 13, `agent-writer.yml` with item 4a,
-`agent-engineer.yml` with items 6, 9 and 10, `agent-exo.yml` with item 7,
-`agent-pm.yml` with items 6 and 15. `agent-market.yml`,
-`agent-research.yml` and `agent-security.yml` are named by this item alone.
-Every overlapping item edits a `prompt:` block, an `env:` block or a step
-body, and this item edits only `claude_args` lines, so no anchor here moves
-any anchor there and any order works. Items 4 and 11 are deleted by this
-item and must not be applied.
+**Ordering, rewritten 2026-10-11 because the previous version was wrong on
+five of its eight files.** It was written from the whole-page sweep
+published in ExO charter §5, and that command matched
+`.github/workflows/<name>.yml` only, while this page names files bare at
+least as often. The under-count was inherited as a statement of fact. The
+command is corrected in the charter and this is its output.
+
+**The overlap table at the top of this page is the authority and it is
+regenerated every run.** Read it rather than this paragraph. For this item's
+files it says: `agent-skill.yml` with 6, 12 and 13, `agent-engineer.yml`
+with 5, 6, 9 and 10, `agent-exo.yml` with 7, `agent-research.yml` with 6,
+and `agent-market.yml` and `agent-security.yml` with nothing.
+
+What the old paragraph got wrong, for the record: it called
+`agent-research.yml` "named by this item alone" when item 6 also names it,
+it listed three neighbours for `agent-engineer.yml` where there are four,
+and it listed `agent-pm.yml`, which this item does not touch at all. It also
+listed `agent-writer.yml`, which moved to item 21.
+
+**Any order still works, and now for a checked reason rather than an
+assumed one.** Every item in the right-hand column edits a `prompt:` block,
+an `env:` block, a `secrets` line or a whole-file addition. This item edits
+only `claude_args` lines. No anchor here sits inside any anchor there.
+
+Items 4 and 11 are deleted by this item and must not be applied. Item 21
+carries the writer's line and is independent of this item.
 
 **Cost.** $0 unless a run uses the turns. A cap is a tripwire and not a
 budget, and this is the sentence the page has repeated since 2026-09-18
@@ -1969,6 +2232,136 @@ prints the 2026-W41 card against the live receipt, and
 `python3 -m pytest tests/test_press_watch.py -q` is 41 passed. Six of those
 tests read this staged file, so an edit that drops the schedule or adds a
 branch trigger turns the pull request that makes it red.
+
+### 2026-10-11-writers-cap: CANCELLED 2026-10-24. Rotted, and overtaken twice over. The live ask is Ask 4 on `hq-relay.md`.
+
+**Cancelled rather than rewritten, per this charter's rule that an item which
+has been overtaken is cancelled in the item and not left to a reader's
+judgment.** Three facts, in order of how much they matter.
+
+1. **The anchor does not match and has not since 2026-10-12.**
+   `grep -c -F -e 'claude_args: "--max-turns 150 ...'` on
+   `.github/workflows/agent-writer.yml` returns **0**. The live line reads
+   `--max-turns 225`, raised by hand on 2026-10-12. So the diff below would
+   not apply, and the item's own sentence claiming the anchor "appears
+   exactly once" has been false for twelve days.
+2. **The file it patches no longer governs a scheduled run.** Decision 056
+   retired every `schedule:` on 2026-10-17. `.github/workflows/agent-writer.yml`
+   is now the door a manual `workflow_dispatch` walks through, and nothing
+   else. The cap that governed the writer's nine sessions on 2026-10-18 and
+   its 140-turn run on 2026-10-23 is `max_turns = 150` in
+   `runtime/agents/alexandria/writer/agent.toml` in
+   `alexandrapaiz/alexandra-systems`, which this page cannot reach.
+3. **So an urgent item sat for thirteen days in the one lane that could not
+   deliver it**, while the seat it was written for ran at 93% of a cap this
+   page believed it was raising. The live ask is **Ask 4 of the 2026-10-18
+   entry in `docs/agents/hq-relay.md`**, which is a one-line manifest diff,
+   and it carries today's 140-of-150 measurement.
+
+**The number also moved and the next reader should not take 350 from here.**
+`docs/agents/turn-caps.md`, re-derived 2026-10-24 from the board's run
+record, measures a peak of 140 and the 2x rule gives 300. The relay ask
+proposes 225 on purpose, because 225 is the number the owner already
+approved on 2026-10-12 and applying it stops the losses tonight; the gap from
+225 to 300 is recorded on that page rather than traded away here.
+
+**Why this rot was not caught by two previous runs, which is the part worth
+keeping.** This charter requires every `-` line of every queued diff to be
+grepped against the live file every run. The run of 2026-10-18 wrote an
+entire new section of this page about what decision 056 changed, and did not
+re-grep this item. **A run that is editing a page is not thereby auditing
+it**, and the two feel identical from the inside. The check is mechanical and
+takes one command for the whole page; it belongs at the start of the pass,
+before any new prose, and the ExO charter's §5 now says so in those words.
+
+The original item, for the record:
+
+```diff
+-          claude_args: "--max-turns 150 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 350 --permission-mode bypassPermissions --model claude-opus-5"
+```
+
+in `.github/workflows/agent-writer.yml`.
+
+**350 and not 300.** Item 14 proposed 300 off a peak of 136. The seat has
+since hit its cap twice, so 136 is not the peak and 151 is not either: a
+capped run is a floor on demand and not a measurement of it. The rule in
+[turn-caps.md](turn-caps.md) gives `2 x 151 = 302`, rounded up to 350. Both
+cap hits came from free-running editorial work, not from a routing failure,
+so rule 1 does not disqualify either as a measurement.
+
+**What it has cost, twice.** Run 37226048547 on 2026-10-04 at 18:51 UTC and
+run 37986599276 on 2026-10-09 at 20:22 UTC, both `"subtype":
+"error_max_turns"` with `"num_turns": 151` against `--max-turns 150`. Both
+died mid-edit. Ship-first saved the pushed work both times and both times
+the unpushed increment went with the sandbox; on 2026-10-09 that was
+`docs/ideas.md`, `docs/voice/ban-list.md` and
+`docs/voice/reviews/2026-10-09.md`, dirty and unpushed at teardown.
+Registered as
+`INC-2026-10-09-the-writer-hit-the-cap-its-own-raise-queued-five-days-earlier`
+by the PM seat. The 2026-10-04 hit was registered by nobody and this run
+found it; see the ExO learning log for why.
+
+**The first hit landed 54 minutes after item 14 was queued.** The
+measurement was right, the proposal was right, the lane was right, and the
+seat still lost work twice, because the fix needs a hand and the hand saw
+one item asking for seven edits.
+
+**Ordering.** See the overlap table at the top of the page, which is the
+authority. `agent-writer.yml` is named by items 4a and 6 as well as by this
+one. Item 4a edits a `prompt:` block and item 6 adds an `env:` line, so
+neither sits inside a `claude_args` line and any order works. Item 14 no
+longer touches this file, because this item is the writer row that was
+removed from it.
+
+**Cost.** $0 unless a run uses the turns. A cap is a tripwire, not a budget.
+
+**The smoke run it owes.** `--max-turns` is a runtime change under
+[runtime-changes.md](runtime-changes.md) and this seat cannot smoke it,
+because creating the branch needs the push the runner's token refuses. The
+obligation transfers to whoever applies it: the writer's next run should
+print `--max-turns 350` in its log, and if it prints 150 the edit did not
+land.
+
+**Renumbered to a slug on 2026-10-18, and the collision that forced it is
+this page's fifth.** This item was queued as "item 21" on 2026-10-11, in the
+very pull request that added the rule "New items get a slug, never the next
+number" to this page. Three days later a second item 21 was queued on main,
+which is the quiet-send guardrail's schedule directly above. The two then met
+in a merge and the conflict was committed unresolved for 21 hours
+(`INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register`).
+Both items are real and both are kept. This one takes the slug because it is
+the one whose own author wrote the rule, and because nothing outside this
+page cites it. References to "item 21" at lines 334, 349, 371 and 447, and in
+`docs/agents/learning-log.md`, mean this item and are left as written with
+this paragraph as their key.
+
+**ROT, found 2026-10-18, and the diff below is rewritten.** The anchor said
+`--max-turns 150` and `grep -c -F -e` returns **0** against the live
+`.github/workflows/agent-writer.yml`, because commit `971944e5` of
+2026-10-12 already raised that line to 225. The item's own closing paragraph
+still says "if it prints 150 the edit did not land", which was true when it
+was written and is now the wrong test.
+
+**And the item can no longer do what it was queued to do, which matters more
+than the anchor.** Since HQ decision 056 on 2026-10-17 the writer's governing
+cap is `[runtime].max_turns` in its host manifest, and that still reads 150.
+Applying the diff below changes the cap for a `workflow_dispatch` and leaves
+every real run at 150. **So this item is necessary and not sufficient**, and
+its other half is ask 4 of the 2026-10-18 entry in
+`docs/agents/hq-relay.md`. See
+`INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens`.
+
+```diff
+-          claude_args: "--max-turns 225 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 350 --permission-mode bypassPermissions --model claude-opus-5"
+```
+
+The new anchor was checked with `grep -c -F -e` against the live file on
+2026-10-18 and appears exactly once. The test for whether it landed is now
+that the writer's next dispatched run prints `--max-turns 350`, and if it
+prints 225 the edit did not land.
+
 
 ## Not queued here, because it needs a key rather than a hand
 
