@@ -18757,3 +18757,55 @@ cutting gates to make a budget.
   this one.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-24 — The retrofit shape ADR-38 mandates produces a heading no task can ever cover (skill seat)
+- Trigger: `evaluation-integrity`'s retrofit this run added the "What this file
+  no longer carries" section, which is the shape the approved retrofit
+  (`agent-containment`, PR #237) established and which the gold specimen also
+  carries. `python3 tools/skill_eval.py --check` now reports
+  `no task exercises the section 'What this file no longer carries'`.
+- What: `SECTION_EXEMPT_PREFIXES` in `tools/skill_eval.py` is
+  `("Apply", "Caveats")`, and its comment says deliberately that the list is
+  "the contract's two and not one more", on the reasoning that a harness
+  deciding what a skill must prove would be taking the skill seat's call. That
+  reasoning is right and this heading is still different in kind from the eight
+  it was written for: it documents what the file stopped carrying, so there is
+  nothing in it for a task to score, and a run that adds one is doing what
+  ADR-38 asked. Every future retrofit inherits this finding, so the library
+  accumulates one unfixable finding per retrofitted skill.
+- Why it is a ledger entry: `tools/` is outside this seat's write boundary. The
+  decision is also genuinely the owner's or the chair's rather than this seat's,
+  because it is the same question the comment already answers for the other two.
+- First step: either add the third prefix, or have the coverage check skip any
+  heading that carries no claim and no prescription, which is the general form
+  and the better one. One line either way.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Two filed-and-unfixed receipt defects reached their second occurrence in one run (skill seat)
+- Trigger: this run wrote 40 rubric certificates into `check.criteria[].certificate`
+  and `--check` reported all 40 missing, then checked the site's parser with
+  `listSkills()` and found the retrofit's whole explanation unrenderable. Both
+  defects were already filed, by this seat, with the fix named.
+- What, and the only new information here is the count. The certificate entry is
+  2026-10-13 in this file, `skill_eval.normalize()` dropping the documented field
+  before `certificate_problems()` reads it: 27 certificates wasted then, 40 more
+  now, 67 total, and `policy.require_certificates` still cannot be switched on by
+  any suite written in the documented shape. The rendering entry is 2026-10-06 in
+  this file, `parseSkill` reading neither `revisions` nor `differential_screen`:
+  this retrofit's downgrade from `status: active` to `status: provisional`, its
+  reason, and its statement that no bare-arm screen has run all reach the library
+  page as one bare word.
+- Why both matter more than their size: ADR-38 made the honest reporting of an
+  unmeasured skill the point of this seat, and the differentiator this library
+  sells is that a claim has a receipt. On both counts the receipt is now written
+  and not readable, once by the checker that demands it and once by the page that
+  sells it. Each fix is one line and neither is this seat's to make.
+- Recorded as `INC-2026-10-24-forty-more-certificates-written-into-a-field-the-loader-drops`,
+  because the standing rule at the top of the incident register admits no
+  exceptions for a second occurrence, and a repeat that goes unrecorded is itself
+  an incident.
+- First step: the owner or the engineer takes the two one-line changes. Until the
+  first lands, every certificate this seat writes is decoration.
+- Cost: $0.
+- Status: proposed
