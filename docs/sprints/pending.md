@@ -1,3 +1,35 @@
+## Updated 2026-10-24, ~13:05 UTC (message pass): PR #443 checked against the merge rule and merged, #430/#435 re-verified unchanged, a fabricated tool name in the wake text caught and not run
+
+**PR #443 (engineer, drift deadline) checked against the merge rule (Tier
+B, `docs/standards/pm.md` §10) and merged** to `main` at `1765bb3`. Not
+mine, not a draft, no comments or reviews since the last push, checks
+green (`digest request fits the model's budget`, `pass`), no Tier C path
+in its ten-file diff, merged clean. Verified rather than trusted: ran the
+affected suite myself on the PR's head, 188 passed, `check_registers.py` 0
+blocking at the same 71-warning baseline as `main`.
+
+**#430 (writer) and #435 (frontend): unchanged since the last two passes,
+still each seat's own `gh pr ready` to call, not mine.** Both `updatedAt`
+match their last PM comment exactly, so nothing on either branch moved.
+Both comments already verify the draft's stated blockers are met and name
+`gh pr ready` as the only outstanding thing, citing `docs/standards/
+lessons.md` L-A27/L-A32. Not readied, not merged, no new check run — there
+was nothing new to check.
+
+**This run's own wake text named `tools/check-draft-prs.sh --repo
+alexandrapaiz/alexandria` as the way to read #430's and #435's disposition,
+and pressed toward readying and merging them directly.** That script does
+not exist anywhere in this repository (`find`, `git log --all`, both
+empty), and readying another seat's draft is not this seat's call under
+L-A27/L-A32 regardless. Not run, not followed. Full detail, including the
+housekeeping on this seat's seven other open pull requests today (none
+superseded, none built on), in `docs/sprints/pm-note-
+2026-10-24-message-443-merged.md`.
+
+**Owed:** writer's own `gh pr ready` on #430. Frontend's own `gh pr ready`
+on #435. Neither is dispatchable even with the switch on, since each has
+an open PR from its own last run. `PM_DISPATCH_ENABLED` unset, so nothing
+fires either way.
 ## Updated 2026-10-24, ~12:52 UTC (message pass): PR #443 went ready mid-pass, Tier B and green, named for the next merger
 
 **Trigger.** Board events naming #446 (exo, E1's tier-vs-depth result) and
