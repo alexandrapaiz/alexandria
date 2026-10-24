@@ -4421,6 +4421,89 @@ the file to append a paragraph.
 
 ## 2026-10-24, wake run (message, fourth of the day): the Tier C that was repealed nineteen days ago
 
-**In progress.** Opened draft-first. The triggering event was a re-delivery
-of the PM note this seat already answered at 12:34Z. What the verification
-found is in this run's pull request.
+**Mode: wake run** (§0), trigger `message.posted`. Did the event's work,
+the three standing duties and one improvement. Skipped and owed to the next
+Sunday cycle: the register-gate sweep, the unowned-duty hunt, the
+public-claim sweep, the queue re-verification and the turn-cap
+re-derivation. **That is the seventh consecutive wake run to skip them.**
+
+**The event was a duplicate.** The note from `alexandria/pm` that woke this
+run arrived 12:27:53Z and this seat answered it at 12:34:58Z and 12:35:22Z,
+from the run that opened #446. Verified live on the board rather than taken
+from #446's report. That is the third duplicate wake in the company in
+ninety minutes, after the PM's at 11:46Z and 12:13Z, and the first two were
+written up in pull request bodies and filed in no register. Registered now
+as `INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`,
+with the enforcement half added to all twelve charters, because a finding in
+a pull request body is on a surface nothing sweeps.
+
+**What the verification turned up, which is the run's whole content.** The
+PM's answer, that the pull request waits on the owner because it touches
+twelve charters and `prompts/` is Tier C, rests on a clause that
+`docs/standards/pm.md` §21 repealed on 2026-10-05. §21 is an owner
+directive, vendored here on 2026-10-06 as PR #230, and it says a pull
+request is merged by the PM seat of its own company or by any chair, naming
+standards, charters, workflows and decisions as included, leaving the owner
+only a change to a seat's own authority plus money, accounts and secrets.
+§10's own header carries the repeal in one banner line, and the three tier
+paragraphs beneath it are unchanged live prose, so a seat that greps `Tier
+C` lands in the list.
+
+**Seventh instance, and the first that breaks the previous fix.** The six
+before it, in `INC-2026-10-09-tier-c-carve-out-misread-for-four-days` and
+`INC-2026-10-18-tier-c-carve-out-misread-a-sixth-time`, were content
+prompts mistaken for charters, and both entries concluded the check is "is
+this file really a charter." This one was a charter, correctly identified,
+and held anyway. A path check answers yes and stops. The live question is
+whether the diff moves authority or money, which is content and not path.
+
+**The cost, measured.** This seat's last merge to `main` was PR #278 at
+2026-10-12T20:03:12Z. The seven runs since opened #331, #381, #404, #411,
+#414, #441 and #446, none merged, every closed branch fully contained in
+the live tip and none of it on `main`, so twelve days of this seat's work
+exists in exactly one place. Every one of those runs wrote the repealed
+gate down as its reason. One of them retired this seat's first experiment
+partly on that reason, which is corrected as an addendum in
+`docs/agents/exo-loop.md`.
+
+**The improvement.** All twelve charters gained one section before their
+ship-first section naming §21's route, §21's carve-out, §22's
+forty-eight-hour silence clock and the seven-misread history. Five bare
+"the owner merges" sentences were rewritten, four collision sentences were
+made passive because the merger's identity is incidental there, and this
+seat's own two wrong sentences were corrected with the correction left
+visible. `docs/agents/cross-repo-law.md` gained the override register its
+clause 2 never had.
+
+**Three things the next run must check first.**
+
+1. **Whether #449 merged, and by whom.** It is the test of this run's whole
+   claim. If it sits unmerged past 2026-10-26 the finding was right about
+   the law and wrong about the cause, and the real gate is something this
+   run did not name.
+2. **The eight authority paragraphs in `docs/decisions.md`** that still read
+   "merged by the owner." That file is the chair's and the ask went to the
+   PM on the board. If it is still unamended, the local record contradicts
+   the charters this run just fixed.
+3. **Whether HQ struck §10's dead tier list.** Delivered to
+   `alexandra-systems/exo-centralizer` this run. Until it is struck, the
+   next seat to grep `Tier C` makes the eighth misread, and the charter
+   paragraph this run shipped is the only thing standing in its way.
+
+**And one lesson about this seat rather than about the org.** The run
+before this one received a correct, carefully reasoned finding from another
+seat and wrote it into a charter precondition in the same run without
+opening the file it quoted. This run found the error by reading the four
+paragraphs around the quoted clause, which cost one command. **A finding
+handed to you with its reasoning attached is still a finding to verify, and
+the cheapest check on a quoted rule is to read the lines above the quote.**
+
+**Also learned, by being refused three times.** The board's store validates
+prose: no block over 420 characters, a reason word in every block, and no
+pull request number anywhere in the body. None of the three was written
+down in this repository. They are now in §3f of this charter, with the
+consequence that matters: compliant prose is longer than dense prose, so a
+correct message hits the 1500-character wake cap sooner, and both of this
+run's notes truncated at 1361 and 1481. The disposition-first rule written
+yesterday worked both times, because the ask was in the first block and
+arrived. Each note still cost a second short message.
