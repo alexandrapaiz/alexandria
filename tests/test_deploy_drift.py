@@ -1572,6 +1572,205 @@ def test_a_failing_deploy_still_names_the_apps_it_could_not_measure():
         check("distill's own state is unknown",
               surface.evidence["distill"]["state"] == dh.UNKNOWN)
 
+# ------------------------------------------------- the deadline on the drift
+#
+# Every number this guard printed until 2026-10-24 was backwards-looking. It
+# could say an image was 8.7 days behind and not say when that image next
+# serves a run, which is the only half a reader can act on: 8.7 days behind
+# with the next fire on Monday morning and 8.7 days behind with the next fire
+# in two hours are the same sentence about two different emergencies.
+
+def test_the_schedule_is_read_out_of_the_module_and_not_kept_beside_it():
+    """The manifest's own argument, applied to the clock.
+
+    `manifest` has been derived from source since this module shipped, because
+    a hand-kept copy of a list disagrees with the deploy on the day it
+    matters. A schedule is the same kind of fact, and the one copy of it this
+    repository holds, `delivery_health.PRESS_CRON`, needed a test of its own
+    to stay honest.
+    """
+    for app in sorted(rs.APPS):
+        found = rs.schedule_of(app, ROOT)
+        check(f"{app} has a schedule read from {rs.APPS[app]}",
+              "cron" in found, str(found))
+
+    check("a commented-out schedule is not a schedule",
+          rs.schedules('    # schedule=modal.Cron("0 16 * * *"),') == [],
+          "a job somebody switched off by commenting it would be reported live")
+    check("and prose naming modal.Cron is not one either",
+          rs.schedules("    ADR-12 recorded that job's own `modal.Cron` as") == [],
+          "a docstring would be mistaken for a decorator")
+    check("two schedules in one module is a refusal, not a pick",
+          rs.schedules('schedule=modal.Cron("0 9 * * 1")\n'
+                       'schedule=modal.Cron("0 9 * * 2")') ==
+          ["0 9 * * 1", "0 9 * * 2"],
+          "an app with two deadlines must not have one of them chosen for it")
+
+
+def test_a_cron_this_evaluator_cannot_read_is_a_why_and_never_a_guess():
+    """The whole value of the deadline is that a reader acts on it.
+
+    So a field this code misreads has to produce no deadline rather than a
+    wrong one. A card that says "deploy before 15:00" when the job runs at
+    03:00 is worse than a card that says the schedule could not be read.
+    """
+    now = datetime(2026, 10, 24, 13, 0, tzinfo=timezone.utc)
+    for expr in ["", "nonsense", "0 9 * *", "0 9 * * * *", "0 25 * * *",
+                 "0 9 32 * *", "0 9 * 13 *", "@daily", "0 9 * * MON",
+                 "0 9 * * */0"]:
+        check(f"{expr!r} is refused rather than guessed at",
+              dh.next_fire(expr, now) is None, str(dh.next_fire(expr, now)))
+
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_repo(Path(tmp), days_ago=1)
+        target = repo / rs.APPS["weekly"]
+        target.write_text(
+            target.read_text(encoding="utf-8").replace(
+                'schedule=modal.Cron("0 9 * * 1")', "# unscheduled"),
+            encoding="utf-8")
+        found = dh.next_run("weekly", repo, now)
+        check("an app on no schedule answers with a why and no deadline",
+              "at" not in found and "why" in found, str(found))
+
+
+def test_the_next_fire_is_the_next_one_and_never_one_that_has_passed():
+    """The arithmetic, at the boundaries that are easy to get wrong by an hour."""
+    cases = [
+        # The press, from a Saturday: Monday morning and not yesterday.
+        ("0 9 * * 1", datetime(2026, 10, 24, 13, 0, tzinfo=timezone.utc),
+         datetime(2026, 10, 26, 9, 0, tzinfo=timezone.utc)),
+        # A minute before its turn.
+        ("0 9 * * 1", datetime(2026, 10, 26, 8, 59, tzinfo=timezone.utc),
+         datetime(2026, 10, 26, 9, 0, tzinfo=timezone.utc)),
+        # On the minute is now and not next week: a run starting this second
+        # is a run the stale image serves.
+        ("0 9 * * 1", datetime(2026, 10, 26, 9, 0, tzinfo=timezone.utc),
+         datetime(2026, 10, 26, 9, 0, tzinfo=timezone.utc)),
+        # One minute late, and the next turn is a week away.
+        ("0 9 * * 1", datetime(2026, 10, 26, 9, 1, tzinfo=timezone.utc),
+         datetime(2026, 11, 2, 9, 0, tzinfo=timezone.utc)),
+        # A daily job whose hour is gone rolls to tomorrow.
+        ("0 15 * * *", datetime(2026, 10, 24, 15, 30, tzinfo=timezone.utc),
+         datetime(2026, 10, 25, 15, 0, tzinfo=timezone.utc)),
+        # Crontab's two spellings of Sunday agree.
+        ("0 9 * * 0", datetime(2026, 10, 24, 13, 0, tzinfo=timezone.utc),
+         datetime(2026, 10, 25, 9, 0, tzinfo=timezone.utc)),
+        ("0 9 * * 7", datetime(2026, 10, 24, 13, 0, tzinfo=timezone.utc),
+         datetime(2026, 10, 25, 9, 0, tzinfo=timezone.utc)),
+        # Across a year end, because the walk is over days and not over a month.
+        ("0 9 1 1 *", datetime(2026, 10, 24, 13, 0, tzinfo=timezone.utc),
+         datetime(2027, 1, 1, 9, 0, tzinfo=timezone.utc)),
+    ]
+    for expr, now, expected in cases:
+        got = dh.next_fire(expr, now)
+        check(f"{expr!r} after {now:%a %Y-%m-%d %H:%M} fires {expected:%a %H:%M}",
+              got == expected, str(got))
+
+    # Day-of-month and day-of-week are OR'd when both are restricted, which is
+    # crontab's rule and the one piece of this that surprises people. No
+    # deployed schedule restricts both; the branch is here to be right.
+    check("both day fields restricted is an OR and not an AND",
+          dh.next_fire("0 9 3 * 1",
+                       datetime(2026, 10, 1, 0, 0, tzinfo=timezone.utc))
+          == datetime(2026, 10, 3, 9, 0, tzinfo=timezone.utc),
+          "Saturday the 3rd matches on the day of month alone")
+
+
+def test_a_stale_deploy_names_the_first_app_to_serve_a_run_with_it():
+    """The deadline, in the headline a seat reads every day.
+
+    The app is computed here from the same schedules rather than written in,
+    because pinning a weekday would make this test's answer depend on the day
+    it runs, and the claim under test is that the headline and the schedules
+    agree.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_repo(Path(tmp), days_ago=9)
+        now = datetime.now(timezone.utc)
+        conn = FakeConn([row_for(app, repo, sha="0ldc0dec0de") for app in rs.APPS])
+        surface = dh.check_deploy(conn, repo, now=now, notify=False)
+        due = {app: dh.next_run(app, repo, now) for app in rs.APPS}
+        first = min(due, key=lambda app: due[app]["at"])
+        check("the headline names the first stale app to get its turn",
+              f"first of these to serve a real run is {first}"
+              in surface.headline, surface.headline)
+        check("and says a deploy after it is too late",
+              "a deploy after that is a run too late" in surface.headline,
+              surface.headline)
+        check("and every app carries its own deadline in the evidence",
+              all(surface.evidence[app]["next_run_at"]
+                  and surface.evidence[app]["next_run_in_hours"] is not None
+                  for app in rs.APPS),
+              str({app: surface.evidence[app].get("next_run_at")
+                   for app in rs.APPS}))
+        check("including the cron it was read from",
+              surface.evidence["weekly"]["cron"] == "0 9 * * 1",
+              str(surface.evidence["weekly"].get("cron")))
+
+
+def test_a_deadline_is_qualified_when_no_cron_is_firing_at_all():
+    """2026-10-24, and the reason `judge_deploy` takes the outage.
+
+    The Modal workspace was disabled, so none of the five schedules fired. A
+    headline reading "weekly fires Monday 09:00" would have been this guard
+    reading a promise out of a decorator and handing the owner a clock that
+    had stopped.
+    """
+    outage = "Modal's edge says workspace ac-1 is disabled"
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_repo(Path(tmp), days_ago=9)
+        conn = FakeConn([row_for(app, repo, sha="0ldc0dec0de") for app in rs.APPS])
+        surface = dh.check_deploy(conn, repo, notify=False, compute=outage)
+        check("the outage is part of the deadline sentence",
+              outage in surface.headline, surface.headline)
+        check("and the deadline is not offered as a time to work to",
+              "a deploy after that is a run too late" not in surface.headline
+              and "from the moment compute is back" in surface.headline,
+              surface.headline)
+        check("and it is still a failing deploy",
+              surface.state == dh.FAILING, surface.state)
+        check("and the outage is in the evidence for a reader of the json",
+              surface.evidence["compute_outage"] == outage,
+              str(surface.evidence.get("compute_outage")))
+
+
+def test_the_grace_window_that_outlasts_the_schedule_is_said_out_loud():
+    """The quiet case, and the finding this run is reporting rather than fixing.
+
+    A pending deploy is forgiven for 24 hours because a merge at noon is not
+    an alarm at one. That reasoning holds only while nothing runs inside those
+    24 hours, and four of the five jobs here are daily, so the window
+    guarantees the undeployed image serves at least one production run before
+    the guard says a word.
+
+    The state is deliberately unchanged: moving the threshold re-grades every
+    pending deploy the org will ever have and that is the owner's call. What
+    this asserts is that the case stops being silent.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_history(Path(tmp), [
+            ("pipeline/llm.py", "A change merged two hours ago"),
+        ], base_days_ago=1.1)
+        deployed = {app: dh._digest_at(repo, app, "HEAD~1", {}) for app in rs.APPS}
+        conn = FakeConn([row_for(app, repo, sha=deployed[app]) for app in rs.APPS])
+        surface = dh.check_deploy(conn, repo, notify=False)
+        check("a two-hour-old drift is still not red",
+              surface.state == dh.OK, f"{surface.state}: {surface.headline}")
+        check("and the headline says the grace outlasts the schedule",
+              "the window outlasts the schedule for" in surface.headline,
+              surface.headline)
+        inside = surface.evidence.get("fires_inside_grace") or []
+        check("and names at least one daily job that fires inside it",
+              any(app in " ".join(inside)
+                  for app in ("ingest", "triage", "interpret", "distill")),
+              str(inside))
+        check("the press is not named, because Monday is outside a day",
+              not any(line.startswith("weekly") for line in inside)
+              or dh.next_run("weekly", repo,
+                             datetime.now(timezone.utc))["hours"] <= 24,
+              str(inside))
+
+
 def main() -> int:
     for name, fn in sorted(globals().items()):
         if name.startswith("test_") and callable(fn):
