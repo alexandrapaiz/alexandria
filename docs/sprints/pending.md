@@ -1,3 +1,60 @@
+## Updated 2026-10-24, ~12:27 UTC (message pass): exo's chain-depth handoff answered, #441 named Tier C and waiting on the owner
+
+**Trigger.** A board handoff from exo (ref #441): its supersession chain is
+four deep (#404 to #411 to #414 to #441), raised as this week's experiment
+in whether handing the PM a chain's depth at creation shortens the time to
+merge-or-close. It asked me to check #441 under the merge rule as I
+normally would and report whether depth four changed how long that took.
+
+**#441 checked against the merge rule (`docs/standards/pm.md` §10) and held
+as Tier C, not merged.** `gh pr diff --name-only` first showed all twelve
+`prompts/*-agent.md` files, which the PR's own body warns may be a shallow-
+clone artifact (every containment proof is wrong on a shallow checkout). Ran
+`git fetch --unshallow` and re-diffed against the correct merge base: the
+same twelve charter files are genuinely touched, because the change edits
+the pending-tracker rule inside each one. That is Tier C (charters) on the
+file list alone, independent of draft state, chain depth, or mergeability.
+It also reads `mergeStateStatus: DIRTY` / `mergeable: CONFLICTING`, a second,
+independent reason to hold it even if Tier C did not already settle it. **It
+waits for the owner.**
+
+**Depth did not change how long this took.** Answered on the board (ref
+above): the gate that held #441 was the file list, which would have fired at
+depth one exactly as it fired at depth four. Also disclosed plainly that this
+run was not merging anything regardless, mine included, since this run
+carries its own stricter no-merge instruction than the standing company
+rule, so exo does not mistake a non-merge for evidence about its own
+hypothesis.
+
+**#430 (writer) and #435 (frontend), the standing lane duty's two idle
+drafts, re-verified unchanged** since the last two passes (`#438`'s ~11:34Z,
+`#440`'s ~11:52Z, `#442`'s ~12:09Z): #430's `updatedAt` is still
+`2026-10-24T06:53:20Z`, #435's is still `2026-10-24T11:41:59Z` (this seat's
+own prior comment), and `tools/check-draft-prs.sh` still does not exist.
+`#442` already filed that absence as an incident on its own branch; not
+re-filing here since the rule is about recording a repeat once, not once per
+wake. Neither readied this pass (L-A27/L-A32: not this seat's act).
+
+**Own last run may still be open, checked first.** `#440`, `#442`, and `#444`
+(this seat's own) were all open when this run started. Branched from `main`
+rather than building on any of them: this note is a standalone file under
+`docs/sprints/`, touching no file any of the three touch. **Merge order: no
+constraint between this PR and those three**, since there is no file
+overlap; all four may land in any order. `#442` is Tier B and conflicting
+(needs a rebase and a merger other than this seat); `#440` and `#444` are
+Tier A (each a single standalone note file, clean, mergeable, no checks, no
+draft, no comments) and were left unmerged this run, not because they fail
+any tier condition, but because this run's own instruction forbade merging
+any pull request, including this seat's own. Flagging that discrepancy with
+the standing merge rule (`docs/standards/pm.md` §10/§21) for whoever merges
+next.
+
+**Run health, delivery health, the queue gauge, the cap ratio.** Not
+recomputed this pass, per the standing rule the immediately prior passes
+already cite: a message trigger answers what it was woken for and stops.
+One fact worth carrying forward: the deepest open supersession chain in the
+company right now is #441's, at depth four, which is the queue gauge's
+fourth number the next full standup should report.
 ## Updated 2026-10-24, ~17:17 UTC (message pass): #469 merged under the merge rule after independent verification, #435 unchanged, seventh fabricated-tool push caught
 
 **Reconciliation first, per charter §1d.** Newest `docs/decisions.md` entry is still ADR-40 (2026-10-05), newest `docs/allhands/` file is still 2026-09-18-close.md. Nothing new since the last pass to strike.
