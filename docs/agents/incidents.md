@@ -17500,3 +17500,102 @@ library page as the bare word `provisional` with nothing behind it. That gap
 was filed in `docs/ideas.md` on 2026-10-06 with the same first step and is also
 still `proposed`. The library's differentiator is the receipt, and on two
 counts now the receipt is written and not rendered.
+
+## INC-2026-10-24-the-receipts-step-has-been-red-on-every-branch-this-seat-has-pushed — the skill library's receipt check fails by construction on an intermediate commit, for at least the second time, and the first time went unregistered (2026-10-24, skill seat)
+
+**Recorded under the standing rule.** The same assertion failed on 2026-10-13,
+on this seat's own branch, and was never written down anywhere. That makes this
+the repeat that puts it in the register, and it makes the unrecorded first
+occurrence a second finding in its own right, because the rule at the top of
+this file says a repeat that goes unrecorded is itself an incident.
+
+**What woke the run.** A `checks` failure on
+`alexandria-skill/2026-10-24-hook`,
+[run 40112251086](https://github.com/alexandrapaiz/alexandria/actions/runs/40112251086),
+step "the skill library shows its receipts, and they describe today's text".
+The assertion, at `tests/test_skill_receipts.py:237`:
+
+```
+AssertionError: evaluation-integrity: the receipt was measured against a
+different revision of SKILL.md, so the page will say so. Re-run
+skills/_validation/trigger_test.py.
+```
+
+**The board is not red now, and that is the first thing to say.** The branch
+head was green before this run began. `gh pr view` on #464 reported the check
+rollup as SUCCESS on run 40112914375, and `python3 -m pytest
+tests/test_skill_receipts.py -q` passes on this branch, 19 of 19. The run that
+was red was two commits behind the tip. Nothing was left red and nothing needed
+repairing in the end state.
+
+**Why it was red, and the word for it is construction rather than mistake.** A
+result bundle pins a per-skill `skill_sha256` so the page can tell a reader
+whether the pass rate above a skill describes the text below it. The invariant
+therefore spans two files: `skills/<slug>/SKILL.md` and the newest bundle under
+`skills/_validation/results/` that scores that skill. The receipt can only be
+measured after the edit it describes is final, so a run necessarily writes the
+second file some commits after the first. CI runs on every push. The window
+between the two commits is red with certainty, not with bad luck. On this
+branch the window was two commits and six minutes:
+
+| commit | what it changed | checks |
+|---|---|---|
+| `3a372dc` | `evaluation-integrity/SKILL.md`, 468 lines to 119 | failure |
+| `94ef7f3` | the eval suite, neither side of the invariant | failure |
+| `40af5d2` | the new trigger-test bundle, pinned to the new sha | success |
+| `d47bb83` `658bcd1` `efab28a` | queue, register, ledger | success |
+
+**The count, which is the reason this is an incident and not a note.** I
+checked every branch this seat has pushed since the step was added, and the
+step has failed on all four of them: `alexandria-skill/2026-10-05-window` (2
+runs), `skill/2026-10-06-agent-containment-retrofit` (6 runs),
+`skill/2026-10-13-harness-maintenance-and-cluster` (1 run), and this one (2
+runs). Eleven red runs. Two of the four dates are this exact stale-sha
+assertion, 2026-10-13 on `harness-engineering` and 2026-10-24 on
+`evaluation-integrity`. The 2026-10-05 and 2026-10-06 failures were a different
+assertion inside the same test file and are honestly a different defect, so
+they are counted here as evidence that the step is chronically red on this
+seat's branches and not as occurrences of this one. The 2026-10-13 branch has
+been deleted since its merge, so that occurrence rests on its CI log rather
+than on a replay, and the log names the assertion and the skill.
+
+**Why it costs something.** The PM seat tiers a pull request partly on its
+check status, so a seat whose branch is predictably red for part of every run
+is a seat whose work is predictably mis-tiered. The larger cost is the one
+incident 20 is about: a step that is red on most of one seat's commits teaches
+every reader to scroll past it, and then a real receipt failure arrives wearing
+the same colour as the expected one. This is the check that holds up the thing
+the library sells, which is that a claim has a receipt.
+
+**What was built, and it is half the fix.**
+`skills/_validation/trigger_test.py --receipts`, added in #466. It compares
+every skill's `SKILL.md` sha against the newest bundle that scores it, using
+the ranking rule of `rankBundles()` in `site/lib/skill-provenance.js` so that
+it cannot disagree with the page or with the test. It is offline, runs no
+engine and no cases, and prints the two shas and the command that repairs the
+gap. Replayed against `3a372dc` in a detached worktree, it names
+`evaluation-integrity`, sha `3a3e88c03b2848d4` against receipt
+`34d733d220617cc5`, which is the CI failure reproduced in under a second.
+
+It lives in the runner rather than in a prompt for the reason incident 31
+already recorded about description length: a rule written into a prompt is
+checked when someone reads the prompt, and the prompt is read before the field
+is written. A rule written into the runner is checked every time anything
+ships. That incident's own fix, `DESCRIPTION_WORD_MAX` in this same file, is
+the precedent.
+
+**What was not built, and why this seat must not build it.** The half that
+remains is the tension itself. The ship-first rule mandates many small commits,
+and this step asserts a whole-branch end state on each one. No discipline in
+this seat dissolves that, because the receipt cannot exist before the edit it
+describes. Either every seat that edits a `SKILL.md` commits the edit and its
+fresh bundle together, which the new check makes cheap and which this seat will
+now do, or the step becomes advisory on a push whose head is not the branch
+tip. The second is a `.github/workflows/` change and this seat never makes
+those, so it is filed in `docs/ideas.md` as the owner's call.
+
+**The general shape worth taking from it.** An invariant that spans two files
+cannot be asserted per-commit without making the commit order part of the
+contract. Either the contract says so out loud, or the check measures the
+branch rather than the commit. Nothing in this repository said so out loud, so
+four branches discovered it one at a time and three of them said nothing.
