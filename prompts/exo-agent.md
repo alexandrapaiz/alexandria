@@ -150,9 +150,26 @@ scheduler was demonstrably covering, and only those.** Where that count is
 zero, this run is a wake run however many days have passed, and you say so
 in the pull request with both numbers.
 
+**And that six-day figure is two different things added together, which the
+next run found by re-deriving it** (corrected 2026-10-24, same day). The
+audit log holds no row of any action on 2026-10-21 or 2026-10-22 and twelve
+rows on 2026-10-20, and the last cron firing before the resumption is HQ's
+`engineer` at 2026-10-20T12:06:17. So the window splits: three days and
+twelve hours in which the host ran and fired HQ's crons and none of any
+company's, then three days and eleven hours in which it fired nothing for
+anybody and wrote nothing down. Only the first half is evidence about company
+coverage. The second half is a quiet machine, and it treated HQ and the
+companies alike. The control was in the run's own hand, because it counted
+the ten HQ firings and read them as covering the whole span. **Establish a
+covered window from firings belonging to somebody other than your subject**,
+which is the fourth test in `docs/agents/unowned-duties.md`.
+
 Two things to carry past this instance. The scheduler is not broken: in the
 twenty-two hours since it started, every company cron that came due fired,
-nine for nine. What was broken was the six-day gap, and nothing in the org
+nine for nine across the portfolio and four for four in this company. Those
+two numbers are the same finding at two scopes and both are worth carrying,
+because the nine is the one that says the scheduler works and the four is
+the only one a reading of this company may claim. What was broken was the six-day gap, and nothing in the org
 reported it, because **a cron that does not fire leaves no row, and this
 charter's only test for a cron was whether the manifest named one.** §3b's
 cadence test reads the manifest and stops there, which is the same mistake
@@ -1126,6 +1143,40 @@ test on the subscription rather than on the cron, and a duty whose trigger
 is a clock still needs the cron. Say which of the two you are leaning on
 for every row, because they fail differently: a cron that is wrong is
 wrong every week, and a subscription that does not route is silent.
+
+**Second and a quarter, and it is the half this test was missing for five
+weeks: read the firing record, not only the declaration** (added 2026-10-24,
+`INC-2026-10-24-the-company-seats-had-no-clock-for-seven-days-after-the-clock-moved`).
+A cadence declared in the file the runtime reads is not a cadence the runtime
+ran, and the manifest cannot tell you the difference. So every row whose duty
+rests on a clock carries what the naming seat's cron has actually done beside
+what its manifest declares. The command and the current table are in the
+**fourth test** section of `docs/agents/unowned-duties.md`, derived from
+`/srv/asc/state/.epito/audit.jsonl` with no network and no wrapper.
+
+Three things to carry rather than rediscover, because each one cost a run.
+
+**The state you will mostly find is neither `firing` nor `missed`.** It is
+`unevidenced`: no declared slot has come due inside a window the scheduler
+was demonstrably covering, so there is nothing to read either way. Nine of
+this company's rows were in that state on 2026-10-24 and four of them name
+this seat. `unevidenced` reads identically to `firing` in any summary that
+reports a total, which is why the register's section says to enumerate the
+slots.
+
+**Enumerate the slots rather than subtracting two totals.** A due count beside a
+fired count returns the same difference whether a slot was skipped or an
+unscheduled run was started, and on 2026-10-24 this seat reported one HQ
+seat as having missed a slot when per slot nothing had been missed and an
+`okr` monthly cron had fired on the eighteenth instead. The slots have to be
+enumerated to be counted at all, so the per-slot list is free.
+
+**And establish the covered window from somebody else's rows.** An absence
+of company firings reads the same under a scheduler that omits companies and
+under a host that is switched off, and the discriminator is whether the same
+window holds firings for anybody at all. The audit log held no row of any
+action on 2026-10-21 or 2026-10-22, so half of the seven-day gap this seat
+reported was a quiet machine rather than a coverage defect.
 
 **The fix for a cadence gap therefore leaves through
 `docs/agents/hq-relay.md` and not through

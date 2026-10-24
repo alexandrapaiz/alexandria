@@ -5438,3 +5438,129 @@ as a check that found nothing wrong.**
    than on new findings.
 5. **This run superseded #478 and is seventh in its chain.** The charter
    prose from six wakes is on this branch and nowhere else.
+
+---
+
+## 2026-10-24 — Wake run, eighth of the day: the cadence register learns whether the clock fired
+
+**Mode and trigger.** A `message.posted` wake saying PR #482 had merged and
+asking me to continue with the next item in my lane on the board. Wake run,
+so one improvement and three standing duties. The weekly sweeps are untouched
+and the owed list below is unchanged from the previous entry.
+
+**What "the next item in my lane" turned out to mean, and the method is worth
+keeping.** The board holds 65 items and 4 of them carry `seat: exo`. Two are
+in Done and two are in Review, and Review here means a report awaiting a
+merger rather than work awaiting a worker. So my lane holds nothing in
+Backlog, This sprint or In progress, and the board could not answer the
+event's question. The answer was in `docs/agents/learning-log.md`, in the
+previous run's "what the next run must check first", item 3: §3b's cadence
+test still has no firing column, queued rather than shipped because a wake
+run takes one improvement. **The queue for this seat is this file and not the
+board**, which is worth saying plainly because the event asked about the
+board and three runs could burn a turn each discovering it.
+
+### The improvement, and the two corrections it produced on the way
+
+The fix as queued was mechanical: put the firing record beside the manifest
+line for every row of `docs/agents/unowned-duties.md`. Deriving it corrected
+two numbers the previous run had published, and the corrections are worth
+more than the column.
+
+**A missed cron and an extra cron look the same in a subtraction.** The
+previous run's table gave HQ's seats 11 slots due and 10 fired and read the
+difference as one seat missing its slot. Per slot, HQ `engineer` had 8 due
+and fired 8 and `exo-centralizer` had 1 and fired 1, so nothing was missed.
+The tenth row is `okr` at 2026-10-18T16:00:20 against a declared
+`0 16 1 * *`, monthly on the first. It was an extra firing of a cron with no
+slot, which is the opposite defect and a stranger one. HQ's `finance`
+declares the same monthly shape and did not fire, so a plain catch-up on
+restart does not explain it.
+
+**And half the seven-day coverage gap was a machine that was off.** The audit
+log holds 12 rows on 2026-10-20, none at all on 2026-10-21, none on
+2026-10-22, and 331 on 2026-10-23. The last firing before the resumption is
+2026-10-20T12:06:17 and the next row of any action is a `daemon.stop` at
+2026-10-23T17:03:01. So the span is 3 days 12 hours in which the host ran and
+fired 9 of HQ's 9 due slots and 0 of 39 company slots, then 3 days 11 hours
+in which it fired nothing for anybody including HQ's own 7. Only the first
+half is evidence about company coverage.
+
+The previous run had the control for that second finding in its hand. It
+counted the ten HQ firings inside the window and read them as covering all of
+it. **An absence of firings for one group reads identically under a scheduler
+that omits the group and under a host that is switched off, and the
+discriminator is whether the same window holds firings for anybody else.**
+
+### What shipped
+
+`docs/agents/unowned-duties.md` gains a fourth test with three sections: the
+firing record with a command that runs against the host's audit log and no
+network, the per-row firing state for all fourteen clock-triggered duty rows,
+and the rule to enumerate slots rather than subtract totals. The third state
+is the one that matters: **`unevidenced`**, meaning no declared slot has come
+due inside a covered window, and nine of the fourteen rows are in it. Four of
+those nine name this seat. `prompts/exo-agent.md` §3b carries the clause that
+sends a run to the section, and §0's six-day figure is corrected in place with
+both the portfolio number and this company's kept side by side.
+
+The published command was extracted from the markdown and run verbatim before
+shipping, which is this charter's rule about validating a new check, and it
+reproduced the table.
+
+### The standing duties
+
+**§2b, the failure sweep.** Since my last run ended at 2026-10-24T21:38:38:
+16 completed runs, 3 non-zero exits, all three cap hits, `ursa-exo` at 101 of
+100, `epitome-exo` at 121 of 120 and `exo-centralizer` at 151 of 150, inside
+three minutes of each other. **Zero unclassified**, which answers item 2 of
+the previous run's list. Over the whole day: 369 completed runs, 103 non-zero
+exits, 50 provider refusals, 30 refusal retries, 20 cap hits and 3 host
+timeouts, again zero unclassified. This seat's own `exit: 1` at
+2026-10-24T18:27:07, 98 turns of a 200 cap, falls inside the 17:47 to 18:33
+refusal window, so it was weather and not a defect.
+
+**One pattern in the cap hits, offered as an observation rather than a
+finding.** Twelve of the day's twenty cap hits belong to an exo-class seat:
+`ursa-exo` four, `epitome-exo` four, `exo-centralizer` four. The remaining
+eight are spread over five seats. The exo seat is the seat that runs out of
+turns, across three companies and HQ, and the previous entry's note that
+twelve wake runs each correctly took one improvement is the same fact seen
+from the budget side.
+
+**§3f, Undelivered to HQ.** Nothing. Every entry on `docs/agents/hq-relay.md`
+is delivered, answered or marked not an ask, which is the first time this
+heading has been empty. This run added a correction to the 2026-10-24
+scheduler-gap entry and delivered it in the same run as the rule requires,
+message `2219723a`, 1,351 of 1,351 characters, `body_truncated` false. Five
+blocks, each under 420 characters and each carrying a reason word, composed
+against the three validator rules rather than discovered by being refused.
+
+### What the next run must check first
+
+1. **Did this seat's cron fire at 2026-10-25T14:00?** Carried forward
+   unchanged from the previous entry, because the slot had not come due when
+   this run ended. It is the single test that separates "the gap is closed"
+   from "only daily crons work". If it fired, close
+   `INC-2026-10-24-the-company-seats-had-no-clock-for-seven-days-after-the-clock-moved`
+   and say so.
+2. **Re-read the firing table with a wider covered window.** Mine is 22.8
+   hours long, so it asked nothing of nine of twelve seats and four for four
+   is not fleet health. The table becomes informative once a Wednesday, a
+   Friday and a Monday have passed inside a covered window, which is
+   2026-10-29 at the earliest for `frontend`.
+3. **The owed list, unchanged and now thirteen wake runs deep.** §2c's second
+   half, the unowned-duty hunt, the register-gate polarity pass, the
+   public-claim sweep, the per-anchor queue re-verification, the §5b
+   repository sweep. The previous entry was right that this is a cadence
+   finding rather than a backlog, and this run's own firing table is the
+   evidence for it: the duty "the repo describes the system it is" rests on a
+   clock that has never been observed to fire.
+4. **Nine unevidenced rows want a proposal, not a sentence.** Either the duty
+   moves to a seat with an observed clock or its trigger moves to an event
+   the seat subscribes to, and the second is cheaper for most of them. That
+   is an `ask` to the owner under §22's silence rule rather than a change
+   this seat makes, and no run has posted it yet.
+5. **This run branched from `main` and supersedes nothing.** Chain depth one.
+   PR #482 merged at 21:47 and this run started at 21:47, so the chain of
+   seven that the previous nine runs carried is cleared.

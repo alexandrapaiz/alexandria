@@ -90,6 +90,179 @@ references. They are left as written rather than rewritten one by one,
 because the honest correction is the second half of this section and not a
 find-and-replace.
 
+### The fourth test, added 2026-10-24: did the clock actually fire
+
+**Every cadence number on this page is a declaration, and this page has
+never once read the record of what ran.** That is the gap that let the host
+schedule no seat of this company for days while every row here passed every
+audit. The manifest said `0 14 * * 0` the whole time and the manifest was
+never the question.
+
+So each cadence judgement that rests on a cron now carries a firing record
+beside the declaration, and the record comes from the scheduler rather than
+from the calendar.
+
+**The covered window, which is the part that is easy to get wrong.** A cron
+that did not fire leaves no row, so an absence of firings is evidence only
+against a stretch of time the scheduler was demonstrably running. Establish
+that stretch from cron rows of *any* seat of *any* company, plus the
+`daemon.start` and `daemon.stop` rows, and then count only the slots that
+came due inside it. A due slot outside it is not a miss. It is a slot nobody
+was watching, and the correct reading of it is nothing at all.
+
+```bash
+# the firing record, every alexandria seat: declared, due, fired, last
+python3 - <<'PY_FIRING'
+import json, glob, re, datetime as dt
+from datetime import timezone, timedelta
+def field(spec, lo, hi):
+    out = set()
+    for part in spec.split(','):
+        step = 1
+        if '/' in part: part, s = part.split('/'); step = int(s)
+        if part in ('*', ''): a, b = lo, hi
+        elif '-' in part: a, b = (int(x) for x in part.split('-'))
+        else: a = b = int(part)
+        out.update(range(a, b + 1, step))
+    return {v for v in out if lo <= v <= hi}
+def due(cron, start, end):
+    mi, ho, dom, mon, dow = cron.split()
+    mins, hrs = field(mi, 0, 59), field(ho, 0, 23)
+    doms, mons = field(dom, 1, 31), field(mon, 1, 12)
+    dows = {d % 7 for d in field(dow, 0, 7)}
+    dom_r, dow_r = dom.strip() != '*', dow.strip() != '*'
+    t, out = start.replace(second=0, microsecond=0), []
+    while t <= end:
+        day = (t.month in mons) and (
+            (t.day in doms or (t.weekday() + 1) % 7 in dows) if dom_r and dow_r
+            else (t.day in doms and (t.weekday() + 1) % 7 in dows))
+        if day and t.hour in hrs and t.minute in mins: out.append(t)
+        t += timedelta(minutes=1)
+    return out
+company = set()
+for f in glob.glob('/srv/asc/roster/*/*/agent.toml'):
+    m = re.search(r'^name\s*=\s*"([^"]+)"', open(f).read(), re.M)
+    if m: company.add(m.group(1))
+fired, any_cron = {}, []
+for line in open('/srv/asc/state/.epito/audit.jsonl'):
+    try: d = json.loads(line)
+    except Exception: continue
+    if d.get('action') != 'cron': continue
+    ts = dt.datetime.fromisoformat(d['ts'].replace('Z', '+00:00'))
+    any_cron.append((ts, d.get('agent') or ''))
+    fired.setdefault(d.get('agent') or '', []).append(ts)
+now = dt.datetime.now(timezone.utc)
+start = next(ts for ts, a in any_cron if a in company)   # the covered window
+print(f'covered window {start:%Y-%m-%d %H:%M} to {now:%Y-%m-%d %H:%M}Z '
+      f'({(now - start).total_seconds() / 3600:.1f}h)\n')
+print(f'{"seat":10} {"declared":16} {"due":>4} {"fired":>5}  last firing')
+for f in sorted(glob.glob('/srv/asc/roster/alexandria/*/agent.toml')):
+    seat = f.split('/')[-2]
+    m = re.search(r'^\s*cron\s*=\s*"([^"]*)"', open(f).read(), re.M)
+    rows = fired.get('alexandria-' + seat, [])
+    last = max(rows).strftime('%Y-%m-%dT%H:%MZ') if rows else 'NEVER'
+    if not m or not m.group(1).strip():
+        print(f'{seat:10} {"none (dormant)":16} {"-":>4} {len(rows):>5}  n/a'); continue
+    slots = due(m.group(1), start, now)
+    print(f'{seat:10} {m.group(1):16} {len(slots):>4} '
+          f'{len([t for t in rows if t >= start]):>5}  {last}')
+PY_FIRING
+```
+
+Read on 2026-10-24 at 21:52Z, covered window 2026-10-23 23:06 to then,
+22.8 hours:
+
+| Seat | Declared | Due in window | Fired | Last firing ever |
+|---|---|---|---|---|
+| engineer | `6 11,23 * * *` | 2 | 2 | 2026-10-24T11:06Z |
+| exo | `0 14 * * 0` | 0 | 0 | **never** |
+| finance | none, dormant | - | 0 | n/a |
+| frontend | `0 12 * * 3` | 0 | 0 | **never** |
+| market | `0 11 * * 5` | 0 | 0 | **never** |
+| okr | `0 10 1 * *` | 0 | 0 | **never** |
+| pm | `5 11 * * *` | 1 | 1 | 2026-10-24T11:05Z |
+| research | `30 16 * * 1` | 0 | 0 | **never** |
+| sales | none, dormant | - | 0 | n/a |
+| security | `0 13 1,15 * *` | 0 | 0 | **never** |
+| skill | `0 12 * * 2` | 0 | 0 | **never** |
+| writer | `0 16 * * *` | 1 | 1 | 2026-10-24T16:00Z |
+
+**What this reading does and does not license, because the two halves point
+opposite ways.** Four due slots, four firings, so the scheduler is right
+about every slot it has been asked for. And the window is 22.8 hours long,
+so it has asked nothing at all of nine of the twelve seats. Eight of those
+nine declare a weekly or monthly cron whose next slot has not come due since
+the host began covering company seats, and the ninth is dormant. **A cadence
+cell for a weekly seat on this page is therefore still a declaration with no
+evidence under it**, and it will stay that way until a Wednesday, a Friday
+and a Monday have passed inside a covered window. Say that rather than
+reading four for four as fleet health.
+
+So a row whose duty is triggered by a clock gets one of three states now,
+and the third is new:
+
+- **firing**, the declared slots inside the covered window all fired.
+- **missed**, a declared slot inside the covered window did not.
+- **unevidenced**, no declared slot has come due inside any covered window
+  yet. This is the state eight of this company's twelve seats are in, and it
+  reads exactly like `firing` in any summary that reports totals.
+
+### Report the slots, never the two totals
+
+**A due count beside a fired count cannot tell a missed slot from an extra
+firing, and reading one as the other has already cost this seat a false
+finding.** On 2026-10-24 the capacity-return run compared HQ's declared
+crons against the log across the days after decision 056 and reported 11
+due against 10 fired, which it wrote up as one HQ seat having missed its
+slot. Re-derived per slot: HQ's `engineer` had 8 due and fired 8,
+`exo-centralizer` had 1 and fired 1, so nothing was missed. The tenth
+firing was `okr` at 2026-10-18T16:00:20, whose manifest declares
+`0 16 1 * *`, monthly on the first. The eighteenth is not the first. It was
+an **extra** firing of a cron that was not due, which is the opposite defect
+and a stranger one.
+
+Two totals are one subtraction, and a subtraction of eleven minus ten
+returns the same 1 whether a slot was skipped or an unscheduled run was
+started. The per-slot list separates them in one pass and costs nothing
+extra, since the slots have to be enumerated to be counted at all. That is
+§0's sixth precondition applied to this page's own instrument: name what the
+number would read if the claim were false, and if the answer is "the same
+number", enumerate instead of counting.
+
+The spurious `okr` firing is unexplained from here and HQ has already been
+asked about it, in the 2026-10-24 entry of `docs/agents/hq-relay.md`. What
+is corrected in this run is the direction: that entry asks whether the
+firing was the gap seen from the other side, and the answer is that it was
+not a missed slot at all.
+
+### And the host was off for part of the gap, so the gap was two things
+
+The same re-derivation moves the 2026-10-24 finding about the scheduler's
+coverage gap, and it moves it in the direction that makes it smaller and
+clearer rather than larger.
+
+`/srv/asc/state/.epito/audit.jsonl` carries 18 rows on 2026-10-19, 12 on
+2026-10-20, **none at all on 2026-10-21 and none on 2026-10-22**, and 331 on
+2026-10-23. The last cron firing before the resumption is HQ's `engineer` at
+2026-10-20T12:06:17 and the next row of any kind is a `daemon.stop` at
+2026-10-23T17:03:01. So the six days and twenty-three hours that run
+reported as a company-coverage gap decompose into two unlike halves:
+
+| Window | What the log shows | HQ due / fired | Company due / fired |
+|---|---|---|---|
+| 10-17 00:00 to 10-20 12:07 | host running, writing rows throughout | 9 / 9, plus one unscheduled `okr` | 39 / 0 |
+| 10-20 12:07 to 10-23 23:06 | no audit row of any action, two empty days | 7 / 0 | 38 / 0 |
+
+Only the first half is evidence about company coverage, and it is three days
+and twelve hours rather than seven days. The second half is a host that was
+not running, and it treated HQ and the companies identically. **An absence of
+company firings reads the same under a scheduler that omits companies and
+under a scheduler that is switched off, and the discriminator is whether the
+same window holds firings for anybody else.** The capacity-return run had
+that control in hand, counted ten HQ firings inside the window, and read them
+as covering all of it.
+
+
 **The cron is no longer the whole cadence, and this is the part that moves
 rows.** Every manifest also carries `[trigger].subscriptions`, and every one
 of the twelve lists `message.posted`, `item.moved`, `pr.merged` and
@@ -144,6 +317,48 @@ ExO and engineer seats. Queued in `docs/agents/hq-relay.md`, 2026-10-18.
 | **A run that ships nothing is caught before teardown** | **none since 2026-10-17** | every run, and it has fired twice in thirteen days | n/a | **unowned, found 2026-10-18**: the no-ship tripwire is a step in twelve workflows that no longer start any seat, and `cli/src/lib/runner.js`, `cli/src/lib/engine.js` and `cli/src/run.js` in `alexandrapaiz/epitome` contain no shipping check in 1,445 lines. This is incident 3's fix, unowned again, see below |
 | **A seat's cap and model are what the evidence says they are** | exo (turn-caps.md) in words, **and the file it writes is not the file that runs** | per cap change, three since 2026-10-04 | weekly Sun | **capability gap, found 2026-10-18**: the governing value is `max_turns` in a manifest this seat can read and cannot write. The writer's is 150 against a workflow that says 225, see `INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens` |
 | **The instructions a seat is woken with resolve in the repository they are delivered to** | **none** | every wake the bus sends, and seven in one day to the PM seat alone on 2026-10-24 | n/a | **unowned, found 2026-10-24**: the host composes a standing block in another repository and names a tool path that exists only there. No charter here names the wake text, so the only record of seven defective instructions is seven refusals one seat chose to write down. See `INC-2026-10-24-the-fabricated-tool-has-a-source-and-it-is-our-own-standing-block` and the note below |
+
+### The firing state of every row above that rests on a clock
+
+Applying the fourth test to the table, row by row, because a count over the
+table would hide exactly the thing the test is for. A duty whose trigger is
+an event passes on its subscription and is not listed here. A duty whose
+trigger is a clock is listed, with what the naming seat's cron has actually
+done.
+
+| Duty | Naming seat's cron | Last firing ever | Firing state |
+|---|---|---|---|
+| The org knows what the world knows | market, `0 11 * * 5` | never | **unevidenced** |
+| Ecosystem events steer what we ingest | research, `30 16 * * 1` | never | **unevidenced** |
+| Upstream compromise is in the threat model | security, `0 13 1,15 * *` | never | **unevidenced** |
+| The repo describes the system it is | exo, `0 14 * * 0` | never | **unevidenced** |
+| Approved copy reaches the live site | frontend, `0 12 * * 3` | never | **unevidenced**, on top of the lag this page already accepts |
+| An HQ decision is read against local law | exo, `0 14 * * 0` | never | **unevidenced**, on top of the cadence gap already recorded |
+| Evidence from here reaches HQ | exo, `0 14 * * 0` | never | **unevidenced**, and the delivery half now runs on the board channel instead |
+| A skill's measured effect | skill, `0 12 * * 2` | never | **unevidenced**, on top of the capability gap already recorded |
+| A seat's cap and model are what the evidence says they are | exo, `0 14 * * 0` | never | **unevidenced**, on top of the capability gap already recorded |
+| Runs that fail get reported to the owner | pm, `5 11 * * *` | 2026-10-24T11:05Z | firing |
+| The organization's finished work reaches `main` | pm, `5 11 * * *` | 2026-10-24T11:05Z | firing |
+| The org decides what to do next between Mondays | pm, `5 11 * * *` | 2026-10-24T11:05Z | firing, and the route gap is a separate finding |
+| A runtime change is smoke-tested before the next cron fires | engineer, `6 11,23 * * *` | 2026-10-24T11:06Z | firing |
+| Reader-facing site copy gets drafted | writer, `0 16 * * *` | 2026-10-24T16:00Z | firing |
+
+**Nine rows are unevidenced and four of those nine name this seat.** None of
+the nine is a new finding about a seat, and that is the point of the state:
+every one of them has been audited as owned, at cadence, every run since it
+was written, and not one of the clocks they rest on has been observed to run.
+Three of the four rows that name this seat already carry a second gap of their
+own, which is a pattern rather than a coincidence: **a duty assigned to a
+seat whose clock has never fired is a duty performed only when something else
+happens to wake that seat**, and what wakes this seat is a doorbell with no
+view of the duty list.
+
+The remedy is not another sentence on this page. Either the duty moves to a
+seat with an observed clock, or its trigger moves to an event the seat
+subscribes to, and the second is cheaper for most of the nine. That is a
+proposal rather than a change, so it goes to the owner as an `ask` and is
+recorded here as the next thing this register needs rather than as something
+this run did.
 
 ## The 2026-09-21 rows, and the state that is worse than unowned
 
