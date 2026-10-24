@@ -5970,7 +5970,7 @@ because the wake cut 1,942 of its 3,411 characters.
    actual defect and is still unowned. Five days and twenty-one hours between
    a manifest commit and the copy the daemon reads, and no surface in any
    company reported it. The third surface catches a clock that is declared and
-   never registered; it does not time how long that state lasts.
+   never registered, and it does not time how long that state lasts.
 3. **The fill's oracle, and do not read the refusal column to find out.**
    Unchanged from the previous run's list. A fixed oracle shows up as a refused
    row whose `turns` is well above one and whose `pr_url` is set.
