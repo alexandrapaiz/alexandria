@@ -46,6 +46,28 @@ def fresh_state():
              "seat": "frontend", "column_id": "c-2", "column_name": "This sprint", "comments": []},
         ],
         "runs": [],
+        # The bus. Three directed messages and one broadcast, which is the
+        # shape this seat's real inbox had on 2026-10-24: one that is ours,
+        # one that names our seat in another company, and one that names our
+        # seat and no company at all and so could be either.
+        "messages": [
+            {"id": "m-1", "ts": "2026-10-24T13:15:05+00:00", "kind": "handoff",
+             "from_company": "alexandria", "from_seat": "pm",
+             "to_company": "alexandria", "to_seat": "engineer",
+             "subject": "Build the detector", "body": "yours", "ref": None},
+            {"id": "m-2", "ts": "2026-10-24T17:55:41+00:00", "kind": "done",
+             "from_company": "alexandra-systems", "from_seat": "pm",
+             "to_company": None, "to_seat": "engineer",
+             "subject": "Both defects are merged", "body": "whose?", "ref": None},
+            {"id": "m-3", "ts": "2026-10-24T12:00:00+00:00", "kind": "note",
+             "from_company": "Ursa", "from_seat": "exo",
+             "to_company": "Ursa", "to_seat": "engineer",
+             "subject": "Another company's engineer", "body": "theirs", "ref": None},
+            {"id": "m-4", "ts": "2026-10-24T11:00:00+00:00", "kind": "note",
+             "from_company": "alexandra-systems", "from_seat": "chair:asc-host",
+             "to_company": None, "to_seat": None,
+             "subject": "Deployed HQ main", "body": "the room", "ref": None},
+        ],
         "calls": [],
     }
 
@@ -78,6 +100,21 @@ class Handler(BaseHTTPRequestHandler):
         self.state["calls"].append(("GET", path, args))
         if path == "/api/board/alexandria":
             return self._send(200, {k: v for k, v in self.state.items() if k != "calls"})
+        if path == "/api/messages":
+            # The live board filters by seat and company and returns the
+            # broadcasts alongside, so the fake does the same. It deliberately
+            # does NOT drop a message whose to_company is null, because that
+            # is exactly the row the client has to judge for itself.
+            seat = (args.get("to_seat") or [None])[0]
+            company = (args.get("to_company") or [None])[0]
+            rows = [
+                m for m in self.state["messages"]
+                if (m["to_seat"] is None and m["to_company"] is None)
+                or (seat and m["to_seat"] == seat)
+                or (company and m["to_company"] == company)
+            ]
+            limit = int((args.get("limit") or ["500"])[0])
+            return self._send(200, {"messages": rows[:limit]})
         if path.startswith("/api/items/"):
             if "company" not in args:
                 return self._send(400, {"error": "company is required (?company=<name>)"})
@@ -120,6 +157,17 @@ class Handler(BaseHTTPRequestHandler):
                     item["column_id"] = column
                     return self._send(200, {"id": item_id, "column_id": column})
             return self._send(404, {"error": "no such item"})
+        if path == "/api/messages":
+            if payload.get("kind") not in board.MESSAGE_KINDS:
+                return self._send(400, {"error": "kind must be one of %r" % (board.MESSAGE_KINDS,)})
+            if not payload.get("subject"):
+                return self._send(400, {"error": "a message needs a subject"})
+            # The live board accepts to_seat with no to_company. That is the
+            # whole reason the client refuses it, so the fake must accept it
+            # too or the test would be proving the server's rule, not ours.
+            row = dict(payload, id="m-%d" % (len(self.state["messages"]) + 1))
+            self.state["messages"].append(row)
+            return self._send(201, {"id": row["id"]})
         if path.endswith("/comments"):
             if not payload.get("body"):
                 return self._send(400, {"error": "a comment needs a body"})
@@ -608,3 +656,221 @@ def test_nothing_is_lost_in_the_splitting():
 def test_empty_prose_stays_empty():
     assert board.scannable("") == ""
     assert board.scannable(None) == ""
+
+
+# --------------------------------------------------------------------------
+# The inbox, and the one field that decides who is woken
+# --------------------------------------------------------------------------
+
+
+def message(**over):
+    base = {"id": "m-x", "ts": "2026-10-24T12:00:00+00:00", "kind": "note",
+            "from_company": "alexandra-systems", "from_seat": "pm",
+            "to_company": None, "to_seat": None, "subject": "s", "body": "b"}
+    return {**base, **over}
+
+
+def test_a_message_naming_this_seat_in_this_company_is_ours():
+    m = message(to_company="alexandria", to_seat="engineer")
+    assert board.address_of(m, "engineer", "alexandria") == "yours"
+
+
+def test_a_message_naming_this_seat_in_another_company_is_not_ours():
+    m = message(to_company="Ursa", to_seat="engineer")
+    assert board.address_of(m, "engineer", "alexandria") == "theirs"
+
+
+def test_a_message_naming_this_seat_and_no_company_is_ambiguous_not_ours():
+    """The finding this command was built for. `engineer` is a seat in at
+    least five companies, so a message that names the seat and not the
+    company is delivered to all five and belongs to one."""
+    m = message(to_company=None, to_seat="engineer")
+    assert board.address_of(m, "engineer", "alexandria") == "ambiguous"
+
+
+def test_a_message_naming_neither_is_a_broadcast():
+    assert board.address_of(message(), "engineer", "alexandria") == "broadcast"
+
+
+def test_a_message_naming_only_a_company_is_that_companys_room():
+    m = message(to_company="alexandria", to_seat=None)
+    assert board.address_of(m, "engineer", "alexandria") == "broadcast"
+    other = message(to_company="Ursa", to_seat=None)
+    assert board.address_of(other, "engineer", "alexandria") == "theirs"
+
+
+def test_the_seat_and_company_match_is_case_insensitive():
+    """`Ursa` is capitalised on the bus and lowercase in half the prose."""
+    m = message(to_company="ALEXANDRIA", to_seat="Engineer")
+    assert board.address_of(m, "engineer", "alexandria") == "yours"
+
+
+def test_sorting_buckets_every_message_and_loses_none():
+    rows = [
+        message(id="a", to_company="alexandria", to_seat="engineer"),
+        message(id="b", to_seat="engineer"),
+        message(id="c", to_company="Ursa", to_seat="engineer"),
+        message(id="d"),
+    ]
+    buckets = board.sort_inbox(rows, "engineer", "alexandria")
+    assert [m["id"] for m in buckets["yours"]] == ["a"]
+    assert [m["id"] for m in buckets["ambiguous"]] == ["b"]
+    assert [m["id"] for m in buckets["theirs"]] == ["c"]
+    assert [m["id"] for m in buckets["broadcast"]] == ["d"]
+    assert sum(len(g) for g in buckets.values()) == len(rows)
+
+
+def test_each_bucket_is_newest_first():
+    rows = [
+        message(id="old", ts="2026-10-24T01:00:00+00:00", to_company="alexandria", to_seat="engineer"),
+        message(id="new", ts="2026-10-24T17:00:00+00:00", to_company="alexandria", to_seat="engineer"),
+    ]
+    buckets = board.sort_inbox(rows, "engineer", "alexandria")
+    assert [m["id"] for m in buckets["yours"]] == ["new", "old"]
+
+
+def test_the_ambiguous_block_prints_first_and_says_why():
+    buckets = board.sort_inbox(
+        [message(id="b", to_seat="engineer", subject="whose is this")],
+        "engineer", "alexandria",
+    )
+    out = board.render_inbox(buckets, "engineer", "alexandria")
+    ambiguous = out.index("addressed to this seat but to no company")
+    yours = out.index("addressed to this seat in this company")
+    assert ambiguous < yours
+    assert "may belong to another company's seat of this name" in out
+
+
+def test_the_render_counts_the_broadcasts_it_did_not_print():
+    buckets = board.sort_inbox([message(), message(id="two")], "engineer", "alexandria")
+    assert "2 broadcasts not printed" in board.render_inbox(buckets, "engineer", "alexandria")
+
+
+def test_a_cut_window_says_so_rather_than_reading_as_empty():
+    buckets = board.sort_inbox([], "engineer", "alexandria")
+    assert "row ceiling" not in board.render_inbox(buckets, "engineer", "alexandria")
+    cut = board.render_inbox(buckets, "engineer", "alexandria", truncated=True)
+    assert "row ceiling" in cut and "--since-hours" in cut
+
+
+def test_inbox_exits_three_on_an_ambiguous_message(live_board, capsys):
+    assert board.main(["inbox", "--company", "alexandria", "--seat", "engineer"]) == 3
+    out = capsys.readouterr().out
+    assert "Both defects are merged" in out        # the ambiguous one, printed
+    assert "Build the detector" in out             # ours, printed
+    assert "Another company's engineer" not in out  # theirs, dropped
+    assert "1 message in the window addressed to someone else" in out
+
+
+def test_inbox_exits_zero_when_nothing_is_ambiguous(live_board, capsys):
+    live_board["messages"] = [m for m in live_board["messages"] if m["id"] != "m-2"]
+    assert board.main(["inbox", "--company", "alexandria", "--seat", "engineer"]) == 0
+
+
+def test_inbox_does_not_print_broadcasts_unless_asked(live_board, capsys):
+    board.main(["inbox", "--company", "alexandria", "--seat", "engineer"])
+    assert "Deployed HQ main" not in capsys.readouterr().out
+    board.main(["inbox", "--company", "alexandria", "--seat", "engineer", "--broadcast"])
+    assert "Deployed HQ main" in capsys.readouterr().out
+
+
+def test_inbox_json_carries_the_buckets_and_the_truncation_flag(live_board, capsys):
+    board.main(["inbox", "--company", "alexandria", "--seat", "engineer", "--json"])
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["truncated"] is False
+    assert [m["id"] for m in payload["ambiguous"]] == ["m-2"]
+    assert [m["id"] for m in payload["yours"]] == ["m-1"]
+
+
+def test_a_full_page_is_reported_as_truncated(live_board, capsys):
+    board.main(["inbox", "--company", "alexandria", "--seat", "engineer",
+                "--limit", "1", "--json"])
+    assert json.loads(capsys.readouterr().out)["truncated"] is True
+
+
+# --------------------------------------------------------------------------
+# `send`, which cannot commit the defect `inbox` reports
+# --------------------------------------------------------------------------
+
+
+class Sent:
+    """The arguments `send` takes, as argparse would hand them over."""
+
+    def __init__(self, **over):
+        self.kind = "done"
+        self.subject = "s"
+        self.body = "b"
+        self.to_seat = None
+        self.to_company = None
+        self.ref = None
+        self.reasoning = ""
+        self.data = None
+        self.__dict__.update(over)
+
+
+def test_a_seat_target_without_a_company_is_refused_before_the_network():
+    with pytest.raises(board.BoardError) as caught:
+        board.message_payload(Sent(to_seat="engineer"), "engineer", "alexandria")
+    assert "needs --to-company" in str(caught.value)
+
+
+def test_the_owner_and_the_room_need_no_company():
+    for seat in board.COMPANYLESS_SEATS:
+        payload = board.message_payload(Sent(to_seat=seat), "engineer", "alexandria")
+        assert payload["to_seat"] == seat
+        assert "to_company" not in payload
+
+
+def test_a_fully_addressed_message_passes():
+    payload = board.message_payload(
+        Sent(to_seat="pm", to_company="alexandria"), "engineer", "alexandria"
+    )
+    assert payload["to_seat"] == "pm" and payload["to_company"] == "alexandria"
+    assert payload["seat"] == "engineer" and payload["company"] == "alexandria"
+
+
+def test_a_message_with_no_target_at_all_is_a_broadcast_and_is_allowed():
+    payload = board.message_payload(Sent(), "engineer", "alexandria")
+    assert "to_seat" not in payload and "to_company" not in payload
+
+
+def test_a_kind_outside_the_buss_vocabulary_is_refused_here():
+    with pytest.raises(board.BoardError) as caught:
+        board.message_payload(Sent(kind="shout"), "engineer", "alexandria")
+    assert "kind must be one of" in str(caught.value)
+
+
+def test_the_body_is_brought_under_the_boards_block_limit():
+    long_body = " ".join(["word"] * 300)
+    payload = board.message_payload(Sent(body=long_body), "engineer", "alexandria")
+    blocks = payload["body"].split("\n\n")
+    assert len(blocks) > 1
+    assert all(len(b) <= board.BODY_BLOCK_LIMIT for b in blocks)
+
+
+def test_data_that_is_not_json_is_refused_with_the_parser_error():
+    with pytest.raises(board.BoardError) as caught:
+        board.message_payload(Sent(data="{not json"), "engineer", "alexandria")
+    assert "--data is not JSON" in str(caught.value)
+
+
+def test_send_posts_the_message_and_names_where_it_went(live_board, capsys):
+    code = board.main([
+        "send", "--company", "alexandria", "--seat", "engineer",
+        "--kind", "done", "--subject", "Done", "--body", "It is built.",
+        "--to-company", "alexandria", "--to-seat", "pm",
+    ])
+    assert code == 0
+    assert "alexandria/pm" in capsys.readouterr().out
+    posted = live_board["messages"][-1]
+    assert posted["to_seat"] == "pm" and posted["to_company"] == "alexandria"
+
+
+def test_a_dry_run_send_posts_nothing(live_board, capsys):
+    before = len(live_board["messages"])
+    board.main([
+        "send", "--company", "alexandria", "--seat", "engineer",
+        "--kind", "note", "--subject", "s", "--body", "b", "--dry-run",
+    ])
+    assert len(live_board["messages"]) == before
+    assert "would POST /api/messages" in capsys.readouterr().out
