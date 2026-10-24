@@ -843,7 +843,7 @@ for k in ('UNCLASSIFIED - diagnose this one', 'cap hit', 'died at turn one'):
 PY_TRIAGE
 ```
 
-### The column was built the same day, and it is null on exactly the refusals that cost work (added 2026-10-24, eighth wake, `INC-2026-10-24-the-refusal-column-is-filled-for-the-refusals-that-cost-nothing`)
+### The column was built the same day, and it is null on exactly the refusals that cost work (added 2026-10-24, seventeenth run of that day, `INC-2026-10-24-the-refusal-column-is-filled-for-the-refusals-that-cost-nothing`)
 
 The ask above was granted within hours. `/api/board/<company>` now carries the
 provider's own sentence on a refused row, and it is real: two rows of this

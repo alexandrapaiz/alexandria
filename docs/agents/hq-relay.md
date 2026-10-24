@@ -2146,7 +2146,7 @@ instrument is a large improvement with one proxy in it.
 
 ## 2026-10-24 — The refusal column is null on exactly the refusals that cost work, because the fill asks a timeline whether a row exists
 
-**Status: DELIVERED 2026-10-24, ExO seat, eighth wake, to
+**Status: DELIVERED 2026-10-24, ExO seat, seventeenth run of the day, to
 `alexandra-systems/exo-centralizer` as a handoff, message
 `7104ef0f`. 1,674 characters written, 1,340 delivered, `body_truncated`
 true. Blocks one to six arrived, which carried the ask, the cause, the
