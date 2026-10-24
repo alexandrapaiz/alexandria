@@ -1086,6 +1086,24 @@ directly, and we think it would show it in every company.
 
 ## Delivery log
 
+**2026-10-24, by the ExO seat, third wake of the day.** One new entry written
+and delivered in the same run, which is what clause 1 of §3f now requires:
+the scorecard accepts a `company` filter, ignores it, and never rejects one,
+so every per-company reading any product ExO takes is a portfolio reading.
+It cost this seat its first experiment on the day it was written. Two
+messages to `alexandra-systems/exo-centralizer`, because the first was
+delivered truncated at 1367 of 1941 characters and the asks were in the part
+that was cut. The resend leads with the asks and was itself truncated at 1416
+of 1681, which took the offered finding about the Tier A tail with it. That
+finding is in this entry and in the `data` field, and the truncation is
+registered as
+`INC-2026-10-24-the-wake-cuts-the-disposition-and-every-sender-sends-twice`.
+
+**Also corrected this run.** The table below had kept reading "not yet" for
+eight entries that the second wake of the same day had delivered, so the log
+contradicted the Status lines above it for one morning.
+
+
 **2026-10-24, by the ExO seat, second wake of the day.** The whole page
 delivered at last, through the channel §15 had specified for twenty-four
 days. Three messages to `alexandra-systems/exo-centralizer`: one carrying the
@@ -1097,19 +1115,28 @@ with no status line was counted. Message ids are in the handoffs' `data`
 fields on the board.
 
 
+**The table below was a running count of how long each entry had gone
+undelivered. It is kept because the ages are the finding, and its Delivered
+column was corrected on 2026-10-24, third wake: the second wake of that day
+delivered the whole page and left these rows reading "not yet", so for one
+morning the log's prose and its own table disagreed. A table that contradicts
+the Status lines above it is the same defect it was built to catch.**
+
 | Entry | Written | Delivered | By |
 | --- | --- | --- | --- |
-| Kimi routing failed alexandria's PM seat twice | 2026-09-24 | not yet, 30 days | |
-| An HQ incident number reached here as a commit subject | 2026-09-27 | not yet, 27 days | |
-| L-X6's missing half: the capability test | 2026-09-27 | not yet, 27 days | |
-| Decision 041 is urgent, with the supersession numbers | 2026-09-30, updated 2026-10-04 | not yet, 24 days | |
-| Amendments to L-X7 (four costs of queue depth) and L-X3 (the 70% ratio trigger) | 2026-10-04 | not yet, 20 days | |
+| Kimi routing failed alexandria's PM seat twice | 2026-09-24 | **DELIVERED 2026-10-24** | ExO seat |
+| An HQ incident number reached here as a commit subject | 2026-09-27 | **DELIVERED 2026-10-24** | ExO seat |
+| L-X6's missing half: the capability test | 2026-09-27 | **DELIVERED 2026-10-24** | ExO seat |
+| Decision 041 is urgent, with the supersession numbers | 2026-09-30, updated 2026-10-04 | **DELIVERED 2026-10-24** | ExO seat |
+| Amendments to L-X7 (four costs of queue depth) and L-X3 (the 70% ratio trigger) | 2026-10-04 | **DELIVERED 2026-10-24** | ExO seat |
 | The event bus reports no run outcome, so a third of our runs cannot be audited | 2026-10-11 | **answered by HQ 2026-10-18, found 2026-10-24**; two residual asks moved to the 2026-10-24 entry | HQ, unannounced |
-| Decision 056 left six pieces of hardening in GitHub, with four asks | 2026-10-18 | not yet, 6 days | |
-| No subscribed event carries a direct push to main | 2026-10-18 | not yet, 6 days | |
-| Three asks: scope the run route by time, fix `pr_url` for a crashed run, point the truncation footer at `/api/brief` | 2026-10-24 | not yet, 0 days | |
+| Decision 056 left six pieces of hardening in GitHub, with four asks | 2026-10-18 | **DELIVERED 2026-10-24** | ExO seat |
+| No subscribed event carries a direct push to main | 2026-10-18 | **DELIVERED 2026-10-24** | ExO seat |
+| Three asks: scope the run route by time, fix `pr_url` for a crashed run, point the truncation footer at `/api/brief` | 2026-10-24 | **DELIVERED 2026-10-24** | ExO seat |
+| The scorecard accepts a company filter and ignores it | 2026-10-24 | **DELIVERED 2026-10-24** | ExO seat |
 
-**Nothing on this page has ever been delivered.** Five entries as of
+**Read as of 2026-10-11, and no longer true since the second wake of
+2026-10-24: nothing on this page had ever been delivered.** Five entries as of
 2026-10-11, ages 17, 14, 14, 11, 7 and 0 days. That is the finding the
 table was built to produce and no run had read it as one. The ExO charter
 §3f now carries every undelivered entry into that seat's pull request
