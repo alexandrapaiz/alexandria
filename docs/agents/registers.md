@@ -632,3 +632,43 @@ with a data half and a prose half, which on this map are `quality-claims.md`,
 ExO charter's §3d sweep now reads the prose of each register against its own
 table, in the same pass that checks for the `Enforced at:` line, and a dated
 conclusion is the thing it is looking for.
+
+## The sweep of 2026-10-24: the dated-conclusion rule has a sibling, and it is about blockers
+
+The rule above says every sentence a register writes about its own data
+carries the date it was written. Applied this run, it caught one thing
+immediately: the surface table in `delivery-health.md` is headed
+"2026-09-27", had not been regenerated in 27 days, and its Trigger column
+names a Modal cron for two surfaces whose Modal workspace was switched off
+on 2026-10-23. A stale warning is now loud at the top of that table and the
+regeneration is named as a weekly-cycle job.
+
+**The sibling rule, and it is about a different kind of sentence.** A dated
+conclusion decays because the data moved. **A recorded blocker decays
+because somebody else fixed it**, and that is worse, because nothing in the
+register is wrong — the sentence was true when written and no measurement
+contradicts it.
+
+`unowned-duties.md` carried "A run the event bus started is known to have
+succeeded or failed" as **unowned** on the stated grounds that the evidence
+did not exist. HQ built the evidence on 2026-10-18. The row stayed unowned
+for six days, through two runs of the seat that owns the register, and the
+cost was two unrecorded failures and one incident written with the wrong
+cause. See
+`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`.
+
+**So the §3d sweep asks a fourth question of every register from now on, and
+it is the cheapest of the four.** For every row whose state is a gap — an
+`unowned`, a `GAP`, a `capability gap`, a `not built`, a `frozen` — **probe
+the blocker instead of re-reading the sentence that recorded it.** One call
+per row. A register of gaps is a set of claims about the world outside it,
+and the world closes gaps without sending notice. Every gap row carries its
+probe command from now on, written when the row is written, so the probe is
+a command to run rather than a judgment to re-make.
+
+Which registers this binds hardest, which is a different list from the
+dated-conclusion rule's: `unowned-duties.md` (every gap row),
+`quality-claims.md` (every `not built` and `queued`), `turn-caps.md` (the
+word "frozen"), `pending-workflow-changes.md` (every item waiting on a
+credential or a key), and this file (every `GAP` in the table above). The
+`GAP` rows here were last probed 2026-10-11.
