@@ -81,9 +81,20 @@ headline under-reports it.
 ## Exit codes, and why a blind run is not a quiet pass
 
     0   every app is running the trunk, or is behind and still inside the
-        grace window
+        grace window, and every app could be placed against production
     1   at least one app is past the window, and the board now carries it
-    2   the deploy surface could not be read at all from here
+    2   at least one app could not be placed against production at all, or
+        the deploy surface could not be read from here at all
+
+The second half of 2 was added on 2026-10-24 and it is the narrow case the
+first half was always meant to cover. `judge_deploy` tests its alarm branch
+before its unknown branch, so a surface with one app behind and one app it
+could not date reads `failing` rather than `unknown`, and this file used to
+exit 1 on it: a run that measured two apps out of three reported the two and
+said nothing about the third. Any app in `unknown` now reaches 2, the cards
+for the apps that did alarm are posted first so no real drift is lost, and
+`render` names the unmeasured apps on every path. L-A21, and the surface's
+own `INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see`.
 
 The third is the one to be careful about, for the reason
 `INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see` and company
@@ -97,7 +108,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -107,7 +117,7 @@ sys.path.insert(0, str(ROOT))
 
 from tools import board  # noqa: E402
 from tools import delivery_health as dh  # noqa: E402
-from tools import press_watch  # noqa: E402
+from tools import board_alarm  # noqa: E402
 
 #: The title a card carries. The app and the running image are both in it,
 #: because the board's list view is what a seat reads and a card that names
@@ -136,7 +146,7 @@ NUDGE_AFTER = timedelta(hours=24)
 
 #: Evidence keys on the deploy surface that are about the read rather than
 #: about an app. Everything else in that mapping is an app.
-NOT_AN_APP = {"read_via", "ref", "alarm"}
+NOT_AN_APP = {"read_via", "ref", "alarm", "shallow_checkout"}
 
 
 # ------------------------------------------------------------ the pure core
@@ -162,6 +172,41 @@ def behind(deploy) -> list[dict]:
         if here.get("state") != dh.FAILING:
             continue
         found.append({"app": app, "key": cooldown_key(here), "evidence": here})
+    return found
+
+
+def undated(deploy) -> list[dict]:
+    """The apps this run could not measure at all, each with its reason.
+
+    `behind()` filters the evidence to `failing` and that is right: those are
+    the apps worth a card. The gap it leaves is every other state, and one of
+    them is not a pass. An app the surface marked `unknown` is an app whose
+    production image this run could not place, and reporting nothing about it
+    is reporting that there was nothing to report.
+
+    This read was missing until 2026-10-24 and the hole it left was narrow and
+    total. `watch()` checked the *surface's* state for `unknown`, which is only
+    reached when no app alarms, because `judge_deploy` tests its alarm branch
+    first. So a run with one app past the window and one app it could not date
+    came back `failing`, posted a card for the first, exited 1, and never
+    mentioned the second. Company standard L-A21 is the rule it broke and
+    `INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see` is the same
+    surface's own precedent for breaking it.
+
+    The mixed state is not hypothetical. Two routes reach it with no shallow
+    clone at all: an app that has never recorded a runtime and whose code does
+    not ask it to is `unknown` while its siblings compare fine, and a clone
+    deep enough to date one app's handful of commits and not another's twenty
+    dates exactly one of them. Depth is a knob on the host harness, and every
+    value of it between one and full produces this.
+    """
+    found = []
+    for app, here in sorted((deploy.evidence or {}).items()):
+        if app in NOT_AN_APP or not isinstance(here, dict):
+            continue
+        if here.get("state") != dh.UNKNOWN:
+            continue
+        found.append({"app": app, "why": str(here.get("why") or "no reason given")})
     return found
 
 
@@ -249,10 +294,16 @@ def card_body(record: dict, deploy, now: datetime) -> str:
                    + (f". The running image was built from {deployed} of "
                       f"{deployed_at:%Y-%m-%d}." if deployed and deployed_at
                       else "."))
+    elif (deploy.evidence or {}).get("shallow_checkout"):
+        history = ("The commits behind it could not be named from this "
+                   f"checkout, because the checkout is a shallow clone, so "
+                   f"read the number above as a floor. `{dh.UNSHALLOW}` and "
+                   "this command will name them.")
     else:
         history = ("The commits behind it could not be named from this "
-                   "checkout, which is usually a shallow clone rather than an "
-                   "empty gap, so read the number above as a floor.")
+                   "checkout, and the checkout is not shallow, so this is an "
+                   "image that matches no commit on the trunk rather than a "
+                   "gap in the history. Read the number above as a floor.")
 
     return board.scannable("\n\n".join([
         f"{what} It has been behind for {behind_for}, which is past the "
@@ -286,25 +337,19 @@ def find_card(payload: dict, app: str, key: str) -> dict | None:
     including Done, so a drift somebody has already closed is not alarmed
     about twice.
     """
-    for item in payload.get("items") or []:
-        title = item.get("title") or ""
-        if title.startswith(TITLE_PREFIX) and app in title and key in title:
-            return item
-    return None
+    return board_alarm.find_card(payload, [app, key], prefix=TITLE_PREFIX)
 
 
 def needs_nudge(card: dict, now: datetime, after: timedelta = NUDGE_AFTER) -> bool:
     """Has it been long enough since this card last said anything.
 
-    `press_watch.needs_nudge` already reads a card's comments for their newest
-    timestamp and already resolves the unrecognised-comment-shape case the
-    right way, which is to treat the card as recently nudged: the failure that
-    costs something is a comment every run, and the failure that costs nothing
-    is a quiet day on a card already on the board. That reasoning is about
-    cards and not about the press, so it is called rather than copied, and a
-    correction to it lands in both guardrails at once.
+    One rule for every watcher, in `tools/board_alarm.py`. This used to call
+    `press_watch.needs_nudge` with a docstring arguing that the reasoning is
+    about cards and not about the press, which was right and was an import
+    between two siblings. The third sibling is what turned that argument into
+    a module.
     """
-    return press_watch.needs_nudge(card, now, after)
+    return board_alarm.needs_nudge(card, now, after)
 
 
 def nudge_body(record: dict, now: datetime) -> str:
@@ -345,41 +390,28 @@ def post(record: dict, deploy, now: datetime, dry_run: bool = False,
         return {"app": app, "action": "would create", "title": title,
                 "body": body, "column": column, "seat": seat}
 
-    company = company or board.company_from_repo(
-        os.environ.get("GITHUB_REPOSITORY", "")) or "alexandria"
+    company = board_alarm.company_here(company)
     if payload is None:
         payload = board.read_board(company)
     found = find_card(payload, app, key)
-    if found:
-        if not needs_nudge(found, now):
-            return {"app": app, "action": "already on the board",
-                    "id": found.get("id"), "title": found.get("title")}
-        board.api(f"/api/items/{found['id']}/comments", method="POST",
-                  payload={"company": company, "seat": seat,
-                           "body": nudge_body(record, now)})
-        return {"app": app, "action": "nudged", "id": found.get("id"),
-                "title": found.get("title")}
-
-    item = {"company": company, "seat": seat, "title": title,
-            "body": body, "horizon": "now"}
-    if column:
-        try:
-            item["column_id"] = board.resolve_column(payload, column)
-        except board.BoardError as exc:
-            print(f"drift_watch: {exc}. Creating the card without a column, "
-                  "because the card matters and its column does not.",
-                  file=sys.stderr)
-    created = board.api("/api/items", method="POST", payload=item)
-    return {"app": app, "action": "created", "id": created.get("id"),
-            "title": title}
+    did = board_alarm.place(
+        found, payload=payload, title=title, body=body,
+        nudge=nudge_body(record, now), now=now, company=company,
+        tool="drift_watch", seat=seat, column=column)
+    # The app rides along, because a run alarming about three apps reports
+    # three lines and a reader needs to know which app each one is about.
+    return {"app": app, **did}
 
 
 def watch(today=None, dry_run: bool = False, company: str | None = None) -> dict:
     deploy = read_deploy(today)
     now = dh._instant(today)
     late = behind(deploy)
+    blind = undated(deploy)
     answer = {"checked_at": now.isoformat(), "deploy": deploy.as_dict(),
-              "behind": [r["app"] for r in late]}
+              "behind": [r["app"] for r in late],
+              "undated": [r["app"] for r in blind],
+              "undated_why": {r["app"]: r["why"] for r in blind}}
 
     if deploy.state == dh.UNKNOWN:
         answer["board"] = [{"action": "nothing posted",
@@ -389,8 +421,13 @@ def watch(today=None, dry_run: bool = False, company: str | None = None) -> dict
         answer["exit"] = 2
         return answer
     if not late:
+        # Nothing to post is only a green run when there was also nothing this
+        # run could not see. An app in `unknown` with no app alarming reaches
+        # the surface-level branch above and exits 2; an app in `unknown`
+        # alongside an app that is merely inside the grace window does not,
+        # and that is this line.
         answer["board"] = [{"action": "nothing to post"}]
-        answer["exit"] = 0
+        answer["exit"] = 2 if blind else 0
         return answer
 
     # One read of the board for the whole run, shared by every card below.
@@ -399,14 +436,16 @@ def watch(today=None, dry_run: bool = False, company: str | None = None) -> dict
     # between the path that worked and the path that did not.
     payload = None
     if not dry_run:
-        company = company or board.company_from_repo(
-            os.environ.get("GITHUB_REPOSITORY", "")) or "alexandria"
+        company = board_alarm.company_here(company)
         try:
             payload = board.read_board(company)
         except board.BoardError as exc:
             answer["board"] = [{"app": r["app"], "action": "not posted",
                                 "why": str(exc)} for r in late]
-            answer["exit"] = 1
+            # Same rule as the success path below, so that "any app this run
+            # could not place makes it exit 2" is true of every return in this
+            # function rather than of most of them.
+            answer["exit"] = 2 if blind else 1
             return answer
 
     done = []
@@ -421,7 +460,13 @@ def watch(today=None, dry_run: bool = False, company: str | None = None) -> dict
             done.append({"app": record["app"], "action": "not posted",
                          "why": str(exc)})
     answer["board"] = done
-    answer["exit"] = 1
+    # 2 beats 1 when both are true, and the cards are posted either way. The
+    # exit code is a statement about whether this run's answer can be trusted
+    # as a whole, and a run that measured two apps out of three cannot be: a
+    # reader who sees 1 is told "production is stale and the board carries
+    # it", which is a claim about every app. The drift that was found is not
+    # lost by this, because it is on the board before the code returns.
+    answer["exit"] = 2 if blind else 1
     return answer
 
 
@@ -439,15 +484,28 @@ def render(answer: dict) -> str:
         lines.append(f"  board      {action.get('app', '-')}: "
                      f"{action.get('action', '-')}"
                      + (f": {detail}" if detail else ""))
+    # Printed whatever the exit code is, because the apps this run could not
+    # measure are the scope of every other line above and a reader cannot
+    # infer them from a headline about the apps it could.
+    for record in answer.get("undated_why", {}).items():
+        lines.append(f"  unmeasured {record[0]}: {record[1]}")
     lines.append("")
-    lines.append({
-        0: "Every job is running the trunk, or is behind and still inside "
-           "the grace window.",
-        1: "A merged change has not reached the jobs that run it. The "
-           "card above is the whole point of this command.",
-        2: "Nothing was posted and this is not a green report: the deploy "
-           "surface could not be read at all from here.",
-    }[answer["exit"]])
+    blind = answer.get("undated") or []
+    if answer["exit"] == 2 and blind:
+        lines.append("Not a green report: "
+                     + board.plural(len(blind), "app") + " could not be "
+                     "placed against production at all ("
+                     + ", ".join(blind) + "), so this run cannot say whether "
+                     "the rest of the pipeline is deployed.")
+    else:
+        lines.append({
+            0: "Every job is running the trunk, or is behind and still inside "
+               "the grace window.",
+            1: "A merged change has not reached the jobs that run it. The "
+               "card above is the whole point of this command.",
+            2: "Nothing was posted and this is not a green report: the deploy "
+               "surface could not be read at all from here.",
+        }[answer["exit"]])
     return "\n".join(lines)
 
 

@@ -149,7 +149,7 @@ PRICING_URL = f"{SITE_URL}/pricing"
 # publishes the rows this command judges and no seat needs a credential to read
 # them. Facts only: the judgement below is the single copy.
 RECEIPT_URL = f"{SITE_URL}/api/delivery"
-RECEIPT_VERSION = 5  # must match site/lib/delivery-core.js RECEIPT_VERSION
+RECEIPT_VERSION = 6  # must match site/lib/delivery-core.js RECEIPT_VERSION
 
 # And the versions this reader can still read. Exact-match was the rule until
 # 2026-10-10 and it made every additive field an outage: the site deploys on a
@@ -165,9 +165,68 @@ RECEIPT_VERSION = 5  # must match site/lib/delivery-core.js RECEIPT_VERSION
 # readable too, and version 4 added the two sibling-stage markers on the same
 # terms again, and version 5 added the `payments` block on the same terms once
 # more: an absent block is a till this reader cannot see, which is `unknown`,
-# and never a till with nothing wrong. A version that removed or renamed a
-# field would not be added to this tuple.
-READABLE_VERSIONS = (1, 2, 3, 4, 5)
+# and never a till with nothing wrong. Version 6 added the `unreadable` block
+# on the same terms a fifth time, and it is the easiest of the six to justify:
+# the block says why another block is null, so a receipt without it is one that
+# gives no reason, which is exactly what every receipt before it did. A version
+# that removed or renamed a field would not be added to this tuple.
+READABLE_VERSIONS = (1, 2, 3, 4, 5, 6)
+
+# Why a fail-soft block could not be read, and what closes it.
+#
+# The three strings are site/lib/delivery-core.js's `UNREADABLE_REASONS`, which
+# the receipt publishes in its version 6 `unreadable` block, and this file
+# classifies a direct psycopg failure into the same three so the two readers
+# stay interchangeable. That interchangeability is the contract the whole
+# credential-free half of this file rests on: a receipt and a connection must
+# not be able to reach different first steps from the same database.
+#
+# The second half is the point. A surface that says it could not look is honest
+# and it is not actionable, and `payments` proved how far that goes: it answered
+# `unknown` in every standup from the day the block shipped, because
+# `payment_exceptions` is newer than every other table here and `apply_schema`
+# is a hand-run step. One command closed it the entire time and no report said
+# so. So a reason this file recognises carries its own next step.
+NO_TABLE, NO_COLUMN, QUERY_FAILED = ("no such table", "no such column",
+                                     "query failed")
+
+UNREADABLE_HANDS = {
+    NO_TABLE: ("this database is behind db/schema.sql, so one hand-run "
+               "`modal run pipeline/db_setup.py::apply_schema` closes it"),
+    NO_COLUMN: ("this database is behind db/schema.sql by a column, so one "
+                "hand-run `modal run pipeline/db_setup.py::apply_schema` "
+                "closes it"),
+    QUERY_FAILED: ("the table is there and the query broke, so this one needs "
+                   "a log read rather than a migration"),
+}
+
+
+def unreadable_reason(value) -> str | None:
+    """One of the three reasons, or None for anything this reader does not know.
+
+    None rather than `query failed` for an unrecognised string, because a newer
+    receipt inventing a fourth reason is a fact this reader does not have, and
+    guessing at it would put a first step in a report on no evidence. The
+    generic `unknown` sentence is the honest answer there.
+    """
+    return value if value in UNREADABLE_HANDS else None
+
+
+def why_unreadable(exc: BaseException) -> str:
+    """A psycopg failure as one of the three reasons the receipt publishes.
+
+    `sqlstate` and never the message. 42P01 is undefined_table and 42703 is
+    undefined_column, and both of those mean the schema is behind rather than
+    the query being wrong. Everything else is `query failed`, which is the
+    state whose first step is a log.
+    """
+    state = getattr(exc, "sqlstate", None)
+    if state == "42P01":
+        return NO_TABLE
+    if state == "42703":
+        return NO_COLUMN
+    return QUERY_FAILED
+
 
 # Which reader answered. It goes in every surface's evidence as `read_via`,
 # because "the press printed" and "a second-hand record says the press printed"
@@ -797,8 +856,15 @@ def check_checkout(repo_root: Path | None = None) -> Surface:
     status, body, _ = fetch(PRICING_URL)
     evidence: dict = {"url": PRICING_URL, "status": status}
     if status == 0:
-        return Surface("checkout", FAILING,
-                       f"the pricing page did not answer: {body}", evidence)
+        # Guardrail 1's distinction, and this surface had it backwards until
+        # 2026-10-23. A page that never answered and a page with nothing for
+        # sale are the same silence and very different facts, and the one that
+        # costs something is calling the shop shut from a sandbox with no
+        # egress. `check_compute` reads the same silence the same way.
+        return Surface("checkout", UNKNOWN,
+                       "the pricing page could not be reached from here, which "
+                       f"is this checkout's network and not a verdict: {body}",
+                       evidence)
     if status != 200:
         return Surface("checkout", FAILING,
                        f"/pricing returned HTTP {status}, so nobody is reading an offer "
@@ -1348,6 +1414,37 @@ def _dirty(repo_root: Path, paths: list[str]) -> list[str]:
                    for line in out.splitlines() if line.split(maxsplit=1)[1:]})
 
 
+def _is_shallow(repo_root: Path) -> bool:
+    """Does this checkout hold a truncated history.
+
+    Asked rather than inferred, because every message this surface prints
+    about an undatable drift used to guess at the cause ("usually a shallow
+    clone") and a guess is not a next step. `git rev-parse
+    --is-shallow-repository` answers it in one call and has since git 2.15,
+    and a git that does not understand the flag answers non-zero, which
+    reads here as "cannot say", which is the honest answer rather than
+    `False`.
+
+    The reason this is worth a function of its own is that the answer
+    changed under the org without any file in this repository changing.
+    Until 2026-10-17 every seat's run was a GitHub workflow checking out
+    with `fetch-depth: 0`, so full history was a property of the runtime and
+    this question had one answer everywhere it mattered. `ab4e5bb` moved
+    every seat's cadence to the host manifests, the host clones one commit
+    deep, and three guards went quiet without a line of their own code
+    moving (INC-2026-10-18-the-machinery-diff-reads-clean-on-a-shallow-clone,
+    INC-2026-10-23-the-drift-guard-answered-green-from-a-checkout-that-could-not-see).
+    """
+    status, out = _git(repo_root, "rev-parse", "--is-shallow-repository")
+    return status == 0 and out.strip() == "true"
+
+
+#: What closes an undatable drift, for the reader who has one. Named rather
+#: than described, the way every other unknown on this surface has named its
+#: one command since 2026-10-24.
+UNSHALLOW = "git fetch --unshallow"
+
+
 def _deployable_ref(repo_root: Path) -> str:
     """Which commit the running image is judged against.
 
@@ -1383,9 +1480,19 @@ def _last_commit_at(repo_root: Path, paths: list[str],
 
     None when the answer cannot be trusted, which is a shallow clone that
     predates the change, git not being present, or a path set nothing in the
-    available history ever touched. The seat workflows check out with
+    available history ever touched. It degrades to `unknown` rather than to a
+    guess.
+
+    This docstring used to end "the seat workflows check out with
     `fetch-depth: 0`, so in the place this actually runs daily the answer is
-    real; anywhere else it degrades to `unknown` instead of to a guess.
+    real". That sentence was true when it was written and stopped being true
+    on 2026-10-17, when `ab4e5bb` moved every seat's cadence off GitHub
+    schedules and onto the host manifests. The workflow files still say
+    `fetch-depth: 0` and they are no longer what checks out a scheduled run;
+    the host clones one commit deep. So the daily place this runs is exactly
+    the shallow case the old sentence promised it was not, and the promise
+    was part of why nobody looked. `_is_shallow` is the replacement, and it
+    asks rather than assuming.
     """
     status, out = _git(repo_root, "log", "-1", "--format=%cI", ref,
                        "--", *paths)
@@ -1797,6 +1904,11 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
     rows = facts
 
     evidence = {"read_via": source, "ref": ref}
+    # Asked once for the whole surface rather than once per app: the answer is
+    # a property of the checkout, not of an app, and it is what turns "cannot
+    # be dated" from a dead end into one command.
+    shallow = _is_shallow(root)
+    evidence["shallow_checkout"] = shallow
     drifted, unknowns, alarms = [], [], []
     # Alarms that cannot be mailed, kept apart from the ones that can. The
     # cooldown lives in `deploy_runtime.notified_at`, so an app with no row
@@ -1921,6 +2033,50 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
         named = name_undeployed(found)
         since, anchor = drift_began(found, changed_at)
         age_hours = (now - since).total_seconds() / 3600
+
+        # A drift the replay could not date, measured from the wrong end and
+        # landing inside the window, is not a green app. It is an unanswered
+        # question, and until 2026-10-23 it answered OK.
+        #
+        # The cost was total and it was invisible. Every agent seat runs from
+        # a shallow clone, `git clone --depth 1`, which has one commit of
+        # history, so `undeployed_commits` can never match the running digest
+        # and `drift_began` always falls back to the newest commit to the
+        # app's files, which in a shallow clone is that single commit and is
+        # therefore hours old. The same tree, the same rows, the same moment:
+        # shallow read `ok, a deploy is pending and still inside the 24h
+        # window: distill (0.1h), ingest (0.1h), weekly (0.1h)`, and the same
+        # checkout after `git fetch --unshallow` read three apps between 7.3
+        # and 8.2 days behind. So the drift alarm was silent for every reader
+        # it has, which is every seat, and `tools/drift_watch.py` exited 0 on
+        # a press job eight days behind.
+        #
+        # `drift_began` is right that a guard which cannot date a drift should
+        # under-report rather than invent one. That argument is about the
+        # number. This is about the state: an undated app whose fallback clock
+        # already puts it past the window still alarms, exactly as before, and
+        # only the one that would have been called fine on a clock it cannot
+        # trust goes to `unknown`.
+        if age_hours <= DEPLOY_GRACE_HOURS and "commits" not in found:
+            here.update(state=UNKNOWN, merged_at=str(changed_at),
+                        drift_began=str(since), drift_anchor=anchor,
+                        drift_hours=round(age_hours, 1), undeployed=found,
+                        shallow_checkout=shallow,
+                        why=("the running image matches no commit this "
+                             "checkout can see, so the only clock left is the "
+                             "newest commit to this app's files and that says "
+                             "nothing about how far behind production is: "
+                             + str(found.get("why", ""))
+                             + (f". This checkout is a shallow clone, so "
+                                f"`{UNSHALLOW}` and ask again"
+                                if shallow else "")))
+            unknowns.append(
+                f"{app} (the drift cannot be dated from this checkout"
+                + (f", which is shallow: {UNSHALLOW}" if shallow else "")
+                + ")")
+            evidence[app] = here
+            continue
+
         here.update(state=FAILING if age_hours > DEPLOY_GRACE_HOURS else OK,
                     merged_at=str(changed_at), drift_began=str(since),
                     drift_anchor=anchor, drift_hours=round(age_hours, 1),
@@ -1957,8 +2113,20 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
                         "runs. This surface is where they are read")
             note = f"{note}. {withheld}" if note else withheld
         evidence["alarm"] = note
+        # The undated apps ride along on the FAILING headline rather than
+        # being dropped by it. This branch is tested ahead of `unknowns` and
+        # used to return without ever mentioning them, so a run that could
+        # measure one app and not another reported the one it could and said
+        # nothing at all about the other. That is
+        # INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see one layer
+        # down, and company standard L-A21 in its own words: a gate that saw
+        # nothing must not read as a quiet pass. A reader told "weekly is 8
+        # days behind" and not told "distill could not be measured" has been
+        # given a verdict on production and a blank where its scope should be.
+        blind_note = ("; and the deploy cannot be compared from here for: "
+                      + "; ".join(unknowns)) if unknowns else ""
         return Surface("deploy", FAILING,
-                       f"the deployed code is not {ref}: {names}. "
+                       f"the deployed code is not {ref}: {names}{blind_note}. "
                        f"{note}", evidence)
     if unknowns:
         return Surface("deploy", UNKNOWN,
@@ -2063,8 +2231,13 @@ PAYMENT_CODES = """
 """
 
 
-def payment_facts(conn) -> dict | None:
-    """The open exceptions, or None when the table cannot be read.
+def payment_facts(conn) -> dict | str | None:
+    """The open exceptions, or why they could not be read.
+
+    A dict of counts, or one of the three reasons in `UNREADABLE_HANDS` when
+    the read failed, which is the same shape `deploy_facts` has always had and
+    for the same reason. None stays reachable for the one case that is neither:
+    a read that worked and returned no row at all.
 
     None rather than zeroes, the same contract `queue_facts` keeps and for the
     same reason: `payment_exceptions` is newer than every other table this file
@@ -2084,8 +2257,11 @@ def payment_facts(conn) -> dict | None:
         with conn.transaction():
             total = conn.execute(PAYMENT_TOTALS).fetchone()
             codes = conn.execute(PAYMENT_CODES).fetchall()
-    except Exception:
-        return None
+    except Exception as exc:
+        # The reason and not a bare None, so this reader reaches the same first
+        # step the receipt's `unreadable.payments` gives the credential-free
+        # one. `why_unreadable` reads the sqlstate and never the message.
+        return why_unreadable(exc)
     if total is None:
         return None
     return {"unresolved": total[0], "needs_a_hand": total[1],
@@ -2107,7 +2283,7 @@ def _name_codes(codes: list | None) -> str:
     return ", ".join(named)
 
 
-def judge_payments(facts: dict | None, now: datetime | None = None,
+def judge_payments(facts: dict | str | None, now: datetime | None = None,
                    source: str = DIRECT) -> Surface:
     """Open payment exceptions, against what will clear itself.
 
@@ -2131,11 +2307,23 @@ def judge_payments(facts: dict | None, now: datetime | None = None,
     """
     now = now or datetime.now(timezone.utc)
     read = {"read_via": source}
-    if facts is None:
+    if facts is None or isinstance(facts, str):
+        # `unknown` either way, because an unread till is not a clear one. What
+        # changes with a reason is whether the report ends at "could not look".
+        # It answered exactly that for the nine days since it shipped while one
+        # hand-run migration was all it ever needed, which is the gap the
+        # version 6 receipt and `why_unreadable` exist to close.
+        why = unreadable_reason(facts)
+        if why is None:
+            return Surface("payments", UNKNOWN,
+                           "payment_exceptions could not be read, so whether a "
+                           "verified payment reached an account is unknown here",
+                           read)
         return Surface("payments", UNKNOWN,
-                       "payment_exceptions could not be read, so whether a "
-                       "verified payment reached an account is unknown here",
-                       read)
+                       f"payment_exceptions could not be read ({why}), so "
+                       f"whether a verified payment reached an account is "
+                       f"unknown here: {UNREADABLE_HANDS[why]}",
+                       {"unreadable": why, **read})
 
     open_rows = int(facts.get("unresolved") or 0)
     stuck = int(facts.get("needs_a_hand") or 0)
@@ -2280,14 +2468,26 @@ def receipt_facts(payload: dict) -> tuple[dict | None, dict, dict | str, dict | 
                     "queues": queues if isinstance(queues, dict) else None,
                     "siblings": siblings}
 
+    # Version 6's reasons for the blocks that are null, keyed by block name.
+    # Absent on versions 1 to 5 and on any receipt where everything read, and
+    # `unreadable_reason` turns anything this reader does not recognise back
+    # into None, so an older site and a newer one both land on the sentence
+    # that claims nothing.
+    unreadable = payload.get("unreadable")
+    if not isinstance(unreadable, dict):
+        unreadable = {}
+
     deploy = payload.get("deploy")
     if deploy is None:
         # The route sends null when it could not run that query at all, and an
         # empty list when the table is really empty. Collapsing the two would
         # make a missing table look like three jobs that never reported, which
         # is the drift alarm firing on a schema step.
+        why = unreadable_reason(unreadable.get("deploy"))
         deploy_rows: dict | str = ("deploy_runtime could not be read by the site "
                                    "either, so the receipt carries no deploy rows")
+        if why is not None:
+            deploy_rows += f" ({why}): {UNREADABLE_HANDS[why]}"
     else:
         deploy_rows = {row["app"]: {"runtime_sha": row.get("runtime_sha"),
                                     "recorded_at": _parse_iso(row.get("recorded_at")),
@@ -2301,7 +2501,10 @@ def receipt_facts(payload: dict) -> tuple[dict | None, dict, dict | str, dict | 
     # hand the judgement the same thing and neither can call the till clear on
     # evidence the other would call unknown.
     published = payload.get("payments")
-    payments = None
+    # A version 6 receipt says why, and the reason is what gives the verdict a
+    # next step instead of a shrug. On an older receipt there is no reason to
+    # carry and None is the same unknown it has always been.
+    payments: dict | str | None = unreadable_reason(unreadable.get("payments"))
     if isinstance(published, dict):
         codes = published.get("codes")
         payments = {

@@ -17752,6 +17752,85 @@ cutting gates to make a budget.
 - Cost: $0, a decision and one line.
 - Status: proposed
 
+### 2026-10-23 — A guard that cannot reach its evidence should name the thing it is missing, not describe the symptom (engineer seat, message run)
+- Trigger: today's break-fix. `judge_deploy` read three production jobs eight
+  days stale as "pending, inside the 24h window" because every agent seat
+  clones one commit deep and the replay that recovers the deployed commit
+  cannot run without history. The fix makes that `unknown`, which is honest
+  and is still not useful: the evidence line now reads "the drift cannot be
+  dated from this checkout", and a reader has to know how the replay works to
+  turn that into "run git fetch --unshallow". The same shape is everywhere in
+  this file. Three surfaces say "could not be read" when what they mean is
+  "nobody handed this process DATABASE_URL".
+- What: every guard in `tools/` that can be blinded by its runtime should
+  detect the specific blindness and name it with the command that lifts it.
+  `git rev-parse --is-shallow-repository` is one word and answers the deploy
+  case exactly, so the evidence can say "this is a shallow clone, so the
+  deployed commit cannot be recovered: git fetch --unshallow". The credential
+  cases already know which variable is unset and only have to say the name.
+  The general form is that an `unknown` carries a cause and a remedy, the way
+  a `failing` already carries the deploy command.
+- First step: one helper in `tools/delivery_health.py` that answers whether a
+  repo root is a shallow checkout, wired into the undated-drift branch added
+  today, with one test that a shallow fixture names itself. Half a day. The
+  credential surfaces are a second pass.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-23 — A board card is keyed on an English sentence, so rewording the alarm orphans every card it already opened (engineer seat, message run)
+- Trigger: today's craft scan of Sentry, below, read against the watcher this
+  run shipped. Sentry's grouping is explicit that a change to the grouping
+  algorithm "is only applied to new events going forward" and that existing
+  issues keep their original fingerprints. All three watchers in this
+  repository do the opposite by accident. The card's key is a phrase built in
+  Python and matched by substring against the title: "no offer on the pricing
+  page can be bought", "Press: no issue for 2026-W41", the running image's
+  sha. The sha is stable. The two sentences are not, and the day somebody
+  improves that wording every open card stops matching, the watcher posts a
+  duplicate, and the original sits in the working column forever with no
+  writer.
+- What: separate the key from the prose. The title keeps a short stable code
+  that nothing rewords, and the sentence is the rest of the title or the body.
+  The cheaper half, worth doing first and on its own: a test that pins the
+  exact fault strings, so a rewording is a red test with a sentence explaining
+  that the open cards will be orphaned, rather than a silent duplicate a week
+  later. `tests/test_checkout_watch.py` already asserts two of the four
+  strings, by accident rather than as the rule.
+- First step: the pinning test across all three watchers, one file, an hour.
+  The stable-code redesign is a second day and needs a decision about what a
+  board reader should see in a list view.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-23 — Craft scan: Sentry groups by fingerprint first and freezes the fingerprint when the algorithm changes (engineer seat, message run)
+- Trigger: the charter's daily craft scan, pointed at the product whose whole
+  job is the problem this run spent the day on, which is an alarm that fires
+  repeatedly about one fact and must not become noise. Read
+  Sentry's own event-grouping concept page directly rather
+  than from memory.
+- **The thing worth stealing.** Sentry evaluates grouping candidates in a
+  fixed order and says the order out loud: "fingerprint first, the stack trace
+  next, then the exception, and then finally the message". The ordering is the
+  design, not an implementation detail, because each rung is more specific
+  than the one below and the fallback is what keeps an unrecognised event from
+  being dropped. `fault()` in `tools/checkout_watch.py` has the same ladder by
+  instinct, four specific cases and then the headline, and it should say so
+  the way Sentry does. The second and larger borrowing is the sentence that
+  became the ledger entry above: changing the grouping rule does not regroup
+  existing issues. That is a promise about continuity of identity, and this
+  org has three alarms with no such promise.
+- **The thing alexandria does better.** A Sentry issue tells you what broke
+  and leaves what to do about it to the reader. The card this run shipped
+  names the three environment variables that would close it, read out of the
+  site's own offer list rather than written by hand, so a tier the owner stops
+  selling leaves the alarm with it. The alarm knows what action ends it and
+  where that action has to happen, which for the till is at the seller and not
+  in this repository. That is the difference between a monitor and a handoff,
+  and for a one-person company with twelve agent seats the handoff is the
+  valuable half.
+- Cost: $0.
+- Status: proposed
+
 ### 2026-10-24 — No standard says a file with a reading contract is read through its reader (writer seat, run 45, for the ExO seat's relay)
 - Trigger: `INC-2026-10-24-the-entry-about-hiding-is-hidden-from-the-owners-console`.
   `docs/ideas.md` has a published entry contract, a purpose-built reader in
@@ -17811,4 +17890,614 @@ cutting gates to make a budget.
   verify by opening one rather than by reasoning about it. Asserting a URL
   nobody opened is what L-A12 is about.
 - Cost: $0 to check, one line either way.
+- Status: proposed
+
+### 2026-10-24 — Every `unknown` surface names a hand or says there is none (engineer seat, message run)
+- Trigger: `payments` answered `unknown` in every standup from the day the
+  block shipped to this run, with the sentence "payment_exceptions could not be
+  read, so whether a verified payment reached an account is unknown here." The
+  sentence was true. What it was waiting for was one hand-run
+  `modal run pipeline/db_setup.py::apply_schema`, and no report ever said so,
+  so the PM's standup copied "the same named gap as every prior standup"
+  forward for nine days instead, and named the wrong cause while it did.
+- What: this run fixed the till. The shape it fixed is not specific to the
+  till. `tools/delivery_health.py` has three other ways to answer `unknown`
+  and none of them is obliged to say what closes it: `compute` when Modal's
+  edge is unreachable for a reason that is not a disabled workspace, `mcp`
+  behind it, and all four database surfaces when neither reader answers. The
+  structural version is a field on `Surface` rather than four more sentences:
+  an `unknown` carries `closes_with`, prose or an explicit "nobody knows yet",
+  and a test over `ORDER` holds every `unknown` path to having one. Then a
+  surface that cannot name its own next step is a test failure at the moment
+  it is written rather than a line somebody rereads for nine days.
+- First step: the `Surface` field and the test, with the till's own sentence
+  as the first filled one, which this run already wrote the hand text for.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — The outage alarm knows the cron and does not count down to it (engineer seat, message run)
+- Trigger: the Modal workspace has been disabled since some time between
+  12:20 and 14:00 UTC on 2026-10-23, read from the edge by
+  `tools/delivery_health.py` in this run. The board card for it says, in
+  words, "a workspace that is still off then is a week with no issue," where
+  "then" is Monday's 09:00 UTC press cron. Nothing computes that distance. The
+  guard holds `PRESS_CRON`, it holds `press_deadline`, and the compute surface
+  it prints beside them says only that the workspace is off.
+- What: the compute surface names the next scheduled thing it will cost and
+  how long there is. "The workspace is off and the press runs in 56 hours" is
+  a different message from "the workspace is off," and it is the one that
+  decides whether the owner opens Modal tonight or on Sunday. Same arithmetic
+  for the four daily corpus crons, which have already each missed a run. All
+  the inputs are in the file and none of them are joined.
+- First step: one function taking the outage's observed start and the cron
+  table, returning the next deadline each disabled app will miss, called from
+  `check_compute` and printed in its headline.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Datadog writes the fix into the alert, and Sentry gives it nowhere to go (engineer seat, message run)
+- Both read this run against the question today's work raised, which is whether
+  a monitor is supposed to carry its own remediation or only its condition.
+  They answer it opposite ways and the disagreement is the finding.
+- **The thing worth stealing, from Datadog.** A monitor's `message` is a
+  Markdown field the product's own documentation fills with remediation, and
+  its example is a numbered list of commands ("Steps to free up disk space on
+  {{host.name}}: 1. Remove unused packages 2. Clear APT cache ..."). It is
+  templated, so the text can name the host that is actually full, and it is
+  conditional per state: `{{#is_alert}}`, `{{#is_warning}}` and
+  `{{#is_renotify}}` are different blocks, so the first page and the third
+  page about one condition can say different things. The renotify block is the
+  half this product has no answer to at all. Our guards repeat one sentence
+  forever, and the till's repeated for nine days.
+- **What Sentry does not have, read from the alert-creation docs in the same
+  pass.** An alert is "When" (triggers), "If" (filters) and "Then" (actions,
+  meaning destinations and tickets). There is no remediation field anywhere in
+  that flow, so the fix for a Sentry alert lives in a wiki somebody has to
+  already know about. Sentry's own answer to the routing half is Ownership
+  Rules, `path:src/javascript/*.[tj]sx #team`, which auto-assigns by stack
+  trace, and the last matching rule wins. That is routing a condition to a
+  person, which is a real thing and is not the same as telling the person what
+  to do.
+- **One thing alexandria does better, as of this run.** The hand our guard
+  names is derived rather than typed. A Datadog message is prose a human wrote
+  once, so it can be confidently wrong forever and nothing notices. Our
+  `apply_schema` sentence is reachable only when the database answered sqlstate
+  42P01, and when it answers anything else the guard says to read a log
+  instead. A remediation that can only fire on the evidence that justifies it
+  is the version that does not rot.
+- The proposal inside it, so this note is one: our guards say the same sentence
+  on the first reading and the ninth, and the till's said it for nine days.
+  Give a repeated finding a second sentence that names how long it has been
+  saying the first one, which is Datadog's renotify block without the
+  templating language. `payment_exceptions`'s own `first_seen_at` column is
+  the shape the deploy surface already uses for exactly this.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — Law 12a is the only hard voice law with no pre-send gate, and the word it was written for is bare in every issue the press has ever sent (writer seat, run 46, for the engineer)
+- Trigger: writer run 46's grade of canon law 12a, her outsider ruling of
+  2026-09-19, scored against all three prints rather than against the newest
+  file in the repository. `docs/voice/reviews/2026-10-24-firstuse.md` carries
+  the measurement.
+- The finding in one line: `harness` is carried bare in 2026-W37, in
+  2026-W39 and in 2026-W40, which is every issue the library has sent.
+- Why this is not another prompt patch, which is the part that matters.
+  `prompts/digest.md` holds five rules in its first-use pass, added 2026-09-19,
+  2026-09-28, 2026-10-01, 2026-10-01 and 2026-10-14. Four of the five were in
+  force when W40 printed on 2026-10-05, and W40's opening and first section
+  alone carried 13 bare terms of art against the generator's own whole-issue
+  cap of five. A rule that is live, four deep, specific, and quoting its own
+  earlier failures did not hold. The writer charter's step 4 says a structural
+  fix that has failed twice through prompt changes goes to the ledger instead
+  of a third rewrite, so this is the filing and there is deliberately no
+  generator diff in the pull request that made it.
+- The ask, and it is one rule in one file: a blocking `term-of-art-cap` finding
+  in `tools/check_digest_quality.py`. That file already runs inside the press
+  at `pipeline/weekly.py:1350`, is shipped into the Modal image at
+  `pipeline/weekly.py:209`, can hold an issue before it sends, and feeds a
+  corrections pass at `pipeline/weekly.py:822`. It carries 17 rules and 8 of
+  them block. None of the 17 is law 12a.
+- The pairing that makes the gap hard to argue with. She gave law 12 and law
+  12a on the same day, out of the same read of the same issue. Law 12 has a
+  blocking pre-send rule, `skeleton-heading`, citing the incidents behind it.
+  Law 12a has five sentences in a prompt and no command between the model and
+  the reader.
+- Why CI is the wrong gate, and this is the correction to the 2026-10-04 filing
+  rather than a restatement of it. That filing asks for
+  `docs/voice/check_voice.py` to be wired into `.github/workflows/checks.yml`
+  and is still `proposed` twenty days later. CI reads the repository, and an
+  issue is not in the repository when it sends. W40 is the proof: it reached
+  readers on 2026-10-05 and never became a file here, so a CI check would have
+  had nothing to look at. Both filings are worth doing and they do not
+  substitute for each other.
+- What already exists, so the estimate is small. The inventory is written and
+  mechanical in `docs/voice/check_voice.py`: `issue_sentences` at line 2035,
+  `terms_of` at 2083, `glossed` at 2005, `coined` at 2060, and the `CLUB`,
+  `ORDINARY_TERMS` and `INSTITUTION` vocabularies at 1895, 1912 and 1925. It
+  already exits 1 on a finding. The move is to import or vendor the inventory
+  and add one `add(BLOCK, "term-of-art-cap", ...)` where the count of terms the
+  issue chose for itself exceeds the generator's five.
+- The honest limit on what can block, stated so nobody builds the wrong half.
+  The CAP is mechanical and is the blockable rule. Whether a clause actually
+  defines its term is a reading and stays in the grade, which is what
+  `check_voice.py`'s own header already says. A gate that tried to decide the
+  clause would be the false-green shape of
+  `INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason`.
+- Probe before trusting it, per L-A21. The two artifacts in the repository are
+  a known failure and a known near-miss: `2026-W39.md` at 24 and
+  `2026-W37.md` at 31 must both fail, and no synthetic fixture is needed.
+- Cost: one rule in one file, no new dependency, no schema change. The press
+  already handles a held issue and already has the alarm subject for it at
+  `pipeline/weekly.py:597`.
+- Status: proposed
+
+### 2026-10-24 — The agent container cannot start a browser, so the one seat whose charter is "look at the pixels" has to build a library path first (frontend seat, message run)
+- Trigger: this run's step 1. The charter says the run executes in the
+  prebaked container of Stage 1, with Playwright 1.49.1 and its Chromium
+  already installed at `PLAYWRIGHT_BROWSERS_PATH`. Three of those four facts
+  were not true where this run executed. `PLAYWRIGHT_BROWSERS_PATH` was unset.
+  The browser under `~/.cache/ms-playwright` was `chromium-1248`, which is not
+  the revision 1.49.1 pins, so `npx playwright@1.49.1` would have downloaded
+  rather than found it, which is the exact waste the pin exists to prevent.
+  And the Chromium that was present would not start: `error while loading
+  shared libraries: libatk-1.0.so.0`.
+- What the run did, because fixing the pin in-run is forbidden and screenshots
+  are the whole job. Resolved Chromium's runtime libraries with `apt-get
+  install --print-uris -y`, fetched the 54 packages, unpacked them to
+  `/tmp/ptroot` with `dpkg -x`, and launched through `LD_LIBRARY_PATH`. Then
+  drove that binary with the `playwright` already in `site/package.json` via
+  `executablePath`, installing no second Playwright. Nothing left the sandbox
+  and nothing entered the repository. It cost roughly fifteen turns of a run
+  whose actual task was one line of markdown.
+- Why it is a proposal and not a fix. Every part of that is outside
+  `.github/docker/`, which is where the answer belongs, and
+  `docs/agents/runtime-changes.md` says a runtime change is proposed with a
+  smoke run behind it rather than improvised by the seat that tripped over it.
+  It also says, in its own general rule, that a rule enforced by a sentence in
+  a charter is enforced at the reliability of a model reading a file. The
+  charter's sentence about the prebaked container is exactly that: a seat
+  reads it, believes it, and discovers otherwise.
+- The ask, for the engineer seat. Either the image this seat runs in gets
+  Chromium's library set and a `PLAYWRIGHT_BROWSERS_PATH` holding the revision
+  the pin names, or the charter's Stage 1 paragraph stops asserting a container
+  this seat does not get. The second is cheaper and worse: a frontend run that
+  cannot render cannot do its defining job, so the failure mode is a seat that
+  reports on code it read instead of pixels it saw.
+- One line worth having either way: a smoke step that launches the baked
+  browser and prints its version. `chrome --version` answered the whole
+  question here in one command, and it would have answered it before the run
+  rather than during it.
+- Cost: $0 to propose. The image change is one `RUN` line of the dependency
+  set Playwright's own `install-deps` installs.
+- Status: proposed
+
+### 2026-10-24 — A Clerk dev instance sends every screenshot to a handshake, so a visual run photographs Clerk's error page unless it knows one cookie (frontend seat, message run)
+- Trigger: the first three screenshots this run took were of
+  `{"errors":[{"message":"Invalid host", … "code":"host_invalid"}]}` at 390px,
+  and they looked like perfectly good screenshots until they were read. A
+  `curl` of the same URL answered `200`, which is why the condition is easy to
+  miss: the server renders, and the browser is redirected.
+- The mechanism, written down so the next run does not spend turns on it.
+  `clerkMiddleware` answers a browser navigation with
+  `307 → …clerk.accounts.dev/v1/client/handshake`, header
+  `x-clerk-auth-reason: dev-browser-missing`, whenever the dev-browser cookie
+  is absent. Setting `__clerk_db_jwt` on the Playwright context and aborting
+  requests to the Clerk hosts renders the real page with no change to any file
+  in `site/`.
+- The wrong fix, recorded because it is the obvious one. Replacing
+  `site/middleware.js` with a pass-through makes the route a 500, not a page:
+  the issue route's layout calls `auth()`, and Clerk refuses to answer it when
+  it cannot detect `clerkMiddleware()`. A seat that stubs the middleware and
+  screenshots the result photographs Next's error overlay instead, which is a
+  different wrong picture.
+- **Corrected later in the same run.** The first version of this entry asked
+  for the screenshot helper to be committed as `site/tools/shoot.mjs`, on the
+  belief that every visual run rebuilds it. It does not need committing,
+  because `docs/design/harness/shoot.mjs` has existed since 2026-10-07 with
+  guards this run did not think of. The ask was wrong and the belief behind it
+  was the actual defect: this run did not know the harness existed, which is
+  `INC-2026-10-24-the-visual-harness-was-rebuilt-from-scratch-for-the-second-time`.
+  The cookie is now in that script, verified against the running site, and the
+  README carries the whole recipe.
+- The ask that remains, and it is for the seat that owns `prompts/` rather
+  than for this one: the frontend charter's step 1 says "npm install and start
+  the site (site/)" and names `npx playwright@1.49.1`, which is an instruction
+  to BUILD a start step. It never names `docs/design/harness/`. A run that
+  follows the charter exactly arrives at a hand-rolled harness, every time,
+  which is twice now. One line in step 1 pointing at
+  `docs/design/harness/serve.sh` closes it.
+- Cost: $0, one line in a charter this seat may not edit.
+- Status: proposed
+
+### 2026-10-24 — The visual harness kills every next-server on the machine, and the machine is shared with other companies (frontend seat, message run)
+- Trigger: `docs/design/harness/serve.sh` refused to start, reporting
+  `next-server(3099797) is alive and did not come from this script's pid`. That
+  process was real and it was not ours:
+  `readlink /proc/3099797/cwd` answered
+  `/tmp/epito-ursa-frontend-68dg0X/ursa-minor`, a different company's frontend
+  seat with its own checkout in this same container, mid-run.
+- The part that is already fixed on a branch: the STRAY CHECK's blindness to
+  cwd, which is what produced that false diagnosis. That is pull request 333's
+  change, readied by this run rather than reimplemented.
+- The part nobody had seen, which is worse and is fixed here. The loop at the
+  TOP of the script, the one that actually kills, was never narrowed. It asks
+  `ps` for every `next-server` on the machine and kills each one
+  unconditionally, so a visual run of this seat takes a sibling company's
+  server down as its first act. Nothing downstream can notice, because
+  everything the script verifies afterwards is about our own port. Narrowed in
+  this pull request by the same `/proc/<pid>/cwd` test, and verified: the run
+  printed `leaving next-server 3099797 alone, it serves
+  /tmp/epito-ursa-frontend-68dg0X/ursa-minor` and killed only ours.
+- What this is really evidence of, and it is the reason this is a ledger entry
+  and not just a diff. Seats from different companies share a container and
+  nothing told either of them. Every tool any seat has that reaches for "the
+  process on this box" by name or by port is now a cross-company action. This
+  one was found because a guard happened to print a pid. The ask, for the ExO
+  seat: a sweep of the tooling for `pkill`, bare `ps` matches and fixed ports,
+  judged against a shared container rather than a private one.
+- Cost: $0 here. The sweep is a seat-hour.
+- Status: proposed
+
+### 2026-10-24 — "Opens shortly" is a status standing in an action slot, and now it is a link (frontend seat, second message run, for the writer seat)
+- Trigger: board card `e0a238b6`. Both paid plans on the pricing page were
+  dead ends, `<span className="pill ghost">` with no href. The destination was
+  settled by the PM on 2026-10-18 in PR #355 and is the waitlist anchor the
+  free tier already uses, so this run wired both controls to it and changed no
+  word a reader sees, because this seat sets approved copy and does not author
+  it.
+- The ask, for the writer seat: a line for this slot. There is no row for it in
+  `docs/voice/awaiting-her-word.md` and no candidate under `docs/voice/`, so it
+  has never been drafted, which is why the live words shipped untouched tonight.
+- What makes it worth a round rather than a shrug. "Opens shortly" is a
+  *status* and the slot is an *action*: the pill now goes somewhere, so its
+  label is the only thing on the card that does not say where. Two of the three
+  plan controls carry identical text to one destination, which the design ban
+  list's entry 21 is the neighbour of rather than an instance.
+- And one register that already bears on it, which is why this is the writer's
+  question and not only a wording preference. `docs/design/taste.md` carries
+  her standing ruling "No coming-soon pages standing in for something being
+  sold (ADR-26)". "Opens shortly" on a priced tier is that sentence's subject
+  in miniature. Making it a door to the waitlist moves against the ruling
+  rather than with it, which is the argument for the change that shipped, and
+  it does not settle the words.
+- Cost: $0, one copy round.
+- Status: proposed
+
+### 2026-10-24 — The Left-Behind Index shows 44 characters of a claim with 380px of empty viewport either side, and the obvious fix makes the page worse (frontend seat, second message run)
+- Trigger: this run's sweep, judged at 50 DUMMY FIXTURE findings. Measured at
+  1440: `main.page` is 680, `.lb-index` is 632, the claim cell is 420, 44
+  characters fit, the sample claim is 73 characters, and 380px of viewport is
+  empty on each side.
+- What was tried: the breakout `.tiers.three` already uses on the pricing page,
+  `margin-inline: -174px` above 1180, which takes 632 to 980 on the same centre
+  axis. It works as a measurement and fails as a page. The index then starts at
+  x=230 under an h1 at x=404, so the column labels and every identifier hang
+  174px past the title and the page has two left edges. Reverted. The frame is
+  `docs/design/reviews/2026-10-24/left-behind-980-breakout-rejected-desktop-1440x900.png`
+  and it is kept precisely because it is the argument.
+- Why pricing gets away with it and this does not: the tiers are a centred band
+  of bordered cards, which reads as a block that is allowed its own width. A
+  hairline-ruled list under a left-aligned title is a column, and a column that
+  starts left of its own heading reads as a mistake.
+- The one version that does not make something else worse, for whoever takes
+  card `eb85b8d1`: `/skills` is the site's other long data list and already
+  uses a 760px shell. Moving `/left-behind` onto 760 gains 80px of claim column,
+  about eight characters, and adds no fourth width to a site that already has
+  four. It is a smaller gain than the measurement wants. That is the trade and
+  it is a judgment rather than a calculation, which is why it is here.
+- One caveat on the measurement itself, under design ban list entry 28: 50
+  generated fixtures are a demo distribution. Real `deprecated_claims` text is
+  the shape that decides this, and nobody has looked at its length distribution.
+- Cost: $0 to decide, one line to apply.
+- Status: proposed
+
+### 2026-10-24 — The container has no Clerk key, no browser libraries, and a browser cache another company can delete (frontend seat, second message run, for the seat that owns prompts/ and the Dockerfile)
+- Trigger: this run's step 1, again. The first run of today filed two of these
+  and the charter still describes none of them. Four facts, each executed
+  rather than reasoned about:
+  - **No Clerk publishable key exists in this container at all.** Not a
+    placeholder, not a `pk_test`: unset. `clerkMiddleware` throws
+    `Missing publishableKey` and every route 500s, so the site cannot be
+    served before any screenshot question arises. The previous run met a
+    `pk_test` key and a handshake redirect, which is a different failure with a
+    different cure, so the README's answer does not cover this one. A locally
+    synthesised test-shaped key gets the server up and is not committed,
+    because a key in the repository is the thing guard 1 exists to prevent.
+  - `PLAYWRIGHT_BROWSERS_PATH` unset, for the second run running.
+  - The cached Chromium will not start for want of ATK, Pango, Cairo and GBM.
+    The README's `apt-get --print-uris` recipe into `/tmp/ptroot` works and
+    costs about a minute.
+  - **The cache was deleted mid-run**, filed as
+    `INC-2026-10-24-the-browser-cache-was-deleted-under-a-running-seat`.
+- The ask, in two parts because they have two owners. For the image: bake the
+  browser libraries and pin one Chromium revision to whatever
+  `site/package.json` resolves, so that none of the above is a run's problem.
+  For `prompts/frontend-agent.md`: step 1 still says Playwright 1.49.1 is
+  installed at `PLAYWRIGHT_BROWSERS_PATH`, which has now been false in three
+  consecutive runs, and it still does not name
+  `docs/design/harness/serve.sh` as the start step.
+- Cost: a Dockerfile change and two sentences. The recurring cost of not doing
+  it is measured: turns at the top of every visual run.
+- Status: proposed
+
+### 2026-10-24 — The company standards have no frontend section, so a UI seat's whole obligation is the `any` list (frontend seat, second message run, for the ExO seat's relay)
+- Trigger: this run's shipping step, which says to read "the `any` section and
+  your seat's section" of `docs/standards/lessons.md`. There is no frontend
+  section. The file's headings are any, engineer, pm, okr, mba, yc,
+  distribution, marketing, exo, security and research.
+- This is an observation and not a complaint: the `any` list is substantial and
+  L-A54 fired usefully on this run, which is recorded as an incident. But every
+  Alexandra Systems product has a surface, the owner's standing order of
+  2026-10-17 was that every UI in the company gets polished, and the register
+  that generalises her corrections across products has nothing in it about
+  surfaces. The lessons this seat keeps learning, that a frame can be a valid
+  photograph of the wrong state and that a measurement can improve while the
+  page gets worse, are not alexandria-shaped.
+- The ask: whether a frontend section is wanted, which is the chair's call
+  through the relay rather than this seat's. If it is, this seat can propose
+  its first entries from the design ban list, which is already the generalised
+  form of her corrections about surfaces.
+- Cost: $0 to decide.
+- Status: proposed
+
+### 2026-10-24 — The site cannot be served in the agent container at all, because clerkMiddleware throws without a publishable key (frontend seat, third message run, for the runtime register)
+- Trigger: this run executed `docs/design/harness/serve.sh` end to end to prove
+  a change to its kill loop. The build succeeded, the server started, the
+  process-descent check passed, and every route then answered 500.
+  `/tmp/next-serve.log` carries the reason on repeat: "@clerk/nextjs: Missing
+  publishableKey", thrown inside the middleware bundle before any page renders.
+- There is no env file in `site/` in a fresh clone and no Clerk key exported in
+  the container, so this is the default state of a visual run here rather than
+  an unlucky one.
+- The harness cannot reach it, and that is the point worth recording. The
+  `__clerk_db_jwt` cookie in `docs/design/harness/local-context.mjs` cures the
+  dev-browser handshake, which is a 307 the middleware issues after it has
+  loaded. What fails here is earlier: the middleware throws while initialising,
+  so there is no handshake to cure and no context setting that helps. The
+  README's note that a placeholder publishable key is "worse" because it
+  reaches the real Clerk is about a different tradeoff than the one in front of
+  a run that cannot render a single page.
+- The ask: a key for the visual run's environment, or a documented way for the
+  harness to run the site with the middleware's Clerk path inert. Which of
+  those is right is a runtime decision rather than a design one, so it belongs
+  in `docs/agents/runtime-changes.md` and to the seat that owns the container.
+  This seat should not be exporting keys or editing `site/middleware.js` to
+  route around auth.
+- What it costs now: a visual run in this container can build and start the
+  site and cannot photograph it. The frames in tonight's review folder are from
+  the run that had a working server earlier in the pass, which is why this run
+  verified the instrument and did not re-shoot the sweep.
+- Cost: $0 to decide. A development key is free, and the alternative is a
+  documented environment variable.
+- Status: proposed
+
+### 2026-10-24 — A company standard tells every seat to ship a worked example beside a prohibition and never says the example must pass it (writer seat, run 47, for the ExO seat's relay)
+- Trigger: writer run 47's sweep of every worked example at a writing position
+  in `prompts/digest.md`, which is ban list entry 93's unenforced half.
+  `docs/voice/reviews/2026-10-24-specimens.md` carries the count and
+  `INC-2026-10-24-the-safe-form-broke-the-rule-it-illustrated` the record. This
+  is a proposed amendment to a company standard, so it is not this seat's edit
+  to make and the vendored copy in `docs/standards/lessons.md` is never edited
+  here, per `docs/agents/cross-repo-law.md`.
+- The finding. `L-A14` says a rule that forbids an outcome ships the safe form
+  beside it, "so following the rule is copying rather than composing". `L-A23`
+  says a prohibition must not quote the banned specimen where the work is
+  written. Both are right and together they are incomplete: **neither says the
+  safe form has to pass the rule it illustrates.**
+- The evidence, and it is one commit. `6f3a492` of 2026-09-26 added to
+  `prompts/digest.md` a hard rule banning a past-tense verb with "you" as its
+  subject, the gate that enforces it naming present perfect by name, and a
+  "safe form" quoted at the writing position whose verb is present perfect
+  with "you" as its subject. The commit message and the sentence introducing
+  the specimen both quote L-A14's own words. It sat there twenty-eight days,
+  through three audits of that slot and through the third shipped greeting
+  failure, whose own postmortem fixed a test at the bottom of the slot and
+  never read the specimen at the top.
+  `INC-2026-10-24-the-safe-form-broke-the-rule-it-illustrated` is the record.
+- The proposed clause, which is one sentence rather than a new lesson. The safe
+  form is checked against the rule it illustrates, by that rule's own gate
+  where the rule has one.
+- Why it is not local. L-A14's own worked case is a shell snippet, where
+  whether the snippet does the safe thing is visible at a glance. Where a rule
+  governs prose, the safe form is a sentence and whether it obeys the rule is a
+  reading, so the standard that tells every seat in every product to ship an
+  example beside a prohibition is silent in exactly the case where the example
+  can carry the defect. Any prompt, checklist or charter in any of the six
+  companies can hold this shape.
+- What the local half already is, so the relay carries a worked fix rather than
+  a complaint. `python3 docs/voice/check_voice.py specimens` runs the
+  generator's own gates over the generator's own specimens, which no gate in
+  this repository had ever done, and it found this on the run that wrote it.
+  Ban list 135 is the entry.
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Consensus names the corpora it covers and never the ones it does not (engineer seat, message run)
+- Trigger: today's build was about a guard that reported on the apps it could
+  measure and said nothing about the apps it could not, so the scan asked the
+  same question of a product in alexandria's own category: when a research tool
+  answers a question, does it tell you what it did not look at. Consensus,
+  rotating off three consecutive observability scans (Modal 2026-10-23, Sentry
+  2026-10-23, Datadog 2026-10-24 earlier today).
+- What: Consensus's own explanation of how it works gives a corpus size, "over
+  200 million academic papers," and then does something better than the number,
+  which is the thing worth stealing. It names the corpora by name: "nearly all
+  of the highest-impact journals and the entirety of PubMed," from four
+  aggregators plus direct publisher partnerships, "primarily peer-reviewed
+  journal articles, along with some conference papers and preprints." A reader
+  who knows their field can tell from that sentence whether their literature is
+  in it, which a count of 200 million cannot tell anyone. What the page does not
+  carry anywhere is the other half: no excluded set, no unindexed or paywalled
+  caveat, no completeness statement on a result. The framing is uniformly what
+  is included, and the closest it comes to a limit is a claim about ranking
+  quality, that results are "more likely to reflect high-quality, credible
+  science," which is an argument about the papers it found rather than about the
+  ones it did not.
+- Worth stealing: scope a coverage claim by naming its sources rather than by
+  sizing them. alexandria's home page says "papers read this week" and the
+  number stands alone, and the board already carries a `pm` card saying that
+  metric has no quality-claims row. The press's own corrected arithmetic is the
+  evidence that the denominator is where the meaning is: 164 papers read in
+  full out of 8,956 ingested is a true sentence that one of those two numbers
+  on its own would misrepresent in opposite directions.
+- Where alexandria is ahead, and today is why: its guards are being made to
+  report their own blind spots as a matter of law rather than of taste. L-A21
+  says a gate that saw nothing must not read as a quiet pass, four entries in
+  the incident register are enforcement of it against this org's own code, and
+  as of today the deploy surface names the apps it could not place in the same
+  headline that alarms about the ones it could. Consensus is a bigger product
+  with a better corpus and no visible equivalent of that rule.
+- Cost: $0, read from the vendor's own published page.
+- Status: proposed
+
+### 2026-10-24 — Every guard declares the runtime inputs it needs, and one command says which guards this runtime can be trusted to run
+- Trigger: two findings one day apart, both from this seat, both the same
+  missing thing.
+  `INC-2026-10-23-the-drift-guard-answered-green-from-a-checkout-that-could-not-see`
+  closes with "every seat runs shallow, and no guard in this repository says
+  anywhere what depth of history it needs." Today's run found the sibling bug
+  and also found the reason nobody looked: `_last_commit_at`'s docstring
+  promised "the seat workflows check out with `fetch-depth: 0`, so in the place
+  this actually runs daily the answer is real," which was true until `ab4e5bb`
+  moved every seat's cadence onto the host manifests on 2026-10-17 and the host
+  began cloning one commit deep. A runtime change outside this repository
+  falsified a comment inside it, and the comment went on telling every reader
+  not to check.
+- What: each guard declares what it needs from the runtime as data rather than
+  as prose, in a module-level constant on the file that needs it:
+  `NEEDS = {"git_history": "full", "egress": True, "database": False}` is the
+  whole shape, and `tools/delivery_health.py`, `tools/drift_watch.py`,
+  `tools/press_watch.py`, `tools/checkout_watch.py` and `tools/deploy_gate.py`
+  are the five that have unwritten requirements today. Then one command,
+  `tools/guard_inputs.py`, probes the runtime it is actually in, `git rev-parse
+  --is-shallow-repository` and the rest, and prints one line per guard saying
+  whether this environment can run it. The value is not the probe, which today's
+  pull request already wrote for the one case it needed. It is that the
+  declaration is a fact in a file that a changed runtime can be checked against,
+  instead of a reassurance in a docstring that a changed runtime silently
+  falsifies. The shape is deliberately the same as `pipeline/budget.py`, which
+  already answers "does this request fit" before a job runs rather than after it
+  fails.
+- First step: the constant on `tools/delivery_health.py` and
+  `tools/drift_watch.py` only, the probe for `git_history` only, since the probe
+  is `_is_shallow` and already exists and is tested, and one line in each
+  guard's own output saying which of its declared inputs this runtime is
+  missing. Two files, no new dependency, and it is a day-sized slice that leaves
+  the other three guards for the next one.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A verdict that aggregates per-item states gets one test per state with a mixed input
+- Trigger: today's bug, and specifically the one-day gap between the fix that
+  caused it and the fix that closed it. Yesterday's run added a third state,
+  `unknown`, to `judge_deploy` at the per-app level, wired `drift_watch` to exit
+  2 on it, and tested it with a depth-one clone, which makes every app unknown
+  at once. The test passed, the fix was real, and the mixed case, one app
+  behind and one app unmeasurable, still returned `failing` with the unknowns
+  discarded on the way out and the watcher exiting 1. The new state was written
+  per-app and read per-surface, and nothing in the suite had an input where
+  those two levels could disagree.
+- What: a convention, and a check that enforces it where it is mechanical. Any
+  function that reduces a mapping of per-item states to one verdict gets, for
+  each state it can produce, a test whose input holds that state alongside a
+  different one, because a reducer's branch order is only observable on a mixed
+  input and a uniform input tests the item and not the reduction. This
+  repository has at least four such reducers:
+  `delivery_health.judge_deploy`, `judge_pipeline`, `tools/panel.py`'s verdict
+  roll-up, and `tools/skill_gate.py`. The mechanical half is a test that reads
+  each reducer's state constants and asserts a named test exists per state. The
+  judgement half, whether the mixed input is a real one, stays with the author.
+- First step: write the four mixed-input tests by hand against the reducers
+  named above and record which of them already drop a state, before building
+  anything that enforces the convention. If none of the other three has the bug,
+  this is a lesson for `docs/standards/lessons.md` through the ExO relay rather
+  than a gate, and that is a cheaper and better outcome than a check nobody
+  needed.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Elicit labels coverage on the row and gives one label to two different states (engineer seat, scheduled run)
+- Trigger: today's build is two instruments about queues and resolutions that
+  could not be read, and the two engineer runs before it were both about a
+  guard reporting on what it could measure and staying silent on what it could
+  not. So the scan asked the same question of the product in alexandria's own
+  category that has the most mature answer to it. Elicit, rotating off
+  Consensus earlier today and three observability products before that.
+- What: Elicit puts a coverage label on every paper in a review table, and the
+  wording is first-hand from its own support page. "Full text" means "We have
+  the full text of this paper available for data extraction." "Abstract only"
+  means "We only have the paper's abstract. This appears either before we've
+  attempted to retrieve the full text (during abstract screening) or if
+  retrieval wasn't successful." The corpus claim beside it is 138 million
+  papers from Semantic Scholar, PubMed and OpenAlex, with full text reachable
+  when a paper is open access or when the reader's own browser extension and
+  journal subscription fetch it.
+- Worth stealing, and it is the placement rather than the label. The coverage
+  fact sits on the row the reader is already looking at, next to the extracted
+  value, so a thin answer and the reason it is thin arrive together. alexandria
+  has the same fact and keeps it somewhere else: 164 papers read in full out of
+  8,956 ingested is a true sentence in the press's arithmetic, and no claim in
+  an issue says whether the paper behind it was read in full or in abstract.
+  The claim is where the reader's trust is spent, so the claim is where the
+  label belongs.
+- Where alexandria is ahead, and it is the half Elicit's own page admits. One
+  label covers two states that mean opposite things: "we have not tried yet"
+  and "we tried and failed". A reader cannot tell a review that is still
+  running from one that has finished and come up short, which is exactly the
+  distinction this org has spent four incident entries and company lesson
+  L-A21 forcing into its own guards, and as of this week every health surface
+  here separates `unknown` from `FAILING` by law.
+- Cost: $0, read from the vendor's own published support pages.
+- Status: proposed
+
+### 2026-10-24 — The merge order is measurable, and the standup's queue gauge is the reader that should carry it
+- Trigger: `tools/merge_order.py`, built today, run against this repository's
+  live queue on its first execution: 4 of 5 open pull requests merge in
+  sequence oldest-first, 5 of the 10 pairs are mutually exclusive, all 5 of
+  those over nothing but prose, and the top anchor is
+  `docs/agents/incidents.md` blocking 4 of them. `#414` cannot merge in
+  sequence at all. Every one of those five pull requests is individually
+  `MERGEABLE` against `main`, which is the only question any check in this
+  repository has ever asked.
+- What: the PM's daily standup already prints a four-number "Queue gauge" in
+  `docs/sprints/dispatch-queue.md`: newest commit on main, open pull request
+  count, seven-day conversion, deepest open chain. All four describe the
+  queue's size and none of them can see its shape, so the gauge has reported a
+  healthy-looking queue on days when half of it was mutually exclusive. One
+  more line, from `python3 tools/merge_order.py --json`, gives the owner the
+  order to merge in and the one file to fix first. The instrument is built,
+  tested and $0. What is missing is the reader, and the reader is a line in
+  `prompts/pm-agent.md`, which is not this seat's file.
+- First step: the PM seat runs the command in one standup and pastes its three
+  numbers into the gauge. If the numbers change the merge order that pass
+  chose, the charter line is worth writing. If they do not, this entry is
+  closed cheaply and that is a better outcome than a rule nobody needed.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The incident register is this repository's worst merge anchor, and its repair is the file layout
+- Trigger: the first measurement this repository has ever taken of its own
+  queue, above. `docs/agents/incidents.md` blocks four of five open pull
+  requests today. Company lesson L-A48 measured the same shape across four
+  repositories on 2026-10-18 and named alexandria's worst anchor as
+  `docs/sprints/pending.md` at 15. Six days later the contention has moved to
+  the incident register, which is the same relocation L-A49 records for Ursa,
+  whose contention moved to `docs/agents/learning-log.md` the moment the ledger
+  was handled.
+- What: L-A48's own fix, applied to this file. One entry per file under
+  `docs/agents/incidents/`, named `INC-YYYY-MM-DD-slug.md`, with the current
+  monolith frozen as the archive rather than rewritten. Nothing needs a
+  generated index, because an index is a second shared anchor: the readers are
+  `tools/check_registers.py` and the seats' own greps, and both can read a
+  directory. The attribute shortcut is closed by measurement rather than by
+  taste, because L-A49 is explicit that `.gitattributes` changes nothing about GitHub's merge
+  button and that `union` destroyed records in Ursa's probe, two entries in and
+  one and a half out, exit 0 and no marker. So layout is the only arm left.
+- Why it is not this seat's to do: the file is ExO-owned, the standing rule at
+  its top binds twelve seats, and the id allocator described in its own header
+  would need to read a directory. The engineer half, when someone decides it,
+  is a day: the directory, both readers, and a frozen monolith.
+- First step, which is cheap and is somebody's today: run
+  `python3 tools/merge_order.py` and read the anchor table. The decision is
+  only hard while the number is a guess.
+- Cost: $0.
 - Status: proposed

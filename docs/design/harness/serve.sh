@@ -18,6 +18,11 @@
 set -euo pipefail
 cd "$(dirname "$0")/../../../site"
 
+# Where this harness's own server runs, read once because both guards below
+# compare a process's `/proc/<pid>/cwd` against it, and two definitions of one
+# directory is the kind of pair that drifts.
+SITE_DIR="$(pwd -P)"
+
 # The port is read from the environment, because 3000 is not ours to assume.
 # On 2026-10-17 the agent container had an unrelated service listening on it,
 # and this script's own stale-server check reported "an older one is still on
@@ -29,11 +34,40 @@ PORT_FE="${FE_PORT:-3000}"
 BASE_FE="http://127.0.0.1:${PORT_FE}"
 echo "== port ${PORT_FE} =="
 
+# Narrowed 2026-10-24, and this narrowing is not about a stale server of ours.
+# It is about somebody else's live one. The agent container is SHARED between
+# companies: this run found a `next-server` serving
+# /tmp/epito-ursa-frontend-.../ursa-minor alive beside ours, which is another
+# company's frontend seat mid-run. This loop asked `ps` for every next-server
+# on the machine and killed each one unconditionally, so a visual run of this
+# seat takes a sibling company's server down as its first act and reports
+# nothing. Nothing downstream can notice, because everything this script
+# verifies afterwards is about OUR port.
+#
+# A process's /proc/<pid>/cwd is the directory it was started in and
+# `next start` runs in `site/`, so a next-server whose cwd is another tree was
+# started by somebody else. /proc is present wherever this script can run at
+# all. The stray check further down tests the same thing on the same set, and
+# the two guards are both here on purpose: this one decides what to KILL,
+# that one decides whether to FAIL.
+#
+# An unreadable cwd is spared, which is the right default for the right
+# reason: `/proc/<pid>/cwd` resolves for the user who owns the process, so a
+# next-server we cannot read is a next-server we did not start. If one of ours
+# ever did become unreadable and held the port, the EADDRINUSE check below
+# fails the run loudly rather than letting it photograph a stale build.
 echo "== stopping any server from a previous build =="
 for pid in $(ps -eo pid=,args= | awk '$2=="next-server"{print $1}'); do
+  cwd=$(readlink -f "/proc/$pid/cwd" 2>/dev/null || true)
+  if [ "$cwd" != "$SITE_DIR" ]; then
+    echo "   leaving next-server $pid alone, it serves ${cwd:-an unreadable cwd}"
+    continue
+  fi
   echo "   killing next-server $pid"; kill "$pid" 2>/dev/null || true
 done
 for pid in $(ps -eo pid=,args= | awk '/next start/ && !/awk/{print $1}'); do
+  cwd=$(readlink -f "/proc/$pid/cwd" 2>/dev/null || true)
+  [ "$cwd" = "$SITE_DIR" ] || continue
   kill "$pid" 2>/dev/null || true
 done
 sleep 2
@@ -87,12 +121,10 @@ fi
 # on the machine, which assumes every Next app on the box is ours. The agent
 # container is shared, and on 2026-10-17 it ran an unrelated Next service that
 # this check reported as our stale server, with a pid no run of this seat could
-# have started and must not kill. So the set is cut to the servers serving THIS
-# site: a process's `/proc/<pid>/cwd` is where it was started, `next start`
-# runs in `site/`, and /proc is present wherever this script can run at all. A
-# next-server whose cwd is some other tree is somebody else's and is none of
-# this harness's business.
-SITE_DIR="$(pwd -P)"
+# have started and must not kill. So the set is cut to the servers whose cwd is
+# $SITE_DIR, by the test the kill loop at the top of this file explains. What
+# this check does with the answer is the other half: it reports a stale server
+# of ours rather than killing anything.
 strays=
 for srv in $(ps -eo pid=,args= | awk '$2=="next-server"{print $1}'); do
   cwd=$(readlink -f "/proc/$srv/cwd" 2>/dev/null || true)
@@ -112,9 +144,23 @@ fi
 echo "PID MATCH: every next-server in $SITE_DIR descends from $STARTED"
 
 echo "== proving the server is THIS build =="
-served=$(curl -s "$BASE_FE/" | grep -o '/_next/static/css/[^"]*' | head -1)
+# `|| true` is what lets the guard below speak. `set -euo pipefail` is on, grep
+# exits 1 when the page references no stylesheet, and pipefail hands that to
+# the assignment, so until 2026-10-24 this script aborted on the assignment and
+# the FAIL message under it had never once been printed. A visual run saw exit
+# 1 and no reason. That is the same defect the comment above the stray check
+# warns about, a guard that quietly does nothing, except here the guard could
+# not even announce itself.
+served=$(curl -s "$BASE_FE/" | grep -o '/_next/static/css/[^"]*' | head -1 || true)
 if [ -z "$served" ]; then
+  code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE_FE/" || true)
   echo "FAIL: the served page references no stylesheet at all." >&2
+  echo "      ${BASE_FE}/ answered ${code:-nothing}, so this is an error" >&2
+  echo "      document rather than our markup. Read /tmp/next-serve.log." >&2
+  echo "      The known cause in this container is a missing Clerk" >&2
+  echo "      publishable key: clerkMiddleware throws before any page" >&2
+  echo "      renders, and the harness's __clerk_db_jwt cookie cannot help," >&2
+  echo "      because the middleware never reaches the handshake it cures." >&2
   exit 1
 fi
 if [ ! -f ".next${served#/_next}" ]; then

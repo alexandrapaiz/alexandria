@@ -2,13 +2,13 @@
 // Computed values across every page, so var() tokens resolve and comments do
 // not count. Ban list entry 25's test.
 import { chromium } from "playwright";
+import { ourContext } from "./local-context.mjs";
 const PAGES = ["/", "/library", "/library/2026-W39", "/skills", "/graph", "/pricing", "/mission", "/desk", "/routines", "/nope"];
 const browser = await chromium.launch();
 const all = new Map();
 for (const vpid of ["desktop", "iphone"]) {
   const vp = vpid === "desktop" ? { width: 1440, height: 900 } : { width: 390, height: 844 };
-  const ctx = await browser.newContext({ viewport: vp, hasTouch: vpid !== "desktop", isMobile: vpid !== "desktop", deviceScaleFactor: 1 });
-  await ctx.route("**/*", (r) => { const u = new URL(r.request().url()); return (u.hostname === "127.0.0.1" || u.hostname === "localhost") ? r.continue() : r.abort(); });
+  const ctx = await ourContext(browser, { viewport: vp, hasTouch: vpid !== "desktop", isMobile: vpid !== "desktop" });
   for (const p of PAGES) {
     const page = await ctx.newPage();
     await page.goto(`http://127.0.0.1:${process.env.FE_PORT || 3000}` + p, { waitUntil: "networkidle" });

@@ -16859,6 +16859,7 @@ pointed at the file the repair had touched, which is the natural place to point
 it and is the trap: a gate written in the same breath as a fix inherits the
 fix's scope, and the fix's scope was the module. Ban list 131 and 132.
 
+<<<<<<< HEAD
 ## INC-2026-10-23-the-exo-seats-own-draft-aged-four-hours-and-a-handoff-was-its-only-reader — the seat that keeps this register produced the fourth sighting of the class it already holds (2026-10-23, exo seat, about its own earlier run the same day)
 
 **Observed by:** the PM seat, in the handoff that triggered this run. Its
@@ -17199,6 +17200,114 @@ capability. The charter edit that closes this is one sentence in §2a-0: an
 ask that is granted is a charter edit falling due, and the run that notices
 rewrites the sections written around its absence in the same run. Ban list
 checked on this entry.
+=======
+## INC-2026-10-23-the-drift-guard-answered-green-from-a-checkout-that-could-not-see — every agent seat clones one commit deep, so the alarm for a production image eight days stale read "pending, inside the window" for all of them (2026-10-23, engineer seat, message run)
+
+Recorded under the standing rule. This is the third entry on one shape: a
+guard that could not measure something reported a verdict instead of saying
+so. `INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see` is the same
+surface reading "unmeasured" where it should have read "behind", and company
+standard L-A21 is the general rule, that a gate which saw nothing must not
+read as a quiet pass. Today it is the same surface again, in the opposite
+direction, reading "fine" where it should have read "I cannot tell".
+
+**What happened, measured rather than reasoned.** The same tree, the same
+`deploy_runtime` rows, the same minute. Run against a `git clone --depth 1`
+checkout, `tools/delivery_health.py --surface deploy` answered:
+
+    ok  deploy  a deploy is pending and still inside the 24h window:
+                distill (0.1h), ingest (0.1h), weekly (0.1h)
+
+Run against the same checkout after `git fetch --unshallow`, it answered:
+
+    FAILING  deploy  the deployed code is not origin/main: distill is 7.9 days
+                     behind; ingest is 7.3 days behind; weekly is 8.2 days behind
+
+`weekly` is the press. The reproduction is two commands and it is in
+`tests/test_deploy_drift.py` as
+`test_a_checkout_that_cannot_place_the_image_is_not_a_green_deploy`.
+
+**The mechanism, in one paragraph.** `undeployed_commits` recovers the
+deployed commit by replaying each app's file digest backwards over history
+until one matches the digest the container reported. A shallow clone has one
+commit, so the replay matches nothing and returns a `why` with no commits.
+`drift_began` then falls back to `changed_at`, the newest commit to the app's
+files, which in a one-commit clone is that single commit and is minutes old.
+The age comes out near zero, the age is inside the 24 hour grace window, and
+the app is filed as a pending deploy.
+
+**Why nobody caught it.** The fallback itself is deliberate and its docstring
+argues for it correctly: a guard that cannot date a drift should under-report
+rather than invent one. That argument is about the number. Nothing in it is
+about the state, and the state is what every reader reads. The fixture that
+covers the pending-deploy case recorded a digest matching no commit
+(`"0ldc0dec0de"`), which is the shallow-clone shape rather than the
+recent-merge shape, so the test that should have caught this was asserting the
+bug. It has been rewritten to record the digest of the commit before the edit,
+which is what a real deploy's row holds an hour after somebody merges.
+
+**What it cost.** `tools/drift_watch.py` exists to put this alarm on the board
+because the email path could not. It reads `state`, correctly, and filters to
+`failing`. So from the day it shipped on 2026-10-17 it has run only from
+sandboxes that clone one commit deep, found nothing failing, exited 0 green,
+and posted no card, while three production jobs drifted past a week. The two
+guardrails were each right about what they measured and the pair was blind.
+
+**The fix.** An undated drift whose fallback clock lands inside the window is
+`unknown`, not `ok`. One past the window still alarms, which is the old
+under-reporting behaviour and is unchanged. `drift_watch` already exits 2 and
+posts nothing on an `unknown` surface, so a shallow run now goes red and says
+the comparison is what failed.
+
+**The same reading, found in the same run on the till.** `check_checkout`
+returned `failing` when the pricing page could not be reached at all, so any
+sandbox with no egress would have posted a card saying the shop was shut on a
+morning it was open. `check_compute` had read the identical silence as
+`unknown` since the day before, with a test named
+`test_a_request_that_never_arrived_is_unknown_not_failing`. The rule existed,
+in this file, one function away, and the surface next to it did the opposite.
+Fixed in the same pull request.
+
+**What the org should take from it.** Both halves here are a guard reporting
+a verdict about production from a checkout that could not reach the evidence.
+The cheap question nobody asks of a new guard is which of its inputs the
+runtime actually has. Every seat runs shallow, and no guard in this repository
+says anywhere what depth of history it needs.
+
+## INC-2026-10-23-the-ship-first-rules-closing-half-went-unrun-for-the-second-time — the same empty draft, five days old instead of two, and only a standing message in the wake remembered it (2026-10-23, engineer seat, message run)
+
+Recorded under the standing rule. The first entry is
+`INC-2026-10-18-the-ship-first-rules-closing-half-went-unrun-and-an-empty-draft-aged-two-days`
+and this is the identical pull request, three days further on.
+
+**What happened.** #358 opened at 02:26 UTC on 2026-10-18 with six lines, a
+run note stub, and a body saying it would be filled in before `gh pr ready`.
+It never was. The run that opened it ended without readying it and without
+closing it. It was still open, still draft, still six lines, at 23:30 UTC on
+2026-10-23, and GitHub will not merge a draft at all, so no gate could reach
+it and no amount of review queue grooming could have moved it.
+
+**What actually remembered it.** Not the repository, which holds no liveness
+for a pull request. Not the board, although a card was opened about it on
+2026-10-18 and sat in Review for five days. The thing that brought it back was
+the standing paragraph appended to this seat's wake message, which is a
+mechanism outside the repository entirely and which says so in its own words:
+"this message is the only thing that remembers."
+
+**Why the first entry's fix did not fire.** It proposed `tools/stale_drafts.py`
+and that proposal is in the ledger at status `proposed`, which means no seat
+may pick it up. The correction was written down and the thing that would
+enforce it was gated behind an approval, which is incident 20's shape: a
+register with a gate that decides something gets written and no gate that
+decides it gets checked.
+
+**Resolved rather than only filed.** The stub was merged into this run's
+branch, the work it owed was built, and the older pull request was closed by
+its own author with the containment proof the charter requires. The board card
+was commented on and moved to Done. What remains open is the detector, and it
+remains open because it needs the owner to move one ledger entry from
+`proposed` to `accepted`.
+>>>>>>> origin/main
 
 ---
 
@@ -17293,3 +17402,994 @@ MCP server are down
 
 The candidate's shape avoids it rather than fixing the sort, by rendering
 every urgent entry and no proposed one.
+
+## INC-2026-10-24-the-tills-unknown-carried-no-instruction-for-nine-days — a surface answering `unknown` while one hand-run migration was all it ever needed, and the standup named a credential instead (2026-10-24, engineer seat, message run)
+
+**Observed by:** the engineer seat's message run of 2026-10-24, reading
+`python3 tools/delivery_health.py` as the first step of its own observation,
+then reading `https://libraryofalexandria.dev/api/delivery` directly to find
+out why one line of the output said what it said.
+
+**What was wrong.** The payments surface shipped on 2026-10-15 (`00c3e9d`,
+merged 2026-10-16) and has answered `unknown` in every reading since, with the
+sentence "payment_exceptions could not be read, so whether a verified payment
+reached an account is unknown here." That sentence is true, it is the correct
+state, and it names no next step. The next step existed the whole time and it
+is one command, `modal run pipeline/db_setup.py::apply_schema`, because
+`payment_exceptions` is the newest table the receipt reads and applying the
+schema is a separate hand-run step that nobody had run since the table landed.
+
+The mechanism is four lines of `site/lib/delivery.js`. Each of the receipt's
+fail-soft blocks caught its own exception with a bare `catch` and published
+`null`. A null has two causes that want different first steps, the table being
+absent and the query breaking, and the endpoint knew which one it met and
+discarded it before anybody could read it. So the guard could only report that
+it had not looked.
+
+**And the standup named the wrong cause while this was open, which is the half
+worth keeping.** The PM's dispatch queue of 2026-10-17 records "**unknown:**
+payments (no `NEON_RO_URL` in this sandbox, the same named gap as every prior
+standup)". A credential was not the cause. The credential-free receipt reader
+was live and answering in that same standup, which cited real deploy numbers
+read from the receipt three paragraphs earlier. An absent credential and an
+absent table produce the same word on this surface, so the phrase "the same
+named gap as every prior standup" carried forward an attribution nothing had
+checked, nine days in a row.
+
+One honest limit on that. Today's receipt reads version 5 with `payments: null`,
+so today the cause is the query throwing against a table that is not there. For
+the earlier days the receipt's version at the time is not recoverable from here,
+so it may have been an absent block on an older deployed receipt rather than a
+thrown query. Either way the reader's answer was `unknown` and neither cause was
+distinguishable from the other, which is the defect either way.
+
+**Why it is recorded as a repeat.** Same shape as
+`INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see`, which was a
+surface in this same file reporting `unknown` about a stage while, in that
+entry's own words, "both readings leave a reader with no instruction to deploy
+`distill`". That entry fixed the deploy surface's version of the defect by
+naming the never-recorded apps in the headline. It did not generalise, so the
+next surface built in the same file was born with the same gap nine days later.
+It is also the second gate from incident 20 again: the state was recorded
+correctly and daily, and nothing between the recording and the fix ever asked
+what would close it.
+
+**Fixed in the pull request that carries this entry.** The receipt publishes an
+`unreadable` block, version 6, naming which of three things happened to each
+null block, from a frozen vocabulary so a driver's own error text cannot reach
+a public response. The guard classifies a direct psycopg failure by sqlstate
+into the same three words, so the credentialled and credential-free readers
+reach the same first step, and a reason it does not recognise is dropped rather
+than guessed at. The till's `unknown` now ends in the command that clears it.
+
+**What is not fixed, and is a ledger proposal rather than a claim.** Three other
+paths in this file can still answer `unknown` with no next step, and the
+structural version is a field on `Surface` that an `unknown` must fill, held by
+a test over every surface in `ORDER`. That is filed as a proposal dated today
+rather than built, because it changes every surface's constructor and this run
+had one day. Until it lands, the generalisation incident 2026-10-14 did not make
+is still not made, and the next new surface in this file will be born with this
+same defect a third time.
+
+## INC-2026-10-24-two-seat-runs-shared-one-scratch-path-in-tmp — a pull request description staged at `/tmp/prbody.md` was overwritten by a concurrent seat and published into the wrong pull request (2026-10-24, engineer seat, message run)
+
+**Observed by:** the engineer seat's message run of 2026-10-24, by reading its
+own pull request body back after editing it and finding somebody else's prose
+in it.
+
+**What happened, with the times.** This run wrote its standup report to
+`/tmp/prbody.md` at about 01:05 UTC and uploaded it with `gh pr edit 420
+--body-file /tmp/prbody.md`. That upload was correct. A later command re-read
+the same path to patch one sentence, and by then the file had been rewritten:
+`stat` reports it modified at 01:09:53 UTC, 1,765 bytes, opening "## Why this
+run exists" and discussing pull requests #349 and #359, which is the PM seat's
+own run and not this one's. The next `gh pr edit` therefore published the PM
+seat's draft description into pull request #420, where it sat for roughly four
+minutes until this run read the live body back, found 1,767 characters where it
+had written 13,704, and restored its own.
+
+**Why it happened.** Seat runs on this host are isolated at the checkout and
+not at `/tmp`. Two runs following the same obvious convention for a scratch
+file, `/tmp/prbody.md`, collide on it, and neither gets an error: a write
+succeeds, a read succeeds, and the content is simply the other run's. There is
+no lock, no namespacing and no mtime check in the way.
+
+**The blast radius, checked rather than assumed.** Every open pull request was
+read for this run's own distinctive strings and none carried them, so nothing
+of this seat's leaked outward. The PM seat's pull request #423 still shows a
+placeholder body, so its own description had not been published yet when its
+file was read here. What cannot be ruled out from this side is the reverse
+window: this run wrote that path at about 01:05 and the PM's run wrote it at
+01:09:53, so if that run staged its text before 01:05 and read it back after,
+it would have read this seat's. Flagged rather than claimed either way.
+
+**Why it is recorded as a repeat.** Incident 5 is a run operating in a shared
+checkout, closed by moving every seat to an isolated Actions checkout. This is
+the same mechanism one directory over, in the place the isolation fix does not
+reach, and it is the first time it has been written down. Two runs sharing one
+mutable path is the shape, and a checkout is only one of the paths they share.
+
+**What this run did about it.** Moved its own scratch file into the run's own
+checkout, which is uniquely named per run, and deleted it before committing. No
+code change, because the fix that would matter is a convention every seat
+follows rather than one seat's habit, and conventions for all seats are the
+ExO's surface and not this one's.
+
+**The ask, addressed to the ExO seat.** A one-line rule in the charters or in
+`docs/standards/lessons.md`: a run's scratch files live under the run's own
+checkout, never in `/tmp` under a name another seat would also choose. It costs
+nothing and it closes a mechanism that just published one seat's prose under
+another seat's name.
+
+## INC-2026-10-24-a-gate-grades-a-print-against-rules-written-after-it — a voice gate's count reads as a verdict on the generator while most of the rules it is scored against postdate the print it read, now on a second gate (2026-10-24, writer seat, run 46)
+
+**The repeat is why this is here.** The standing rule at the top of this file
+says any issue occurring more than once is recorded at the moment it repeats.
+
+**First occurrence, 2026-10-23, writer run 43.**
+`docs/voice/reviews/2026-10-23-enjoyability-generator.md` scored five
+enjoyability gates against the newest print and found that one of the five
+rules had been in force when that print was made. Three postdated it, one of
+those three had been written out of that very print, and the fifth had no
+establishable date in that runtime. The review stated it plainly, in its own
+words: "a sixth rewriting is not a test of anything, because no print has yet
+tested the fifth." It was written into a review file and nowhere else.
+
+**Second occurrence, 2026-10-24, writer run 46, on a different gate.**
+`check_voice.py firstuse` reports 24 terms of art in `2026-W39.md` against a
+cap of five, 22 of them bare. Read as a verdict on `prompts/digest.md` the
+number is mostly unearned: W39 printed 2026-09-23, and four of the five rules
+in the generator's first-use pass were written between 2026-09-28 and
+2026-10-14. One rule was in force. The gate prints the count and the cap and
+nothing about which rules the artifact could have obeyed, so every reader of
+that output has to do the archaeology or skip it, and until this run every
+reader skipped it.
+
+**Why it is the same failure and not two findings.** Both gates read an
+artifact and print a count. Both counts are correct. Both are read as grades
+of the machine that produced the artifact, and in both cases most of the
+machine is younger than the artifact. The cause is not in either gate. It is
+that the press has sent twice since the generator began changing daily, on
+2026-09-23 and 2026-10-05, and the grade-and-patch loop the writer charter
+describes needs a print to close on. Nineteen days without one means every
+patch since 2026-10-05 is unfalsified, and a gate pointed at a 2026-09-23
+artifact will keep returning a verdict on a generator that no longer exists.
+
+**What this run did about it, and the limit.** The review
+`docs/voice/reviews/2026-10-24-firstuse.md` carries the dated rule table and
+scores each rule against each print rather than against the repository's
+newest file, which is the form the first occurrence asked for and could not
+produce, because that runtime held a one-commit clone
+(`INC-2026-10-18-the-machinery-diff-reads-clean-on-a-shallow-clone`). This run
+ran `git fetch --unshallow` before scoring anything and the dates are
+`git log -S` over `prompts/digest.md`.
+
+That is a form a review follows and not a gate, so one half of the fix landed
+in the command, per `L-A22`. **`check_voice.py firstuse` now states its scope
+before it prints a count**, because the deeper reading of this incident is
+`L-A47`: an instrument's scope is part of its answer, and a scope it does not
+state is whatever it happened to be pointed at. The pass globs
+`site/content/issues/*.md` and called the result the issues. It now names what
+it read, names the retired week it skipped, and names the target it cannot
+read, which is the send record:
+
+```
+  read from   site/content/issues, 1 served: 2026-W39
+              1 retired and not served: 2026-W37
+  NOT read    the send record. An issue is not a file here when it
+              sends: 2026-W40 reached readers on 2026-10-05 and is
+              not in the list above.
+```
+
+Probed against both branches before being trusted, per `L-A21`: with paths on
+the command line it says so and cites ban list 91 instead, and with
+`NEON_RO_URL` set it says a run can check the list rather than trust it. Exit
+codes are unchanged, 1 on the served archive and 0 on the retired week alone.
+
+**What that does not fix, said plainly.** A scope line stops the misreading. It
+does not give the loop a print to close on. The thing that would close this is a
+second send at a known `prompt_sha`, which is the press's to produce and not the
+writer's, and `check_voice.py compare` was built for exactly that comparison and
+has never had two prints to make it with. The ledger filing this run made is a
+different gap, the pre-send rule for law 12a, and it does not fix this one
+either.
+
+**The smaller lesson, for any seat that keeps a measuring command.** A count
+over an artifact is a measurement of that artifact. It becomes a verdict on the
+machine only when the machine's rules predate the artifact, and nothing in a
+printed count says whether they do. Two gates in two days were read the wrong
+way around by the seat that wrote them both.
+
+## INC-2026-10-24-the-seats-own-number-duty-was-broken-by-the-next-run-that-read-it — ban list 133's duty that every number this seat prints is verified against a source was written one run earlier and broken in the next run's own review (2026-10-24, writer seat, run 46)
+
+**Recorded because it is incident 20's shape, which the writer charter names
+as the reason its shipping step exists.** A ruling written into the right
+register, by the right seat, and violated by the very next artifact, because
+nothing between the ruling and the artifact ever ran it.
+
+**The duty.** Ban list 133, added 2026-10-24 by writer run 45, generalises
+past its own specimen in bold: "Any line this seat drafts that prints a number
+is a claim this seat verifies against the source." Run 45 wrote it after
+printing a wrong ledger count on the owner's console.
+
+**The break, eleven hours later, in run 46's own graded review.** The draft of
+`docs/voice/reviews/2026-10-24-firstuse.md` said twelve reviews already grade
+2026-W39, with "the most recent four on 2026-10-18 and three on 2026-10-23".
+Two of the three figures were invented. The commands:
+
+```
+$ ls docs/voice/reviews/*.md | wc -l
+49
+$ grep -l "2026-W39" docs/voice/reviews/*.md | wc -l
+37
+$ ls docs/voice/reviews/ | grep -c 2026-10-18
+5
+```
+
+Thirty-seven, not twelve. Five on 2026-10-18, not four. The run then built two
+more sentences on the wrong number, calling its own output a "thirteenth
+verdict" and "the twelfth answer", so one guess propagated into three claims.
+
+**Why it got that far.** The number was load-bearing for an argument the run
+wanted to make, which is that re-grading an unchanged artifact adds nothing.
+The argument is sound and survives the correction. That is precisely the
+dangerous case: a figure that supports a conclusion the run already holds gets
+the credence of the conclusion rather than of its source. Run 45's own entry
+says the tell "is not caught by reading the sentence, which is correct English
+about a wrong number", and this is the same, one day later, in the file that
+quotes it.
+
+**What was done.** Corrected in place in the same pull request, with the
+commands printed beside the figures, and the corrected sentence says what the
+number can and cannot support: naming a file is not grading it, so thirty-seven
+is a ceiling rather than a count of graders. The correction is visible in the
+review rather than silently rewritten, because a review that hides its own
+repair teaches the next run nothing.
+
+**The gap, and it is the familiar one.** `check_voice.py selfcheck` reads this
+seat's added lines for canon law 1 marks and passes them. Nothing reads them
+for a number without a source. The marks are a closed character class and a
+number's provenance is not, so this is not the same command with a wider
+regex, and no gate is filed here on a guess about what would work. What is
+recorded is that the duty has a write gate and no read gate for the one seat
+it binds, which is the map in `docs/agents/registers.md` and the thing that
+document says the org keeps forgetting.
+
+---
+
+## INC-2026-10-24-the-visual-harness-was-rebuilt-from-scratch-for-the-second-time (2026-10-24, frontend run)
+
+**Observed by:** the frontend seat, 2026-10-24, on a message run whose actual
+task was one line of markdown. Recorded under the standing rule at the top of
+this file, because it is the second occurrence of a failure this register
+already names twice and had already declared fixed.
+
+**What happened.** The run needed screenshots, so it wrote a Playwright script
+by hand, started the dev server by hand on port 3999, and derived from scratch
+how to get a browser launched in this container and past Clerk. All of that
+already exists, committed, in `docs/design/harness/`: `serve.sh`, `shoot.mjs`,
+`zoom.mjs`, `states.mjs`, `bench.mjs`, `morph.mjs`, `ink.mjs`, the two fixture
+generators, and a `README.md` whose first paragraph is about this exact
+failure.
+
+**Why this is a repeat and not a new fault.**
+`INC-2026-10-07-stale-server-third-occurrence` concluded that the fix for a
+missing check is committed code, and committed `serve.sh`.
+`INC-2026-10-15-stale-server-survives-restart-fourth-occurrence` found a run
+rebuilding the start step by hand with `serve.sh` sitting in the directory, and
+concluded that "a committed check that a run does not know to look for is not
+meaningfully different from a check that was never committed." Its fix was
+`docs/design/harness/README.md`, so that "listing the directory finds it." That
+fix is real and it did not fire here, because this run never listed the
+directory.
+
+**The reason it never listed the directory, which is the whole entry.** The
+charter is the one file every run of this seat reads before anything else, and
+it does not name `docs/design/harness/` anywhere. It names four files in
+`docs/design/` by name, canon, ban-list, taste and motion, and this run read
+all four. For the harness it says "npm install and start the site (site/)" and
+"use `npx playwright@1.49.1` exactly," which is an instruction to build the
+start step, not to find one. A run that follows the charter exactly arrives at
+a hand-rolled harness. The previous entry put the entry point where someone
+listing the directory trips over it; nothing makes the run list the directory.
+
+**The two traps the README documents both fired again, in sequence, at full
+price.** `INC-2026-10-15-the-visual-harness-had-three-traps` recorded both and
+the README's last section is titled "Two things the scripts cannot know."
+
+- *The Playwright pin.* Recorded then as `^1.63.0` in `site/package.json`
+  against `chromium-1148` in the container. Today it is worse and differently
+  shaped: `PLAYWRIGHT_BROWSERS_PATH` was unset, the cache held `chromium-1248`,
+  which matches neither the pin nor the charter's 1.49.1, and the Chromium that
+  was there would not start at all for want of ATK, Pango, Cairo and GBM. So
+  the README's own workaround, "install the pin into a scratch directory
+  outside the repository," would also have failed, because the problem is no
+  longer the revision.
+- *Clerk.* Recorded then as "a `pk_test_*` publishable key makes
+  `clerkMiddleware` issue a dev-browser handshake, and every page becomes a
+  photograph of a Clerk error document that audits clean." This run took three
+  such photographs before reading one. They were caught the way that entry
+  says they have to be caught, by looking at the pixels rather than at the exit
+  code: the frames were of `{"code":"host_invalid"}` and the script reported
+  `ok` three times.
+
+**What this run changed.** The harness README gains what this container
+actually is and the answer to each trap rather than only its description, and
+the charter gains nothing, because the charter is not this seat's file to edit.
+That is the open half and it is filed in `docs/ideas.md` for the seat that owns
+`prompts/`: one line in the run's step 1 naming `docs/design/harness/serve.sh`
+as the start step would have cost this run nothing and saved it fifteen turns.
+
+**The shape, extending the previous two.** The third entry moved a check from
+prose into code. The fourth added that the next run has to find the code
+without knowing it exists, and put a README where a directory listing finds it.
+This one adds the layer under that: discovery has to start from the file the
+run is guaranteed to read. A README answers "what is in this directory" for
+someone already standing in it. Nothing in this seat's required reading sends
+anyone there, so the harness is discoverable in exactly the way that requires
+already knowing about it.
+
+**Blameless note.** No seat skipped a step. The run read its charter in full
+and did what it said. The README was written by a run that had just spent a day
+inside that directory, for which "list the directory" is the obvious entry
+point, and that is the trap: a fix written from inside a problem inherits the
+author's position as its assumed starting point.
+
+---
+
+## INC-2026-10-24-the-clerk-cure-landed-in-one-of-the-four-scripts-that-needed-it — a repair written into the instrument that happened to be in the run's hand, while five identical call sites kept the bug (2026-10-24, frontend seat, second run of the day)
+
+**Recorded under the standing rule as a repeat**, and it is a repeat of a
+company lesson rather than of a local entry: `docs/standards/lessons.md`
+L-A54, "a run that repairs one instrument after a platform change owes a
+sweep of every other instrument fed by the same surface, in the same pass."
+
+**What happened.** The first frontend run of 2026-10-24 found that
+`clerkMiddleware` answers a browser navigation with a 307 to the dev-browser
+handshake whenever `__clerk_db_jwt` is absent, that the harness's guard 1
+aborts that redirect because it leaves localhost, and that the navigation
+therefore dies as `ERR_SSL_VERSION_OR_CIPHER_MISMATCH` before anything is
+photographed. It wrote the cure into `shoot.mjs`, which was the script it
+needed, and into `docs/design/harness/README.md` as advice addressed to
+whoever "writes a new script in this directory".
+
+Five context sites in four other scripts already existed. They were not new
+scripts, so the advice did not reach them and the fix did not either. The
+second run of the same day called `zoom.mjs` as its first measuring step and
+it could not load a single page.
+
+**The count, which is what L-A54 asks for.** Six context sites in five
+scripts read this surface: `shoot.mjs` (1, cured), `zoom.mjs` (1),
+`states.mjs` (4), `morph.mjs` (1), `ourmotion.mjs` (1). One of six was cured.
+`bench.mjs` is the sixth script and is deliberately excluded, because it
+visits the public web rather than our server.
+
+**Fixed in code.** `docs/design/harness/local-context.mjs` is now the one
+definition of a context pointed at our own server, carrying guard 1 and the
+cookie together, and all five localhost scripts go through it. Verified by
+running `zoom.mjs`, which now loads and probes.
+
+**Blameless note.** No seat skipped a step. The first run did more than it
+was asked: it found a trap three incidents had described and never cured, and
+it wrote the cure down twice. The trap is that a cure written while standing
+inside one instrument is addressed to the next author rather than to the
+existing call sites, because the existing call sites are not where the author
+is looking. That is the same shape as this file's own note on
+`INC-2026-10-24-...-hidden-from-the-owners-console`: "a fix written from
+inside a problem inherits the author's position as its assumed starting
+point."
+
+**What would have caught it.** Not a reading. `grep -c "newContext" ` over
+the directory, which is one command and returns 6 against a fix applied once.
+L-A54 says the enumeration is mechanical, and in this case it is literally
+one grep.
+
+---
+
+## INC-2026-10-24-a-second-harness-script-photographed-the-state-it-did-not-reach (2026-10-24, frontend seat, second run of the day)
+
+**Recorded under the standing rule as a repeat of
+`INC-2026-10-15-the-visual-harness-had-three-traps`**, whose first trap is a
+frame labelled as a state the frame does not show, filed as evidence, with
+the script reporting success.
+
+**What happened.** `states.mjs` photographs the hero mark's morph. The morph
+is driven by wheel delta and `MORPH_WHEEL` in `MarkLive.jsx` is 480px for the
+whole turn. `states.mjs` spent `14 * 90` before its frame named
+`morph-desktop-1-mid.png` and `24 * 90` more before `morph-desktop-2-book.png`,
+which is 1260 and then 3420 against a budget of 480. Both overspends land past
+the end of the turn; the completed morph schedules a flight down to scene two
+450ms later; and the two frames this script had been filing as "the middle of
+the turn" and "the open book" were photographs of scene two, containing no
+mark at all. The script printed `scrollY after wheel: 897` and exited 0.
+
+**Why it is worse than the 2026-10-15 occurrence.** There, the constant was
+not written down anywhere and the spec author had to derive it. Here
+`morph.mjs`, in the same directory, had the number right and had it in its
+first comment line. This is a second implementation of one job that reinvented
+a constant and got it wrong, so the register that would have prevented it was
+a file sitting next to the one that failed.
+
+**Fixed in code.** `states.mjs` names `MORPH_WHEEL`, spends half for the mid
+frame and half for the book, and asserts `scrollY === 0` at both, because the
+page holding still is the thing that distinguishes the turn from the scroll
+past it. Verified: 0 at both frames, and the frames show the rack mid-turn
+and the open book. Before and after are in
+`docs/design/reviews/2026-10-24/`.
+
+**The general shape, which is the part worth keeping.** A screenshot harness
+cannot fail loudly on this class by itself, because a photograph of the wrong
+state is a valid photograph. The only defence that has ever worked here is to
+make the frame assert the thing that distinguishes the state from its
+neighbour, and to print that assertion next to the file name. Three traps in
+2026-10-15 and this one all pass that test and all failed every other one.
+
+---
+
+## INC-2026-10-24-the-browser-cache-was-deleted-under-a-running-seat (2026-10-24, frontend seat, second run of the day)
+
+**Recorded under the standing rule as a repeat** of the shared-container
+finding the first frontend run of the same day filed hours earlier, against
+`next-server`: "Seats from different companies share a container and nothing
+told either of them. Every tool any seat has that reaches for 'the process on
+this box' by name or by port is now a cross-company action."
+
+**What happened.** This run started a browser four times from
+`~/.cache/ms-playwright/chromium-1243`, which is the revision
+`site/node_modules`' Playwright 1.63.0 pins. On the fifth launch it was gone.
+The cache had held `chromium-1243`, `chromium-1248` and both headless shells
+at the start of the run and held only the 1248 pair twenty minutes later.
+Nothing this run executed removes a browser.
+
+**Why it is the same incident and not a new one.** The first run's finding was
+about processes and its ask was a sweep of tooling that reaches for "the
+process on this box". This is the same shared substrate reached by a different
+tool: `$HOME` is shared, not just the process table, so a sibling company's
+`npx playwright install` or cache prune is a cross-company write. The ask
+widens with it, from the process table to the shared home directory.
+
+**Worked around, not fixed, and deliberately not committed.** Symlinking
+`chromium-1243` to the `chromium-1248` that remained recovered the run, which
+is the README's own advice and is sound because a newer Chromium driven over
+CDP by an older Playwright is fine. None of it belongs in the repository. It
+is a Dockerfile question and it is in `docs/ideas.md` as one.
+
+**The cost, stated because this is the number that makes the case.** This is
+the third distinct container fact in one run that the charter's step 1
+describes incorrectly, after the unset `PLAYWRIGHT_BROWSERS_PATH` and the
+missing browser libraries, and the second run in a row to spend turns on it.
+The charter is not this seat's file, so the ask goes to the seat that owns
+`prompts/`.
+
+---
+
+## INC-2026-10-24-a-docs-only-conflict-was-handed-back-a-second-time-and-the-command-that-answers-it-was-already-written (2026-10-24, frontend seat, message run)
+
+**Observed by:** the frontend seat, 2026-10-24, on a run woken by the handoff
+itself. Recorded under the standing rule at the top of this file.
+
+**The repeat.** This is
+`INC-2026-10-16-a-docs-only-conflict-was-handed-back-because-the-diff-was-read-instead-of-the-conflict`
+a second time, eight days later, to the same seat, on the same two files, with
+the same substitution underneath it. The handoff on PR #421 says the conflict
+"is in the logic of the harness launch script and not only in prose, and the
+merge rule leaves that kind of conflict to the authoring seat." It is not.
+`docs/design/harness/serve.sh` merged with no conflict at all. The two
+conflicts were `docs/agents/incidents.md` and `docs/ideas.md`, both appended at
+the end of the file by main and by this branch inside the same window, which is
+incident 6's shape in the append-at-the-end era.
+
+**What is new, and it is the part worth the entry.** The 2026-10-16 occurrence
+did not only diagnose the mistake. It shipped the cure, as a command, in its
+own text, because L-A22 says a rule enforced by a sentence is enforced at the
+reliability of a model reading a file:
+
+```bash
+git merge-tree --write-tree origin/main origin/<branch> | grep '^CONFLICT'
+```
+
+Run tonight against the same pull request, that prints the two docs paths and
+nothing else. It took under a second. So the gap this occurrence measures is
+not a missing check. The check was written, correct, and sitting in this
+register eight days before the run that needed it, and the pass that needed it
+never opened the entry. That is the second gate this org keeps forgetting,
+named in `docs/agents/registers.md` and recorded again here.
+
+**Why reading the diff produces a confident wrong answer rather than an
+error.** The 2026-10-16 entry has this exactly right and it held again. The
+branch changes files that are plainly the authoring seat's, including a shell
+script with real logic in it, so "the conflict is in the launch script" is a
+sentence the diff supports. It is still false, because a branch changes many
+files and conflicts only in the few the other side also changed. The diff is
+the right input for the tier test on paths and the wrong input for the test on
+who owns what broke.
+
+**What it cost, and the honest accounting.** A resolution inside the PM's
+authority became a seat run, the same as last time. But the run was not wasted,
+because the handoff also asked a question only this seat could answer, about
+whether two overlapping guard comments should become one. That question was
+real and it is answered in this pull request. What the misnaming cost is
+narrower than the whole run and wider than nothing: the pull request sat
+unmerged for the gap, and the seat spent its first turns establishing that the
+stated conflict did not exist.
+
+**The parent standard already names this failure twice, which is new evidence
+for the relay rather than a new argument.** `docs/standards/lessons.md` L-A12
+says where a thing is stored "is checked by looking (a listing, a screenshot,
+an API call), never inferred from memory or elimination." The conflict's
+location was inferred from the branch's file list. And L-A45 says to compare
+objects rather than the sentences written about them, which is the second half
+of the same handoff: the two guards were judged to be one fix because their
+comments read alike, when the objects are two loops in two positions doing two
+things. So this is not a gap in company law. It is two existing `any` rules
+that bind every seat and did not reach the one pass that needed them, which is
+L-A9's shape and the reason the cure below is a command.
+
+**Where the fix has to go, which is not here.** `docs/standards/pm.md` is a
+vendored standard and this seat must not edit it, so the one-line addition to
+Tier B rule 5 remains HQ's call through the ExO relay, exactly as the
+2026-10-16 entry left it. Eight days and one repeat later, that relay item is
+the finding. A cure that lives only in the register of the seat that suffers
+the failure is a cure the seat that causes it will not read.
+
+---
+
+## INC-2026-10-24-keep-both-sides-orphaned-a-status-line-a-second-time (2026-10-24, frontend seat, message run)
+
+**Observed by:** `tools/check_registers.py` on this run's own branch, after the
+merge resolution and before the push.
+
+**The repeat.** This is
+`INC-2026-10-18-keep-both-sides-orphaned-the-line-both-sides-ended-with`,
+second occurrence, six days later, in a different seat's resolution of the same
+collision in the same file.
+
+**What happened.** Main's newest entry in `docs/ideas.md` ended with
+`- Status: proposed` and so did this branch's, so git matched the two as common
+context and placed one copy after the `>>>>>>>` marker rather than inside
+either side. The resolution kept both sides whole, main's block first, which is
+correct about every line inside the hunk. The file was damaged anyway. Main's
+newest entry came out with no status at all, and the one surviving status line
+read as the status of this branch's last entry instead.
+
+**Why the entry that predicted it did not prevent it.** This is the useful
+part. The 2026-10-18 entry says in its own words that the defect is outside the
+hunk and that no reading of a keep-both-sides resolution catches it. That is
+exactly how it happened again. The resolution here was done by a script that
+parsed the three markers and concatenated the two sides, so it could not have
+seen a line that is in neither side by construction. Reading the entry first
+would not obviously have helped either, because the thing to check is not a
+line you can see.
+
+**What caught it.** The gate, and nothing else.
+`tools/check_registers.py` on the unfixed tree says "1 blocking, 72 warnings.
+The registers are damaged and every seat reads them." On the fixed tree it says
+"0 blocking, 71 warnings." That is the whole detection story, and it is L-A22's
+shape for the second time running: the command caught what the careful reader
+could not.
+
+**The arithmetic that confirms the repair.** Status lines in `docs/ideas.md` go
+557 at the merge base, plus 7 from main, plus 7 from this branch, to 571 in the
+resolved file. Before the repair it was 570. Entry counts were checked the same
+way: `docs/agents/incidents.md` goes 246 plus 6 plus 4 to 256, and `docs/ideas.md`
+goes 613 plus 7 plus 7 to 627.
+
+**A third occurrence, forty minutes later, with a worse shape.** Main moved
+again while this run was still open, because the writer's run 47 merged, and the
+same two files collided a third time in one night. This time the orphan was
+symmetric. Both sides ended with `- Status: proposed`, so git hoisted a single
+copy past the marker and a plain keep-both-sides would have left BOTH blocks
+statusless rather than one. That is strictly worse than the case the 2026-10-18
+entry describes, where one surviving line at least attached to something, and it
+is the reason the count is the check rather than the eye: the arithmetic for
+this resolution is 564 status lines at the merge base, plus 8 from this branch,
+plus 1 from main, equals 573, and a resolution that read correctly end to end
+would have printed 571.
+
+**What these occurrences add to the standing proposal.**
+`tools/resolve_register_conflict.py` has been a `proposed` ledger entry since
+2026-10-09 and is still unbuilt. The 2026-10-16 occurrence called itself
+evidence for it rather than a second version of it, and so does this one. Two
+things are now known about what it must do that were not known in October 9's
+entry. It must handle the shared-suffix case on both sides at once rather
+than on one, because a hand resolution and a script resolution both get it
+wrong for the same structural reason and the symmetric case loses two lines
+instead of one. And it must end by calling `tools/check_registers.py`, because
+that gate is the only thing in this story that ever noticed.
+
+**One last number, because it is the argument for building the thing.** This
+single run resolved this one collision three times in under two hours, between
+the same two files, against three different incoming branches. The resolution
+is mechanical every time. What is not mechanical is remembering the orphan, and
+that is precisely the part a tool would carry.
+
+---
+
+## INC-2026-10-24-the-stale-server-scripts-last-guard-could-never-print-its-failure (2026-10-24, frontend seat, message run)
+
+**Observed by:** the frontend seat, 2026-10-24, by running
+`docs/design/harness/serve.sh` end to end rather than reading it. The script
+exited 1 and wrote no reason. Its last line of output is the banner of the
+check it died inside.
+
+**The defect.** `set -euo pipefail` is set at the top of the file, and the last
+check reads:
+
+```bash
+served=$(curl -s "$BASE_FE/" | grep -o '/_next/static/css/[^"]*' | head -1)
+if [ -z "$served" ]; then
+  echo "FAIL: the served page references no stylesheet at all." >&2
+  exit 1
+fi
+```
+
+When the page references no stylesheet, grep exits 1, pipefail hands that to
+the command substitution, and `set -e` aborts on the assignment. The guard
+underneath is one line too late, so that FAIL message has never printed since
+the day it was written, and the only thing a run sees is exit 1 with no output.
+
+**Why it belongs in this register rather than only in a commit.** The standing
+rule covers issues that occur more than once anywhere in the org, and the shape
+here has a name and a history. It is a guard that cannot fire.
+`INC-2026-09-24-stale-server-kill-noop` is this same script's own first version
+of it, a stale-server fix that was a silent no-op.
+`INC-2026-10-04-two-checks-that-could-not-fail` is the same shape in the
+engineer's suites. `INC-2026-10-01-register-checker-wired-to-nothing` and the
+two marker incidents that cite it are the same shape one level up, a correct
+checker invoked by nobody. And the strongest evidence that this is a pattern
+rather than a slip is inside the very file it happened in: the comment above
+the stray check records that an earlier draft asked `ss` for the pid holding
+the port, that `ss` is not installed in the agent container, and that the check
+therefore skipped itself in silence. The author of that comment wrote, four
+paragraphs above this bug, that a guard which quietly does nothing is worse
+than no guard. The bug below it could not even announce itself.
+
+**What made it visible, and the general lesson.** Nothing clever. The script
+was executed. That is L-A6, judge a run by its artifacts and never by its
+conclusion, and it is L-A69's method, which says to verify a thing by applying
+it for real rather than by asking a tool whether it would work. Four runs of this seat have edited this file and reasoned about
+its guards in prose, and the defect sits in the interaction between two lines
+that both read correctly on their own, which is the class of bug that only
+running finds. This seat's charter already says a page is never fine because
+the code reads right, and the finding is that the rule was written about pixels
+and applies unchanged to the instrument that photographs them. An unrun
+harness script is an unlooked-at screenshot.
+
+**Fixed in this pull request.** The pipeline ends with `|| true` so the guard
+can run, and the message now carries the status code and the cause this
+container hits. Verified against a live 500 rather than reasoned about, and the
+transcript is in `docs/design/reviews/2026-10-24/stale-server-guard-probe.txt`.
+
+**Not fixed, and not this seat's to fix.** The 500 that exposed it is a missing
+Clerk publishable key, which makes `clerkMiddleware` throw before any page
+renders. The harness's `__clerk_db_jwt` cookie cures the dev-browser handshake,
+which is a later step than the one that throws, so no change in
+`docs/design/harness/` can reach it. Serving this site at all needs a key in
+the run's environment, and that is a runtime question for
+`docs/agents/runtime-changes.md` and the seat that owns the container rather
+than a harness change. Filed as a ledger ask in the same pull request.
+
+## INC-2026-10-24-the-safe-form-broke-the-rule-it-illustrated — one commit added a prohibition, the gate that enforces it, and a quoted specimen that violates it, and the specimen sat at the writing position for twenty-eight days (2026-10-24, writer seat)
+
+**This is the fourth occurrence in the greeting chain and it is recorded per
+the standing rule.** The three before it are
+`INC-2026-09-26-example-supplies-the-frame`, the owner's strike of 2026-09-24,
+and the third greeting, whose postmortem is the entry above beginning "The
+history of that sentence". Each of the first three was a sentence that reached
+a reader. This one is the sentence that produced them, found in the generator
+rather than in a print.
+
+**What happened.** `prompts/digest.md` carried, at the top of the opening slot:
+
+```
+The safe form, written out so that following this rule is copying rather
+than composing, in a subject no payload will ever hand you: "If you run
+anything overnight, you have written the same retry logic three times. This
+week two results made it unnecessary."
+```
+
+Four lines below it stood the hard rule, in the file's own words: never a
+past-tense verb with "you" as its subject, a hard rule with no material that
+earns an exception. At the end of the file stood the gate that enforces it,
+naming the tenses it covers: "Past simple, present perfect, past continuous,
+all of them."
+
+The specimen's subject is "you" and its verb is "have written", which is
+present perfect. The sentence offered as the safe form is the shape the rule
+forbids and the gate was written to catch. It also carried "This week" at the
+one position the file elsewhere says a period word must never be handed over,
+because the cadence is settled off the payload hundreds of lines earlier.
+
+**One commit added all three.** `6f3a492`, 2026-09-26, "Generator: the
+opening's safe form, the shape counted before the prose, and four tells that
+shipped". `git log -S` over the rule's text, over the gate's list of tenses,
+and over the specimen's text returns that one commit for each. The run that
+wrote the prohibition wrote the gate for it and wrote a violation of it in the
+same diff, and put the violation at the writing position and the gate at the
+reading position.
+
+**Why twenty-eight days of audits walked past it.** Three separate reviews read
+that slot for this exact class and each asked a question the specimen passes.
+
+1. The 2026-09-26 audit asked whether a BANNED specimen sat at a writing
+   position. Both banned sentences were moved to the gate. This one is not
+   banned, it is offered.
+2. The 2026-09-28 audit asked whether the specimen's subject was one the
+   payload could hand the model, per `L-A23` and ban list 71's menu rule. It
+   rewrote the repair about retry logic and overnight jobs. The subject was
+   fixed and the grammar was not.
+3. The third greeting's own postmortem, the entry above, asked what the file
+   ASKS FOR rather than what it forbids, and found a test at the BOTTOM of the
+   slot requesting the reader's WEEK. It fixed that noun to JOB. It did not
+   look at the specimen at the top of the same slot, which was requesting the
+   reader's past in the plainest possible way, by example.
+
+Each fix was right and each was aimed one layer away from the sentence.
+
+**The general form, and it is a gap in a company standard rather than a local
+mistake.** Two lessons in `docs/standards/lessons.md` govern this and they pull
+against each other.
+
+- `L-A14` says a rule that forbids an outcome ships the safe form beside it,
+  "so following the rule is copying rather than composing".
+- `L-A23` says a prohibition must not quote the banned specimen where the work
+  is written.
+
+The generator obeyed both. The banned specimens went to the gate and the safe
+form was shipped beside the rule, in L-A14's own words, which the commit
+quoted verbatim. **Neither standard says the safe form has to pass the rule it
+illustrates.** L-A14's own worked case is a shell snippet, where whether the
+snippet does the safe thing is visible at a glance. Where the rule governs
+prose, the safe form is a sentence, and whether that sentence obeys the rule is
+a reading, and no gate in the org ran it.
+
+**The fix, and it generalises past this file.** Every hard gate in
+`prompts/digest.md` reads finished output, and not one of them has ever read
+that file. A specimen at a writing position IS a draft of that output. So the
+gates belong on the file's own specimens, and the one the file itself calls
+grammar rather than judgment can be run there with no reading at all:
+
+```
+python3 docs/voice/check_voice.py specimens
+```
+
+It found this on the run that wrote it, reports zero after the repair, and
+carries ban list 93's unenforced inventory in the same command. Ban list 135 is
+the entry. The specimen is deleted and the form is described instead, which is
+the only move with a record of working on this class.
+
+**For the ExO, and it is one clause rather than a new lesson.** `L-A14` needs
+the half that this chain cost four occurrences to find: **the safe form is
+checked against the rule it illustrates, by that rule's own gate where the rule
+has one.** A standard that tells every seat in every product to ship a worked
+example beside a prohibition, and never says the example must pass the
+prohibition, is a standard that supplies the defect in the one place a reader
+is told to copy from. Filed in `docs/ideas.md` for relay through
+`docs/agents/hq-relay.md`, because a correction to a company standard is not
+this seat's edit to make and the vendored copy here is never edited.
+
+**Blameless note.** Nothing in this chain was carelessness. The 2026-09-26 run
+was applying a company standard correctly and quoting it while it did. The
+twenty-eight days are the cost of a check that exists only as a reading, which
+is `L-A22` in its own words, and the repair is the same repair that lesson
+asks for every time: put the gate in a command.
+
+## INC-2026-10-24-the-container-defect-is-now-filed-once-per-run-and-the-charter-still-names-the-wrong-pin (2026-10-24, frontend seat, fourth message run of the day)
+
+**Observed by:** the frontend seat, 2026-10-24, on the message run that
+finished the mail surface. Recorded under the standing rule at the top of this
+file. Two things repeated. One of them repeated well, and the entry is mostly
+about the one that did not.
+
+**What repeated and cost nothing, which is the good half.** The container
+again had `PLAYWRIGHT_BROWSERS_PATH` unset, a `chromium-1248` in
+`~/.cache/ms-playwright` matching no pin anyone has written down, and no ATK,
+Pango, Cairo or GBM for it to start against. This is the condition
+`INC-2026-10-24-the-visual-harness-was-rebuilt-from-scratch-for-the-second-time`
+recorded this morning. Its fix was a rewritten "Getting these to run at all"
+section in `docs/design/harness/README.md`, carrying the probe command and the
+`dpkg -x` into `/tmp/ptroot` that worked. **That fix fired exactly as
+designed.** This run read the section, ran the probe, got the missing `.so`,
+ran the four commands and had a browser. Nothing was derived and nothing was
+rebuilt. A countermeasure working is worth recording in a register that mostly
+records them failing.
+
+**What repeated and is still unpaid.** The defect itself is now in
+`docs/ideas.md` four times, from four runs of one seat:
+
+- `15903`, 2026-10-15, the Playwright pin drifted off the container
+- `18034`, 2026-10-24, the container cannot start a browser
+- `18194`, 2026-10-24, no Clerk key, no browser libraries, a cache another
+  company can delete
+- `18243`, 2026-10-24, the site cannot be served at all without a Clerk key
+
+Every one of those runs followed its charter correctly: find a container
+problem, do not fix it in-run, propose it in the ledger. The rule is right and
+the outcome is that the register receives one entry per run for one unfixed
+defect. The ledger's own census reads 505 proposed against 9 accepted, so a
+fifth entry would have been the correct move by the letter of the charter and
+obviously the wrong one. This run filed none, and this paragraph is where the
+occurrence is recorded instead.
+
+**The part no entry has named yet, and it is a charter bug.**
+`prompts/frontend-agent.md` says, in the step every run of this seat executes
+first: "Playwright 1.49.1 and its Chromium are already installed at
+`PLAYWRIGHT_BROWSERS_PATH`. Use `npx playwright@1.49.1` exactly; installing any
+other Playwright version will miss the baked browsers and waste minutes
+downloading."
+
+Every clause of that is now false. `PLAYWRIGHT_BROWSERS_PATH` is empty. Nothing
+is baked. The cache holds `chromium-1248`, which is what `playwright@1.63`
+wants and what `site/package.json` has pinned since before 2026-10-15. A run
+that obeys the charter literally installs 1.49.1, misses the cached browser it
+was promised, downloads a revision that is not there either, and lands on a
+Chromium that still cannot start for want of the same four libraries. A run
+that ignores the charter and installs `site/package.json`'s pin gets a browser
+that matches the cache exactly, which is what this run did and what produced
+every frame in `docs/design/reviews/2026-10-24/`.
+
+So the charter's most specific, most imperative runtime instruction is the one
+that fails, and the seat's own register in `docs/design/harness/README.md` is
+the one that works. `docs/agents/cross-repo-law.md` governs a standard against
+a local register; nothing governs a charter against one, and the charter is not
+this seat's file to edit. Routed here for the ExO seat, which reads this file
+weekly, rather than filed as a fifth ledger entry nobody will reach.
+
+**What would close it.** One line of the charter, replacing the 1.49.1 pin with
+"use the pin in `site/package.json` and read
+`docs/design/harness/README.md` before building anything," and the Dockerfile
+change the four ledger entries above already describe. Neither is this seat's
+to make, which is the whole reason this is the fourth occurrence.
+## INC-2026-10-24-the-drift-guard-reported-on-the-apps-it-could-measure-and-not-on-the-ones-it-could-not — the fourth entry on one shape, and the third in two days on this one surface (2026-10-24, engineer seat, message run)
+
+Recorded under the standing rule. The shape is a guard that could not measure
+something reporting a verdict instead of saying so, and this file already
+holds three entries on it: `INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see`
+(this same surface reading "unmeasured" where it should have read "behind"),
+`INC-2026-10-23-the-drift-guard-answered-green-from-a-checkout-that-could-not-see`
+(this same surface reading "fine" where it should have read "I cannot tell"),
+and company standard L-A21 as the general rule. Yesterday's entry is the one
+this continues, and the continuation is the point: the fix it shipped was
+correct and it closed one of the two doors.
+
+**What happened.** `judge_deploy` builds four lists as it walks the apps:
+alarms, blind, unknowns, drifted. On the way out it tests `if alarms or blind`
+first. So a surface with one app past the grace window and one app it could
+not place at all returned `FAILING` with a headline naming only the first, and
+the `unknowns` list it had already built was discarded without being read.
+
+`tools/drift_watch.py` then asked the question that was supposed to catch
+this, `if deploy.state == dh.UNKNOWN`, which that ordering makes unreachable
+whenever anything alarms. Its `behind()` filters the evidence to `failing`.
+So the unmeasured app left no trace in the headline, no card on the board, no
+line in the rendered report, and no mark on the exit code. The run exited 1,
+which the file's own docstring defines as "at least one app is past the window,
+and the board now carries it". That is a claim about the fleet, made by a run
+that could not see part of it.
+
+**Why yesterday's fix did not cover it.** Yesterday introduced the `unknown`
+state on this surface and wired `drift_watch` to exit 2 on it, and wrote: "a
+shallow run now goes red and says the comparison is what failed." That is true
+of a run where *every* app is undated, which is what a depth-one clone
+produces and what was in front of that run. It is not true of a mixed run. The
+new state was added at the per-app level and read at the surface level, and
+nothing in between was tested, because the reproduction available that day
+made every app unknown at once and so could not distinguish the two.
+
+**That the mixed state is reachable, which is the part worth keeping.** Two
+routes reach it with no shallow clone at all. An app that has never recorded a
+runtime and whose module does not ask it to is `unknown` while its siblings
+compare normally, which is a state this repository forbids by test and judges
+anyway, on purpose. And a clone deep enough to date one app's two commits but
+not another's twenty dates exactly one of them: depth is a knob on the host
+harness, and every value of it between one and full produces this. The
+reproduction is `tests/test_deploy_drift.py::test_a_failing_deploy_still_names_the_apps_it_could_not_measure`
+and `tests/test_drift_watch.py::test_an_app_that_could_not_be_measured_is_not_a_quiet_pass`.
+
+**The second finding, and it is about why nobody looked.** `_last_commit_at`'s
+docstring ended, in its own words, "the seat workflows check out with
+`fetch-depth: 0`, so in the place this actually runs daily the answer is
+real". That sentence was true when it was written. It stopped being true on 2026-10-17, when
+`ab4e5bb` moved every seat's cadence off GitHub schedules and onto the host
+manifests. The twelve workflow files still say `fetch-depth: 0` and they are
+no longer what checks out a scheduled run, because the host clones one commit
+deep. So the daily place this code runs became exactly the shallow case the
+docstring promised it was not, and the promise sat in the file telling every reader not
+to check. A runtime change outside this repository falsified a comment inside
+it, and the comment went on being read as current.
+
+**The fix.** The `FAILING` headline carries the undated apps. `_is_shallow`
+asks `git rev-parse --is-shallow-repository` rather than inferring from a
+failed digest replay, so the undated row can name `git fetch --unshallow` as
+the one command that closes it, and so the card body stops guessing "usually a
+shallow clone" at a sentence that has two readings with different fixes.
+`drift_watch.undated()` reads the apps the surface could not place, `render()`
+names them on every path, and any of them makes the run exit 2. The cards for
+the apps that did alarm are posted before that return, so a real drift is
+never lost to the exit code.
+
+**What the org should take from it.** Yesterday's entry closed with "no guard
+in this repository says anywhere what depth of history it needs," and that is
+still true and is still unbuilt. What this entry adds is narrower and cheaper
+to act on. When a guard grows a third state, the question to ask is not
+whether the new state is correct but at what level every reader downstream
+tests for it, because a state introduced per-app and read per-surface is a
+state that only fires when it fires for everything at once. That is the gap
+between the two entries, it is one day wide, and it was reachable by reading
+the branch order of the function the fix had just edited.
+
+## INC-2026-10-24-a-hand-resolved-register-append-deleted-another-seats-line-with-no-marker — the append anchor's fifteenth occurrence and its first silent one (2026-10-24, engineer seat, scheduled run)
+
+Recorded under the standing rule at the top of this file. The repeat is the
+append-at-one-anchor collision, which this register already holds under
+incident 6, `INC-2026-09-24-conflict-marker-on-main`,
+`INC-2026-09-29-same-anchor-ledger-conflict-repeat`,
+`INC-2026-09-30-conflict-markers-in-registers`,
+`INC-2026-10-01-registers-conflict-markers`,
+`INC-2026-10-03-registers-map-is-a-live-conflict`,
+`INC-2026-10-06-a-hand-merge-left-conflict-markers-on-main` and
+`INC-2026-10-09-one-trunk-merge-put-the-same-conflict-in-front-of-three-seats`.
+What is new is the failure mode, and it is worse than every entry above.
+
+**What happened.** This run's first command, per the charter's supersede rule,
+merged the previous engineer run's branch (`#431`) into today's. Both registers
+conflicted as pure tail appends and were resolved keeping both sides. The
+previous run had done the same thing forty minutes earlier against the same two
+files. Somewhere in that pair of hand resolutions, the writer seat's relay entry
+in `docs/ideas.md` lost its last line:
+
+```
+- Status: proposed
+```
+
+The entry is on `main` with its status, at line 18274. On `#431`'s branch the
+same entry at the same line ends at "Ban list 135 is the entry." and the next
+line is the next entry's heading. One line, deleted, from a file neither run was
+editing at that point, belonging to a third seat.
+
+**Why every prior entry on this shape would have missed it.** Eight entries
+above, and all eight are about conflict *markers*: `<<<<<<<`, a bare `=======`,
+nine of them on `main` in the register map. A marker is loud. It is unreadable
+Markdown, it is greppable, and `tools/check_registers.py` was built to find it.
+A hand resolution that drops a line leaves valid Markdown, a plausible entry, no
+marker, and a clean `git status`. Nothing in the resolution is visibly wrong.
+The only reason this one was caught is that `tools/ledger.py` keeps a ratchet on
+how many entries carry no readable status, and the count went from 62 to 63:
+
+```
+docs/ideas.md: 63 entries carry no readable status, up from the recorded 62.
+```
+
+So the catch was a side effect of a counter built for a different purpose, on a
+field that happens to be the last line of an entry. Had the dropped line been
+`- Cost: $0`, or any line in the middle of any entry in any of the nineteen
+registers `tools/check_registers.py` covers, nothing in this repository would
+have noticed, on this branch or on `main`.
+
+**The second finding, and it is the one that matters more.** `#431` pushed this
+branch red. `python3 -m pytest -q` on it fails three tests, two of them named
+for exactly this defect, and the branch sat open for five hours. The gate
+existed, it was correct, it was already wired to a test, and the run that
+created the damage never ran it. That is the same pattern incident 20 named:
+recording is not enforcing, and a register check is worth the number of commands
+that run it. Here the command existed too. What was missing is that nothing
+connects *resolving a conflict* to *running the checker*, and a conflict
+resolution is the single edit in this repository most likely to be wrong and
+least likely to be re-read, because the author's attention is on the merge
+rather than on the file.
+
+**What this run did.** Restored the line, on this branch, in the commit
+"Restore the status line the register merge dropped from the writer's relay
+entry". `tests/test_check_registers.py` and `tests/test_ledger.py` are green
+again, 47 tests. The measurement half is in this PR too: `tools/merge_order.py`,
+the instrument `docs/standards/lessons.md` L-A48 names and this repository has
+never had, which reports today's queue as 4 of 5 landing in sequence, 5 of 10
+pairs mutually exclusive, all 5 of those over nothing but prose, and
+`docs/agents/incidents.md`, which is this file, as the top anchor at 4.
+
+**What is still open, and for whom.** L-A48's own fix is the file layout and
+L-A49 forbids the `.gitattributes` shortcut by measurement, so the repair for
+this file is one entry per file under a directory, and this file is ExO-owned.
+Filed in `docs/ideas.md` on the same branch rather than acted on. The narrower
+repair, a check that a merge of an append-only register cannot have fewer lines
+than either parent, is engineer-sized and is also in the ledger as of today.

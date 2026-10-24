@@ -336,15 +336,68 @@ def test_and_a_real_deploy_clears_it():
 
 
 def test_a_drift_younger_than_a_day_is_a_pending_deploy_not_an_alarm():
-    """The org merges most days, and most mornings are not an incident."""
+    """The org merges most days, and most mornings are not an incident.
+
+    The row here holds the digest of the commit BEFORE the edit, which is what
+    a real deploy's row holds: the image was built from the trunk as it stood,
+    and then somebody merged. Until 2026-10-23 this fixture recorded a digest
+    matching no commit at all, which is the shape of a shallow clone rather
+    than of a recent merge. The two have to answer differently, because one is
+    a pending deploy and the other is a question the checkout cannot answer,
+    and `test_a_checkout_that_cannot_place_the_image_is_not_a_green_deploy` is
+    the other half of that pair.
+    """
     with tempfile.TemporaryDirectory() as tmp:
-        repo = fixture_repo(Path(tmp), days_ago=0.1)
-        conn = FakeConn([row_for(app, repo, sha="0ldc0dec0de") for app in rs.APPS])
+        repo = fixture_history(Path(tmp), [
+            ("pipeline/llm.py", "A change merged two hours ago"),
+        ], base_days_ago=1.1)
+        deployed = {app: dh._digest_at(repo, app, "HEAD~1", {}) for app in rs.APPS}
+        conn = FakeConn([row_for(app, repo, sha=deployed[app]) for app in rs.APPS])
         surface = dh.check_deploy(conn, repo, notify=False)
         check("a two-hour-old drift is not red",
               surface.state == dh.OK, f"{surface.state}: {surface.headline}")
         check("and the headline still names the pending deploy",
               "pending" in surface.headline, surface.headline)
+        check("and it was dated from the undeployed commit, not from the file",
+              surface.evidence["triage"]["drift_anchor"]
+              == "the oldest undeployed commit",
+              str(surface.evidence["triage"].get("drift_anchor")))
+
+
+def test_a_checkout_that_cannot_place_the_image_is_not_a_green_deploy():
+    """The shallow-clone hole, which was open to every seat for two weeks.
+
+    Every agent seat runs from `git clone --depth 1`. One commit of history
+    means the replay in `undeployed_commits` can never match the running
+    digest, so `drift_began` falls back to the newest commit to the app's
+    files, which in a shallow clone is that single commit and is hours old.
+    The surface then reported a pending deploy inside its grace window.
+
+    Measured on the live repository on 2026-10-23, same tree and same rows,
+    with the only difference being the clone: shallow read `ok, a deploy is
+    pending and still inside the 24h window: distill (0.1h), ingest (0.1h),
+    weekly (0.1h)`, and the same checkout after `git fetch --unshallow` read
+    three apps between 7.3 and 8.2 days behind. `weekly` is the press.
+
+    So an undated drift inside the window is `unknown`. The one outside it
+    still alarms, which is `test_an_undatable_drift_falls_back_to_the_old_anchor`
+    and is unchanged: under-reporting the number is the old and correct
+    behaviour, and reporting the state as green was never part of it.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_repo(Path(tmp), days_ago=0.1)
+        conn = FakeConn([row_for(app, repo, sha="0ldc0dec0de") for app in rs.APPS])
+        surface = dh.check_deploy(conn, repo, notify=False)
+        check("an image this checkout cannot place is not green",
+              surface.state == dh.UNKNOWN, f"{surface.state}: {surface.headline}")
+        check("and the headline says the comparison is what failed",
+              "cannot be compared" in surface.headline, surface.headline)
+        triage = surface.evidence["triage"]
+        check("and the evidence says why, in the app's own row",
+              "matches no commit this checkout can see" in triage.get("why", ""),
+              str(triage.get("why")))
+        check("while the number it could not trust is still on the page",
+              "drift_hours" in triage, str(sorted(triage)))
 
 
 def test_a_job_that_never_reported_is_treated_as_drift():
@@ -1199,6 +1252,115 @@ def test_an_undatable_drift_falls_back_to_the_old_anchor():
         check("and the drift is still reported rather than withheld",
               triage["drift_hours"] > dh.DEPLOY_GRACE_HOURS, str(triage["drift_hours"]))
 
+
+
+
+# ------------------------- what the verdict says about what it could not see
+
+def fixture_shallow(tmp: Path, days_ago: float = 0.1) -> Path:
+    """A genuinely shallow checkout, cloned one commit deep from a real repo.
+
+    Not simulated. `_is_shallow` shells out to `git rev-parse
+    --is-shallow-repository`, and the whole value of asking git rather than
+    inferring from a failed digest replay is that the answer comes from the
+    same place the broken reads came from. So the fixture is a two-commit
+    repository and a `git clone --depth 1` of it, which is what the host
+    harness hands every seat.
+    """
+    origin = fixture_repo(tmp / "origin", days_ago=30)
+    (origin / "NOTE.md").write_text("a change the shallow clone cannot see\n",
+                                    encoding="utf-8")
+    _commit(origin, "a second commit the shallow clone will not be able to see",
+            datetime.now(timezone.utc) - timedelta(days=days_ago))
+    repo = tmp / "shallow"
+    subprocess.run(["git", "clone", "-q", "--depth", "1",
+                    f"file://{origin}", str(repo)], check=True,
+                   capture_output=True)
+    return repo
+
+
+def test_an_undatable_drift_names_the_command_that_closes_it():
+    """`unknown` is honest. `unknown` with no next step is a dead end.
+
+    The deploy row read "the drift cannot be dated from this checkout" for
+    every agent seat and named nothing a reader could do about it, while the
+    one command that fixes it was `git fetch --unshallow` the whole time. The
+    payments row on this same surface took the same correction on 2026-10-24.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_shallow(Path(tmp))
+        check("the fixture is actually shallow", dh._is_shallow(repo))
+
+        rows = {app: {"runtime_sha": "0ldc0dec0de", "recorded_at": None,
+                      "first_seen_at": None, "notified_at": None}
+                for app in rs.APPS}
+        surface = dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+
+        check("an image it cannot place is not a verdict", surface.state == dh.UNKNOWN,
+              surface.headline)
+        check("the headline names the one command",
+              dh.UNSHALLOW in surface.headline, surface.headline)
+        check("the evidence says the checkout is shallow",
+              surface.evidence.get("shallow_checkout") is True)
+        for app in rs.APPS:
+            check(f"{app}'s own reason names it too",
+                  dh.UNSHALLOW in surface.evidence[app]["why"],
+                  surface.evidence[app]["why"])
+
+
+def test_a_full_clone_that_cannot_date_a_drift_does_not_blame_a_shallow_clone():
+    """The hint is a fact about the checkout, so it is only printed when true.
+
+    `drift_watch`'s card body used to guess, "which is usually a shallow clone
+    rather than an empty gap". A guess that is right most of the time is the
+    shape that sent four prior runs after the wrong cause.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_repo(Path(tmp), days_ago=0.1)
+        check("the fixture is not shallow", not dh._is_shallow(repo))
+
+        rows = {app: {"runtime_sha": "0ldc0dec0de", "recorded_at": None,
+                      "first_seen_at": None, "notified_at": None}
+                for app in rs.APPS}
+        surface = dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+
+        check("still an unknown", surface.state == dh.UNKNOWN, surface.headline)
+        check("and it does not claim a shallow clone",
+              dh.UNSHALLOW not in surface.headline, surface.headline)
+
+
+def test_a_failing_deploy_still_names_the_apps_it_could_not_measure():
+    """One app behind and one app unmeasurable is not a report about one app.
+
+    `judge_deploy` tests its alarm branch before its unknown branch, so this
+    surface reads `failing`, and until 2026-10-24 the `unknowns` list it had
+    already built was discarded on the way out. A reader was told that weekly
+    was eight days behind and was never told that distill could not be placed
+    at all. L-A21, and this surface's own
+    INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        # `distill`'s module does not ask for a row, so it has none and
+        # nothing dates it: unknown. `weekly` reports an image this checkout
+        # cannot place, and the one commit is nine days old: failing.
+        repo = fixture_never_records(Path(tmp), "distill", days_ago=9)
+        rows = {app: {"runtime_sha": rs.digest(rs.local_entries(app, repo)),
+                      "recorded_at": datetime.now(timezone.utc),
+                      "first_seen_at": datetime.now(timezone.utc),
+                      "notified_at": None}
+                for app in rs.APPS if app != "distill"}
+        rows["weekly"]["runtime_sha"] = "0ldc0dec0de"
+        surface = dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+
+        check("the app that is behind still alarms", surface.state == dh.FAILING,
+              surface.headline)
+        check("weekly is named", "weekly" in surface.headline, surface.headline)
+        check("and so is the app nothing could measure",
+              "distill" in surface.headline, surface.headline)
+        check("with the word that says it was not measured",
+              "cannot be compared" in surface.headline, surface.headline)
+        check("distill's own state is unknown",
+              surface.evidence["distill"]["state"] == dh.UNKNOWN)
 
 def main() -> int:
     for name, fn in sorted(globals().items()):

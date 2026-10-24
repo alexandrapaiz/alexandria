@@ -7,9 +7,31 @@ export const metadata = { title: "Pricing — library of alexandr.ia" };
 // hard-coded, so the owner can create the products in Polar and the page
 // becomes buyable without a deploy. Until a checkout link is set, each
 // paid plan shows what it costs and says the door is not open yet, which
-// is the truth and is better than a button that goes nowhere.
+// is the truth.
+//
+// It was a <span> until 2026-10-24, and that is the half of the sentence
+// above that was not true. The span carried `.pill`, so it took the house
+// pill's geometry, the featured card's inversion and `.pill:hover`, which
+// means the house spring scaled it to 1.06 under the cursor: measured, the
+// loudest control on the page played the feedback animation whose only job
+// (canon rule 1) is to answer "did that work" on the one control where
+// nothing worked. It was also unreachable, tabIndex -1, so the page offered
+// a keyboard visitor one of its three plans.
+//
+// The destination is the PM's decided call of 2026-10-18 (PR #355) and the
+// board's card e0a238b6: the waitlist anchor the free tier two columns over
+// already uses. The words are untouched on purpose. "Opens shortly" is a
+// status standing in an action slot and a line for it has never been drafted,
+// and this seat sets approved copy rather than writing it, so the wording is
+// a ledger note and not a sentence typed here.
 function Offer({ offer }) {
-  if (!offer.live) return <span className="pill ghost">Opens shortly</span>;
+  if (!offer.live) {
+    return (
+      <a className="pill ghost" href="#waitlist">
+        Opens shortly
+      </a>
+    );
+  }
   return (
     <a className="pill" href={offer.href}>
       {offer.label}

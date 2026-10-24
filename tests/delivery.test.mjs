@@ -367,3 +367,56 @@ test("a non-numeric file_count becomes null rather than a NaN that JSON cannot c
   assert.equal(r.deploy[0].file_count, null);
   assert.ok(JSON.stringify(r).includes('"file_count":null'));
 });
+
+// ------------------------------------------------- version 6: the reason why
+
+test("a receipt whose every query ran carries no unreadable block at all", () => {
+  const r = core.buildReceipt(FULL);
+  assert.equal("unreadable" in r, false);
+  // And the same for an explicit empty one, because the reader of this block
+  // is a guard that treats the field's presence as the finding.
+  assert.equal("unreadable" in core.buildReceipt({ ...FULL, unreadable: {} }), false);
+});
+
+test("a null block says which of the three things happened to it", () => {
+  const r = core.buildReceipt({
+    ...FULL,
+    payments: null,
+    deploy: null,
+    unreadable: { payments: "no such table", deploy: "query failed" },
+  });
+  assert.equal(r.payments, null);
+  assert.equal(r.deploy, null);
+  assert.deepEqual(r.unreadable, { payments: "no such table", deploy: "query failed" });
+});
+
+test("a reason outside the vocabulary cannot reach the response", () => {
+  // The one block on this receipt built from a value a caught exception
+  // produced, so this is the one place a driver's own text could escape. A
+  // Neon error names the host and the role it failed to authenticate.
+  const r = core.buildReceipt({
+    ...FULL,
+    payments: null,
+    unreadable: {
+      payments: 'password authentication failed for user "alexandria" at ep-xyz',
+    },
+  });
+  assert.deepEqual(r.unreadable, { payments: "query failed" });
+  for (const value of Object.values(r.unreadable)) {
+    assert.ok(core.UNREADABLE_REASONS.includes(value));
+  }
+});
+
+test("a key for a block this receipt does not publish is dropped", () => {
+  const r = core.buildReceipt({
+    ...FULL,
+    unreadable: { press: "no such table", pipeline: "query failed", "../etc": "x" },
+  });
+  assert.equal("unreadable" in r, false);
+});
+
+test("the vocabulary is frozen, so no caller can widen it at runtime", () => {
+  assert.ok(Object.isFrozen(core.UNREADABLE_REASONS));
+  assert.deepEqual([...core.UNREADABLE_REASONS].sort(),
+                   ["no such column", "no such table", "query failed"]);
+});
