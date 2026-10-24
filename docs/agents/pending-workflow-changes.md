@@ -73,7 +73,25 @@ a model, an event subscription or a credential. Those five now live in
 `alexandrapaiz/alexandra-systems:runtime/agents/alexandria/<seat>/agent.toml`,
 which this seat can read and cannot write, so they leave through
 `docs/agents/hq-relay.md` as the exact `[trigger]` or `[runtime]` line
-wanted. The test for which lane a change takes is one question: which
+wanted.
+
+**Corrected 2026-10-24: two of those five are readable from inside the
+sandbox, and the other three are not, so stop treating them as one group.**
+`model` and the cadence are in `/srv/asc/state/.epito/state.json` on this
+host, under `agents.alexandria-<seat>`, together with `repo` and a resolved
+`nextCron`. No credential and no other repository. The cap, the event
+subscriptions and the credentials are not in that file, and `max_turns` in
+particular is only in the parent's `agent.toml`.
+
+The distinction is worth the paragraph because it changes what an audit can
+assert. A reading of the model or the cron is now a measurement taken from
+the thing that decides, and `docs/agents/model-routing.md` and
+`docs/agents/unowned-duties.md` were both re-derived from it on 2026-10-24.
+A reading of a cap is still a quotation from another repository, which is why
+eight of twelve rows on `docs/agents/turn-caps.md` compare a measured peak
+against a cap nobody local can confirm. **Saying "readable but not writable"
+of all five let three audits report a measurement when they held a
+quotation.** The test for which lane a change takes is one question: which
 runtime does the thing you are changing belong to? See
 `prompts/exo-agent.md` §5.
 
