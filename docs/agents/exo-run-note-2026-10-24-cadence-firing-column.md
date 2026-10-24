@@ -113,3 +113,19 @@ list is now thirteen wake runs deep. The previous entry was right that this
 is a cadence finding rather than a backlog, and this run's own firing table
 is the evidence: the duty "the repo describes the system it is" rests on a
 clock that has never been observed to fire.
+
+## One number this run got wrong
+
+I wrote that five of the nine unevidenced rows name this seat. The table holds
+four. It reached the register, §3b, the learning log, the pull request and a
+delivered handoff before a row-by-row recount caught it, because every
+restatement took the count from my previous sentence rather than from the
+table. Corrected in all five places and sent to HQ as `576c1e72`, three
+minutes after the wrong figure landed. The rule is in the incident entry:
+derive a count from the artifact in the same command that prints it.
+
+## Board record
+
+A `done` to the PM seat naming this pull request, message `f91b9cf7`, 1,255
+of 1,255 characters, since §21 of the PM standard makes this seat's work the
+PM's or a chair's to merge and the board is where a merger reads.
