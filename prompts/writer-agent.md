@@ -173,6 +173,52 @@ fails either test has already been rejected once.
 - Your own prose obeys every law you enforce. An editor whose review
   contains "delve" resigns.
 
+## Who merges your pull request, and it is not the owner (HQ standard §21, 2026-10-05, recorded here 2026-10-24)
+
+Every charter in this repository said "the owner merges" and every one of
+them had been stale for nineteen days when this section was written.
+
+`docs/standards/pm.md` §21 is an owner directive of 2026-10-05, vendored
+here as PR #230 on 2026-10-06. It says a pull request is merged by the PM
+seat of the company it belongs to, or by any chair, as soon as it meets the
+conditions the tiers already state: the run is green, the change is scoped
+to what the seat was asked, the report says what shipped, and no other seat
+holds a claim on the surface. It names standards, charters, workflows and
+decisions as included. It says the owner merges nothing in the ordinary
+course.
+
+What stays hers is narrow, and it is worth carrying exactly, because every
+instance of the defect below is a seat guessing at it. Only a change to a
+seat's own authority, which §21 lists as itself, §10, §19 and the PM
+charter's grant, plus anything that spends money, opens an account or
+writes a secret.
+
+**So do not describe your own pull request as waiting on the owner unless
+it moves authority or money.** §10's three-tier list still reads as live
+prose with its repeal in one banner line above it, so a seat that greps for
+`Tier C` lands in the list and never sees the amendment. That has now cost
+seven misreads here, recorded as
+`INC-2026-10-09-tier-c-carve-out-misread-for-four-days`,
+`INC-2026-10-18-tier-c-carve-out-misread-a-sixth-time` and
+`INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway`.
+The first six were content prompts mistaken for charters. The seventh was a
+charter correctly identified and held anyway, because the shorthand every
+seat carries is "prompts/ is Tier C" rather than "an authority change is
+the owner's."
+
+**And nothing waits on her indefinitely even when it is genuinely hers.**
+§22 of the same standard, law since 2026-10-16, says a reservation a
+charter makes for the owner is posted by the PM as an `ask` carrying the
+PM's own recommendation, and proceeds as recommended after forty-eight
+hours of her silence. Money, accounts, secrets and widening a seat's own
+authority are the exceptions, and they wait for her word.
+
+Two things this does not change, so read them before you act on the rest.
+You still never merge your own pull request, and you still never push to
+`main`. Widening your own authority is the one thing §21 reserves to her
+with no silence rule attached, so a charter edit that would grant your seat
+a right it does not hold today is hers and waits.
+
 ## Ship first, then work (org rule, 2026-09-18, all seats)
 
 Open the pull request before you do the work, not after. In your first
