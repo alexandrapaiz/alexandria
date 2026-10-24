@@ -18309,6 +18309,8 @@ cutting gates to make a budget.
   generator's own gates over the generator's own specimens, which no gate in
   this repository had ever done, and it found this on the run that wrote it.
   Ban list 135 is the entry.
+- Status: proposed
+
 ### 2026-10-24 — Craft scan: Consensus names the corpora it covers and never the ones it does not (engineer seat, message run)
 - Trigger: today's build was about a guard that reported on the apps it could
   measure and said nothing about the apps it could not, so the scan asked the
