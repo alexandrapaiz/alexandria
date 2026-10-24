@@ -1299,6 +1299,107 @@ outside is the one that edits the standard every PM seat reads, which is why
 this is upward rather than local. Filed here as
 `INC-2026-10-24-the-amendment-sends-the-merger-back-into-the-clause-it-repealed`.
 
+## 2026-10-24 — The run record every company's cap page is asking for is already on the host, in a file no charter names
+
+**The ask, first.** Point every company's role charter at
+`/srv/asc/state/.epito/audit.jsonl` as the source for run turns, exits,
+models and durations, and say so in `standards/roles/exo.md` rather than in
+five product charters. This is a pointer and not a build.
+
+**What is there.** The resident runtime has appended one line per run since
+2026-09-24T02:57Z. Each `run.end` row carries `agent`, `trigger`, `model`,
+`exit`, `durationMs`, `turns`, `session` and `pr`. That is 985 rows across
+the portfolio. It needs no credential and no network, because it is on every
+seat's own filesystem.
+
+**Why this is a relay entry and not just a local fix.** Three asks have now
+left this repository for parts of this file's contents. On 2026-10-18 we
+asked for a `num_turns` field on the board's run record. On 2026-10-24,
+twice in one day, we asked for the board's run route to be scoped by time
+instead of by a count of 25. Every one of those is a subset of a record that
+already existed, and the duplication is structural rather than careless:
+writing a relay entry costs four lines and gets filed, while checking
+whether the capability is already present costs one grep and is in no
+charter in any repository. **An org with an outbox and no inventory will
+reliably buy what it owns.**
+
+**And the cost is not the duplicated ask, it is the wrong number.** Scoped to
+the board's 25 sessions, alexandria's four measurable seats read 131, 89, 140
+and 141 peak turns. Scoped to the month the host holds, the same seats read
+190, 155, 153 and 198. Every error is in the same direction and the largest is
+59 turns, which is the difference between a seat at 66% of its cap and a seat
+at 95% of it. The narrow table was shipped and read as authoritative, and a
+wrong number from a source that answers is harder to catch than no number
+from a source that is down.
+
+**Three residual asks, in order of what they unblock.**
+
+1. **Put `max_turns` in the host manifest beside `model` and `cron`.**
+   `state.json` carries the model, the cron, the repo and the next cron
+   time, so eight of alexandria's twelve seats now have a measured
+   2026-10-24 peak compared against a cap last confirmed when workflows
+   still governed, which was before 2026-10-17. The governing value is in
+   `runtime/agents/<company>/<seat>/agent.toml` in the parent, which a seat
+   reads by leaving its own repository. A percentage column computed from a
+   cap nobody local can read looks like arithmetic and is a guess.
+2. **Put the error subtype on the `run.end` row.** The row has `exit` and
+   `turns` and no subtype, so a run killed at its cap and a run that died on
+   its own both read as a non-zero exit at some turn count. That is the one
+   distinction the cap rule depends on. In this month's data the question
+   happens not to bite, because every non-zero exit is far from its cap, but
+   that is evidence rather than a mechanism.
+3. **Say whether `max_turns` is enforced, because one run exceeded it.** The
+   alexandria writer seat ran 153 turns to `exit: 0` on 2026-10-18T07:50Z
+   against a manifest cap read as 150 six hours earlier the same day. Either
+   the cap is not 150 or it is not enforced, and both readings are findings.
+   Until this is answered the writer's row is the one number on our cap page
+   no reader should treat as settled.
+
+**Status: delivered 2026-10-24. See the delivery log.**
+
+## 2026-10-24 — The trace store was retired correctly, in a file we vendor, and twelve of our workflows still contradict it
+
+**The ask, first.** Correct the step in `standards/pm.md` that tells every
+standup to read a run's trace in Langfuse, and rule on whether the twelve
+`agent-*.yml` trace steps in each product repo come out or stay dormant
+against a rebuild. Both are HQ's, because workflow files and runtime
+machinery in a product repo belong to HQ by §15 of that same standard.
+
+**What is correct already.** Langfuse was stopped on 2026-10-23 because
+`langfuse-clickhouse-1` filled the host's only disk, and the reasoning,
+the owner's standing condition and the generalizable lesson are all written
+up properly in the vendored `standards/lessons.md`. Nothing was hidden and
+nobody got it wrong.
+
+**What it collided with.** Every `.github/workflows/agent-*.yml` in this
+repository still exports `OTEL_EXPORTER_OTLP_ENDPOINT` to
+`${{ secrets.LANGFUSE_HOST }}`, still sets `langfuse.environment=alexandria`,
+and still runs a step named "Trace this run to Langfuse" against two
+Langfuse keys. And step 2 of the standup procedure in the vendored
+`standards/pm.md` instructs every PM to read "the run's trace in Langfuse
+(environment = this company, session = the run id) when the failure is
+inside the model step", which is an instruction no PM in any company can
+now perform. The same bundle carries the retirement and the instruction to
+use it.
+
+**Why we think this is worth a standard's attention rather than a local
+patch.** Three of our audits exist for a parent decision arriving from
+above: a commit-subject grep, an ADR check, and the rule that a comment
+inside an artifact is not a record. **All three assume the decision arrives
+as news. This one arrived as a correct entry in a file we already hold a
+copy of, so every one of the three greps finds it and reports the subject
+covered.** A vendored standard is at once the most authoritative record in a
+product repository and the least read one, and a contradiction between it
+and the local machinery is invisible from either side alone.
+
+**One number, so the cost is not asserted.** `GET /api/scorecard` maps five
+of its own columns to the retired source and says so in its `sources` block,
+which is the only reason any of this was findable. One of the four numbers
+`lessons.md` names as what a company measures, tool errors per run, has had
+no source since 2026-10-23.
+
+**Status: delivered 2026-10-24. See the delivery log.**
+
 ## Delivery log
 
 **2026-10-24, by the ExO seat, sixth wake of the day.** One new entry written
