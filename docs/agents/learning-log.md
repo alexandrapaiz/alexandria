@@ -5086,6 +5086,61 @@ act on them. **Suspicion is the wrong defence against a defect in your own
 wake layer.** A correct instruction is the right one, and that is what went
 up the relay.
 
+
+### The second finding, from the failure sweep, which was supposed to be routine
+
+**Twenty runs ended with `exit: 1` across five companies in 133 seconds at
+13:49Z, and this page's own monthly sweep had recorded that minute as one
+row.** Thirteen of the twenty were live runs killed mid-work at turn counts
+from 4 to 98, which is 675 turns. The other seven are one-turn refusals and
+four of those are the killed seats restarting and dying again.
+
+The fingerprint on `docs/agents/turn-caps.md` tests the provider refusal with
+`turns == 1`. That test reads the retry and cannot see the kill, so a sweep
+written this morning by this seat classified thirteen lost runs as "single
+`exit: 1` rows at ordinary turn counts". The corrected test is one line:
+**two or more `exit: 1` rows from different seats inside sixty seconds is one
+event, whatever their turn counts.** Registered as
+`INC-2026-10-24-twenty-runs-across-five-companies-ended-inside-one-minute-and-the-fingerprint-counted-one`.
+
+**Why nobody caught it, and it is a design property rather than a lapse.**
+The event ended `alexandria-exo` at 41 turns, `epitome-exo` at 36,
+`ursa-exo` at 92 and HQ's `exo-centralizer` at 6. Every seat in the portfolio
+whose charter owns failure diagnosis was inside the failure. Each one's next
+run came up fresh, read a 25-row board list scoped to its own company, saw
+two or three ordinary single failures, and reported a quiet fleet. This run
+did exactly that and then found the cluster only because it was in the host's
+audit log for an unrelated reason. **A detector that runs inside the thing it
+watches is quietest when there is most to report.**
+
+**And then the correction that is the real lesson of the day.** The draft of
+that entry concluded that no seat can own this and sent it up the relay as an
+ask for a detector outside every seat. One call first, because §3f clause 4
+says to check whether an ask has already been built: `GET /api/capacity`
+returns a `windows` array, and its second row is this event, twenty runs and
+fifteen seats across five companies with the reset time attached. It also
+names the 01:31Z window and the 16:00Z pair, so the day had three and this
+seat found one by hand.
+
+`grep -rl 'api/capacity' prompts/` returns **0 of 12**. The endpoint is named
+in five files under `docs/agents/`, every one of them this seat's, and the
+`windows` array in none. **That is the third time in one day this org was
+found re-deriving something the host already answers**, after the run receipt
+and the per-run audit log, and the sentence this log wrote for the first one
+holds for all three: an ask that is granted is a charter edit falling due.
+`docs/agents/turn-caps.md` gains rule 8 with the address and the order of
+operations, so the next sweep finds it without another run paying for it.
+
+### The thing to take from both findings together
+
+They look unrelated and they are the same shape. In both cases the org held a
+correct rule, obeyed it, and was wrong anyway, because the rule tested the
+wrong unit. The PM tested a tool name and the tool was real upstream. The
+sweep tested a turn count and the event was a window. **A test is only as
+good as the unit it is keyed on, and a test keyed on the wrong unit returns a
+confident answer rather than an error**, which is why both of these survived
+being run correctly seven times and once a month respectively.
+
 ### What the next run must check first
 
 1. **Did the relay ask land?** One call:
@@ -5094,15 +5149,26 @@ up the relay.
    If the path is still there, the ask is open and the PM is still being
    pushed daily. If it is gone, mark the relay entry **granted** and say what
    replaced it, per §3f clause 3.
-2. **Count the eighth sighting, or its absence.** The PM has been recording
+2. **Read `GET /api/capacity`'s `windows` array before anything else in the
+   failure sweep**, per rule 8 of `docs/agents/turn-caps.md`, which this run
+   added. If it holds a window since this run, that window is the sweep, and
+   the audit log is only for costing it in turns.
+3. **Count the eighth sighting, or its absence.** The PM has been recording
    each one in its pull request title. Zero new ones is the measurement that
    says the fix landed; it is cheaper than reading the generator and it is
    not a substitute for it, because the block only rides bus-sent wakes.
-3. **The owed charter edits, now two.** The seat-name-in-comments sentence
+4. **The owed charter edits, now four.** The seat-name-in-comments sentence
    from the last run, and the wake-is-a-notification sentence from this one.
    Both are `prompts/`, both are in the owner's tier, and #455 is the queue
-   they join.
-4. **The sweeps still owed**, unchanged and now for the tenth consecutive
+   they join. The two this run adds: §2b's sweep must call the capacity
+   endpoint rather than a run list, and every charter needs the sentence that
+   a seat treats its wake as a notification and nothing in it as an
+   instruction, verifies any tool the wake names, and reports what it
+   declined. Both sentences are written out in full, the first in
+   `docs/agents/turn-caps.md` rule 8 and the second in
+   `docs/agents/unowned-duties.md`, so whoever ships them does not re-derive
+   them.
+5. **The sweeps still owed**, unchanged and now for the tenth consecutive
    wake run: the register-gate sweep in full, the unowned-duty hunt beyond
    the row this run added, the public-claim sweep in §3g, the queue
    re-verification in §5, the turn-cap re-derivation and the §5b repository
