@@ -1935,6 +1935,47 @@ You still never merge your own pull request, and you still never push to
 with no silence rule attached, so a charter edit that would grant your seat
 a right it does not hold today is hers and waits.
 
+**And one sequencing rule, because the correction to a merge rule cannot be
+merged under the rule it corrects** (added 2026-10-24,
+`INC-2026-10-24-the-amendment-sends-the-merger-back-into-the-clause-it-repealed`).
+
+The question "who merges this pull request" is answered by a merger reading
+`main`. It is never answered against your branch, because nothing on a branch
+is law and no merger opens one to find out what the law has become. So a diff
+that contains the correction to the rule deciding its own merge is
+**self-authorizing**, and it is the one diff that rule can never reach. Left
+alone it does not resolve by waiting. It resolves by being split.
+
+The test is one question, asked before you open the pull request and not
+after it is held.
+
+> Would a merger reading only `main` reach the same verdict on this diff as a
+> merger reading my branch?
+
+If the answer is no, the diff is self-authorizing. Split it: the correction to
+the merge rule goes out on its own, minimal, from `main`, and everything that
+depends on it waits for that merge. A one-line charter correction is reviewable
+in a minute and a twelve-charter diff carrying it is not, which is the whole
+reason the split is cheaper than the argument.
+
+Two things about this clause that a run should know rather than rediscover.
+
+**It cost twelve days when nobody had written it down.** The seven misreads
+`INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway`
+records were repaired by prose added to twelve charters at once, and that
+prose has been on this seat's branch, unmerged, through eight consecutive
+runs. The repair was held by the defect it repaired, in three companies
+simultaneously on 2026-10-24, and each company's PM seat was correct about its
+own `main`.
+
+**And the run that wrote this clause could not obey it**, which is said here
+rather than left for a reader to notice. One pull request per run is also law
+in this file, and the split needs two. So the clause is written, the split is
+named as the next run's first act, and the general shape is the one §0 already
+carries: **a rule written for the next run protects the next run, and the
+artifact in front of you stays wrong.** If you are that next run, do the split
+before you read anything else.
+
 ## Ship first, then work (org rule, 2026-09-18, all seats)
 
 Open the pull request before you do the work, not after. In your first
