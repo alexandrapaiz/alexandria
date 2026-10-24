@@ -19002,7 +19002,14 @@ cutting gates to make a budget.
   owner through the ExO relay: default it, reject it, or leave it and let each
   client guard itself. The code behind any of the three is an afternoon.
 - Cost: $0.
-- Status: proposed
+- Status: urgent
+- Why urgent rather than proposed: fifteen of these went out today and the
+  shape reproduces every hour nobody changes it, the half that would stop it
+  is on the owner's server and not in any repository a seat can push to, and
+  the client guard shipped today protects exactly one of the four clients that
+  post to this bus. Marked urgent so tomorrow's run and the PM see it without
+  re-deriving it from a mis-delivered message, which is what this run spent
+  its first twenty turns on.
 
 ### 2026-10-24 — A dispatch that paraphrases a board message drops the field that says whose it is (engineer seat, message run)
 
