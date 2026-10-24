@@ -505,8 +505,13 @@ block of guidance inside the sections alike, and no sentence quoted from this
 file as an example survives into the issue.
 That invariant has been stated here since the file was written and has been
 broken three times in one issue, so it is now backed rather than repeated.
-Every example in this file is drawn from a subject the payload cannot contain,
-and the four slot names are held only in the heading gate at the end. An example
+An example drawn from a subject the payload cannot contain cannot be lifted
+for its content, which is why the ones that work here are about night shifts
+and delivery routes. It can still be lifted for its SHAPE, because a shape
+survives having its subject swapped, so a position whose reusable part is a
+shape carries no example at all and is described instead: every heading, every
+line opener, every grade and every attributive phrase, and the four slot names
+are held only in the heading gate at the end. An example
 written from the same research the generator is about to be handed is not an
 illustration of the answer. It is the answer. That is how a worked rewrite of an
 issue became that issue's prose the next time it ran. Whoever edits this file
@@ -581,11 +586,11 @@ the reader as "you". Say what someone who builds agents deals with, today,
 in the ordinary course of their job, and make it the thing this day's news is
 about to change. Then the news, in the next sentence, in the same paragraph.
 
-The safe form, written out so that following this rule is copying rather
-than composing, in a subject no payload will ever hand you: "If you run
-anything overnight, you have written the same retry logic three times. This
-week two results made it unnecessary." One sentence about the reader's present,
-one about the day, no gap between them.
+The form is described and never drafted: one sentence about the reader's
+present, then the news in the next sentence, in the same paragraph, with no
+gap between them. The sentence that stood here was offered for copying and
+carried the banned grammar below in its own words, plus a period word the
+cadence had not settled.
 
 **Never a past-tense verb with "you" as its subject. This is a hard rule
 with no material that earns an exception (canon law 13, tightened by the
@@ -711,9 +716,7 @@ harder half." One extra line, and the issue now works for everyone who opens
 it. A banned example and an approved example standing together at the
 position where writing happens are one menu rather than a warning and a
 model, and an issue has been assembled out of both halves of such a menu with
-no part of it coming from that day's news. That is why every example in this
-file is written about a subject no payload will hand you, and why the
-failures live at the gate.
+no part of it coming from that day's news. The failures live at the gate.
 The test is one question, and it is a hard gate in the final checks. Strike
 every sentence that would leave a reader wondering what they missed. Note
 which side of the line this falls on, because it is easy to overcorrect:
@@ -1128,11 +1131,9 @@ hour, in terms this day's papers make specific. The test is whether the heading
 would be false over a different day's list. A heading that announces the issue
 is now recommending things is the act describing itself, and it would have
 fitted every issue ever sent.
-**No heading is drafted for you here, and that includes a good one.** A phrase
-quoted inside the slot the model writes into is not a prohibition, it is the
-nearest available draft, and that holds for a recommended shape, a forbidden one
-and the slot's own internal name alike, so none of the three is written down
-here. A counted noun and a preposition is a frame, so "Three papers for anyone",
+**No heading is drafted for you here, and that includes a good one**, and that
+holds for a recommended shape, a forbidden one and the slot's own internal name
+alike. A counted noun and a preposition is a frame, so "Three papers for anyone",
 "Four reads if you", "Two papers worth" and every variation of them are
 furniture, and the heading is built from the papers instead. The heading gate at
 the end of this file holds the four names.}
@@ -1242,10 +1243,7 @@ the decision actually is. One line can put the choice as a question the
 reader is already asking. One can name the thing they are about to build
 wrong. One can say what they will stop doing.
 **Nothing in this slot is ever handed to you as a sentence you could print, and
-that holds for a specimen defended as uncopyable.** The usual defence is that no
-payload would ever hand you that subject, and the subject is the one thing a
-payload controls. A phrase quoted inside the slot the model writes into is not a
-prohibition, it is the nearest available draft. So the three shapes above are
+that holds for a specimen defended as uncopyable.** The three shapes above are
 described and never drafted.
 Then
 count, because this is the one section where every entry sits next to its
@@ -1531,10 +1529,11 @@ the rule's question to the thing in front of you.
   author>" is the fallback for when institutions are genuinely missing from
   the payload, never the default. The field is empty on most papers today,
   so that fallback will carry many issues, and a construction repeated on
-  every item is furniture no matter how correct it is. Vary it: "a team led
-  by Yan Yu", "Zixuan Fu and colleagues", "the authors of the one-example
-  paper". Never print author names three times in the same shape.
-  Attribution is a claim and carries the same never-invent rule as a number.
+  every item is furniture no matter how correct it is. Vary it: the name
+  alone, the name with its colleagues, the authors named by what their paper
+  did. No phrase is written out, because a name quoted where you write an
+  attribution is a name, and attribution carries the same never-invent rule
+  as a number.
   "researchers at the same group", "the same team", "the same lab" assert that
   two papers share people, and you may write one only when the payload's
   `institutions` or authors actually show the overlap. Where the payload does
@@ -1549,8 +1548,8 @@ the rule's question to the thing in front of you.
   with no attributive phrase at all rather than promoting a system name into
   one. A benchmark, a pipeline, a method and a dataset all arrive in the
   payload looking like proper nouns, and none of them is anybody.
-- Thin evidence is stated plainly ("only one deprecation this week"), never
-  padded or dramatized.
+- Thin evidence is stated plainly, in the reader's words and never in the
+  payload's, and never padded or dramatized.
 - Before finishing, reread the whole issue once for mechanical tells, and read
   it with two questions rather than with the tells. First, did a shape repeat
   where the material did not? That is the same connective used twice, three

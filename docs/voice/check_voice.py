@@ -2620,21 +2620,30 @@ def specimens(paths=None):
         for n, r, s in domain:
             print(f"    ON-SUBJECT {shown}:{n}  [{r}]  {s[:96]}")
 
-        if tense or internal:
+        # Only the tense finding fails, and the asymmetry is the file's own.
+        # It holds all three shipped past-tense greetings at the gate and says
+        # they are "deliberately absent from the opening slot where the line
+        # gets written", so a specimen of that shape at a writing position
+        # cannot be a banned one and needs no reading. The internal-vocabulary
+        # list makes no such promise: the file quotes the machine's own words
+        # at writing positions both as the failure and as the form, and one of
+        # the two hits below is each. A gate that failed on a correct line is
+        # a gate the next run routes around.
+        if tense:
             rc = 1
     print()
-    print("The first two counts fail this check and the third does not.")
-    print("A specimen that breaks one of the file's own hard gates is a")
-    print("defect by the file's own reasoning, and it needs no reading to")
-    print("find.")
+    print("The tense finding fails this check. A specimen carrying the one")
+    print("shape the file calls grammar rather than judgment, at the one")
+    print("position the file says that shape is deliberately absent from,")
+    print("is a defect by the file's own reasoning and needs no reading.")
     print()
-    print("The on-subject list is the inventory and it is a ceiling rather")
-    print("than a verdict, for a reason the entry gives itself: a quoted")
+    print("The other two lists are inventory and each is a ceiling rather")
+    print("than a verdict, for a reason entry 93 gives itself: a quoted")
     print("BANNED specimen is not this class, because a model copying one")
     print("is caught by the ban, and nothing here can tell a banned")
-    print("specimen from an offered one. Roughly a third of the list is")
-    print("banned text. Sorting it is the reading, and the reading belongs")
-    print("to a graded review rather than to this command.")
+    print("specimen from an offered one. Both lists hold some of each.")
+    print("Sorting them is the reading, and the reading belongs to a")
+    print("graded review rather than to this command.")
     return rc
 
 
