@@ -1185,6 +1185,25 @@ against a cap of 300. A queue item's real cost is not its diff. It is that
 every future run re-verifies it and one of them eventually applies it. See
 INC-2026-09-30-queue-item-2-rotted-a-third-time.
 
+**Run the anchor grep for the whole page before you write any prose on it**
+(added 2026-10-24). The 2026-10-18 run added a long new section to the queue
+page about what decision 056 changed, and did not re-grep a single existing
+item. Item `2026-10-11-writers-cap`, the only urgent one on the page, had
+been rotted since 2026-10-12 and stayed rotted through that run and the next.
+**A run that is editing a page is not thereby auditing it**, and the two feel
+identical from the inside, because both involve having the file open. So the
+grep comes first, mechanically, before the pass has an opinion:
+
+```bash
+grep -oE '^-\s+.*$' docs/agents/pending-workflow-changes.md | sed 's/^-//' | \
+  while IFS= read -r line; do
+    [ -z "${line// }" ] && continue
+    printf '%s  <- %s\n' "$(grep -rc -F -e "$line" .github/workflows/ 2>/dev/null | awk -F: '{t+=$2} END{print t+0}')" "${line:0:70}"
+  done
+```
+
+Any leading zero is a rot. Report the count in the pull request.
+
 **Check every line, not the line that broke last time.** The 2026-09-20
 run rewrote that same item against the live file and still shipped it
 rotted, because it re-verified the step structure, which was what had

@@ -2215,19 +2215,55 @@ prints the 2026-W41 card against the live receipt, and
 tests read this staged file, so an edit that drops the schedule or adds a
 branch trigger turns the pull request that makes it red.
 
-### 2026-10-11-writers-cap: The writer's cap, alone, because this one has already cost two runs
+### 2026-10-11-writers-cap: CANCELLED 2026-10-24. Rotted, and overtaken twice over. The live ask is Ask 4 on `hq-relay.md`.
 
-**Queued 2026-10-11 by the ExO agent**, split out of item 14. This is the
-only item on this page whose change has a measured cost rather than a
-predicted one, and it is one line.
+**Cancelled rather than rewritten, per this charter's rule that an item which
+has been overtaken is cancelled in the item and not left to a reader's
+judgment.** Three facts, in order of how much they matter.
+
+1. **The anchor does not match and has not since 2026-10-12.**
+   `grep -c -F -e 'claude_args: "--max-turns 150 ...'` on
+   `.github/workflows/agent-writer.yml` returns **0**. The live line reads
+   `--max-turns 225`, raised by hand on 2026-10-12. So the diff below would
+   not apply, and the item's own sentence claiming the anchor "appears
+   exactly once" has been false for twelve days.
+2. **The file it patches no longer governs a scheduled run.** Decision 056
+   retired every `schedule:` on 2026-10-17. `.github/workflows/agent-writer.yml`
+   is now the door a manual `workflow_dispatch` walks through, and nothing
+   else. The cap that governed the writer's nine sessions on 2026-10-18 and
+   its 140-turn run on 2026-10-23 is `max_turns = 150` in
+   `runtime/agents/alexandria/writer/agent.toml` in
+   `alexandrapaiz/alexandra-systems`, which this page cannot reach.
+3. **So an urgent item sat for thirteen days in the one lane that could not
+   deliver it**, while the seat it was written for ran at 93% of a cap this
+   page believed it was raising. The live ask is **Ask 4 of the 2026-10-18
+   entry in `docs/agents/hq-relay.md`**, which is a one-line manifest diff,
+   and it carries today's 140-of-150 measurement.
+
+**The number also moved and the next reader should not take 350 from here.**
+`docs/agents/turn-caps.md`, re-derived 2026-10-24 from the board's run
+record, measures a peak of 140 and the 2x rule gives 300. The relay ask
+proposes 225 on purpose, because 225 is the number the owner already
+approved on 2026-10-12 and applying it stops the losses tonight; the gap from
+225 to 300 is recorded on that page rather than traded away here.
+
+**Why this rot was not caught by two previous runs, which is the part worth
+keeping.** This charter requires every `-` line of every queued diff to be
+grepped against the live file every run. The run of 2026-10-18 wrote an
+entire new section of this page about what decision 056 changed, and did not
+re-grep this item. **A run that is editing a page is not thereby auditing
+it**, and the two feel identical from the inside. The check is mechanical and
+takes one command for the whole page; it belongs at the start of the pass,
+before any new prose, and the ExO charter's §5 now says so in those words.
+
+The original item, for the record:
 
 ```diff
 -          claude_args: "--max-turns 150 --permission-mode bypassPermissions --model claude-opus-5"
 +          claude_args: "--max-turns 350 --permission-mode bypassPermissions --model claude-opus-5"
 ```
 
-in `.github/workflows/agent-writer.yml`. The anchor was checked this run
-with `grep -c -F -e` and appears exactly once.
+in `.github/workflows/agent-writer.yml`.
 
 **350 and not 300.** Item 14 proposed 300 off a peak of 136. The seat has
 since hit its cap twice, so 136 is not the peak and 151 is not either: a
