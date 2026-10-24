@@ -19364,6 +19364,15 @@ is pinned by a test that reads the gate's live source rather than a fixture
 copied out of it. An exemption that grows too broad goes red on the next run of
 the suite. Gitleaks has no equivalent, because an allowlist in a config file
 has nothing to go red against.
+- First step: give `tools/check_authority.py` the field gitleaks named, which
+  is one argument on the three exemption call sites saying what the exemption
+  is matched against, so a reader can ask the question without reading the
+  function. Added 2026-10-24 by the next run of this seat: this entry and the
+  Graphiti one below it were the two that pushed
+  `test_every_live_entry_carrying_a_readable_status_has_the_contract_fields`
+  from its 206 to 208, and that bound is a ratchet, so the fields are supplied
+  rather than the number raised.
+- Cost: $0
 - Status: proposed
 
 ### 2026-10-24 — A real Postgres is already on the seat host, so SQL can be tested on rows
@@ -19386,6 +19395,28 @@ has nothing to go red against.
 - First step: move the fixture, then point one existing suite at it, starting
   with `tests/test_graph_audit.py`, whose `integrity` metric now has a defect
   that only rows can distinguish from a correct answer.
+- And the part of this that is not in this seat's hands, recorded here because
+  the register it belongs to already has it and nothing has acted on it:
+  `checks.yml` enumerates test files one step at a time, 12 of this
+  repository's 58, so `tests/test_latest_links.py` runs for any seat on this
+  host and in no CI run.
+  `INC-2026-10-06-a-guard-defined-below-its-own-runner-never-ran` names the
+  class, says no seat's token carries `workflows` permission so the seat that
+  writes a test cannot enrol it, and sets the honest order as green `main`
+  first and then one `python3 -m pytest tests/ -q` glob, because `main` held 19
+  failing tests when that was written. **Both halves of that order are now
+  done except the move.** The glob is written: it is line 110 of
+  `.github/workflows-pending/checks.yml`, which `docs/agents/pending-workflow-changes.md`
+  tracks as a standing lane-one item, and applying it is a `git mv` one
+  directory up rather than an edit. And the green-`main` condition it waited on
+  is met, with one correction worth having: `main` was red tonight on
+  `tests/test_ledger.py`, at 207 against a bound of 206, because the previous
+  run of this seat appended a scan note without its contract fields and
+  `tests/test_ledger.py` is itself one of the 46 files no workflow runs. That
+  is the pin list's own thesis arriving as a real red: the gate that measures
+  the ledger is silent on the pull request that pushes its count up. Fixed in
+  the same run that found it, by supplying the fields rather than raising the
+  ratchet.
 - Cost: $0
 - Status: proposed
 
@@ -19434,6 +19465,8 @@ has nothing to go red against.
   the product whose whole design is re-judgment: Graphiti, Zep's open-source
   temporal knowledge graph for agent memory. It is the closest adjacent product
   to the thing this run built, and it had never been scanned here.
+- What: the scan, and one thing worth stealing from it that this repository
+  can act on without adopting anything of Graphiti's storage or its model.
 - What is worth stealing: **two clocks, not one.** Graphiti separates when a
   fact was true in the world from when the system learned it, and it carries
   both on the edge. `claim_links` has one timestamp, `created_at`, and it means
@@ -19460,6 +19493,11 @@ has nothing to go red against.
   re-contradiction after a withdrawal deprecates again, which is the case an
   invalidation flag has to be careful about and a `distinct on` cannot get
   wrong.
+- First step: add `valid_at date` to `claim_links`, nullable, written at
+  interpret from the `published_at` of the paper the newer claim came from,
+  which is a date this database already holds. Then the digest's two seven-day
+  sections can ask when the evidence changed rather than when we looked, and
+  the column is honestly NULL for every edge drawn before it existed.
 - Cost: $0 for the scan; the two-clock idea above is a ledger proposal and not
   an action.
 - Status: proposed
