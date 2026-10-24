@@ -2530,8 +2530,25 @@ def past_tense_you(span):
     verb is in any past tense, past simple, present perfect and past
     continuous alike. This is the one check in the generator the file calls
     grammar rather than judgment, which is why it can be run here at all.
+
+    The participle arm reads a stem of two characters or more, and refuses a
+    stem that is itself a negation. It used to read `\\w+`, with no floor, so
+    any word ending in ed, en, t or ne was a participle and "you have one
+    hour", "you have it", "you have ten" and "you have none" were all read as
+    claims about the reader's history. The floor is what separates "done",
+    whose stem is "do", from "one", whose stem is "o".
+
+    That mattered the moment this check was pointed at an issue rather than at
+    a prompt, because `What to read if you have one hour` is a standing heading
+    and the old pattern fired on it. A gate whose first run on the real
+    artifact reports a heading the laws permit is a gate nobody keeps, which is
+    `INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason`
+    from the other side. Seventeen cases are asserted in
+    `tests/test_voice_standalone.py`, the eight true shapes and the nine that
+    collide with them.
     """
-    pat = (r"\byou\b\s+(?:have|had|'ve|'d)\s+\w+(?:ed|en|t|ne)\b"
+    pat = (r"\byou\b\s+(?:have|had|'ve|'d)\s+(?:not\s+|never\s+)?"
+           r"(?!not\b|none\b)\w{2,}(?:ed|en|t|ne)\b"
            r"|\byou\b\s+(?:were|was)\b"
            r"|\byou\b\s+(?:spent|wrote|ran|read|built|saw|went|did|"
            r"watched|shipped|learned|started|stopped)\b")
@@ -2747,6 +2764,91 @@ def blockrules():
     return rc
 
 
+# ---- standalone --------------------------------------------------------
+
+
+def standalone(paths=None):
+    """Canon law 13's mechanical half, run over the issue instead of the prompt.
+
+    `past_tense_you` is the grammar question the generator calls "the only one
+    of these four that can be checked without judgment", and until this gate it
+    had exactly one caller: `specimens`, which reads the two generator prompts.
+    So the one hard voice law with a detector already written in this
+    repository had never been pointed at the artifact a reader opens.
+
+    It had been pointed at the prompt four times instead. `prompts/digest.md`
+    carries the rule at the writing position, the four shapes at the gate, a
+    worked repair, and a note that three specimens of it have shipped. The
+    charter's step 4 says that when the same structural fix fails twice through
+    prompt changes alone, the next fix belongs in the pipeline rather than in a
+    third round of prompt-tinkering. By the prompt's own count this is past
+    that line, so this run wrote no fifth paragraph.
+
+    What the gate found on its first run is why the prompt was never the
+    problem. `site/content/issues/2026-W39.md` opens on the shape, and the
+    history says the owner's correction was made and then lost:
+
+        396f4f1  2026-09-23  "You spent last week watching agents get faster
+                             by doing less at test time."   <- she struck this
+        b7d6929  2026-09-24  "The agent-building world has spent the week
+                             arguing about scaffolding"     <- the repair, and
+                             it is the exact sentence prompts/digest.md now
+                             holds up as the model answer
+        820df48  2026-09-29  "You have spent the week watching agents get
+                             faster by thinking less at test time."
+
+    The third commit is "2026-W39 is Monday's print (the digests record), not
+    Thursday's preview". It replaced the file wholesale with what the press
+    actually sent, which was right, and it discarded her correction, because
+    the correction had only ever been written into the rendered archive and
+    never into the record the archive is rendered from. Two later commits
+    touched the same file and neither re-read the opening.
+
+    So the generator is not what failed here and a fifth prompt paragraph would
+    not have moved it. A correction applied downstream of the record is lost
+    the next time the record renders, and the only thing that catches that is a
+    command over the file the public reads. That is this.
+
+    The tense only, deliberately. The generator lists four shapes and says
+    three of them "need you to judge whether a reference is load-bearing". A
+    literal search for "last week" would fire on "last week the field argued",
+    which is a time reference about the research and not about our publishing,
+    and a gate that cries on legitimate prose is one nobody keeps. The three
+    judged shapes stay a reading, and this gate claims only the quarter it can
+    prove.
+
+        python3 -I docs/voice/check_voice.py standalone
+    """
+    paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    paths = [pathlib.Path(p) for p in paths]
+    hits, exempt = [], []
+    for path in paths:
+        for n, span, _ in issue_sentences(path):
+            if not past_tense_you(span):
+                continue
+            # Her own words are her fine-tuning and the charter says
+            # refinements layer on top of it, never beside it. The exemption is
+            # computed from her register for the reason the taste gate gives.
+            (exempt if hers(span) else hits).append((path, n, span))
+    print(f"  read from   site/content/issues, {len(paths)} issue(s): "
+          f"{', '.join(p.stem for p in paths)}")
+    print(f"  sentences whose subject is 'you' and whose verb is past  "
+          f"{len(hits) + len(exempt)}")
+    for path, n, span in hits:
+        print(f"  FAIL    {path.relative_to(ROOT)}:{n}")
+        print(f"            {span[:92]}")
+    for path, n, span in exempt:
+        print(f"  HERS    {path.relative_to(ROOT)}:{n}  exempt, in taste.md")
+    if not hits:
+        print("  no issue tells a reader what they have been doing")
+    print()
+    print("Each hit is a claim about what the reader has done, it is not")
+    print("knowable from here, and the repair is the present tense and the")
+    print("reader's actual job rather than deletion. The generator's own")
+    print("worked answer is the b7d6929 line quoted above.")
+    return 1 if hits else 0
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -2757,7 +2859,7 @@ def main():
     paths = sys.argv[2:]
     rc = 0
     takes_paths = {"measure", "links", "delivery", "compare", "firstuse",
-                   "generator", "specimens"}
+                   "generator", "specimens", "standalone"}
     # `enforcements` takes a git ref rather than a path, because ban list 105
     # is about the file the press runs and that file is only reachable through
     # the commit the deploy was built from.
@@ -2776,6 +2878,7 @@ def main():
                      ("firstuse", firstuse),
                      ("generator", generator),
                      ("specimens", specimens),
+                     ("standalone", standalone),
                      ("blockrules", blockrules),
                      ("compare", compare), ("selfcheck", selfcheck)):
         if which == name or (which == "all"
