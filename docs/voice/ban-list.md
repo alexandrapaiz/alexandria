@@ -3429,3 +3429,54 @@ gap that the same collision had left empty (incident 25).
     ```
     LANDED docs/voice/check_voice.py: "colon heading, canon law 12 and incident 20"
     ```
+133. The number printed as copy whose provenance is a second reader of a file
+    that already has one. A count beside a heading is a sentence, and the
+    question a reader asks of it is the claims question: how do you know that.
+    The answer here was a regular expression written on the page, in a second
+    language, for a file whose contract already had a reader built because
+    reading it this way loses entries.
+    `site/app/desk/page.jsx` prints `Awaiting your verdict 524`. The figure
+    comes from `parseIdeas`, which matches `/- Status:\s*(\w+)/` with no line
+    anchor and no `m` flag. `tools/ledger.py --census` reads the same file
+    through the contract and counts 525. The one entry the page cannot see is
+    "2026-09-24 — A ledger entry can hide from every consumer by writing its
+    status as a sentence", whose own status line reads `proposed` and whose
+    first bullet quotes `grep "Status: accepted" docs/ideas.md` as the command
+    that would have missed it. The unanchored pattern matches inside that
+    quoted command. The entry about an entry hiding from every consumer is
+    hidden from the owner's console by the mechanism it describes, quoted in
+    its own body.
+    The tell, stated so a later run can look for it rather than admire this
+    one: **a surface that prints a count it derived itself, where the
+    repository holds a reader for the same source.** It is not a prose
+    judgment and it is not caught by reading the sentence, which is correct
+    English about a wrong number. It is caught by running both readers.
+    Third in a family, and the distinction is what the repair is. Entry 109 is
+    the count whose noun is false of a member. Entry 112 is the count whose
+    number is wrong and whose unit is unstated, "so the number cannot be shown
+    wrong". This is the count whose unit is exact, whose number is wrong, and
+    which CAN be shown wrong in one command, because a second reader of the
+    same source already exists and disagrees. So the hedge that answers an
+    unverifiable claim makes this one worse: writing "about 524" over a figure
+    that is knowably 525 spends a word to keep the error. The repair is the
+    anchor, never softer wording.
+    Where this one came from matters to the next run. The card that sent this
+    seat to the page asked for one string naming a remainder. The remainder is
+    a count, so checking the count was inside the job and not beside it. **Any
+    line this seat drafts that prints a number is a claim this seat verifies
+    against the source, and the register that governs it is
+    `docs/agents/quality-claims.md`'s question rather than its table,** because
+    a count computed on the page has no row to find and still owes the answer.
+    The sweep, over the class: `docs/ideas.md` is the only file in this
+    repository with a published reading contract and more than one reader.
+    `tools/ledger.py`, `tools/check_registers.py` (which imports the first's
+    vocabulary rather than restating it, and is the right shape), and the desk.
+    One offender, and the generalisable half is the duty above rather than the
+    count.
+    Added 2026-10-24, writer run 45. Enforced the same day, and the check reads
+    the page's pattern out of the page rather than holding a copy, so a rewrite
+    of the parse cannot pass it by accident. Probed against the fixed page:
+    486 and 486, `rc=0`.
+    ```
+    LANDED docs/voice/check_voice.py: "the desk's pattern, read off the page"
+    ```

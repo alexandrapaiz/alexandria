@@ -9,7 +9,7 @@ const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
 await ctx.route("**/*", (r) => { const u = new URL(r.request().url()); return (u.hostname === "127.0.0.1" || u.hostname === "localhost") ? r.continue() : r.abort(); });
 const page = await ctx.newPage();
-await page.goto("http://127.0.0.1:3000/", { waitUntil: "networkidle" });
+await page.goto(`http://127.0.0.1:${process.env.FE_PORT || 3000}/`, { waitUntil: "networkidle" });
 await page.waitForTimeout(500);
 const clip = { x: 420, y: 380, width: 600, height: 420 };
 const shot = async (n) => {

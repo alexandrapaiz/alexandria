@@ -797,8 +797,15 @@ def check_checkout(repo_root: Path | None = None) -> Surface:
     status, body, _ = fetch(PRICING_URL)
     evidence: dict = {"url": PRICING_URL, "status": status}
     if status == 0:
-        return Surface("checkout", FAILING,
-                       f"the pricing page did not answer: {body}", evidence)
+        # Guardrail 1's distinction, and this surface had it backwards until
+        # 2026-10-23. A page that never answered and a page with nothing for
+        # sale are the same silence and very different facts, and the one that
+        # costs something is calling the shop shut from a sandbox with no
+        # egress. `check_compute` reads the same silence the same way.
+        return Surface("checkout", UNKNOWN,
+                       "the pricing page could not be reached from here, which "
+                       f"is this checkout's network and not a verdict: {body}",
+                       evidence)
     if status != 200:
         return Surface("checkout", FAILING,
                        f"/pricing returned HTTP {status}, so nobody is reading an offer "
@@ -1921,6 +1928,43 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
         named = name_undeployed(found)
         since, anchor = drift_began(found, changed_at)
         age_hours = (now - since).total_seconds() / 3600
+
+        # A drift the replay could not date, measured from the wrong end and
+        # landing inside the window, is not a green app. It is an unanswered
+        # question, and until 2026-10-23 it answered OK.
+        #
+        # The cost was total and it was invisible. Every agent seat runs from
+        # a shallow clone, `git clone --depth 1`, which has one commit of
+        # history, so `undeployed_commits` can never match the running digest
+        # and `drift_began` always falls back to the newest commit to the
+        # app's files, which in a shallow clone is that single commit and is
+        # therefore hours old. The same tree, the same rows, the same moment:
+        # shallow read `ok, a deploy is pending and still inside the 24h
+        # window: distill (0.1h), ingest (0.1h), weekly (0.1h)`, and the same
+        # checkout after `git fetch --unshallow` read three apps between 7.3
+        # and 8.2 days behind. So the drift alarm was silent for every reader
+        # it has, which is every seat, and `tools/drift_watch.py` exited 0 on
+        # a press job eight days behind.
+        #
+        # `drift_began` is right that a guard which cannot date a drift should
+        # under-report rather than invent one. That argument is about the
+        # number. This is about the state: an undated app whose fallback clock
+        # already puts it past the window still alarms, exactly as before, and
+        # only the one that would have been called fine on a clock it cannot
+        # trust goes to `unknown`.
+        if age_hours <= DEPLOY_GRACE_HOURS and "commits" not in found:
+            here.update(state=UNKNOWN, merged_at=str(changed_at),
+                        drift_began=str(since), drift_anchor=anchor,
+                        drift_hours=round(age_hours, 1), undeployed=found,
+                        why=("the running image matches no commit this "
+                             "checkout can see, so the only clock left is the "
+                             "newest commit to this app's files and that says "
+                             "nothing about how far behind production is: "
+                             + str(found.get("why", ""))))
+            unknowns.append(f"{app} (the drift cannot be dated from this checkout)")
+            evidence[app] = here
+            continue
+
         here.update(state=FAILING if age_hours > DEPLOY_GRACE_HOURS else OK,
                     merged_at=str(changed_at), drift_began=str(since),
                     drift_anchor=anchor, drift_hours=round(age_hours, 1),

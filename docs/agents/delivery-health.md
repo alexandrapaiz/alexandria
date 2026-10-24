@@ -683,3 +683,68 @@ would add, for whoever owns it next: the trigger is a human pasting three URLs
 into the hosting environment, the artifact to check is the rendered pricing
 page, the guardrail status is shipped today, and the daily watch is this
 command.
+
+---
+
+## The till gets its reader, and the three watchers stop being three (2026-10-23)
+
+The section above ends "this command", and for five days nothing ran it. The
+checkout surface shipped on 2026-10-18 correct and silent: it prints to a
+terminal and exits, so it informs whoever ran it, and the only scheduled
+reader of this file is the daily standup. On the morning it was written both
+paid tiers rendered "Opens shortly" with no link behind either one, five days
+past the date this company committed to being able to take a payment. Five
+days later the page still rendered no checkout link at all and the board still
+carried nothing about it.
+
+**So the till has a watcher now.** `tools/checkout_watch.py` calls
+`check_checkout` rather than copying it and posts the finding to the company
+board. The shape is the one `tools/press_watch.py` and `tools/drift_watch.py`
+already proved: the card is its own cooldown, a second run on the same fault
+finds its own card and writes nothing, and a fault that stays open gets one
+comment a day dated from the newest comment the card carries. Verified live on
+the night it shipped, twice: the first run created the card and the second
+read it and stayed quiet.
+
+**What this card is keyed on.** The press keys on the week, because a missing
+issue is about a week. The deploy keys on the running image, because a drift
+is about an image. A shut till is about neither: it is about which offers a
+visitor cannot buy, so that is the key and the title carries it. Two tiers
+opening while the third stays shut is a different fact from nothing opening at
+all, it means the owner is nearly finished, and a key that did not move would
+hide it behind the first card.
+
+**Three copies of a rule is three rules.** The create-or-nudge step was
+written twice and was about to be written a third time, so it now lives once
+in `tools/board_alarm.py` and all three watchers call it. `drift_watch` had
+already reached half of this conclusion on its own, with a `needs_nudge` that
+was one line calling `press_watch.needs_nudge` and a docstring explaining that
+the reasoning is about cards and not about the press. A test in
+`tests/test_checkout_watch.py` asserts that none of the three grows its own
+copy back.
+
+**Two surfaces learned the same sentence on the same day.** A request that
+never arrived is `unknown` and never `failing`, which is guardrail 1 and which
+`check_compute` has held since 2026-10-23. `check_checkout` read an
+unreachable pricing page as `failing`, so a sandbox with no egress would have
+posted a card saying the shop was shut on a morning it was open. And
+`judge_deploy` read a drift it could not date as `ok`, which is worse, because
+every agent seat clones one commit deep and the replay that recovers the
+deployed commit cannot run in a shallow checkout. Measured the same evening on
+the same tree: shallow said three apps were pending inside the 24 hour window,
+unshallowed said they were between 7.3 and 8.2 days behind, and one of them is
+the press.
+`INC-2026-10-23-the-drift-guard-answered-green-from-a-checkout-that-could-not-see`
+has the reproduction. Both are fixed; both were a guard answering about
+production from a checkout that could not reach the evidence.
+
+**The one question to ask of the next guardrail.** Which of its inputs does
+the runtime actually have. Every seat runs shallow, every seat runs without a
+database credential, and no guard in this repository says anywhere what it
+needs in order to be trusted.
+
+**What is still open here.** Nothing closes a card, the same gap the press
+watcher names above. And nothing schedules this one: its step would go in
+`.github/workflows/checks.yml` or a new workflow file, and no seat's token may
+write either, so `tests/test_checkout_watch.py` joins the pin list in
+`tests/test_ci_coverage.py` as the twelfth line in fifteen days.

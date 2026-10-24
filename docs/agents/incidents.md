@@ -16100,3 +16100,204 @@ complete for the file it was in. The gate was built after the repair and
 pointed at the file the repair had touched, which is the natural place to point
 it and is the trap: a gate written in the same breath as a fix inherits the
 fix's scope, and the fix's scope was the module. Ban list 131 and 132.
+
+## INC-2026-10-23-the-drift-guard-answered-green-from-a-checkout-that-could-not-see — every agent seat clones one commit deep, so the alarm for a production image eight days stale read "pending, inside the window" for all of them (2026-10-23, engineer seat, message run)
+
+Recorded under the standing rule. This is the third entry on one shape: a
+guard that could not measure something reported a verdict instead of saying
+so. `INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see` is the same
+surface reading "unmeasured" where it should have read "behind", and company
+standard L-A21 is the general rule, that a gate which saw nothing must not
+read as a quiet pass. Today it is the same surface again, in the opposite
+direction, reading "fine" where it should have read "I cannot tell".
+
+**What happened, measured rather than reasoned.** The same tree, the same
+`deploy_runtime` rows, the same minute. Run against a `git clone --depth 1`
+checkout, `tools/delivery_health.py --surface deploy` answered:
+
+    ok  deploy  a deploy is pending and still inside the 24h window:
+                distill (0.1h), ingest (0.1h), weekly (0.1h)
+
+Run against the same checkout after `git fetch --unshallow`, it answered:
+
+    FAILING  deploy  the deployed code is not origin/main: distill is 7.9 days
+                     behind; ingest is 7.3 days behind; weekly is 8.2 days behind
+
+`weekly` is the press. The reproduction is two commands and it is in
+`tests/test_deploy_drift.py` as
+`test_a_checkout_that_cannot_place_the_image_is_not_a_green_deploy`.
+
+**The mechanism, in one paragraph.** `undeployed_commits` recovers the
+deployed commit by replaying each app's file digest backwards over history
+until one matches the digest the container reported. A shallow clone has one
+commit, so the replay matches nothing and returns a `why` with no commits.
+`drift_began` then falls back to `changed_at`, the newest commit to the app's
+files, which in a one-commit clone is that single commit and is minutes old.
+The age comes out near zero, the age is inside the 24 hour grace window, and
+the app is filed as a pending deploy.
+
+**Why nobody caught it.** The fallback itself is deliberate and its docstring
+argues for it correctly: a guard that cannot date a drift should under-report
+rather than invent one. That argument is about the number. Nothing in it is
+about the state, and the state is what every reader reads. The fixture that
+covers the pending-deploy case recorded a digest matching no commit
+(`"0ldc0dec0de"`), which is the shallow-clone shape rather than the
+recent-merge shape, so the test that should have caught this was asserting the
+bug. It has been rewritten to record the digest of the commit before the edit,
+which is what a real deploy's row holds an hour after somebody merges.
+
+**What it cost.** `tools/drift_watch.py` exists to put this alarm on the board
+because the email path could not. It reads `state`, correctly, and filters to
+`failing`. So from the day it shipped on 2026-10-17 it has run only from
+sandboxes that clone one commit deep, found nothing failing, exited 0 green,
+and posted no card, while three production jobs drifted past a week. The two
+guardrails were each right about what they measured and the pair was blind.
+
+**The fix.** An undated drift whose fallback clock lands inside the window is
+`unknown`, not `ok`. One past the window still alarms, which is the old
+under-reporting behaviour and is unchanged. `drift_watch` already exits 2 and
+posts nothing on an `unknown` surface, so a shallow run now goes red and says
+the comparison is what failed.
+
+**The same reading, found in the same run on the till.** `check_checkout`
+returned `failing` when the pricing page could not be reached at all, so any
+sandbox with no egress would have posted a card saying the shop was shut on a
+morning it was open. `check_compute` had read the identical silence as
+`unknown` since the day before, with a test named
+`test_a_request_that_never_arrived_is_unknown_not_failing`. The rule existed,
+in this file, one function away, and the surface next to it did the opposite.
+Fixed in the same pull request.
+
+**What the org should take from it.** Both halves here are a guard reporting
+a verdict about production from a checkout that could not reach the evidence.
+The cheap question nobody asks of a new guard is which of its inputs the
+runtime actually has. Every seat runs shallow, and no guard in this repository
+says anywhere what depth of history it needs.
+
+## INC-2026-10-23-the-ship-first-rules-closing-half-went-unrun-for-the-second-time — the same empty draft, five days old instead of two, and only a standing message in the wake remembered it (2026-10-23, engineer seat, message run)
+
+Recorded under the standing rule. The first entry is
+`INC-2026-10-18-the-ship-first-rules-closing-half-went-unrun-and-an-empty-draft-aged-two-days`
+and this is the identical pull request, three days further on.
+
+**What happened.** #358 opened at 02:26 UTC on 2026-10-18 with six lines, a
+run note stub, and a body saying it would be filled in before `gh pr ready`.
+It never was. The run that opened it ended without readying it and without
+closing it. It was still open, still draft, still six lines, at 23:30 UTC on
+2026-10-23, and GitHub will not merge a draft at all, so no gate could reach
+it and no amount of review queue grooming could have moved it.
+
+**What actually remembered it.** Not the repository, which holds no liveness
+for a pull request. Not the board, although a card was opened about it on
+2026-10-18 and sat in Review for five days. The thing that brought it back was
+the standing paragraph appended to this seat's wake message, which is a
+mechanism outside the repository entirely and which says so in its own words:
+"this message is the only thing that remembers."
+
+**Why the first entry's fix did not fire.** It proposed `tools/stale_drafts.py`
+and that proposal is in the ledger at status `proposed`, which means no seat
+may pick it up. The correction was written down and the thing that would
+enforce it was gated behind an approval, which is incident 20's shape: a
+register with a gate that decides something gets written and no gate that
+decides it gets checked.
+
+**Resolved rather than only filed.** The stub was merged into this run's
+branch, the work it owed was built, and the older pull request was closed by
+its own author with the containment proof the charter requires. The board card
+was commented on and moved to Done. What remains open is the detector, and it
+remains open because it needs the owner to move one ledger entry from
+`proposed` to `accepted`.
+
+---
+
+## INC-2026-10-24-the-entry-about-hiding-is-hidden-from-the-owners-console — a file with a published reading contract and a purpose-built reader got a fourth ad-hoc reader, on the one page the owner opens daily, and it loses the entry that warned about exactly this (2026-10-24, writer seat, run 45)
+
+**Recorded under the standing rule as a repeat.** The first occurrence is in
+this file already, inside
+`INC-2026-09-24-conflict-marker-on-main`, as the
+finding that run left for another seat: one ledger entry wrote its status as
+prose, "so that entry is invisible to every consumer that reads statuses by
+grep, including the PM's sprint grooming and this seat's own fallback scan."
+`docs/ideas.md`'s reader, `tools/ledger.py`, was built because of it, and its
+first line is "Read `docs/ideas.md` the way its contract says it is shaped,
+instead of grepping it."
+
+This is the same defect, in JavaScript, on `site/app/desk/page.jsx`.
+
+**What it costs.** The desk's verdict queue prints `Awaiting your verdict 524`.
+`python3 tools/ledger.py --census` reads the same file through the contract and
+counts 525, which is 486 proposed and 39 urgent. The one entry the page cannot
+see is
+
+> 2026-09-24 — A ledger entry can hide from every consumer by writing its
+> status as a sentence (engineer agent)
+
+Its own status line reads `- Status: proposed`. Twenty lines above it, inside
+its own first bullet, it quotes the command it was filed about:
+
+```
+grep "Status: accepted" docs/ideas.md
+```
+
+`parseIdeas` matches `/- Status:\s*(\w+)/`, with no line anchor and no `m`
+flag, so it matches inside that quoted command and reads the entry as
+`accepted`. The entry warning that a status written as a sentence hides an
+entry from every consumer is hidden from the owner's console, by a status
+written as a sentence, in its own body. It has never appeared in her queue.
+
+**Why it was not caught.** Every gate this seat owns reads prose. `reading`
+reads sentences for one verb, `claims` reads sentences against a register,
+`taste` reads rulings against files. A count is not a sentence any of them can
+be wrong about, because "Awaiting your verdict 524" is correct English and the
+error is entirely in the number. The claims register is the one place a
+reader-facing assertion gets checked against a mechanism, and
+`docs/agents/quality-claims.md` holds rows for sentences rather than for
+figures a page computes in front of you. A figure a page computes has no row to
+find and still owes the answer to "how do you know that".
+
+**The standard that nearly covers it, and the gap.** L-A21's test is the one
+that would have caught this: name one change that would break what this
+instrument governs, then ask whether it would have *seen* that change. A status
+written as prose is that change, the ledger register recorded it as that change
+a month ago, and the desk's parser cannot see it. But L-A21 is written about
+gates, and the desk is a surface. No standard in `docs/standards/lessons.md`
+says that a file with a published reading contract is read through its reader
+and never re-parsed. That omission is the generalisable half and it is not this
+seat's to write, so it is filed in the ledger for the ExO seat's relay to the
+chair rather than edited here.
+
+**The fix, which is one character and one flag.**
+
+```js
+const status = (rest.join("\n").match(/^-\s+Status:\s*(\w+)/m) || [])[1];
+```
+
+`site/` is the frontend seat's surface, so this run drafted it rather than set
+it. The words that print the count are in
+`docs/voice/desk-verdict-queue-2026-10-24.md`, with the anchor beside them and
+the measurement in the review, and the anchor is named there as not optional
+ahead of the lines.
+
+**The gate, which is the part that outlives this entry.**
+`python3 -I docs/voice/check_voice.py ledger` reads the status pattern out of
+the desk page rather than holding a copy, computes the queue both ways over the
+live file, and fails where the two disagree. It reports `desk 524, contract 525`
+today. Probed against the fixed page in a scratch copy: 486 and 486, `rc=0`,
+and `git diff site/` empty afterwards. Ban list 133.
+
+**The second finding in the same reading, left standing.** The queue renders
+oldest first, because `docs/ideas.md` is appended to and `parseIdeas` returns
+file order, while the merged list beside it comes from
+`pulls?state=closed` and is newest first. The two lists look alike and only one
+is sorted. Board card `8787a154` proposed capping the queue at eight "because
+the precedent for capping already exists on the same page", and that cap
+applied as written would have printed eight proposals from 2026-09-18 and
+dropped row 524 of 524, which is
+
+```
+2026-10-23 — URGENT: the Modal workspace is disabled, so every cron and the
+MCP server are down
+```
+
+The candidate's shape avoids it rather than fixing the sort, by rendering
+every urgent entry and no proposed one.

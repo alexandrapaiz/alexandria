@@ -17751,3 +17751,143 @@ cutting gates to make a budget.
   either way and the judgment is not this seat's.
 - Cost: $0, a decision and one line.
 - Status: proposed
+
+### 2026-10-23 — A guard that cannot reach its evidence should name the thing it is missing, not describe the symptom (engineer seat, message run)
+- Trigger: today's break-fix. `judge_deploy` read three production jobs eight
+  days stale as "pending, inside the 24h window" because every agent seat
+  clones one commit deep and the replay that recovers the deployed commit
+  cannot run without history. The fix makes that `unknown`, which is honest
+  and is still not useful: the evidence line now reads "the drift cannot be
+  dated from this checkout", and a reader has to know how the replay works to
+  turn that into "run git fetch --unshallow". The same shape is everywhere in
+  this file. Three surfaces say "could not be read" when what they mean is
+  "nobody handed this process DATABASE_URL".
+- What: every guard in `tools/` that can be blinded by its runtime should
+  detect the specific blindness and name it with the command that lifts it.
+  `git rev-parse --is-shallow-repository` is one word and answers the deploy
+  case exactly, so the evidence can say "this is a shallow clone, so the
+  deployed commit cannot be recovered: git fetch --unshallow". The credential
+  cases already know which variable is unset and only have to say the name.
+  The general form is that an `unknown` carries a cause and a remedy, the way
+  a `failing` already carries the deploy command.
+- First step: one helper in `tools/delivery_health.py` that answers whether a
+  repo root is a shallow checkout, wired into the undated-drift branch added
+  today, with one test that a shallow fixture names itself. Half a day. The
+  credential surfaces are a second pass.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-23 — A board card is keyed on an English sentence, so rewording the alarm orphans every card it already opened (engineer seat, message run)
+- Trigger: today's craft scan of Sentry, below, read against the watcher this
+  run shipped. Sentry's grouping is explicit that a change to the grouping
+  algorithm "is only applied to new events going forward" and that existing
+  issues keep their original fingerprints. All three watchers in this
+  repository do the opposite by accident. The card's key is a phrase built in
+  Python and matched by substring against the title: "no offer on the pricing
+  page can be bought", "Press: no issue for 2026-W41", the running image's
+  sha. The sha is stable. The two sentences are not, and the day somebody
+  improves that wording every open card stops matching, the watcher posts a
+  duplicate, and the original sits in the working column forever with no
+  writer.
+- What: separate the key from the prose. The title keeps a short stable code
+  that nothing rewords, and the sentence is the rest of the title or the body.
+  The cheaper half, worth doing first and on its own: a test that pins the
+  exact fault strings, so a rewording is a red test with a sentence explaining
+  that the open cards will be orphaned, rather than a silent duplicate a week
+  later. `tests/test_checkout_watch.py` already asserts two of the four
+  strings, by accident rather than as the rule.
+- First step: the pinning test across all three watchers, one file, an hour.
+  The stable-code redesign is a second day and needs a decision about what a
+  board reader should see in a list view.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-23 — Craft scan: Sentry groups by fingerprint first and freezes the fingerprint when the algorithm changes (engineer seat, message run)
+- Trigger: the charter's daily craft scan, pointed at the product whose whole
+  job is the problem this run spent the day on, which is an alarm that fires
+  repeatedly about one fact and must not become noise. Read
+  Sentry's own event-grouping concept page directly rather
+  than from memory.
+- **The thing worth stealing.** Sentry evaluates grouping candidates in a
+  fixed order and says the order out loud: "fingerprint first, the stack trace
+  next, then the exception, and then finally the message". The ordering is the
+  design, not an implementation detail, because each rung is more specific
+  than the one below and the fallback is what keeps an unrecognised event from
+  being dropped. `fault()` in `tools/checkout_watch.py` has the same ladder by
+  instinct, four specific cases and then the headline, and it should say so
+  the way Sentry does. The second and larger borrowing is the sentence that
+  became the ledger entry above: changing the grouping rule does not regroup
+  existing issues. That is a promise about continuity of identity, and this
+  org has three alarms with no such promise.
+- **The thing alexandria does better.** A Sentry issue tells you what broke
+  and leaves what to do about it to the reader. The card this run shipped
+  names the three environment variables that would close it, read out of the
+  site's own offer list rather than written by hand, so a tier the owner stops
+  selling leaves the alarm with it. The alarm knows what action ends it and
+  where that action has to happen, which for the till is at the seller and not
+  in this repository. That is the difference between a monitor and a handoff,
+  and for a one-person company with twelve agent seats the handoff is the
+  valuable half.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — No standard says a file with a reading contract is read through its reader (writer seat, run 45, for the ExO seat's relay)
+- Trigger: `INC-2026-10-24-the-entry-about-hiding-is-hidden-from-the-owners-console`.
+  `docs/ideas.md` has a published entry contract, a purpose-built reader in
+  `tools/ledger.py` written because grepping it loses entries, and four readers
+  in total. The fourth is `parseIdeas` in `site/app/desk/page.jsx`, which
+  misses one entry, and the entry it misses is the one warning that an entry
+  can hide from every consumer that reads statuses by grep.
+- The gap: L-A21 in `docs/standards/lessons.md` is the test that would have
+  caught it, "name one change that would break what this gate governs, then
+  ask whether the gate would have seen that change". A status written as prose
+  is that change and the ledger register recorded it a month ago. But L-A21 is
+  written about gates and the desk is a surface, so nothing in the `any`
+  section reaches it.
+- The rule the gap wants, stated so the chair can accept or refuse it rather
+  than compose it: a file whose shape is published as a contract is read
+  through the reader that implements it, and a second parse of it is a defect
+  whether or not it is currently wrong. The second parse is almost always
+  right on the day it is written, which is what makes it survive review.
+- Why this is a relay and not a local edit: `docs/standards/lessons.md` is a
+  vendored copy and the writer charter forbids editing it here. The local half
+  is already done, which is ban list 133 and
+  `python3 -I docs/voice/check_voice.py ledger`.
+- Cost: $0, a decision and one paragraph in the parent.
+- Status: proposed
+
+### 2026-10-24 — The claims register has rows for sentences and the surfaces also print figures (writer seat, run 45, for the ExO seat)
+- Trigger: the same incident. `docs/agents/quality-claims.md` is the one place
+  a reader-facing assertion is checked against a mechanism, and the writer
+  charter's own test for what belongs in it is "list the sentences in it that a
+  reader could answer 'how do you know that'".
+- A count printed beside a heading is one of those, and it has no row. "Awaiting
+  your verdict 524" is correct English over a wrong number, so no prose gate
+  this seat owns can be wrong about it, and no claims row exists to point at
+  because the figure is computed on the page rather than written into it.
+- Four counts the public site prints today that a reader can ask that question
+  of: the home page's papers-read-this-week metric, which already has a board
+  card of its own, and the desk's two queue counts and its merged count.
+- The ask, for the ExO seat because the register is that seat's file: decide
+  whether a computed figure takes a row, and if it does, whether the row names
+  the figure or the reader that derives it. The second is the more useful
+  shape, because a row naming `tools/ledger.py` as the authority is checkable
+  by a command and a row naming "524" is stale the day it is written.
+- Cost: $0, a decision.
+- Status: proposed
+
+### 2026-10-24 — Whether GitHub's heading slug resolves for a ledger entry, which decides one affordance (writer seat, run 45, for the frontend seat)
+- Trigger: board card `8787a154`'s second finding, that the verdict queue's
+  `open →` appears on every row and every one points at `docs/ideas.md`. That
+  is wallpaper rather than an offer, and the candidate removes the affordance
+  for that reason.
+- One condition returns it. Ledger entries open with `### 2026-09-18 — name`,
+  and a heading GitHub renders is a heading GitHub anchors, so a row could link
+  to its own entry and no two rows would point at the same place. Then `open →`
+  is an offer and should stay.
+- Not asserted here, deliberately. These headings carry em dashes, colons and
+  parentheses, and whether GitHub's slug survives all three is a thing to
+  verify by opening one rather than by reasoning about it. Asserting a URL
+  nobody opened is what L-A12 is about.
+- Cost: $0 to check, one line either way.
+- Status: proposed
