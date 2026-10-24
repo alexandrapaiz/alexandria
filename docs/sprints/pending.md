@@ -1,3 +1,62 @@
+## Updated 2026-10-24, ~06:55 UTC (message wake): #433 merged under Tier B closing the mail-rendering surface of card `9103a2d6`, #431 and #430 read off their diffs and left in draft with the blocking clause named in each
+
+**Trigger.** The event bus woke this seat on frontend's PR #433 opening,
+with a standing note attached asking this seat to read #433 against the
+merge rule and to decide the disposition of two idle drafts, #431
+(engineer) and #430 (writer), each with no live run behind it.
+
+**Own last run may still be open, checked first, and it was.** `#432`
+(this seat's own six-hour pass) was still open, touching this same file
+and `dispatch-queue.md`. Built on it by fast-forward merge rather than
+branching from main: `git log --oneline origin/alexandria-pm/2026-10-24-
+message-pr428-6h ^HEAD` printed nothing, confirming containment, and
+`#432` is closed as superseded by `#434`. **Chain: `#397` to `#399` to
+`#401` to `#403` to `#427` to `#429` to `#432` to this one, depth 8. This
+seat is blocked on merges**, one link deeper again than every prior pass
+tonight.
+
+**PR #433 (frontend, the mail-rendering defect pass on card `9103a2d6`)
+checked against Tier B and merged.** Not mine, not a draft, no `hold`
+label, zero comments or reviews, one check green, `mergeStateStatus:
+CLEAN`. `gh pr diff --name-only`: 19 files, all `docs/design/`, `docs/
+agents/incidents.md`, `site/emails/digest.html` — no Tier C path.
+Reran its named tests before merging rather than trusting the green
+check alone: `tests/test_email_template.py` and `tests/
+test_press_rehearsal.py`, 56/56 pass. Merged `159f30f..`, `06:52:58Z`.
+The PR itself names two findings that are not its author's to fix
+(the section-title slot's two contracts, and the read-list's floating
+reason line in `pipeline/email_render.py`'s `parse_section`) — not
+carded here since the PR already states them in full and either seat can
+read them there.
+
+**PR #431 (engineer) and #430 (writer), each idle ~5h with no live run
+behind it, read off their diffs per the disposition the standing note
+asked for, following the line two sibling PMs (alexandra-systems,
+epitome) already set on this same board tonight: merge what is already
+ready, close what is empty, name the blocking clause on the rest, and
+never self-ready another seat's draft.**
+
+- **#431 is not ready to merge, and the reason is a real defect, not the
+  draft flag.** `tools/check_registers.py` on its branch: `1 blocking`,
+  a new `docs/ideas.md` entry (the third this PR adds) with no `- Status:
+  proposed` line, breaking the ledger contract (`docs/standards/pm.md`
+  §4). Named on the pull request. **Owed by engineer**, next run: a
+  one-line fix.
+- **#430 has no defect found.** Every blocker its own draft note names
+  (the grade, the prompt diff, the gate extension, the suite) is present
+  and verified independently: `docs/voice/check_voice.py all` and
+  `blockrules` both exit 0, `tests/test_press_rehearsal.py` 13/13,
+  registers unchanged from main's baseline (0 blocking, 71 warnings).
+  **Owed by writer**, next run: nothing but its own `gh pr ready`. Named
+  on the pull request so the next run does not re-derive the checks cold.
+
+**`tools/check-draft-prs.sh`, named in this wake's own standing note,
+does not exist anywhere in this repository** (checked: `find . -iname
+"*check-draft*"` returns nothing), the same gap epitome's PM found in
+its own repo this same wake. Disposition above was read by hand from
+`gh pr view --json files,additions,deletions` and `tools/
+check_registers.py` run on each branch directly.
+
 ## Updated 2026-10-24, ~06:30 UTC (six-hour pass): #428 merged under Tier B closing sprint item 3, #414 held on the same unresolved Tier C question for a fourth pass and now asked of the owner directly, two unlogged host-run failures triaged with the evidence this seat has
 
 **Trigger.** The six-hour pass: read the inbox, triage the last six hours
