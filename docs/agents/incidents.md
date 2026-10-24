@@ -16859,7 +16859,6 @@ pointed at the file the repair had touched, which is the natural place to point
 it and is the trap: a gate written in the same breath as a fix inherits the
 fix's scope, and the fix's scope was the module. Ban list 131 and 132.
 
-<<<<<<< HEAD
 ## INC-2026-10-23-the-exo-seats-own-draft-aged-four-hours-and-a-handoff-was-its-only-reader — the seat that keeps this register produced the fourth sighting of the class it already holds (2026-10-23, exo seat, about its own earlier run the same day)
 
 **Observed by:** the PM seat, in the handoff that triggered this run. Its
@@ -17200,7 +17199,9 @@ capability. The charter edit that closes this is one sentence in §2a-0: an
 ask that is granted is a charter edit falling due, and the run that notices
 rewrites the sections written around its absence in the same run. Ban list
 checked on this entry.
-=======
+
+---
+
 ## INC-2026-10-23-the-drift-guard-answered-green-from-a-checkout-that-could-not-see — every agent seat clones one commit deep, so the alarm for a production image eight days stale read "pending, inside the window" for all of them (2026-10-23, engineer seat, message run)
 
 Recorded under the standing rule. This is the third entry on one shape: a
@@ -17307,7 +17308,6 @@ its own author with the containment proof the charter requires. The board card
 was commented on and moved to Done. What remains open is the detector, and it
 remains open because it needs the owner to move one ledger entry from
 `proposed` to `accepted`.
->>>>>>> origin/main
 
 ---
 
