@@ -41,12 +41,27 @@ console.log("== morph ==");
   const page = await ctx.newPage();
   await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.waitForTimeout(400);
+  // The budget is MORPH_WHEEL in MarkLive.jsx, which is 480px of wheel delta
+  // for the whole turn, so half of it is the middle and all of it is the
+  // book. This script used to spend 14 * 90 before the "mid" frame and 24 * 90
+  // more before the "book" frame, which is 1260 and then 3420 against a budget
+  // of 480. Both overspends land past the turn, the completed morph schedules
+  // its flight to scene two after 450ms, and the frames this script filed as
+  // "the middle of the turn" and "the open book" were two photographs of
+  // scene two with no mark in them at all. They audited clean, which is
+  // `INC-2026-10-15-the-visual-harness-had-three-traps` happening again: a
+  // frame labelled as a state it does not show. morph.mjs in this directory
+  // had the number right the whole time; this script reinvented it.
+  const MORPH_WHEEL = 480;
+  const spend = async (px) => {
+    for (let i = 0; i < 4; i++) { await page.mouse.wheel(0, px / 4); await page.waitForTimeout(130); }
+  };
   await page.screenshot({ path: `${OUT}/morph-desktop-0-machine.png`, clip: { x: 360, y: 100, width: 720, height: 760 } });
-  for (let i = 0; i < 14; i++) { await page.mouse.wheel(0, 90); await page.waitForTimeout(90); }
-  console.log("scrollY after wheel:", await page.evaluate(() => window.scrollY));
+  await spend(MORPH_WHEEL / 2);
+  console.log("scrollY at half the turn (must be 0, the page holds still):", await page.evaluate(() => window.scrollY));
   await page.screenshot({ path: `${OUT}/morph-desktop-1-mid.png`, clip: { x: 360, y: 100, width: 720, height: 760 } });
-  for (let i = 0; i < 24; i++) { await page.mouse.wheel(0, 90); await page.waitForTimeout(80); }
-  console.log("scrollY at end:", await page.evaluate(() => window.scrollY));
+  await spend(MORPH_WHEEL / 2);
+  console.log("scrollY at the end of the turn (must be 0):", await page.evaluate(() => window.scrollY));
   await page.screenshot({ path: `${OUT}/morph-desktop-2-book.png`, clip: { x: 360, y: 100, width: 720, height: 760 } });
   await ctx.close();
 }
