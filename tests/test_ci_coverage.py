@@ -359,6 +359,30 @@ UNCOVERED = {
     "tests/test_waitlist.py",
     "tests/unsubscribe.test.mjs",
     "tests/waitlist.test.mjs",
+    # Added 2026-10-24 with the two queue instruments, and pinned for the same
+    # structural reason as every line above: the step that would run them goes
+    # in `.github/workflows/checks.yml`, which no seat's token may write, and
+    # `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words not
+    # to attempt that file again. These are the thirteenth and fourteenth lines
+    # added in sixteen days.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding and already correct, so these entries count
+    # themselves there rather than opening another incident on one pattern.
+    #
+    # What they guard is the merge queue, which is this repository's measured
+    # throughput constraint rather than any part of the product.
+    # `test_merge_order.py` holds the read-only promise L-E12 asks of a
+    # measurement that runs inside a checkout somebody else is standing in, and
+    # that is the assertion whose silence would cost most: a regression there
+    # leaves a seat's clone shallow or its HEAD moved, which breaks the run
+    # that took the measurement rather than the measurement.
+    # `test_resolve_register_conflict.py` holds the arithmetic that catches a
+    # resolution which dropped a line, which is
+    # `INC-2026-10-24-a-hand-resolved-register-append-deleted-another-seats-line-with-no-marker`,
+    # and a dropped line leaves valid Markdown, so that arithmetic is the only
+    # thing in this repository that would notice the next one.
+    "tests/test_merge_order.py",
+    "tests/test_resolve_register_conflict.py",
 }
 
 

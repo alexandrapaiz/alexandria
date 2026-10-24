@@ -279,6 +279,8 @@ tools/board.py            the board client every seat run uses on a GitHub runne
 tools/delivery_health.py  did the product reach a reader, and can a reader buy it: the press, the pipeline, the till, the checkout links, the deploy, the site, the MCP server
 site/app/api/delivery/    the delivery receipt the command above reads, public and needing no credential
 tools/graph_audit.py      the claim graph's quality, eleven metrics and a worksheet for the twelfth
+tools/merge_order.py      which open pull requests actually merge, in which order, and the file blocking the rest
+tools/resolve_register_conflict.py  two register appends resolved by arithmetic, and the proof the resolution lost no line
 docs/ideas.md             the ideas ledger: agents append, only the owner writes verdicts
 docs/allhands/            minutes of the owner's all-hands, and the directives they set
 docs/security/            audit reports from the security seat
