@@ -17751,3 +17751,72 @@ cutting gates to make a budget.
   either way and the judgment is not this seat's.
 - Cost: $0, a decision and one line.
 - Status: proposed
+
+### 2026-10-24 — The agent container cannot start a browser, so the one seat whose charter is "look at the pixels" has to build a library path first (frontend seat, message run)
+- Trigger: this run's step 1. The charter says the run executes in the
+  prebaked container of Stage 1, with Playwright 1.49.1 and its Chromium
+  already installed at `PLAYWRIGHT_BROWSERS_PATH`. Three of those four facts
+  were not true where this run executed. `PLAYWRIGHT_BROWSERS_PATH` was unset.
+  The browser under `~/.cache/ms-playwright` was `chromium-1248`, which is not
+  the revision 1.49.1 pins, so `npx playwright@1.49.1` would have downloaded
+  rather than found it, which is the exact waste the pin exists to prevent.
+  And the Chromium that was present would not start: `error while loading
+  shared libraries: libatk-1.0.so.0`.
+- What the run did, because fixing the pin in-run is forbidden and screenshots
+  are the whole job. Resolved Chromium's runtime libraries with `apt-get
+  install --print-uris -y`, fetched the 54 packages, unpacked them to
+  `/tmp/ptroot` with `dpkg -x`, and launched through `LD_LIBRARY_PATH`. Then
+  drove that binary with the `playwright` already in `site/package.json` via
+  `executablePath`, installing no second Playwright. Nothing left the sandbox
+  and nothing entered the repository. It cost roughly fifteen turns of a run
+  whose actual task was one line of markdown.
+- Why it is a proposal and not a fix. Every part of that is outside
+  `.github/docker/`, which is where the answer belongs, and
+  `docs/agents/runtime-changes.md` says a runtime change is proposed with a
+  smoke run behind it rather than improvised by the seat that tripped over it.
+  It also says, in its own general rule, that a rule enforced by a sentence in
+  a charter is enforced at the reliability of a model reading a file. The
+  charter's sentence about the prebaked container is exactly that: a seat
+  reads it, believes it, and discovers otherwise.
+- The ask, for the engineer seat. Either the image this seat runs in gets
+  Chromium's library set and a `PLAYWRIGHT_BROWSERS_PATH` holding the revision
+  the pin names, or the charter's Stage 1 paragraph stops asserting a container
+  this seat does not get. The second is cheaper and worse: a frontend run that
+  cannot render cannot do its defining job, so the failure mode is a seat that
+  reports on code it read instead of pixels it saw.
+- One line worth having either way: a smoke step that launches the baked
+  browser and prints its version. `chrome --version` answered the whole
+  question here in one command, and it would have answered it before the run
+  rather than during it.
+- Cost: $0 to propose. The image change is one `RUN` line of the dependency
+  set Playwright's own `install-deps` installs.
+- Status: proposed
+
+### 2026-10-24 — A Clerk dev instance sends every screenshot to a handshake, so a visual run photographs Clerk's error page unless it knows one cookie (frontend seat, message run)
+- Trigger: the first three screenshots this run took were of
+  `{"errors":[{"message":"Invalid host", … "code":"host_invalid"}]}` at 390px,
+  and they looked like perfectly good screenshots until they were read. A
+  `curl` of the same URL answered `200`, which is why the condition is easy to
+  miss: the server renders, and the browser is redirected.
+- The mechanism, written down so the next run does not spend turns on it.
+  `clerkMiddleware` answers a browser navigation with
+  `307 → …clerk.accounts.dev/v1/client/handshake`, header
+  `x-clerk-auth-reason: dev-browser-missing`, whenever the dev-browser cookie
+  is absent. Setting `__clerk_db_jwt` on the Playwright context and aborting
+  requests to the Clerk hosts renders the real page with no change to any file
+  in `site/`.
+- The wrong fix, recorded because it is the obvious one. Replacing
+  `site/middleware.js` with a pass-through makes the route a 500, not a page:
+  the issue route's layout calls `auth()`, and Clerk refuses to answer it when
+  it cannot detect `clerkMiddleware()`. A seat that stubs the middleware and
+  screenshots the result photographs Next's error overlay instead, which is a
+  different wrong picture.
+- The ask, small and for this seat to carry rather than the engineer: the
+  screenshot helper this run wrote by hand belongs in the repository as
+  `site/tools/shoot.mjs`, with the cookie, the route block, the three charter
+  viewports and the executable-path resolution in it. Every weekly visual run
+  rebuilds it from nothing today, which is how a run ends up reading Clerk's
+  JSON and calling it the library page. Not built in this run, which was a
+  one-line handoff and had no mandate to add a tool.
+- Cost: $0, one file, no dependency.
+- Status: proposed
