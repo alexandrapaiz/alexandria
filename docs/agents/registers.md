@@ -673,3 +673,78 @@ dated-conclusion rule's: `unowned-duties.md` (every gap row),
 word "frozen"), `pending-workflow-changes.md` (every item waiting on a
 credential or a key), and this file (every `GAP` in the table above). The
 `GAP` rows here were last probed 2026-10-11.
+
+## The §3d sweep, 2026-10-24, and a filter the command needed
+
+The sweep ran for the first time in ten runs. Nine consecutive event-woken
+ExO runs skipped it, which is in the learning log as its own finding.
+
+**The command as §3d publishes it now returns 64 lines and is unreadable.**
+`grep -L "Enforced at:" docs/agents/*.md docs/voice/*.md docs/design/*.md`
+returned 36 files and the charter-count loop returned 32, and in both lists
+the clear majority are dated session records: eleven engineer run notes, two
+of this seat's own run notes, and thirteen dated voice artifacts like
+`docs/voice/pricing-claims-2026-10-18.md`. **A record of one session is not a
+register and has no rule to gate**, so the list is mostly correct answers to
+the wrong question, and a 64-line list of correct non-findings is how a
+sweep stops being run. That is the same failure as a register of rejections:
+nothing converges.
+
+The filter is two patterns, and the output drops to ten lines.
+
+```bash
+for f in docs/agents/*.md docs/voice/*.md docs/design/*.md; do
+  case "$f" in *run-note*|*-2026-*) continue;; esac
+  n=$(grep -rl "$f" prompts/*-agent.md 2>/dev/null | wc -l)
+  g=$(grep -c "Enforced at:" "$f")
+  echo "$n charters, gate=$g : $f"
+done | grep -E '^0 charters|gate=0'
+```
+
+Run across the whole artifact in the same run it was written, per §5's rule
+about new mechanical checks. Ten instances, in three classes.
+
+### Class one: zero charters name it, and it holds a rule
+
+| File | Gate line | Verdict |
+|---|---|---|
+| `docs/agents/exo-loop.md` | present, naming `prompts/exo-agent.md §3f and §24-tick` | **dangling.** Neither section exists on `main`. See below |
+| `docs/agents/skill-eval-program.md` | absent | **GAP.** The skill seat's surface, so the fix is a line in `prompts/skill-agent.md` and is filed as a charter edit rather than written into their file |
+| `docs/voice/awaiting-her-word.md` | absent | **GAP.** The writer's surface, same treatment |
+| `docs/agents/durable-execution.md` | present, saying "nothing, deliberately" | **not a finding.** It declares itself a decision note with no rule to violate, and says the sweep should list it with that verdict. Working as designed |
+
+**`exo-loop.md` is this run's own doing and is stated rather than hidden.**
+It is shipped in this pull request and its gate is a charter section that
+ships in the other one. So for as long as this pull request is merged and
+that one is not, the org holds a register that names a gate nobody can read:
+a file saying it is enforced at a section that does not exist is weaker than
+a file saying it is enforced at nothing, because the first one reads as
+covered. **That is the price of splitting a diff by file ownership rather
+than by meaning**, it is the correct price to pay here because the
+alternative was neither half merging, and it is the strongest single argument
+for merging the charter half.
+
+### Class two: a charter names it, and the file does not say so
+
+Six taste and design registers carry no `Enforced at:` header while being
+cited by one to three charters each: `docs/voice/taste.md`,
+`docs/voice/value.md`, `docs/design/taste.md`, `docs/design/ban-list.md`,
+`docs/design/canon.md`, `docs/design/motion.md`.
+
+These are **not unenforced**, and the distinction matters enough to keep the
+class separate. A gate exists in each case. What is missing is the file's own
+statement of where, which is what makes the gate auditable from the file
+rather than only from a grep across twelve charters. The header is cheap and
+it is the reader's only local evidence, so a register without one has to be
+trusted rather than checked. All six belong to the writer and frontend
+surfaces, so all six are filed as one charter edit rather than six file
+edits.
+
+### What this says about the sweep itself
+
+The published command has been in §3d since 2026-09-19 with no filter, which
+means every run that executed it faithfully got a list in which the real
+findings were outnumbered four to one by run notes. **A check whose output a
+reader has to triage by hand is a check that gets skipped**, and this one was
+skipped nine times in a row by runs that had other reasons to skip it. The
+filter above is the fix and it belongs in the charter next to the command.
