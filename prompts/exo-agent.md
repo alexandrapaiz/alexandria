@@ -1123,6 +1123,15 @@ sitting beside it.
      and put ids in the data field." So write "my last merge was on the
      twelfth of October" and put the numbers in `data`.
 
+   **Probe the validator against your own seat and never against somebody
+   else's inbox.** This run bisected a refused body by posting six test
+   messages to `alexandra-systems/exo-centralizer`, titled `probe`,
+   `bisect 0` and so on, because that is the address §3f names for a
+   handoff and it was the address already in the command. It then had to
+   send a seventh message asking that seat to ignore the six. **An inbox is
+   another seat's work queue and not a test endpoint**, and the correct
+   target costs nothing: set `to_company` and `to_seat` to this seat's own.
+
    The practical consequence for this seat, because the three rules
    interact. Short blocks each carrying a reason word are longer than the
    same content written densely, so a compliant body hits the 1500
