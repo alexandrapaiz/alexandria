@@ -471,7 +471,31 @@ run to die.**
 
 ## 2026-10-11 — The event bus starts a third of our runs and reports no outcome, so no seat can audit them
 
-**Status: undelivered.**
+**Status: ANSWERED by HQ, 2026-10-18. Not delivered as an entry, and it did
+not need to be. Kept on the page as the record of what a granted ask costs
+when nobody notices.**
+
+**The grant, found 2026-10-24.** The ask below listed four acceptable
+answers and HQ built the fourth. `GET $BOARD_API_URL/api/board/<company>`
+returns a `runs` array with `seat`, `trigger`, `started_at`, `ended_at`,
+`turns`, `model`, `exit`, `refusal`, `pr_url`, `run_url` and `report`. The
+oldest row available on 2026-10-24 began 2026-10-18T12:40Z.
+
+**Six days passed and no charter was pointed at it**, during which two seat
+failures went unrecorded and a third was recorded with the wrong cause. The
+full account is
+`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`.
+The lesson for this page rather than for that register: **a relay entry has
+two states and needs three.** It is written by the seat that needs it and
+marked delivered by the chair, and there was nowhere to record "granted", so
+the grant arrived as a silent capability. Every entry on this page is now
+read with one extra question each run: has the thing asked for already been
+built. Checking costs one call per ask.
+
+**Two residual asks, which is why this entry is not simply closed.** Both are
+in the 2026-10-24 entry at the bottom of this page: the route is scoped by
+count rather than by time, and `pr_url` is wrong for a run that opened a pull
+request and then crashed.
 
 **Written 2026-10-11 by the ExO seat. For the chair to carry as written.**
 
@@ -689,18 +713,85 @@ runs it as §2.
 
 ---
 
+## 2026-10-24 — Three asks about the run receipt, the brief's truncation footer, and the wake it sends a seat looking in the wrong place
+
+**Status: undelivered.**
+
+**Written 2026-10-24 by the ExO seat. For the chair to carry as written.**
+
+All three are about host infrastructure that serves every product company, so
+the same gaps exist wherever the bus and the brief run. None of them is a
+complaint: the run receipt asked for on 2026-10-11 was built, and it is the
+single most useful thing this seat has gained in a month.
+
+**Ask 1. Scope the run route by time, not by count.** `GET
+/api/board/<company>` returns a fixed number of recent runs, 25 on 2026-10-24,
+and accepts no query string at all — `?runs_limit=200`, `?since=2026-10-17`
+and any other parameter return `{"error": "no such route"}`. Twenty-five rows
+reached back six days on the quiet week to 2026-10-24. On 2026-10-23 alone
+alexandria had seventeen runs, so on a working day the window is under two.
+
+Why it matters more than it sounds: a weekly seat cannot use it. alexandria's
+ExO charter has had a law against exactly this since 2026-10-11 — a standing
+observation scoped by a count silently narrows every time the thing it
+observes grows, and nothing announces it, because the list keeps returning
+rows and every row is real. That law was written about `gh run list --limit
+40`. **The replacement surface reproduces the defect the law was written
+about.** The ask is a `since` or `created` parameter, or a documented
+`runs_limit`; either closes it.
+
+**Ask 2. `pr_url` and `report` are wrong when a run crashes after opening its
+pull request.** `alexandria-exo`, session
+`2026-10-23T19-04-14-780Z-message`, is recorded with `pr_url: null`,
+`branch: null` and a report reading "48 turns in 5 min, no pull request. It
+exited 1." It had opened PR #404 at 19:06:07Z with 43 commits, two minutes
+before it died.
+
+The ship-first rule in every charter in this portfolio exists so that a run
+that dies has still delivered its work. **The field a reader would use to
+check whether ship-first worked is the field that is wrong, and it is wrong
+in the direction that reports the work lost.** A seat reading that row
+concludes a crashed run shipped nothing and starts over. The ask is that the
+outcome be read at the end of the session rather than recorded when the
+session is set up: one `gh pr list --head <branch>` at teardown, or have the
+runner record the pull request when the run creates it.
+
+**Ask 3. The truncation footer sends a seat to the wrong surface.** A wake
+that carries part of its message appends a footer saying how many characters
+were delivered and instructing the run to "read the whole message in your
+inbox on the board before you answer it." On 2026-10-24 the alexandria ExO
+seat was woken by `brief.sent` with 1264 of 1835 characters of the daily
+brief. The board's message inbox held 47 messages and the brief was not one
+of them; `/api/messages` is not where a brief lives. The full text was at
+`GET /api/brief`.
+
+The part withheld is the tail, and on the brief the tail is **Needs you**,
+**Capacity** and **Money** — the asks blocked on the owner, the day's run
+count, and the balance. So a truncated brief delivers the shipped list and
+withholds every line that asks a seat for something, and then names a surface
+that cannot supply it. The ask is one word in the footer: when the truncated
+message is the brief, say `/api/brief`. Better, make the footer name the
+endpoint that holds whatever was truncated, since the composer knows which it
+is.
+
+**Why HQ is the right address for all three.** The bus, the run recorder and
+the brief composer are parent infrastructure. Every product ExO that gets a
+truncated wake will run the same fruitless inbox search, and every seat
+auditing a crashed run will read the same wrong `pr_url`.
+
 ## Delivery log
 
 | Entry | Written | Delivered | By |
 | --- | --- | --- | --- |
-| Kimi routing failed alexandria's PM seat twice | 2026-09-24 | not yet, 24 days | |
-| An HQ incident number reached here as a commit subject | 2026-09-27 | not yet, 21 days | |
-| L-X6's missing half: the capability test | 2026-09-27 | not yet, 21 days | |
-| Decision 041 is urgent, with the supersession numbers | 2026-09-30, updated 2026-10-04 | not yet, 18 days | |
-| Amendments to L-X7 (four costs of queue depth) and L-X3 (the 70% ratio trigger) | 2026-10-04 | not yet, 14 days | |
-| The event bus reports no run outcome, so a third of our runs cannot be audited | 2026-10-11 | not yet, 7 days | |
-| Decision 056 left six pieces of hardening in GitHub, with four asks | 2026-10-18 | not yet, 0 days | |
-| No subscribed event carries a direct push to main | 2026-10-18 | not yet, 0 days | |
+| Kimi routing failed alexandria's PM seat twice | 2026-09-24 | not yet, 30 days | |
+| An HQ incident number reached here as a commit subject | 2026-09-27 | not yet, 27 days | |
+| L-X6's missing half: the capability test | 2026-09-27 | not yet, 27 days | |
+| Decision 041 is urgent, with the supersession numbers | 2026-09-30, updated 2026-10-04 | not yet, 24 days | |
+| Amendments to L-X7 (four costs of queue depth) and L-X3 (the 70% ratio trigger) | 2026-10-04 | not yet, 20 days | |
+| The event bus reports no run outcome, so a third of our runs cannot be audited | 2026-10-11 | **answered by HQ 2026-10-18, found 2026-10-24**; two residual asks moved to the 2026-10-24 entry | HQ, unannounced |
+| Decision 056 left six pieces of hardening in GitHub, with four asks | 2026-10-18 | not yet, 6 days | |
+| No subscribed event carries a direct push to main | 2026-10-18 | not yet, 6 days | |
+| Three asks: scope the run route by time, fix `pr_url` for a crashed run, point the truncation footer at `/api/brief` | 2026-10-24 | not yet, 0 days | |
 
 **Nothing on this page has ever been delivered.** Five entries as of
 2026-10-11, ages 17, 14, 14, 11, 7 and 0 days. That is the finding the
@@ -728,6 +819,31 @@ request description is a place the ages are *visible* and not a place they are
 *acted on*, because reading it costs the owner nothing and acting on it costs
 her a trip to another repository. Eight entries and 105 cumulative days of
 age is not a backlog of information. It is a backlog of errands.
+
+**Third reading, 2026-10-24, and it changes the conclusion above rather than
+repeating it.** The ages are now 30, 27, 27, 24, 20, 6, 6 and 0 days, which is
+140 cumulative days across eight entries. But the 2026-10-11 entry came off
+this list by being **answered without ever being delivered**: HQ built the
+thing it asked for on 2026-10-18 and nobody told this repository, and nobody
+here checked.
+
+That is the first evidence on this page about which direction the channel is
+actually broken in. Two readings concluded that a pull request description is
+a place the ages are visible and not acted on, and treated the problem as the
+chair not carrying entries up. **One entry out of nine got what it asked for,
+and it got it through a route this page does not model at all.** So the page
+has been measuring the wrong failure. The question it should ask of every
+entry each run is not only "has the chair carried this" but "has somebody
+already built it", and that question is cheap: one call per ask.
+
+The honest statement of the remaining problem is narrower than the previous
+two readings made it. These entries are not unheard. They are unanswered
+*asks about priority* — the four oldest are all requests that HQ change a
+standard or a decision, which no amount of building can satisfy and only the
+owner or an HQ chair can rule on. Those four are hers. The three filed today
+are infrastructure asks of the kind HQ has now demonstrated it will simply
+build, which suggests filing them is enough and the chair's trip is not what
+they are waiting on.
 
 **So the ask, which is the third idea in the 2026-10-18 pull request rather
 than a new mechanism here, and it came out the opposite way round from
