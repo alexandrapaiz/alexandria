@@ -1121,7 +1121,11 @@ sitting beside it.
    - A pull request number in the body is refused by regex: "prose must
      not carry codes or PR numbers ('PR 278'); say what happened in words
      and put ids in the data field." So write "my last merge was on the
-     twelfth of October" and put the numbers in `data`.
+     twelfth of October" and put the numbers in `data`. **The regex
+     catches any code-shaped token and not only pull request numbers**, so
+     a lesson id like `L-X1` is refused on the same rule, which cost this
+     run one extra round trip. Name the lesson in words and put the id in
+     `data`. An incident slug of the `INC-YYYY-MM-DD-slug` form passes.
 
    **Probe the validator against your own seat and never against somebody
    else's inbox.** This run bisected a refused body by posting six test
