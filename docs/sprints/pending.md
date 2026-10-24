@@ -1,3 +1,126 @@
+## Updated 2026-10-24, ~01:49 UTC (message pass): #424 checked against the merge rule and merged, #421 found already superseded, #427 absorbed at depth 6
+
+**Trigger.** Four board events, two pairs naming #421 and #424 respectively:
+"pull request opened... review it against the merge rule: merge it, or say
+on the board what it still needs" and "the [seat]'s run finished... merge
+what is yours under the merge rule, close what is superseded, and hand the
+next thing to a seat," for the writer's #424 and the frontend's #421.
+
+**Own last run may still be open, checked first, and it was.** `#427`
+(this seat's own, from the pass twenty minutes earlier) was still open,
+touching this same file and `dispatch-queue.md` at this same anchor. Built
+on it rather than branching from main: `git log --oneline
+origin/alexandria-pm/2026-10-24-message-pr419-420 ^HEAD` printed nothing,
+confirming containment, and `#427` is closed as superseded by `#429`.
+**Chain: `#397` to `#399` to `#401` to `#403` to `#427` to this one, depth
+6. This seat is blocked on merges**, same shape every pass tonight has
+reported: the diff carries six runs of this file's own work for one run of
+review.
+
+**PR #424 (writer, the ban-list entry 93 sweep and the digest generator's
+own rule violation it found), checked against the merge rule (Tier B,
+`docs/standards/pm.md` §10) and merged.** Not mine, not a draft, no `hold`
+label, zero comments or reviews. `gh pr diff --name-only` showed six files
+(`docs/agents/incidents.md`, `docs/ideas.md`, `docs/voice/ban-list.md`,
+`docs/voice/check_voice.py`, `docs/voice/reviews/2026-10-24-specimens.md`,
+`prompts/digest.md`). `prompts/digest.md` is not a Tier C charter path: it
+is the writer's own named writable surface (`prompts/writer-agent.md`
+line 44), not a `prompts/<seat>-agent.md` role definition, and
+`docs/agents/registers.md` confirms the twelve charters are a distinct,
+separately-tracked set. One check, "digest request fits the model's
+budget," green. Mergeable clean. Merged as a normal merge, now on `main`.
+
+**PR #421 (frontend, the pricing page's dead pills and the masthead-anchor
+fix) was not mine to merge: it had already been superseded.** Read before
+acting, per the survey rule, rather than trusting the title. `mergeable:
+CONFLICTING` on first read; `git merge-tree` (after unshallowing this
+clone, see below) showed the only two real conflicts were
+`docs/agents/incidents.md` and `docs/ideas.md`, both append-only, both
+docs-only, which §10 condition 5 leaves to the PM. Before resolving it,
+found the frontend seat's own `#428` already open, titled exactly as the
+rebase of `#421` with that same conflict named and already resolved by the
+owning seat. Nothing left for the PM to do: `#421` is closed (by the
+frontend seat, not by this pass), and `#428` carries all of its commits.
+`#428` is still a draft with its own findings still landing in later
+commits, so it is not yet a Tier B candidate and this pass takes no
+merge action on it.
+
+**This clone was shallow**, which is why the first `git merge-base` against
+`#421`'s branch failed outright rather than returning a wrong answer.
+`git rev-parse --is-shallow-repository` was `true`; `git fetch --unshallow`
+fixed it for this run. This is the same fact the engineer's open `#426`
+names from the other side (a deploy-row check that cannot be read). Filed
+as a repeat below rather than re-discovered silently.
+
+**Board.** Moved the writer's Review card for entry 93 to Done, with the
+merge reasoning in the comment. The frontend's Review card for the pricing
+pills stays in Review: the fix is real but not yet merged, since `#428` is
+still in progress. Posted one `done` message rather than opening a
+dispatch, because dispatch is still off and every dispatchable seat already
+has live work of its own in flight (writer's `#430`, frontend's `#428`,
+engineer's `#426`, all drafts opened or still open within the last few
+minutes) — handing any of them something new now would be the seizure the
+standing note already warns against.
+
+**Run health.** No new non-success since the last pass's read: the newest
+run on the board's list beyond that point is the `checks` run on `main`
+for this seat's own merge of `#424`, success. Cap ratio not recomputed;
+no new run old enough to measure against its cap this pass.
+
+**Delivery health.** Not recomputed; unchanged since the prior reading:
+press, site, archive ok; compute/pipeline/mcp, checkout, and deploy still
+on the same three owner-only blockers; payments unknown.
+
+## Updated 2026-10-24, ~01:38 UTC (message pass): both merges confirmed on main, #403 absorbed at depth 5, nothing new to take
+
+**Trigger.** Two confirmation events: "your pull request merged: PR #419
+checked against the merge rule, Tier B, merged (`#423`)" and "your pull
+request merged: PR #420 checked against the merge rule, Tier B, merged
+(`#425`)." Both close with "continue with the next item in your lane on
+the board, and say what you took."
+
+**Own last run may still be open, checked first, and it was.** `#403`
+(this seat's own, from the 2026-10-23 18:56 pass) was still open,
+touching this same file and `dispatch-queue.md` at this same anchor.
+Built on it rather than branching from main: new branch started at
+`#403`'s own tip, merged `origin/main` in, resolved four docs-only
+conflicts (`docs/agents/incidents.md` and `docs/ideas.md`, both
+append-only, kept both sides in full; this file, kept both in full with
+`main`'s newer entries placed above `#403`'s older ones, matching the
+newest-first convention; `docs/sprints/dispatch-queue.md`, took `main`'s
+side whole, since that file is replaced in full each run rather than
+appended to). `git log --oneline
+origin/alexandria-pm/2026-10-23-message-pr402-merge ^HEAD` printed
+nothing, confirming containment, and `#403` is closed as superseded by
+this run's own pull request. **Chain: `#397` to `#399` to `#401` to
+`#403` to this one, depth 5. This seat is blocked on merges**, same as
+`#403` already reported at depth 4: the diff carries five runs of this
+file's own work for one run of review.
+
+**What this pass took: confirmed both merges, found nothing new.**
+`#419` and `#420` are both on `main` (`507099e` and `6baf03d`), each
+already checked and verified by the prior two passes tonight — nothing
+to redo. Checked every other open pull request for a new Tier B
+candidate: `#421`, `#424`, `#426` are all drafts, so §10 condition 2
+holds every one of them regardless of diff. `#414` is unchanged, still
+held on the same unresolved question this seat already asked (whether a
+routine, non-authority charter fix is covered by the autonomy-tiers
+amendment's carve-out or by the standard's separate owner-only
+"Charters" category) — no new fact arrived to answer it, so it stays
+held rather than re-litigated on the strength of nothing new.
+
+**Board walked for an orphaned pm-lane item; one found, already closed
+in substance.** `d69a5c1a` (the home-page quality-claims row) looks done
+in its own comment thread, but the actual fix is bundled inside the
+still-unmerged `#414`, so it correctly stays in Backlog rather than Done,
+the same reasoning this seat already gave for leaving `#414`'s own board
+card in Review. Nothing to move, nothing new to comment.
+
+**Run health, delivery health, cap ratio.** Not recomputed; unchanged
+since the prior pass ten minutes ago, which already read the board's run
+list and found no new non-success. Full numbers in this run's
+`dispatch-queue.md`.
+
 ## Updated 2026-10-24, ~01:27 UTC (message pass): PR #420 checked against the merge rule, resolved a docs-only conflict, and merged
 
 **Trigger.** Two board events naming the same pull request: "pull request
@@ -756,6 +879,509 @@ addressed to this seat, answered and closed, per the standing rule for an
 event-driven wake with one instruction and nothing else to do: it answers
 that one thing and stops, the same shape as this seat's other passes
 tonight.
+
+## Updated 2026-10-23, ~18:55 UTC (message pass): PR #402 (chair, skill evals' first host run) checked against the merge rule, Tier B, merged
+
+**Own last run may still be open, checked first.** `gh pr list --state
+open` found `#401` (this seat's own message pass on PR #400, opened
+18:09:21Z), still open. Its diff lands in `docs/sprints/pending.md` and
+`docs/sprints/dispatch-queue.md` at this same anchor, so this run built
+on it rather than branching from main: the new branch starts at `#401`'s
+own tip, `git log --oneline origin/alexandria-pm/2026-10-23-message-pr400-review ^HEAD`
+printed nothing, confirming containment, and `#401` is closed as
+superseded by this run's own pull request (`#403`). Chain: `#397` to
+`#399` to `#401` to `#403`, depth 4. **This seat is blocked on merges**:
+by this point the diff carries four runs of `pending.md` work for one
+run of review, which is slower to review, which is what deepens the
+chain again.
+
+**Trigger.** Event: a pull request opened by a seat in the company, the
+chair's "Skill evals: register the policy on every suite and let the
+judge finish" (`alexandrapaiz/alexandria#402`). Instruction: review it
+against the merge rule, merge it, or say on the board what it still
+needs and hand that to its seat.
+
+**PR #402 checked against the merge rule and merged, this time
+cleanly.** `gh pr diff --name-only` showed seven files, all six
+`skills/*/evals/evals.json` and `tools/skill_eval.py` — no `prompts/`,
+no `company.yaml`, no secret, so none of the Tier C paths this exact
+pass held `#400` on. Every Tier B condition held: not a draft, no
+`hold` label, no comment, no review, `mergeable: MERGEABLE`,
+`mergeStateStatus: CLEAN`, the one defined check (the digest-budget
+gate) `SUCCESS`, opened today. §21 ("Merges belong to the PMs and the
+chairs, not to the owner") and the broadened §10 amendment both clear
+it independently of Tier B. Not the PM's own PR, and it does not spend
+money, open an account or write a secret: `JUDGE_MAX_TOKENS` 700→2000
+and a retry-once-with-double-budget change tune an existing eval
+harness that already carries its own `CAP_USD` guardrail, not a new
+spend.
+
+**Checked rather than trusted.** The PR's own "Checks" section claims
+`tools/skill_eval.py --check` shows no `failing:` lines and `--smoke`
+passes. Ran `--check` on `origin/main` first: exit 1, nine `failing:`
+lines, six of them "`policy.repetitions` is not pre-registered" and
+eight of them `context-window-engineering`'s `sections` naming headings
+that are not in the current `SKILL.md`, exactly the two defects the PR
+describes. Then fetched the PR branch into a scratch worktree and ran
+the same two commands: `--check` exits 0, "9 of 9 skills carry a
+conformant eval file," zero `failing:` lines; `--smoke` exits 0, "the
+harness measures what it should." Also read the `ask()` diff: the new
+`except self.llm.NoModelAnswered` branch catches the exact exception
+`llm.ask_json` already raises elsewhere in this file (confirmed at the
+two other call sites), so the retry path is reachable rather than
+dead code.
+
+**Nothing owed back to the chair.** The two follow-ups the PR body
+itself names (gameable-rubric findings from `--audit`, and the
+measured `results.json` once the host run finishes) are declared as
+coming in a second PR, not asked of this one.
+
+**Board.** No open board item or Review card named this PR or
+`chair`'s seat; posted nothing to the board for want of a card to post
+to, logged here instead.
+
+## Updated 2026-10-23, ~18:10 UTC (message pass): PR #400 (writer, second run, the generator's own duplicated text) checked against the merge rule and held on a Tier C path, handed to the owner, nothing owed from the writer
+
+**Own last run may still be open, checked first.** `gh pr list --state
+open` found `#399` (this seat's own message pass on PR #398, opened
+17:44:02Z), still open. Its diff lands in `docs/sprints/pending.md` at
+this same anchor, so this run built on it rather than branching from
+main: the new branch starts at `#399`'s own tip,
+`git log --oneline origin/alexandria-pm/2026-10-23-message-pr398 ^HEAD`
+printed nothing, confirming containment, and `#399` is closed as
+superseded by this run's own pull request (`#401`). Chain: `#397` to
+`#399` to `#401`, depth 3. **This seat is blocked on merges**: by this
+point the diff carries three runs of `pending.md` work for one run of
+review, which is slower to review, which is what deepens the chain
+again.
+
+**Trigger.** Event: a pull request opened by the writer seat, "Writer
+2026-10-23 (second run): the generator was carrying four blocks of its
+own text twice, and one left a slot open to the end of the file"
+(`alexandrapaiz/alexandria#400`). Instruction: review it against the
+merge rule, merge it, or say on the board what it still needs and hand
+that to its seat.
+
+**PR #400 checked against the merge rule and held, not merged.** Every
+Tier B condition but one holds: not a draft, no `hold` label, no
+comment, no review, `mergeable: MERGEABLE`, `mergeStateStatus: CLEAN`,
+and the one defined check (the digest-budget gate) reads `SUCCESS`. But
+`gh pr diff --name-only` shows `prompts/digest.md` in the file list, a
+Tier C path (`docs/standards/pm.md` §10, "Charters (`prompts/`)"), so
+rule 4 fails and it is not mine to merge no matter how clean the rest of
+it is. This is the same read `#376` and `#385` already gave `#372` and
+`#381`: a `prompts/` path is Tier C regardless of what the change inside
+it does.
+
+**Checked rather than trusted.** The PR's whole claim is that a gate can
+read a broken file as fine, so I did not take its own grade of itself on
+faith. Fetched the branch into a scratch worktree and ran
+`docs/voice/check_voice.py generator` myself: green on the repaired
+`prompts/digest.md` (zero duplicated blocks, zero unpaired braces, zero
+mid-clause truncations). Then pointed the same command at
+`origin/main`'s copy of the file, the one `#400` has not touched yet,
+and it came back red: three duplicated blocks, one brace opened on line
+1140 that never closes before the file ends, and two lines ending
+mid-clause. That is the gate working in both directions, not a one-way
+pass, and it independently confirms the PR's central finding that `main`
+is carrying the damage right now.
+
+**Nothing owed back to the writer.** The diff is clean on every axis but
+scope, and the scope axis is the one that matters. The PR's own two
+asks for the engineer (list `prompts/digest.md` in the shared edit-
+damage checker's register, and widen that checker's test past the git-
+conflict marker to the duplicated-block form) are already filed as a
+`proposed` entry in `docs/ideas.md` dated today, addressed to the
+engineer seat's surface, not mine to groom into `accepted` on a message
+pass. Replied on the board (`writer`'s Review card for this PR) in first
+person: the merge-rule check, the independent re-run of the new check
+against both the repaired file and `main`'s current one, and the hold.
+
+**Run health.** Not re-run this pass; a single-message event wake
+answered and stopped per the standing rule for a seat with nothing else
+to do, same as the other message passes today.
+
+**Owed to the owner, unchanged:** `#381` (exo, Tier C, all eleven
+`prompts/*-agent.md` files, named by the 2026-10-18 pass and not
+re-litigated here) and now `#400` (writer, Tier C, `prompts/digest.md`),
+both waiting on the owner's or a chair's merge for the same reason. The
+Polar Merchant-of-Record account and the other items already on this
+tracker are unchanged and not restated.
+
+**Merged this run:** none. `#400` is clean and Tier-B-eligible on every
+axis but scope; the scope axis holds it for the owner.
+
+## Updated 2026-10-23, ~17:40-17:50 UTC (message pass): PR #398 (writer, the outsider-cap instrument) checked against the merge rule and merged under Tier B
+
+**Trigger.** Event: a pull request opened by the writer seat, "Writer
+2026-10-23: the one law the generator has never held, counted for the
+first time, 24 terms of art against its own cap of five"
+(`alexandrapaiz/alexandria#398`). Instruction: review it against the
+merge rule, merge it, or say on the board what it still needs and hand
+that to its seat.
+
+**Own prior open PR, resolved first.** `#397` (this seat's own earlier
+message pass this run, "back from five days dark") folds into this PR.
+This entry lands in the same file #397 wrote, so this run built on the
+open branch rather than starting from main again.
+`git log --oneline origin/alexandria-pm/2026-10-23-message ^HEAD`
+printed nothing, confirming containment. Then `#397` was closed as
+superseded by `#399` (this PR). Chain depth 2, not at the bold-warning
+threshold.
+
+**PR #398 checked against the merge rule (`docs/standards/pm.md` §10,
+Tier B) and merged.** All six conditions held. Not the PM's own PR. Not
+a draft, no `hold` label, zero comments since the single push. No CI
+checks defined on the branch at all (`gh pr checks 398`: "no checks
+reported"), which the rule treats the same as green. `gh pr diff
+--name-only` showed only `docs/agents/incidents.md`, `docs/ideas.md`,
+`docs/voice/awaiting-her-word.md`, `docs/voice/ban-list.md`,
+`docs/voice/check_voice.py` and `docs/voice/reviews/2026-10-23.md`, no
+Tier C path at all (no `prompts/`, no `company.yaml`, no secret, no
+spend). `mergeStateStatus` read `CLEAN`. Opened today.
+
+**Verified rather than trusted, because a false green is the exact
+incident this PR itself files.** Checked out the branch in a worktree
+and ran the new command directly instead of taking its own grade at its
+word. `python3 -I docs/voice/check_voice.py firstuse` on the branch
+exits 1, and the printed counts match the PR's claim exactly.
+`site/content/issues/2026-W39.md` carries 24 terms of art against the
+generator's own cap of 5, 22 bare, 2 bare title nouns (`harness`,
+`distillation`). A hand-built clean fixture with one glossed term and no
+bare title exits 0, which proves green is reachable and this is not a
+gate that can only ever fail. `python3 -I docs/voice/check_voice.py all`
+on the branch also exits 1 for the same reason, confirming the new
+command is wired into `all` and not into CI. That matches the PR's own
+point that `firstuse` belongs in the press's pre-send pass rather than
+`.github/workflows/checks.yml`, since it stays red on the one archived
+issue nobody is going to rewrite. `tools/check_registers.py` reproduces
+the same "63 entries carry no readable status" BLOCKING line on `main`
+itself and on the PR branch alike, confirming the PR's own claim that
+this is pre-existing and not caused by this diff. `prompts/digest.md` is
+byte-identical to main, as claimed. This is the eighth attempt at a
+structural fix, well past the charter's own threshold of two failed
+prompt rewrites before the fix moves to a command.
+
+**Three things the PR hands onward, carried here rather than
+re-litigated.**
+1. **Owner.** `docs/voice/awaiting-her-word.md`'s nine candidates,
+   oldest 27 days, re-confirmed by command this run and still live.
+   Already tracked below under "Owed to the owner."
+2. **Engineer, next grooming pass.** Wire `firstuse` into the press's
+   pre-send pass in `pipeline/weekly.py`, explicitly not CI, because CI
+   would redden every build on a pilot issue nobody may edit. Filed as a
+   `proposed` ledger entry by the PR itself. This is a sprint item for a
+   future planning pass, not a dispatch. The current sprint
+   (`sprint-2026-10-19.md`) already carries two conditions toward
+   Wednesday.
+3. **ExO.** One charter line for the writer seat. A run that ships a
+   new `docs/voice/check_voice.py` command should name, in its review,
+   the fixture it built that the command was meant to fail and the exit
+   code it got. Filed as a `proposed` ledger entry, not self-applied,
+   per the `L-A22` exception for charter-only enforcement. The PR's own
+   incident
+   (`INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason`)
+   already names the standards that cover the repeat (`L-A39`, `L-A21`),
+   so no new register entry was needed here.
+
+## Updated 2026-10-23, ~17:00-18:00 UTC (message run, first wake after the five-day host outage): the queue checked PR by PR, two merged, one incident class repeated a seventh time, the sprint reopened toward Wednesday
+
+**Trigger.** A handoff from `alexandra-systems/chair:hq-console` (board
+message `c42edc8e`), addressed to `pm`/`alexandria`: drain Saturday's
+queue, merge what is green/scoped/reported under `docs/standards/pm.md`
+§21, close what a later run superseded, leave the rest with a line
+saying why, and say in one note what the week lost and what ships by
+Wednesday.
+
+**Own two open PRs, resolved first.** `#396` (clean, dispatch-queue.md +
+pending.md, fast-forwarded in) and `#332` (the Regroom pass, two
+docs-only append conflicts in `docs/ideas.md` and this file, resolved
+keeping both sides) both folded into this run's own PR and were closed
+as superseded. Chain depth 2, not at the bold-warning threshold.
+
+**The queue itself was six open pull requests, not "dozens."** Checked
+`gh pr list --state open` directly rather than trusting the handoff's own
+count (the host was dark for the chair too; its figure may describe the
+whole company's boards, not this one alone). Disposition on each:
+
+- **#372** (writer, the taste-gate work) — **merged**, Tier B. Held open
+  five days on a Tier-C misread of `prompts/digest.md` (PR #376, same day
+  as the fix for the identical misread on the same file eleven hours
+  earlier, PR #366) — recorded as
+  `INC-2026-10-23-tier-c-carve-out-misread-a-seventh-time`. Resolved two
+  docs-only append conflicts that had accumulated during the outage
+  (`docs/agents/incidents.md`, `docs/ideas.md`) in a scratch worktree,
+  pushed to the writer's own branch, waited for a fresh green check, then
+  merged.
+- **#381** (exo, "the clock left GitHub, eight things changed with it")
+  — **left open, named rather than merged.** A prior pass (PR #385) called
+  this Tier C and handed it to the owner. This run's own read of all
+  thirteen charter diffs found only uniform procedural safety additions
+  (unshallow-the-clone, no stray conflict markers, no shared `/tmp`
+  filenames, a cap-ratio window fix) and nothing that changes who may
+  dispatch, merge or approve what — which would make it Tier B under the
+  same carve-out that freed #372. Not reversed here: the diff is 26
+  files and 3,870 insertions, this run already corrected one Tier-C
+  misread today, and a second reversal of a predecessor's considered
+  call on a cross-cutting charter PR in the same pass is a worse bet than
+  naming the disagreement for a second reader. **Recommend the owner or a
+  chair take a second look at #381's tier call specifically**, rather
+  than leaving it as settled.
+- **#358** (engineer, checkout-alarm reader), **#356** and **#333**
+  (frontend, visual review) — **left open, named.** All three are still
+  drafts; Tier B condition 2 requires not-a-draft. Ursa's own idle-draft
+  note (answered on the board 2026-10-18, before the outage) already
+  named these as idle with only their opening commits. Not closed as
+  abandoned: the host was dark, not the work, and a draft stalling
+  because every seat on the host stopped is not the same finding as a
+  draft its own author walked away from.
+
+**What the week lost, and what ships by Wednesday: in the PR description
+in full, and in `docs/sprints/sprint-2026-10-19.md`'s own text.** Short
+form: two of the five sellable conditions from the 2026-10-17 Regroom
+reset shipped same-night before the outage (#339 install line/marketplace,
+#348 buyer's-path measurement); two were lost outright because their one
+scheduled shot (skill's Tuesday, frontend's Wednesday) fell entirely
+inside the dark window (proof-in-session, catalog page + pricing
+reframe); 2026-W41's press issue was never sent and cannot be safely
+backfilled (a real anchor bug, `INC-2026-10-18-press-recovery-content-anchor`,
+not an outage artifact). Carried into the new sprint, re-targeted to
+Wednesday 2026-10-28.
+
+**Reconciliation against `docs/decisions.md` and `docs/allhands/`,**
+per this charter's own standing clause: `docs/decisions.md` still stops
+at ADR-40 and `docs/allhands/` still has nothing newer than
+2026-09-18-close — unchanged since the last pass before the outage, so
+nothing here to strike.
+
+**Owed to the owner, unchanged and not re-litigated here, each older by
+the five dark days:**
+- The Polar sandbox account (ADR-30), a half-hour browser task, 27 days
+  overdue (overdue since 2026-09-26).
+- PR #60 (pre-send quality checklist), Tier C, now 28 days old.
+- `#381`'s tier call, named above, worth a second look.
+- No entry in `docs/decisions.md` names HQ decision 056 (seats off
+  GitHub, PR #334) or the local cadence law it overrides
+  (`docs/agents/cross-repo-law.md` rule 1); this is the ExO seat's §3e to
+  close, flagged here because it is six days old and the ExO's own PR
+  (#381) already found it and could not land.
+
+**Board.** The board's item/view API answered `503` throughout this
+run (`"the board's database is unreachable"`); the messages API answered
+normally. Replied to the chair's handoff in first person on the messages
+surface; could not move or comment on board items while the 503 held.
+Flagged as a current, unresolved finding rather than worked around
+silently.
+
+**Run health.** No agent workflow has run through GitHub Actions since
+2026-10-17 (seats moved to the host's own clock the night before the
+outage, PR #334); nothing to triage from Actions. No visibility into
+host-window runs from this sandbox beyond the board's events feed, which
+this run did read.
+
+**Delivery health
+(`docs/agents/delivery-health.md`, via `tools/delivery_health.py`).**
+**ok:** press (2026-W42 written), pipeline, site, archive. **FAILING:**
+checkout (Polar env vars still unset — the same account gap above),
+deploy (weekly/distill/ingest 7-8 days behind `origin/main`, unsurprising
+across a five-day dark window, needs a hand with `modal deploy`), **mcp**
+(`/mcp` now returns `404`, new today — worth the engineer's or chair's
+immediate look, not just a standup line). **unknown:** payments
+(`NEON_RO_URL` absent from this sandbox, unchanged).
+
+**Queue gauge, four numbers.**
+1. `main`'s newest commit before this run: `c04b430`, 2026-10-18T18:46:44Z
+   — effectively the whole outage, ~119 hours old at this run's start.
+   Newest `checks.yml` on `main` before this run: success, 2026-10-18T07:09:33Z.
+   This run's own merge of #372 moved `main` forward during the pass itself.
+2. Open pull requests at this run's start: 6 total (this seat's own
+   #397, plus #381, #372, #358, #356, #333); 0 opened since the last
+   merge to `main` until this run's own #397.
+3. 7-day conversion: 61 merged / 78 opened (0.78) — a number earned almost
+   entirely by the single Sunday catch-up burst before the outage, not by
+   anything in the dark window itself.
+4. Deepest open chain: 1 among what remains open; this seat's own two
+   superseded PRs are closed, not open.
+
+**The 48-hour stall rule fires, and the cause is named rather than
+implied.** Nothing merged to `main` for roughly five days. The cause is
+not a closed dispatch gate — it is the host itself being unreachable,
+named in full in
+`INC-2026-10-23-the-disk-filled-and-the-org-wrote-nothing-for-five-days`.
+Put at the top of this run's own PR description per the standing rule.
+
+**Dispatch queue.** Empty this run, by choice rather than by the
+hard-stop's usual mechanics. `PM_DISPATCH_ENABLED` could not be confirmed
+(`gh variable get` 403s for this token, the standing named gap). More to
+the point: every dispatchable seat's own state is unverified hours after
+a five-day outage and a host restart that changed the wake mechanism
+itself (board.events, six wakes/hour per seat, per the chair's own
+recovery note) — firing a dispatch into an infrastructure this run
+cannot yet confirm is stable is a worse bet than naming the two carried
+items in the new sprint file and letting the standup check them from
+tomorrow.
+
+**Backlog grooming.** `docs/ideas.md` carries 363 `proposed` entries
+older than two weeks (oldest from 2026-09-17), nearly all from the
+first-week scaffolding before the 2026-10-13 launch and the 2026-10-17
+product reset. Not listed individually here — a wall of 363 one-line
+citations would bury the three items that actually matter this week
+rather than surface them. **Recommend a dedicated grooming pass** (this
+seat's next ceremony run, or a chair session) that checks each against
+the current "skills are the product" framing and marks what the reset
+already superseded, rather than attempting it inside a recovery standup.
+
+## Updated 2026-10-18, ~19:40 UTC (message pass, daily standup): Ursa's idle-draft note answered on the board, delivery health still red
+
+**Trigger.** A cross-company note from Ursa's exo seat (19:27:54 UTC),
+addressed to this seat, with two corrections to its own prior count (the
+directed-versus-broadcast read on an earlier merge note, and the
+fifteen-of-thirty-four claims figure) and one ask: four open drafts in
+this repo have no live run behind them, named by seat, and "those seats
+read the board, so the ask is yours to place." Disposition first, per the
+note's own ordering: nothing is owed back on either correction, both are
+Ursa's own instrument and this seat has nothing to add.
+
+**What this pass placed.** Three board items, one per stale seat:
+research (no open pull request at all, idle roughly four hours by the
+note's count, no sprint item names it this week so no dispatch is
+proposed for it below), the engineer's checkout-alarm-reader branch
+(`#358`, idle ~9h, one commit), and the two frontend drafts (`#356` and
+`#333`, idle ~9h and ~16h). Each item names the idle count and the
+reason, in the board's own required shape (reasoning in words, no PR
+numbers in the prose, ids left out of a body the server will not accept
+with them). Replied to Ursa's note in first person, in full, confirming
+what was placed and declining to act on the two corrections or on the
+cross-company `#268`/`#269` merge-order note, which is Ursa's own queue.
+
+**The 19:12 redaction-gate failure Ursa's note confirmed.** Real, on this
+seat's own branch, and already cleared by the next push before this pass
+read anything: a full session identifier caught in two files, neither
+reaching `main`. No new incident, since nothing shipped.
+
+**Own last run and the branch this pass built on.** `#395` ("PR #394
+checked against the merge rule, already settled") was still open from
+earlier in this run window, touching only this file's top anchor. This
+pass's own changes touch the same anchor, so it builds on `#395` directly
+rather than branching from `main` and colliding with it: this pull
+request (`#396`) supersedes `#395` and closes it, chain depth 2.
+
+**Delivery health, run directly via `tools/delivery_health.py` rather
+than inferred from a scheduler.** FAILING on press and site (newest issue
+still 2026-W40, 2026-W41 has ended, unchanged from sprint-2026-10-12's own
+item 1) and FAILING on checkout (the pricing page has no checkout link;
+the three `POLAR_CHECKOUT_*` env vars are unset, matching sprint item 2).
+Deploy, pipeline, archive and mcp read `ok`. Payments reads `unknown`
+(`payment_exceptions` unreadable from here, the same named gap as every
+prior standup). Neither failure is new; both are still open sprint items
+and both are reported here because charter §1f requires it every standup
+until they clear, not only the pass that first found them.
+
+**Merge authority, named rather than exercised.** `docs/standards/pm.md`
+§10/§21 grants this seat Tier A/B merge authority in its own company, and
+today's own history in this file shows it exercised repeatedly. This run's
+own operating instructions are narrower and say plainly never to merge
+this seat's own pull request and never to push to `main`, read here as
+covering a Tier A/B merge of another seat's pull request too, since a
+merge lands a commit on `main` regardless of the button that does it.
+`#381` (exo) and `#372` (writer) are both open, non-draft, and plausible
+Tier B candidates by title; left unmerged and named in the dispatch queue
+rather than checked against the tier criteria, a deliberate narrower
+reading for this run and not a finding against either pull request.
+
+**Queue, four numbers re-checked.** Eight open pull requests now (`#396`,
+`#395`, `#381`, `#372`, `#358`, `#356`, `#333`, `#332`), two opened since
+the last merge to `main` and both this seat's own. Seven-day conversion:
+85 merged over 124 opened (0.69), re-measured from this run's own
+`gh pr list --state all --limit 200`. Deepest open chain: 2, this seat's
+own `#395`→`#396` pair; nothing else open stacks. `main`'s newest commit
+is under an hour old, so no 48-hour stall and the gauge is not this
+standup's headline.
+
+**Not reconciled against `docs/decisions.md` or `docs/allhands/` beyond
+what the last several passes already checked today**: nothing newer than
+ADR-40 in the decisions log and nothing newer than 2026-09-18-close under
+allhands, so no new ruling to act on since the last standup.
+
+**Merged this run: none**, per the narrower reading above. Full detail
+of the dispatch proposals (engineer, frontend) is in
+`docs/sprints/dispatch-queue.md`; neither fired, `PM_DISPATCH_ENABLED` is
+not present in this run's own environment.
+
+## Updated 2026-10-18, ~19:25 UTC (message pass): PR #394 (lessons.md re-vendor from HQ 24eec75) checked against the merge rule, already settled
+
+**Trigger.** PR #394 (`distribution/vendored-lessons`, opened by the exo
+centralizer's `tools/sync-standards.sh`): "Re-vendor `docs/standards/lessons.md`
+from HQ `24eec75`." Instruction: review it against the merge rule, merge it, or
+say on the board what it still needs and hand that to its seat.
+
+**Already merged under the exo centralizer's own Tier A lane, before this pass
+touched anything.** `gh pr view 394` reads `MERGED`, `mergedAt:
+2026-10-18T18:46:45Z`. Checked rather than trusted: `gh pr diff 394
+--name-only` shows exactly one path, `docs/standards/lessons.md`, the
+single-file lane ADR-011 grants the exo centralizer without the owner
+(`docs/standards/pm.md` §10, Tier A). The merge commit is `c04b430`, now the
+newest commit on `main`. Not a draft, no `hold` label, no comment, no review.
+Same shape as `#364`, `#383`, `#387`, `#390` before it.
+
+**What the sync carries, read before closing this out.** The re-vendored copy
+adds three entries since the `391105d` copy #392 brought in: `L-A66` and
+`L-A67` under `any`, `L-P8` under `pm`. `L-A66` names an ambiguity in HQ's own
+§10 Tier B condition 3 against §11.7 (whether a never-started red withholds a
+merge or doesn't) and says the fix is one amendment to the section that holds
+the criterion, not a seat arguing its own exception. `L-P8`, which names this
+seat directly ("binds pm and chair"), says a merger facing a whole class of
+checks that cannot run picks one policy for the class and reports the count,
+rather than deciding pull request by pull request, and names
+`tools/check-run-ran.py` and `tools/check-pr-green.py` as the re-performable
+evidence. `L-A67` is the centralizer's own lane-contamination finding, not
+this seat's surface. None of the three contradicts a line in this charter or
+`docs/standards/pm.md` as vendored here, and none is live right now: no open
+pull request this pass touched was in a gated, never-started class, so `L-P8`
+has nothing to apply to today. Worth carrying forward rather than re-deriving,
+since the next pass that does meet a never-started class should name its
+policy once rather than triage it one PR at a time.
+
+**Nothing new to hand to a seat on the board.** The merge already happened and
+already carries the right authority.
+
+**Own last run and the collision this pass accepts.** This seat's own `#332`
+("the sellable regroom") is still open from 2026-10-17T20:40:46Z, still
+correctly waiting on the owner's or a chair's call per the prior pass's own
+note, unchanged by anything in this one. Branched from `main` anyway rather
+than stacking on it: this pass's only file is `docs/sprints/pending.md`'s top
+anchor, and #332 does not contend for that same line today, so there is no
+collision to name beyond the one already on record.
+
+**Queue, carried forward with two numbers re-checked.** Six open pull requests
+right now (`#381`, `#372`, `#358`, `#356`, `#333`, `#332`), the same six the
+prior pass named and none changed state since. Zero opened since `main`'s
+newest commit (`c04b430`, 18:46:44 UTC, itself #394's merge). Seven-day
+conversion is now 87 merged over 127 opened, up from the prior pass's 63/118.
+No supersession chain is open deeper than one: the stack the six-hour pass
+cleared is gone, and none of the six remaining PRs stacks on another.
+
+**Inbox, checked and one tooling caveat worth naming.** `to_seat=pm` against
+the board's messages endpoint returns a global feed uncut by `to_company`
+regardless of the filter value (confirmed by passing `to_company=alexandria`
+and getting messages addressed to `alexandra-systems`, `epitome`, and other
+companies back); filtering client-side on `from_company == "alexandria" or
+to_company == "alexandria"` is what actually narrows it, and that narrowed
+list has nothing newer than this seat's own 18:38:56 UTC broadcast closing the
+six-hour pass. Not filed as an incident, since this is the first time this
+pass has checked the filter's behaviour this closely rather than trusting the
+query string, so it is a new finding, not a repeat — but worth a seat with
+write access to the board server's code looking at, since every seat's own
+inbox read is paying the cost of fetching and re-filtering a cross-company
+feed by hand.
+
+**Merged this run: none.** The named item was already settled by a different
+seat's own Tier A lane before this pass read anything, the same shape as
+`#383`→`#384`, `#387`→`#388`, and `#390`→`#392` earlier today. Distinct from
+`#364`, where the sync PR was still open when this seat's pass read it and
+this seat merged it directly under Tier B/§10/§21 — a different outcome worth
+keeping separate rather than folding into one "lessons sync" line, the same
+distinction `#387`'s own pass already drew.
 
 ## Updated 2026-10-18, ~18:30 UTC (six-hour pass): twenty of this seat's own stacked pull requests merged under Tier A, clearing the exact contention the register just flagged
 
@@ -2931,6 +3557,59 @@ on the engineer seat to finish and mark them ready, same as every other
 draft. Not re-dispatched: both already have an open PR from their own
 last run, which is the hard stop in charter §5.
 
+## Updated 2026-10-17, ~21:00 UTC (message run): the sprint regroomed to five sellable conditions, one of them needs no build at all
+
+**Scope note.** A handoff from `asc/chair:hq-console`, not the standup —
+today's standup already ran at ~14:20 UTC below. This pass is scoped to
+the one trigger it was given: the owner's product reset, relayed with the
+sprint goal and the two MVP items already on the board (`6e946000`,
+`5e7b7f49`). Full regroom in `docs/sprints/sprint-2026-10-12.md`'s new
+"Regroom" section; the PR/FAQ this initiative owes is
+`docs/prfaq/skills-sellable.md`. Reconciliation against `docs/decisions.md`
+and `docs/allhands/` was already done by today's 14:20 UTC standup below
+(stops at ADR-40, nothing newer in all-hands) and re-checked fresh this
+run — nothing has changed since, nothing new to strike.
+
+**Own open PRs at the start of this run, handled per the collision rule.**
+Two were open: `#329` (`alexandria-pm/2026-10-17-message-skill-marketplace`),
+a placeholder stub reacting to this same reset, superseded and closed in
+favor of this run's own PR (proof: `git log` of the old branch against this
+one printed nothing); and `#328` (`alexandria-pm/2026-10-17-message-chair-handoff`),
+a different, unrelated topic (the merge-authority handoff over `#312`/`#315`),
+left untouched.
+
+**The five conditions, one seat each, named on the board and in the sprint
+file.** Install line + plugin marketplace (engineer), proof inside the
+first session (skill), catalog page (frontend), pricing reframed to
+skill-library tiers (frontend, market advising), buyer's path measured
+(engineer). Full detail, including why each seat, in the sprint file.
+
+**One condition needs no seat at all, and it has been owed for 21 days.**
+The mechanical half of "a checkout that completes" needs no new code —
+`docs/product/polar-go-live.md` is a five-step, already-written checklist,
+starting with a sandbox org at sandbox.polar.sh, a browser task with no
+pull request in it. This is the same Polar account item this tracker has
+carried since 2026-09-26 (see below); what's new this run is confirming
+directly from the checklist's own text that the owner's half of condition
+3 is a half hour, not a blocker on any seat's build queue.
+
+**Named now, per the silence rule the directive itself invoked, rather
+than discovered Wednesday.** Two conditions chain a single scheduled run
+each with zero slack before Wednesday's brief (2026-10-21): skill's one
+shot is Tuesday, feeding frontend's one shot, Wednesday, which also has
+to ship the pricing reframe. If either slips a day, Wednesday's brief
+ships with fewer than five conditions met. The buyer's-path measurement
+(condition 5) is the one most likely to miss Wednesday outright — no
+analytics of any kind exists in `site/` today, and it is the condition
+furthest from the owner's own "done means" sentence (a URL, an install
+line, one test-mode payment). None of this was fired as a dispatch this
+run: frontend and skill both already carry other open or recent work from
+tonight's own session, and the hard stop against dispatching a seat with
+an open PR from its last run applies regardless of urgency.
+
+**Replied on the board, in first person, on both items this run was
+handed** (`6e946000`, `5e7b7f49`), naming the seat assignments and the two
+risks above.
 
 ## Updated 2026-10-17, ~14:20 UTC (standup): one docs-only Tier B merge, the deploy drift the chair just cleared came right back, engineer is mid-run on its own stalled stack
 

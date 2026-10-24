@@ -17462,6 +17462,33 @@ cutting gates to make a budget.
   register entry, printing Tier B or Tier C with the reason in one line.
 - Cost: $0, engineer time only.
 - Status: proposed
+
+### 2026-10-17 — Grooming note: the sprint regrooms to five sellable conditions (PM agent, message run)
+- Trigger: a handoff from `asc/chair:hq-console` relaying the owner's
+  product reset of 2026-10-17 (board item `6e946000`): skills are the
+  product, not the newsletter, and she judges the skills not sellable yet.
+  Full regroom in `docs/sprints/sprint-2026-10-12.md`'s new "Regroom"
+  section; full PR/FAQ in `docs/prfaq/skills-sellable.md`.
+- What changed in this ledger: the "Agent packs" entry (2026-09-18, above)
+  and the "Craft scan — Anthropic's Claude Code plugin marketplaces" entry
+  (2026-09-24, above) are both now directly in scope rather than future
+  research — the plugin-marketplace mechanism those two entries scouted is
+  this sprint's engineer item 1. Neither entry needs a new filing; this
+  note is the pointer forward for whoever picks either up next.
+- Status: accepted (owner directive, relayed via board items `6e946000`
+  and `5e7b7f49`, not a seat's proposal awaiting a verdict)
+- Grooming note (PM, 2026-10-17): five new day-sized items enter this
+  sprint's regroom directly (install line/marketplace, proof-in-session,
+  catalog fix, pricing reframe, buyer-path measurement), each with a named
+  seat, in the sprint file above. None is filed as a separate ledger entry
+  because each already has a trigger, a first step and an owner (the
+  sprint file itself) — filing a duplicate here would only make two
+  surfaces to keep in sync. The one gap this run could not close: the
+  plugin-marketplace mechanism is the owner's own instruction (board item
+  `6e946000`'s own words), not yet an ADR in `docs/decisions.md`. Recording
+  it there is the chair's surface, not this seat's (docs/agents/registers.md);
+  named here so the gap is tracked rather than assumed closed.
+
 ### 2026-10-23 — The outsider gate belongs in the press's pre-send pass, not in the repository's CI (writer seat, run 42)
 - Trigger: `python3 docs/voice/check_voice.py firstuse`, added this run. It
   counts her outsider ruling of 2026-09-19 as an inventory rather than as an
@@ -18309,4 +18336,29 @@ cutting gates to make a budget.
   generator's own gates over the generator's own specimens, which no gate in
   this repository had ever done, and it found this on the run that wrote it.
   Ban list 135 is the entry.
+- Status: proposed
+
+### 2026-10-24 — Every sandbox checks out shallow, and four seats have each discovered it the hard way (pm seat, message pass)
+- Trigger: checking PR #421 against the merge rule needed a real
+  `git merge-base`, and the shallow clone this sandbox booted from
+  answered "refusing to merge unrelated histories" instead of the real
+  answer. `INC-2026-10-24-the-shallow-clone-broke-a-merge-rule-check-for-the-third-time`
+  is the fourth occurrence company-wide, after two against this seat in
+  one window on 2026-09-24 and one against the engineer seat on
+  2026-10-18. The engineer's own open PR today (the shallow-clone finding
+  behind the deploy-row check nobody could read) is the fourth
+  independent discovery of the same fact in this company on this date.
+- What: the checkout step every agent run boots from, whatever sets up
+  the sandbox before any charter is read, clones at full depth
+  (`git fetch --unshallow` or an equivalent non-shallow clone flag) rather
+  than leaving every seat to discover and self-heal a shallow clone from
+  inside whichever command it happens to be running when the gap bites.
+- First step: one line in the checkout step's own configuration
+  (`fetch-depth: 0` is the usual spelling for this class of checkout
+  action). No charter changes, because a charter sentence cannot fix a
+  clone depth set before the charter is ever read, which is the same
+  argument `INC-2026-10-18`'s own entry already made and that nobody has
+  carried past the incident register until now.
+- Cost: $0, one config line, and it removes a discovery tax four separate
+  runs have now paid independently for the same fact.
 - Status: proposed
