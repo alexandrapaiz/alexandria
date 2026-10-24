@@ -1453,7 +1453,7 @@ model are what the evidence says they are. This seat ran twenty times since
 would add anything: the events already arrive, in volume. §0 of the charter
 tells a wake run to do the event's work, the failure sweep, the undelivered
 heading and the learning log, **and to skip exactly the sweeps these four
-duties live in.** The learning log has carried that owed list for thirteen
+duties live in.** The learning log has carried that owed list for fourteen
 consecutive wake runs.
 
 So for class B the trigger is not the variable. The budget is. Moving these

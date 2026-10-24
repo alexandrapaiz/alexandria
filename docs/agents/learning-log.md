@@ -5564,3 +5564,174 @@ against the three validator rules rather than discovered by being refused.
 5. **This run branched from `main` and supersedes nothing.** Chain depth one.
    PR #482 merged at 21:47 and this run started at 21:47, so the chain of
    seven that the previous nine runs carried is cleared.
+
+## 2026-10-24 — Wake run, ninth of the day: the nine unevidenced rows get their proposal, and three of them turn out to be a liveness finding
+
+Woken by `message.posted` on my own pull request merging, asking me to continue
+with the next item in my lane on the board. Wake run, so one improvement and
+three standing duties. The weekly sweeps are untouched and the owed list below
+is unchanged.
+
+**The board still cannot answer "the next item in your lane", and the
+previous entry was right about where to look.** Four `seat: exo` cards, two in
+Done and two in Review, nothing in Backlog, This sprint or In progress. The
+queue is this file. Its previous entry listed five things for the next run:
+items 1 and 2 are time-gated past today, item 3 is the standing owed list, and
+**item 4 was the first actionable one** — the nine unevidenced duty rows want
+a proposal rather than a sentence, and no run had posted it. That is what I
+took, and it took one turn to find because the previous run wrote down where
+to look.
+
+### The improvement, and the proposal is three proposals
+
+The fourth test, shipped this morning, ended with one remedy for all nine
+rows: "either the duty moves to a seat with an observed clock, or its trigger
+moves to an event the seat subscribes to." **Deriving the proposal found that
+both halves of that sentence assume the naming seat runs**, and for three of
+the nine rows that is the only question that matters.
+
+**Read the bus rather than inferring it.** `runtime/board/api.py` and
+`runtime/board/tests/test_bus_targets.py` in `alexandra-systems` say what each
+of the four subscribed events routes: `message.posted` to the addressee,
+`item.moved` to the card's seat and only on a move into an in-progress column,
+`pr.merged` and `check.failed` to the seat named by the **merged branch's
+prefix**. **None of the four can be produced by the passage of time.** Two are
+downstream of the seat's own prior work and two need a different seat to act.
+So the subscription list is a continuation mechanism, not a starter: it keeps
+a working seat working and has no way to start a seat that has stopped.
+
+**Class A, three rows: the seat is not running.** `market`, `research` and
+`security`. Since the clock moved to the host on 2026-10-17 the audit log
+holds **zero** `run.start` rows for each, and GitHub holds **zero** pull
+requests from each. Last pull request ever: market `#316` on 2026-10-16,
+research `#284` on 2026-10-12, security `#196` on 2026-10-05. Two independent
+sources, one local and one remote, agree. Their crons have never fired and no
+event has ever been addressed to them, which is the loop above closing.
+**Three seats declare a weekly or biweekly cadence and are indistinguishable
+from the two this register already calls dormant**, which at least say so in
+their manifests. Those three rows are now marked measured rather than
+declared; the remedy is the owner's.
+
+**Class B, four rows, all this seat's: the trigger is not the variable, the
+budget is.** Twenty runs since 2026-10-17, nineteen of them doorbell wakes, so
+the events already arrive in volume. §0 tells a wake run to skip exactly the
+sweeps those four duties live in, and the owed list is now fourteen wakes
+deep. The proposal is a rotation — one owed sweep per wake alongside the one
+improvement, oldest first and recorded — which clears a six-item list inside a
+day at the present wake rate. It is a `prompts/` edit so it is proposed and
+not taken, and holding it is deliberate: widening my own budget is the one
+reservation §22 says does not proceed on silence.
+
+**Class C, two rows: the ordinary case, with one obstacle the morning's
+sentence did not have.** `frontend` and `skill` both run and both duties are
+event-shaped. But the event each wants is **another seat's merge**, and a
+merge wakes only the branch-prefix seat, so no subscription in any manifest
+can express "wake me when somebody else's branch merges." The cheap route
+needs no new event type: the seat whose merge creates the obligation addresses
+the seat that owes it, which is `message.posted` and already the busiest door
+on the bus.
+
+The ask carrying all three went to the owner, `ac4b3609`, with the
+recommendation on each.
+
+### The repeat this run produced, nine hours after the charter predicted it
+
+`INC-2026-10-24-the-wake-cap-truncated-a-second-ask-nine-hours-after-the-charter-predicted-it`.
+The ask was 2,794 characters; the store kept all of it and the bus delivered
+1,347 against a 1,500 wake cap, cutting part-way through class A and taking
+both remaining recommendations with it. A companion note of 946 characters
+went immediately and arrived whole. The fifth wake of this seat did the same
+thing this morning and wrote the fix down: count the characters before
+posting rather than reading the response after.
+
+**The part worth keeping is why that written fix did not stick.** This run did
+validate. It asserted every block against the 420-character rule, in the same
+script, and that check passed. It had no assertion on the wake cap at all.
+**A block over 420 is refused and a body over 1,500 is delivered** — so one
+rule teaches the sender in the same breath and gets mechanised the first time
+anybody meets it, while the other returns `201` and reports itself in a field
+nobody is required to read. The run guarded the loud rule and left the quiet
+one to be noticed. The general form: **the checks an organization mechanises
+are selected by how loudly a rule fails rather than by how much a breach
+costs**, and the quiet rules are the ones whose breaches reach a reader
+looking complete. Both length checks are now one copyable pair on the relay
+page.
+
+### The standing duties
+
+**§2b, the failure sweep.** Alexandria since my last run started at 21:47Z:
+4 completed runs, **zero non-zero exits**, peak 92 turns of a 200 cap at 46%,
+so no re-derivation trigger fires. Fleet-wide over the same window: 17
+completed runs, 2 non-zero exits, both cap hits — `epitome-engineer` at 151 of
+150 and HQ `engineer` at 201 of 200. Zero unclassified. The day: 382 completed
+runs and 105 non-zero exits, with the host's own capacity route reporting 72
+provider refusals across four windows, 27 ran-and-failed, and 12 lost with
+their runner in five cohorts with no exit code ever written.
+
+**One correction to the previous entry's pattern claim, and it shrinks it.**
+That entry observed that twelve of the day's twenty cap hits belonged to an
+exo-class seat and named the exo seat as the seat that runs out of turns.
+Both cap hits in this window are engineer-class. One window of two does not
+overturn a day of twenty, but it is the reading the claim predicts least, so
+it is recorded rather than left for a later run to find.
+
+**§3f, Undelivered to HQ.** Nothing, for the second consecutive run. All 22
+entries on `docs/agents/hq-relay.md` carry a status of delivered, answered or
+not-an-ask, checked by parsing the headings against the status lines rather
+than by eye. This run added the dual length check to the delivery rules, which
+is a correction to our own page and not an ask upward, so it carries no status
+line and needs no delivery.
+
+### What the next run must check first
+
+1. **Did this seat's cron fire at 2026-10-25T14:00?** Carried forward for the
+   third time, still not due. It is the single test that separates "the gap is
+   closed" from "only daily crons work". If it fired, close
+   `INC-2026-10-24-the-company-seats-had-no-clock-for-seven-days-after-the-clock-moved`
+   and say so.
+2. **Has the owner ruled on the three-class ask, `ac4b3609`?** Posted
+   2026-10-24T22:14Z. Under §22 the class A and class C recommendations
+   proceed on her silence from 2026-10-26T22:14Z. **Class B does not**, because
+   it widens this seat's own budget, so do not take the rotation without her
+   word however convenient it would be — and that temptation is the reason the
+   sentence is here.
+3. **Check whether market, research or security has run.** It is the cheapest
+   reading of whether class A moved, and `frontend` is in the command as the
+   control that proves the instrument is reading anything at all:
+
+   ```bash
+   python3 - <<'PY_ALIVE'
+   import json
+   for seat in ('market', 'research', 'security', 'frontend'):
+       n = 0
+       for line in open('/srv/asc/state/.epito/audit.jsonl'):
+           try: d = json.loads(line)
+           except Exception: continue
+           if (d.get('agent') == 'alexandria-' + seat and d.get('action') == 'run.start'
+                   and d['ts'] >= '2026-10-17'): n += 1
+       print(f'{seat:10} {n} host runs since 2026-10-17')
+   PY_ALIVE
+   ```
+
+   Ran before publishing, per the rule about validating a new check: 0, 0, 0
+   and 8. If any of the three has moved off zero, say what woke it, because
+   the answer tells the org which of the two class A remedies is live.
+
+   **Do not reach for `grep` here, and the reason is a trap this run nearly
+   published.** The first draft of this item was
+   `grep -c '"agent":"alexandria-market"' …`, which returns 19. The same
+   pattern with a space after the colon returns 0. The audit log carries both
+   spacings, because the writer changed at some point and the file is
+   append-only, so **a grep over this log answers a question about JSON
+   formatting rather than about the fleet**, and both answers look like
+   evidence. Parse it.
+4. **The owed list, unchanged and now fourteen wake runs deep.** §2c's second
+   half, the unowned-duty hunt, the register-gate polarity pass, the
+   public-claim sweep, the per-anchor queue re-verification, the §5b repository
+   sweep. This is the backlog the class B proposal exists to clear.
+5. **Re-read the firing table with a wider covered window**, carried forward.
+   Mine was 22.8 hours; the table becomes informative once a Wednesday, a
+   Friday and a Monday have passed inside a covered window, 2026-10-29 at the
+   earliest.
+6. **This run branched from `main` and supersedes nothing.** Chain depth one,
+   second consecutive run at depth one.
