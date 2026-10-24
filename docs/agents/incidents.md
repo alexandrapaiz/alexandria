@@ -18590,3 +18590,85 @@ exists because a wake has a budget. **The general rule to carry: when a
 format rule and a transport limit disagree, the transport wins silently and
 the format rule becomes advice.** Put the check where the author is, not in
 the document that describes the style. Ban list checked on this entry.
+
+---
+
+## INC-2026-10-24-the-machinery-diff-gate-named-this-runs-own-commit-as-a-runtime-change — the fifth entry on the shallow clone, and the first where the wrong answer was a false positive rather than a false negative (2026-10-24, engineer seat, message run)
+
+Recorded under the standing rule, and recorded against this run rather than
+about someone else's. The shape is a command that answers confidently from a
+history it does not have, and this file already holds four entries on it:
+`INC-2026-09-24-shallow-clone-merge-base-repeat`,
+`INC-2026-10-18-the-machinery-diff-reads-clean-on-a-shallow-clone`,
+`INC-2026-10-23-the-drift-guard-answered-green-from-a-checkout-that-could-not-see`,
+and `INC-2026-10-24-the-drift-guard-reported-on-the-apps-it-could-measure-and-not-on-the-ones-it-could-not`.
+
+**What happened.** The engineer charter's first pre-ship gate is a machinery
+diff, and it is one command:
+
+    git log --since="36 hours ago" --format='%h %ci %an %s' -- .github/ pipeline/
+
+This run ran it at turn seven, on the checkout the host handed it, which is
+one commit deep. It returned a single row, the merge of `#436`, and this run
+read that row as "one commit, it is my own seat's merged pull request, it is
+explained, the gate is green" and moved on.
+
+Both halves of that reading were wrong, and I only found out because the day's
+work happened to unshallow the same checkout. After `git fetch --unshallow`,
+on the same tree in the same minute, the identical command returns **nothing
+at all**. The true answer is that no commit touched `.github/` or `pipeline/`
+in the last thirty-six hours.
+
+**Why it printed a row that does not exist.** At a shallow boundary git has no
+parent to diff against, so the root commit presents as adding every file in
+the tree. A path filter therefore matches the root commit whatever the path
+is. Reproduced deliberately, on a fresh `--depth 1` clone of this run's own
+branch, whose root commit `d21f555` touches only `tools/` and `tests/`:
+
+    $ git log --since="36 hours ago" --format='%h %s' -- .github/ pipeline/
+    d21f555 The deploy row deepens the checkout it cannot read, instead of ...
+
+That commit changes no file under either path. The gate named it anyway.
+
+**Why this is a new fact and not a restatement.**
+`INC-2026-10-18-the-machinery-diff-reads-clean-on-a-shallow-clone` recorded
+this gate failing in one direction: commits outside the clone's depth are
+invisible, so the gate reads clean when it should read dirty. That entry's
+prescription was a `git fetch --unshallow` reflex before the diff, and it is
+correct. What it did not say is that the one commit the clone *does* hold is
+attributed every watched path. So the gate has two wrong answers available to
+it, and they are worse together than either alone: the commits that matter are
+missing, and a commit that does not matter is present and looks exactly like a
+finding. A seat that meets the false positive spends its attention clearing a
+commit that changed nothing, and comes away believing the gate ran.
+
+**The honest part, which is the reason this is filed.** The reflex this entry
+re-prescribes was already written down, twice, by name, in a register this
+seat is required to read before shipping. I read it. I then ran the gate
+against a shallow clone anyway, accepted its output, and would have reported
+the gate as green in my own pull request if the day's unrelated work had not
+deepened the checkout underneath me. That is incident 20's shape exactly:
+recording is not enforcing, and the thing between the register and the
+artifact was a human intention, which is the component that has now failed
+five times on this one topic.
+
+**What this run did about it.** Not the gate, because the gate lives in
+`prompts/engineer-agent.md` and charters are owner-merged. What this run could
+fix is the other instrument in the same family, and it did: since today
+`tools/delivery_health.py` runs the fetch itself when it finds the history
+missing, rather than printing the command and leaving it to a reader. The
+measured difference on one depth-one clone, one minute apart, is `unknown` and
+nothing posted against `FAILING`, `weekly is 8.7 days behind, 23 undeployed
+commits`, and three board cards. Four and a half seconds.
+
+**What the org should take from it.** Five entries in, the pattern in the
+*fixes* is clearer than the pattern in the failures. Every repair for this so
+far has been a sentence telling a seat to run a command first, and the seats
+do not run it, including the seat that wrote the sentence. The repair that
+worked today was code doing the fetch. So the general form is: when a guard
+needs a precondition the reader must satisfy by hand, the precondition is the
+bug. Two instruments still ask rather than do, and both are named here so the
+next reader does not have to find them. The machinery diff in all twelve
+charters is one, and it needs an owner's merge. Any `git merge-base` check a
+seat runs by hand is the other. A ledger entry proposes making the charter
+gate a script this seat can own instead of a command a charter recites.

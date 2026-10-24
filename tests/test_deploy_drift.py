@@ -38,6 +38,7 @@ which of two code paths the whole file exercises.
 Run with `python3 tests/test_deploy_drift.py` or under pytest.
 """
 
+import contextlib
 import os
 import shutil
 import subprocess
@@ -1279,6 +1280,30 @@ def fixture_shallow(tmp: Path, days_ago: float = 0.1) -> Path:
     return repo
 
 
+@contextlib.contextmanager
+def no_fetch():
+    """Forbid the deepening fetch for the body of the block.
+
+    Two reasons every test that wants a shallow checkout to stay shallow goes
+    through here. The fixture's origin is a `file://` remote in the same
+    temporary directory, so it is reachable, so `judge_deploy` would deepen it
+    and the case under test would stop existing. And the memo in `_deepen` is
+    process-wide, so a test that left it set would decide the answer for every
+    test that ran after it.
+    """
+    before = os.environ.get(dh.NO_FETCH_ENV)
+    os.environ[dh.NO_FETCH_ENV] = "1"
+    dh._deepen_attempted.clear()
+    try:
+        yield
+    finally:
+        dh._deepen_attempted.clear()
+        if before is None:
+            os.environ.pop(dh.NO_FETCH_ENV, None)
+        else:
+            os.environ[dh.NO_FETCH_ENV] = before
+
+
 def test_an_undatable_drift_names_the_command_that_closes_it():
     """`unknown` is honest. `unknown` with no next step is a dead end.
 
@@ -1286,8 +1311,14 @@ def test_an_undatable_drift_names_the_command_that_closes_it():
     every agent seat and named nothing a reader could do about it, while the
     one command that fixes it was `git fetch --unshallow` the whole time. The
     payments row on this same surface took the same correction on 2026-10-24.
+
+    The fetch is forbidden here because on 2026-10-24 the surface started
+    running that command itself when it can, so an unforbidden shallow
+    fixture with a reachable origin no longer reaches this branch. The branch
+    is still the live one wherever the fetch cannot run, which is any run
+    without a network or with `--no-fetch`, so it keeps its test.
     """
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory() as tmp, no_fetch():
         repo = fixture_shallow(Path(tmp))
         check("the fixture is actually shallow", dh._is_shallow(repo))
 
@@ -1327,6 +1358,185 @@ def test_a_full_clone_that_cannot_date_a_drift_does_not_blame_a_shallow_clone():
         check("still an unknown", surface.state == dh.UNKNOWN, surface.headline)
         check("and it does not claim a shallow clone",
               dh.UNSHALLOW not in surface.headline, surface.headline)
+
+
+def test_a_shallow_checkout_is_deepened_so_the_drift_can_be_dated():
+    """The acceptance criterion for 2026-10-24: the row answers, not advises.
+
+    This is the whole point of the change. The host clones every seat's run one
+    commit deep, so the `deploy` row answered `unknown` on every run this org
+    makes, and the command that closes it was a command no seat ran. Naming it
+    (#436) was better than guessing at it and still left the reader to do the
+    work. Here the surface does the fetch itself and reaches a verdict.
+
+    One fixture, read twice, which is the only way to show a change rather
+    than assert one. The fixture commits the app's files 30 days ago, then
+    adds a second commit two hours ago, and the `--depth 1` clone is cut at
+    the second. So the shallow read has one commit of history, dates the app's
+    files to that recent commit, finds itself inside the 24-hour window and
+    answers `unknown`. The deep read sees the real commit and answers
+    `failing` at 30 days.
+
+    That A and that B are the production numbers in miniature. On 2026-10-24
+    this surface read `unknown` for all three apps from a seat's checkout, and
+    `weekly is 8.7 days behind, 23 undeployed commits` from the same tree one
+    fetch later.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_shallow(Path(tmp), days_ago=0.1)
+        rows = {app: {"runtime_sha": "0ldc0dec0de", "recorded_at": None,
+                      "first_seen_at": None, "notified_at": None}
+                for app in rs.APPS}
+
+        with no_fetch():
+            check("the fixture starts shallow", dh._is_shallow(repo))
+            before = dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+        check("without the fetch the drift cannot be dated",
+              before.state == dh.UNKNOWN, before.headline)
+
+        dh._deepen_attempted.clear()
+        try:
+            after = dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+
+            check("the checkout was deepened",
+                  after.evidence.get("deepened") is True, after.evidence)
+            check("and it no longer reports itself shallow",
+                  after.evidence.get("shallow_checkout") is False,
+                  after.evidence)
+            check("the fetch actually landed the history",
+                  not dh._is_shallow(repo))
+            check("the same tree and the same rows now reach a verdict",
+                  after.state == dh.FAILING, after.headline)
+            check("dated from the real commit, not the shallow boundary",
+                  "30.0 days behind" in after.headline, after.headline)
+            check("so the headline stops asking the reader to fetch",
+                  dh.UNSHALLOW not in after.headline, after.headline)
+        finally:
+            dh._deepen_attempted.clear()
+
+
+def test_the_deepening_fetch_is_forbidden_by_the_switch():
+    """`--no-fetch` has to actually reach the fetch, through one env var.
+
+    A guard that touches the network needs an off switch, and the switch is an
+    environment variable rather than an argument because `judge_deploy` is
+    reached from `tools/drift_watch.py` and the PM's standup as well as from
+    this file's own CLI. With it set the row is exactly what it was before
+    today: `unknown`, naming the command, having run nothing.
+    """
+    with tempfile.TemporaryDirectory() as tmp, no_fetch():
+        # Inside the 24-hour fallback window, which is the only state that
+        # reaches the `unknown` branch: an undated app whose fallback clock
+        # already puts it past the window alarms instead, by design.
+        repo = fixture_shallow(Path(tmp), days_ago=0.1)
+
+        rows = {app: {"runtime_sha": "0ldc0dec0de", "recorded_at": None,
+                      "first_seen_at": None, "notified_at": None}
+                for app in rs.APPS}
+        surface = dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+
+        check("nothing was fetched", surface.evidence.get("deepened") is False,
+              surface.evidence)
+        check("the checkout is still shallow", dh._is_shallow(repo))
+        check("the verdict is the old one", surface.state == dh.UNKNOWN,
+              surface.headline)
+        check("and it names the command for the reader who can run it",
+              dh.UNSHALLOW in surface.headline, surface.headline)
+        check("without claiming it was tried",
+              "could not complete" not in surface.headline, surface.headline)
+
+
+def test_a_fetch_that_cannot_reach_its_remote_says_so_rather_than_advising_it():
+    """Telling a reader to run the command that just failed is bad advice.
+
+    The failure mode this guards: a shallow checkout whose origin is gone, on
+    a run with no network. The surface must still answer `unknown`, because it
+    genuinely cannot date the drift, and it must not print "which is shallow:
+    git fetch --unshallow" as though that were an untried next step, since
+    this process has already tried it from here. It still names the command,
+    because the reader is usually somewhere the run was not.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        dh._deepen_attempted.clear()
+        try:
+            repo = fixture_shallow(Path(tmp), days_ago=0.1)
+            # The origin the clone came from, removed. The remote stays
+            # configured, so the fetch is attempted and fails, which is the
+            # case under test rather than a repository with no remote at all.
+            shutil.rmtree(tmp + "/origin")
+
+            rows = {app: {"runtime_sha": "0ldc0dec0de", "recorded_at": None,
+                          "first_seen_at": None, "notified_at": None}
+                    for app in rs.APPS}
+            surface = dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+
+            check("the fetch failed", surface.evidence.get("deepened") is False,
+                  surface.evidence)
+            check("so the checkout is still shallow",
+                  surface.evidence.get("shallow_checkout") is True,
+                  surface.evidence)
+            check("and the verdict degrades to the old one",
+                  surface.state == dh.UNKNOWN, surface.headline)
+            check("the headline says the command was tried from here",
+                  "could not complete here" in surface.headline,
+                  surface.headline)
+            for app in rs.APPS:
+                check(f"{app}'s reason says it was tried too",
+                      "was tried from here" in surface.evidence[app]["why"],
+                      surface.evidence[app]["why"])
+        finally:
+            dh._deepen_attempted.clear()
+
+
+def test_the_fetch_is_attempted_once_per_checkout_per_process():
+    """Three doors reach `judge_deploy`, so the memo is load-bearing.
+
+    Without it a run that asks twice fetches twice, and a repository whose
+    remote is slow or unreachable pays the timeout again on every call. The
+    memo is keyed by checkout, so two repositories in one process still get
+    one attempt each.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        dh._deepen_attempted.clear()
+        try:
+            repo = fixture_shallow(Path(tmp), days_ago=40)
+            check("first call deepens", dh._deepen(repo) is True)
+            # The answer is remembered, so a second call must not shell out at
+            # all. Proved by removing the origin: a real second fetch against
+            # a missing remote would fail and flip the answer.
+            shutil.rmtree(tmp + "/origin")
+            check("second call answers from the memo",
+                  dh._deepen(repo) is True)
+            check("one entry, keyed by the checkout",
+                  list(dh._deepen_attempted) == [str(repo)],
+                  str(dh._deepen_attempted))
+        finally:
+            dh._deepen_attempted.clear()
+
+
+def test_a_full_clone_is_never_fetched():
+    """The fetch is a repair, so it only runs where there is damage.
+
+    A full checkout, which is what a human's working copy is, must not have
+    its remote touched by a read-only health check.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        dh._deepen_attempted.clear()
+        try:
+            repo = fixture_repo(Path(tmp), days_ago=40)
+            check("the fixture is not shallow", not dh._is_shallow(repo))
+
+            rows = {app: {"runtime_sha": "0ldc0dec0de", "recorded_at": None,
+                          "first_seen_at": None, "notified_at": None}
+                    for app in rs.APPS}
+            surface = dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+
+            check("no fetch was reported",
+                  surface.evidence.get("deepened") is False, surface.evidence)
+            check("and none was attempted", dh._deepen_attempted == {},
+                  str(dh._deepen_attempted))
+        finally:
+            dh._deepen_attempted.clear()
 
 
 def test_a_failing_deploy_still_names_the_apps_it_could_not_measure():
