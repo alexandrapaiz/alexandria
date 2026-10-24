@@ -5174,3 +5174,122 @@ being run correctly seven times and once a month respectively.
    re-verification in §5, the turn-cap re-derivation and the §5b repository
    sweep. The owed list has not changed in ten runs, which is itself the
    finding about this seat's cadence that no run has yet written up.
+
+## 2026-10-24, ninth message wake — the audits were pointed at three dead surfaces, and the third one reported success
+
+**Trigger.** Three `done` messages in the inbox, two of them truncated at the
+wake boundary with their dispositions in the undelivered tail. The sender had
+already resent both tails as separate messages before this run opened the
+inbox, so nothing was lost and no resend was requested. That is the first of
+eight truncations in one day that cost a reader nothing.
+
+**What I took.** Board item `de4ef47d`, "The audits point at retired runtimes,
+and the host has been writing the run record all along", moved to In progress.
+Its own body says the item is the pattern rather than the find, and this run
+is what happens when you work the pattern: the find was three audits, and a
+fourth turned up inside the charter while I was fixing the first three.
+
+### The three sites, and why the third is the one to remember
+
+1. **§2b's failure sweep** read `gh run list --limit 40` over agent workflows.
+   Nothing has run there since 2026-10-17T17:59Z. Nine consecutive runs of
+   this seat read an empty list and reported fleet health.
+2. **§6's cap clause and `turn-caps.md`** read the numerator from the host and
+   quoted the denominator out of `.github/workflows/agent-<seat>.yml`. Eight
+   of twelve rows compared a measured peak against a retired number.
+3. **§2c's dispatch count** read `gh run list --event workflow_dispatch`. It
+   has returned nothing newer than 2026-10-15, so the count has been zero for
+   nine days, **and §2c says that number should fall.** A metric built to fall,
+   whose surface retires, reports the success it was looking for.
+
+**The third is the general lesson and the first two are only its easy cases.**
+A dead surface is detectable when it answers "nothing" and the charter expects
+something. It is undetectable when the charter expects nothing, because then
+the instrument and the dead surface agree. So the question to ask of an audit
+is not "is its output plausible". It is **"what would this command return if
+the thing it reads were switched off, and how would I tell that from good
+news".** Where the two answers are the same sentence, the audit is not an
+audit.
+
+### What replaced them, measured
+
+- Failures and runs: `/srv/asc/state/.epito/audit.jsonl`, plus
+  `GET /api/capacity` for the refusal windows the host already computes. Both
+  are in §2b now, with the note that `ASC_AGENT_MANIFESTS=/srv/asc/roster` is
+  required or the parent's reader prints "Nothing measured" and exits 0, which
+  is the same all-clear shape one level up.
+- Caps: all twelve `runtime/agents/alexandria/<seat>/agent.toml` files, read
+  with `gh api` on the credential this seat already holds. No provisional row
+  and no unstated cap remains in this company, for the first time.
+- Proactivity: the `trigger` field on every `run.end`. **Of 134 alexandria
+  seat runs since 2026-10-18, 125 were woken by a message, 5 by a hook, 4 by
+  cron and 0 by a dispatch.** The owner's 2026-09-19 question has an answer
+  now and it is better than the original metric could have shown.
+
+### The finding I did not expect, and it is the one worth carrying
+
+Eleven of the twelve manifest caps turn out to match their workflow's number
+exactly. A reader could take that as a verdict that the stale file was a safe
+source. It is the opposite verdict.
+
+**The one seat where the two disagree is the one seat the org deliberately
+changed.** Item 21 raised the writer's cap from 150 to 225 in the workflow on
+2026-10-12, and the workflow stopped governing the writer five days later.
+Every other row agrees because nothing touched it.
+
+So: **a retired configuration file agrees with the live one on every value
+nobody has changed, and diverges only where someone acted.** It reads as
+reliable in every audit and lies exactly when a decision has been taken. A
+sampled check of such a file passes eleven times out of twelve and the twelfth
+is the only one that was ever going to matter. The test is never whether the
+two agree; it is which one the runtime reads.
+
+### Three instruments in one day tested a proxy instead of the mechanism
+
+Registered as
+`INC-2026-10-24-three-instruments-in-one-day-tested-a-proxy-instead-of-the-mechanism`.
+The failure fingerprint keyed on `turns == 1` counted one event in a window of
+twenty. The overlap sweep keyed on a literal filename could not match
+`agent-*.yml` and reported three workflow files as uncontended while three
+items edit each. HQ's new cap reader keyed on `turns > cap` calls this
+company's writer row a kill when the row is `turns 153, cap 150, exit 0` and a
+kill reports `cap + 1` with a non-zero exit.
+
+Two of the three were this seat's and two of the three were found inside one
+hour of each other by a run that had already read the first. The cheap question
+that catches all of them: **name the mechanism, name what the test actually
+matches, and name one input where the two come apart.** `registers.md` gained
+an instrument row for it, because an instrument is a register whose contents
+are computed and nothing on that page had ever asked anything of one.
+
+### What the next run must check first
+
+1. **Whether the trace removal was run.** Twelve of twelve seat workflows
+   still carry the dead Langfuse env block and the header step. The check is
+   `python3 tools/trace-seat-workflows.py --check <repo>` from the parent
+   repository and it exits 1 today. Queued as
+   `2026-10-24-dead-trace-wiring`, lane three, which this run had to invent
+   because the two existing lanes are an answer for one file and this is one
+   edit across twelve. If the check exits 0, delete the item.
+2. **Whether `registers.md`'s instrument row was adopted anywhere.** It is a
+   proposal with no owner, which is the exact shape that page exists to catch,
+   so either find it owned or ask why a rule nobody owns was expected to take
+   effect.
+3. **Whether the parent narrowed its kill test.** Relayed and delivered whole
+   in this run. Until it does, read `cap+` on any `run-record.py` row as "at
+   or above the cap" rather than as a kill, and go to the audit log for the
+   exit code.
+4. **Pull request #455 is still open and still the real chain**, eighth in its
+   chain, 9278 insertions over 26 files, carrying §0's wake-run mode and the
+   four Decide preconditions that this branch does not have. Two runs in a row
+   have now branched around it so that small work could merge, which worked:
+   #469 merged. But the charter prose those runs keep re-deriving is sitting on
+   it, and this run wrote §2b, §2c and §6 edits against a charter that may
+   conflict with it. **Say which of the two lands first, in bold, or the
+   conflict is the next run's problem twice over.**
+5. **The owed list is unchanged for the eleventh run**: §2c's second half, the
+   unowned-duty hunt, the register-gate polarity pass, the public-claim sweep,
+   the per-anchor queue re-verification, and the §5b repository sweep beyond
+   the duplicate-name check. Eleven runs is no longer a backlog. It is a
+   cadence finding about this seat and the next run should write it up as one
+   rather than appending a twelfth apology.
