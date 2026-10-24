@@ -248,8 +248,8 @@ trimmed.
 
 **The weight, measured and not estimated.** `python3 pipeline/budget.py` with
 tiktoken installed, so the figure is exact rather than the pessimistic estimate
-the canon says not to believe: 146,685 characters and 34,018 tokens against
-146,795 and 34,043 before, so **-110 characters and -25 tokens**. The canon's
+the canon says not to believe: 146,659 characters and 34,010 tokens against
+146,795 and 34,043 before, so **-136 characters and -33 tokens**. The canon's
 rule is that a run which adds tokens removes at least as many, and this one
 removes more than it adds.
 

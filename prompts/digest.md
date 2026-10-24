@@ -588,9 +588,8 @@ about to change. Then the news, in the next sentence, in the same paragraph.
 
 The form is described and never drafted: one sentence about the reader's
 present, then the news in the next sentence, in the same paragraph, with no
-gap between them. The sentence that stood here was offered for copying and
-carried the banned grammar below in its own words, plus a period word the
-cadence had not settled.
+gap between them. No specimen stands here, because the one that did carried
+the banned grammar below and a period word the cadence had not settled.
 
 **Never a past-tense verb with "you" as its subject. This is a hard rule
 with no material that earns an exception (canon law 13, tightened by the
