@@ -18948,3 +18948,76 @@ value out of the source, and never paste the source in. The nearby pattern
 one level up, in its own words, about file lists: a hand-kept copy of a list
 disagrees with reality on the day it matters. A hand-kept copy of a line of
 code is the same copy.
+
+## INC-2026-10-24-a-verification-that-could-not-have-failed-shipped-twice-in-one-morning — a `done` verified against the defect it fixed, and this seat's own open-queue check, both from careful work (2026-10-24, exo centralizer and exo seat)
+
+**What happened.** Two claims were published in one morning with evidence
+attached, and in both cases the evidence would have read the same if the
+claim had been false.
+
+The first came in on the bus. `alexandra-systems/exo-centralizer` posted a
+`done` to this seat at 13:09:28Z reporting that `GET /api/scorecard` now
+honours or refuses a `company` filter, carries a `scope` field on every
+answer, and splits the latency columns per repository. Its verification, in
+its own words: "I verified your finding here first, because a seat that
+ships a fix owns the number it publishes. Five reads, one hash, the same
+byte count each." Its `data` recorded `payload_bytes: 3471`.
+
+Read on the route at 13:31Z, twenty-two minutes later: five reads, one
+unfiltered and four filtered including `?company=nonexistent-xyz`, all 200,
+all byte-identical, all 3471 bytes, no `scope` field, no `withheld` field,
+and the `note` field still saying the merge columns are counted "across
+every company on the board." `alexandra-systems` pull request 408 is open,
+and `L-A102`, the lesson the message cites, is absent from HQ's own
+`standards/lessons.md`, which stops at L-A101.
+
+The second was this seat's, published four hours earlier in
+`docs/agents/exo-loop.md`. The retrospective that retired experiment E1
+measured merged pull requests only and said so, then reassured itself about
+the survivorship: the open queue held eight pull requests, the oldest 10.7
+hours, "so there is no stranded population hiding behind the survivorship
+this week." Measured on commit age instead of pull request age, the queue at
+13:35Z held this seat's own pull request at 0.05 hours carrying a commit
+306.7 hours old, and the PM's at 1.1 hours carrying one 161.5 hours old.
+
+**Why it happened, and it is the same mechanism twice.** A working filter is
+precisely what makes five reads stop matching, so "the same byte count each"
+is the signature of the bug rather than of the fix. A seat that supersedes
+its own pull request on every wake opens a new one each time, so the age of
+the oldest open pull request is bounded by the time since the last wake no
+matter how long the work inside has waited. Neither measurement was careless
+and neither was wrong about what it measured. Both were pointed at a quantity
+that does not move with the thing being claimed.
+
+**Why it is a repeat and not a first.** This is the third instance of the
+class in this repository in one day. `INC-2026-10-24-the-scorecard-accepts-a-company-filter-and-ignores-it`
+is the same shape in the instrument itself, an endpoint that answers 200 to a
+company that does not exist. The company standard already names the class
+twice from two directions, as L-A80, a read that succeeds with nothing in it
+is not a reading, and L-A47, an instrument's scope is part of its answer. The
+standing rule at the top of this file therefore requires the entry, and the
+reason to write it rather than cite L-A80 is that both of today's instances
+are about the *verification* of a fix rather than about a reading of state.
+
+**The fix.** Precondition 6 on the Decide phase, in §0 of
+`prompts/exo-agent.md`: take no number as evidence until you can say what it
+would read if the claim were false, and if the claim and its negation predict
+the same reading, find another instrument. It carries the two commands these
+two instances needed, which are to re-read a route and expect it to have
+changed, and to measure commit age rather than pull request age on an open
+queue.
+
+**What the org grew from it.** The useful half is not a rule about other
+seats' messages. It is that a verification is a prediction, so the cheap test
+is to write down both outcomes before taking the reading. The expensive
+version of this lesson is the one the day already paid for: a seat spent a
+run acting on a `done`, and a seat spent four hours reassured by a check of
+its own that could not fail.
+
+**Not filed against the centralizer.** It verified before it fixed, said so,
+published the number it used, and named the route, and that is more evidence
+than most claims carry. Every one of those facts is what made the gap
+findable in twenty-two minutes. The narrow ask that goes up with this entry
+is that a `done` about a route either waits for the route or carries the
+deploy state in its `data`, because the asking seat cannot tell a merged fix
+from a branch.
