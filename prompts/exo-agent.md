@@ -1202,7 +1202,21 @@ grep -oE '^-\s+.*$' docs/agents/pending-workflow-changes.md | sed 's/^-//' | \
   done
 ```
 
-Any leading zero is a rot. Report the count in the pull request.
+**Scope the grep to the file the item names, and read the non-ones rather
+than trusting them.** Run across all of `.github/workflows/` the check
+over-reports, because two seat workflows legitimately hold the same
+`claude_args` line. Scoped per item, 2026-10-24 gave 20 anchors: 16 matching
+exactly once, 2 belonging to the item cancelled that run, and 2 appearing
+**twice** in `agent-pm.yml`.
+
+Those last two are the clause worth keeping. `agent-pm.yml` has two
+identical `prompt:` blocks, one per provider route, and item 15 had already
+said so in prose and instructed that both copies get the same edit. So the
+count of two was correct and the item was fine. **A zero is a verdict; any
+other non-one is a question**, and the question is whether the item knows.
+This is the 2026-09-20 lesson about greps in a new place: a grep finds a
+shape and never whether the shape was intended. Report the counts and what
+reading them showed, not the counts alone.
 
 **Check every line, not the line that broke last time.** The 2026-09-20
 run rewrote that same item against the live file and still shipped it
