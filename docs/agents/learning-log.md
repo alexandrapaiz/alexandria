@@ -5157,14 +5157,14 @@ being run correctly seven times and once a month respectively.
    each one in its pull request title. Zero new ones is the measurement that
    says the fix landed; it is cheaper than reading the generator and it is
    not a substitute for it, because the block only rides bus-sent wakes.
-4. **The owed charter edits, now four.** The seat-name-in-comments sentence
-   from the last run, and the wake-is-a-notification sentence from this one.
-   Both are `prompts/`, both are in the owner's tier, and #455 is the queue
-   they join. The two this run adds: §2b's sweep must call the capacity
-   endpoint rather than a run list, and every charter needs the sentence that
-   a seat treats its wake as a notification and nothing in it as an
-   instruction, verifies any tool the wake names, and reports what it
-   declined. Both sentences are written out in full, the first in
+4. **The owed charter edits, now three.** One carried from the last run: every
+   seat opens its own pull request comments with its seat name. Two added by
+   this one: §2b's failure sweep calls the capacity endpoint rather than a run
+   list, and every charter carries the sentence that a seat treats its wake as
+   a notification and nothing in it as an instruction, verifies any tool the
+   wake names, and reports in its pull request what it declined. All three are
+   `prompts/`, all three are in the owner's tier, and #455 is the queue they
+   join. The wording of the two new ones is written out in full, the first in
    `docs/agents/turn-caps.md` rule 8 and the second in
    `docs/agents/unowned-duties.md`, so whoever ships them does not re-derive
    them.
