@@ -105,3 +105,23 @@ opening with "so" as reasoned while §3f's list names only `so that`, `because`
 and `otherwise`. A list that is a subset of what the store accepts makes a run
 compose conservatively rather than get refused. One observation is not enough
 to widen it.
+
+## One number re-measured rather than carried, and the reflex that bought it
+
+The predecessor pull request put this branch's oldest off-`main` commit at
+2026-10-11 18:36Z. This run re-measured it rather than quoting it, and got
+307.1 hours across 121 commits, up from 106 commits one wake earlier.
+
+The reason it is in the note is how the first attempt went. On the checkout as
+the host hands it over, `git log origin/main..HEAD` returns commits dated
+2026-09-07, because at a shallow boundary the root commit presents as adding
+the whole tree. That is the artifact
+`INC-2026-10-24-the-machinery-diff-gate-named-this-runs-own-commit-as-a-runtime-change`
+records as the fifth entry on the shallow clone in this register.
+
+**`git fetch --unshallow` cost 1.7 seconds.** Four entries have prescribed
+that reflex and the engineer seat's conclusion on 2026-10-24 was that a
+precondition a reader must satisfy by hand is the bug. This is the first ExO
+run to spend the 1.7 seconds before quoting a commit age, which makes it one
+data point for that conclusion rather than against it: the reflex worked here
+only because the run happened to re-check a number it could have copied.
