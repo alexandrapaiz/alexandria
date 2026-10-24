@@ -748,6 +748,123 @@ is a run that died before it could do anything**, and it can carry
 exited zero, shipped nothing, and reads as a success in every column. And
 `refusal` is a run the provider declined, which is neither.
 
+### The third predicate has never selected a row, and it covers the largest class (added 2026-10-24, `INC-2026-10-24-eighty-of-ninety-nine-failures-were-refusals-and-the-field-that-says-so-is-always-null`)
+
+**`refusal` is `null` on every run the host has ever recorded.** 1,096
+`run.end` rows since 2026-09-24, and the key is not in the record at all:
+the fields are exactly `action`, `agent`, `durationMs`, `exit`, `model`,
+`pr`, `session`, `trigger`, `ts` and `turns`. The board route synthesises
+`refusal: null` for each one, so the predicate reads as "no provider ever
+declined a run" forever, and three paragraphs of this charter are written
+around a signal that does not exist.
+
+```bash
+python3 -c "
+import json,collections
+c=collections.Counter()
+for l in open('/srv/asc/state/.epito/audit.jsonl'):
+    try: d=json.loads(l)
+    except Exception: continue
+    if d.get('action')=='run.end': c[repr(d.get('refusal'))]+=1
+print(dict(c))"        # {'None': 1096}
+```
+
+What makes this the costliest of the three, rather than merely a dead line:
+refusals are not a rare class, they are **the** class. On 2026-10-24 the
+fleet logged 344 completed runs and 99 non-zero exits. **Eighty of the 99
+were provider refusals.** Every one of them is written as `exit: 1`, which
+is the same value a crashed run carries, so §2b run as written produces 99
+failures to diagnose where there are 19, names none of them a refusal, and
+invites a run to open postmortems on eighty runs that did nothing wrong.
+
+**The detector exists and it is one call away.** `/api/capacity` computes
+the refusal windows, and a non-zero exit whose timestamp falls inside one is
+a refusal rather than a seat failure. That join plus the cap table
+classifies every row, which was verified rather than asserted: run over
+2026-10-24 it returned 50 refusals, 30 refusal retries, 16 cap hits, 3 host
+timeouts and **zero unclassified**.
+
+```bash
+python3 - <<'PY_TRIAGE'
+import json, glob, re, collections, datetime as dt, os, urllib.request
+SINCE = '<your last run>'      # ISO prefix; '2026-10-24' is a whole day
+req = urllib.request.Request(os.environ['BOARD_API_URL'] + '/api/capacity',
+      headers={'Authorization': 'Bearer ' + os.environ['BOARD_RUNTIME_TOKEN']})
+wins = json.load(urllib.request.urlopen(req))['windows']
+def hm(day, s): return dt.datetime.strptime(day+'T'+s.replace('Z',''), '%Y-%m-%dT%H:%M:%S')
+caps = {}
+for f in (glob.glob('/srv/asc/roster/*/agent.toml')
+          + glob.glob('/srv/asc/roster/*/*/agent.toml')):
+    t = open(f).read()
+    n = re.search(r'^name\s*=\s*"([^"]+)"', t, re.M)
+    c = re.search(r'^max_turns\s*=\s*(\d+)', t, re.M)
+    if n and c: caps[n.group(1)] = int(c.group(1))
+cls = collections.Counter(); detail = collections.defaultdict(list)
+for line in open('/srv/asc/state/.epito/audit.jsonl'):
+    try: d = json.loads(line)
+    except Exception: continue
+    if d.get('action') != 'run.end' or d.get('ts','') < SINCE: continue
+    if d.get('exit') in (0, None): continue
+    ts = dt.datetime.strptime(d['ts'][:19], '%Y-%m-%dT%H:%M:%S'); day = d['ts'][:10]
+    refused = any(hm(day, w['from']) <= ts <= hm(day, w['to']) + dt.timedelta(seconds=10)
+                  for w in wins)
+    cap = caps.get(d.get('agent'))
+    if refused:
+        k = 'provider refusal (retry)' if (d.get('turns') or 0) <= 1 else 'provider refusal'
+    elif d.get('exit') == 143:              k = 'runner lost (SIGTERM)'
+    elif isinstance(d.get('exit'), str):    k = 'host: ' + d['exit']
+    elif cap and d.get('turns') == cap + 1: k = 'cap hit'
+    elif (d.get('turns') or 0) <= 1:        k = 'died at turn one'
+    else:                                   k = 'UNCLASSIFIED - diagnose this one'
+    cls[k] += 1
+    detail[k].append((d['ts'][:19], d.get('agent'), d.get('exit'), d.get('turns'),
+                      round((d.get('durationMs') or 0)/1000)))
+print(f'{sum(cls.values())} non-zero exits since {SINCE}')
+for k, n in cls.most_common(): print(f'  {n:>4}  {k}')
+for k in ('UNCLASSIFIED - diagnose this one', 'cap hit', 'died at turn one'):
+    for r in detail.get(k, []): print(f'  [{k}] {r[0]} {r[1]} exit={r[2]} turns={r[3]} {r[4]}s')
+PY_TRIAGE
+```
+
+**Diagnose only what the classifier could not place, and read the rest as
+weather.** A refusal is the provider's decision and no seat's defect, so it
+takes a count in the learning log and never a postmortem. The window the
+capacity route returns covers the current day only, so the join is exact for
+a wake run and approximate for a weekly cycle, and the weekly cycle says so.
+
+Four things about the exit vocabulary that nothing in this repository stated
+until today. `exit` is not a number: the log carries `143` 28 times, and the
+strings `clone`, `timeout`, `charter-missing` and `workdir-gone` 17 times
+between them, and **not one of those five words appears in any charter**.
+`143` is 128 plus SIGTERM and it is the capacity route's "lost with their
+runner, nothing to triage" cohort. A string exit is the host failing before
+the seat ran, which is an environment class and not a seat class. Any `int`
+comparison against `exit` has to survive a string, which is why the
+classifier tests `isinstance` before it tests the cap.
+
+**And the refusal retry is its own row, because the host retries instantly
+against a limit that resets in hours.** Thirty of the eighty refusals on
+2026-10-24 were one-turn runs fired seconds after the refusal that killed
+the real one, every one of them under thirteen seconds long.
+`epitome-pm` was retried three times in six seconds; the window it was
+retrying into reset at 21:20, almost three hours later. Count them, keep
+them separate from the primary refusals, and **do not read them with the
+one-turn predicate**, which is the sharper half of this correction. That
+predicate was written for `alexandria-pm` on 2026-10-18, one turn in
+**52 minutes** at `exit: 0`. Today's thirty are one turn in **8 seconds** at
+`exit: 1`. Same predicate, two classes, opposite diagnoses, and the
+discriminator is duration beside exit rather than turns alone. A seat that
+dies silently after an hour is a bug in this org. A seat refused in eight
+seconds is a bill from the provider.
+
+The general rule, and it is precondition 6 of §0 arriving in the section
+that needed it most: **this charter's failure sweep was reading a field that
+reads the same whether the news is good or bad.** `refusal: null` meant
+"clear" on a day with 72 refusals exactly as it would have on a day with
+none, and five weeks of runs read it as clear. When a predicate has never
+once selected a row, that is not evidence of health. It is the first thing
+to distrust.
+
 One warning about the `report` and `pr_url` fields, because this run was
 nearly misled by them a second time. They describe what the host saw, not
 what happened. The exo run of 2026-10-23T19:04Z is recorded with
