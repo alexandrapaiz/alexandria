@@ -1587,3 +1587,130 @@ three, and two of them are not the one the morning's sentence named.**
 
 The ask carrying all three is on the board, addressed to the owner, with the
 recommendation above, under §22 of the PM standard.
+
+## 2026-10-24: class A is withdrawn, and the three seats it called dead ran their last covered slot successfully
+
+The section above split the nine unevidenced rows into three classes and
+posted an ask to the owner carrying all three. **Class A does not survive
+being re-derived, and this section withdraws it.** It said that `market`,
+`research` and `security` "are not running at all" and that neither remedy
+reaches them. All three ran their last scheduled slot, on time, and shipped a
+pull request that merged.
+
+What makes this worth a section rather than a correction in place is that
+class A passed every test this page holds. It cited two independent sources,
+it quoted a date per seat, and both sources agreed. The defect is one layer
+under the evidence: **it measured an absence against a window in which the
+thing could not have been recorded**, which is the rule §0 of the ExO charter
+states and the fourth test on this page restates, applied by the run that
+wrote the test to somebody else's rows and not to its own argument.
+
+### Not one alexandria cron existed in the roster the daemon reads until 2026-10-23T17:03:01Z
+
+`/srv/asc/roster` is a symlink into a working clone at
+`/srv/asc/repos/alexandra-systems`, and the host moves that clone with
+`git reset --hard`, so the clone's reflog is the deploy history. It holds 77
+entries from 2026-09-24T02:56:48Z to now, and across all of them the six
+seats checked take exactly three states:
+
+| Loaded at | Commit | What the six manifests held |
+|---|---|---|
+| 2026-09-24T02:56:48Z | `88bc4019` | no manifest for any of the six |
+| 2026-09-24T04:11:25Z | `4cac54a2` | all six present, **every one with no cron at all** |
+| 2026-10-23T17:03:01Z | `b843ac83` | all six carrying the crons they declare today |
+
+So the window class A measured in, "since the clock moved on 2026-10-17", was
+a window in which **no seat of this company had a cron in either runtime**.
+GitHub's `schedule:` blocks were deleted on 2026-10-17 and the host's copy did
+not carry a replacement until six days later.
+
+### Inside the window the scheduler was demonstrably covering, none of the three had a slot due
+
+The covered window opens at that deploy. Over the 29.9 hours from
+2026-10-23T17:03:01Z, four alexandria cron slots came due and **four fired**:
+`engineer` twice, `pm` once, `writer` once. The three class A seats had
+**zero** slots due, and so did `exo`, `frontend`, `skill` and `okr`.
+
+| Seat | Cron | Slots due in the covered window | Fired | First slot that can answer its row |
+|---|---|---|---|---|
+| engineer | `6 11,23 * * *` | 2 | 2 | — |
+| pm | `5 11 * * *` | 1 | 1 | — |
+| writer | `0 16 * * *` | 1 | 1 | — |
+| exo | `0 14 * * 0` | 0 | 0 | 2026-10-25T14:00Z |
+| research | `30 16 * * 1` | 0 | 0 | **2026-10-26T16:30Z** |
+| skill | `0 12 * * 2` | 0 | 0 | 2026-10-27T12:00Z |
+| frontend | `0 12 * * 3` | 0 | 0 | 2026-10-28T12:00Z |
+| market | `0 11 * * 5` | 0 | 0 | **2026-10-30T11:00Z** |
+| security | `0 13 1,15 * *` | 0 | 0 | **2026-11-01T13:00Z** |
+| okr | `0 10 1 * *` | 0 | 0 | 2026-11-01T10:00Z |
+
+Three seats of twelve have had their clock tested at all. "Their crons have
+never fired" is true of nine of them and carries no information about any,
+because nine have had no slot to fire on.
+
+### What the three seats actually did, which is the part that settles it
+
+Each ran its last slot under the runtime that was covering it then, which was
+GitHub Actions, and each shipped:
+
+| Seat | Last scheduled run | Actions conclusion | What it shipped |
+|---|---|---|---|
+| research | 2026-10-12T23:07:16Z | `success` | `research/2026-10-12`, PR #284, merged |
+| security | 2026-10-15T17:25:09Z | `success` | `sec/2026-10-15`, PR #307, merged |
+| market | 2026-10-16T15:18:33Z | `success` | `market/2026-10-16`, PR #316, merged |
+
+So each of the three has missed, at most, the slots that fell inside the
+clockless hole between 2026-10-17T17:59:54Z and 2026-10-23T17:03:01Z.
+Re-derived per seat, that hole swallowed **29 alexandria slots**:
+
+| Seat | Slots lost to the hole |
+|---|---|
+| engineer | 12 |
+| pm | 6 |
+| writer | 6 |
+| exo, frontend, skill, market, research | 1 each |
+| security, okr | 0 |
+
+Read that distribution rather than the total, because it is the finding. The
+daily seats lost 24 slots between them and no instrument in this
+organization reported it, because events kept all three awake and a seat that
+is working does not notice which door it came through. The weekly seats lost
+one slot each, which is their whole week, and `security` lost none at all:
+its cadence is the 1st and the 15th and the hole contained neither.
+
+### And the register's own date for security was wrong by ten days, because the sweep looked for one branch prefix
+
+Class A reported security's last pull request as `#196` on 2026-10-05. It is
+`#307` on 2026-10-15. The seat ships under two prefixes: `alexandria-security/`
+on a host-started run and `sec/` on a cron run, the second being what its
+charter tells it to use. A sweep written for the host convention cannot see
+the other one, and it fails silently, because a seat with no matching branch
+reads as a seat with no output.
+
+That is the same shape as the lesson on the ExO charter's queue page: **a
+mechanical check inherits the vocabulary of the artifact its author happened
+to be reading.** The author was reading host-era branches. There were two
+eras.
+
+### Where this leaves the nine
+
+Class B and class C stand as written; nothing in this re-derivation touches
+them. Class A becomes a date rather than a finding, and the honest state of
+its three rows is **unevidenced and not yet answerable**, with the minute each
+becomes answerable named in the table above. The soonest is `research` on
+2026-10-26T16:30Z and the last is `security` on 2026-11-01T13:00Z.
+
+**The owner ask is corrected rather than withdrawn**, because its class B and
+class C halves are unaffected. Its class A half asked her to choose between
+waking three seats and marking them dormant. Both options are premature and
+one of them would have retired three working seats. The correction went to the
+board in the same run that found it.
+
+**The new column this page owes itself.** The section above already noted that
+a duty assigned to an event-woken seat has no cadence, only a frequency. This
+run adds the second half: a row's state has to distinguish *unevidenced*, no
+observation either way, from *unanswerable*, no observation was possible yet.
+Nine of the twelve rows are the second and this page scored them as though
+they were the first, which is how a liveness finding came out of a clock that
+had not been switched on. **A state that cannot tell "we did not look" from
+"there was nothing to see" will eventually report the second as the first.**
