@@ -209,4 +209,137 @@ so the fleet is not less effective per run. It ran less. The 377 dark
 minutes after reset are the most likely cause and this tick did not test
 that, which is the obvious candidate for E2.
 
-<!-- run 2026-10-24 (message, tier-not-depth): in progress -->
+---
+
+## Addendum to the tick of 2026-10-24 — E1 answered seven days early, and was retired
+
+This is not a second tick. The wake was `message.posted` rather than
+`brief.sent`, so the five phases are not re-run. It is written here because
+E1's answer arrived on the day it was decided, and a ledger that records a
+decision and not its reversal is worse than no ledger.
+
+### What came back
+
+The PM seat answered the chain-depth handoff the same morning. Its finding,
+in its own words: the pull request waits on the owner because of what it
+touches and not because of its depth. It read the full diff after
+unshallowing, found all twelve charters, and scored it Tier C on the file
+list alone, which waits for the owner regardless of draft state, mergeable
+state or chain depth. It also said plainly that its own run carried an
+instruction not to merge anything, so its non-merge is evidence about that
+instruction and not about depth. Naming that is what stopped it becoming a
+second confound.
+
+### Defect one: the subject was pinned upstream of the variable
+
+E1 chose this seat as its subject because this seat held the deepest chain
+in the repository. That is choosing a subject by the size of the
+independent variable, and it ignored whether the dependent variable was
+free to move. It was not. This seat's output is charters, every charter
+pull request is Tier C, and every Tier C pull request waits for the owner.
+Depth and her cadence are therefore the same column here, and no run of
+this experiment on this seat could have separated them.
+
+**The general shape, and it is the part worth keeping:** a subject at the
+extreme of the variable is often extreme *because* some gate upstream of
+the variable is pinning it, and that gate is exactly what makes it useless
+as a subject. The most affected case is the worst case to measure.
+
+### Defect two: the metric is four companies wide and the intervention is one seat
+
+Found while checking the first. `GET /api/scorecard?company=alexandria`
+returns a payload byte-identical to the unfiltered read, and so does
+`?company=ursa` and so does `?company=nonexistent-xyz`. The parameter is
+accepted, ignored, and never rejected. So `p90_hours_to_main` at 118.06 is
+a portfolio figure covering alexandria, Ursa, epitome, alexandra-systems
+and atelier.
+
+This repository's own merged work over the same week does not look like
+that number at all. Over the 82 pull requests alexandria merged between
+2026-10-17 and 2026-10-24, the median time to main is 0.53 hours and the
+p90 is 11.35 hours. Over the 120 merged since 2026-10-06, p90 is 21.32
+hours. So a change confined to one seat in one repository could not have
+moved the target even if the hypothesis had been entirely right, and the
+target was not reproducible from here in the first place.
+
+### The measurement that answers the hypothesis without running it
+
+Taken retrospectively on work already merged, which cost one morning and
+no waiting. Tier is derived from each pull request's changed-file list
+against §10 of the PM standard. Depth is read from the chain line in each
+description, with a superseding description and no count read as depth 2.
+
+| cut | n | median h | p90 h | max h |
+|---|---|---|---|---|
+| all merged, 2026-10-17 to 2026-10-24 | 82 | 0.53 | 11.35 | 147.87 |
+| Tier A, self-merge | 40 | 4.02 | 11.41 | 21.25 |
+| Tier B, PM merge | 34 | 0.45 | 5.01 | 147.87 |
+| Tier C, owner merge | 7 | 5.76 | 63.42 | 129.87 |
+| depth 1 | 46 | 0.41 | 10.46 | 35.22 |
+| depth 2 | 34 | 0.90 | 11.64 | 147.87 |
+| depth 3 | 2 | 9.62 | 17.22 | 19.13 |
+| depth 1, within Tier B | 18 | 0.22 | 1.96 | |
+| depth 2, within Tier B | 16 | 0.52 | 7.49 | |
+
+**Tier moves the tail by tens of hours. Depth, held inside one tier so that
+depth is the only thing changing, moves it by about five.** Depth is real
+and it is an order of magnitude smaller than the gate it was competing
+with. E1's hypothesis is not supported.
+
+**And the result nobody predicted.** Of the nine pull requests at or above
+the p90, five are Tier A, which is the tier a seat may merge itself. They
+sat between 11 and 21 hours. The slowest merged work of the week needed
+nobody's permission. The tail is therefore made of two things and neither
+of them is slow review: work that structurally waits for the owner, and
+work that waits for a merger who was not awake. That second half is the
+same 377 dark minutes this tick already named as its biggest raw drag, now
+arriving from a second direction.
+
+One caveat stated rather than buried. This measures merged pull requests
+only, so it is blind to anything still open, which is where the worst
+latency would live. The open queue at the time of measurement was eight
+pull requests, the oldest 10.7 hours, so there is no stranded population
+hiding behind the survivorship this week. That will not always be true and
+the next run should re-check it rather than assume it.
+
+### Decided: E1 is retired, not rerun
+
+The PM suggested rerunning on a chain that stays inside product or docs
+surfaces. That is right about defect one and it does nothing about defect
+two, so it would buy one of the two fixes with a week of waiting, and the
+retrospective bought both in a morning. Retired rather than reopened.
+
+The ask that replaces it went to the PM and to HQ: a per-company split of
+`median_hours_to_main` and `p90_hours_to_main`. With that column this
+stops being an experiment anyone has to stage and becomes a measurement
+any run can take.
+
+**E2 is not opened in this addendum.** A wake run ships at most one
+improvement, and choosing the next experiment is Decide work that belongs
+to the next `brief.sent` tick. The candidate standing for it is unchanged
+and now has a second line of evidence: the dark minutes after reset, which
+the Tier A tail points at from the merge side.
+
+### Three preconditions on Decide, which are this run's one improvement
+
+Written into §0 of the charter so the next Decide phase cannot repeat
+either defect.
+
+1. **The subject's outcome must be free to move.** Name the gates upstream
+   of the variable for the subject you pick, and if any of them pins the
+   outcome on its own, the subject is disqualified however extreme its
+   value on the variable.
+2. **The metric must be scoped no wider than the intervention.** A
+   portfolio metric does not test a change to one seat. Check the scope by
+   reading the instrument rather than its parameter list, because this one
+   accepts a filter it ignores.
+3. **The target number must be reproducible from this repository before it
+   is quoted.** Reproduce it, or quote it with the run that measured it and
+   say it is not local. E1 quoted 118.34 hours and the local figure is
+   11.35.
+
+And one that falls out of the result rather than the defects. **Prefer the
+retrospective to the staged run when the data already exists.** E1 would
+have cost seven days of waiting and returned one confounded point. The same
+question answered on 82 already-merged pull requests took one morning and
+returned a table.
