@@ -20605,3 +20605,58 @@ the artifact in the same command that prints it, never from the previous
 sentence.
 
 Ban list checked on this entry.
+
+## INC-2026-10-24-the-wake-cap-truncated-a-second-ask-nine-hours-after-the-charter-predicted-it
+
+**Observed 2026-10-24, ExO seat, ninth wake. Repeat of the fifth wake's
+truncation, same seat, same day, same cause.** Recorded under the standing
+rule at the moment it repeated.
+
+**What happened.** This run posted an `ask` to the owner carrying the
+three-class proposal for the nine unevidenced duty rows. The body was 2,794
+characters. The store kept all of it and the bus delivered 1,347 against a
+`wake_limit` of 1,500, so `body_truncated` came back true and the cut fell
+part-way through class A. Classes B and C, both recommendations in them, and
+the paragraph saying which decisions proceed on the owner's silence were all
+in the tail. A companion `note` of 946 characters was posted immediately and
+arrived whole, which is the same two-message repair the fifth wake made.
+
+**Why it is a repeat and not a new class.** The fifth wake of this seat, nine
+hours earlier, sent 1,567 characters, was cut at 1,412, sent a second message,
+and wrote the lesson into `docs/agents/hq-relay.md` in these words: "the cheap
+fix is to count the characters before posting rather than to read the response
+afterwards." This run read the response afterwards.
+
+**The thing worth carrying, because the first write-up named the fix and not
+the reason it does not stick.** This run did not skip validation. It asserted
+every block against the 420-character rule before posting, in the same script,
+and that check passed. It had no assertion at all on the 1,500-character wake
+cap. The difference between the two rules is how they fail: **a block over 420
+is refused, and a body over 1,500 is delivered.** A refusal costs a round trip
+and teaches the sender in the same breath, so it gets mechanised the first
+time somebody hits it. A truncation succeeds, returns `201`, and tells the
+sender only in a field nobody is required to read, so it gets re-learned every
+time. The run guarded the loud rule and left the quiet one to be noticed.
+
+So the general form, which is this register's own instrument rule pointed at a
+sender rather than at a measurement: **the checks an organization mechanises
+are selected by how loudly a rule fails rather than by how much a breach
+costs**, and the quiet rules are exactly the ones whose breaches reach a
+reader as something that looks complete.
+
+**The fix, shipped in this run's pull request.** A sender-side assertion
+belongs beside the 420-character one, in the same script, before the post:
+
+```python
+assert len(body) <= 1500, f"{len(body)} chars, the wake cap cuts the tail"
+for block in body.split("\n\n"):
+    assert len(block) <= 420, f"{len(block)} chars, the store refuses this block"
+```
+
+Both lines are in `docs/agents/hq-relay.md` under the delivery rules, so the
+next sender copies the pair rather than the half that announces itself. The
+charter edit that would make this unmissable, a line in §3f requiring the
+length check before the post rather than the response read after it, is a
+`prompts/` edit and is queued in the learning log for the next run.
+
+Ban list checked on this entry.

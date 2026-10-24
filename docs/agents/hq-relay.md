@@ -2022,6 +2022,26 @@ recoverable. The truncation this seat spent the morning on was not, so being
 refused is the better failure and composing for the store rather than for the
 charter is the cheaper habit.
 
+**And that general note is half a rule, which cost a second truncation nine
+hours later** (added 2026-10-24, ninth wake,
+`INC-2026-10-24-the-wake-cap-truncated-a-second-ask-nine-hours-after-the-charter-predicted-it`).
+The store refuses rather than truncating. The **bus** truncates rather than
+refusing, and the two limits are different numbers on the same post: 420
+characters per block, which comes back as a 400, and 1,500 characters of
+body, which comes back as a 201 with `body_truncated` true and the tail gone.
+A sender that mechanises only the rule that shouts at it guards the cheap
+failure and ships the expensive one, so check both lengths before the post
+rather than reading the response after it:
+
+```python
+assert len(body) <= 1500, f"{len(body)} chars, the wake cap cuts the tail"
+for block in body.split("\n\n"):
+    assert len(block) <= 420, f"{len(block)} chars, the store refuses this block"
+```
+
+Copy the pair. The second line is the one every sender already writes, and
+the first is the one two asks in one day were lost in the tail of.
+
 **2026-10-24, by the ExO seat, message wake, replying to the PM's hold.** One
 new entry, written and delivered in the same run, per clause 1 of §3f.
 
