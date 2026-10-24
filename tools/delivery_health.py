@@ -1414,6 +1414,37 @@ def _dirty(repo_root: Path, paths: list[str]) -> list[str]:
                    for line in out.splitlines() if line.split(maxsplit=1)[1:]})
 
 
+def _is_shallow(repo_root: Path) -> bool:
+    """Does this checkout hold a truncated history.
+
+    Asked rather than inferred, because every message this surface prints
+    about an undatable drift used to guess at the cause ("usually a shallow
+    clone") and a guess is not a next step. `git rev-parse
+    --is-shallow-repository` answers it in one call and has since git 2.15,
+    and a git that does not understand the flag answers non-zero, which
+    reads here as "cannot say", which is the honest answer rather than
+    `False`.
+
+    The reason this is worth a function of its own is that the answer
+    changed under the org without any file in this repository changing.
+    Until 2026-10-17 every seat's run was a GitHub workflow checking out
+    with `fetch-depth: 0`, so full history was a property of the runtime and
+    this question had one answer everywhere it mattered. `ab4e5bb` moved
+    every seat's cadence to the host manifests, the host clones one commit
+    deep, and three guards went quiet without a line of their own code
+    moving (INC-2026-10-18-the-machinery-diff-reads-clean-on-a-shallow-clone,
+    INC-2026-10-23-the-drift-guard-answered-green-from-a-checkout-that-could-not-see).
+    """
+    status, out = _git(repo_root, "rev-parse", "--is-shallow-repository")
+    return status == 0 and out.strip() == "true"
+
+
+#: What closes an undatable drift, for the reader who has one. Named rather
+#: than described, the way every other unknown on this surface has named its
+#: one command since 2026-10-24.
+UNSHALLOW = "git fetch --unshallow"
+
+
 def _deployable_ref(repo_root: Path) -> str:
     """Which commit the running image is judged against.
 
@@ -1449,9 +1480,19 @@ def _last_commit_at(repo_root: Path, paths: list[str],
 
     None when the answer cannot be trusted, which is a shallow clone that
     predates the change, git not being present, or a path set nothing in the
-    available history ever touched. The seat workflows check out with
+    available history ever touched. It degrades to `unknown` rather than to a
+    guess.
+
+    This docstring used to end "the seat workflows check out with
     `fetch-depth: 0`, so in the place this actually runs daily the answer is
-    real; anywhere else it degrades to `unknown` instead of to a guess.
+    real". That sentence was true when it was written and stopped being true
+    on 2026-10-17, when `ab4e5bb` moved every seat's cadence off GitHub
+    schedules and onto the host manifests. The workflow files still say
+    `fetch-depth: 0` and they are no longer what checks out a scheduled run;
+    the host clones one commit deep. So the daily place this runs is exactly
+    the shallow case the old sentence promised it was not, and the promise
+    was part of why nobody looked. `_is_shallow` is the replacement, and it
+    asks rather than assuming.
     """
     status, out = _git(repo_root, "log", "-1", "--format=%cI", ref,
                        "--", *paths)
@@ -1863,6 +1904,11 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
     rows = facts
 
     evidence = {"read_via": source, "ref": ref}
+    # Asked once for the whole surface rather than once per app: the answer is
+    # a property of the checkout, not of an app, and it is what turns "cannot
+    # be dated" from a dead end into one command.
+    shallow = _is_shallow(root)
+    evidence["shallow_checkout"] = shallow
     drifted, unknowns, alarms = [], [], []
     # Alarms that cannot be mailed, kept apart from the ones that can. The
     # cooldown lives in `deploy_runtime.notified_at`, so an app with no row
@@ -2015,12 +2061,19 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
             here.update(state=UNKNOWN, merged_at=str(changed_at),
                         drift_began=str(since), drift_anchor=anchor,
                         drift_hours=round(age_hours, 1), undeployed=found,
+                        shallow_checkout=shallow,
                         why=("the running image matches no commit this "
                              "checkout can see, so the only clock left is the "
                              "newest commit to this app's files and that says "
                              "nothing about how far behind production is: "
-                             + str(found.get("why", ""))))
-            unknowns.append(f"{app} (the drift cannot be dated from this checkout)")
+                             + str(found.get("why", ""))
+                             + (f". This checkout is a shallow clone, so "
+                                f"`{UNSHALLOW}` and ask again"
+                                if shallow else "")))
+            unknowns.append(
+                f"{app} (the drift cannot be dated from this checkout"
+                + (f", which is shallow: {UNSHALLOW}" if shallow else "")
+                + ")")
             evidence[app] = here
             continue
 
@@ -2060,8 +2113,20 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
                         "runs. This surface is where they are read")
             note = f"{note}. {withheld}" if note else withheld
         evidence["alarm"] = note
+        # The undated apps ride along on the FAILING headline rather than
+        # being dropped by it. This branch is tested ahead of `unknowns` and
+        # used to return without ever mentioning them, so a run that could
+        # measure one app and not another reported the one it could and said
+        # nothing at all about the other. That is
+        # INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see one layer
+        # down, and company standard L-A21 in its own words: a gate that saw
+        # nothing must not read as a quiet pass. A reader told "weekly is 8
+        # days behind" and not told "distill could not be measured" has been
+        # given a verdict on production and a blank where its scope should be.
+        blind_note = ("; and the deploy cannot be compared from here for: "
+                      + "; ".join(unknowns)) if unknowns else ""
         return Surface("deploy", FAILING,
-                       f"the deployed code is not {ref}: {names}. "
+                       f"the deployed code is not {ref}: {names}{blind_note}. "
                        f"{note}", evidence)
     if unknowns:
         return Surface("deploy", UNKNOWN,
