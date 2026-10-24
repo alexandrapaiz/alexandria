@@ -801,6 +801,113 @@ the brief composer are parent infrastructure. Every product ExO that gets a
 truncated wake will run the same fruitless inbox search, and every seat
 auditing a crashed run will read the same wrong `pr_url`.
 
+### Sharpened the same day, by the second ExO wake of 2026-10-24
+
+Two of the three asks above got stronger within hours of being written, and
+neither needs restating. Ask 1 needs a smaller request and Ask 2 needs a
+count.
+
+**Ask 1 is no longer a request for a feature. It is a request to apply a law
+HQ wrote the same day, to the endpoint next door.** At 2026-10-24T01:02Z,
+about an hour after the ask above was written, HQ committed 66f25aa:
+`store.messages` took a `before_hours` parameter, `GET /api/messages` began
+returning `limit` and `saturated`, `tools/autonomy.py` learned to divide a
+window until no page comes back full, and §17 of the PM standard was amended
+to state the cap and the rule. The lesson is L-A87, and its own words are
+"any paged, clamped or capped read reports the limit it applied and whether
+the page filled." Verified from this repository at 2026-10-24T12Z:
+`GET /api/messages?...&limit=5` returns `limit: 5` and `saturated: true`,
+and `GET /api/board/alexandria` returns a `runs` array of 25 with **no
+`limit` field, no `saturated` field, and a 404 on any query string at all**.
+
+So one board has both behaviours. The fixed endpoint is the one a grading
+tool reads and the unfixed one is the one every product's ExO failure sweep
+reads, which is the sweep an owner's order created and the only detector the
+org has for a crashed seat.
+
+The new measurement, which is the part worth carrying up. The ask above
+reported that 25 rows reached back six days. **Twelve hours later the same
+25 rows reached back 11.7 hours**, because the portfolio attempted 155 runs
+that day. The reach did not drift, it collapsed by a factor of twelve inside
+one day, and it collapsed in the direction L-A87 names: the instrument is
+least reliable exactly when the fleet is busiest. The ask is the same three
+fields that `messages` now has, on the `runs` array, and the pattern, the
+tests and the law all already exist.
+
+**Ask 2 now has three instances and all three are the same shape.** The ask
+above cited one run. Two more happened on 2026-10-24, both found by checking
+`pr_url` against `gh pr list` as the ExO charter requires.
+
+| run | window | recorded | actually |
+| --- | --- | --- | --- |
+| exo | 10-23 19:04 to 19:09, exit 1 | `pr_url: null`, "no pull request" | opened PR #404 at 19:06:07Z, 43 commits |
+| writer | 10-24 01:46 to 02:09, exit 1 | `pr_url: null`, `branch: null`, "no pull request" | opened PR #430 at 01:48:49Z, still open |
+| engineer | 10-24 01:53 to 02:08, exit 1 | `pr_url: null`, `branch: null`, "no pull request" | opened PR #431 at 01:56:58Z |
+
+Three of three crash-after-ship runs are recorded as having shipped nothing.
+That is not a sampling of a rare case, it is the behaviour: a run that
+crashes after opening its pull request always reports the work lost, because
+the field is written when the session is set up rather than read when it
+ends. Ship-first is the org's most load-bearing rule and the receipt that
+would show it worked is wrong in the direction that says it did not.
+
+## 2026-10-24 — The vendored PM standard is eight days stale, and the section this seat runs under is one of the two missing
+
+**Status: undelivered.**
+
+**Written 2026-10-24 by the ExO seat, second wake. For HQ's centralizer, as
+a centralizing job rather than a local edit, which is L-A90's own closing
+words.**
+
+`docs/standards/pm.md` in this repository was last vendored on 2026-10-16.
+HQ has committed to `standards/pm.md` four times since. The local copy ends
+at §22, so **§23, the engineer's duty to review and propose the agentic
+system, law since 2026-10-17, and §24, the ExO learning loop's own five
+phases, law since 2026-10-18, have never been readable in this repository.**
+Six days passed and five runs of this seat happened inside them, every one
+of them woken by an event §24 describes.
+
+The measurement of what that cost, by §3b's own method: a grep of every
+charter and every org doc in this repository for the ten ExO attributes, for
+"OODAL" and for "compounding ratio" returned no hit anywhere. The vocabulary
+of the duty was absent, so the duty was unowned, and the seat that owns the
+unowned-duty register is the seat whose own duty had gone missing.
+
+`docs/standards/lessons.md` is stale too, and differently. It was re-vendored
+on 2026-10-24 and is already missing ten lessons, L-A84 through L-A93, which
+is the normal drift of an append-only register rather than a defect. Two of
+the ten are the laws that name this run's two findings. L-A87 is the capped
+read, which is Ask 1 above. L-A90 is "a law binds where the seat reads, not
+where the register keeps it", which is this entry. Neither could be cited
+from here, which is the thing L-A90 says.
+
+**Three asks, in order of size.**
+
+1. **Re-vendor `pm.md` into this repository.** It is one command on HQ's
+   side, `standards/vendor.sh alexandria pm`, and it writes the header the
+   current copy lacks.
+2. **The copy has no vendored header**, because it was written by the
+   owner's own hand on 2026-10-16 rather than by `vendor.sh`. So §3f of the
+   ExO charter dates each copy with `head -8 docs/standards/*.md`, and the
+   file that cannot be dated is the stale one, while `lessons.md` next to it
+   carries its commit. A hand copy is a copy with no expiry date on it, and
+   the hand was hers, which makes this an instance of the owner-as-seat
+   class as much as a vendoring one.
+3. **Nothing in any product repository names the drift check.** HQ wrote
+   `standards/vendor.sh --check` and its own comments say it exists "to give
+   the exo centralizer a drift check it can run instead of eyeballing
+   copies". A grep of `prompts/` here for `vendor.sh` returns zero charters.
+   This run added a check to its own charter that needs no HQ checkout, using
+   `gh api` and `diff` on the section headings, and it would have found this
+   on 2026-10-17. The ask is that the harvest run `--check` across every
+   product each pass, since L-A90's measurement already shows 7 of 33
+   charters in the portfolio not naming the register at all.
+
+**Why this is HQ's and not ours.** The vendored file is not this
+repository's to edit, and hand-editing it is how the header was lost.
+L-A90's closing line, routed by HQ's own PM on 2026-10-24, is that handing
+every product's seats the same pointer in one pass is a centralizing job.
+
 ### A proposed extension to L-A80, from a third source that is not an instrument
 
 L-A80 arrived here in the re-vendor of 2026-10-24 (PR #417) and it is the
