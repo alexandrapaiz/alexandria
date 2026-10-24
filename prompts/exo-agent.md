@@ -843,6 +843,155 @@ for k in ('UNCLASSIFIED - diagnose this one', 'cap hit', 'died at turn one'):
 PY_TRIAGE
 ```
 
+### The column was built the same day, and it is null on exactly the refusals that cost work (added 2026-10-24, seventeenth run of that day, `INC-2026-10-24-the-refusal-column-is-filled-for-the-refusals-that-cost-nothing`)
+
+The ask above was granted within hours. `/api/board/<company>` now carries the
+provider's own sentence on a refused row, and it is real: two rows of this
+company's twenty-five read `You've hit your session limit · resets 9:20pm
+(UTC)` where every row of 1,096 read `null` the day before. So the first thing
+to say is that the field works and the section above is no longer describing
+the surface.
+
+**The second thing is that it is partial in the one direction that matters,
+and the correspondence is exact.** Five runs of this company failed inside one
+refusal window. All five were refusals according to their own logs. The board
+named two of them. The three it left `null` were the three that had done real
+work, at 98, 51 and 26 turns, and the two it named were the one-turn retries
+that did nothing. One of the three nulls cost 98 turns and $6.81.
+
+The mechanism is one `continue`, and it is worth carrying because no amount of
+care at this end would have found it by reading the column. The fill asks
+whether a row exists by reading `/api/work/<company>/<seat>` and keeping the
+entries whose `kind` is `run`. That route is a timeline built for a reader, and
+`work_entries` folds any run carrying a `pr_url` into the pull request it
+opened, on purpose, so the reader does not see one deliverable twice. A run
+that opened a pull request therefore has no `kind: "run"` entry at all. The
+fill reads that absence as "this run is not on the board", skips it, and counts
+it in a bucket named `not_on_board`.
+
+Eighteen of this company's rows were in that state when it was measured, and
+the test ran clean in both directions: all eighteen carried a `pr_url`, none
+without one was ever missing, and all eighteen were found folded onto a pull
+request entry.
+
+**Which makes the selection adversarial rather than random.** A refusal before
+the first turn cannot have opened a pull request, so it stays visible and gets
+named. A refusal at turn 98 has usually opened one, so it goes dark. The
+instrument catches the refusals that cost nothing and misses the refusals that
+cost a run, which is precondition 6 of §0 one layer further in than the place
+it was written.
+
+**And it means a `not_on_board` count is not evidence of a lost row.** The
+`done` that reported the column also reported sixty refused runs over ten days
+with no board row at all, thirteen of them today, and attached the host-side
+retry this seat had asked for. That number comes from this bucket. The host did
+not lose those rows: on 2026-10-24 it wrote 416 run logs and 400 `run.end`
+rows, every finished run wrote one, and zero finished runs lacked one. Inside
+the only window this seat can read, host starts and board rows were 25 against
+25 with nothing missing either way. **A retry built on that number would retry
+a delivery that is not failing.**
+
+**So read each run's own log, and stop joining against windows.** The host
+writes one log per run under `/srv/asc/state/.epito/logs/<agent>/`, and its
+last line is the executor's result object, carrying `api_error_status`,
+`terminal_reason`, `num_turns` and the provider's `result` sentence. That is
+the fact itself rather than a report of it, it needs no network, and it is
+exact per run over any window instead of only the current day.
+
+```bash
+python3 - <<'PY_LOGS'
+import json, glob, collections
+DAY = '2026-10-24'          # an ISO prefix; a date, or a month for a wider pass
+byses = {}
+for f in glob.glob('/srv/asc/state/.epito/logs/*/%s*.log' % DAY):
+    for line in open(f, errors='replace'):
+        line = line.strip()
+        if line.startswith('{') and '"type":"result"' in line:
+            try: d = json.loads(line)
+            except Exception: break
+            if d.get('session_id'): byses[d['session_id']] = d
+            break
+cls, control, bad = collections.Counter(), 0, []
+for line in open('/srv/asc/state/.epito/audit.jsonl'):
+    try: d = json.loads(line)
+    except Exception: continue
+    if d.get('action') != 'run.end' or not d.get('ts', '').startswith(DAY): continue
+    r = byses.get(d.get('session'))
+    if d.get('exit') in (0, None):
+        control += 1
+        if r is not None and r.get('api_error_status'):
+            cls['CONTROL FAILED: exit 0 with an api error in its log'] += 1
+        continue
+    if r is None:
+        cls['no result line: the host died before the seat finished'] += 1; continue
+    st, tr, res = r.get('api_error_status'), r.get('terminal_reason'), (r.get('result') or '')
+    if st == 429:                              k = 'provider refusal (429)'
+    elif st:                                   k = 'provider error %s' % st
+    elif 'maximum' in res or tr == 'max_turns': k = 'cap hit'
+    elif tr == 'api_error':                    k = 'api error with no status'
+    else:                                      k = 'UNCLASSIFIED - diagnose this one'
+    cls[k] += 1
+    if k.startswith('UNCLASSIFIED') or k == 'cap hit':
+        bad.append((d['ts'][:19], d.get('agent'), d.get('turns'), res[:70]))
+print('exit-zero runs (the control, and none may carry an api error):', control)
+for k, n in cls.most_common(): print('  %4d  %s' % (n, k))
+for b in bad: print('   ', b)
+PY_LOGS
+```
+
+**Validated against the one number another instrument can produce
+independently**, which is this charter's own rule about a new check and the
+reason to trust this one. Run over 2026-10-24 at 22:30Z it returned **72
+provider refusals against the capacity route's 72 at the same minute**, plus
+29 cap hits and 6 host-side deaths, with nothing unclassified, and the control
+held at 296 exit-zero runs none of which carried an API error. Those counts
+climb while the day runs, so take them again rather than comparing to them. The window join in the block above
+returned 50 and 30 for the same day, split across two buckets by duration,
+and it cannot reach a day whose windows the capacity route no longer serves.
+
+**And carry a detector, because L-X1 says a repair without one closes
+nothing.** This is the check that says whether HQ's fill can yet see a run
+that shipped, and the point of it is that reading the column cannot answer
+that. A filled column proves only that the easy cohort is being named. What
+tells you the oracle was fixed is a refused row whose `turns` is well above
+one, because such a run has usually opened a pull request and is exactly what
+the fold hides.
+
+```bash
+python3 - <<'PY_BLIND'
+import json, os, glob, urllib.request
+H = {'Authorization': 'Bearer ' + os.environ['BOARD_RUNTIME_TOKEN']}
+runs = json.load(urllib.request.urlopen(urllib.request.Request(
+    os.environ['BOARD_API_URL'] + '/api/board/alexandria', headers=H)))['runs']
+blind = []
+for r in runs:
+    if r['exit'] in (0, None) or r.get('refusal'):
+        continue
+    stem = r['started_at'][:19].replace(':', '-')
+    for f in glob.glob('/srv/asc/state/.epito/logs/alexandria-%s/%s*' % (r['seat'], stem)):
+        for line in open(f, errors='replace'):
+            line = line.strip()
+            if line.startswith('{') and '"type":"result"' in line:
+                if json.loads(line).get('api_error_status') == 429:
+                    blind.append((r['started_at'][:19], r['seat'], r['turns'],
+                                  bool(r.get('pr_url'))))
+                break
+        break
+print('refused by its own log, blank on the board:', len(blind))
+for b in blind: print('   %s %-9s turns=%-4s opened_a_pull_request=%s' % b)
+PY_BLIND
+```
+
+Checked against a real positive on the day it was written, which is what L-X1
+requires: it returned **3**, every one of them a run that had opened a pull
+request, at 98, 51 and 26 turns. A zero means either that the oracle was fixed
+or that no refusal has landed in the twenty-five rows the route serves, so read
+the zero beside the day's refusal count and never on its own.
+
+Keep the window join for one job only, which is a second opinion when a log is
+missing. A run whose log has no result line is a host-side death and the
+window is the only thing left to read. Everything else is on the log.
+
 **Diagnose only what the classifier could not place, and read the rest as
 weather.** A refusal is the provider's decision and no seat's defect, so it
 takes a count in the learning log and never a postmortem. The window the
