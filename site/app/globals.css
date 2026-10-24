@@ -1825,6 +1825,18 @@ button.pill {
   max-width: 540px;
 }
 
+/* Measured 2026-10-24: zero. Two paragraphs with nothing between them, inside
+   a block whose own leading is 24px, so the gap that was supposed to separate
+   them was smaller than the gap between two lines of one of them. On the page
+   they read as a single paragraph with a hard break in the middle, and the
+   sentence that starts the second one ("Payment and invoicing run through
+   Polar") is the one a reader worried about where their card goes is looking
+   for. 16 off the 8-point grid, which puts 40px baseline to baseline against
+   24 inside, so the break reads as a break. */
+.billing-note p + p {
+  margin-top: 16px;
+}
+
 /* ---------- graph ---------- */
 
 /* The claim graph explorer. Built 2026-09-26 on the owner's dispatch, against

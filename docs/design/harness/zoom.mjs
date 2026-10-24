@@ -59,6 +59,17 @@ for (const s of specs) {
   if (s.wait) await page.waitForTimeout(s.wait);
   const file = path.join(OUT, `${s.id}.png`);
   if (s.clip) {
+    // The clip is viewport-relative, and `height` below is clamped by the
+    // viewport, so a target below the fold used to produce a zero or negative
+    // height and Playwright threw "Expected options.clip.height to be greater
+    // than 0" with nothing naming the real cause. A spec that says "clip this
+    // element" means it wherever the element is, so bring it into view first
+    // unless the spec pinned a scroll offset on purpose. Found 2026-10-24
+    // clipping `.billing-note`, which is 2000px down the pricing page.
+    if (!s.scroll) {
+      await page.locator(s.clip).first().scrollIntoViewIfNeeded();
+      await page.waitForTimeout(400);
+    }
     const box = await page.locator(s.clip).first().boundingBox();
     if (!box) { console.log(`${s.id}: SELECTOR NOT FOUND ${s.clip}`); await ctx.close(); continue; }
     const pad = s.pad ?? 16;
