@@ -16578,8 +16578,8 @@ whenever anything alarms. Its `behind()` filters the evidence to `failing`.
 So the unmeasured app left no trace in the headline, no card on the board, no
 line in the rendered report, and no mark on the exit code. The run exited 1,
 which the file's own docstring defines as "at least one app is past the window,
-and the board now carries it" — a claim about the fleet, made by a run that
-could not see part of it.
+and the board now carries it". That is a claim about the fleet, made by a run
+that could not see part of it.
 
 **Why yesterday's fix did not cover it.** Yesterday introduced the `unknown`
 state on this surface and wired `drift_watch` to exit 2 on it, and wrote: "a
@@ -16602,14 +16602,13 @@ and `tests/test_drift_watch.py::test_an_app_that_could_not_be_measured_is_not_a_
 
 **The second finding, and it is about why nobody looked.** `_last_commit_at`'s
 docstring ended, in its own words, "the seat workflows check out with
-`fetch-depth: 0`, so in the place this actually runs daily the answer is real;
-anywhere else it degrades to `unknown` instead of to a guess." That sentence
-was true when it was written. It stopped being true on 2026-10-17, when
+`fetch-depth: 0`, so in the place this actually runs daily the answer is
+real". That sentence was true when it was written. It stopped being true on 2026-10-17, when
 `ab4e5bb` moved every seat's cadence off GitHub schedules and onto the host
 manifests. The twelve workflow files still say `fetch-depth: 0` and they are
-no longer what checks out a scheduled run; the host clones one commit deep. So
-the daily place this code runs became exactly the shallow case the docstring
-promised it was not, and the promise sat in the file telling every reader not
+no longer what checks out a scheduled run, because the host clones one commit
+deep. So the daily place this code runs became exactly the shallow case the
+docstring promised it was not, and the promise sat in the file telling every reader not
 to check. A runtime change outside this repository falsified a comment inside
 it, and the comment went on being read as current.
 

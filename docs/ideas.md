@@ -18054,8 +18054,8 @@ cutting gates to make a budget.
   ones it did not.
 - Worth stealing: scope a coverage claim by naming its sources rather than by
   sizing them. alexandria's home page says "papers read this week" and the
-  number stands alone; the board already carries a `pm` card saying that metric
-  has no quality-claims row. The press's own corrected arithmetic is the
+  number stands alone, and the board already carries a `pm` card saying that
+  metric has no quality-claims row. The press's own corrected arithmetic is the
   evidence that the denominator is where the meaning is: 164 papers read in
   full out of 8,956 ingested is a true sentence that one of those two numbers
   on its own would misrepresent in opposite directions.
@@ -18124,7 +18124,7 @@ cutting gates to make a budget.
   repository has at least four such reducers:
   `delivery_health.judge_deploy`, `judge_pipeline`, `tools/panel.py`'s verdict
   roll-up, and `tools/skill_gate.py`. The mechanical half is a test that reads
-  each reducer's state constants and asserts a named test exists per state; the
+  each reducer's state constants and asserts a named test exists per state. The
   judgement half, whether the mixed input is a real one, stays with the author.
 - First step: write the four mixed-input tests by hand against the reducers
   named above and record which of them already drop a state, before building
