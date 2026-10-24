@@ -18810,12 +18810,53 @@ cutting gates to make a budget.
 - Cost: $0.
 - Status: proposed
 
-### 2026-10-24 — The trigger-test receipt goes stale between the run that writes it and the commit that edits SKILL.md (skill seat)
+### 2026-10-24 — The receipts CI step has been red on four of this seat's last four branches, and nobody registered it (skill seat)
 - Trigger: a `checks` failure on this seat's own branch,
   [run 40112251086](https://github.com/alexandrapaiz/alexandria/actions/runs/40112251086),
-  `tests/test_skill_receipts.py::test_every_skill_the_page_receives_shows_a_dated_validation_result`,
-  with the message `evaluation-integrity: the receipt was measured against a
-  different revision of SKILL.md`. Opening this run's investigation here so the
-  entry carries the run link; the finding and its first step land in a later
-  commit on this branch.
+  step "the skill library shows its receipts, and they describe today's text".
+  The assertion was `tests/test_skill_receipts.py:237`, `evaluation-integrity:
+  the receipt was measured against a different revision of SKILL.md`.
+- What: a result bundle pins a per-skill `skill_sha256`, so `latestValidation` in
+  `site/lib/skill-provenance.js` can tell a reader whether the pass rate on the
+  page describes the text below it, and `test_skill_receipts.py` makes a stale
+  receipt a build failure. That invariant spans two files, `SKILL.md` and the
+  newest bundle under `skills/_validation/results/`. A run edits the first and
+  records the second several commits later, because the receipt can only be
+  measured after the edit is final. CI runs on every push. So the branch is red
+  by construction for the window in between, and on this run that window was
+  two commits and six minutes: `3a372dc` rewrote the file, `94ef7f3` touched
+  neither side, `40af5d2` recorded the new bundle and the branch went green and
+  stayed green for three more commits. I checked every branch this seat has
+  pushed since the step was added, and the step failed on all four of them:
+  `alexandria-skill/2026-10-05-window` (2 runs), `skill/2026-10-06-agent-containment-retrofit`
+  (6 runs), `skill/2026-10-13-harness-maintenance-and-cluster` (1 run) and this
+  one (2 runs), eleven red runs in total. Two of the four, 2026-10-13 and
+  2026-10-24, are this exact stale-sha assertion; the 2026-10-05 and 2026-10-06
+  failures were a different assertion in the same file and are not this defect.
+- Why it matters more than a transient red: the PM seat tiers a pull request
+  partly on its check status, so a seat whose branch is predictably red for part
+  of every run is a seat whose work is predictably mis-tiered. Worse, a step
+  that is red on most of one seat's commits teaches every reader to scroll past
+  it, which is how a real receipt failure gets missed. The library's whole pitch
+  is that a claim has a receipt, and this is the check that holds that pitch up.
+- First step: the half inside this seat's boundary is already in this PR.
+  `skills/_validation/trigger_test.py --receipts` is new here: an offline check,
+  no engine and no cases, that compares every skill's SKILL.md sha against the
+  newest bundle that scores it, using the same ranking rule as `rankBundles()`
+  so it cannot disagree with the page. Replayed against `3a372dc`, the commit
+  that was red, it names the same skill and the same two shas the CI assertion
+  did, in under a second. Incident 31's lesson is why it lives in the runner and
+  not only in a prompt: a rule in a prompt is checked when someone reads the
+  prompt, and a rule in the runner is checked every time anything ships.
+- What is left, and it is the owner's call rather than this seat's: whether the
+  receipts step should stay a hard failure on an intermediate commit at all. The
+  org rule that produced this is the ship-first rule, which mandates many small
+  commits, and the step asserts a whole-branch end state on each one. Those two
+  rules are in direct tension and no amount of discipline in this seat removes
+  it, because the receipt genuinely cannot exist before the edit it describes.
+  The options are a one-commit discipline (the runner check above makes that
+  cheap, and it is what this seat will now follow), or making that one step
+  advisory on a push whose head is not the branch tip. The second is a
+  `.github/workflows/` change, which this seat must never make.
+- Cost: $0.
 - Status: proposed
