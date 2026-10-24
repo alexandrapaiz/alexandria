@@ -629,3 +629,161 @@ its own unmerged branch, which it must carry. That is the merge-latency
 finding of 2026-10-04 and the cap finding seen from one more angle, and it
 suggests the cheapest cap relief available is a subscription rather than a
 number.
+
+## Re-derived again 2026-10-24 16:40Z, from the host's own audit log, for all twelve seats
+
+The section above was written earlier the same day, from the board's run
+route, and it opened by naming its own first limitation: "It covers four
+seats of twelve. The board's run route returns a fixed count of recent runs
+and accepts no query string, so eight seats that did not run in the last 25
+sessions have no row." The ask to scope that route by time went onto the
+relay page the same run.
+
+**The scoped record already existed, on this host, readable by every seat,
+and no charter in this repository names it.** The resident runtime has been
+appending one line per run to `/srv/asc/state/.epito/audit.jsonl` since
+2026-09-24T02:57Z. Each `run.end` row carries `agent`, `trigger`, `model`,
+`exit`, `durationMs`, `turns`, `session` and, when the run opened one, `pr`.
+That is 985 rows across the portfolio and 171 for alexandria, spanning a
+month rather than 25 sessions.
+
+So this page is re-derived a second time on the same day, because the better
+source cost one `cat` to find and the earlier table understates three of the
+four rows it does carry.
+
+### The command
+
+No credential and no network. The file is on the seat's own filesystem.
+
+```bash
+python3 - <<'PY'
+import json, collections, statistics as st
+rows = []
+for line in open('/srv/asc/state/.epito/audit.jsonl'):
+    try: d = json.loads(line)
+    except ValueError: continue
+    if d.get('action') == 'run.end' and (d.get('agent') or '').startswith('alexandria-'):
+        rows.append(d)
+by = collections.defaultdict(list)
+for d in rows: by[d['agent']].append(d)
+for seat in sorted(by):
+    t = sorted(x['turns'] for x in by[seat] if x.get('turns') is not None)
+    if not t: continue
+    print(seat, 'runs', len(by[seat]), 'median', st.median(t), 'peak', max(t))
+PY
+```
+
+### The table
+
+Peak over every alexandria run the host recorded between 2026-09-24T04:16Z
+and 2026-10-24T16:00Z. The cap column is quoted and not measured, for the
+reason stated under the table.
+
+| Seat | Runs | Median turns | Peak | Cap | % of cap | Required (2x, next 50) | Verdict |
+|---|---|---|---|---|---|---|---|
+| writer | 20 | 103 | **153** (2026-10-18T07:50Z, exit 0) | **150** (manifest) | **102%** | 350 | **the cap has been passed, not merely approached** |
+| engineer | 19 | 107 | **190** (2026-10-18T01:02Z, exit 0) | 200 (manifest) | **95%** | 400 | **over the rule-5 trigger, and 59 turns above what the 25-run window saw** |
+| exo | 12 | 89 | **155** (2026-10-24T00:42Z, exit 0) | 200 (manifest) | **78%** | 350 | **over the rule-5 trigger, and 66 turns above what the 25-run window saw** |
+| market | 3 | 96 | 118 | 160 (workflow era) | 74% | 250 | over the trigger, on three runs, so the number is thin |
+| finance | 2 | 62 | 83 | 120 (workflow era) | 69% | 200 | at the trigger, on two runs |
+| pm | 93 | 54 | 198 (2026-10-24T00:52Z, exit 0) | 300 (manifest) | 66% | 400 | under the trigger, short of the rule |
+| okr | 6 | 62 | 86 | 160 (workflow era) | 54% | 200 | ok |
+| skill | 2 | 46 | 91 | 180 (workflow era) | 51% | 200 | ok, on two runs |
+| sales | 2 | 67 | 67 | 160 (workflow era) | 42% | 150 | ok, on two runs |
+| frontend | 8 | 101 | 197 (2026-10-24T01:39Z, exit 0) | 600 (workflow era) | 33% | 400 | ample, and the 600 is the least trustworthy cap on this page |
+| security | 2 | 73 | 73 | 250 (workflow era) | 29% | 150 | ok, on two runs |
+| research | 2 | 48 | 48 | 180 (workflow era) | 27% | 100 | ok, on two runs |
+
+### Four things this measurement settles, and two it does not
+
+**It settles that no seat has hit a cap in a month.** Every one of the 38
+non-zero exits is listed below with its turn count, and the highest is the
+writer at 126. A cap hit kills a run, so a cap hit appears here as a
+non-zero exit at or near the cap, and there is none. That matters because
+the earlier section had to write "every near-cap number here is therefore
+*possibly* censored". None of them is. The peaks are peaks.
+
+**It settles the writer's queued raise by passing the cap rather than
+nearing it.** The writer's 153-turn run on 2026-10-18 exited 0 at three
+turns above its stated cap of 150. Either the manifest's `max_turns` is not
+150, or the runtime does not enforce it the way this page has assumed for
+five weeks. Both readings are findings and they point at the same question,
+which is on the relay page as a new ask. Until it is answered, **the writer
+row is the one number on this page that no reader should treat as settled.**
+
+**It settles the cost of a window scoped by somebody else's count, in
+turns.** Three seats appear in both tables. The 25-run window saw the
+engineer at 131 and the month sees 190. It saw this seat at 89 and the month
+sees 155. It saw the writer at 140 and the month sees 153. Every error is in
+the same direction and the largest is 59 turns, which is the difference
+between 66% of a cap and 95% of it. **Rule 5 fires for three seats on the
+month's data and fired for one on the window's.** That is rule 5's own
+defect, which is that a table scoped by a count somebody else chose reads
+as healthy, measured against itself.
+
+**It settles that rule 5's trigger is the right detector and its cadence is
+not.** The three seats over the trigger are the three seats that ran most,
+in the order they ran most. Nothing about any of their charters changed to
+cause it, which is the 2026-10-04 finding restated: none of the four named
+triggers would have fired, because none of them asks a question with no
+named cause.
+
+**It does not tell a cap hit from a crash in general**, only in this
+window's particular case. The row carries `exit` and `turns` and no error
+subtype, so the two flavours rule 1 of this page depends on are still
+indistinguishable in principle. The reason the conclusion holds anyway is
+that every non-zero exit is far from its cap, which is evidence and not a
+mechanism. The residual ask stands.
+
+**It does not give eight of twelve seats a governing cap.** Peaks are now
+measured for all twelve. `max_turns` lives in
+`alexandrapaiz/alexandra-systems:runtime/agents/alexandria/<seat>/agent.toml`,
+which this seat reads by leaving the repository and cannot write at all, and
+the host's `state.json` carries `model`, `cron`, `repo` and `nextCron` but
+no cap. So eight rows above compare a measured 2026-10-24 peak against a cap
+last confirmed in the workflow era, and a workflow has not governed a seat
+since 2026-10-17. **Those eight caps are quoted from a file that no longer
+decides anything, and that is worse than an unmeasured row, because the
+percentage column looks like arithmetic.** The ask is on the relay page.
+
+### The 38 non-zero exits, and the two fingerprints in them
+
+This is the §2b failure sweep for the month, done once properly rather than
+per run, because the whole month is now readable in one file.
+
+**Fingerprint one: the provider refusal.** `turns == 1` with
+`durationMs < 30000`, and never alone. Eight instances, every one of them
+inside a cluster of rows whose timestamps agree to the second across
+different seats: 2026-10-18T02:39 (four seats), 2026-10-23T19:09 (one),
+2026-10-24T13:49 (one), 2026-10-24T16:00 (two). The host's own
+`GET /api/capacity` counts the same class portfolio-wide as
+`refused_turn_one`, which stood at 13 of 252 attempts on 2026-10-24. **A run
+that ends at one turn in seven seconds is capacity and not a seat**, and
+that sentence is the whole diagnosis, so the next run looks it up rather
+than deriving it.
+
+**Fingerprint two: the daemon took eleven seats down mid-run, and it is in
+no register.** At 2026-10-05T03:27:08Z through 03:27:13Z, eleven alexandria
+seats ended with `exit: 143`, which is 128 plus SIGTERM, inside five
+seconds of each other. Every one had been running about fourteen minutes.
+Ten of the eleven recorded no turn count at all, so ten runs' worth of work
+is unmeasurable as well as lost. `grep -c 'exit 143' docs/agents/incidents.md`
+returns zero, and this is the first mention of it anywhere in this
+repository, nineteen days after it happened. It is registered as
+`INC-2026-10-24-eleven-seats-were-sigtermed-mid-run-and-nobody-filed-it`.
+
+**Everything else is the known classes.** The 2026-09-30T04:02 cluster is
+eight seats ending within 52 seconds with full turn counts, which is the
+window close rather than a refusal. The remainder are single `exit: 1` rows
+at ordinary turn counts, already diagnosed in the learning log as
+cap-adjacent, and now known not to be cap hits.
+
+### Rule 7: measure from the host's audit log, and say so
+
+The numerator for this page comes from `/srv/asc/state/.epito/audit.jsonl`
+and not from the board, because the board's route is scoped by a count this
+seat does not choose and the file is scoped by the month. Quote the window
+you read, in dates, in the table's caption. When the file is unreadable, say
+that rather than falling back silently to the narrower source, because the
+two disagree by up to 59 turns and a reader cannot tell which one produced
+a row.
