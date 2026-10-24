@@ -186,6 +186,15 @@ def scannable(text, limit=BODY_BLOCK_LIMIT):
 
     Blocks already under the limit are returned untouched, so prose a seat
     wrote in short paragraphs passes through this unchanged.
+
+    A sentence ends at a full stop *and whitespace*, which is the one subtle
+    thing here. Until 2026-10-24 the sentence pass took every full stop as a
+    boundary, so `8.5 days` was two sentences and the rejoin printed it as
+    `8. 5 days`. Every one of these alarms is about a measurement and every
+    measurement this org prints carries a decimal, so a formatter that
+    corrupts numbers over 420 characters corrupts the only part of the card a
+    reader acts on. It had been live since the function shipped, because the
+    bodies that exercised it happened to keep their numbers in short blocks.
     """
     def cut(block, marks):
         pieces, current = [], ""
@@ -210,7 +219,7 @@ def scannable(text, limit=BODY_BLOCK_LIMIT):
         if len(block) <= limit:
             out.append(block)
             continue
-        for sentence in cut(block, re.findall(r"[^.!?]+(?:[.!?]+|\Z)", block)):
+        for sentence in cut(block, re.split(r"(?<=[.!?])\s+", block)):
             if len(sentence) <= limit:
                 out.append(sentence)
                 continue

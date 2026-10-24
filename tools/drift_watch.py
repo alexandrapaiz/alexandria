@@ -323,6 +323,8 @@ def card_body(record: dict, deploy, now: datetime) -> str:
 
         history,
 
+        deadline(record, deploy),
+
         f"I am reading this from {(deploy.evidence or {}).get('read_via')} "
         "rather than from the database, because no agent seat holds a "
         "database credential. That is also why this is a card and not the "
@@ -336,6 +338,49 @@ def card_body(record: dict, deploy, now: datetime) -> str:
         "ladder in docs/agents/press-rehearsal.md. The next run of the job "
         "records its own sha and this surface goes green on its own.",
     ]))
+
+
+def deadline(record: dict, deploy) -> str:
+    """When this stale image next serves a run, for the card.
+
+    The card used to say how old the image was and never when it mattered,
+    which left the owner to work the cron out of a decorator. The ExO seat did
+    exactly that by hand on 2026-10-24, on the compute card, and wrote the
+    answer in as a comment. One paragraph here is cheaper than that, every day.
+
+    An outage is part of the deadline rather than a footnote to it, because a
+    card that says "weekly fires Monday morning" while the whole workspace is
+    switched off is telling the reader to work to a clock that has stopped.
+
+    Times go through this file's own `ageing` rather than the health tool's,
+    so that one card does not render the same quantity two ways: the age above
+    this paragraph and the wait below it are both hours, and a reader
+    comparing "behind for 8.5 days" with "2.4h away" is doing a unit
+    conversion the card should have done.
+    """
+    app, here = record["app"], record["evidence"]
+    at, hours = here.get("next_run_at"), here.get("next_run_in_hours")
+    if not at:
+        why = here.get("next_run_why") or "nothing here could read its schedule"
+        return (f"I cannot say when this image next serves a run, because "
+                f"{why}, so read the age above without a deadline on it.")
+    # Formatted here rather than in the evidence, which keeps the full
+    # timestamp a script can parse and gives the card the one a person reads.
+    stamp = dh._parse_iso(str(at))
+    when = (f"{stamp:%Y-%m-%d %H:%M} UTC" if stamp else str(at))
+    when = f"{when}, on the {here.get('cron')} schedule"
+    outage = (deploy.evidence or {}).get("compute_outage")
+    if outage:
+        return (f"The next run of {app} would be {when}, which is "
+                f"{ageing(hours)} away, but no cron in this "
+                f"pipeline is firing at all right now: {outage}. So that is "
+                f"the deadline from the moment compute comes back rather than "
+                f"a time to work to, and the deploy still has to happen "
+                f"before it.")
+    return (f"The next run of {app} is {when}, which is "
+            f"{ageing(hours)} away. That is the deadline on this "
+            f"card: a deploy after it leaves this image serving one more "
+            f"production run.")
 
 
 def find_card(payload: dict, app: str, key: str) -> dict | None:
@@ -369,7 +414,10 @@ def nudge_body(record: dict, now: datetime) -> str:
         f"nothing has run {deploy_command(record['app'])} yet. Production is "
         f"on {here.get('recorded_sha') or 'an image it has never recorded'} "
         f"and {here.get('ref', 'origin/main')} is at "
-        f"{here.get('expected_sha')}.")
+        f"{here.get('expected_sha')}."
+        + (f" Next run {dh._parse_iso(str(here['next_run_at'])):%Y-%m-%d %H:%M}"
+           f" UTC, {ageing(here.get('next_run_in_hours'))} away."
+           if dh._parse_iso(str(here.get("next_run_at"))) else ""))
 
 
 # ------------------------------------------------------------------- the run

@@ -134,7 +134,25 @@ workflow change first and as a charter line second, and the surface
 stays marked unwatched until the secret lands. A guardrail whose input
 is missing is worse than an absent one, because it reports.
 
-## The known state of each surface, 2026-09-27
+## The known state of each surface, 2026-09-27 — **STALE, read the 2026-10-24 note below first**
+
+**Dated-conclusion warning, added 2026-10-24.** The table below was written
+on 2026-09-27 and has not been regenerated in 27 days, while eight dated
+notes were appended beneath it. Its "Trigger" column says "Modal cron" for
+the two press rows, and on 2026-10-23 the Modal workspace was switched off at
+its spend limit, so both of those triggers are dead as of this writing. Its
+"Watched daily" column predates five of the readers that now exist. **A
+reader who stops at the table gets a picture of the org from before half of
+its instruments were built and from before its scheduler was switched off.**
+
+This is the register's own rule arriving on the register: every sentence a
+register writes about its own data carries the date it was written, and a
+table of running systems is the most perishable sentence of all. The
+regeneration is a weekly-cycle job and is named in this run's pull request
+as the one duty deliberately left; the warning is here so the staleness is
+loud in the meantime.
+
+## The known state of each surface, as of 2026-09-27
 
 | Surface | Trigger | Artifact to check | Guardrails 1 to 3 | Watched daily |
 | --- | --- | --- | --- | --- |
