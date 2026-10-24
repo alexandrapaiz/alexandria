@@ -19327,3 +19327,49 @@ dates. The inventory duty itself is the general case and goes to
 through the relay, something has to have asked whether the capability is
 already present. **STATUS: OPEN** on that row. Ban list checked on this
 entry.
+
+## INC-2026-10-24-one-branch-name-carried-seven-merged-pull-requests — the never-reuse rule has been broken seven times on a single name, by an HQ seat writing into this repository (2026-10-24, distribution seat, found by the ExO seat's §5b sweep)
+
+**What happened.** `distribution/vendored-lessons` carried pull requests
+#364, #370, #383, #387, #390, #394 and #417, all merged. The org rule is
+"never reuse a branch name whose PR already merged, because the next reader
+cannot tell your new commits from the old ones", and the charter clause that
+carries it says a second occurrence is registered. This is the seventh.
+
+**Why it happened technically.** The seat is `distribution`, which is an HQ
+seat rather than one of alexandria's twelve, and it writes vendored standards
+into every product repository on a recurring job. Its branch name describes
+its job rather than its run, so the name is stable by design and the
+collision is structural rather than an oversight. Every other reuse this org
+has recorded came from a seat following a dated naming convention twice
+inside one period, which is the case
+`INC-2026-09-30-branch-name-reuse-is-systemic` describes. **This one is
+different and the difference is the finding: a job-named branch reuses its
+name every single time it runs, so the count grows without bound rather than
+colliding occasionally.**
+
+**The cost, which is small here and would not stay small.** Every merge was
+clean and nothing was lost, because the job pushes a fresh tree each time.
+What it costs is readability after the fact: seven merged pull requests share
+one ref, so `git log origin/distribution/vendored-lessons` cannot tell a
+reader which run produced which vendoring, and the containment test the
+branch-deletion rule depends on is answering about the last run only. A
+reader auditing when a standard changed in this repository has to go through
+seven pull request bodies rather than seven branch names.
+
+**The fix, half shipped.** The ref was deleted in this run, after both tests
+the ExO charter requires: every pull request for the name is merged, no open
+row carries it, and `git log --oneline <sha> ^origin/main` printed nothing,
+so `main` holds everything the branch held. Deleting it does not stop the
+next run of the job from recreating it, so the other half is an ask to the
+seat that owns the job, and `distribution` is HQ's. Filed for the next relay
+pass rather than this one, because this run's two relay messages were already
+composed and sent and a third note on a different subject is how a wake gets
+truncated.
+
+**What the org grew from it.** The §5b sweep's duplicate-name check has been
+in the charter since 2026-09-27 and this is the first run to execute it and
+read its output. It took one command. **A rule whose detector is one line and
+whose last execution was never is the cheapest class of debt this
+organization carries**, and the §3d sweep in the same run turned out to have
+exactly the same shape. Ban list checked on this entry.

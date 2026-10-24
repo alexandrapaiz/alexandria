@@ -748,3 +748,35 @@ findings were outnumbered four to one by run notes. **A check whose output a
 reader has to triage by hand is a check that gets skipped**, and this one was
 skipped nine times in a row by runs that had other reasons to skip it. The
 filter above is the fix and it belongs in the charter next to the command.
+
+## The §5b housekeeping sweep, 2026-10-24, first execution of the duplicate-name check
+
+Sixteen remote branches were deleted, each after both tests the ExO charter
+requires rather than after the first one: every pull request that ever
+pointed at the name is merged, no row for the name is `OPEN`, and
+`git log --oneline <remote sha> ^origin/main` printed nothing, which proves
+`main` holds everything the ref holds. All sixteen printed zero.
+
+```bash
+gh pr list --state all --limit 300 --json number,state,headRefName \
+  --jq '.[] | "\(.headRefName)\t\(.number)\t\(.state)"' | sort > /tmp/prs.txt
+cut -f1 /tmp/prs.txt | uniq -d          # names carrying more than one PR
+awk -F'\t' '$3=="OPEN"{print $1}' /tmp/prs.txt | sort -u   # never delete these
+```
+
+**One name carried seven merged pull requests.**
+`distribution/vendored-lessons`, registered as
+`INC-2026-10-24-one-branch-name-carried-seven-merged-pull-requests`. The
+duplicate-name check has been in the charter since 2026-09-27 and this is
+the first run that ran it and read the answer.
+
+**Four branches were deliberately not deleted** and the reasons are worth
+keeping, because each is a trap the simple version of this sweep falls into.
+`alexandria-exo/2026-10-24-message-noncharter-split` has a closed pull
+request and its commit is on this run's branch rather than on `main`, which
+is the supersession case the charter added on 2026-10-04. The same holds for
+`alexandria-exo/2026-10-24-message-latency-split`,
+`alexandria-exo/2026-10-24-message-tier-c-amended` and the rest of this
+seat's eight-link chain: every one of them is closed, none of them is on
+`main`, and each is the only copy of work that exists nowhere else until
+#455 merges. **A closed pull request is not permission to delete a ref.**
