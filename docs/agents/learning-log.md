@@ -4379,6 +4379,18 @@ other place that status is written down**, because a register that
 contradicts itself fails in whichever direction the reader happens to open
 it.
 
+**And one failure this run had rather than found.** It staged its pull
+request description at `/tmp/body.md`, another seat on this host overwrote
+that path, and `gh pr edit` published a different seat's description onto
+this pull request for about two minutes. Registered as
+`INC-2026-10-24-tmp-is-shared-between-seats-and-one-run-published-anothers-pull-request-description`.
+Twenty-one seats share one writable `/tmp` and nothing tells them so. The
+local fix is to stage run artifacts under `.git/exo-run/` in the checkout.
+**The rule to carry: a resource that is shared by default and private by
+convention will be treated as private, and the convention is not a
+mechanism.** The detector was coincidence, because this run only reopened
+the file to append a paragraph.
+
 ### What the next run must check first
 
 1. **Do not measure E1.** It is retired and the ledger says so. Item 2 of

@@ -18672,3 +18672,50 @@ next reader does not have to find them. The machinery diff in all twelve
 charters is one, and it needs an owner's merge. Any `git merge-base` check a
 seat runs by hand is the other. A ledger entry proposes making the charter
 gate a script this seat can own instead of a command a charter recites.
+
+---
+
+## INC-2026-10-24-tmp-is-shared-between-seats-and-one-run-published-anothers-pull-request-description
+
+**Observed** 2026-10-24, third ExO wake, by having it happen to this run.
+
+**What happened.** This run staged its pull request description at
+`/tmp/body.md`, wrote it, published it with `gh pr edit --body-file`, and
+later reopened the same path to append two paragraphs. The file had been
+replaced. The content at that path was a different seat's pull request
+description, complete with its own merge notes and its own test results, and
+`gh pr edit` published it onto this seat's pull request. It was live for
+about two minutes before it was noticed and restored from a rewrite.
+
+**Why it happened.** Twenty-one seats run on one host. `/tmp` is shared and
+writable by all of them, `body.md` is an obvious name, and nothing in any
+charter or any workflow tells a seat that its scratch space is not its own.
+The failure is silent in both directions: the seat that overwrote this file
+got no error, and this seat got no error either, because writing to a path
+another process also writes to is a perfectly ordinary thing to do.
+
+**Why this one was cheap and the next one will not be.** The blast radius
+here was a description, which is reversible and which this run happened to
+re-read. A seat staging a patch, a generated YAML file, a diff it is about to
+apply or a file it is about to commit has the same exposure with no
+reversibility, and the corrupted content would be plausible rather than
+obviously foreign, because every seat on this host writes the same kind of
+prose. **The detector here was coincidence: this run only looked again
+because it wanted to append a paragraph.**
+
+**The fix shipped here.** This seat stages run artifacts inside its own
+checkout, under `.git/exo-run/`, which is per-run, private by construction
+and never committed. That is one seat's fix and it is the smaller half.
+
+**The fix that is not this seat's.** A shared `/tmp` across twenty-one seats
+belongs to whoever owns the runtime. Two options worth naming: give each run
+a private temporary directory and point `TMPDIR` at it, which costs one line
+in the runner and fixes every seat at once including the ones that will never
+read this entry, or leave `/tmp` shared and say so somewhere a seat reads.
+The first is strictly better because it needs nobody to have read anything.
+
+**Blameless note.** No seat did anything wrong and no charter was broken.
+Both writers used a conventional path for a conventional purpose. **The
+general rule to carry: a resource that is shared by default and private by
+convention will be treated as private, and the convention is not a
+mechanism.** Ban list checked on this entry.
