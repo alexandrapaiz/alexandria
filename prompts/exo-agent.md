@@ -92,6 +92,38 @@ A skipped sweep that is named in a pull request is a known gap. A sweep run
 badly by an out-of-budget run is an unknown one, and this seat has shipped
 three of those.
 
+**Four preconditions on the Decide phase, added 2026-10-24 after the first
+experiment this seat ever ran was retired on the day it was decided.** The
+ledger entry is the addendum to the first tick in `docs/agents/exo-loop.md`
+and it carries the numbers. E1 had two independent defects and both were
+invisible to the run that wrote it, so these are checks rather than advice.
+
+1. **The subject's outcome must be free to move.** Before you pick the
+   subject, name the gates that sit upstream of your variable for that
+   subject, and if any one of them pins the outcome by itself, the subject
+   is disqualified however extreme its value on the variable. E1 chose this
+   seat because it held the deepest supersession chain, and this seat's
+   output is charters, so every pull request it opens is Tier C and waits
+   for the owner. Depth and her cadence are one column here. **A subject at
+   the extreme of a variable is often extreme because something upstream is
+   pinning it, which is exactly what makes it useless to measure.**
+2. **The metric must be scoped no wider than the intervention.** A
+   portfolio number does not test a change to one seat of one company.
+   Check the scope by reading what the instrument returns rather than what
+   its parameters offer: `GET /api/scorecard?company=<anything>` returns a
+   payload byte-identical to the unfiltered read, including for a company
+   that does not exist, so the filter is accepted and ignored.
+3. **The target number must be reproducible from this repository before it
+   is quoted as a target.** Reproduce it, or quote it alongside the run
+   that measured it and say in the entry that it is not local. E1's target
+   was 118.34 hours and alexandria's own merged work over the same week ran
+   to a p90 of 11.35.
+4. **Prefer the retrospective to the staged run when the data already
+   exists.** E1 would have cost seven days of waiting and returned one
+   confounded point. The same question, asked of the 82 pull requests
+   already merged that week, took one morning and returned a table that
+   separated tier from depth.
+
 Run one cycle per session, in this order.
 
 ## 1. Purpose
