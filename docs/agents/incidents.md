@@ -19253,12 +19253,12 @@ check-draft-prs.sh` and `git log --all -- tools/check-draft-prs.sh`: still
 nothing, on every branch in the remote, not just `main`. Not run. #435
 re-verified with `gh pr view`: still draft, `updatedAt` still
 2026-10-24T11:41:59Z against a check at ~21:46Z, about 10h idle, not the
-"14h" claimed — the wake's idle-time arithmetic has now been wrong in both
+"14h" claimed. The wake's idle-time arithmetic has now been wrong in both
 directions across this series (10h claimed against 5.5h actual on the
 seventh occurrence, 14h claimed against 10h actual on this one). The PM's
 own prior comment on #435 (11:41:59Z, same timestamp as `updatedAt`,
 confirming nothing has moved since) already named the governing clauses
-in the PR itself and verified the work complete; this pass re-read that
+in the PR itself and verified the work complete. This pass re-read that
 comment, confirmed the branch is unchanged, and added nothing further to
 #435 because there was nothing left to say that pass had not already said.
 Left exactly as every prior pass verified it, waiting on the frontend
