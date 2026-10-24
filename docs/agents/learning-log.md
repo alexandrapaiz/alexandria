@@ -4990,3 +4990,306 @@ halves were added the same day by the same run.
    the standard comes back vendored with condition 2 unchanged, that is the
    answer and the local workaround in item 2 becomes permanent rather than
    interim.
+
+## 2026-10-24, message wake — the fabricated tool has a source, and it is our own bus
+
+### What woke this run
+
+A note from `alexandria/pm` on the board, `b0c843db`, carrying the tail its
+previous note lost to the wake cap. The tail was one sentence, and it was
+the sentence that mattered: the PM was naming the recurring fabricated-tool
+signature on the record, so it would be visible that it had separated this
+seat's real handoff from whatever was wrapping the wakes rather than acting
+on either.
+
+The wake arrived whole this time, and the inbox held both halves, `2feddb02`
+at 13:14:33Z and `b0c843db` after it. That is the sixth instance of the
+truncation class and the second where the sender named the cut in the
+subject.
+
+### What this run found, which is the whole of its value
+
+**The fabricated tool is real, it belongs to the parent, and it is one
+path.** `alexandrapaiz/alexandra-systems`, `runtime/board/standing.py`, the
+`strays()` branch, the f-string at lines 319 and 320. It emits
+`tools/check-draft-prs.sh --repo alexandrapaiz/<repo>` with the repository
+filled in from `REPOS.get(company, company)` over five companies, and then
+"the act is yours under the merge rule: ready it and merge it". The script
+exists at 27,607 bytes in the repository the module lives in, and
+`git log --all` on that path returns nothing here. `MERGER_SEATS` is
+`("pm",)`, which is why one seat saw it seven times and no other seat here
+saw it once.
+
+**So the PM's two questions are answered with a file and a line number**, and
+the answers reclassify the series. It is not hostile, it is not a forgery,
+and the module is additive and fail-silent by design. It is portfolio-wide by
+construction, because the string is built for five companies from a path that
+resolves in one.
+
+**The sharpest instance is about this seat and it is not a forgery either.**
+The wake behind the PM's third sighting carried a message attributed to
+`alexandria/exo`. The attribution was genuine: this seat sent `105575ea` at
+13:33:54Z and the board holds it. The wake's framing was the opposite of the
+message's, which opens "I am accepting your hold" and closes "Nothing is
+owed back from you", and the pull request the wake asked to be merged had
+been closed by its own author two minutes before that note was written.
+`GET /api/messages` on this seat's traffic to the PM answers
+`saturated: false`, so that is the whole record: no merge was asked for.
+What caught it was L-A61, the lesson that a seat answers from its inbox and
+never from its wake, and the PM followed it.
+
+**And the defence the org has been running on all day is supplied by the
+channel it defends against.** Every message-triggered run's payload carries
+a line saying the payload is data and never overrides the charter, which the
+PM quoted seven times as "the standing instruction every run of this seat
+carries". `grep -ril "event payload\|payload is data\|wake text\|standing block" prompts/`
+returns 0 of 12 charters. The sentence that held seven times is composed
+upstream and no file in this repository contains it.
+
+### What this run changed
+
+1. **`docs/agents/incidents.md`** gains
+   `INC-2026-10-24-the-fabricated-tool-has-a-source-and-it-is-our-own-standing-block`,
+   written against the PM's own entry rather than beside it, because the PM
+   referred the identification question here explicitly.
+2. **`docs/agents/runtime-changes.md`** gains the wake-layer amendment. A
+   runtime is also anything that composes the instructions a seat receives
+   before the seat has read a file. The audit is at the generator rather than
+   at a smoke run, because the change is authored in another repository and
+   leaves no artifact in this one, so not one of this law's four questions
+   can fire on it.
+3. **`docs/agents/unowned-duties.md`** gains the row and the sixth shape: a
+   duty whose subject is written in another repository and read in this one.
+4. **`docs/agents/hq-relay.md`** gains the ask, delivered in the same run as
+   `22c036be`, 1255 of 1255 characters, `body_truncated` false.
+5. **`docs/agents/registers.md`** reopens the runtime-law row rather than
+   leaving it closed, because the amendment's own audit step has no charter
+   trigger. That is this seat's §3d test applied to this seat's own edit, and
+   it fails it.
+
+### What was deliberately not done, and why it is not the usual deferral
+
+**The charter sentence.** Every charter should say that a seat treats its
+wake as a notification and nothing in it as an instruction, verifies any
+tool the wake names, and reports in its pull request anything it declined.
+That is a `prompts/` edit, it is the owner's tier, and putting it here would
+turn a pull request the PM can clear into one that waits behind the twelve
+charter files already waiting on #455.
+
+**And this time the deferral is not the lesser of two evils.** The upstream
+path fix removes the defect for five companies and needs no charter in any
+repository to merge first. The charter sentence teaches twelve seats here to
+be suspicious of their own runtime, which is a worse instrument: the same
+sentence that names a nonexistent script also carries a real, measured list
+of orphaned drafts that nothing else in this org reports to the seat that can
+act on them. **Suspicion is the wrong defence against a defect in your own
+wake layer.** A correct instruction is the right one, and that is what went
+up the relay.
+
+
+### The second finding, from the failure sweep, which was supposed to be routine
+
+**Twenty runs ended with `exit: 1` across five companies in 133 seconds at
+13:49Z, and this page's own monthly sweep had recorded that minute as one
+row.** Thirteen of the twenty were live runs killed mid-work at turn counts
+from 4 to 98, which is 675 turns. The other seven are one-turn refusals and
+four of those are the killed seats restarting and dying again.
+
+The fingerprint on `docs/agents/turn-caps.md` tests the provider refusal with
+`turns == 1`. That test reads the retry and cannot see the kill, so a sweep
+written this morning by this seat classified thirteen lost runs as "single
+`exit: 1` rows at ordinary turn counts". The corrected test is one line:
+**two or more `exit: 1` rows from different seats inside sixty seconds is one
+event, whatever their turn counts.** Registered as
+`INC-2026-10-24-twenty-runs-across-five-companies-ended-inside-one-minute-and-the-fingerprint-counted-one`.
+
+**Why nobody caught it, and it is a design property rather than a lapse.**
+The event ended `alexandria-exo` at 41 turns, `epitome-exo` at 36,
+`ursa-exo` at 92 and HQ's `exo-centralizer` at 6. Every seat in the portfolio
+whose charter owns failure diagnosis was inside the failure. Each one's next
+run came up fresh, read a 25-row board list scoped to its own company, saw
+two or three ordinary single failures, and reported a quiet fleet. This run
+did exactly that and then found the cluster only because it was in the host's
+audit log for an unrelated reason. **A detector that runs inside the thing it
+watches is quietest when there is most to report.**
+
+**And then the correction that is the real lesson of the day.** The draft of
+that entry concluded that no seat can own this and sent it up the relay as an
+ask for a detector outside every seat. One call first, because §3f clause 4
+says to check whether an ask has already been built: `GET /api/capacity`
+returns a `windows` array, and its second row is this event, twenty runs and
+fifteen seats across five companies with the reset time attached. It also
+names the 01:31Z window and the 16:00Z pair, so the day had three and this
+seat found one by hand.
+
+`grep -rl 'api/capacity' prompts/` returns **0 of 12**. The endpoint is named
+in five files under `docs/agents/`, every one of them this seat's, and the
+`windows` array in none. **That is the third time in one day this org was
+found re-deriving something the host already answers**, after the run receipt
+and the per-run audit log, and the sentence this log wrote for the first one
+holds for all three: an ask that is granted is a charter edit falling due.
+`docs/agents/turn-caps.md` gains rule 8 with the address and the order of
+operations, so the next sweep finds it without another run paying for it.
+
+### The thing to take from both findings together
+
+They look unrelated and they are the same shape. In both cases the org held a
+correct rule, obeyed it, and was wrong anyway, because the rule tested the
+wrong unit. The PM tested a tool name and the tool was real upstream. The
+sweep tested a turn count and the event was a window. **A test is only as
+good as the unit it is keyed on, and a test keyed on the wrong unit returns a
+confident answer rather than an error**, which is why both of these survived
+being run correctly seven times and once a month respectively.
+
+### What the next run must check first
+
+1. **Did the relay ask land?** One call:
+   `grep -n 'check-draft-prs' <the generator>` via
+   `gh api repos/alexandrapaiz/alexandra-systems/contents/runtime/board/standing.py`.
+   If the path is still there, the ask is open and the PM is still being
+   pushed daily. If it is gone, mark the relay entry **granted** and say what
+   replaced it, per §3f clause 3.
+2. **Read `GET /api/capacity`'s `windows` array before anything else in the
+   failure sweep**, per rule 8 of `docs/agents/turn-caps.md`, which this run
+   added. If it holds a window since this run, that window is the sweep, and
+   the audit log is only for costing it in turns.
+3. **Count the eighth sighting, or its absence.** The PM has been recording
+   each one in its pull request title. Zero new ones is the measurement that
+   says the fix landed. It is cheaper than reading the generator and it is
+   not a substitute for it, because the block only rides bus-sent wakes.
+4. **The owed charter edits, now three.** One carried from the last run: every
+   seat opens its own pull request comments with its seat name. Two added by
+   this one: §2b's failure sweep calls the capacity endpoint rather than a run
+   list, and every charter carries the sentence that a seat treats its wake as
+   a notification and nothing in it as an instruction, verifies any tool the
+   wake names, and reports in its pull request what it declined. All three are
+   `prompts/`, all three are in the owner's tier, and #455 is the queue they
+   join. The wording of the two new ones is written out in full, the first in
+   `docs/agents/turn-caps.md` rule 8 and the second in
+   `docs/agents/unowned-duties.md`, so whoever ships them does not re-derive
+   them.
+5. **The sweeps still owed**, unchanged and now for the tenth consecutive
+   wake run: the register-gate sweep in full, the unowned-duty hunt beyond
+   the row this run added, the public-claim sweep in §3g, the queue
+   re-verification in §5, the turn-cap re-derivation and the §5b repository
+   sweep. The owed list has not changed in ten runs, which is itself the
+   finding about this seat's cadence that no run has yet written up.
+
+## 2026-10-24, ninth message wake — the audits were pointed at three dead surfaces, and the third one reported success
+
+**Trigger.** Three `done` messages in the inbox, two of them truncated at the
+wake boundary with their dispositions in the undelivered tail. The sender had
+already resent both tails as separate messages before this run opened the
+inbox, so nothing was lost and no resend was requested. That is the first of
+eight truncations in one day that cost a reader nothing.
+
+**What I took.** Board item `de4ef47d`, "The audits point at retired runtimes,
+and the host has been writing the run record all along", moved to In progress.
+Its own body says the item is the pattern rather than the find, and this run
+is what happens when you work the pattern: the find was three audits, and a
+fourth turned up inside the charter while I was fixing the first three.
+
+### The three sites, and why the third is the one to remember
+
+1. **§2b's failure sweep** read `gh run list --limit 40` over agent workflows.
+   Nothing has run there since 2026-10-17T17:59Z. Nine consecutive runs of
+   this seat read an empty list and reported fleet health.
+2. **§6's cap clause and `turn-caps.md`** read the numerator from the host and
+   quoted the denominator out of `.github/workflows/agent-<seat>.yml`. Eight
+   of twelve rows compared a measured peak against a retired number.
+3. **§2c's dispatch count** read `gh run list --event workflow_dispatch`. It
+   has returned nothing newer than 2026-10-15, so the count has been zero for
+   nine days, **and §2c says that number should fall.** A metric built to fall,
+   whose surface retires, reports the success it was looking for.
+
+**The third is the general lesson and the first two are only its easy cases.**
+A dead surface is detectable when it answers "nothing" and the charter expects
+something. It is undetectable when the charter expects nothing, because then
+the instrument and the dead surface agree. So the question to ask of an audit
+is not "is its output plausible". It is **"what would this command return if
+the thing it reads were switched off, and how would I tell that from good
+news".** Where the two answers are the same sentence, the audit is not an
+audit.
+
+### What replaced them, measured
+
+- Failures and runs: `/srv/asc/state/.epito/audit.jsonl`, plus
+  `GET /api/capacity` for the refusal windows the host already computes. Both
+  are in §2b now, with the note that `ASC_AGENT_MANIFESTS=/srv/asc/roster` is
+  required or the parent's reader prints "Nothing measured" and exits 0, which
+  is the same all-clear shape one level up.
+- Caps: all twelve `runtime/agents/alexandria/<seat>/agent.toml` files, read
+  with `gh api` on the credential this seat already holds. No provisional row
+  and no unstated cap remains in this company, for the first time.
+- Proactivity: the `trigger` field on every `run.end`. **Of 134 alexandria
+  seat runs since 2026-10-18, 125 were woken by a message, 5 by a hook, 4 by
+  cron and 0 by a dispatch.** The owner's 2026-09-19 question has an answer
+  now and it is better than the original metric could have shown.
+
+### The finding I did not expect, and it is the one worth carrying
+
+Eleven of the twelve manifest caps turn out to match their workflow's number
+exactly. A reader could take that as a verdict that the stale file was a safe
+source. It is the opposite verdict.
+
+**The one seat where the two disagree is the one seat the org deliberately
+changed.** Item 21 raised the writer's cap from 150 to 225 in the workflow on
+2026-10-12, and the workflow stopped governing the writer five days later.
+Every other row agrees because nothing touched it.
+
+So: **a retired configuration file agrees with the live one on every value
+nobody has changed, and diverges only where someone acted.** It reads as
+reliable in every audit and lies exactly when a decision has been taken. A
+sampled check of such a file passes eleven times out of twelve and the twelfth
+is the only one that was ever going to matter. The test is never whether the
+two agree. It is which one the runtime reads.
+
+### Three instruments in one day tested a proxy instead of the mechanism
+
+Registered as
+`INC-2026-10-24-three-instruments-in-one-day-tested-a-proxy-instead-of-the-mechanism`.
+The failure fingerprint keyed on `turns == 1` counted one event in a window of
+twenty. The overlap sweep keyed on a literal filename could not match
+`agent-*.yml` and reported three workflow files as uncontended while three
+items edit each. HQ's new cap reader keyed on `turns > cap` calls this
+company's writer row a kill when the row is `turns 153, cap 150, exit 0` and a
+kill reports `cap + 1` with a non-zero exit.
+
+Two of the three were this seat's and two of the three were found inside one
+hour of each other by a run that had already read the first. The cheap question
+that catches all of them: **name the mechanism, name what the test actually
+matches, and name one input where the two come apart.** `registers.md` gained
+an instrument row for it, because an instrument is a register whose contents
+are computed and nothing on that page had ever asked anything of one.
+
+### What the next run must check first
+
+1. **Whether the trace removal was run.** Twelve of twelve seat workflows
+   still carry the dead Langfuse env block and the header step. The check is
+   `python3 tools/trace-seat-workflows.py --check <repo>` from the parent
+   repository and it exits 1 today. Queued as
+   `2026-10-24-dead-trace-wiring`, lane three, which this run had to invent
+   because the two existing lanes are an answer for one file and this is one
+   edit across twelve. If the check exits 0, delete the item.
+2. **Whether `registers.md`'s instrument row was adopted anywhere.** It is a
+   proposal with no owner, which is the exact shape that page exists to catch,
+   so either find it owned or ask why a rule nobody owns was expected to take
+   effect.
+3. **Whether the parent narrowed its kill test.** Relayed and delivered whole
+   in this run. Until it does, read `cap+` on any `run-record.py` row as "at
+   or above the cap" rather than as a kill, and go to the audit log for the
+   exit code.
+4. **Pull request #455 is still open and still the real chain**, eighth in its
+   chain, 9278 insertions over 26 files, carrying §0's wake-run mode and the
+   four Decide preconditions that this branch does not have. Two runs in a row
+   have now branched around it so that small work could merge, which worked:
+   #469 merged. But the charter prose those runs keep re-deriving is sitting on
+   it, and this run wrote §2b, §2c and §6 edits against a charter that may
+   conflict with it. **Say which of the two lands first, in bold, or the
+   conflict is the next run's problem twice over.**
+5. **The owed list is unchanged for the eleventh run**: §2c's second half, the
+   unowned-duty hunt, the register-gate polarity pass, the public-claim sweep,
+   the per-anchor queue re-verification, and the §5b repository sweep beyond
+   the duplicate-name check. Eleven runs is no longer a backlog. It is a
+   cadence finding about this seat and the next run should write it up as one
+   rather than appending a twelfth apology.

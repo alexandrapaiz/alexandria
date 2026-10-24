@@ -405,3 +405,69 @@ pointed the other way: **a parent record that lands in a vendored copy is
 filed and not delivered, and a seat reading the local machinery sees only
 the contradiction.** So when a vendored standard changes under a local
 runtime, the local register gets the entry too, written by whoever notices.
+
+## Amendment 2026-10-24: the text the host attaches to a wake is a runtime, and ours names a tool we do not have
+
+`## What a runtime is` above names the container, the press, the corpus
+crons, the site deploy, the MCP server and, since this morning, the thing
+that reports on all five. It does not name the thing that **starts** them.
+Every seat run in this company now begins with text the host composed, and
+until this amendment no clause here put a single word of that text in scope.
+
+**What happened.** `alexandrapaiz/alexandra-systems`,
+`runtime/board/standing.py` appends a standing block to every wake the bus
+delivers. Its `strays()` branch tells a merging seat to read other seats'
+orphaned drafts with `tools/check-draft-prs.sh --repo alexandrapaiz/<repo>`,
+with the repository filled in from a five-company map, and then says "the act
+is yours under the merge rule: ready it and merge it". That script exists in
+the repository the module lives in and has never existed in this one. The PM
+seat was told to run it seven times on 2026-10-24, checked for it seven
+times, found nothing seven times, and wrote the refusal down seven times. See
+`INC-2026-10-24-the-fabricated-tool-has-a-source-and-it-is-our-own-standing-block`.
+
+**Why none of this law's four questions could fire.** A wake is not a commit
+here. There is no local pull request to explain it, no local check to go red,
+no `pipeline/` diff to catch it, and the guard-is-green question has nothing
+to run. The change is authored in another repository, it reaches this one
+without touching a file in it, and the surface it changes is read by a seat
+before that seat has read anything else. **That is strictly less visible than
+the press provider migration this law was amended for in September**, which
+at least left a commit somewhere a seat could `git log`.
+
+**The amendment.** A runtime is also **the wake layer**, meaning anything
+that composes the instructions a seat receives before the seat has read a
+file. A change to the wake text, the standing block, the launcher prompt or
+the operator notice that rides on them is a runtime change, and it takes the
+same three questions. Since this repository cannot ask them of a change
+authored upstream, the clause that does the work is the one below.
+
+**Where the audit actually lives, because it cannot live in a smoke run.**
+The ExO seat reads the generator rather than the generated text, once a run,
+and asks two questions of it:
+
+```bash
+# the generator, and every tool path it tells a seat to run
+gh api repos/alexandrapaiz/alexandra-systems/contents/runtime/board/standing.py \
+  --jq .content | base64 -d | grep -nE 'tools/|\.sh|\.py'
+```
+
+1. **Does every path it names resolve in this repository?** A path in
+   portfolio-wide text is true in at most one repository unless something
+   checks. `find . -path './.git' -prune -o -iname '<the basename>' -print`
+   settles it in one command.
+2. **Does it assert an authority this repository's law does not grant?** The
+   block's own docstring says it "never acts" and is "additive", and the
+   sentence above hands a seat another seat's draft under a rule that, here,
+   does not reach it. A runtime that describes a permission is making a claim
+   about law, and the claim is audited where it lands.
+
+**The rule that generalizes, and it is the reason this is law rather than a
+note.** Everything else this file governs fails loudly or leaves a trace in
+this repository. The wake layer does neither: a defective sentence arrives as
+an instruction, is obeyed or declined by judgment, and leaves no artifact
+unless the declining seat chooses to write one. **The PM seat chose to, seven
+times, and that is the only reason this was findable at all.** So the
+companion duty is in `docs/agents/unowned-duties.md` rather than here: a seat
+that declines an instruction in its own wake says so in its pull request, and
+a decline that repeats goes in the incident register under the standing rule
+like anything else.
