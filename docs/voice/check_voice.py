@@ -98,6 +98,16 @@ import unicodedata
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 BAN = ROOT / "docs/voice/ban-list.md"
 DIGEST = ROOT / "prompts/digest.md"
+#: The degraded edition's generator, which the press prints when no model can
+#: take the full issue. `pipeline/budget.py` calls it `SHORT_ISSUE_PROMPT` and
+#: says in its own comment that it is this seat's surface. Until 2026-10-24 no
+#: gate in this repository named it, so the finding that closed writer run 47,
+#: that no gate had ever read the generator, was still true of the second one.
+SHORT = ROOT / "prompts/digest-short.md"
+#: Every file the press writes an issue from. The gates below default to this
+#: list rather than to `DIGEST`, because a default naming one of two generators
+#: reports a clean file and a silent one under the same verdict.
+GENERATORS = [DIGEST, SHORT]
 CANON = ROOT / "docs/voice/canon.md"
 TASTE = ROOT / "docs/voice/taste.md"
 
@@ -2377,7 +2387,7 @@ def generator(paths=None):
     quiet form rather than the loud one: no conflict marker, just text the file
     already held, written in beside itself.
     """
-    paths = paths or [DIGEST]
+    paths = paths or GENERATORS
     rc = 0
     for p in paths:
         p = pathlib.Path(p)
@@ -2580,7 +2590,7 @@ def specimens(paths=None):
     grade, and the owner's own specimens are exempted by reaching into her
     register rather than by anyone's judgment here.
     """
-    paths = paths or [DIGEST]
+    paths = paths or GENERATORS
     rc = 0
     for p in paths:
         p = pathlib.Path(p)
@@ -2647,6 +2657,96 @@ def specimens(paths=None):
     return rc
 
 
+#: The pre-send gate, which is the last thing between a written issue and a
+#: reader. `tools/check_digest_quality.py` is the engineer's file and this gate
+#: only reads it.
+PRESEND = ROOT / "tools/check_digest_quality.py"
+BLOCK_RULE = re.compile(r'add\(BLOCK,\s*"([a-z-]+)"')
+
+#: How `prompts/digest-short.md` answers each rule the pre-send gate blocks on.
+#: The value is a phrase that has to be present in the short prompt, or None
+#: where the rule cannot fire on this edition at all, with the reason beside it.
+#:
+#: The map is maintained rather than derived, and that is the point of it. A
+#: rule added to the pre-send gate lands here as a failure, and the failure is
+#: addressed to this seat: does the degraded edition need to be taught this
+#: one? Nothing else in the repository asks that question, and the twelve days
+#: in INC-2026-10-24-the-short-edition-was-handed-an-editorial-judgment are
+#: what not asking it looks like.
+SHORT_ANSWERS = {
+    "no-title": "A title on the first line",
+    "date-in-title": "The title carries no",
+    "internal-vocabulary": "claim graph",
+    "typesetter-punctuation": "plain ASCII",
+    "slop-lexicon": "sound important",
+    "ends-on-citation": "before the close",
+    # Cannot fire. The short edition prints no section headings, so the
+    # generator's slot labels have nowhere to appear.
+    "skeleton-heading": None,
+    # Cannot fire. Guarded by `kind == "daily"` and this edition is a weekly.
+    "daily-too-short": None,
+}
+
+
+def blockrules():
+    """Every rule the press blocks on is answered in the short generator.
+
+    The short edition is the one the press prints when no model can take the
+    full issue, and `weekly.print_issue` hands it to `hold_for_quality` with
+    `rewrite=None`. The full edition gets a second draft on a blocking finding.
+    This one does not. So a block on the short edition is not a worse issue, it
+    is a held issue and a week with no issue at all, which is the outage the
+    short edition was built to answer.
+
+    That makes the pre-send gate's BLOCK list the one mechanical answer to the
+    question `pipeline/budget.py` left open in its own comment, that 103 ban
+    list entries do not fit in a request this size and choosing which survive
+    is an editorial judgment. A rule that can hold the issue survives. The
+    judgment is still this seat's, and this gate is where it is recorded.
+
+    Two findings, and neither is a reading. A rule the pre-send gate blocks on
+    with no row here is unruled, and a row whose phrase has left the short
+    prompt is a rule that was answered once and is not answered now.
+    """
+    rc = 0
+    if not PRESEND.exists() or not SHORT.exists():
+        print(f"  {PRESEND.name} or {SHORT.name} is missing")
+        return 1
+    rules = sorted(set(BLOCK_RULE.findall(PRESEND.read_text())))
+    short = SHORT.read_text()
+    print(f"  rules the pre-send gate blocks on             {len(rules)}")
+
+    unruled = [r for r in rules if r not in SHORT_ANSWERS]
+    print(f"  of those this seat has never ruled on         {len(unruled)}")
+    for r in unruled:
+        print(f"    UNRULED    {r}  (block on the short edition holds the issue)")
+        rc = 1
+
+    inert = [r for r in rules if SHORT_ANSWERS.get(r) is None
+             and r in SHORT_ANSWERS]
+    print(f"  of those that cannot fire on this edition     {len(inert)}")
+
+    missing = [(r, SHORT_ANSWERS[r]) for r in rules
+               if SHORT_ANSWERS.get(r) and SHORT_ANSWERS[r] not in short]
+    print(f"  of those the short prompt no longer answers   {len(missing)}")
+    for r, phrase in missing:
+        print(f"    DROPPED    {r}  expected {phrase!r} in {SHORT.name}")
+        rc = 1
+
+    stale = [r for r in SHORT_ANSWERS if r not in rules]
+    print(f"  rows here for a rule the gate no longer has   {len(stale)}")
+    for r in stale:
+        print(f"    STALE      {r}  is not a BLOCK rule in {PRESEND.name}")
+        rc = 1
+
+    if not rc:
+        print()
+        print("  Every rule that can hold the short edition is answered in")
+        print("  the prompt that writes it. A new BLOCK rule in the pre-send")
+        print("  gate fails this check until this seat rules on it.")
+    return rc
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -2676,6 +2776,7 @@ def main():
                      ("firstuse", firstuse),
                      ("generator", generator),
                      ("specimens", specimens),
+                     ("blockrules", blockrules),
                      ("compare", compare), ("selfcheck", selfcheck)):
         if which == name or (which == "all"
                              and name not in ("selfcheck", "compare")):
