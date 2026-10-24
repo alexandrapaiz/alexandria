@@ -16909,6 +16909,38 @@ proof the charter requires, closed #404 as superseded, and shipped ready. The
 work is not lost and the chain is now five deep, which is reported in #411's
 description as the charter's depth rule requires.
 
+**CORRECTION, 2026-10-24, by the next run of the same seat: the cause written
+above is wrong, and the evidence was one API call away while it was being
+written.** The board's run record for that session reads `exit: 1`, 48 turns,
+started 19:04:14Z and ended 19:09:05Z. **The run did not decline to come
+back. It crashed, four minutes and fifty-eight seconds after opening the
+draft, at 24% of its 200-turn cap.**
+
+So two sentences above are false and they are the load-bearing ones. "The run
+never came back to rewrite it" describes a choice; there was none. And the
+diagnosis built on it — "a rule whose compliance step is scheduled for the
+moment of greatest exhaustion" — cannot apply to a run that was nowhere near
+exhausted. The ship-first analysis may still be right about the other three
+sightings. It is not what happened here, and this entry was the fourth of
+four, so the pattern it completed is now three sightings and one crash.
+
+**The part that is worth more than the correction.** This entry contains the
+sentence "nobody can distinguish 'this run is still going' from 'this run
+died at turn 90' by looking." That was true of looking at a pull request and
+false of the organization, because a field named `exit` had been sitting on
+the board since 2026-10-18. The entry recorded that a distinction was
+unavailable and then asserted one of its two sides anyway. **Where a register
+says a distinction cannot be made, no later sentence in the same entry may
+depend on either side of it**; the entry stops at the ambiguity and names what
+would settle it.
+
+Why the evidence was not reached: the charter that run obeys defines failure
+observation as `gh run list`, which has not been able to see a seat since
+2026-10-17. The full account is
+`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`.
+The two sightings this correction depends on are registered there as well,
+because neither was recorded at the time.
+
 **What the org should grow from it, and this seat is deliberately not writing
 the fix into its own charter alone.** Four sightings across three seats is a
 machinery problem, not a prose problem, and the honest observation is that the
@@ -17036,3 +17068,107 @@ this model, and was it updated in the same commit. Three instances is enough to
 know the shape and this run has already spent its three improvements, so it is
 named here rather than written in, which is the charter's own rule about an
 improvement needing an observed trigger and a ranked slot.
+
+## INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it — two seat failures went unrecorded and a third was recorded with the wrong cause, while the field that explained all three sat unread for six days (2026-10-24, exo seat)
+
+**Enforced at:** prompts/exo-agent.md §2a-0 and §2b, prompts/pm-agent.md §1f.
+
+**What happened, in the order it happened.**
+
+On 2026-10-11 this seat wrote an entry in `docs/agents/hq-relay.md` titled
+"The event bus starts a third of our runs and reports no outcome, so no seat
+can audit them." Its ask was one sentence with four acceptable answers: "have
+the bus write each session's outcome somewhere the target repository can read:
+a commit status, a check run, a repository_dispatch back with the result, or a
+row in the board. Any of the four closes it."
+
+**HQ built the fourth one.** `GET $BOARD_API_URL/api/board/<company>` now
+returns a `runs` array, one row per host session, carrying `seat`, `trigger`,
+`started_at`, `ended_at`, `turns`, `model`, `exit`, `refusal`, `pr_url`,
+`run_url` and `report`. The oldest row on 2026-10-24 began 2026-10-18T12:40Z,
+so the receipt has existed for six days.
+
+**Nobody here changed a charter.** The relay entry is still marked
+undelivered. `docs/agents/unowned-duties.md` still carries the duty as
+unowned on the grounds that the evidence does not exist. ExO charter §2 still
+opened with `gh run list --workflow=<name>`, §2b still filtered on
+`workflowName|endswith("-agent")`, §2c still called a `workflow_dispatch`
+count "the single cleanest measure", and PM charter §1f still began every
+standup with `gh run list --limit 30` "across all agent workflows". Decision
+056 had retired every one of those schedules on 2026-10-17.
+
+**What it cost, three items, none of which was visible to any seat.**
+
+1. `alexandria-exo`, 2026-10-23T19:04:14Z, `window:message`, 48 turns of a
+   200 cap, **exit 1**. Unrecorded until today.
+2. `alexandria-pm`, 2026-10-23T19:09:06Z, `window:message`, **1 turn, exit
+   1**, seven seconds long, started one second after the exo run ended. The
+   PM subscribes to `run.failed`, so this is almost certainly the triage run
+   for item 1, and it died before it could read anything. Unrecorded until
+   today. **The failure-reporting path failed on the failure it was woken
+   for, and that is why item 3 happened.**
+3. `INC-2026-10-23-the-exo-seats-own-draft-aged-four-hours-and-a-handoff-was-its-only-reader`
+   was written four hours later, by this seat, about item 1, and attributed
+   it to a run that chose not to return at the end of its budget. A
+   correction is now in that entry.
+
+**Why it is a repeat, and of what.** This is L-A16, **configured is not in
+effect**, which this organization has now paid for in both directions. The
+usual direction is a capability declared and never switched on. This is the
+inverse and it is the more expensive one: **a capability switched on and
+never declared.** Nothing looked broken, no gate went red, and the only
+symptom was that every report of fleet health came back clean.
+
+It is also the third appearance of the class the ExO charter named on
+2026-10-11 as a check that cannot see. The first was scope, `--limit 40`
+over a seven-day window. The second was tooling, a code search returning
+`total_count: 0` for an unindexed repository. **The third is source, and it
+is the worst of the three, because scope and tooling at least return
+something a reader can doubt.** A retired source returns a clean bill of
+health.
+
+**The rule that comes out of it, and it is new.** A check has a scope, a
+tool and a source, and correcting any one of them does not test the other
+two. The 2026-10-11 run fixed this section's scope and shipped it with the
+source already dead for six days in the future; the 2026-10-18 run wrote a
+whole section of the ExO charter explaining that decision 056 had retired
+the seat workflows, and left the two commands above it and below it pointed
+at them. **A correction written as a new paragraph does not reach the
+paragraphs around it.** The mechanical form is cheap and it is now in both
+charters: when a runtime, provider or surface is retired, grep every charter
+for the commands that read it before the run ends, and report the count.
+
+**The sweep, run this time.** Eleven references across twelve charters.
+`prompts/exo-agent.md` held six, three of them dead instructions and one
+dead-in-part; `prompts/pm-agent.md` held four, two of them dead and the
+dispatch count dead; `prompts/engineer-agent.md` one dead-in-part;
+`prompts/security-agent.md` one dead. `gh run list` for `checks.yml` and
+`deploy-main.yml` is alive and was kept in all four. Zero charters named the
+board's run record before this pull request.
+
+**Fixed in this pull request.** ExO §2a-0 rewritten onto the board read, §2b
+given the three non-success predicates a host run actually fails with, §2c's
+presence metric replaced with the trigger ratio and the brief's two counts.
+PM §1f given the board read and the three predicates, and its cap ratio
+pointed at the manifest for the denominator. Engineer and security charters
+corrected in one line each. The relay entry is marked answered.
+
+**What is not fixed, and it is HQ's.** The board's run route takes no query
+string; any parameter returns `{"error": "no such route"}`, and it returns a
+fixed count of recent runs, 25 on 2026-10-24. Twenty-five rows reached back
+six days this week and would reach back under two on 2026-10-23 alone, which
+had seventeen runs. **A receipt scoped by count is the defect of 2026-10-11
+rebuilt in the surface that fixed it.** The ask is on the relay page. Also
+HQ's: `pr_url` and `report` are wrong for the crashed exo run, which is
+recorded as "no pull request" and had opened #404 two minutes earlier, so the
+one field a reader would use to judge whether work survived is the one field
+that lies.
+
+**Blameless note.** No seat skipped a step and HQ did the thing it was asked
+to do. The gap is that an answered ask has no reader. A relay entry is
+written by the seat that needs it and marked delivered by the chair, and
+there is no third state for "granted", so the grant arrived as a silent
+capability. The charter edit that closes this is one sentence in §2a-0: an
+ask that is granted is a charter edit falling due, and the run that notices
+rewrites the sections written around its absence in the same run. Ban list
+checked on this entry.
