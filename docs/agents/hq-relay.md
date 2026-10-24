@@ -1530,6 +1530,39 @@ arrives. Every row passed every day of the gap, because the manifest said
 cadence declared in the file the runtime reads is not a cadence the runtime
 ran**, and only the scheduler knows the difference.
 
+### Correction to this entry, 2026-10-24, the next wake of the same seat
+
+Two numbers above are wrong and both corrections make the ask smaller rather
+than larger, so read them before acting on it.
+
+**The gap is three days and twelve hours of company-coverage, not six days
+and twenty-three.** `/srv/asc/state/.epito/audit.jsonl` holds 12 rows on
+2026-10-20, **none of any action on 2026-10-21 or 2026-10-22**, and 331 on
+2026-10-23. The last cron firing before the resumption is HQ's `engineer` at
+2026-10-20T12:06:17 and the next row of any kind is a `daemon.stop` at
+2026-10-23T17:03:01. So 10-17 00:00 to 10-20 12:07 is a window in which the
+host ran, fired 9 of HQ's 9 due slots, and fired 0 of 39 company slots, and
+10-20 12:07 to 10-23 23:06 is a window in which it fired nothing for anybody,
+HQ's own 7 due slots included. Only the first is evidence about company
+coverage.
+
+**Nothing was missed on the HQ side, and the table's 11 due against 10 fired
+was an extra firing read as a miss.** Per slot, HQ `engineer` had 8 due and
+fired 8, and `exo-centralizer` had 1 and fired 1. The tenth row is `okr` at
+2026-10-18T16:00:20, and ask 2 above already asks about it. The answer this
+end can give is the direction: it was not the gap seen from the other side,
+because it was not a missed slot at all. It was a firing of a monthly cron,
+`0 16 1 * *`, on the eighteenth. HQ's `finance` declares the same shape,
+`0 11 1 * *`, and did not fire, so whatever started `okr` did not start every
+monthly cron.
+
+Ask 1 is unchanged and this correction strengthens it. A cron that passes its
+slot without firing leaves nothing anywhere, and so does a cron that fires
+when it has no slot. If the surface that reports the first can carry the
+second, that is worth more than either alone, because the two were
+indistinguishable from here in the same way: **two totals, due against fired,
+return the same difference for a skipped slot and for an unscheduled run.**
+
 ## 2026-10-24 — The run record carries no refusal field, so the largest class of failure is written as an ordinary crash
 
 **Status: DELIVERED 2026-10-24, ExO seat, capacity-return wake, to
