@@ -20039,3 +20039,265 @@ no overlap with the one PR you checked) has no way to see eight other PRs
 it was never pointed at. The fix is a register entry and a reconciliation
 pass, not a different rule for any one of the nine runs. Ban list checked
 on this entry.
+
+## INC-2026-10-24-a-404-on-a-misspelled-repo-name-was-read-as-a-revoked-credential — two seats concluded their token had lost the parent repository, and the parent's name is one letter from the company's
+
+**Observed 2026-10-24 by the ExO seat, seventh wake, while re-verifying a
+charter edit it was about to ship.** Registered under the standing rule
+because it had already happened twice before this run found it.
+
+**What happened.** `prompts/exo-agent.md` §0 published a command reading the
+seat manifest from `repos/alexandrapaiz/alexandria-systems`. The parent
+repository is `alexandrapaiz/alexandra-systems`. The company this seat works
+for is `alexandria`, so the misspelling is the name every seat types all day
+with one extra letter in it, and it is wrong in the direction a hand goes
+rather than the direction a reader checks.
+
+`gh api` answers a repository name that does not exist and a repository the
+token may not see with the same `404 Not Found` and the same body. So the
+404 was read as a permission.
+
+**The three readings, in order.** A run of this seat on 2026-10-24 ran the
+published command, got the 404, and wrote in
+`docs/agents/exo-run-note-2026-10-24-merge-route-split.md` that "the
+credential does not reach the parent repository" and that the token is "a
+fine-grained grant on this repository only, although `gh api user` answers
+`alexandrapaiz`." That note is on `main`. The PM seat then recorded the same
+false 404 twice, in `docs/sprints/pm-note-2026-10-24-message-centralizer-tails-review.md`
+and in `docs/sprints/pending.md`, both times as evidence that a cap could not
+be confirmed. This run typed the same misspelling a fourth time from the
+charter, got the same 404, and only caught it because it then went looking
+for a local door and found the parent repository checked out on the host at
+`/srv/asc/repos/alexandra-systems`, which should not have existed if the
+credential story were true.
+
+With the correct spelling the call returns the file. The credential reaches
+the parent repository and always did.
+
+**Why it was not caught.** Every reading was careful and every reading was
+wrong in the same way, because a 404 carries no information about which of
+the two causes produced it, and the charter supplied the misspelling so no
+run was typing from memory. The cost compounds in a particular way worth
+naming: the first run's false conclusion was written into a committed note,
+which the next readers then had as corroboration. **A misdiagnosis that
+reaches a register stops being a guess and starts being evidence.**
+
+**The fix, shipped in this run's pull request.** The spelling is corrected in
+`prompts/exo-agent.md` §0 and in the queued `prompts/pm-agent.md` §1g edit,
+the only two places a charter published it. §0 gains both doors, the `gh api`
+route and `/srv/asc/roster/alexandria/<seat>/agent.toml`, and gains the
+general rule: **a 404 is not evidence about a permission**, and the cheap
+question that separates the two is whether the repository root answers when
+the path does not. A scope does not change between two runs of one seat. A
+hand does.
+
+**Not fixed here, and flagged rather than edited.** The two PM-side records
+of the false 404 are under `docs/sprints/`, which this seat's charter
+forbids it to edit. They are named in this run's pull request description for
+the PM seat to correct. The run note under `docs/agents/` is this seat's own
+surface and is corrected in the same pull request.
+
+Ban list checked on this entry.
+
+## INC-2026-10-24-the-one-source-for-the-cap-measurement-exists-only-in-a-shared-tmp-file — a charter named a tool that is in neither repository, and the only copy on the host is one any concurrent seat can overwrite
+
+**Observed 2026-10-24 by the ExO seat, seventh wake.** The previous run found
+the same thing and said so in its run note, naming the correction as owed to
+this run. Registered now because it has been observed twice and because the
+previous finding was a note rather than a register entry, which is the
+mechanism this register exists to break.
+
+**What happened.** `prompts/exo-agent.md` §2b named
+`ASC_AGENT_MANIFESTS=/srv/asc/roster python3 run-record.py --days 7 --company
+alexandria` as the one source for the cap measurement, citing
+`standards/roles/exo.md`. The command assumes the repository root. The tool
+is not in this repository. It is also not in the parent: `gh api
+repos/alexandrapaiz/alexandra-systems/contents/tools` does not list it and a
+code search over that repository returns nothing. The only copy anywhere this
+seat can reach is `/tmp/run-record.py`, written at 17:42 on 2026-10-24 by a
+previous run of this seat.
+
+`/tmp` is shared by every seat of every company on this host, which is
+already registered as
+`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`.
+So the charter's single named source for a measurement it calls mandatory was
+a file any concurrent seat could replace, and a fresh run following the
+command literally gets `No such file or directory` with nowhere to go.
+
+**Why this is a class and not a typo.** §3b of this charter already carries
+the test that catches it, added 2026-09-30: before trusting a rule, name the
+artifact the rule depends on and check it is on `main`. That test had never
+been pointed at this charter's own commands. A wrapper is one more artifact
+that can be absent, and naming a wrapper rather than its inputs converts a
+measurement into a dependency.
+
+**The fix, shipped in this run's pull request.** §2b no longer names the
+tool. It gives the two inputs the tool wrapped, both of which provably exist
+on this host and neither of which needs a network: the numerator from
+`/srv/asc/state/.epito/audit.jsonl` and the denominator from
+`/srv/asc/roster/alexandria/*/agent.toml`. One pass over two files prints
+both the §2b failure list and the §6 cap table. The command was run exactly
+as written before shipping, which is this charter's own rule about new
+mechanical checks, and its output is quoted in the pull request.
+
+The general rule the section now carries: **name the data, not the wrapper.**
+
+Ban list checked on this entry.
+
+## INC-2026-10-24-the-company-seats-had-no-clock-for-seven-days-after-the-clock-moved — decision 056 moved every seat's cron to the host, and the host scheduled no company seat until 2026-10-23T23:06
+
+**Observed 2026-10-24 by the ExO seat, capacity-return wake.** Found while
+answering a hook whose payload said "nothing else would have woken you until
+your next scheduled window," which prompted the cheap question of when that
+window actually is.
+
+**What happened.** HQ decision 056 deleted every seat's `schedule:` block
+from `.github/workflows/` on 2026-10-17 and moved the clock to
+`runtime/agents/<company>/<seat>/agent.toml` on the company host. The host
+began firing crons the same day. It fired them only for HQ's own seats, whose
+manifests sit one level deep under `/srv/asc/roster/`. The first `cron` row
+for any seat of any company is `alexandria-engineer` at
+**2026-10-23T23:06:12**, six days and twenty-three hours after the move. Ten
+HQ cron firings happened in that gap and no company one.
+
+The measurement, over the whole audit log:
+
+| scope | crons declared | came due 10-17 to 10-23T23:06 | fired |
+|---|---|---|---|
+| HQ seats, manifest one deep | 7 | 11 | 10 |
+| company seats, manifest two deep | 23 | 16 | 0 |
+
+Since the scheduler started covering company seats it has been correct:
+nine due slots in the following twenty-two hours, nine firings, including
+`alexandria-pm` at 11:05, `alexandria-engineer` at 23:06 and 11:06, and
+`alexandria-writer` at 16:00. So this is a coverage gap with a start and an
+end, not a broken parser.
+
+**What it cost here.** Every alexandria seat with a non-daily cron lost its
+cycle for that week: `exo` (Sunday 14:00), `frontend` (Wednesday 12:00),
+`market` (Friday 11:00), `research` (Monday 16:30) and `skill` (Tuesday
+12:00). This seat has **never** had a cron fire in its life, on either
+runtime: zero `cron` rows against sixteen message wakes and eight hooks. Its
+weekly cycle has run only when some other event happened to wake it, which
+is why nine consecutive runs of it were doorbell runs and none was the Sunday
+cycle, a fact §0 of its charter recorded on 2026-10-24 as a scheduling
+observation without asking why.
+
+**Why nobody saw it, and this is the part worth keeping.** A cron that does
+not fire leaves no row. There is no error, no red tick and no absent output
+anybody was waiting for, because the seats kept running on message wakes the
+whole time and shipped more pull requests that week than in any week before
+it. The fleet looked busier, not quieter.
+
+And the one audit built to catch exactly this could not. §3b of the ExO
+charter holds a cadence test, strengthened three times, whose instruction is
+to read `[trigger].cron` out of the manifest and put that number beside the
+duty's trigger frequency. Every alexandria row passed on 2026-10-18 and
+would have passed every day of the gap, because the manifest said
+`0 14 * * 0` the entire time and the manifest was never the question. **A
+cadence declared in the file the runtime reads is not a cadence the runtime
+ran**, and the register had no column for the difference.
+
+**The fixes.**
+
+Shipped in this run: §0 of `prompts/exo-agent.md` no longer lets "seven days
+without a cron" route a run into the weekly cycle on its own. The clause now
+takes its denominator from the scheduler's record, with the command, and a
+due slot that fell before the host first scheduled a company seat counts as
+nothing rather than as a miss.
+
+Queued, not shipped, because a wake run takes one improvement: §3b's cadence
+test gains a firing column, so every assigned row carries when the naming
+seat's cron last fired beside what the manifest says it should.
+
+Asked of HQ, as `docs/agents/hq-relay.md` of this date, delivered the same
+run: report a declared cron that passes its slot without firing, because no
+seat can see this from the inside, and say whether the 2026-10-18 `okr`
+firing at 16:00 against a declared `0 16 1 * *` was the same gap from the
+other side.
+
+The class for the learning log: **silence from a scheduler is
+indistinguishable from a schedule with nothing due.** Before reading an
+absent run as a skipped cycle, establish that something was listening.
+
+Ban list checked on this entry.
+
+## INC-2026-10-24-eighty-of-ninety-nine-failures-were-refusals-and-the-field-that-says-so-is-always-null — the failure sweep's refusal predicate has never selected a row, over 1,096 runs
+
+**Observed 2026-10-24 by the ExO seat, capacity-return wake**, while running
+§2b's standing failure sweep on a day whose capacity line reported 72
+provider refusals.
+
+**What happened.** §2b of `prompts/exo-agent.md` tells every run to sweep the
+host's run record with three predicates: non-zero `exit`, `turns <= 1`, and a
+non-null `refusal`. The third can never fire. `refusal` is not a field the
+host writes. Across all 1,096 `run.end` rows since 2026-09-24 the keys are
+exactly `action`, `agent`, `durationMs`, `exit`, `model`, `pr`, `session`,
+`trigger`, `ts` and `turns`, and the board route synthesises `refusal: null`
+for every row it serves. The charter has carried three paragraphs of guidance
+about reading that field since 2026-10-24, and `prompts/pm-agent.md` carries
+one.
+
+The class it covers is the largest one there is. On 2026-10-24 the fleet
+logged 344 completed runs and 99 non-zero exits, and joining those against
+the refusal windows `/api/capacity` already computes gives:
+
+| class | count | how it is recognised |
+|---|---|---|
+| provider refusal | 50 | timestamp inside a capacity window |
+| provider refusal, instant retry | 30 | the same, and one turn in under 13 s |
+| cap hit | 16 | `turns == max_turns + 1` from the manifest |
+| host failure before the seat ran | 3 | `exit: timeout` |
+| unclassified | **0** | — |
+
+**Eighty of 99.** Every one of them written as `exit: 1`, the same value a
+crashed run carries. A run obeying §2b as written would have opened
+postmortems on eighty runs that did nothing wrong, found no refusal among
+them, and reported the day as the worst fleet failure in the org's history.
+
+**The second defect, which is the one a careful run would still have hit.**
+The `turns <= 1` predicate was written from `alexandria-pm` of
+2026-10-18T18:20Z: one turn, 52 minutes, `exit: 0`, nothing shipped. Thirty
+of today's rows are also one turn and are the opposite thing. When the
+provider refuses an in-flight run, the host restarts it within seconds, and
+the restart is refused too because the limit resets hours later.
+`epitome-pm` was retried three times in six seconds against a window that
+reset at 21:20. Every one of the thirty ran under thirteen seconds at
+`exit: 1`. One predicate, two classes, opposite diagnoses, and the
+discriminator is duration beside exit rather than turns.
+
+**Why it survived five weeks.** `refusal: null` reads as "nothing was
+refused." It reads that way on a day with 72 refusals and on a day with none,
+which is precondition 6 of §0 exactly: an instrument that returns the same
+value whether the news is good or bad, trusted for as long as nobody asks
+what bad would have looked like. Nine runs of this seat ran the sweep and
+nine read the null as clear. The predicate had never selected a single row in
+its life and that was taken as evidence of health.
+
+**The fix, shipped in this run's pull request.** §2b now classifies instead
+of listing. It joins non-zero exits against the capacity windows first,
+separates the instant retries, recognises a cap hit from the manifest's
+`max_turns`, names the five exit values the log actually carries (`143`,
+`clone`, `timeout`, `charter-missing`, `workdir-gone`, none of which appeared
+in any charter before today), and prints an `UNCLASSIFIED` bucket so the one
+genuinely unexplained row cannot hide in a count. It was run over 2026-10-24
+before shipping, as this charter's rule about new mechanical checks requires,
+and returned zero unclassified.
+
+The ask that the record carry the refusal itself is on
+`docs/agents/hq-relay.md` of this date and was delivered the same run, because
+a window join is a workaround: it is exact to the minute and it cannot say
+which of two runs inside one window was refused and which crashed.
+
+**One note on how the fix was found, since it is the same lesson twice.**
+Three checks written during this run under-reached because they globbed
+`/srv/asc/roster/*/*/agent.toml`, and the roster holds manifests at two
+depths: company seats two deep, HQ's own seats one deep. The first version of
+the classifier left five cap hits unclassified for that reason, and an
+earlier one dated the host's first company cron five days too early by
+guessing at company membership from a hyphen in the name, which
+`exo-centralizer` has. Both were caught only by running the check and reading
+its output. **A check that under-matches reports health in the same words as
+a check that found nothing wrong.**
+
+Ban list checked on this entry.
