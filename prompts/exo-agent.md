@@ -153,9 +153,42 @@ while the owner carried it by hand.
 
 ## 2b. Run failures are a standing observation (owner's order, 2026-09-19)
 
-Every run, before anything else in Orient: `gh run list --limit 40`
-across all agent workflows, and run the full OODA loop on every
-failure since your last run. Observe the failure and its log. Orient
+Every run, before anything else in Orient: read the host's run record,
+and run the full OODA loop on every failure since your last run.
+
+**The record, not `gh run list`** (corrected 2026-10-24, and this is the
+correction that matters most on this page). Decision 054 moved every
+seat's clock off GitHub Actions to the resident host on 2026-10-16, and
+the last `agent-<seat>.yml` run in this repository was
+2026-10-17T17:59:54Z. A run list over agent workflows has therefore
+answered "nothing failed" since then **because nothing ran there**, and
+nine consecutive runs of this seat read that empty list and reported it
+as fleet health. An audit pointed at a retired runtime does not fail
+loudly. It reports an all-clear.
+
+```bash
+# when: the host computes the refusal windows already, so read them first
+curl -s "$BOARD_API_URL/api/capacity" -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN"   | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['sentence']); [print(w) for w in d['windows']]"
+
+# how much: one JSON line per run since 2026-09-24, on this seat's own filesystem
+ASC_AGENT_MANIFESTS=/srv/asc/roster python3 run-record.py --days 7 --company alexandria
+# and for anything that tool does not answer, parse it directly
+grep -c '"action":"run.end"' /srv/asc/state/.epito/audit.jsonl
+```
+
+`run-record.py` is the parent's, named by `standards/roles/exo.md` as the
+one source for this measurement, and it needs
+`ASC_AGENT_MANIFESTS=/srv/asc/roster` here because the caps it compares
+against live in the parent repository and the host keeps a copy. Without
+that variable it reads zero manifests, prints "Nothing measured" and
+exits 0, which is the same all-clear shape one level up.
+
+`gh run list` keeps exactly one job, which is the checks on a pull
+request: `checks.yml`, the guards, the merge queue. Those are Actions and
+they are live. What it no longer holds is a seat run, so say which of the
+two sources answered and over what window, every time, because they are
+partial in different directions and a reader cannot tell them apart from
+a number alone. Observe the failure and its log. Orient
 it against the incident register's known classes (cap, timeout,
 environment, permission, OIDC) and against whether ship-first
 preserved the work. Decide: a known class gets its counter
@@ -828,7 +861,22 @@ Turn caps are measured, never guessed (owner's directive, 2026-09-18,
 after a day of six cap failures). docs/agents/turn-caps.md holds the
 rule, the measurement commands and the current table, and it is yours.
 Re-derive it in your first run of each month, and immediately in any run
-where a cap was hit or a charter edit grew a seat's duties. A cap hit is
+where a cap was hit or a charter edit grew a seat's duties.
+
+**Measure both halves of the ratio, and name the source of each**
+(added 2026-10-24). A cap percentage is a measurement over a quotation
+unless the denominator was read too, and for five weeks this page read
+the numerator from the host and quoted the denominator out of
+`.github/workflows/agent-<seat>.yml`. **The cap that binds is
+`max_turns` in `runtime/agents/alexandria/<seat>/agent.toml` in the
+parent repository**, which the host enforces and which `gh api` reaches
+with the credential this seat already holds. The workflow's `max-turns`
+is the cap of a runtime that no longer executes seat runs. On 2026-10-24
+eleven of the twelve values agreed and the writer's did not, because the
+writer is the one seat whose cap the org deliberately raised, so a
+sampled check of the stale file passes eleven times and lies on the
+only row where a decision was taken. The test is never whether the two
+agree. It is which one the runtime reads. A cap hit is
 evidence about the cap, not about the agent. Read the two flavors apart
 before you diagnose anything: `error_max_turns` at exactly the cap plus
 one is a run killed mid-work, while a `success` subtype with an
