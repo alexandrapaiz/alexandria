@@ -17891,3 +17891,85 @@ cutting gates to make a budget.
   nobody opened is what L-A12 is about.
 - Cost: $0 to check, one line either way.
 - Status: proposed
+
+### 2026-10-24 — Every `unknown` surface names a hand or says there is none (engineer seat, message run)
+- Trigger: `payments` answered `unknown` in every standup from the day the
+  block shipped to this run, with the sentence "payment_exceptions could not be
+  read, so whether a verified payment reached an account is unknown here." The
+  sentence was true. What it was waiting for was one hand-run
+  `modal run pipeline/db_setup.py::apply_schema`, and no report ever said so,
+  so the PM's standup copied "the same named gap as every prior standup"
+  forward for a month instead.
+- What: this run fixed the till. The shape it fixed is not specific to the
+  till. `tools/delivery_health.py` has three other ways to answer `unknown`
+  and none of them is obliged to say what closes it: `compute` when Modal's
+  edge is unreachable for a reason that is not a disabled workspace, `mcp`
+  behind it, and all four database surfaces when neither reader answers. The
+  structural version is a field on `Surface` rather than four more sentences:
+  an `unknown` carries `closes_with`, prose or an explicit "nobody knows yet",
+  and a test over `ORDER` holds every `unknown` path to having one. Then a
+  surface that cannot name its own next step is a test failure at the moment
+  it is written rather than a line somebody rereads for a month.
+- First step: the `Surface` field and the test, with the till's own sentence
+  as the first filled one, which this run already wrote the hand text for.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — The outage alarm knows the cron and does not count down to it (engineer seat, message run)
+- Trigger: the Modal workspace has been disabled since some time between
+  12:20 and 14:00 UTC on 2026-10-23, read from the edge by
+  `tools/delivery_health.py` in this run. The board card for it says, in
+  words, "a workspace that is still off then is a week with no issue," where
+  "then" is Monday's 09:00 UTC press cron. Nothing computes that distance. The
+  guard holds `PRESS_CRON`, it holds `press_deadline`, and the compute surface
+  it prints beside them says only that the workspace is off.
+- What: the compute surface names the next scheduled thing it will cost and
+  how long there is. "The workspace is off and the press runs in 56 hours" is
+  a different message from "the workspace is off," and it is the one that
+  decides whether the owner opens Modal tonight or on Sunday. Same arithmetic
+  for the four daily corpus crons, which have already each missed a run. All
+  the inputs are in the file and none of them are joined.
+- First step: one function taking the outage's observed start and the cron
+  table, returning the next deadline each disabled app will miss, called from
+  `check_compute` and printed in its headline.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Datadog writes the fix into the alert, and Sentry gives it nowhere to go (engineer seat, message run)
+- Both read this run against the question today's work raised, which is whether
+  a monitor is supposed to carry its own remediation or only its condition.
+  They answer it opposite ways and the disagreement is the finding.
+- **The thing worth stealing, from Datadog.** A monitor's `message` is a
+  Markdown field the product's own documentation fills with remediation, and
+  its example is a numbered list of commands ("Steps to free up disk space on
+  {{host.name}}: 1. Remove unused packages 2. Clear APT cache ..."). It is
+  templated, so the text can name the host that is actually full, and it is
+  conditional per state: `{{#is_alert}}`, `{{#is_warning}}` and
+  `{{#is_renotify}}` are different blocks, so the first page and the third
+  page about one condition can say different things. The renotify block is the
+  half this product has no answer to at all. Our guards repeat one sentence
+  forever, and the till's repeated for a month.
+- **What Sentry does not have, read from the alert-creation docs in the same
+  pass.** An alert is "When" (triggers), "If" (filters) and "Then" (actions,
+  meaning destinations and tickets). There is no remediation field anywhere in
+  that flow, so the fix for a Sentry alert lives in a wiki somebody has to
+  already know about. Sentry's own answer to the routing half is Ownership
+  Rules, `path:src/javascript/*.[tj]sx #team`, which auto-assigns by stack
+  trace, and the last matching rule wins. That is routing a condition to a
+  person, which is a real thing and is not the same as telling the person what
+  to do.
+- **One thing alexandria does better, as of this run.** The hand our guard
+  names is derived rather than typed. A Datadog message is prose a human wrote
+  once, so it can be confidently wrong forever and nothing notices. Our
+  `apply_schema` sentence is reachable only when the database answered sqlstate
+  42P01, and when it answers anything else the guard says to read a log
+  instead. A remediation that can only fire on the evidence that justifies it
+  is the version that does not rot.
+- The proposal inside it, so this note is one: our guards say the same sentence
+  on the first reading and the thirtieth, and the till's said it for a month.
+  Give a repeated finding a second sentence that names how long it has been
+  saying the first one, which is Datadog's renotify block without the
+  templating language. `payment_exceptions`'s own `first_seen_at` column is
+  the shape the deploy surface already uses for exactly this.
+- Cost: $0
+- Status: proposed
