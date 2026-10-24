@@ -81,6 +81,62 @@ _ADD_DIR = re.compile(
 
 DIGEST_CHARS = 12
 
+# The cron line in a scheduled function's own decorator. Read out of source for
+# the same reason the file manifest is: a hand-kept copy of a schedule is a
+# copy that disagrees with the deploy on the day it matters. `schedule=` is in
+# the pattern on purpose, so that a docstring naming `modal.Cron` in prose is
+# not mistaken for a job on a clock.
+_CRON = re.compile(
+    r"""schedule\s*=\s*modal\.Cron\(\s*["']([^"']+)["']""")
+
+
+def schedules(source: str) -> list[str]:
+    """Every cron expression this module puts a function on, in source order.
+
+    Commented-out lines are skipped, because a schedule somebody switched off
+    by commenting it is not a schedule. `pipeline/skill_revision.py` is the
+    live example: it carried `# schedule=modal.Cron("0 16 * * *")` from
+    2026-10-05 and that job does not run.
+    """
+    found = []
+    for line in source.splitlines():
+        if line.lstrip().startswith("#"):
+            continue
+        match = _CRON.search(line)
+        if match:
+            found.append(match.group(1))
+    return found
+
+
+def schedule_of(app: str, repo_root) -> dict:
+    """The one cron expression this app runs on, or a `why` there is no one.
+
+    Returns `{"cron": ...}` or `{"why": ...}`, the shape
+    `tools/delivery_health.py` already uses for `recording_asked_at`, because
+    the two questions fail the same way: the useful answer to "when does this
+    next run" is sometimes "nothing here can say", and a caller that gets None
+    for both "not scheduled" and "scheduled twice" cannot tell a daily job
+    from an ambiguity.
+
+    Two schedules in one module is a `why` rather than a pick. An app that
+    deploys two scheduled functions has two deadlines, the drift is the same
+    for both, and choosing one of them silently would report the wrong one
+    half the time. No module in `APPS` is in that state today, and the point
+    of refusing is that the day one is, this says so.
+    """
+    module = APPS[app]
+    try:
+        source = (pathlib.Path(repo_root) / module).read_text(encoding="utf-8")
+    except OSError as exc:
+        return {"why": f"{module} could not be read here ({exc})"}
+    found = schedules(source)
+    if not found:
+        return {"why": f"{module} puts nothing on a modal.Cron schedule"}
+    if len(found) > 1:
+        return {"why": f"{module} carries {len(found)} cron schedules "
+                       f"({', '.join(found)}), so it has no single next run"}
+    return {"cron": found[0]}
+
 
 def manifest(source: str) -> list[tuple[str, str, bool]]:
     """The (repository path, container path, is_dir) triples an image adds.
