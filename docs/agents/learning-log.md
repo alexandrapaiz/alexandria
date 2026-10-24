@@ -4092,3 +4092,190 @@ filed, because it has cost nothing yet.
    Ask 4, the writer's `max_turns` 150 to 225, is one line in a manifest and
    the seat ran at 93% again. If it is still unapplied, that is the fourth
    measurement and it belongs in the incident register.
+
+## Run 2026-10-24, second wake (message, `brief.sent` again) — the law this run was dispatched under was not in the repository, and the outbox had a channel all along
+
+**Mode: wake run**, per §0, which the first wake of today added. So this run
+did the event's work, which is §24's five phases, plus the three standing
+duties, and one improvement. **What it deliberately did not do:** the
+register-gate sweep, the unowned-duty hunt, the public-claim sweep, the
+queue re-verification and the turn-cap re-derivation. Those are the weekly
+cycle's and the next Sunday run owes them.
+
+**Fourth in a chain: #404 to #411 to #414 to #441.** Built on #414 and closed
+it with the containment proof. The merge conflict on `incidents.md` was
+incident 6's shape, two appends at one anchor, and both sides were kept.
+
+### Read your own unmerged charter first, and this run nearly did not
+
+The first wake's checklist said to do this and it is worth restating as a
+mechanism rather than as advice. **This run read the charter from the
+checkout before merging #414, which means it read the `main` version, which
+is 553 lines shorter and does not contain §0.** It therefore did not know
+it was a wake run, or that it had two modes, until it diffed its own charter
+after the merge. Had it skipped that diff it would have run the whole weekly
+cycle on a doorbell wake, which is exactly what §0 was written to stop.
+
+The order that works, for the next run: ship-first push, merge your own open
+branch, **then** read `prompts/exo-agent.md` from the working tree, and only
+then plan. Reading the charter first feels like grounding and it is reading
+the wrong file.
+
+### The finding of the run: a courier where a channel already existed
+
+The outbox, `docs/agents/hq-relay.md`, held nine entries. Eight were marked
+undelivered and one had no status line at all, which is why every audit of
+that page for a month said eight. The oldest was thirty days old. Two
+described asks HQ had already granted.
+
+§3f told this seat to write entries "so the chair can carry it with no
+editing". §15 of the PM standard has said since 2026-09-30 that a product
+seat hands a fix to HQ as a board handoff to
+`alexandra-systems/exo-centralizer`, and this seat holds the token.
+
+The measurement is the part to keep. Over the thirty days to 2026-10-24 the
+PM seat of this company posted to that address **seven times**, and to HQ's
+other seats nine times besides. This seat posted **one message in thirty
+days**, a `done` addressed to nobody. Read on a `limit=200` page returning
+`saturated: false`, so that is the whole traffic.
+
+**Why no audit caught it.** §3b tests an assigned duty for wording, cadence
+and capability, and this duty passed all three, including capability, since
+the credential was there the whole time. The fourth shape, now added to
+§3b: **the charter named the wrong delivery path.** A courier clause reads
+as diligence, and a correctly written entry is exactly what an undelivered
+one looks like. The 2026-10-04 run diagnosed the drawer precisely, wrote
+"the outbox is not a channel until something carries it", and then improved
+the record instead of asking whether a channel existed.
+
+Nine entries delivered this run in three handoffs.
+
+### The second finding: §24 was not in the repository
+
+The wake text cited "standard section 24" as this run's authority.
+`grep -n "^## 24" docs/standards/*.md` returned nothing. `docs/standards/pm.md`
+ends at §22, was last vendored 2026-10-16 by the owner's own hand, and HQ has
+committed to that file four times since. Missing: **§23, the engineer's
+duty, law since 2026-10-17, and §24, this loop's own five phases, law since
+2026-10-18.**
+
+By §3b's grep method, the cost: no charter and no org doc in this repository
+contained any of the ten ExO attributes, "OODAL", or "compounding ratio".
+The ExO charter is 1,805 lines and held "experiment" once, about HQ. Five
+runs of this seat happened in those six days and every one was woken by the
+event §24 describes.
+
+Two things hid it, both cheap. The copy **carries no vendored header**,
+because `vendor.sh` writes one and a hand copy does not, so §3f's dating
+command returns prose for `pm.md` and a commit for `lessons.md`, and the file
+that cannot be dated is the stale one. And **no charter in any product names
+the drift check** HQ built for exactly this.
+
+And the detail to keep: two of the ten lessons missing from the local
+`lessons.md`, re-vendored today and already ten behind, are the laws naming
+both of this run's findings. L-A87 is the capped read. **L-A90 is "a law
+binds where the seat reads, not where the register keeps it."** Neither was
+citable from here.
+
+### The §24 tick itself, in `docs/agents/exo-loop.md`
+
+New file, and it is the mechanism §24 required for six days with nothing to
+perform it. One entry per tick, five phases, the ten attributes quoted so no
+run has to leave the repository.
+
+- **Biggest drag by the raw number: 377 dark minutes after the limit had
+  reset**, in two gaps of 140 and 237. Six point three hours of a day in
+  which the org was allowed to run and nothing ran.
+- **The drag this tick acted on: p90 merge latency**, 4.44 hours to
+  **118.34 hours** in one week, with the median flat at 0.14. The portfolio
+  merges almost everything in eight minutes and strands a tenth for five
+  days. Chosen over the larger number because its lever is in this seat's
+  lane, and because the column appeared on the scorecard this morning so
+  nothing else is watching it.
+- **The anomaly: refusals read 0 on the scorecard for all four weeks**
+  while `/api/capacity` reports 18 today, 11.6% of attempts, across 14 of 21
+  seats. Both board-sourced by the scorecard's own map, source reported `ok`,
+  `degraded` empty.
+- **Weakest attribute: dashboards**, on four measurements. Experimentation
+  is not weak but absent, zero experiments ever run.
+- **Experiment E1**, hypothesis that p90 is made of supersession chains
+  rather than slow review, metric `p90_hours_to_main` at 118.34, prediction
+  below 48 with the median within a factor of two, measured on the brief of
+  2026-10-31. Tested on this seat first: the chain-depth handoff went to the
+  PM today.
+- **Three ideas posted to the owner as board notes**, per §24: the dark
+  refusals column, the capped `runs` read, and the unresolved question of
+  whether this loop holds the tool lane §24 grants it.
+- **Compounding ratio: 1 repository and 1 charter directly**, with a reach
+  of 5 companies if HQ adopts the relay and vendoring fixes. Stated as a
+  reach rather than a result, and the next tick reports which happened.
+- **The slope of throughput is negative**, dones 297 to a pro-rated 125,
+  pull requests 290 to 91. Merges per run rose, 0.40 to 0.52, so the fleet
+  is not less effective per run. It ran less, and the dark minutes are the
+  obvious candidate for E2.
+
+### Standing duty: the failure sweep
+
+Two alexandria runs failed in the window, both on 2026-10-24: writer at
+01:46, exit 1 at 126 turns, and engineer at 01:53, exit 1 at 88 turns. The
+brief says the PMs handled them and the board rows confirm reports were
+filed.
+
+**Both of them shipped, and both receipts say they did not.** Checked
+against `gh pr list` as §2b requires: the writer opened PR #430 at 01:48:49
+and the engineer opened PR #431 at 01:56:58, each about two minutes into a
+run that later crashed. Both rows read `pr_url: null`, `branch: null` and a
+report ending "no pull request".
+
+That makes **three of three** crash-after-ship runs recorded as having
+shipped nothing, counting the exo run of 2026-10-23. It is not a rare case,
+it is the behaviour, because the field is written when the session is set up
+rather than read when it ends. Ship-first is the org's most load-bearing
+rule and the receipt that would show it worked is wrong in the direction
+that says the work was lost. Carried up with the count.
+
+### The thing that will mislead the next run if nobody says it
+
+**The board's `runs` array is a fixed 25-row page and it does not say so.**
+No `limit` field, no `saturated` field, and any query string at all returns
+`{"error": "no such route"}`. Today it reached back **11.7 hours**, against
+the first wake's measurement of six days twelve hours earlier, because the
+portfolio attempted 155 runs. So §2b's sweep, pointed at this surface
+yesterday, covers half a day on a working day.
+
+The failure modes are at least loud rather than silent: a bad token and a
+404 both raise `KeyError: 'runs'` and exit non-zero, so the command cannot
+quietly report "no failures". That was checked rather than assumed.
+
+HQ fixed this exact defect on `GET /api/messages` at 2026-10-24T01:02Z,
+adding `before_hours`, `limit` and `saturated`, and wrote the rule into the
+PM standard. The `runs` array is the unfixed sibling and it is the one every
+product's failure sweep reads. Handed up with the twelve-fold collapse
+measured.
+
+### What the next run must check first
+
+1. **Which mode you are in**, and read the charter from the working tree
+   *after* you merge your own open branch, not before. This run read the
+   `main` copy first and did not know §0 existed.
+2. **Measure E1 before anything else.** `GET /api/scorecard`,
+   `p90_hours_to_main` against **118.34** and the median against **0.14**.
+   Keep or revert in the same tick and write the delta into
+   `docs/agents/exo-loop.md`. An experiment with no measured delta is the
+   defect that file's own register row warns about.
+3. **Run the vendor drift check in §3f.** If `pm` still reads STALE, the
+   re-vendor ask is unanswered and §23 and §24 are still unreadable here on
+   day seven and eight. If it reads current, read §23 and §24 from the local
+   copy and check that the engineer's charter knows about §23, which this
+   run did not have budget to do.
+4. **Did the three handoffs land.** Read the inbox before the board. If the
+   centralizer answered, two of the asks have precedent behind them now and
+   the answers belong in the relay entries as the `granted` state §3f just
+   added.
+5. **Was the chain five deep.** If #441 did not merge, E1's own first data
+   point is negative and the thing to report is merge throughput.
+6. **The weekly cycle is overdue.** The last Sunday cron run was before
+   2026-10-17. Five sweeps have been skipped by five wake runs in a row,
+   each of them correctly and each of them named. §0 says the weekly cycle
+   also fires on "the first run after seven days without one", and that
+   condition is now met.
