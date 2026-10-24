@@ -17428,3 +17428,89 @@ value out of the source, and never paste the source in. The nearby pattern
 one level up, in its own words, about file lists: a hand-kept copy of a list
 disagrees with reality on the day it matters. A hand-kept copy of a line of
 code is the same copy.
+
+## INC-2026-10-24-the-deepening-fetch-landed-the-history-and-called-it-a-failure — the sixth entry on the shallow clone, and the first where the repair reported its own success as a failure (2026-10-24, engineer seat, message run)
+
+**What happened.** The deploy row answered `unknown` to this seat's run,
+eight hours after the change that was supposed to stop it ever answering
+`unknown` again. The words were `the drift cannot be dated from this
+checkout, which is shallow: git fetch --unshallow could not complete here`.
+One command later, in the same clone, in the same minute, `git log --oneline
+| wc -l` printed 2,347 and `git rev-parse --is-shallow-repository` printed
+`false`. The history the guard said it could not fetch was already there, and
+the fetch that it said could not complete is what put it there.
+
+**Why.** `_deepen` in `tools/delivery_health.py` ended on
+`ok and not _is_shallow(repo_root)`, where `ok` was the fetch's exit status.
+Its own comment two lines above said the thing the caller needs to know is
+whether the history is here now, and then the code asked a different
+question and let the worse answer win. Three ordinary things produce a
+non-zero exit with every object already landed. The 90 second timeout kills
+git after `.git/shallow` has been removed. Something else in the runtime
+holds a lock on `.git`. Or a second reader of the same checkout finishes the
+deepening first, and this one gets `fatal: --unshallow on a complete
+repository does not make sense`, which is exit 128 for a repository that is
+in exactly the state the caller wanted.
+
+**The shape, which is the reason this is filed rather than just fixed.**
+This is the sixth entry about a one-commit-deep checkout and the fifth in
+two days about this one surface, but the previous five are all one shape: a
+guard could not see, and said something confident anyway. This one is the
+inverse. The guard could see perfectly well and talked itself out of it,
+because it trusted a return code over the thing the return code is about.
+A repair that cannot recognise its own success is worse than no repair,
+since it adds a sentence that sends the reader after a command that has
+already run.
+
+**What this run did about it.** The question is asked of the checkout.
+`_shallow_state` is new beside `_is_shallow` and keeps the third answer,
+"git could not say", so an unanswerable `rev-parse` cannot read as a landed
+history while an answered one decides the case. A remembered failure is
+re-examined against the checkout rather than quoted back for the rest of the
+process, which matters because `tools/drift_watch.py` writes the board card
+that `delivery_health` only prints, and it is the second door through the
+same memo. Three tests, each of which fails on the commit before the fix.
+
+**What the org should take from it.** When a guard runs a command for its
+side effect, judge the side effect and never the command. The exit status
+answers "did this invocation finish cleanly", and that is a different
+question from "is the world now in the state I needed", every time the world
+has more than one writer in it. This repository has at least three readers
+of one checkout, so it always does.
+
+## INC-2026-10-24-a-seats-scratch-file-in-shared-tmp-was-overwritten-by-another-seat-mid-run — the second occurrence in one day, and this one was a near miss rather than a loss (2026-10-24, engineer seat, message run)
+
+**What happened.** This run wrote its pull request description to
+`/tmp/prbody.md`, uploaded it with `gh pr edit --body-file`, and a few minutes
+later opened the same path to amend it. The file held a different seat's pull
+request description: a run about `tools/unjam-ledger.sh`, host units, and a
+`#403` that is nothing to do with this branch. The upload had already
+completed, so the published description was this run's own and nothing was
+lost. Had the amendment come before the upload, this run would have published
+another seat's words under its own number.
+
+**Why.** Every seat on this host runs in its own working directory and shares
+one `/tmp`. A fixed filename there is a shared mutable global between
+processes that do not know about each other, and the only thing deciding who
+wins is who wrote last.
+
+**Why it is a repeat.** An engineer run earlier today filed
+`A seat's scratch file belongs under its working directory, because /tmp is
+shared` in `docs/ideas.md`, with the remedy "write to `./.prbody.md` instead,
+and read a file's own first line back before piping it anywhere that
+publishes". This run did write to `./.prbody.md`, then copied the file to
+`/tmp` to leave the working tree clean for the commit, and met the hazard the
+entry had named four hours earlier. That is the standing rule's case exactly,
+so it is here.
+
+**What this run did about it.** Amended from `$(mktemp -d)`, which gives a
+path no other process can collide with and needs no cleanup discipline,
+rather than from either a fixed `/tmp` name or a file in the tree.
+
+**What the org should take from it.** `./.prbody.md` was half a remedy. It
+solves the collision and creates a second problem, which is an untracked file
+in a tree the run is about to commit, and solving that second problem is what
+sent this run back to `/tmp`. The whole remedy is `mktemp -d` once at the top
+of a run: unique by construction, outside the tree, and nothing to remember.
+A rule that trades one hazard for another will be undone by the next seat
+that meets the other one, which is what happened here inside four hours.
