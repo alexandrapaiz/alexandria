@@ -1,3 +1,141 @@
+## Updated 2026-10-24, ~01:05 UTC (message pass): PR #414 read and held for you, not self-merged, and the board's own ask on it answered
+
+**Trigger.** Three board events in one wake: PR #408 and PR #405 (this
+seat's own, from earlier tonight) confirmed merged, with the instruction
+to continue the next item in this seat's lane; and the ExO seat's run
+finished (PR #414), with the instruction to read its report, merge what
+is mine under the merge rule, close what is superseded, and hand the
+next thing to a seat on the board.
+
+**Branched from this seat's own prior run, not from `main`.** `gh pr
+list --state open` found `#418` (this seat's own six-hour pass, still
+open) and `#403` (depth 4, still open) at the start. `#418` touches the
+exact two files this pass writes (`pending.md`, `dispatch-queue.md`);
+`#403` does not. Built on `#418` (`git log --oneline
+origin/alexandria-pm/2026-10-24-message-6h ^HEAD` printed nothing,
+confirming containment), opened this PR (#422) superseding it, then
+closed `#418` with a pointer to #422. `#403` stays open, untouched, and
+still blocked on a merger other than this seat: it carries the real
+current sprint (`sprint-2026-10-19.md`) and the skills-sellable PR/FAQ,
+not just old reports, exactly as #418 found.
+
+**#414 is not merged, and the reason is worth stating plainly rather
+than silently repeating the prior pass's call.** `gh pr diff
+--name-only` shows 23 files: eleven are `docs/agents/*` knowledge
+surfaces (Tier A territory), but twelve are `prompts/*-agent.md`, one
+per seat including this seat's own charter. `docs/standards/pm.md` §10's
+amendment says the PM merges every tier in its own company now, "except
+a change to a seat's own authority," so this pass read the full diff
+rather than assume the old Tier C line still binds. None of the twelve
+charter diffs changes who may dispatch whom, a dispatch ceiling, or a
+merge-tier definition; every change is mechanical (reading the board
+API instead of the blind `gh run list`, the shallow-clone and `/tmp`-
+scratch cautions, the `pending.md` writer split). So this is arguably
+not "a change to a seat's own authority" by the amendment's own test.
+
+Even so, this pass is holding it rather than merging it, for three
+reasons that outweigh that reading. First, this seat's own immediately
+prior run (#418, forty minutes earlier) read the same diff and called it
+"not this seat's to self-merge," and reversing that within the same
+session with no new fact on the table is not applying the merge rule,
+it is re-litigating it. Second, `docs/standards/pm.md` §9 and §10 both
+still name "Charters (`prompts/`)" as their own enumerated Tier C
+category, separately from "a change to a seat's own authority," and the
+amendment's one sentence does not say which of the two readings is
+meant: that the authority carve-out is the only thing still hers, or
+that the whole "Charters" line is swallowed by "authority" because a
+charter is what grants authority. Third, the blast radius is every
+seat's next run, all at once, and the cost of holding one more cycle is
+cheap while the cost of a wrong charter merge is not. **Asking rather
+than guessing: does §10's amendment's authority carve-out leave
+"Charters (`prompts/`)" itself still an owner/chair line regardless of
+content, or does it only protect the specific clauses that grant or
+limit a seat's power?** Until that is answered, this pass is treating
+charter PRs as Tier C.
+
+**Nothing to close.** #414's own chain (`#272` to `#331` to `#381` to
+`#404` to `#411` to `#414`) is already fully closed by the ExO seat
+itself; checked all five and every one reads `CLOSED`. No other open
+pull request duplicates or is invalidated by #414's unmerged content.
+
+**The board's own ask on this answered, not just the PR.** Card
+`df7b4a84` (Review column) is this seat's own 2026-10-18 ask to the ExO
+seat, asking for exactly the charter edit #414 now carries, because this
+seat's charter could not edit itself. Commented on the card: the edit is
+built, correctly scoped to what was asked, and this seat is holding the
+merge for the reason above rather than treating "I asked for this" as
+licence to also be the one who lands it. Left in Review, not moved to
+Done, because the code is not on `main` yet.
+
+**Hand the next thing to a seat: checked, and there is nothing new to
+hand.** Walked the whole board (Backlog, This sprint, In progress,
+Review) rather than only the cards this pass already knew about. The one
+candidate that looked like an orphan, the issue dek's two-word widow on
+tablet and desktop that the frontend seat's own comment on card
+`d79bfd44` said deserved "a card of its own," already has one
+(`b37a342a`, frontend, Backlog, filed before today). Every other
+dispatchable seat (engineer `#420`, writer `#419`, frontend `#421`) has
+an open pull request from its own last run right now, which is the hard
+stop on proposing anything new for them, and all three are visibly still
+working (draft, "filling in" sections). `research`'s idle card
+(`50f9a0f3`) explicitly says fresh work needs the owner's word first, so
+it is named, not queued. `market`, `skill`, and `security` last opened a
+pull request on 2026-10-05, nineteen days ago, and `okr` on 2026-10-18;
+none of that has a sprint item naming it this week to point to (the real
+current sprint is the one stuck inside #403), so there is no evidenced
+trigger to act on rather than a cadence question for the ExO's weekly
+re-derivation. Reported rather than acted on.
+
+**Run health, read from the board** (`gh run list` is blind to every
+agent seat's run since 2026-10-17, confirmed again this pass: the newest
+30 rows are all `checks`/`deploy-main` merge pushes, zero agent
+workflows). `GET /api/board/alexandria` returns 25 rows, back to
+2026-10-18T14:33Z. Two non-successes in the window, both already known
+and both still unregistered on `main`: `exo` at 2026-10-23T19:04:14Z,
+exit 1 at 48 of 200 turns, and `pm` at 2026-10-23T19:09:06Z, exit 1 at
+turn 1, seven seconds after. #414 already drafts the incident entry for
+both (`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-
+was-pointed-at-it`), so this pass is not adding a second, differently-
+named entry for the same two failures while that one sits one merge
+away: duplicating it would be the allocator collision the charter
+already warns about, for no gain. If #414 is still unmerged by the next
+ceremony, that registration still has to land, by whichever seat opens
+next.
+
+**Cap ratio.** `exo`'s own run on this PR: 155 of a 200 cap (workflow
+file and #414's own host-manifest reading agree on 200), 77.5%, over the
+70% line. `writer`'s two most recent runs, 140 and 113 turns: the
+workflow file still says `--max-turns 225` (113/225 = 50%, 140/225 =
+62%, both under), but #414 reports that number is stale since decision
+056 moved cadence to host manifests, and reads the live manifest cap as
+150 (140/150 = 93%, 113/150 = 75%, both over, and 93% would be a third
+consecutive measurement over the line per #414). Could not independently
+confirm 150: `gh api repos/alexandrapaiz/alexandria-systems/...` 404s for
+this seat's token. Reporting both readings rather than picking one
+silently.
+
+**Delivery health, `tools/delivery_health.py` direct.** `ok`: press
+(2026-W42, caught up), site, archive. **FAILING, unchanged:** compute /
+pipeline / mcp (Modal workspace disabled, `#406` urgent, 2026-10-26
+09:00Z deadline, owner-only); checkout (the three Polar env vars still
+unset, owner-only); deploy (distill 8.0 days, ingest 7.4 days, weekly 8.2
+days undeployed behind `origin/main`). **unknown:** payments.
+
+**Queue gauge, four numbers.** `main`'s newest commit is the merge of
+`#409`, 2026-10-24T00:47:16Z, about fourteen minutes old at this writing.
+`checks.yml` on `main` fires only on changes to specific paths (pipeline,
+digest/daily prompts, named tests, `skills/**`); its newest matching run
+is `success` from the merge of `#400` at 2026-10-23T23:31:12Z, and no
+merge since has touched one of its paths, which is why nothing newer
+shows and that is not a gap. Open pull requests: 6 total (`#403`, `#414`,
+`#419`, `#420`, `#421`, `#422`), 3 opened since the last merge to `main`
+(`#420`, `#421`, `#422`). 7-day conversion: 73 merged / 100 opened
+(0.73). Deepest open chain: 6 (`#414`), unchanged, and already reported
+bold per the charter at that depth by #414 itself.
+
+**Linear trial.** Not checked this pass; nothing in this run's inputs
+bears on it.
+
 ## Updated 2026-10-24, ~00:50 UTC (the six-hour pass): the stacked queue drained, two chains correctly left for you, the inbox answered
 
 **Trigger.** The six-hour pass instruction: read the inbox and the Messages
