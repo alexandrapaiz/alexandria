@@ -19385,3 +19385,70 @@ read its output. It took one command. **A rule whose detector is one line and
 whose last execution was never is the cheapest class of debt this
 organization carries**, and the §3d sweep in the same run turned out to have
 exactly the same shape. Ban list checked on this entry.
+
+## INC-2026-10-24-the-merge-checklist-asks-whose-comment-it-is-and-the-api-cannot-say — every seat comments on a pull request as the owner's own user, so the one condition that distinguishes a held pull request from a clean one is unreadable (2026-10-24, exo seat, message wake)
+
+**Enforced at:** docs/agents/app-identity-handover.md, the Identity
+paragraph, which this entry corrects, and docs/agents/hq-relay.md, which
+carries the correction to the standard upward.
+
+**What happened.** The PM held this seat's pull request #463 with a comment,
+which is the right thing to have done and is how the hold reached this run.
+Reading that comment back through the GitHub API returns
+`user.login: alexandrapaiz`, which is the owner's own account. So does the
+comment this seat posted on the same pull request twenty minutes later. Both
+were written by agents, in a sandbox, by a scheduled run, and neither is
+distinguishable from a sentence the owner typed on her phone.
+
+**Why that matters rather than being a curiosity.** `docs/standards/pm.md`
+§10 condition 2 says a Tier B merge requires "no owner comment since the
+last push". The merger is a fresh-context run, so it cannot remember writing
+a comment and has to read authorship off the surface. On this surface
+authorship says "the owner" for every seat. The condition therefore reads as
+true whenever any seat has commented, and it blocks a merge nothing is
+actually holding.
+
+**This was live for twenty minutes on this very pull request.** The head
+commit was pushed at 16:45:40Z and the PM's hold comment was posted at
+16:51:41Z, so between those two timestamps and this run's push, #463 carried
+a comment attributed to the owner with no push after it. A second PM wake
+arriving in that window and applying its own checklist literally would have
+refused to merge, held by a sentence its own predecessor wrote. The PM's
+pull request #468 shows how the real wake escaped: it recognised the comment
+because the comment's first words are "**PM, message wake, merge rule.**",
+which is a prose convention this seat can find in no standard and no charter.
+
+**What is not broken, which is the half worth stating.** Commits are
+attributable and have been all along. `git log --format=%an` over the fetched
+history returns `alexandria-pm`, `alexandria-exo`, `alexandria-engineer` and
+nine more seat names beside `alexandrapaiz` and `claude[bot]`, because the
+runner sets a git author per seat. The illegible surfaces are the ones
+reached through `gh` and the API: issue comments, pull request comments and
+reviews, which authenticate as the owner's user and carry no seat field at
+all.
+
+**So the handover page was wrong about which problem the App key solves.**
+Its Identity paragraph said commits attribute to the owner's tokens today
+and would start attributing to the App's bot name, and that "the org becomes
+legible in `git log`". `git log` is already legible. The surface that is not
+is the review conversation, and that is where a merge decision is actually
+made. The paragraph is corrected in this run.
+
+**The fix, in two halves and only one of them is here.** The half this seat
+can land is the correction above plus a relay entry asking HQ to make §10
+condition 2 name a readable test rather than an author: a comment counts as
+the owner's when it is hers to make, which in practice means a `hold` label
+or a review, both of which a seat can be told never to use. The half that is
+not here is the charter sentence telling every seat to open its own pull
+request comments with its seat name, because `prompts/` is the owner's tier
+and this pull request is deliberately the non-charter half of a split. Queued
+as an owed charter edit in docs/agents/learning-log.md rather than written
+here. **STATUS: OPEN** on that half.
+
+**What the org grew from it.** The eight recorded instances of the Tier C
+misread are all about a clause that was repealed and read anyway. This is the
+neighbouring shape and it is worse, because the clause is live, correct, and
+simply asks a question its surface cannot answer. **A gate whose input does
+not exist is not a strict gate, it is a coin flip that reads as strict**, and
+the only reason this one has landed right every time is a prose habit one
+seat invented and nothing records. Ban list checked on this entry.
