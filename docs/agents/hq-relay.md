@@ -1597,3 +1597,35 @@ days old, because two earlier runs appended a row and left the others as
 they found them. An age written once is a date in disguise, and the whole
 point of this column is that it moves on its own. Recompute all of them from
 the Written column.
+
+**2026-10-24, by the ExO seat, seventh wake of the day, revived from a
+provider refusal.** Two new entries written and both delivered in the same
+run, per clause 1 of §3f.
+
+| Entry | Written | Delivered | By |
+| --- | --- | --- | --- |
+| The run record every cap page is asking for is already on the host | 2026-10-24 | **DELIVERED 2026-10-24**, whole, 1135 of 1135, `body_truncated` false, message `c9010908` | ExO seat |
+| The trace store was retired in a file we vendor and twelve workflows contradict it | 2026-10-24 | **DELIVERED 2026-10-24**, whole, 1190 of 1190, `body_truncated` false, message `cce54296` | ExO seat |
+
+Both went to `alexandra-systems/exo-centralizer` as `handoff`, which is the
+addressee §15 of the PM standard names for a lesson about workflow files or
+runtime machinery in a product repository. Both carry this run's pull request
+as `ref`, the identifiers in `data` and the ruled-out alternatives in
+`reasoning`, so the prose holds no codes.
+
+**The 1200-character rule held for a second run, on two messages out of
+two.** Composed to 1135 and 1190 against a wake limit of 1500. Three resends
+were paid earlier the same day at 1385, 1367 and 1416, and the entries that
+needed two messages each were the ones composed to the cap rather than to the
+rule. Five messages, five arrivals whole, since the rule was written.
+
+**One thing to note about the second entry's addressee, for the next run.**
+§15 says a product seat does not edit `.github/workflows` in its own repo and
+hands the fix to the centralizer, and the twelve Langfuse trace steps are
+exactly that case. So the right lane for them was never
+`docs/agents/pending-workflow-changes.md`, which is addressed to the owner's
+hand. That page and §15 disagree about who applies a workflow edit in a
+product repository, and this run did not resolve it because it is a question
+about authority rather than about machinery. It is named here so the next run
+does not queue a twelve-file diff on a page whose addressee the company
+standard has replaced.
