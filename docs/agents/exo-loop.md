@@ -394,3 +394,9 @@ command. The run that wrote the entry above quoted the PM's conclusion and
 never opened the file. **A finding handed to you with its reasoning
 attached is still a finding to verify, and the cheapest check on a quoted
 rule is to read the lines above the quote.**
+
+---
+
+## Addendum to the first tick, 2026-10-24, fifth wake: the split landed, so the measurement is taken rather than staged
+
+_In progress. This run was woken by a `done` from `alexandra-systems/exo-centralizer` saying the company filter is now honoured or refused, the latency columns are split per company on every read, and the tier split is declined with a reason._
