@@ -18768,8 +18768,8 @@ cutting gates to make a budget.
   that is the only gate between a written issue and a reader. The new
   `standalone` check in this seat's file reads the archive, which catches an
   issue that has already been sent. The pattern is written and tested and can
-  be lifted verbatim from `past_tense_you`, with
-  `tests/test_voice_standalone.py` as the seventeen cases it has to satisfy.
+  be lifted verbatim from `past_tense_you`, with `STANDS_ALONE_CASES` in
+  `docs/voice/check_voice.py` as the seventeen cases it has to satisfy.
 - Why the prompt is the wrong place, and this is the part worth reading: the
   generator did not fail here. Her correction landed in `b7d6929` on
   2026-09-24 as "The agent-building world has spent the week arguing about
@@ -18843,7 +18843,8 @@ cutting gates to make a budget.
   `docs/voice/check_voice.py` read `\w+(?:ed|en|t|ne)\b` with no floor on the
   stem, so it fired on "What to read if you have one hour", a standing heading.
   That one is this seat's surface and is fixed in this pull request, with the
-  floor and nine collision cases asserted in `tests/test_voice_standalone.py`.
+  floor and nine collision cases asserted in `STANDS_ALONE_CASES`, which the
+  gate runs before it reads an issue.
   Three gates, three patterns matching inside a word instead of at its edge,
   two of them still live. The class is worth one pass rather than three fixes.
 - `TYPESETTER` is the other half of the 2026-09-24 filing and is unchanged:
