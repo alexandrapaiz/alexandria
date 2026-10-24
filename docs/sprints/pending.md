@@ -1,3 +1,62 @@
+## Updated 2026-10-24, ~21:25 UTC (hook pass, capacity-return): #480 (own prior run) finalized and closed as superseded, a fourth capacity window named
+
+**Trigger.** The hook text: "capacity returned: the provider limit that
+refused your last run has reset." This seat's own prior pass left PR #480
+open mid-finalization (last commit 18:25:41Z, body still reading
+"Finalizing the standup now."), one of 32 runs across 17 seats that a
+portfolio-wide refusal window (17:47:17Z-18:33:01Z, `GET /api/capacity`)
+cut off at once. Filed as
+`INC-2026-10-24-a-fourth-capacity-window-the-same-day-ended-this-seats-own-run-mid-finalization`
+in `docs/agents/incidents.md`, this pass.
+
+**Chose: build on it.** Branched directly from #480's tip (zero commits
+difference, containment true by construction), opened #483, then verified
+containment against #480's branch and closed it as superseded. Chain:
+#397→...→#442→#480→#483, **depth 13. This seat is blocked on merges.**
+
+**Queue gauge, fresh this pass.** `main` tip `eea1360` (merge of #471),
+2026-10-24T18:21:50Z, ~3.1h old. `checks.yml`'s last run touching `main`
+is still the 13:00:24Z success (no PR since has touched a path it fires
+on); no 48h stall. Open PRs: 7 total after closing #480 (#483, #482, #481,
+#473, #466, #461, #435), 3 opened since the last merge (#483, #482, #481,
+all three hook-triggered capacity-return passes from pm/exo/engineer
+starting within two minutes of each other, same `reset_at`). Conversion,
+7 days: 92 merged / 146 opened (0.63). Deepest open chain: this seat's own
+#483 at depth 13; next deepest is exo's #482 at depth seven.
+
+**Cap ratio.** Not re-measured fresh this pass (the board run record
+needs a per-seat `num_turns` read this run did not have budget for after
+the capacity finding). Carried from the 18:10Z pass: `writer` 149 turns,
+66% of the workflow file's 225, 99% of the live manifest cap of 150 that
+#414/#455 both report. Third consecutive over-threshold reading on that
+second number, now a fourth pass old. `exo` 63%, `skill` 65%, both under
+either line.
+
+**Delivery health.** Re-run fresh this pass (`tools/delivery_health.py`):
+press/site/archive **ok**. compute/pipeline/mcp (Modal workspace
+`ac-5DsaR3hWSUxqyNoGYiowja` disabled, owner-only), checkout (Polar env
+vars unset), deploy (distill 8.8d, ingest 8.2d, weekly 9.1d behind)
+**FAILING**. payments **unknown** (`payment_exceptions` table missing,
+one hand-run migration closes it, already named in an earlier pass).
+Nothing new on any of these since they were last flagged; naming again
+because the guardrail requires evidence every pass, not inference from
+silence.
+
+**Dispatch.** `PM_DISPATCH_ENABLED` unset in this run's own environment.
+Every one of the seven dispatchable seats this seat checked for a cited
+trigger (engineer, writer, frontend, skill all have an open PR from their
+own last run and are excluded by the hard stop regardless; research,
+market, security, okr have no standing obligation in this file naming
+them) produced nothing to queue. Queue holds no proposed entries this
+pass.
+
+**What's owed:** the owner or a chair still owes merging #483 (this pass,
+Tier B, blocked-on-merges), #482 (exo) and #481 (engineer), all three
+hook-triggered siblings opened within the same two minutes. Frontend
+still owes its own `gh pr ready` on #435. Writer's #461 and skill's #466
+are this pass's first sight of them; not re-verified this pass, carried
+as open rather than re-checked, since neither showed a trigger.
+
 ## Updated 2026-10-24, ~18:10 UTC (message pass): #474 merged (its own Tier C self-label was wrong), nine own-seat siblings reconciled, #435 unchanged (eighth fabricated-tool push)
 
 **Trigger.** Exo's #474 opened, with the standing instruction to check it

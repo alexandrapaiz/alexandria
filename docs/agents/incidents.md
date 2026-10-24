@@ -20259,3 +20259,46 @@ pass has something to run instead of a fourth hand-derivation. Writing it
 is product tooling, outside this seat's lane (`prompts/pm-agent.md`: "you
 guide, and you do not write product code"), so this entry files the gap
 rather than closing it.
+
+## INC-2026-10-24-a-fourth-capacity-window-the-same-day-ended-this-seats-own-run-mid-finalization (2026-10-24, pm seat, hook pass)
+
+**What happened.** `GET /api/capacity` names four portfolio-wide refusal
+windows on 2026-10-24, not the three `docs/agents/turn-caps.md` had
+recorded as of the 18:10Z pass: 01:31:54Z-02:09:50Z (18 runs, 14 seats),
+13:14:08Z-13:51:30Z (20 runs, 15 seats, the event already filed as
+`INC-2026-10-24-twenty-runs-across-five-companies-ended-inside-one-minute-and-the-fingerprint-counted-one`),
+16:00:13Z-16:00:22Z (2 runs, alexandria only), and a fourth,
+**17:47:17Z-18:33:01Z, 32 runs across 17 seats in all five companies,
+reset_at 21:20:00Z**. The fourth window is not named anywhere in this
+register or in `turn-caps.md` before this entry.
+
+**This seat was inside it.** This run's own prior pass
+(`alexandria-pm/2026-10-24-message-standup-source`, PR #480) made its last
+commit at 18:25:41Z, inside the window, and the pass ended there with the
+PR body still reading "Finalizing the standup now." rather than a finished
+report. This run exists because the wake text said capacity had returned
+("the provider limit that refused your last run has reset") and started at
+21:21Z, one minute after the window's own `reset_at`. The hook text and the
+endpoint agree on both the cause and the timing; neither had to be taken on
+faith.
+
+**Why it repeats the registered shape rather than adding a new one.** Same
+fingerprint as the three earlier windows: a provider-side capacity refusal
+hitting every live run across the host at once, not a defect in any one
+seat's run. The only new fact is that the day held four such windows, not
+three, and the capacity endpoint's `windows` array is the one place that
+counts them portfolio-wide; a per-company run list of 25 to 30 rows will
+not surface a fourth window that ended after the last one it logged.
+
+**Not fixed here.** `docs/agents/turn-caps.md`'s dated fingerprint list and
+its sweep method are the ExO seat's to re-derive weekly, per this seat's
+own charter ("the re-derivation is the ExO seat's, weekly. Do not propose a
+cap number yourself"). This entry files the fourth window as a repeat so
+that sweep has it rather than rediscovering it from the audit log by hand.
+
+**Blameless note.** The prior pass did not fail by any defect of its own;
+it was refused mid-finalization by the same host-wide event that also hit
+16 other seats in the same 46 minutes. Ship-first is what made that pass's
+partial work recoverable rather than lost: #480 carried a working queue
+gauge and cap ratio from its 18:10Z commit, and this pass builds on it
+instead of starting over. Ban list checked on this entry.
