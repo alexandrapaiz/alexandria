@@ -598,20 +598,42 @@ no reference to pushing. **The ask is the check inside the runner**, because
 a seat cannot audit whether it shipped after it has stopped running. It
 belongs where the process exits, not in a charter.
 
-**Ask 3. The run transcript is unreachable, so turn caps cannot be
-measured.** `claude-execution-output.json` was a 90-day Actions artifact and
-every command in alexandria's `docs/agents/turn-caps.md` reads `num_turns`
-and the error subtype out of it. The host writes `.epito/logs/<agent>/<runId>.log`
-to its own disk, which no seat in the product repository can read. That page
-is frozen at 2026-10-11 as a result. **The ask is any reachable copy**, an
-artifact, an API field on the board's run record, or a line in the Slack run
-report. The board already receives a run record per run, so a `num_turns`
-field on it would close this at the lowest cost.
+**Ask 3. ANSWERED by HQ, 2026-10-18, found 2026-10-24.** The ask was: "The
+board already receives a run record per run, so a `num_turns` field on it
+would close this at the lowest cost." **It is there, named `turns`, beside
+`model`.** `docs/agents/turn-caps.md` was re-derived from it on 2026-10-24
+after being frozen for thirteen days, six of them unnecessary. The original
+ask is kept below for the record.
 
-**Ask 4, and it is one line in one file.** The writer seat's manifest says
-`max_turns = 150`. Its workflow says 225, raised on 2026-10-12 after two
-exhaustions six days apart, both at `num_turns: 151`, the second losing
-commits it had never pushed. Eleven of the twelve alexandria manifests agree
+> The run transcript is unreachable, so turn caps cannot be measured.
+> `claude-execution-output.json` was a 90-day Actions artifact and every
+> command in alexandria's `docs/agents/turn-caps.md` reads `num_turns` and
+> the error subtype out of it. The host writes
+> `.epito/logs/<agent>/<runId>.log` to its own disk, which no seat in the
+> product repository can read. That page is frozen at 2026-10-11 as a
+> result. **The ask is any reachable copy**, an artifact, an API field on
+> the board's run record, or a line in the Slack run report.
+
+**One thing the field does not carry, and it is the clause this page's own
+rule 1 depends on.** `turn-caps.md` distinguishes a run killed at its cap
+(`error_max_turns`) from a run that finished and was failed afterwards, and
+scores the first as a censored lower bound rather than a measurement. The
+board gives `exit` and `turns` and no error subtype, so the two read
+identically: turns equal to the cap plus nothing. **Residual ask: put the
+exit reason on the run record**, one string, so a cap hit can be told from a
+crash. Without it every re-derivation from this source has to treat a
+near-cap number as possibly censored.
+
+**Ask 4, and it is one line in one file. Still open on 2026-10-24, and now
+with a fresh measurement behind it.** The writer seat's manifest still says
+`max_turns = 150`, confirmed by reading it today. Its workflow says 225,
+raised on 2026-10-12 after two exhaustions six days apart, both at
+`num_turns: 151`, the second losing commits it had never pushed. **On
+2026-10-23 the writer ran 140 turns against that 150, which is 93% and the
+third consecutive measurement of this seat above the 70% trigger.** The
+measured rule asks for 300, not 225; the diff below is left at 225 because
+it is the number the owner already approved and applying it stops the bleeding
+tonight, with the gap to 300 noted in `docs/agents/turn-caps.md`. Eleven of the twelve alexandria manifests agree
 with their workflow and this one does not, because the writer is the only
 seat whose cap changed after the manifests were generated. The writer ran
 nine sessions on 2026-10-18.
