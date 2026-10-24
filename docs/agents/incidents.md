@@ -16100,3 +16100,92 @@ complete for the file it was in. The gate was built after the repair and
 pointed at the file the repair had touched, which is the natural place to point
 it and is the trap: a gate written in the same breath as a fix inherits the
 fix's scope, and the fix's scope was the module. Ban list 131 and 132.
+
+---
+
+## INC-2026-10-24-the-entry-about-hiding-is-hidden-from-the-owners-console — a file with a published reading contract and a purpose-built reader got a fourth ad-hoc reader, on the one page the owner opens daily, and it loses the entry that warned about exactly this (2026-10-24, writer seat, run 45)
+
+**Recorded under the standing rule as a repeat.** The first occurrence is in
+this file already, inside
+`INC-2026-09-24-conflict-marker-on-main`, as the
+finding that run left for another seat: one ledger entry wrote its status as
+prose, "so that entry is invisible to every consumer that reads statuses by
+grep, including the PM's sprint grooming and this seat's own fallback scan."
+`docs/ideas.md`'s reader, `tools/ledger.py`, was built because of it, and its
+first line is "Read `docs/ideas.md` the way its contract says it is shaped,
+instead of grepping it."
+
+This is the same defect, in JavaScript, on `site/app/desk/page.jsx`.
+
+**What it costs.** The desk's verdict queue prints `Awaiting your verdict 524`.
+`python3 tools/ledger.py --census` reads the same file through the contract and
+counts 525, which is 486 proposed and 39 urgent. The one entry the page cannot
+see is
+
+> 2026-09-24 — A ledger entry can hide from every consumer by writing its
+> status as a sentence (engineer agent)
+
+Its own status line reads `- Status: proposed`. Twenty lines above it, inside
+its own first bullet, it quotes the command it was filed about:
+
+```
+grep "Status: accepted" docs/ideas.md
+```
+
+`parseIdeas` matches `/- Status:\s*(\w+)/`, with no line anchor and no `m`
+flag, so it matches inside that quoted command and reads the entry as
+`accepted`. The entry warning that a status written as a sentence hides an
+entry from every consumer is hidden from the owner's console, by a status
+written as a sentence, in its own body. It has never appeared in her queue.
+
+**Why it was not caught.** Every gate this seat owns reads prose. `reading`
+reads sentences for one verb, `claims` reads sentences against a register,
+`taste` reads rulings against files. A count is not a sentence any of them can
+be wrong about, because "Awaiting your verdict 524" is correct English and the
+error is entirely in the number. The claims register is the one place a
+reader-facing assertion gets checked against a mechanism, and
+`docs/agents/quality-claims.md` holds rows for sentences rather than for
+figures a page computes in front of you. A figure a page computes has no row to
+find and still owes the answer to "how do you know that".
+
+**The standard that nearly covers it, and the gap.** L-A21's test is the one
+that would have caught this: name one change that would break what this
+instrument governs, then ask whether it would have *seen* that change. A status
+written as prose is that change, the ledger register recorded it as that change
+a month ago, and the desk's parser cannot see it. But L-A21 is written about
+gates, and the desk is a surface. No standard in `docs/standards/lessons.md`
+says that a file with a published reading contract is read through its reader
+and never re-parsed. That omission is the generalisable half and it is not this
+seat's to write, so it is filed in the ledger for the ExO seat's relay to the
+chair rather than edited here.
+
+**The fix, which is one character and one flag.**
+
+```js
+const status = (rest.join("\n").match(/^-\s+Status:\s*(\w+)/m) || [])[1];
+```
+
+`site/` is the frontend seat's surface, so this run drafted it rather than set
+it. The words that print the count are in
+`docs/voice/desk-verdict-queue-2026-10-24.md`, with the anchor beside them and
+the measurement in the review, and the anchor is named there as not optional
+ahead of the lines.
+
+**The gate, which is the part that outlives this entry.**
+`python3 -I docs/voice/check_voice.py ledger` reads the status pattern out of
+the desk page rather than holding a copy, computes the queue both ways over the
+live file, and fails where the two disagree. It reports `desk 524, contract 525`
+today. Probed against the fixed page in a scratch copy: 486 and 486, `rc=0`,
+and `git diff site/` empty afterwards. Ban list 133.
+
+**The second finding in the same reading, left standing.** The queue renders
+oldest first, because `docs/ideas.md` is appended to and `parseIdeas` returns
+file order, while the merged list beside it comes from
+`pulls?state=closed` and is newest first. The two lists look alike and only one
+is sorted. Board card `8787a154` proposed capping the queue at eight "because
+the precedent for capping already exists on the same page", and that cap
+applied as written would have printed eight proposals from 2026-09-18 and
+dropped `2026-10-23 — URGENT: the Modal workspace is disabled, so every cron
+and the MCP server are down`, which is row 524 of 524. The candidate's shape
+avoids it rather than fixing the sort, by rendering every urgent entry and no
+proposed one.
