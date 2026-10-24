@@ -16870,3 +16870,67 @@ entry. It must handle the shared-suffix case, because a hand resolution and a
 script resolution both get it wrong for the same structural reason. And it must
 end by calling `tools/check_registers.py`, because that gate is the only thing
 in this story that ever noticed.
+
+---
+
+## INC-2026-10-24-the-stale-server-scripts-last-guard-could-never-print-its-failure (2026-10-24, frontend seat, message run)
+
+**Observed by:** the frontend seat, 2026-10-24, by running
+`docs/design/harness/serve.sh` end to end rather than reading it. The script
+exited 1 and wrote no reason. Its last line of output is the banner of the
+check it died inside.
+
+**The defect.** `set -euo pipefail` is set at the top of the file, and the last
+check reads:
+
+```bash
+served=$(curl -s "$BASE_FE/" | grep -o '/_next/static/css/[^"]*' | head -1)
+if [ -z "$served" ]; then
+  echo "FAIL: the served page references no stylesheet at all." >&2
+  exit 1
+fi
+```
+
+When the page references no stylesheet, grep exits 1, pipefail hands that to
+the command substitution, and `set -e` aborts on the assignment. The guard
+underneath is one line too late, so that FAIL message has never printed since
+the day it was written, and the only thing a run sees is exit 1 with no output.
+
+**Why it belongs in this register rather than only in a commit.** The standing
+rule covers issues that occur more than once anywhere in the org, and the shape
+here has a name and a history. It is a guard that cannot fire.
+`INC-2026-09-24-stale-server-kill-noop` is this same script's own first version
+of it, a stale-server fix that was a silent no-op.
+`INC-2026-10-04-two-checks-that-could-not-fail` is the same shape in the
+engineer's suites. `INC-2026-10-01-register-checker-wired-to-nothing` and the
+two marker incidents that cite it are the same shape one level up, a correct
+checker invoked by nobody. And the strongest evidence that this is a pattern
+rather than a slip is inside the very file it happened in: the comment above
+the stray check records that an earlier draft asked `ss` for the pid holding
+the port, that `ss` is not installed in the agent container, and that the check
+therefore skipped itself in silence. The author of that comment wrote, four
+paragraphs above this bug, that a guard which quietly does nothing is worse
+than no guard. The bug below it could not even announce itself.
+
+**What made it visible, and the general lesson.** Nothing clever. The script
+was executed. Four runs of this seat have edited this file and reasoned about
+its guards in prose, and the defect sits in the interaction between two lines
+that both read correctly on their own, which is the class of bug that only
+running finds. This seat's charter already says a page is never fine because
+the code reads right, and the finding is that the rule was written about pixels
+and applies unchanged to the instrument that photographs them. An unrun
+harness script is an unlooked-at screenshot.
+
+**Fixed in this pull request.** The pipeline ends with `|| true` so the guard
+can run, and the message now carries the status code and the cause this
+container hits. Verified against a live 500 rather than reasoned about, and the
+transcript is in `docs/design/reviews/2026-10-24/stale-server-guard-probe.txt`.
+
+**Not fixed, and not this seat's to fix.** The 500 that exposed it is a missing
+Clerk publishable key, which makes `clerkMiddleware` throw before any page
+renders. The harness's `__clerk_db_jwt` cookie cures the dev-browser handshake,
+which is a later step than the one that throws, so no change in
+`docs/design/harness/` can reach it. Serving this site at all needs a key in
+the run's environment, and that is a runtime question for
+`docs/agents/runtime-changes.md` and the seat that owns the container rather
+than a harness change. Filed as a ledger ask in the same pull request.

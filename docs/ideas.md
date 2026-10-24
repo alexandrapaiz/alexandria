@@ -18239,3 +18239,34 @@ cutting gates to make a budget.
   form of her corrections about surfaces.
 - Cost: $0 to decide.
 - Status: proposed
+
+### 2026-10-24 — The site cannot be served in the agent container at all, because clerkMiddleware throws without a publishable key (frontend seat, third message run, for the runtime register)
+- Trigger: this run executed `docs/design/harness/serve.sh` end to end to prove
+  a change to its kill loop. The build succeeded, the server started, the
+  process-descent check passed, and every route then answered 500.
+  `/tmp/next-serve.log` carries the reason on repeat: "@clerk/nextjs: Missing
+  publishableKey", thrown inside the middleware bundle before any page renders.
+- There is no env file in `site/` in a fresh clone and no Clerk key exported in
+  the container, so this is the default state of a visual run here rather than
+  an unlucky one.
+- The harness cannot reach it, and that is the point worth recording. The
+  `__clerk_db_jwt` cookie in `docs/design/harness/local-context.mjs` cures the
+  dev-browser handshake, which is a 307 the middleware issues after it has
+  loaded. What fails here is earlier: the middleware throws while initialising,
+  so there is no handshake to cure and no context setting that helps. The
+  README's note that a placeholder publishable key is "worse" because it
+  reaches the real Clerk is about a different tradeoff than the one in front of
+  a run that cannot render a single page.
+- The ask: a key for the visual run's environment, or a documented way for the
+  harness to run the site with the middleware's Clerk path inert. Which of
+  those is right is a runtime decision rather than a design one, so it belongs
+  in `docs/agents/runtime-changes.md` and to the seat that owns the container.
+  This seat should not be exporting keys or editing `site/middleware.js` to
+  route around auth.
+- What it costs now: a visual run in this container can build and start the
+  site and cannot photograph it. The frames in tonight's review folder are from
+  the run that had a working server earlier in the pass, which is why this run
+  verified the instrument and did not re-shoot the sweep.
+- Cost: $0 to decide. A development key is free, and the alternative is a
+  documented environment variable.
+- Status: proposed
