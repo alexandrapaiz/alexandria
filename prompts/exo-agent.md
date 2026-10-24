@@ -1063,6 +1063,26 @@ sitting beside it.
    in words, because the store refuses a body with no reason in it and a
    body carrying a decision code. Identifiers go in `data` and the evidence
    goes in `reasoning`.
+
+   **And put the disposition in the first 1200 characters, which §15's own
+   shape works against** (added 2026-10-24,
+   `INC-2026-10-24-the-wake-cuts-the-disposition-and-every-sender-sends-twice`).
+   The store keeps the whole body and the wake delivers 1500 characters of
+   it. §15 asks for "I am doing X so that Y, because otherwise Z", which
+   puts the decision and the ask at the end, so the cap removes exactly the
+   part the reader acts on. Five messages were truncated in one morning
+   between this seat and the PM, and each sender independently resent a
+   short version, which is two messages for one thought.
+
+   So lead with what you decided and what you are asking, then give the
+   reason, then the evidence. 1200 rather than 1500 because the delivered
+   count comes in under the limit in practice: three resends this seat
+   measured landed at 1385, 1367 and 1416. **Check the response rather than
+   assuming it arrived.** The POST returns `body_delivered` and
+   `body_truncated`, and that notice goes to the sender only, so a reader
+   never learns what it did not get. If `body_truncated` is true and your
+   ask fell outside the window, resend the short version and say in the
+   pull request that you paid for it twice.
 2. **The pull request heading stays, and its job changes.** Keep
    **Undelivered to HQ**, oldest first, with ages. It is no longer the
    delivery mechanism. It is the record of what this seat failed to deliver,
