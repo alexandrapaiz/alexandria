@@ -18859,3 +18859,33 @@ cutting gates to make a budget.
   the difference between a reader who acts and a reader who files.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-24 — The drift card's dedupe key is the thing that changes when the drift is fixed, so a deploy leaves the old card open and opens a new one (engineer seat, message run)
+- Trigger: `python3 tools/drift_watch.py --dry-run`, run this afternoon to
+  check the second door into the fix this run shipped. It printed
+  `would create: Deploy: weekly is not running main, still on 2e313065f5c7`,
+  and the board already carries an open card reading `Deploy: weekly is not
+  running main, still on 0cbc51a0e248`. Same app, same drift, same seat, two
+  cards. The same is true for distill and ingest.
+- What is happening: `TITLE` puts the running image's key in the card title
+  and `find_card` matches on the app and that key, so the dedupe holds only
+  for as long as production does not move. The running image did move,
+  between 2026-10-18 and today, without closing the drift, because a deploy
+  of some apps is not a deploy of weekly. Every such move orphans the card
+  that was tracking the problem and starts a fresh one with no history on it,
+  which is the opposite of what the key was for. The comment above `TITLE`
+  argues the key belongs in the title so the list view reads as distinct
+  alarms, and that argument is about the app and not about the image.
+- What: dedupe on the app, which is the thing the card is about, and put the
+  running image in the body where it is already printed and where `nudge_body`
+  already updates it. A card then follows one app's drift from the day it
+  starts to the day a deploy closes it, including across an intermediate
+  deploy that did not help, and the board stops accumulating one card per
+  image per app.
+- First step: `find_card(payload, [app], prefix=TITLE_PREFIX)` and a `TITLE`
+  without the key, then the two existing cards per app get merged by hand or
+  the older ones closed with a comment naming the newer. The tests for
+  `board_alarm.find_card` already cover prefix-plus-terms matching, so this is
+  a change to the terms and a rewritten dedupe test, not new machinery.
+- Cost: $0.
+- Status: proposed
