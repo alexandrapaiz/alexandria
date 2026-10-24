@@ -2544,8 +2544,8 @@ def past_tense_you(span):
     artifact reports a heading the laws permit is a gate nobody keeps, which is
     `INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason`
     from the other side. Seventeen cases are asserted in
-    `tests/test_voice_standalone.py`, the eight true shapes and the nine that
-    collide with them.
+    `STANDS_ALONE_CASES` below and run by `standalone` before it reads an
+    issue, the eight true shapes and the nine that collide with them.
     """
     pat = (r"\byou\b\s+(?:have|had|'ve|'d)\s+(?:not\s+|never\s+)?"
            r"(?!not\b|none\b)\w{2,}(?:ed|en|t|ne)\b"
@@ -2764,15 +2764,48 @@ def blockrules():
     return rc
 
 
+#: The seventeen cases `past_tense_you` has to satisfy, as data rather than as
+#: a test file. `tests/` is the engineer's surface and this seat's is
+#: `docs/voice/`, and a first draft of this gate put them in
+#: `tests/test_voice_standalone.py`, where `tests/test_ci_coverage.py` correctly
+#: answered that no workflow runs it. Here they run every time the gate runs,
+#: which is strictly more often, and they need no workflow edit this seat is
+#: not allowed to make.
+#:
+#: Both halves matter. A pattern tuned only against its false positives stops
+#: catching the sentence the owner struck, and a pattern tuned only against her
+#: specimens fires on a standing heading. The first two CLAIMS are the openings
+#: she struck and the one that shipped with her ruling already in the prompt.
+STANDS_ALONE_CASES = (
+    (True, "You spent last week watching agents get faster by doing less."),
+    (True, "You have spent the week watching agents get faster by thinking less."),
+    (True, "you have written the same retry logic three times"),
+    (True, "You have shipped a dozen agents."),
+    (True, "you had built the harness yourself"),
+    (True, "you have done this before"),
+    (True, "You were running agents overnight."),
+    (True, "you have not shipped a single one"),
+    (False, "What to read if you have one hour"),
+    (False, "you have it in production"),
+    (False, "you have ten agents running"),
+    (False, "you have none of these"),
+    (False, "You keep a dozen agents running."),
+    (False, "if you have a minute"),
+    (False, "you have two models to choose between"),
+    (False, "The agent-building world has spent the week arguing about scaffolding."),
+    (False, "Accelerate every builder and agent to frontier speed."),
+)
+
+
 # ---- routed ------------------------------------------------------------
 
 #: A ledger entry nobody has acted on. `built`, `done`, `closed` and
-#: `rejected` are settled; everything else is a finding still waiting, and
+#: `rejected` are settled. Everything else is a finding still waiting, and
 #: re-filing one of those as new is what this gate is for.
 LEDGER_SETTLED = ("built", "done", "closed", "rejected")
 
 #: What counts as naming the defect rather than naming the machine. A SHOUTING
-#: constant is the identifier of one thing; a filename is the identifier of a
+#: constant is the identifier of one thing, and a filename is the identifier of a
 #: building. Measured on this repository the day the gate was written:
 #: `check_digest_quality.py` appears in NINE unsettled ledger entries and
 #: `INTENSIFIERS` in one, which is the entry that holds the defect. So the gate
@@ -2982,6 +3015,19 @@ def standalone(paths=None):
 
         python3 -I docs/voice/check_voice.py standalone
     """
+    wrong = [(want, span) for want, span in STANDS_ALONE_CASES
+             if past_tense_you(span) is not want]
+    for want, span in wrong:
+        print(f"  BROKEN  the detector is {'missing' if want else 'firing on'}"
+              f" a case it is asserted against")
+        print(f"            {span}")
+    if wrong:
+        print()
+        print("The pattern changed and STANDS_ALONE_CASES says how. Nothing")
+        print("below was read, because a detector that fails its own cases")
+        print("reports a clean archive for the wrong reason.")
+        return 1
+    print(f"  the detector's own cases   {len(STANDS_ALONE_CASES)} pass")
     paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
     paths = [pathlib.Path(p) for p in paths]
     hits, exempt = [], []
