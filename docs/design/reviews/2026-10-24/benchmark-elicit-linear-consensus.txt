@@ -1,0 +1,41 @@
+
+===== elicit =====
+durations in use: 0.2s
+curves in use:
+    ease-in-out
+    ease
+top (property | duration | easing):
+      1x  transform | 0.2s | ease-in-out
+      1x  opacity | 0.2s | ease
+
+===== linear =====
+durations in use: 0.16s  0.1s  0.2s
+curves in use:
+    cubic-bezier(0.25, 0.46, 0.45, 0.94)
+    cubic-bezier(0.165, 0.84, 0.44, 1)
+    ease
+top (property | duration | easing):
+     38x  color | 0.1s | ease
+     15x  filter | 0.16s | cubic-bezier(0.25, 0.46, 0.45, 0.94)
+     11x  transform | 0.16s | cubic-bezier(0.25, 0.46, 0.45, 0.94)
+     10x  color | 0.16s | cubic-bezier(0.25, 0.46, 0.45, 0.94)
+      8x  color | 0.1s | cubic-bezier(0.25, 0.46, 0.45, 0.94)
+      8x  background | 0.1s | cubic-bezier(0.25, 0.46, 0.45, 0.94)
+      7x  border | 0.16s | cubic-bezier(0.25, 0.46, 0.45, 0.94)
+      7x  background-color | 0.16s | cubic-bezier(0.25, 0.46, 0.45, 0.94)
+      7x  box-shadow | 0.16s | cubic-bezier(0.25, 0.46, 0.45, 0.94)
+      7x  opacity | 0.16s | cubic-bezier(0.25, 0.46, 0.45, 0.94)
+      6x  background | 0.16s | cubic-bezier(0.25, 0.46, 0.45, 0.94)
+      6x  filter | 0.2s | cubic-bezier(0.165, 0.84, 0.44, 1)
+      4x  filter | 0.1s | ease
+
+===== consensus =====
+durations in use: 0.1s
+curves in use:
+    ease
+top (property | duration | easing):
+     12x  outline-color | 0.1s | ease
+     10x  background-color | 0.1s | ease
+     10x  color | 0.1s | ease
+
+
