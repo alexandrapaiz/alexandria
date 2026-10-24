@@ -18602,3 +18602,109 @@ cutting gates to make a budget.
   and a cron does not press buttons.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-24 — The deploy grace window outlasts the schedule it is protecting (engineer seat, message run)
+- Trigger: building the deadline into the deploy surface today made the
+  arithmetic visible. `DEPLOY_GRACE_HOURS` is 24 and four of the five
+  scheduled jobs are daily, so an undeployed image is forgiven for longer
+  than the gap between its own runs. The window does not cover a deploy in
+  flight in those cases. It guarantees that the stale image serves at least
+  one production run before the guard says a single word, and `weekly` is
+  the only app the number is actually right for, because Monday is more than
+  a day away six days out of seven.
+- What: make the grace per app rather than per org, at
+  `min(DEPLOY_GRACE_HOURS, hours until this app next fires)`. A merge at noon
+  is still not an alarm at one, which is the window's whole argument, but a
+  merge at noon against a job that runs at three stops being green at three
+  rather than at noon tomorrow. The surface already computes both numbers as
+  of today, so this is a comparison and not new machinery.
+- First step: it is one expression and about six tests, and the tests are the
+  work: every existing pending-deploy case has to be re-read against the new
+  threshold, because this re-grades every pending deploy the org will ever
+  have and some of the current fixtures are green only because of the number
+  it changes.
+- Cost: $0. It is a threshold, not a service. The real cost is noise, which is
+  why it is a proposal: a guard that goes red on the afternoon of every merge
+  is a guard seats learn to scroll past, and that judgment is the owner's.
+  Today's run named the case in the headline and deliberately changed no
+  state, so the decision is readable rather than made.
+- Status: proposed
+
+### 2026-10-24 — Deploy on merge, so the drift cannot accumulate at all (engineer seat, message run)
+- Trigger: today's craft scan. Argo CD's product is this exact question and
+  its answer to a drift that needs a hand is `selfHeal: true`, which removes
+  the hand. The deploy card in this lane is eight days old, it has four
+  comments from this seat measuring it more precisely each time, and every one
+  of them ends in the same sentence: this closes with one command by somebody
+  holding a Modal token. Four runs of measurement is four runs of not fixing
+  it.
+- What: a workflow that runs `modal deploy` for each app whose files changed,
+  on merge to main, behind the rehearsal ladder in
+  docs/agents/press-rehearsal.md. The drift guard then watches for the case
+  the automation misses rather than for the ordinary case, which is the state
+  it was built for and has never been in. Today's work makes this safer to
+  propose than it was yesterday, because the guard can now say which app is
+  about to run and therefore which deploy is urgent.
+- First step: not a build step, because this seat cannot write a workflow
+  file or set a secret, and four prior runs of this lane have proved that the
+  staged-file route needs an owner's hand anyway
+  (docs/agents/pending-workflow-changes.md). The first step is the owner's
+  decision on whether a merge to main may deploy without a human in the loop,
+  which is an ADR-14 question and the reason this is a ledger line.
+- Cost: $0 in services. GitHub Actions minutes are already paid for by every
+  other job in this repository, and `modal deploy` costs nothing beyond the
+  compute the crons already use. It needs the two Modal token secrets that
+  docs/agents/pending-workflow-changes.md has wanted since 2026-10-07.
+- Status: proposed
+
+### 2026-10-24 — PRESS_CRON is the last hand-kept copy of a schedule, and there is a reader for it now (engineer seat, message run)
+- Trigger: writing `runtime_sha.schedule_of` today. Its own docstring argues
+  that a hand-kept copy of a list disagrees with the deploy on the day it
+  matters, which is the argument `manifest` has carried since it shipped, and
+  `delivery_health.PRESS_CRON = "0 9 * * 1"` is a hand-kept copy of exactly
+  the fact that function now reads. The constant knows it: its comment says
+  "so it is a copy, and this file's standing argument is that a copy agrees
+  with the original only by luck", and it is held honest by a test rather
+  than by a reader.
+- What: read the press's cron at call time through `schedule_of("weekly")`,
+  and keep the constant only as the fallback for a caller with no checkout.
+  The test that pins the copy to the decorator then has nothing left to pin
+  and becomes a test that the reader resolves, which is a smaller claim about
+  a bigger surface.
+- First step: `press_deadline` is the only function that splits the constant,
+  so this is one function, one fallback and one rewritten test. Do it in the
+  same change as anything else that touches that region, because on its own
+  it is twenty minutes and a diff nobody needs to review separately.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Argo CD puts a cron on the deploy's permission and never on the stale thing's next use (engineer seat, message run)
+- Trigger: the rotation, taken off the landscape's academic-tools list today
+  and onto the instrument this run was building, because the question "is the
+  running code the declared code" has an industry-standard product behind it
+  and this repository had been answering it from first principles for three
+  weeks. Read today at argo-cd.readthedocs.io, the auto-sync and sync-windows
+  pages.
+- Worth stealing: `OutOfSync` is a named state and not an error, and auto-sync
+  refuses to act on an application that is in an error state. Two separate
+  ideas and both are good. A deploy that has not happened is a legitimate
+  condition of a healthy system rather than a fault, which is the distinction
+  the pending-deploy window in this repository is reaching for. And an
+  automation that declines to act while the thing it acts on is already broken
+  is the rule today's run arrived at from the other direction: the deadline
+  this surface now prints is qualified by the compute outage, because a
+  deadline read off a cron that is not firing is a clock handed over stopped.
+  The one to steal properly is `selfHeal`, which is the ledger entry above.
+- What alexandria does better: Argo CD has cron arithmetic and spends it on
+  the wrong side of the question. `schedule` and `duration` on a sync window
+  say when a deploy is *permitted*, and nothing in either page says when the
+  drift starts to cost anything. An application can sit `OutOfSync` forever
+  and the product's only answer about time is that it re-checks every two to
+  three minutes. So the deadline is on the remedy and never on the harm. As of
+  today this repository puts it on the harm: the row says weekly is 8.7 days
+  behind *and* that distill is the first of the three to get its turn, at
+  15:00 UTC, on the `0 15 * * *` schedule it was read from. That is the half a
+  reader can act on, and it is the half the mature product in the category
+  does not print.
+- Cost: $0.
+- Status: proposed
