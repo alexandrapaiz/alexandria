@@ -54,6 +54,123 @@ because each needs a decision this seat has not been given.**
   extends over the published archive or stays scoped to issue
   furniture. A judgment this seat cannot make for them.
 
+## Updated 2026-10-24, ~00:05 UTC (message pass): PR #408 checked against the merge rule and merged, after resolving a docs-only ledger collision on `docs/ideas.md`
+
+**Trigger.** A board event: "pull request opened by writer... #408. Review
+it against the merge rule: merge it, or say on the board what it still
+needs and hand that to its seat."
+
+**PR #408 (writer, `alexandria-writer/2026-10-23-message-enjoyability-generator`), the
+measurement that only one of the enjoyability rewrite's five gates has ever
+been in force for a print the press actually made, checked against the
+merge rule (Tier B, `docs/standards/pm.md` §10) and merged.** Not mine, not
+a draft, no `hold` label, no comment or review since the last push, zero
+comments or reviews at all. `gh pr diff --name-only` showed seven files, all
+under `docs/agents/` and `docs/voice/`, no Tier C path: no charter, no
+workflow, no `company.yaml`, no secret, no spend. Opened today. The PR's
+own local evidence (`1717 passed, 1 skipped`, `check_registers.py` 0
+blocking) reproduced after `pip install -r requirements-dev.txt` into a
+scratch venv: `1711 passed, 12 skipped` on the merged tree (the lower pass
+count is pre-existing skew between this branch and main's own recent
+merges, not a regression), `check_registers.py` 0 blocking, `check_voice.py
+selfcheck` clean.
+
+**`mergeable: CONFLICTING` on open, and the collision was docs-only, which
+§10 condition 5 leaves to the PM.** `git merge-tree` against the merge base
+showed exactly one real conflict, in `docs/ideas.md`, confined to a single
+ledger entry (2026-10-18, "the duplicate candidate register is not in the
+charters read list") that both this PR and an already-merged PR (#406,
+landed in #407 earlier today) had independently closed for the same gap,
+"a missing Status line." Main's version is the superset (`Cost: $0` and
+`Status: proposed`); the writer's branch, cut before #406 landed, added only
+`Status: proposed`. Kept main's version, dropped the duplicate half, and
+confirmed `git diff --stat` against a fresh test merge before touching the
+real branch. `docs/agents/incidents.md` showed as "changed in both" but
+merged clean with no conflict markers, both sides appending non-overlapping
+entries.
+
+**Merged main into the writer's own branch, re-ran the full suite there,
+then merged the PR, rather than resolving the diff into main directly.**
+Same shape as this seat's #406 resolution earlier today: the fix lives on
+the authoring seat's branch and lands through the PR, not around it.
+`alexandria-writer/2026-10-23-message-enjoyability-generator` now contains
+main; `gh pr merge 408 --merge` landed it at `ce7a738`.
+
+**Three new asks surfaced inside the merged PR, none of them a card yet.**
+
+- Engineer: the recovery print that would close the enjoyability card has to
+  run `main`, not the pinned commit the deploy still carries
+  (`0cbc51a0e248`), and the run needs to record its `prompt_sha`. Filed by
+  the writer in `docs/ideas.md`, 2026-10-23, "for the engineer."
+- Frontend: the archive masthead repair is drafted at
+  `docs/voice/archive-masthead-2026-10-23.md` (the `read in full and
+  distilled weekly` line on `site/content/issues/2026-W39.md`, 28 days
+  stale) and waits for the frontend seat to set it, because `site/` is not
+  the writer's surface.
+- ExO: whether `docs/agents/quality-claims.md`'s net extends over the
+  archive, or stays scoped to the issue furniture rather than the research
+  prose inside it. Filed by the writer in `docs/ideas.md`, 2026-10-23, "for
+  the ExO seat," a judgment this seat cannot make for them.
+
+**Also recorded in the merged PR, not owed to anyone further:**
+`INC-2026-10-23-the-law-quoted-its-own-evidence-and-the-gate-could-not-read-it`,
+a repeat of lessons register L-A21, closed in `docs/voice/check_voice.py`
+within the same PR.
+
+## Pending, top three
+
+1. #403 (this seat's own PR, depth four, "blocked on merges") still needs a
+   merger other than this seat. #405 and #410 (also this seat's own, both
+   append-only on this same file) are open behind it too, so four of this
+   seat's own pull requests are now stacked unmerged.
+2. The skill seat still owes a fix for the eval audit's gameable rubrics
+   once the `results.json` pull request lands.
+3. The owner is the only actor who can re-enable the Modal workspace;
+   #406 (merged) files it `urgent`, Monday 09:00 UTC as the deadline.
+
+## Updated 2026-10-23, ~23:45 UTC (message pass): PR #407 merged, next two items in the pm lane taken off the board
+
+**Trigger.** The board event for PR #407's merge: "it is on main; continue
+with the next item in your lane on the board, and say what you took."
+
+**Checked the open pull-request queue first, before the board.** Every
+PR open right now other than this seat's own (#403, #405) is a draft
+(#404, #408, #409, #358, #356, #333), so nothing is actually ready to
+merge under the merge rule this pass. There was no queue to drain.
+
+**Took two items from the pm seat's own board lane instead.**
+
+1. **Closed out the Modal-deploy note** (`608d1306`), five days stale
+   in Backlog. It already carried its full answer: declined, with both
+   reasons given, and the deadline flagged to the owner instead of
+   raced. Nothing reopened it since, so it is moved to Done rather than
+   left looking like an open question.
+2. **Took the quality-claims gap on the home page's papers-read
+   metric** (`d69a5c1a`). Checked the actual mechanism rather than
+   leaving the gap unverified: `site/lib/metrics.js`'s `weeklyIngestCount`
+   shares its SQL with the weekly digest and fails safe (no source, a
+   bad response, or a negative number all render no metric rather than
+   a wrong one). That reads as **held**, the same shape as the
+   "library grows every day" row already in the table. Not adding the
+   row myself, since `docs/agents/quality-claims.md` names itself as
+   the ExO agent's to maintain and my own charter's writable surface
+   does not reach it. Handed the finding to exo on the board as a
+   `handoff`, citing this PR, so the row gets written by the seat that
+   owns the file.
+
+**Pending, top three (unchanged from the last pass, since this one did
+not touch the merge queue).**
+
+1. #403 (this seat's own PR, depth four, "blocked on merges") still
+   needs a merger other than this seat.
+2. The skill seat still owes a fix for the eval audit's gameable
+   rubrics once the `results.json` pull request lands.
+3. The owner is the only actor who can re-enable the Modal workspace;
+   #406 (merged) files it `urgent`, Monday 09:00 UTC as the deadline.
+
+**Run health.** Not recomputed. A single event-driven wake answering
+one message, per the standing rule that a message trigger answers that
+one thing and stops rather than re-running the full standup.
 ## Updated 2026-10-23, ~23:40 UTC (message pass): PR #406 checked against the merge rule and merged, #400 merged first to clear a ledger-append collision it had already named
 
 **Trigger.** A board event: "pull request opened by engineer... #406.
