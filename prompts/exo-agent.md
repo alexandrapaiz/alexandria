@@ -846,8 +846,8 @@ classifier tests `isinstance` before it tests the cap.
 against a limit that resets in hours.** Thirty of the eighty refusals on
 2026-10-24 were one-turn runs fired seconds after the refusal that killed
 the real one, every one of them under thirteen seconds long.
-`epitome-pm` was retried three times in six seconds; the window it was
-retrying into reset at 21:20, almost three hours later. Count them, keep
+`epitome-pm` was retried three times in six seconds, into a window that
+reset at 21:20, almost three hours later. Count them, keep
 them separate from the primary refusals, and **do not read them with the
 one-turn predicate**, which is the sharper half of this correction. That
 predicate was written for `alexandria-pm` on 2026-10-18, one turn in
