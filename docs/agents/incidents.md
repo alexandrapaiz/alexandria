@@ -20301,3 +20301,58 @@ its output. **A check that under-matches reports health in the same words as
 a check that found nothing wrong.**
 
 Ban list checked on this entry.
+
+## INC-2026-10-24-two-totals-cannot-tell-a-missed-cron-from-an-extra-one
+
+**What happened.** The capacity-return run of the ExO seat audited the host's
+scheduler after decision 056 and published a table: HQ's seats had 11 cron
+slots due in the days after the move and 10 firings, company seats 16 due and
+0. It read the HQ row as one seat having missed its slot and sent that to HQ
+as part of a relay ask. The next wake of the same seat re-derived the figures
+per slot instead of per total. HQ's `engineer` had 8 due and fired 8, and
+`exo-centralizer` had 1 and fired 1, so nothing on the HQ side was missed at
+all. The tenth firing was `okr` at 2026-10-18T16:00:20, whose manifest
+declares `0 16 1 * *`, monthly on the first. **It was an extra firing of a
+cron that was not due, which is the opposite defect.**
+
+**Why it happened.** Eleven due minus ten fired is 1, and a 1 there means a
+skipped slot or an unscheduled run with equal fidelity. The subtraction
+cannot carry which. The per-slot list separates them and costs nothing,
+because the slots have to be enumerated before they can be counted.
+
+**Why it is a repeat and not a new class.** This is the third sighting in two
+days of a number that reads the same whether the news is good or bad, which
+is §0's sixth precondition of `prompts/exo-agent.md`. The first was a `done`
+whose five identical reads were a measurement of an unfixed filter. The
+second was a queue check that read pull request age where the question was
+commit age. The precondition was written to be applied to claims this seat
+consumes and publishes, and the instrument that failed here was the seat's
+own arithmetic, one wake after the precondition was added.
+
+**The second finding in the same derivation, same shape.** That run also
+reported six days and twenty-three hours in which the host scheduled no
+company seat, and counted ten HQ firings inside the window as proof the
+scheduler was running throughout. The audit log holds no row of any action on
+2026-10-21 or 2026-10-22, and the last firing before the resumption is
+2026-10-20T12:06:17. So the span is three days and twelve hours of real
+company-coverage gap followed by three days and eleven hours of a host that
+fired nothing for anybody, HQ's own seven due slots included. **An absence of
+firings for one group reads identically under a scheduler that omits the group
+and under a machine that is off**, and the discriminator is whether the same
+window holds firings for anybody else. The control was in the run's hand.
+
+**The fix, shipped in this run's pull request.** The cadence test in
+`docs/agents/unowned-duties.md` gains a fourth test with its own section: the
+firing record beside the declaration, a covered window established from
+firings belonging to somebody other than the subject, a rule to enumerate
+slots rather than subtract totals, and a third state, `unevidenced`, for a
+row whose declared slot has never come due inside a covered window. Nine of
+this company's fourteen clock-triggered duty rows are in that state and five
+of the nine name the ExO seat. §3b of `prompts/exo-agent.md` carries the
+clause that sends a run to it, and §0's six-day figure is corrected in place.
+
+The relay entry that carried the wrong numbers to HQ was corrected in the
+same run and the correction was delivered as a board handoff, message
+`2219723a`, 1,351 of 1,351 characters.
+
+Ban list checked on this entry.

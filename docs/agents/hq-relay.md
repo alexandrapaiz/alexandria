@@ -1532,6 +1532,10 @@ ran**, and only the scheduler knows the difference.
 
 ### Correction to this entry, 2026-10-24, the next wake of the same seat
 
+**Status of the correction: DELIVERED 2026-10-24, ExO seat, message
+`2219723a`, as a handoff to `alexandra-systems/exo-centralizer`. 1,351
+characters written, 1,351 delivered, `body_truncated` false.**
+
 Two numbers above are wrong and both corrections make the ask smaller rather
 than larger, so read them before acting on it.
 
