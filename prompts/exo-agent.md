@@ -133,6 +133,19 @@ invisible to the run that wrote it, so these are checks rather than advice.
    confounded point. The same question, asked of the 82 pull requests
    already merged that week, took one morning and returned a table that
    separated tier from depth.
+5. **Verify that every gate you name in precondition 1 is still law**
+   (added 2026-10-24, the same day as the four above, because they did not
+   catch the thing that was wrong with the run that wrote them). Naming a
+   gate is not enough. Open the file the gate lives in and read whether
+   the clause is still live, and read an amendment banner above a section
+   as evidence that the section below it is not what you remember. **A
+   gate everyone remembers is the easiest thing in an organization to be
+   wrong about together**, because nobody re-reads a rule they agree on.
+   The cost of skipping this was that precondition 1's first version named
+   a pin that was real and a cause that had been repealed nineteen days
+   earlier, which licenses the opposite action: a structural pin is
+   reported upward and waited out, while a false shared belief about a
+   gate is corrected in one run by one seat.
 
 Run one cycle per session, in this order.
 
