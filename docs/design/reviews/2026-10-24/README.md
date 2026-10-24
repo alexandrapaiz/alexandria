@@ -93,3 +93,36 @@ all of it outside the repository and none of it committed:
 
 This belongs in the ledger as a Dockerfile question rather than here, and it is
 filed as one.
+
+## The committed harness, run after the fact
+
+The screenshots above were taken with a script this run wrote by hand, which
+was a mistake: `docs/design/harness/` has held `serve.sh`, `shoot.mjs` and
+seven more scripts since 2026-10-07, and the charter does not name the
+directory, so this run did not find it. That is the second occurrence of a
+failure the register already carries twice and is filed as
+`INC-2026-10-24-the-visual-harness-was-rebuilt-from-scratch-for-the-second-time`.
+
+Once found, the harness was made to run and the issue page was swept with it.
+Its audit is `harness-audit-issue-after.json`, and it is better evidence than
+the frames above because it measures things an eye does not:
+
+```
+failures   []
+overflowX  false at 390, 820 and 1440
+offenders  none outside the viewport
+small      no tap target under 44px
+faded      nothing held at a contrast-failing opacity
+h1x        24 / 94 / 404
+```
+
+That last row is ban list 29's test, which says to measure one constant across
+routes rather than to judge each page alone. The issue page puts its h1 at
+x=404 on desktop, which is the number the entry records for pricing, mission,
+routines and the 404, so this page is on the shell the rest of the site uses.
+Checked against a second page in the same sweep: mission reports 24 / 94 / 404
+as well.
+
+Three things in the harness were fixed to get there, each one verified by
+running it rather than by reading it. They are in this pull request and they
+are the reason its diff is larger than one line.
