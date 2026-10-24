@@ -1159,7 +1159,7 @@ Three things to carry rather than rediscover, because each one cost a run.
 **The state you will mostly find is neither `firing` nor `missed`.** It is
 `unevidenced`: no declared slot has come due inside a window the scheduler
 was demonstrably covering, so there is nothing to read either way. Nine of
-this company's rows were in that state on 2026-10-24 and five of them name
+this company's rows were in that state on 2026-10-24 and four of them name
 this seat. `unevidenced` reads identically to `firing` in any summary that
 reports a total, which is why the register's section says to enumerate the
 slots.

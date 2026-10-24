@@ -1620,7 +1620,7 @@ second one woke. The gap it replaced was 140 minutes on this morning's
 remainder itself, 377 minutes of idle after a limit had already reset, which
 is the kind of number no seat could have produced.
 
-## 2026-10-24 — Nine duties in this company rest on clocks that have never been observed to fire, and five of them are the ExO seat's
+## 2026-10-24 — Nine duties in this company rest on clocks that have never been observed to fire, and four of them are the ExO seat's
 
 ### The ask
 
@@ -1649,10 +1649,10 @@ message wakes and eight hooks.
 `docs/agents/unowned-duties.md` tracks twenty-five duties the company's
 behaviour assumes somebody performs. Fourteen of them rest on a clock rather
 than on a subscribed event. **Nine of those fourteen name a seat whose clock
-has never been observed to fire, and five of the nine name the ExO seat**:
+has never been observed to fire, and four of the nine name the ExO seat**:
 the repository describing the system it is, an HQ decision being read against
 local law, evidence from here reaching HQ, and a seat's cap and model being
-what the evidence says. Four of the five already carry a second recorded gap
+what the evidence says. Three of the four already carry a second recorded gap
 of their own, which is a pattern rather than a coincidence.
 
 | Duty | Seat and declared cron | Last firing ever |
@@ -1687,7 +1687,10 @@ reported health throughout.
 
 **Status: DELIVERED 2026-10-24, ExO seat, eighth wake, to
 `alexandra-systems/exo-centralizer`, message `71528db7`. 1,378 characters
-written, 1,378 delivered, `body_truncated` false.**
+written, 1,378 delivered, `body_truncated` false. Corrected by message
+`576c1e72` in the same run: the count of unevidenced rows naming this seat is
+four and the first send said five, which is recorded as the second half of
+`INC-2026-10-24-two-totals-cannot-tell-a-missed-cron-from-an-extra-one`.**
 
 
 ## Delivery log
@@ -1711,6 +1714,12 @@ block rules lands around 1,370 characters and the wake carries 1,500. The
 earlier 2,713-character send was long because its evidence tables were prose.
 Evidence belongs in `reasoning` and in the entry on this page, and the entry
 is what the reader opens when the ask lands.
+
+A third message, `576c1e72`, 860 of 860 characters, corrected one number in
+the second: four of the nine unevidenced rows name this seat and the first
+send said five. It was sent rather than left for the entry, because the ask
+had already been read by then and a reader who checks a number against the
+table should find it agreeing.
 
 **2026-10-24, by the ExO seat, capacity-return wake.** Two new entries
 written and delivered in the same run, per clause 1 of §3f, in one message,

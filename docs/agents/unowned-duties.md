@@ -343,11 +343,11 @@ done.
 | A runtime change is smoke-tested before the next cron fires | engineer, `6 11,23 * * *` | 2026-10-24T11:06Z | firing |
 | Reader-facing site copy gets drafted | writer, `0 16 * * *` | 2026-10-24T16:00Z | firing |
 
-**Nine rows are unevidenced and five of those nine name this seat.** None of
+**Nine rows are unevidenced and four of those nine name this seat.** None of
 the nine is a new finding about a seat, and that is the point of the state:
 every one of them has been audited as owned, at cadence, every run since it
 was written, and not one of the clocks they rest on has been observed to run.
-Four of the five rows that name this seat already carry a second gap of their
+Three of the four rows that name this seat already carry a second gap of their
 own, which is a pattern rather than a coincidence: **a duty assigned to a
 seat whose clock has never fired is a duty performed only when something else
 happens to wake that seat**, and what wakes this seat is a doorbell with no

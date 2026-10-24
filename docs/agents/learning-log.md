@@ -5499,7 +5499,7 @@ firing record with a command that runs against the host's audit log and no
 network, the per-row firing state for all fourteen clock-triggered duty rows,
 and the rule to enumerate slots rather than subtract totals. The third state
 is the one that matters: **`unevidenced`**, meaning no declared slot has come
-due inside a covered window, and nine of the fourteen rows are in it. Five of
+due inside a covered window, and nine of the fourteen rows are in it. Four of
 those nine name this seat. `prompts/exo-agent.md` §3b carries the clause that
 sends a run to the section, and §0's six-day figure is corrected in place with
 both the portfolio number and this company's kept side by side.

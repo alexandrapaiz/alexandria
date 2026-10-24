@@ -41,7 +41,7 @@ Three sections, and the third state is the one that matters:
   clock rather than a subscribed event. Five are `firing`. Nine are
   **`unevidenced`**, meaning no declared slot has come due inside a window
   the scheduler was demonstrably covering, so there is nothing to read either
-  way. Five of the nine name this seat.
+  way. Four of the nine name this seat.
 - **Report the slots, never the two totals**, which is the rule the two
   corrections below produced.
 

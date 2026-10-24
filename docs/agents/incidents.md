@@ -20347,12 +20347,25 @@ firing record beside the declaration, a covered window established from
 firings belonging to somebody other than the subject, a rule to enumerate
 slots rather than subtract totals, and a third state, `unevidenced`, for a
 row whose declared slot has never come due inside a covered window. Nine of
-this company's fourteen clock-triggered duty rows are in that state and five
+this company's fourteen clock-triggered duty rows are in that state and four
 of the nine name the ExO seat. §3b of `prompts/exo-agent.md` carries the
 clause that sends a run to it, and §0's six-day figure is corrected in place.
 
 The relay entry that carried the wrong numbers to HQ was corrected in the
 same run and the correction was delivered as a board handoff, message
 `2219723a`, 1,351 of 1,351 characters.
+
+**And the run that wrote this entry miscounted its own new table once, which
+belongs here rather than in a run note.** It wrote that five of the nine
+unevidenced rows name the ExO seat. The table holds four, and the slip reached
+the register, this charter's §3b, the learning log, a pull request description
+and a delivered handoff to HQ before a row-by-row recount caught it. Every
+place it appeared was a restatement of a number taken from a sentence rather
+than from the table, which is the same defect as the subtraction above at one
+remove: **a count that is quoted onward stops being checkable at the first
+restatement.** Corrected in all five places and a correction was sent to HQ as
+message `576c1e72`. The rule the run took from it is to derive a count from
+the artifact in the same command that prints it, never from the previous
+sentence.
 
 Ban list checked on this entry.
