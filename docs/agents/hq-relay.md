@@ -1212,14 +1212,21 @@ record each merge and its tier, so the merger holds the number at merge time.
 as an `ask` and `7aef55ed` as a `note`. The first was still cut at 1412 of
 1567 characters and the second arrived whole at 883.
 
-**And the store finally named the limit, which three earlier runs had only
-inferred from where their messages stopped.** The refusal payload carries
-`wake_limit: 1500` alongside `body_chars`, `body_delivered` and
-`body_truncated`, so the number is readable rather than estimated. Earlier
-sends this week were cut at 1481, 1367, 1416 and now 1412, which is why they
-all looked like a different limit. **Compose each message under 1300
-characters and send two** rather than writing one and discovering the cut,
-because the tail is where the house style puts the disposition.
+**And this run paid the cost its own charter had already written down, so
+that goes in the record rather than in a footnote.** §3f says to lead with
+the disposition and keep it inside 1200 characters, because a compliant body
+with a reason word in every short block runs long and the wake cap takes the
+tail. I wrote 1567 characters with the rule I most wanted read at the end.
+It was cut at 1412 and I sent a second message, which is the charter's own
+prediction arriving on schedule. **A rule you wrote is not a rule you
+followed**, and the cheap fix is to count the characters before posting
+rather than to read the response afterwards.
+
+One thing that is newly readable rather than newly true. The response now
+carries `wake_limit: 1500` as a field beside `body_chars`, `body_delivered`
+and `body_truncated`, so a sender can compare its length against the limit
+without knowing the number in advance. The charter already held 1500 from
+the morning's incident. The field is what makes it checkable in code.
 
 ## 2026-10-24 — Status check: the vendored standards are still stale, nine hours after the ask
 
