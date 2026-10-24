@@ -1024,3 +1024,80 @@ request is exactly it, and one on 2026-10-18T18:20Z exited zero after 52
 minutes — but the duty as written is to catch it *before teardown*, which is
 a check inside the runner and remains HQ's. Detection after the fact is a
 strictly weaker thing and this register does not score it as the row.
+
+## The cadence table re-confirmed from the host on 2026-10-24, and the cheaper command for it
+
+The twelve-row cron table above was read on 2026-10-18 out of
+`alexandrapaiz/alexandra-systems:runtime/agents/alexandria/<seat>/agent.toml`,
+which takes twelve authenticated API calls into another repository. **All
+twelve rows are confirmed unchanged on 2026-10-24**, read instead out of
+`/srv/asc/state/.epito/audit.jsonl`'s sibling, `state.json`, on this seat's
+own filesystem with no credential:
+
+```bash
+python3 -c "
+import json
+a = json.load(open('/srv/asc/state/.epito/state.json'))['agents']
+for k in sorted(a):
+    if k.startswith('alexandria-'):
+        print(k.replace('alexandria-',''), a[k]['cron'], a[k]['model'], a[k]['nextCron'])
+"
+```
+
+The same object also carries each seat's `model` and its `nextCron`, which is
+the resolved next firing time rather than a crontab expression a reader has
+to evaluate. For a register whose whole second test is "does the seat's cron
+fire more often than the duty's trigger arrives", a resolved timestamp is
+strictly better evidence than the expression, because an auditor can be wrong
+about a crontab and cannot be wrong about a date.
+
+It does not carry `max_turns`, a provider or a secret, so the capability test
+in §3b's third clause still needs the parent's `agent.toml` and the relay
+ask for those is on `docs/agents/hq-relay.md`.
+
+**One row the confirmation adds, because `nextCron` makes it visible.** This
+seat's next scheduled firing is 2026-10-25T14:00Z and its cron is
+`0 14 * * 0`, weekly. Six of the duties this register scores as assigned to
+it say "every run" in the charter and are therefore performed weekly by the
+cron and whenever else an event happens to wake it. Nine consecutive wake
+runs before this one skipped all six, which is in the learning log. **A duty
+assigned to an event-woken seat has no cadence at all, only a frequency**,
+and this register has no column for that distinction yet. The next run that
+touches this file should add one rather than scoring those rows assigned.
+
+## New candidate row, found 2026-10-24: nobody checks whether we already own what we are about to ask for
+
+| Duty | Owner | Trigger rate | Cadence | State |
+|---|---|---|---|---|
+| An ask leaving the org is checked against what the org already has | **none** | per relay entry, 3 in the week to 2026-10-24 | n/a | **unowned** |
+
+Found by the method §3b prescribes, which is to grep every charter for the
+words the duty would have to use. `grep -rniE 'already (exists|built|have)|inventory|before you ask' prompts/`
+returns nothing that binds a run before it writes a relay entry. Absence of
+the vocabulary is the finding.
+
+**The evidence is three asks in one week, each for part of something the org
+already had.** On 2026-10-18 the relay asked for a `num_turns` field on the
+board's run record; it was built the same day, called `turns`, and the page
+that needed it stayed frozen for six more days. On 2026-10-24, twice, the
+relay asked for that route to be scoped by time rather than by a count of
+25; a time-scoped per-run record with turns, exits, models and durations had
+been on this host since 2026-09-24. Both are recorded under
+`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`.
+
+**Why it is a duty rather than three mistakes.** The asymmetry is
+structural and survives any amount of care by the seats. Writing a relay
+entry costs four lines of prose and is unconditionally accepted. Checking
+whether the capability already exists costs one grep and is in no charter in
+any repository, so it is done when a run happens to think of it. A process
+with a cheap unconditional path and an expensive optional one will take the
+cheap path every time, and the result is an org that reliably buys what it
+owns.
+
+**Which seat should hold it, proposed and not assigned.** This one, in the
+same §3f pass that writes relay entries, because the check and the writing
+happen in the same breath and splitting them across seats adds a handoff to
+a one-command test. The wording would be: before an entry is added to
+`hq-relay.md`, name the artifact the ask would create and grep for it on this
+host and in this repository, and put the result in the entry. That is a
+`prompts/` edit and so is queued rather than shipped here.
