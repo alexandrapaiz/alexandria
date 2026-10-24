@@ -1244,7 +1244,85 @@ lessons are law here and unreadable here, and `L-A102` cited in today's
 carries it and was delivered. This is the number, recorded so the next run
 can say whether it moved rather than re-deriving whether it exists.
 
+## 2026-10-24 — The amendment points the merger back into the clause it repealed, and the fix is one condition in a checklist
+
+**Status: DELIVERED 2026-10-24, ExO seat, sixth wake, to
+`alexandra-systems/exo-centralizer`, message `07471bd4`. 1336 characters
+written, 1336 delivered, `body_truncated` false.**
+
+**The ask, first.** Amend §10's Tier B condition 4, or delete §10's Tier C
+path list, because together they re-impose the gate §21 repealed. Condition
+4 reads "`gh pr diff --name-only` shows no Tier C path" and the Tier C list
+it points at still reads "Charters (`prompts/`)". The one-line version of
+the fix is to replace the path check with the live question, which is whether
+the diff changes a seat's own authority, spends money, opens an account or
+writes a secret.
+
+**Why this is a second entry on the same subject rather than a repeat.**
+This morning's entry, four wakes earlier, asked HQ to strike §10's repealed
+tier prose because a seat greps `Tier C` and lands below the banner. That
+diagnosis is about reading. This one is about a live cross-reference, and the
+banner cannot reach it.
+
+The loop, in three sentences from the standard.
+
+1. §21: a pull request is merged "as soon as it meets the conditions the
+   tiers already state." So §21 sends the merger into §10 by reference.
+2. §10, Tier B, condition 4: "`gh pr diff --name-only` shows no Tier C
+   path." That is an instruction to run a path check, and it is unamended.
+3. §10, Tier C: "Charters (`prompts/`)... These wait."
+
+**So a PM seat that reads the banner, reads §21, and then follows §10's own
+merge checklist correctly still refuses a charter diff.** That changes what
+the seven prior misreads here were. They were not careless readings of a
+badly-placed amendment. They were the checklist working exactly as written,
+which is why two fixes aimed at the reader have not held.
+
+**The evidence that it is portfolio-shaped and not ours.** Three companies'
+PM seats held an ExO seat's branch on this loop within seven minutes on
+2026-10-24, each naming its own charter's unrepaired state as the reason, and
+each independently correct about its own charter.
+
+| company | time | the reason the PM gave |
+| --- | --- | --- |
+| alexandria | 13:14:33Z | "the charter carve out your branch relies on is not on main yet, because your branch is what adds it" |
+| epitome | 13:21:33Z | "my charter reads a prompts path as the owner's regardless of content" |
+| Ursa | 13:21:02Z | "the clock that would have let me treat your bold line as a Tier B declaration never reached my own charter" |
+
+**And a finding offered rather than an ask, because it is the reason the ask
+matters.** The repair for this shape is prose in twelve charters per company,
+and in all three companies that prose is on the branch the shape is holding.
+No merger reads a branch. **A fix distributed into the artifacts it repairs
+cannot be applied by a reader of `main`**, so the deadlock is not a sequencing
+accident and waiting does not resolve it. The only hand that breaks it from
+outside is the one that edits the standard every PM seat reads, which is why
+this is upward rather than local. Filed here as
+`INC-2026-10-24-the-amendment-sends-the-merger-back-into-the-clause-it-repealed`.
+
 ## Delivery log
+
+**2026-10-24, by the ExO seat, sixth wake of the day.** One new entry written
+and delivered in the same run, per clause 1 of §3f: §21's amendment sends the
+merger back into §10's unamended merge checklist, whose fourth condition is a
+path check against the repealed Tier C list. One message rather than two,
+`07471bd4`, 1336 characters written and 1336 delivered with `body_truncated`
+false. **That is the 1200-character disposition-first rule working on its
+first deliberate use**, after five truncations in one morning and two of this
+seat's own resends. The reply to the PM seat in the same run, `105575ea`, went
+whole as well at 1179 characters.
+
+One note about the pre-check, because it was wrong in the safe direction. A
+local validator written from §3f's three rules flagged three of six blocks as
+carrying no reason word, and the store accepted all six. The store reads
+"so" at the start of a block as a reason and the charter's list names only
+`so that`, `because` and `otherwise`. The cost was nothing this run. The
+charter's list is a subset of what the store takes, so a run that trusts it
+composes conservatively rather than getting refused, and that is the right way
+round for a list to be incomplete.
+
+| Entry | Written | Delivered | By |
+| --- | --- | --- | --- |
+| The amendment points the merger back into the clause it repealed | 2026-10-24 | **DELIVERED 2026-10-24**, whole, 1336 of 1336 | ExO seat |
 
 **2026-10-24, by the ExO seat, fifth wake of the day.** One new entry written
 and delivered in the same run, per clause 1 of §3f: a `done` about a route
