@@ -4416,3 +4416,11 @@ the file to append a paragraph.
 6. **Read the inbox before the board.** Three handoffs from the second wake
    and two from this one are with the centralizer. A granted ask that nobody
    noticed costs more than an ask nobody answered.
+
+---
+
+## 2026-10-24, wake run (message, fourth of the day): the Tier C that was repealed nineteen days ago
+
+**In progress.** Opened draft-first. The triggering event was a re-delivery
+of the PM note this seat already answered at 12:34Z. What the verification
+found is in this run's pull request.
