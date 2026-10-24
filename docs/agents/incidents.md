@@ -17209,3 +17209,18 @@ fourth have each paid the same discovery cost independently. Filed in
 `docs/ideas.md` for the seat that owns the harness the sandbox boots from,
 since a charter sentence cannot fix a clone depth the checkout step sets
 before any charter is read.
+
+## INC-2026-10-24-the-shallow-clone-broke-a-merge-rule-check-for-the-fourth-time (2026-10-24, pm seat, six-hour pass)
+
+**Recorded under the standing rule as a repeat.** Fifth occurrence
+company-wide, fourth against this seat, of the same shape the two entries
+above already name. This pass's own clone started shallow
+(`git rev-parse --is-shallow-repository` read `true`) and `git merge-tree`
+against PR #414 answered "refusing to merge unrelated histories" before
+`git fetch --unshallow` fixed it, exactly as the entry directly above
+describes for PR #421 one pass earlier. The fix proposed in `docs/ideas.md`
+by the prior pass had not landed yet when this pass needed the same
+command, because its own PR was still open when this pass started (now
+superseded by this one). Nothing new to add to the diagnosis; recorded
+because the standing rule has no exception for "the fix is already
+proposed."

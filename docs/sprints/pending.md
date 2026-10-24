@@ -1,3 +1,146 @@
+## Updated 2026-10-24, ~06:30 UTC (six-hour pass): #428 merged under Tier B closing sprint item 3, #414 held on the same unresolved Tier C question for a fourth pass and now asked of the owner directly, two unlogged host-run failures triaged with the evidence this seat has
+
+**Trigger.** The six-hour pass: read the inbox, triage the last six hours
+of failed runs, merge what qualifies under Tier B or say what waits on the
+owner and why, move the sprint, post one board note.
+
+**Own last run may still be open, checked first, and it was.** `#429`
+(this seat's own, from the pass four and a half hours earlier) was still
+open, touching this same file and `dispatch-queue.md` at this same anchor.
+Built on it rather than branching from main: `git log --oneline
+origin/alexandria-pm/2026-10-24-message-pr421-424 ^HEAD` printed nothing,
+confirming containment, and `#429` is closed as superseded by `#432`.
+**Chain: `#397` to `#399` to `#401` to `#403` to `#427` to `#429` to this
+one, depth 7. This seat is blocked on merges**, one link deeper than every
+prior pass tonight reported, and now the deepest open chain in the
+company, past `#414`'s six.
+
+**Inbox read first, per standard §15.1.** Two messages have ever been
+addressed to `pm` directly in the window the board's API returns: the
+centralizer's lessons-sync handoff (`#417`, 00:30 UTC) and the chair's
+skill-eval note (`#402`, 2026-10-23 18:54 UTC). Both are already answered,
+by earlier passes tonight, not by this one: `#417` is merged (confirmed on
+`main`), and `#402` is merged (confirmed in this seat's own commit log,
+`c96f5dc`). No unanswered ask or handoff addressed to this seat.
+
+**PR #428 (frontend, the pricing page reframed to the skill-library
+tiers) checked against the merge rule (Tier B, `docs/standards/pm.md`
+§10) and merged.** Not mine, not a draft, no `hold` label, zero comments
+or reviews, no checks defined, `mergeStateStatus: CLEAN`. `gh pr diff
+--name-only`: 36 files, all `site/`, `docs/design/`, `docs/ideas.md`,
+`docs/agents/incidents.md`, and `docs/voice/awaiting-her-word.md` — no
+Tier C path. This closes **sprint item 3** (the pricing-page reframe);
+the Polar mechanics underneath were already code-complete.
+
+**PR #414 (ExO) held for a fourth consecutive pass, now surfaced as a
+direct ask rather than re-litigated silently.** Unchanged since `#403`
+first named it: the diff touches all twelve `prompts/<seat>-agent.md`
+charters, which `docs/standards/pm.md` §16 names explicitly as the
+product-repo Tier C boundary ("the trimmed product charter on each
+product (Tier C, the owner's)"), and this repo's own practice has held
+every `prompts/` charter diff as Tier C regardless of diff content
+(`#272`, named the same way on 2026-09-30). §21's amendment to §10 reads
+"no tier waits for the owner any more except a change to a seat's own
+authority," which could be read to narrow Tier C down to authority
+changes only, and this diff is not an authority change — it corrects
+stale run-health and dispatch-switch instructions across the fleet. Four
+passes have now held it on the stricter reading without asking which one
+governs. **Asked below rather than guessed at.** The PR is also
+`CONFLICTING` against current `main` in one place, `docs/agents/
+incidents.md`, append-only and docs-only — resolvable by this seat under
+condition 5 once the tier question is answered either way.
+
+**Two failed runs this pass found and triaged, from the board's run
+record rather than from `gh run list`** (which has carried no seat run
+since 2026-10-17, per this repo's own migration off GitHub Actions
+schedules — the same gap `#414`, still unmerged, documents in detail).
+Read via `GET $BOARD_API_URL/api/board/alexandria`'s `runs` array:
+
+- **writer**, 2026-10-24T01:46:06Z, `window:message`, 126 turns, **exit
+  1**, no pull request.
+- **engineer**, 2026-10-24T01:53:49Z, `window:message`, 88 turns, **exit
+  1**, no pull request.
+
+Neither run is in `docs/agents/incidents.md`. Neither this run nor any
+tool available to it (no `gh run view` for a host window run, no trace
+store reachable from this seat) can read why either one died; **that
+could not be checked, said plainly rather than left out.** Both seats
+opened a fresh draft on related scope within three minutes of their own
+crash (writer's `#430`, engineer's `#431`), so no work reads as lost, but
+the crash itself is unexplained and is named here so it is not silently
+absorbed into "all green." Classified *configuration/unknown* rather than
+*transient* or *real defect*, for lack of evidence to choose between them,
+and that gap — host window runs failing with no log this seat can reach —
+is itself worth the centralizer's attention; filed as a question, not an
+incident, since nothing here repeats a named shape.
+
+**Cap ratio, this seat's own charter method.** `grep -HoE
+'\-\-max-turns [0-9]+' .github/workflows/agent-*.yml`: writer 225,
+engineer 200. Against today's board turns (writer's highest 140, engineer's
+highest 133), neither crosses 70%. `#414`'s own unmerged text claims lower,
+host-manifest caps (writer 150, engineer 200) that would put writer at 93%
+on its 140-turn run — not used here, because it is unverified text inside a
+PR this pass has not merged, but it is the same reason #414's question
+is worth answering rather than sitting.
+
+**Sprint: "The lights back on," checkpoint Wednesday 2026-10-28.** Item 3
+shipped today (above). Item 4 (engineer, the `pipeline/weekly.py` content-
+anchor fix) has no pull request against it yet — surveyed by title and by
+file across every engineer PR opened today, none touches
+`pipeline/weekly.py`. **Item 1 (skill, the before/after delta) is the
+item this pass's own standing duty (item 5) exists to watch, and it has
+not moved**: the skill seat's last pull request of any kind is `#200`,
+2026-10-05, **19 days** before this pass, and it has not run once since
+the five-day host outage ended on 2026-10-23. The sprint's own fallback
+rule gives it until Tuesday 2026-10-27 before this escalates on its own;
+not yet breached, said here so the next three passes do not have to
+re-derive the deadline. Item 2 (frontend, the catalog page) stays blocked
+on item 1 by the sprint's own chain note.
+
+**Run health.** Fleet (`checks`/`deploy-main`, the half still on GitHub):
+all green. `deploy-main` ran once this pass, success, triggered by this
+seat's own merge of `#428`. `checks.yml` has not run on `main` since the
+`#424` merge at 01:46:07Z; this pass's merge of `#428` did not trigger a
+new one, noted rather than assumed benign.
+
+**Delivery health, recomputed live this pass** (`tools/delivery_health.py`):
+press ok (2026-W42, kimi-k2.6); site ok; archive ok. Three owner-only
+blockers, unchanged in kind, fresher in number: **compute/pipeline/mcp**
+FAILING (Modal workspace `ac-5DsaR3hWSUxqyNoGYiowja` disabled, which takes
+the MCP server down with it); **checkout** FAILING (the pricing page has
+no checkout link — `POLAR_CHECKOUT_TRIAL`, `_MONTHLY`, `_LIFETIME` all
+unset in the site's environment); **deploy** FAILING (distill 8.2 days
+behind `main`, ingest 7.6 days, weekly 8.4 days); **payments** unknown
+(`payment_exceptions` table missing, one `modal run
+pipeline/db_setup.py::apply_schema` away, itself blocked by the same Modal
+outage).
+
+**Board.** Moved nothing new; walked the board for an orphaned item and
+found none this pass. One `done` note posted (below). `PM_DISPATCH_ENABLED`
+read directly from this run's own environment: unset, so the queue below is
+proposals only.
+
+**For you, three lines, ordered.**
+
+1. **The §414/§16 Tier question, asked directly rather than held a fifth
+   time.** Does a `prompts/<seat>-agent.md` charter diff that changes no
+   seat's authority, ceiling, or dispatch grant merge under Tier B per
+   §21's amendment, or does §16's enumerated Tier C boundary hold
+   regardless of content? My own recommendation, for the reason four
+   passes have already given it without saying so: keep charters Tier C
+   regardless of content, because §16 names the product-repo boundary in
+   its own words and a PM reading its own authority expansively is the
+   one error this standard cannot self-correct. This is a question about
+   this seat's own merge authority, so per §21 it does not proceed on
+   silence; it waits for your word either way. `#414` (ExO, depth 6,
+   blocked on merges) sits behind the answer.
+2. **The Modal outage is the single cause behind three "FAILING" rows**
+   (compute, checkout's underlying account work, deploy) and one
+   "unknown" (payments) above. Unchanged since the last several passes;
+   restoring the account is the one action that moves all four.
+3. **The Polar sandbox signup** (`docs/product/polar-go-live.md`), owner-
+   only, **29 days** overdue against ADR-30.
+
 ## Updated 2026-10-24, ~01:49 UTC (message pass): #424 checked against the merge rule and merged, #421 found already superseded, #427 absorbed at depth 6
 
 **Trigger.** Four board events, two pairs naming #421 and #424 respectively:
