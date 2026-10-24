@@ -42,6 +42,68 @@ Three clauses make it work in practice.
    2026-09-23, and for four days this page carried one measured row that
    described neither of them.
 
+5. **Any run finishing above 70% of its cap re-derives that seat's row in
+   the same week** (added 2026-10-04, **written into this page 2026-10-18**).
+   The four triggers above all ask an auditor to name a cause, and the
+   October re-derivation found seven of thirteen rows under the measured
+   rule with the writer at 91% of its cap while **not one of the four had
+   fired**, because the drift had no cause to name. Charters grow two lines
+   at a time, and a seat whose last run is still open spends turns reading
+   and re-shipping that branch before it starts today's work. Merge latency
+   and cap collisions are the same failure. The PM reports the ratio daily
+   from the run list it already reads and the re-derivation is the ExO's.
+
+   This rule was cited by `prompts/exo-agent.md` §6 and by the 2026-10-11
+   re-derivation on this page for fourteen days without ever being written
+   here, which is `registers.md`'s own "recording is not enforcing" with the
+   register and the citation the wrong way round. A rule that exists only in
+   the files that cite it is a rule whose text nobody can check.
+
+6. **A cap now lives in two files and only one of them runs the seat**
+   (added 2026-10-18, `INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens`).
+   HQ decision 056 moved every seat's clock to the company host on
+   2026-10-17. Since then `--max-turns` in
+   `.github/workflows/agent-<seat>.yml` governs an explicit
+   `workflow_dispatch` and nothing else, while `[runtime].max_turns` in
+   `alexandrapaiz/alexandra-systems:runtime/agents/alexandria/<seat>/agent.toml`
+   governs every real run. **So every cap change is written in both places
+   or it is not a cap change.** This seat can read the manifests and can
+   write neither, so the manifest half leaves through
+   `docs/agents/hq-relay.md` with the exact line, and the item is not closed
+   until the chair has carried it.
+
+   The reconciliation is one command and it runs every time this page is
+   touched:
+
+   ```bash
+   for s in engineer exo finance frontend market okr pm research sales security skill writer; do
+     wf=$(grep -oE '\-\-max-turns [0-9]+' .github/workflows/agent-$s.yml | grep -oE '[0-9]+' | head -1)
+     mf=$(gh api "repos/alexandrapaiz/alexandra-systems/contents/runtime/agents/alexandria/$s/agent.toml" \
+            --jq .content | base64 -d | grep -oE '^max_turns = [0-9]+' | grep -oE '[0-9]+')
+     [ "$wf" = "$mf" ] || echo "DIVERGED $s: workflow=$wf manifest=$mf"
+   done
+   ```
+
+   Run on 2026-10-18 across all twelve seats it printed exactly one line:
+   `DIVERGED writer: workflow=225 manifest=150`. Eleven of twelve agree and
+   the models agree in all twelve. The check was validated against that
+   known instance before being published here, per the 2026-10-11 rule that
+   a check which cannot see reports health in the same words as a check that
+   found nothing.
+
+7. **And the measurement input is gone for every run after 2026-10-17**
+   (added 2026-10-18). Every command in "How to measure" below reads
+   `num_turns` and the error subtype out of `claude-execution-output.json`,
+   which twelve workflows uploaded as a 90-day Actions artifact. The host
+   writes its log to `.epito/logs/<agent>/<runId>.log` on its own disk
+   instead, which no seat in this repository can read. So this page cannot
+   be re-derived from evidence for any host run, which is now every run, and
+   the honest state of the table below is **frozen at 2026-10-11 until the
+   transcript is reachable again**. Do not refresh a row from a guess. The
+   ask for a reachable transcript is in `docs/agents/hq-relay.md` for
+   2026-10-18, and it is the precondition for rules 1 through 5 working at
+   all.
+
 ## When this gets reviewed
 
 - **Monthly**, by the ExO agent, in its first run of each month. Re-run
@@ -50,7 +112,13 @@ Three clauses make it work in practice.
   A cap hit is evidence about the cap.
 - **On duty growth**, whenever a charter edit gives a seat more to do.
 - **On a cron change**, whenever a workflow gains or splits a schedule,
-  because that splits the job behind the cap.
+  because that splits the job behind the cap. Since 2026-10-17 read "cron"
+  as `[trigger].cron` in the seat's host manifest, and read a change to
+  `[trigger].subscriptions` the same way, because an added subscription is a
+  new turn profile for the same reason a second schedule was.
+- **On a runtime change**, whenever the thing that starts a seat changes at
+  all, because a cap belongs to a job and the job is now somewhere else.
+  See `prompts/exo-agent.md` §2d.
 
 Never set a cap from a feeling about how much work a seat "should"
 need. The commands below take about a minute.
@@ -424,3 +492,140 @@ raise that outruns its job timeout buys nothing.
 This measurement was taken by the engineer seat under the owner's
 directive of 2026-09-25, not by the ExO seat that maintains this page.
 The page stays the ExO's; one directed edit is not a transfer.
+
+## Re-derivation, 2026-10-11, on a cap hit
+
+Rule 2 fired, twice over. The writer hit `error_max_turns` on 2026-10-04
+(run 37226048547) and again on 2026-10-09 (run 37986599276), both at
+`num_turns: 151` against `--max-turns 150`. Rule 5's ratio also fires for
+the engineer. Every number below is the peak over that seat's eight newest
+`success` or `failure` runs, by the command at the top of this page.
+
+| Seat | Peak | Prev (2026-10-04) | Cap | Required | % of cap | Verdict |
+|---|---|---|---|---|---|---|
+| writer | **151, a cap hit** | 136 | 150 | 350 | **100.7%** | **failed twice.** Item 21, split out and urgent |
+| engineer | **184** | 168 | 200 | 400 | **92%** | short. Item 14's 350 was below the rule before it was read |
+| frontend | 188 | 286 | 600 | 400 | 31% | ok, and the only comfortable row in the org |
+| skill | 156 | 156 | 180 | 350 | 87% | short, item 14, unchanged |
+| research | 145 | 145 | 180 | 300 | 81% | short, item 14, unchanged |
+| security | 134 | 134 | 250 | 300 | 54% | short, item 14, unchanged |
+| market | 131 | 131 | 160 | 300 | 82% | short, item 14, unchanged |
+| pm | 105 | 81 | 300 | 250 | 35% | ok |
+| exo | 134 | 134 | 200 | 300 | 67% | short, item 14, unchanged |
+
+The writer's and the engineer's rows are the only ones that moved, and they
+moved in the same direction for different reasons: the writer's peak is now
+a floor rather than a measurement, because a capped run tells you demand
+exceeded 151 and not what it was, and the engineer's rose 16 turns on its
+own in seven days while nothing was added to its charter.
+
+### What a cap hit costs, measured rather than asserted
+
+Both writer hits were `error_max_turns`, which this page's own test
+identifies as a run killed mid-work rather than a run failed after
+shipping. Ship-first held both times and both times the unpushed increment
+died: on 2026-10-09 that was `docs/ideas.md`, `docs/voice/ban-list.md` and
+`docs/voice/reviews/2026-10-09.md`, dirty at teardown. So the cost of a
+short cap is bounded by ship-first and is not zero, which is the number the
+"a cap is a tripwire, not a budget" argument needs beside it.
+
+### Rule 6: a capped run re-derives on a floor, and the proposal is not the old number plus a bit
+
+Added 2026-10-11. When a seat hits its cap, `2 x the cap + 1` is the
+arithmetic the rule produces and it is the wrong instinct to then round
+down toward the old proposal. Item 14 had already proposed 300 for the
+writer off a peak of 136. After the cap hit, 151 doubles to 302 and rounds
+to 350, and a run that proposes 300 because 300 was already written down
+has let a queued number outrank a measurement. **The queued proposal is
+evidence about what a previous run thought, never an input to the rule.**
+
+This is the fourth time a stale number on `pending-workflow-changes.md`
+nearly shipped as a fix: items 4 and 11 proposed 200 for two seats already
+above it, item 26's timeout diff would have lowered a live value, and item
+14 itself carried 350 for a seat that needed 400 within a week of being
+written. Re-read the numbers in a queued item every run, not only its
+anchors.
+
+## Re-derived 2026-10-24, from the board's run record, after thirteen days frozen
+
+This page said at the top of its measurement section that it was frozen at
+2026-10-11 because `num_turns` lived in a GitHub Actions artifact and the
+seats had left GitHub. The ask that would unfreeze it was written into
+`docs/agents/hq-relay.md` on 2026-10-18 in these words: "The board already
+receives a run record per run, so a `num_turns` field on it would close this
+at the lowest cost."
+
+**That field was built on 2026-10-18, is called `turns`, and this page stayed
+frozen for six more days.** Two runs of this seat read both files in between.
+The account is
+`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`.
+
+### The new measurement command
+
+The numerator and the denominator now come from two different places, and
+both are readable by any seat:
+
+```bash
+# numerator: turns per run, per seat
+curl -s "$BOARD_API_URL/api/board/alexandria" \
+  -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN" \
+  | python3 -c 'import json,sys
+from collections import defaultdict
+peak=defaultdict(int)
+for r in json.load(sys.stdin)["runs"]:
+    peak[r["seat"]]=max(peak[r["seat"]], r["turns"] or 0)
+for s,t in sorted(peak.items(), key=lambda kv:-kv[1]): print(s,t)'
+
+# denominator: the cap that actually governs, which is not in any workflow
+for s in engineer exo pm writer frontend market okr research sales security skill finance; do
+  printf '%s ' "$s"
+  gh api "repos/alexandrapaiz/alexandra-systems/contents/runtime/agents/alexandria/$s/agent.toml" \
+    --jq .content | base64 -d | grep -E '^max_turns|^model' | tr '\n' ' '
+  echo
+done
+```
+
+### The table
+
+Peak over the runs the board returned, which is the 25 most recent across all
+seats, covering 2026-10-18T12:40Z to 2026-10-24T00:08Z.
+
+| Seat | Peak | Cap in manifest | Required (2x, next 50) | % of cap | Verdict |
+|---|---|---|---|---|---|
+| writer | **140** (2026-10-23T23:31Z) | **150** | 300 | **93%** | **over the rule-5 trigger for the third consecutive measurement.** Ask 4 on the relay page asks for 225, the owner's own approved number; the rule asks 300 |
+| pm | 141 (2026-10-23T17:04Z) | 300 | 300 | 47% | ok, and correct at 300 |
+| engineer | 131 (2026-10-23T23:35Z) | 200 | 300 | 66% | under the trigger, short of the rule |
+| exo | 89 (2026-10-23T23:43Z) | 200 | 200 | 45% | ok |
+
+### Three things this measurement cannot do, stated so no reader over-reads it
+
+1. **It covers four seats of twelve.** The board's run route returns a fixed
+   count of recent runs and accepts no query string, so eight seats that did
+   not run in the last 25 sessions have no row. Their last real measurement
+   is still 2026-10-11. **A table scoped by somebody else's count is the
+   defect this page's rule 5 was written against**, and the ask to scope the
+   route by time is the 2026-10-24 entry on the relay page.
+2. **It cannot tell a cap hit from a crash**, which rule 1 of this page
+   depends on. The record carries `exit` and `turns` and no error subtype,
+   so a run killed at its cap and a run that died on its own both read as a
+   non-zero exit at some turn count. Every near-cap number here is therefore
+   *possibly* censored and the writer's 140 is the one that matters: if that
+   run was killed, 140 is a floor and not a peak. Residual ask filed.
+3. **The cap it compares against is one this seat cannot write.** The
+   governing value is `max_turns` in a manifest in `alexandrapaiz/alexandra-systems`.
+   `pending-workflow-changes.md` is the wrong lane for it and always was;
+   the lane is `hq-relay.md`. That is already recorded as a capability gap
+   on `docs/agents/unowned-duties.md` and as
+   `INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens`.
+
+### What the numbers say about the organization, which is not what they say about the caps
+
+The pm at 47% of 300 and the writer at 93% of 150 are the same week of work.
+The difference is not that one seat does more; the pm ran ten sessions in
+that window and the writer three. **A seat woken often finishes each session
+well inside its cap. A seat woken rarely arrives at each session holding
+everything that accumulated since the last one**, which it must read, plus
+its own unmerged branch, which it must carry. That is the merge-latency
+finding of 2026-10-04 and the cap finding seen from one more angle, and it
+suggests the cheapest cap relief available is a subscription rather than a
+number.
