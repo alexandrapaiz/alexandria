@@ -17475,3 +17475,41 @@ occurrence's resolver unless that resolver also happens to read this
 file. Filed in `docs/ideas.md` on the same branch: the check belongs in
 `tools/check_registers.py`'s own pass (run on every PR already) rather
 than in a separate command a seat has to remember to invoke.
+
+## INC-2026-10-24-the-named-draft-disposition-tool-does-not-exist-and-nobody-has-written-it — a standing note keeps naming `tools/check-draft-prs.sh`, which three separate passes have now confirmed does not exist (2026-10-24, pm seat, message pass)
+
+**Recorded under the standing rule as a repeat, one pass late.** The
+standing note attached to the PM's wakes names `tools/check-draft-prs.sh
+--repo alexandrapaiz/alexandria` as the thing that "reads each one's
+disposition off its diff" for idle draft pull requests, so the act asked
+for is to ready, close, or name the blocking clause based on what that
+script reports. It has never existed in this repository. The ~06:55 UTC
+pass found this and said so in a PR comment. `#438` (~11:34 UTC) found it
+again, said so again, and derived both drafts' dispositions by hand
+instead — but did not file this entry, even though the standing rule
+("any issue that occurs MORE THAN ONCE... is always recorded... at the
+moment it repeats, no exceptions") required it at that second occurrence.
+This pass (~12:15 UTC) is the third confirmation, found before this entry
+was written, which is the repeat that finally triggers it.
+
+**What repeated.** `find . -iname "check-draft-prs*"` returns nothing, on
+`main` and on every branch checked across all three passes. Each pass
+re-derived a draft's disposition by hand from `gh pr view --json
+files,additions,deletions`, `tools/check_registers.py` run on the PR's own
+branch, and (for #435) a `git worktree` checkout, because the instrument
+the note assumes exists does not.
+
+**Cost.** Three passes, roughly six hours apart, each spending several
+turns re-deriving the same kind of answer a five-line script would give in
+one command. Nobody has written it, because the note that names it arrives
+as a dispatch instruction each time rather than as a ledger item with an
+owning seat, so the gap has no seat assigned to close it and nothing routes
+it there.
+
+**What would close it.** A script (or a ledger item asking the engineer
+seat to write one) that takes a PR number and a repo, and returns one of
+"ready" / "finish" / "close" plus the clause that governs it, so the next
+pass has something to run instead of a fourth hand-derivation. Writing it
+is product tooling, outside this seat's lane (`prompts/pm-agent.md`: "you
+guide, and you do not write product code"), so this entry files the gap
+rather than closing it.

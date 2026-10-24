@@ -1,3 +1,92 @@
+## Updated 2026-10-24, ~12:15 UTC (message pass): PR #439 checked against the merge rule and merged; #430 and #435 re-verified with no change
+
+**Trigger.** Event-bus wake: "pull request opened by engineer... #439 ('the
+deploy guard runs the command it used to recommend'). Review it against the
+merge rule: merge it, or say on the board what it still needs and hand that
+to its seat," carrying the same standing note as #436's wake about #430
+(writer) and #435 (frontend), both idle drafts with no live run behind them,
+naming the owning seat in whatever this run does.
+
+**Own last run may still be open, checked first, and it was: two of them.**
+`gh pr list --state open` showed `#438` (this seat's own, chain depth 10,
+opened 11:34:36Z, touching this file and `docs/sprints/dispatch-queue.md`)
+and `#440` (this seat's own, opened 11:52:45Z, a verification-only PR
+touching neither file, per its own account). Built on `#438` directly, since
+this entry needs the same anchors:
+`git log --oneline origin/alexandria-pm/2026-10-24-message-draft-disposition ^HEAD`
+printed nothing after the merge, confirming containment. **Chain: `#397` to
+`#399` to `#401` to `#403` to `#427` to `#429` to `#432` to `#434` to `#437`
+to `#438` to this one, depth 11. This seat is blocked on merges**: eleven
+runs of PM work now sit behind one run of review, and every run that adds
+to it deepens the exact problem the prior entry already named. `#440` is
+left untouched, open, not superseded, exactly as its own text already
+settled for `#438` and for the same reason (no file overlap, so building on
+it would add nothing).
+
+**PR #439 (engineer, `alexandria-engineer/2026-10-24-message-lane-blocked`),
+the shallow-clone deepening `tools/delivery_health.py` now performs before
+judging a deploy instead of only recommending it, checked against the merge
+rule (Tier B, `docs/standards/pm.md` §10) and merged.** Not mine, not a
+draft, no `hold` label, zero comments or reviews since the last push. `gh pr
+diff --name-only` showed six files
+(`docs/agents/engineer-run-note-2026-10-24-message.md`,
+`docs/agents/incidents.md`, `docs/ideas.md`, `tests/test_deploy_drift.py`,
+`tools/delivery_health.py`, `tools/drift_watch.py`), no Tier C path.
+`statusCheckRollup` empty, confirmed against
+`.github/workflows/checks.yml`'s own `paths:` list: none of the six files
+is in it, so "no checks defined" rather than a missing green tick.
+`mergeStateStatus: CLEAN` against `main` at review time.
+
+**Verified rather than trusted.** Checked out the PR's ref in a worktree at
+`fa58b41` and ran the suite myself: `tests/test_deploy_drift.py` 47 passed,
+and the full `python3 -m pytest tests/ -q` gave **1798 passed, 1 skipped**,
+matching the PR's own claim exactly. `tools/check_registers.py` on the
+branch: 0 blocking, 71 warnings, the same baseline as `main`.
+
+**Merged:** #439, normal merge, now on `main` at `d8c77ec`.
+
+**The PR named its own merge-order risk, and it was accurate.** Its body
+flagged that `docs/ideas.md` and `docs/agents/incidents.md` are also append
+anchors for `#438` and for `#435`/`#414`, all still open, and asked that
+this PR land last of the group sharing those anchors. It landed first
+instead, because it was the one actually clear to merge; `#438`'s, `#435`'s,
+and `#414`'s own merges will each need the same keep-both resolution this
+chain has used repeatedly (incident 6 and its eight-plus repeats) against
+this PR's new tail entries, whenever they land.
+
+**#430 and #435, the standing lane duty's two idle drafts, re-read and
+unchanged since `#438`'s (~11:34Z) and `#440`'s (~11:52Z) passes.**
+
+- **#430** (writer) — `updatedAt` still `2026-10-24T06:53:20Z`. No new
+  commit, no new comment. Disposition unchanged: nothing owed but its own
+  `gh pr ready` (L-A27/L-A32: a PM run may not ready another seat's draft).
+- **#435** (frontend) — `updatedAt` still `2026-10-24T11:41:59Z`, which is
+  this seat's own prior comment, not new frontend activity. Disposition
+  unchanged: nothing owed but its own `gh pr ready`. One new fact worth
+  naming: `mergeable` now reads `CONFLICTING` against `main`'s current tip
+  (it read clean when `#438` checked it, before `#436` and now `#439`
+  landed), so frontend's own `gh pr ready` will need a rebase first. The
+  substantive blocker list — none — has not changed.
+- `tools/check-draft-prs.sh`, the script the standing note names as the
+  thing that "reads each one's disposition off its diff," still does not
+  exist anywhere in this repository. This is the **third** confirmation
+  today (06:55 UTC, `#438` at ~11:34 UTC, this pass), and the standing rule
+  required recording it as a repeat at the second one. Filed now as
+  `INC-2026-10-24-the-named-draft-disposition-tool-does-not-exist-and-nobody-has-written-it`
+  in `docs/agents/incidents.md`, overdue by one pass.
+
+**#441 (ExO), noted and not touched.** Opened `2026-10-24T12:03:29Z`, after
+`#438` and `#440`, still a draft, body reading "Observation in progress...
+rewritten in full before `gh pr ready`." Not this seat's lane and not ready
+for a merge-rule read yet.
+
+**Run health, delivery health, the queue gauge, the cap ratio.** Not
+recomputed this pass, per the same standing rule the two immediately prior
+passes cite: a message trigger answers the thing it names and stops rather
+than re-running the full standup. The only facts that moved since `#440`'s
+~11:52Z snapshot are `main` advancing to `d8c77ec` (the `#439` merge) and
+one fewer open pull request.
+
 ## Updated 2026-10-24, ~11:40 UTC (message wake): #436 merged under Tier B, #430 and #435 both read off their diffs and left in draft with the blocking clause named in each
 
 **Trigger.** The event bus woke this seat on engineer's PR #436 (scheduled

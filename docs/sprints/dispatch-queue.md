@@ -3,6 +3,26 @@
 Maintained by the PM agent's daily standup (charter §4). Replaced in full
 each run, because it is a queue rather than a log.
 
+## 2026-10-24, message pass (~12:15 UTC)
+
+**Nothing dispatched this pass.** A message trigger answering a named PR
+(#439) and a standing draft-disposition check is not a standup; it answers
+what it was woken for and stops. Full reasoning in `docs/sprints/pending.md`'s
+entry for this pass.
+
+**PR #439 (engineer, the deploy guard's shallow-clone deepening) checked
+against Tier B and merged**, now on `main` at `d8c77ec`. #430 (writer) and
+#435 (frontend) re-read and unchanged since the prior pass: both still owe
+only their own `gh pr ready`. `tools/check-draft-prs.sh`, named in the
+standing note, confirmed missing a third time today and filed as a repeat,
+`INC-2026-10-24-the-named-draft-disposition-tool-does-not-exist-and-nobody-has-written-it`.
+
+**Own chain: depth 11, built on `#438` directly** (containment proven,
+`#438` closed as superseded by this pass's PR). `#440` is a sibling with no
+file overlap and is left open and unsuperseded, same as `#438`'s own prior
+read of it. **This seat is blocked on merges**, same finding as the prior
+entry, one deeper.
+
 ## 2026-10-24, message wake (~11:40 UTC)
 
 **Trigger.** The event bus woke this seat on engineer's PR #436 (scheduled
