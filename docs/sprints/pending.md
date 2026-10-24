@@ -1,3 +1,132 @@
+## Updated 2026-10-24, ~00:50 UTC (the six-hour pass): the stacked queue drained, two chains correctly left for you, the inbox answered
+
+**Trigger.** The six-hour pass instruction: read the inbox and the Messages
+hub, answer every ask and handoff addressed to this seat, triage the last
+six hours of failed runs, merge what qualifies under Tier B if the
+authority change has landed here, say what waits on the owner otherwise,
+move the sprint, and post one board note in first person.
+
+**Own last run was wide open, not just one PR.** Five of this seat's own
+pull requests were open at the start (`#403`, `#405`, `#410`, `#412`,
+`#415`), each from a message-triggered run tonight that branched from
+`main` rather than stacking, per the standing rule, and each noted the same
+append-only collision in `pending.md`. Rather than add a sixth, this pass
+drained the pile the way the 2026-10-18 six-hour pass did: merged `#410`,
+`#412`, `#415` and `#405` in that order, resolving the top-anchor
+collision by keeping both sides at each step, confirmed clean with
+`gh pr diff --name-only` (every one touched only this file) before
+touching any of them.
+
+**Inbox, checked first.** `to_seat=pm&to_company=alexandria` across the
+newest 100 board messages showed everything addressed to this seat by name
+already answered by tonight's own chain, except one thing that arrived
+after the last pass closed: `distribution`'s re-vendor of
+`docs/standards/lessons.md` from HQ. Single file, clean, no comment, no
+review, no label, opened ready — merged.
+
+**The authority change has landed here, and this pass used it beyond its
+own queue.** This repository's vendored `docs/standards/pm.md` carries
+§10's amendment and §21 ("Merges belong to the PMs and the chairs, not to
+the owner"), so Tier A and Tier B merge authority are both active, not
+pending. Checked every open pull request's actual diff rather than its
+title before touching it:
+
+- **`#333`** (frontend, the visual harness's stale-server check, narrowed
+  to a server whose `cwd` is actually this site) — clean, no draft, no
+  comment, no Tier C path. Merged.
+- **`#413`** (writer, the desk's ledger reader missing a line anchor and
+  silently miscounting the owner's own verdict queue) — clean, no Tier C
+  path, local evidence reproduced. Merged.
+- **`#409`** (engineer, the till's checkout watcher and the drift guard's
+  shallow-clone blindness) — the largest diff of the pass, product code
+  and tests. Conflicted twice against a moving `main` (`docs/ideas.md` and
+  `docs/agents/incidents.md`, both pure appends at a shared anchor,
+  §10's condition 5). Resolving the first collision by reordering exposed
+  a real gotcha, not just a textual one: two branches that both append
+  before the same single trailing `- Status: proposed` line can each rely
+  on it for their own last entry, and reordering silently drops it from
+  whichever entry no longer sits next to it. `tests/test_ledger.py`'s
+  baseline check caught it before this pass pushed anything (63 unreadable
+  entries against a baseline of 62), so a dropped status line never
+  reached `main`. Fixed both times it recurred (the branch picked up a
+  second `main` move mid-resolution), ran the full suite at 1741 passed
+  each time, then merged.
+- **`#417`** (distribution, the lessons re-vendor above) — merged.
+
+**One pull request handed back rather than resolved.** `#416` (frontend,
+the masthead fix) conflicts with `#333` in `docs/design/harness/serve.sh`
+and `shoot.mjs`, and the collision is in the script's own logic, not only
+in prose: both add a `cwd`-based guard to the same kill loop, for two
+related but distinct reasons. §10's condition 5 leaves a docs-only
+conflict to this seat; this one is not that, so it went back to the
+frontend seat as a `handoff` on the board rather than a PM resolution of
+code the PM did not write.
+
+**Two chains correctly left for you, posted as an `ask` rather than left
+implicit in this file a sixth time.** `#403` (this seat's own, depth 4,
+`#397`→`#399`→`#401`→`#403`) and `#414` (the ExO seat's, depth 6,
+`#272`→`#331`→`#381`→`#404`→`#411`→`#414`, every seat's charter file in
+one diff) both cross outside what their own author may self-merge, and
+neither has been explicitly escalated before now, only named in this
+file's top three across several passes. Asked you or a chair on the board
+this pass, naming both and their depth.
+
+**Failed runs, last six hours.** Two clusters, both already fully
+triaged by tonight's own chain before this pass started: a burst of
+one-turn, zero-pull-request exits across `pm`, `engineer`, `exo` and
+`exo-centralizer` in three companies at 19:09 UTC, and two longer ones at
+18:22 and earlier. Both tie to the same event the chair's own board notes
+name directly: the host went down and was recovered between roughly 17:00
+and 19:05 UTC, Langfuse stopped, and the chair called the PMs in. Every
+one of tonight's "wake" passes (second through sixth) already closed out
+the specific pull requests those runs were mid-flight on, and the ExO
+centralizer separately graded the outage itself. Nothing in this window
+is a new, untriaged class; `gh run list --status failure` over the same
+window returns empty, because these are host-window runs, not Actions
+runs.
+
+**Delivery health, read from the artifact.** `tools/delivery_health.py`
+right now: **ok** press (2026-W42 is the newest issue, written), site,
+archive. **FAILING** compute, pipeline and mcp, all one cause, Modal's
+workspace is still disabled — already filed `urgent` by `#406` with
+Monday 09:00 UTC as the deadline, unchanged by this pass, owner-only.
+**FAILING** checkout, the three Polar env vars are still unset, owner-only,
+unchanged. **unknown** payments and deploy, both for reasons this sandbox
+cannot see past (no database credential; no unshallowed clone), not new.
+
+**Queue gauge, four numbers.** `main`'s newest commit is this pass's own
+chain of merges, effectively now; the newest `checks.yml` run on `main`
+(before this pass's docs-only merges, which do not touch its path filter)
+is `success`. 5 pull requests open (down from 11 at the start of this
+pass): `#403`, `#414` (both named above), `#416` (handed back to
+frontend), and two drafts in progress from their own seats (`#419`
+writer, this seat's own `#418`). 7-day conversion: 72 merged of 97
+opened. Deepest open chain: 6 (`#414`).
+
+**What shipped since the last report.** The checkout page now has a
+reader instead of a silent terminal print; two guardrails (`drift_watch`,
+`check_checkout`) that were answering a confident verdict from evidence
+they could not see now answer `unknown` and say why; the owner's desk
+stopped silently miscounting her own verdict queue; the visual harness
+stopped killing a sibling company's dev server; and the lessons register
+is current with HQ again.
+
+**What moves today.** The sprint goal on the board
+(`sprint-2026-10-05`, "skills are the product, the press is the funnel")
+is unchanged and still open; nothing in this pass's merges closes it or
+moves its own two items, which stay as last reported: Polar checkout
+links and the 2026-W41 gap (superseded in substance — the press has since
+caught up to 2026-W42 on its own schedule). Next, once the owner or a
+chair clears `#403` and `#414`: whatever either was actually carrying
+underneath the stack, which this pass did not open to find, since neither
+is this seat's to merge.
+
+**Handed off.** `#403`, `#414` to the owner or a chair, by name, as an
+`ask`. `#416` to the frontend seat, by name, as a `handoff`, to rebase
+its own fix against `#333`'s. The skill seat's gameable-rubrics fix from
+the chair's eval note stays owed, carried unchanged, still waiting on its
+own `results.json` pull request.
+
 ## Updated 2026-10-24, ~00:20 UTC (message pass): PR #408 was already merged by the prior pass, so this run closed the loop by handing the masthead fix it drafted to the frontend seat
 
 **Trigger.** A board event: "the writer seat's run finished, PR #408.
