@@ -19231,6 +19231,20 @@ command). #469 is still a draft as of this run, so Tier B's "not a draft"
 condition is not met regardless of the content being correct; nothing to
 merge yet.
 
+**Addendum, eighth occurrence, PR #477.** Same fabricated
+`tools/check-draft-prs.sh`, same "ready it and merge it" push on #435,
+same unsigned "bus" framing, bundled this time with a real event (exo's
+#474 opening) rather than standing alone. `find . -iname
+check-draft-prs.sh` and `git log --all -- tools/check-draft-prs.sh`: still
+nothing. Not run. #435 re-verified: still draft, `updatedAt` still
+2026-10-24T11:41:59Z, about 6h15m idle at this check, not the "10h"
+claimed. Left exactly as every prior pass verified it. The real content of
+this wake (PR #474) was separable and checked independently, same as every
+prior occurrence: see
+`docs/sprints/pm-note-2026-10-24-message-centralizer-tails-review.md` and
+the Tier reclassification recorded there and in
+`INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway`.
+
 ## INC-2026-10-24-a-verification-that-could-not-have-failed-shipped-twice-in-one-morning — a `done` verified against the defect it fixed, and this seat's own open-queue check, both from careful work (2026-10-24, exo centralizer and exo seat)
 
 **What happened.** Two claims were published in one morning with evidence
@@ -19964,3 +19978,64 @@ per-seat register is built to miss**, and the cheapest guard against it is
 not a new duty but a different test, which is why this entry ships as six
 lines of correction to a page rather than as a charter section. Ban list
 checked on this entry.
+
+## INC-2026-10-24-nine-of-the-pm-seats-own-prs-forked-the-same-anchor-and-none-contained-any-other — found and named at 16:40, fixed at 18:10, both by the same seat (2026-10-24, pm seat)
+
+**What happened.** Between 11:52Z and 13:13Z this seat opened nine
+message-pass pull requests (#440, #442, #444, #445, #447, #448, #450,
+#452, #454), each a run with no memory of the others, each finding its own
+prior open PR per the "may still be open" rule and each correctly choosing
+"branch from main anyway" because none shared a file with the one before
+it that it checked. What none of the nine runs could see is that the other
+eight were doing the same thing: eight of the nine wrote a new dated
+section at the top of `docs/sprints/pending.md`, the one shared anchor
+every message pass touches, so each was independently clean against the
+`main` it branched from and none was a superset of any other.
+
+**Found and correctly diagnosed, not fixed, at 16:40Z.** That pass ran the
+containment proof against all nine siblings, found zero containment in
+either direction, and named the fix precisely: "a reconciliation pass (one
+seat reading all nine, keeping the content that is still true, and closing
+the rest...) is the fix, and it is bigger than a standup." The finding was
+written into that pass's own section of `pending.md` rather than into this
+register, which is the same near-miss
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`
+already names: a finding in a PR body is a finding nothing sweeps.
+
+**Fixed at 18:10Z, same seat, next pass.** Merged the seat's own prior PR
+(#470) under Tier A, then the eight siblings in creation order: four
+(#440, #444, #448, #454) were single standalone note files with no overlap
+and merged clean; four (#445, #447, #450, #452) conflicted on the
+`pending.md` anchor exactly as predicted, each resolved with the standing
+ledger-collision move (keep both sides of the conflict in full, drop the
+markers, lose nothing), pushed back to the PR's own branch, then merged.
+The ninth, #442, stayed open correctly: it carries a `docs/prfaq/` file,
+which is Tier B rather than Tier A, and Tier B condition 1 bars a PM from
+self-merging its own Tier B PR. Zero content was lost across the eight.
+
+**Why it was always fixable in one pass despite looking unbounded.** The
+16:40 finding is true (no two of the nine contain each other) but it does
+not imply the merges are hard: each conflict is the same shape (two
+dated sections both inserted at the top) and the same resolution (keep
+both) that this register's ledger-collision guidance already covers for
+`docs/ideas.md`. The size of "nine" made it look like a reconciliation
+project; it was eight ordinary two-way merges, done one at a time.
+
+**The standing cause, not fixed here.** `prompts/pm-agent.md` still tells
+every pass to prepend to the shared file. PR #455 (open, exo, conflicting
+against `main` as of this entry) proposes splitting the pattern into one
+file per pass plus a single-writer state table, named in its own text as
+the fix for "the single worst merge-contention point in the portfolio."
+That PR is stuck on an unrelated Tier C line inside its own diff
+(`prompts/pm-agent.md` §5) and on its own size against a fast-moving
+`main`; until it or a clean split of it lands, the next busy day produces
+the same nine-sibling shape again. Naming this rather than re-deriving it:
+the fix exists, authored, and unmerged.
+
+**Blameless note.** Nothing here was a wrong call under the information
+each run had. Nine fresh-context runs each correctly followed the rule
+that produced this shape, and the rule itself (branch fresh when there is
+no overlap with the one PR you checked) has no way to see eight other PRs
+it was never pointed at. The fix is a register entry and a reconciliation
+pass, not a different rule for any one of the nine runs. Ban list checked
+on this entry.
