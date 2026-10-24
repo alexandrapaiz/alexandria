@@ -18757,3 +18757,494 @@ cutting gates to make a budget.
   this one.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-24 — The deepening fetch should report how long it took, so the ceiling on it is a distribution rather than one measurement (engineer seat, message run)
+- Trigger: today's incident. `DEEPEN_TIMEOUT_SECONDS` is 90 and its comment
+  says the number was measured rather than guessed, at 4.5 seconds for this
+  repository's whole history on 2026-10-24. That measurement was taken on an
+  idle container. The first production failure of the function it protects
+  happened in a container that was also running the full test suite, and the
+  surface could not tell a fetch that timed out from a fetch that lost a lock
+  from a fetch that found the work already done, because all three arrive as
+  the same `False`.
+- What: record the elapsed seconds of the fetch and the reason it ended in
+  the deploy row's evidence, next to `deepened` and `fetch_forbidden` which
+  are already there. Then the ceiling stops being one reading from one
+  machine, and the next reader of an undatable drift gets the one fact that
+  separates a slow remote from a busy host. Nothing about the verdict
+  changes, because as of today the verdict is read off the checkout and not
+  off the fetch.
+- First step: one `time.monotonic()` pair in `_deepen`, one key in the
+  evidence dict, and a line in the `unknown` branch's reason. The tests that
+  assert on that branch already read the evidence, so they are where the new
+  key gets its assertion.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Every card in this lane closes with a hand no seat holds, and nothing counts that (engineer seat, message run)
+- Trigger: today's board read. The engineer lane has four cards in `This
+  sprint` and every one of them ends in the same sentence. Checkout needs
+  three values in the site's environment. Compute needs the owner to switch
+  the Modal workspace back on. Deploy needs `modal deploy` from a hand
+  holding a Modal token. Press needs either `modal run ... ::resend` or a
+  written decision. The oldest was filed on 2026-10-14, which is ten days.
+  This seat has opened five pull requests in the last twenty four hours and
+  every one of them was an instrument pointed at those four cards rather than
+  a card closing, which is the honest description of the lane and is a
+  sentence somebody has to write by hand every time.
+- What: a card can say what it is waiting on, and the standup can count it. A
+  line in the body with a fixed shape, `Blocked on: <the hand>`, read by
+  `tools/board.py show --seat <x>` and summarised in one sentence: how many
+  of a lane's open cards are blocked, on how many distinct hands, and how old
+  the oldest is. The value is not the dashboard. It is that a lane which is
+  100% blocked looks identical, from main, to a lane that is merely slow, and
+  the difference decides whether the right response is to build harder or to
+  ask the owner for ten minutes.
+- First step: the convention and the reader, nothing else. One regex over the
+  card bodies the board already returns, one summary line in
+  `tools/board.py show`, and the four cards above get the line added in the
+  same change as examples that are true on the day they are written.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A guard that runs a command for its side effect judges the side effect, which belongs in the company standards (engineer seat, message run, for the ExO seat's relay)
+- Trigger: `INC-2026-10-24-the-deepening-fetch-landed-the-history-and-called-it-a-failure`,
+  filed in this run. A repair shipped yesterday and the first run to need it
+  reported its own success as a failure, because it ended on the fetch's exit
+  status instead of on the question the fetch exists to answer. The guard was
+  looking at the right repository and talked itself out of what it saw.
+- What: one rule, in the `any` section, in about two sentences. When a check
+  runs a command for a side effect, the verdict is read from the world
+  afterwards and never from the command's return code, because the two differ
+  every time the world has more than one writer in it. Ansible is the
+  worked example in the industry and it is worth naming: `changed_when` and
+  `failed_when` exist precisely so a task's outcome can be decided from
+  observed output rather than from `rc`, which is the same correction made
+  in configuration management long before this repository existed.
+- First step: the relay, not a commit. `docs/standards/lessons.md` is a
+  vendored copy and no seat here may edit it, so this goes to the chair
+  through `docs/agents/hq-relay.md`. If it is rejected as too narrow for a
+  company standard, the fallback is a line in this repository's own
+  `docs/agents/delivery-health.md`, which is where every guard this rule
+  would bind already lives.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Ansible makes the outcome a declaration, so a return code is one input rather than the answer (engineer seat, message run)
+- Trigger: the rotation, taken off the landscape and onto the craft this run
+  was working in, the way the Argo CD and Datadog scans earlier today were.
+  The landscape's academic-tools shelf has been read four times today by
+  three runs of this seat, and the question in front of this one was not
+  about search. Read live at
+  docs.ansible.com/ansible/latest/playbook_guide/playbooks_error_handling.html.
+- **Worth stealing: the outcome is a declaration, not an inference.**
+  `failed_when` and `changed_when` both take a condition over the task's
+  observed output, and the documentation's own words are that you define what
+  failure means in each task, "based on return codes or output". Two things
+  are good about that and they are separable. The first is that `rc` is
+  demoted to one input among several rather than being the answer. The second
+  is that `changed` is a first-class third state beside ok and failed, so a
+  run that did nothing because nothing needed doing is reported differently
+  from a run that did something, and neither is an error. This repository's
+  guards have the first half as of today and do not have the second: a
+  deepening fetch that found the history already present and one that
+  fetched it both return the same `True`, and those are different facts about
+  the runtime.
+- **What alexandria does better: the remedy is in the failure, not in the
+  runbook.** Ansible will tell you a task failed and show you the module's
+  output, and what to do about it lives in the author's head or a wiki. Every
+  unknown on the delivery surface names the one command that closes it, in
+  the sentence that reports the unknown, and since today it also refuses to
+  name a command the run has already tried. That is a small thing and it is
+  the difference between a reader who acts and a reader who files.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The drift card's dedupe key is the thing that changes when the drift is fixed, so a deploy leaves the old card open and opens a new one (engineer seat, message run)
+- Trigger: `python3 tools/drift_watch.py --dry-run`, run this afternoon to
+  check the second door into the fix this run shipped. It printed
+  `would create: Deploy: weekly is not running main, still on 2e313065f5c7`,
+  and the board already carries an open card reading `Deploy: weekly is not
+  running main, still on 0cbc51a0e248`. Same app, same drift, same seat, two
+  cards. The same is true for distill and ingest.
+- What is happening: `TITLE` puts the running image's key in the card title
+  and `find_card` matches on the app and that key, so the dedupe holds only
+  for as long as production does not move. The running image did move,
+  between 2026-10-18 and today, without closing the drift, because a deploy
+  of some apps is not a deploy of weekly. Every such move orphans the card
+  that was tracking the problem and starts a fresh one with no history on it,
+  which is the opposite of what the key was for. The comment above `TITLE`
+  argues the key belongs in the title so the list view reads as distinct
+  alarms, and that argument is about the app and not about the image.
+- What: dedupe on the app, which is the thing the card is about, and put the
+  running image in the body where it is already printed and where `nudge_body`
+  already updates it. A card then follows one app's drift from the day it
+  starts to the day a deploy closes it, including across an intermediate
+  deploy that did not help, and the board stops accumulating one card per
+  image per app.
+- First step: `find_card(payload, [app], prefix=TITLE_PREFIX)` and a `TITLE`
+  without the key, then the two existing cards per app get merged by hand or
+  the older ones closed with a comment naming the newer. The tests for
+  `board_alarm.find_card` already cover prefix-plus-terms matching, so this is
+  a change to the terms and a rewritten dedupe test, not new machinery.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A tool that declares an exit-status contract should be required to have a test that reads it back (engineer seat, hook run)
+- Trigger: this run. `tools/check_authority.py` shipped in #456 with 714
+  lines, three verdicts, an exit-status contract written out in its docstring,
+  and nothing in the suite reading any of it. Writing the tests found a false
+  `clear` in the one direction the docstring forbids itself, which means the
+  promise and the code had disagreed since the moment both were written.
+  Fourteen instruments in `tools/` print a verdict and exit on it, and nothing
+  in this repository knows which of them have a test behind that exit status
+  and which only have the paragraph.
+- What: one meta-test, in the shape `tests/test_ci_coverage.py` already uses
+  for a different invisible defect. For every file in `tools/` whose docstring
+  contains an exit-status table, require a test file that imports it and
+  asserts the mapping. The pin list is the model: today's set is written down,
+  it may shrink and may not grow, and a new instrument with a contract and no
+  test fails the gate on the pull request that adds it rather than six days
+  later. This is L-A9's amendment with one more rung on it: the amendment says
+  name the command and say what its exit status means, and this run's evidence
+  is that a docstring saying so is still a specification. The rung that makes
+  it a gate is a test that reads the status back, because that is the first
+  moment the promise and the code are in the same room.
+- First step: the detector for the contract, which is the only part with any
+  judgement in it. A docstring table of `0 clear` / `2 reserved` shaped lines,
+  or a module-level `EXIT` dict, are both unambiguous and both already present
+  in the two instruments that have one. Start by printing the set across
+  `tools/` and reading it before writing any assertion, because the set size
+  decides whether this is a gate or a six-month migration.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A detector cannot be edited without flagging its own pattern definitions, and there is no way to say read, ruled, waived (engineer seat, hook run)
+- Trigger: `python3 tools/check_authority.py --range origin/main...HEAD`, run
+  against this run's own branch after the fixtures were rebuilt. Verdict
+  `undecided`, exit 3, ten findings, and all ten are lines inside the tool's
+  own regex definitions: `SECRET_KEY`, `SECRET_LITERAL`, `CREDENTIAL_SHAPE`,
+  `SPEND` and `ACCOUNT` describe the shapes they look for, so they contain
+  them. These ten are a one-time artifact of the file being new, because once
+  it merges those lines become context. They come back on every future edit to
+  a pattern, which is to say on every improvement to the detector.
+- What: an auditable waiver, in the `# noqa` idiom and not in its semantics.
+  The difference that matters: a waiver marker is a claim that a human read the
+  line and ruled on it, so the tool should report waived lines in its output
+  and count them, never silently skip them. A `clear` with three waivers on it
+  is a different fact from a `clear` with none, and a surface that hides the
+  difference is how a suppression list becomes permanent.
+- First step: do not build it yet, because the design has an authority question
+  inside it that this seat should not answer alone. If any seat may write the
+  marker, then the gate on the owner's four reserved things is a gate any seat
+  can open with a comment, which is the one thing the tool exists to prevent.
+  The first step is the question, on the board, to the PM: who may waive, and
+  does a waiver expire. The code after that is an afternoon.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The suite's own module loader breaks on dataclasses, and ten test files carry the broken copy (engineer seat, hook run)
+- Trigger: `tests/test_check_authority.py` failed at collection, not at an
+  assertion, with `AttributeError: 'NoneType' object has no attribute
+  '__dict__'` raised from inside `dataclasses`. The cause is that the loader
+  pattern this suite copies between files, `spec_from_file_location` followed
+  by `exec_module`, never puts the module into `sys.modules`, and
+  `dataclasses` resolves a field's annotations by looking the defining class's
+  own module up there. For a module loaded by path and never registered that
+  lookup returns `None` and the decorator raises while the file is still
+  importing. `tools/merge_order.py` has no dataclasses, which is the only
+  reason the copy that was pasted from it works.
+- What: one shared helper, `tests/_load.py`, holding the loader once with the
+  `sys.modules` registration in it, and the ten or so files that carry their
+  own `_module()` calling it instead. The value is not the deduplication. It is
+  that the current failure mode is a collection error, which under
+  `pytest tests/ -q` is not one red test but a file that contributes no tests
+  at all, and the next seat to add a dataclass to any tool in `tools/` meets it
+  with no idea why. This is the same copy argument
+  `INC-2026-10-24-a-guard-pinned-to-a-copy-of-the-code-it-guards` makes one
+  level up: a hand-kept copy of a loader disagrees with reality on the day a
+  tool grows a dataclass.
+- First step: write the helper and convert one file, `test_check_authority.py`,
+  which is the only file that currently needs the registration. Converting the
+  other nine is mechanical and separable, and doing it in the same change would
+  put nine unrelated files in a diff whose point is one helper.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The bus should fill the recipient's company in from the sender's, because a blank half is a fan-out (engineer seat, message run)
+
+- Trigger: this run was woken by a `done` the dispatch described as "addressed
+  to you". The bus disagreed. The message carried `to_seat: engineer` and
+  `to_company: null`, it was answering a handoff sent nine minutes earlier by
+  `alexandra-systems/engineer`, and its reference was a pull request in the HQ
+  repository. A second message in the same inbox, from `Ursa/exo`, had the
+  identical shape and belonged to the Ursa engineer. Measured over the 500 rows
+  the bus returns: 374 carry both address fields, 108 carry neither, 15 carry a
+  seat with no company, 3 carry a company with no seat.
+- What: `POST /api/messages` defaults `to_company` to the sender's company
+  whenever `to_seat` is set and `to_company` is not, and stores the filled-in
+  value rather than the blank. Both of today's mis-deliveries were a seat
+  writing to its own company's counterpart and omitting a field it never
+  thought about, so the sender's own company is the right default in both,
+  and it is the right default in the general case for the same reason: a seat
+  that means to cross a company boundary is doing a deliberate thing and will
+  name it. The seats that genuinely have no company, `owner` and `everyone`,
+  are the exception the default skips.
+- Why this rather than a rejection: a rejection turns every existing client
+  into a broken one on the day it ships, and three of the four clients that
+  post to this bus are not ours to update. A default is invisible to a correct
+  caller and corrects an incorrect one.
+- Why it is the owner's and not mine: it is her server, and a rule there binds
+  twelve seats in five companies at once. `tools/board.py` now refuses to send
+  the bare row and `tools/board.py inbox` exits non-zero on one it receives,
+  which is the client half and the only half this repository owns.
+- First step: the measurement above, which is done, and one question to the
+  owner through the ExO relay: default it, reject it, or leave it and let each
+  client guard itself. The code behind any of the three is an afternoon.
+- Cost: $0.
+- Status: urgent
+- Why urgent rather than proposed: fifteen of these went out today and the
+  shape reproduces every hour nobody changes it, the half that would stop it
+  is on the owner's server and not in any repository a seat can push to, and
+  the client guard shipped today protects exactly one of the four clients that
+  post to this bus. Marked urgent so tomorrow's run and the PM see it without
+  re-deriving it from a mis-delivered message, which is what this run spent
+  its first twenty turns on.
+
+### 2026-10-24 — A dispatch that paraphrases a board message drops the field that says whose it is (engineer seat, message run)
+
+- Trigger: the event payload for this run quoted the body of the `done` in
+  full and introduced it as "a done from alexandra-systems/pm addressed to
+  you". Every word of the body was accurate. The addressing was not, and the
+  payload could not have said so, because the prose of a message does not
+  carry `to_company` and the paraphrase had no field left to put it in. The
+  run spent its first twenty turns re-deriving from the bus what one field
+  would have said.
+- What: the wake payload carries the message's `id`, `to_seat` and
+  `to_company` verbatim alongside the prose, and says "addressed to
+  `<company>/<seat>`" rather than "addressed to you" when the company is
+  blank. A seat reading "addressed to `engineer`, company not set" knows in
+  one line what this run measured in twenty turns.
+- Why it is worth more than the twenty turns: the four other seats named
+  `engineer` get the same payload with the same "addressed to you", and the
+  one most likely to act on a `done` is the one whose recent work rhymes with
+  the subject line. The payload is the last place the ambiguity could be
+  surfaced before a seat acts on it.
+- First step: this is the host runtime's payload builder and not this
+  repository's, so the first step is the ExO relay rather than a commit. The
+  evidence to send with it is this run's inbox read, which is three directed
+  messages of which one was ours.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A proposal that carries a measurement should carry the date the measurement expires (engineer seat, message run)
+
+- Trigger: the 2026-10-18 entry that proposed this run's own work is still
+  `proposed`, and two of its three measurements are now false. It recorded
+  that the bus has five kinds and that `handoff` is not one of them, and the
+  bus has six with `handoff` among them. It recorded that every message
+  carries a null `to_seat`, and 374 of 500 now carry both address fields. The
+  addressing was built in the six days between. Nothing read the entry in
+  those six days, so nothing noticed.
+- What: `tools/ledger.py` learns to spot an entry whose body contains a
+  measurement, which is a number next to a noun, and reports any such entry
+  still `proposed` after thirty days as stale rather than as pending. Not a
+  failure, a separate count in `--census`, because a stale measurement is a
+  different thing from a backlog and the owner triages them differently.
+- Why: the ledger's whole claim is that an observation written down is an
+  observation kept. A measurement decays on a schedule the prose never states,
+  and an entry whose numbers are wrong argues for the wrong fix with the
+  authority of having been checked. That is worse than an entry with no
+  numbers at all.
+- First step: count how many `proposed` entries older than thirty days carry a
+  number, on the live file, before writing anything. If the answer is three the
+  idea is not worth a command.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Temporal makes the second half of an address impossible to omit, and pays for it with a silent default (engineer seat, message run)
+
+- Trigger: the daily craft scan, taken as an adjacency pick rather than a
+  rotation through `docs/market/landscape.md`, because the run's finding is
+  about addressing between agents and the landscape's shelves are research
+  tools and newsletters. Temporal is named in
+  `docs/agents/durable-execution.md` and it is the engine the host runs these
+  seats on, so it is the nearest system that has already solved the problem
+  this run found. Read live at `docs.temporal.io/namespaces`.
+- What: the steal is that the second half of an address is completed at the
+  client and never sent blank, and the counterpoint is that a default which
+  silently resolves is worse than a blank which is flagged. Both halves below,
+  and the first is filed as its own proposal earlier in this run.
+
+**Observed 2026-10-24, from `docs.temporal.io/namespaces`.** Temporal has the
+identical structure to the board's bus. A workflow is addressed by a workflow
+id inside a namespace, and in its own words, "Temporal guarantees a unique
+Workflow Id within a Namespace. Workflow Executions may have the same Workflow
+Id if they are in different Namespaces." So the id alone is ambiguous across
+namespaces, exactly as `engineer` is ambiguous across companies.
+
+**The thing worth stealing.** Temporal never lets the second half be empty.
+"If no Namespace is specified, the Temporal Service uses the Namespace
+`default` for all Temporal SDKs and the Temporal CLI." The address is
+completed at the client, so nothing ambiguous ever reaches the wire, and the
+namespace has to exist first: "You must create a Namespace before using it in
+your Client." You cannot address a namespace into being. The board's bus does
+the opposite. It stores the blank, and the blank becomes a delivery to five
+seats. The proposal above is this steal with one change, which is that the
+sensible default here is the sender's own company rather than a literal named
+`default`, because both of today's mis-deliveries were a seat writing to its
+own company's counterpart.
+
+**The thing alexandria does better, and it is the half Temporal gets wrong.** A
+default that is wrong is harder to see than a blank that is flagged. A
+Temporal client that forgot its namespace does not fail, it addresses the
+`default` namespace successfully and silently, and the operator finds out when
+the workflow is not where they looked. `tools/board.py inbox` as of today
+refuses to resolve the ambiguity on the reader's behalf: it prints the message
+in a bucket named for its uncertainty and exits non-zero. The right shape is
+both halves and they are not the same half. Default at the sender, where the
+answer is known. Flag at the reader, where it is not.
+- First step: the steal is already filed as the first proposal of this run,
+  which is the one the owner answers. What is left over is the reader half,
+  and that shipped today: `tools/board.py inbox` names its own uncertainty and
+  exits on it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 - The corrected capacity fingerprint has no scheduled reader, and four of today's six events are unregistered (engineer seat, hook run)
+- Trigger: `INC-2026-10-24-twenty-runs-across-five-companies-ended-inside-one-minute-and-the-fingerprint-counted-one`
+  was filed this morning and ends by stating the corrected test in one line,
+  which is that two or more `exit: 1` rows from different seats inside sixty
+  seconds is one event whatever their turn counts. This run is the first to
+  apply it. Over the whole of 2026-10-24 it finds six multi-seat events
+  carrying 45 killed runs and 2,740 turns, and four of the six are in no
+  register, including the largest of the day at 18:27Z and one at 02:07Z that
+  has been invisible for nineteen hours.
+- What: the test is prose in a register, and prose does not fire. Lift it into
+  `tools/capacity_sweep.py` with a `--since` window, so the claim is a command
+  any seat can run in one line rather than a paragraph a seat has to decide to
+  believe. Then give it a reader. The register that holds the fingerprint is
+  `docs/agents/turn-caps.md`, owned by the ExO seat, and the ExO seat was
+  killed inside four of the six events it would have been diagnosing. The one
+  seat that runs every day and came up alive is this one, so the cheapest
+  reader is the engineer's own observation step, next to the machinery diff
+  and the green-main check that already live there.
+- First step: the twenty-five lines are already written and already verified,
+  embedded in the incident this run filed. Lift them into the tool with a
+  test over a fixture log and a test over the live one. The charter line that
+  calls it daily is an edit to this seat's own charter, so it is the owner's
+  merge and not this seat's to write.
+- Cost: $0.
+- Status: urgent
+
+### 2026-10-24 - A one-turn refusal is a wake spent, and nothing counts wakes (engineer seat, hook run)
+- Trigger: the same sweep. Across the day's six events there are 27 rows at
+  exactly one turn, and the timestamps show what they are. `alexandria-pm`
+  ended at 18:27:11.476Z, its replacement started at 18:27:11.483Z, seven
+  milliseconds later, and died after one turn at 18:27:24.274Z. A third
+  started and died the same way at 18:28:19.846Z. `atelier-pm` and HQ's `pm`
+  each burned two re-wakes inside twenty seconds.
+- What: an outage does not cost a seat one run. It costs the run, plus every
+  wake the host spends re-entering the outage, and the seat with the deepest
+  message queue behind it pays the most because each queued message buys
+  another immediate refusal. Nothing counts that anywhere. The turn ledger
+  counts turns and the board counts runs, so a wake spent on a refusal is
+  recorded as a run that did nothing rather than as capacity consumed.
+- First step: the sweep above grows one column, refused wakes per seat per
+  event, which is already derivable from the rows it reads. If the ratio is
+  as high as the 18:27Z window suggests, the fix is a backoff before the host
+  re-wakes a seat whose own previous run exited non-zero inside the last
+  minute. That is the host's code rather than ours, so it goes to the chair
+  through `docs/agents/hq-relay.md` with the measurement attached, which is
+  the pattern the bus-addressing finding already follows.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 - The inbox built for the incident register should cover the other registers two seats append to (engineer seat, hook run)
+- Trigger: today the append anchor collided twice in two different files.
+  Merging #462 into #475 conflicted in `docs/agents/incidents.md`, and four
+  of the PM seat's nine sibling branches conflicted on the top anchor of
+  `docs/sprints/pending.md`
+  (`INC-2026-10-24-nine-of-the-pm-seats-own-prs-forked-the-same-anchor-and-none-contained-any-other`).
+  This run fixed one file. The mechanism is not specific to it.
+- What: `tools/incidents.py` is already written against a register, an inbox
+  directory, an id pattern and a baseline, so the generalisation is a table
+  rather than a rewrite. The two registers that would benefit most are the
+  ones that collided today. Neither is this seat's to restructure: `pending.md`
+  is the PM's planning surface and this charter forbids editing it, and
+  `docs/ideas.md` is appended by every seat, so the owner and the PM decide
+  whether the ledger's readers can be pointed at a directory. HQ's own ledger
+  carries this proposal twice already for its growth register, per L-A18, so
+  a decision here is worth relaying either way.
+- First step: parameterise the tool over a small register table, then propose
+  the ledger as the first adopter in a separate pull request that changes no
+  prose, only where new entries land. Keep the fold optional, because the
+  reason this run's gate does not demand an empty inbox is that a gate able
+  to redden `main` over bookkeeping is worse than the collision it fixes.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 - Craft scan: Changesets solved today's problem first, and names its files to never collide (engineer seat, hook run)
+- Trigger: this run built an inbox for the incident register and had to choose
+  a filename scheme. Looking for prior art on the exact problem, which is many
+  contributors appending to one changelog, turned up the tool that is the
+  reference implementation of it.
+- What: the steal is the affordance for the contributor who has nothing to
+  file, and the counterpoint is the filename, where alexandria made the
+  opposite choice on purpose. Both below.
+
+**Observed 2026-10-24, from the Changesets project (`github.com/changesets/changesets`).**
+Changesets exists because a monorepo's `CHANGELOG.md` is an append-only file
+that every contributor writes to, which is the shape of every register this
+company keeps. Its answer is the one this run arrived at independently. A
+contributor runs `changeset add`, which writes one Markdown file into
+`.changeset/` holding the packages affected and a summary. Nothing touches
+the changelog. At release, `changeset version` consumes every file in that
+directory, writes the entries into the changelogs, and deletes the files it
+consumed. One author, one snapshot, exactly like the fold this run wrote.
+
+**The thing worth stealing, and it is not the mechanism.** The mechanism we
+already have. What Changesets has that this run does not is an answer for the
+contributor with nothing to file. It ships `changeset add --empty`, which
+writes a deliberately empty entry, and a bot that comments on any pull request
+carrying no changeset at all. Together those turn "I considered whether this
+needs an entry" into a recorded act rather than a silence. The incident
+register has the opposite default. Its standing rule fires on a repeat, so a
+run that looked for repeats and honestly found none leaves exactly the same
+trace as a run that never looked. That is the shape of incident 20, which is
+that recording is not enforcing, and it is also why
+`docs/agents/registers.md` exists. An empty filing is the cheapest instrument
+this company does not have.
+
+**The thing alexandria does better, and the filename is a real disagreement.**
+Changesets names its files with random human-readable triples like
+`lucky-pandas-wander.md`, and the reason is sound, because a random name
+cannot collide and therefore needs no coordination at all. The cost is that
+the filename carries nothing. You cannot grep the directory for the change you
+remember, and the name is discarded at release, so it never becomes a
+citation. This register's ids are cited by charters, by standards and by other
+incidents, so the file is named `INC-YYYY-MM-DD-slug.md` after the id inside
+it, which makes the directory greppable by the same string a charter quotes.
+That reintroduces the possibility of two seats choosing one name, so the gate
+this run shipped checks for exactly that: an id already in the register, two
+inbox files claiming one id, and a filename that disagrees with the heading
+inside it. The right read is that Changesets optimised for a name nobody ever
+cites and we optimised for a name everybody cites, and each choice owes a
+different check.
+
+**The second thing we do better, and it is small.** Changesets trusts its
+release step. `changeset version` is not asked to prove that the changelog it
+wrote contains every entry it consumed. This run's fold states the arithmetic
+and refuses itself when it fails, which is the discipline
+`tools/resolve_register_conflict.py` already applies to a merge resolution,
+and the reason it matters here is on the record:
+`INC-2026-10-24-a-hand-resolved-register-append-deleted-another-seats-line-with-no-marker`
+is a resolution that left valid Markdown and deleted a third seat's line.
+A fold is a resolution with better odds, not a different kind of act.
+- First step: `changeset add --empty` is the one worth copying, as
+  `python3 tools/incidents.py new --none`, writing a dated line into the
+  inbox saying a run swept for repeats and found none. It is a day-sized
+  piece of work and it would make the register's silences readable for the
+  first time.
+- Cost: $0.
+- Status: proposed

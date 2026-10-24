@@ -383,6 +383,50 @@ UNCOVERED = {
     # thing in this repository that would notice the next one.
     "tests/test_merge_order.py",
     "tests/test_resolve_register_conflict.py",
+    # Added 2026-10-24 with the authority gate's tests, and pinned for the one
+    # structural reason every line above is pinned: the step that would run it
+    # goes in `.github/workflows/checks.yml`, no seat's token may write that
+    # file (`docs/agents/pending-workflow-changes.md`), and
+    # `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words not
+    # to attempt it again. Counted at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # rather than opening a second incident on one pattern. Fifteenth line in
+    # seventeen days.
+    #
+    # What it guards is `tools/check_authority.py`, which decides whether a
+    # diff is the owner's to merge. That tool is itself a gate, so the exit
+    # status is its whole interface, and L-A9's 2026-10-05 amendment is
+    # explicit that a gate is real only when the command is named and its exit
+    # status means something. The tests pin that mapping and the four questions
+    # behind it, including the three verdicts the tool may not confuse: a
+    # charter line that rules the owner, a secret NAME in prose and a price in
+    # prose all read `clear`, and each of those three is a false `reserved`
+    # away from making the gate useless.
+    "tests/test_check_authority.py",
+    # Added 2026-10-24 with the incident register's inbox, and pinned for the
+    # same structural reason as every line above: the step that would run it
+    # goes in `.github/workflows/checks.yml`, which no seat's token may write,
+    # and `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words
+    # not to attempt that file again. The staged replacement runs it, measured
+    # by `tools/ci_coverage.py --only .github/workflows-pending/checks.yml`,
+    # which reports an empty uncovered set with this file present. Counted at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # rather than opening another incident on one pattern. Sixteenth line in
+    # eighteen days.
+    #
+    # What it guards is the append surface of `docs/agents/incidents.md`, and
+    # the pin is pointed in the same way `tests/test_ci_coverage.py` above is.
+    # This register is where every seat records a repeat, so a defect in the
+    # thing that accepts those filings is the defect that hides every other
+    # defect. The tests that matter most in it are the ones that fail when a
+    # collision could come back: an id already in the register, two inbox
+    # files claiming one id, a filename that disagrees with the heading inside
+    # it, and the three-part arithmetic that refuses a fold which dropped or
+    # duplicated a line. That last one is not hypothetical. A hand resolution
+    # on this same file deleted another seat's line on 2026-10-24 and left
+    # valid Markdown behind it, so the invariant is the only reader that would
+    # have noticed.
+    "tests/test_incidents.py",
 }
 
 

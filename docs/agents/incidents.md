@@ -19743,6 +19743,242 @@ not exist is not a strict gate, it is a coin flip that reads as strict**, and
 the only reason this one has landed right every time is a prose habit one
 seat invented and nothing records. Ban list checked on this entry.
 
+---
+
+## INC-2026-10-24-the-deepening-fetch-landed-the-history-and-called-it-a-failure — the sixth entry on the shallow clone, and the first where the repair reported its own success as a failure (2026-10-24, engineer seat, message run)
+
+**What happened.** The deploy row answered `unknown` to this seat's run,
+eight hours after the change that was supposed to stop it ever answering
+`unknown` again. The words were `the drift cannot be dated from this
+checkout, which is shallow: git fetch --unshallow could not complete here`.
+One command later, in the same clone, in the same minute, `git log --oneline
+| wc -l` printed 2,347 and `git rev-parse --is-shallow-repository` printed
+`false`. The history the guard said it could not fetch was already there, and
+the fetch that it said could not complete is what put it there.
+
+**Why.** `_deepen` in `tools/delivery_health.py` ended on
+`ok and not _is_shallow(repo_root)`, where `ok` was the fetch's exit status.
+Its own comment two lines above said the thing the caller needs to know is
+whether the history is here now, and then the code asked a different
+question and let the worse answer win. Three ordinary things produce a
+non-zero exit with every object already landed. The 90 second timeout kills
+git after `.git/shallow` has been removed. Something else in the runtime
+holds a lock on `.git`. Or a second reader of the same checkout finishes the
+deepening first, and this one gets `fatal: --unshallow on a complete
+repository does not make sense`, which is exit 128 for a repository that is
+in exactly the state the caller wanted.
+
+**The shape, which is the reason this is filed rather than just fixed.**
+This is the sixth entry about a one-commit-deep checkout and the fifth in
+two days about this one surface, but the previous five are all one shape: a
+guard could not see, and said something confident anyway. This one is the
+inverse. The guard could see perfectly well and talked itself out of it,
+because it trusted a return code over the thing the return code is about.
+A repair that cannot recognise its own success is worse than no repair,
+since it adds a sentence that sends the reader after a command that has
+already run.
+
+**What this run did about it.** The question is asked of the checkout.
+`_shallow_state` is new beside `_is_shallow` and keeps the third answer,
+"git could not say", so an unanswerable `rev-parse` cannot read as a landed
+history while an answered one decides the case. A remembered failure is
+re-examined against the checkout rather than quoted back for the rest of the
+process, which matters because `tools/drift_watch.py` writes the board card
+that `delivery_health` only prints, and it is the second door through the
+same memo. Three tests, each of which fails on the commit before the fix.
+
+**What the org should take from it.** When a guard runs a command for its
+side effect, judge the side effect and never the command. The exit status
+answers "did this invocation finish cleanly", and that is a different
+question from "is the world now in the state I needed", every time the world
+has more than one writer in it. This repository has at least three readers
+of one checkout, so it always does.
+
+## INC-2026-10-24-a-seats-scratch-file-in-shared-tmp-was-overwritten-by-another-seat-mid-run — the second occurrence in one day, and this one was a near miss rather than a loss (2026-10-24, engineer seat, message run)
+
+**What happened.** This run wrote its pull request description to
+`/tmp/prbody.md`, uploaded it with `gh pr edit --body-file`, and a few minutes
+later opened the same path to amend it. The file held a different seat's pull
+request description: a run about `tools/unjam-ledger.sh`, host units, and a
+`#403` that is nothing to do with this branch. The upload had already
+completed, so the published description was this run's own and nothing was
+lost. Had the amendment come before the upload, this run would have published
+another seat's words under its own number.
+
+**Why.** Every seat on this host runs in its own working directory and shares
+one `/tmp`. A fixed filename there is a shared mutable global between
+processes that do not know about each other, and the only thing deciding who
+wins is who wrote last.
+
+**Why it is a repeat.** An engineer run earlier today filed
+`A seat's scratch file belongs under its working directory, because /tmp is
+shared` in `docs/ideas.md`, with the remedy "write to `./.prbody.md` instead,
+and read a file's own first line back before piping it anywhere that
+publishes". This run did write to `./.prbody.md`, then copied the file to
+`/tmp` to leave the working tree clean for the commit, and met the hazard the
+entry had named four hours earlier. That is the standing rule's case exactly,
+so it is here.
+
+**What this run did about it.** Amended from `$(mktemp -d)`, which gives a
+path no other process can collide with and needs no cleanup discipline,
+rather than from either a fixed `/tmp` name or a file in the tree.
+
+**What the org should take from it.** `./.prbody.md` was half a remedy. It
+solves the collision and creates a second problem, which is an untracked file
+in a tree the run is about to commit, and solving that second problem is what
+sent this run back to `/tmp`. The whole remedy is `mktemp -d` once at the top
+of a run: unique by construction, outside the tree, and nothing to remember.
+A rule that trades one hazard for another will be undone by the next seat
+that meets the other one, which is what happened here inside four hours.
+
+## INC-2026-10-24-the-authority-gate-shipped-with-a-false-clear-in-the-one-direction-it-forbade-itself — L-A9's own 2026-10-05 case, repeating against the instrument that case produced (2026-10-24, engineer seat, hook run)
+
+**Observed 2026-10-24 by the engineer seat, in the hook run that opened
+PR #462, against code the same seat wrote in the message run behind PR #456.
+Caught before either reached `main`, so the entry is about the shape rather
+than about a cost.**
+
+**What happened.** `tools/check_authority.py` decides whether a diff is the
+owner's to merge. Its docstring states the direction of error in its own
+words: a wrong `reserved` costs one merge of waiting, a wrong `clear` costs
+an authority breach, so `undecided` exists, it is non-zero, "and it is the
+error this command is allowed to make." The file shipped with a false `clear`
+in it.
+
+`SETTING_VALUE` exists to keep ordinary configuration out of the secret
+question, so that `id-token: write` is read as a setting rather than as a
+credential. It is compiled with `re.I` and its last alternative is
+`[A-Z][A-Z0-9_]{2,}`, which under that flag fullmatches any single word of
+letters, digits and underscores at any length. It was checked before
+`CREDENTIAL_SHAPE`. So a forty-character hex token assigned to a name ending
+`_API_KEY` matched the setting exemption, returned before the credential
+check it was meant to defer to, and cleared.
+
+**Why it is a repeat.** L-A9's 2026-10-05 amendment is this shape, and this
+instrument is the thing that amendment asked for. Its own worked example is
+`docs/standards/pm.md` §10: the company put a gate on its only self-service
+merge path, made a wrong answer an incident, and implemented the gate as a
+seat reading a paragraph from memory once per run, with nothing in `tools/`
+computing it for two weeks. The amendment's test of a real gate is to name
+the command and say what its exit status means. #456 did both, in a docstring,
+and stopped there. 714 lines, three verdicts, an exit-status contract, and
+nothing in the suite read any of it, so the gate's stated promise and the
+gate's behaviour had never been compared. The promise was wrong about the
+code on the day the code was written.
+
+**The second finding, same run, same cause.** Pointed at its own diff for the
+first time, the gate answered `RESERVED` with eleven findings, and every one
+of the eleven was a fixture inside its own test file: credential-shaped
+strings and secret-shaped assignments written out in full, which is what a
+test for a secret detector is made of. A gate whose first real verdict is on
+itself, and wrong, is a gate people learn to pass with `--no-verify`. The
+tool's own docstring is the argument: `reserved` is the cheap error only while
+it stays rare.
+
+**What this run did about it.** The order is reversed, so `CREDENTIAL_SHAPE`
+is asked before the setting exemption, and a long constant now reads
+`reserved` instead, which is one merge of waiting. 43 tests behind the gate,
+every one through `examine()` on a unified diff, asserting the verdict and the
+exit code rather than any regex, because the verdict is what a caller acts on.
+Every fixture that names a secret, a price or an account is assembled from
+parts, and one test feeds the file to `examine()` as an all-added diff and
+requires `clear`, so the promise is asserted rather than trusted. That test
+caught the last fixture the hand-audit had missed. What the run deliberately
+did not do is exempt `tests/` inside the tool: a real credential committed
+under `tests/` is a leaked credential.
+
+**What the org should take from it.** The gap L-A9 names is between a gate
+that is specified and a gate that is computed, and this run says the ladder
+has one more rung than the amendment describes. A command with an exit-status
+contract in its docstring is still a specification. The rung that makes it a
+gate is a test that reads the exit status back, because that is the first
+moment the promise and the code are in the same room. Fourteen instruments in
+`tools/` print a verdict and exit on it; nothing in this repository knows
+which of them have that test and which only have the paragraph. Until
+something does, the next instrument ships the same way, and it will be the
+author's own docstring that is wrong.
+
+---
+
+## INC-2026-10-24-a-message-addressed-to-engineer-is-addressed-to-five-engineers — the bus delivers on a seat name alone, so four seats read a handoff that belongs to a fifth (2026-10-24, engineer seat, message run)
+
+**Recorded under the standing rule at the top of this file.** The reader half
+is the second occurrence of
+`INC-2026-10-18-the-inbox-a-charter-names-has-no-reader-in-the-toolbox`, filed
+at the moment it repeated. The addressing half is new and it is the larger of
+the two.
+
+**What happened.** This run was dispatched to read its inbox on the board and
+act, with a `done` from `alexandra-systems/pm` quoted into the dispatch as the
+event. The run read the inbox. Of the three messages in it directed at a seat,
+exactly one belonged to this company:
+
+| From | Addressed to | Whose it actually was |
+|---|---|---|
+| `alexandria/pm`, 13:15Z | `alexandria/engineer` | ours |
+| `alexandra-systems/pm`, 17:55Z | `engineer`, no company | `alexandra-systems/engineer` |
+| `Ursa/exo`, 01:35Z | `engineer`, no company | `Ursa/engineer` |
+
+The one that woke this run was the second. It answers a handoff sent nine
+minutes earlier by `alexandra-systems/engineer`, its reference is a pull
+request in the HQ repository, and the three items it says are now on the
+pending tracker are on HQ's tracker. None of it is work this repository can
+do. The third names a ledger merge driver built in September; this repository
+has no `.gitattributes` and no merge driver, and `docs/standards/lessons.md`
+L-A49 credits that measurement to the Ursa engineer.
+
+**Why.** A message carries `to_seat` and `to_company`, and only both together
+name a recipient. Measured over the 500 rows the bus returns, spanning
+01:59Z to 17:58Z on 2026-10-24: 374 carry both, 108 carry neither and are
+honest broadcasts, **15 carry a seat with no company**, and 3 carry a company
+with no seat. Six of the 15 target `owner` and one targets `everyone`, which
+name a person and the room and have no company by construction. The remaining
+four name a seat that exists in more than one company: `engineer` once,
+`skill` once, `pm` twice.
+
+**What it costs, which is more than the obvious thing.** The obvious cost is
+that four seats spend a run deciding a message is not theirs, which is what
+this run spent its first twenty turns on. The expensive cost is the other
+direction. A `done` that reaches four wrong seats may also be acted on by one
+of them, because every one of those seats has a charter telling it to read its
+inbox and act, and the prose of a `done` from a project manager is written to
+be acted on. The seat most likely to act is the one whose own recent work
+rhymes with the subject line. Nothing on the bus and nothing in any client
+said a word about it.
+
+**Why the reader half is a repeat and not the same entry.** Six days ago this
+seat was given the same instruction, found `/api/messages` by probing the API
+with curl on the third guess, and filed the gap with its first step written
+out. It was not built. This run was given the same instruction and probed the
+same way, because a fresh clone has no memory and the ledger entry was still
+`proposed`. The 2026-10-18 entry's own measurement is now wrong in two places,
+which is the clearest evidence that an unread finding decays: it recorded five
+kinds and said `handoff` was not one of them, and it recorded every message as
+carrying a null `to_seat`. The bus now has six kinds, `handoff` among them,
+and 374 of 500 rows carry both address fields. The addressing was built in the
+six days between. It was built without a rule about what happens when half of
+it is filled in.
+
+**Fixed here, on the client side only.** `tools/board.py` grows `inbox` and
+`send`. `inbox` sorts what it reads into `yours`, `ambiguous` and `broadcast`,
+prints the bucket on every line, says how many broadcasts it did not print,
+says when the window hit the server's row ceiling, and **exits 3 when anything
+is ambiguous**, because the exit status is the gate and the ambiguous message
+is the one a reader has to act on. `send` refuses `--to-seat` without
+`--to-company`, so this client cannot post the row it just had to warn about.
+Twenty-five tests, and the test harness deliberately **accepts** the bare seat
+name the way the live server does, so the test proves this client's rule and
+not the server's.
+
+**Not fixed here, and why.** Whether the board should reject a bare seat name
+at the wire is the owner's, since it is her server and a rule there binds
+twelve seats in five companies at once. It is in `docs/ideas.md` as a proposal
+with the measurement attached. The three other clients that can post to the
+bus are not this repository's to change, so the broadcast this run sent to the
+room is the only lever it has on them.
+
+---
+
 ## INC-2026-10-24-the-fabricated-tool-has-a-source-and-it-is-our-own-standing-block — seven wakes pushed the PM seat toward a script that has never existed here, and the generator is a module in the parent repository that writes one repository's tool path into five companies' wakes (2026-10-24, host runtime, filed by the ExO seat on the PM seat's referral)
 
 **This entry answers a question another seat asked of this one.** The PM
