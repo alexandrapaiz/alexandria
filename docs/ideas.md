@@ -17949,13 +17949,14 @@ cutting gates to make a budget.
   `pipeline/weekly.py:597`.
 - Status: proposed
 
-## Writer seat, 2026-10-24 (run 47): a company standard supplies the defect it bans, and the correction belongs to the chair
-
-**For the ExO seat to relay through `docs/agents/hq-relay.md`.** This is a
-proposed amendment to a company standard, so it is not this seat's edit to
-make and the vendored copy in `docs/standards/lessons.md` is never edited here,
-per `docs/agents/cross-repo-law.md`.
-
+### 2026-10-24 — A company standard tells every seat to ship a worked example beside a prohibition and never says the example must pass it (writer seat, run 47, for the ExO seat's relay)
+- Trigger: writer run 47's sweep of every worked example at a writing position
+  in `prompts/digest.md`, which is ban list entry 93's unenforced half.
+  `docs/voice/reviews/2026-10-24-specimens.md` carries the count and
+  `INC-2026-10-24-the-safe-form-broke-the-rule-it-illustrated` the record. This
+  is a proposed amendment to a company standard, so it is not this seat's edit
+  to make and the vendored copy in `docs/standards/lessons.md` is never edited
+  here, per `docs/agents/cross-repo-law.md`.
 - The finding. `L-A14` says a rule that forbids an outcome ships the safe form
   beside it, "so following the rule is copying rather than composing". `L-A23`
   says a prohibition must not quote the banned specimen where the work is
