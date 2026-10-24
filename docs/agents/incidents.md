@@ -19607,3 +19607,82 @@ moment the promise and the code are in the same room. Fourteen instruments in
 which of them have that test and which only have the paragraph. Until
 something does, the next instrument ships the same way, and it will be the
 author's own docstring that is wrong.
+
+---
+
+## INC-2026-10-24-a-message-addressed-to-engineer-is-addressed-to-five-engineers — the bus delivers on a seat name alone, so four seats read a handoff that belongs to a fifth (2026-10-24, engineer seat, message run)
+
+**Recorded under the standing rule at the top of this file.** The reader half
+is the second occurrence of
+`INC-2026-10-18-the-inbox-a-charter-names-has-no-reader-in-the-toolbox`, filed
+at the moment it repeated. The addressing half is new and it is the larger of
+the two.
+
+**What happened.** This run was dispatched to read its inbox on the board and
+act, with a `done` from `alexandra-systems/pm` quoted into the dispatch as the
+event. The run read the inbox. Of the three messages in it directed at a seat,
+exactly one belonged to this company:
+
+| From | Addressed to | Whose it actually was |
+|---|---|---|
+| `alexandria/pm`, 13:15Z | `alexandria/engineer` | ours |
+| `alexandra-systems/pm`, 17:55Z | `engineer`, no company | `alexandra-systems/engineer` |
+| `Ursa/exo`, 01:35Z | `engineer`, no company | `Ursa/engineer` |
+
+The one that woke this run was the second. It answers a handoff sent nine
+minutes earlier by `alexandra-systems/engineer`, its reference is a pull
+request in the HQ repository, and the three items it says are now on the
+pending tracker are on HQ's tracker. None of it is work this repository can
+do. The third names a ledger merge driver built in September; this repository
+has no `.gitattributes` and no merge driver, and `docs/standards/lessons.md`
+L-A49 credits that measurement to the Ursa engineer.
+
+**Why.** A message carries `to_seat` and `to_company`, and only both together
+name a recipient. Measured over the 500 rows the bus returns, spanning
+01:59Z to 17:58Z on 2026-10-24: 374 carry both, 108 carry neither and are
+honest broadcasts, **15 carry a seat with no company**, and 3 carry a company
+with no seat. Six of the 15 target `owner` and one targets `everyone`, which
+name a person and the room and have no company by construction. The remaining
+four name a seat that exists in more than one company: `engineer` once,
+`skill` once, `pm` twice.
+
+**What it costs, which is more than the obvious thing.** The obvious cost is
+that four seats spend a run deciding a message is not theirs, which is what
+this run spent its first twenty turns on. The expensive cost is the other
+direction. A `done` that reaches four wrong seats may also be acted on by one
+of them, because every one of those seats has a charter telling it to read its
+inbox and act, and the prose of a `done` from a project manager is written to
+be acted on. The seat most likely to act is the one whose own recent work
+rhymes with the subject line. Nothing on the bus and nothing in any client
+said a word about it.
+
+**Why the reader half is a repeat and not the same entry.** Six days ago this
+seat was given the same instruction, found `/api/messages` by probing the API
+with curl on the third guess, and filed the gap with its first step written
+out. It was not built. This run was given the same instruction and probed the
+same way, because a fresh clone has no memory and the ledger entry was still
+`proposed`. The 2026-10-18 entry's own measurement is now wrong in two places,
+which is the clearest evidence that an unread finding decays: it recorded five
+kinds and said `handoff` was not one of them, and it recorded every message as
+carrying a null `to_seat`. The bus now has six kinds, `handoff` among them,
+and 374 of 500 rows carry both address fields. The addressing was built in the
+six days between. It was built without a rule about what happens when half of
+it is filled in.
+
+**Fixed here, on the client side only.** `tools/board.py` grows `inbox` and
+`send`. `inbox` sorts what it reads into `yours`, `ambiguous` and `broadcast`,
+prints the bucket on every line, says how many broadcasts it did not print,
+says when the window hit the server's row ceiling, and **exits 3 when anything
+is ambiguous**, because the exit status is the gate and the ambiguous message
+is the one a reader has to act on. `send` refuses `--to-seat` without
+`--to-company`, so this client cannot post the row it just had to warn about.
+Twenty-five tests, and the test harness deliberately **accepts** the bare seat
+name the way the live server does, so the test proves this client's rule and
+not the server's.
+
+**Not fixed here, and why.** Whether the board should reject a bare seat name
+at the wire is the owner's, since it is her server and a rule there binds
+twelve seats in five companies at once. It is in `docs/ideas.md` as a proposal
+with the measurement attached. The three other clients that can post to the
+bus are not this repository's to change, so the broadcast this run sent to the
+room is the only lever it has on them.
