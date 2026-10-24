@@ -342,3 +342,132 @@ that touches a model id, a provider, a reservation or a timeout.
 The engineer's daily §0 check is the faster half of the same duty, and
 its command is scoped to `.github/` for the same reason. It now covers
 the delivery runtimes too.
+
+## Amendment 2026-10-24: the observability runtime is a runtime, and its retirement went unrecorded for a day
+
+`## What a runtime is` above names the container, the press, the corpus
+crons, the site deploy and the MCP server. It does not name the thing that
+reports on all five. That omission has now cost a record.
+
+**What happened.** Langfuse, which held every seat's run trace, was stopped
+on 2026-10-23 because `langfuse-clickhouse-1` filled the host's only disk
+under Docker's default `json-file` driver with no `max-size`, and Postgres
+then hit `PANIC: could not write to file ... No space left on device`. The
+owner's standing condition, recorded the same day, is that Langfuse stays
+stopped until it is rebuilt with a disk budget.
+
+**Where that is written down.** Upstream, in the vendored
+`docs/standards/lessons.md`, as part of an alexandra-systems incident. In
+this repository, as of 2026-10-24 16:30Z, nowhere at all. Not here, not in
+`docs/decisions.md`, not in `docs/agents/incidents.md`, not in
+`docs/agents/registers.md`, and not in `docs/agents/delivery-health.md`. The
+only local trace was three lines written the same morning into
+`docs/agents/exo-loop.md`, on an unmerged branch.
+
+**What still names it as live.** Twelve files. Every
+`.github/workflows/agent-*.yml` exports `OTEL_EXPORTER_OTLP_ENDPOINT` to
+`${{ secrets.LANGFUSE_HOST }}/api/public/otel`, sets
+`langfuse.environment=alexandria` in `OTEL_RESOURCE_ATTRIBUTES`, and runs a
+step called "Trace this run to Langfuse" against `LANGFUSE_PUBLIC_KEY` and
+`LANGFUSE_SECRET_KEY`. And the vendored `docs/standards/pm.md` still
+instructs every standup to read "the run's trace in Langfuse (environment =
+this company, session = the run id) when the failure is inside the model
+step", which is a step no PM can perform.
+
+**What it cost, measured.** `GET /api/scorecard` answers with a `sources`
+block saying `trace_store` is retired and `nothing is listening on
+127.0.0.1:8123`, and with a `columns` block mapping five of its columns to
+that source: `runs`, `tool_errors`, `tool_errors_per_run`,
+`runs_with_errors` and `median_minutes`. The API degrades honestly, which is
+why this was findable at all. But five columns of the org's own scorecard
+have had no source for a day, and the one rule that reads them,
+`docs/standards/lessons.md` L-A81's "the company measured merges per run,
+hours to main, runs that shipped nothing and tool errors per run", is
+unexecutable on the last of those four.
+
+**The amendment.** A runtime is also **the observability runtime**, meaning
+anything that records what the other runtimes did. Stopping one is a runtime
+change and takes the same three questions as starting one. The reason it
+belongs here rather than in a monitoring doc is the asymmetry this page
+already argues from: when a runtime fails, the org finds out loudly. When
+the thing that watches the runtimes fails, every number downstream of it
+keeps rendering, and the only loud signal is the one the scorecard API chose
+to emit about itself. **An observability outage is the one runtime failure
+whose symptom is silence.**
+
+**And the rule that falls out of the record being upstream.** The retirement
+was recorded correctly, in the parent's own register, by the company that
+owned the disk. It was not relayed down. `docs/agents/cross-repo-law.md`
+covers a parent decision arriving as a commit or an ADR. This one arrived as
+a line inside a vendored file that twelve local workflows contradict, which
+is the §3f reading that `grep -rn "HQ Incident 5" docs/` was written for,
+pointed the other way: **a parent record that lands in a vendored copy is
+filed and not delivered, and a seat reading the local machinery sees only
+the contradiction.** So when a vendored standard changes under a local
+runtime, the local register gets the entry too, written by whoever notices.
+
+## Amendment 2026-10-24: the text the host attaches to a wake is a runtime, and ours names a tool we do not have
+
+`## What a runtime is` above names the container, the press, the corpus
+crons, the site deploy, the MCP server and, since this morning, the thing
+that reports on all five. It does not name the thing that **starts** them.
+Every seat run in this company now begins with text the host composed, and
+until this amendment no clause here put a single word of that text in scope.
+
+**What happened.** `alexandrapaiz/alexandra-systems`,
+`runtime/board/standing.py` appends a standing block to every wake the bus
+delivers. Its `strays()` branch tells a merging seat to read other seats'
+orphaned drafts with `tools/check-draft-prs.sh --repo alexandrapaiz/<repo>`,
+with the repository filled in from a five-company map, and then says "the act
+is yours under the merge rule: ready it and merge it". That script exists in
+the repository the module lives in and has never existed in this one. The PM
+seat was told to run it seven times on 2026-10-24, checked for it seven
+times, found nothing seven times, and wrote the refusal down seven times. See
+`INC-2026-10-24-the-fabricated-tool-has-a-source-and-it-is-our-own-standing-block`.
+
+**Why none of this law's four questions could fire.** A wake is not a commit
+here. There is no local pull request to explain it, no local check to go red,
+no `pipeline/` diff to catch it, and the guard-is-green question has nothing
+to run. The change is authored in another repository, it reaches this one
+without touching a file in it, and the surface it changes is read by a seat
+before that seat has read anything else. **That is strictly less visible than
+the press provider migration this law was amended for in September**, which
+at least left a commit somewhere a seat could `git log`.
+
+**The amendment.** A runtime is also **the wake layer**, meaning anything
+that composes the instructions a seat receives before the seat has read a
+file. A change to the wake text, the standing block, the launcher prompt or
+the operator notice that rides on them is a runtime change, and it takes the
+same three questions. Since this repository cannot ask them of a change
+authored upstream, the clause that does the work is the one below.
+
+**Where the audit actually lives, because it cannot live in a smoke run.**
+The ExO seat reads the generator rather than the generated text, once a run,
+and asks two questions of it:
+
+```bash
+# the generator, and every tool path it tells a seat to run
+gh api repos/alexandrapaiz/alexandra-systems/contents/runtime/board/standing.py \
+  --jq .content | base64 -d | grep -nE 'tools/|\.sh|\.py'
+```
+
+1. **Does every path it names resolve in this repository?** A path in
+   portfolio-wide text is true in at most one repository unless something
+   checks. `find . -path './.git' -prune -o -iname '<the basename>' -print`
+   settles it in one command.
+2. **Does it assert an authority this repository's law does not grant?** The
+   block's own docstring says it "never acts" and is "additive", and the
+   sentence above hands a seat another seat's draft under a rule that, here,
+   does not reach it. A runtime that describes a permission is making a claim
+   about law, and the claim is audited where it lands.
+
+**The rule that generalizes, and it is the reason this is law rather than a
+note.** Everything else this file governs fails loudly or leaves a trace in
+this repository. The wake layer does neither: a defective sentence arrives as
+an instruction, is obeyed or declined by judgment, and leaves no artifact
+unless the declining seat chooses to write one. **The PM seat chose to, seven
+times, and that is the only reason this was findable at all.** So the
+companion duty is in `docs/agents/unowned-duties.md` rather than here: a seat
+that declines an instruction in its own wake says so in its pull request, and
+a decline that repeats goes in the incident register under the standing rule
+like anything else.

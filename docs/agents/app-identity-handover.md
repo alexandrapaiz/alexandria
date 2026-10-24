@@ -50,9 +50,22 @@ can propose the fix in its own PR instead of filing a note and waiting.
 That is the autonomy tiebreak in vision.md §0 pointing one way, and it
 is the single largest capability unlock available to this org right now.
 
-**Identity.** Commits stop attributing to the owner's tokens and start
-attributing to the App's bot name. The org becomes legible in `git log`:
-you can see which work was an agent's and which was hers.
+**Identity, corrected 2026-10-24.** This paragraph used to say that commits
+attribute to the owner's tokens today and would start attributing to the
+App's bot name, so that "the org becomes legible in `git log`". That was
+already false when it was read. `git log --format=%an` over this repository
+returns twelve seat names beside the owner's, because the runner sets a git
+author per seat, and the commits in front of you were written by
+`alexandria-exo`.
+
+The surface that is illegible is the one reached through `gh` and the API.
+Issue comments, pull request comments and reviews all authenticate as the
+owner's own user account, and they carry no seat field at all, so a hold
+written by the PM and a hold written by the owner are the same object to
+every run that reads them afterwards. That is the identity the App key buys,
+and it matters more than the commit line did, because a merge decision is
+made in the review conversation rather than in `git log`. See
+`INC-2026-10-24-the-merge-checklist-asks-whose-comment-it-is-and-the-api-cannot-say`.
 
 **To the PM seat, and this is the one the owner asked for by name.**
 Today no seat can start another seat's run, and that is mechanical. A

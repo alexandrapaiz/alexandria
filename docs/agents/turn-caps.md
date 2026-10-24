@@ -42,6 +42,68 @@ Three clauses make it work in practice.
    2026-09-23, and for four days this page carried one measured row that
    described neither of them.
 
+5. **Any run finishing above 70% of its cap re-derives that seat's row in
+   the same week** (added 2026-10-04, **written into this page 2026-10-18**).
+   The four triggers above all ask an auditor to name a cause, and the
+   October re-derivation found seven of thirteen rows under the measured
+   rule with the writer at 91% of its cap while **not one of the four had
+   fired**, because the drift had no cause to name. Charters grow two lines
+   at a time, and a seat whose last run is still open spends turns reading
+   and re-shipping that branch before it starts today's work. Merge latency
+   and cap collisions are the same failure. The PM reports the ratio daily
+   from the run list it already reads and the re-derivation is the ExO's.
+
+   This rule was cited by `prompts/exo-agent.md` §6 and by the 2026-10-11
+   re-derivation on this page for fourteen days without ever being written
+   here, which is `registers.md`'s own "recording is not enforcing" with the
+   register and the citation the wrong way round. A rule that exists only in
+   the files that cite it is a rule whose text nobody can check.
+
+6. **A cap now lives in two files and only one of them runs the seat**
+   (added 2026-10-18, `INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens`).
+   HQ decision 056 moved every seat's clock to the company host on
+   2026-10-17. Since then `--max-turns` in
+   `.github/workflows/agent-<seat>.yml` governs an explicit
+   `workflow_dispatch` and nothing else, while `[runtime].max_turns` in
+   `alexandrapaiz/alexandra-systems:runtime/agents/alexandria/<seat>/agent.toml`
+   governs every real run. **So every cap change is written in both places
+   or it is not a cap change.** This seat can read the manifests and can
+   write neither, so the manifest half leaves through
+   `docs/agents/hq-relay.md` with the exact line, and the item is not closed
+   until the chair has carried it.
+
+   The reconciliation is one command and it runs every time this page is
+   touched:
+
+   ```bash
+   for s in engineer exo finance frontend market okr pm research sales security skill writer; do
+     wf=$(grep -oE '\-\-max-turns [0-9]+' .github/workflows/agent-$s.yml | grep -oE '[0-9]+' | head -1)
+     mf=$(gh api "repos/alexandrapaiz/alexandra-systems/contents/runtime/agents/alexandria/$s/agent.toml" \
+            --jq .content | base64 -d | grep -oE '^max_turns = [0-9]+' | grep -oE '[0-9]+')
+     [ "$wf" = "$mf" ] || echo "DIVERGED $s: workflow=$wf manifest=$mf"
+   done
+   ```
+
+   Run on 2026-10-18 across all twelve seats it printed exactly one line:
+   `DIVERGED writer: workflow=225 manifest=150`. Eleven of twelve agree and
+   the models agree in all twelve. The check was validated against that
+   known instance before being published here, per the 2026-10-11 rule that
+   a check which cannot see reports health in the same words as a check that
+   found nothing.
+
+7. **And the measurement input is gone for every run after 2026-10-17**
+   (added 2026-10-18). Every command in "How to measure" below reads
+   `num_turns` and the error subtype out of `claude-execution-output.json`,
+   which twelve workflows uploaded as a 90-day Actions artifact. The host
+   writes its log to `.epito/logs/<agent>/<runId>.log` on its own disk
+   instead, which no seat in this repository can read. So this page cannot
+   be re-derived from evidence for any host run, which is now every run, and
+   the honest state of the table below is **frozen at 2026-10-11 until the
+   transcript is reachable again**. Do not refresh a row from a guess. The
+   ask for a reachable transcript is in `docs/agents/hq-relay.md` for
+   2026-10-18, and it is the precondition for rules 1 through 5 working at
+   all.
+
 ## When this gets reviewed
 
 - **Monthly**, by the ExO agent, in its first run of each month. Re-run
@@ -50,7 +112,13 @@ Three clauses make it work in practice.
   A cap hit is evidence about the cap.
 - **On duty growth**, whenever a charter edit gives a seat more to do.
 - **On a cron change**, whenever a workflow gains or splits a schedule,
-  because that splits the job behind the cap.
+  because that splits the job behind the cap. Since 2026-10-17 read "cron"
+  as `[trigger].cron` in the seat's host manifest, and read a change to
+  `[trigger].subscriptions` the same way, because an added subscription is a
+  new turn profile for the same reason a second schedule was.
+- **On a runtime change**, whenever the thing that starts a seat changes at
+  all, because a cap belongs to a job and the job is now somewhere else.
+  See `prompts/exo-agent.md` §2d.
 
 Never set a cap from a feeling about how much work a seat "should"
 need. The commands below take about a minute.
@@ -424,3 +492,553 @@ raise that outruns its job timeout buys nothing.
 This measurement was taken by the engineer seat under the owner's
 directive of 2026-09-25, not by the ExO seat that maintains this page.
 The page stays the ExO's; one directed edit is not a transfer.
+
+## Re-derivation, 2026-10-11, on a cap hit
+
+Rule 2 fired, twice over. The writer hit `error_max_turns` on 2026-10-04
+(run 37226048547) and again on 2026-10-09 (run 37986599276), both at
+`num_turns: 151` against `--max-turns 150`. Rule 5's ratio also fires for
+the engineer. Every number below is the peak over that seat's eight newest
+`success` or `failure` runs, by the command at the top of this page.
+
+| Seat | Peak | Prev (2026-10-04) | Cap | Required | % of cap | Verdict |
+|---|---|---|---|---|---|---|
+| writer | **151, a cap hit** | 136 | 150 | 350 | **100.7%** | **failed twice.** Item 21, split out and urgent |
+| engineer | **184** | 168 | 200 | 400 | **92%** | short. Item 14's 350 was below the rule before it was read |
+| frontend | 188 | 286 | 600 | 400 | 31% | ok, and the only comfortable row in the org |
+| skill | 156 | 156 | 180 | 350 | 87% | short, item 14, unchanged |
+| research | 145 | 145 | 180 | 300 | 81% | short, item 14, unchanged |
+| security | 134 | 134 | 250 | 300 | 54% | short, item 14, unchanged |
+| market | 131 | 131 | 160 | 300 | 82% | short, item 14, unchanged |
+| pm | 105 | 81 | 300 | 250 | 35% | ok |
+| exo | 134 | 134 | 200 | 300 | 67% | short, item 14, unchanged |
+
+The writer's and the engineer's rows are the only ones that moved, and they
+moved in the same direction for different reasons: the writer's peak is now
+a floor rather than a measurement, because a capped run tells you demand
+exceeded 151 and not what it was, and the engineer's rose 16 turns on its
+own in seven days while nothing was added to its charter.
+
+### What a cap hit costs, measured rather than asserted
+
+Both writer hits were `error_max_turns`, which this page's own test
+identifies as a run killed mid-work rather than a run failed after
+shipping. Ship-first held both times and both times the unpushed increment
+died: on 2026-10-09 that was `docs/ideas.md`, `docs/voice/ban-list.md` and
+`docs/voice/reviews/2026-10-09.md`, dirty at teardown. So the cost of a
+short cap is bounded by ship-first and is not zero, which is the number the
+"a cap is a tripwire, not a budget" argument needs beside it.
+
+### Rule 6: a capped run re-derives on a floor, and the proposal is not the old number plus a bit
+
+Added 2026-10-11. When a seat hits its cap, `2 x the cap + 1` is the
+arithmetic the rule produces and it is the wrong instinct to then round
+down toward the old proposal. Item 14 had already proposed 300 for the
+writer off a peak of 136. After the cap hit, 151 doubles to 302 and rounds
+to 350, and a run that proposes 300 because 300 was already written down
+has let a queued number outrank a measurement. **The queued proposal is
+evidence about what a previous run thought, never an input to the rule.**
+
+This is the fourth time a stale number on `pending-workflow-changes.md`
+nearly shipped as a fix: items 4 and 11 proposed 200 for two seats already
+above it, item 26's timeout diff would have lowered a live value, and item
+14 itself carried 350 for a seat that needed 400 within a week of being
+written. Re-read the numbers in a queued item every run, not only its
+anchors.
+
+## Re-derived 2026-10-24, from the board's run record, after thirteen days frozen
+
+This page said at the top of its measurement section that it was frozen at
+2026-10-11 because `num_turns` lived in a GitHub Actions artifact and the
+seats had left GitHub. The ask that would unfreeze it was written into
+`docs/agents/hq-relay.md` on 2026-10-18 in these words: "The board already
+receives a run record per run, so a `num_turns` field on it would close this
+at the lowest cost."
+
+**That field was built on 2026-10-18, is called `turns`, and this page stayed
+frozen for six more days.** Two runs of this seat read both files in between.
+The account is
+`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`.
+
+### The new measurement command
+
+The numerator and the denominator now come from two different places, and
+both are readable by any seat:
+
+```bash
+# numerator: turns per run, per seat
+curl -s "$BOARD_API_URL/api/board/alexandria" \
+  -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN" \
+  | python3 -c 'import json,sys
+from collections import defaultdict
+peak=defaultdict(int)
+for r in json.load(sys.stdin)["runs"]:
+    peak[r["seat"]]=max(peak[r["seat"]], r["turns"] or 0)
+for s,t in sorted(peak.items(), key=lambda kv:-kv[1]): print(s,t)'
+
+# denominator: the cap that actually governs, which is not in any workflow
+for s in engineer exo pm writer frontend market okr research sales security skill finance; do
+  printf '%s ' "$s"
+  gh api "repos/alexandrapaiz/alexandra-systems/contents/runtime/agents/alexandria/$s/agent.toml" \
+    --jq .content | base64 -d | grep -E '^max_turns|^model' | tr '\n' ' '
+  echo
+done
+```
+
+### The table
+
+Peak over the runs the board returned, which is the 25 most recent across all
+seats, covering 2026-10-18T12:40Z to 2026-10-24T00:08Z.
+
+| Seat | Peak | Cap in manifest | Required (2x, next 50) | % of cap | Verdict |
+|---|---|---|---|---|---|
+| writer | **140** (2026-10-23T23:31Z) | **150** | 300 | **93%** | **over the rule-5 trigger for the third consecutive measurement.** Ask 4 on the relay page asks for 225, the owner's own approved number; the rule asks 300 |
+| pm | 141 (2026-10-23T17:04Z) | 300 | 300 | 47% | ok, and correct at 300 |
+| engineer | 131 (2026-10-23T23:35Z) | 200 | 300 | 66% | under the trigger, short of the rule |
+| exo | 89 (2026-10-23T23:43Z) | 200 | 200 | 45% | ok |
+
+### Three things this measurement cannot do, stated so no reader over-reads it
+
+1. **It covers four seats of twelve.** The board's run route returns a fixed
+   count of recent runs and accepts no query string, so eight seats that did
+   not run in the last 25 sessions have no row. Their last real measurement
+   is still 2026-10-11. **A table scoped by somebody else's count is the
+   defect this page's rule 5 was written against**, and the ask to scope the
+   route by time is the 2026-10-24 entry on the relay page.
+2. **It cannot tell a cap hit from a crash**, which rule 1 of this page
+   depends on. The record carries `exit` and `turns` and no error subtype,
+   so a run killed at its cap and a run that died on its own both read as a
+   non-zero exit at some turn count. Every near-cap number here is therefore
+   *possibly* censored and the writer's 140 is the one that matters: if that
+   run was killed, 140 is a floor and not a peak. Residual ask filed.
+3. **The cap it compares against is one this seat cannot write.** The
+   governing value is `max_turns` in a manifest in `alexandrapaiz/alexandra-systems`.
+   `pending-workflow-changes.md` is the wrong lane for it and always was;
+   the lane is `hq-relay.md`. That is already recorded as a capability gap
+   on `docs/agents/unowned-duties.md` and as
+   `INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens`.
+
+### What the numbers say about the organization, which is not what they say about the caps
+
+The pm at 47% of 300 and the writer at 93% of 150 are the same week of work.
+The difference is not that one seat does more; the pm ran ten sessions in
+that window and the writer three. **A seat woken often finishes each session
+well inside its cap. A seat woken rarely arrives at each session holding
+everything that accumulated since the last one**, which it must read, plus
+its own unmerged branch, which it must carry. That is the merge-latency
+finding of 2026-10-04 and the cap finding seen from one more angle, and it
+suggests the cheapest cap relief available is a subscription rather than a
+number.
+
+## Re-derived again 2026-10-24 16:40Z, from the host's own audit log, for all twelve seats
+
+The section above was written earlier the same day, from the board's run
+route, and it opened by naming its own first limitation: "It covers four
+seats of twelve. The board's run route returns a fixed count of recent runs
+and accepts no query string, so eight seats that did not run in the last 25
+sessions have no row." The ask to scope that route by time went onto the
+relay page the same run.
+
+**The scoped record already existed, on this host, readable by every seat,
+and no charter in this repository names it.** The resident runtime has been
+appending one line per run to `/srv/asc/state/.epito/audit.jsonl` since
+2026-09-24T02:57Z. Each `run.end` row carries `agent`, `trigger`, `model`,
+`exit`, `durationMs`, `turns`, `session` and, when the run opened one, `pr`.
+That is 985 rows across the portfolio and 171 for alexandria, spanning a
+month rather than 25 sessions.
+
+So this page is re-derived a second time on the same day, because the better
+source cost one `cat` to find and the earlier table understates three of the
+four rows it does carry.
+
+### The command
+
+No credential and no network. The file is on the seat's own filesystem.
+
+```bash
+python3 - <<'PY'
+import json, collections, statistics as st
+rows = []
+for line in open('/srv/asc/state/.epito/audit.jsonl'):
+    try: d = json.loads(line)
+    except ValueError: continue
+    if d.get('action') == 'run.end' and (d.get('agent') or '').startswith('alexandria-'):
+        rows.append(d)
+by = collections.defaultdict(list)
+for d in rows: by[d['agent']].append(d)
+for seat in sorted(by):
+    t = sorted(x['turns'] for x in by[seat] if x.get('turns') is not None)
+    if not t: continue
+    print(seat, 'runs', len(by[seat]), 'median', st.median(t), 'peak', max(t))
+PY
+```
+
+### The table
+
+Peak over every alexandria run the host recorded between 2026-09-24T04:16Z
+and 2026-10-24T16:00Z. The cap column is quoted and not measured, for the
+reason stated under the table.
+
+| Seat | Runs | Median turns | Peak | Cap | % of cap | Required (2x, next 50) | Verdict |
+|---|---|---|---|---|---|---|---|
+| writer | 20 | 103 | **153** (2026-10-18T07:50Z, exit 0) | **150** (manifest) | **102%** | 350 | **the cap has been passed, not merely approached** |
+| engineer | 19 | 107 | **190** (2026-10-18T01:02Z, exit 0) | 200 (manifest) | **95%** | 400 | **over the rule-5 trigger, and 59 turns above what the 25-run window saw** |
+| exo | 12 | 89 | **155** (2026-10-24T00:42Z, exit 0) | 200 (manifest) | **78%** | 350 | **over the rule-5 trigger, and 66 turns above what the 25-run window saw** |
+| market | 3 | 96 | 118 | 160 (workflow era) | 74% | 250 | over the trigger, on three runs, so the number is thin |
+| finance | 2 | 62 | 83 | 120 (workflow era) | 69% | 200 | at the trigger, on two runs |
+| pm | 93 | 54 | 198 (2026-10-24T00:52Z, exit 0) | 300 (manifest) | 66% | 400 | under the trigger, short of the rule |
+| okr | 6 | 62 | 86 | 160 (workflow era) | 54% | 200 | ok |
+| skill | 2 | 46 | 91 | 180 (workflow era) | 51% | 200 | ok, on two runs |
+| sales | 2 | 67 | 67 | 160 (workflow era) | 42% | 150 | ok, on two runs |
+| frontend | 8 | 101 | 197 (2026-10-24T01:39Z, exit 0) | 600 (workflow era) | 33% | 400 | ample, and the 600 is the least trustworthy cap on this page |
+| security | 2 | 73 | 73 | 250 (workflow era) | 29% | 150 | ok, on two runs |
+| research | 2 | 48 | 48 | 180 (workflow era) | 27% | 100 | ok, on two runs |
+
+### Four things this measurement settles, and two it does not
+
+**It settles that no seat has hit a cap in a month.** Every one of the 38
+non-zero exits is listed below with its turn count, and the highest is the
+writer at 126. A cap hit kills a run, so a cap hit appears here as a
+non-zero exit at or near the cap, and there is none. That matters because
+the earlier section had to write "every near-cap number here is therefore
+*possibly* censored". None of them is. The peaks are peaks.
+
+**It settles the writer's queued raise by passing the cap rather than
+nearing it.** The writer's 153-turn run on 2026-10-18 exited 0 at three
+turns above its stated cap of 150. Either the manifest's `max_turns` is not
+150, or the runtime does not enforce it the way this page has assumed for
+five weeks. Both readings are findings and they point at the same question,
+which is on the relay page as a new ask. Until it is answered, **the writer
+row is the one number on this page that no reader should treat as settled.**
+
+**It settles the cost of a window scoped by somebody else's count, in
+turns.** Three seats appear in both tables. The 25-run window saw the
+engineer at 131 and the month sees 190. It saw this seat at 89 and the month
+sees 155. It saw the writer at 140 and the month sees 153. Every error is in
+the same direction and the largest is 59 turns, which is the difference
+between 66% of a cap and 95% of it. **Rule 5 fires for three seats on the
+month's data and fired for one on the window's.** That is rule 5's own
+defect, which is that a table scoped by a count somebody else chose reads
+as healthy, measured against itself.
+
+**It settles that rule 5's trigger is the right detector and its cadence is
+not.** The three seats over the trigger are the three seats that ran most,
+in the order they ran most. Nothing about any of their charters changed to
+cause it, which is the 2026-10-04 finding restated: none of the four named
+triggers would have fired, because none of them asks a question with no
+named cause.
+
+**It does not tell a cap hit from a crash in general**, only in this
+window's particular case. The row carries `exit` and `turns` and no error
+subtype, so the two flavours rule 1 of this page depends on are still
+indistinguishable in principle. The reason the conclusion holds anyway is
+that every non-zero exit is far from its cap, which is evidence and not a
+mechanism. The residual ask stands.
+
+**It does not give eight of twelve seats a governing cap.** Peaks are now
+measured for all twelve. `max_turns` lives in
+`alexandrapaiz/alexandra-systems:runtime/agents/alexandria/<seat>/agent.toml`,
+which this seat reads by leaving the repository and cannot write at all, and
+the host's `state.json` carries `model`, `cron`, `repo` and `nextCron` but
+no cap. So eight rows above compare a measured 2026-10-24 peak against a cap
+last confirmed in the workflow era, and a workflow has not governed a seat
+since 2026-10-17. **Those eight caps are quoted from a file that no longer
+decides anything, and that is worse than an unmeasured row, because the
+percentage column looks like arithmetic.** The ask is on the relay page.
+
+### The 38 non-zero exits, and the two fingerprints in them
+
+This is the §2b failure sweep for the month, done once properly rather than
+per run, because the whole month is now readable in one file.
+
+**Fingerprint one: the provider refusal.** `turns == 1` with
+`durationMs < 30000`, and never alone. Eight instances, every one of them
+inside a cluster of rows whose timestamps agree to the second across
+different seats: 2026-10-18T02:39 (four seats), 2026-10-23T19:09 (one),
+2026-10-24T13:49 (one), 2026-10-24T16:00 (two). The host's own
+`GET /api/capacity` counts the same class portfolio-wide as
+`refused_turn_one`, which stood at 13 of 252 attempts on 2026-10-24. **A run
+that ends at one turn in seven seconds is capacity and not a seat**, and
+that sentence is the whole diagnosis, so the next run looks it up rather
+than deriving it.
+
+**Fingerprint two: the daemon took eleven seats down mid-run, and it is in
+no register.** At 2026-10-05T03:27:08Z through 03:27:13Z, eleven alexandria
+seats ended with `exit: 143`, which is 128 plus SIGTERM, inside five
+seconds of each other. Every one had been running about fourteen minutes.
+Ten of the eleven recorded no turn count at all, so ten runs' worth of work
+is unmeasurable as well as lost. `grep -c 'exit 143' docs/agents/incidents.md`
+returns zero, and this is the first mention of it anywhere in this
+repository, nineteen days after it happened. It is registered as
+`INC-2026-10-24-eleven-seats-were-sigtermed-mid-run-and-nobody-filed-it`.
+
+**Everything else is the known classes.** The 2026-09-30T04:02 cluster is
+eight seats ending within 52 seconds with full turn counts, which is the
+window close rather than a refusal. The remainder are single `exit: 1` rows
+at ordinary turn counts, already diagnosed in the learning log as
+cap-adjacent, and now known not to be cap hits.
+
+### Correction, same day, later run: fingerprint one's test selects the retry and discards the kill
+
+The paragraph above is wrong about 2026-10-24T13:49, and wrong in a way that
+matters more than the count. It records that minute as one instance of the
+provider refusal, because its test is `turns == 1` and exactly one
+alexandria row in that minute had one turn. Read the window by time instead
+of by turn count and it is not one row. It is **twenty**.
+
+```bash
+# the test that finds the event: cluster on time, across seats, at any turn count
+python3 - <<'PY2'
+import json
+rows = []
+for line in open('/srv/asc/state/.epito/audit.jsonl'):
+    try: rows.append(json.loads(line))
+    except Exception: pass          # see the torn line below; do not drop this guard
+w = [r for r in rows if r.get('action') == 'run.end' and r.get('exit') == 1
+     and '2026-10-24T13:49' <= r['ts'] <= '2026-10-24T13:52']
+print(len(w), [(r['agent'], r.get('turns')) for r in w])
+PY2
+```
+
+**The `try` is not defensive habit and the first version of this command did
+not have it.** The log holds one torn line, 4209 of 5639, where a `message`
+row from 2026-10-20T12:20Z is truncated mid-key at 124 characters and a
+second row from 2026-10-23T15:26Z is written over the remainder. A strict
+parse raises on it and the whole sweep returns nothing, which is how this
+command failed the first time it was run after being written. The lost record
+is a `message` action and not a `run.end`, so this page's numerators are
+intact, and rule 7 says to quote the source rather than trust it: an
+append-only file written non-atomically loses a record about every 5,600 and
+gives no sign of which one.
+
+`2026-10-24T13:49:23.944Z` through `13:51:37.170Z`, a span of 133 seconds,
+twenty `run.end` rows with `exit: 1`, across all five companies: Ursa 10,
+alexandra-systems 4, alexandria 3, atelier 2, epitome 1. **Thirteen of the
+twenty were live runs killed mid-work**, at turn counts 4, 6, 35, 36, 41, 46,
+50, 53, 64, 75, 75, 92 and 98, which is 675 turns of work. The other seven
+are at exactly one turn with durations from 6.3 to 24.0 seconds, and four of
+those seven are immediate restarts of a seat that had just been killed:
+`ursa-market`, `atelier-pm`, `ursa-exo` and HQ's `engineer` each have a kill
+row and a one-turn row inside the same half minute.
+
+**So the one-turn rows are the aftershock and the kills are the event.**
+Fingerprint one describes a run that was refused before it started, which is
+real and is the right diagnosis for a seat that wakes into an exhausted
+provider. It is the wrong diagnosis for this minute, because it reads the
+retries and discards the thirteen runs whose work was actually lost. A test
+keyed on `turns == 1` cannot see a kill by construction.
+
+**The third fingerprint, then, stated as a test rather than as a story.**
+
+> Two or more `exit: 1` rows from different seats inside sixty seconds is one
+> event, whatever their turn counts. Count the window, not the row.
+
+That holds for `exit: 143` too, which is fingerprint two, so the two
+fingerprints are one shape read through two signals. The sharper question a
+cluster asks is which signal the host sent, and the turn counts answer a
+different question: how much work the event cost.
+
+**Why nobody diagnosed this one on the day, which is the organizational
+half.** The event killed `alexandria-exo` at 41 turns, `epitome-exo` at 36,
+`ursa-exo` at 92 and HQ's `exo-centralizer` at 6. **Every seat in the
+portfolio whose charter owns failure diagnosis was inside the failure.** The
+seat that would have swept it was dead for the same reason the sweep was
+needed, and the next ExO run of each company read a board run list scoped to
+25 rows and saw a handful of ordinary-looking single failures. That is not a
+gap in anybody's charter. It is a correlated-failure property of putting one
+duty in one seat per company and waking all of them off one host, and the
+honest fix is a detector that does not depend on a seat being alive.
+Registered as
+`INC-2026-10-24-twenty-runs-across-five-companies-ended-inside-one-minute-and-the-fingerprint-counted-one`.
+
+### Rule 8: the host already names the refusal windows, so read them before clustering by hand
+
+Added 2026-10-24, after this page's own sweep found the 13:49Z outage by
+clustering the audit log and then discovered the host had computed it.
+
+```bash
+curl -s "$BOARD_API_URL/api/capacity" -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN" \
+  | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['sentence']); [print(w) for w in d['windows']]"
+```
+
+The `windows` array is one row per refusal window, portfolio-scoped, with
+`runs`, `seats`, the companies touched and the `reset_at`. On 2026-10-24 it
+held three: 01:31:54Z to 02:09:50Z over 18 runs and 14 seats, 13:14:08Z to
+13:51:30Z over 20 runs and 15 seats, and 16:00:13Z to 16:00:22Z over 2 runs
+in alexandria alone. The second is the event registered as
+`INC-2026-10-24-twenty-runs-across-five-companies-ended-inside-one-minute-and-the-fingerprint-counted-one`,
+and its run count agrees exactly with the audit-log clustering.
+
+The same response carries `refused_turn_one`, `refused_share`, `seats_refused`
+and a `gaps` array of dark periods with `after_reset` minutes on each, plus a
+one-line `sentence` written for a reader. `grep -rl 'api/capacity' prompts/`
+returned **zero of twelve charters** on the day this rule was written, and the
+`windows` array was named in no file in this repository at all.
+
+So the order of operations for a failure sweep is: read `windows` first, then
+go to the audit log for what the window cost in turns, because the endpoint
+says when and the log says how much. Clustering by hand is the fallback for
+when the endpoint is unreachable, not the method.
+
+### Rule 7: measure from the host's audit log, and say so
+
+The numerator for this page comes from `/srv/asc/state/.epito/audit.jsonl`
+and not from the board, because the board's route is scoped by a count this
+seat does not choose and the file is scoped by the month. Quote the window
+you read, in dates, in the table's caption. When the file is unreadable, say
+that rather than falling back silently to the narrower source, because the
+two disagree by up to 59 turns and a reader cannot tell which one produced
+a row.
+
+## The denominator is measured too, 2026-10-24 17:40Z, and eight rows stop being quotations
+
+Everything above this heading measures the numerator from the host's audit log
+and quotes the denominator. The table's own caption says so: "The cap column is
+quoted and not measured", and eight of its twelve rows carry the note
+`workflow era`, meaning a number read out of
+`.github/workflows/agent-<seat>.yml`, a file that has not started a seat run
+since 2026-10-17T17:59Z.
+
+This run read the twelve files that do decide. They are in the parent
+repository, one per seat, and `gh api` reaches them with the credential this
+seat already holds.
+
+```bash
+for s in engineer exo finance frontend market okr pm research sales security skill writer; do
+  v=$(gh api "repos/alexandrapaiz/alexandra-systems/contents/runtime/agents/alexandria/$s/agent.toml" \
+      --jq '.content' | base64 -d | grep -E '^\s*max_turns' | head -1)
+  echo "$s|${v:-NO max_turns}"
+done
+```
+
+All twelve answered. There is no provisional row and no unstated cap in this
+company, which is the first time this page can say that.
+
+| Seat | Manifest `max_turns` | Workflow `max-turns` | Agree |
+|---|---|---|---|
+| engineer | 200 | 200 | yes |
+| exo | 200 | 200 | yes |
+| finance | 120 | 120 | yes |
+| frontend | 600 | 600 | yes |
+| market | 160 | 160 | yes |
+| okr | 160 | 160 | yes |
+| pm | 300 | 300 | yes |
+| research | 180 | 180 | yes |
+| sales | 160 | 160 | yes |
+| security | 250 | 250 | yes |
+| skill | 180 | 180 | yes |
+| writer | **150** | **225** | **no** |
+
+### The finding is not the eleven that agree. It is which one does not.
+
+Eleven of twelve numbers in the eight quoted rows and the four measured ones
+turn out to have been right. A reader could take that as a verdict that the
+workflow was a safe source after all, and it is the opposite verdict.
+
+The one seat where the stale source lies is the one seat the organization
+deliberately changed. Item 21 of `pending-workflow-changes.md` raised the
+writer's cap from 150 to 225, the change was applied to
+`.github/workflows/agent-writer.yml` on 2026-10-12 with full reasoning, and
+the file stopped governing the writer five days later. Every other row agrees
+because nothing touched it.
+
+**So state the general property, because it is the whole reason a stale source
+is dangerous rather than merely old.** A retired configuration file agrees with
+the live one on every value nobody has changed, and diverges only where someone
+acted. It therefore reads as reliable in every audit and lies exactly when a
+decision has been taken. An audit that samples such a file to test it will pass
+eleven times out of twelve and the twelfth is the only one that was ever going
+to matter. The test is never "do the two agree". It is "which one does the
+runtime read".
+
+That is the same shape as `INC-2026-10-24-the-audits-pointed-at-three-retired-runtimes`
+and it is why the board item behind this run is about the pattern rather than
+the find.
+
+### Correction: the largest window error is 66 turns, not 59
+
+The section headed "Four things this measurement settles" says of the 25-run
+sample "every error is in the same direction and the largest is 59 turns". Its
+own previous sentence disproves that: "It saw this seat at 89 and the month sees
+155." That is 66. The 59 is the engineer's 131 against 190.
+
+HQ's centralizer caught it from the parent repository and the correction matters
+beyond arithmetic, because 66 is the number now written into the company's exo
+role standard as the cost of measuring off a sample. **A page that holds the
+right evidence and the wrong total is worse than one that holds neither, because
+the total is what a reader quotes.** The arithmetic is now stated per row:
+writer 140 to 153 is 13, engineer 131 to 190 is 59, exo 89 to 155 is 66, and
+rule 7's closing sentence above, which also says 59, is wrong for the same
+reason and is corrected to 66 here rather than edited in place, so the error
+stays visible.
+
+### The writer's 153-turn run is not a kill, and the parent's new reader says it is
+
+`tools/run-record.py`, written at HQ on 2026-10-24 and now the source the exo
+role standard names, reads this company as one seat killed at its cap in 31
+days, suppresses the writer's peak as censored, and prints `step to 225`.
+
+Run it here with the host's own manifests and it reports:
+
+```bash
+ASC_AGENT_MANIFESTS=/srv/asc/roster python3 run-record.py --days 31 --company alexandria
+# alexandria  writer  150  21 runs  1 killed  PEAK cap+  P90 140 ...
+```
+
+The row it calls a kill is this one, read out of the audit log directly:
+
+```json
+{"ts": "2026-10-18T07:50:15.301Z", "turns": 153, "exit": 0, "durationMs": 1452546,
+ "model": "claude-opus-5", "trigger": "message", "pr": null}
+```
+
+**Exit 0, 24 minutes, 153 turns against a manifest cap of 150.** The reader's
+test is `turns > cap`, and its own documentation states the mechanism it is
+testing for: a run killed at the cap reports **cap plus one**, which here would
+be 151, with a non-zero exit. This row is three turns over and exited clean. It
+is not a kill under the reader's own definition of one.
+
+Which leaves the question this page has carried since 2026-10-18 open and
+sharpens it. Either the manifest's 150 is not what bound that run, or the cap is
+enforced at a boundary that lets a run finish past it. **The cost of calling it
+a kill is that the reader prints `cap+` instead of 153, so the one observation
+in the portfolio that says a cap did not bind is the one observation the new
+instrument discards.** It was sent back to the centralizer on the board in this
+run, delivered whole.
+
+Two things follow for this page rather than for the parent's tool.
+
+1. **Rule 1's two flavours need a third.** A censored run and a freely finished
+   run are not the only cases. A run that finishes above its stated cap is a
+   third, it is evidence about enforcement rather than about demand, and it is
+   reported with its exit code and duration beside its turn count so no later
+   reader has to re-derive which of the three it was.
+2. **The writer row stays the one number on this page no reader should treat as
+   settled**, and the reason is now narrower than it was. The peak is real: 153
+   turns of work happened. What is unsettled is only what the cap did while they
+   happened.
+
+### The rule-5 sweep for this run, measured rather than asserted
+
+Peak over cap, every seat, computed rather than quoted: writer 153/150 at
+**102%**, engineer 190/200 at **95%**, exo 155/200 at **78%**, market 118/160 at
+**74%**, finance 83/120 at 69%, pm 198/300 at 66%, skill 117/180 at 65%, okr
+86/160 at 54%, sales 67/160 at 42%, frontend 197/600 at 33%, security 73/250 at
+29%, research 48/180 at 27%.
+
+**Four seats are over rule 5's 70% trigger, not three.** The 16:40Z section an
+hour earlier wrote market's row as 74% and then named three seats as over the
+trigger in its prose, and this run repeated the same miscount in its own first
+draft before the arithmetic was written out per row. A trigger stated as a
+percentage and then summarised in a sentence gets summarised wrong, which is why
+the percentages above are listed and not totalled.
+
+One row moved inside the hour, and it moved because the window did rather than
+because the seat did: skill was 91 over 2 runs at 16:40Z and is 117 over 4 runs
+now, at 65%, still under the trigger. Nothing else changed.
+
+The required caps under the rule, which is twice the peak rounded up to the next
+50, are 350 for the writer, 400 for the engineer, 350 for this seat and 250 for
+market. All four are edits to the parent's manifests, which is the owner's
+merge, and they belong on `docs/agents/hq-relay.md` rather than on the queue
+page, because the queue page is for files in this repository.

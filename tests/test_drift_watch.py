@@ -233,6 +233,79 @@ def test_every_block_of_the_card_fits_what_the_board_accepts(stale_repo):
             f"board refuses anything over {board.BODY_BLOCK_LIMIT}")
 
 
+def test_the_card_names_the_deadline_the_deploy_has_to_beat(stale_repo):
+    """The card used to say how old the image was and never when it mattered.
+
+    So the owner was left to work the cron out of a decorator. The ExO seat
+    did exactly that by hand on 2026-10-24, on the compute card, and wrote
+    the answer in as a comment. One paragraph here is cheaper than that, and
+    it is right every day rather than on the day somebody bothered.
+    """
+    deploy = surface({app: "0000stale000" for app in drift.rs.APPS},
+                     days_ago=9, repo=stale_repo)
+    record = dw.behind(deploy)[0]
+    body = dw.card_body(record, deploy, NOW)
+    app = record["app"]
+    assert f"The next run of {app} is" in body, body
+    assert "away. That is the deadline on this card" in body, body
+    assert record["evidence"]["cron"], record["evidence"]
+    # The schedule itself, so a reader can check the arithmetic rather than
+    # trust it.
+    assert record["evidence"]["cron"] in body, body
+
+
+def test_the_card_does_not_hand_over_a_deadline_while_nothing_is_firing(stale_repo):
+    """A clock that has stopped is not a deadline, and 2026-10-24 was that day.
+
+    The Modal workspace was disabled, so a card reading "weekly fires Monday
+    09:00" would have told the owner to work to a schedule that was not
+    running. The outage belongs inside the deadline sentence, because a reader
+    who skips a footnote has been misled by the part they did read.
+    """
+    outage = "Modal's edge says workspace ac-1 is disabled."
+    deploy = surface({app: "0000stale000" for app in drift.rs.APPS},
+                     days_ago=9, repo=stale_repo)
+    deploy.evidence["compute_outage"] = outage
+    body = dw.card_body(dw.behind(deploy)[0], deploy, NOW)
+    assert outage in body, body
+    assert "no cron in this pipeline is firing at all" in body, body
+    assert "from the moment compute comes back" in body, body
+    assert "That is the deadline on this card" not in body, body
+
+
+def test_a_schedule_that_cannot_be_read_leaves_the_card_without_a_deadline(stale_repo):
+    """And says so, rather than printing an age with an implied deadline.
+
+    `deadline` is the only new sentence on this card and it is the one a
+    reader acts on, so the failure mode that matters is a confident wrong
+    time. There is no third option where it quietly says nothing: a card with
+    the paragraph missing reads as a card whose deadline is not urgent.
+    """
+    deploy = surface({app: "0000stale000" for app in drift.rs.APPS},
+                     days_ago=9, repo=stale_repo)
+    record = dw.behind(deploy)[0]
+    record["evidence"] = {**record["evidence"], "next_run_at": None,
+                          "next_run_why": "its module puts nothing on a cron"}
+    body = dw.card_body(record, deploy, NOW)
+    assert "I cannot say when this image next serves a run" in body, body
+    assert "its module puts nothing on a cron" in body, body
+
+
+def test_the_nudge_carries_the_deadline_too(stale_repo):
+    """A nudge is read instead of the card, not alongside it.
+
+    The card is written once per image and nudged once a day after that, so
+    on day eight the sentence the owner sees is the nudge. A deadline only on
+    the card is a deadline that expires from view on day two.
+    """
+    deploy = surface({app: "0000stale000" for app in drift.rs.APPS},
+                     days_ago=9, repo=stale_repo)
+    record = dw.behind(deploy)[0]
+    assert "Next run" in dw.nudge_body(record, NOW)
+    bare = {**record, "evidence": {**record["evidence"], "next_run_at": None}}
+    assert "Next run" not in dw.nudge_body(bare, NOW)
+
+
 @pytest.mark.parametrize("hours,expected", [
     (24.5, "24.5 hours"),
     (47.9, "47.9 hours"),

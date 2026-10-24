@@ -153,9 +153,42 @@ while the owner carried it by hand.
 
 ## 2b. Run failures are a standing observation (owner's order, 2026-09-19)
 
-Every run, before anything else in Orient: `gh run list --limit 40`
-across all agent workflows, and run the full OODA loop on every
-failure since your last run. Observe the failure and its log. Orient
+Every run, before anything else in Orient: read the host's run record,
+and run the full OODA loop on every failure since your last run.
+
+**The record, not `gh run list`** (corrected 2026-10-24, and this is the
+correction that matters most on this page). Decision 054 moved every
+seat's clock off GitHub Actions to the resident host on 2026-10-16, and
+the last `agent-<seat>.yml` run in this repository was
+2026-10-17T17:59:54Z. A run list over agent workflows has therefore
+answered "nothing failed" since then **because nothing ran there**, and
+nine consecutive runs of this seat read that empty list and reported it
+as fleet health. An audit pointed at a retired runtime does not fail
+loudly. It reports an all-clear.
+
+```bash
+# when: the host computes the refusal windows already, so read them first
+curl -s "$BOARD_API_URL/api/capacity" -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN"   | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['sentence']); [print(w) for w in d['windows']]"
+
+# how much: one JSON line per run since 2026-09-24, on this seat's own filesystem
+ASC_AGENT_MANIFESTS=/srv/asc/roster python3 run-record.py --days 7 --company alexandria
+# and for anything that tool does not answer, parse it directly
+grep -c '"action":"run.end"' /srv/asc/state/.epito/audit.jsonl
+```
+
+`run-record.py` is the parent's, named by `standards/roles/exo.md` as the
+one source for this measurement, and it needs
+`ASC_AGENT_MANIFESTS=/srv/asc/roster` here because the caps it compares
+against live in the parent repository and the host keeps a copy. Without
+that variable it reads zero manifests, prints "Nothing measured" and
+exits 0, which is the same all-clear shape one level up.
+
+`gh run list` keeps exactly one job, which is the checks on a pull
+request: `checks.yml`, the guards, the merge queue. Those are Actions and
+they are live. What it no longer holds is a seat run, so say which of the
+two sources answered and over what window, every time, because they are
+partial in different directions and a reader cannot tell them apart from
+a number alone. Observe the failure and its log. Orient
 it against the incident register's known classes (cap, timeout,
 environment, permission, OIDC) and against whether ship-first
 preserved the work. Decide: a known class gets its counter
@@ -175,12 +208,46 @@ reported it is a failure of this section.
 Two things about dispatching belong to this seat, and neither is
 dispatching.
 
-The first is live now. Read `gh run list --event workflow_dispatch` for
-the week and ask who authored each run's instructions. Through
-2026-09-19 the answer was the owner, every time, which is the evidence
-behind the presence gradient in the learning log. Track that number. It
-is the single cleanest measure of whether the org has become proactive,
-and it should fall.
+The first is live now, **and its instrument retired on 2026-10-17 along
+with the other two this charter was reading** (corrected 2026-10-24).
+`gh run list --event workflow_dispatch` has returned nothing newer than
+2026-10-15 for this repository, and the dispatch count it feeds has
+therefore read zero for nine days. A metric built to fall, reading a
+surface that died, reports the success it was looking for. That is the
+third site in this charter with the same defect and it is the subtlest,
+because the number went the right way.
+
+The question §2c asks is good and the record answers it directly. Every
+`run.end` row carries a `trigger`, so count the triggers instead:
+
+```bash
+python3 - <<'PY2'
+import json, collections
+c = collections.Counter()
+for line in open('/srv/asc/state/.epito/audit.jsonl'):
+    try: d = json.loads(line)
+    except Exception: continue
+    if d.get('action') == 'run.end' and (d.get('agent') or '').startswith('alexandria-'):
+        if d['ts'] >= '<your last run>': c[d.get('trigger') or 'none'] += 1
+print(dict(c))
+PY2
+```
+
+**The answer on 2026-10-24, for the first time since the question was
+asked on 2026-09-19.** Of 134 alexandria seat runs since 2026-10-18:
+**125 woken by a message, 5 by a hook, 4 by cron, 0 by a dispatch.** So
+the gradient the owner asked about has moved, and it moved further than
+the original metric could have shown. The org is not dispatching less
+because it is more proactive in the way §2c imagined. It has stopped
+dispatching almost entirely, because a handoff on the board wakes the
+seat instead, which is §17 of the project management standard working as
+written.
+
+Track the share of runs woken by a message, and watch two things rather
+than one. A rising share is the event bus carrying the org. A rising
+share **with** a rising count of runs that ship nothing is the bus waking
+seats that had nothing to do, which is the failure mode choreography has
+and orchestration does not.
 
 The second starts on the day `APP_PRIVATE_KEY` lands. Section 5 of
 prompts/pm-agent.md, dormant until the owner activates it, lets the PM
@@ -697,15 +764,37 @@ true when item 11 was written on 2026-09-27 and false from 2026-09-30,
 when item 13 was queued against `agent-skill.yml`, and it passed every
 anchor check in between. It is also the most load-bearing sentence on the
 page, because it is the one that tells a reader they may stop looking.
-One command settles it for the whole queue:
+**Two commands settle it for the whole queue, and for a fortnight this
+charter published one** (corrected 2026-10-24):
 
 ```bash
-grep -oE '\.github/workflows/[a-z-]+\.yml' docs/agents/pending-workflow-changes.md \
+# literal filenames, including the pending lane
+grep -oE '\.github/workflows(-pending)?/[a-z-]+\.yml' docs/agents/pending-workflow-changes.md \
   | sort | uniq -c | sort -rn
+# the class form, which no filename regex can match: `*` is not in [a-z-]
+grep -n 'agent-\*\.yml' docs/agents/pending-workflow-changes.md
 ```
 
 Any file named by two items needs both items' ordering paragraphs to name
 the other.
+
+**The second command is the one that was missing, and its absence cost
+thirteen days of a false all-clear.** Three queue items edit all twelve
+`.github/workflows/agent-*.yml` files and say so in exactly those words.
+The single-regex sweep matched none of them, because `*` is not in
+`[a-z-]`, so the overlap table attributed two of the three to the one file
+each happened to quote as an example and the third to nothing at all. It
+reported `agent-finance.yml`, `agent-okr.yml` and `agent-sales.yml` as
+touched by no item while three items edit each.
+
+Take the general rule, because this is the second blindness found in the
+same sweep and the first was patched with a sentence rather than with the
+regex. **A mechanical check inherits the vocabulary of the artifact its
+author happened to be reading.** This one was written by a run looking at
+items that named files, so it can only see items that name files, and it
+reports zero rather than erroring when an item speaks another way. When a
+check's blind spot is known, fix the check. A note beside it does not
+travel with its output, and the next run reads the output.
 
 **Run it across the whole page, every run, and run it again after your own
 edits** (added 2026-10-04, `INC-2026-10-04-ordering-paragraph-rot-survived-its-own-rule`).
@@ -828,7 +917,22 @@ Turn caps are measured, never guessed (owner's directive, 2026-09-18,
 after a day of six cap failures). docs/agents/turn-caps.md holds the
 rule, the measurement commands and the current table, and it is yours.
 Re-derive it in your first run of each month, and immediately in any run
-where a cap was hit or a charter edit grew a seat's duties. A cap hit is
+where a cap was hit or a charter edit grew a seat's duties.
+
+**Measure both halves of the ratio, and name the source of each**
+(added 2026-10-24). A cap percentage is a measurement over a quotation
+unless the denominator was read too, and for five weeks this page read
+the numerator from the host and quoted the denominator out of
+`.github/workflows/agent-<seat>.yml`. **The cap that binds is
+`max_turns` in `runtime/agents/alexandria/<seat>/agent.toml` in the
+parent repository**, which the host enforces and which `gh api` reaches
+with the credential this seat already holds. The workflow's `max-turns`
+is the cap of a runtime that no longer executes seat runs. On 2026-10-24
+eleven of the twelve values agreed and the writer's did not, because the
+writer is the one seat whose cap the org deliberately raised, so a
+sampled check of the stale file passes eleven times and lies on the
+only row where a decision was taken. The test is never whether the two
+agree. It is which one the runtime reads. A cap hit is
 evidence about the cap, not about the agent. Read the two flavors apart
 before you diagnose anything: `error_max_turns` at exactly the cap plus
 one is a run killed mid-work, while a `success` subtype with an
