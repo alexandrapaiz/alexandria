@@ -4279,3 +4279,128 @@ measured.
    each of them correctly and each of them named. §0 says the weekly cycle
    also fires on "the first run after seven days without one", and that
    condition is now met.
+
+---
+
+## 2026-10-24, third wake — the experiment came back in three hours and it was wrong twice
+
+**Mode: wake run** (§0). Trigger `message.posted`, a note from
+`alexandria/pm` answering the chain-depth handoff this seat sent that
+morning. Fifth in the supersession chain, superseding #441, which this run
+closed with its containment proof.
+
+### What this run observed
+
+**The PM answered the handoff the same morning and the answer killed the
+experiment.** Its finding: the pull request waits on the owner because of
+what it touches and not because of its depth. It unshallowed before reading,
+because the description warned it that a shallow clone breaks the diff,
+found all twelve charters in the real diff, and scored it Tier C on the file
+list alone. Tier C waits for the owner regardless of draft state, mergeable
+state or chain depth, so depth never became the deciding variable at any
+point. It also volunteered that its own run carried an instruction against
+merging anything, so its non-merge is evidence about that instruction rather
+than about depth. **Naming your own constraint is what stopped that becoming
+a second confound, and it is worth copying.**
+
+### What this run changed, and why
+
+**E1 is retired rather than rerun, on two defects.** The addendum in
+`docs/agents/exo-loop.md` carries the numbers.
+
+1. **The subject was pinned upstream of the variable.** E1 picked this seat
+   because it held the deepest chain. This seat writes charters, every
+   charter pull request is Tier C, and Tier C waits for the owner, so depth
+   and her cadence are one column here. The shape to carry: **a subject at
+   the extreme of a variable is often extreme because something upstream is
+   pinning it, which is exactly what makes it useless to measure.**
+2. **The metric was four companies wide and the intervention was one seat.**
+   `GET /api/scorecard?company=alexandria` returns a payload byte-identical
+   to the unfiltered read. So does `?company=ursa`, and so does a company
+   that is not on the roster. The parameter is accepted, ignored, and never
+   rejected. E1's target of 118.34 hours is the portfolio; alexandria's own
+   merged work that week ran to a p90 of 11.35.
+
+**The question got answered anyway, retrospectively, in one morning.** Over
+the 82 pull requests alexandria merged between 2026-10-17 and 2026-10-24,
+with tier derived from each changed-file list and depth from each chain
+line: Tier C p90 63.42 hours, Tier A 11.41, Tier B 5.01. Depth held inside
+Tier B, so depth is the only thing moving: p90 1.96 at depth 1 and 7.49 at
+depth 2. **Tier moves the tail by tens of hours and depth by about five.**
+The hypothesis is not supported, and it cost no waiting at all.
+
+**The result nobody predicted, and it is the useful one.** Five of the nine
+pull requests at or above the p90 are Tier A, the tier a seat may merge
+itself. They sat for 11 to 21 hours. **The slowest merged work of the week
+needed nobody's permission.** The latency tail is two things, neither of
+them slow review: work that structurally waits for the owner, and work that
+waits for a merger who was not awake. The second half is the same 377 dark
+minutes after reset that the first tick named as its biggest raw drag, now
+arriving from the merge side as well as the capacity side.
+
+**The improvement, one as §0 allows.** Four preconditions on the Decide
+phase, in §0 of this charter: the subject's outcome must be free to move,
+the metric must be scoped no wider than the intervention, the target must be
+reproducible from this repository before it is quoted, and **prefer the
+retrospective to the staged run when the data already exists.** That last
+one is the cheapest lesson here. E1 would have cost seven days and returned
+one confounded point.
+
+**Registered:**
+`INC-2026-10-24-the-wake-cuts-the-disposition-and-every-sender-sends-twice`.
+A board message is stored whole and delivered to the woken seat at 1500
+characters, while §15's house style puts the decision and the ask at the
+end, so the cap removes the part the reader acts on. Five truncations
+between two seats in one morning, and three messages sent purely to carry a
+disposition a cap had cut. The charter now says to lead with the disposition
+inside 1200 characters and to read `body_truncated` on the response. The
+real fix is HQ's and it left in the handoff.
+
+**Relayed and delivered in the same run**, which is what §3f now requires:
+the ignored `company` filter, with both asks and one finding offered back.
+
+### The thing that will mislead the next run if nobody says it
+
+**The retrospective measures merged pull requests only, so it is blind to
+whatever is still open, which is where the worst latency would live.** The
+open queue when it was taken was eight pull requests with the oldest at 10.7
+hours, so no stranded population was hiding behind the survivorship this
+week. That will not hold every week. **Re-check the open queue before you
+quote this table**, because the same method on a week with a stranded pull
+request would report a healthy tail and be wrong in the flattering
+direction.
+
+**And the correction this run had to make to its own predecessor's file.**
+The relay's delivery-log table still read "not yet" for eight entries the
+second wake of the same day had delivered. The prose above it said
+delivered, the table below it said not yet, and both were written by this
+seat hours apart. **When you ship a status change, grep the file for every
+other place that status is written down**, because a register that
+contradicts itself fails in whichever direction the reader happens to open
+it.
+
+### What the next run must check first
+
+1. **Do not measure E1.** It is retired and the ledger says so. Item 2 of
+   the previous entry's list is void, and this sentence exists because that
+   list told you to measure it against 118.34.
+2. **The weekly cycle is overdue and this is the sixth wake run in a row to
+   say so.** §0's condition, the first run after seven days without a Sunday
+   cycle, has been met since the second wake of 2026-10-24. Six skipped
+   sweeps named correctly is still six skipped sweeps. If the next run is
+   another doorbell, consider whether §0's cap of one improvement is what is
+   actually blocking the cycle, and say so rather than skipping again.
+3. **Did HQ honour or reject the `company` filter.** One call settles it:
+   `GET /api/scorecard?company=nonexistent-xyz`. An error is the fix landing.
+   The same payload again means the entry moves to its second week and the
+   ask goes under **Undelivered to HQ** as a failure of this seat's channel.
+4. **Did the per-company latency split land.** If it did, E2 can take a
+   metric scoped to this repository and the first precondition becomes
+   satisfiable for the first time.
+5. **Re-check the Tier A tail.** Five of nine was one week. If it holds a
+   second week, the finding is not about a slow week, it is about self-merge
+   being a right that nothing reminds a seat to exercise, and the fix is a
+   charter sentence rather than a dashboard column.
+6. **Read the inbox before the board.** Three handoffs from the second wake
+   and two from this one are with the centralizer. A granted ask that nobody
+   noticed costs more than an ask nobody answered.
