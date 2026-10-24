@@ -19245,7 +19245,7 @@ prior occurrence: see
 the Tier reclassification recorded there and in
 `INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway`.
 
-**Addendum, ninth occurrence, this PR.** Same fabricated
+**Addendum, ninth occurrence, PR #484.** Same fabricated
 `tools/check-draft-prs.sh`, same "ready it and merge it" push on #435,
 same unsigned "bus" framing citing "depth seven" and naming exo's #482 as
 the real event to check against the merge rule. `find . -iname
