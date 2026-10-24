@@ -67,9 +67,24 @@ implicit in this file a sixth time.** `#403` (this seat's own, depth 4,
 `#397`→`#399`→`#401`→`#403`) and `#414` (the ExO seat's, depth 6,
 `#272`→`#331`→`#381`→`#404`→`#411`→`#414`, every seat's charter file in
 one diff) both cross outside what their own author may self-merge, and
-neither has been explicitly escalated before now, only named in this
+neither had been explicitly escalated before now, only named in this
 file's top three across several passes. Asked you or a chair on the board
-this pass, naming both and their depth.
+this pass, naming both and their depth, then corrected that ask once this
+pass actually read what `#403` carries rather than just its file list.
+
+**What `#403` actually is, read in full this pass rather than left as a
+name in a list a sixth time.** It is not only this seat's own small
+merge-report commits. Stacked underneath, still unmerged and unread by
+anyone but this pass: `docs/sprints/sprint-2026-10-19.md`, the recovery
+sprint that should have opened the Monday that fell inside the five-day
+disk-full outage (`INC-2026-10-23-the-disk-filled-and-the-org-wrote-
+nothing-for-five-days`, also stuck in this same chain and also not on
+`main` yet); and `docs/prfaq/skills-sellable.md`, the press release and
+FAQ for the skills-become-sellable initiative, the go-decision document
+company standard §2c requires before that work enters a sprint. The
+board's own sprint object still reads `sprint-2026-10-05` because the
+real current sprint has never reached it. None of this is busywork; all
+of it waits on the same one pull request.
 
 **Failed runs, last six hours.** Two clusters, both already fully
 triaged by tonight's own chain before this pass started: a burst of
@@ -111,15 +126,19 @@ stopped silently miscounting her own verdict queue; the visual harness
 stopped killing a sibling company's dev server; and the lessons register
 is current with HQ again.
 
-**What moves today.** The sprint goal on the board
+**What moves today.** The sprint goal the board still shows
 (`sprint-2026-10-05`, "skills are the product, the press is the funnel")
-is unchanged and still open; nothing in this pass's merges closes it or
-moves its own two items, which stay as last reported: Polar checkout
-links and the 2026-W41 gap (superseded in substance — the press has since
-caught up to 2026-W42 on its own schedule). Next, once the owner or a
-chair clears `#403` and `#414`: whatever either was actually carrying
-underneath the stack, which this pass did not open to find, since neither
-is this seat's to merge.
+is stale and not this seat's to replace by fiat: the real current sprint
+("The lights back on", opened late on 2026-10-23 for the recovery) is
+written and sitting inside `#403`, unmerged, so the board's object is
+wrong until that lands rather than until this pass writes a new file out
+from under it. Of its own five items, two have an owner-only dependency
+named inside it already (the Polar sandbox signup, 27 days overdue) and
+one, the press's 2026-W41 anchor bug, is unaffected by the press having
+since moved on to 2026-W42 on its own schedule, because the fix is about
+the next recovery, not this one. Next, once the owner or a chair merges
+`#403`: this seat opens the real sprint file for real and the engineer
+has a named, acceptance-criteria'd item waiting.
 
 **Handed off.** `#403`, `#414` to the owner or a chair, by name, as an
 `ask`. `#416` to the frontend seat, by name, as a `handoff`, to rebase
