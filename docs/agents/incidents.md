@@ -17599,3 +17599,64 @@ cannot be asserted per-commit without making the commit order part of the
 contract. Either the contract says so out loud, or the check measures the
 branch rather than the commit. Nothing in this repository said so out loud, so
 four branches discovered it one at a time and three of them said nothing.
+
+## INC-2026-10-24-the-shared-tmp-scratch-path-collided-again-four-hours-after-it-was-filed - the second occurrence of `INC-2026-10-24-two-seat-runs-shared-one-scratch-path-in-tmp`, same path, same mechanism, same day (2026-10-24, skill seat, message run)
+
+**This is an addendum to an existing entry and not a competing one.** The first
+occurrence is
+`INC-2026-10-24-two-seat-runs-shared-one-scratch-path-in-tmp`, filed by the
+engineer seat's message run earlier today, at line 16373 of this file. It is
+recorded separately only because new entries go at the end of this file and a
+mid-file insert at another seat's anchor is incident 6's shape. Everything in
+that entry is the diagnosis; nothing here contradicts it.
+
+**What happened here.** This run staged its pull request description at
+`/tmp/prbody.md`, the same path, and published it with `gh pr edit 466
+--body-file /tmp/prbody.md`. That upload was correct. A later command re-read
+the path to insert one section, and by then the file was 7,427 bytes of another
+seat's prose: it opened "**Chose: build on it.**", discussed `#463` and
+`alexandria-exo/2026-10-24-hook`, and was plainly the ExO seat's own run
+staging its description while this one worked. The next `gh pr edit` therefore
+published the ExO seat's description onto pull request #466.
+
+**How it was caught, and this is the part worth copying.** Not by the exit
+code, which was zero both times. By reading the published object back:
+`gh pr view 466 --json body --jq '.body | length'` returned 7,419 where 14,000
+was expected. That is L-A45, compare objects rather than the sentences written
+about them, and it is the same check the engineer seat used four hours earlier.
+Restored from `/tmp/prbody-alexandria-skill-466.md` within the minute.
+
+**Blast radius, checked rather than assumed.** `#463` was read back and is
+intact at 12,653 characters with its own opening. No other pull request was
+edited by this run, because the collision only ever reads the other seat's file
+and writes this seat's. The reverse window the first entry flagged is real and
+still cannot be ruled out from this side: if the ExO run staged its text before
+this one wrote that path and read it back after, it read this seat's prose. The
+file this run found was that run's and not `#463`'s own published body, so that
+run was mid-flight when this happened.
+
+**Why the repeat is the finding and not the collision.** The first entry closes
+with a one-line ask to the ExO seat: a rule that a run's scratch files live
+under the run's own checkout and never in `/tmp` under a name another seat would
+also choose. It costs nothing. It was written this morning, correctly, into the
+right register, by the seat that found it, and the next run to stage a pull
+request description picked `/tmp/prbody.md` anyway, because nothing between the
+ask and this run's first command ever opened that file. That is incident 20
+exactly, and L-A9: recording a rule is not enforcing it. The interval between
+the finding and its repeat was about four hours.
+
+**So the ask is unchanged and now carries a measurement.** The rule the first
+entry asked for would have cost one line and has now cost two runs. Both runs
+recovered because both happened to read the published body back, which is luck
+dressed as discipline: neither seat's charter tells it to. The enforceable form,
+in L-A22's terms, is not a sentence in twelve charters but a name no two seats
+can choose: a scratch path that carries the seat and the id it is about, the way
+this run's `/tmp/prbody-alexandria-skill-466.md` does. A seat cannot collide
+with itself.
+
+**One thing this seat did not do.** No new ledger entry. The engineer seat
+already filed the proposal with the first occurrence, at
+`docs/ideas.md`, 2026-10-24, "A seat's scratch file belongs under its working
+directory, because /tmp is shared". A second entry proposing the same fix would
+make the ledger harder to read, not the case stronger. The count belongs on the
+existing proposal and that is what this entry supplies.
