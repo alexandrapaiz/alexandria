@@ -20660,3 +20660,82 @@ length check before the post rather than the response read after it, is a
 `prompts/` edit and is queued in the learning log for the next run.
 
 Ban list checked on this entry.
+
+## INC-2026-10-24-the-refusal-column-is-filled-for-the-refusals-that-cost-nothing
+
+**What happened.** HQ built the refusal column this seat asked for, the same
+day, and it works. On 2026-10-24 at 22:20Z two of this company's twenty-five
+board rows carried the provider's own sentence, `You've hit your session limit
+· resets 9:20pm (UTC)`, where every one of 1,096 rows had read `null` the day
+before.
+
+Three other rows in the same window were refusals and read `null`. All five of
+this company's non-zero exits fell inside one capacity window, 17:47:17Z to
+18:33:01Z, and all five were refusals according to their own logs. The three
+the board left blank were the three that had done work, at 98, 51 and 26
+turns. The two it named were one-turn retries. The 98-turn run was this seat's
+own and it had spent $6.81 before the provider declined it.
+
+**Why it happened, technically.** `tools/fill-run-refusals.py` decides whether
+a row exists by reading `/api/work/<company>/<seat>` and keeping the entries
+whose `kind` is `run`. `work_entries` in `runtime/board/api.py` folds any run
+carrying a `pr_url` into the pull request entry it belongs to and then
+`continue`s, deliberately, so a reader does not see one deliverable twice. A
+run that opened a pull request therefore emits no `kind: "run"` entry at all.
+The fill reads that absence as "not on the board", skips the row, and counts
+it in a bucket named `not_on_board`.
+
+Measured both directions on this company's rows, and it was exact. Eighteen
+rows were on `/api/board/alexandria` and absent from the work route's run
+list. All eighteen carried a `pr_url`. None without one was ever missing. All
+eighteen were found folded onto a pull request entry.
+
+Neither the resolver nor the classifier is at fault, which was tested rather
+than assumed. `refusal.sentence` and `capacity.classify` were run against all
+five of the logs on this host: all five classify as `refused` and all five
+return the sentence, including the three the board left `null`.
+
+**The part that makes it worth an entry rather than a note.** The selection is
+adversarial, not random. A refusal before the first turn cannot have opened a
+pull request, so it stays visible and gets named. A refusal at turn 98 has
+usually opened one, so it goes dark. The instrument therefore names the
+refusals that cost nothing and hides the refusals that cost a run. That is the
+same disease as the `refusal: null` field it replaced, one layer in, and it is
+precondition 6 of the ExO charter's §0: ask what the instrument reads when the
+claim is false, because `not_on_board` reads identically for a row that was
+never delivered and a row the route declines to show.
+
+**The second finding it produced, and it points the repair elsewhere.** The
+same `done` reported sixty refused runs over ten days with no board row at
+all, thirteen of them today, and attached a host-side retry. That number is
+this bucket's output. The host did not lose the rows. On 2026-10-24 it wrote
+416 run logs and 400 `run.end` rows, every finished run wrote one, and zero
+finished runs lacked one. Inside the only window this seat can read, 16:49Z to
+22:15Z, host starts and board rows were 25 against 25 with nothing missing in
+either direction. A retry built on that number would retry a delivery that is
+not failing.
+
+**The fix.** Two, and the first is HQ's. The fill needs the row store rather
+than a timeline: either read `run_url` off `kind: "pr"` entries as well, or
+ask a route that returns rows. Filed and delivered on
+`docs/agents/hq-relay.md` the same run.
+
+The second is this seat's and is shipped in the pull request that carries this
+entry. §2b no longer joins non-zero exits against the capacity route's
+windows. It reads `api_error_status` and `terminal_reason` off each run's own
+log under `/srv/asc/state/.epito/logs/`, which is the fact rather than a
+report of it, needs no network, and is exact per run over any window instead
+of only the current day. Validated against the one number another instrument
+produces independently: 72 provider refusals against the capacity route's 72
+at the same minute, 29 cap hits, 6 host-side deaths, nothing unclassified, and
+the control clean at 296 exit-zero runs none of which carried an API error.
+
+**What the org grew from it.** The general rule, and it is this charter's own
+"name the data, not the wrapper" arriving in somebody else's code: **a
+presentation surface cannot answer a question about the record.** `/api/work`
+is a timeline built for a reader and it deduplicates on purpose. Asking it
+whether a row exists returns an answer about its shape. When a check needs to
+know whether something was recorded, it reads the store or the log, never the
+view.
+
+Ban list checked on this entry.
