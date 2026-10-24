@@ -81,12 +81,30 @@ FENCE = re.compile(r"^\s*(```|~~~)")
 
 INBOX_FILENAME = re.compile(r"^(INC-\d{4}-\d{2}-\d{2}-[a-z0-9][a-z0-9-]*)\.md$")
 
-# Measured on the register at the commit that added this file. Nine numbers
-# answer to more than one entry, and twelve entries are the excess copies. The
-# register's own header admits one of the nine ("Two entries numbered 22
-# remain"), which is itself why a measured baseline beats a remembered one.
-BASELINE_DUPLICATE_LEGACY_KEYS = 9
-BASELINE_EXCESS_LEGACY_ENTRIES = 12
+# Measured on the register at the commit that added this file. Nine legacy
+# numbers answer to more than one entry and twelve entries are the excess
+# copies, all of them from the sequential allocator L-A18 retired on
+# 2026-09-24. The register's own header admits one of the nine ("Two entries
+# numbered 22 remain"), which is itself the argument for a measured baseline
+# over a remembered one.
+#
+# This is a set and not a count, and the first draft of this file made it a
+# count. A count cannot see a substitution: repair one legacy duplicate, let a
+# new number collide, and `9 == 9` reports nothing. That is incident 26's shape
+# in this register, "a gate written as a list catches only what already
+# shipped", and its own test caught it here before this shipped.
+BASELINE_DUPLICATE_LEGACY: dict[str, int] = {
+    "Incident 22": 2,
+    "Incident 24": 3,
+    "Incident 25": 3,
+    "Incident 26": 3,
+    "Incident 27": 2,
+    "Incident 28": 2,
+    "Incident 29": 2,
+    "Incident 30": 2,
+    "Incident 31": 2,
+}
+BASELINE_EXCESS_LEGACY_ENTRIES = sum(n - 1 for n in BASELINE_DUPLICATE_LEGACY.values())
 
 
 class Entry:
@@ -204,18 +222,16 @@ def check(register_text: str, inbox: list[tuple[str, str]], require_folded: bool
                 "two entries answering to one id"
             )
 
-    census = legacy_census(entries)
-    if census["keys"] > BASELINE_DUPLICATE_LEGACY_KEYS:
-        problems.append(
-            f"docs/agents/incidents.md: {census['keys']} legacy numbers answer to more "
-            f"than one entry, above the baseline of {BASELINE_DUPLICATE_LEGACY_KEYS}: "
-            "a sequential id was allocated again"
-        )
-    if census["excess"] > BASELINE_EXCESS_LEGACY_ENTRIES:
-        problems.append(
-            f"docs/agents/incidents.md: {census['excess']} excess legacy entries, above "
-            f"the baseline of {BASELINE_EXCESS_LEGACY_ENTRIES}"
-        )
+    # Legacy numbers are compared key by key against the measured baseline, so a
+    # number that collides for the first time is loud even if another one was
+    # repaired in the same change and the total did not move.
+    for key, count in sorted(legacy_census(entries)["detail"].items()):
+        allowed = BASELINE_DUPLICATE_LEGACY.get(key, 1)
+        if count > allowed:
+            problems.append(
+                f"docs/agents/incidents.md: {key!r} answers to {count} entries and the "
+                f"baseline records {allowed}: a sequential id was allocated again"
+            )
 
     known = set(inc_counts)
     seen: dict[str, str] = {}
