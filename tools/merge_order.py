@@ -115,17 +115,29 @@ def fetch_heads(prs: list[dict], repo=ROOT) -> list[dict]:
     One fetch, every refspec, so a queue of twenty costs one network round trip.
     A pull request whose head has been garbage collected on the remote is
     dropped from the measurement and named, rather than failing the run.
+
+    The retry is the part that matters. `git fetch` with many refspecs fails as
+    a unit, so one dead head takes every live head down with it, and the
+    measurement that comes back is "nothing to merge" rather than "I could not
+    look" — the quiet pass L-A21 exists to forbid. So the batch is the fast path
+    and the per-head loop is the truth, and the loop runs whenever the batch
+    does not bring back everything it asked for.
     """
     if not prs:
         return []
-    specs = [f"{p['headRefOid']}:{REF_NS}/{p['number']}" for p in prs]
-    git("fetch", "--no-tags", "origin", *specs, repo=repo, check=False)
-    present = []
-    for pr in prs:
-        if git("rev-parse", "--verify", "--quiet",
-               f"{REF_NS}/{pr['number']}", repo=repo, check=False).returncode == 0:
-            present.append(pr)
-    return present
+    spec = lambda pr: f"{pr['headRefOid']}:{REF_NS}/{pr['number']}"
+    git("fetch", "--no-tags", "origin", *[spec(p) for p in prs], repo=repo, check=False)
+    if len(_present(prs, repo)) < len(prs):
+        for pr in prs:
+            git("fetch", "--no-tags", "origin", spec(pr), repo=repo, check=False)
+    return _present(prs, repo)
+
+
+def _present(prs: list[dict], repo=ROOT) -> list[dict]:
+    """The subset whose head is now an object in this repository."""
+    return [pr for pr in prs
+            if git("rev-parse", "--verify", "--quiet", f"{REF_NS}/{pr['number']}",
+                   repo=repo, check=False).returncode == 0]
 
 
 def drop_refs(repo=ROOT) -> None:
