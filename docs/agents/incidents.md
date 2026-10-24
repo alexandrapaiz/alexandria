@@ -16194,3 +16194,60 @@ MCP server are down
 
 The candidate's shape avoids it rather than fixing the sort, by rendering
 every urgent entry and no proposed one.
+
+## INC-2026-10-24-a-gate-grades-a-print-against-rules-written-after-it — a voice gate's count reads as a verdict on the generator while most of the rules it is scored against postdate the print it read, now on a second gate (2026-10-24, writer seat, run 46)
+
+**The repeat is why this is here.** The standing rule at the top of this file
+says any issue occurring more than once is recorded at the moment it repeats.
+
+**First occurrence, 2026-10-23, writer run 43.**
+`docs/voice/reviews/2026-10-23-enjoyability-generator.md` scored five
+enjoyability gates against the newest print and found that one of the five
+rules had been in force when that print was made. Three postdated it, one of
+those three had been written out of that very print, and the fifth had no
+establishable date in that runtime. The review stated it plainly, in its own
+words: "a sixth rewriting is not a test of anything, because no print has yet
+tested the fifth." It was written into a review file and nowhere else.
+
+**Second occurrence, 2026-10-24, writer run 46, on a different gate.**
+`check_voice.py firstuse` reports 24 terms of art in `2026-W39.md` against a
+cap of five, 22 of them bare. Read as a verdict on `prompts/digest.md` the
+number is mostly unearned: W39 printed 2026-09-23, and four of the five rules
+in the generator's first-use pass were written between 2026-09-28 and
+2026-10-14. One rule was in force. The gate prints the count and the cap and
+nothing about which rules the artifact could have obeyed, so every reader of
+that output has to do the archaeology or skip it, and until this run every
+reader skipped it.
+
+**Why it is the same failure and not two findings.** Both gates read an
+artifact and print a count. Both counts are correct. Both are read as grades
+of the machine that produced the artifact, and in both cases most of the
+machine is younger than the artifact. The cause is not in either gate. It is
+that the press has sent twice since the generator began changing daily, on
+2026-09-23 and 2026-10-05, and the grade-and-patch loop the writer charter
+describes needs a print to close on. Nineteen days without one means every
+patch since 2026-10-05 is unfalsified, and a gate pointed at a 2026-09-23
+artifact will keep returning a verdict on a generator that no longer exists.
+
+**What this run did about it, and the limit.** The review
+`docs/voice/reviews/2026-10-24-firstuse.md` carries the dated rule table and
+scores each rule against each print rather than against the repository's
+newest file, which is the form the first occurrence asked for and could not
+produce, because that runtime held a one-commit clone
+(`INC-2026-10-18-the-machinery-diff-reads-clean-on-a-shallow-clone`). This run
+ran `git fetch --unshallow` before scoring anything and the dates are
+`git log -S` over `prompts/digest.md`.
+
+That is a form a review follows and not a gate. **The durable fix is not
+written here and not filed as this seat's**, because the thing that would
+close it is a second print at a known `prompt_sha`, which is the press's to
+produce and not the writer's. `check_voice.py compare` was built for exactly
+the two-print comparison and has never had two prints. The ledger filing this
+run did make is a different gap, the pre-send rule for law 12a, and it does not
+fix this one.
+
+**The smaller lesson, for any seat that keeps a measuring command.** A count
+over an artifact is a measurement of that artifact. It becomes a verdict on the
+machine only when the machine's rules predate the artifact, and nothing in a
+printed count says whether they do. Two gates in two days were read the wrong
+way around by the seat that wrote them both.
