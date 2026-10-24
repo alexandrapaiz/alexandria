@@ -17751,3 +17751,64 @@ cutting gates to make a budget.
   either way and the judgment is not this seat's.
 - Cost: $0, a decision and one line.
 - Status: proposed
+
+### 2026-10-24 — No standard says a file with a reading contract is read through its reader (writer seat, run 45, for the ExO seat's relay)
+- Trigger: `INC-2026-10-24-the-entry-about-hiding-is-hidden-from-the-owners-console`.
+  `docs/ideas.md` has a published entry contract, a purpose-built reader in
+  `tools/ledger.py` written because grepping it loses entries, and four readers
+  in total. The fourth is `parseIdeas` in `site/app/desk/page.jsx`, which
+  misses one entry, and the entry it misses is the one warning that an entry
+  can hide from every consumer that reads statuses by grep.
+- The gap: L-A21 in `docs/standards/lessons.md` is the test that would have
+  caught it, "name one change that would break what this gate governs, then
+  ask whether the gate would have seen that change". A status written as prose
+  is that change and the ledger register recorded it a month ago. But L-A21 is
+  written about gates and the desk is a surface, so nothing in the `any`
+  section reaches it.
+- The rule the gap wants, stated so the chair can accept or refuse it rather
+  than compose it: a file whose shape is published as a contract is read
+  through the reader that implements it, and a second parse of it is a defect
+  whether or not it is currently wrong. The second parse is almost always
+  right on the day it is written, which is what makes it survive review.
+- Why this is a relay and not a local edit: `docs/standards/lessons.md` is a
+  vendored copy and the writer charter forbids editing it here. The local half
+  is already done, which is ban list 133 and
+  `python3 -I docs/voice/check_voice.py ledger`.
+- Cost: $0, a decision and one paragraph in the parent.
+- Status: proposed
+
+### 2026-10-24 — The claims register has rows for sentences and the surfaces also print figures (writer seat, run 45, for the ExO seat)
+- Trigger: the same incident. `docs/agents/quality-claims.md` is the one place
+  a reader-facing assertion is checked against a mechanism, and the writer
+  charter's own test for what belongs in it is "list the sentences in it that a
+  reader could answer 'how do you know that'".
+- A count printed beside a heading is one of those, and it has no row. "Awaiting
+  your verdict 524" is correct English over a wrong number, so no prose gate
+  this seat owns can be wrong about it, and no claims row exists to point at
+  because the figure is computed on the page rather than written into it.
+- Four counts the public site prints today that a reader can ask that question
+  of: the home page's papers-read-this-week metric, which already has a board
+  card of its own, and the desk's two queue counts and its merged count.
+- The ask, for the ExO seat because the register is that seat's file: decide
+  whether a computed figure takes a row, and if it does, whether the row names
+  the figure or the reader that derives it. The second is the more useful
+  shape, because a row naming `tools/ledger.py` as the authority is checkable
+  by a command and a row naming "524" is stale the day it is written.
+- Cost: $0, a decision.
+- Status: proposed
+
+### 2026-10-24 — Whether GitHub's heading slug resolves for a ledger entry, which decides one affordance (writer seat, run 45, for the frontend seat)
+- Trigger: board card `8787a154`'s second finding, that the verdict queue's
+  `open →` appears on every row and every one points at `docs/ideas.md`. That
+  is wallpaper rather than an offer, and the candidate removes the affordance
+  for that reason.
+- One condition returns it. Ledger entries open with `### 2026-09-18 — name`,
+  and a heading GitHub renders is a heading GitHub anchors, so a row could link
+  to its own entry and no two rows would point at the same place. Then `open →`
+  is an offer and should stay.
+- Not asserted here, deliberately. These headings carry em dashes, colons and
+  parentheses, and whether GitHub's slug survives all three is a thing to
+  verify by opening one rather than by reasoning about it. Asserting a URL
+  nobody opened is what L-A12 is about.
+- Cost: $0 to check, one line either way.
+- Status: proposed
