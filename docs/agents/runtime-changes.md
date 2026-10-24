@@ -342,3 +342,66 @@ that touches a model id, a provider, a reservation or a timeout.
 The engineer's daily §0 check is the faster half of the same duty, and
 its command is scoped to `.github/` for the same reason. It now covers
 the delivery runtimes too.
+
+## Amendment 2026-10-24: the observability runtime is a runtime, and its retirement went unrecorded for a day
+
+`## What a runtime is` above names the container, the press, the corpus
+crons, the site deploy and the MCP server. It does not name the thing that
+reports on all five. That omission has now cost a record.
+
+**What happened.** Langfuse, which held every seat's run trace, was stopped
+on 2026-10-23 because `langfuse-clickhouse-1` filled the host's only disk
+under Docker's default `json-file` driver with no `max-size`, and Postgres
+then hit `PANIC: could not write to file ... No space left on device`. The
+owner's standing condition, recorded the same day, is that Langfuse stays
+stopped until it is rebuilt with a disk budget.
+
+**Where that is written down.** Upstream, in the vendored
+`docs/standards/lessons.md`, as part of an alexandra-systems incident. In
+this repository, as of 2026-10-24 16:30Z, nowhere at all. Not here, not in
+`docs/decisions.md`, not in `docs/agents/incidents.md`, not in
+`docs/agents/registers.md`, and not in `docs/agents/delivery-health.md`. The
+only local trace was three lines written the same morning into
+`docs/agents/exo-loop.md`, on an unmerged branch.
+
+**What still names it as live.** Twelve files. Every
+`.github/workflows/agent-*.yml` exports `OTEL_EXPORTER_OTLP_ENDPOINT` to
+`${{ secrets.LANGFUSE_HOST }}/api/public/otel`, sets
+`langfuse.environment=alexandria` in `OTEL_RESOURCE_ATTRIBUTES`, and runs a
+step called "Trace this run to Langfuse" against `LANGFUSE_PUBLIC_KEY` and
+`LANGFUSE_SECRET_KEY`. And the vendored `docs/standards/pm.md` still
+instructs every standup to read "the run's trace in Langfuse (environment =
+this company, session = the run id) when the failure is inside the model
+step", which is a step no PM can perform.
+
+**What it cost, measured.** `GET /api/scorecard` answers with a `sources`
+block saying `trace_store` is retired and `nothing is listening on
+127.0.0.1:8123`, and with a `columns` block mapping five of its columns to
+that source: `runs`, `tool_errors`, `tool_errors_per_run`,
+`runs_with_errors` and `median_minutes`. The API degrades honestly, which is
+why this was findable at all. But five columns of the org's own scorecard
+have had no source for a day, and the one rule that reads them,
+`docs/standards/lessons.md` L-A81's "the company measured merges per run,
+hours to main, runs that shipped nothing and tool errors per run", is
+unexecutable on the last of those four.
+
+**The amendment.** A runtime is also **the observability runtime**, meaning
+anything that records what the other runtimes did. Stopping one is a runtime
+change and takes the same three questions as starting one. The reason it
+belongs here rather than in a monitoring doc is the asymmetry this page
+already argues from: when a runtime fails, the org finds out loudly. When
+the thing that watches the runtimes fails, every number downstream of it
+keeps rendering, and the only loud signal is the one the scorecard API chose
+to emit about itself. **An observability outage is the one runtime failure
+whose symptom is silence.**
+
+**And the rule that falls out of the record being upstream.** The retirement
+was recorded correctly, in the parent's own register, by the company that
+owned the disk. It was not relayed down. `docs/agents/cross-repo-law.md`
+covers a parent decision arriving as a commit or an ADR. This one arrived as
+a line inside a vendored file that twelve local workflows contradict, which
+is the §3f reading that `grep -rn "HQ Incident 5" docs/` was written for,
+pointed the other way: **a parent record that lands in a vendored copy is
+filed and not delivered, and a seat reading the local machinery sees only
+the contradiction.** So when a vendored standard changes under a local
+runtime, the local register gets the entry too, written by whoever notices.
