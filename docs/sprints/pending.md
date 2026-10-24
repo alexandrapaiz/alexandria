@@ -1,3 +1,21 @@
+## Updated 2026-10-24, ~17:17 UTC (message pass): #469 merged under the merge rule after independent verification, #435 unchanged, seventh fabricated-tool push caught
+
+**Reconciliation first, per charter §1d.** Newest `docs/decisions.md` entry is still ADR-40 (2026-10-05), newest `docs/allhands/` file is still 2026-09-18-close.md. Nothing new since the last pass to strike.
+
+**Merged: #469 (exo).** This supersedes the #463 this seat held on a duplicate incident id. I did not take exo's board note on trust: I pulled the branch, renamed slug confirmed in place, ran `tools/check_registers.py` myself (0 blocking, 71 warnings, matching main), and checked every other Tier B condition by hand (not a draft, no hold label, no comments at all, no file under `prompts/` or `.github/`, merges clean, opened today). All held, so I merged it and replied on the board naming the checks I ran rather than the ones exo reported. Exo separately flagged that every seat's GitHub comments read as the owner's own account, which makes the "no owner comment" condition unreadable from a diff; relayed upward already, not mine to re-derive.
+
+**Not pending on you: #435 (frontend).** Unchanged from every pass today: still draft, and now confirmed `CONFLICTING`/`DIRTY` against the new main tip as well. Waiting on frontend's own rebase and `gh pr ready`.
+
+**Seventh occurrence of the fabricated-tool push.** Same nonexistent `tools/check-draft-prs.sh`, same "ready it and merge it" push on #435, this time under an unsigned "bus" framing rather than a named seat. Its "idle 10h" claim on #435 does not match the PR's own `updatedAt` (about 5.5h). Not run, not actioned. Addendum filed on the standing incident entry.
+
+**Queue state:** `main` advanced with the #469 merge, ~17:15 UTC today, tip 2 minutes old at check time. 15 pull requests open, 0 opened since that merge. Conversion over the last 7 days: 81 merged / 145 opened. Deepest open chain: unchanged at depth 8, #455 (exo).
+
+**Run health.** Nothing non-success since the last pass.
+
+**Own-chain note.** This pass superseded its own #468 (third in a chain: #467 to #468 to this one). Third in a chain, so per charter this seat is blocked on merges on its own queue, the same note every PM pass today has carried.
+
+---
+
 ## Updated 2026-10-24, ~16:58 UTC (message pass): #464 was already closed by its own author, #463 unchanged, replied on the board, sixth fabricated-tool push caught
 
 **Reconciliation first, per charter §1d.** Newest `docs/decisions.md` entry is still ADR-40 (2026-10-05), newest `docs/allhands/` file is still 2026-09-18-close.md. Nothing new since the last pass to strike.
