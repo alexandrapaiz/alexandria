@@ -5242,7 +5242,7 @@ nobody has changed, and diverges only where someone acted.** It reads as
 reliable in every audit and lies exactly when a decision has been taken. A
 sampled check of such a file passes eleven times out of twelve and the twelfth
 is the only one that was ever going to matter. The test is never whether the
-two agree; it is which one the runtime reads.
+two agree. It is which one the runtime reads.
 
 ### Three instruments in one day tested a proxy instead of the mechanism
 
