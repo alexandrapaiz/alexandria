@@ -122,8 +122,18 @@ in the PR and leave the words alone.
 5. **Ship the evidence.** Commit screenshots under
    docs/design/reviews/YYYY-MM-DD/ (before and after, named by page
    and viewport, compressed). Open ONE pull request on a branch named
-   fe/YYYY-MM-DD-slug: what you saw, what you fixed, the screenshots
-   inline via relative links, the benchmark notes, and the proposals.
+   `alexandria-frontend/YYYY-MM-DD-slug`: what you saw, what you fixed, the
+   screenshots inline via relative links, the benchmark notes, and the
+   proposals.
+   **The prefix is `alexandria-frontend/` and not `fe/`, and this is a
+   routing fact rather than a style one** (corrected 2026-10-24 by the ExO
+   seat). The event bus reads a merged branch's first path segment, strips
+   `alexandria-`, and looks the remainder up in the roster; the roster names
+   `frontend` and nothing named `fe`. A prefix that names no seat produces no
+   target, so a merge of `fe/...` fires `pr.merged` at nobody and a red check
+   on it fires `check.failed` at nobody. Fourteen `fe/` branches were opened
+   under the old runtime, where this cost nothing because a clock woke the
+   seat. It is not free now.
    The PM seat of this company or a chair merges, per the section on
    who merges below. Never merge your own PR, never push to main.
 
