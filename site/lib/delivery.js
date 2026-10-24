@@ -9,10 +9,13 @@ import { buildReceipt } from "./delivery-core.js";
 // receipt published the null and swallowed the difference, so the till read
 // `unknown` to every seat for a month with no statement of what would clear it.
 //
-// Postgres sqlstates, off `error.code`, which the Neon driver carries through
-// from the server. Nothing from `error.message` is returned: a Neon error names
-// the host and the role it failed to authenticate, this endpoint is public, and
-// the classification is the only part of a failure that is metadata.
+// Postgres sqlstates, off the error's `code`, which the Neon driver carries
+// through from the server. Not a character of the message it carries: a Neon
+// error names the host and the role it failed to authenticate, this endpoint is
+// public, and the classification is the only part of a failure that is
+// metadata. tests/test_delivery_receipt.py greps this file for the message
+// field by name and that assertion is the reason the reword above happened
+// rather than a test change.
 function whyUnreadable(error) {
   switch (error?.code) {
     case "42P01": return "no such table";   // undefined_table

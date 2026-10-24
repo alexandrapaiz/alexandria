@@ -40,6 +40,15 @@ from tools import delivery_health as dh  # noqa: E402
 
 CORE = (REPO / "site" / "lib" / "delivery-core.js").read_text()
 READER = (REPO / "site" / "lib" / "delivery.js").read_text()
+
+# The site's own `UNREADABLE_REASONS`, read out of its source rather than
+# retyped here. Retyping it would make this file agree with itself while the
+# two halves disagreed, which is the failure the version constant next to it
+# already has a test for.
+CORE_REASONS = re.findall(
+    r'"([^"]+)",',
+    re.search(r"UNREADABLE_REASONS = Object\.freeze\(\[(.*?)\]\)", CORE,
+              re.S).group(1))
 ROUTE = (REPO / "site" / "app" / "api" / "delivery" / "route.js").read_text()
 
 FAILURES: list[str] = []
@@ -287,7 +296,7 @@ def SIBLINGS(when, model="kimi-k2.6"):
 def receipt(week="2026-W39", created="2026-09-28T09:03:00+00:00",
             papers=None, claims=None, deploy=None, version=None,
             press_present=True, queues="default", distilled="default",
-            siblings="default", payments="default"):
+            siblings="default", payments="default", unreadable=None):
     """A receipt whose corpus moved last night, whatever night it is.
 
     The press surface is judged against the `today` these tests pass in, so the
@@ -316,6 +325,9 @@ def receipt(week="2026-W39", created="2026-09-28T09:03:00+00:00",
         "queues": QUEUES if queues == "default" else queues,
         "payments": (CLEAR_TILL if payments == "default" else payments),
         "deploy": deploy if deploy is not None else [],
+        # Version 6's block, and absent by default rather than empty, because
+        # that is what a receipt whose every query ran looks like.
+        **({"unreadable": unreadable} if unreadable is not None else {}),
     }
 
 
@@ -933,13 +945,18 @@ def test_a_missing_payments_table_costs_the_till_and_nothing_else():
     this first and this read is inside the same guard for the same reason.
     """
     class Aborting(FakeConn):
-        def __init__(self):
+        def __init__(self, sqlstate="42P01"):
             super().__init__({})
             self.inside = False
+            self.sqlstate = sqlstate
 
         def execute(self, sql, params=None):
             if "payment_exceptions" in sql:
-                raise RuntimeError('relation "payment_exceptions" does not exist')
+                # Shaped like the psycopg error this really meets: the sqlstate
+                # is what `why_unreadable` reads, and 42P01 is undefined_table.
+                exc = RuntimeError('relation "payment_exceptions" does not exist')
+                exc.sqlstate = self.sqlstate
+                raise exc
             return _Result(("2026-W39", datetime.now(timezone.utc), "kimi-k2"))
 
         def transaction(self):
@@ -947,12 +964,98 @@ def test_a_missing_payments_table_costs_the_till_and_nothing_else():
             return contextlib.nullcontext()
 
     conn = Aborting()
-    check("an absent table is unknown, not failing",
-          dh.payment_facts(conn) is None
-          and dh.judge_payments(None).state == dh.UNKNOWN)
+    why = dh.payment_facts(conn)
+    surface = dh.judge_payments(why)
+    check("an absent table is unknown, not failing", surface.state == dh.UNKNOWN)
     check("and the read was inside a savepoint", conn.inside)
     check("so the next surface on the same connection still answers",
           dh.judge_press(dh.press_facts(conn), dh.date(2026, 10, 1)).state == dh.OK)
+    # The half this test did not hold until 2026-10-24, which is the whole
+    # reason the till read `unknown` in every standup for a month: the surface
+    # said it could not look and never said that one hand-run migration was all
+    # it was waiting for.
+    check("the reason is carried rather than swallowed", why == dh.NO_TABLE, why)
+    check("and the headline names the hand that closes it",
+          "apply_schema" in surface.headline, surface.headline)
+    check("and the evidence carries the reason for a machine reader",
+          surface.evidence.get("unreadable") == dh.NO_TABLE)
+
+    other = dh.payment_facts(Aborting(sqlstate="57014"))
+    check("a failure that is not a schema gap is not called one",
+          other == dh.QUERY_FAILED, other)
+    check("and it sends the reader to a log rather than to a migration",
+          "apply_schema" not in dh.judge_payments(other).headline)
+
+
+def test_the_two_readers_reach_the_same_hand_for_an_unreadable_till():
+    """The contract the credential-free half of this file rests on, for version 6.
+
+    A receipt and a connection must not reach different first steps from the
+    same database. The direct reader classifies a psycopg sqlstate; the site
+    classifies the same sqlstate in site/lib/delivery.js and publishes the word
+    in `unreadable.payments`. If those two vocabularies drifted, the standup
+    and the owner's laptop would disagree about whether a migration was owed.
+    """
+    class Absent(FakeConn):
+        def __init__(self):
+            super().__init__({})
+
+        def execute(self, sql, params=None):
+            if "payment_exceptions" in sql:
+                exc = RuntimeError("undefined table")
+                exc.sqlstate = "42P01"
+                raise exc
+            return _Result(None)
+
+        def transaction(self):
+            return contextlib.nullcontext()
+
+    direct = dh.judge_payments(dh.payment_facts(Absent()))
+    _, _, _, till = dh.receipt_facts(
+        receipt(payments=None, unreadable={"payments": "no such table"}))
+    via_receipt = dh.judge_payments(till, source=dh.RECEIPT_URL)
+
+    check("both readers answer unknown",
+          direct.state == dh.UNKNOWN and via_receipt.state == dh.UNKNOWN)
+    check("and the headline is the same word for word",
+          direct.headline == via_receipt.headline,
+          f"{direct.headline!r} vs {via_receipt.headline!r}")
+    check("and the site's three words are the reader's three words",
+          set(dh.UNREADABLE_HANDS) == set(CORE_REASONS),
+          f"reader={sorted(dh.UNREADABLE_HANDS)} site={sorted(CORE_REASONS)}")
+
+
+def test_a_reason_this_reader_does_not_know_claims_nothing():
+    """A newer site inventing a fourth reason must not put a first step in a
+    report on no evidence. The generic sentence is the honest answer there, and
+    `unreadable_reason` is the one place that decides it."""
+    _, _, _, till = dh.receipt_facts(
+        receipt(payments=None, unreadable={"payments": "the vibes were off"}))
+    check("an unknown reason is dropped", till is None)
+    surface = dh.judge_payments(till, source=dh.RECEIPT_URL)
+    check("so the verdict is the sentence that names no hand",
+          surface.state == dh.UNKNOWN and "apply_schema" not in surface.headline,
+          surface.headline)
+    check("and a receipt with no unreadable block at all behaves the same",
+          dh.receipt_facts(receipt(payments=None))[3] is None)
+
+
+def test_the_receipt_publishes_no_reason_it_does_not_own():
+    """The vocabulary is closed on the site's side too.
+
+    `unreadable` is the one block on this receipt built from a value a caught
+    exception produced, so it is the one place where an error's own text could
+    reach a public response. buildReceipt filters it to three strings this
+    codebase chose, and to the four blocks it publishes, so neither a driver
+    message nor a key for a block that does not exist comes out.
+    """
+    check("the vocabulary is frozen", "Object.freeze" in CORE
+          and "UNREADABLE_REASONS" in CORE)
+    check("every value goes through the filter", "reason(given)" in CORE)
+    check("and the blocks it will key are named one by one",
+          '["siblings", "queues", "payments", "deploy"]' in CORE)
+    check("the site reads the sqlstate and not the message",
+          '"42P01"' in READER and '"42703"' in READER)
 
 def test_the_direct_reader_is_still_the_one_that_mails():
     """`check_deploy(conn, notify=True)` is unchanged, so the Modal jobs and the

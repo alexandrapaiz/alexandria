@@ -149,7 +149,7 @@ PRICING_URL = f"{SITE_URL}/pricing"
 # publishes the rows this command judges and no seat needs a credential to read
 # them. Facts only: the judgement below is the single copy.
 RECEIPT_URL = f"{SITE_URL}/api/delivery"
-RECEIPT_VERSION = 5  # must match site/lib/delivery-core.js RECEIPT_VERSION
+RECEIPT_VERSION = 6  # must match site/lib/delivery-core.js RECEIPT_VERSION
 
 # And the versions this reader can still read. Exact-match was the rule until
 # 2026-10-10 and it made every additive field an outage: the site deploys on a
@@ -165,9 +165,68 @@ RECEIPT_VERSION = 5  # must match site/lib/delivery-core.js RECEIPT_VERSION
 # readable too, and version 4 added the two sibling-stage markers on the same
 # terms again, and version 5 added the `payments` block on the same terms once
 # more: an absent block is a till this reader cannot see, which is `unknown`,
-# and never a till with nothing wrong. A version that removed or renamed a
-# field would not be added to this tuple.
-READABLE_VERSIONS = (1, 2, 3, 4, 5)
+# and never a till with nothing wrong. Version 6 added the `unreadable` block
+# on the same terms a fifth time, and it is the easiest of the six to justify:
+# the block says why another block is null, so a receipt without it is one that
+# gives no reason, which is exactly what every receipt before it did. A version
+# that removed or renamed a field would not be added to this tuple.
+READABLE_VERSIONS = (1, 2, 3, 4, 5, 6)
+
+# Why a fail-soft block could not be read, and what closes it.
+#
+# The three strings are site/lib/delivery-core.js's `UNREADABLE_REASONS`, which
+# the receipt publishes in its version 6 `unreadable` block, and this file
+# classifies a direct psycopg failure into the same three so the two readers
+# stay interchangeable. That interchangeability is the contract the whole
+# credential-free half of this file rests on: a receipt and a connection must
+# not be able to reach different first steps from the same database.
+#
+# The second half is the point. A surface that says it could not look is honest
+# and it is not actionable, and `payments` proved how far that goes: it answered
+# `unknown` in every standup from the day the block shipped, because
+# `payment_exceptions` is newer than every other table here and `apply_schema`
+# is a hand-run step. One command closed it the entire time and no report said
+# so. So a reason this file recognises carries its own next step.
+NO_TABLE, NO_COLUMN, QUERY_FAILED = ("no such table", "no such column",
+                                     "query failed")
+
+UNREADABLE_HANDS = {
+    NO_TABLE: ("this database is behind db/schema.sql, so one hand-run "
+               "`modal run pipeline/db_setup.py::apply_schema` closes it"),
+    NO_COLUMN: ("this database is behind db/schema.sql by a column, so one "
+                "hand-run `modal run pipeline/db_setup.py::apply_schema` "
+                "closes it"),
+    QUERY_FAILED: ("the table is there and the query broke, so this one needs "
+                   "a log read rather than a migration"),
+}
+
+
+def unreadable_reason(value) -> str | None:
+    """One of the three reasons, or None for anything this reader does not know.
+
+    None rather than `query failed` for an unrecognised string, because a newer
+    receipt inventing a fourth reason is a fact this reader does not have, and
+    guessing at it would put a first step in a report on no evidence. The
+    generic `unknown` sentence is the honest answer there.
+    """
+    return value if value in UNREADABLE_HANDS else None
+
+
+def why_unreadable(exc: BaseException) -> str:
+    """A psycopg failure as one of the three reasons the receipt publishes.
+
+    `sqlstate` and never the message. 42P01 is undefined_table and 42703 is
+    undefined_column, and both of those mean the schema is behind rather than
+    the query being wrong. Everything else is `query failed`, which is the
+    state whose first step is a log.
+    """
+    state = getattr(exc, "sqlstate", None)
+    if state == "42P01":
+        return NO_TABLE
+    if state == "42703":
+        return NO_COLUMN
+    return QUERY_FAILED
+
 
 # Which reader answered. It goes in every surface's evidence as `read_via`,
 # because "the press printed" and "a second-hand record says the press printed"
@@ -2107,8 +2166,13 @@ PAYMENT_CODES = """
 """
 
 
-def payment_facts(conn) -> dict | None:
-    """The open exceptions, or None when the table cannot be read.
+def payment_facts(conn) -> dict | str | None:
+    """The open exceptions, or why they could not be read.
+
+    A dict of counts, or one of the three reasons in `UNREADABLE_HANDS` when
+    the read failed, which is the same shape `deploy_facts` has always had and
+    for the same reason. None stays reachable for the one case that is neither:
+    a read that worked and returned no row at all.
 
     None rather than zeroes, the same contract `queue_facts` keeps and for the
     same reason: `payment_exceptions` is newer than every other table this file
@@ -2128,8 +2192,11 @@ def payment_facts(conn) -> dict | None:
         with conn.transaction():
             total = conn.execute(PAYMENT_TOTALS).fetchone()
             codes = conn.execute(PAYMENT_CODES).fetchall()
-    except Exception:
-        return None
+    except Exception as exc:
+        # The reason and not a bare None, so this reader reaches the same first
+        # step the receipt's `unreadable.payments` gives the credential-free
+        # one. `why_unreadable` reads the sqlstate and never the message.
+        return why_unreadable(exc)
     if total is None:
         return None
     return {"unresolved": total[0], "needs_a_hand": total[1],
@@ -2151,7 +2218,7 @@ def _name_codes(codes: list | None) -> str:
     return ", ".join(named)
 
 
-def judge_payments(facts: dict | None, now: datetime | None = None,
+def judge_payments(facts: dict | str | None, now: datetime | None = None,
                    source: str = DIRECT) -> Surface:
     """Open payment exceptions, against what will clear itself.
 
@@ -2175,11 +2242,23 @@ def judge_payments(facts: dict | None, now: datetime | None = None,
     """
     now = now or datetime.now(timezone.utc)
     read = {"read_via": source}
-    if facts is None:
+    if facts is None or isinstance(facts, str):
+        # `unknown` either way, because an unread till is not a clear one. What
+        # changes with a reason is whether the report ends at "could not look".
+        # It answered exactly that in every standup for a month while one
+        # hand-run migration was all it ever needed, which is the gap the
+        # version 6 receipt and `why_unreadable` exist to close.
+        why = unreadable_reason(facts)
+        if why is None:
+            return Surface("payments", UNKNOWN,
+                           "payment_exceptions could not be read, so whether a "
+                           "verified payment reached an account is unknown here",
+                           read)
         return Surface("payments", UNKNOWN,
-                       "payment_exceptions could not be read, so whether a "
-                       "verified payment reached an account is unknown here",
-                       read)
+                       f"payment_exceptions could not be read ({why}), so "
+                       f"whether a verified payment reached an account is "
+                       f"unknown here: {UNREADABLE_HANDS[why]}",
+                       {"unreadable": why, **read})
 
     open_rows = int(facts.get("unresolved") or 0)
     stuck = int(facts.get("needs_a_hand") or 0)
@@ -2324,14 +2403,26 @@ def receipt_facts(payload: dict) -> tuple[dict | None, dict, dict | str, dict | 
                     "queues": queues if isinstance(queues, dict) else None,
                     "siblings": siblings}
 
+    # Version 6's reasons for the blocks that are null, keyed by block name.
+    # Absent on versions 1 to 5 and on any receipt where everything read, and
+    # `unreadable_reason` turns anything this reader does not recognise back
+    # into None, so an older site and a newer one both land on the sentence
+    # that claims nothing.
+    unreadable = payload.get("unreadable")
+    if not isinstance(unreadable, dict):
+        unreadable = {}
+
     deploy = payload.get("deploy")
     if deploy is None:
         # The route sends null when it could not run that query at all, and an
         # empty list when the table is really empty. Collapsing the two would
         # make a missing table look like three jobs that never reported, which
         # is the drift alarm firing on a schema step.
+        why = unreadable_reason(unreadable.get("deploy"))
         deploy_rows: dict | str = ("deploy_runtime could not be read by the site "
                                    "either, so the receipt carries no deploy rows")
+        if why is not None:
+            deploy_rows += f" ({why}): {UNREADABLE_HANDS[why]}"
     else:
         deploy_rows = {row["app"]: {"runtime_sha": row.get("runtime_sha"),
                                     "recorded_at": _parse_iso(row.get("recorded_at")),
@@ -2345,7 +2436,10 @@ def receipt_facts(payload: dict) -> tuple[dict | None, dict, dict | str, dict | 
     # hand the judgement the same thing and neither can call the till clear on
     # evidence the other would call unknown.
     published = payload.get("payments")
-    payments = None
+    # A version 6 receipt says why, and the reason is what gives the verdict a
+    # next step instead of a shrug. On an older receipt there is no reason to
+    # carry and None is the same unknown it has always been.
+    payments: dict | str | None = unreadable_reason(unreadable.get("payments"))
     if isinstance(published, dict):
         codes = published.get("codes")
         payments = {
