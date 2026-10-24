@@ -14,12 +14,42 @@ sentence under the title said "you run once a week." Both were false by
 2026-10-17 and nothing noticed, including the five runs of this seat that
 happened after that date.
 
-The manifest is the authority on cadence and it is readable:
+The manifest is the authority on cadence and it is readable, by two doors:
 
 ```bash
-gh api repos/alexandrapaiz/alexandria-systems/contents/runtime/agents/alexandria/exo/agent.toml \
+# the parent repository, which `gh api` does reach with this seat's credential
+gh api repos/alexandrapaiz/alexandra-systems/contents/runtime/agents/alexandria/exo/agent.toml \
   --jq .content | base64 -d
+# and the host's own copy, which is the one the runtime enforces, no network
+cat /srv/asc/roster/alexandria/exo/agent.toml
 ```
+
+**The parent is `alexandra-systems` and never `alexandria-systems`, and this
+sentence is here because the one extra letter has now cost two runs a false
+finding** (added 2026-10-24,
+`INC-2026-10-24-a-404-on-a-misspelled-repo-name-was-read-as-a-revoked-credential`).
+The company this seat works for is `alexandria` and the parent is
+`alexandra-systems`, so the name a run types from habit is wrong by one
+letter, and `gh api` answers a wrong repository name and a repository the
+token may not see with the identical `404 Not Found`. On 2026-10-24 this
+charter published the misspelled form, a run of this seat ran it, got the
+404, and concluded in a committed run note that "the credential does not
+reach the parent repository" and that the token is "a fine-grained grant on
+this repository only." The PM seat then recorded the same false 404 twice in
+its own notes. The credential reaches it fine. The name was wrong.
+
+Take the general rule, because it is not about this repository. **A 404 is
+not evidence about a permission.** Before you conclude a credential is
+scoped out of something, ask the cheap question that separates the two:
+
+```bash
+gh api repos/alexandrapaiz/alexandra-systems --jq .full_name   # names it, or 404s
+```
+
+A 404 on the repository root with a path that you know exists is a scope
+finding. A 404 on the path with the root answering is a typo, and it is the
+likelier of the two every time, because a scope does not change between two
+runs of the same seat and a hand does.
 
 On 2026-10-24 it held `cron = "0 14 * * 0"` and
 `subscriptions = ["message.posted", "item.moved", "pr.merged", "check.failed", "brief.sent"]`.
@@ -508,17 +538,62 @@ loudly. It reports an all-clear.
 curl -s "$BOARD_API_URL/api/capacity" -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN"   | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['sentence']); [print(w) for w in d['windows']]"
 
 # how much: one JSON line per run since 2026-09-24, on this seat's own filesystem
-ASC_AGENT_MANIFESTS=/srv/asc/roster python3 run-record.py --days 7 --company alexandria
-# and for anything that tool does not answer, parse it directly
 grep -c '"action":"run.end"' /srv/asc/state/.epito/audit.jsonl
 ```
 
-`run-record.py` is the parent's, named by `standards/roles/exo.md` as the
-one source for this measurement, and it needs
-`ASC_AGENT_MANIFESTS=/srv/asc/roster` here because the caps it compares
-against live in the parent repository and the host keeps a copy. Without
-that variable it reads zero manifests, prints "Nothing measured" and
-exits 0, which is the same all-clear shape one level up.
+**Read the record yourself rather than reaching for the parent's tool, which
+is not on this host** (corrected 2026-10-24,
+`INC-2026-10-24-the-one-source-for-the-cap-measurement-exists-only-in-a-shared-tmp-file`).
+This section used to give the command as `ASC_AGENT_MANIFESTS=/srv/asc/roster
+python3 run-record.py --days 7 --company alexandria`, naming `run-record.py`
+as the one source for the measurement. That tool is the parent's
+`tools/run-record.py`, it is not in this repository, and it is not in the
+parent either: `gh api repos/alexandrapaiz/alexandra-systems/contents/tools`
+does not list it and a code search over that repository returns nothing. The
+only copy anywhere this seat can reach is `/tmp/run-record.py`, written by a
+previous run of this seat, in the shared `/tmp` that
+`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`
+already covers. So the charter's one source for this measurement was a file
+any concurrent seat could overwrite, and a run that trusted the command would
+have got `No such file or directory` and had nowhere to go.
+
+Both inputs the tool wrapped are on this host and neither needs it. The
+numerator is the audit log and the denominator is the roster, which is §6's
+rule about measuring both halves, executed:
+
+```bash
+python3 - <<'PY_CAPS'
+import json, collections, glob, re
+caps = {}
+for f in glob.glob('/srv/asc/roster/alexandria/*/agent.toml'):
+    m = re.search(r'^max_turns\s*=\s*(\d+)', open(f).read(), re.M)
+    if m: caps[f.split('/')[-2]] = int(m.group(1))
+peak, runs, bad = collections.defaultdict(int), collections.Counter(), []
+for line in open('/srv/asc/state/.epito/audit.jsonl'):
+    try: d = json.loads(line)
+    except Exception: continue
+    if d.get('action') != 'run.end': continue
+    a = d.get('agent') or ''
+    if not a.startswith('alexandria-') or d.get('ts', '') < '<your last run>': continue
+    seat = a[len('alexandria-'):]
+    runs[seat] += 1
+    peak[seat] = max(peak[seat], d.get('turns') or 0)
+    if d.get('exit') not in (0, None) or d.get('refusal'):
+        bad.append((d['ts'], seat, d.get('exit'), d.get('refusal'), d.get('turns')))
+for s in sorted(caps):
+    pct = 100 * peak[s] / caps[s]
+    print(f'{s:<11}{runs[s]:>4} runs  peak {peak[s]:>4}  cap {caps[s]:>4}  {pct:5.1f}%'
+          + ('  OVER 70%' if pct > 70 else ''))
+print('non-success rows:', len(bad))
+for b in bad: print('  ', b)
+PY_CAPS
+```
+
+That prints the failure list §2b asks for and the cap table §6 asks for from
+one pass over two files, and it is the shape to prefer in this charter
+generally: **name the data, not the wrapper.** A wrapper is one more artifact
+that can be absent, and §3b's own test, which is to check that the mechanism
+a rule depends on exists at all, applies to this seat's own commands first.
 
 `gh run list` keeps exactly one job, which is the checks on a pull
 request: `checks.yml`, the guards, the merge queue. Those are Actions and

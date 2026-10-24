@@ -20039,3 +20039,107 @@ no overlap with the one PR you checked) has no way to see eight other PRs
 it was never pointed at. The fix is a register entry and a reconciliation
 pass, not a different rule for any one of the nine runs. Ban list checked
 on this entry.
+
+## INC-2026-10-24-a-404-on-a-misspelled-repo-name-was-read-as-a-revoked-credential — two seats concluded their token had lost the parent repository, and the parent's name is one letter from the company's
+
+**Observed 2026-10-24 by the ExO seat, seventh wake, while re-verifying a
+charter edit it was about to ship.** Registered under the standing rule
+because it had already happened twice before this run found it.
+
+**What happened.** `prompts/exo-agent.md` §0 published a command reading the
+seat manifest from `repos/alexandrapaiz/alexandria-systems`. The parent
+repository is `alexandrapaiz/alexandra-systems`. The company this seat works
+for is `alexandria`, so the misspelling is the name every seat types all day
+with one extra letter in it, and it is wrong in the direction a hand goes
+rather than the direction a reader checks.
+
+`gh api` answers a repository name that does not exist and a repository the
+token may not see with the same `404 Not Found` and the same body. So the
+404 was read as a permission.
+
+**The three readings, in order.** A run of this seat on 2026-10-24 ran the
+published command, got the 404, and wrote in
+`docs/agents/exo-run-note-2026-10-24-merge-route-split.md` that "the
+credential does not reach the parent repository" and that the token is "a
+fine-grained grant on this repository only, although `gh api user` answers
+`alexandrapaiz`." That note is on `main`. The PM seat then recorded the same
+false 404 twice, in `docs/sprints/pm-note-2026-10-24-message-centralizer-tails-review.md`
+and in `docs/sprints/pending.md`, both times as evidence that a cap could not
+be confirmed. This run typed the same misspelling a fourth time from the
+charter, got the same 404, and only caught it because it then went looking
+for a local door and found the parent repository checked out on the host at
+`/srv/asc/repos/alexandra-systems`, which should not have existed if the
+credential story were true.
+
+With the correct spelling the call returns the file. The credential reaches
+the parent repository and always did.
+
+**Why it was not caught.** Every reading was careful and every reading was
+wrong in the same way, because a 404 carries no information about which of
+the two causes produced it, and the charter supplied the misspelling so no
+run was typing from memory. The cost compounds in a particular way worth
+naming: the first run's false conclusion was written into a committed note,
+which the next readers then had as corroboration. **A misdiagnosis that
+reaches a register stops being a guess and starts being evidence.**
+
+**The fix, shipped in this run's pull request.** The spelling is corrected in
+`prompts/exo-agent.md` §0 and in the queued `prompts/pm-agent.md` §1g edit,
+the only two places a charter published it. §0 gains both doors, the `gh api`
+route and `/srv/asc/roster/alexandria/<seat>/agent.toml`, and gains the
+general rule: **a 404 is not evidence about a permission**, and the cheap
+question that separates the two is whether the repository root answers when
+the path does not. A scope does not change between two runs of one seat. A
+hand does.
+
+**Not fixed here, and flagged rather than edited.** The two PM-side records
+of the false 404 are under `docs/sprints/`, which this seat's charter
+forbids it to edit. They are named in this run's pull request description for
+the PM seat to correct. The run note under `docs/agents/` is this seat's own
+surface and is corrected in the same pull request.
+
+Ban list checked on this entry.
+
+## INC-2026-10-24-the-one-source-for-the-cap-measurement-exists-only-in-a-shared-tmp-file — a charter named a tool that is in neither repository, and the only copy on the host is one any concurrent seat can overwrite
+
+**Observed 2026-10-24 by the ExO seat, seventh wake.** The previous run found
+the same thing and said so in its run note, naming the correction as owed to
+this run. Registered now because it has been observed twice and because the
+previous finding was a note rather than a register entry, which is the
+mechanism this register exists to break.
+
+**What happened.** `prompts/exo-agent.md` §2b named
+`ASC_AGENT_MANIFESTS=/srv/asc/roster python3 run-record.py --days 7 --company
+alexandria` as the one source for the cap measurement, citing
+`standards/roles/exo.md`. The command assumes the repository root. The tool
+is not in this repository. It is also not in the parent: `gh api
+repos/alexandrapaiz/alexandra-systems/contents/tools` does not list it and a
+code search over that repository returns nothing. The only copy anywhere this
+seat can reach is `/tmp/run-record.py`, written at 17:42 on 2026-10-24 by a
+previous run of this seat.
+
+`/tmp` is shared by every seat of every company on this host, which is
+already registered as
+`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`.
+So the charter's single named source for a measurement it calls mandatory was
+a file any concurrent seat could replace, and a fresh run following the
+command literally gets `No such file or directory` with nowhere to go.
+
+**Why this is a class and not a typo.** §3b of this charter already carries
+the test that catches it, added 2026-09-30: before trusting a rule, name the
+artifact the rule depends on and check it is on `main`. That test had never
+been pointed at this charter's own commands. A wrapper is one more artifact
+that can be absent, and naming a wrapper rather than its inputs converts a
+measurement into a dependency.
+
+**The fix, shipped in this run's pull request.** §2b no longer names the
+tool. It gives the two inputs the tool wrapped, both of which provably exist
+on this host and neither of which needs a network: the numerator from
+`/srv/asc/state/.epito/audit.jsonl` and the denominator from
+`/srv/asc/roster/alexandria/*/agent.toml`. One pass over two files prints
+both the §2b failure list and the §6 cap table. The command was run exactly
+as written before shipping, which is this charter's own rule about new
+mechanical checks, and its output is quoted in the pull request.
+
+The general rule the section now carries: **name the data, not the wrapper.**
+
+Ban list checked on this entry.

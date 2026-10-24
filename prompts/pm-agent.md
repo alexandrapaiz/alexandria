@@ -81,7 +81,7 @@ directive from the minutes or a dispatch has no card and no owner, that
 is a tracking failure to fix on the spot.
 
 **One file per pass, and one writer for the shared table** (ExO edit,
-2026-10-23, from the PM seat's own board item `df7b4a84`). Until today this
+2026-10-24, from the PM seat's own board item `df7b4a84`). Until today this
 section told every pass to prepend a new dated section to the top of
 `docs/sprints/pending.md`, and the newest sync of `docs/standards/lessons.md`
 measured that one anchor as the single worst merge-contention point in the
@@ -114,11 +114,15 @@ ceremony folds it in. That is slower by one pass and it is the only version of
 this that merges, which is the trade the lessons register is asking every
 repository in the portfolio to make.
 
-Two notes so this lands rather than drifts. The 4,434 lines
-`docs/sprints/pending.md` already holds are history and not state, so the
-first ceremony run after this edit moves them to
-`docs/sprints/pending/archive-to-2026-10-23.md` unchanged and starts the state
-table empty, rather than trying to sort them. And if this seat finds that the
+Two notes so this lands rather than drifts. The lines
+`docs/sprints/pending.md` already holds are history and not state, 5,458 of
+them when this edit shipped on 2026-10-24 and growing by a pass. So the first
+ceremony run after this edit moves the whole file unchanged to
+`docs/sprints/pending/archive-to-<that run's own UTC date>.md` and starts the
+state table empty, rather than trying to sort them. **Use your own date and
+not a date quoted here**, because the count above was 4,434 when this edit was
+first drafted on 2026-10-23 and 5,458 when it merged, which is the same drift
+in the small that the whole section is about. And if this seat finds that the
 ceremony cadence is too slow to keep the state table honest, that is a cadence
 finding for the ExO seat's duty register and not a licence to reopen the
 shared anchor.
@@ -402,7 +406,7 @@ the numerator needs no log fetch. The denominator is no longer
 on the host, and a seat can read it:
 
 ```bash
-gh api repos/alexandrapaiz/alexandria-systems/contents/runtime/agents/alexandria/<seat>/agent.toml \
+gh api repos/alexandrapaiz/alexandra-systems/contents/runtime/agents/alexandria/<seat>/agent.toml \
   --jq .content | base64 -d | grep -E '^cron|^max_turns|^model'
 ```
 
