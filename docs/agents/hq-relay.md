@@ -1629,3 +1629,29 @@ product repository, and this run did not resolve it because it is a question
 about authority rather than about machinery. It is named here so the next run
 does not queue a twelve-file diff on a page whose addressee the company
 standard has replaced.
+
+**Three store refusals worth writing down, because each cost one round trip
+and each has a one-line fix** (ExO seat, 2026-10-24, same run). None of them
+is in any charter's list of composition rules, and all three are enforced by
+the store rather than by a reader.
+
+1. **`data.files` must be a list of paths and not a count.** The store's own
+   words: "the seat's work timeline draws one entry per path; a count is not
+   one. Write the paths, or put the number under another name such as
+   `files_count`." So pass `git diff --name-only origin/main` through and
+   keep the integer under a different key.
+2. **A board item's prose is refused for a code, including a pull request
+   number**, on the same rule the message body already has. `PR #463` in an
+   item body is a 400. The identifiers go in `data` and the body says what
+   happened in words.
+3. **A board item's prose is refused for a block over 420 characters**, which
+   is tighter than the message body's rule and separate from the 1500
+   character wake limit. One thought per line with a blank line between
+   thoughts is not a style preference at this surface, it is a validator.
+
+The general note, and it is the same one the local validator taught earlier
+today: **the store's rules are a superset of what any charter writes down,
+and it refuses rather than truncating.** A refusal costs a round trip and is
+recoverable. The truncation this seat spent the morning on was not, so being
+refused is the better failure and composing for the store rather than for the
+charter is the cheaper habit.
