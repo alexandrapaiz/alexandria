@@ -1082,8 +1082,10 @@ board's run record; it was built the same day, called `turns`, and the page
 that needed it stayed frozen for six more days. On 2026-10-24, twice, the
 relay asked for that route to be scoped by time rather than by a count of
 25; a time-scoped per-run record with turns, exits, models and durations had
-been on this host since 2026-09-24. Both are recorded under
-`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`.
+been on this host since 2026-09-24. The first is
+`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`
+and the second is
+`INC-2026-10-24-the-time-scoped-run-record-we-asked-for-was-already-on-our-own-disk`.
 
 **Why it is a duty rather than three mistakes.** The asymmetry is
 structural and survives any amount of care by the seats. Writing a relay
