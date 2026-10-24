@@ -2764,6 +2764,169 @@ def blockrules():
     return rc
 
 
+# ---- routed ------------------------------------------------------------
+
+#: A ledger entry nobody has acted on. `built`, `done`, `closed` and
+#: `rejected` are settled; everything else is a finding still waiting, and
+#: re-filing one of those as new is what this gate is for.
+LEDGER_SETTLED = ("built", "done", "closed", "rejected")
+
+#: What counts as naming the defect rather than naming the machine. A SHOUTING
+#: constant is the identifier of one thing; a filename is the identifier of a
+#: building. Measured on this repository the day the gate was written:
+#: `check_digest_quality.py` appears in NINE unsettled ledger entries and
+#: `INTENSIFIERS` in one, which is the entry that holds the defect. So the gate
+#: reads constants and never paths.
+IDENTIFIER = re.compile(r"^[A-Z][A-Z0-9_]{3,}$")
+
+#: A constant can still name a building. `NEON_RO_URL` is a credential every
+#: seat's run touches and it sits in fifteen unsettled entries, so "the ledger
+#: holds an entry mentioning it" says nothing about whether this finding is
+#: filed. The first run of this gate reported all fifteen and the real finding
+#: was two rows in the middle of them. A token this broad is reported and not
+#: failed on, because the gate cannot tell which of fifteen a run meant, and a
+#: check that guesses is one a run learns to skip.
+TOO_BROAD = 2
+
+#: The sentences that say a finding is being handed to another seat. Taken from
+#: this seat's own reviews, which have used all of these.
+ROUTING = re.compile(
+    r"routed rather than patched|filed rather than patched"
+    r"|rout(?:ed|es?) (?:it |them |both )?to the ledger"
+    r"|(?:goes|go) to the ledger|filed in the ledger"
+    r"|in the ledger for the engineer", re.I)
+
+
+def ledger_entries(text=None):
+    """`docs/ideas.md` as [(heading, body, status)], unsettled entries only."""
+    text = text if text is not None else LEDGER_MD.read_text()
+    out = []
+    for block in re.split(r"^### ", text, flags=re.M)[1:]:
+        lines = block.split("\n")
+        head, body = lines[0].strip(), "\n".join(lines[1:])
+        m = LEDGER_STATUS.search(body)
+        status = (m.group(1) if m else "").lower()
+        if status not in LEDGER_SETTLED:
+            out.append((head, body, status or "none"))
+    return out
+
+
+def routed(ref=None):
+    """A finding this run hands to another seat that the ledger already holds.
+
+    Run 48 of this seat closed its review with a section called "Two findings
+    in the engineer's file, routed rather than patched", about `INTENSIFIERS`
+    matching the substring "very " and `TYPESETTER` enforcing four characters
+    where the ban list is a class. Both findings were correct. Both had been
+    filed on 2026-09-24, by this same seat, in
+    "The quality gate passes the issue the owner rejected (writer seat, for the
+    engineer)", status `proposed` ever since. The run did not name that entry,
+    and its pull request appended nothing to the ledger either, so the output
+    of the work was a second description of a thirty-day-old finding in a file
+    the engineer does not read.
+
+    That is the shape this register keeps recording: a register written to stop
+    rediscovery whose only reader is the register.
+    `INC-2026-10-18-the-duplicate-candidate-register-is-not-in-the-charters-read-list`
+    is the fourth count of it and names the other three. This is the fifth and
+    the first pointed at the ledger, and the reason is one line of a charter:
+    the writer charter names seven files to read every run and `docs/ideas.md`
+    is not among them, so a seat following its charter exactly files into a
+    register it never opens.
+
+    The fix that incident chose is the fix here, in its own words: a command
+    the run types is better than a sentence the run reads. So the duty becomes
+    a check over the run's own diff, beside `candidates`, which does the same
+    job for copy candidates.
+
+    The escape is the same too, and it is not a new rule. A run may route a
+    finding the ledger already holds. It may not do so without naming the
+    entry, because that is the difference between escalating a stale finding
+    and not knowing it exists. Naming it is also what turns a re-file into the
+    thing the org actually wants: `docs/agents/incidents.md` already requires a
+    repeat to be escalated rather than filed a fourth time.
+
+        python3 -I docs/voice/check_voice.py routed origin/main
+    """
+    ref = ref or "origin/main"
+    out = subprocess.run(["git", "diff", "--name-status", ref],
+                         cwd=ROOT, capture_output=True, text=True)
+    reviews = []
+    for line in out.stdout.splitlines():
+        parts = line.split("\t")
+        if len(parts) < 2 or not parts[0].startswith("A"):
+            continue
+        path = parts[-1]
+        if path.startswith("docs/voice/reviews/") and path.endswith(".md") \
+                and (ROOT / path).exists():
+            reviews.append(path)
+    entries = ledger_entries()
+    # The escape is read across the whole diff and not per file, because the
+    # unit a run ships is a pull request. A review that routes a stale finding
+    # and a second file in the same pull request that escalates it by name is
+    # the org getting what it wants. Scoping the escape to the routing file
+    # would instead ask a run to rewrite a graded review it is carrying from
+    # an earlier run, and a grade is a dated record rather than a draft.
+    # `added_lines` and not `git diff`, because a diff prefixes every line
+    # with "+" and the headings in this register wrap. Normalising the raw
+    # diff turns "passes the\n+  issue" into "passes the + issue", so an
+    # escalation that names the entry correctly reads as not naming it. The
+    # first run of this gate failed its own escalation that way.
+    acknowledged = norm("\n".join(
+        [(ROOT / r).read_text() for r in reviews]
+        + [text for path, _, text in added_lines(ref)
+           if path == "docs/ideas.md"]))
+    clashes, broad = [], []
+    for path in reviews:
+        body = (ROOT / path).read_text()
+        if not ROUTING.search(body):
+            continue
+        # Only the sections that route. Run 48's review named `NEON_RO_URL`
+        # four sections away, under "Honest limits of this grade", where it is
+        # a fact about the runtime and not a finding being handed to anyone.
+        # Reading the whole file made every mention of every constant a
+        # routed finding, which is how the first run of this gate buried its
+        # own two real rows under fifteen.
+        sections = [s for s in re.split(r"(?m)^(?=#{2,}\s)", body)
+                    if ROUTING.search(s)]
+        tokens = {t.strip() for s in sections
+                  for t in re.findall(r"`([^`\n]+)`", s)
+                  if IDENTIFIER.match(t.strip())}
+        for token in sorted(tokens):
+            held = [(h, st) for h, e, st in entries if token in e]
+            if not held:
+                continue
+            if len(held) > TOO_BROAD:
+                broad.append((path, token, len(held)))
+                continue
+            for head, status in held:
+                if norm(head) in acknowledged:
+                    continue
+                clashes.append((path, token, status, head))
+    print(f"  review files this diff adds   {len(reviews)}")
+    for path in reviews:
+        routes = "routes a finding" if ROUTING.search(
+            (ROOT / path).read_text()) else "routes nothing"
+        print(f"    {path}  ({routes})")
+    print(f"  unsettled entries in docs/ideas.md   {len(entries)}")
+    for path, token, status, head in clashes:
+        print(f"  FAIL    {path}")
+        print(f"            routes `{token}`, which is already filed and "
+              f"still {status}:")
+        print(f"            {head[:88]}")
+    for path, token, n in broad:
+        print(f"  BROAD   {path}")
+        print(f"            `{token}` sits in {n} unsettled entries, so it "
+              f"names a machine rather than a finding")
+    if not clashes:
+        print("  no finding routed here is one the ledger already holds")
+    print()
+    print("A run may route a finding the ledger already holds. It may not do")
+    print("so without naming the entry, because that is the difference")
+    print("between escalating a stale finding and not knowing it exists.")
+    return 1 if clashes else 0
+
+
 # ---- standalone --------------------------------------------------------
 
 
@@ -2879,12 +3042,14 @@ def main():
                      ("generator", generator),
                      ("specimens", specimens),
                      ("standalone", standalone),
+                     ("routed", routed),
                      ("blockrules", blockrules),
                      ("compare", compare), ("selfcheck", selfcheck)):
         if which == name or (which == "all"
                              and name not in ("selfcheck", "compare")):
             print(f"==== {name} ====")
-            if name in ("enforcements", "selfcheck", "candidates", "ledger"):
+            if name in ("enforcements", "selfcheck", "candidates", "ledger",
+                        "routed"):
                 rc |= fn(paths[0]) if (which == name and paths) else fn()
             else:
                 rc |= fn(paths) if (name in takes_paths and paths) else fn()

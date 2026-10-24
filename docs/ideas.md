@@ -18757,3 +18757,79 @@ cutting gates to make a budget.
   this one.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-24 — Canon law 13 has a detector in this repository and the pre-send gate does not run it (writer seat, run 49, for the engineer)
+- Trigger: this run pointed `past_tense_you`, which has been in
+  `docs/voice/check_voice.py` for weeks, at `site/content/issues` for the first
+  time. It found the opening the owner struck on 2026-09-24, live in the public
+  archive. `prompts/digest.md` has been patched four times on this law and says
+  in its own gate section that three specimens of it have shipped.
+- What: the rule belongs in `tools/check_digest_quality.py` as a BLOCK, because
+  that is the only gate between a written issue and a reader. The new
+  `standalone` check in this seat's file reads the archive, which catches an
+  issue that has already been sent. The pattern is written and tested and can
+  be lifted verbatim from `past_tense_you`, with
+  `tests/test_voice_standalone.py` as the seventeen cases it has to satisfy.
+- Why the prompt is the wrong place, and this is the part worth reading: the
+  generator did not fail here. Her correction landed in `b7d6929` on
+  2026-09-24 as "The agent-building world has spent the week arguing about
+  scaffolding", which is the exact sentence `prompts/digest.md` now holds up as
+  the model repair. Five days later `820df48`, "2026-W39 is Monday's print (the
+  digests record), not Thursday's preview", replaced the file wholesale with
+  what the press actually sent and discarded her correction, because the
+  correction had only ever been written into the rendered archive and never
+  into the record the archive renders from. A fifth prompt paragraph does not
+  reach that.
+- The second half, and it is the larger one: a correction applied to
+  `site/content/issues/` is lost the next time that issue is re-rendered from
+  the `digests` record. Either a correction goes upstream into the record, or
+  re-rendering an issue the owner has corrected needs to refuse and say so.
+  This is the engineer's call on which, and it is worth more than the gate,
+  because the gate only notices after the issue has been public for a month.
+- First step: the BLOCK rule, which is small and tested. The re-render
+  question is the design one.
+- Blocked by: nothing.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — ESCALATED, thirty days: two word-boundary bugs in the pre-send gate, one of them firing on the owner's own mandated close (writer seat, run 49, for the engineer)
+- This is not a new entry and it is deliberately not written as one. The
+  finding was filed on 2026-09-24 in **2026-09-24 — The quality gate passes the
+  issue the owner rejected (writer seat, for the engineer)**, items 2 and 3,
+  and that entry has read `proposed` ever since. Run 48 of this seat
+  rediscovered both defects a month later and described them again as new. The
+  incident register's standing rule is that a repeat is escalated rather than
+  filed a fourth time, so this row escalates and the 2026-09-24 entry stays the
+  filing.
+- What has changed is that the cost is now measured rather than argued.
+  `tools/check_digest_quality.py` on `site/content/issues/2026-W39.md`, the
+  only issue the gate has ever read, returns **7 warnings, and 2 of the 7 are
+  not real**:
+
+  ```
+  [warn] empty-intensifier (2x, ban list 5)
+      line 54: 'very'      <- "behavioral recovery rate"
+      line 56: 'very'      <- "Accelerate every builder and agent to
+                              frontier speed.", which canon law 10 and her
+                              ruling of 2026-09-30 require in every issue
+  ```
+
+  `INTENSIFIERS` holds `"very "` and the test is `if word in low`, a substring
+  match with no word boundary, so the close she mandated raises a finding
+  forever and nothing can ever clear it. Under `--strict` it exits 1.
+- The third defect in the same class, found this run: `past_tense_you` in
+  `docs/voice/check_voice.py` read `\w+(?:ed|en|t|ne)\b` with no floor on the
+  stem, so it fired on "What to read if you have one hour", a standing heading.
+  That one is this seat's surface and is fixed in this pull request, with the
+  floor and nine collision cases asserted in `tests/test_voice_standalone.py`.
+  Three gates, three patterns matching inside a word instead of at its edge,
+  two of them still live. The class is worth one pass rather than three fixes.
+- `TYPESETTER` is the other half of the 2026-09-24 filing and is unchanged:
+  four characters where ban list 13 is the class of every non-ASCII character,
+  and `pipeline/weekly.py` builds the payload's `dates` with an en dash the
+  check passes, every week, by construction.
+- First step: word boundaries on `INTENSIFIERS`, which is one line, and the
+  ASCII class question on `TYPESETTER`, which is a few. Both were specified in
+  the 2026-09-24 entry.
+- Cost: $0.
+- Status: urgent
