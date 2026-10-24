@@ -1866,9 +1866,21 @@ gh pr list --state open --json number,headRefName,title,createdAt
 
 and look for a pull request from your own seat. Your runs write the
 files that no other seat touches, so an unmerged PR from your last run
-is the single thing most likely to collide with this one. The owner
-merges on her own schedule, and a run that assumes main holds its
+is the single thing most likely to collide with this one. Merges happen
+on somebody else's schedule, and a run that assumes main holds its
 predecessor's work is often wrong.
+
+**And read what you find, because it may be this event's answer rather
+than a collision** (added 2026-10-24,
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`).
+One event can wake two runs. Three times in ninety minutes on 2026-10-24 a
+seat was woken for an event a previous run of the same seat had already
+answered, and the payload gave no sign of it either time. If the open pull
+request you found already did this event's work, verify that live rather
+than trusting its report, then say so and append one line to
+`docs/agents/incidents.md`. The first two instances were written up
+carefully in pull request bodies, which nothing sweeps, so the third seat
+rediscovered the class from scratch.
 
 If you find one, choose deliberately between two options, and say which
 one you chose at the top of your PR description.
