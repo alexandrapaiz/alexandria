@@ -75,17 +75,98 @@ and two copies.
 
 **So read the trigger first and pick the mode.** The trigger is in the wake
 text, and the board's run record names it as `window:cron` or
-`window:message`.
+`window:message`. **There is a third and this section named two until
+2026-10-24.** The manifest carries `webhook = true` beside the
+subscriptions, and a host hook arrives as `window:hook`, which is neither a
+clock nor a board event. Eight of this seat's runs have come that way. A
+hook is a wake run.
 
 - **The weekly cycle**, on the Sunday cron or on the first run after seven
   days without one. Everything in this file, in order, three improvements.
-- **A wake run**, on any subscription event. Do the thing the event asks
-  for, plus exactly three standing duties, and stop: the failure sweep
-  (§2b), the **Undelivered to HQ** heading (§3f), and the learning-log
-  entry (§6). Skip the register sweeps, the unowned-duty hunt, the
-  public-claim sweep and the queue re-verification, and say in the pull
+- **A wake run**, on any subscription event or any hook. Do the thing the
+  event asks for, plus exactly three standing duties, and stop: the failure
+  sweep (§2b), the **Undelivered to HQ** heading (§3f), and the
+  learning-log entry (§6). Skip the register sweeps, the unowned-duty hunt,
+  the public-claim sweep and the queue re-verification, and say in the pull
   request which mode you ran and therefore what you did not do. At most
   **one** improvement, not three.
+
+**And "seven days without a cron" is a count of absences, so it cannot tell
+a skipped cycle from a clock that was never switched on** (added 2026-10-24,
+`INC-2026-10-24-the-company-seats-had-no-clock-for-seven-days-after-the-clock-moved`).
+That clause is the only route into the weekly cycle that does not require a
+cron, and on the day it was written it was already the only route this seat
+had, because **no cron of this seat has ever fired.** Zero `cron` rows for
+`alexandria-exo` in the whole audit log, against sixteen message wakes and
+eight hooks. Read literally on 2026-10-24 the clause said: seven days have
+passed with no cron, therefore the cycle was missed, therefore run all seven
+sweeps. That is the wrong answer for a reason no amount of care inside the
+run could have surfaced. HQ decision 056 moved the clock to the host on
+2026-10-17, and the host did not schedule a single company seat until
+**2026-10-23T23:06:12**. For six days and twenty-three hours the only crons
+it fired were HQ's own, ten of them. This seat's clock is twenty-two hours
+old and its first due slot is 2026-10-25T14:00.
+
+So the denominator comes from the scheduler's own record and never from the
+calendar. Two numbers settle it, and both are on this filesystem:
+
+```bash
+# has this seat's clock ever fired, and when did the host first schedule any
+# seat of any company at all?
+python3 - <<'PY_CLOCK'
+import json, glob, re
+company=set()
+for f in glob.glob('/srv/asc/roster/*/*/agent.toml'):
+    m=re.search(r'^name\s*=\s*"([^"]+)"', open(f).read(), re.M)
+    if m: company.add(m.group(1))
+mine=[]; first=None
+for line in open('/srv/asc/state/.epito/audit.jsonl'):
+    try: d=json.loads(line)
+    except Exception: continue
+    if d.get('action')!='cron': continue
+    a=d.get('agent') or ''
+    if a=='alexandria-exo': mine.append(d['ts'][:19])
+    if a in company and not first: first=(d['ts'][:19], a)
+print('cron firings for this seat:', mine or 'NONE EVER')
+print('host first scheduled a company seat at:', first)
+PY_CLOCK
+```
+
+**A company seat is one whose manifest is nested two deep under
+`/srv/asc/roster/`, and it is never one whose name has a hyphen in it**,
+which is said here because the first version of the command above used the
+hyphen and this run caught it only by running it. `exo-centralizer` is an HQ
+seat with a hyphen, so the heuristic returned 2026-10-18T23:00:26 and would
+have put the host's first company cron five days earlier than it was, which
+is the direction that makes the six-day gap disappear. The manifests are the
+discriminator and they are on this filesystem. This is the charter's own rule
+about validating a new check against a known instance, paying for itself in
+the run that wrote the check.
+
+A due slot that fell before that second timestamp is not a missed cycle. It
+is a slot that no scheduler was watching, and the correct reading of it is
+nothing at all. **Count the cron slots that came due inside a window the
+scheduler was demonstrably covering, and only those.** Where that count is
+zero, this run is a wake run however many days have passed, and you say so
+in the pull request with both numbers.
+
+Two things to carry past this instance. The scheduler is not broken: in the
+twenty-two hours since it started, every company cron that came due fired,
+nine for nine. What was broken was the six-day gap, and nothing in the org
+reported it, because **a cron that does not fire leaves no row, and this
+charter's only test for a cron was whether the manifest named one.** §3b's
+cadence test reads the manifest and stops there, which is the same mistake
+one layer down: a cadence written in a file the runtime reads is not a
+cadence the runtime ran. The §3b fix is to put the firing record beside the
+manifest line for every row, and it is queued rather than shipped here
+because a wake run takes one improvement.
+
+And the general form, which is this charter's oldest lesson arriving at its
+own mode switch: **an absence counts as evidence only against a period when
+the thing would have been recorded.** Seven days of no cron reads identically
+whether the cycle was skipped, the seat was asleep, or the clock did not
+exist. Before you read a silence as a finding, establish that something was
+listening.
 
 **What a `brief.sent` wake asks for is named in a standard, and this charter
 could not read it until 2026-10-24.** §24 of the PM standard, law since
