@@ -1644,10 +1644,17 @@ the store rather than by a reader.
    number**, on the same rule the message body already has. `PR #463` in an
    item body is a 400. The identifiers go in `data` and the body says what
    happened in words.
-3. **A board item's prose is refused for a block over 420 characters**, which
-   is tighter than the message body's rule and separate from the 1500
-   character wake limit. One thought per line with a blank line between
-   thoughts is not a style preference at this surface, it is a validator.
+3. **A block over 420 characters is refused, and it is refused on messages
+   too.** This item said when it was written that the rule was tighter for
+   items than for message bodies. That was wrong, and this page said so
+   twenty lines above in the same run, where the message store's three
+   undocumented prose rules are listed and the first of them is this one. A
+   message composed on 2026-10-24 at 1677 characters in seven paragraphs was
+   refused with "prose must be scannable: one thought per line, a blank line
+   between thoughts; a block over 420 characters is not". So the rule is one
+   rule over both surfaces, it is separate from the 1500 character wake
+   limit, and one thought per line with a blank line between thoughts is a
+   validator rather than a style preference.
 
 The general note, and it is the same one the local validator taught earlier
 today: **the store's rules are a superset of what any charter writes down,
@@ -1655,3 +1662,54 @@ and it refuses rather than truncating.** A refusal costs a round trip and is
 recoverable. The truncation this seat spent the morning on was not, so being
 refused is the better failure and composing for the store rather than for the
 charter is the cheaper habit.
+
+**2026-10-24, by the ExO seat, message wake, replying to the PM's hold.** One
+new entry, written and delivered in the same run, per clause 1 of §3f.
+
+| Entry | Written | Delivered | By |
+| --- | --- | --- | --- |
+| Section 10's condition 2 asks whose comment it is, and the API cannot say | 2026-10-24 | **DELIVERED 2026-10-24**, whole, 1180 of 1180, `body_truncated` false, message `38870ebb` | ExO seat |
+
+**The entry, written to be carried with no editing.**
+
+Section 10 condition 2 of the PM standard requires, before a Tier B merge,
+that there be no owner comment since the last push. The merger is a
+fresh-context run and has to read authorship off the pull request. Every
+seat in this portfolio reaches GitHub through a token that authenticates as
+the owner's own user, so every seat's comment and every seat's review comes
+back from the API as hers. The condition is therefore unanswerable in the
+direction that matters: a comment written by a seat reads as the owner's, so
+a merge is held by a sentence no one intended as a hold, and a comment
+written by the owner reads the same as a seat's, so an intended hold can be
+dismissed.
+
+This was live inside alexandria for twenty minutes on 2026-10-24. The PM
+held a pull request with a comment at 16:51:41Z over a head pushed at
+16:45:40Z, and a second PM wake inside that window, applying the checklist
+literally, would have refused to merge a pull request its own predecessor
+was merely annotating. The real wake escaped only because the comment opens
+with the words "PM, message wake, merge rule", which is a prose habit the PM
+seat invented and which no standard and no charter requires.
+
+**Two asks, in order of cost.**
+
+The first costs one sentence in the standard. Make condition 2 name a test a
+run can actually perform rather than an author it cannot resolve. A `hold`
+label and a formal review are both already in the standard, both are
+unambiguous on the API, and both can be reserved to the owner by telling
+every seat never to use them. Then condition 2 reads: no `hold` label and no
+owner review since the last push, and a plain comment never holds anything.
+
+The second is the one the portfolio has been queuing for weeks and this is
+one more reason for it. Give the seats an identity of their own, whether
+through the GitHub App whose private key alexandria is waiting on or through
+anything narrower than the owner's account. Commits are already attributable,
+because the runner sets a git author per seat. The review conversation is
+not, and that is where merge decisions are made.
+
+**Why this leaves through the relay rather than being fixed here.**
+`docs/standards/pm.md` is the vendored copy of a company standard and this
+seat never edits it. The local half of the fix is registered as
+`INC-2026-10-24-the-merge-checklist-asks-whose-comment-it-is-and-the-api-cannot-say`
+and the correction to the handover page's Identity paragraph shipped in the
+same pull request.
