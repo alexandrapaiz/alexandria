@@ -1,6 +1,26 @@
 import { neon } from "@neondatabase/serverless";
 import { buildReceipt } from "./delivery-core.js";
 
+// Why a fail-soft block came back null, in the receipt's own three words.
+//
+// Each of the four blocks below has two ways to be null and they want different
+// first steps: the table is not in this database yet, which one hand-run
+// migration closes, or the query broke, which somebody has to go and read. The
+// receipt published the null and swallowed the difference, so the till read
+// `unknown` to every seat for a month with no statement of what would clear it.
+//
+// Postgres sqlstates, off `error.code`, which the Neon driver carries through
+// from the server. Nothing from `error.message` is returned: a Neon error names
+// the host and the role it failed to authenticate, this endpoint is public, and
+// the classification is the only part of a failure that is metadata.
+function whyUnreadable(error) {
+  switch (error?.code) {
+    case "42P01": return "no such table";   // undefined_table
+    case "42703": return "no such column";  // undefined_column
+    default: return "query failed";
+  }
+}
+
 // Reads the facts the delivery receipt publishes.
 //
 // Fails closed, the same contract as lib/entitlement.js and lib/graph-live.js,
@@ -42,6 +62,11 @@ export async function loadDeliveryReceipt() {
 
   try {
     const sql = neon(url);
+
+    // Filled by the four blocks below, one key each and only when one fails.
+    // Passed whole to `buildReceipt`, which filters it to the blocks it
+    // publishes and to its own vocabulary before any of it leaves here.
+    const unreadable = {};
 
     // `order by week desc` and not `created_at`, so this agrees with
     // tools/delivery_health.py's own query. A backfilled week would otherwise
@@ -104,8 +129,9 @@ export async function loadDeliveryReceipt() {
       // null only when a query threw, which is the contract `deploy` and
       // `queues` already keep.
       siblings = { triage: triaged[0] ?? null, interpret: linked[0] ?? null };
-    } catch {
+    } catch (error) {
       siblings = null;
+      unreadable.siblings = whyUnreadable(error);
     }
 
     // The queue depths: how many rows are waiting at each stage. Same
@@ -128,10 +154,11 @@ export async function loadDeliveryReceipt() {
           (select count(*) from interpret_queue) as interpret_pending
       `;
       queues = rows[0] ?? null;
-    } catch {
+    } catch (error) {
       // null, not zeroes. A queue of zero is a real and useful fact (the stage
       // has nothing to read), so a failed read must not be able to claim it.
       queues = null;
+      unreadable.queues = whyUnreadable(error);
     }
 
     // deploy_runtime lands with the drift guard and `apply_schema` is a hand
@@ -147,11 +174,12 @@ export async function loadDeliveryReceipt() {
         from deploy_runtime
         order by app
       `;
-    } catch {
+    } catch (error) {
       // null, not []: an empty array would tell the drift guard that every job
       // has failed to report, and it would raise the alarm this endpoint
       // exists to make readable.
       deploy = null;
+      unreadable.deploy = whyUnreadable(error);
     }
 
     // The till's open exceptions, added in version 5. Verified payments that
@@ -189,11 +217,17 @@ export async function loadDeliveryReceipt() {
         order by n desc, reason_code
       `;
       payments = { ...(totals[0] ?? {}), codes };
-    } catch {
+    } catch (error) {
       // null, not zero. A till with no open exceptions is the good news this
       // surface exists to confirm, and a failed read must not be able to
       // claim it.
       payments = null;
+      // And the reason, because this is the block the swallowed one cost most.
+      // `payment_exceptions` is the newest table here, so "no such table" is
+      // the state a site deployed ahead of `apply_schema` is really in, and
+      // naming it is the difference between a surface nobody can close and one
+      // command.
+      unreadable.payments = whyUnreadable(error);
     }
 
     return {
@@ -206,6 +240,7 @@ export async function loadDeliveryReceipt() {
         queues,
         deploy,
         payments,
+        unreadable,
         observedAt: new Date(),
       }),
     };
