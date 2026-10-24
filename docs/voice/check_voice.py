@@ -1723,6 +1723,121 @@ def candidates(ref=None):
     return 1 if clashes else 0
 
 
+# ---- ledger -----------------------------------------------------------
+
+DESK = ROOT / "site/app/desk/page.jsx"
+LEDGER_MD = ROOT / "docs/ideas.md"
+
+#: The status line as `docs/ideas.md`'s contract writes it, which is the
+#: pattern `tools/ledger.py` compiles and the one authority on the shape. Kept
+#: as a Python translation of that file's `STATUS_LINE` rather than imported,
+#: because what this check compares is a SECOND implementation against the
+#: first and importing the first would make the comparison vacuous.
+LEDGER_STATUS = re.compile(r"^-\s+Status:\s*(\w+)", re.M)
+
+#: The pattern the desk's own parser uses, lifted out of the page by reading
+#: it. A literal copy here would be a third implementation and would go stale
+#: silently, which is the defect this whole check is about.
+DESK_STATUS = re.compile(r"match\((/[^/]+/[a-z]*)\)")
+
+
+def desk_queue_statuses():
+    """The statuses `site/app/desk/page.jsx` treats as awaiting her verdict."""
+    if not DESK.exists():
+        return None
+    text = DESK.read_text()
+    return sorted(set(re.findall(r'i\.status === "(\w+)"', text)))
+
+
+def ledger_count(pattern, statuses):
+    """Entries of `docs/ideas.md` whose status matches, read one way."""
+    blocks = re.split(r"^### ", LEDGER_MD.read_text(), flags=re.M)[1:]
+    out = {}
+    for block in blocks:
+        body = "\n".join(block.split("\n")[1:])
+        m = pattern.search(body)
+        status = (m.group(1) if m else "").lower()
+        if status in statuses:
+            out[status] = out.get(status, 0) + 1
+    return out
+
+
+def ledger():
+    r"""The number beside "Awaiting your verdict" is a claim, and it is wrong.
+
+    A count printed on a surface is a sentence a reader can answer "how do you
+    know that" about, so it is this seat's to check, and the answer here is
+    that the desk reads `docs/ideas.md` with its own regex rather than through
+    the file's contract.
+
+    `tools/ledger.py` exists for exactly that reason. Its own opening says the
+    ledger "is read by grep in at least three places" and that an entry whose
+    status is prose "is silently absent, which is the failure mode that leaves
+    no trace". That was recorded in the incident register on 2026-09-24. The
+    desk's `parseIdeas` is a fourth such reader, in JavaScript, on the page the
+    owner opens daily.
+
+    Its pattern carries no line anchor, so it matches `Status:` inside a
+    sentence. Measured on the live file the day this check was written, the two
+    readers disagree by one entry, and the entry is
+
+        2026-09-24 - A ledger entry can hide from every consumer by writing
+        its status as a sentence
+
+    whose real status line reads `proposed` and whose own first bullet quotes
+    `grep "Status: accepted" docs/ideas.md`. The entry warning that a status
+    written as a sentence hides an entry from every consumer is hidden from the
+    owner's console by a status written as a sentence in its own body.
+
+    The fix is one anchor and one flag, `/^-\s+Status:\s*(\w+)/m`, and it is
+    written out in `docs/voice/desk-verdict-queue-2026-10-24.md` beside the
+    four lines that print these counts. This check fails until the page agrees
+    with the contract and goes green on that diff.
+
+    It compares the two readings rather than grepping the page for the right
+    regex, because a check that looks for a known-good string passes on any
+    pattern that contains it and says nothing about the number on the surface.
+    What matters is the count the owner reads.
+    """
+    statuses = desk_queue_statuses()
+    if statuses is None:
+        print(f"  SKIP    {DESK.relative_to(ROOT)} is not in this checkout")
+        return 0
+    found = DESK_STATUS.search(DESK.read_text())
+    if not found:
+        print("  FAIL    no status pattern found in the desk's parser")
+        print("            this check reads the page's own regex rather than")
+        print("            holding a copy, so a rewrite of the parse needs it")
+        print("            pointed at the new shape")
+        return 1
+    literal = found.group(1)
+    body, flags = literal.rsplit("/", 1)
+    desk_pattern = re.compile(body[1:].replace("\\s", r"\s"),
+                              re.M if "m" in flags else 0)
+    mine = ledger_count(desk_pattern, statuses)
+    contract = ledger_count(LEDGER_STATUS, statuses)
+    print(f"the queue's statuses, read off the page   {', '.join(statuses)}")
+    print(f"the desk's pattern, read off the page     {literal}")
+    print(f"the contract's pattern, tools/ledger.py   /^-\\s+Status:\\s*(\\w+)/m")
+    print()
+    rc = 0
+    for status in statuses:
+        d, c = mine.get(status, 0), contract.get(status, 0)
+        mark = "OK  " if d == c else "FAIL"
+        print(f"  {mark}    {status:<10} desk {d:>4}   contract {c:>4}")
+        if d != c:
+            rc = 1
+    print(f"            total      desk {sum(mine.values()):>4}   "
+          f"contract {sum(contract.values()):>4}")
+    if rc:
+        print()
+        print("The desk prints a count the repository's own reader of the same")
+        print("file contradicts. The anchor and the flag are in")
+        print("docs/voice/desk-verdict-queue-2026-10-24.md, with the entry the")
+        print("page cannot see named in full.")
+    return rc
+
+
 # ---- firstuse ----------------------------------------------------------
 #
 # Her outsider ruling of 2026-09-19, and the half of it no command could see.
@@ -2267,6 +2382,7 @@ def main():
                      ("delivery", delivery), ("claims", claims),
                      ("reading", reading),
                      ("candidates", candidates),
+                     ("ledger", ledger),
                      ("firstuse", firstuse),
                      ("generator", generator),
                      ("compare", compare), ("selfcheck", selfcheck)):
