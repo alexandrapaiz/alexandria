@@ -33,3 +33,69 @@ It kills nothing. The two guards read the same property of the same set and do
 different things with the answer, which is why both comments stay in the file
 and why the mechanism is now explained once, at the first of the two in reading
 order, with the second pointing back at it.
+
+----------------------------------------------------------------------
+The same guard, run for real rather than probed, later the same night.
+----------------------------------------------------------------------
+
+  $ FE_PORT=4903 bash docs/design/harness/serve.sh
+
+  == port 4903 ==
+  == stopping any server from a previous build ==
+     leaving next-server 3259468 alone, it serves an unreadable cwd
+     leaving next-server 3483784 alone, it serves an unreadable cwd
+     leaving next-server 3563173 alone, it serves an unreadable cwd
+     leaving next-server 3655653 alone, it serves an unreadable cwd
+     leaving next-server 3835165 alone, it serves /tmp/epito-ursa-frontend-WUyUPZ/ursa-minor
+  == build ==
+  ... next build, compiled in 53s, 9 static pages
+  == start ==
+  PID MATCH: every next-server in /tmp/epito-alexandria-frontend-jQhHa3/site
+             descends from 3854613
+  == proving the server is THIS build ==
+  serve.sh exit 1
+
+The kill loop named all five and killed none, which is the guard working on a
+live machine and not in a probe. The four unreadable processes were still alive
+afterwards. The ursa one exited inside the window on its own and ursa started
+another, 3852435, which also survived. The only processes this run killed were
+3854613 and 3854639, both of them its own, checked by cwd before the signal.
+
+Then the part that was not the guard, and it is a second finding.
+
+serve.sh exited 1 and printed no reason at all. The last line it wrote is the
+banner of the check it died inside. The cause is in the script rather than in
+the server:
+
+  served=$(curl -s "$BASE_FE/" | grep -o '/_next/static/css/[^"]*' | head -1)
+
+`set -euo pipefail` is on at the top of the file. When the page references no
+stylesheet, grep exits 1, pipefail hands that to the assignment, and set -e
+aborts the script on the assignment itself. The `if [ -z "$served" ]` guard
+underneath it, with its FAIL message, is one line too late and had therefore
+never printed since the day it was written. The script's own comment above the
+stray check says a guard that quietly does nothing is worse than no guard. This
+one could not even announce itself.
+
+Repaired by ending the pipeline with `|| true`, so the guard that was always
+there can now run, and by giving it the status code and the known cause. Tested
+against the live 500 from the run above:
+
+  == proving the server is THIS build ==
+  FAIL: the served page references no stylesheet at all.
+        http://127.0.0.1:4903/ answered 500, so this is an error
+        document rather than our markup. Read /tmp/next-serve.log.
+        The known cause in this container is a missing Clerk
+        publishable key: clerkMiddleware throws before any page
+        renders, and the harness's __clerk_db_jwt cookie cannot help,
+        because the middleware never reaches the handshake it cures.
+
+The 500 itself is the environment and not the branch. `site/` has no env file
+here and no Clerk publishable key is exported, so `clerkMiddleware` throws
+inside the middleware bundle before any page renders. The harness's cookie cure
+is for the dev-browser handshake, which is a later step than the one that
+throws, so it cannot reach this. That is why this run verified the script and
+did not re-shoot the sweep: the frames in this folder are from the run that had
+a working server, the site diff under review has not changed since they were
+taken, and photographing nine 500 pages tonight would have been evidence of
+nothing.

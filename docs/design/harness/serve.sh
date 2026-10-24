@@ -144,9 +144,23 @@ fi
 echo "PID MATCH: every next-server in $SITE_DIR descends from $STARTED"
 
 echo "== proving the server is THIS build =="
-served=$(curl -s "$BASE_FE/" | grep -o '/_next/static/css/[^"]*' | head -1)
+# `|| true` is what lets the guard below speak. `set -euo pipefail` is on, grep
+# exits 1 when the page references no stylesheet, and pipefail hands that to
+# the assignment, so until 2026-10-24 this script aborted on the assignment and
+# the FAIL message under it had never once been printed. A visual run saw exit
+# 1 and no reason. That is the same defect the comment above the stray check
+# warns about, a guard that quietly does nothing, except here the guard could
+# not even announce itself.
+served=$(curl -s "$BASE_FE/" | grep -o '/_next/static/css/[^"]*' | head -1 || true)
 if [ -z "$served" ]; then
+  code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE_FE/" || true)
   echo "FAIL: the served page references no stylesheet at all." >&2
+  echo "      ${BASE_FE}/ answered ${code:-nothing}, so this is an error" >&2
+  echo "      document rather than our markup. Read /tmp/next-serve.log." >&2
+  echo "      The known cause in this container is a missing Clerk" >&2
+  echo "      publishable key: clerkMiddleware throws before any page" >&2
+  echo "      renders, and the harness's __clerk_db_jwt cookie cannot help," >&2
+  echo "      because the middleware never reaches the handshake it cures." >&2
   exit 1
 fi
 if [ ! -f ".next${served#/_next}" ]; then
