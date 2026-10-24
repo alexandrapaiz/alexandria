@@ -13,8 +13,11 @@ Two layers make that happen, and both of them run themselves.
 1. **The pipeline** reads, triages, distills, connects, and publishes. It runs
    on crons over one Postgres database, with no worker ever calling another.
 2. **The agent org** builds and steers the pipeline. Twelve agent seats run on
-   GitHub Actions schedules, each with a versioned charter, each shipping one
-   pull request per run. The owner's merge is the only thing that takes effect.
+   a company host, each with a versioned charter, each shipping one pull
+   request per run. The owner's merge is the only thing that takes effect.
+   Until 2026-10-17 the clock was a GitHub Actions schedule in this
+   repository. Since HQ decision 056 it is each seat's manifest on the host,
+   and GitHub is an event source and a dispatch door rather than a runtime.
 
 The recursion is the point. The org ships the pipeline, the pipeline feeds the
 org, and the owner sits on the single gate between a proposal and reality.
@@ -56,7 +59,7 @@ week. That circle is the whole company.
 
 ```mermaid
 flowchart TB
-    subgraph ORG["The org: twelve seats, GitHub Actions cron, one PR per run"]
+    subgraph ORG["The org: twelve seats, a host clock plus an event bus, one PR per run"]
         direction TB
         BUILD["<b>Build</b><br/>engineer · daily 7:06 ET<br/>skill · Tue<br/>frontend · Wed"]
         STEER["<b>Steer</b><br/>pm · daily, Mon is the ceremony<br/>okr · monthly<br/>exo · Sun"]
@@ -141,9 +144,11 @@ the decision behind each seat in [docs/decisions.md](docs/decisions.md).
 | finance | dormant | OPEX today, unit economics after launch | ADR-24 |
 | sales | dormant | campaigns and drafts, never sends | ADR-24 |
 
-Every seat runs the same shape. A GitHub Actions cron checks out this repo,
-runs Claude Code headlessly against the seat's charter file, and the run ends
-with one branch and one pull request. No agent merges its own work, no agent
+Every seat runs the same shape. The host clones this repo, runs Claude Code
+headlessly against the seat's charter file, and the run ends with one branch
+and one pull request. That host replaced GitHub Actions as the runtime on
+2026-10-17, and `.github/workflows/agent-*.yml` is kept as the door an
+explicit dispatch opens. No agent merges its own work, no agent
 pushes to main, and no agent touches secrets. The harness is the same for every
 seat and the model behind it is not. All twelve run on Claude today. From
 2026-09-19 to 2026-09-23 the pm, market, okr and finance seats were routed to
@@ -155,9 +160,18 @@ now a real fallback rather than an either/or: since 2026-09-24 the open-routed
 step may fail without failing the job, and the Claude step runs whenever it does
 not succeed. That was the precondition for turning the trial back on, and the
 remaining conditions are in
-[the incident register](docs/agents/incidents.md) under incident 23. Two modes govern when they run:
-**asynchronous**, where the schedules are the heartbeat, and **synchronous**,
-where the owner is present and seats are dispatched into her session.
+[the incident register](docs/agents/incidents.md) under incident 23. Three
+modes govern when they run. **Asynchronous**, where each seat's
+`[trigger].cron` on the host is the heartbeat. **Synchronous**, where the
+owner is present and seats are dispatched into her session. And since
+October, **event-driven**, where an event bus starts a seat session on
+something that happened: every seat subscribes to `message.posted`,
+`item.moved`, `pr.merged` and `check.failed`, those runs commit as
+`alexandria-<seat>` rather than as `claude[bot]`, and in the week to
+2026-10-18 they were 142 commits against 193. They are the reason the PM now
+passes several times a day rather than once. The event-driven mode has
+overtaken the first one in practice: the last scheduled GitHub run of any
+seat was 2026-10-17 at 17:59 UTC.
 
 The org keeps its own memory in [docs/agents/](docs/agents/), because every run
 starts with a fresh context and remembers nothing: the
@@ -192,8 +206,8 @@ flowchart TB
         MCP2["MCP server, OAuth 2.1"]
     end
 
-    subgraph GHA["GitHub Actions: the agent org"]
-        SEATS["Twelve seats on cron<br/>Claude Code, the owner's subscription token<br/>two of them in a prebaked container image"]
+    subgraph GHA["GitHub: the dispatch door and the event source"]
+        SEATS["Twelve seats, dispatch door only since 2026-10-17<br/>Claude Code, the owner's subscription token<br/>two of them in a prebaked container image"]
     end
 
     FEEDS --> INGEST
@@ -265,7 +279,7 @@ sources.yaml              the read list, tiered a/a-low/b/c/d as triage priors
 prompts/                  two kinds of versioned prompt, both proposed against by diff:
                             pipeline prompts (triage, distill, interpret, digest, rag-answer)
                             agent charters (*-agent.md), one per seat
-.github/workflows/        agent-*.yml, one scheduled workflow per seat
+.github/workflows/        agent-*.yml, one dispatch door per seat (crons retired 2026-10-17)
 skills/                   the gold layer: promoted skills and pattern notes
 docs/vision.md            the mission and the declared end state
 docs/decisions.md         architecture decision records, ADR-1 through ADR-28
@@ -446,8 +460,9 @@ The pipeline, built bottom-up.
 
 The org, built after it (ADR-14 through ADR-28, all in one week of September 2026).
 
-- [x] Agent org live in the cloud, not on a laptop (ADR-18): twelve seats, ten on cron,
-      each a GitHub Actions workflow running its charter
+- [x] Agent org live in the cloud, not on a laptop (ADR-18): twelve seats, ten on a
+      clock, each running its charter. The clock moved from GitHub Actions to the
+      company host on 2026-10-17 (HQ decision 056)
 - [x] Seats run in a prebaked container image (`.github/docker/Dockerfile`), so a run
       spends its first minutes working rather than installing. Frontend and engineer
       migrated; the rest follow
@@ -465,12 +480,16 @@ The org, built after it (ADR-14 through ADR-28, all in one week of September 202
       itself rather than the credential
 - [ ] Finance and sales seats activated (ADR-24), which is a one-line schedule change each.
       Both have now run once on dispatch
-- [ ] The org's output reaches main without the owner present. This is the open one that
-      bounds all the others: between 2026-09-30 and 2026-10-04 the seats ran 24 times, all
-      green, opened 49 pull requests and merged one, because every channel out of the org
-      ends at one person. ADR/HQ decision 041 hands Tier B merges to the PM seat and is
-      itself waiting in the queue. See `docs/agents/incidents.md`,
-      `INC-2026-10-04-four-days-of-output-and-no-delivery`
+- [~] The org's output reaches main without the owner present. **Partly, as of
+      2026-10-11, and this is the biggest thing that changed in a week.** The stall
+      recorded in `INC-2026-10-04-four-days-of-output-and-no-delivery` is over: 13
+      pull requests merged between 2026-10-05 and 2026-10-11, and `main` has been
+      green since 2026-10-09 after ten red days. Decision 041's Tier B merge grant
+      is operating, and three of those merges were made by the `app/claude`
+      identity inside PM run windows rather than by the owner: #253, #263 and #237.
+      What is still hers is every Tier A merge, and the decision itself is still
+      absent from `docs/decisions.md`, so the org is executing a merge-authority
+      grant that its own decision register does not record
 
 The launch, 2026-10-13. Tracked in [docs/backlog.md](docs/backlog.md).
 

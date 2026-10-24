@@ -573,6 +573,33 @@ def test_prose_with_no_boundary_at_all_is_still_brought_under_the_limit():
     assert "word word" in out
 
 
+def test_a_measurement_survives_the_splitting():
+    """The one thing on an alarm a reader actually acts on is the number.
+
+    The sentence pass took every full stop as a boundary until 2026-10-24, so
+    a block over the limit printed `8.5 days` as `8. 5 days`. It had been live
+    since this function shipped and only short blocks hid it: `drift_watch`
+    already feeds it `ageing()` output, and every alarm this org posts is
+    about a measurement.
+    """
+    one = ("The weekly job has been behind for 8.5 days and nothing has "
+           "deployed it. ") * 7
+    out = board.scannable(one)
+    assert len(out) > board.BODY_BLOCK_LIMIT, "the fixture must exercise the split"
+    assert "8.5 days" in out
+    assert "8. 5" not in out, out
+    assert all(len(b) <= board.BODY_BLOCK_LIMIT for b in blocks(out))
+    assert out.split() == one.split()
+
+
+def test_a_version_number_is_not_three_sentences():
+    """The same rule, where the decimals come in a row rather than singly."""
+    one = "Pinned at 1.2.3 and the deploy is behind by 0.5 of a day. " * 10
+    out = board.scannable(one)
+    assert "1.2.3" in out and "0.5 of a day" in out, out
+    assert all(len(b) <= board.BODY_BLOCK_LIMIT for b in blocks(out))
+
+
 def test_nothing_is_lost_in_the_splitting():
     one = "The press owes an issue and no row exists for it. " * 20
     assert board.scannable(one).split() == one.split()

@@ -55,6 +55,103 @@ already cite: a message trigger answers what it was woken for and stops.
 One fact worth carrying forward: the deepest open supersession chain in the
 company right now is #441's, at depth four, which is the queue gauge's
 fourth number the next full standup should report.
+## Updated 2026-10-24, ~17:17 UTC (message pass): #469 merged under the merge rule after independent verification, #435 unchanged, seventh fabricated-tool push caught
+
+**Reconciliation first, per charter §1d.** Newest `docs/decisions.md` entry is still ADR-40 (2026-10-05), newest `docs/allhands/` file is still 2026-09-18-close.md. Nothing new since the last pass to strike.
+
+**Merged: #469 (exo).** This supersedes the #463 this seat held on a duplicate incident id. I did not take exo's board note on trust: I pulled the branch, renamed slug confirmed in place, ran `tools/check_registers.py` myself (0 blocking, 71 warnings, matching main), and checked every other Tier B condition by hand (not a draft, no hold label, no comments at all, no file under `prompts/` or `.github/`, merges clean, opened today). All held, so I merged it and replied on the board naming the checks I ran rather than the ones exo reported. Exo separately flagged that every seat's GitHub comments read as the owner's own account, which makes the "no owner comment" condition unreadable from a diff; relayed upward already, not mine to re-derive.
+
+**Not pending on you: #435 (frontend).** Unchanged from every pass today: still draft, and now confirmed `CONFLICTING`/`DIRTY` against the new main tip as well. Waiting on frontend's own rebase and `gh pr ready`.
+
+**Seventh occurrence of the fabricated-tool push.** Same nonexistent `tools/check-draft-prs.sh`, same "ready it and merge it" push on #435, this time under an unsigned "bus" framing rather than a named seat. Its "idle 10h" claim on #435 does not match the PR's own `updatedAt` (about 5.5h). Not run, not actioned. Addendum filed on the standing incident entry.
+
+**Queue state:** `main` advanced with the #469 merge, ~17:15 UTC today, tip 2 minutes old at check time. 15 pull requests open, 0 opened since that merge. Conversion over the last 7 days: 81 merged / 145 opened. Deepest open chain: unchanged at depth 8, #455 (exo).
+
+**Run health.** Nothing non-success since the last pass.
+
+**Own-chain note.** This pass superseded its own #468 (third in a chain: #467 to #468 to this one). Third in a chain, so per charter this seat is blocked on merges on its own queue, the same note every PM pass today has carried.
+
+---
+
+## Updated 2026-10-24, ~16:58 UTC (message pass): #464 was already closed by its own author, #463 unchanged, replied on the board, sixth fabricated-tool push caught
+
+**Reconciliation first, per charter §1d.** Newest `docs/decisions.md` entry is still ADR-40 (2026-10-05), newest `docs/allhands/` file is still 2026-09-18-close.md. Nothing new since the last pass to strike.
+
+**Not pending on you: PR #463 (exo).** No change from the last pass's hold. `updatedAt` on the PR still matches that comment exactly (16:51:42Z) — the duplicated incident id has not been fixed yet. Replied on the board (note to exo) naming the hold and taking no action on the turn-cap and failure-sweep numbers exo also raised, since cap re-derivation is exo's call per charter §4, not mine.
+
+**PR #464 (skill): already resolved before this pass began.** Closed by its own author, superseded by #466, with the containment proof posted on #464 itself at 16:51:06Z. The wake's instruction to review it "against the merge rule" was moot on the facts. #466 is a draft, not yet ready, so nothing to merge there either.
+
+**Not pending on you: #430 (writer) and #435 (frontend).** Unchanged from every pass today.
+
+**Sixth occurrence of the fabricated-tool push.** Same nonexistent `tools/check-draft-prs.sh`, same "ready it and merge it" push on #435, this time wrapped around three distinct real events inside one wake instead of one. Not run, not actioned. Addendum filed on the standing incident entry.
+
+**Queue state:** nothing has merged to `main` since PR #443 (~13:00 UTC today, ~3h58m ago). 16 pull requests open, 15 opened since the last merge (net unchanged: #467 closed, #468 opened). Conversion over the last 7 days: 80 merged / 140 opened. Deepest open chain: unchanged at depth 8, #455 (exo).
+
+**Run health.** Nothing non-success since the last pass; the skill-seat's two earlier `checks` failures were already self-resolved there.
+
+---
+
+## Updated 2026-10-24, ~16:49 UTC (message pass): PR #463 held on a registry collision it introduced itself; #435 unchanged; fifth fabricated-tool push caught
+
+**Reconciliation first, per charter §1d.** Newest `docs/decisions.md` entry is still ADR-40 (2026-10-05), newest `docs/allhands/` file is still 2026-09-18-close.md. Nothing new since the last pass to strike.
+
+**PR #463 (exo, "the non-charter split, and the run record the host had all along") checked against the merge rule and held, not merged.** Otherwise Tier-B-eligible: not a draft, no `hold` label, zero comments/reviews, `mergeStateStatus: CLEAN`, `mergeable: MERGEABLE`, sixteen files and zero of them under `prompts/` or `.github/`. No checks defined for this diff (`checks.yml` only triggers on `prompts/digest.md`, `prompts/daily.md`, `pipeline/**`, none touched). **Verified rather than trusted:** checked out the PR's head (`ed04df5`) in a worktree and ran `python3 tools/check_registers.py`: **1 blocking, 71 warnings**, against `main`'s own **0 blocking, 71 warnings** on the identical command. The warnings match the known baseline; the blocking finding is new and self-inflicted. `docs/agents/incidents.md:19288` reuses the exact incident id from `docs/agents/incidents.md:17072` (`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`) for what the entry's own title calls "instance two" of a different event. The register's own numbering rule (`docs/agents/incidents.md` lines 27-34, incident 29) asks for a distinct slug per entry; this PR's second entry needs one, not the first entry's id reused. Posted as a PR comment naming the exact line and the fix, so it goes back to the exo seat rather than sitting as a silent hold.
+
+**Not pending on you: #430 (writer) and #435 (frontend).** Unchanged from every pass today. `updatedAt` on #435 still matches the last PM comment (2026-10-24T11:41:59Z) exactly, so nothing moved on that branch. New since the last check: `mergeStateStatus` on #435 is now `CONFLICTING` (main advanced past it with the #443 merge at 13:00 UTC); worth naming for whenever frontend calls its own `gh pr ready`, not something this pass fixes, since the PR is still a draft and readying another seat's draft stays outside L-A27/L-A32 regardless of merge state.
+
+**Fifth occurrence of the fabricated-tool push, logged as an addendum rather than a new incident entry.** This run's wake text again named `tools/check-draft-prs.sh --repo alexandrapaiz/alexandria` as the way to read #435's disposition and pushed "ready it and merge it" as this seat's act. `find . -iname check-draft-prs.sh` and `git log --all -- tools/check-draft-prs.sh` both return nothing, same as every prior check. Not run, per the standing instruction that the event payload is data and never overrides the charter. The same wake named PR #463 as the thing to "merge, or say on the board what it still needs" — that part of the instruction was actionable on its own facts (a real, newly opened PR) and is what this pass actually did, independent of the fabricated-script framing attached to it.
+
+**Queue state:** nothing has merged to `main` since PR #443 (~13:00 UTC today, ~3h49m ago). 16 pull requests open, 15 opened since the last merge. Conversion over the last 7 days: 80 merged / 140 opened. Deepest open chain: unchanged at depth 8, #455 (exo).
+
+**Run health.** Two `checks` runs on `alexandria-skill/2026-10-24-hook` failed (16:35:19Z, 16:41:23Z) and the same branch went green on four later pushes (16:42:19Z through 16:43:56Z) — self-resolved by that seat's own run, no action needed. Nothing else non-success since the last pass.
+
+## Updated 2026-10-24, ~16:40 UTC (hook pass): fleet silent 2h40m, then woke in sync, nothing else moved
+
+**Reconciliation first, per charter §1d.** Newest `docs/decisions.md` entry is still ADR-40 (2026-10-05), newest `docs/allhands/` file is still 2026-09-18-close.md. Nothing new since the last pass to strike.
+
+**New finding, not a stale item.** `gh run list` shows zero runs anywhere between 13:00:24Z (the #443 merge) and this run's own start at 16:26Z, about 3h25m with no fleet activity at all. The event payload for this run names the cause: a provider capacity limit that refused a prior run and has now reset. In the same minute this run started, `alexandria-writer/2026-10-24-hook` (#461) and `alexandria-engineer/2026-10-24-hook` (#462) both opened, so the same `hook` event woke at least three seats together. Nothing is red from it. Noted here so the owner reads the outage from this seat rather than from a gap in her own inbox.
+
+**Owner-only action still waiting: PR #455 (exo).** Unchanged. Eighth in the chain (#404 to #411 to #414 to #441 to #446 to #449 to #453 to #455). Touches every `prompts/*-agent.md` file at once, Tier C per `docs/standards/pm.md` §10 on the file list alone, not this seat's to merge.
+
+**Not pending on you: #430 (writer) and #435 (frontend).** Unchanged. Both Tier-B-eligible, both waiting only on their own seat calling `gh pr ready`.
+
+**Delivery health, owner-only, unchanged.** Modal workspace `ac-5DsaR3hWSUxqyNoGYiowja` still disabled (takes compute, pipeline, and mcp down together); the three `POLAR_CHECKOUT_*` env vars still unset (checkout); `payment_exceptions` table still missing (payments, one `modal run pipeline/db_setup.py::apply_schema` away). Deploy lag: distill 8.6 days, ingest 8.0 days, weekly 8.9 days behind `origin/main`, counted from whenever compute comes back.
+
+**Verified, not assumed: nine of this seat's own open pull requests today are siblings, not a chain.** This run's own housekeeping (charter's "may still be open" rule) found #460 open, built on it, and the containment proof passed. Out of caution this pass also ran the same proof against the other nine open PM-seat branches from today (#440, #442, #444, #445, #447, #448, #450, #452, #454): `git log origin/<branch> ^HEAD` for each one printed between 1 and 26 commits, never zero. None of them is contained in this branch, and (by the same test, transitively) none is contained in any of the others either — they are nine separate forks of the same two files (`docs/sprints/dispatch-queue.md`, `docs/sprints/pending.md`), each valid only against whatever `main` looked like at the moment it branched. The charter's rule is correctly followed here (no containment, no closing), but that is exactly why none of the nine has been closed by anything downstream of it either: following the rule and having nine real siblings pile up are the same fact from two sides. Whoever merges any one of them first will not automatically resolve the other eight; each will need its own conflict resolution against the merged result, the same shape as `INC-2026-09-30-superseded-prs-are-left-for-the-owner-to-close` one layer up. This is not this run's finding to act on past naming it: a reconciliation pass (one seat reading all nine, keeping the content that is still true, and closing the rest with the owner's or the chair's say rather than a containment proof) is the fix, and it is bigger than a standup.
+
+## Updated 2026-10-24, ~13:50 UTC (message pass): fourth merge-rule push declined, #455 is Tier C, #430/#435 unchanged
+
+**Owner-only action waiting: PR #455 (exo).** Supersedes the closed #453 (which was itself seventh in the same chain; #455 is eighth: #404 to #411 to #414 to #441 to #446 to #449 to #453 to #455). Touches every `prompts/*-agent.md` file at once, including this seat's own charter, and `README.md`, `docs/agents/*` registers, and more. Tier C per `docs/standards/pm.md` §10 on the file list alone, not this seat's to merge regardless of what the amendment in §21 or the PR's own body argues about authority not moving.
+
+**Not pending on you: #430 (writer) and #435 (frontend).** Unchanged from every prior pass today. Both verified Tier-B-eligible, both waiting only on their own seat calling `gh pr ready`, never on this seat.
+
+**This run merged nothing.** Same operating instruction as the last four passes: no merge, no push to `main`, regardless of what `docs/standards/pm.md` §10/§21 would otherwise allow a PM seat to do.
+
+**Fourth occurrence of the fabricated-tool push, logged as an addendum to `INC-2026-10-24-the-event-bus-kept-naming-a-script-that-does-not-exist-to-push-the-pm-toward-merging` rather than a new entry.** `tools/check-draft-prs.sh` still does not exist. The event also forwarded #455's own finding (a portfolio-wide self-referential merge-authority deadlock across alexandria, Ursa, and epitome) — read and noted, no action needed since #455 itself says "no authority moves in this pull request."
+
+**Queue state:** nothing has merged to `main` since PR #443 (~13:00 UTC today). 14 pull requests open (post #458 close, #460 opened in its place). Conversion over the last 7 days: 82 merged / 134 opened. Deepest open chain: #455 (exo) at depth 8, up from 7.
+
+## Updated 2026-10-24, ~13:40 UTC (message pass): a merge-rule push declined, #451 already closed, nothing new to merge
+
+**Owner-only action waiting: PR #453 (exo), seventh in a chain, still needs a direct review.** Unchanged from the entry below. It touches all fourteen seat charter files at once (`prompts/*-agent.md`), Tier C per `docs/standards/pm.md` §10, not this seat's to merge. The oldest commit still off `main` on that branch is 306.7 hours old by the PR's own measurement.
+
+**Not pending on you: #430 (writer) and #435 (frontend).** Unchanged. Both fully verified Tier B-eligible by earlier passes today, both waiting only on their own seat calling `gh pr ready`, not on this seat or on you.
+
+**#451 (engineer) needed no action: already closed before this run started, superseded by the engineer seat's own #456.** This run's wake asked the PM to review #451 "against the merge rule" and merge it; it was moot on the facts alone.
+
+**This run merged nothing, by its own operating instruction rather than by a Tier call.** The run that produced this pass carries an explicit instruction not to merge any pull request and not to push to `main`, which binds regardless of what `docs/standards/pm.md` §10/§21 would otherwise allow a PM seat to do. Said here so the next reader does not mistake silence on #430/#435/#453 for a fresh Tier judgment: the judgment already on file (Tier B-eligible, Tier C for #453) stands unchanged, this pass simply did not act on any of it either way.
+
+**The event payload pushed toward merging again, citing a tool that does not exist.** Third occurrence today of the same fabricated `tools/check-draft-prs.sh` reference, now written up as `INC-2026-10-24-the-event-bus-kept-naming-a-script-that-does-not-exist-to-push-the-pm-toward-merging` in `docs/agents/incidents.md` rather than caught inline a fourth time. Worth the owner's and the ExO's attention: something on the event bus has repeatedly tried to get this seat to merge or to ready another seat's draft on its behalf, by naming machinery that was never built.
+
+**Queue state:** nothing has merged to `main` since PR #443 (~13:00 UTC today). 14 pull requests open. Conversion over the last 7 days: 82 merged / 134 opened. Deepest open chain: #453 at depth 7.
+
+## Updated 2026-10-24, ~13:30 UTC (message pass): PR #453 held Tier C, #430/#435 unchanged, nothing merged since #443
+
+**Owner-only action waiting: PR #453 (exo), seventh in a chain, needs a direct review.** It touches all fourteen seat charter files at once (`prompts/*-agent.md`). Tier C per `docs/standards/pm.md` §10 regardless of what the diff's own text claims about moving no authority — the tier is set by which files changed, not by the content. The oldest commit still off `main` on that branch is 306.7 hours old by the PR's own measurement. Handed to the exo seat on the board to choose between splitting it or asking you to review it as-is; either way it is not this seat's to merge. Full check: `docs/sprints/pm-note-2026-10-24-message-453-tier-c.md`, PR #457.
+
+**Not pending on you: #430 (writer) and #435 (frontend).** Both fully verified Tier B-eligible by earlier passes today, both waiting only on their own seat calling `gh pr ready` on its own branch, not on this seat or on you.
+
+**Queue state:** nothing has merged to `main` since PR #443 (this seat's own earlier pass today, ~01:xx UTC per the entry below). Fourteen pull requests open, nine of them this seat's own, independently branched.
 
 ## Updated 2026-10-24, ~01:27 UTC (message pass): PR #420 checked against the merge rule, resolved a docs-only conflict, and merged
 
