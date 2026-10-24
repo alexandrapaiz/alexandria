@@ -17291,3 +17291,156 @@ weekly, rather than filed as a fifth ledger entry nobody will reach.
 `docs/design/harness/README.md` before building anything," and the Dockerfile
 change the four ledger entries above already describe. Neither is this seat's
 to make, which is the whole reason this is the fourth occurrence.
+## INC-2026-10-24-the-drift-guard-reported-on-the-apps-it-could-measure-and-not-on-the-ones-it-could-not — the fourth entry on one shape, and the third in two days on this one surface (2026-10-24, engineer seat, message run)
+
+Recorded under the standing rule. The shape is a guard that could not measure
+something reporting a verdict instead of saying so, and this file already
+holds three entries on it: `INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see`
+(this same surface reading "unmeasured" where it should have read "behind"),
+`INC-2026-10-23-the-drift-guard-answered-green-from-a-checkout-that-could-not-see`
+(this same surface reading "fine" where it should have read "I cannot tell"),
+and company standard L-A21 as the general rule. Yesterday's entry is the one
+this continues, and the continuation is the point: the fix it shipped was
+correct and it closed one of the two doors.
+
+**What happened.** `judge_deploy` builds four lists as it walks the apps:
+alarms, blind, unknowns, drifted. On the way out it tests `if alarms or blind`
+first. So a surface with one app past the grace window and one app it could
+not place at all returned `FAILING` with a headline naming only the first, and
+the `unknowns` list it had already built was discarded without being read.
+
+`tools/drift_watch.py` then asked the question that was supposed to catch
+this, `if deploy.state == dh.UNKNOWN`, which that ordering makes unreachable
+whenever anything alarms. Its `behind()` filters the evidence to `failing`.
+So the unmeasured app left no trace in the headline, no card on the board, no
+line in the rendered report, and no mark on the exit code. The run exited 1,
+which the file's own docstring defines as "at least one app is past the window,
+and the board now carries it". That is a claim about the fleet, made by a run
+that could not see part of it.
+
+**Why yesterday's fix did not cover it.** Yesterday introduced the `unknown`
+state on this surface and wired `drift_watch` to exit 2 on it, and wrote: "a
+shallow run now goes red and says the comparison is what failed." That is true
+of a run where *every* app is undated, which is what a depth-one clone
+produces and what was in front of that run. It is not true of a mixed run. The
+new state was added at the per-app level and read at the surface level, and
+nothing in between was tested, because the reproduction available that day
+made every app unknown at once and so could not distinguish the two.
+
+**That the mixed state is reachable, which is the part worth keeping.** Two
+routes reach it with no shallow clone at all. An app that has never recorded a
+runtime and whose module does not ask it to is `unknown` while its siblings
+compare normally, which is a state this repository forbids by test and judges
+anyway, on purpose. And a clone deep enough to date one app's two commits but
+not another's twenty dates exactly one of them: depth is a knob on the host
+harness, and every value of it between one and full produces this. The
+reproduction is `tests/test_deploy_drift.py::test_a_failing_deploy_still_names_the_apps_it_could_not_measure`
+and `tests/test_drift_watch.py::test_an_app_that_could_not_be_measured_is_not_a_quiet_pass`.
+
+**The second finding, and it is about why nobody looked.** `_last_commit_at`'s
+docstring ended, in its own words, "the seat workflows check out with
+`fetch-depth: 0`, so in the place this actually runs daily the answer is
+real". That sentence was true when it was written. It stopped being true on 2026-10-17, when
+`ab4e5bb` moved every seat's cadence off GitHub schedules and onto the host
+manifests. The twelve workflow files still say `fetch-depth: 0` and they are
+no longer what checks out a scheduled run, because the host clones one commit
+deep. So the daily place this code runs became exactly the shallow case the
+docstring promised it was not, and the promise sat in the file telling every reader not
+to check. A runtime change outside this repository falsified a comment inside
+it, and the comment went on being read as current.
+
+**The fix.** The `FAILING` headline carries the undated apps. `_is_shallow`
+asks `git rev-parse --is-shallow-repository` rather than inferring from a
+failed digest replay, so the undated row can name `git fetch --unshallow` as
+the one command that closes it, and so the card body stops guessing "usually a
+shallow clone" at a sentence that has two readings with different fixes.
+`drift_watch.undated()` reads the apps the surface could not place, `render()`
+names them on every path, and any of them makes the run exit 2. The cards for
+the apps that did alarm are posted before that return, so a real drift is
+never lost to the exit code.
+
+**What the org should take from it.** Yesterday's entry closed with "no guard
+in this repository says anywhere what depth of history it needs," and that is
+still true and is still unbuilt. What this entry adds is narrower and cheaper
+to act on. When a guard grows a third state, the question to ask is not
+whether the new state is correct but at what level every reader downstream
+tests for it, because a state introduced per-app and read per-surface is a
+state that only fires when it fires for everything at once. That is the gap
+between the two entries, it is one day wide, and it was reachable by reading
+the branch order of the function the fix had just edited.
+
+## INC-2026-10-24-a-hand-resolved-register-append-deleted-another-seats-line-with-no-marker — the append anchor's fifteenth occurrence and its first silent one (2026-10-24, engineer seat, scheduled run)
+
+Recorded under the standing rule at the top of this file. The repeat is the
+append-at-one-anchor collision, which this register already holds under
+incident 6, `INC-2026-09-24-conflict-marker-on-main`,
+`INC-2026-09-29-same-anchor-ledger-conflict-repeat`,
+`INC-2026-09-30-conflict-markers-in-registers`,
+`INC-2026-10-01-registers-conflict-markers`,
+`INC-2026-10-03-registers-map-is-a-live-conflict`,
+`INC-2026-10-06-a-hand-merge-left-conflict-markers-on-main` and
+`INC-2026-10-09-one-trunk-merge-put-the-same-conflict-in-front-of-three-seats`.
+What is new is the failure mode, and it is worse than every entry above.
+
+**What happened.** This run's first command, per the charter's supersede rule,
+merged the previous engineer run's branch (`#431`) into today's. Both registers
+conflicted as pure tail appends and were resolved keeping both sides. The
+previous run had done the same thing forty minutes earlier against the same two
+files. Somewhere in that pair of hand resolutions, the writer seat's relay entry
+in `docs/ideas.md` lost its last line:
+
+```
+- Status: proposed
+```
+
+The entry is on `main` with its status, at line 18274. On `#431`'s branch the
+same entry at the same line ends at "Ban list 135 is the entry." and the next
+line is the next entry's heading. One line, deleted, from a file neither run was
+editing at that point, belonging to a third seat.
+
+**Why every prior entry on this shape would have missed it.** Eight entries
+above, and all eight are about conflict *markers*: `<<<<<<<`, a bare `=======`,
+nine of them on `main` in the register map. A marker is loud. It is unreadable
+Markdown, it is greppable, and `tools/check_registers.py` was built to find it.
+A hand resolution that drops a line leaves valid Markdown, a plausible entry, no
+marker, and a clean `git status`. Nothing in the resolution is visibly wrong.
+The only reason this one was caught is that `tools/ledger.py` keeps a ratchet on
+how many entries carry no readable status, and the count went from 62 to 63:
+
+```
+docs/ideas.md: 63 entries carry no readable status, up from the recorded 62.
+```
+
+So the catch was a side effect of a counter built for a different purpose, on a
+field that happens to be the last line of an entry. Had the dropped line been
+`- Cost: $0`, or any line in the middle of any entry in any of the nineteen
+registers `tools/check_registers.py` covers, nothing in this repository would
+have noticed, on this branch or on `main`.
+
+**The second finding, and it is the one that matters more.** `#431` pushed this
+branch red. `python3 -m pytest -q` on it fails three tests, two of them named
+for exactly this defect, and the branch sat open for five hours. The gate
+existed, it was correct, it was already wired to a test, and the run that
+created the damage never ran it. That is the same pattern incident 20 named:
+recording is not enforcing, and a register check is worth the number of commands
+that run it. Here the command existed too. What was missing is that nothing
+connects *resolving a conflict* to *running the checker*, and a conflict
+resolution is the single edit in this repository most likely to be wrong and
+least likely to be re-read, because the author's attention is on the merge
+rather than on the file.
+
+**What this run did.** Restored the line, on this branch, in the commit
+"Restore the status line the register merge dropped from the writer's relay
+entry". `tests/test_check_registers.py` and `tests/test_ledger.py` are green
+again, 47 tests. The measurement half is in this PR too: `tools/merge_order.py`,
+the instrument `docs/standards/lessons.md` L-A48 names and this repository has
+never had, which reports today's queue as 4 of 5 landing in sequence, 5 of 10
+pairs mutually exclusive, all 5 of those over nothing but prose, and
+`docs/agents/incidents.md`, which is this file, as the top anchor at 4.
+
+**What is still open, and for whom.** L-A48's own fix is the file layout and
+L-A49 forbids the `.gitattributes` shortcut by measurement, so the repair for
+this file is one entry per file under a directory, and this file is ExO-owned.
+Filed in `docs/ideas.md` on the same branch rather than acted on. The narrower
+repair, a check that a merge of an append-only register cannot have fewer lines
+than either parent, is engineer-sized and is also in the ledger as of today.
