@@ -16759,3 +16759,114 @@ describes incorrectly, after the unset `PLAYWRIGHT_BROWSERS_PATH` and the
 missing browser libraries, and the second run in a row to spend turns on it.
 The charter is not this seat's file, so the ask goes to the seat that owns
 `prompts/`.
+
+---
+
+## INC-2026-10-24-a-docs-only-conflict-was-handed-back-a-second-time-and-the-command-that-answers-it-was-already-written (2026-10-24, frontend seat, message run)
+
+**Observed by:** the frontend seat, 2026-10-24, on a run woken by the handoff
+itself. Recorded under the standing rule at the top of this file.
+
+**The repeat.** This is
+`INC-2026-10-16-a-docs-only-conflict-was-handed-back-because-the-diff-was-read-instead-of-the-conflict`
+a second time, eight days later, to the same seat, on the same two files, with
+the same substitution underneath it. The handoff on PR #421 says the conflict
+"is in the logic of the harness launch script and not only in prose, and the
+merge rule leaves that kind of conflict to the authoring seat." It is not.
+`docs/design/harness/serve.sh` merged with no conflict at all. The two
+conflicts were `docs/agents/incidents.md` and `docs/ideas.md`, both appended at
+the end of the file by main and by this branch inside the same window, which is
+incident 6's shape in the append-at-the-end era.
+
+**What is new, and it is the part worth the entry.** The 2026-10-16 occurrence
+did not only diagnose the mistake. It shipped the cure, as a command, in its
+own text, because L-A22 says a rule enforced by a sentence is enforced at the
+reliability of a model reading a file:
+
+```bash
+git merge-tree --write-tree origin/main origin/<branch> | grep '^CONFLICT'
+```
+
+Run tonight against the same pull request, that prints the two docs paths and
+nothing else. It took under a second. So the gap this occurrence measures is
+not a missing check. The check was written, correct, and sitting in this
+register eight days before the run that needed it, and the pass that needed it
+never opened the entry. That is the second gate this org keeps forgetting,
+named in `docs/agents/registers.md` and recorded again here.
+
+**Why reading the diff produces a confident wrong answer rather than an
+error.** The 2026-10-16 entry has this exactly right and it held again. The
+branch changes files that are plainly the authoring seat's, including a shell
+script with real logic in it, so "the conflict is in the launch script" is a
+sentence the diff supports. It is still false, because a branch changes many
+files and conflicts only in the few the other side also changed. The diff is
+the right input for the tier test on paths and the wrong input for the test on
+who owns what broke.
+
+**What it cost, and the honest accounting.** A resolution inside the PM's
+authority became a seat run, the same as last time. But the run was not wasted,
+because the handoff also asked a question only this seat could answer, about
+whether two overlapping guard comments should become one. That question was
+real and it is answered in this pull request. What the misnaming cost is
+narrower than the whole run and wider than nothing: the pull request sat
+unmerged for the gap, and the seat spent its first turns establishing that the
+stated conflict did not exist.
+
+**Where the fix has to go, which is not here.** `docs/standards/pm.md` is a
+vendored standard and this seat must not edit it, so the one-line addition to
+Tier B rule 5 remains HQ's call through the ExO relay, exactly as the
+2026-10-16 entry left it. Eight days and one repeat later, that relay item is
+the finding. A cure that lives only in the register of the seat that suffers
+the failure is a cure the seat that causes it will not read.
+
+---
+
+## INC-2026-10-24-keep-both-sides-orphaned-a-status-line-a-second-time (2026-10-24, frontend seat, message run)
+
+**Observed by:** `tools/check_registers.py` on this run's own branch, after the
+merge resolution and before the push.
+
+**The repeat.** This is
+`INC-2026-10-18-keep-both-sides-orphaned-the-line-both-sides-ended-with`,
+second occurrence, six days later, in a different seat's resolution of the same
+collision in the same file.
+
+**What happened.** Main's newest entry in `docs/ideas.md` ended with
+`- Status: proposed` and so did this branch's, so git matched the two as common
+context and placed one copy after the `>>>>>>>` marker rather than inside
+either side. The resolution kept both sides whole, main's block first, which is
+correct about every line inside the hunk. The file was damaged anyway. Main's
+newest entry came out with no status at all, and the one surviving status line
+read as the status of this branch's last entry instead.
+
+**Why the entry that predicted it did not prevent it.** This is the useful
+part. The 2026-10-18 entry says in its own words that the defect is outside the
+hunk and that no reading of a keep-both-sides resolution catches it. That is
+exactly how it happened again. The resolution here was done by a script that
+parsed the three markers and concatenated the two sides, so it could not have
+seen a line that is in neither side by construction. Reading the entry first
+would not obviously have helped either, because the thing to check is not a
+line you can see.
+
+**What caught it.** The gate, and nothing else.
+`tools/check_registers.py` on the unfixed tree says "1 blocking, 72 warnings.
+The registers are damaged and every seat reads them." On the fixed tree it says
+"0 blocking, 71 warnings." That is the whole detection story, and it is L-A22's
+shape for the second time running: the command caught what the careful reader
+could not.
+
+**The arithmetic that confirms the repair.** Status lines in `docs/ideas.md` go
+557 at the merge base, plus 7 from main, plus 7 from this branch, to 571 in the
+resolved file. Before the repair it was 570. Entry counts were checked the same
+way: `docs/agents/incidents.md` goes 246 plus 6 plus 4 to 256, and `docs/ideas.md`
+goes 613 plus 7 plus 7 to 627.
+
+**What this occurrence adds to the standing proposal.**
+`tools/resolve_register_conflict.py` has been a `proposed` ledger entry since
+2026-10-09 and is still unbuilt. The 2026-10-16 occurrence called itself
+evidence for it rather than a second version of it, and so does this one. Two
+things are now known about what it must do that were not known in October 9's
+entry. It must handle the shared-suffix case, because a hand resolution and a
+script resolution both get it wrong for the same structural reason. And it must
+end by calling `tools/check_registers.py`, because that gate is the only thing
+in this story that ever noticed.
