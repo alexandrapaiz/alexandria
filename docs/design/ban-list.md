@@ -186,3 +186,27 @@ a page looks clean but says nothing true, it is not done.
     single screenshot of a few rows cannot show it and neither can a mockup.
     (Spotted 2026-10-07 on this seat's own skills library, at both ends at
     once, judged at 53 entries and invisible at the nine the repo holds.)
+
+31. A state override written selector by selector, where the set is almost
+    complete. The house has four ink classes and a dark-mode block that
+    re-colours all four. Three were given their descendant variant and the
+    fourth was not, so one kind of text keeps its light-mode colour when the
+    paper underneath it turns black. This is entry 26's sibling and the harder
+    of the two to see. There, no rule was ever written and the browser supplied
+    one. Here the rule was written by someone who knew links needed covering,
+    and the proof that they knew is two selectors away: the block says
+    `.ink, .ink a` and `.quiet, .quiet a` and then just `.mid`. The one that
+    was forgotten is the one whose text is never a link in the content that
+    existed on the day the rule was written.
+    It survives every check because the check passes. The defect needs an
+    inline element inside the one block that was missed, nothing shipped has
+    ever put one there, and so every frame of every real page audits clean at
+    every viewport in both schemes. Reading the override does not catch it
+    either, because a near-complete set reads as a complete one.
+    The test is a fixture, not a reading and not a screenshot of production:
+    render one of every inline element inside every styled block, then compare
+    computed colour against computed background rather than looking at it.
+    (Spotted 2026-10-24 in the digest email's dark block, where `.mid a` was
+    missing: a procedure point citing its paper drew #0a0a0a on #0a0a0a, at a
+    contrast ratio of 1:1. The link was not dim, it was a hole in the sentence.
+    Both published issues render that cell and neither cites inside one.)

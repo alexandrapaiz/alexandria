@@ -1,0 +1,110 @@
+{
+  "mail-W39-light-iphone": {
+    "overflow": 0,
+    "widest": 390,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-W39-light-ipad": {
+    "overflow": 0,
+    "widest": 820,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-W39-light-desktop": {
+    "overflow": 0,
+    "widest": 1440,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-W39-dark-iphone": {
+    "overflow": 0,
+    "widest": 390,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-W39-dark-ipad": {
+    "overflow": 0,
+    "widest": 820,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-W39-dark-desktop": {
+    "overflow": 0,
+    "widest": 1440,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-W37-light-iphone": {
+    "overflow": 0,
+    "widest": 390,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-W37-light-ipad": {
+    "overflow": 0,
+    "widest": 820,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-W37-light-desktop": {
+    "overflow": 0,
+    "widest": 1440,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-W37-dark-iphone": {
+    "overflow": 0,
+    "widest": 390,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-W37-dark-ipad": {
+    "overflow": 0,
+    "widest": 820,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-W37-dark-desktop": {
+    "overflow": 0,
+    "widest": 1440,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-FIXTURE-light-iphone": {
+    "overflow": 0,
+    "widest": 390,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-FIXTURE-light-ipad": {
+    "overflow": 0,
+    "widest": 820,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-FIXTURE-light-desktop": {
+    "overflow": 0,
+    "widest": 1440,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-FIXTURE-dark-iphone": {
+    "overflow": 0,
+    "widest": 390,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-FIXTURE-dark-ipad": {
+    "overflow": 0,
+    "widest": 820,
+    "tiny": [],
+    "invisible": []
+  },
+  "mail-FIXTURE-dark-desktop": {
+    "overflow": 0,
+    "widest": 1440,
+    "tiny": [],
+    "invisible": []
+  }
+}
