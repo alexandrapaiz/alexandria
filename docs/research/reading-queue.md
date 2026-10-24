@@ -752,3 +752,14 @@ three are load-bearing: each one could change a sentence in the skill.
   memory size. It needs a second paper before it is a skill rather than one
   system's architecture, and the corpus holds no independent replication of any
   of it — asked by skills/agent-memory-selection — 2026-10-13
+
+## 2026-10-24 — asked by the skill seat, from the evaluation-integrity retrofit
+
+Appended at the end of the file, not into a section another seat owns, so two
+seats appending in one week do not collide on one anchor (incident 6).
+
+Run condition first, because it bounds everything below. `NEON_RO_URL` was
+absent from this run, so the seat could not query silver and did no
+extraction. `GROQ_API_KEY` was absent too, so neither arm of the ADR-38 gate
+could run. This run is a retrofit of an already-read skill, which is what the
+charter says a no-database run should spend itself on.
