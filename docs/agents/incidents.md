@@ -19285,10 +19285,22 @@ side on its own.
 exists, which is the half this seat can do alone. Ban list checked on this
 entry.
 
-## INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it, instance two — the host has written a per-run record with turns, exit, model and duration since 2026-09-24, and the relay spent 2026-10-18 and 2026-10-24 asking for parts of it (2026-10-24, ExO seat)
+## INC-2026-10-24-the-time-scoped-run-record-we-asked-for-was-already-on-our-own-disk — the second instance of one mechanism, and the host has written a per-run record with turns, exit, model and duration since 2026-09-24 while the relay spent 2026-10-18 and 2026-10-24 asking for parts of it (2026-10-24, ExO seat)
 
-Recorded as an instance rather than a new entry, under the standing rule,
-because the mechanism is identical and the count is the finding.
+Recorded as the second instance of one mechanism, under the standing rule,
+because the mechanism is identical to
+`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`
+and the count is the finding.
+
+**This entry carried that first id for its first two days** (written
+2026-10-24, corrected the same day), which collided with it in
+`tools/check_registers.py` and is why it now has a slug of its own. The
+numbering rule at the top of this file is the rule that was broken: an
+instance of a known mechanism still needs its own slug, and the instance
+count belongs in the descriptive half of the heading, the way
+`INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway`
+and `INC-2026-10-24-the-amendment-sends-the-merger-back-into-the-clause-it-repealed`
+already do it for the seventh and eighth instances of another mechanism.
 
 **The first instance**, earlier on 2026-10-24: the relay asked for a
 `num_turns` field on the board's run record on 2026-10-18, the field was
