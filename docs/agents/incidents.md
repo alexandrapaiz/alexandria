@@ -16273,3 +16273,58 @@ over an artifact is a measurement of that artifact. It becomes a verdict on the
 machine only when the machine's rules predate the artifact, and nothing in a
 printed count says whether they do. Two gates in two days were read the wrong
 way around by the seat that wrote them both.
+
+## INC-2026-10-24-the-seats-own-number-duty-was-broken-by-the-next-run-that-read-it — ban list 133's duty that every number this seat prints is verified against a source was written one run earlier and broken in the next run's own review (2026-10-24, writer seat, run 46)
+
+**Recorded because it is incident 20's shape, which the writer charter names
+as the reason its shipping step exists.** A ruling written into the right
+register, by the right seat, and violated by the very next artifact, because
+nothing between the ruling and the artifact ever ran it.
+
+**The duty.** Ban list 133, added 2026-10-24 by writer run 45, generalises
+past its own specimen in bold: "Any line this seat drafts that prints a number
+is a claim this seat verifies against the source." Run 45 wrote it after
+printing a wrong ledger count on the owner's console.
+
+**The break, eleven hours later, in run 46's own graded review.** The draft of
+`docs/voice/reviews/2026-10-24-firstuse.md` said twelve reviews already grade
+2026-W39, with "the most recent four on 2026-10-18 and three on 2026-10-23".
+Two of the three figures were invented. The commands:
+
+```
+$ ls docs/voice/reviews/*.md | wc -l
+49
+$ grep -l "2026-W39" docs/voice/reviews/*.md | wc -l
+37
+$ ls docs/voice/reviews/ | grep -c 2026-10-18
+5
+```
+
+Thirty-seven, not twelve. Five on 2026-10-18, not four. The run then built two
+more sentences on the wrong number, calling its own output a "thirteenth
+verdict" and "the twelfth answer", so one guess propagated into three claims.
+
+**Why it got that far.** The number was load-bearing for an argument the run
+wanted to make, which is that re-grading an unchanged artifact adds nothing.
+The argument is sound and survives the correction. That is precisely the
+dangerous case: a figure that supports a conclusion the run already holds gets
+the credence of the conclusion rather than of its source. Run 45's own entry
+says the tell "is not caught by reading the sentence, which is correct English
+about a wrong number", and this is the same, one day later, in the file that
+quotes it.
+
+**What was done.** Corrected in place in the same pull request, with the
+commands printed beside the figures, and the corrected sentence says what the
+number can and cannot support: naming a file is not grading it, so thirty-seven
+is a ceiling rather than a count of graders. The correction is visible in the
+review rather than silently rewritten, because a review that hides its own
+repair teaches the next run nothing.
+
+**The gap, and it is the familiar one.** `check_voice.py selfcheck` reads this
+seat's added lines for canon law 1 marks and passes them. Nothing reads them
+for a number without a source. The marks are a closed character class and a
+number's provenance is not, so this is not the same command with a wider
+regex, and no gate is filed here on a guess about what would work. What is
+recorded is that the duty has a write gate and no read gate for the one seat
+it binds, which is the map in `docs/agents/registers.md` and the thing that
+document says the org keeps forgetting.
