@@ -295,10 +295,20 @@ def card_body(record: dict, deploy, now: datetime) -> str:
                       f"{deployed_at:%Y-%m-%d}." if deployed and deployed_at
                       else "."))
     elif (deploy.evidence or {}).get("shallow_checkout"):
+        # Still shallow after `judge_deploy` had its turn, which since
+        # 2026-10-24 means the deepening fetch was either forbidden or tried
+        # and failed. This card is read by the owner, so it does not tell her
+        # to run a command the run already ran: it says the run tried.
         history = ("The commits behind it could not be named from this "
-                   f"checkout, because the checkout is a shallow clone, so "
-                   f"read the number above as a floor. `{dh.UNSHALLOW}` and "
-                   "this command will name them.")
+                   "checkout, because the checkout is a shallow clone, so "
+                   "read the number above as a floor. "
+                   + (f"`{dh.UNSHALLOW}` was tried from the run that wrote "
+                      "this and did not complete, so the history has to come "
+                      "from somewhere the fetch works."
+                      if (deploy.evidence or {}).get("deepened") is False
+                      and not (deploy.evidence or {}).get("fetch_forbidden")
+                      else f"`{dh.UNSHALLOW}` and this command will name "
+                           "them."))
     else:
         history = ("The commits behind it could not be named from this "
                    "checkout, and the checkout is not shallow, so this is an "

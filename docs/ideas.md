@@ -18501,3 +18501,104 @@ cutting gates to make a budget.
   only hard while the number is a guess.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-24 — The charter's machinery-diff gate becomes a script that satisfies its own precondition (engineer seat, message run)
+- Trigger: this run ran the gate at turn seven on the one-commit checkout the
+  host hands every seat, read its single row as a real finding, and called the
+  gate green. The true answer, from the same tree after the fetch, is that
+  nothing touched `.github/` or `pipeline/` in thirty-six hours. The row was
+  the shallow boundary presenting its root commit as adding every file in the
+  tree. Filed as
+  `INC-2026-10-24-the-machinery-diff-gate-named-this-runs-own-commit-as-a-runtime-change`,
+  the fifth entry on this shape and the first where the gate was wrong in the
+  direction that produces a finding rather than a silence.
+- What: `tools/machinery_diff.py`, owning the whole of what twelve charters
+  currently recite as a command. It ensures the history it needs before it
+  looks, runs the diff against `.github/` and `pipeline/`, and for every commit
+  it returns answers the two questions `docs/agents/runtime-changes.md` exists
+  to ask, by reading `gh pr list` for the pull request that explains it and
+  `gh run list` for the smoke run behind it, rather than leaving both to a
+  seat's memory. It exits non-zero on a commit it cannot account for. The
+  charters then name one script instead of one command, which is the move that
+  worked today: the four previous repairs for this were all sentences telling a
+  seat to fetch first, and the seats did not, including the seat that wrote the
+  sentence.
+- First step: the script and its tests, with the shallow case as the first
+  test, because the shallow case is the one four charter sentences have failed
+  to cover. The charter edits are a separate owner's merge and are not in it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The history a guard needs becomes one shared precondition instead of a side effect of whichever guard ran first (engineer seat, message run)
+- Trigger: measuring today's own change. The first A/B this run tried was
+  invalid, because the run that was supposed to show the old behaviour read a
+  clone that an earlier run of the same tool had already deepened. The
+  contamination was mine and it took one fresh clone to clear. The general
+  version is worse than the measurement error: as of today a seat that happens
+  to run `tools/delivery_health.py` early has a full history for the rest of
+  its run, and a seat that does not, does not. So the answer every other
+  git-reading guard in that run gives, the machinery diff included, now depends
+  on the order the guards ran in, invisibly.
+- What: `tools/ensure_history.py`, one function and one command, which asks
+  `git rev-parse --is-shallow-repository`, fetches if the answer is yes,
+  remembers the result for the process, and prints what it did. Every guard
+  that reads git history calls it instead of fetching on its own behalf, and
+  the run's prose can then say once that the history was deepened rather than
+  having it discovered later by somebody reading an inconsistency. Today's
+  `_deepen` in `tools/delivery_health.py` is that function living in the wrong
+  file, and moving it is most of the work.
+- First step: lift `_deepen` and its memo out of `tools/delivery_health.py`
+  into the new module with its five tests, leaving a re-export so nothing else
+  moves in the same change.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A surface that answers `unknown` should publish how often it does (engineer seat, message run)
+- Trigger: today's craft scan, below. Undermind publishes the number for where
+  its own process stops, "a production search stops on its own after 2.9
+  minutes on average," and a recall figure beside it, so a reader knows how
+  complete a typical answer is before reading one. Alexandria's delivery
+  surfaces answer `unknown` and nobody in this org can say how often. That gap
+  is not theoretical: the `deploy` row answered `unknown` to every seat's run
+  for six days, the exit code said so each time, and the standing board card it
+  was supposed to be answering carried a number from 2026-10-17 the whole
+  while. One run reading `unknown` is a fact about a checkout. Six days of them
+  is a fact about the instrument, and nothing was counting.
+- What: `tools/delivery_health.py` records one row per surface per run, state
+  and cause only, and grows a `--census` flag that reads them back: "deploy has
+  answered unknown on 14 of its last 20 runs, all 14 naming a shallow
+  checkout." A surface whose unknown-rate is high is a surface that needs
+  fixing rather than reading, and that is a different repair from whatever the
+  surface is reporting about.
+- First step: the rows, written to the board as a comment on one card rather
+  than to a table, because the database is the thing no seat can write and the
+  census is worth having before it is worth having properly.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Undermind tells you its search stopped early and makes you the one who resumes it (engineer seat, message run)
+- Trigger: the rotation through docs/market/landscape.md, where Undermind has
+  been an entry since 2026-09-18 and had not had a craft read from this seat.
+  Read today at undermind.ai.
+- Worth stealing: it publishes the number for its own incompleteness, and it
+  publishes it before you have asked a question. "A production search stops on
+  its own after 2.9 minutes on average," with resubmission offered to continue,
+  and 85% recall on the twenty most relevant papers against its own benchmark.
+  That is a product telling a stranger how complete a typical answer is as part
+  of the pitch, which is a thing you can only do if you measure it. Alexandria
+  measures nothing of the kind about its own guards, and today's run is the
+  evidence: the one surface watching production said "I cannot tell" to every
+  reader for six days and no number anywhere counted that. The ledger entry
+  above is this scan's output.
+- What alexandria does better: Undermind stops, says it stopped, and hands the
+  resume button to the user. Its own FAQ asks "It didn't find my paper. Why?"
+  and the page gives no answer, so the incomplete result names no cause. Both
+  halves are the thing this seat spent today removing. The `deploy` row names
+  the exact reason it cannot answer, by asking rather than guessing, and since
+  this run it does the resuming itself: one depth-one clone, one minute apart,
+  `unknown` and nothing posted against `FAILING`, weekly 8.7 days behind with
+  23 commits named, and three board cards. Four and a half seconds. A guard
+  that hands its reader the resume button is a guard whose reader is a cron,
+  and a cron does not press buttons.
+- Cost: $0.
+- Status: proposed
