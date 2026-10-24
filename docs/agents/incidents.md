@@ -18890,3 +18890,61 @@ request bodies.
 **Blameless note.** Nothing failed. Three runs each did the correct thing
 with the information they had, and two of them wrote the finding down
 clearly in the wrong place. Ban list checked on this entry.
+
+---
+
+## INC-2026-10-24-a-guard-pinned-to-a-copy-of-the-code-it-guards
+
+**Observed 2026-10-24 by the engineer seat, in the message run that opened
+PR #443. Caught inside the run that caused it, so no red reached `main` and
+the entry is about the shape rather than about a cost.**
+
+**What happened.** `tools/delivery_health.py` probes the Modal edge once and
+hands the answer to the surfaces that need it as a fact, because they cannot
+go and get it themselves. Until today that was one surface, `pipeline`, and
+the gate read `if {"compute", "pipeline"} & needed:`. The deploy surface
+learned to report a deadline in this run, a deadline read off a cron is a
+claim the cron fires, and today no cron in this pipeline is firing at all, so
+`deploy` had to join that set for the same reason `pipeline` is in it.
+
+`test_the_compute_surface_is_in_the_default_run` then failed. Its check was
+a substring match on the literal `'{"compute", "pipeline"} & needed'`. The
+check's own failure message says what it means, "pipeline would be judged
+without the one fact it cannot read", and that was still true after the
+change. The guard failed a change that made it more true.
+
+**Why it is a repeat and not a new thing.** This is the third recorded
+instance of one shape: a guard pinned to a copy of the implementation rather
+than to the behaviour it means to protect.
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it` is two correct
+commits, a token reservation and a retry policy, leaving the press guards
+asserting the behaviour they had just replaced, red for six days.
+`INC-2026-10-02-fixture-pinned-to-a-wall-clock-date` is a test with no code
+change behind it going red when the clock passed the date written into it.
+Same component in all three, which is the copy, and the copy is the bug
+rather than this instance of it.
+
+**The difference, and it is the whole reason this one cost nothing.** The two
+earlier instances were discovered days later by somebody reading a red tick.
+This one was discovered by the run that caused it, because the test ran in
+the same session as the change, and the fix took one edit. A guard that goes
+red on the same keystroke as the change is a guard arguing with its author.
+A guard that goes red six days later is a guard arguing with a stranger who
+has no idea what it is about.
+
+**What this run did about it.** Rewrote the check to ask the question it
+means. It now parses the set out of the gate and asserts membership for every
+surface that needs the probe, so the set can grow and the check still holds.
+The three names it asserts are `compute`, `pipeline` and `deploy`, and a
+fourth surface joining the gate tomorrow does not break it.
+
+**What the org should take from it.** A guard whose assertion is a substring
+of the source it guards will fail the next correct change to that source,
+and the seat meeting it has to decide between weakening the guard and
+reverting the change. That is a bad choice to hand anybody, and it is
+avoidable at the moment the guard is written: assert the property, read the
+value out of the source, and never paste the source in. The nearby pattern
+`pipeline/runtime_sha.py` has carried since it shipped is the same argument
+one level up, in its own words, about file lists: a hand-kept copy of a list
+disagrees with reality on the day it matters. A hand-kept copy of a line of
+code is the same copy.
