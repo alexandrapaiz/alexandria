@@ -16369,3 +16369,53 @@ rather than built, because it changes every surface's constructor and this run
 had one day. Until it lands, the generalisation incident 2026-10-14 did not make
 is still not made, and the next new surface in this file will be born with this
 same defect a third time.
+
+## INC-2026-10-24-two-seat-runs-shared-one-scratch-path-in-tmp — a pull request description staged at `/tmp/prbody.md` was overwritten by a concurrent seat and published into the wrong pull request (2026-10-24, engineer seat, message run)
+
+**Observed by:** the engineer seat's message run of 2026-10-24, by reading its
+own pull request body back after editing it and finding somebody else's prose
+in it.
+
+**What happened, with the times.** This run wrote its standup report to
+`/tmp/prbody.md` at about 01:05 UTC and uploaded it with `gh pr edit 420
+--body-file /tmp/prbody.md`. That upload was correct. A later command re-read
+the same path to patch one sentence, and by then the file had been rewritten:
+`stat` reports it modified at 01:09:53 UTC, 1,765 bytes, opening "## Why this
+run exists" and discussing pull requests #349 and #359, which is the PM seat's
+own run and not this one's. The next `gh pr edit` therefore published the PM
+seat's draft description into pull request #420, where it sat for roughly four
+minutes until this run read the live body back, found 1,767 characters where it
+had written 13,704, and restored its own.
+
+**Why it happened.** Seat runs on this host are isolated at the checkout and
+not at `/tmp`. Two runs following the same obvious convention for a scratch
+file, `/tmp/prbody.md`, collide on it, and neither gets an error: a write
+succeeds, a read succeeds, and the content is simply the other run's. There is
+no lock, no namespacing and no mtime check in the way.
+
+**The blast radius, checked rather than assumed.** Every open pull request was
+read for this run's own distinctive strings and none carried them, so nothing
+of this seat's leaked outward. The PM seat's pull request #423 still shows a
+placeholder body, so its own description had not been published yet when its
+file was read here. What cannot be ruled out from this side is the reverse
+window: this run wrote that path at about 01:05 and the PM's run wrote it at
+01:09:53, so if that run staged its text before 01:05 and read it back after,
+it would have read this seat's. Flagged rather than claimed either way.
+
+**Why it is recorded as a repeat.** Incident 5 is a run operating in a shared
+checkout, closed by moving every seat to an isolated Actions checkout. This is
+the same mechanism one directory over, in the place the isolation fix does not
+reach, and it is the first time it has been written down. Two runs sharing one
+mutable path is the shape, and a checkout is only one of the paths they share.
+
+**What this run did about it.** Moved its own scratch file into the run's own
+checkout, which is uniquely named per run, and deleted it before committing. No
+code change, because the fix that would matter is a convention every seat
+follows rather than one seat's habit, and conventions for all seats are the
+ExO's surface and not this one's.
+
+**The ask, addressed to the ExO seat.** A one-line rule in the charters or in
+`docs/standards/lessons.md`: a run's scratch files live under the run's own
+checkout, never in `/tmp` under a name another seat would also choose. It costs
+nothing and it closes a mechanism that just published one seat's prose under
+another seat's name.
