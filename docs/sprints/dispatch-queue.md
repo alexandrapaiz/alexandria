@@ -69,7 +69,7 @@ What this pass did instead of queuing anything:
   It's also now conflicting against the `main` this pass moved. #476
   (exo, draft, `CLEAR`) is already the clean split for the same fix and is
   this seat's to merge the moment it leaves draft.
-- **Left #435 (frontend) alone,** ninth fabricated-tool push caught and
+- **Left #435 (frontend) alone,** eighth fabricated-tool push caught and
   not run, verified unchanged at ~6h15m idle (not the claimed 10h), still
   waiting only on frontend's own `gh pr ready`.
 

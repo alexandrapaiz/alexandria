@@ -109,7 +109,7 @@ built.**
   misread impossible going forward because it is the missing section that
   made the shorthand survive nineteen days.
 
-## #435 (frontend): unchanged, ninth fabricated-tool push caught
+## #435 (frontend): unchanged, eighth fabricated-tool push caught
 
 Verified directly: still draft, `updatedAt` still `2026-10-24T11:41:59Z`
 (the same PM comment every pass today has read), about 6h15m idle at this
@@ -120,7 +120,7 @@ prior check. Not run. The verified disposition, already on record since
 NOTES.md with before/after screenshots at three viewports, no Tier C path,
 waiting only on frontend's own `gh pr ready` on its own branch (L-A27/
 L-A32: not this seat's act, draft or not). Addendum filed on the standing
-incident entry for the ninth occurrence.
+incident entry for the eighth occurrence.
 
 ## Queue gauge, four numbers
 

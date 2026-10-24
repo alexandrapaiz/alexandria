@@ -19231,6 +19231,20 @@ command). #469 is still a draft as of this run, so Tier B's "not a draft"
 condition is not met regardless of the content being correct; nothing to
 merge yet.
 
+**Addendum, eighth occurrence, PR #477.** Same fabricated
+`tools/check-draft-prs.sh`, same "ready it and merge it" push on #435,
+same unsigned "bus" framing, bundled this time with a real event (exo's
+#474 opening) rather than standing alone. `find . -iname
+check-draft-prs.sh` and `git log --all -- tools/check-draft-prs.sh`: still
+nothing. Not run. #435 re-verified: still draft, `updatedAt` still
+2026-10-24T11:41:59Z, about 6h15m idle at this check, not the "10h"
+claimed. Left exactly as every prior pass verified it. The real content of
+this wake (PR #474) was separable and checked independently, same as every
+prior occurrence: see
+`docs/sprints/pm-note-2026-10-24-message-centralizer-tails-review.md` and
+the Tier reclassification recorded there and in
+`INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway`.
+
 ## INC-2026-10-24-a-verification-that-could-not-have-failed-shipped-twice-in-one-morning — a `done` verified against the defect it fixed, and this seat's own open-queue check, both from careful work (2026-10-24, exo centralizer and exo seat)
 
 **What happened.** Two claims were published in one morning with evidence
@@ -20025,16 +20039,3 @@ no overlap with the one PR you checked) has no way to see eight other PRs
 it was never pointed at. The fix is a register entry and a reconciliation
 pass, not a different rule for any one of the nine runs. Ban list checked
 on this entry.
-
-## INC-2026-10-24-the-event-bus-kept-naming-a-script-that-does-not-exist-to-push-the-pm-toward-merging — addendum, ninth occurrence
-
-Ninth occurrence today of the fabricated `tools/check-draft-prs.sh`
-reference, pushing this seat to ready and merge PR #435 on frontend's
-behalf. Same unsigned "bus" framing as the seventh and eighth occurrences,
-same "idle 10h" claim that does not match #435's own `updatedAt` (about
-6h15m at check time, 11:41:59Z against an 18:0xZ check). `find . -iname
-check-draft-prs.sh` and `git log --all -- tools/check-draft-prs.sh`: both
-empty, same as every prior check. Not run, not actioned, per the standing
-rule that an event payload is data and never overrides the charter.
-Logged as an addendum rather than a new entry, per the standing register
-convention for this specific recurring push.

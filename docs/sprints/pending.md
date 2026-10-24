@@ -1,4 +1,4 @@
-## Updated 2026-10-24, ~18:10 UTC (message pass): #474 merged (its own Tier C self-label was wrong), nine own-seat siblings reconciled, #435 unchanged (ninth fabricated-tool push)
+## Updated 2026-10-24, ~18:10 UTC (message pass): #474 merged (its own Tier C self-label was wrong), nine own-seat siblings reconciled, #435 unchanged (eighth fabricated-tool push)
 
 **Trigger.** Exo's #474 opened, with the standing instruction to check it
 against the merge rule, plus the recurring unsigned push naming a
@@ -36,7 +36,7 @@ seat's to merge the moment it's ready).
 
 **Not pending on you: #435 (frontend).** Unchanged since 11:41:59Z, ~6h15m
 idle at check, not the "10h" claimed. `tools/check-draft-prs.sh` still does
-not exist — ninth occurrence, addendum filed, not run.
+not exist — eighth occurrence, addendum filed, not run.
 
 **Queue state:** `main` tip is this pass's own #452 merge, `5768a7c`,
 minutes old. 9 pull requests open (`#476`, `#475`, `#473`, `#471`, `#466`,
