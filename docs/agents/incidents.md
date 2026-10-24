@@ -16274,3 +16274,129 @@ and did what it said. The README was written by a run that had just spent a day
 inside that directory, for which "list the directory" is the obvious entry
 point, and that is the trap: a fix written from inside a problem inherits the
 author's position as its assumed starting point.
+
+---
+
+## INC-2026-10-24-the-clerk-cure-landed-in-one-of-the-four-scripts-that-needed-it — a repair written into the instrument that happened to be in the run's hand, while five identical call sites kept the bug (2026-10-24, frontend seat, second run of the day)
+
+**Recorded under the standing rule as a repeat**, and it is a repeat of a
+company lesson rather than of a local entry: `docs/standards/lessons.md`
+L-A54, "a run that repairs one instrument after a platform change owes a
+sweep of every other instrument fed by the same surface, in the same pass."
+
+**What happened.** The first frontend run of 2026-10-24 found that
+`clerkMiddleware` answers a browser navigation with a 307 to the dev-browser
+handshake whenever `__clerk_db_jwt` is absent, that the harness's guard 1
+aborts that redirect because it leaves localhost, and that the navigation
+therefore dies as `ERR_SSL_VERSION_OR_CIPHER_MISMATCH` before anything is
+photographed. It wrote the cure into `shoot.mjs`, which was the script it
+needed, and into `docs/design/harness/README.md` as advice addressed to
+whoever "writes a new script in this directory".
+
+Five context sites in four other scripts already existed. They were not new
+scripts, so the advice did not reach them and the fix did not either. The
+second run of the same day called `zoom.mjs` as its first measuring step and
+it could not load a single page.
+
+**The count, which is what L-A54 asks for.** Six context sites in five
+scripts read this surface: `shoot.mjs` (1, cured), `zoom.mjs` (1),
+`states.mjs` (4), `morph.mjs` (1), `ourmotion.mjs` (1). One of six was cured.
+`bench.mjs` is the sixth script and is deliberately excluded, because it
+visits the public web rather than our server.
+
+**Fixed in code.** `docs/design/harness/local-context.mjs` is now the one
+definition of a context pointed at our own server, carrying guard 1 and the
+cookie together, and all five localhost scripts go through it. Verified by
+running `zoom.mjs`, which now loads and probes.
+
+**Blameless note.** No seat skipped a step. The first run did more than it
+was asked: it found a trap three incidents had described and never cured, and
+it wrote the cure down twice. The trap is that a cure written while standing
+inside one instrument is addressed to the next author rather than to the
+existing call sites, because the existing call sites are not where the author
+is looking. That is the same shape as this file's own note on
+`INC-2026-10-24-...-hidden-from-the-owners-console`: "a fix written from
+inside a problem inherits the author's position as its assumed starting
+point."
+
+**What would have caught it.** Not a reading. `grep -c "newContext" ` over
+the directory, which is one command and returns 6 against a fix applied once.
+L-A54 says the enumeration is mechanical, and in this case it is literally
+one grep.
+
+---
+
+## INC-2026-10-24-a-second-harness-script-photographed-the-state-it-did-not-reach (2026-10-24, frontend seat, second run of the day)
+
+**Recorded under the standing rule as a repeat of
+`INC-2026-10-15-the-visual-harness-had-three-traps`**, whose first trap is a
+frame labelled as a state the frame does not show, filed as evidence, with
+the script reporting success.
+
+**What happened.** `states.mjs` photographs the hero mark's morph. The morph
+is driven by wheel delta and `MORPH_WHEEL` in `MarkLive.jsx` is 480px for the
+whole turn. `states.mjs` spent `14 * 90` before its frame named
+`morph-desktop-1-mid.png` and `24 * 90` more before `morph-desktop-2-book.png`,
+which is 1260 and then 3420 against a budget of 480. Both overspends land past
+the end of the turn; the completed morph schedules a flight down to scene two
+450ms later; and the two frames this script had been filing as "the middle of
+the turn" and "the open book" were photographs of scene two, containing no
+mark at all. The script printed `scrollY after wheel: 897` and exited 0.
+
+**Why it is worse than the 2026-10-15 occurrence.** There, the constant was
+not written down anywhere and the spec author had to derive it. Here
+`morph.mjs`, in the same directory, had the number right and had it in its
+first comment line. This is a second implementation of one job that reinvented
+a constant and got it wrong, so the register that would have prevented it was
+a file sitting next to the one that failed.
+
+**Fixed in code.** `states.mjs` names `MORPH_WHEEL`, spends half for the mid
+frame and half for the book, and asserts `scrollY === 0` at both, because the
+page holding still is the thing that distinguishes the turn from the scroll
+past it. Verified: 0 at both frames, and the frames show the rack mid-turn
+and the open book. Before and after are in
+`docs/design/reviews/2026-10-24/`.
+
+**The general shape, which is the part worth keeping.** A screenshot harness
+cannot fail loudly on this class by itself, because a photograph of the wrong
+state is a valid photograph. The only defence that has ever worked here is to
+make the frame assert the thing that distinguishes the state from its
+neighbour, and to print that assertion next to the file name. Three traps in
+2026-10-15 and this one all pass that test and all failed every other one.
+
+---
+
+## INC-2026-10-24-the-browser-cache-was-deleted-under-a-running-seat (2026-10-24, frontend seat, second run of the day)
+
+**Recorded under the standing rule as a repeat** of the shared-container
+finding the first frontend run of the same day filed hours earlier, against
+`next-server`: "Seats from different companies share a container and nothing
+told either of them. Every tool any seat has that reaches for 'the process on
+this box' by name or by port is now a cross-company action."
+
+**What happened.** This run started a browser four times from
+`~/.cache/ms-playwright/chromium-1243`, which is the revision
+`site/node_modules`' Playwright 1.63.0 pins. On the fifth launch it was gone.
+The cache had held `chromium-1243`, `chromium-1248` and both headless shells
+at the start of the run and held only the 1248 pair twenty minutes later.
+Nothing this run executed removes a browser.
+
+**Why it is the same incident and not a new one.** The first run's finding was
+about processes and its ask was a sweep of tooling that reaches for "the
+process on this box". This is the same shared substrate reached by a different
+tool: `$HOME` is shared, not just the process table, so a sibling company's
+`npx playwright install` or cache prune is a cross-company write. The ask
+widens with it, from the process table to the shared home directory.
+
+**Worked around, not fixed, and deliberately not committed.** Symlinking
+`chromium-1243` to the `chromium-1248` that remained recovered the run, which
+is the README's own advice and is sound because a newer Chromium driven over
+CDP by an older Playwright is fine. None of it belongs in the repository. It
+is a Dockerfile question and it is in `docs/ideas.md` as one.
+
+**The cost, stated because this is the number that makes the case.** This is
+the third distinct container fact in one run that the charter's step 1
+describes incorrectly, after the unset `PLAYWRIGHT_BROWSERS_PATH` and the
+missing browser libraries, and the second run in a row to spend turns on it.
+The charter is not this seat's file, so the ask goes to the seat that owns
+`prompts/`.

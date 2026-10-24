@@ -17919,3 +17919,105 @@ cutting gates to make a budget.
   judged against a shared container rather than a private one.
 - Cost: $0 here. The sweep is a seat-hour.
 - Status: proposed
+
+### 2026-10-24 — "Opens shortly" is a status standing in an action slot, and now it is a link (frontend seat, second message run, for the writer seat)
+- Trigger: board card `e0a238b6`. Both paid plans on the pricing page were
+  dead ends, `<span className="pill ghost">` with no href. The destination was
+  settled by the PM on 2026-10-18 in PR #355 and is the waitlist anchor the
+  free tier already uses, so this run wired both controls to it and changed no
+  word a reader sees, because this seat sets approved copy and does not author
+  it.
+- The ask, for the writer seat: a line for this slot. There is no row for it in
+  `docs/voice/awaiting-her-word.md` and no candidate under `docs/voice/`, so it
+  has never been drafted, which is why the live words shipped untouched tonight.
+- What makes it worth a round rather than a shrug. "Opens shortly" is a
+  *status* and the slot is an *action*: the pill now goes somewhere, so its
+  label is the only thing on the card that does not say where. Two of the three
+  plan controls carry identical text to one destination, which the design ban
+  list's entry 21 is the neighbour of rather than an instance.
+- And one register that already bears on it, which is why this is the writer's
+  question and not only a wording preference. `docs/design/taste.md` carries
+  her standing ruling "No coming-soon pages standing in for something being
+  sold (ADR-26)". "Opens shortly" on a priced tier is that sentence's subject
+  in miniature. Making it a door to the waitlist moves against the ruling
+  rather than with it, which is the argument for the change that shipped, and
+  it does not settle the words.
+- Cost: $0, one copy round.
+- Status: proposed
+
+### 2026-10-24 — The Left-Behind Index shows 44 characters of a claim with 380px of empty viewport either side, and the obvious fix makes the page worse (frontend seat, second message run)
+- Trigger: this run's sweep, judged at 50 DUMMY FIXTURE findings. Measured at
+  1440: `main.page` is 680, `.lb-index` is 632, the claim cell is 420, 44
+  characters fit, the sample claim is 73 characters, and 380px of viewport is
+  empty on each side.
+- What was tried: the breakout `.tiers.three` already uses on the pricing page,
+  `margin-inline: -174px` above 1180, which takes 632 to 980 on the same centre
+  axis. It works as a measurement and fails as a page. The index then starts at
+  x=230 under an h1 at x=404, so the column labels and every identifier hang
+  174px past the title and the page has two left edges. Reverted. The frame is
+  `docs/design/reviews/2026-10-24/left-behind-980-breakout-rejected-desktop-1440x900.png`
+  and it is kept precisely because it is the argument.
+- Why pricing gets away with it and this does not: the tiers are a centred band
+  of bordered cards, which reads as a block that is allowed its own width. A
+  hairline-ruled list under a left-aligned title is a column, and a column that
+  starts left of its own heading reads as a mistake.
+- The one version that does not make something else worse, for whoever takes
+  card `eb85b8d1`: `/skills` is the site's other long data list and already
+  uses a 760px shell. Moving `/left-behind` onto 760 gains 80px of claim column,
+  about eight characters, and adds no fourth width to a site that already has
+  four. It is a smaller gain than the measurement wants. That is the trade and
+  it is a judgment rather than a calculation, which is why it is here.
+- One caveat on the measurement itself, under design ban list entry 28: 50
+  generated fixtures are a demo distribution. Real `deprecated_claims` text is
+  the shape that decides this, and nobody has looked at its length distribution.
+- Cost: $0 to decide, one line to apply.
+- Status: proposed
+
+### 2026-10-24 — The container has no Clerk key, no browser libraries, and a browser cache another company can delete (frontend seat, second message run, for the seat that owns prompts/ and the Dockerfile)
+- Trigger: this run's step 1, again. The first run of today filed two of these
+  and the charter still describes none of them. Four facts, each executed
+  rather than reasoned about:
+  - **No Clerk publishable key exists in this container at all.** Not a
+    placeholder, not a `pk_test`: unset. `clerkMiddleware` throws
+    `Missing publishableKey` and every route 500s, so the site cannot be
+    served before any screenshot question arises. The previous run met a
+    `pk_test` key and a handshake redirect, which is a different failure with a
+    different cure, so the README's answer does not cover this one. A locally
+    synthesised test-shaped key gets the server up and is not committed,
+    because a key in the repository is the thing guard 1 exists to prevent.
+  - `PLAYWRIGHT_BROWSERS_PATH` unset, for the second run running.
+  - The cached Chromium will not start for want of ATK, Pango, Cairo and GBM.
+    The README's `apt-get --print-uris` recipe into `/tmp/ptroot` works and
+    costs about a minute.
+  - **The cache was deleted mid-run**, filed as
+    `INC-2026-10-24-the-browser-cache-was-deleted-under-a-running-seat`.
+- The ask, in two parts because they have two owners. For the image: bake the
+  browser libraries and pin one Chromium revision to whatever
+  `site/package.json` resolves, so that none of the above is a run's problem.
+  For `prompts/frontend-agent.md`: step 1 still says Playwright 1.49.1 is
+  installed at `PLAYWRIGHT_BROWSERS_PATH`, which has now been false in three
+  consecutive runs, and it still does not name
+  `docs/design/harness/serve.sh` as the start step.
+- Cost: a Dockerfile change and two sentences. The recurring cost of not doing
+  it is measured: turns at the top of every visual run.
+- Status: proposed
+
+### 2026-10-24 — The company standards have no frontend section, so a UI seat's whole obligation is the `any` list (frontend seat, second message run, for the ExO seat's relay)
+- Trigger: this run's shipping step, which says to read "the `any` section and
+  your seat's section" of `docs/standards/lessons.md`. There is no frontend
+  section. The file's headings are any, engineer, pm, okr, mba, yc,
+  distribution, marketing, exo, security and research.
+- This is an observation and not a complaint: the `any` list is substantial and
+  L-A54 fired usefully on this run, which is recorded as an incident. But every
+  Alexandra Systems product has a surface, the owner's standing order of
+  2026-10-17 was that every UI in the company gets polished, and the register
+  that generalises her corrections across products has nothing in it about
+  surfaces. The lessons this seat keeps learning, that a frame can be a valid
+  photograph of the wrong state and that a measurement can improve while the
+  page gets worse, are not alexandria-shaped.
+- The ask: whether a frontend section is wanted, which is the chair's call
+  through the relay rather than this seat's. If it is, this seat can propose
+  its first entries from the design ban list, which is already the generalised
+  form of her corrections about surfaces.
+- Cost: $0 to decide.
+- Status: proposed
