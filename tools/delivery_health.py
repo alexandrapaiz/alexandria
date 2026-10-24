@@ -1444,6 +1444,74 @@ def _is_shallow(repo_root: Path) -> bool:
 #: one command since 2026-10-24.
 UNSHALLOW = "git fetch --unshallow"
 
+#: Set to anything non-empty to forbid the deepening fetch below. For a run
+#: that must not touch the network, and for the tests, which assert on both
+#: branches and must never depend on a remote being reachable.
+NO_FETCH_ENV = "DELIVERY_HEALTH_NO_FETCH"
+
+#: How long the deepening fetch may take before it is abandoned. Measured
+#: rather than guessed: 4.5 seconds for this repository's whole history, 2,327
+#: commits and 24 MB, on 2026-10-24. Ninety seconds is twenty times that, so
+#: the ceiling is here to stop a hung transport from taking the standup down
+#: and not to ration a cost anybody has met.
+DEEPEN_TIMEOUT_SECONDS = 90
+
+#: One attempt per process, remembered here. `judge_deploy` is called once per
+#: run today, but `tools/drift_watch.py` and the PM's standup both reach it
+#: through different doors, and a retry loop that re-fetches on every call
+#: would turn a 4.5 second cost into an unbounded one.
+_deepen_attempted: dict[str, bool] = {}
+
+
+def _deepen(repo_root: Path) -> bool:
+    """Fetch the history this checkout is missing. True when it worked.
+
+    Why a guard does network I/O, which is the fair question to ask of it.
+    This surface already reads <https://libraryofalexandria.dev/api/delivery>
+    on every run that has no database credential, so a fetch is not a new
+    category of behaviour for this file. And the alternative has been measured
+    for six days: the `deploy` row reads `unknown` from every seat's run,
+    because the host clones one commit deep, and the one command that answers
+    it is a command no seat ever runs.
+
+    That left the only surface watching production answering a question nobody
+    asked it. On 2026-10-18 the PM read 44.7 hours off the standing Deploy
+    card's body while the truth was 8.2 days, and the correction came from a
+    seat that had run `git fetch --unshallow` by hand. Naming the command was
+    yesterday's fix (#436) and it is strictly better than guessing, but a
+    guard that tells its reader to go and re-run it by hand has moved the work
+    rather than done it. Four and a half seconds is cheaper than a wrong
+    number in a card body for six days.
+
+    It degrades to exactly the behaviour it replaced. No remote, no network, a
+    git too old for the flag, or `DELIVERY_HEALTH_NO_FETCH` set: this returns
+    False, the checkout stays shallow, and every message downstream is the one
+    this file printed before today, which names `UNSHALLOW` for a reader who
+    can run it in a place where the fetch could not.
+    """
+    import os
+    import subprocess
+
+    key = str(repo_root)
+    if key in _deepen_attempted:
+        return _deepen_attempted[key]
+    if os.environ.get(NO_FETCH_ENV):
+        _deepen_attempted[key] = False
+        return False
+    try:
+        done = subprocess.run(
+            ["git", "-C", key, "fetch", "--unshallow", "--quiet"],
+            capture_output=True, text=True,
+            timeout=DEEPEN_TIMEOUT_SECONDS)
+        ok = done.returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        ok = False
+    # Asked again rather than trusted: a fetch can exit 0 and leave a
+    # repository shallow if the remote itself is a shallow mirror, and the
+    # thing the caller needs to know is whether the history is here now.
+    _deepen_attempted[key] = ok and not _is_shallow(repo_root)
+    return _deepen_attempted[key]
+
 
 def _deployable_ref(repo_root: Path) -> str:
     """Which commit the running image is judged against.
@@ -1908,7 +1976,39 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
     # a property of the checkout, not of an app, and it is what turns "cannot
     # be dated" from a dead end into one command.
     shallow = _is_shallow(root)
+    # And if it is shallow, fetch what is missing before judging anything,
+    # because the answer below is only as good as the history behind it and
+    # every seat's checkout arrives one commit deep. `deepened` is in the
+    # evidence because the fetch is a side effect on the reader's repository
+    # and a guard should say when it changed something rather than leave it to
+    # be discovered.
+    import os
+
+    evidence["deepened"] = False
+    # Forbidding the fetch is a different fact from the fetch failing, and the
+    # words below differ on it, so the switch is read here rather than
+    # inferred from a False return that means both.
+    fetch_forbidden = bool(os.environ.get(NO_FETCH_ENV))
+    evidence["fetch_forbidden"] = fetch_forbidden
+    tried_to_deepen = False
+    if shallow and not fetch_forbidden:
+        tried_to_deepen = True
+        evidence["deepened"] = _deepen(root)
+        if evidence["deepened"]:
+            shallow = False
     evidence["shallow_checkout"] = shallow
+    # Still shallow, which now has two causes that need different words. The
+    # fetch was forbidden, and the reader can run it; or the fetch was tried
+    # from here and failed, and telling that reader to run the command this
+    # process just ran would be advice the surface already knows is wrong.
+    # Both still name the command, because the reader is often somewhere the
+    # run was not.
+    failed_to_deepen = shallow and tried_to_deepen
+    remedy_short = (f"{UNSHALLOW} could not complete here" if failed_to_deepen
+                    else UNSHALLOW)
+    remedy_long = (f"`{UNSHALLOW}` was tried from here and did not complete"
+                   if failed_to_deepen
+                   else f"`{UNSHALLOW}` and ask again")
     drifted, unknowns, alarms = [], [], []
     # Alarms that cannot be mailed, kept apart from the ones that can. The
     # cooldown lives in `deploy_runtime.notified_at`, so an app with no row
@@ -2068,11 +2168,11 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
                              "nothing about how far behind production is: "
                              + str(found.get("why", ""))
                              + (f". This checkout is a shallow clone, so "
-                                f"`{UNSHALLOW}` and ask again"
+                                f"{remedy_long}"
                                 if shallow else "")))
             unknowns.append(
                 f"{app} (the drift cannot be dated from this checkout"
-                + (f", which is shallow: {UNSHALLOW}" if shallow else "")
+                + (f", which is shallow: {remedy_short}" if shallow else "")
                 + ")")
             evidence[app] = here
             continue
@@ -2678,6 +2778,11 @@ def main(argv: list[str] | None = None) -> int:
                         help="find a stale deploy and do not mail the owner about it")
     parser.add_argument("--json", action="store_true",
                         help="print the result as JSON instead of prose")
+    parser.add_argument("--no-fetch", action="store_true",
+                        help="do not deepen a shallow checkout to date the "
+                             "deploy drift. The deploy row then answers "
+                             "unknown from a one-commit clone, which is what "
+                             "it did before 2026-10-24")
     parser.add_argument("--today", default=None,
                         help="YYYY-MM-DD, or an ISO timestamp, to ask what a "
                              "given moment should have seen. A bare date means "
@@ -2685,6 +2790,13 @@ def main(argv: list[str] | None = None) -> int:
                              "Monday, when the press's own deadline falls "
                              "inside it")
     args = parser.parse_args(argv)
+    if args.no_fetch:
+        # Set rather than threaded through, because `judge_deploy` is reached
+        # from `tools/drift_watch.py` and the PM's standup as well as from
+        # here, and one switch every door honours beats three signatures.
+        import os
+
+        os.environ[NO_FETCH_ENV] = "1"
 
     today = parse_moment(args.today)
     results = run(args.surfaces or ORDER, today, notify=not args.no_notify)
