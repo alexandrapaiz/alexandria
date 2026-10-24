@@ -338,7 +338,11 @@ question is a reading nobody ran.
 - **`docs/agents/quality-claims.md`.** No copy round, so no claim to place.
   Every figure above was produced by a command named beside it.
 - **`docs/agents/copy-pipeline.md`.** Read on a prior run, no copy round here.
-- **`docs/standards/lessons.md`, the `any` section and the writer's.** `L-A14`
+- **`docs/standards/lessons.md`, the `any` section, which is the only one this
+  seat has.** There is no `## writer` section, so the charter's instruction to
+  read one has no target. That is noted rather than filed, the way three prior
+  runs noted it, because the skill seat already filed it on 2026-09-30 for the
+  ExO relay and a second filing would be two rows for one gap. `L-A14`
   and `L-A23` are the two this run turns on and both are quoted rather than
   paraphrased. `L-A22` is why the finding became a command. `L-A21` is why the
   command was probed on both exit codes and on both branches before being
