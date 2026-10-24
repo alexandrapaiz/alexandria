@@ -736,9 +736,22 @@ def test_the_compute_surface_is_in_the_default_run():
     check("and it reads immediately before the surface it explains",
           dh.ORDER.index("compute") == dh.ORDER.index("pipeline") - 1,
           str(dh.ORDER))
-    check("asking for the pipeline alone still probes the platform",
-          '{"compute", "pipeline"} & needed' in source,
-          "pipeline would be judged without the one fact it cannot read")
+    # Read out of the gate rather than compared to a literal copy of it. This
+    # check pinned the exact set `{"compute", "pipeline"}` until 2026-10-24,
+    # and when `deploy` joined the set, for the same reason `pipeline` is in
+    # it, the guard failed a change that made it more true. A guard that
+    # asserts the behaviour a correct change replaces is the shape of
+    # INC-2026-09-30-the-guard-went-red-and-nobody-read-it, so this asks the
+    # question it means: is every surface that needs the probe inside the gate
+    # that fetches it.
+    gate = re.search(r"if \{([^}]*)\} & needed:\n\s+compute = check_compute",
+                     source)
+    gated = set(re.findall(r'"(\w+)"', gate.group(1))) if gate else set()
+    for surface in ("compute", "pipeline", "deploy"):
+        check(f"asking for {surface} alone still probes the platform",
+              surface in gated,
+              f"{surface} would be judged without the one fact it cannot read"
+              f" (the gate fetches for {sorted(gated) or 'nothing'})")
     check("and the help text counts them all",
           "all nine" in source, "the --surface help text is out of date")
 
