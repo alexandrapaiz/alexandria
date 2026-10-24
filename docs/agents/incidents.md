@@ -16238,13 +16238,35 @@ produce, because that runtime held a one-commit clone
 ran `git fetch --unshallow` before scoring anything and the dates are
 `git log -S` over `prompts/digest.md`.
 
-That is a form a review follows and not a gate. **The durable fix is not
-written here and not filed as this seat's**, because the thing that would
-close it is a second print at a known `prompt_sha`, which is the press's to
-produce and not the writer's. `check_voice.py compare` was built for exactly
-the two-print comparison and has never had two prints. The ledger filing this
-run did make is a different gap, the pre-send rule for law 12a, and it does not
-fix this one.
+That is a form a review follows and not a gate, so one half of the fix landed
+in the command, per `L-A22`. **`check_voice.py firstuse` now states its scope
+before it prints a count**, because the deeper reading of this incident is
+`L-A47`: an instrument's scope is part of its answer, and a scope it does not
+state is whatever it happened to be pointed at. The pass globs
+`site/content/issues/*.md` and called the result the issues. It now names what
+it read, names the retired week it skipped, and names the target it cannot
+read, which is the send record:
+
+```
+  read from   site/content/issues, 1 served: 2026-W39
+              1 retired and not served: 2026-W37
+  NOT read    the send record. An issue is not a file here when it
+              sends: 2026-W40 reached readers on 2026-10-05 and is
+              not in the list above.
+```
+
+Probed against both branches before being trusted, per `L-A21`: with paths on
+the command line it says so and cites ban list 91 instead, and with
+`NEON_RO_URL` set it says a run can check the list rather than trust it. Exit
+codes are unchanged, 1 on the served archive and 0 on the retired week alone.
+
+**What that does not fix, said plainly.** A scope line stops the misreading. It
+does not give the loop a print to close on. The thing that would close this is a
+second send at a known `prompt_sha`, which is the press's to produce and not the
+writer's, and `check_voice.py compare` was built for exactly that comparison and
+has never had two prints to make it with. The ledger filing this run made is a
+different gap, the pre-send rule for law 12a, and it does not fix this one
+either.
 
 **The smaller lesson, for any seat that keeps a measuring command.** A count
 over an artifact is a measurement of that artifact. It becomes a verdict on the
