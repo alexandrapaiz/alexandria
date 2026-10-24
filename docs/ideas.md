@@ -17891,3 +17891,60 @@ cutting gates to make a budget.
   nobody opened is what L-A12 is about.
 - Cost: $0 to check, one line either way.
 - Status: proposed
+
+### 2026-10-24 — Law 12a is the only hard voice law with no pre-send gate, and the word it was written for is bare in every issue the press has ever sent (writer seat, run 46, for the engineer)
+- Trigger: writer run 46's grade of canon law 12a, her outsider ruling of
+  2026-09-19, scored against all three prints rather than against the newest
+  file in the repository. `docs/voice/reviews/2026-10-24-firstuse.md` carries
+  the measurement.
+- The finding in one line: `harness` is carried bare in 2026-W37, in
+  2026-W39 and in 2026-W40, which is every issue the library has sent.
+- Why this is not another prompt patch, which is the part that matters.
+  `prompts/digest.md` holds five rules in its first-use pass, added 2026-09-19,
+  2026-09-28, 2026-10-01, 2026-10-01 and 2026-10-14. Four of the five were in
+  force when W40 printed on 2026-10-05, and W40's opening and first section
+  alone carried 13 bare terms of art against the generator's own whole-issue
+  cap of five. A rule that is live, four deep, specific, and quoting its own
+  earlier failures did not hold. The writer charter's step 4 says a structural
+  fix that has failed twice through prompt changes goes to the ledger instead
+  of a third rewrite, so this is the filing and there is deliberately no
+  generator diff in the pull request that made it.
+- The ask, and it is one rule in one file: a blocking `term-of-art-cap` finding
+  in `tools/check_digest_quality.py`. That file already runs inside the press
+  at `pipeline/weekly.py:1350`, is shipped into the Modal image at
+  `pipeline/weekly.py:209`, can hold an issue before it sends, and feeds a
+  corrections pass at `pipeline/weekly.py:822`. It carries 17 rules and 8 of
+  them block. None of the 17 is law 12a.
+- The pairing that makes the gap hard to argue with. She gave law 12 and law
+  12a on the same day, out of the same read of the same issue. Law 12 has a
+  blocking pre-send rule, `skeleton-heading`, citing the incidents behind it.
+  Law 12a has five sentences in a prompt and no command between the model and
+  the reader.
+- Why CI is the wrong gate, and this is the correction to the 2026-10-04 filing
+  rather than a restatement of it. That filing asks for
+  `docs/voice/check_voice.py` to be wired into `.github/workflows/checks.yml`
+  and is still `proposed` twenty days later. CI reads the repository, and an
+  issue is not in the repository when it sends. W40 is the proof: it reached
+  readers on 2026-10-05 and never became a file here, so a CI check would have
+  had nothing to look at. Both filings are worth doing and they do not
+  substitute for each other.
+- What already exists, so the estimate is small. The inventory is written and
+  mechanical in `docs/voice/check_voice.py`: `issue_sentences` at line 2035,
+  `terms_of` at 2083, `glossed` at 2005, `coined` at 2060, and the `CLUB`,
+  `ORDINARY_TERMS` and `INSTITUTION` vocabularies at 1895, 1912 and 1925. It
+  already exits 1 on a finding. The move is to import or vendor the inventory
+  and add one `add(BLOCK, "term-of-art-cap", ...)` where the count of terms the
+  issue chose for itself exceeds the generator's five.
+- The honest limit on what can block, stated so nobody builds the wrong half.
+  The CAP is mechanical and is the blockable rule. Whether a clause actually
+  defines its term is a reading and stays in the grade, which is what
+  `check_voice.py`'s own header already says. A gate that tried to decide the
+  clause would be the false-green shape of
+  `INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason`.
+- Probe before trusting it, per L-A21. The two artifacts in the repository are
+  a known failure and a known near-miss: `2026-W39.md` at 24 and
+  `2026-W37.md` at 31 must both fail, and no synthetic fixture is needed.
+- Cost: one rule in one file, no new dependency, no schema change. The press
+  already handles a held issue and already has the alarm subject for it at
+  `pipeline/weekly.py:597`.
+- Status: proposed
