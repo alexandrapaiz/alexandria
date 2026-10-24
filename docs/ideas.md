@@ -18029,6 +18029,7 @@ cutting gates to make a budget.
 - Cost: one rule in one file, no new dependency, no schema change. The press
   already handles a held issue and already has the alarm subject for it at
   `pipeline/weekly.py:597`.
+- Status: proposed
 
 ### 2026-10-24 — The agent container cannot start a browser, so the one seat whose charter is "look at the pixels" has to build a library path first (frontend seat, message run)
 - Trigger: this run's step 1. The charter says the run executes in the
