@@ -78,7 +78,8 @@ The stronger form of check 4 needs the corpus and is filed with it.
 
 Usage:  python3 docs/voice/check_voice.py
           [enforcements|stale|measure|links|delivery|sweep|claims|
-           reading|taste|candidates|firstuse|generator|all] [path...]
+           reading|taste|candidates|firstuse|generator|specimens|all]
+           [path...]
         python3 docs/voice/check_voice.py enforcements <git-ref>
         python3 docs/voice/check_voice.py selfcheck <git-ref-or-range>
 Exit:   1 if any check reports a finding, 0 if clean.
@@ -2416,6 +2417,227 @@ def generator(paths=None):
     return rc
 
 
+# ---- specimens ---------------------------------------------------------
+
+# The writing positions in prompts/digest.md, found by marker rather than by
+# line number, because the file is edited on most runs and a hardcoded span
+# silently starts reading the wrong region.
+#
+#   voice   the house-law bullets above the template: how a line gets written
+#   slots   the fenced template itself, the {curly brace} writing positions
+#   rules   the rules list, which governs writing
+#   gates   the passes that read FINISHED output
+#
+# The boundary that matters is the last one. The file's own doctrine is that a
+# banned specimen is safe at a gate, because there you are reading output you
+# have already written, and unsafe at a writing position, because there it is
+# the nearest available draft. So `gates` is excluded from every finding below
+# and the file's own reasoning is why.
+REGION_MARKS = (
+    ("voice", r"^# The digest writer"),
+    ("slots", r"^```$"),
+    ("rules", r"^Rules\. Every one of them names examples"),
+    ("gates", r"^- Before finishing, reread the whole issue once"),
+)
+
+# The payload's own subject matter, taken from the terms the generator's
+# first-use rule names as club words plus the stream vocabulary of the field
+# it covers. A specimen carrying one of these is written about the research
+# the model is about to be handed, which is the one subject a payload controls.
+DOMAIN = (
+    r"agent|model|paper|benchmark|reward|distillation|gradient|token|cache|"
+    r"inference|training|fine-?tun|prompt|LLM|transformer|attention|"
+    r"reinforcement|rollout|verifier|alignment|ablation|citation|arxiv|"
+    r"researcher|lab\b|dataset|teacher|student|checkpoint|context window|"
+    r"self-correction|sampling|scaffold|harness|replicat"
+)
+
+# The words the generator forbids the issue to print, in its own words: the
+# machine's names for its own parts. A specimen carrying one hands the model a
+# sentence that breaks a different rule in the same file.
+INTERNAL = (
+    r"\bpayload\b|\btriage|\bingest|\bslot\b|\bdeprecation\b|"
+    r"\bdeprecated\b|\bdistilled\b|\bclaim graph\b|\bsupports? edge|"
+    r"\btraction stream\b|\bsource tier\b|\bdeep[ _]read"
+)
+
+
+def regions(lines):
+    """Map each 1-based line number to its writing region."""
+    at, seen = {}, None
+    for i, line in enumerate(lines, 1):
+        for name, pat in REGION_MARKS:
+            if re.match(pat, line) and name != seen:
+                # The template's fence opens and closes on the same marker, so
+                # the second one ends the slots rather than reopening them.
+                if name == "slots" and seen == "slots":
+                    continue
+                seen = name
+                break
+        at[i] = seen or "voice"
+    # The fenced template's closing ``` leaves the region as `slots` until the
+    # rules list starts, which is correct: the lines between are the sign-off.
+    return at
+
+
+def quoted(path):
+    """Every double-quoted span in a file, with its line and its region.
+
+    The unit is the quoted span because that is the unit the ban list's entry
+    93 names: a sentence a reader could lift unchanged. A span running over a
+    blank line is a quotation mark used for something else and is skipped.
+    """
+    text = pathlib.Path(path).read_text()
+    lines = text.split("\n")
+    at = regions(lines)
+    starts, pos = [], 0
+    for i, line in enumerate(lines, 1):
+        starts.append((pos, i))
+        pos += len(line) + 1
+
+    def lineno(off):
+        n = 1
+        for o, i in starts:
+            if o > off:
+                break
+            n = i
+        return n
+
+    out = []
+    for m in re.finditer(r'"([^"]{3,400})"', text, re.S):
+        body = m.group(1)
+        if "\n\n" in body:
+            continue
+        n = lineno(m.start())
+        out.append((n, at[n], norm(body)))
+    return out
+
+
+def past_tense_you(span):
+    """The tense check from the stands-alone gate, run on a specimen.
+
+    The gate's own words: find every sentence whose subject is "you" and whose
+    verb is in any past tense, past simple, present perfect and past
+    continuous alike. This is the one check in the generator the file calls
+    grammar rather than judgment, which is why it can be run here at all.
+    """
+    pat = (r"\byou\b\s+(?:have|had|'ve|'d)\s+\w+(?:ed|en|t|ne)\b"
+           r"|\byou\b\s+(?:were|was)\b"
+           r"|\byou\b\s+(?:spent|wrote|ran|read|built|saw|went|did|"
+           r"watched|shipped|learned|started|stopped)\b")
+    return re.search(pat, span, re.I) is not None
+
+
+def hers(span):
+    """Is this specimen the owner's own words, carried over from her register?
+
+    The exemption is computed from `docs/voice/taste.md` and never from a list
+    kept here, for the reason the taste gate already gives: this seat may not
+    edit her register, so the quote lives on the checker's side and reaches
+    across. A specimen she wrote is her fine-tuning, the charter says
+    refinements layer on top of it and never beside it, and a gate that
+    reported it as a defect would be asking a run to delete her craft.
+    """
+    if not TASTE.exists():
+        return False
+    book = norm(TASTE.read_text()).lower()
+    low = span.lower()
+    if low in book:
+        return True
+    # Her register wraps, so a long specimen can differ by a word she reworded
+    # when she quoted it. Seven words of overlap is her line.
+    words = low.split()
+    return any(" ".join(words[i:i + 7]) in book
+               for i in range(len(words) - 6))
+
+
+def specimens(paths=None):
+    """Ban list 93's unenforced half: the worked example at a writing position.
+
+    Entry 93 was added on 2026-10-05, enforced by deleting the four specimens
+    that print had lifted, and left with a stated gap in its own last
+    paragraph: the file still teaches by worked example at other writing
+    positions and nothing had inventoried them, because a guessed count
+    recorded as a sweep is worse than no sweep. Three runs declined that count
+    on exactly that ground, the last of them writing "cannot be scored, and
+    that is the honest verdict". This is the count.
+
+    Two findings are mechanical and neither is a prose judgment.
+
+    A specimen at a writing position is a draft of the issue's output, so the
+    file's own hard gates apply to it. Every one of those gates reads finished
+    output and none of them has ever read this file. The first finding runs the
+    one gate the file calls grammar rather than judgment, the tense check, over
+    the specimens themselves. The second runs the internal-vocabulary rule the
+    same way.
+
+    The third is a count rather than a verdict. The file claims, in its own
+    words above the template, that every example in it is drawn from a subject
+    the payload cannot contain. That claim is checkable and the reading-list
+    slot has already refuted it in prose, saying the subject is the one thing a
+    payload controls. The count says how far off the claim is. Whether a given
+    on-subject specimen is worth its risk stays a reading and stays in the
+    grade, and the owner's own specimens are exempted by reaching into her
+    register rather than by anyone's judgment here.
+    """
+    paths = paths or [DIGEST]
+    rc = 0
+    for p in paths:
+        p = pathlib.Path(p)
+        if not p.exists():
+            print(f"{p}: missing")
+            rc = 1
+            continue
+        try:
+            shown = p.resolve().relative_to(ROOT)
+        except ValueError:
+            shown = p.resolve()
+        spans = quoted(p)
+        writing = [(n, r, s) for n, r, s in spans if r != "gates"]
+        sentences = [(n, r, s) for n, r, s in writing
+                     if len(s.split()) >= 5]
+        print(f"{shown}")
+        print(f"  quoted spans in the file                      {len(spans)}")
+        print(f"  of those at a writing position                {len(writing)}")
+        print(f"  of those long enough to lift as a sentence    {len(sentences)}")
+
+        tense = [(n, r, s) for n, r, s in sentences if past_tense_you(s)]
+        print(f"  specimens the tense check would fail          {len(tense)}")
+        for n, r, s in tense:
+            print(f"    TENSE      {shown}:{n}  [{r}]  {s[:96]}")
+
+        internal = [(n, r, s) for n, r, s in sentences
+                    if re.search(INTERNAL, s, re.I)]
+        print(f"  specimens printing the machine's own words    {len(internal)}")
+        for n, r, s in internal:
+            print(f"    INTERNAL   {shown}:{n}  [{r}]  {s[:96]}")
+
+        mine = [(n, r, s) for n, r, s in sentences if not hers(s)]
+        domain = [(n, r, s) for n, r, s in mine
+                  if re.search(DOMAIN, s, re.I)]
+        print(f"  specimens that are not her own words          {len(mine)}")
+        print(f"  of those written about the payload's subject  {len(domain)}")
+        for n, r, s in domain:
+            print(f"    ON-SUBJECT {shown}:{n}  [{r}]  {s[:96]}")
+
+        if tense or internal:
+            rc = 1
+    print()
+    print("The first two counts fail this check and the third does not.")
+    print("A specimen that breaks one of the file's own hard gates is a")
+    print("defect by the file's own reasoning, and it needs no reading to")
+    print("find.")
+    print()
+    print("The on-subject list is the inventory and it is a ceiling rather")
+    print("than a verdict, for a reason the entry gives itself: a quoted")
+    print("BANNED specimen is not this class, because a model copying one")
+    print("is caught by the ban, and nothing here can tell a banned")
+    print("specimen from an offered one. Roughly a third of the list is")
+    print("banned text. Sorting it is the reading, and the reading belongs")
+    print("to a graded review rather than to this command.")
+    return rc
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -2426,7 +2648,7 @@ def main():
     paths = sys.argv[2:]
     rc = 0
     takes_paths = {"measure", "links", "delivery", "compare", "firstuse",
-                   "generator"}
+                   "generator", "specimens"}
     # `enforcements` takes a git ref rather than a path, because ban list 105
     # is about the file the press runs and that file is only reachable through
     # the commit the deploy was built from.
@@ -2444,6 +2666,7 @@ def main():
                      ("ledger", ledger),
                      ("firstuse", firstuse),
                      ("generator", generator),
+                     ("specimens", specimens),
                      ("compare", compare), ("selfcheck", selfcheck)):
         if which == name or (which == "all"
                              and name not in ("selfcheck", "compare")):
