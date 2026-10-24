@@ -38,12 +38,12 @@ proposals". The repository's own reader of the same file says 486.
 It asked for one string. It gets four, and a different shape than it proposed,
 and the reason is a measurement rather than a preference.
 
-The card reasoned from the merged list beside the queue: "the precedent for
-capping already exists on the same page." The cap transfers and the order
-under it does not. `gh("pulls?state=closed")` returns newest first;
-`parseIdeas` returns file order, and `docs/ideas.md` is appended to. So the
-merged list's eight are the last eight merges and the verdict queue's eight
-would be
+The card reasoned from the merged list beside the queue, in its own words
+"the precedent for capping already exists on the same page." The cap transfers
+and the order under it does not. `gh("pulls?state=closed")` returns newest
+first, while `parseIdeas` returns file order and `docs/ideas.md` is appended
+to. So the merged list's eight are the last eight merges and the verdict
+queue's eight would be these three and five more from the same morning.
 
 ```
 2026-09-18 — Skill-verification badge on every library entry
@@ -51,10 +51,15 @@ would be
 2026-09-18 — Agent packs: skill + activation prompt as a priced SKU
 ```
 
-and five more from the same morning, with row 524 — "URGENT: the Modal
-workspace is disabled, so every cron and the MCP server are down" — not
-printed. The card's shape, applied as written, would have made the page worse
-on the one day the outage was live.
+Row 524, the last one a reader reaches, would not be printed at all.
+
+```
+2026-10-23 — URGENT: the Modal workspace is disabled, so every cron and the
+MCP server are down
+```
+
+The card's shape, applied as written, would have made the page worse on the
+one day the outage was live.
 
 The second asymmetry it hides is the one the words sit on. The merged list is
 a record of what happened, so eight of it is a sample. The verdict queue is a

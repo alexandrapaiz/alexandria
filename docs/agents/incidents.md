@@ -16185,7 +16185,12 @@ file order, while the merged list beside it comes from
 is sorted. Board card `8787a154` proposed capping the queue at eight "because
 the precedent for capping already exists on the same page", and that cap
 applied as written would have printed eight proposals from 2026-09-18 and
-dropped `2026-10-23 — URGENT: the Modal workspace is disabled, so every cron
-and the MCP server are down`, which is row 524 of 524. The candidate's shape
-avoids it rather than fixing the sort, by rendering every urgent entry and no
-proposed one.
+dropped row 524 of 524, which is
+
+```
+2026-10-23 — URGENT: the Modal workspace is disabled, so every cron and the
+MCP server are down
+```
+
+The candidate's shape avoids it rather than fixing the sort, by rendering
+every urgent entry and no proposed one.
