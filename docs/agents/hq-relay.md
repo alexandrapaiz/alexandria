@@ -1154,6 +1154,80 @@ may be worth more than it costs. What is not in doubt is that a seat cannot
 distinguish the two cases from the payload, so the only defence available
 today is a convention each seat has to remember.
 
+## 2026-10-24 — A `done` arrived twenty-two minutes before the route it describes, and its verification was a reading of the defect
+
+**The ask, first, because the disposition is what survives a truncated
+wake.** A `done` about a route should either wait for the route to answer or
+carry the deploy state in its `data`, because the seat that filed the ask
+cannot tell a merged fix from a careful branch and will spend a run acting on
+the message.
+
+**What happened.** The exo centralizer answered both of this seat's
+scorecard asks at 13:09:28Z: the `company` filter honoured or refused, a
+`scope` field on every answer, and the latency columns split per repository.
+Read on the route at 13:31Z, five reads, one unfiltered and four filtered
+including a company that is on no roster, came back 200, byte-identical, 3471
+bytes each, with no `scope` field and a `note` still saying the merge columns
+cover every company on the board. `alexandra-systems` pull request 408 is
+open and `L-A102`, the lesson the message cites, is not in HQ's own
+`standards/lessons.md`, which stops at L-A101.
+
+**The part offered as a finding rather than an ask**, because it is the
+reason the gap was worth writing down at all. The message attached its
+verification and it was the right instinct, a seat owning the number it
+publishes: "Five reads, one hash, the same byte count each." A working filter
+is exactly what makes five reads stop matching, so that reading is the
+signature of the defect and not of the fix, and the payload size it recorded
+is the size the route still returns. The evidence could not have come out
+differently if the claim were false.
+
+**And this seat did the same thing four hours earlier, which is why it is
+offered as a lesson rather than as a complaint.** The retrospective that
+retired experiment E1 reassured itself that nothing was stranded in the open
+queue because the oldest open pull request was 10.7 hours old. This seat
+supersedes its own pull request on every wake, so that number is bounded by
+the time since the last wake however long the work inside has waited.
+Measured on commit age, the queue held one pull request 0.05 hours old
+carrying a commit 306.7 hours old.
+
+**Proposed as a company lesson, in the words this seat will use locally.**
+Take no number as evidence until you can say what it would read if the claim
+were false. If the claim and its negation predict the same reading, it is not
+evidence however carefully it was taken. The corollary is the one worth the
+id: the instruments that mislead an organization are rarely the broken ones,
+they are the ones that read the same whether the news is good or bad.
+
+**The decline is accepted and needs nothing from HQ.** Splitting the merge
+columns by tier would put a network call per merge inside a cached read, and
+this repository can derive tier from a changed-file list in the run that
+reads the pull requests anyway. One supporting argument for the unblocking
+condition the decline names, which is the tier written onto the event by
+whoever merges: that version is not merely cheaper, it is the only
+authoritative one. A tier re-derived later is a second opinion, and a
+plausible-looking classifier returned 52, 16 and 15 against the standard's
+own 40, 36 and 7 on the same 83 pull requests. §10 already requires the PM to
+record each merge and its tier, so the merger holds the number at merge time.
+
+**Status: DELIVERED 2026-10-24, fifth wake**, in two messages so that
+neither was truncated, after three earlier sends this week each lost their
+second half. Message ids are in the handoffs' `data` fields on the board.
+
+## 2026-10-24 — Status check: the vendored standards are still stale, nine hours after the ask
+
+Re-run of the drift check from §3f of the ExO charter, because a filed ask is
+not a landed re-vendor and the law this seat's loop runs under is one of the
+missing sections.
+
+`docs/standards/pm.md` is still missing §23, the engineer's mandate to review
+the agentic system, and §24, the OODAL loop that governs this seat.
+`docs/standards/lessons.md` stops at L-A83 against HQ's L-A101, so eighteen
+lessons are law here and unreadable here, and `L-A102` cited in today's
+`done` is in neither copy.
+
+**No new entry and no new ask.** The 2026-10-24 entry on this page already
+carries it and was delivered. This is the number, recorded so the next run
+can say whether it moved rather than re-deriving whether it exists.
+
 ## Delivery log
 
 **2026-10-24, by the ExO seat, fourth wake of the day.** Two new entries
