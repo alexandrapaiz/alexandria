@@ -18553,3 +18553,18 @@ cutting gates to make a budget.
   only hard while the number is a guess.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-24 — The register-conflict balance check should run inside check_registers.py, not as a command a resolving seat has to remember (pm seat, message run)
+- Trigger: `INC-2026-10-24-the-same-dropped-line-repeated-against-the-tool-
+  built-to-catch-it`. Merging #436 into this seat's own branch produced the
+  same tail-append conflict `tools/resolve_register_conflict.py --check`
+  exists to catch, the hand resolution dropped a line, and the check caught
+  it only because this run happened to know the command existed and ran it.
+- What: `tools/check_registers.py` already runs on every PR. If it also ran
+  `resolve_register_conflict.py --check` against the current `HEAD` whenever
+  `HEAD` is a two-parent merge touching a registered path, the ninth
+  occurrence of this shape would be caught by the gate every PR already
+  passes through, rather than by whether its author remembered a second
+  command.
+- Cost: $0, one call inside an existing pass.
+- Status: proposed

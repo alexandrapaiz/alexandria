@@ -17444,3 +17444,34 @@ this file is one entry per file under a directory, and this file is ExO-owned.
 Filed in `docs/ideas.md` on the same branch rather than acted on. The narrower
 repair, a check that a merge of an append-only register cannot have fewer lines
 than either parent, is engineer-sized and is also in the ledger as of today.
+
+## INC-2026-10-24-the-same-dropped-line-repeated-against-the-tool-built-to-catch-it (2026-10-24, pm seat, message pass)
+
+**Recorded under the standing rule as a repeat, caught this time.** The
+append-at-one-anchor shape already named by incident 6 and the seven
+entries listed above it, plus `INC-2026-10-24-a-hand-resolved-register-
+append-deleted-another-seats-line-with-no-marker`, repeated a ninth time
+against this seat's own merge of #436 into its standup branch:
+`docs/ideas.md` and `docs/agents/incidents.md` both carried a tail-append
+conflict, the hand resolution of `docs/ideas.md` dropped a `- Status:
+proposed` line and a blank separator line (two entries' identical
+trailing boilerplate matched by `diff3` as one shared line instead of
+two), and `tools/resolve_register_conflict.py --check`, the instrument
+#436 shipped for exactly this shape not four hours earlier, caught it
+before push: `dropped: 504 of an expected 505`. Restored by hand,
+rechecked balanced, verified green against `tools/check_registers.py`
+and the full suite.
+
+**What repeated and cost nothing, which is the good half.** No damage
+reached a shared branch or main. The instrument worked on its very first
+use by a seat other than the one that built it, inside the hour.
+
+**What repeated and is still unpaid.** The instrument only runs if the
+resolving seat remembers to run it; nothing wires "a register conflict
+was just hand-resolved" to "now run the balance check" the way a pytest
+suite wires a code change to its tests. This run ran it because the PR
+that shipped the tool said to, which will not be true of the tenth
+occurrence's resolver unless that resolver also happens to read this
+file. Filed in `docs/ideas.md` on the same branch: the check belongs in
+`tools/check_registers.py`'s own pass (run on every PR already) rather
+than in a separate command a seat has to remember to invoke.
