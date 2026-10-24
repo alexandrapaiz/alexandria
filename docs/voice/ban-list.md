@@ -1735,6 +1735,14 @@ gap that the same collision had left empty (incident 25).
     at other writing positions and this run did not inventory them, because
     counting them is a different job from grading an issue and a guessed count
     recorded as a sweep is worse than no sweep. Filed in docs/ideas.md.
+    **Counted 2026-10-24, writer run 47, and the count is a command now:**
+    `python3 docs/voice/check_voice.py specimens`. Three runs declined this
+    sweep on the ground above and the last of them wrote "cannot be scored, and
+    that is the honest verdict", which was true and is the reason the count had
+    to become something other than a run's reading. The inventory and the four
+    specimens it found are entry 135, and the one this entry's own tell did not
+    reach is there too: a specimen at a writing position can fail the gate
+    written to catch it.
 
 94. The evidence grade that ate the meaning line. Not a wording defect. A
     position defect, and the register had no entry for a rule losing to a slot
@@ -3533,3 +3541,66 @@ gap that the same collision had left empty (incident 25).
     issue before a reader does. A sixth sentence in the generator would be the
     third mistake the charter names, and it would be unfalsifiable until the
     press sends again, which it has not done in nineteen days.
+
+135. The specimen that fails the gate written to catch it. Entry 93 is about
+    where a worked example SITS, and this is the sharper form of it: the
+    example sitting at a writing position is itself a violation of the rule it
+    illustrates, so the file hands the model the defect and the prohibition in
+    the same slot and the defect is the part at the writing position.
+    The specimen is the greeting. The opening slot offered a sentence
+    introduced in the file's own words as "written out so that following this
+    rule is copying rather than composing", and that sentence's subject was
+    "you" and its verb was present perfect. Four lines below it stood the hard
+    rule: never a past-tense verb with "you" as its subject, no material earns
+    an exception. The stands-alone gate at the end of the file runs a tense
+    check for exactly that shape and names present perfect in its own list.
+    Three greetings have shipped with that grammar, and the third shipped with
+    the grammar rule already written.
+    What makes it this entry rather than a third repeat of that rule. The slot
+    had already done the hard part. It removed BOTH banned specimens from that
+    position on the stated ground that "a banned sentence sitting at the
+    position where a sentence gets written is the nearest available draft no
+    matter what the paragraph around it says", and moved them to the gate. It
+    then left the OFFERED sentence standing four lines above the rule, carrying
+    the same grammar the two it had just removed carried. The warning was moved
+    away from the writing position and the model was left there.
+    The file's diagnosis of the third shipped failure is the proof that nothing
+    reads this class. It blamed a test at the bottom of the slot for asking
+    about the reader's WEEK rather than their JOB, and fixed that noun. The
+    specimen at the top of the same slot was not looked at.
+    The tell, and it is a command rather than a reading. Every hard gate in
+    `prompts/digest.md` reads finished output and none of them has ever read
+    that file. A specimen at a writing position IS a draft of that output, so
+    the gates apply to it. Run the one the file calls grammar rather than
+    judgment over the file's own specimens:
+    ```
+    python3 docs/voice/check_voice.py specimens
+    ```
+    The same command carries entry 93's unenforced half, which three runs
+    declined to count because a guessed sweep is worse than no sweep: 252
+    quoted spans, 191 at a writing position, 73 long enough to lift as a
+    sentence, and 27 of those written about the payload's own subject after the
+    owner's specimens are exempted by reaching into her register. That number
+    is a ceiling and not a verdict, because roughly a third of the list is
+    banned text and no command can tell banned from offered.
+    Why the off-subject defence is not the repair, which the file had already
+    worked out and had not generalised. The reading-list slot says in its own
+    words that a specimen "defended as uncopyable" is still a draft, because
+    "the usual defence is that no payload would ever hand you that subject, and
+    the subject is the one thing a payload controls". That is right, and the
+    claim above the template said the opposite about the whole file. The test
+    that reconciles them: an off-subject example cannot be lifted for its
+    CONTENT and can still be lifted for its SHAPE, since a shape survives
+    having its subject swapped. So a position whose reusable part is a shape
+    carries no example at all. The print of 2026-10-05 is the evidence, having
+    lifted a heading frame with nothing but its tail changed.
+    Added 2026-10-24, writer run 47. Enforced by deleting the specimen and
+    describing the form, which is the only move with a record of working on
+    this class, plus the command above, plus three other specimens found the
+    same way: a thin-evidence line naming a payload stream at the reader, and
+    three attributive phrases naming people at the position where an
+    attribution gets written, under a rule whose own absolute is never-invent.
+    ```
+    LANDED prompts/digest.md: "The form is described and never drafted"
+    LANDED prompts/digest.md: "a position whose reusable part is a shape"
+    ```
