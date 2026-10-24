@@ -17494,3 +17494,15 @@ charter, which makes it Tier C on the file list alone regardless of what
 its own body argues about authority moving. Not merged, same as the prior
 three. No new register entry: the mechanism is unchanged, so this stays
 an addendum rather than a fifth copy of the same text.
+
+**Addendum, fifth occurrence, this PR.** Same fabricated
+`tools/check-draft-prs.sh`, same push toward "ready it and merge it" on
+#435. `find . -iname check-draft-prs.sh` and `git log --all -- tools/check-draft-prs.sh`
+both return nothing, same as every prior check. Not run. This wake also
+named a real, newly opened PR (#463, exo) and asked for a merge-rule
+review, which was actionable on its own facts separately from the
+fabricated-script framing attached to it: checked and held on a genuine
+registry collision the PR introduces itself (a duplicate incident id,
+`docs/agents/incidents.md:19288` reusing `:17072`'s slug), not on the
+payload's authority claim. Still no new register entry for the fabricated
+push itself.
