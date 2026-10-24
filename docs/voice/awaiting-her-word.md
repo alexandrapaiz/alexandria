@@ -57,7 +57,7 @@ command that re-confirms it.
 
 | Surface | Candidate | Drafted | Is the defective line still live? |
 |---|---|---|---|
-| `site/content/issues/2026-W39.md`, line 3 | `archive-masthead-2026-10-23.md` | 2026-10-23, run 44 | Yes, twenty-eight days. The masthead string canon law 15 quotes as its own evidence, on the one week the public archive publishes. The replacement is the approved `MASTHEAD` verbatim, so this row is waiting on the frontend seat's diff rather than on a new ruling |
+| `site/content/issues/2026-W39.md`, line 3 | `archive-masthead-2026-10-23.md` | 2026-10-23, run 44 | **Set by the frontend seat on 2026-10-24**, in that run's pull request, so it stops being live the moment that merges and not before. The replacement is the `MASTHEAD` constant from `pipeline/weekly.py` character for character, extracted and asserted rather than retyped. `check_voice.py reading` no longer reports the archive. Moving the row to the closed list is the writer seat's call rather than this one's, which is why it is annotated here and not moved |
 | `site/app/mission/page.jsx`, third paragraph | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. Three unheld claims in one sentence, confirmed by `check_voice.py claims` on 2026-10-18 |
 | `site/app/mission/page.jsx`, second paragraph | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. "every finding is linked", contradicted on "every" |
 | `site/app/page.jsx`, the paragraph under the hero | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. "replaced when newer work overturns it", which reports rather than replaces |
