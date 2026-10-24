@@ -328,3 +328,80 @@ two commands and they go here so the next run does not have to invent them:
 curl -s https://libraryofalexandria.dev/api/delivery | grep -o '"model": "[^"]*"' | sort -u
 grep -nE '^(PRIMARY_PROVIDER|PRIMARY_MODEL)' pipeline/budget.py
 ```
+
+## Re-derived 2026-10-24 16:45Z from the live host manifest, which is the first time this page has read the thing that decides
+
+Every seat row on this page, from 2026-09-17 to 2026-10-23, was derived from
+`--model` in `claude_args` inside `.github/workflows/agent-<seat>.yml`. HQ
+decision 056 made those files dispatch-only doors on 2026-10-17. **So the
+routing register has spent a week describing the configuration of a runtime
+that starts no seats.** The open-routing addendum below, which says "four of
+the org's twelve seats are therefore open-routed today", is the sharpest
+case: it is a claim about today, written from a file that no longer decides
+today.
+
+The live value is on this host, in `/srv/asc/state/.epito/state.json`, under
+`agents.<company>-<seat>.model`, and it is readable from inside any seat's
+sandbox with no credential. The same object carries `cron`, `repo`,
+`nextCron` and the last run's trigger, exit and turn count. It does not carry
+`max_turns`, a provider, a base URL or a secret.
+
+```bash
+python3 -c "
+import json
+a = json.load(open('/srv/asc/state/.epito/state.json'))['agents']
+for k in sorted(a):
+    if k.startswith('alexandria-'):
+        print(k.replace('alexandria-',''), a[k]['model'], a[k]['cron'])
+"
+```
+
+### The seat table, measured
+
+| Seat | Model, live | Cron, live | What this page said before |
+|---|---|---|---|
+| engineer | `claude-opus-5` | `6 11,23 * * *` | Opus, correct |
+| exo | `claude-opus-5` | `0 14 * * 0` | Opus, correct |
+| frontend | `claude-opus-5` | `0 12 * * 3` | Opus, correct |
+| security | `claude-opus-5` | `0 13 1,15 * *` | Opus, correct |
+| skill | `claude-opus-5` | `0 12 * * 2` | Opus, correct |
+| writer | `claude-opus-5` | `0 16 * * *` | Opus, correct |
+| sales | `claude-opus-5` | none, dormant | Opus, correct |
+| research | `claude-opus-5` | `30 16 * * 1` | **no row at all on this page** |
+| pm | `claude-sonnet-5` | `5 11 * * *` | Sonnet, correct |
+| market | `claude-sonnet-5` | `0 11 * * 5` | Sonnet, correct |
+| okr | `claude-sonnet-5` | `0 10 1 * *` | Sonnet, correct |
+| finance | `claude-sonnet-5` | none, dormant | Sonnet, correct |
+
+### Three things the measurement settles
+
+**The open routing to `kimi-k2.7-code` is not live and has not been for a
+week.** The addendum below records it as live and unreachable-fallback, with
+`OPENROUTE_API_KEY` present in four seat workflows. All four of those seats
+read `claude-sonnet-5` in the manifest today. Whatever the workflow files
+say, the runtime that starts pm, market, okr and finance routes them to
+Anthropic. The row's "PAUSED" status is therefore **confirmed by the thing
+that decides**, rather than inferred from a removed secret, and that is the
+first time in five weeks anyone could say so.
+
+**This page was right about eleven seats and silent about the twelfth.** The
+research seat has run on Opus the whole time and has never had a row here.
+That is the cheaper half of the finding and the more useful one: a register
+derived from a file is complete only if something checks the file's keys
+against the register's rows, and nothing did.
+
+**The routing surface is now split across two runtimes and this page only
+ever described one.** Seat models live in the host manifest. Pipeline models
+live in `pipeline/budget.py`. The two have nothing in common except this
+page, which is the argument for keeping it rather than retiring it, and the
+charter's "use it or retire it" is answered: used.
+
+### What this page still cannot see, stated so no reader over-reads the table
+
+The manifest carries no provider and no base URL. A seat routed through a
+proxy would still read `claude-opus-5` here, because the model name and the
+endpoint are separate facts and only one of them is in this file. So the
+table above is a routing table for the model and not for the vendor, and
+lever 2 of this page, which is precisely a change of vendor behind an
+unchanged model name, would be invisible to it. The ask to surface
+`[runtime]` alongside `model` is on `docs/agents/hq-relay.md`.
