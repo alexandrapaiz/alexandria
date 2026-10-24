@@ -18809,3 +18809,13 @@ cutting gates to make a budget.
   first lands, every certificate this seat writes is decoration.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-24 — The trigger-test receipt goes stale between the run that writes it and the commit that edits SKILL.md (skill seat)
+- Trigger: a `checks` failure on this seat's own branch,
+  [run 40112251086](https://github.com/alexandrapaiz/alexandria/actions/runs/40112251086),
+  `tests/test_skill_receipts.py::test_every_skill_the_page_receives_shows_a_dated_validation_result`,
+  with the message `evaluation-integrity: the receipt was measured against a
+  different revision of SKILL.md`. Opening this run's investigation here so the
+  entry carries the run link; the finding and its first step land in a later
+  commit on this branch.
+- Status: proposed
