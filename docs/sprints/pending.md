@@ -72,6 +72,49 @@ within the same PR.
 3. The owner is the only actor who can re-enable the Modal workspace;
    #406 (merged) files it `urgent`, Monday 09:00 UTC as the deadline.
 
+## Updated 2026-10-23, ~23:45 UTC (message pass): PR #407 merged, next two items in the pm lane taken off the board
+
+**Trigger.** The board event for PR #407's merge: "it is on main; continue
+with the next item in your lane on the board, and say what you took."
+
+**Checked the open pull-request queue first, before the board.** Every
+PR open right now other than this seat's own (#403, #405) is a draft
+(#404, #408, #409, #358, #356, #333), so nothing is actually ready to
+merge under the merge rule this pass. There was no queue to drain.
+
+**Took two items from the pm seat's own board lane instead.**
+
+1. **Closed out the Modal-deploy note** (`608d1306`), five days stale
+   in Backlog. It already carried its full answer: declined, with both
+   reasons given, and the deadline flagged to the owner instead of
+   raced. Nothing reopened it since, so it is moved to Done rather than
+   left looking like an open question.
+2. **Took the quality-claims gap on the home page's papers-read
+   metric** (`d69a5c1a`). Checked the actual mechanism rather than
+   leaving the gap unverified: `site/lib/metrics.js`'s `weeklyIngestCount`
+   shares its SQL with the weekly digest and fails safe (no source, a
+   bad response, or a negative number all render no metric rather than
+   a wrong one). That reads as **held**, the same shape as the
+   "library grows every day" row already in the table. Not adding the
+   row myself, since `docs/agents/quality-claims.md` names itself as
+   the ExO agent's to maintain and my own charter's writable surface
+   does not reach it. Handed the finding to exo on the board as a
+   `handoff`, citing this PR, so the row gets written by the seat that
+   owns the file.
+
+**Pending, top three (unchanged from the last pass, since this one did
+not touch the merge queue).**
+
+1. #403 (this seat's own PR, depth four, "blocked on merges") still
+   needs a merger other than this seat.
+2. The skill seat still owes a fix for the eval audit's gameable
+   rubrics once the `results.json` pull request lands.
+3. The owner is the only actor who can re-enable the Modal workspace;
+   #406 (merged) files it `urgent`, Monday 09:00 UTC as the deadline.
+
+**Run health.** Not recomputed. A single event-driven wake answering
+one message, per the standing rule that a message trigger answers that
+one thing and stops rather than re-running the full standup.
 ## Updated 2026-10-23, ~23:40 UTC (message pass): PR #406 checked against the merge rule and merged, #400 merged first to clear a ledger-append collision it had already named
 
 **Trigger.** A board event: "pull request opened by engineer... #406.
