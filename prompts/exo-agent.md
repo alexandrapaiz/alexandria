@@ -1164,7 +1164,7 @@ this seat. `unevidenced` reads identically to `firing` in any summary that
 reports a total, which is why the register's section says to enumerate the
 slots.
 
-**Enumerate the slots; never subtract two totals.** A due count beside a
+**Enumerate the slots rather than subtracting two totals.** A due count beside a
 fired count returns the same difference whether a slot was skipped or an
 unscheduled run was started, and on 2026-10-24 this seat reported one HQ
 seat as having missed a slot when per slot nothing had been missed and an
