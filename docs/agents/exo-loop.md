@@ -208,3 +208,5 @@ from 290 to 91, merges from 232 to 133. Merges per run rose, 0.40 to 0.52,
 so the fleet is not less effective per run. It ran less. The 377 dark
 minutes after reset are the most likely cause and this tick did not test
 that, which is the obvious candidate for E2.
+
+<!-- run 2026-10-24 (message, tier-not-depth): in progress -->
