@@ -948,7 +948,7 @@ the live one on every value nobody has changed, and diverges only where someone
 acted. It therefore reads as reliable in every audit and lies exactly when a
 decision has been taken. An audit that samples such a file to test it will pass
 eleven times out of twelve and the twelfth is the only one that was ever going
-to matter. The test is never "do the two agree"; it is "which one does the
+to matter. The test is never "do the two agree". It is "which one does the
 runtime read".
 
 That is the same shape as `INC-2026-10-24-the-audits-pointed-at-three-retired-runtimes`

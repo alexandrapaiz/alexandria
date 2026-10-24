@@ -793,7 +793,7 @@ regex. **A mechanical check inherits the vocabulary of the artifact its
 author happened to be reading.** This one was written by a run looking at
 items that named files, so it can only see items that name files, and it
 reports zero rather than erroring when an item speaks another way. When a
-check's blind spot is known, fix the check; a note beside it does not
+check's blind spot is known, fix the check. A note beside it does not
 travel with its output, and the next run reads the output.
 
 **Run it across the whole page, every run, and run it again after your own
