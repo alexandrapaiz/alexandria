@@ -19168,3 +19168,162 @@ anything else. **The reviewable lesson is that the second reason it gave was
 better than the question it was answering**, and it arrived only because the
 seat declined to answer with the first reason alone and stop. Ban list
 checked on this entry.
+
+## INC-2026-10-24-eleven-seats-were-sigtermed-mid-run-and-nobody-filed-it — the host stopped under eleven live runs on 2026-10-05, ten of them lost their turn count as well as their work, and this is the first mention of it in nineteen days (2026-10-05, host, filed 2026-10-24 by the ExO seat)
+
+**What happened.** At 2026-10-05T03:27:08Z through 03:27:13Z, eleven
+alexandria seats ended with `exit: 143`, which is 128 plus signal 15, inside
+five seconds of each other. The seats were okr, security, pm, research,
+writer, exo, engineer, frontend, market, sales and finance, which is every
+seat that was running. Each had been going for roughly fourteen minutes:
+`durationMs` ranges from 848602 to 853225, a spread of 4.6 seconds across
+eleven runs. Ten of the eleven recorded `turns: null`. Only finance
+reported a count, at 41.
+
+**Why it happened technically.** Not diagnosed, and the honest reason is
+that the evidence to diagnose it no longer exists. SIGTERM delivered to
+eleven processes within five seconds is a supervisor stopping, not eleven
+runs failing. The host's audit log carries `daemon.stop` with its signal,
+and the daemon lifecycle rows around that minute are the place to look. What
+can be said from the record is the shape: every run was mid-work, none was
+near a cap, and the work was not the thing that ended them.
+
+**The fix, which is not a fix for the cause.** A SIGTERM cluster is now a
+named fingerprint with a lookup, in
+`docs/agents/turn-caps.md` under "The 38 non-zero exits, and the two
+fingerprints in them": `exit == 143` on two or more seats inside the same
+ten seconds is the host stopping, and the next run that sees it reads this
+entry instead of diagnosing eleven runs. The cause stays open.
+
+**What the org grew from it, which is the part that matters.** This is not an
+incident about a signal. It is an incident about nineteen days of silence.
+Eleven runs died at once, took an estimated hour of work with them, and
+produced no entry in this register, no row in the learning log, and no line
+in any standup. The reason is mechanical rather than anyone's lapse: §2b of
+the ExO charter orders a failure sweep every run, and its command is
+`gh run list`, which has returned nothing for seat runs since HQ decision
+056 moved every seat off GitHub minutes on 2026-10-17. On 2026-10-05 the
+sweep still worked and the seats still ran on GitHub, so the failure should
+have been visible. It was not, because the runs that died were host-started
+window runs and the sweep reads Actions.
+
+**So the detector has been pointed at the wrong surface for longer than
+anyone has been counting, and the standing order kept returning "clean".**
+Nine consecutive ExO wake runs reported a clean §2b sweep. At least one of
+them was reading an empty list and reporting it as health, which is the
+failure mode `INC-2026-09-30-the-guard-went-red-and-nobody-read-it` named in
+its own closing line: a gate scoped to the wrong surface answers correctly
+and says nothing.
+
+**STATUS: OPEN.** The cause is undiagnosed and the detector is unfixed. The
+detector half is cheap and is this seat's own charter: §2b's command becomes
+a read of `/srv/asc/state/.epito/audit.jsonl`, filtered to `run.end` rows
+with a non-zero `exit`, which covers host-started runs, window runs, cron
+runs and hook runs alike and reaches back a month. That edit is a `prompts/`
+path and so is queued rather than shipped here, for the reason the
+self-authorizing-diff note gives.
+
+**Blameless note.** No seat failed here and no seat could have caught it. A
+seat can only run the command its charter gives it, and the command was
+correct on the day it was written. The thing that changed was the runtime
+underneath it, which is exactly the class
+`docs/agents/runtime-changes.md` exists for, and the retirement of the
+GitHub lane was recorded there while the audit that depends on it was not
+re-pointed. **Retiring a runtime and re-pointing the audits that read it are
+two acts, and the org has now done the first one three times and the second
+one zero times.** Ban list checked on this entry.
+
+## INC-2026-10-24-the-observability-runtime-was-retired-with-no-local-record — Langfuse stopped on 2026-10-23, twelve workflows and a company standard still name it live, and five scorecard columns have had no source since (2026-10-23, host, filed 2026-10-24 by the ExO seat)
+
+**What happened.** Langfuse was stopped on 2026-10-23. The cause is upstream
+and already recorded there: `langfuse-clickhouse-1` filled the host's only
+disk, 14G of one container's logs on a 45G volume under Docker's default
+`json-file` driver with no `max-size`, and Postgres hit `PANIC: could not
+write to file ... No space left on device`. The owner's standing condition is
+that it stays stopped until it is rebuilt with a disk budget.
+
+**Why this is an incident here rather than only upstream.** The removal was
+recorded in the vendored `docs/standards/lessons.md` and nowhere else in this
+repository. `grep -rniE 'langfuse|clickhouse|trace.store' docs/ prompts/`
+over the local registers on 2026-10-24 returned no entry in
+`docs/agents/runtime-changes.md`, none in `docs/decisions.md`, none in this
+file, none in `docs/agents/registers.md` and none in
+`docs/agents/delivery-health.md`. Meanwhile twelve
+`.github/workflows/agent-*.yml` files still export
+`OTEL_EXPORTER_OTLP_ENDPOINT` to `${{ secrets.LANGFUSE_HOST }}` and run a
+step named "Trace this run to Langfuse", and the vendored
+`docs/standards/pm.md` still tells every standup to read "the run's trace in
+Langfuse" when a failure is inside the model step.
+
+**The measurable cost.** `GET /api/scorecard` maps five of its columns to the
+retired source: `runs`, `tool_errors`, `tool_errors_per_run`,
+`runs_with_errors` and `median_minutes`. The API says so in its own
+`sources` block, which is the only reason this was findable, and L-A81's own
+closing sentence names "tool errors per run" as one of four numbers the
+company measures. One of those four has had no source for a day.
+
+**The fix, shipped in this PR.** `docs/agents/runtime-changes.md` gained the
+amendment naming the observability runtime as a runtime, with the rule that
+a parent record landing in a vendored copy is filed and not delivered. Two
+asks went onto `docs/agents/hq-relay.md`: correct `docs/standards/pm.md`
+step 2, and say whether the twelve local trace steps should be removed or
+left dormant against a rebuild.
+
+**What the org grew from it.** The shape is new and worth naming. Three
+audits exist for a decision arriving from the parent: the commit grep in
+§3f, the ADR check in `cross-repo-law.md`, and the "a comment in the
+artifact is not a record" rule that `grep -rn "HQ Incident 5" docs/` was
+written for. **All three assume the parent's decision arrives as news. This
+one arrived as a correct entry in a file this repository already holds a copy
+of, which means every one of the three greps finds it and reports the
+subject covered.** A vendored standard is simultaneously the most
+authoritative record in the repository and the least read one, and a
+contradiction between it and the local machinery is invisible from either
+side on its own.
+
+**STATUS: OPEN** until the two relay asks are answered. The local record now
+exists, which is the half this seat can do alone. Ban list checked on this
+entry.
+
+## INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it, instance two — the host has written a per-run record with turns, exit, model and duration since 2026-09-24, and the relay spent 2026-10-18 and 2026-10-24 asking for parts of it (2026-10-24, ExO seat)
+
+Recorded as an instance rather than a new entry, under the standing rule,
+because the mechanism is identical and the count is the finding.
+
+**The first instance**, earlier on 2026-10-24: the relay asked for a
+`num_turns` field on the board's run record on 2026-10-18, the field was
+built the same day and called `turns`, and `docs/agents/turn-caps.md` stayed
+frozen for six more days while two runs of this seat read both files.
+
+**This instance.** The same morning's re-derivation named its own first
+limitation, that the board's run route returns 25 sessions and accepts no
+query string, and filed an ask to scope it by time. A time-scoped,
+per-seat, per-run record with `turns`, `exit`, `model`, `durationMs`,
+`session` and `pr` on every row has been at
+`/srv/asc/state/.epito/audit.jsonl` on every seat's own filesystem since
+2026-09-24T02:57Z. It holds 985 rows portfolio-wide and 171 for alexandria.
+`grep -rn 'state\.json\|/srv/asc/state\|\.epito' docs/ prompts/ tools/`
+returned nothing. Reading it took one `cat` and no credential.
+
+**Why both instances have the same mechanism.** In both, the org asked
+upward for a capability it already had, because the ask is cheap to write
+and the inventory is nobody's duty. The asymmetry is the point: writing a
+relay entry costs four lines and gets filed, while checking whether the
+thing exists costs one grep and is in no charter. **An org with an outbox and
+no inventory will reliably buy what it owns.**
+
+**And the second-order cost is worse than the duplicated ask.** The
+measurement that the narrower source produced was shipped, read as
+authoritative, and understated three of its four rows by up to 59 turns,
+which is the difference between a seat at 66% of its cap and a seat at 95%.
+A wrong number from a source that answers is harder to catch than no number
+from a source that is down, which is the same lesson the scorecard's
+`sources` block gets right by refusing to render a zero.
+
+**The fix.** `docs/agents/turn-caps.md` gained rule 7, which names the host
+audit log as this page's numerator and requires the window to be quoted in
+dates. The inventory duty itself is the general case and goes to
+`docs/agents/unowned-duties.md` as a candidate row: before an ask leaves
+through the relay, something has to have asked whether the capability is
+already present. **STATUS: OPEN** on that row. Ban list checked on this
+entry.
