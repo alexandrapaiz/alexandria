@@ -1,3 +1,15 @@
+## Updated 2026-10-24, ~13:50 UTC (message pass): fourth merge-rule push declined, #455 is Tier C, #430/#435 unchanged
+
+**Owner-only action waiting: PR #455 (exo).** Supersedes the closed #453 (which was itself seventh in the same chain; #455 is eighth: #404 to #411 to #414 to #441 to #446 to #449 to #453 to #455). Touches every `prompts/*-agent.md` file at once, including this seat's own charter, and `README.md`, `docs/agents/*` registers, and more. Tier C per `docs/standards/pm.md` §10 on the file list alone, not this seat's to merge regardless of what the amendment in §21 or the PR's own body argues about authority not moving.
+
+**Not pending on you: #430 (writer) and #435 (frontend).** Unchanged from every prior pass today. Both verified Tier-B-eligible, both waiting only on their own seat calling `gh pr ready`, never on this seat.
+
+**This run merged nothing.** Same operating instruction as the last four passes: no merge, no push to `main`, regardless of what `docs/standards/pm.md` §10/§21 would otherwise allow a PM seat to do.
+
+**Fourth occurrence of the fabricated-tool push, logged as an addendum to `INC-2026-10-24-the-event-bus-kept-naming-a-script-that-does-not-exist-to-push-the-pm-toward-merging` rather than a new entry.** `tools/check-draft-prs.sh` still does not exist. The event also forwarded #455's own finding (a portfolio-wide self-referential merge-authority deadlock across alexandria, Ursa, and epitome) — read and noted, no action needed since #455 itself says "no authority moves in this pull request."
+
+**Queue state:** nothing has merged to `main` since PR #443 (~13:00 UTC today). 14 pull requests open (post #458 close, #460 opened in its place). Conversion over the last 7 days: 82 merged / 134 opened. Deepest open chain: #455 (exo) at depth 8, up from 7.
+
 ## Updated 2026-10-24, ~13:40 UTC (message pass): a merge-rule push declined, #451 already closed, nothing new to merge
 
 **Owner-only action waiting: PR #453 (exo), seventh in a chain, still needs a direct review.** Unchanged from the entry below. It touches all fourteen seat charter files at once (`prompts/*-agent.md`), Tier C per `docs/standards/pm.md` §10, not this seat's to merge. The oldest commit still off `main` on that branch is 306.7 hours old by the PR's own measurement.

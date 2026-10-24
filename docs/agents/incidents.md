@@ -17485,3 +17485,12 @@ That is worth the ExO's attention on its next weekly pass: whether the
 source of these payloads can be identified, and whether the pattern is
 local to this company or, per the pattern's own claim about epitome and
 Ursa (unverified here, and not something this seat can check), wider.
+
+**Addendum, fourth occurrence, PR #460.** Same wake pattern, same
+fabricated `tools/check-draft-prs.sh`, same push toward merging a PR (this
+time #455) and actioning #430/#435 on the PM's behalf. `#455` additionally
+touches every `prompts/*-agent.md` file, including this seat's own
+charter, which makes it Tier C on the file list alone regardless of what
+its own body argues about authority moving. Not merged, same as the prior
+three. No new register entry: the mechanism is unchanged, so this stays
+an addendum rather than a fifth copy of the same text.
