@@ -1,4 +1,82 @@
-## Updated 2026-10-24, ~06:55 UTC (message wake): #433 merged under Tier B closing the mail-rendering surface of card `9103a2d6`, #431 and #430 read off their diffs and left in draft with the blocking clause named in each
+## Updated 2026-10-24, ~11:40 UTC (message wake): #436 merged under Tier B, #430 and #435 both read off their diffs and left in draft with the blocking clause named in each
+
+**Trigger.** The event bus woke this seat on engineer's PR #436 (scheduled
+run), with a standing note asking this seat to read it against the merge
+rule and to decide the disposition of two idle drafts, #430 (writer) and
+#435 (frontend), each with no live run behind it.
+
+**Own last run may still be open, checked first, and it was.** `#437`
+(this seat's own cron-triggered standup, opened ~11:07Z) was still open,
+touching this same file and `dispatch-queue.md`. Built on it directly
+(its tip, rather than branching from `main`):
+`git log --oneline origin/alexandria-pm/2026-10-24-scheduled ^HEAD`
+printed nothing, confirming containment, and `#437` is closed as
+superseded by `#438`. **Chain: `#397` to `#399` to `#401` to `#403` to
+`#427` to `#429` to `#432` to `#434` to `#437` to this one, depth 10.**
+
+That number needs one caveat the chain alone does not carry. `docs/
+standards/pm.md` §11.6 and §10 both say the queue file and the standup PR
+are **Tier A**, knowledge surfaces this seat merges itself after the scope
+check, which this PR's diff (`docs/sprints/`, `docs/ideas.md` grooming,
+`docs/agents/incidents.md`) would clear. This run's own operating
+instructions said "never merge your own PR" as a hard rule for this
+session, so that is the rule actually in force here, not an inability.
+Writing both down rather than letting the depth-10 number read as a
+bottleneck nobody can open: the gate holding this chain this time is a
+run instruction, not the owner's queue.
+
+**PR #436 (engineer, scheduled run, the register-conflict instruments)
+checked against Tier B and merged.** Not mine, not a draft, no `hold`
+label, zero comments, no checks defined on the branch (none failing).
+`gh pr diff --name-only`: 14 files — `README.md`, `docs/agents/*`, `docs/
+ideas.md`, `tests/*.py` (4 files), `tools/*.py` (4 files). No Tier C
+path. `mergeStateStatus: CLEAN`. 1793 passed / 1 skipped per the PR's own
+report. Merged `11:34:49Z`.
+
+Merging it into this branch's own tail-append conflict on `docs/ideas.md`
+and `docs/agents/incidents.md` (the exact shape #436 built the tool for)
+hit the one case `tools/resolve_register_conflict.py` itself refuses to
+touch automatically — "ours changed something that is not the end of the
+file" — because this branch's own history carries a mid-file insertion
+from an earlier pass. Resolved by hand, and the hand resolution **dropped
+a line on the first attempt** (a `- Status: proposed` line and a blank
+separator, both swallowed by `diff3` matching two different entries'
+identical trailing boilerplate as one shared line — the exact failure
+shape `INC-2026-10-24-a-hand-resolved-register-append-deleted-another-
+seats-line-with-no-marker` describes). `tools/resolve_register_conflict.py
+--check` caught it before push (`dropped: 504 of an expected 505`), it was
+restored, and the recheck now reads "balanced, every line of both sides is
+present once" for both files. Filed as evidence that the new instrument
+works, not as a new incident entry, since no damage reached a shared
+branch and nothing new was learned about the failure shape.
+
+**PR #430 (writer) and #435 (frontend), each idle with no live run behind
+it, read off their diffs per the disposition the standing note asked for:
+merge what is already ready, close what is empty, name the blocking
+clause on the rest, and never self-ready another seat's draft.**
+
+- **#430 — unchanged since the 06:55Z pass's own comment on the PR.**
+  Every blocker its own draft note names (the grade, the prompt diff, the
+  gate extension, the suite) was already verified there and nothing has
+  moved since: no new commit, no new comment, idle since 06:53Z. `tools/
+  check-draft-prs.sh`, named in both this wake's and that one's standing
+  note, still does not exist anywhere in this repository (`find . -iname
+  "*check-draft*"` returns nothing). **Owed by writer**, next run:
+  nothing but its own `gh pr ready`.
+- **#435 — read for the first time this pass, same verdict.** `tools/
+  check_registers.py` on its branch: 0 blocking, 71 warnings, same
+  baseline as `main`. `gh pr diff --name-only`: `docs/design/reviews/
+  2026-10-24-catalog-shelves/` (NOTES.md plus six screenshots), `docs/
+  ideas.md`, `site/lib/skill-shelves.js`. No Tier C path. The fix is two
+  lines of behaviour plus a full before/after table and three-viewport
+  screenshots as its own verification; no test file exists for
+  `skill-shelves.js` on `main` to compare against. The deferred half
+  (naming two new shelves for the four skills that now read "More from
+  the library") is correctly handed to the writer's copy round as a
+  ledger note rather than written here. **Owed by frontend**, next run:
+  nothing but its own `gh pr ready`. Verification posted on the pull
+  request so the next run does not re-derive it cold.
+
 
 **Trigger.** The event bus woke this seat on frontend's PR #433 opening,
 with a standing note attached asking this seat to read #433 against the
