@@ -1,3 +1,81 @@
+## Updated 2026-10-24, ~01:15 UTC (message pass): PR #419 checked against the merge rule and merged
+
+**Trigger.** A board event: "pull request opened by writer... #419.
+Review it against the merge rule: merge it, or say on the board what it
+still needs and hand that to its seat."
+
+**PR #419 (writer, `alexandria-writer/2026-10-24-message-firstuse`),
+'harness' bare in every issue the press has sent, checked against the
+merge rule (Tier B, `docs/standards/pm.md` §10) and merged.** Not mine,
+not a draft, no `hold` label, zero comments or reviews. No checks
+reported on the branch, read as "no checks defined" rather than a
+missing tick. `gh pr diff --name-only` shows five files
+(`docs/agents/incidents.md`, `docs/ideas.md`, `docs/voice/ban-list.md`,
+`docs/voice/check_voice.py`, `docs/voice/reviews/2026-10-24-firstuse.md`)
+and 615 insertions, 0 deletions — no `prompts/`, no `company.yaml`, no
+secret, no Tier C path. `mergeStateStatus` read `CLEAN`/`MERGEABLE`.
+Opened today.
+
+**Verified rather than trusted, same as every merge this seat logs
+here.** Merged `main` into a scratch worktree with the PR's branch to
+confirm the clean merge GitHub reported (no conflicts, 615 insertions
+matching the PR's own stat exactly). Ran the new `check_voice.py
+firstuse` against the merged tree: it now prints a scope line before any
+count ("read from site/content/issues, 1 served... NOT read the send
+record...") exactly as the diff and the PR body describe, and the
+underlying BARE findings are unchanged. Reproduced the two self-correction
+counts the PR's own incident entry cites (`ls docs/voice/reviews/*.md |
+wc -l` → 49, `grep -l 2026-W39 docs/voice/reviews/*.md | wc -l` → 37, `ls
+docs/voice/reviews/ | grep -c 2026-10-18` → 5): all three match what the
+PR says it corrected to. `docs/ideas.md`'s new entry is filed `proposed`,
+an owner-controlled status this pass left untouched.
+
+**Merged:** #419, normal merge, now on `main`.
+
+**Branched from this seat's own prior run, not from `main`, because the
+prior run touches the same two files this pass writes.** `gh pr list
+--state open` at the start showed two of this seat's own open pull
+requests: `#422` (`alexandria-pm/2026-10-24-message-exo414`, touching
+`pending.md` and `dispatch-queue.md`, the exact files this pass writes)
+and `#403` (depth 4, untouched by this pass's file list). Built on `#422`
+(`git log --oneline origin/alexandria-pm/2026-10-24-message-exo414 ^HEAD`
+printed nothing, confirming containment), opened this pull request
+superseding it, then closed `#422` with a pointer here. `#403` stays
+open, untouched, still blocked on a merger other than this seat (the
+owner or a chair), exactly as the prior two passes found it.
+
+**Third in a chain, and this seat's own merges are the thing stalling
+now: `#418` to `#422` to this one.** `#418` was itself closed as
+superseded by `#422` an hour earlier, and `#422` is now closed as
+superseded by this pull request, with neither ever reaching `main`.
+**At depth three the charter says to report this plainly rather than
+route around it: this seat is blocked on merges of its own output**,
+specifically of `docs/sprints/pending.md` and `docs/sprints/dispatch-
+queue.md`, which keeps restating the same board state across three
+unmerged pull requests instead of landing it once. None of the three
+pull requests' content is lost (each supersedes cleanly, verified by the
+empty `git log` check above), so nothing here is at risk, but the next
+reader of this file on `main` is still reading content from before
+tonight's last several passes until one of this chain merges.
+
+**Pending, top three, carried from the prior pass and not re-derived
+this pass.** (1) `#403` (this seat's own, depth 4) still carries the
+recovery sprint and the skills-sellable PR/FAQ, unmerged. (2) `#414`
+(the ExO seat's, depth 6) stays held per the open question in the prior
+entry below: does §10's amendment's authority carve-out leave "Charters
+(`prompts/`)" itself an owner/chair line regardless of content, or only
+the clauses that grant or limit a seat's power. (3) The Modal workspace
+is still disabled (`#406`, urgent, 2026-10-26 09:00 UTC deadline,
+owner-only).
+
+**Run health, delivery health, the queue gauge, the cap ratio, the
+board walk.** Not recomputed this pass. This is a single event-driven
+wake answering one message, per the standing rule that a message
+trigger answers that one thing and stops rather than re-running the full
+standup. The prior entry below (~01:05 UTC) carries the last full read
+of all of these; nothing in merging #419 changes any of those readings
+except the open-PR count and the deepest chain, both named above.
+
 ## Updated 2026-10-24, ~01:05 UTC (message pass): PR #414 read and held for you, not self-merged, and the board's own ask on it answered
 
 **Trigger.** Three board events in one wake: PR #408 and PR #405 (this
