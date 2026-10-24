@@ -18708,3 +18708,30 @@ cutting gates to make a budget.
   does not print.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-24 — The charter tells every run to build the rehearsal ladder, and the ladder shipped a month ago (engineer seat, message run)
+- Trigger: the ship check in prompts/engineer-agent.md, run today as written.
+  It says of docs/agents/press-rehearsal.md that "it does not exist as code
+  yet, and until it does the ladder has two working links and a paragraph",
+  sizes it as "one Modal function, one scratch table, one more `&&` in the
+  deploy command", and instructs the run to either take it or write a
+  declination. All three parts exist. `rehearse()` is at
+  pipeline/weekly.py:1821, `press_rehearsals` is in db/schema.sql at line 201,
+  the one-line chain with the extra `&&` is in that module's own docstring,
+  and tests/test_press_rehearsal.py holds thirteen tests. It landed in PR #94
+  on 2026-09-24 and reached the corpus crons in PR #118 on 2026-09-26.
+- What: delete the paragraph's claim and keep its instruction. The clause is
+  doing real work, because it is the thing that tells a seat the third gate
+  exists and must not be skipped for a provider change, and that half is
+  correct and enforced. Only the "does not exist yet" sentence and the sizing
+  are wrong, and they are the half that costs a run: today's run spent four
+  tool calls proving the ladder was already there, and the clause's own
+  closing instruction is that a run which declines it must write down why, so
+  every future run either rebuilds something that exists or files a
+  declination against a finished feature.
+- First step: the owner's, because charters are owner-merged and this seat is
+  forbidden from including a charter edit in its daily pull request. The edit
+  is two sentences. The reason it is in the ledger rather than in the diff is
+  the boundary itself.
+- Cost: $0.
+- Status: proposed
