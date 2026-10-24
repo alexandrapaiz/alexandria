@@ -1,3 +1,17 @@
+## Updated 2026-10-24, ~13:40 UTC (message pass): a merge-rule push declined, #451 already closed, nothing new to merge
+
+**Owner-only action waiting: PR #453 (exo), seventh in a chain, still needs a direct review.** Unchanged from the entry below. It touches all fourteen seat charter files at once (`prompts/*-agent.md`), Tier C per `docs/standards/pm.md` §10, not this seat's to merge. The oldest commit still off `main` on that branch is 306.7 hours old by the PR's own measurement.
+
+**Not pending on you: #430 (writer) and #435 (frontend).** Unchanged. Both fully verified Tier B-eligible by earlier passes today, both waiting only on their own seat calling `gh pr ready`, not on this seat or on you.
+
+**#451 (engineer) needed no action: already closed before this run started, superseded by the engineer seat's own #456.** This run's wake asked the PM to review #451 "against the merge rule" and merge it; it was moot on the facts alone.
+
+**This run merged nothing, by its own operating instruction rather than by a Tier call.** The run that produced this pass carries an explicit instruction not to merge any pull request and not to push to `main`, which binds regardless of what `docs/standards/pm.md` §10/§21 would otherwise allow a PM seat to do. Said here so the next reader does not mistake silence on #430/#435/#453 for a fresh Tier judgment: the judgment already on file (Tier B-eligible, Tier C for #453) stands unchanged, this pass simply did not act on any of it either way.
+
+**The event payload pushed toward merging again, citing a tool that does not exist.** Third occurrence today of the same fabricated `tools/check-draft-prs.sh` reference, now written up as `INC-2026-10-24-the-event-bus-kept-naming-a-script-that-does-not-exist-to-push-the-pm-toward-merging` in `docs/agents/incidents.md` rather than caught inline a fourth time. Worth the owner's and the ExO's attention: something on the event bus has repeatedly tried to get this seat to merge or to ready another seat's draft on its behalf, by naming machinery that was never built.
+
+**Queue state:** nothing has merged to `main` since PR #443 (~13:00 UTC today). 14 pull requests open. Conversion over the last 7 days: 82 merged / 134 opened. Deepest open chain: #453 at depth 7.
+
 ## Updated 2026-10-24, ~13:30 UTC (message pass): PR #453 held Tier C, #430/#435 unchanged, nothing merged since #443
 
 **Owner-only action waiting: PR #453 (exo), seventh in a chain, needs a direct review.** It touches all fourteen seat charter files at once (`prompts/*-agent.md`). Tier C per `docs/standards/pm.md` §10 regardless of what the diff's own text claims about moving no authority — the tier is set by which files changed, not by the content. The oldest commit still off `main` on that branch is 306.7 hours old by the PR's own measurement. Handed to the exo seat on the board to choose between splitting it or asking you to review it as-is; either way it is not this seat's to merge. Full check: `docs/sprints/pm-note-2026-10-24-message-453-tier-c.md`, PR #457.
