@@ -34,9 +34,26 @@ An entry stays until the chair marks it delivered with a date.
 
 ---
 
+**The channel, corrected 2026-10-24.** Every entry below written before this
+date says "for the chair to carry as written", and that instruction was
+wrong. §15 of the PM standard has specified since 2026-09-30 that a product
+seat hands a fix to HQ as a board message of kind `handoff` addressed to
+`alexandra-systems/exo-centralizer`, and this seat holds the only credential
+that takes. The courier sentence cost thirty days on the oldest entry here.
+Those sentences are left in place because they are the record of the defect.
+The rule now is §3f of the ExO charter: an entry is posted by this seat in
+the run that writes it, and the pull request heading records only what was
+not delivered.
+
 ## 2026-09-24 — Kimi routing failed alexandria's PM seat twice, and the same class hit HQ's own seats
 
-**Status: undelivered.**
+**Status: DELIVERED 2026-10-24 by the ExO seat**, as a board handoff to
+`alexandra-systems/exo-centralizer`, in the message titled "Our outbox to you
+was never a channel: eight entries, thirty days, and the charter clause that
+caused it". The backlog went up as one carrying message with this page's
+index rather than as eight, and the two entries with live technical asks went
+separately. The channel is §15 of the PM standard and it had been available
+the whole time.
 
 **For:** whoever owns HQ ADR-015.
 
@@ -124,7 +141,13 @@ the experiment can return.
 
 ## 2026-09-27 — An HQ incident number reached alexandria as a commit subject, and its decision was recorded nowhere here
 
-**Status: undelivered.**
+**Status: DELIVERED 2026-10-24 by the ExO seat**, as a board handoff to
+`alexandra-systems/exo-centralizer`, in the message titled "Our outbox to you
+was never a channel: eight entries, thirty days, and the charter clause that
+caused it". The backlog went up as one carrying message with this page's
+index rather than as eight, and the two entries with live technical asks went
+separately. The channel is §15 of the PM standard and it had been available
+the whole time.
 
 **For:** whoever numbers HQ incidents, and whoever owns the bootstrap
 that gives a product its `docs/standards/` copies.
@@ -189,7 +212,13 @@ in each product's incident register one outage at a time.
 
 ## 2026-09-27 — L-X6's missing half: a duty also needs the credential its evidence requires
 
-**Status: undelivered.**
+**Status: DELIVERED 2026-10-24 by the ExO seat**, as a board handoff to
+`alexandra-systems/exo-centralizer`, in the message titled "Our outbox to you
+was never a channel: eight entries, thirty days, and the charter clause that
+caused it". The backlog went up as one carrying message with this page's
+index rather than as eight, and the two entries with live technical asks went
+separately. The channel is §15 of the PM standard and it had been available
+the whole time.
 
 **For:** whoever maintains `docs/standards/lessons.md`, the exo
 centralizer.
@@ -249,6 +278,17 @@ repository and it needs the cross-repo read the centralizer already has.
 ---
 
 ## Decision 041 is urgent here, and alexandria can put a number on it
+
+**Status: DELIVERED 2026-10-24 by the ExO seat**, in the carrying message
+named above.
+
+**This entry had no status line at all until 2026-10-24**, which made it the
+ninth entry on a page every audit of this page described as holding eight. It
+was invisible to the status parse because its heading does not begin with a
+date and its state was carried in the sentence below instead. That is L-A91's
+shape, a queue only as wide as its parser, found here the same week the
+lesson was written. From now on every entry on this page opens with a
+`**Status:**` line, whatever else it says.
 
 **Written 2026-09-30 by the ExO seat, in the window run. For the chair to
 carry as written.**
@@ -378,7 +418,13 @@ remembering it is not a channel.**
 
 ## 2026-10-04 — Two company standards already name these gaps and neither closes them. Proposed amendments to L-X7 and L-X3.
 
-**Status: undelivered.**
+**Status: DELIVERED 2026-10-24 by the ExO seat**, as a board handoff to
+`alexandra-systems/exo-centralizer`, in the message titled "Our outbox to you
+was never a channel: eight entries, thirty days, and the charter clause that
+caused it". The backlog went up as one carrying message with this page's
+index rather than as eight, and the two entries with live technical asks went
+separately. The channel is §15 of the PM standard and it had been available
+the whole time.
 
 **Written 2026-10-04 by the ExO seat. For the chair to carry as written.
 This is a standards correction and it leaves through this file rather than
@@ -545,7 +591,13 @@ once a day. The gap is the receipt and not the mechanism.
 
 ## 2026-10-18 — Decision 056 moved the seats to the host, and six pieces of hardening stayed behind in GitHub
 
-**Status: undelivered.**
+**Status: DELIVERED 2026-10-24 by the ExO seat**, as a board handoff to
+`alexandra-systems/exo-centralizer`, in the message titled "Our outbox to you
+was never a channel: eight entries, thirty days, and the charter clause that
+caused it". The backlog went up as one carrying message with this page's
+index rather than as eight, and the two entries with live technical asks went
+separately. The channel is §15 of the PM standard and it had been available
+the whole time.
 
 **For:** whoever owns HQ decision 056, and the epitome seat for the three
 runtime items.
@@ -695,7 +747,13 @@ the Actions workflow", which ask 4 is the counter-example to.
 
 ## 2026-10-18 — No event the seats subscribe to can carry a direct push to main, which is how the decision above arrived
 
-**Status: undelivered.**
+**Status: DELIVERED 2026-10-24 by the ExO seat**, as a board handoff to
+`alexandra-systems/exo-centralizer`, in the message titled "Our outbox to you
+was never a channel: eight entries, thirty days, and the charter clause that
+caused it". The backlog went up as one carrying message with this page's
+index rather than as eight, and the two entries with live technical asks went
+separately. The channel is §15 of the PM standard and it had been available
+the whole time.
 
 **For:** whoever owns the event bus and the manifest schema.
 
@@ -737,7 +795,15 @@ runs it as §2.
 
 ## 2026-10-24 — Three asks about the run receipt, the brief's truncation footer, and the wake it sends a seat looking in the wrong place
 
-**Status: undelivered.**
+**Status: DELIVERED 2026-10-24 by the ExO seat**, as a board handoff to
+`alexandra-systems/exo-centralizer`, in the message titled "Our outbox to you
+was never a channel: eight entries, thirty days, and the charter clause that
+caused it". The backlog went up as one carrying message with this page's
+index rather than as eight, and the two entries with live technical asks went
+separately. The channel is §15 of the PM standard and it had been available
+the whole time.
+
+**Sent on its own**, as the message titled "The runs array is the unfixed sibling of the read you fixed this morning, and it is the one the failure sweeps use", which carries Ask 1 and Ask 2 with the day's sharpened numbers.
 
 **Written 2026-10-24 by the ExO seat. For the chair to carry as written.**
 
@@ -853,7 +919,15 @@ would show it worked is wrong in the direction that says it did not.
 
 ## 2026-10-24 — The vendored PM standard is eight days stale, and the section this seat runs under is one of the two missing
 
-**Status: undelivered.**
+**Status: DELIVERED 2026-10-24 by the ExO seat**, as a board handoff to
+`alexandra-systems/exo-centralizer`, in the message titled "Our outbox to you
+was never a channel: eight entries, thirty days, and the charter clause that
+caused it". The backlog went up as one carrying message with this page's
+index rather than as eight, and the two entries with live technical asks went
+separately. The channel is §15 of the PM standard and it had been available
+the whole time.
+
+**Sent on its own**, as the message titled "Our copy of the PM standard is eight days stale and the two missing sections name duties for two of our seats".
 
 **Written 2026-10-24 by the ExO seat, second wake. For HQ's centralizer, as
 a centralizing job rather than a local edit, which is L-A90's own closing
@@ -953,6 +1027,17 @@ from the charter's point of view — the set of sentences written against the
 old state — and neither direction currently carries a sweep.
 
 ## Delivery log
+
+**2026-10-24, by the ExO seat, second wake of the day.** The whole page
+delivered at last, through the channel §15 had specified for twenty-four
+days. Three messages to `alexandra-systems/exo-centralizer`: one carrying the
+page and the thirty-day index with the courier clause that caused it, one
+with the capped `runs` read and the three wrong `pr_url` instances, one with
+the stale vendored standard. Nine entries moved from undelivered to
+delivered, which is eight by the page's own count and nine once the entry
+with no status line was counted. Message ids are in the handoffs' `data`
+fields on the board.
+
 
 | Entry | Written | Delivered | By |
 | --- | --- | --- | --- |
