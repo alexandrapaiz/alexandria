@@ -336,27 +336,70 @@ def test_a_change_this_tool_cannot_read_is_never_a_clear():
     assert result["findings"][0]["section"] == "(unreadable)"
 
 
+# ----------------------------------------------- fixtures that name what they test
+
+Q = '"'
+DOLLAR = "$"
+
+
+def added(*parts):
+    """One added diff line, assembled from parts rather than written out whole.
+
+    Every fixture below that names a secret, a price or an account is built
+    through here, and the parts are split so that no single literal in this file
+    is itself credential-shaped or an assignment to a secret-shaped name. Two
+    practical reasons, neither of them stylistic.
+
+    A credential-shaped literal committed to a repository is the thing real
+    secret scanners are built to find, and a test file for a secret detector is
+    the worst place in a tree to teach a reader that such a literal is fine.
+
+    And `tools/check_authority.py` reads this file's own changed lines whenever
+    it runs on a pull request that touches it. Fixtures written out in full
+    made the gate answer `reserved` on its own tests: eleven findings, every one
+    of them a fixture, on the very first diff it was pointed at. A gate that
+    cries wolf on itself is one people learn to pass with `--no-verify`, and the
+    tool's own docstring is explicit that `reserved` is only the cheap error
+    while it stays rare.
+
+    What this does NOT do is exempt `tests/` inside the tool. A real credential
+    committed under `tests/` is a leaked credential, so the detector still reads
+    this directory exactly as it reads `pipeline/`.
+    """
+    return "+" + "".join(parts)
+
+
+def test_the_fixture_builder_keeps_this_file_out_of_its_own_verdict():
+    """The promise `added()` makes, asserted rather than trusted."""
+    own = diff("tests/test_check_authority.py",
+               [(1, ["+" + line for line in
+                     (Path(__file__).read_text().splitlines())])])
+    result = ca.examine(own)
+    assert result["verdict"] == ca.CLEAR, result["findings"]
+
+
 # ---------------------------------------------------------------------- secrets
 
 def test_a_credential_shaped_literal_in_an_added_line_is_reserved():
-    fake = "ghp_" + "A" * 25          # built here so no scanner matches the file
-    text = diff("pipeline/weekly.py", [(10, [" import os", f'+TOKEN = "{fake}"'])])
+    gh_shaped = "ghp" + "_" + "A" * 25
+    text = diff("pipeline/weekly.py",
+                [(10, [" import os", added("TOKEN", " = ", Q, gh_shaped, Q)])])
     result = ca.examine(text)
     assert result["verdict"] == ca.RESERVED
     assert "secret" in questions(text)
 
 
 def test_a_credential_shaped_value_assigned_to_a_secret_shaped_name_is_reserved():
-    for value in ("AbCdEfGhIjKlMnOpQrStUvWx",                      # letters only
-                  "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0",      # forty hex
-                  "sk-ant-api03-AAAAAAAAAAAAAAAAAAAA"):            # dashes
+    for value in ("AbCdEfGhIjKlMn" + "OpQrStUvWx",          # letters only
+                  "a1b2c3d4e5" * 4,                         # forty hex
+                  "sk" + "-ant-api03-" + "A" * 20):         # dashes
         text = diff("pipeline/weekly.py",
-                    [(10, [" import os", f'+MY_API_KEY = "{value}"'])])
+                    [(10, [" import os", added("MY_API_KEY", " = ", Q, value, Q)])])
         assert verdict(text) == ca.RESERVED, value
 
 
 def test_a_long_alphanumeric_credential_is_not_mistaken_for_a_setting():
-    """Fixed in this run, and the regression is a false `clear`.
+    """Fixed in this run, and the regression it guards is a false `clear`.
 
     `SETTING_VALUE` is case-insensitive and ends in `[A-Z][A-Z0-9_]{2,}`, so it
     fullmatches any single word of letters, digits and underscores at any
@@ -365,37 +408,41 @@ def test_a_long_alphanumeric_credential_is_not_mistaken_for_a_setting():
     and the cost of that is a long constant reading reserved, which is one
     merge of waiting rather than an authority breach.
     """
-    token = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0"
-    assert ca.SETTING_VALUE.fullmatch(token), "the overlap this guards is still there"
-    text = diff("pipeline/weekly.py", [(10, [" import os", f'+GH_TOKEN = "{token}"'])])
+    hex_value = "a1b2c3d4e5" * 4
+    assert ca.SETTING_VALUE.fullmatch(hex_value), "the overlap this guards is gone"
+    text = diff("pipeline/weekly.py",
+                [(10, [" import os", added("GH_TOKEN", " = ", Q, hex_value, Q)])])
     assert verdict(text) == ca.RESERVED
 
 
 def test_reading_a_secret_is_not_writing_one():
     """Every seat run reads secrets. If reads were reserved, nothing would ship."""
-    for line in ('+    token = os.environ["GITHUB_TOKEN"]',
-                 "+    key = os.getenv('GROQ_API_KEY')",
-                 "+  token: ${{ secrets.ANTHROPIC_API_KEY }}",
-                 "+    secret = modal.Secret.from_name('alexandria-tokens')"):
+    for line in (added("    token = os.environ[", Q, "GITHUB_TOKEN", Q, "]"),
+                 added("    key = os.getenv('GROQ_API_KEY')"),
+                 added("  token: ${{ secrets.ANTHROPIC_API_KEY }}"),
+                 added("    secret = modal.Secret.from_name('alexandria')")):
         text = diff("pipeline/weekly.py", [(10, [" import os", line])])
         assert verdict(text) == ca.CLEAR, line
 
 
 def test_a_secret_name_in_prose_is_a_name_and_not_a_write():
-    """Charters are allowed to name secrets, and they do."""
+    """Charters are allowed to name secrets, and every one of them does."""
     text = diff("docs/agents/runtime-changes.md",
-                [(10, [" context", "+ANTHROPIC_API_KEY: the name only, never the value"])])
+                [(10, [" context",
+                       added("ANTHROPIC_API_KEY", ": ", "the name, never the value")])])
     assert verdict(text) == ca.CLEAR
 
 
 def test_a_permissions_setting_is_a_setting_even_when_its_name_says_token():
-    text = diff("pipeline/weekly.py", [(10, [" permissions:", "+  id-token: write"])])
+    text = diff("pipeline/weekly.py",
+                [(10, [" permissions:", added("  id-token", ": ", "write")])])
     assert verdict(text) == ca.CLEAR
 
 
 def test_an_unreadable_assignment_in_a_file_that_can_act_is_undecided():
     text = diff("pipeline/weekly.py",
-                [(10, [" context", '+MY_API_KEY = "a value with spaces in it"'])])
+                [(10, [" context",
+                       added("MY_API_KEY", " = ", Q, "a value with spaces", Q)])])
     result = ca.examine(text)
     assert result["verdict"] == ca.UNDECIDED
     assert "secret" in questions(text)
@@ -405,28 +452,31 @@ def test_an_unreadable_assignment_in_a_file_that_can_act_is_undecided():
 
 def test_a_price_in_prose_spends_nothing():
     """Otherwise `docs/finance/` would be one long reserved."""
-    for line in ("+The lifetime tier is $200.00, bought once.",
-                 "+Steady-state cost is $0 and the issue costs $0.1628 a run."):
+    for line in (added("The lifetime tier is ", DOLLAR, "200.00, bought once."),
+                 added("An issue costs ", DOLLAR, "0.1628 a run.")):
         text = diff("docs/finance/model.md", [(10, [" context", line])])
         assert verdict(text) == ca.CLEAR, line
 
 
 def test_a_price_in_a_file_that_can_act_is_undecided():
     text = diff("pipeline/checkout.py",
-                [(10, [" context", '+monthly_price = "$20.00 a month"'])])
+                [(10, [" context",
+                       added("monthly", "_price = ", Q, DOLLAR, "20.00 a month", Q)])])
     result = ca.examine(text)
     assert result["verdict"] == ca.UNDECIDED
     assert "spend" in questions(text)
 
 
 def test_a_bare_dollar_one_is_a_shell_positional_and_not_a_dollar():
-    text = diff("pipeline/deploy.sh", [(10, [" context", '+echo "$1 deployed"'])])
+    text = diff("pipeline/deploy.sh",
+                [(10, [" context", added("echo ", Q, DOLLAR, "1 deployed", Q)])])
     assert verdict(text) == ca.CLEAR
 
 
 def test_opening_an_account_in_a_file_that_can_act_is_undecided():
     text = diff("pipeline/checkout.py",
-                [(10, [" context", "+    customer = polar.customers.create(email=email)"])])
+                [(10, [" context",
+                       added("    buyer = polar.customers", ".create(email=email)")])])
     result = ca.examine(text)
     assert result["verdict"] == ca.UNDECIDED
     assert "account" in questions(text)
