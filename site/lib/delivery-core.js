@@ -28,7 +28,7 @@
 //    issue itself and claim text is the paid product (lib/graph-live.js says
 //    so in its own words); neither has a field here and neither is queried.
 
-export const RECEIPT_VERSION = 5;
+export const RECEIPT_VERSION = 6;
 
 // Version 2 adds `queues`, the depth of each stage's waiting list, and removes
 // nothing. The bump is here because a reader has to be able to tell a site that
@@ -117,8 +117,44 @@ function stage(row) {
 // the charge, and not one of them appears here: rule 2 above is why, and this
 // is the first block on this receipt where breaking it would publish a
 // customer rather than a number.
+// Version 6 adds `unreadable` and removes nothing. It exists because version 5
+// went live and answered `payments: null`, which is the right answer and not a
+// usable one. Four blocks on this receipt fail soft, so each of them has two
+// ways to be null: the table is not there yet, or the query broke. Those two
+// send a reader to different places, and until now neither reader could tell
+// them apart, so `tools/delivery_health.py` has reported the till as `unknown`
+// in every standup since the block shipped and nobody could say what would
+// close it. The answer was a hand step the whole time, `modal run
+// pipeline/db_setup.py::apply_schema`, and the receipt knew and did not say.
+//
+// A closed vocabulary and never an error message. `UNREADABLE_REASONS` is the
+// whole of it, three strings this codebase chose, so a Neon error carrying the
+// host and the role it failed to authenticate cannot reach a public response
+// through this field. That is rule 2 above applied to a diagnosis rather than
+// to a row: the classification is metadata, the message it came from is not.
+//
+// Absent rather than empty when everything read, so the ordinary receipt does
+// not grow a block of nulls and a reader can treat the field's presence as the
+// finding it is.
+export const UNREADABLE_REASONS = Object.freeze([
+  // Postgres 42P01. The table or view is not in this database, which on this
+  // project means `apply_schema` has not been run since the migration that
+  // added it landed. One command closes it and the guard names the command.
+  "no such table",
+  // Postgres 42703. A column the query asks for is absent, so the schema is
+  // behind in a narrower way than a missing table and the same hand fixes it.
+  "no such column",
+  // Everything else, which is the state where the first step is to read a log
+  // rather than to run a migration.
+  "query failed",
+]);
+
+function reason(value) {
+  return UNREADABLE_REASONS.includes(value) ? value : "query failed";
+}
+
 export function buildReceipt({ digest, papers, distilled, claims, siblings,
-                               queues, deploy, payments, observedAt }) {
+                               queues, deploy, payments, unreadable, observedAt }) {
   return {
     receipt: "alexandria-delivery",
     version: RECEIPT_VERSION,
@@ -230,5 +266,29 @@ export function buildReceipt({ digest, papers, distilled, claims, siblings,
       first_seen_at: iso(row.first_seen_at),
       notified_at: iso(row.notified_at),
     })),
+    // Why any of the four blocks above is null, for the ones that are. Keyed by
+    // the block's own name on this receipt, so a reader that finds
+    // `payments: null` looks up `unreadable.payments` and gets the reason
+    // rather than a guess.
+    //
+    // Only blocks that failed appear. An absent key means the block read, which
+    // for `payments` means zero open exceptions is the good news it looks like.
+    ...unreadableBlock(unreadable),
   };
+}
+
+// The reasons, filtered to the blocks this receipt actually publishes and to
+// the vocabulary above, or nothing at all.
+//
+// Built by name like every other field here, so a caller that passes a whole
+// error object, or a key for a block that does not exist, publishes neither.
+function unreadableBlock(unreadable) {
+  if (unreadable === null || unreadable === undefined) return {};
+  const named = {};
+  for (const block of ["siblings", "queues", "payments", "deploy"]) {
+    const given = unreadable[block];
+    if (given === null || given === undefined) continue;
+    named[block] = reason(given);
+  }
+  return Object.keys(named).length === 0 ? {} : { unreadable: named };
 }
