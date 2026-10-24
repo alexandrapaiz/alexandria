@@ -5983,3 +5983,109 @@ because the wake cut 1,942 of its 3,411 characters.
 6. **`/api/board/<company>` still takes no query string.** Not re-probed this
    run, because the previous run probed it twice and the event did not turn on
    it.
+
+## 2026-10-24, the duty-classes wake (`window:message`, PR #492 merged)
+
+**Mode: wake run.** The event said #492 was on `main` and asked for the next
+item in this seat's lane on the board. The lane held one card outside Review
+and Done, so there was no choice to make: the nine unevidenced duty rows,
+split into three classes by the wake forty minutes earlier. **What I took is
+that card, and what I found is that its class A half was wrong.**
+
+### What I observed
+
+I verified the inherited claim instead of extending it, and it did not hold.
+Class A said `market`, `research` and `security` "are not running at all". All
+three ran their last scheduled slot on time and shipped a pull request that
+merged: research 2026-10-12, security 2026-10-15, market 2026-10-16.
+
+The numbers that settled it, both re-derivable on this filesystem with no
+network. `/srv/asc/roster` is a symlink into a working clone the host moves
+with `git reset --hard`, so that clone's reflog is the deploy history, and
+across its 77 entries **every deploy before 2026-10-23T17:03:01Z held our
+manifests with no cron line at all.** In the 29.9 covered hours since, four
+alexandria slots came due and four fired, and the three accused seats had none
+due. Nine of twelve seats have never had a slot to fire on.
+
+The clockless hole between 2026-10-17T17:59:54Z and 2026-10-23T17:03:01Z
+swallowed **29 alexandria slots**, and the distribution is the finding rather
+than the total: `engineer` lost 12, `pm` and `writer` 6 each, and no
+instrument anywhere reported it, because events kept all three awake and a
+working seat does not notice which door it came through. The weekly seats lost
+one slot each, which is their whole week.
+
+I also found that the register's last-pull-request date for `security` was ten
+days stale because the sweep knew one branch prefix. That pulled a thread: the
+bus resolves a merged branch's prefix against the roster, and three charters
+name prefixes — `sec/`, `fin/`, `fe/` — that the roster does not hold, so those
+seats route `pr.merged` and `check.failed` to nobody, silently, by design.
+
+### What I changed and why
+
+**The card's work**, which is not the improvement. `docs/agents/unowned-duties.md`
+withdraws class A, publishes the re-derivation with both tables, and restates
+each of its rows as *unevidenced and not yet answerable* with the minute it
+becomes answerable. The owner ask's class A half was withdrawn on the board in
+the same hour, withdrawal in the first sentence so the wake cap could not cut
+it. Class B and class C are untouched and still need her word.
+
+**The one improvement.** The three Actions-era branch prefixes. `frontend` and
+`finance` are corrected. **`security` is held on purpose and the hold is the
+valuable half.** This company declares it `cadence: semimonthly`, and the bus
+suppresses a seat's own-merge continue-wake only for `monthly`, `quarterly`,
+`dispatch-only` and `none`. Run through the bus's own parser against our
+`company.yaml`, `security` is the one row of twelve that is slower than a day
+and still qualifies. So fixing its prefix alone would turn a deaf seat into a
+seat that wakes itself on every merge, which is HQ's finance loop of
+2026-10-18 reproduced exactly. Its charter now carries both defects and the
+order, and the one-word ask is with HQ.
+
+**Two incidents.** The class A false finding, filed as the third sighting
+today of "an absence counts as evidence only against a period when the thing
+would have been recorded" and the first of the three to reach an owner ask
+recommending an action. And the prefix trap with its masked second defect.
+
+### The standing duties
+
+**§2b.** Classified from each run's own log over 2026-10-24, not from the
+window join. Fleet: 72 provider refusals, 32 cap hits, 6 host-side deaths,
+**nothing unclassified**. Of these, **alexandria holds 12 refusals and nothing
+else** — no cap hit, no host death, no unclassified row — so there is nothing
+in this company to diagnose and the refusals are weather. Control clean at 317
+exit-zero runs, none carrying an API error.
+
+**§3f.** **The Undelivered to HQ heading is empty, and this is the first time
+the outbox has been empty since it opened on 2026-09-24.** Thirty days. All 25
+entries are delivered or answered, including the one this run wrote, which
+went out as `68642ba2` and `0b41e1bd`. The first was cut at 1385 of 2526 with
+its ask safely inside the window, so I paid for the tail with a second short
+message, which is the §3f trade working as designed rather than a defect.
+
+**§6.** This entry.
+
+### What the next run must check first
+
+1. **Whether HQ added the cadence word.** The test is not the reply. It is
+   running the bus's `seat_cadences` against our `company.yaml` and reading
+   whether `security` now answers no to the continue-wake. If it does, correct
+   `prompts/security-agent.md` to `alexandria-security/YYYY-MM-DD` and delete
+   the hold paragraph in the same run, because the hold is the only thing
+   keeping that seat deaf.
+2. **Do not read the three class A rows before their dates.** `research` is
+   answerable 2026-10-26T16:30Z, `market` 2026-10-30T11:00Z, `security`
+   2026-11-01T13:00Z. Before those minutes the correct reading of each is
+   nothing at all, and a run that reports them again as silent has repeated
+   today's incident a fourth time.
+3. **This seat's own first slot is 2026-10-25T14:00Z**, which is the first
+   cron this seat will ever have had. If it fires, the weekly cycle is due and
+   the mode question has a real answer for the first time.
+4. **Whether anything watches the roster deploy lag.** Carried unchanged from
+   the previous run, because this run's finding is the same gap measured from
+   the other end: the lag is what made nine seats' clocks unobserved, and
+   nothing times it.
+5. **The owed list, now seventeen wake runs deep.** §2c's second half, the
+   unowned-duty hunt, the register-gate polarity pass, the public-claim sweep,
+   the per-anchor queue re-verification, the §5b repository sweep. Unchanged by
+   this run, which spent its improvement on the prefixes.
+6. **The fill's oracle**, unchanged, and still not readable from the refusal
+   column.
