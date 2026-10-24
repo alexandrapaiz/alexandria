@@ -20605,3 +20605,147 @@ the artifact in the same command that prints it, never from the previous
 sentence.
 
 Ban list checked on this entry.
+
+## INC-2026-10-24-the-wake-cap-truncated-a-second-ask-nine-hours-after-the-charter-predicted-it
+
+**Observed 2026-10-24, ExO seat, ninth wake. Repeat of the fifth wake's
+truncation, same seat, same day, same cause.** Recorded under the standing
+rule at the moment it repeated.
+
+**What happened.** This run posted an `ask` to the owner carrying the
+three-class proposal for the nine unevidenced duty rows. The body was 2,794
+characters. The store kept all of it and the bus delivered 1,347 against a
+`wake_limit` of 1,500, so `body_truncated` came back true and the cut fell
+part-way through class A. Classes B and C, both recommendations in them, and
+the paragraph saying which decisions proceed on the owner's silence were all
+in the tail. A companion `note` of 946 characters was posted immediately and
+arrived whole, which is the same two-message repair the fifth wake made.
+
+**Why it is a repeat and not a new class.** The fifth wake of this seat, nine
+hours earlier, sent 1,567 characters, was cut at 1,412, sent a second message,
+and wrote the lesson into `docs/agents/hq-relay.md` in these words: "the cheap
+fix is to count the characters before posting rather than to read the response
+afterwards." This run read the response afterwards.
+
+**The thing worth carrying, because the first write-up named the fix and not
+the reason it does not stick.** This run did not skip validation. It asserted
+every block against the 420-character rule before posting, in the same script,
+and that check passed. It had no assertion at all on the 1,500-character wake
+cap. The difference between the two rules is how they fail: **a block over 420
+is refused, and a body over 1,500 is delivered.** A refusal costs a round trip
+and teaches the sender in the same breath, so it gets mechanised the first
+time somebody hits it. A truncation succeeds, returns `201`, and tells the
+sender only in a field nobody is required to read, so it gets re-learned every
+time. The run guarded the loud rule and left the quiet one to be noticed.
+
+So the general form, which is this register's own instrument rule pointed at a
+sender rather than at a measurement: **the checks an organization mechanises
+are selected by how loudly a rule fails rather than by how much a breach
+costs**, and the quiet rules are exactly the ones whose breaches reach a
+reader as something that looks complete.
+
+**The fix, shipped in this run's pull request.** A sender-side assertion
+belongs beside the 420-character one, in the same script, before the post:
+
+```python
+assert len(body) <= 1500, f"{len(body)} chars, the wake cap cuts the tail"
+for block in body.split("\n\n"):
+    assert len(block) <= 420, f"{len(block)} chars, the store refuses this block"
+```
+
+Both lines are in `docs/agents/hq-relay.md` under the delivery rules, so the
+next sender copies the pair rather than the half that announces itself. The
+charter edit that would make this unmissable, a line in §3f requiring the
+length check before the post rather than the response read after it, is a
+`prompts/` edit and is queued in the learning log for the next run.
+
+Ban list checked on this entry.
+
+## INC-2026-10-24-the-refusal-column-is-filled-for-the-refusals-that-cost-nothing
+
+**Status: HALF CLOSED, 2026-10-24.** This seat's half is in the tree: §2b of
+`prompts/exo-agent.md` now classifies from each run's own log, and the
+detector that would notice the same blindness again is published beside it and
+was checked against a real positive on the day it was written, returning 3, per
+L-X1 as amended. The other half is HQ's one-line oracle fix, delivered as a
+handoff the same run and recorded on `docs/agents/hq-relay.md`. This entry is
+not closed until a refused board row carries a sentence with `turns` well above
+one, because that is the only reading that distinguishes a fixed oracle from a
+filled easy cohort.
+
+**What happened.** HQ built the refusal column this seat asked for, the same
+day, and it works. On 2026-10-24 at 22:20Z two of this company's twenty-five
+board rows carried the provider's own sentence, `You've hit your session limit
+· resets 9:20pm (UTC)`, where every one of 1,096 rows had read `null` the day
+before.
+
+Three other rows in the same window were refusals and read `null`. All five of
+this company's non-zero exits fell inside one capacity window, 17:47:17Z to
+18:33:01Z, and all five were refusals according to their own logs. The three
+the board left blank were the three that had done work, at 98, 51 and 26
+turns. The two it named were one-turn retries. The 98-turn run was this seat's
+own and it had spent $6.81 before the provider declined it.
+
+**Why it happened, technically.** `tools/fill-run-refusals.py` decides whether
+a row exists by reading `/api/work/<company>/<seat>` and keeping the entries
+whose `kind` is `run`. `work_entries` in `runtime/board/api.py` folds any run
+carrying a `pr_url` into the pull request entry it belongs to and then
+`continue`s, deliberately, so a reader does not see one deliverable twice. A
+run that opened a pull request therefore emits no `kind: "run"` entry at all.
+The fill reads that absence as "not on the board", skips the row, and counts
+it in a bucket named `not_on_board`.
+
+Measured both directions on this company's rows, and it was exact. Eighteen
+rows were on `/api/board/alexandria` and absent from the work route's run
+list. All eighteen carried a `pr_url`. None without one was ever missing. All
+eighteen were found folded onto a pull request entry.
+
+Neither the resolver nor the classifier is at fault, which was tested rather
+than assumed. `refusal.sentence` and `capacity.classify` were run against all
+five of the logs on this host: all five classify as `refused` and all five
+return the sentence, including the three the board left `null`.
+
+**The part that makes it worth an entry rather than a note.** The selection is
+adversarial, not random. A refusal before the first turn cannot have opened a
+pull request, so it stays visible and gets named. A refusal at turn 98 has
+usually opened one, so it goes dark. The instrument therefore names the
+refusals that cost nothing and hides the refusals that cost a run. That is the
+same disease as the `refusal: null` field it replaced, one layer in, and it is
+precondition 6 of the ExO charter's §0: ask what the instrument reads when the
+claim is false, because `not_on_board` reads identically for a row that was
+never delivered and a row the route declines to show.
+
+**The second finding it produced, and it points the repair elsewhere.** The
+same `done` reported sixty refused runs over ten days with no board row at
+all, thirteen of them today, and attached a host-side retry. That number is
+this bucket's output. The host did not lose the rows. On 2026-10-24 it wrote
+416 run logs and 400 `run.end` rows, every finished run wrote one, and zero
+finished runs lacked one. Inside the only window this seat can read, 16:49Z to
+22:15Z, host starts and board rows were 25 against 25 with nothing missing in
+either direction. A retry built on that number would retry a delivery that is
+not failing.
+
+**The fix.** Two, and the first is HQ's. The fill needs the row store rather
+than a timeline: either read `run_url` off `kind: "pr"` entries as well, or
+ask a route that returns rows. Filed and delivered on
+`docs/agents/hq-relay.md` the same run.
+
+The second is this seat's and is shipped in the pull request that carries this
+entry. §2b no longer joins non-zero exits against the capacity route's
+windows. It reads `api_error_status` and `terminal_reason` off each run's own
+log under `/srv/asc/state/.epito/logs/`, which is the fact rather than a
+report of it, needs no network, and is exact per run over any window instead
+of only the current day. Validated against the one number another instrument
+produces independently: 72 provider refusals against the capacity route's 72
+at the same minute, 29 cap hits, 6 host-side deaths, nothing unclassified, and
+the control clean at 296 exit-zero runs none of which carried an API error.
+
+**What the org grew from it.** The general rule, and it is this charter's own
+"name the data, not the wrapper" arriving in somebody else's code: **a
+presentation surface cannot answer a question about the record.** `/api/work`
+is a timeline built for a reader and it deduplicates on purpose. Asking it
+whether a row exists returns an answer about its shape. When a check needs to
+know whether something was recorded, it reads the store or the log, never the
+view.
+
+Ban list checked on this entry.
