@@ -322,6 +322,33 @@ one week without a pull request, so that is not a hypothetical here.
 Where a queued edit has grown too large to read as a diff, split the
 item. Do not switch its lane.
 
+### A third lane, added 2026-10-24: the same edit to many files, carried by a tool
+
+The two lanes above are a complete answer for one file. They are the wrong
+answer for one edit repeated across twelve, which is what arrived on
+2026-10-24: HQ's centralizer sent a command that strips the dead Langfuse
+wiring out of every `agent-*.yml` in this repository. Queued as twelve diffs
+it would be twelve copies of one hunk, each anchored separately, each able to
+rot alone, and the overlap table would gain twelve rows about one change. That
+is the "nineteen paragraphs rotting alone" defect this page already names, set
+up deliberately.
+
+| The change | The lane | What the owner does |
+|---|---|---|
+| One mechanical edit across many workflow files | name the tool, its repository and the exact command, with its `--check` output quoted at the time of queuing | run two commands: the check, then the tool |
+
+**The precondition, because this lane is only better when all three hold.**
+The tool must locate its edit **by test rather than by context line**, so
+there is no anchor to rot. It must be **idempotent**, so applying it twice is
+applying it once. And it must ship a **check mode that exits non-zero while
+any file still carries the change**, so the item's own staleness is a command
+and not a reader's judgment. A tool meeting all three cannot carry the silent
+failure the full-copy lane was refused for: there is no stored copy of the
+file, so there is nothing to revert, and the check is the proof.
+
+Where any of the three fails, the change goes back to being diffs, one per
+file, split as the rule above says.
+
 ---
 
 Applied items get deleted from this file by the next ExO run, which
@@ -2362,6 +2389,70 @@ The new anchor was checked with `grep -c -F -e` against the live file on
 that the writer's next dispatched run prints `--max-turns 350`, and if it
 prints 225 the edit did not land.
 
+
+### 2026-10-24-dead-trace-wiring: strip the Langfuse wiring out of all twelve seat workflows
+
+**Lane three** (the lane is defined above and was defined for this item).
+**Queued 2026-10-24 by the ExO seat, at HQ's centralizer's request.**
+
+**What is wrong.** Every one of the twelve `.github/workflows/agent-*.yml`
+files in this repository carries a job-level `env:` block of eleven
+OpenTelemetry variables pointing at `${{ secrets.LANGFUSE_HOST }}`, and a step
+named "Trace this run to Langfuse" that builds a Basic-auth header out of
+`LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` and writes it to `GITHUB_ENV`.
+The Langfuse stack was removed from the host on 2026-10-23 for filling the only
+disk. The endpoint refuses the connection and the credential opens nothing, so
+what remains is a dead credential echo in twelve files.
+
+**The command.** The tool is `tools/trace-seat-workflows.py` in
+`alexandrapaiz/alexandra-systems`, on `main`, with nine tests pinning it. It
+removes the tracing keys from a job `env:` block and nothing adjacent, and it
+removes the step whole rather than leaving an orphan body.
+
+```bash
+# from a hand that may write under .github/workflows/
+python3 tools/trace-seat-workflows.py --check /path/to/alexandria   # names what still carries it; exits 1 while any does
+python3 tools/trace-seat-workflows.py        /path/to/alexandria   # removes it
+python3 tools/trace-seat-workflows.py --check /path/to/alexandria   # must now exit 0
+```
+
+**The check output at the time of queuing**, 2026-10-24 17:42Z, run by this
+seat against this repository's working tree:
+
+```
+agent-engineer.yml: still carries the Langfuse env, step
+agent-exo.yml:      still carries the Langfuse env, step
+... all twelve, identically ...
+EXIT=1
+```
+
+Twelve of twelve. There is no partial state to reason about.
+
+**Why this seat did not run it.** The push would probably succeed, which is the
+finding at the top of this page. The standing instruction this run carries says
+never to touch workflows, and §15 of the project management standard gives
+`.github/workflows/` to HQ in every product repository. Both reasons are
+independent of the credential, so the credential question does not decide it.
+
+**Ordering.** This item touches all twelve `agent-*.yml` files, so it touches
+every file named in the overlap table except `checks.yml` and
+`hq-origin-notice.yml`. It is disjoint from all of them: every other item edits
+a `prompt:` block, a `claude_args` line, a concurrency block, a step body or a
+single non-tracing `env:` line, and this one deletes the tracing `env:` keys and
+the tracing step. **The one real interaction is with item 6**, which adds
+`NEON_RO_URL` to the `env:` block of `agent-engineer.yml`, `agent-pm.yml` and
+`agent-skill.yml`. Apply this item **first** in those three files: it shrinks
+the block item 6 appends to, and item 6's anchor is the block's existing
+non-tracing lines, which this item does not touch. In the other order item 6
+still applies, but the tool then has to parse a block it has not seen, and the
+tool is the artifact here rather than a diff, so give it the file it was tested
+against.
+
+**What this does not decide.** The owner's 2026-09-29 decision that she wanted
+to see what agents do stands. Only the Actions-side implementation of it is
+dead. Tracing that returns will return on the host runtime with the keys read
+from the process environment, which is the engineer's lane and a different
+tool.
 
 ## Not queued here, because it needs a key rather than a hand
 
