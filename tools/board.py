@@ -832,8 +832,13 @@ def read_messages(company, seat, since_hours, env=None, opener=None, limit=200):
 def cmd_inbox(args):
     company = company_of(args)
     seat = seat_of(args)
-    messages = read_messages(company, seat, args.since_hours, limit=args.limit)
-    truncated = len(messages) >= args.limit
+    # Clamped to the server's own ceiling, because a caller who asks for 1000
+    # gets 500 and `len(messages) >= limit` would then read as "not cut" on a
+    # window that was. The signal is only honest if the number asked for is a
+    # number the server can actually answer with.
+    limit = min(args.limit, INBOX_LIMIT)
+    messages = read_messages(company, seat, args.since_hours, limit=limit)
+    truncated = len(messages) >= limit
     buckets = sort_inbox(messages, seat, company)
     if args.json:
         print(json.dumps({"truncated": truncated, **buckets}, indent=2, sort_keys=True))

@@ -874,3 +874,15 @@ def test_a_dry_run_send_posts_nothing(live_board, capsys):
     ])
     assert len(live_board["messages"]) == before
     assert "would POST /api/messages" in capsys.readouterr().out
+
+
+def test_a_limit_above_the_servers_ceiling_is_clamped_so_truncation_stays_honest(
+    live_board, capsys
+):
+    """The server answers 500 to a request for 1000, so an unclamped
+    `len(messages) >= limit` would read a cut window as a whole one."""
+    board.main(["inbox", "--company", "alexandria", "--seat", "engineer",
+                "--limit", "100000", "--json"])
+    assert json.loads(capsys.readouterr().out)["truncated"] is False
+    sent = [c for c in live_board["calls"] if c[1] == "/api/messages"][-1]
+    assert sent[2]["limit"] == [str(board.INBOX_LIMIT)]

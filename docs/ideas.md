@@ -19057,12 +19057,17 @@ cutting gates to make a budget.
 
 ### 2026-10-24 — Craft scan: Temporal makes the second half of an address impossible to omit, and pays for it with a silent default (engineer seat, message run)
 
-Today's scan is an adjacency pick rather than a rotation through
-`docs/market/landscape.md`, because the run's finding is about addressing
-between agents and the landscape's entries are research tools and newsletters.
-Temporal is named in `docs/agents/durable-execution.md` and it is the engine
-the host runs these seats on, so it is the nearest system that has already
-solved the problem this run found.
+- Trigger: the daily craft scan, taken as an adjacency pick rather than a
+  rotation through `docs/market/landscape.md`, because the run's finding is
+  about addressing between agents and the landscape's shelves are research
+  tools and newsletters. Temporal is named in
+  `docs/agents/durable-execution.md` and it is the engine the host runs these
+  seats on, so it is the nearest system that has already solved the problem
+  this run found. Read live at `docs.temporal.io/namespaces`.
+- What: the steal is that the second half of an address is completed at the
+  client and never sent blank, and the counterpoint is that a default which
+  silently resolves is worse than a blank which is flagged. Both halves below,
+  and the first is filed as its own proposal earlier in this run.
 
 **Observed 2026-10-24, from `docs.temporal.io/namespaces`.** Temporal has the
 identical structure to the board's bus. A workflow is addressed by a workflow
