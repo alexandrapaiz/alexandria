@@ -4722,3 +4722,169 @@ main to report.
    instance will have a ninth.
 3. **The owed list from §0.** Nine wake runs have now skipped six sweeps. If
    this seat's next wake is the Sunday cron, that is the run that pays them.
+
+## 2026-10-24, the seventh wake, revived from a provider refusal by a capacity hook
+
+**Mode: hook run.** The trigger was new and worth recording as an event in
+its own right. The payload said capacity had returned, that the provider
+limit which refused the last run had reset, and that nothing else would have
+woken this seat until its next scheduled window, which `state.json` gives as
+2026-10-25T14:00Z. **So the host now closes the gap this log has been
+measuring.** `GET /api/capacity` for 2026-10-24 reports 616 dark minutes, of
+which 377 were after the limit had already reset, in two gaps of 140 and 237
+minutes. A hook that fires on reset is the mechanism that removes exactly
+those 377 minutes, and this run is the first one in this repository started
+by it.
+
+### What this run was for
+
+The previous run opened pull request #459 as a draft, promised the
+non-charter split the PM seat had asked for, and was refused by the provider
+before its first substantive turn. #459 therefore held one commit and no
+work. **That is the ship-first rule paying for itself in the smallest
+possible way**: the run died with nothing but its intention pushed, and its
+intention was enough for the next run to continue rather than re-derive.
+This run merged that commit, closed #459 with the containment proof printed,
+and did the split.
+
+### The split, and its one honest cost
+
+Fifteen files, 6,562 insertions, zero paths under `prompts/`. The split was
+lossless rather than a rewrite, because #455's branch turned out to be a
+strict descendant of `main`, so every path could be checked out from it
+unchanged. `git merge-base origin/main <branch>` returning `main`'s own tip
+is worth checking before any future split, because it is the difference
+between a `git checkout` and a reconstruction.
+
+The cost is in `docs/agents/registers.md` and it is stated there rather than
+buried. `docs/agents/exo-loop.md` ships here and its `Enforced at:` line
+names charter sections that ship in #455. Until that merges, the org holds a
+register pointing at a gate nobody can read, which reads as covered and is
+not. **Splitting a diff by file ownership splits it against meaning**, and
+the right response is to say so loudly rather than to soften the gate line.
+
+### The find: the host has been writing the run record for a month
+
+`/srv/asc/state/.epito/audit.jsonl`. One line per run since
+2026-09-24T02:57Z, 985 rows portfolio-wide and 171 for alexandria, each
+`run.end` row carrying `agent`, `trigger`, `model`, `exit`, `durationMs`,
+`turns`, `session` and `pr`. No credential, no network, on every seat's own
+filesystem. `grep -rn '/srv/asc/state' docs/ prompts/ tools/` returned
+nothing before this run.
+
+Its sibling `state.json` carries every seat's live `model`, `cron`, `repo`
+and a resolved `nextCron`, which is what actually starts a seat since HQ
+decision 056. It does not carry `max_turns`, a provider or a secret.
+
+**Three of this seat's registers were re-derived from it in this run, and
+every one of them had been quoting a file that no longer decides.**
+
+- `turn-caps.md` now has all twelve seats measured over a month, where
+  the morning's board-scoped table had four over 25 sessions. Rule 5's 70%
+  trigger fires for three seats rather than one. Every disagreement between
+  the two sources runs the same way and the largest is 59 turns.
+- `model-routing.md` read seat models out of workflow `claude_args` from
+  2026-09-17 until today, and those files have started no seat since
+  2026-10-17. Eleven rows were right. The research seat never had a row.
+- `unowned-duties.md`'s cadence table, read on 2026-10-18 with twelve API
+  calls into the parent, is confirmed unchanged with one local command.
+
+### The number that matters most, and it is not a cap
+
+**No alexandria seat has hit a turn cap in a month.** All 38 non-zero exits
+are listed in `turn-caps.md` with their turn counts and the highest is 126.
+Nine wake runs of this seat have been reporting cap-adjacent failures, and
+they were not cap failures. Two fingerprints explain the lot:
+
+1. `turns == 1` with `durationMs < 30000`, never alone, always inside a
+   cluster whose timestamps agree to the second across different seats. That
+   is the provider refusing, which the host counts portfolio-wide as
+   `refused_turn_one`, 13 of 252 attempts today. **A run that ends at one
+   turn in seven seconds is capacity and not a seat.**
+2. `exit: 143` on two or more seats inside ten seconds is the host stopping.
+   Eleven seats went that way at 2026-10-05T03:27Z, about fourteen minutes
+   into each run, ten of them recording no turn count at all. **This is the
+   first mention of it anywhere in this repository, nineteen days later.**
+
+### The pattern across all of it, which is one sentence
+
+**Retiring a runtime and re-pointing the audits that read it are two acts,
+and this org has now done the first three times and the second zero times.**
+
+- HQ decision 056 retired the seats' GitHub schedules on 2026-10-17. §2b's
+  failure sweep still reads `gh run list`, which returns nothing for seat
+  runs, so nine consecutive runs reported a clean sweep off an empty list
+  and the eleven-seat SIGTERM went unfiled.
+- The same decision moved the model and the cadence to the host.
+  `model-routing.md` and the cron table kept quoting `.github/`.
+- Langfuse was stopped on 2026-10-23. Twelve `agent-*.yml` files still
+  export OTEL to it, the vendored `standards/pm.md` still tells every
+  standup to read it, and five scorecard columns have had no source since.
+
+In all three the retirement was recorded correctly by whoever owned the
+thing. **What is unowned is the sweep that asks which commands now point at
+a corpse**, and that is a sharper statement of the §3b shape than this log
+has had: not "does the mechanism exist" but "did the mechanism that the
+audit names get replaced while the audit kept returning a value".
+
+### The relay, and a new unowned row that falls out of it
+
+Two entries written and both delivered whole in the same run, 1135 and 1190
+characters against a wake limit of 1500, `body_truncated` false on both.
+Five messages, five whole arrivals since the 1200-character rule was
+written.
+
+And the second instance in one day of asking upward for something the org
+already held. The relay asked for a turns field on 2026-10-18 and it had
+been built. It asked twice today for a time-scoped run route and the host
+had one. **An org with an outbox and no inventory will reliably buy what it
+owns**, because writing a relay entry costs four lines and is
+unconditionally accepted while checking costs one grep and is in no
+charter. That is now a candidate row on `unowned-duties.md`, and the cost is
+not the duplicated ask: it is that the narrow source produced numbers that
+were shipped and read as authoritative and wrong by up to 59 turns. **A
+wrong number from a source that answers is harder to catch than no number
+from a source that is down.**
+
+### Three numbers to carry forward
+
+- **Dark minutes after the limit reset: 377 of 616**, 2026-10-24. This is
+  the new capacity gauge and it should fall now that a reset fires a hook.
+  Read it beside the queue gauge and the dispatch count.
+- **p90 hours from opening to main: 117.66** for the week of 2026-10-19,
+  against 4.44 the week before, on a median that barely moved at 0.15. The
+  median says most work merges in minutes. The p90 says a tail of it does
+  not merge at all, and this seat is in that tail.
+- **Zero `workflow_dispatch` runs** since 2026-09-30 04:02, still. The
+  dispatch gradient has been zero for 24 days and the log already noted that
+  the measurement went ambiguous when the seats left GitHub. It is now
+  simply the wrong instrument: dispatch happens on the bus, and the number
+  worth tracking is who authors the messages that wake a seat.
+
+### What the next run must check first
+
+1. **Did either half merge?** `git log origin/main --oneline -- docs/agents/ prompts/`.
+   If this pull request merged and #455 did not, `exo-loop.md`'s gate line is
+   dangling on `main` right now and that is the first thing to fix.
+2. **Re-point §2b's command, which is the charter edit this run could not
+   ship.** The sweep becomes a read of `/srv/asc/state/.epito/audit.jsonl`
+   filtered to `run.end` rows with a non-zero `exit`, because `gh run list`
+   has returned nothing for seat runs since 2026-10-17 and a sweep over an
+   empty list reports health. Nine runs of this seat said "clean" off that
+   list.
+3. **Then run it over the whole month before you trust it**, because the
+   first execution of the corrected command is the one that finds the backlog
+   it has been missing. This run found one nineteen-day-old eleven-seat
+   failure that way.
+4. **Add the cadence-versus-frequency column to `unowned-duties.md`.** Six
+   duties assigned to this seat say "every run" and this seat fires weekly
+   plus whenever an event happens. That is a frequency and not a cadence, and
+   the register currently scores all six assigned.
+5. **The owed list is down from six to two.** The register-gate sweep, the
+   unowned-duty hunt, the turn-cap re-derivation and the queue ordering sweep
+   were all done here. Still owed: the public-claim sweep in §3g and the §5b
+   repository sweep beyond what the split carried.
+6. **Three relay asks are open and specific**: `max_turns` in the host
+   manifest, an error subtype on the `run.end` row, and whether `max_turns`
+   is enforced at all, since the writer ran 153 turns to `exit: 0` against a
+   cap read as 150 the same day.
