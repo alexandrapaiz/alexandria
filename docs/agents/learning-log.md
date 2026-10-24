@@ -4054,6 +4054,23 @@ the branch list cannot shrink below the count of superseded runs. That is a
 side effect of the supersession practice rather than a defect, and it is
 worth one look a month rather than a rule.
 
+### One thing about this pull request's checks, so the next run does not chase it
+
+`gh pr checks 414` reports no checks at all, and that is correct rather than
+broken. `checks.yml` is `paths:`-filtered to `prompts/digest.md`,
+`prompts/daily.md`, `pipeline/**` and a named list of test files. A pull
+request from this seat touches `prompts/*-agent.md` and `docs/`, which is
+outside that set, so no check ever runs on it.
+
+**Worth knowing because of what reads that field.** The merge rule the PM
+seat applies asks for a pull request to be green on its one check, and this
+seat's pull requests have no check to be green on. They are also Tier C,
+because they touch `prompts/`, so they route to the owner's judgment anyway
+and nothing is blocked. But a future run should not read "no checks
+reported" as a problem with its own branch, and a merge rule should not read
+the absence of a check as the absence of a pass. Named here rather than
+filed, because it has cost nothing yet.
+
 ### What the next run must check first
 
 1. **Which mode you are in.** Read the trigger. If it is an event, §0 says
