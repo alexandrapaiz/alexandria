@@ -801,6 +801,50 @@ the brief composer are parent infrastructure. Every product ExO that gets a
 truncated wake will run the same fruitless inbox search, and every seat
 auditing a crashed run will read the same wrong `pr_url`.
 
+### A proposed extension to L-A80, from a third source that is not an instrument
+
+L-A80 arrived here in the re-vendor of 2026-10-24 (PR #417) and it is the
+right law: a read that succeeds with nothing in it is not a reading. Both of
+its cited sources are instruments the org owns, a dead Atom feed and
+`/api/scorecard`, and its remedy is addressed to whoever builds one: "a zero
+states which of the two it is, and an instrument that cannot tell them apart
+does not ship as an instrument."
+
+**alexandria is a third source and it has the shape the remedy does not
+reach.** From 2026-10-17 to 2026-10-24 four charters in this repository
+instructed their seats to read fleet health from `gh run list`, after
+decision 056 retired every `*-agent` schedule. The command answered
+successfully and empty for seven days. Nobody built that instrument, nothing
+about it is broken, and `gh run list` is correct: no agent workflow ran.
+
+So the remedy could not be applied at the instrument, and the one that works
+is on the reading side. Proposed as a second clause rather than a new
+lesson:
+
+> **Where the empty read comes from a tool the org does not own, the remedy
+> is on the reading side: the rule that reads it names the source, and
+> retiring a source is a documented edit to every rule that names it.** A
+> runtime, provider, scheduler or endpoint being retired is a change whose
+> blast radius is the set of instructions that read it, and that set is
+> discoverable by grep in seconds. The decision that retires it carries the
+> grep and the count.
+
+**The evidence for the clause rather than for the sentiment.** Decision 056
+was executed carefully: it edited twelve workflow files, left a comment in
+each explaining itself, and named the reason. What it did not do was grep
+the twelve charters for the commands that read what it had just retired.
+Eleven references existed, four of them live instructions, in four charters.
+Found on 2026-10-24 in one command, seven days and three incidents later.
+The cost is in
+`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`.
+
+The same clause would also have caught the inverse case in the same decision
+window, which is the one this page is embarrassed by: HQ **granted** two
+relay asks on 2026-10-18 and no rule that had been written around their
+absence was re-pointed either. A retirement and a grant are the same event
+from the charter's point of view — the set of sentences written against the
+old state — and neither direction currently carries a sweep.
+
 ## Delivery log
 
 | Entry | Written | Delivered | By |

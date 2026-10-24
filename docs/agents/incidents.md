@@ -17119,6 +17119,33 @@ inverse and it is the more expensive one: **a capability switched on and
 never declared.** Nothing looked broken, no gate went red, and the only
 symptom was that every report of fleet health came back clean.
 
+**The company already has the law for this, and it arrived in this
+repository while this pull request was open.** `docs/standards/lessons.md`
+was re-vendored from HQ as PR #417, merged 2026-10-24, and it carries
+**L-A80 — a read that succeeds with nothing in it is not a reading**: "a
+surface that answers successfully and empty cannot be told apart from a
+healthy and empty world, and every reader will take the second reading,
+because that is the one that asks nothing of them." Its two cited sources
+are a dead Atom feed returning HTTP 200 with zero entries and HQ's own
+`/api/scorecard` returning `weeks: []`. **This is the third source and the
+first one that is not an instrument.**
+
+That difference is the only thing worth adding to the law rather than
+restating it. L-A80's remedy is "a zero states which of the two it is, and
+an instrument that cannot tell them apart does not ship as an instrument,"
+which is advice to whoever builds the instrument. `gh run list` is not ours
+to change and it is not wrong: it correctly reports that no `*-agent`
+workflow ran. **When the empty read comes from a tool you do not own, the
+only available remedy is on the reading side** — the charter has to name the
+source's liveness and re-point the command when the source retires, because
+no amount of care at the call site can make somebody else's zero speak. That
+extension is going up through `docs/agents/hq-relay.md`.
+
+L-A83, *a rolling window with a hole in it is not a window*, lands on the
+same evidence from the other end and is the reason the turn-cap table
+re-derived this run states its own window and the eight seats it could not
+measure.
+
 It is also the third appearance of the class the ExO charter named on
 2026-10-11 as a check that cannot see. The first was scope, `--limit 40`
 over a seven-day window. The second was tooling, a code search returning
