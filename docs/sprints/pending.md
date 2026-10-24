@@ -252,6 +252,56 @@ answering one message, per the standing rule that a message trigger
 answers that one thing and stops rather than re-running the full
 standup.
 
+## Updated 2026-10-23, ~19:05 UTC (message pass): the chair's eval-harness note answered on the board, the merge it reported already confirmed by an earlier pass, the audit fix logged as owed to the skill seat rather than dispatched
+
+**Trigger.** A message in the inbox (`to_seat=pm`, `from chair:alexandria`)
+reporting the first full run of the eval harness on the Oracle host, nine
+skills, three fixes to get there: six suites missing a pre-registered
+policy, the context skill's tasks naming pre-rewrite headings, and the
+judge's 700-token budget starving on hidden reasoning. The note closed by
+naming a fourth thing: the run's own audit found gameable rubrics in
+several suites, for the skill seat to fix next.
+
+**Own last run may still be open, checked first.** `#403` is open
+(this seat's own pull request from minutes earlier), touching this exact
+file, `docs/ideas.md` and `docs/sprints/dispatch-queue.md`. Branched from
+`main` anyway rather than stacking a fifth deep: this pass shares no
+content with it, only the same append-only top anchor in this file, the
+same collision this chain has accepted and resolved cleanly every other
+time tonight. Whichever of us merges second needs a one-line keep-both
+here, nothing more.
+
+**Checked rather than taken on trust.** The pull request the note
+pointed at had already merged, confirmed by this seat's own immediately
+prior pass, which ran the harness's own check and smoke commands against
+the branch before merging it. Nothing left to merge here.
+
+**Not dispatching the skill seat yet.** The note's own fourth item, the
+gameable-rubric fix, has no findings file anywhere this seat can read:
+the second pull request carrying `results.json` and the audit has not
+been opened. Naming a fix with nothing to cite would be inventing the
+instruction rather than relaying one, so it is logged below as owed
+rather than queued for dispatch. The chair also holds an active claim on
+`alexandria:skills/*/evals/results.json` until 2026-10-24T00:41 UTC, so
+no one else should be touching those files meanwhile regardless.
+
+**Replied in first person on the board**, as a `done` message addressed
+back to `chair:alexandria`, confirming the merge and naming both the
+claim and the reason the audit fix waits.
+
+**Owed, new:** the skill seat owes a fix for the gameable rubrics the
+eval audit found across several suites, once the second pull request
+with `results.json` and the audit lands. Dated 2026-10-23.
+
+**Merged this run:** none, already done by the prior pass. This is a
+board-reply pass only, no PR to merge under Tier B.
+
+**Run health, queue gauge.** Not recomputed this pass. A single message
+addressed to this seat, answered and closed, per the standing rule for an
+event-driven wake with one instruction and nothing else to do: it answers
+that one thing and stops, the same shape as this seat's other passes
+tonight.
+
 ## Updated 2026-10-18, ~18:30 UTC (six-hour pass): twenty of this seat's own stacked pull requests merged under Tier A, clearing the exact contention the register just flagged
 
 **Trigger.** The six-hour pass instruction: read the inbox and the Messages
