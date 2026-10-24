@@ -2065,7 +2065,8 @@ def _ageing_hours(hours: float | None) -> str:
     return f"{round(hours / 24, 1)} days"
 
 
-def _soonest(apps: list[str], deadlines: dict) -> str:
+def _soonest(apps: list[str], deadlines: dict,
+             compute: str | None = None) -> str:
     """The first of these stale apps to serve a real run, as a sentence.
 
     Returns "" when none of them has a readable schedule, because a headline
@@ -2082,6 +2083,11 @@ def _soonest(apps: list[str], deadlines: dict) -> str:
     if not dated:
         return ""
     when, app = min(dated)
+    if compute:
+        return (f"On the schedule the first of these to serve a run would be "
+                f"{app}, {deadline_phrase(deadlines[app])}, but nothing is "
+                f"firing at all: {compute}. So that is the deadline from the "
+                f"moment compute is back rather than a time to work to. ")
     return (f"The first of these to serve a real run is {app}, which fires "
             f"{deadline_phrase(deadlines[app])}, so a deploy after that is a "
             f"run too late. ")
@@ -2108,7 +2114,7 @@ def deploy_facts(conn) -> dict | str:
 
 def judge_deploy(facts: dict | str, repo_root: Path | None = None,
                  now: datetime | None = None, notify_conn=None,
-                 source: str = DIRECT) -> Surface:
+                 source: str = DIRECT, compute: str | None = None) -> Surface:
     """Is the trunk the code the crons are running.
 
     One surface for all three jobs rather than three, because the question the
@@ -2125,6 +2131,13 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
     `notify_conn` is a connection or None. None means do not mail, and the two
     reasons for that are a caller passing `notify=False` and the facts having
     come from the public receipt, which cannot write the alarm's cooldown.
+
+    `compute` is the platform outage, when there is one, in the same shape
+    `judge_pipeline` already takes it. It is here because this surface now
+    reports a deadline, and a deadline read off a cron is a claim that the cron
+    fires. On 2026-10-24 the Modal workspace was disabled and none of the five
+    did, so an unqualified "weekly fires Monday 09:00" would have been the
+    guard inventing a schedule out of a decorator.
     """
     root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
     now = now or datetime.now(timezone.utc)
@@ -2141,7 +2154,7 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
         return Surface("deploy", UNKNOWN, facts, {"read_via": source})
     rows = facts
 
-    evidence = {"read_via": source, "ref": ref}
+    evidence = {"read_via": source, "ref": ref, "compute_outage": compute}
     # Asked once for the whole surface rather than once per app: the answer is
     # a property of the checkout, not of an app, and it is what turns "cannot
     # be dated" from a dead end into one command.
@@ -2441,7 +2454,7 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
         # number above this line is backwards-looking: it says how stale the
         # image is and nothing about whether a deploy tomorrow is in time.
         soonest = _soonest([app for app, *_ in alarms]
-                           + [app for app, *_ in blind], deadlines)
+                           + [app for app, *_ in blind], deadlines, compute)
         return Surface("deploy", FAILING,
                        f"the deployed code is not {ref}: {names}{blind_note}. "
                        f"{soonest}{note}", evidence)
@@ -2464,9 +2477,10 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
 
 
 def check_deploy(conn, repo_root: Path | None = None,
-                 now: datetime | None = None, notify: bool = True) -> Surface:
+                 now: datetime | None = None, notify: bool = True,
+                 compute: str | None = None) -> Surface:
     return judge_deploy(deploy_facts(conn), repo_root, now,
-                        notify_conn=conn if notify else None)
+                        notify_conn=conn if notify else None, compute=compute)
 
 
 def _notify_drift(conn, alarms: list[tuple], repo_root: Path,
@@ -2868,7 +2882,8 @@ def database_surfaces(today: date | None = None, repo_root: Path | None = None,
         return [judge_press(press, today, RECEIPT_URL),
                 judge_pipeline(pipeline, source=RECEIPT_URL, compute=compute),
                 judge_payments(payments, source=RECEIPT_URL),
-                judge_deploy(deploy, repo_root, source=RECEIPT_URL)]
+                judge_deploy(deploy, repo_root, source=RECEIPT_URL,
+                             compute=compute)]
 
     why = (f"the artifact guardrail 4 names cannot be read here: {direct_why}, "
            f"and the published receipt did not answer either ({receipt_why})")
@@ -2894,7 +2909,8 @@ def _from_database(url: str, today: date | None, repo_root: Path | None,
         with psycopg.connect(url, connect_timeout=15) as conn:
             return [check_press(conn, today), check_pipeline(conn, compute),
                     check_payments(conn),
-                    check_deploy(conn, repo_root, notify=notify)], ""
+                    check_deploy(conn, repo_root, notify=notify,
+                                 compute=compute)], ""
     except Exception as exc:
         return None, f"DATABASE_URL is set but the connection failed: {exc}"
 
@@ -2917,12 +2933,19 @@ def run(surfaces: list[str], today: date | None = None,
     # is testable as one.
     needed = asked | ({"press", "site"} if "archive" in asked else set())
 
-    # One probe, two readers. `pipeline` needs the answer as a fact and cannot
-    # go and get it, so the platform is checked here even when only `pipeline`
-    # was asked for, and the extra surface is dropped by the filter at the end.
+    # One probe, three readers. `pipeline` and `deploy` both need the answer as
+    # a fact and neither can go and get it, so the platform is checked here
+    # even when only one of them was asked for, and the extra surface is
+    # dropped by the filter at the end.
+    #
+    # `deploy` joined this set on 2026-10-24, when that surface started
+    # reporting when a stale image next serves a run. It costs the deploy-only
+    # callers, of which `tools/drift_watch.py` is one, a single HTTP request,
+    # and it buys them not putting a deadline on a card for a cron that is not
+    # running.
     compute = None
     outage = None
-    if {"compute", "pipeline"} & needed:
+    if {"compute", "pipeline", "deploy"} & needed:
         compute = check_compute()
         outage = compute.headline if compute.state == FAILING else None
 
