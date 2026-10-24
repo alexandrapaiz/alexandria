@@ -87,6 +87,7 @@ import collections
 import contextlib
 import html
 import io
+import os
 import pathlib
 import re
 import subprocess
@@ -2130,10 +2131,52 @@ def terms_of(sentences):
     return out
 
 
+def scope(paths, retired, given):
+    """What this pass read, printed before any count it reports.
+
+    `L-A47`: an instrument's scope is part of its answer, and a scope it does
+    not state is whatever it happened to be pointed at. This pass globs
+    `site/content/issues/*.md` and calls the result the issues. The site
+    archive is not the send record. 2026-W40 went to readers on 2026-10-05 and
+    never became a file in this repository, so every count this pass has ever
+    printed described the archive while reading as a verdict on what the press
+    sends, which is `INC-2026-10-24-a-gate-grades-a-print-against-rules-written-
+    after-it`. The authority on what was sent is the `digests` table, reachable
+    only with `NEON_RO_URL`, so when that is unset the gap is named here rather
+    than left for a reader to infer from a number.
+    """
+    if given:
+        print(f"  read from   {len(paths)} path(s) named on the command line")
+        print( "              a figure below belongs to the artifact above it")
+        print( "              and to no other, which is ban list 91")
+        return
+    served = [pathlib.Path(x) for x in paths]
+    off = [x.stem for x in served if x.stem in retired]
+    on = [x.stem for x in served if x.stem not in retired]
+    print(f"  read from   site/content/issues, {len(on)} served: "
+          f"{', '.join(on) if on else 'none'}")
+    if off:
+        print(f"              {len(off)} retired and not served: {', '.join(off)}")
+    print( "  NOT read    the send record. An issue is not a file here when it")
+    print( "              sends: 2026-W40 reached readers on 2026-10-05 and is")
+    print( "              not in the list above. The authority is the digests")
+    if os.environ.get("NEON_RO_URL"):
+        print( "              table, and NEON_RO_URL is set, so a run can check")
+        print( "              this list against it rather than trusting it")
+    else:
+        print( "              table and NEON_RO_URL is unset, so this pass")
+        print( "              cannot say how many prints it has never seen")
+    print( "              A count below grades this archive. Reading it as a")
+    print( "              grade of the generator needs the date of the print")
+    print( "              and the dates of the rules, which is a review's job")
+
+
 def firstuse(paths=None):
     retired = hidden_weeks()
+    given = paths is not None
     paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
     rc = 0
+    scope(paths, retired, given)
     for p in paths:
         p = pathlib.Path(p)
         if not p.exists():

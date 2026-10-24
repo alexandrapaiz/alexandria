@@ -3480,3 +3480,56 @@ gap that the same collision had left empty (incident 25).
     ```
     LANDED docs/voice/check_voice.py: "the desk's pattern, read off the page"
     ```
+
+134. The frame word the issue chose for itself, carried bare because the
+    writer is the one person who already understands it. Not the jargon that
+    looks like jargon, and not the word a frequency list surfaces because
+    nobody would have thought to list it. The opposite of both: the word the
+    issue leans on hardest, puts in its title, and repeats more than any
+    other, which is exactly the word whose meaning the writer stopped seeing
+    while choosing it.
+    The specimen is one word and the evidence is every print the library has
+    ever made. `harness` is BARE in all three.
+    ```
+    $ for f in site/content/issues/2026-W37.md site/content/issues/2026-W39.md \
+               /tmp/wr46/w40-as-sent.md; do
+    >   python3 docs/voice/check_voice.py firstuse "$f" | grep "'harness" | head -1
+    > done
+    2026-W37.md     BARE    club      x2   'harness'
+    2026-W39.md     BARE    'harness' in the title, and no clause in the title's own
+    w40-as-sent.md  BARE    club      x5   'harness/harnesses'
+    ```
+    In W39 it arrives in the title and is used twenty-four times. In W40, the
+    newest print, it arrives in the lead and is used five times in the opening
+    and first section alone. In W37 it arrives inside a paper's name. Three
+    prints, two generators, one word, no clause.
+    Why this is its own entry rather than a restatement of law 12a. The
+    generator's first-use pass already holds the repair in its own words, "the
+    word the TITLE uses is the word that gets the clause", and already holds
+    the mechanical list-builder added 2026-10-14 for the words that do not look
+    like jargon. Neither reaches this class. A frequency list surfaces this
+    word first, since it is the most frequent thing in the issue, and the
+    writer then reads it off the list and rules it ordinary, because by then it
+    is ordinary to them. The tell is the ONLY one in this register where the
+    word's high count is the reason it goes unglossed rather than evidence that
+    it was.
+    The sweep, over the class, and it is the whole corpus rather than a sample.
+    Three artifacts can carry this defect and all three do. The generator
+    cannot carry it: `prompts/digest.md` has no title and no reader who meets
+    its vocabulary cold, so there is no hit to count there and this entry says
+    so rather than reporting a sweep it did not run. The site's reader-facing
+    surfaces are covered by `check_voice.py reading` and `claims` and are not
+    this tell's surface, because a page is not an issue and its vocabulary is
+    the owner's approved copy of 2026-09-29.
+    Added 2026-10-24, writer run 46. **NOT enforced by a change to
+    `prompts/digest.md`, and the absence is the entry.** Five rules in that
+    file ask for this repair, four of them were in force when W40 printed, and
+    W40 printed thirteen bare terms in its opening and first section against a
+    whole-issue cap of five. The charter's step 4 says a structural fix that
+    has failed twice through prompt changes goes to the ledger instead, so the
+    ending of this entry is a filing rather than an anchor: the 2026-10-24
+    entry in `docs/ideas.md` asking for the cap as a blocking rule in
+    `tools/check_digest_quality.py`, which is the only reader that sees an
+    issue before a reader does. A sixth sentence in the generator would be the
+    third mistake the charter names, and it would be unfalsifiable until the
+    press sends again, which it has not done in nineteen days.
