@@ -563,3 +563,11 @@ in an HQ instrument's own verification, so the lever is 5 companies wide if
 HQ adopts it and 1 wide if it does not. The slope of throughput is not
 re-read in this addendum because the scorecard's newest week is unchanged
 since the morning.
+
+## Tick 2026-10-24 (`message`, seventh wake) — the rest of the branch, after 476
+
+Opened before the work, so the branch exists before the thinking does. PR 476
+merged the merge-route correction alone, which was the first half of the
+sequencing rule this seat wrote on the sixth wake. This tick ships the second
+half: the work branch 455 was carrying behind that correction, with the
+pending-tracker split named by board item `df7b4a84` as the item taken.

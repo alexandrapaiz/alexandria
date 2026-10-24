@@ -236,6 +236,33 @@ seat records what it noticed and had no lane for. Run `gh pr list
 cheap to read and they are the org's only record of what it saw and did
 not use.
 
+### And write your own, which this charter forgot to ask for (added 2026-10-11 by the ExO seat)
+
+**Every run, end your PR description with a short section headed "Seen and
+not mine."** List what you noticed this run that looked like it mattered and
+was not yours to act on. One line each, with a link, and at most five. Then
+stop, because acting on it is the point you are not doing. An empty section
+is a legitimate answer and should say "nothing this run."
+
+The wording above is the same rule the okr, security and research charters
+carry, and this charter was the only one of the four outward-looking seats
+that did not. **It told you to read every other seat's section and never to
+write one.** On 2026-10-09 this seat's PR #255 had no such section, and that
+was this charter's omission rather than the run's.
+
+It is worth knowing how it hid, because the ExO audit that finds this kind
+of thing nearly missed it. Grepping all twelve charters for "Seen and not
+mine" returns this file, so the duty reads as covered from the only cheap
+check there is. It is covered from the consuming side and absent from the
+producing side. That is the polarity trap in ExO charter §3b, which says a
+grep finds vocabulary and not direction and that every hit must be read
+rather than counted. This is the second time that rule has earned its place:
+the first was a writer charter that named site copy in order to forbid it.
+
+**You are the one seat for which this section matters twice**, because you
+both write it and sweep it. A run of yours with no section is a gap in the
+record you are the keeper of.
+
 A week where you find nothing is a real answer, and writing "nothing
 this week that a builder would be embarrassed to miss" is the correct
 output when it is true. Writing nothing at all is not.
@@ -249,12 +276,52 @@ gh pr list --state open --json number,headRefName,title,createdAt
 
 and look for a pull request from your own seat. Your runs write the
 files that no other seat touches, so an unmerged PR from your last run
-is the single thing most likely to collide with this one. The owner
-merges on her own schedule, and a run that assumes main holds its
+is the single thing most likely to collide with this one. Merges happen
+on somebody else's schedule, and a run that assumes main holds its
 predecessor's work is often wrong.
+
+**And read what you find, because it may be this event's answer rather
+than a collision** (added 2026-10-24,
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`).
+One event can wake two runs. Three times in ninety minutes on 2026-10-24 a
+seat was woken for an event a previous run of the same seat had already
+answered, and the payload gave no sign of it either time. If the open pull
+request you found already did this event's work, verify that live rather
+than trusting its report, then say so and append one line to
+`docs/agents/incidents.md`. The first two instances were written up
+carefully in pull request bodies, which nothing sweeps, so the third seat
+rediscovered the class from scratch.
 
 If you find one, choose deliberately between two options, and say which
 one you chose at the top of your PR description.
+
+**First, unshallow the clone, before you run a single command that compares
+two branches** (added 2026-10-18, `INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register`).
+
+The host clones this repository shallow. A shallow clone does not only hide
+history. `--depth 1` implies `--single-branch`, so the default branch is
+grafted with no parents, and a three-way merge between two close branches
+reads as unrelated histories. The merge then produces garbage that commits
+cleanly. On 2026-10-17 the ExO seat's own run merged its predecessor's branch
+in that state and committed 2,456 lines of conflict markers into
+`docs/agents/incidents.md`, and the pull request sat open that way for 21
+hours.
+
+Two commands, always, before any merge, `git merge-base`, `A...B` diff, or
+staleness check:
+
+```bash
+git rev-parse --is-shallow-repository    # true means every comparison below lies
+git fetch --unshallow                    # harmless when it is already full
+```
+
+This was filed for a charter on 2026-09-24 as
+`INC-2026-09-24-shallow-clone-merge-base-repeat`, which offered two remedies.
+The mechanical one shipped as `fetch-depth: 0` in all twelve workflows and
+stopped governing on 2026-10-17 when the seats left GitHub Actions. This
+sentence is the other one, and it is here rather than in a workflow because
+a charter line travels with the seat and a workflow step does not.
+
 
 - **Build on it.** Merge that branch into yours early, in your first
   few turns, before you write anything. Your PR then supersedes it, and
@@ -326,6 +393,19 @@ a name. The suffix is how you follow the rule and stay unique.
 
 ## Check the register before you ship (org rule, 2026-09-19, all seats)
 
+**0. No conflict markers in anything you are shipping** (added 2026-10-18,
+`INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register`).
+This is step zero because it is the only one whose failure is silent after
+the first time. A committed marker conflicts once and is ordinary text
+forever after, so the merge that created it is the only merge that will warn
+anybody. On 2026-10-17 the ExO seat committed markers into two files on one
+branch, and the next run's merge flagged one of the two and carried the other
+in without a word.
+
+```bash
+grep -rn '^<<<<<<< \|^=======$\|^>>>>>>> ' docs/ prompts/ README.md   # must print nothing
+```
+
 Recording is not enforcing. Incident 20 in docs/agents/incidents.md is a
 taste ruling that was written into the right register, by the right
 seat, within the hour, and violated by the very next artifact anyway,
@@ -337,6 +417,22 @@ second is the one the org keeps forgetting. The full map of which
 register has which gate is docs/agents/registers.md.
 
 So before you call `gh pr ready`, two checks.
+
+**0b. No scratch file under a fixed name in `/tmp`** (added 2026-10-18,
+`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`).
+On the company host every seat of every product runs as the same user on one
+machine, so `/tmp/body.md` is a shared name and not a private one. In GitHub
+Actions each run had its own filesystem and this was safe. On 2026-10-18 the
+ExO seat's pull request description was overwritten by a concurrent seat
+between the write and the publish, and it reached GitHub wrong.
+
+```bash
+scratch=$(mktemp -d); cat > "$scratch/body.md"   # unique per run
+```
+
+The failure is silent: the write succeeds, the read succeeds, and the content
+belongs to somebody else. A run that writes once and ships once never finds
+out.
 
 **1. The registers your output is bound by.**
 

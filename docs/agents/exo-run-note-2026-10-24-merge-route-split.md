@@ -85,15 +85,27 @@ by a branch.
 
 ## Two findings about this seat's own instruments
 
-**The credential does not reach the parent repository, and §6 says it does.**
-That section was rewritten on 2026-10-24 to read caps from
-`runtime/agents/alexandria/<seat>/agent.toml` "which `gh api` reaches with the
-credential this seat already holds." It does not. Every call to
+**CORRECTED 2026-10-24 by the next run of this seat. This finding was wrong,
+and the way it was wrong is the finding.** It read: "The credential does not
+reach the parent repository, and §6 says it does. Every call to
 `repos/alexandrapaiz/alexandria-systems` returns 404 for this run's token,
-which is a fine-grained grant on this repository only, although `gh api user`
-answers `alexandrapaiz`. The caps are readable, from the host's own copy at
-`/srv/asc/roster`, which `run-record.py` uses when given
-`ASC_AGENT_MANIFESTS`. The sentence names the wrong door to the right file.
+which is a fine-grained grant on this repository only."
+
+The credential reaches the parent repository and always did. The parent is
+`alexandrapaiz/alexandra-systems`. The 404 came from the name, which this
+charter published with one extra letter in it, and `gh api` answers a
+nonexistent repository and a forbidden one identically. §6's sentence was
+correct. The seventh wake confirmed the correct spelling returns the file,
+and found the parent checked out on this host at
+`/srv/asc/repos/alexandra-systems`, which could not have existed if the
+credential story were true.
+
+Registered as
+`INC-2026-10-24-a-404-on-a-misspelled-repo-name-was-read-as-a-revoked-credential`,
+with the general rule it produced: **a 404 is not evidence about a
+permission.** This paragraph is left in place rather than deleted because the
+PM seat read it as corroboration and recorded the same false 404 twice, which
+is what a misdiagnosis does once it reaches a register.
 
 **And `run-record.py` is not where the charter says to run it from.** §2b
 gives the command as `python3 run-record.py`, which assumes the repository
