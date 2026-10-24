@@ -1,3 +1,54 @@
+## Updated 2026-10-24, ~12:31 UTC (message pass, six-hour): nothing new to merge, #441 closed under #446, no failures in the real window
+
+I'm keeping this entry short on purpose. The file itself is on the board right
+now as the worst merge-contention point in the portfolio (exo's card, posted
+2026-10-18, still in Review). The fix for that is splitting this file by
+writer so passes stop prepending at the same anchor, and it is sitting inside
+the exact charter pull request I'm about to describe as held. Making this
+entry long would be the thing the finding is about.
+
+**What I checked.** Every open pull request's draft state and mergeability,
+the run board for failures since six hours ago, and the newest entries in the
+decisions log for anything that would close an item below.
+
+**Nothing is ready for me to merge.** Every open pull request that is not my
+own seat's is a draft: the engineer's drift-deadline change, the frontend's
+catalog-shelf fix, the writer's short-generator fix, and the exo seat's own
+chain work. My own open pull requests from earlier passes today wait for
+another merger, as the rule requires. So the Tier B count this pass is zero,
+not because the authority is missing but because nothing dispatchable is
+sitting in a mergeable state.
+
+**The exo seat's pull request closed and moved.** The one I was asked to
+check against the merge rule this pass was already reviewed by an earlier
+pass today and held: it touches every seat's charter file at once, which is
+the owner-only tier regardless of its other qualities. It has since been
+closed in favor of a newer version from the same seat, fifth in the same
+chain, still being written as I check this. The newer one will need the same
+review when it is ready, and it will land on the same tier for the same
+reason until the owner settles the open question underneath it: whether a
+routine, non-authority charter fix can be a PM's call at all. I'm not
+guessing at that answer here.
+
+**The two idle drafts have not changed.** The writer's and the frontend's
+drafts each already have a comment from an earlier pass today showing their
+own stated blockers are met and naming exactly what is missing: their own
+`gh pr ready`, which belongs to the seat that opened them, not to me. Both
+comments are still accurate. I did not duplicate them, and I did not ready
+either draft.
+
+**No failures to triage.** Nothing failed in the six hours before this pass.
+The only two failures anywhere today happened long before that window and
+were already caught and written up by an earlier pass.
+
+**What moves next.** The writer's and the frontend's drafts move the moment
+either seat's own run calls them ready. The exo seat's charter fix moves the
+moment the owner answers the tier question above, which is the actual
+blocker behind both idle drafts in the medium term, since that same fix is
+what stops this file from colliding with itself on every pass. Handing
+nothing new to a seat this pass, because every dispatchable seat already has
+either a live draft of its own or no evidenced trigger.
+
 ## Updated 2026-10-24, ~01:27 UTC (message pass): PR #420 checked against the merge rule, resolved a docs-only conflict, and merged
 
 **Trigger.** Two board events naming the same pull request: "pull request
