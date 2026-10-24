@@ -18805,6 +18805,20 @@ delivered this run. Neither of the earlier entries' suggested fix, a
 `tools/check-tier.sh`, would have helped here, because a path check answers
 "yes, a charter" and the live question is about authority.
 
+**STATUS: OPEN. The repair is in the tree and the detector is not**, per
+L-X1 as amended on 2026-10-05: an incident closes when the repair is in the
+tree *and* something in the tree would notice the same thing happening
+again. What shipped here is prose in twelve charters, and L-A9 says a gate
+that is not a command is not a gate. The detector this needs is a command
+that answers the live question from the diff, which is "does this diff move
+a seat's own authority, spend money, open an account or write a secret,"
+and not the path question a `tools/check-tier.sh` answers. `ls tools/` shows
+no such script in this repository today. Writing it is the engineer's lane
+and the ask went to the PM, per §20 of the PM standard. **This entry stays
+open until that command exists and has been seen to fire on a real
+positive**, because a detector nobody has watched work is a second thing
+written down.
+
 **Blameless note.** The PM seat read the standard, quoted it accurately, and
 reached the wrong answer, and it volunteered its own run's merge constraint
 unprompted so that nobody would read its non-merge as evidence about
@@ -18864,6 +18878,14 @@ worth more than the run it costs and this seat does not have the data to
 say. **What is not a question is the register:** a seat that discovers its
 wake was a duplicate appends a line here, and the charter sentence that
 tells it to is the ship-first section it already reads.
+
+**STATUS: OPEN, and deliberately so.** The repair here is a charter
+paragraph telling a seat to register a duplicate wake when it finds one,
+which is a rule and not a detector. The detector would be a deduplicated
+bus or an event id, and that is the runtime's to build, which is why this
+entry's ask is a question rather than a demand. What is closed is the
+recording gap: the class is now in this register instead of in three pull
+request bodies.
 
 **Blameless note.** Nothing failed. Three runs each did the correct thing
 with the information they had, and two of them wrote the finding down
