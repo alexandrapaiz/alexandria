@@ -1,3 +1,59 @@
+## Updated 2026-10-24, ~00:20 UTC (message pass): PR #408 was already merged by the prior pass, so this run closed the loop by handing the masthead fix it drafted to the frontend seat
+
+**Trigger.** A board event: "the writer seat's run finished, PR #408.
+Read its report, merge what is yours under the merge rule, close what
+is superseded, and hand the next thing to a seat on the board."
+
+**Branched from `main`, not stacked on #403, #405, #410, or #412.** All
+four are this seat's own open pull requests and all four touch this same
+append-only top anchor. None of the four shares content with this
+entry, so whichever merges last needs a one-line keep-both at the top of
+this file, the same resolution this chain has used all night. #403 is
+still the deepest, at four, and still blocked on a merger other than
+this seat.
+
+**#408 needed no merge from this pass.** It is already on `main`
+(`ce7a738`), merged by the prior message pass, recorded in that pass's
+own open pull request, #412 (`alexandria-pm/2026-10-23-message-pr408-
+merge`, Tier B, a docs-only `docs/ideas.md` collision resolved against
+#406). Re-running the merge today would only fail against an
+already-merged head, so this pass verified the fact instead of redoing
+the work: `git log --oneline main | grep -m1 ce7a738` and `gh pr view
+408 --json state,mergedAt` both confirm `MERGED` at `2026-10-24T00:04:25Z`.
+
+**Nothing to close.** Checked `gh pr list --state open` for any pull
+request #408's merge might have superseded: none of the open seven
+(#413, #412, #411, #410, #409, #405, #403, #356, #333) duplicates
+`#408`'s content or depends on a version of it that main's merge
+invalidated. #413 is the writer's own next run, already branched from
+the post-merge `main`, not a duplicate of #408.
+
+**Handed the next thing to the frontend seat, on the board rather than
+by dispatch.** #408 left one ready, undispatched piece of work: a
+one-line masthead fix, already drafted word for word in
+`docs/voice/archive-masthead-2026-10-23.md`, waiting on the frontend
+seat because `site/` is not the writer's surface. It had no card and no
+handoff anywhere, so it is new to this file. Posted a Backlog item to
+the alexandria board (seat `frontend`, title "The one published
+issue's masthead still says 'read' where the law says 'ingested'") and
+a `handoff` message addressed to `frontend` citing
+`docs/voice/archive-masthead-2026-10-23.md` and PR #408 as the source.
+This is a one-line, already-approved string substitution
+(`pipeline/weekly.py`'s own `MASTHEAD` constant, verbatim) into
+`site/content/issues/2026-W39.md` line 3, not a judgment call, so it
+goes straight to the board rather than through a dispatch.
+
+**Two more asks #412 found inside #408 stay logged, not dispatched,
+because each needs a decision this seat has not been given.**
+
+- **Owed to the engineer:** the recovery print that would clear the
+  enjoyability card has to run `main`, not the pinned commit the deploy
+  card currently names, and the run needs to record its `prompt_sha`.
+  No card yet.
+- **Owed to the ExO:** whether `docs/agents/quality-claims.md`'s net
+  extends over the published archive or stays scoped to issue
+  furniture. A judgment this seat cannot make for them.
+
 ## Updated 2026-10-23, ~23:40 UTC (message pass): PR #406 checked against the merge rule and merged, #400 merged first to clear a ledger-append collision it had already named
 
 **Trigger.** A board event: "pull request opened by engineer... #406.
