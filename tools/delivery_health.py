@@ -1917,6 +1917,176 @@ def name_unrecorded(found: dict, limit: int = DEPLOY_NAMED_COMMITS) -> str:
             f"{named}" + (f", and {rest} more" if rest > 0 else ""))
 
 
+# Modal reads every cron in UTC, which is also the only clock in this file, so
+# a schedule parsed out of a decorator needs no timezone argument.
+#
+# This evaluator covers `*`, a comma list, a range and a step, which is every
+# shape the five deployed schedules use and a fair margin past it. Anything
+# else returns None rather than a guess, because the whole value of the number
+# it produces is that a reader can act on it: a deadline computed from a field
+# this code misread is worse than no deadline at all, and "nothing here can
+# read that schedule" is an answer a caller can print.
+def _cron_field(spec: str, low: int, high: int) -> set[int] | None:
+    """One cron field as the set of values it matches, or None if unreadable."""
+    out: set[int] = set()
+    for part in spec.split(","):
+        part = part.strip()
+        if not part:
+            return None
+        step = 1
+        if "/" in part:
+            part, _, raw = part.partition("/")
+            if not raw.isdigit() or int(raw) < 1:
+                return None
+            step = int(raw)
+        if part == "*":
+            first, last = low, high
+        elif "-" in part.lstrip("-"):
+            start, _, end = part.partition("-")
+            if not (start.isdigit() and end.isdigit()):
+                return None
+            first, last = int(start), int(end)
+        elif part.isdigit():
+            first = last = int(part)
+        else:
+            return None
+        if first > last or first < low or last > high:
+            return None
+        out.update(range(first, last + 1, step))
+    return out or None
+
+
+def parse_cron(expr: str) -> dict | None:
+    """A five-field cron expression as sets, or None if this cannot read it.
+
+    Day-of-week is 0-6 with 0 as Sunday, which is what Modal accepts, and 7 is
+    normalised to Sunday too because crontab has always allowed both.
+    """
+    fields = (expr or "").split()
+    if len(fields) != 5:
+        return None
+    bounds = [("minute", 0, 59), ("hour", 0, 23), ("dom", 1, 31),
+              ("month", 1, 12), ("dow", 0, 7)]
+    parsed = {}
+    for spec, (name, low, high) in zip(fields, bounds):
+        values = _cron_field(spec, low, high)
+        if values is None:
+            return None
+        parsed[name] = values
+        parsed[f"{name}_any"] = spec.strip() == "*"
+    parsed["dow"] = {0 if v == 7 else v for v in parsed["dow"]}
+    return parsed
+
+
+def next_fire(expr: str, now: datetime) -> datetime | None:
+    """The first minute at or after `now` that this cron fires, or None.
+
+    Day-of-month and day-of-week are OR'd when both are restricted and AND'd
+    when either is `*`, which is crontab's own rule and is the one piece of
+    this that surprises people. None of the five deployed schedules restricts
+    both, so the branch is here to be correct rather than because it is
+    exercised in production.
+
+    Searches forward a day at a time and only inside the hours and minutes the
+    expression allows, so the walk is bounded by the days in the window rather
+    than by the minutes in it.
+    """
+    cron = parse_cron(expr)
+    if cron is None:
+        return None
+    start = now.astimezone(timezone.utc).replace(second=0, microsecond=0)
+    hours, minutes = sorted(cron["hour"]), sorted(cron["minute"])
+    # Four years, so that a 29 February in the expression is answered rather
+    # than reported unreachable.
+    for offset in range(0, 366 * 4 + 1):
+        day = (start + timedelta(days=offset)).date()
+        if day.month not in cron["month"]:
+            continue
+        # Python's Monday-is-0 to cron's Sunday-is-0.
+        dow = (day.weekday() + 1) % 7
+        by_dom, by_dow = day.day in cron["dom"], dow in cron["dow"]
+        if cron["dom_any"] or cron["dow_any"]:
+            if not (by_dom and by_dow):
+                continue
+        elif not (by_dom or by_dow):
+            continue
+        for hour in hours:
+            for minute in minutes:
+                when = datetime(day.year, day.month, day.day, hour, minute,
+                                tzinfo=timezone.utc)
+                if when >= start:
+                    return when
+    return None
+
+
+def next_run(app: str, repo_root: Path, now: datetime) -> dict:
+    """When this app's cron next fires, as the deploy surface reports it.
+
+    Returns `{"cron": ..., "at": ..., "hours": ...}` or `{"why": ...}`. The
+    reason this exists at all is that a drift measured only backwards cannot
+    be acted on: "weekly is 8.7 days behind" and "weekly next runs in 41
+    hours" are the same fact, and only the second one says whether a deploy
+    tomorrow is in time. The ExO seat wrote that sentence onto the compute
+    card by hand on 2026-10-24, having worked out the press cron from the
+    docstring, which is the work this function is here to stop repeating.
+    """
+    try:
+        from pipeline import runtime_sha
+    except Exception as exc:
+        return {"why": f"pipeline/runtime_sha.py could not be read here: {exc}"}
+    found = runtime_sha.schedule_of(app, repo_root)
+    if "cron" not in found:
+        return found
+    when = next_fire(found["cron"], now)
+    if when is None:
+        return {"cron": found["cron"],
+                "why": f"this cron expression cannot be read here: "
+                       f"{found['cron']}"}
+    return {"cron": found["cron"], "at": when,
+            "hours": round((when - now).total_seconds() / 3600, 1)}
+
+
+def deadline_phrase(entry: dict) -> str:
+    """How a next run reads in a headline or on a card, or "" when unknown."""
+    if not entry or "at" not in entry:
+        return ""
+    return (f"{entry['at']:%Y-%m-%d %H:%M} UTC, "
+            f"{_ageing_hours(entry['hours'])} from now")
+
+
+def _ageing_hours(hours: float | None) -> str:
+    """Hours as the unit a reader thinks in."""
+    if hours is None:
+        return "an unknown time"
+    if hours < 1:
+        return "under an hour"
+    if hours < 48:
+        return f"{round(hours, 1)}h"
+    return f"{round(hours / 24, 1)} days"
+
+
+def _soonest(apps: list[str], deadlines: dict) -> str:
+    """The first of these stale apps to serve a real run, as a sentence.
+
+    Returns "" when none of them has a readable schedule, because a headline
+    that says "the next run could not be computed" spends a reader's attention
+    on the instrument instead of on the deploy. The per-app evidence carries
+    the `why` for anyone who wants it.
+
+    One app named rather than all of them. The reader of this headline has one
+    action, which is a deploy, and what they need from it is the moment after
+    which running it is too late.
+    """
+    dated = [(deadlines[app]["at"], app) for app in apps
+             if "at" in (deadlines.get(app) or {})]
+    if not dated:
+        return ""
+    when, app = min(dated)
+    return (f"The first of these to serve a real run is {app}, which fires "
+            f"{deadline_phrase(deadlines[app])}, so a deploy after that is a "
+            f"run too late. ")
+
+
 def deploy_facts(conn) -> dict | str:
     """What each job last reported it was running, from `deploy_runtime`.
 
@@ -2009,7 +2179,21 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
     remedy_long = (f"`{UNSHALLOW}` was tried from here and did not complete"
                    if failed_to_deepen
                    else f"`{UNSHALLOW}` and ask again")
+    # Asked once per app, before anything else about it is judged, because
+    # every branch below wants it and none of them can reach it: an app that
+    # has never recorded and an app eight days behind have the same deadline,
+    # which is the next time its cron fires. Five file reads and some
+    # arithmetic, no network, no git.
+    deadlines = {app: next_run(app, root, now) for app in sorted(runtime_sha.APPS)}
+    evidence["schedules"] = {
+        app: (entry.get("cron") or entry.get("why"))
+        for app, entry in deadlines.items()}
+
     drifted, unknowns, alarms = [], [], []
+    # The apps in `drifted`, as names rather than as the prose that describes
+    # them, because the grace-window question below is about an app's clock and
+    # `drifted` holds sentences.
+    pending: list[tuple[str, float]] = []
     # Alarms that cannot be mailed, kept apart from the ones that can. The
     # cooldown lives in `deploy_runtime.notified_at`, so an app with no row
     # has nowhere to remember that it was mailed, and this file already
@@ -2039,9 +2223,14 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
             evidence[app] = {"state": UNKNOWN, "why": why}
             continue
         row = rows.get(app)
+        due = deadlines.get(app) or {}
         here = {"expected_sha": local, "files": len(keys), "ref": ref,
                 "recorded_sha": row["runtime_sha"] if row else None,
-                "last_run": str(row["recorded_at"]) if row else None}
+                "last_run": str(row["recorded_at"]) if row else None,
+                "cron": due.get("cron"),
+                "next_run_at": str(due["at"]) if "at" in due else None,
+                "next_run_in_hours": due.get("hours"),
+                "next_run_why": due.get("why")}
 
         # Never recorded is a third state, and the question it turns on is
         # not whether a row exists. It is whether the code at `ref` asks for
@@ -2097,6 +2286,7 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
             if age_hours > DEPLOY_GRACE_HOURS:
                 blind.append((app, round(age_hours / 24, 1), asked["sha"], named))
             else:
+                pending.append((app, age_hours))
                 drifted.append(f"{app} (asked to record {round(age_hours, 1)}h "
                                "ago and has not run since)")
             continue
@@ -2185,8 +2375,30 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
         if age_hours > DEPLOY_GRACE_HOURS:
             alarms.append((app, round(age_hours / 24, 1), row, local, named))
         else:
+            pending.append((app, age_hours))
             inside = f"{round(age_hours, 1)}h" + (f", {named}" if named else "")
             drifted.append(f"{app} ({inside})")
+
+    # A pending deploy is forgiven for a day because a merge at noon is not an
+    # alarm at one. That reasoning holds only while nothing actually runs
+    # inside the day. Four of the five jobs here are daily, so their next run
+    # nearly always lands inside the window, which means the window quietly
+    # guarantees the undeployed image serves at least one production run before
+    # this guard says a word.
+    #
+    # Moving the threshold is the owner's call and not this function's, so the
+    # state here is unchanged: what used to be silent is now said out loud
+    # every time it is true, and the decision sits with whoever reads it.
+    early = []
+    for app, age_hours in pending:
+        due = deadlines.get(app) or {}
+        if due.get("hours") is None:
+            continue
+        left = DEPLOY_GRACE_HOURS - age_hours
+        if due["hours"] <= left:
+            early.append(f"{app} fires {deadline_phrase(due)}, inside the "
+                         f"{round(left, 1)}h of grace it has left")
+    evidence["fires_inside_grace"] = early
 
     if alarms or blind:
         names = "; ".join(
@@ -2225,9 +2437,14 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
         # given a verdict on production and a blank where its scope should be.
         blind_note = ("; and the deploy cannot be compared from here for: "
                       + "; ".join(unknowns)) if unknowns else ""
+        # The deadline, which is the half of this that can be acted on. Every
+        # number above this line is backwards-looking: it says how stale the
+        # image is and nothing about whether a deploy tomorrow is in time.
+        soonest = _soonest([app for app, *_ in alarms]
+                           + [app for app, *_ in blind], deadlines)
         return Surface("deploy", FAILING,
                        f"the deployed code is not {ref}: {names}{blind_note}. "
-                       f"{note}", evidence)
+                       f"{soonest}{note}", evidence)
     if unknowns:
         return Surface("deploy", UNKNOWN,
                        "the deploy cannot be compared from here: "
@@ -2235,7 +2452,11 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
     if drifted:
         return Surface("deploy", OK,
                        f"a deploy is pending and still inside the "
-                       f"{DEPLOY_GRACE_HOURS}h window: {', '.join(drifted)}",
+                       f"{DEPLOY_GRACE_HOURS}h window: {', '.join(drifted)}"
+                       + (f"; and the window outlasts the schedule for "
+                          f"{'; '.join(early)}, so the grace runs out after "
+                          "the undeployed image has already served a run"
+                          if early else ""),
                        evidence)
     return Surface("deploy", OK,
                    f"all {len(runtime_sha.APPS)} jobs are running {ref}",
