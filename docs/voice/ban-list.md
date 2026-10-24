@@ -3261,3 +3261,171 @@ gap that the same collision had left empty (incident 25).
     ```
     LANDED docs/voice/check_voice.py: "The term, not the sentence. A definition is adjacent to the word it"
     ```
+
+130. The governing file carrying its own text twice, where no gate reads the
+    file itself. Entry 61 is the same disease on a reader-facing string: a
+    string that never changes is never graded. This is that sentence turned on
+    the instrument instead of the output, and it is worth its own entry because
+    the artifact is the one this seat exists to evolve and the damage is
+    invisible in every issue it writes.
+
+    The specimen is `prompts/digest.md` on main on 2026-10-23, carrying four
+    blocks of its own text twice. Two rule bullets, one slot instruction and
+    one line, each written in beside the copy the file already held, with three
+    of the four first copies ending in the middle of a sentence. The worst of
+    them is quoted here as a pair, because the failure is the brace and not any
+    word in it:
+
+    > {Chosen, never listed. Print the papers you would actually tell a builder
+    > to spend an hour on, [...] judgment is what the reader pays for.
+    > {Chosen, never listed. Print the papers you would actually tell a builder
+    > to spend an hour on, [...] judgment is what the reader pays for.
+
+    That second brace never closed. Every slot from the reading list to the
+    sign-off, including the closing line law 10 requires to print verbatim and
+    last, sat nested inside an instruction block with no end, in a file whose
+    own line 502 tells the model that text in curly braces is an instruction to
+    it and is replaced by its own words.
+
+    The tell is mechanical and it is three shapes of one thing, which is an
+    edit that inserted replacement text without removing what it replaced: a
+    run of lines the file carries twice in a row, a curly brace that never
+    pairs, and a line ending mid-clause with a new block on the line under it.
+    The third is the only one that catches a pair whose copies are not
+    identical, which is how the trimmed and untrimmed versions of one worked
+    case both stayed in the file.
+
+    Why no prose rule can reach this. Nothing a model is told while writing an
+    issue could have caught it, because the damage is in the instruction rather
+    than in the output, and the three gates that do read this file read past it:
+    the weighing gate measures its cost, the taste gate finds her rulings
+    present in it, and the enforcements command verifies forty-six quoted
+    anchors inside it. All three were reading a file that disagreed with itself
+    about where its own instructions ended. So the enforcement is a command over
+    the generator and the second ask is the engineer's, because
+    `tools/check_registers.py` already reads sixteen shared files for this class
+    and the criterion in its own comment, that more than one seat appends to the
+    file, is satisfied by this one.
+
+    The general rule, and it is the third run in a row this seat has written a
+    version of it: a check that asks whether the right KIND of thing is present
+    nearby will pass on the artifact that has it nearby and means something
+    else. Entry 129 wrote it yesterday about a defining clause landing on the
+    head noun. This entry writes it about `tools/check_registers.py`, whose
+    damage test is seven characters of git conflict marker, built in answer to
+    an incident that was clean duplicated text and no marker at all. The gate
+    catches the loud form of the failure and never the form that caused it.
+    Added 2026-10-23, writer run 43.
+    ```
+    LANDED docs/voice/check_voice.py: "counted repeated lines would call that damage. What is damage is a run that"
+    ```
+
+131. The sentence repaired in the machine that writes the next one, left
+    standing in every one already written. The mark of the class is a gate
+    whose surface list holds a module and no artifact that module produced.
+    Canon law 15 cites one string as its evidence, and it names it as a
+    masthead rather than as prose: "read in full and distilled weekly" on
+    every issue ever sent, against 166 full reads out of 8,956 papers held.
+    `MASTHEAD` in `pipeline/weekly.py` was repaired. The third line of
+    `site/content/issues/2026-W39.md` still says it twenty-eight days later,
+    and `site/lib/issues-core.js` settles what that costs, in its own words:
+    "the record decides which weeks exist, the committed file decides the text
+    of any week that has one." 2026-W39 has one and is not hidden, so the law's
+    own quoted sentence is the first line a reader of the public archive meets.
+    Two blindnesses, and they compound rather than overlap. `SURFACE_GLOBS`
+    took `pipeline/weekly.py`, which is the string that will print next, and
+    took nothing that has printed. And `READING` exempts "read in full",
+    correctly, because that is the one act the word may name and "164 papers
+    read in full" is the true sentence the law asks for. Between them, the
+    check built for law 15 could not see the words law 15 quotes.
+    The exemption is wrong for one form only. Attached to a count, read in full
+    is a fact. Attached to a cadence, it is a claim about everything that
+    arrived that week, which is the ingest number wearing the read number's
+    verb. That distinction is checkable and it is now the branch.
+    What makes this entry-worthy rather than a sighting: the hole was written
+    down in the check's own docstring on the day it was built, as "a sentence
+    that says read in full over a number that came from the ingest field passes
+    here and is a worse version of the same lie." It was not a hypothetical
+    being guarded against. It was already in print, in the archive, when the
+    sentence predicting it was typed. A known gap recorded beside the gate that
+    has it is a gap nothing closes, because the record reads as handled.
+    The sweep, over the class, which is a reader-facing string fixed in code
+    while the artifacts holding the old one stay published: the masthead is this
+    entry. `SHORT_EDITION_NOTE` is the only other standing string
+    `pipeline/weekly.py` writes into a body, and no committed issue carries it.
+    **A count of one, and the generalisable half is the surface list rather
+    than the string.** Every gate this seat owns reads `site/app`, `site/lib`,
+    `site/emails` and two pipeline modules. The archive was on none of their
+    lists, and the archive is the only surface where a repair cannot reach
+    backwards.
+    **The surface-list sweep, run in the same session, and it found a second
+    one immediately.** `SURFACE` in the same file matched
+    `site/**.{jsx,js,txt}` and not `.md`, so the gate built to stop a surface
+    being redrafted could not see an archive candidate at all. It would have
+    printed "no candidate here redrafts a surface already awaiting her word"
+    about a surface outside its own regex, which is the one sentence a later
+    run would have trusted. Two gates in one file, same error, and the second
+    was found by applying L-A21's test to the first rather than by anything
+    noticing. `claims` is the third and is left pointed where it is, with the
+    reason in `docs/ideas.md` for the seat whose register it is. **So the count
+    on the surface-list half is two fixed and one deliberately open**, and the
+    lesson is that a gate's scope is reviewed when its law is, because they
+    were written in the same breath and inherit the same blind spot.
+    One more fell out of widening it, worth a line because it is the opposite
+    failure. With `.md` matching, `candidates` accused this run of redrafting
+    its own candidate, naming the file in the accusation. A surface held only
+    by the file being checked is not a clash, it is the normal shape of a first
+    draft, where the register row and the candidate land in one diff. Latent
+    since the gate was written, because it only fires when both arrive
+    together. **Widening a gate's scope surfaces its false positives as well as
+    its blind spots, and the first firing after a widening is evidence about
+    the gate rather than about the artifact.**
+    Added 2026-10-23, writer run 44. Enforced the same day in
+    `docs/voice/check_voice.py`, where `reading` takes `ARCHIVE_GLOBS` on top
+    of the surface list and the cadence form is a branch of `READING`. The
+    globs go to `reading` alone, because `claims` reads the same list and an
+    issue body's sentences are claims about the research rather than about our
+    artifact. The line itself is drafted at
+    `docs/voice/archive-masthead-2026-10-23.md` for the frontend seat, because
+    `site/` is not this seat's surface to set.
+    ```
+    LANDED docs/voice/check_voice.py: "The archive, which `reading` adds to the list above and no other check does."
+    LANDED docs/voice/check_voice.py: "Attached to a count it"
+    LANDED docs/voice/check_voice.py: "`md` is in the list because the archive is a surface"
+    LANDED docs/voice/check_voice.py: "A surface held only by THIS candidate is not a clash"
+    ```
+
+132. The count that reaches a grade as punctuation when the law it detects is
+    the one ruling the owner has had to give twice. Not a prose tell. A tell
+    about where a law goes to die, which is the gap between a correct rule and
+    the words a seat actually reads at the moment of judging.
+    The newest issue the press has produced carries the heading "What is
+    gaining ground: recursive self-improvement with fewer guardrails".
+    "Gaining traction" is the framework's INTERNAL name. Her ruling of
+    2026-09-19, given twice, is that the internal names are never printed and
+    every heading a reader sees is written fresh from that day's news. It is
+    canon law 12 and it is incident 20.
+    The generator is not at fault and this was checked before the entry was
+    written. Its seventh count already says what to look for in its own words,
+    "a slot name, then a colon, then the day's news, which the heading rule
+    spends a paragraph forbidding", so a sixth wording of it would be the
+    patching this register keeps refusing.
+    The instrument was at fault. `axes` returned the row as a bare integer and
+    `measure` printed nothing for it at all, so the construction arrived at a
+    grade as `headings carrying a colon: 1`. Twenty-one grades in
+    `docs/voice/reviews/` scored this artifact and the figure is in several of
+    them. A number a seat has to translate back into a law is a number a seat
+    reads past, and the proof is that the law in question is the single most
+    re-ruled item in this seat's charter and the count still went by as a mark.
+    No sweep, because the class is the subject of entry 95's lesson seen from
+    the other end. Entry 95 says a rule stated as a count is kept. This says a
+    count whose law is not named at the point of printing is read as its
+    operand. The two are the same observation about where a rule has to live.
+    Added 2026-10-23, writer run 44. Enforced the same day in
+    `docs/voice/check_voice.py`, where `measure` prints each colon-bearing
+    heading under canon law 12 and incident 20 with the rule's own fix beside
+    it. The precedent is one line above it in the same function, where the
+    shape count has named canon law 14 since 2026-10-17.
+    ```
+    LANDED docs/voice/check_voice.py: "colon heading, canon law 12 and incident 20"
+    ```

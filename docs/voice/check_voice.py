@@ -62,9 +62,23 @@ The stronger form of check 4 needs the corpus and is filed with it.
    masthead, the headings and the bold leads. The inventory is mechanical.
    Whether a clause defines its term is a reading and stays in the grade.
 
+9. `generator`, the finding of 2026-10-23 and the repeat of the damage
+   `tools/check_registers.py` was built for on 2026-09-24. That checker reads
+   sixteen shared files for merge damage and the criterion in its own comment
+   is that more than one seat appends to the file. `prompts/digest.md` is not
+   on the list, and on the day this was written it was carrying four blocks of
+   edit damage: two rule bullets, one slot instruction and one line each
+   written in beside the copy the file already held, three of the four first
+   copies ending mid-sentence. One of them opened a curly brace that never
+   closed, so every slot from the reading list to the sign-off was nested
+   inside an instruction block with no end, in a file that tells the model
+   braces mark instructions to replace with its own words. No conflict marker,
+   no failing test, no red anywhere: the loud form of this damage has a gate
+   and the quiet form had none.
+
 Usage:  python3 docs/voice/check_voice.py
           [enforcements|stale|measure|links|delivery|sweep|claims|
-           reading|taste|candidates|firstuse|all] [path...]
+           reading|taste|candidates|firstuse|generator|all] [path...]
         python3 docs/voice/check_voice.py enforcements <git-ref>
         python3 docs/voice/check_voice.py selfcheck <git-ref-or-range>
 Exit:   1 if any check reports a finding, 0 if clean.
@@ -542,6 +556,19 @@ def measure(paths=None):
               + "  ".join(f"{k} {v}" for k, v in sorted(body.items())))
         if len(body) < 2:
             print("    one kind of block is a failing issue (canon law 14)")
+        # The colon count, with its specimen and the law it detects. `axes`
+        # returns this as a bare number and `measure` printed nothing at all,
+        # so the one ruling the owner has had to give TWICE arrived at a grade
+        # as "headings carrying a colon: 1" and read as punctuation. 2026-W40
+        # printed "What is gaining ground: recursive self-improvement with
+        # fewer guardrails", which is the framework's internal name, a colon,
+        # and the day's news. The construction is what the count is for.
+        for h in [h for h in re.findall(r"^#{1,3} .*$", t, re.M) if ":" in h]:
+            print(f"    colon heading, canon law 12 and incident 20: "
+                  f"{h.strip()[:72]}")
+            print("      the internal names are never printed. Strike the "
+                  "label and the colon,")
+            print("      and check whether what is left is the heading.")
         unruled = 0
         for c, k in na.most_common():
             word = next((w for w in re.findall(r"\S*" + re.escape(c) + r"\S*", t)), "")
@@ -943,6 +970,24 @@ SURFACE_GLOBS = ("site/app/**/*.jsx", "site/app/**/*.js", "site/lib/*.js",
                  "site/emails/*.html", "pipeline/weekly.py",
                  "pipeline/email_render.py")
 
+# The archive, which `reading` adds to the list above and no other check does.
+# `pipeline/weekly.py` is the string that will print on the NEXT issue. The
+# committed issue is the string printing on a published one right now, and
+# `site/lib/issues-core.js` says which of the two a reader gets: "the record
+# decides which weeks exist, the committed file decides the text of any week
+# that has one." So a masthead repaired in the module is repaired for every
+# week the press has not written yet, and for no week it already did.
+#
+# Only `reading` takes these. `claims` reads the same globs and must not: an
+# issue body's sentences are claims about the research rather than about our
+# artifact, which is the one distinction the writer charter's claims gate turns
+# on, and pointing a gate that FAILS on unhedged claims at eighteen hundred
+# lines of research prose would redden the tree over work nobody can fix.
+# Whether the register's net belongs over the archive is the ExO seat's call on
+# its own file, and the ledger entry filed with this change asks it rather than
+# answering it here.
+ARCHIVE_GLOBS = ("site/content/issues/*.md",)
+
 # Words that carry no claim. Overlap is scored on the rest, because the claim
 # in the register and the claim on the page are rarely the same string: the
 # register holds "revised when the research sharpens it" and /llms.txt prints
@@ -1192,7 +1237,21 @@ READING = re.compile(
     # reach. Her 2026-09-20 ruling rejects "it" as the subject of a
     # mechanism sentence anyway, so the form is wrong twice over.
     r"|\bit reads\b[^.]{0,40}"
-    r"\b(?:research|papers?|literature|abstracts?)\b", re.I)
+    r"\b(?:research|papers?|literature|abstracts?)\b"
+    # "read in full" is exempted above, and it has to be: it is the one act
+    # the law permits the word to name, and "164 papers read in full" is both
+    # true and the sentence the law asks for. The exemption is wrong for
+    # exactly one form, and that form is the string canon law 15 quotes as its
+    # own evidence: 'read in full and distilled weekly'. Attached to a count it
+    # is a fact. Attached to a cadence it is a claim about everything that
+    # arrives in a week, which is the ingest number wearing the read number's
+    # verb, and it is the defect the law was written for.
+    # This is the hole the first draft of this check wrote down and left open:
+    # "a sentence that says read in full over a number that came from the
+    # ingest field passes here". Narrowed to the cadence form, it closes
+    # without touching the true sentence. Added 2026-10-23.
+    r"|\bread in full\b[^.]{0,40}\b(?:weekly|every week|each week|a week)\b",
+    re.I)
 
 
 def reading(paths=None):
@@ -1225,6 +1284,14 @@ def reading(paths=None):
     that only looks at sentences cannot see the one line this check exists to
     catch.
 
+    It reads the archive as well as the code, added 2026-10-23, and the first
+    firing found the law's own evidence still in print. Canon law 15 cites one
+    string: 'The masthead said "read in full and distilled weekly" on every
+    issue ever sent.' `pipeline/weekly.py` was repaired. The third line of
+    `site/content/issues/2026-W39.md` still says it, and that file is the live
+    public text of the one week the archive publishes. Twenty-eight days, on a
+    page anybody can open, under a law that quotes the sentence.
+
     What it cannot see. The verb is checkable and the count behind it is not:
     "papers read this week" is caught by the word, while a sentence that says
     read in full over a number that came from the ingest field passes here and
@@ -1233,7 +1300,7 @@ def reading(paths=None):
     """
     targets = [ROOT / p for p in paths] if paths else []
     if not targets:
-        for glob in SURFACE_GLOBS:
+        for glob in SURFACE_GLOBS + ARCHIVE_GLOBS:
             targets += sorted(ROOT.glob(glob))
     hits = []
     for path in [t for t in targets if t.is_file()]:
@@ -1547,7 +1614,19 @@ def taste():
 AWAITING = ROOT / "docs/voice/awaiting-her-word.md"
 # A path inside backticks, which is how every row of the register and every
 # candidate file names the surface it is about.
-SURFACE = re.compile(r"`(site/[A-Za-z0-9_./-]+\.(?:jsx|js|txt))")
+#
+# `md` is in the list because the archive is a surface, which this run learned
+# the expensive way one function over: `reading` held the module that writes
+# the next issue and no issue it had already written. The same scope error was
+# here, and its cost is worse rather than better. Without `md` a candidate for
+# `site/content/issues/<week>.md` matches nothing in the register, so the one
+# gate built to stop a surface being redrafted reports "no candidate here
+# redrafts a surface already awaiting her word" about a surface it cannot see.
+# That is the sentence a later run would have trusted. L-A21 of
+# docs/standards/lessons.md is the standard and its test is the one that found
+# this: name a change that would break what the gate governs, then ask whether
+# the gate would have SEEN it.
+SURFACE = re.compile(r"`(site/[A-Za-z0-9_./-]+\.(?:jsx|js|txt|md))")
 CANDIDATE_FILE = re.compile(r"`([a-z0-9][A-Za-z0-9_.-]*\.md)`")
 
 
@@ -1616,6 +1695,15 @@ def candidates(ref=None):
             r"([a-z0-9][A-Za-z0-9_.-]*\.md)", body)}
         for surface in sorted(set(SURFACE.findall(body))):
             held = rows.get(surface, set())
+            # A surface held only by THIS candidate is not a clash, it is this
+            # run doing the bookkeeping correctly: the row in the register and
+            # the file it points at land in one diff, which is the normal shape
+            # of a first draft for a new surface. Without this the gate accuses
+            # a run of redrafting its own candidate, and the accusation names
+            # the file it is being made about, which is how it was found.
+            # Latent until now because `new` holds only files the diff ADDS, so
+            # it needs a row and its candidate in the same pull request.
+            held = held - {pathlib.Path(path).name}
             if held and not (held & named):
                 clashes.append((path, surface, sorted(held)))
     print(f"candidate files this diff adds under docs/voice/   {len(new)}")
@@ -2007,6 +2095,153 @@ def firstuse(paths=None):
     return rc
 
 
+#: The words a line of this generator may not end on when the line after it
+#: starts a new block. None of them can close a sentence, so the pair is a
+#: first copy whose tail was replaced and whose head was left behind.
+DANGLING = set("""a an the and or but of to in on for with that which is are was
+were be been by as at from into than then so because its it this these those
+not no""".split())
+
+#: What can begin a block rather than continue a wrapped sentence: a markdown
+#: bullet, which can never be a continuation, or an ordinary capitalised word,
+#: which usually starts a sentence. The exclusions below are what make the
+#: second half safe.
+RESTART = re.compile(r"^\s*(-\s+\*\*|[A-Z])")
+
+#: A run of capitals is this file emphasising a word mid-sentence ("the heading
+#: is\nWRITTEN FRESH"), so it is a continuation and not a restart. Three of
+#: this check's four false positives were exactly that shape.
+SHOUTED = re.compile(r"^\s*[A-Z][A-Z]+\b")
+
+
+def duplicated_blocks(lines):
+    """A run of lines the file carries twice, contiguously or adjacent.
+
+    Not any repeated line. Two slots of this generator legitimately end on the
+    same wrapped cross-reference three hundred lines apart, and a check that
+    counted repeated lines would call that damage. What is damage is a run that
+    appears twice with nothing between the copies, because the only way to
+    write that on purpose is to mean it twice in a row.
+    """
+    body = [(n, l.strip()) for n, l in enumerate(lines, 1) if l.strip()]
+    out, i = [], 0
+    while i < len(body):
+        best = 0
+        # Longest run starting here that is repeated immediately after itself.
+        for k in range(1, (len(body) - i) // 2 + 1):
+            a = [t for _, t in body[i:i + k]]
+            b = [t for _, t in body[i + k:i + 2 * k]]
+            if a == b and all(len(t) > 12 for t in a):
+                best = k
+        if best:
+            out.append((body[i][0], body[i + best][0], best, body[i][1]))
+            i += 2 * best
+        else:
+            i += 1
+    return out
+
+
+def unclosed_slots(lines):
+    """Where the template's brace depth leaves zero and never comes back.
+
+    Line 502 of the generator tells the model that text in curly braces is an
+    instruction to it, replaced by its own words. So a brace that never closes
+    does not read as a typo: every slot after it is nested inside an
+    instruction block with no end, and the model has to guess where the
+    instruction stopped and the template resumed.
+    """
+    out, depth, opened = [], 0, []
+    for n, line in enumerate(lines, 1):
+        for ch in line:
+            if ch == "{":
+                depth += 1
+                opened.append(n)
+            elif ch == "}":
+                depth -= 1
+                if opened:
+                    opened.pop()
+                if depth < 0:
+                    out.append((n, "a closing brace with nothing open"))
+                    depth = 0
+    for n in opened:
+        out.append((n, "opened here and the file ends with it still open"))
+    return out
+
+
+def truncations(lines):
+    """A line ending mid-clause with a new block on the line after it.
+
+    The fourth false positive is the reason for the two balance tests. A line
+    ending inside an open parenthesis or an open quotation is mid-quotation and
+    its next line finishes the quote, so an attribution example wrapping after
+    `("researchers at` is not damage.
+    """
+    out = []
+    for i in range(len(lines) - 1):
+        cur, nxt = lines[i].rstrip(), lines[i + 1]
+        if not cur.strip() or not nxt.strip():
+            continue
+        if cur.endswith((".", ":", "!", "?", "}", "`", '"', ")", "*")):
+            continue
+        if cur.count("(") != cur.count(")") or cur.count('"') % 2:
+            continue
+        if SHOUTED.match(nxt):
+            continue
+        words = re.findall(r"[A-Za-z][A-Za-z-]*", cur)
+        if words and words[-1].lower() in DANGLING and RESTART.match(nxt):
+            out.append((i + 1, cur.strip()))
+    return out
+
+
+def generator(paths=None):
+    """Edit damage in prompts/digest.md, which no gate in this repo read.
+
+    `tools/check_registers.py` reads sixteen shared files for merge damage and
+    the criterion in its own comment is that more than one seat appends to the
+    file. This one is not on that list, and the damage it was carrying is the
+    quiet form rather than the loud one: no conflict marker, just text the file
+    already held, written in beside itself.
+    """
+    paths = paths or [DIGEST]
+    rc = 0
+    for p in paths:
+        p = pathlib.Path(p)
+        if not p.exists():
+            print(f"{p}: missing")
+            rc = 1
+            continue
+        try:
+            shown = p.resolve().relative_to(ROOT)
+        except ValueError:
+            shown = p.resolve()
+        lines = p.read_text().split("\n")
+        dup = duplicated_blocks(lines)
+        brace = unclosed_slots(lines)
+        trunc = truncations(lines)
+        print(f"{shown}   {len(lines)} lines")
+        print(f"  blocks the file carries twice in a row        {len(dup)}")
+        for first, second, k, head in dup:
+            print(f"    DUPLICATE  lines {first} and {second}, "
+                  f"{k} line(s) each")
+            print(f"               {head[:88]}")
+        print(f"  curly braces that do not pair                 {len(brace)}")
+        for n, why in brace:
+            print(f"    BRACE      {shown}:{n}  {why}")
+        print(f"  lines ending mid-clause before a new block    {len(trunc)}")
+        for n, text in trunc:
+            print(f"    TRUNCATED  {shown}:{n}  ...{text[-72:]}")
+        if dup or brace or trunc:
+            rc = 1
+    print()
+    print("All three findings are one defect seen three ways: an edit that")
+    print("inserted replacement text without removing what it replaced. The")
+    print("duplicate is the tail left behind, the truncation is where the")
+    print("first copy was cut, and the brace is what a duplicated slot opens.")
+    print("None of them is a prose judgment, so none of them belongs in a")
+    print("grade a person has to remember to run.")
+    return rc
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -2016,7 +2251,8 @@ def main():
     # prevent (ban list 91, fixed 2026-10-06).
     paths = sys.argv[2:]
     rc = 0
-    takes_paths = {"measure", "links", "delivery", "compare", "firstuse"}
+    takes_paths = {"measure", "links", "delivery", "compare", "firstuse",
+                   "generator"}
     # `enforcements` takes a git ref rather than a path, because ban list 105
     # is about the file the press runs and that file is only reachable through
     # the commit the deploy was built from.
@@ -2032,6 +2268,7 @@ def main():
                      ("reading", reading),
                      ("candidates", candidates),
                      ("firstuse", firstuse),
+                     ("generator", generator),
                      ("compare", compare), ("selfcheck", selfcheck)):
         if which == name or (which == "all"
                              and name not in ("selfcheck", "compare")):

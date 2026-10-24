@@ -15861,3 +15861,242 @@ existing entries on board 503s, `INC-2026-09-28-board-run-reports-still-503`
 and `INC-2026-09-29-board-run-reports-503-third-run`, are both about
 `POST /api/runs` refusing writes across many hours. This was a GET, it
 recovered on its own, and it is filed here only so the count is complete.
+
+## INC-2026-10-23-a-404-was-reported-as-a-mystery-while-the-body-named-a-total-outage — the third time this org read an HTTP status as the fact and left the explanation unread (2026-10-23, engineer seat)
+
+Recorded under the standing rule. The two prior entries are
+`INC-2026-09-20-the-arxiv-406-is-rate-limiting-wearing-the-wrong-status-code`
+and `INC-2026-10-17-a-403-was-recorded-as-a-measured-death-and-the-gate-never-
+asked-the-production-client`, and the second of those closes by naming the next
+place it would happen. It happened somewhere neither of them looked: not in a
+tool that reads someone else's feed, but in the guardrail that reads this
+company's own platform.
+
+**What happened.** At 23:08 UTC today `python3 tools/delivery_health.py`
+reported eight surfaces. One of them read `FAILING mcp /mcp returned an
+unexpected HTTP 404`. Two of them read `ok`: `pipeline  ingesting and
+distilling within 2 days`, and `deploy  a deploy is pending and still inside
+the 24h window`.
+
+One `curl` of the same URL returned, as its entire body,
+`modal-http: workspace <id> is disabled`.
+
+Every cron in `pipeline/` and the MCP server are apps in that one workspace.
+The whole compute layer of this company was switched off, and the report said
+one route was missing and the pipeline was fine.
+
+**How long, and how it was timed.** The deploy surface's own evidence dates it
+without needing a log. `ingest` last ran at 2026-10-23 11:02 UTC and `triage`
+at 12:00 UTC, both today and both normal. `interpret` is scheduled at 14:00
+and last ran 2026-10-22. `distill` is scheduled at 15:00 and last ran
+2026-10-22. So the workspace was serving at 12:00 UTC and gone by 14:00, and
+the outage was about nine hours old when this run met it. Two scheduled jobs
+had already been missed. `distill_pending` stood at 3,680.
+
+**Why the status code was not enough, stated precisely.** Modal's HTTP edge
+answers for every app in a workspace, including the ones it will not route.
+It returns 404 with a one-line plain-text body prefixed `modal-http:`, and
+that line is the only place the cause is written down. `check_mcp` fetched the
+body, bound it to a local named `body`, used it on the connection-error path,
+and dropped it on every other path in favour of the integer. So the probe held
+the answer and reported the symptom. This is the same defect as the two prior
+entries with the polarity reversed: those read a status code as a fact about
+something it was not about, and this one declined to read anything else while
+the fact sat in hand.
+
+**Why `pipeline` read green, which is the worse half.** `judge_pipeline`'s unit
+is staleness and its window is two days. That is the right unit for the
+failure it was built for, which is a cron that runs and produces nothing. It
+is structurally blind to a platform that stops, because for two days after the
+last cron that will ever run, every row it judges is still fresh. The same
+blindness is in `deploy`, which reads what the last run recorded: an outage
+freezes that number rather than changing it, so the surface keeps reporting
+the last healthy answer indefinitely. Neither surface was wrong about what it
+measures. Nothing measured whether the platform was up.
+
+This is incident 24's shape again, and the org has now met it on the press
+(incident 24), on the till
+(`INC-2026-10-18-the-till-had-no-outside-observer`), and today on the compute
+every other surface depends on. Each time, the question was answered from
+inside the system's own records, and each time an outsider's single request
+would have answered it in one line.
+
+**What it cost.** Nothing recoverable was lost: the corpus is intact, the
+press had already printed 2026-W42 on Monday, and the two missed jobs are
+daily ones that catch up. What it cost is the nine hours, and what it would
+have cost is unbounded, because nothing in this org was going to notice. The
+daily standup reads this command, and this command was going to keep saying
+the pipeline was ingesting and distilling for another day and a half. The
+first surface that would have turned red on its own is `press`, next Monday.
+
+**What this seat did about it.** `tools/delivery_health.py` gains a `compute`
+surface that asks Modal's edge directly, a `modal_edge_outage` classifier that
+reads the body the probe already had, and an outage fact threaded into
+`judge_pipeline` so that fresh rows cannot read green while the platform is
+confirmed down. The MCP probe now quotes Modal instead of paraphrasing the
+status code. Five tests in `tests/test_delivery_health.py` hold it, including
+the direction it must not go: a request that never arrived is `unknown` and
+never `failing`, because an alarm that cries wolf about its own sandbox's
+network is one nobody reads on the day it is right.
+
+**What this seat could not do.** Re-enabling the workspace is an account action
+on Modal and no agent seat holds that. It is in the ledger as `urgent`, and it
+is the only thing on today's list that needs the owner's hands.
+
+**The generalisation, for the ExO.** Every one of this org's delivery surfaces
+reads an artifact the system itself wrote. That was the whole point of
+guardrail 4, and it was a real advance over reading `gh run list`. But a record
+written by a dead system is indistinguishable from a record written by a
+healthy idle one, and the only cure is a probe that talks to the platform
+rather than to its output. Guardrail 4 says read the artifact, not the
+scheduler. Today adds: and ask the platform whether it is there, because an
+artifact cannot tell you it has stopped being written.
+
+## INC-2026-10-23-the-generator-is-not-on-the-list-of-files-checked-for-edit-damage — a file carried four blocks of its own text twice, and the checker built for exactly that damage does not read it and would not have caught this form of it (2026-10-23, writer seat, run 43)
+
+**What happened.** `prompts/digest.md` on main was carrying four blocks of its
+own text twice: two rule bullets, one slot instruction and one single line,
+each written in beside the copy the file already held. Three of the four first
+copies end in the middle of a sentence, which is what identifies the cause as
+an edit that inserted replacement text and did not remove what it replaced.
+
+One of the four was not cosmetic. The duplicated slot instruction opened a
+second curly brace, so the file's brace depth never returned to zero after
+line 1145. Every slot from the reading list to the sign-off was nested inside
+an instruction block that never closed, including the closing line canon law 10
+requires to print verbatim and last, in a file whose own line 502 tells the
+model that text in curly braces is an instruction to it and is replaced by its
+own words.
+
+**Why it is a repeat and not a finding.** This is the same class as the
+2026-09-24 damage in this register, recorded in this file's own header note:
+"this file carried two verbatim copies of incidents 19 and 20, from a merge
+that appended entries the file already held." `tools/check_registers.py` was
+built in answer to it. Two things about that answer are the actual incident.
+
+1. **The criterion is met and the file is not on the list.** That checker's own
+   comment says the criterion for inclusion is not that a file is famous, it is
+   "that more than one seat appends to it, because that is what produces the
+   anchor contention". The list has grown to sixteen files. `prompts/digest.md`
+   is the most-appended file in the writer seat's custody, 101 commits in forty
+   days by the canon's own count, and it is not on it.
+2. **The damage test is narrower than the damage it was built for.** The test
+   is `CONFLICT`, seven characters of git marker at the start of a line. The
+   2026-09-24 damage was not a conflict marker. It was clean duplicated text.
+   So the gate built in response to that incident catches the loud form of the
+   failure and never the form that caused it, and has been green over this
+   class of damage in sixteen files for twenty-nine days.
+
+**Why nothing else saw it.** Three gates read this file every time this seat
+runs and all three read past it. The weighing gate measures its token cost and
+passed it. The taste gate finds every one of her rulings present in it and
+scored 27 of 31 green. The enforcements command verifies forty-six quoted
+anchors inside it and reported zero missing. Every one of them was reading a
+file that disagreed with itself about where its own instructions ended, because
+each asks a question about the file's contents and none asks whether the file
+is well formed.
+
+**Blameless postmortem.** No seat did anything the loop told it not to. The
+trimming edit that produced the pair at line 1946 was following the weighing
+gate's own rule that dates are this seat's notes rather than the model's
+instructions, and it wrote the trimmed sentence in correctly. What was missing
+is the step after an edit: every charter warns the seat that is about to
+append, and the thing that reads the result afterwards exists for sixteen files
+and not for this one. The 2026-09-24 entry made this exact observation in its
+own words, "what is missing is not the fix but the looking", and then added a
+checker whose list this file never joined.
+
+**Fixed in this pull request.** The four blocks are removed, no operative
+clause among them, brace depth back to zero, 34,364 tokens to 34,043, and the
+per-issue worst case from $0.1479 to $0.1476 against a $0.15 ceiling the build
+fails over. `docs/voice/check_voice.py generator` is the instrument, with three
+detectors and six named fixtures: green on the repaired file and a clean
+fixture, red on the file as main carried it naming all four blocks with their
+line numbers, and red on three fixtures holding one defect each.
+
+**Open, and it is the engineer's edit rather than this seat's.** Adding
+`prompts/digest.md` to `REGISTERS` in `tools/check_registers.py`, and widening
+that checker's damage test past the git marker to the duplicated block so the
+other sixteen files get the same cover, is filed in the ledger with the
+measured finding. The writer seat does not write pipeline or tools code.
+
+## INC-2026-10-23-the-law-quoted-its-own-evidence-and-the-gate-could-not-read-it — canon law 15's cited string is the first line of the public archive, twenty-eight days after the masthead was repaired (2026-10-23, writer seat, run 44)
+
+**What happened.** Canon law 15, her ruling of 2026-09-25, cites exactly one
+string as its evidence and names it as a masthead: "read in full and distilled
+weekly" on every issue ever sent, against 166 full reads out of 8,956 papers
+held. `MASTHEAD` in `pipeline/weekly.py` was repaired. On 2026-10-23 the third
+line of `site/content/issues/2026-W39.md` still said it, and
+`site/lib/issues-core.js` makes that file the live public text of the one week
+the archive publishes: "the record decides which weeks exist, the committed
+file decides the text of any week that has one."
+
+So the sentence the law quotes as the thing that must never happen is the first
+line a reader of the public archive meets, and has been for twenty-eight days.
+
+**Why it is a repeat, and of what.** `docs/standards/lessons.md` L-A21 is the
+company law for this exact failure and it is a vendored copy, so it was written
+from a defect that had already happened elsewhere. Its words: "its scope is
+narrower than its subject: a law can fire on schedule, pass its own audit, and
+miss, because it is pointed at the wrong place." It then gives the test. "Name
+one change that would break what this gate governs, then ask whether the gate
+would have seen that change, not whether it would have fired on it."
+
+`docs/voice/check_voice.py reading` was built for law 15. Its surface list held
+`pipeline/weekly.py`, the module that writes the NEXT issue, and held no issue
+that module had already produced. A masthead repaired in the module is repaired
+for every week the press has not written yet and for no week it already did.
+The gate was red on four `site/app` lines the whole time, so it never looked
+like a gate that was passing, which is how it kept attention off its scope.
+
+Three further links, each a seat already knowing the half it was holding.
+
+- The hole was written into the check's own docstring on the day it was built:
+  "a sentence that says read in full over a number that came from the ingest
+  field passes here and is a worse version of the same lie." It was not a
+  hypothetical. It was already in print when the sentence predicting it was
+  typed. **A known gap recorded beside the gate that has it is a gap nothing
+  closes, because the record reads as handled.** That is L-A9 with the register
+  and the gate in one file.
+- `INC-2026-10-18-a-drafted-copy-repair-sat-unset-for-twenty-two-days` is the
+  same law, the same word and the same month on a different surface. That one
+  was drafted and unset. This one was never drafted, because nothing saw it.
+- L-A24's stated consequence is the mechanism here in one line: "only an
+  outside observer reading the artifact catches the missing run, because a
+  scheduler reports its own intentions." Swap run for string. The module
+  reports its own intention and the archive holds the outcome.
+
+**The second blindness, which compounded with the first.** `READING` exempts
+"read in full", and it must: that is the one act the word may name, and "164
+papers read in full" is both true and the sentence the law asks for. Between a
+surface list that excluded the archive and a regex that excluded the phrase,
+the check built for law 15 could not see the words law 15 quotes.
+
+**Fixed in this pull request, in `docs/voice/check_voice.py`.** `reading` takes
+`ARCHIVE_GLOBS` on top of the surface list, so it reads 63 surfaces where it
+read 61, and the first firing reported the line. The exemption now holds for
+the count form and not the cadence form: attached to a count, read in full is a
+fact, and attached to a cadence it is a claim about everything that arrived
+that week. The globs go to `reading` alone, because `claims` reads the same
+list and an issue body's sentences are claims about the research rather than
+about our artifact.
+
+**Not fixed here, and named rather than left.** The line itself is drafted at
+`docs/voice/archive-masthead-2026-10-23.md` and is the frontend seat's to set,
+because `site/` is not the writer seat's surface. Until it is set the archive
+carries the sentence and the gate is red about it, which is the correct state
+of both.
+
+**The generalisable half, which is a scope question rather than a string
+question.** Every gate this seat owns reads `site/app`, `site/lib`,
+`site/emails` and two pipeline modules. The archive was on none of their lists,
+and the archive is the only surface in the product where a repair cannot reach
+backwards. L-A21's test applied to the rest of them is work this run did for
+`reading` and did not do for `claims`, deliberately and with the reason filed,
+and `docs/ideas.md` carries the question for the ExO seat whose register it is.
+
+**Blameless note.** No seat skipped a step. The masthead repair was correct and
+complete for the file it was in. The gate was built after the repair and
+pointed at the file the repair had touched, which is the natural place to point
+it and is the trap: a gate written in the same breath as a fix inherits the
+fix's scope, and the fix's scope was the module. Ban list 131 and 132.
