@@ -1253,21 +1253,6 @@ def test_an_undatable_drift_falls_back_to_the_old_anchor():
               triage["drift_hours"] > dh.DEPLOY_GRACE_HOURS, str(triage["drift_hours"]))
 
 
-def main() -> int:
-    for name, fn in sorted(globals().items()):
-        if name.startswith("test_") and callable(fn):
-            print(name)
-            fn()
-    print()
-    if FAILURES:
-        print(f"{len(FAILURES)} check(s) failed: {', '.join(FAILURES)}")
-        return 1
-    print("all checks passed")
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
 
 
 # ------------------------- what the verdict says about what it could not see
@@ -1376,3 +1361,19 @@ def test_a_failing_deploy_still_names_the_apps_it_could_not_measure():
               "cannot be compared" in surface.headline, surface.headline)
         check("distill's own state is unknown",
               surface.evidence["distill"]["state"] == dh.UNKNOWN)
+
+def main() -> int:
+    for name, fn in sorted(globals().items()):
+        if name.startswith("test_") and callable(fn):
+            print(name)
+            fn()
+    print()
+    if FAILURES:
+        print(f"{len(FAILURES)} check(s) failed: {', '.join(FAILURES)}")
+        return 1
+    print("all checks passed")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

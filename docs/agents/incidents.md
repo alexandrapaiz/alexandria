@@ -16553,3 +16553,82 @@ regex, and no gate is filed here on a guess about what would work. What is
 recorded is that the duty has a write gate and no read gate for the one seat
 it binds, which is the map in `docs/agents/registers.md` and the thing that
 document says the org keeps forgetting.
+
+## INC-2026-10-24-the-drift-guard-reported-on-the-apps-it-could-measure-and-not-on-the-ones-it-could-not — the fourth entry on one shape, and the third in two days on this one surface (2026-10-24, engineer seat, message run)
+
+Recorded under the standing rule. The shape is a guard that could not measure
+something reporting a verdict instead of saying so, and this file already
+holds three entries on it: `INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see`
+(this same surface reading "unmeasured" where it should have read "behind"),
+`INC-2026-10-23-the-drift-guard-answered-green-from-a-checkout-that-could-not-see`
+(this same surface reading "fine" where it should have read "I cannot tell"),
+and company standard L-A21 as the general rule. Yesterday's entry is the one
+this continues, and the continuation is the point: the fix it shipped was
+correct and it closed one of the two doors.
+
+**What happened.** `judge_deploy` builds four lists as it walks the apps:
+alarms, blind, unknowns, drifted. On the way out it tests `if alarms or blind`
+first. So a surface with one app past the grace window and one app it could
+not place at all returned `FAILING` with a headline naming only the first, and
+the `unknowns` list it had already built was discarded without being read.
+
+`tools/drift_watch.py` then asked the question that was supposed to catch
+this, `if deploy.state == dh.UNKNOWN`, which that ordering makes unreachable
+whenever anything alarms. Its `behind()` filters the evidence to `failing`.
+So the unmeasured app left no trace in the headline, no card on the board, no
+line in the rendered report, and no mark on the exit code. The run exited 1,
+which the file's own docstring defines as "at least one app is past the window,
+and the board now carries it" — a claim about the fleet, made by a run that
+could not see part of it.
+
+**Why yesterday's fix did not cover it.** Yesterday introduced the `unknown`
+state on this surface and wired `drift_watch` to exit 2 on it, and wrote: "a
+shallow run now goes red and says the comparison is what failed." That is true
+of a run where *every* app is undated, which is what a depth-one clone
+produces and what was in front of that run. It is not true of a mixed run. The
+new state was added at the per-app level and read at the surface level, and
+nothing in between was tested, because the reproduction available that day
+made every app unknown at once and so could not distinguish the two.
+
+**That the mixed state is reachable, which is the part worth keeping.** Two
+routes reach it with no shallow clone at all. An app that has never recorded a
+runtime and whose module does not ask it to is `unknown` while its siblings
+compare normally, which is a state this repository forbids by test and judges
+anyway, on purpose. And a clone deep enough to date one app's two commits but
+not another's twenty dates exactly one of them: depth is a knob on the host
+harness, and every value of it between one and full produces this. The
+reproduction is `tests/test_deploy_drift.py::test_a_failing_deploy_still_names_the_apps_it_could_not_measure`
+and `tests/test_drift_watch.py::test_an_app_that_could_not_be_measured_is_not_a_quiet_pass`.
+
+**The second finding, and it is about why nobody looked.** `_last_commit_at`'s
+docstring ended, in its own words, "the seat workflows check out with
+`fetch-depth: 0`, so in the place this actually runs daily the answer is real;
+anywhere else it degrades to `unknown` instead of to a guess." That sentence
+was true when it was written. It stopped being true on 2026-10-17, when
+`ab4e5bb` moved every seat's cadence off GitHub schedules and onto the host
+manifests. The twelve workflow files still say `fetch-depth: 0` and they are
+no longer what checks out a scheduled run; the host clones one commit deep. So
+the daily place this code runs became exactly the shallow case the docstring
+promised it was not, and the promise sat in the file telling every reader not
+to check. A runtime change outside this repository falsified a comment inside
+it, and the comment went on being read as current.
+
+**The fix.** The `FAILING` headline carries the undated apps. `_is_shallow`
+asks `git rev-parse --is-shallow-repository` rather than inferring from a
+failed digest replay, so the undated row can name `git fetch --unshallow` as
+the one command that closes it, and so the card body stops guessing "usually a
+shallow clone" at a sentence that has two readings with different fixes.
+`drift_watch.undated()` reads the apps the surface could not place, `render()`
+names them on every path, and any of them makes the run exit 2. The cards for
+the apps that did alarm are posted before that return, so a real drift is
+never lost to the exit code.
+
+**What the org should take from it.** Yesterday's entry closed with "no guard
+in this repository says anywhere what depth of history it needs," and that is
+still true and is still unbuilt. What this entry adds is narrower and cheaper
+to act on. When a guard grows a third state, the question to ask is not
+whether the new state is correct but at what level every reader downstream
+tests for it, because a state introduced per-app and read per-surface is a
+state that only fires when it fires for everything at once. That is the gap
+between the two entries, it is one day wide, and it was reachable by reading
+the branch order of the function the fix had just edited.
