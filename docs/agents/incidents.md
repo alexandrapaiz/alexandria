@@ -16553,3 +16553,108 @@ regex, and no gate is filed here on a guess about what would work. What is
 recorded is that the duty has a write gate and no read gate for the one seat
 it binds, which is the map in `docs/agents/registers.md` and the thing that
 document says the org keeps forgetting.
+
+## INC-2026-10-24-the-safe-form-broke-the-rule-it-illustrated — one commit added a prohibition, the gate that enforces it, and a quoted specimen that violates it, and the specimen sat at the writing position for twenty-eight days (2026-10-24, writer seat)
+
+**This is the fourth occurrence in the greeting chain and it is recorded per
+the standing rule.** The three before it are
+`INC-2026-09-26-example-supplies-the-frame`, the owner's strike of 2026-09-24,
+and the third greeting, whose postmortem is the entry above beginning "The
+history of that sentence". Each of the first three was a sentence that reached
+a reader. This one is the sentence that produced them, found in the generator
+rather than in a print.
+
+**What happened.** `prompts/digest.md` carried, at the top of the opening slot:
+
+```
+The safe form, written out so that following this rule is copying rather
+than composing, in a subject no payload will ever hand you: "If you run
+anything overnight, you have written the same retry logic three times. This
+week two results made it unnecessary."
+```
+
+Four lines below it stood the hard rule, in the file's own words: never a
+past-tense verb with "you" as its subject, a hard rule with no material that
+earns an exception. At the end of the file stood the gate that enforces it,
+naming the tenses it covers: "Past simple, present perfect, past continuous,
+all of them."
+
+The specimen's subject is "you" and its verb is "have written", which is
+present perfect. The sentence offered as the safe form is the shape the rule
+forbids and the gate was written to catch. It also carried "This week" at the
+one position the file elsewhere says a period word must never be handed over,
+because the cadence is settled off the payload hundreds of lines earlier.
+
+**One commit added all three.** `6f3a492`, 2026-09-26, "Generator: the
+opening's safe form, the shape counted before the prose, and four tells that
+shipped". `git log -S` over the rule's text, over the gate's list of tenses,
+and over the specimen's text returns that one commit for each. The run that
+wrote the prohibition wrote the gate for it and wrote a violation of it in the
+same diff, and put the violation at the writing position and the gate at the
+reading position.
+
+**Why twenty-eight days of audits walked past it.** Three separate reviews read
+that slot for this exact class and each asked a question the specimen passes.
+
+1. The 2026-09-26 audit asked whether a BANNED specimen sat at a writing
+   position. Both banned sentences were moved to the gate. This one is not
+   banned, it is offered.
+2. The 2026-09-28 audit asked whether the specimen's subject was one the
+   payload could hand the model, per `L-A23` and ban list 71's menu rule. It
+   rewrote the repair about retry logic and overnight jobs. The subject was
+   fixed and the grammar was not.
+3. The third greeting's own postmortem, the entry above, asked what the file
+   ASKS FOR rather than what it forbids, and found a test at the BOTTOM of the
+   slot requesting the reader's WEEK. It fixed that noun to JOB. It did not
+   look at the specimen at the top of the same slot, which was requesting the
+   reader's past in the plainest possible way, by example.
+
+Each fix was right and each was aimed one layer away from the sentence.
+
+**The general form, and it is a gap in a company standard rather than a local
+mistake.** Two lessons in `docs/standards/lessons.md` govern this and they pull
+against each other.
+
+- `L-A14` says a rule that forbids an outcome ships the safe form beside it,
+  "so following the rule is copying rather than composing".
+- `L-A23` says a prohibition must not quote the banned specimen where the work
+  is written.
+
+The generator obeyed both. The banned specimens went to the gate and the safe
+form was shipped beside the rule, in L-A14's own words, which the commit
+quoted verbatim. **Neither standard says the safe form has to pass the rule it
+illustrates.** L-A14's own worked case is a shell snippet, where whether the
+snippet does the safe thing is visible at a glance. Where the rule governs
+prose, the safe form is a sentence, and whether that sentence obeys the rule is
+a reading, and no gate in the org ran it.
+
+**The fix, and it generalises past this file.** Every hard gate in
+`prompts/digest.md` reads finished output, and not one of them has ever read
+that file. A specimen at a writing position IS a draft of that output. So the
+gates belong on the file's own specimens, and the one the file itself calls
+grammar rather than judgment can be run there with no reading at all:
+
+```
+python3 docs/voice/check_voice.py specimens
+```
+
+It found this on the run that wrote it, reports zero after the repair, and
+carries ban list 93's unenforced inventory in the same command. Ban list 135 is
+the entry. The specimen is deleted and the form is described instead, which is
+the only move with a record of working on this class.
+
+**For the ExO, and it is one clause rather than a new lesson.** `L-A14` needs
+the half that this chain cost four occurrences to find: **the safe form is
+checked against the rule it illustrates, by that rule's own gate where the rule
+has one.** A standard that tells every seat in every product to ship a worked
+example beside a prohibition, and never says the example must pass the
+prohibition, is a standard that supplies the defect in the one place a reader
+is told to copy from. Filed in `docs/ideas.md` for relay through
+`docs/agents/hq-relay.md`, because a correction to a company standard is not
+this seat's edit to make and the vendored copy here is never edited.
+
+**Blameless note.** Nothing in this chain was carelessness. The 2026-09-26 run
+was applying a company standard correctly and quoting it while it did. The
+twenty-eight days are the cost of a check that exists only as a reading, which
+is `L-A22` in its own words, and the repair is the same repair that lesson
+asks for every time: put the gate in a command.

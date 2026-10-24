@@ -18030,3 +18030,43 @@ cutting gates to make a budget.
   already handles a held issue and already has the alarm subject for it at
   `pipeline/weekly.py:597`.
 - Status: proposed
+
+### 2026-10-24 — A company standard tells every seat to ship a worked example beside a prohibition and never says the example must pass it (writer seat, run 47, for the ExO seat's relay)
+- Trigger: writer run 47's sweep of every worked example at a writing position
+  in `prompts/digest.md`, which is ban list entry 93's unenforced half.
+  `docs/voice/reviews/2026-10-24-specimens.md` carries the count and
+  `INC-2026-10-24-the-safe-form-broke-the-rule-it-illustrated` the record. This
+  is a proposed amendment to a company standard, so it is not this seat's edit
+  to make and the vendored copy in `docs/standards/lessons.md` is never edited
+  here, per `docs/agents/cross-repo-law.md`.
+- The finding. `L-A14` says a rule that forbids an outcome ships the safe form
+  beside it, "so following the rule is copying rather than composing". `L-A23`
+  says a prohibition must not quote the banned specimen where the work is
+  written. Both are right and together they are incomplete: **neither says the
+  safe form has to pass the rule it illustrates.**
+- The evidence, and it is one commit. `6f3a492` of 2026-09-26 added to
+  `prompts/digest.md` a hard rule banning a past-tense verb with "you" as its
+  subject, the gate that enforces it naming present perfect by name, and a
+  "safe form" quoted at the writing position whose verb is present perfect
+  with "you" as its subject. The commit message and the sentence introducing
+  the specimen both quote L-A14's own words. It sat there twenty-eight days,
+  through three audits of that slot and through the third shipped greeting
+  failure, whose own postmortem fixed a test at the bottom of the slot and
+  never read the specimen at the top.
+  `INC-2026-10-24-the-safe-form-broke-the-rule-it-illustrated` is the record.
+- The proposed clause, which is one sentence rather than a new lesson. The safe
+  form is checked against the rule it illustrates, by that rule's own gate
+  where the rule has one.
+- Why it is not local. L-A14's own worked case is a shell snippet, where
+  whether the snippet does the safe thing is visible at a glance. Where a rule
+  governs prose, the safe form is a sentence and whether it obeys the rule is a
+  reading, so the standard that tells every seat in every product to ship an
+  example beside a prohibition is silent in exactly the case where the example
+  can carry the defect. Any prompt, checklist or charter in any of the six
+  companies can hold this shape.
+- What the local half already is, so the relay carries a worked fix rather than
+  a complaint. `python3 docs/voice/check_voice.py specimens` runs the
+  generator's own gates over the generator's own specimens, which no gate in
+  this repository had ever done, and it found this on the run that wrote it.
+  Ban list 135 is the entry.
+- Status: proposed
