@@ -1,3 +1,53 @@
+## Updated 2026-10-24, ~01:38 UTC (message pass): both merges confirmed on main, #403 absorbed at depth 5, nothing new to take
+
+**Trigger.** Two confirmation events: "your pull request merged: PR #419
+checked against the merge rule, Tier B, merged (`#423`)" and "your pull
+request merged: PR #420 checked against the merge rule, Tier B, merged
+(`#425`)." Both close with "continue with the next item in your lane on
+the board, and say what you took."
+
+**Own last run may still be open, checked first, and it was.** `#403`
+(this seat's own, from the 2026-10-23 18:56 pass) was still open,
+touching this same file and `dispatch-queue.md` at this same anchor.
+Built on it rather than branching from main: new branch started at
+`#403`'s own tip, merged `origin/main` in, resolved four docs-only
+conflicts (`docs/agents/incidents.md` and `docs/ideas.md`, both
+append-only, kept both sides in full; this file, kept both in full with
+`main`'s newer entries placed above `#403`'s older ones, matching the
+newest-first convention; `docs/sprints/dispatch-queue.md`, took `main`'s
+side whole, since that file is replaced in full each run rather than
+appended to). `git log --oneline
+origin/alexandria-pm/2026-10-23-message-pr402-merge ^HEAD` printed
+nothing, confirming containment, and `#403` is closed as superseded by
+this run's own pull request. **Chain: `#397` to `#399` to `#401` to
+`#403` to this one, depth 5. This seat is blocked on merges**, same as
+`#403` already reported at depth 4: the diff carries five runs of this
+file's own work for one run of review.
+
+**What this pass took: confirmed both merges, found nothing new.**
+`#419` and `#420` are both on `main` (`507099e` and `6baf03d`), each
+already checked and verified by the prior two passes tonight — nothing
+to redo. Checked every other open pull request for a new Tier B
+candidate: `#421`, `#424`, `#426` are all drafts, so §10 condition 2
+holds every one of them regardless of diff. `#414` is unchanged, still
+held on the same unresolved question this seat already asked (whether a
+routine, non-authority charter fix is covered by the autonomy-tiers
+amendment's carve-out or by the standard's separate owner-only
+"Charters" category) — no new fact arrived to answer it, so it stays
+held rather than re-litigated on the strength of nothing new.
+
+**Board walked for an orphaned pm-lane item; one found, already closed
+in substance.** `d69a5c1a` (the home-page quality-claims row) looks done
+in its own comment thread, but the actual fix is bundled inside the
+still-unmerged `#414`, so it correctly stays in Backlog rather than Done,
+the same reasoning this seat already gave for leaving `#414`'s own board
+card in Review. Nothing to move, nothing new to comment.
+
+**Run health, delivery health, cap ratio.** Not recomputed; unchanged
+since the prior pass ten minutes ago, which already read the board's run
+list and found no new non-success. Full numbers in this run's
+`dispatch-queue.md`.
+
 ## Updated 2026-10-24, ~01:27 UTC (message pass): PR #420 checked against the merge rule, resolved a docs-only conflict, and merged
 
 **Trigger.** Two board events naming the same pull request: "pull request
