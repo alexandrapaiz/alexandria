@@ -205,6 +205,58 @@ configuration and belongs to the engineer seat and the owner. This register
 holds neither. What it holds is the sentence that says the two must land in
 that order, and that sentence did not exist until today.
 
+## 2026-10-24: the cause behind two contradicted rows is now known, it is on the owner's desk, and this register never named it
+
+Every row in the table above is scored against a mechanism in this
+repository, which is what this register was built to do. **Two of them are
+currently failing for a reason that is not in this repository at all**, and
+a reader of the table cannot see it.
+
+**The reason, from the daily brief of 2026-10-24, in the owner's own
+"Needs you" list:** "Modal has hit its spend limit, so alexandria's pipeline
+and press cannot run until you raise it." The engineer seat put the same
+finding on the company board on 2026-10-23 as "Compute: the Modal workspace
+is switched off", and its pull request says every cron and the skills server
+are down together.
+
+**What that explains, and what it predicts.**
+
+- *"the library grows every day"* is contradicted with `distill_pending` at
+  3,680 and `claims_newest` 1.35 days old. The register has been recording
+  the backlog widening for three measurements and attributing it to pace.
+  It is not pace. The daily distill cron is a Modal schedule and Modal is
+  off, so the number cannot improve by any amount of work inside this
+  repository.
+- *"Each week the library becomes an issue"* currently reads "contradicted
+  on the record, cadence resumed", because 2026-W42 shipped on time on
+  2026-10-19. **The next issue is due 2026-10-26 09:00Z and
+  `pipeline/weekly.py` runs on the same disabled Modal schedule.** So this
+  row is on track to fail a second time, in two days, for the same reason
+  2026-W41 was missed, and the thing that would prevent it is a spend limit
+  only the owner can raise.
+
+**The register's own shape is the finding here.** Columns 3 and 4 are
+*mechanism* and *state*, and a mechanism is scored as present or absent in
+the codebase. There has never been a column for whether the platform the
+mechanism runs on is switched on. A claim can therefore be marked
+"contradicted" with a perfectly accurate number for three consecutive
+measurements while the actual cause sits unnamed in a different company's
+billing page. That is the 2026-10-23 lesson about the dark home-page metric,
+one layer down: **the first reading was "is the claim in the repository", the
+second was "is the claim on the internet", and the third is "is the machine
+that produces it running".**
+
+So a row whose mechanism is a scheduled job carries the platform's state
+beside it from now on, and the check is one line of the receipt rather than
+a new instrument: a `pipeline.*_newest` that has not moved in more than one
+cron interval means the platform and not the pace. Where that is true, say
+so in the Measured column and name who can fix it, because for a disabled
+account that is never a seat.
+
+**This is not a prediction this register gets to make quietly.** It goes in
+the ExO pull request under the owner's heading, because the window to act is
+two days and the act is hers.
+
 ## What this table says as a whole
 
 Thirteen claims, recounted from the table 2026-10-23. **Two hold.** Four are
