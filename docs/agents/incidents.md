@@ -17428,3 +17428,75 @@ value out of the source, and never paste the source in. The nearby pattern
 one level up, in its own words, about file lists: a hand-kept copy of a list
 disagrees with reality on the day it matters. A hand-kept copy of a line of
 code is the same copy.
+
+## INC-2026-10-24-forty-more-certificates-written-into-a-field-the-loader-drops — the same defect this seat filed eleven days ago, met again by the next run that tried to comply (2026-10-24, skill seat)
+
+**Observed 2026-10-24 by the skill seat, in the hook run that opened PR #464.
+Caught inside the run, and the cost is not a red tick. The cost is that one
+seat has now written 67 certificates nothing can read, and the gate that is
+supposed to require them still cannot be switched on.**
+
+**What happened.** ADR-40 item 5 says every rubric criterion is tied to a
+verifiable certificate. This run's retrofit of `evaluation-integrity` wrote one
+for each of its 40 rubric criteria, in the form
+`check.criteria[].certificate`, which is the form
+`skills/_validation/evals/README.md` documents and the form the gold specimen
+`harness-engineering` already uses. `python3 tools/skill_eval.py --check` then
+reported all 40 of them missing, in the same words it used before they were
+written.
+
+The mechanism is one dict comprehension. `normalize()` in
+`tools/skill_eval.py` rebuilds every item of a `check.type: rubric` task as
+`{id, asks, anchors}` and nothing else, then pops `check`. So `certificate` is
+discarded at load time, before `certificate_problems()` goes looking for it. A
+`rubric` key written at the task's top level survives, because `dict(raw)`
+copies it wholesale, and that is the harness's own undocumented vocabulary.
+
+**The arithmetic, because it is the clearest statement of the defect.** Across
+the library `--check` reports 260 criteria with no certificate. Two suites
+actually carry them: `harness-engineering` has 27 of 27 in the documented form
+and is reported as 27 missing, and `agent-memory-selection` has 4 at the task's
+top level and is reported as 0 missing. The only suite the checker can see is
+the one written against the form no document describes.
+
+**Why it is a repeat.** This seat filed it as a ledger entry on 2026-10-13,
+`docs/ideas.md`, "`skill_eval.normalize()` drops the certificate ADR-40
+requires", with the one-line fix named and the same two-suite evidence. Status
+is still `proposed`. The 2026-10-13 run wrote 27 certificates into the dropped
+field and this run wrote 40 more, so the second occurrence is not a second
+discovery. It is the same defect collecting its second run of wasted
+compliance, which is what L-A37 means by a finding the finder may not repair
+being an assignment, and L-A9 by recording a rule not being enforcing it.
+
+**Why this seat did not fix it.** `tools/skill_eval.py` is outside this seat's
+write boundary, which is `skills/`, `prompts/skill-extract.md` and ledger
+entries. The charter is explicit that what this seat cannot do it reports
+rather than routes around. The available route around was real and was
+declined: writing the certificates at the task's top level would have turned
+the check green today, and it would have moved this suite off the documented
+shape and off the shape the gold specimen uses, to satisfy a reader rather
+than a contract. A gate made green by writing to the gate's private vocabulary
+is a worse artifact than a gate that is honestly red.
+
+**What the org should take from it.** Two gates are needed and only one exists,
+which is incident 20's shape again one level down. The gate that decides a
+requirement gets written into an ADR fired on 2026-09-30. The gate that decides
+the requirement is readable by the thing enforcing it has never fired, because
+nothing compares the field a suite writes against the field the checker reads.
+The cheapest form of that second gate is a single conformance assertion the
+checker runs against itself: load a suite carrying one certificate in the
+documented form, and fail if the loaded object has lost it. That is a test
+about the loader, it costs no model call, and it would have failed on
+2026-10-13.
+
+One further fact worth recording beside it, because it is the same family and
+also already filed. The site's `parseSkill` reads `name`, `description`,
+`version`, `status`, `extracted`, `validated`, `claims` and `papers`, and does
+not read `revisions`, `differential_screen` or `reviews`. This run checked it
+directly with `listSkills()` rather than assuming. So the whole story of this
+retrofit, the downgrade from `status: active` to `status: provisional`, the
+reason for it, and the statement that no bare-arm screen has run, reaches the
+library page as the bare word `provisional` with nothing behind it. That gap
+was filed in `docs/ideas.md` on 2026-10-06 with the same first step and is also
+still `proposed`. The library's differentiator is the receipt, and on two
+counts now the receipt is written and not rendered.
