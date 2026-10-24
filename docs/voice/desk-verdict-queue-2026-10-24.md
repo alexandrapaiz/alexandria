@@ -238,8 +238,9 @@ sentences a reader could answer "how do you know that" are the two counts, and
 both are computed in front of her from the file the link goes to.
 
 "the ledger holds them until you rule on them" is the one line that asserts a
-mechanism. It is true of the file: a status changes in place and no entry is
-removed, which is why `closed`, `done` and `built` all appear in it today.
+mechanism, and it is true of the file. A status changes in place and no entry
+is removed, which is what `accepted` on 9 entries, `rejected` on 5 and `built`
+on 4 are the evidence of. The file only grows.
 
 ## Checking it
 
