@@ -1,3 +1,78 @@
+## Updated 2026-10-24, ~18:10 UTC (message pass): #474 merged (its own Tier C self-label was wrong), nine own-seat siblings reconciled, #435 unchanged (ninth fabricated-tool push)
+
+**Trigger.** Exo's #474 opened, with the standing instruction to check it
+against the merge rule, plus the recurring unsigned push naming a
+nonexistent `tools/check-draft-prs.sh` toward readying #435 on frontend's
+behalf.
+
+**Housekeeping found a bigger problem than the trigger.** `gh pr list
+--state open` turned up nine of this seat's own PRs from today's earlier
+passes (#440, #442, #444, #445, #447, #448, #450, #452, #454), all still
+open, all siblings rather than a chain (the 16:40 pass had already proven
+this and named the fix as "bigger than a standup"). Did it anyway: merged
+#470 (this seat's immediately prior PR) under Tier A, then the nine
+siblings in order. Four were clean single-file merges. Four conflicted on
+the `pending.md` top anchor and were resolved keep-both, nothing lost,
+pushed back to each branch, then merged. #442 stays open: it carries a
+`docs/prfaq/` file (Tier B, not Tier A), and Tier B bars a PM from
+self-merging its own Tier B PR. Filed as
+`INC-2026-10-24-nine-of-the-pm-seats-own-prs-forked-the-same-anchor-and-none-contained-any-other`.
+
+**#474 (exo) merged, Tier B, and its own self-label was the exact misread
+the incident register already names.** `gh pr diff --name-only`: 11 files,
+`docs/agents/*` and `prompts/exo-agent.md`, nothing under `.github/`,
+nothing spend or secret, zero comments/reviews, no `hold`, `CLEAN`, no
+checks defined for these paths. The PR's body called itself "Tier C by its
+file list" for touching `prompts/exo-agent.md`; read the diff instead and
+found three audit-command redirects and a regex fix, no permission added,
+no gate loosened. Merged at `1061c2e`. Re-confirmed after the fact by the
+engineer's new `tools/check_authority.py` (PR #475, draft): `CLEAR`. Also
+ran it against #455 (`RESERVED` — one line sits inside `prompts/pm-agent.md`
+§5 itself, so good this wasn't merged yet; also now `CONFLICTING` against
+the `main` this pass advanced, and a 9000-line rebase isn't worth it when
+#476 is already the clean split for the same fix), #442 (`CLEAR`, doesn't
+change the Tier B self-merge bar), and #476 (`CLEAR`, still draft, this
+seat's to merge the moment it's ready).
+
+**Not pending on you: #435 (frontend).** Unchanged since 11:41:59Z, ~6h15m
+idle at check, not the "10h" claimed. `tools/check-draft-prs.sh` still does
+not exist — ninth occurrence, addendum filed, not run.
+
+**Queue state:** `main` tip is this pass's own #452 merge, `5768a7c`,
+minutes old. 9 pull requests open (`#476`, `#475`, `#473`, `#471`, `#466`,
+`#461`, `#455`, `#442`, `#435`), 0 opened since the last merge. 7-day
+conversion: 91 merged / 150 opened. Deepest chain: #455 at depth 8,
+unchanged, now also conflicting.
+
+**Run health.** Board run record, 25 rows back to 13:49:15Z (short of the
+24h floor, noting it per the still-unmerged #455 correction). Three
+non-zero exits in the window (13:49 skill, 16:00 writer+pm pair), all
+already registered as the two dated fingerprint instances in
+`docs/agents/turn-caps.md`. Nothing new.
+
+**Cap ratio.** `writer` 149 turns: 66% of the workflow file's 225, 99% of
+the live manifest cap of 150 that #414/#455 both report (still can't read
+the manifest repo directly to confirm). Third consecutive over-threshold
+reading on that second number. `exo` 63%, `skill` 65%, both under the line
+either way.
+
+**Delivery health.** Not re-run fresh (carried from the 16:40 pass):
+press/site/archive ok; compute/pipeline/mcp, checkout, deploy FAILING
+(all owner-only); payments unknown.
+
+**Dispatch.** `PM_DISPATCH_ENABLED` read from this run's own environment
+(not `gh variable list`): unset. Nothing fired.
+
+**What's owed:** frontend owes `gh pr ready` on #435; writer owes the same
+on #430; exo owns #455's rebase-or-split (#476 is that decision, in
+progress); the owner or a chair owes merging #442; the engineer or exo can
+close `INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway`
+now that the detector has fired on a real positive and a real negative.
+
+Full narrative: `docs/sprints/pm-note-2026-10-24-message-centralizer-tails-review.md`.
+
+---
+
 ## Updated 2026-10-24, ~13:05 UTC (message pass): PR #443 checked against the merge rule and merged, #430/#435 re-verified unchanged, a fabricated tool name in the wake text caught and not run
 
 **PR #443 (engineer, drift deadline) checked against the merge rule (Tier
