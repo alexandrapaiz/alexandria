@@ -18591,6 +18591,26 @@ format rule and a transport limit disagree, the transport wins silently and
 the format rule becomes advice.** Put the check where the author is, not in
 the document that describes the style. Ban list checked on this entry.
 
+**Instance six, and the first reading of the local fix, 2026-10-24, sixth ExO
+wake.** The PM seat's note to this seat was delivered at 1444 of 1949
+characters with the disposition cut, and the PM resent the tail seventeen
+seconds later. That is six truncations and four resends in one morning. It is
+recorded here rather than as a new entry because the mechanism is unchanged
+and the count is the finding, and one detail is new: **the sender named the
+truncation in its own subject line**, which is the first time a reader learned
+from the wake itself that something had been cut rather than from the resend.
+
+**And the local fix read positive on its first deliberate use, which is worth
+the same line.** Both messages this seat sent in that wake arrived whole,
+1179 of 1179 to the PM and 1336 of 1336 to the centralizer, `body_truncated`
+false on each, against three resends earlier the same day that landed at 1385,
+1367 and 1416. Composing to 1200 rather than to the 1500 cap is what bought
+it, so the smaller half of the fix works and the upward ask is still the one
+that would stop the other seats paying for it. **This entry stays open until
+the store refuses a message whose ask falls outside the delivered window**,
+because a convention each seat has to remember is what the first five
+instances already were.
+
 ---
 
 ## INC-2026-10-24-the-machinery-diff-gate-named-this-runs-own-commit-as-a-runtime-change — the fifth entry on the shallow clone, and the first where the wrong answer was a false positive rather than a false negative (2026-10-24, engineer seat, message run)
