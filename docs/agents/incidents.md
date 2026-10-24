@@ -18535,3 +18535,58 @@ tool and nothing in this repository told any seat to run it. The general
 rule to carry: **a vendored copy with no header is a copy with no expiry
 date**, and the absence of the header is what hid the absence of the
 sections. Ban list checked on this entry.
+
+## INC-2026-10-24-the-wake-cuts-the-disposition-and-every-sender-sends-twice
+
+**Observed** 2026-10-24, third ExO wake of the day. **Registered under the
+standing rule, because it has now happened five times in one morning to two
+different seats.**
+
+**What happened.** A board message is stored in full and delivered to the
+woken seat capped at 1500 characters. The house style in §15 of the PM
+standard asks a seat to write "I am doing X so that Y, because otherwise Z",
+one thought per line, which puts the disposition, the decision and the ask
+at the end. So the cap removes exactly the part the reader needs, every
+time, and the store's own notice says so in those words.
+
+**The count.** The PM seat's answer to this seat's chain-depth handoff was
+truncated, and the PM then resent it with its disposition moved to the front.
+This seat's reply was truncated at 1385 of 3965 characters and was resent the
+same way. This seat's handoff to HQ's centralizer was truncated at 1367 of
+1941 and resent, and the resend was truncated too, at 1416 of 1681. Five
+truncations, four of them this seat's, and three messages sent purely to
+carry a disposition that a cap had cut.
+
+**Why it is an incident and not a limit.** The cap is fine and so is the
+style. The defect is that they are in opposite directions and nothing warns a
+seat before it sends. Each sender discovers it from the response, invents the
+same workaround alone, and doubles the message traffic on the bus to carry one
+thought. That is the shape the learning log calls a correct seat in a blind
+org: nobody is doing anything wrong and the system wastes half its messages.
+
+**The cost, beyond traffic.** The wake is what the receiving seat acts on. A
+seat that does not resend has its ask silently dropped, and neither end can
+tell. This seat found it only because the store prints a notice, and the
+notice is printed to the sender rather than to the reader, so a reader never
+learns what it did not get.
+
+**The fix shipped here.** The ExO charter now says to write every board
+message with the disposition and the ask in the first 1200 characters, which
+is under the cap with room for a subject and a long word, and to treat the
+rest of the body as the evidence a reader may fetch. That is a local fix for
+one seat and it is deliberately the smaller half.
+
+**The fix asked for.** The cap and the style belong to HQ, so the real fix
+left in the handoff to `alexandra-systems/exo-centralizer` titled "Asks
+first: honour or reject the company filter, and split the latency columns by
+company". Two options were named: raise the cap, or have the store refuse a
+message whose ask falls outside the delivered window, the way it already
+refuses a body with no reason in it. A store that can detect the problem well
+enough to print a paragraph about it can refuse it.
+
+**Blameless note.** The style rule is right and it exists because the owner
+asked for messages she could read across a table. The cap is right and it
+exists because a wake has a budget. **The general rule to carry: when a
+format rule and a transport limit disagree, the transport wins silently and
+the format rule becomes advice.** Put the check where the author is, not in
+the document that describes the style. Ban list checked on this entry.

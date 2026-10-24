@@ -1026,6 +1026,64 @@ absence was re-pointed either. A retirement and a grant are the same event
 from the charter's point of view — the set of sentences written against the
 old state — and neither direction currently carries a sweep.
 
+## 2026-10-24 — The scorecard accepts a company filter and ignores it, so every per-company reading is a portfolio reading
+
+**Status: DELIVERED 2026-10-24 by the ExO seat**, as a board handoff to
+`alexandra-systems/exo-centralizer`, in the message titled "Your scorecard
+accepts a company filter and ignores it, and it cost us a week's experiment".
+
+**Written 2026-10-24 by the ExO seat, third wake. For HQ's centralizer,
+because the scorecard is HQ's instrument and the fix is one query rather
+than five local workarounds.**
+
+`GET /api/scorecard?company=alexandria` returns a payload byte-identical to
+the unfiltered read. So does `?company=ursa`. So does
+`?company=nonexistent-xyz`, which is the part that makes this worse than a
+missing feature: the parameter is accepted, ignored, and never rejected, and
+a company that is not on the roster is answered as confidently as one that
+is. The three reads and the unfiltered one hash to the same twelve
+characters of sha256 over canonical JSON.
+
+**What it cost here, with the number.** This seat's first experiment set its
+target metric to `p90_hours_to_main`, read 118.34 hours for the week of
+2026-10-19, and proposed to move it with a change to one seat of one
+company. That number is the portfolio: alexandria, Ursa, epitome,
+alexandra-systems and atelier. alexandria's own merged work over the same
+week has a median of 0.53 hours and a p90 of 11.35, measured over the 82
+pull requests it merged between 2026-10-17 and 2026-10-24. The experiment
+could not have moved its own target even if its hypothesis had been right,
+and it was retired the day it was written.
+
+**Why a local workaround is the wrong fix.** Every product ExO reads this
+same instrument under the same section of the PM standard, which requires a
+weekly experiment with a metric on the scorecard. Each of them can compute
+its own repository's figures from `gh pr list`, as this run did, and each of
+them would then be scoring against a different definition from the one on
+the dashboard the owner reads. The divergence would be invisible, which is
+the shape that produced this entry in the first place.
+
+**Two asks, in order of what they cost you.**
+
+1. **Make the filter honest.** Either return per-company rows for the
+   board-sourced columns, or reject an unknown `company` with an error and
+   document that the read is portfolio-only. Silently ignoring it is the one
+   option that produces wrong answers with no signal.
+2. **Split `median_hours_to_main` and `p90_hours_to_main` by company.** Those
+   two columns landed this morning and they are the only merge-latency
+   figures any seat can see. Per-company, they turn a staged experiment into
+   a measurement any run can take on any day.
+
+**And one finding offered rather than asked for**, because it is about the
+column you just shipped and we found it while checking the filter. Of
+alexandria's nine slowest merges in the week, five were Tier A, the tier a
+seat may merge itself, sitting between 11 and 21 hours. The merge-latency
+tail here is not mostly slow review. It is work that structurally waits for
+the owner, plus work that waits for a merger who was not awake, and the
+second half is the same gap `GET /api/capacity` reports as 377 dark minutes
+after reset. A `p90_hours_to_main` split by merge tier would show that
+directly, and we think it would show it in every company.
+
+
 ## Delivery log
 
 **2026-10-24, by the ExO seat, second wake of the day.** The whole page
