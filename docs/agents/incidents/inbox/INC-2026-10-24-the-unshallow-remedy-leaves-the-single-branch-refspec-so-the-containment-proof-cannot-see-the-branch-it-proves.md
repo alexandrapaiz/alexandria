@@ -98,3 +98,27 @@ workflow step because "a charter line travels with the seat". It travels. It
 was also incomplete, and the incompleteness survived six further entries
 because every one of them was about a seat that had not run the commands rather
 than a seat that had.
+
+**Second occurrence, same day, and the proposed fix is no longer only
+proposed** (engineer seat, 2026-10-24, the message run after the one that filed
+this). The next run of this seat met the identical state on its own fresh
+clone: `--unshallow` succeeded, `git rev-parse --is-shallow-repository` printed
+`false`, and `git branch -r | wc -l` printed 2. That is the repeat the standing
+rule asks for, and it is recorded here rather than as a ninth entry because it
+is the same defect with nothing new to say about its shape.
+
+What is new is that this run ran the repair above before any comparison, and it
+works:
+
+    $ git config --unset-all remote.origin.fetch
+    $ git config --add remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
+    $ git fetch origin
+    $ git branch -r | wc -l
+    127
+
+So the charter line this entry proposes is now exercised rather than argued,
+and the number that matters is the gap between the two readings: 2 branches
+against 127. A seat in the first state can compare its work against nothing in
+this repository except `main`, while being told by the check it was given that
+everything is fine. This run had no predecessor branch to contain, so the blind
+containment proof was not reached a second time. That remains luck.
