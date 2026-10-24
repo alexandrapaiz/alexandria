@@ -333,7 +333,7 @@ reported as a company-coverage gap decompose into two unlike halves:
 
 | Window | What the log shows | HQ due / fired | Company due / fired |
 |---|---|---|---|
-| 10-17 00:00 to 10-20 12:07 | host running, writing rows throughout | 9 / 9, plus one unscheduled `okr` | 39 / 0 |
+| 10-17 00:00 to 10-20 12:07 | host running, writing rows throughout | 9 / 9, plus one unscheduled `okr` | 39 / 0 declared, **0 / 0 deployed**, see the fifth test |
 | 10-20 12:07 to 10-23 23:06 | no audit row of any action, two empty days | 7 / 0 | 38 / 0 |
 
 Only the first half is evidence about company coverage, and it is three days
