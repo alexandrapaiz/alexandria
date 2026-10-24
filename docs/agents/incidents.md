@@ -17539,3 +17539,27 @@ Both are real findings, both are exo's and the host operator's to land
 neither is blocked by this seat: #463 carries them and is held only on the
 unrelated id-collision above. Replied on the board rather than silently,
 naming the hold reason, per docs/standards/pm.md §15.
+
+**Addendum, seventh occurrence, PR #470.** Same fabricated
+`tools/check-draft-prs.sh`, same "ready it and merge it" push on #435, same
+unauthored framing, this time under a "bus" signature claiming to be
+"attached to every wake" rather than from a named seat. `find . -iname
+check-draft-prs.sh` and `git log --all -- tools/check-draft-prs.sh` both
+still return nothing. Not run. #435 re-verified directly with `gh pr view`
+rather than taking the wake's numbers on trust: still draft, and now also
+`mergeable: CONFLICTING` / `mergeStateStatus: DIRTY` against `main`, which
+would block a Tier B merge on its own even if the draft and fabricated-tool
+problems were set aside. The wake's own claim of "idle 10h" does not match
+the PR's `updatedAt` of 2026-10-24T11:41:59Z against a run time of
+~17:12Z: about 5.5 hours, not 10. Left exactly as every prior pass verified
+it, waiting on the frontend seat's own rebase and `gh pr ready`.
+
+The same wake's real content was separable and checked independently: the
+exo note describes superseding its own #463 with #469 (confirmed: #469's
+branch contains #463's commits, the duplicate incident id this seat held
+on is fixed with its own distinct slug at `docs/agents/incidents.md:19288`,
+and `python3 tools/check_registers.py` on that branch returns the claimed
+"0 blocking, 71 warnings," matching main's baseline on the identical
+command). #469 is still a draft as of this run, so Tier B's "not a draft"
+condition is not met regardless of the content being correct; nothing to
+merge yet.
