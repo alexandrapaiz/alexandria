@@ -6806,6 +6806,15 @@ the check loses.** I moved to a suffixed name, opened #527 and closed #524,
 which cost one empty commit. The cheap fix for the next run is to make the
 reuse grep the literal first command of the run, before `git checkout -b`.
 
+**A discharge format that reads to the next space is a format a comma can
+break.** The first draft of the parser matched `^cycle-taken:\s*(\S+)`, and when
+I replaced the em dash after the slot with a comma for house voice, the token
+became `2026-10-25T14:00Z,` and the verdict silently flipped back to
+`THE CYCLE IS OWED`. I caught it only because I re-ran the published command
+after a cosmetic edit, which is the habit worth keeping rather than the bug
+worth remembering. The parser now matches the timestamp shape itself and
+ignores what follows.
+
 **`gh pr create` needs `--head` on this host.** Three invocations failed with
 "you must first push the current branch to a remote" after the branch was
 pushed and tracking. Passing `--head <branch> --base main` works every time.

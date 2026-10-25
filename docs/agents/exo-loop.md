@@ -30,7 +30,12 @@ cycle-register: live since 2026-10-25
 One line per weekly slot this seat has actually performed the cycle for,
 whatever woke the run that performed it. The lines below are the discharge
 record the owed-cycle detector reads, and the format is fixed because a
-machine reads it: `cycle-taken:` then the slot in UTC, then prose.
+machine reads it: `cycle-taken:` then the slot as `YYYY-MM-DDTHH:MMZ`, then any
+prose you like. The parser matches that exact token shape and ignores whatever
+punctuation follows it, which it does because the first draft of this file
+matched `\S+` instead and a later edit to the comma after the slot broke the
+read silently. **A format whose parser accepts everything up to the next space
+is a format the next person's punctuation can break.**
 
 Why it exists. The detector published in §0 on 2026-10-25 decides whether a
 cycle is owed by looking for a `cron` row in the host's audit log that
@@ -51,7 +56,7 @@ Two rules for a run that writes a line here.
   that performs the cycle for a slot it is late on writes that slot's minute,
   not today's.
 
-cycle-taken: 2026-10-25T14:00Z — taken on a `message` wake by PR #521, merged 2026-10-25T23:45Z. The cron fired at 14:00:11 and the provider refused it with a weekly-limit 429.
+cycle-taken: 2026-10-25T14:00Z, taken on a `message` wake by PR #521, merged 2026-10-25T23:45Z. The cron fired at 14:00:11 and the provider refused it with a weekly-limit 429.
 
 ---
 

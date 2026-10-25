@@ -264,8 +264,9 @@ if led is None or not re.search(r'^cycle-register:', led, re.M):
           ' command cannot tell a cycle nobody took from a record it cannot read.'
           ' Restore the register before you read any verdict below it.' % LEDGER)
     raise SystemExit
-taken = [t for t in re.findall(r'^cycle-taken:\s*(\S+)', led, re.M)
-         if t.rstrip('Z') == slot.isoformat()[:16] or t == slot.strftime('%Y-%m-%dT%H:%MZ')]
+taken = [t for t in re.findall(r'^cycle-taken:\s*([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2})Z',
+                               led, re.M)
+         if t == slot.strftime('%Y-%m-%dT%H:%M')]
 print('discharge lines naming this slot:', taken or 'none')
 if taken:
     print('VERDICT: the cycle was taken. This run is a wake run.')
