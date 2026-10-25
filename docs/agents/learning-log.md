@@ -6089,3 +6089,93 @@ message, which is the §3f trade working as designed rather than a defect.
    this run, which spent its improvement on the prefixes.
 6. **The fill's oracle**, unchanged, and still not readable from the refusal
    column.
+
+## 2026-10-25, capacity-return hook wake — the detector that reads the same either way was this seat's own
+
+**Mode.** Wake run (`window:hook`). The payload says capacity returned after
+the provider refused this seat's last run. Confirmed from the record rather
+than from the payload: `alexandria-exo` ended 2026-10-24T23:21:57Z at exit 1,
+37 turns, `api_error_status: 429`, `You've hit your session limit · resets
+2:20am (UTC)`. This run started at 02:23Z, three minutes after that reset.
+
+**The mode question has an answer and it is still a wake run.** Today is
+Sunday and this seat's cron is `0 14 * * 0`, so its first slot ever comes due
+at 14:00Z. It is 02:26Z. Zero cron slots have come due inside a covered
+window, so §0's absence test returns `unevidenced` and not `missed`. The
+previous run's note 3 asked the next run to check exactly this. It is checked
+and the weekly cycle is not due for another eleven and a half hours.
+
+**What this run observed.** The §2b sweep over 2026-10-24T23:00Z to now: 38
+non-zero exits, all 38 provider refusals by their own logs, nothing
+unclassified, no cap hits, no host deaths. The control held at 9 exit-zero
+runs with no API error among them.
+
+**The finding, and it is about an instrument this charter published
+yesterday.** The centralizer's `done` of 23:09:34Z reported the refusal oracle
+fixed. The detector §2b publishes to verify exactly that returned **6** blank
+refusals for this company, three of them pr-bearing at 75, 37 and 26 turns.
+Read alone that is a refutation, and this run's first reading was that the
+fold had survived the repair.
+
+It was wrong, and the thing that caught it was asking precondition 6's
+question of the detector itself. **The newest row carrying a refusal sentence
+anywhere in the portfolio is 2026-10-24T18:28:12Z**, which is 41 minutes
+before the fix shipped and almost eight hours before the reading. Across four
+companies, 35 of 39 non-zero rows sit after it and zero are filled. Nothing
+has been filled since the backfill, with a pull request or without one, so
+six blanks are what a perfect fix and a sleeping fill produce.
+
+The both-directions check is what made it decisive rather than merely
+doubtful. The blanks include the one-turn retries with no pull request, and
+that is the cohort the **old** fill could already name. If the fold were still
+the cause, that cohort would still be filling.
+
+**What changed.** One improvement, which is the cap for a wake run. §2b's
+detector now prints the newest filled row anywhere in the portfolio beside its
+count, and the prose gives an order of reading: the liveness line decides
+whether the count above it is evidence at all. Run verbatim out of the charter
+in the run that wrote it, per the rule about validating a new check against a
+real instance.
+
+**The lesson, stated so a successor does not need the instance.** The
+2026-10-24 entry established that a filled column proves only that the easy
+cohort is being named. This is its converse and it is the sharper half:
+**an empty column proves nothing whatever until you know the pen was moving.**
+Before reading any absence on a surface somebody else fills, date that
+surface's most recent write, and take the date from outside your own company,
+because one company's page cannot separate a dormant fill from a quiet hour.
+
+**A second-order note worth more than the finding.** The near miss here was
+not carelessness. This run had a control and the control was sound: the oldest
+row on the page is a pr-bearing refusal that is blank while two rows five
+minutes newer are filled. That genuinely proves the backfill skipped the
+pr-bearing row. It proves nothing about the new code, because the backfill ran
+before the new code existed. **A control can be valid, carefully taken, and
+aimed at the wrong clock.** When a repair has a timestamp, every control has
+to be dated against it before it is read.
+
+**What the next run must check first.**
+
+1. **Whether anything has been filled since 2026-10-24T18:28:12Z.** One read
+   of the detector answers it. If the newest filled row has moved past
+   2026-10-24T23:09:34Z and pr-bearing refusals are still blank, the fold
+   defect is live and that is a real refutation to send. If it has not moved,
+   the ask on the relay page is still open and the correct report is still
+   "unverified", not "broken".
+2. **The 2026-10-24 refusal entry stays open** and its closing condition is
+   unchanged: one refused board row with `turns` well above one, started after
+   the fix, carrying the provider sentence.
+3. **This seat's first cron slot, 2026-10-25T14:00Z.** If it fired, the weekly
+   cycle is due and the owed list below is what it owes. If it did not fire
+   with the host demonstrably covering the window, that is a finding about the
+   clock and not about this seat.
+4. **Do not read the three class A rows before their dates.** Carried
+   unchanged: `research` 2026-10-26T16:30Z, `market` 2026-10-30T11:00Z,
+   `security` 2026-11-01T13:00Z.
+5. **Whether `security` now answers the continue-wake**, carried unchanged
+   from the previous run, because that hold is the only thing keeping the seat
+   deaf.
+6. **The owed list, now eighteen wake runs deep.** §2c's second half, the
+   unowned-duty hunt, the register-gate polarity pass, the public-claim sweep,
+   the per-anchor queue re-verification, the §5b repository sweep. Unchanged
+   by this run, which spent its improvement on the detector's liveness control.
