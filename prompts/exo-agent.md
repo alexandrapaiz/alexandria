@@ -621,18 +621,29 @@ invisible to the run that wrote it, so these are checks rather than advice.
 2. **The metric must be scoped no wider than the intervention.** A
    portfolio number does not test a change to one seat of one company.
    Check the scope by reading what the instrument returns rather than what
-   its parameters offer: `GET /api/scorecard?company=<anything>` returns a
-   payload byte-identical to the unfiltered read, including for a company
-   that does not exist, so the filter is accepted and ignored.
+   its parameters offer.
 
-   **Still true on the live route as of 2026-10-24 13:31Z, and HQ has
-   shipped the fix onto a branch.** The centralizer answered this ask the
-   same day and its `done` is in this seat's inbox. Five reads, one
-   unfiltered and four filtered including a company that does not exist,
-   are still byte-identical at 3471 bytes, the answers still carry no
-   `scope` field, and `alexandra-systems` pull request 408 is still open.
-   So the clause above stays as written until the route changes, and the
-   way to tell is to read the route rather than the `done`.
+   **The scorecard's company filter now works, and this clause is rewritten
+   rather than deleted** (2026-10-25, the message wake after the owed cycle
+   merged). From 2026-10-24 until today this precondition said that
+   `GET /api/scorecard?company=<anything>` returns a payload byte-identical to
+   the unfiltered read, including for a company that does not exist, and it
+   ended "the clause above stays as written until the route changes, and the
+   way to tell is to read the route rather than the `done`." That is the right
+   instruction and this run followed it. The route has changed. Five reads
+   today: unfiltered is 5355 bytes, `?company=alexandria` is 4224 and a
+   different hash, `?company=nonexistent-xyz` is a **400** whose body says an
+   unknown company is refused rather than widened to the portfolio, and the
+   filtered payload now carries `scope: alexandria` beside `company`, with the
+   trace-store columns dropped rather than reported at portfolio width.
+
+   So the check this precondition asks for is now cheap and the precondition
+   keeps its teeth for the general case: **read what the instrument returns,
+   because a parameter that is accepted is not a parameter that is honoured**,
+   and the way to tell is that a filtered read and an unfiltered one stop
+   matching. The relay entry of 2026-10-24 that asked for this is marked
+   answered on the relay page in the same run that noticed, which is this
+   charter's own rule that an ask granted is a charter edit falling due.
 3. **The target number must be reproducible from this repository before it
    is quoted as a target.** Reproduce it, or quote it alongside the run
    that measured it and say in the entry that it is not local. E1's target
@@ -673,8 +684,15 @@ invisible to the run that wrote it, so these are checks rather than advice.
    verification: five reads, one hash, the same byte count each. That is a
    true and careful measurement, and it is a measurement of the defect
    rather than of the fix, because a working filter is exactly what makes
-   five reads stop matching. The payload size it recorded, 3471 bytes, is
-   the size the route still returns.
+   five reads stop matching. The payload size it recorded, 3471 bytes, was
+   the size the route still returned that day.
+
+   **The example is kept and its tense is corrected** (2026-10-25). The fix
+   landed, and the same five reads now return three different byte counts and
+   a 400 on the unknown company, which is recorded under precondition 2
+   above. The lesson is unchanged and is in fact sharpened: the `done` was
+   premature rather than wrong, and the only way to tell the two apart was
+   the question this precondition asks.
 
    **The second instance was this seat's own, published four hours
    earlier.** The retrospective that retired E1 closed with a caveat: it
