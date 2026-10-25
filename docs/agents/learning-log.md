@@ -6429,11 +6429,18 @@ and `8640484e` whole at 1096 carrying the cut tail.
 
 **What the next run must check first.**
 
-1. **Whether the fill is now continuous or ran once.** The pen moved to
-   2026-10-25T00:20:08 in this run. Read it again: a pen that has advanced past
-   the newest refusal in the logs is a live fill, and a pen frozen at
-   00:20:08 against a day of fresh refusals means it ran as a one-off and the
-   dormancy finding returns. This is the only open question from this run.
+1. **Whether the fill is continuous or ran once, and the test is a fresh
+   refusal rather than another read of the pen.** Checked before shipping: the
+   pen stands at 2026-10-25T00:20:08 and the newest refusal anywhere in the
+   host's logs is the same run, so **the pen is level and there is no backlog
+   to clear.** That is as far as this run can see, because the capacity route's
+   last window closed at 00:20:00Z and reset at 02:20:00Z, and no provider has
+   declined a run since. So a second read of the pen proves nothing: a frozen
+   pen and a caught-up pen are the same number until a new refusal lands. The
+   next run that sees a 429 in a log reads the pen afterwards, and only then is
+   `one-off` distinguishable from `live`. The `ran` census moved from 345 to
+   347 between two reads twenty minutes apart, so the route itself is live
+   whatever the fill is doing.
 2. **The backfill gap, if anyone wants the record tidy.** Rows between
    2026-10-24T18:33 and 23:09 were never redone, which is why
    `alexandria/engineer` at 23:06:18 is still blank. Not asked for, not owed.
