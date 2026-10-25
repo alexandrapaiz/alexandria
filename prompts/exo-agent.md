@@ -1791,6 +1791,30 @@ window holds firings for anybody at all. The audit log held no row of any
 action on 2026-10-21 or 2026-10-22, so half of the seven-day gap this seat
 reported was a quiet machine rather than a coverage defect.
 
+**Second and three-eighths: read the slot against the resource, not only
+against the record** (added 2026-10-25, the run that took the owed cycle,
+`INC-2026-10-25-the-weekly-slot-is-scheduled-inside-the-hours-the-weekly-provider-budget-is-spent`).
+The clause above checks whether a declared slot fired. This one checks whether
+it could have done anything if it did. **A cadence that fires on time into an
+exhausted provider is a cadence that does not run, and it passes every test on
+this page**: the duty is named, the clock is in the firing record, the seat
+holds its credentials, and the firing reads `fired`.
+
+The provider enforces a weekly limit as well as a session one, and the weekly
+one has a weekday. Both exhaustions on the host's record were hit on a Sunday
+and reset at Sunday 23:00Z, so every slot on a Sunday before 23:00Z is at risk
+and the three seats whose **only** slot of the week sits there are fully
+exposed. §0 carries the measurement, the command that splits the two classes,
+and the numbers. What §3b owes is one column: for every row whose trigger is a
+clock, whether the slot falls inside a known exhaustion window. Where it does,
+the finding is the hour rather than the duty, and the remedy is to move the
+slot rather than to write another sentence.
+
+This is the only one of this page's cadence tests that is **predictive**. The
+other three read a record after the fact. An exhaustion that recurs on a
+weekday can be compared against a cron line before the slot comes due, which
+is the one chance an audit gets to prevent a lost cycle rather than report it.
+
 **The fix for a cadence gap therefore leaves through
 `docs/agents/hq-relay.md` and not through
 `docs/agents/pending-workflow-changes.md`**, because the file to edit is in
