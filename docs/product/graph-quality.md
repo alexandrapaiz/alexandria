@@ -262,6 +262,35 @@ has is how much of the corpus sits just outside it. `reach` carries no bound, on
 purpose: a short shortlist is the floor working, and a bound there would call a
 fact about the corpus a failure.
 
+**The question a filter over a vector index always raises, asked and closed.**
+`claims` carries an HNSW index (`claims_embedding_idx`, `vector_cosine_ops`),
+and an HNSW scan can only evaluate the distance ordering. The other two clauses
+of this shortlist, `id < %s` and `paper_id <> %s`, are therefore post-filters,
+and a post-filtered approximate scan is the standard way a query like this
+quietly returns fewer rows than its `limit`: the index hands back a bounded
+number of candidates, the filters delete some of them, and nothing goes back
+for more. If that happened here, raising `NEIGHBORS` from 5 to 10 would buy
+nothing and the audit would report a low ceiling for the wrong reason.
+
+Measured rather than reasoned about. On a 1,200-claim corpus across 50 papers
+with the index built, the shortlist returns 10 candidates of 10, with the floor
+active and with the floor disabled, and identically whether the index is
+allowed or `enable_indexscan` is off. The plan says why: Postgres chooses
+`Limit -> Sort` on an exact distance computation rather than the index at all,
+at this size and with these filters. So the recall is exact and the raise
+delivers what it claims.
+
+What that does not say is that it is exact forever. The planner switches to the
+index when the table is large enough for the sort to look expensive, and that is
+the point where the post-filter behaviour starts to matter. Two things are worth
+knowing then. The server's pgvector version decides whether a filtered scan can
+widen its own search, since `hnsw.iterative_scan` arrived in 0.8.0 and the host
+this was measured on runs 0.6.0, and nothing in this repository records which
+version Neon runs, because no seat can read the database to ask. And the
+instrument already exists: the run's own ceiling line falls when the shortlist
+stops filling, so a scan that silently returns six candidates where ten qualify
+shows up as a ceiling share collapsing without the corpus changing.
+
 **One gap this slice opens and does not close, recorded here because the next
 person to touch the reservation needs it.** Raising
 `MAX_COMPLETION_TOKENS` makes this a runtime change under
