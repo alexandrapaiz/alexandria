@@ -392,6 +392,18 @@ FURNITURE = {
 }
 
 
+#: The citation line, mandated twice in prompts/digest.md as `*title* - [full
+#: text](url)` on a line of its own. It is furniture exactly as the masthead is,
+#: because the generator has no choice about printing one under every item, and
+#: it is one short line standing alone, so `shapes` counted each one as canon
+#: law 14's "number on a line" device. Four of 2026-W39's five standalone lines
+#: are this. Page-level furniture was taken out of the count on 2026-10-06 and
+#: this is the same blindness one level down: every issue the press can produce
+#: carries at least one item, so the one condition `measure` fails on could not
+#: be reached by any artifact.
+ITEM_FURNITURE = re.compile(r"^\*[^*]+\*\s+-\s+\[full text\]\(\S+\)$")
+
+
 def written_here(block):
     """Did the generator put this block on the page, or does it arrive anyway.
 
@@ -399,7 +411,10 @@ def written_here(block):
     differently and the stored row, the site page and a rehearsal dump do not
     agree on where a line ends.
     """
-    return " ".join(block.split()) not in {" ".join(f.split()) for f in FURNITURE}
+    flat = " ".join(block.split())
+    if ITEM_FURNITURE.match(flat):
+        return False
+    return flat not in {" ".join(f.split()) for f in FURNITURE}
 
 
 def shapes(blocks):
@@ -568,6 +583,22 @@ def measure(paths=None):
               + "  ".join(f"{k} {v}" for k, v in sorted(body.items())))
         if len(body) < 2:
             print("    one kind of block is a failing issue (canon law 14)")
+        # The count above is the law's FIRST question and not its content. Law 14
+        # names three devices as required rather than available, and two of them
+        # are shapes no furniture can fake: a list where results are parallel,
+        # and a written turn inside a section that runs long. The reprint she
+        # read and rejected is described in the canon in exactly these terms,
+        # "no list, no subheading inside any section, one shape", and it would
+        # have scored two here on its paragraphs and its citation lines alone.
+        if not body.get("list") and not body.get("turn"):
+            print("    no list and no written turn (canon law 14's two named "
+                  "devices).")
+            print("    This is the shape of the reprint she rejected. The count "
+                  "above")
+            print("    cannot see it, because paragraphs and one standalone line "
+                  "are two.")
+            if not off:
+                rc = 1
         # The colon count, with its specimen and the law it detects. `axes`
         # returns this as a bare number and `measure` printed nothing at all,
         # so the one ruling the owner has had to give TWICE arrived at a grade
