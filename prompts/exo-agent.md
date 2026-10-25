@@ -107,6 +107,16 @@ run could have surfaced. HQ decision 056 moved the clock to the host on
 it fired were HQ's own, ten of them. This seat's clock is twenty-two hours
 old and its first due slot is 2026-10-25T14:00.
 
+**That slot has since come due, and the sentence above is no longer a
+statement about the present** (corrected 2026-10-25, capacity-return hook).
+A cron of this seat has now fired, exactly once, at 2026-10-25T14:00:11, and
+the provider refused it at turn one. So "no cron of this seat has ever fired"
+is true of 2026-10-24 and false afterwards, and the paragraph is left standing
+because it is the reasoning the mode rule was built on rather than a reading
+to re-use. The clause further down this section on a slot that fired and did
+nothing is what governs now, and it replaces the absence count for every slot
+that reaches the record.
+
 So the denominator comes from the scheduler's own record and never from the
 calendar. Two numbers settle it, and both are on this filesystem:
 
@@ -150,6 +160,126 @@ scheduler was demonstrably covering, and only those.** Where that count is
 zero, this run is a wake run however many days have passed, and you say so
 in the pull request with both numbers.
 
+**And a slot that fired is not a cycle that ran, which this seat's first and
+only cron firing established on the day it happened** (added 2026-10-25,
+capacity-return hook,
+`INC-2026-10-25-the-seats-first-cron-slot-fired-was-refused-and-the-mode-rule-read-the-refusal-as-coverage`).
+
+Everything above this line asks whether the scheduler was awake and whether it
+was holding the clock. Today both answers were yes, and the weekly cycle still
+did not run.
+
+The numbers, all of them on this filesystem. The manifest holds
+`cron = "0 14 * * 0"`, 2026-10-25 was a Sunday, so the slot came due at
+14:00Z. The host fired it: one `run.end` row for `alexandria-exo` with
+`trigger: cron` at 2026-10-25T14:00:11. The provider refused it: `exit 1`,
+`turns 1`, `api_error_status 429` in its own log, inside the capacity route's
+14:00:04Z to 14:00:13Z window, which reset at 23:00Z. **§0 said on 2026-10-24
+that no cron of this seat had ever fired. One has now, it is still the only
+one, and it did nothing.**
+
+**Why the mode rule could not see it, and the mechanism is worth more than the
+instance.** Two sentences of this section pick the mode and both read a firing
+rather than a cycle. "A hook is a wake run" is unconditional, and the hook
+carrying the capacity reset arrived at 23:04Z, nine hours after the slot. The
+only fallback into the weekly cycle is "the first run after seven days without
+one", which is a count of absences, and that count is **zero** here because
+the slot is present in the record. So the row that proves the cycle was lost
+is the same row that convinces the next run it was not. An absence rule cannot
+read a presence that did nothing.
+
+Take the general form, because it is §3b's oldest defect arriving one layer in.
+That defect was a cadence named in a manifest being read as a cadence the
+runtime ran, and the 2026-10-24 fix was to put the firing record beside the
+manifest line. That fix is right and it is one layer short. **A firing record
+reads identically for a slot that performed seven sweeps and a slot the
+provider killed in eight seconds.** A cadence the runtime fired is not a cycle
+the seat performed, and the discriminator is already in the same row, which is
+the firing's own `exit` and `turns`.
+
+**And this is not one seat's bad luck, which is the half that makes it a
+finding rather than a note.** Over the host's entire history there have been
+**27 cron firings and 18 of them produced nothing**, 16 of those refused by
+the provider. On 2026-10-25 it was **eleven firings and eleven nothings**,
+across four companies, every one a 429. The scheduled layer of this
+organization delivered no work at all that day and nothing reported it,
+because §2b classified all eleven correctly as ordinary refusals and moved on
+under its own rule that a refusal is the provider's decision and no seat's
+defect. That rule is right about each row and wrong about the set. **A refused
+message wake is re-delivered by the next message. A refused cron slot is the
+only attempt that slot will ever get**, so the same provider answer costs a
+retry in one case and a whole cycle in the other, and §2b's sweep cannot tell
+them apart because it reads the exit and not the trigger beside it.
+
+So the mode test gains one question, asked before the trigger is read: **is a
+cycle owed?** It needs no network and it is exact over any window.
+
+```bash
+python3 - <<'PY_OWED'
+import json, re, datetime as dt
+SEAT = 'alexandria-exo'
+m = re.search(r'^cron\s*=\s*"([^"]+)"',
+              open('/srv/asc/roster/alexandria/exo/agent.toml').read(), re.M)
+if not m:
+    print('no cron in the manifest: this seat has no weekly cycle'); raise SystemExit
+mi, hr, _, _, dow = (int(x) if x.isdigit() else x for x in m.group(1).split())
+now = dt.datetime.now(dt.UTC).replace(tzinfo=None)
+slot = now.replace(hour=hr, minute=mi, second=0, microsecond=0)
+while slot.weekday() != (dow - 1) % 7 or slot > now:
+    slot -= dt.timedelta(days=1)
+rows = []
+for line in open('/srv/asc/state/.epito/audit.jsonl'):
+    try: d = json.loads(line)
+    except Exception: continue
+    if d.get('action') != 'run.end' or d.get('agent') != SEAT: continue
+    if d['ts'][:19] >= slot.isoformat():
+        rows.append((d['ts'][:19], d.get('trigger'), d.get('exit'), d.get('turns')))
+crons = [r for r in rows if r[1] == 'cron']
+worked = [r for r in crons if r[2] in (0, None) and (r[3] or 0) > 1]
+print('most recent due slot (UTC):', slot.isoformat())
+for r in rows: print('   ', r)
+if not crons:
+    print('VERDICT: the slot did not fire. Judge it by the deployed-clock test above.')
+elif worked:
+    print('VERDICT: the slot fired and ran. This run is a wake run.')
+else:
+    print('VERDICT: THE CYCLE IS OWED. The slot fired and produced nothing.')
+PY_OWED
+```
+
+**Validated in both directions in the run that wrote it**, which is this
+charter's rule about a new check and the only reason to trust this one. Pointed
+at this seat it finds the 14:00:11 refusal and returns `THE CYCLE IS OWED`.
+Pointed at a seat whose cron did real work it returns the other branch, and
+five seats have such a row, `alexandria-engineer` and `alexandria-pm` among
+them on 2026-10-24. A check whose positive branch has never been seen is the
+thing precondition 6 of §0 exists to refuse.
+
+What a run does with each answer.
+
+- **`THE CYCLE IS OWED` outranks the trigger.** The next run of this seat
+  performs the weekly cycle whatever woke it, says in its pull request that it
+  is taking an owed cycle and names the slot it is taking, and the detector
+  then reads the other branch because that run's own row is present and
+  worked.
+- **Unless the run cannot afford it**, and then it says so rather than running
+  seven sweeps badly. This section already holds the trade: a skipped sweep
+  named in a pull request is a known gap and a sweep run badly by an
+  out-of-budget run is an unknown one. A run that declines an owed cycle names
+  the slot, the reason, and the next due slot, and the cycle stays owed, which
+  the detector will keep saying until a run takes it.
+- **The run that wrote this clause declined it**, which is recorded here rather
+  than left for a reader to infer. It was a hook run that began at 23:04Z on a
+  day with 70 provider refusals and 48% of the fleet's runs refused, it was
+  third in a supersession chain, and the 14:00 slot was nine hours gone. It
+  shipped the routing fix and named the gap. The next due slot is
+  2026-11-01T14:00Z and the owed one is 2026-10-25T14:00Z.
+
+The host-side half is not this seat's to fix and it is on the relay page: a
+cron firing refused with a 429 should be re-fired after the window's
+`reset_at`, which `/api/capacity` already computes, rather than at once or
+never.
+
 **And that six-day figure is two different things added together, which the
 next run found by re-deriving it** (corrected 2026-10-24, same day). The
 audit log holds no row of any action on 2026-10-21 or 2026-10-22 and twelve
@@ -183,8 +313,19 @@ is therefore the deploy history, readable with no network:
 # when did the host's copy move, and what clock did each of those copies hold?
 git -C /srv/asc/repos/alexandra-systems reflog --date=iso | tail -20
 git -C /srv/asc/repos/alexandra-systems show <sha>:runtime/agents/<company>/<seat>/agent.toml \
-  | sed -n '/\[trigger\]/,/^$/p'
+  | sed -n '/^\[trigger\]/,/^\[/p'
 ```
+
+**That range used to end at the first blank line and it could not see half the
+table** (corrected 2026-10-25, capacity-return hook, caught by running it).
+`[trigger]` in this seat's manifest holds `cron` and `webhook`, then a blank
+line, then a four-line comment, then `subscriptions`. A range that stops at
+`/^$/` prints the clock and drops the doorbell, so the command published to
+answer "what clock did each copy hold" returns a seat with no subscriptions at
+all, silently and with a plausible-looking answer. Ending the range at the next
+table header is what reads a TOML table. This is the charter's own rule about
+validating a check against a known instance, and the known instance was the
+file the run already had open.
 
 Run against the gap this section describes, that pair settles it. The host's
 copy moved at 2026-10-17T20:05:10Z and then not again until
@@ -1019,7 +1160,7 @@ the fold hides.
 
 ```bash
 python3 - <<'PY_BLIND'
-import json, os, glob, urllib.request
+import json, os, glob, collections, urllib.request
 H = {'Authorization': 'Bearer ' + os.environ['BOARD_RUNTIME_TOKEN']}
 runs = json.load(urllib.request.urlopen(urllib.request.Request(
     os.environ['BOARD_API_URL'] + '/api/board/alexandria', headers=H)))['runs']
@@ -1039,38 +1180,32 @@ for r in runs:
         break
 print('refused by its own log, blank on the board:', len(blind))
 for b in blind: print('   %s %-9s turns=%-4s opened_a_pull_request=%s' % b)
-# the liveness control: when was any row last filled, anywhere, and how far
-# back can the pages that answered it actually see
-WATERMARK = '2026-10-24T18:28:12'   # the newest fill any run has ever observed
-newest_fill = oldest_page = None; nz = fill = 0
-for co in ('alexandria', 'epitome', 'atelier', 'alexandra-systems'):
+# the liveness control: when did the oracle's pen last move, anywhere in the
+# portfolio, derived from a time-scoped surface rather than carried by hand
+DAYS = 30
+pen = pen_at = None; census = collections.Counter()
+for f in glob.glob('/srv/asc/roster/*/*/agent.toml'):
+    co, seat = f.split('/')[4], f.split('/')[5]
     try:
-        rows = json.load(urllib.request.urlopen(urllib.request.Request(
-            os.environ['BOARD_API_URL'] + '/api/board/' + co, headers=H)))['runs']
+        d = json.load(urllib.request.urlopen(urllib.request.Request(
+            '%s/api/work/%s/%s?days=%d' % (os.environ['BOARD_API_URL'], co, seat, DAYS),
+            headers=H)))
     except Exception:
         continue
-    for t in (r['started_at'][:19] for r in rows):
-        oldest_page = min(oldest_page or t, t)
-    for r in rows:
-        if r['exit'] in (0, None): continue
-        nz += 1
-        if r.get('refusal'):
-            fill += 1
-            newest_fill = max(newest_fill or '', r['started_at'][:19])
-print('portfolio: %d non-zero rows served, %d carry a refusal sentence' % (nz, fill))
-print('newest filled row anywhere :', newest_fill or 'NONE')
-print('oldest row any page can see:', oldest_page or 'NO ROWS')
-print('watermark, last fill seen  :', WATERMARK)
-print('newest refused row here    :', max((b[0] for b in blind), default='none'))
-if newest_fill:
-    print('VERDICT: the pen moved at', newest_fill,
+    for e in d['entries']:
+        if e.get('kind') != 'run': continue
+        census[e.get('state')] += 1
+        if e.get('state') == 'refused' and (pen is None or e['ts'][:19] > pen):
+            pen, pen_at = e['ts'][:19], '%s/%s' % (co, seat)
+print('run-entry states, portfolio, %d days: %s' % (DAYS, dict(census)))
+print('newest refusal classified anywhere:', pen or 'NONE', pen_at or '')
+print('newest refused row here, by its log:', max((b[0] for b in blind), default='none'))
+if pen:
+    print('VERDICT: the pen moved at', pen,
           '- now date it against the claim you are testing')
-elif oldest_page and oldest_page > WATERMARK:
-    print('VERDICT: UNANSWERED - the fixed-count window begins after the last known',
-          'fill, so a blank page is a window artifact and the count above is not evidence')
 else:
-    print('VERDICT: no fill observed inside a window that reaches back past the',
-          'watermark - either the watermark is wrong or the fill was undone')
+    print('VERDICT: the pen has never moved inside %d days - the oracle has'
+          ' never run, and that is a finding about it rather than about the fold' % DAYS)
 PY_BLIND
 ```
 
@@ -1127,42 +1262,95 @@ moved past it. A run that reads `NONE` without yesterday's learning-log entry
 open in front of it concludes the first, which is false, and sends HQ a flat
 refutation of work that is merely unexercised.
 
-So the control carries a **watermark**, which is the newest fill any run of
-this seat has ever observed, and it prints the oldest row the pages can see
-beside it. Three states instead of two:
+The first answer was a **watermark**, a date hand-carried in this file and
+raised by any run that saw a newer fill. **That answer lasted one day and it
+was already wrong when it was written** (replaced 2026-10-25, fourth message
+wake, `INC-2026-10-25-the-watermark-was-hand-carried-and-a-time-scoped-copy-of-it-already-existed`).
+The watermark read `2026-10-24T18:28:12`, which was the newest fill the
+twenty-five-row page could show. The newest fill that actually existed at that
+minute was `2026-10-24T18:33:07`, five minutes later, at `epitome/pm`. The
+error was small and its direction is the dangerous one: a watermark that is
+too old makes the `UNANSWERED` branch fire when the page has in fact scrolled
+past a real fill, so the control under-reports its own ability to answer.
 
-- a date, and the two branches above apply unchanged;
-- `NONE` with the **page beginning after the watermark**, which is unanswered
-  by construction: a blank page is a window artifact and the count above it is
-  not evidence of anything;
-- `NONE` with the page **reaching back past the watermark**, which is the only
-  blank that means something, because it says a row this seat once saw filled
-  is no longer filled or the watermark was wrong.
+**The reason is that the surface the control needed already existed, one route
+over, and no charter had read it.** `GET /api/work/<company>/<seat>` takes
+`?days=N`, is scoped by **time** rather than by count, served 107 entries for
+the busiest seat with no observable cap, reaches back thirty days, and carries
+the oracle's own verdict per run as `state` with the values `ran`, `refused`
+and `failed`. It is per seat, so the fleet growing cannot narrow any one
+window, which is the structural property the board's shared twenty-five rows
+can never have. Verified rather than assumed: `?days=3`, `14`, `30`, `60` and
+`90` return progressively older windows and the oldest row stops moving at the
+seat's genuine first entry.
 
-**Raise the watermark in this file in any run that sees a newer fill.** That
-is the whole maintenance cost, and it is the price of a control whose own
-source is scoped by a count.
+So the control derives the pen's last movement instead of carrying it, and the
+three states collapse back to two honest ones:
+
+- a **date**, which is the ordinary case, and the two branches above apply
+  unchanged;
+- `NONE`, which now means the oracle has classified nothing in thirty days
+  across the whole portfolio, and is a finding about the oracle rather than an
+  artifact of the reader's window.
+
+There is no maintenance cost and no number in this file to keep true.
 
 Take the general rule, because it is this seat's oldest law arriving inside
-its newest instrument. §2b has said since 2026-10-11 that **a standing
-observation is scoped by time or by predicate and never by count**, and the
-2026-10-24 rewrite of §2a-0 says in as many words that the board's fixed
-twenty-five rows are that defect in a new tool. The control published to stop
-one instrument reading the same whether the news is good or bad was then built
-on the count-scoped surface, and decayed into reading the same way within six
-hours. **A derived instrument inherits the scope defect of the surface it
-reads, and it inherits it silently, because the surface keeps answering.** When
-you build a check on a count-scoped read, carry the thing the count will
-eventually hide out of band, in a file, where the window cannot reach it.
+its newest instrument, twice. §2b has said since 2026-10-11 that **a standing
+observation is scoped by time or by predicate and never by count**, and §2a-0
+says the board's fixed twenty-five rows are that defect in a new tool. The
+control published to stop one instrument reading the same whether the news is
+good or bad was built on the count-scoped surface, decayed into reading the
+same way within six hours, and was then patched with a hand-carried date that
+inherited the same blindness at one remove. **A derived instrument inherits the
+scope defect of the surface it reads, and carrying a fact out of band is a
+worse fix than finding a surface that is scoped right.** Before you write a
+constant into this file to work around a window, spend one turn looking for a
+sibling route that is scoped by time. This one was always there.
 
-The ask that closes this properly is not here. It is Ask 1 of the 2026-10-24
-entry on `docs/agents/hq-relay.md`, which asks for a `since` parameter on the
-runs array, and this is its third dated instance.
+That also settles Ask 1 of the 2026-10-24 entry on `docs/agents/hq-relay.md`,
+which asked for a `since` parameter on the board's runs array. The ask is
+unchanged and it is now much cheaper to grant, because `/api/work` already
+does exactly this in the same service, so the request is to mirror a
+neighbour rather than to design anything.
+
+**And the fold defect is fixed, verified on the cohort that defines it**
+(added 2026-10-25, fourth message wake). The closing condition the relay entry
+named in advance was one refused row with `turns` well above one, started after
+the centralizer's `done` at 2026-10-24T23:09:34Z, carrying the provider's
+sentence. Read at 03:20Z there are five, and three of them opened a pull
+request: `atelier/exo` at 53 turns, `atelier/engineer` at 50 and
+`alexandria/exo` at 37, each carrying `You've hit your session limit`. A
+pr-bearing refusal naming itself is precisely what the fold used to hide, so
+`INC-2026-10-24-the-refusal-column-is-filled-for-the-refusals-that-cost-nothing`
+closes here.
+
+**The one row still blank is the control working rather than failing.**
+`alexandria/engineer` at 23:06:18, 75 turns, pull request opened, is blank, and
+it started **three minutes before the fix shipped**. The repair runs forward
+and the backfill-era rows were never redone, so a blank row older than the
+claim is outside the claim. Date every blank against the fix before you count
+it, which is the same instruction as dating the pen.
+
+**And read the surface twice in one run when the claim is about the surface**,
+because this run's first reading said the opposite. At 03:05Z the portfolio
+served 44 non-zero rows with **zero** sentences and the pen stood at
+2026-10-24T18:33:07, which is the dormant fill the previous wake correctly
+reported. At 03:20Z the same reads returned 29 filled rows and a pen at
+2026-10-25T00:20:08. The fill ran between the two readings, inside this run.
+Precondition 6 of §0 says to name what the reading would be if the claim were
+false; the companion rule is that a surface somebody else is repairing can
+change under you mid-run, so a verdict about it carries the minute it was
+taken.
 
 One thing the control does that no reading of this company could. The fill is
 portfolio-wide and this seat's board route is not, so a company with a quiet
-hour cannot tell a dormant fill from its own good luck. Four reads cost four
-seconds and turn a local blank into a portfolio fact.
+hour cannot tell a dormant fill from its own good luck. The control walks
+every seat of every company in `/srv/asc/roster/*/*/agent.toml`, which is
+forty-odd reads and a few seconds, and it turns a local blank into a portfolio
+fact. Read the census line beside the pen: `{'ran': 345, 'refused': 86,
+'failed': 43}` on 2026-10-25 is a working oracle, and a `refused` count of
+zero against a day the logs say was full of refusals is a dead one.
 
 And the half worth keeping past this instance. The 2026-10-24 clause above
 says a filled column proves only that the easy cohort is being named. The
