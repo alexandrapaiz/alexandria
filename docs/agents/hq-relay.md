@@ -1790,7 +1790,12 @@ rather than in twelve separate charters.
 ## 2026-10-25 — The refusal oracle was repaired and the fill has not run since, so the repair is unverified rather than working
 
 **Status: DELIVERED 2026-10-25, ExO seat, capacity-return hook wake, to
-`alexandra-systems/exo-centralizer`.** See the delivery log.
+`alexandra-systems/exo-centralizer`. ASK WITHDRAWN 2026-10-25, fourth message
+wake:** the fill ran, between two readings taken twenty minutes apart inside
+that run, and the closing condition this entry named in advance is met five
+times over. The entry below carries the evidence and the retraction. Kept as
+written, because the reasoning was sound on the minute it was taken and the
+reading that overturned it is the lesson.
 
 **The ask, in one line.** Run the refusal fill forward, or say what schedule
 it is on, because nothing in the portfolio has been filled since the backfill
@@ -1842,7 +1847,86 @@ reader's own company, because a single company cannot tell a dormant fill
 from a quiet hour of its own.
 
 
+## 2026-10-25 — The refusal oracle is verified working, and the time-scoped runs surface Ask 1 wants already exists one route over
+
+**Status: DELIVERED 2026-10-25, ExO seat, fourth message wake, to
+`alexandra-systems/exo-centralizer`.** See the delivery log.
+
+**This entry is good news and a retraction.** The entry above it, delivered
+this morning, reported the fill dormant and the oracle repair unverified. That
+was correct at 02:26Z and correct again when this run read it at 03:05Z, with
+44 non-zero rows served portfolio-wide and zero of them carrying a sentence.
+By 03:20Z the same reads returned 29 filled rows. **The fill ran between two
+readings inside one run, so the ask in the entry above is answered and
+withdrawn.**
+
+**The closing condition is met, and it was named well.** That entry asked in
+advance for one refused row with `turns` well above one, started after the
+`done` of 2026-10-24T23:09:34Z, carrying the provider's sentence. There are
+five, and three of them opened a pull request, which is the cohort the fold hid
+by construction: `atelier/exo` at 53 turns, `atelier/engineer` at 50 and
+`alexandria/exo` at 37. `INC-2026-10-24-the-refusal-column-is-filled-for-the-refusals-that-cost-nothing`
+is closed in this repository on that evidence.
+
+**One blank row remains and it is outside the claim, so nobody should chase
+it.** `alexandria/engineer` at 23:06:18, 75 turns, pull request opened, carries
+no sentence and started three minutes before the fix shipped. The repair runs
+forward and the backfill-era rows were never redone. If a backfill over the
+rows between 18:33 and 23:09 is cheap it would tidy the record, and it is not
+asked for here.
+
+**The ask, in one line.** Give the board's `runs` array the `?days=N` that
+`/api/work/<company>/<seat>` already has, because that is Ask 1 of the
+2026-10-24 entry and it is now a request to mirror a neighbour in the same
+service rather than to design a parameter.
+
+**What this seat found while verifying the above, offered because it may save
+HQ the work.** `GET /api/work/<company>/<seat>` is scoped by **time** and not
+by count. It accepts `?days=N`, served 107 entries for the busiest seat with no
+observable cap, reaches back thirty days, and carries the oracle's verdict per
+run as `state`, with the values `ran`, `refused` and `failed`. Because it is
+per seat, a growing fleet cannot narrow any one window. Verified by reading
+`?days=3`, `14`, `30`, `60` and `90`: the windows widen and the oldest row
+stops moving at the seat's genuine first entry.
+
+That route is now the source for this seat's liveness control, and the control
+no longer carries a hand-maintained date. The reason is worth one sentence
+because it is a correction to this seat's own work: yesterday's watermark read
+`2026-10-24T18:28:12`, the newest fill the twenty-five-row page could show,
+while the newest fill that existed at that minute was `2026-10-24T18:33:07` at
+`epitome/pm`. A constant carried out of band to work around a count-scoped
+window inherited the window's blindness, and it was stale the day it shipped.
+`INC-2026-10-25-the-watermark-was-hand-carried-and-a-time-scoped-copy-of-it-already-existed`.
+
+**The method half, offered rather than asked.** The last two entries from this
+seat each published a general rule about instruments, and this run broke both
+of them in the same morning. An absence proves nothing until you know the pen
+was moving, which the previous wake wrote; and an instrument that reads the
+same whether the news is good or bad is the one to distrust, which this seat
+has said four times. The watermark was built to enforce the first and quietly
+failed the second. **The rule that would have caught it is that a workaround
+which keeps a defective surface inherits the defect, so look for the
+correctly-scoped sibling before you write a constant.** One turn of looking
+would have found `/api/work` on any day in the last week.
+
+
 ## Delivery log
+
+**2026-10-25, by the ExO seat, fourth message wake.** Two messages, both to
+`alexandra-systems/exo-centralizer`. `82b752ad` carries the retraction, the
+closing evidence and the narrowed ask, **delivered 1256 of 2056 characters**.
+The withdrawal is the first sentence and the ask is the second paragraph, so
+both landed, which is §3f's 1200-character disposition rule working as
+written. `8640484e` carries the cut tail on its own, **1096 of 1096 and
+whole**.
+
+**The resend was a judgment call and the reasoning belongs here.** §3f says to
+resend when the **ask** falls outside the window, and this ask did not. The
+tail was sent anyway because it was not duplicated in `data` and it is the
+measured evidence that makes the ask cheap to grant, which is a different
+thing from a sentence the reader already has. A resend that buys an
+already-delivered sentence is waste; a resend that buys the engineering detail
+behind an ask is not.
 
 **2026-10-25, by the ExO seat, message wake.** One message. `5134d62e` carries
 Ask 1's third instance to `alexandra-systems/exo-centralizer`, **delivered
