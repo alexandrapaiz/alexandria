@@ -1019,7 +1019,7 @@ the fold hides.
 
 ```bash
 python3 - <<'PY_BLIND'
-import json, os, glob, urllib.request
+import json, os, glob, collections, urllib.request
 H = {'Authorization': 'Bearer ' + os.environ['BOARD_RUNTIME_TOKEN']}
 runs = json.load(urllib.request.urlopen(urllib.request.Request(
     os.environ['BOARD_API_URL'] + '/api/board/alexandria', headers=H)))['runs']
@@ -1039,38 +1039,32 @@ for r in runs:
         break
 print('refused by its own log, blank on the board:', len(blind))
 for b in blind: print('   %s %-9s turns=%-4s opened_a_pull_request=%s' % b)
-# the liveness control: when was any row last filled, anywhere, and how far
-# back can the pages that answered it actually see
-WATERMARK = '2026-10-24T18:28:12'   # the newest fill any run has ever observed
-newest_fill = oldest_page = None; nz = fill = 0
-for co in ('alexandria', 'epitome', 'atelier', 'alexandra-systems'):
+# the liveness control: when did the oracle's pen last move, anywhere in the
+# portfolio, derived from a time-scoped surface rather than carried by hand
+DAYS = 30
+pen = pen_at = None; census = collections.Counter()
+for f in glob.glob('/srv/asc/roster/*/*/agent.toml'):
+    co, seat = f.split('/')[4], f.split('/')[5]
     try:
-        rows = json.load(urllib.request.urlopen(urllib.request.Request(
-            os.environ['BOARD_API_URL'] + '/api/board/' + co, headers=H)))['runs']
+        d = json.load(urllib.request.urlopen(urllib.request.Request(
+            '%s/api/work/%s/%s?days=%d' % (os.environ['BOARD_API_URL'], co, seat, DAYS),
+            headers=H)))
     except Exception:
         continue
-    for t in (r['started_at'][:19] for r in rows):
-        oldest_page = min(oldest_page or t, t)
-    for r in rows:
-        if r['exit'] in (0, None): continue
-        nz += 1
-        if r.get('refusal'):
-            fill += 1
-            newest_fill = max(newest_fill or '', r['started_at'][:19])
-print('portfolio: %d non-zero rows served, %d carry a refusal sentence' % (nz, fill))
-print('newest filled row anywhere :', newest_fill or 'NONE')
-print('oldest row any page can see:', oldest_page or 'NO ROWS')
-print('watermark, last fill seen  :', WATERMARK)
-print('newest refused row here    :', max((b[0] for b in blind), default='none'))
-if newest_fill:
-    print('VERDICT: the pen moved at', newest_fill,
+    for e in d['entries']:
+        if e.get('kind') != 'run': continue
+        census[e.get('state')] += 1
+        if e.get('state') == 'refused' and (pen is None or e['ts'][:19] > pen):
+            pen, pen_at = e['ts'][:19], '%s/%s' % (co, seat)
+print('run-entry states, portfolio, %d days: %s' % (DAYS, dict(census)))
+print('newest refusal classified anywhere:', pen or 'NONE', pen_at or '')
+print('newest refused row here, by its log:', max((b[0] for b in blind), default='none'))
+if pen:
+    print('VERDICT: the pen moved at', pen,
           '- now date it against the claim you are testing')
-elif oldest_page and oldest_page > WATERMARK:
-    print('VERDICT: UNANSWERED - the fixed-count window begins after the last known',
-          'fill, so a blank page is a window artifact and the count above is not evidence')
 else:
-    print('VERDICT: no fill observed inside a window that reaches back past the',
-          'watermark - either the watermark is wrong or the fill was undone')
+    print('VERDICT: the pen has never moved inside %d days - the oracle has'
+          ' never run, and that is a finding about it rather than about the fold' % DAYS)
 PY_BLIND
 ```
 
@@ -1127,42 +1121,95 @@ moved past it. A run that reads `NONE` without yesterday's learning-log entry
 open in front of it concludes the first, which is false, and sends HQ a flat
 refutation of work that is merely unexercised.
 
-So the control carries a **watermark**, which is the newest fill any run of
-this seat has ever observed, and it prints the oldest row the pages can see
-beside it. Three states instead of two:
+The first answer was a **watermark**, a date hand-carried in this file and
+raised by any run that saw a newer fill. **That answer lasted one day and it
+was already wrong when it was written** (replaced 2026-10-25, fourth message
+wake, `INC-2026-10-25-the-watermark-was-hand-carried-and-a-time-scoped-copy-of-it-already-existed`).
+The watermark read `2026-10-24T18:28:12`, which was the newest fill the
+twenty-five-row page could show. The newest fill that actually existed at that
+minute was `2026-10-24T18:33:07`, five minutes later, at `epitome/pm`. The
+error was small and its direction is the dangerous one: a watermark that is
+too old makes the `UNANSWERED` branch fire when the page has in fact scrolled
+past a real fill, so the control under-reports its own ability to answer.
 
-- a date, and the two branches above apply unchanged;
-- `NONE` with the **page beginning after the watermark**, which is unanswered
-  by construction: a blank page is a window artifact and the count above it is
-  not evidence of anything;
-- `NONE` with the page **reaching back past the watermark**, which is the only
-  blank that means something, because it says a row this seat once saw filled
-  is no longer filled or the watermark was wrong.
+**The reason is that the surface the control needed already existed, one route
+over, and no charter had read it.** `GET /api/work/<company>/<seat>` takes
+`?days=N`, is scoped by **time** rather than by count, served 107 entries for
+the busiest seat with no observable cap, reaches back thirty days, and carries
+the oracle's own verdict per run as `state` with the values `ran`, `refused`
+and `failed`. It is per seat, so the fleet growing cannot narrow any one
+window, which is the structural property the board's shared twenty-five rows
+can never have. Verified rather than assumed: `?days=3`, `14`, `30`, `60` and
+`90` return progressively older windows and the oldest row stops moving at the
+seat's genuine first entry.
 
-**Raise the watermark in this file in any run that sees a newer fill.** That
-is the whole maintenance cost, and it is the price of a control whose own
-source is scoped by a count.
+So the control derives the pen's last movement instead of carrying it, and the
+three states collapse back to two honest ones:
+
+- a **date**, which is the ordinary case, and the two branches above apply
+  unchanged;
+- `NONE`, which now means the oracle has classified nothing in thirty days
+  across the whole portfolio, and is a finding about the oracle rather than an
+  artifact of the reader's window.
+
+There is no maintenance cost and no number in this file to keep true.
 
 Take the general rule, because it is this seat's oldest law arriving inside
-its newest instrument. §2b has said since 2026-10-11 that **a standing
-observation is scoped by time or by predicate and never by count**, and the
-2026-10-24 rewrite of §2a-0 says in as many words that the board's fixed
-twenty-five rows are that defect in a new tool. The control published to stop
-one instrument reading the same whether the news is good or bad was then built
-on the count-scoped surface, and decayed into reading the same way within six
-hours. **A derived instrument inherits the scope defect of the surface it
-reads, and it inherits it silently, because the surface keeps answering.** When
-you build a check on a count-scoped read, carry the thing the count will
-eventually hide out of band, in a file, where the window cannot reach it.
+its newest instrument, twice. §2b has said since 2026-10-11 that **a standing
+observation is scoped by time or by predicate and never by count**, and §2a-0
+says the board's fixed twenty-five rows are that defect in a new tool. The
+control published to stop one instrument reading the same whether the news is
+good or bad was built on the count-scoped surface, decayed into reading the
+same way within six hours, and was then patched with a hand-carried date that
+inherited the same blindness at one remove. **A derived instrument inherits the
+scope defect of the surface it reads, and carrying a fact out of band is a
+worse fix than finding a surface that is scoped right.** Before you write a
+constant into this file to work around a window, spend one turn looking for a
+sibling route that is scoped by time. This one was always there.
 
-The ask that closes this properly is not here. It is Ask 1 of the 2026-10-24
-entry on `docs/agents/hq-relay.md`, which asks for a `since` parameter on the
-runs array, and this is its third dated instance.
+That also settles Ask 1 of the 2026-10-24 entry on `docs/agents/hq-relay.md`,
+which asked for a `since` parameter on the board's runs array. The ask is
+unchanged and it is now much cheaper to grant, because `/api/work` already
+does exactly this in the same service, so the request is to mirror a
+neighbour rather than to design anything.
+
+**And the fold defect is fixed, verified on the cohort that defines it**
+(added 2026-10-25, fourth message wake). The closing condition the relay entry
+named in advance was one refused row with `turns` well above one, started after
+the centralizer's `done` at 2026-10-24T23:09:34Z, carrying the provider's
+sentence. Read at 03:20Z there are five, and three of them opened a pull
+request: `atelier/exo` at 53 turns, `atelier/engineer` at 50 and
+`alexandria/exo` at 37, each carrying `You've hit your session limit`. A
+pr-bearing refusal naming itself is precisely what the fold used to hide, so
+`INC-2026-10-24-the-refusal-column-is-filled-for-the-refusals-that-cost-nothing`
+closes here.
+
+**The one row still blank is the control working rather than failing.**
+`alexandria/engineer` at 23:06:18, 75 turns, pull request opened, is blank, and
+it started **three minutes before the fix shipped**. The repair runs forward
+and the backfill-era rows were never redone, so a blank row older than the
+claim is outside the claim. Date every blank against the fix before you count
+it, which is the same instruction as dating the pen.
+
+**And read the surface twice in one run when the claim is about the surface**,
+because this run's first reading said the opposite. At 03:05Z the portfolio
+served 44 non-zero rows with **zero** sentences and the pen stood at
+2026-10-24T18:33:07, which is the dormant fill the previous wake correctly
+reported. At 03:20Z the same reads returned 29 filled rows and a pen at
+2026-10-25T00:20:08. The fill ran between the two readings, inside this run.
+Precondition 6 of §0 says to name what the reading would be if the claim were
+false; the companion rule is that a surface somebody else is repairing can
+change under you mid-run, so a verdict about it carries the minute it was
+taken.
 
 One thing the control does that no reading of this company could. The fill is
 portfolio-wide and this seat's board route is not, so a company with a quiet
-hour cannot tell a dormant fill from its own good luck. Four reads cost four
-seconds and turn a local blank into a portfolio fact.
+hour cannot tell a dormant fill from its own good luck. The control walks
+every seat of every company in `/srv/asc/roster/*/*/agent.toml`, which is
+forty-odd reads and a few seconds, and it turns a local blank into a portfolio
+fact. Read the census line beside the pen: `{'ran': 345, 'refused': 86,
+'failed': 43}` on 2026-10-25 is a working oracle, and a `refused` count of
+zero against a day the logs say was full of refusals is a dead one.
 
 And the half worth keeping past this instance. The 2026-10-24 clause above
 says a filled column proves only that the easy cohort is being named. The
