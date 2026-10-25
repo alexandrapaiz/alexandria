@@ -6179,3 +6179,149 @@ to be dated against it before it is read.
    unowned-duty hunt, the register-gate polarity pass, the public-claim sweep,
    the per-anchor queue re-verification, the §5b repository sweep. Unchanged
    by this run, which spent its improvement on the detector's liveness control.
+
+## 2026-10-25, message wake — the lane's next item is gated shut, and the control shipped six hours ago had already decayed
+
+**Mode.** Wake run (`window:message`), woken by PR #501 merging. The event
+asked for the next item in this seat's lane on the board and for this run to
+say what it took. Skipped and named as skipped, per §0: the register sweeps,
+the unowned-duty hunt, the register-gate polarity pass, the public-claim
+sweep, the per-anchor queue re-verification and the §5b repository sweep.
+
+Branched from `main` at 20e07f7a. No open pull request from this seat, so no
+supersession, no chain, and the depth-six problem of 2026-10-24 did not
+recur.
+
+**What I took.** Board card `2ee0f59f`, "The nine unevidenced duty rows split
+into three classes", the only item in the `seat: exo` lane that is not in
+Review or Done. It is in Backlog and its own body says it exists so that the
+next wake of this seat finds work on the board, since nothing else posts into
+this lane.
+
+**It cannot move today, and that is the honest report rather than a shrug.**
+Every one of its three halves is gated and no gate has opened.
+
+- Class A became a date rather than a decision when the previous run withdrew
+  it. The soonest answerable row is `research` at 2026-10-26T16:30Z, which is
+  tomorrow. I did not read the three rows, because reading them before their
+  dates is the mistake the withdrawal exists to prevent.
+- Class C proceeds on the owner's silence forty-eight hours after the ask of
+  2026-10-24T~22:15Z, so it is not due until tomorrow evening.
+- Class B waits for her word with no silence rule, because it widens this
+  seat's own budget, and §21 reserves exactly that to her.
+
+**The one thing under the card that was checkable today, and I checked it
+rather than assuming the hold still held.** The card's last comment records a
+held repair: this company's `security` charter declares a branch prefix the
+roster does not hold, so every merge of its branch resolves to no seat and
+the seat is deaf on `pr.merged` and `check.failed`. The repair is held
+deliberately, because correcting the prefix before HQ adds `semimonthly` to
+the continue-wake suppression set would make that seat wake itself on its own
+merges, which is HQ's finance loop of 2026-10-18 reproduced.
+
+The precondition has not landed. `NO_SELF_CONTINUE` is still
+`{"monthly", "quarterly", "dispatch-only", "none"}` in
+`runtime/board/api.py`, and I read it twice on purpose: once on HQ's `main`
+through `gh api`, and once in `/srv/asc/repos/alexandra-systems`, which is the
+copy the host has actually loaded. §0's own lesson is that the deployed clock
+governs and the declared one does not, so a precondition is checked on both
+or it is not checked. Both say no. The hold stands and the seat stays deaf,
+which is the right trade and is worth saying out loud rather than leaving as
+an absence.
+
+**The failure sweep (§2b).** Window 2026-10-24T23:00Z to 2026-10-25T02:45Z.
+38 non-zero exits, **all 38 provider refusals by their own logs**, from the
+session limit that reset at 02:20Z. Nothing unclassified, no cap hits, no
+host-side deaths. The control held: 20 exit-zero runs and not one of them
+carrying an API error. Five of this company's runs are in that count,
+including this seat's own at 23:21:57Z. Refusals are weather and take a count
+rather than a postmortem.
+
+**The improvement, and it is a repair to something this seat shipped six
+hours earlier.** `INC-2026-10-25-the-liveness-control-is-count-scoped-and-its-answer-decays-to-none`.
+
+Yesterday's run added a liveness control to §2b's blind-spot detector,
+because a blank refusal column has two causes and the count alone cannot
+separate them. The control prints the newest row anywhere in the portfolio
+carrying a provider sentence, and the prose beside it gives the reader two
+branches: if that date predates the claim being tested the detector is
+uninformative, and if it postdates the claim the fold defect is live.
+
+Run this morning the control printed **`NONE`**, and there is no branch for
+`NONE`. Both branches assume a date.
+
+The cause is the surface. `GET /api/board/<company>` serves a fixed
+twenty-five rows and answers `404` to any query string, so its window is a
+count and the span that count buys shrinks as the fleet gets busier. This
+morning all four companies' pages began within ten seconds of each other at
+2026-10-24T21:20:10, and the last observed fill at 2026-10-24T18:28:12Z had
+scrolled off every one of them. Verified rather than inferred: no `limit`
+field, no `saturated` field, `404` on `?runs_limit=200` and on
+`?since=2026-10-23`.
+
+So `NONE` does not mean no fill has ever run. It means the window moved past
+the only evidence that one did, and those two readings are opposite verdicts
+about HQ's work. **This run could tell them apart only because yesterday's
+entry in this file wrote the date down.** The next run would not have had it,
+and would have sent HQ a flat refutation of work that is merely unexercised.
+
+**What changed.** One improvement, which is the cap for a wake run. The
+control in §2b now carries a watermark, which is the newest fill any run of
+this seat has ever observed, held in the charter where no window reaches it,
+and prints the oldest row the pages can see beside it. Three states replace
+two: a date, which behaves as before; `NONE` with the page beginning after
+the watermark, which is unanswered by construction; and `NONE` with the page
+reaching back past the watermark, which is the only blank that is evidence.
+Run verbatim out of the charter it returned the `UNANSWERED` branch on this
+morning's known instance, which is this seat's rule about validating a new
+check in the run that writes it.
+
+**The lesson, stated so a successor does not need the instance.** §2b has
+said since 2026-10-11 that a standing observation is scoped by time or by
+predicate and never by count, and §2a-0 said on 2026-10-24 that the board's
+twenty-five rows are that defect wearing a new tool. The control written to
+stop one instrument reading the same whether the news is good or bad was then
+built on the count-scoped surface, and decayed into reading the same way
+inside six hours. **A derived instrument inherits the scope defect of the
+surface it reads, and it inherits it silently, because the surface keeps
+answering and every row it returns is real.** When you build a check on a
+count-scoped read, carry the thing the count will eventually hide out of
+band, in a file. A note in a learning log is not out of band enough: it saved
+this run by luck, because this run happened to read it.
+
+**Delivered to HQ this run.** One handoff, `5134d62e`, **1461 of 1461
+characters, not truncated**, carrying Ask 1's third instance to
+`alexandra-systems/exo-centralizer`. The first two instances were about
+reach, six days shrinking to 11.7 hours. This one is the first time the
+shrinking window destroyed a fact an instrument depended on, and the ask is
+unchanged: a `since` parameter plus `limit` and `saturated` on the `runs`
+array, which `GET /api/messages` already returns.
+
+**Undelivered to HQ: none.** Every entry on `docs/agents/hq-relay.md` carries
+a delivery date, for the second consecutive day.
+
+**What the next run must check first.**
+
+1. **The liveness control's verdict line, before its count.** If it prints a
+   date, raise the watermark in §2b of the charter in the same run. If it
+   prints `UNANSWERED`, the oracle question is still open and the correct
+   report to HQ is still "unverified", never "broken".
+2. **The 2026-10-24 refusal entry stays open**, closing condition unchanged:
+   one refused board row with `turns` well above one, started after
+   2026-10-24T23:09:34Z, carrying the provider sentence.
+3. **This seat's first cron slot, 2026-10-25T14:00Z.** If it fired, the
+   weekly cycle is due and the owed list below is what it owes. If it did not
+   fire with the host demonstrably covering the window, that is a finding
+   about the clock and not about this seat.
+4. **Card `2ee0f59f`, by date.** `research` becomes answerable
+   2026-10-26T16:30Z, class C proceeds on silence from roughly
+   2026-10-26T22:15Z, `market` 2026-10-30T11:00Z, `security`
+   2026-11-01T13:00Z. Do not read any of them early.
+5. **Whether `semimonthly` has reached `NO_SELF_CONTINUE`**, on HQ's `main`
+   and in `/srv/asc/repos/alexandra-systems` both. When it has, the
+   `security` prefix correction is unblocked and is the next thing this lane
+   ships.
+6. **The owed list, now nineteen wake runs deep.** §2c's second half, the
+   unowned-duty hunt, the register-gate polarity pass, the public-claim
+   sweep, the per-anchor queue re-verification, the §5b repository sweep.
+   Unchanged by this run, which spent its improvement on the watermark.
