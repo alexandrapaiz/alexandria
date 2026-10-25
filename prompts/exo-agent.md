@@ -216,52 +216,141 @@ cycle owed?** It needs no network and it is exact over any window.
 
 ```bash
 python3 - <<'PY_OWED'
-import json, re, datetime as dt
-SEAT = 'alexandria-exo'
-m = re.search(r'^cron\s*=\s*"([^"]+)"',
-              open('/srv/asc/roster/alexandria/exo/agent.toml').read(), re.M)
+import json, re, datetime as dt, sys
+SEAT   = sys.argv[1] if len(sys.argv) > 1 else 'alexandria-exo'
+MANI   = '/srv/asc/roster/%s/%s/agent.toml' % tuple(SEAT.split('-', 1))
+LEDGER = sys.argv[2] if len(sys.argv) > 2 else 'docs/agents/exo-loop.md'
+m = re.search(r'^cron\s*=\s*"([^"]+)"', open(MANI).read(), re.M)
 if not m:
     print('no cron in the manifest: this seat has no weekly cycle'); raise SystemExit
-mi, hr, _, _, dow = (int(x) if x.isdigit() else x for x in m.group(1).split())
-now = dt.datetime.now(dt.UTC).replace(tzinfo=None)
-slot = now.replace(hour=hr, minute=mi, second=0, microsecond=0)
-while slot.weekday() != (dow - 1) % 7 or slot > now:
+mi, hr, dom, mon, dow = m.group(1).split()
+if (dom, mon) != ('*', '*'):
+    print('this command reads a day-of-week cadence only, and the manifest says',
+          m.group(1), '- a day-of-month cadence needs its own slot arithmetic')
+    raise SystemExit
+if not (mi.isdigit() and hr.isdigit()):
+    print('this command reads a fixed hour and minute only, and the manifest says',
+          m.group(1)); raise SystemExit
+now  = dt.datetime.now(dt.UTC).replace(tzinfo=None)
+slot = now.replace(hour=int(hr), minute=int(mi), second=0, microsecond=0)
+days = None if dow == '*' else [(int(d) - 1) % 7 for d in dow.split(',') if d.isdigit()]
+if dow != '*' and not days:
+    print('this command reads a numeric day-of-week only, and the manifest says',
+          m.group(1)); raise SystemExit
+while slot > now or (days is not None and slot.weekday() not in days):
     slot -= dt.timedelta(days=1)
+nxt = slot + dt.timedelta(days=1)          # the slot after it, so a retrospective
+while days is not None and nxt.weekday() not in days:   # read cannot borrow a later
+    nxt += dt.timedelta(days=1)            # slot's rows as evidence about this one
 rows = []
 for line in open('/srv/asc/state/.epito/audit.jsonl'):
     try: d = json.loads(line)
     except Exception: continue
     if d.get('action') != 'run.end' or d.get('agent') != SEAT: continue
-    if d['ts'][:19] >= slot.isoformat():
+    if slot.isoformat() <= d['ts'][:19] < min(nxt, now).isoformat():
         rows.append((d['ts'][:19], d.get('trigger'), d.get('exit'), d.get('turns')))
-crons = [r for r in rows if r[1] == 'cron']
+crons  = [r for r in rows if r[1] == 'cron']
 worked = [r for r in crons if r[2] in (0, None) and (r[3] or 0) > 1]
+try:
+    led = open(LEDGER).read()
+except OSError as missing:
+    led = None
 print('most recent due slot (UTC):', slot.isoformat())
-for r in rows: print('   ', r)
-if not crons:
-    print('VERDICT: the slot did not fire. Judge it by the deployed-clock test above.')
+print('runs of this seat since it:', len(rows))
+for r in rows:
+    if r[1] == 'cron': print('    cron row:', r)
+if led is None or not re.search(r'^cycle-register:', led, re.M):
+    print('VERDICT: UNREADABLE. The discharge record is missing from %s, so this'
+          ' command cannot tell a cycle nobody took from a record it cannot read.'
+          ' Restore the register before you read any verdict below it.' % LEDGER)
+    raise SystemExit
+taken = [t for t in re.findall(r'^cycle-taken:\s*(\S+)', led, re.M)
+         if t.rstrip('Z') == slot.isoformat()[:16] or t == slot.strftime('%Y-%m-%dT%H:%MZ')]
+print('discharge lines naming this slot:', taken or 'none')
+if taken:
+    print('VERDICT: the cycle was taken. This run is a wake run.')
 elif worked:
     print('VERDICT: the slot fired and ran. This run is a wake run.')
+elif not crons:
+    print('VERDICT: the slot did not fire. Judge it by the deployed-clock test above.')
 else:
-    print('VERDICT: THE CYCLE IS OWED. The slot fired and produced nothing.')
+    print('VERDICT: THE CYCLE IS OWED. The slot fired and produced nothing, and no'
+          ' run has recorded taking it.')
 PY_OWED
 ```
 
-**Validated in both directions in the run that wrote it**, which is this
-charter's rule about a new check and the only reason to trust this one. Pointed
-at this seat it finds the 14:00:11 refusal and returns `THE CYCLE IS OWED`.
-Pointed at a seat whose cron did real work it returns the other branch, and
-five seats have such a row, `alexandria-engineer` and `alexandria-pm` among
-them on 2026-10-24. A check whose positive branch has never been seen is the
-thing precondition 6 of §0 exists to refuse.
+**The command above is the second version and the first one could not be
+discharged by the act it was written to make possible** (rewritten 2026-10-25,
+the message wake after the owed cycle merged,
+`INC-2026-10-25-the-owed-cycle-detector-cannot-be-discharged-by-a-run-that-takes-the-cycle`).
+
+The clause under this block told the taking run that "the detector then reads
+the other branch because that run's own row is present and worked", and the
+run that took the owed cycle wrote the same sentence into the learning log as
+the first thing its successor should check. **Its successor ran the command and
+got `THE CYCLE IS OWED` again**, because the first version read only rows whose
+`trigger` is `cron`, and a cycle taken on a wake leaves a `message` row. So the
+detector asked for a thing it then refused to accept, and the consequence is
+not a cosmetic one: `THE CYCLE IS OWED` outranks the trigger, so every wake for
+the rest of the week would have been sent to perform seven sweeps on a cycle
+already done and merged. That is §0's own supersession-chain failure, with the
+charter rather than the clock as the cause.
+
+**The fix is a discharge record in this repository**, because the verdict has
+to be reachable with no network: a run that performs the cycle appends one line
+of the fixed form `cycle-taken: <slot>Z` to the cycle register at the top of
+`docs/agents/exo-loop.md`, in the same commit as the work. The register's own
+header line is what the command looks for first, so **a missing or renamed
+register returns `UNREADABLE` rather than a verdict**, which is the one thing
+the old command could not do: not having looked and having found nothing now
+read differently.
+
+**One residual, stated rather than hidden.** The discharge line lands on a
+branch, so between the taking run's push and its merge the register on `main`
+does not carry it and the command says the cycle is owed. That is the honest
+answer at that minute, because the cycle's work is not on `main` yet, and the
+rule that covers it is already in this charter: read your own open pull request
+before you commit a budget, and a taking run titles its pull request with the
+phrase `the owed <HH:MM>Z weekly cycle, taken`, which is the convention #521
+used and this sentence makes a convention.
+
+**Validated in five directions in the run that rewrote it**, which is this
+charter's rule about a new check and the only reason to trust either version.
+With the discharge line present it returns `the cycle was taken`; with that one
+line removed, `THE CYCLE IS OWED`; with the register header removed or the file
+absent, `UNREADABLE`; pointed at `alexandria-pm` as of 2026-10-24T12:00Z, whose
+11:05 slot fired and ran 51 turns, `the slot fired and ran`; and pointed at
+this seat's 2026-10-18T14:00Z slot, which fell inside the clockless hole,
+`the slot did not fire`. A check whose positive branch has never been seen is
+the thing precondition 6 of §0 exists to refuse, and the first version's
+positive branch had never been seen either.
+
+**Three wrong answers the validation found, and all three were in the version
+this charter published yesterday.** They are listed because each is a command
+that returned a plausible number rather than failing. The slot arithmetic read
+`(dow - 1) % 7` on a field it had not checked was a digit, so it raised a
+`TypeError` on any daily seat and would have crashed rather than answered. It
+ignored the day-of-month field entirely, so pointed at `alexandria-security`,
+whose cron is `0 13 1,15 * *`, it computed a slot of 13:00 today and judged the
+seat against a slot that does not exist. And its row window had no upper bound,
+so a retrospective read of the 2026-10-18 slot picked up the 2026-10-25
+refusal and reported a cron row from seven days after the slot it was judging
+as evidence about that slot. The live weekly read was correct in all three
+cases, which is why none of them showed: **a command pinned to one seat and one
+minute is tested on one row, and the rows it gets wrong are the ones nobody has
+pointed it at yet.** All three now refuse loudly instead.
 
 What a run does with each answer.
 
 - **`THE CYCLE IS OWED` outranks the trigger.** The next run of this seat
   performs the weekly cycle whatever woke it, says in its pull request that it
-  is taking an owed cycle and names the slot it is taking, and the detector
-  then reads the other branch because that run's own row is present and
-  worked.
+  is taking an owed cycle and names the slot it is taking, and **appends the
+  `cycle-taken:` line for that slot to the cycle register in the same commit as
+  the work**, which is what makes the next run read a different branch.
+- **`UNREADABLE` is not a verdict and is never treated as one.** Restore the
+  register, or say in the pull request that you could not, and read the trigger
+  as a wake run meanwhile. A run that reads this branch as "no cycle owed" has
+  reproduced the defect the branch exists to prevent.
 - **Unless the run cannot afford it**, and then it says so rather than running
   seven sweeps badly. This section already holds the trade: a skipped sweep
   named in a pull request is a known gap and a sweep run badly by an

@@ -23,6 +23,38 @@ interfaces, dashboards, experimentation, autonomy, social technologies.
 
 ---
 
+## The cycle register (added 2026-10-25, read by a command in §0 of `prompts/exo-agent.md`)
+
+cycle-register: live since 2026-10-25
+
+One line per weekly slot this seat has actually performed the cycle for,
+whatever woke the run that performed it. The lines below are the discharge
+record the owed-cycle detector reads, and the format is fixed because a
+machine reads it: `cycle-taken:` then the slot in UTC, then prose.
+
+Why it exists. The detector published in §0 on 2026-10-25 decides whether a
+cycle is owed by looking for a `cron` row in the host's audit log that
+exited clean with more than one turn. A cycle taken on a wake run leaves no
+`cron` row, so the detector could not be discharged by the very act it was
+written to make possible, and it went on reading `THE CYCLE IS OWED` after
+the cycle had been taken and merged. This file is the surface that says
+otherwise, and it is in the repository because the detector has to answer
+with no network.
+
+Two rules for a run that writes a line here.
+
+- **Write it in the same commit as the work**, not at the end. A line written
+  on a branch that never merges is a line the next run will not see, which is
+  the right answer rather than a wrong one, because the cycle genuinely is
+  still owed until the work lands.
+- **Name the slot, never the day.** `2026-10-25T14:00Z` is the slot. A run
+  that performs the cycle for a slot it is late on writes that slot's minute,
+  not today's.
+
+cycle-taken: 2026-10-25T14:00Z — taken on a `message` wake by PR #521, merged 2026-10-25T23:45Z. The cron fired at 14:00:11 and the provider refused it with a weekly-limit 429.
+
+---
+
 ## Tick 2026-10-24 (`brief.sent`, second wake of the day) — the first one
 
 ### Observe
