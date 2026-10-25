@@ -2378,6 +2378,91 @@ def truncations(lines):
     return out
 
 
+#: The word a headless line may legitimately open with in lower case: a
+#: backticked command or path, which is a name rather than a sentence.
+NAMED = ("`", "{")
+
+#: `truncations` and `headless` are one defect from two directions, and the
+#: second direction is the one the gate could not see. An edit that cuts a
+#: bullet's own HEADER leaves the line before it ending on a full stop, so
+#: `truncations` discards the pair on its first filter and reports zero. Both
+#: cases below are real: they stood in prompts/digest.md for five and thirty-five
+#: days, at canon law 12's final heading gate and canon law 6's evidence grade,
+#: while `generator` printed "lines ending mid-clause before a new block  0".
+#:
+#: The false cases are the three shapes that look like this one. A restored
+#: header is a bullet and bullets are never continuations. A run of capitals is
+#: this file emphasising a word across a line break. And a backticked command
+#: opening a line is a name, not a sentence.
+HEADLESS_CASES = (
+    (True, "institution. It is to write them with no attributive phrase.",
+     "  something: every line beginning with `#`, and every run of bold"),
+    (True, "rule forbids is an absence and an absence cannot be quoted.",
+     "  clause inside the item's own prose, not a footnote and not a line."),
+    (True, "Only then output.",
+     "  and the fix is to write that line again from the items underneath."),
+    (False, "- **Grade the evidence in-line, on every item with a number.** A short",
+     "  clause inside the item's own prose, not a footnote and not a line."),
+    (False, "Count the links. They match, or the issue is not finished.",
+     "- **Grade the evidence in-line.** A short clause inside the prose."),
+    (False, "every heading that reaches the reader is",
+     "  WRITTEN FRESH from that day's actual news, the way the title is."),
+    (False, "Weigh the change before you commit it.",
+     "  `python3 pipeline/budget.py` prints the number to read."),
+    (False, "A label is a label at any level and in any typeface.",
+     "  Ask it of every line and every fragment you collected."),
+    (False, "the issue is NOT finished, and the fix is to write that line",
+     "  again from the items actually underneath it."),
+)
+
+
+def headless(lines):
+    """A rule whose own opening line was cut, leaving its body standing.
+
+    The shape is one pair of lines: the one before ends a sentence, the one
+    after is indented, is not a block of its own, and opens mid-sentence in
+    lower case. Nothing else in these files does that, because a wrapped
+    sentence never has a full stop in front of it.
+    """
+    out = []
+    fence = False
+    for i in range(1, len(lines)):
+        prev, cur = lines[i - 1].rstrip(), lines[i]
+        if FENCE.match(cur):
+            fence = not fence
+            continue
+        if fence or not prev.strip() or not cur.strip():
+            continue
+        # The cut landed on the line before: that is `truncations`, not this.
+        if not prev.endswith((".", "!", "?")):
+            continue
+        if not re.match(r"^\s+\S", cur):
+            continue
+        if re.match(r"^\s*([-*+]\s|\d+\.\s|#|>|\|)", cur):
+            continue
+        if SHOUTED.match(cur):
+            continue
+        word = cur.strip().split()[0]
+        if word.startswith(NAMED) or not re.match(r"^[a-z]", word):
+            continue
+        out.append((i + 1, cur.strip()))
+    return out
+
+
+def headless_cases():
+    """Every case above, run before the file is read.
+
+    A detector that fails its own cases reports a clean generator for the
+    wrong reason, which is the rule `standalone` already works under.
+    """
+    bad = []
+    for want, prev, cur in HEADLESS_CASES:
+        got = bool(headless([prev, cur]))
+        if got != want:
+            bad.append((want, prev, cur))
+    return bad
+
+
 def generator(paths=None):
     """Edit damage in prompts/digest.md, which no gate in this repo read.
 
@@ -2389,6 +2474,14 @@ def generator(paths=None):
     """
     paths = paths or GENERATORS
     rc = 0
+    bad = headless_cases()
+    if bad:
+        for want, prev, cur in bad:
+            print(f"  CASE    wanted {want}: {cur.strip()[:66]}")
+        print("The pattern changed and HEADLESS_CASES says how. Nothing")
+        print("below was read.")
+        return 1
+    print(f"  the headless cases        {len(HEADLESS_CASES)} pass")
     for p in paths:
         p = pathlib.Path(p)
         if not p.exists():
@@ -2403,6 +2496,7 @@ def generator(paths=None):
         dup = duplicated_blocks(lines)
         brace = unclosed_slots(lines)
         trunc = truncations(lines)
+        cut = headless(lines)
         print(f"{shown}   {len(lines)} lines")
         print(f"  blocks the file carries twice in a row        {len(dup)}")
         for first, second, k, head in dup:
@@ -2415,13 +2509,18 @@ def generator(paths=None):
         print(f"  lines ending mid-clause before a new block    {len(trunc)}")
         for n, text in trunc:
             print(f"    TRUNCATED  {shown}:{n}  ...{text[-72:]}")
-        if dup or brace or trunc:
+        print(f"  rules whose own opening line was cut          {len(cut)}")
+        for n, text in cut:
+            print(f"    HEADLESS   {shown}:{n}  {text[:72]}")
+        if dup or brace or trunc or cut:
             rc = 1
     print()
-    print("All three findings are one defect seen three ways: an edit that")
-    print("inserted replacement text without removing what it replaced. The")
-    print("duplicate is the tail left behind, the truncation is where the")
-    print("first copy was cut, and the brace is what a duplicated slot opens.")
+    print("All four findings are one defect seen four ways, and they run in")
+    print("both directions. An edit that inserts without removing leaves the")
+    print("duplicate, the truncation and the unpaired brace. An edit that")
+    print("removes too much leaves the headless rule, which is what a trim")
+    print("under the weight rule does when it takes a bullet's own header")
+    print("away with the specimens underneath it.")
     print("None of them is a prose judgment, so none of them belongs in a")
     print("grade a person has to remember to run.")
     return rc
