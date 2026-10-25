@@ -189,6 +189,45 @@ def edges_from(out: dict, valid_ids: set) -> list[tuple]:
     return kept
 
 
+#: The trigger slice 5 asked for and did not build. A claim is due for a second
+#: opinion when the current prompt has never read it, which is a question about
+#: `claim_judgments` and not about `claim_links`: a pass that found no relation
+#: wrote no edge, and the absence of an edge cannot tell "October read this and
+#: found nothing" from "October never read it". db/schema.sql says why that
+#: distinction is worth a table.
+#:
+#: `interpreted_at is not null` is what keeps this disjoint from
+#: `interpret_queue`. A claim nobody has ever judged is a first opinion, it is
+#: already the fresh queue's job, and a claim must not be able to arrive twice
+#: in one run.
+REJUDGE_QUEUE_SQL = """
+    select c.id, c.claim, c.embedding
+      from claims c
+     where c.interpreted_at is not null
+       and c.embedding is not null
+       and not exists (select 1 from claim_judgments j
+                        where j.claim_id = c.id and j.prompt_sha = %s)
+     order by c.id
+     limit %s
+"""
+
+
+def rejudge_budget(fresh_taken: int, max_claims: int) -> int:
+    """How many re-judgments this run may take: the leftovers, and only those.
+
+    A first opinion is worth more than a second one. An unjudged claim has no
+    edges at all, so judging it can only add to the graph, where re-judging a
+    claim that already has edges usually confirms them. The fresh queue is
+    2,000-odd deep today, so this returns 0 and the slow loop stays latent
+    until the drain catches up, which is the correct order and not a limitation.
+
+    It is also the spend rule. The run's ceiling is `max_claims` and the cap in
+    dollars, and re-judgment is inside both rather than beside them, so turning
+    the loop on cannot raise this job's bill by a cent.
+    """
+    return max(max_claims - fresh_taken, 0)
+
+
 def drain_forecast(remaining: int, per_run: int) -> str:
     """How many runs are left at this rate. Progress is a remainder, not a total."""
     if per_run <= 0:
@@ -300,6 +339,26 @@ def interpret(max_claims: int = MAX_CLAIMS_PER_RUN, cap_usd: float = CAP_USD):
             (max_claims,),
         ).fetchall()
         print(f"{depth} claims queued, {len(queue)} taken this run, oldest first")
+        # The slow loop, on the leftovers. Oldest first here too, and for the
+        # same reason: an old claim has the most neighbors to have changed its
+        # mind about.
+        rejudge_depth = conn.execute(
+            "select count(*) from claims c where c.interpreted_at is not null "
+            "and c.embedding is not null and not exists "
+            "(select 1 from claim_judgments j where j.claim_id = c.id "
+            "and j.prompt_sha = %s)",
+            (sha,),
+        ).fetchone()[0]
+        room = rejudge_budget(len(queue), max_claims)
+        rejudged = conn.execute(REJUDGE_QUEUE_SQL, (sha, room)).fetchall() if room else []
+        print(f"prompt {sha}: {rejudge_depth} judged claims it has never read, "
+              f"{len(rejudged)} taken on this run's {room} leftover slots")
+        # Fresh first in the list, because the walk below stops on a cap or a
+        # 429 and whatever it did not reach is what gets dropped. It is also
+        # what lets the count be split after the fact: the walk is in order, so
+        # anything past the first `fresh_taken` entries is a re-judgment.
+        fresh_taken = len(queue)
+        queue = queue + rejudged
         # The rule, not a number: the pause is chosen after each call from the
         # model that answered it and the tokens it drew. See llm.pace.
         print("pacing: chosen per call from the answering model's published "
@@ -355,8 +414,8 @@ def interpret(max_claims: int = MAX_CLAIMS_PER_RUN, cap_usd: float = CAP_USD):
                     stopped = "rate limited"
                     break
                 method = f"{model}@{sha}"
-                for cid, rel, confidence in edges_from(
-                        out, {nid for nid, _ in neighbors}):
+                kept = edges_from(out, {nid for nid, _ in neighbors})
+                for cid, rel, confidence in kept:
                     conn.execute(
                         """
                         insert into claim_links (from_claim, to_claim, relation, confidence, method)
@@ -374,20 +433,52 @@ def interpret(max_claims: int = MAX_CLAIMS_PER_RUN, cap_usd: float = CAP_USD):
                 if client.on_fallback(model):
                     fallback_drawn += cap.last_tokens
                 time.sleep(client.pace(model, cap.last_tokens))
+                wrote, answered = len(kept), method
             else:
                 no_neighbors += 1
+                wrote, answered = 0, None
+            # The pass itself, including the empty ones, and this is the row
+            # that makes the loop terminate. Without it a claim the current
+            # prompt read and found nothing in looks identical to one the
+            # current prompt has never seen, so it would come back on every
+            # run and pay for a model call every time.
+            conn.execute(
+                """
+                insert into claim_judgments (claim_id, prompt_sha, method, edges)
+                values (%s, %s, %s, %s)
+                on conflict (claim_id, prompt_sha) do nothing
+                """,
+                (claim_id, sha, answered, wrote),
+            )
             # The marker is written whether or not the claim had neighbors: a
             # claim with none is interpreted, it simply has no edges, and
             # leaving it unmarked is how a queue stops draining.
-            conn.execute("update claims set interpreted_at = now() where id = %s", (claim_id,))
+            #
+            # `is null` is the slow loop's half. This timestamp says when a
+            # claim was first judged, `claim_judgments` carries every pass
+            # since, and a re-judgment that moved the marker would date
+            # September's claim to today and put it back in the seven-day
+            # sections of the issue as new.
+            conn.execute("update claims set interpreted_at = now() "
+                         "where id = %s and interpreted_at is null", (claim_id,))
             conn.commit()
             seen += 1
 
+        # Split, because the two halves answer different questions and one
+        # number for both would answer neither. `seen` counts the claims this
+        # run judged; the drain is about the queue, and a re-judgment takes
+        # nothing out of it.
+        fresh_seen = min(seen, fresh_taken)
         print(f"interpreted {seen} claims, wrote {linked} edges "
               f"({no_neighbors} had no older neighbor and cost no call), "
+              f"of which {fresh_seen} were first opinions and "
+              f"{seen - fresh_seen} were second ones, "
               f"stopped on: {stopped}")
         print(cap.line())
-        print(drain_forecast(max(depth - seen, 0), seen))
+        # Fresh only. Counting a re-judgment as drain progress would forecast a
+        # queue emptying at a rate nothing is emptying it at, and the forecast
+        # is the number the owner reads to decide whether the corpus is moving.
+        print(drain_forecast(max(depth - fresh_seen, 0), fresh_seen))
         return linked
 
 
@@ -515,6 +606,7 @@ def drain() -> str:
 
     client = llm()
     guard = client.budget()
+    _, sha = load_prompt()
     with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
         depth, oldest = conn.execute(
             "select count(*), min(created_at) from interpret_queue"
@@ -523,6 +615,17 @@ def drain() -> str:
             "select count(*) from claims where interpreted_at is null "
             "and embedding is null"
         ).fetchone()[0]
+        rejudge_depth = conn.execute(
+            "select count(*) from claims c where c.interpreted_at is not null "
+            "and c.embedding is not null and not exists "
+            "(select 1 from claim_judgments j where j.claim_id = c.id "
+            "and j.prompt_sha = %s)",
+            (sha,),
+        ).fetchone()[0]
+        reflects = conn.execute(
+            "select prompt_sha, count(*) from latest_judgment "
+            "group by 1 order by 2 desc limit 3"
+        ).fetchall()
 
     per_claim = guard.cost_usd(1_050, 150, MODELS[0])
     per_run = min(int(CAP_USD / per_claim), MAX_CLAIMS_PER_RUN)
@@ -537,6 +640,12 @@ def drain() -> str:
         f"(MAX_CLAIMS_PER_RUN is {MAX_CLAIMS_PER_RUN})",
         f"the backlog clears in {runs} daily runs for about "
         f"${depth * per_claim:.2f} in total",
+        f"re-judgment: prompt {sha} has never read {rejudge_depth} of the "
+        "judged claims, and it takes the slots the fresh queue leaves, which "
+        f"is {rejudge_budget(min(depth, per_run), per_run)} at this depth",
+        "the graph currently reflects: "
+        + (", ".join(f"{n} claims under {psha}" for psha, n in reflects)
+           or "nothing, no claim has been judged yet"),
     ]
     print("\n".join(lines))
     return lines[-1]

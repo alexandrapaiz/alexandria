@@ -427,6 +427,48 @@ UNCOVERED = {
     # valid Markdown behind it, so the invariant is the only reader that would
     # have noticed.
     "tests/test_incidents.py",
+    # Added 2026-10-24 with slice 5 of the graph upgrade, and pinned as the
+    # last resort this gate's own failure message names, because the other two
+    # routes are both closed to this seat. Adding a step goes in
+    # `.github/workflows/checks.yml`, and applying the staged replacement is a
+    # `git mv` out of `.github/workflows-pending/`; both are workflow writes no
+    # seat's token carries. Seventeenth line, and the repeat stays counted at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # rather than opening an eighteenth entry on one pattern.
+    #
+    # What it guards is the claim graph's read path, and the pin costs less
+    # here than on most lines above it, because the structural half of that
+    # change is caught anyway: the audit now names `latest_links`, and
+    # `tests/test_graph_audit.py` resolves every relation the audit names
+    # against `db/schema.sql` and IS one of the twelve files a workflow runs.
+    # Renaming the view in the schema fails that suite. What this file adds and
+    # nothing in CI can reach is the behaviour: that a second opinion inserts
+    # at all, that the same judge twice does not, and that `deprecated_claims`
+    # follows the newest verdict in both directions. Those six tests need a
+    # server, this org runs none in CI, and the company host has one, so they
+    # are evidence where a seat runs and a skip where it does not.
+    "tests/test_latest_links.py",
+    # Added 2026-10-25 with slice 5's second half, the re-judgment trigger, and
+    # pinned for the same reason as the line above it and by the same two closed
+    # routes: a step goes in `.github/workflows/checks.yml` and applying the
+    # staged replacement is a `git mv` out of `.github/workflows-pending/`, and
+    # both are workflow writes no seat's token carries. Eighteenth line, and the
+    # repeat stays counted at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # rather than opening a nineteenth entry on one pattern.
+    #
+    # What it guards is the only part of this slice that can cost money. The
+    # trigger decides which claims get sent to a model again, so the two ways
+    # it can be wrong are a bill rather than a wrong answer: keying it on
+    # `method` instead of the prompt sha re-judges the whole corpus every time
+    # the fallback provider answers, and reading `claim_links` instead of
+    # `claim_judgments` re-judges every claim that was read and found nothing,
+    # on every run, forever. Both are one-word edits and both pass every other
+    # test in this repository. The structural half of that is reachable without
+    # a server and is asserted here on the query text itself; the half that
+    # needs rows, including the backfill recovering September's shas out of
+    # `claim_links.method`, runs on the company host and skips in CI.
+    "tests/test_rejudge_queue.py",
 }
 
 
