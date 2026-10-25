@@ -262,6 +262,26 @@ has is how much of the corpus sits just outside it. `reach` carries no bound, on
 purpose: a short shortlist is the floor working, and a bound there would call a
 fact about the corpus a failure.
 
+**One gap this slice opens and does not close, recorded here because the next
+person to touch the reservation needs it.** Raising
+`MAX_COMPLETION_TOKENS` makes this a runtime change under
+`docs/agents/runtime-changes.md`, whose third gate is
+`modal run pipeline/interpret.py::rehearse`, and that law's own words are that
+a rehearsal uses "the real provider, the real key, the real token reservation,
+the real timeout". The reservation it sends is real. The payload is not:
+`REHEARSAL_NEIGHBORS` is a fixed five-candidate shortlist, so the rehearsal now
+exercises about half the user message production sends, which is the half of
+the request that grew. It would still catch a dead key, a missing model, a
+timeout and a judge that labels everything or nothing, so it is not useless. It
+would not catch a model that handles five candidates and degrades at ten.
+
+Extending it means five more hand-written claims whose right answer is
+knowable, because that fixture's value is that a reader can check the verdict,
+and `tests/test_corpus_drain.py` pins the length at five on purpose. That is a
+small piece of work and it is not this slice's, so it is written down rather
+than rushed. Nothing is urgent about it: the gate cannot run at all until the
+Modal workspace comes back.
+
 **And the done-condition cannot be met today, by anyone in this org.** Both
 halves of it are read off a database. So the run reports the retrieval-side half
 of the same question in its own log, which is the one surface a seat can reach:
