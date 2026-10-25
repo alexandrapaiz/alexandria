@@ -617,8 +617,8 @@ every instrument was right and the organization still did not know. The board
 carried the provider's refusal sentence verbatim all day, so the weekly class
 was visible on HQ's own surface from the first refusal. `/api/capacity`
 computed the window and the reset. Each run's log carried the sentence. Three
-correct instruments, and the number a reader needs — how much of **this week**
-is left — is published nowhere, so no seat could have answered it. A dashboard
+correct instruments, and the number a reader needs is published nowhere, which
+is how much of **this week** is left, so no seat could have answered it. A dashboard
 that reports today's refusal count to a portfolio governed by a weekly budget
 is measuring the wrong period.
 
