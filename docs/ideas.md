@@ -19725,3 +19725,119 @@ has nothing to go red against.
 - First step: the entry above.
 - Cost: $0.
 - Status: proposed
+### 2026-10-24 — Canon law 13 has a detector in this repository and the pre-send gate does not run it (writer seat, run 49, for the engineer)
+- Trigger: this run pointed `past_tense_you`, which has been in
+  `docs/voice/check_voice.py` for weeks, at `site/content/issues` for the first
+  time. It found the opening the owner struck on 2026-09-24, live in the public
+  archive. `prompts/digest.md` has been patched four times on this law and says
+  in its own gate section that three specimens of it have shipped.
+- What: the rule belongs in `tools/check_digest_quality.py` as a BLOCK, because
+  that is the only gate between a written issue and a reader. The new
+  `standalone` check in this seat's file reads the archive, which catches an
+  issue that has already been sent. The pattern is written and tested and can
+  be lifted verbatim from `past_tense_you`, with `STANDS_ALONE_CASES` in
+  `docs/voice/check_voice.py` as the seventeen cases it has to satisfy.
+- Why the prompt is the wrong place, and this is the part worth reading: the
+  generator did not fail here. Her correction landed in `b7d6929` on
+  2026-09-24 as "The agent-building world has spent the week arguing about
+  scaffolding", which is the exact sentence `prompts/digest.md` now holds up as
+  the model repair. Five days later `820df48`, "2026-W39 is Monday's print (the
+  digests record), not Thursday's preview", replaced the file wholesale with
+  what the press actually sent and discarded her correction, because the
+  correction had only ever been written into the rendered archive and never
+  into the record the archive renders from. A fifth prompt paragraph does not
+  reach that.
+- The second half, and it is the larger one, stated as a question because this
+  seat cannot answer it: **is `site/content/issues/` a faithful record of what
+  subscribers received, or a maintained product surface?** `820df48` assumed
+  the first and was right to, which is why it replaced the file with Monday's
+  actual print. Every repair to a published issue's prose assumes the second.
+  The two readings cannot both hold, and nothing in the repository says which
+  it is.
+  - If it is a **record**, the sentence stays, this gate's verdict should
+    become a report rather than a failure, and the whole fix is the pre-send
+    rule above so that no future send carries the shape.
+  - If it is a **surface**, a correction has to go upstream into the `digests`
+    record or the render has to refuse to overwrite a corrected issue, and the
+    replacement line is a copy candidate this seat drafts.
+- Every hand this needs, per `L-A41`, because the first draft of this entry
+  named one of three and read as complete:
+  1. **The engineer**, for the pre-send BLOCK rule. After that lands, no
+     future issue ships the shape, and the live archive is unchanged.
+  2. **The owner, or the engineer as a design call**, for the record-or-surface
+     question above. Nothing else can be sequenced until this is answered,
+     which is why it is the first step and not the second.
+  3. **This seat, and only if the answer is "surface"**, for the replacement
+     line, with the frontend seat setting it. This run deliberately drafted no
+     candidate. `docs/voice/value.md` still reads "Status: awaiting her
+     approval" and the copy pipeline's phase 0 gates drafting on it, and the
+     stronger reason is that a replacement line is the wrong artifact until
+     question 2 is answered. Restoring `b7d6929`'s paragraph verbatim is not
+     available either: it describes Thursday's preview, a different set of
+     papers, so a repair here is new prose and not a restoration.
+- First step: question 2. The BLOCK rule is small and tested and can go in
+  parallel.
+- Blocked by: nothing.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — ESCALATED, thirty days: two word-boundary bugs in the pre-send gate, one of them firing on the owner's own mandated close (writer seat, run 49, for the engineer)
+- This is not a new entry and it is deliberately not written as one. The
+  finding was filed on 2026-09-24 in **2026-09-24 — The quality gate passes the
+  issue the owner rejected (writer seat, for the engineer)**, items 2 and 3,
+  and that entry has read `proposed` ever since. Run 48 of this seat
+  rediscovered both defects a month later and described them again as new. The
+  incident register's standing rule is that a repeat is escalated rather than
+  filed a fourth time, so this row escalates and the 2026-09-24 entry stays the
+  filing.
+- What has changed is that the cost is now measured rather than argued.
+  `tools/check_digest_quality.py` on `site/content/issues/2026-W39.md`, the
+  only issue the gate has ever read, returns **7 warnings, and 2 of the 7 are
+  not real**:
+
+  ```
+  [warn] empty-intensifier (2x, ban list 5)
+      line 54: 'very'      <- "behavioral recovery rate"
+      line 56: 'very'      <- "Accelerate every builder and agent to
+                              frontier speed.", which canon law 10 and her
+                              ruling of 2026-09-30 require in every issue
+  ```
+
+  `INTENSIFIERS` holds `"very "` and the test is `if word in low`, a substring
+  match with no word boundary, so the close she mandated raises a finding
+  forever and nothing can ever clear it. Under `--strict` it exits 1.
+- The third defect in the same class, found this run: `past_tense_you` in
+  `docs/voice/check_voice.py` read `\w+(?:ed|en|t|ne)\b` with no floor on the
+  stem, so it fired on "What to read if you have one hour", a standing heading.
+  That one is this seat's surface and is fixed in this pull request, with the
+  floor and nine collision cases asserted in `STANDS_ALONE_CASES`, which the
+  gate runs before it reads an issue.
+  Three gates, three patterns matching inside a word instead of at its edge,
+  two of them still live. The class is worth one pass rather than three fixes.
+- `TYPESETTER` is the other half of the 2026-09-24 filing and is unchanged:
+  four characters where ban list 13 is the class of every non-ASCII character,
+  and `pipeline/weekly.py` builds the payload's `dates` with an en dash the
+  check passes, every week, by construction.
+- The blast radius, swept this run rather than assumed, because calling this a
+  class and fixing one instance would be the same mistake again. Every entry in
+  `SLOP_ALWAYS`, `SLOP_MAYBE`, `HEDGES` and `INTENSIFIERS` is matched with
+  `if word in low`, so none of them is anchored on its left edge. Most collide
+  with nothing real. `INTENSIFIERS` collides with ordinary research English:
+
+  ```
+  'every'      -> fires on 'very '
+  'delivery'   -> fires on 'very '
+  'discovery'  -> fires on 'very '
+  'recovery'   -> fires on 'very '
+  ```
+
+  A newsletter about research discoveries raises a false finding on the word
+  "discovery". Under `\b` word boundaries all four clear and "very" and "truly"
+  still fire, which is the one-line fix.
+- First step: word boundaries on `INTENSIFIERS`, which is one line, and the
+  ASCII class question on `TYPESETTER`, which is a few. Both were specified in
+  the 2026-09-24 entry. The other three lists need the same anchor for
+  correctness even though nothing in them collides today, because the next word
+  added to one of them is where it would show up.
+- Cost: $0.
+- Status: urgent

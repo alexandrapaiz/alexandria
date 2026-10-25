@@ -98,6 +98,16 @@ import unicodedata
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 BAN = ROOT / "docs/voice/ban-list.md"
 DIGEST = ROOT / "prompts/digest.md"
+#: The degraded edition's generator, which the press prints when no model can
+#: take the full issue. `pipeline/budget.py` calls it `SHORT_ISSUE_PROMPT` and
+#: says in its own comment that it is this seat's surface. Until 2026-10-24 no
+#: gate in this repository named it, so the finding that closed writer run 47,
+#: that no gate had ever read the generator, was still true of the second one.
+SHORT = ROOT / "prompts/digest-short.md"
+#: Every file the press writes an issue from. The gates below default to this
+#: list rather than to `DIGEST`, because a default naming one of two generators
+#: reports a clean file and a silent one under the same verdict.
+GENERATORS = [DIGEST, SHORT]
 CANON = ROOT / "docs/voice/canon.md"
 TASTE = ROOT / "docs/voice/taste.md"
 
@@ -2377,7 +2387,7 @@ def generator(paths=None):
     quiet form rather than the loud one: no conflict marker, just text the file
     already held, written in beside itself.
     """
-    paths = paths or [DIGEST]
+    paths = paths or GENERATORS
     rc = 0
     for p in paths:
         p = pathlib.Path(p)
@@ -2520,8 +2530,25 @@ def past_tense_you(span):
     verb is in any past tense, past simple, present perfect and past
     continuous alike. This is the one check in the generator the file calls
     grammar rather than judgment, which is why it can be run here at all.
+
+    The participle arm reads a stem of two characters or more, and refuses a
+    stem that is itself a negation. It used to read `\\w+`, with no floor, so
+    any word ending in ed, en, t or ne was a participle and "you have one
+    hour", "you have it", "you have ten" and "you have none" were all read as
+    claims about the reader's history. The floor is what separates "done",
+    whose stem is "do", from "one", whose stem is "o".
+
+    That mattered the moment this check was pointed at an issue rather than at
+    a prompt, because `What to read if you have one hour` is a standing heading
+    and the old pattern fired on it. A gate whose first run on the real
+    artifact reports a heading the laws permit is a gate nobody keeps, which is
+    `INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason`
+    from the other side. Seventeen cases are asserted in
+    `STANDS_ALONE_CASES` below and run by `standalone` before it reads an
+    issue, the eight true shapes and the nine that collide with them.
     """
-    pat = (r"\byou\b\s+(?:have|had|'ve|'d)\s+\w+(?:ed|en|t|ne)\b"
+    pat = (r"\byou\b\s+(?:have|had|'ve|'d)\s+(?:not\s+|never\s+)?"
+           r"(?!not\b|none\b)\w{2,}(?:ed|en|t|ne)\b"
            r"|\byou\b\s+(?:were|was)\b"
            r"|\byou\b\s+(?:spent|wrote|ran|read|built|saw|went|did|"
            r"watched|shipped|learned|started|stopped)\b")
@@ -2580,7 +2607,7 @@ def specimens(paths=None):
     grade, and the owner's own specimens are exempted by reaching into her
     register rather than by anyone's judgment here.
     """
-    paths = paths or [DIGEST]
+    paths = paths or GENERATORS
     rc = 0
     for p in paths:
         p = pathlib.Path(p)
@@ -2647,6 +2674,399 @@ def specimens(paths=None):
     return rc
 
 
+#: The pre-send gate, which is the last thing between a written issue and a
+#: reader. `tools/check_digest_quality.py` is the engineer's file and this gate
+#: only reads it.
+PRESEND = ROOT / "tools/check_digest_quality.py"
+BLOCK_RULE = re.compile(r'add\(BLOCK,\s*"([a-z-]+)"')
+
+#: How `prompts/digest-short.md` answers each rule the pre-send gate blocks on.
+#: The value is a phrase that has to be present in the short prompt, or None
+#: where the rule cannot fire on this edition at all, with the reason beside it.
+#:
+#: The map is maintained rather than derived, and that is the point of it. A
+#: rule added to the pre-send gate lands here as a failure, and the failure is
+#: addressed to this seat: does the degraded edition need to be taught this
+#: one? Nothing else in the repository asks that question, and the twelve days
+#: in INC-2026-10-24-the-short-edition-was-handed-an-editorial-judgment are
+#: what not asking it looks like.
+SHORT_ANSWERS = {
+    "no-title": "A title on the first line",
+    "date-in-title": "The title carries no",
+    "internal-vocabulary": "claim graph",
+    "typesetter-punctuation": "plain ASCII",
+    "slop-lexicon": "sound important",
+    "ends-on-citation": "before the close",
+    # Cannot fire. The short edition prints no section headings, so the
+    # generator's slot labels have nowhere to appear.
+    "skeleton-heading": None,
+    # Cannot fire. Guarded by `kind == "daily"` and this edition is a weekly.
+    "daily-too-short": None,
+}
+
+
+def blockrules():
+    """Every rule the press blocks on is answered in the short generator.
+
+    The short edition is the one the press prints when no model can take the
+    full issue, and `weekly.print_issue` hands it to `hold_for_quality` with
+    `rewrite=None`. The full edition gets a second draft on a blocking finding.
+    This one does not. So a block on the short edition is not a worse issue, it
+    is a held issue and a week with no issue at all, which is the outage the
+    short edition was built to answer.
+
+    That makes the pre-send gate's BLOCK list the one mechanical answer to the
+    question `pipeline/budget.py` left open in its own comment, that 103 ban
+    list entries do not fit in a request this size and choosing which survive
+    is an editorial judgment. A rule that can hold the issue survives. The
+    judgment is still this seat's, and this gate is where it is recorded.
+
+    Two findings, and neither is a reading. A rule the pre-send gate blocks on
+    with no row here is unruled, and a row whose phrase has left the short
+    prompt is a rule that was answered once and is not answered now.
+    """
+    rc = 0
+    if not PRESEND.exists() or not SHORT.exists():
+        print(f"  {PRESEND.name} or {SHORT.name} is missing")
+        return 1
+    rules = sorted(set(BLOCK_RULE.findall(PRESEND.read_text())))
+    short = SHORT.read_text()
+    print(f"  rules the pre-send gate blocks on             {len(rules)}")
+
+    unruled = [r for r in rules if r not in SHORT_ANSWERS]
+    print(f"  of those this seat has never ruled on         {len(unruled)}")
+    for r in unruled:
+        print(f"    UNRULED    {r}  (block on the short edition holds the issue)")
+        rc = 1
+
+    inert = [r for r in rules if SHORT_ANSWERS.get(r) is None
+             and r in SHORT_ANSWERS]
+    print(f"  of those that cannot fire on this edition     {len(inert)}")
+
+    missing = [(r, SHORT_ANSWERS[r]) for r in rules
+               if SHORT_ANSWERS.get(r) and SHORT_ANSWERS[r] not in short]
+    print(f"  of those the short prompt no longer answers   {len(missing)}")
+    for r, phrase in missing:
+        print(f"    DROPPED    {r}  expected {phrase!r} in {SHORT.name}")
+        rc = 1
+
+    stale = [r for r in SHORT_ANSWERS if r not in rules]
+    print(f"  rows here for a rule the gate no longer has   {len(stale)}")
+    for r in stale:
+        print(f"    STALE      {r}  is not a BLOCK rule in {PRESEND.name}")
+        rc = 1
+
+    if not rc:
+        print()
+        print("  Every rule that can hold the short edition is answered in")
+        print("  the prompt that writes it. A new BLOCK rule in the pre-send")
+        print("  gate fails this check until this seat rules on it.")
+    return rc
+
+
+#: The seventeen cases `past_tense_you` has to satisfy, as data rather than as
+#: a test file. `tests/` is the engineer's surface and this seat's is
+#: `docs/voice/`, and a first draft of this gate put them in
+#: `tests/test_voice_standalone.py`, where `tests/test_ci_coverage.py` correctly
+#: answered that no workflow runs it. Here they run every time the gate runs,
+#: which is strictly more often, and they need no workflow edit this seat is
+#: not allowed to make.
+#:
+#: Both halves matter. A pattern tuned only against its false positives stops
+#: catching the sentence the owner struck, and a pattern tuned only against her
+#: specimens fires on a standing heading. The first two CLAIMS are the openings
+#: she struck and the one that shipped with her ruling already in the prompt.
+STANDS_ALONE_CASES = (
+    (True, "You spent last week watching agents get faster by doing less."),
+    (True, "You have spent the week watching agents get faster by thinking less."),
+    (True, "you have written the same retry logic three times"),
+    (True, "You have shipped a dozen agents."),
+    (True, "you had built the harness yourself"),
+    (True, "you have done this before"),
+    (True, "You were running agents overnight."),
+    (True, "you have not shipped a single one"),
+    (False, "What to read if you have one hour"),
+    (False, "you have it in production"),
+    (False, "you have ten agents running"),
+    (False, "you have none of these"),
+    (False, "You keep a dozen agents running."),
+    (False, "if you have a minute"),
+    (False, "you have two models to choose between"),
+    (False, "The agent-building world has spent the week arguing about scaffolding."),
+    (False, "Accelerate every builder and agent to frontier speed."),
+)
+
+
+# ---- routed ------------------------------------------------------------
+
+#: A ledger entry nobody has acted on. `built`, `done`, `closed` and
+#: `rejected` are settled. Everything else is a finding still waiting, and
+#: re-filing one of those as new is what this gate is for.
+LEDGER_SETTLED = ("built", "done", "closed", "rejected")
+
+#: What counts as naming the defect rather than naming the machine. A SHOUTING
+#: constant is the identifier of one thing, and a filename is the identifier of a
+#: building. Measured on this repository the day the gate was written:
+#: `check_digest_quality.py` appears in NINE unsettled ledger entries and
+#: `INTENSIFIERS` in one, which is the entry that holds the defect. So the gate
+#: reads constants and never paths.
+IDENTIFIER = re.compile(r"^[A-Z][A-Z0-9_]{3,}$")
+
+#: A constant can still name a building. `NEON_RO_URL` is a credential every
+#: seat's run touches and it sits in fifteen unsettled entries, so "the ledger
+#: holds an entry mentioning it" says nothing about whether this finding is
+#: filed. The first run of this gate reported all fifteen and the real finding
+#: was two rows in the middle of them. A token this broad is reported and not
+#: failed on, because the gate cannot tell which of fifteen a run meant, and a
+#: check that guesses is one a run learns to skip.
+TOO_BROAD = 2
+
+#: The sentences that say a finding is being handed to another seat. Taken from
+#: this seat's own reviews, which have used all of these.
+ROUTING = re.compile(
+    r"routed rather than patched|filed rather than patched"
+    r"|rout(?:ed|es?) (?:it |them |both )?to the ledger"
+    r"|(?:goes|go) to the ledger|filed in the ledger"
+    r"|in the ledger for the engineer", re.I)
+
+
+def ledger_entries(text=None):
+    """`docs/ideas.md` as [(heading, body, status)], unsettled entries only."""
+    text = text if text is not None else LEDGER_MD.read_text()
+    out = []
+    for block in re.split(r"^### ", text, flags=re.M)[1:]:
+        lines = block.split("\n")
+        head, body = lines[0].strip(), "\n".join(lines[1:])
+        m = LEDGER_STATUS.search(body)
+        status = (m.group(1) if m else "").lower()
+        if status not in LEDGER_SETTLED:
+            out.append((head, body, status or "none"))
+    return out
+
+
+def routed(ref=None):
+    """A finding this run hands to another seat that the ledger already holds.
+
+    Run 48 of this seat closed its review with a section called "Two findings
+    in the engineer's file, routed rather than patched", about `INTENSIFIERS`
+    matching the substring "very " and `TYPESETTER` enforcing four characters
+    where the ban list is a class. Both findings were correct. Both had been
+    filed on 2026-09-24, by this same seat, in
+    "The quality gate passes the issue the owner rejected (writer seat, for the
+    engineer)", status `proposed` ever since. The run did not name that entry,
+    and its pull request appended nothing to the ledger either, so the output
+    of the work was a second description of a thirty-day-old finding in a file
+    the engineer does not read.
+
+    That is the shape this register keeps recording: a register written to stop
+    rediscovery whose only reader is the register.
+    `INC-2026-10-18-the-duplicate-candidate-register-is-not-in-the-charters-read-list`
+    is the fourth count of it and names the other three. This is the fifth and
+    the first pointed at the ledger, and the reason is one line of a charter:
+    the writer charter names seven files to read every run and `docs/ideas.md`
+    is not among them, so a seat following its charter exactly files into a
+    register it never opens.
+
+    The fix that incident chose is the fix here, in its own words: a command
+    the run types is better than a sentence the run reads. So the duty becomes
+    a check over the run's own diff, beside `candidates`, which does the same
+    job for copy candidates.
+
+    The escape is the same too, and it is not a new rule. A run may route a
+    finding the ledger already holds. It may not do so without naming the
+    entry, because that is the difference between escalating a stale finding
+    and not knowing it exists. Naming it is also what turns a re-file into the
+    thing the org actually wants: `docs/agents/incidents.md` already requires a
+    repeat to be escalated rather than filed a fourth time.
+
+        python3 -I docs/voice/check_voice.py routed origin/main
+    """
+    ref = ref or "origin/main"
+    out = subprocess.run(["git", "diff", "--name-status", ref],
+                         cwd=ROOT, capture_output=True, text=True)
+    reviews = []
+    for line in out.stdout.splitlines():
+        parts = line.split("\t")
+        if len(parts) < 2 or not parts[0].startswith("A"):
+            continue
+        path = parts[-1]
+        if path.startswith("docs/voice/reviews/") and path.endswith(".md") \
+                and (ROOT / path).exists():
+            reviews.append(path)
+    entries = ledger_entries()
+    # The escape is read across the whole diff and not per file, because the
+    # unit a run ships is a pull request. A review that routes a stale finding
+    # and a second file in the same pull request that escalates it by name is
+    # the org getting what it wants. Scoping the escape to the routing file
+    # would instead ask a run to rewrite a graded review it is carrying from
+    # an earlier run, and a grade is a dated record rather than a draft.
+    # `added_lines` and not `git diff`, because a diff prefixes every line
+    # with "+" and the headings in this register wrap. Normalising the raw
+    # diff turns "passes the\n+  issue" into "passes the + issue", so an
+    # escalation that names the entry correctly reads as not naming it. The
+    # first run of this gate failed its own escalation that way.
+    acknowledged = norm("\n".join(
+        [(ROOT / r).read_text() for r in reviews]
+        + [text for path, _, text in added_lines(ref)
+           if path == "docs/ideas.md"]))
+    clashes, broad = [], []
+    for path in reviews:
+        body = (ROOT / path).read_text()
+        if not ROUTING.search(body):
+            continue
+        # Only the sections that route. Run 48's review named `NEON_RO_URL`
+        # four sections away, under "Honest limits of this grade", where it is
+        # a fact about the runtime and not a finding being handed to anyone.
+        # Reading the whole file made every mention of every constant a
+        # routed finding, which is how the first run of this gate buried its
+        # own two real rows under fifteen.
+        sections = [s for s in re.split(r"(?m)^(?=#{2,}\s)", body)
+                    if ROUTING.search(s)]
+        tokens = {t.strip() for s in sections
+                  for t in re.findall(r"`([^`\n]+)`", s)
+                  if IDENTIFIER.match(t.strip())}
+        for token in sorted(tokens):
+            held = [(h, st) for h, e, st in entries if token in e]
+            if not held:
+                continue
+            if len(held) > TOO_BROAD:
+                broad.append((path, token, len(held)))
+                continue
+            for head, status in held:
+                if norm(head) in acknowledged:
+                    continue
+                clashes.append((path, token, status, head))
+    print(f"  review files this diff adds   {len(reviews)}")
+    for path in reviews:
+        routes = "routes a finding" if ROUTING.search(
+            (ROOT / path).read_text()) else "routes nothing"
+        print(f"    {path}  ({routes})")
+    print(f"  unsettled entries in docs/ideas.md   {len(entries)}")
+    for path, token, status, head in clashes:
+        print(f"  FAIL    {path}")
+        print(f"            routes `{token}`, which is already filed and "
+              f"still {status}:")
+        print(f"            {head[:88]}")
+    for path, token, n in broad:
+        print(f"  BROAD   {path}")
+        print(f"            `{token}` sits in {n} unsettled entries, so it "
+              f"names a machine rather than a finding")
+    if not clashes:
+        print("  no finding routed here is one the ledger already holds")
+    print()
+    print("A run may route a finding the ledger already holds. It may not do")
+    print("so without naming the entry, because that is the difference")
+    print("between escalating a stale finding and not knowing it exists.")
+    return 1 if clashes else 0
+
+
+# ---- standalone --------------------------------------------------------
+
+
+def standalone(paths=None):
+    """Canon law 13's mechanical half, run over the issue instead of the prompt.
+
+    `past_tense_you` is the grammar question the generator calls "the only one
+    of these four that can be checked without judgment", and until this gate it
+    had exactly one caller: `specimens`, which reads the two generator prompts.
+    So the one hard voice law with a detector already written in this
+    repository had never been pointed at the artifact a reader opens.
+
+    It had been pointed at the prompt four times instead. `prompts/digest.md`
+    carries the rule at the writing position, the four shapes at the gate, a
+    worked repair, and a note that three specimens of it have shipped. The
+    charter's step 4 says that when the same structural fix fails twice through
+    prompt changes alone, the next fix belongs in the pipeline rather than in a
+    third round of prompt-tinkering. By the prompt's own count this is past
+    that line, so this run wrote no fifth paragraph.
+
+    What the gate found on its first run is why the prompt was never the
+    problem. `site/content/issues/2026-W39.md` opens on the shape, and the
+    history says the owner's correction was made and then lost:
+
+        396f4f1  2026-09-23  "You spent last week watching agents get faster
+                             by doing less at test time."   <- she struck this
+        b7d6929  2026-09-24  "The agent-building world has spent the week
+                             arguing about scaffolding"     <- the repair, and
+                             it is the exact sentence prompts/digest.md now
+                             holds up as the model answer
+        820df48  2026-09-29  "You have spent the week watching agents get
+                             faster by thinking less at test time."
+
+    The third commit is "2026-W39 is Monday's print (the digests record), not
+    Thursday's preview". It replaced the file wholesale with what the press
+    actually sent, which was right, and it discarded her correction, because
+    the correction had only ever been written into the rendered archive and
+    never into the record the archive is rendered from. Two later commits
+    touched the same file and neither re-read the opening.
+
+    So the generator is not what failed here and a fifth prompt paragraph would
+    not have moved it. A correction applied downstream of the record is lost
+    the next time the record renders, and the only thing that catches that is a
+    command over the file the public reads. That is this.
+
+    One open question about this gate's own verdict, recorded rather than
+    decided. It FAILS on the archive, which is right if the archive is a
+    product surface a reader opens. If the owner rules that
+    `site/content/issues/` is a faithful record of what subscribers received,
+    and `820df48` assumed exactly that, then a shipped issue carrying the shape
+    is history rather than a defect, and this verdict should become a report
+    while the pre-send gate keeps the failure. The ledger entry filed with this
+    gate asks her that question.
+
+    The tense only, deliberately. The generator lists four shapes and says
+    three of them "need you to judge whether a reference is load-bearing". A
+    literal search for "last week" would fire on "last week the field argued",
+    which is a time reference about the research and not about our publishing,
+    and a gate that cries on legitimate prose is one nobody keeps. The three
+    judged shapes stay a reading, and this gate claims only the quarter it can
+    prove.
+
+        python3 -I docs/voice/check_voice.py standalone
+    """
+    wrong = [(want, span) for want, span in STANDS_ALONE_CASES
+             if past_tense_you(span) is not want]
+    for want, span in wrong:
+        print(f"  BROKEN  the detector is {'missing' if want else 'firing on'}"
+              f" a case it is asserted against")
+        print(f"            {span}")
+    if wrong:
+        print()
+        print("The pattern changed and STANDS_ALONE_CASES says how. Nothing")
+        print("below was read, because a detector that fails its own cases")
+        print("reports a clean archive for the wrong reason.")
+        return 1
+    print(f"  the detector's own cases   {len(STANDS_ALONE_CASES)} pass")
+    paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    paths = [pathlib.Path(p) for p in paths]
+    hits, exempt = [], []
+    for path in paths:
+        for n, span, _ in issue_sentences(path):
+            if not past_tense_you(span):
+                continue
+            # Her own words are her fine-tuning and the charter says
+            # refinements layer on top of it, never beside it. The exemption is
+            # computed from her register for the reason the taste gate gives.
+            (exempt if hers(span) else hits).append((path, n, span))
+    print(f"  read from   site/content/issues, {len(paths)} issue(s): "
+          f"{', '.join(p.stem for p in paths)}")
+    print(f"  sentences whose subject is 'you' and whose verb is past  "
+          f"{len(hits) + len(exempt)}")
+    for path, n, span in hits:
+        print(f"  FAIL    {path.relative_to(ROOT)}:{n}")
+        print(f"            {span[:92]}")
+    for path, n, span in exempt:
+        print(f"  HERS    {path.relative_to(ROOT)}:{n}  exempt, in taste.md")
+    if not hits:
+        print("  no issue tells a reader what they have been doing")
+    print()
+    print("Each hit is a claim about what the reader has done, it is not")
+    print("knowable from here, and the repair is the present tense and the")
+    print("reader's actual job rather than deletion. The generator's own")
+    print("worked answer is the b7d6929 line quoted above.")
+    return 1 if hits else 0
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -2657,7 +3077,7 @@ def main():
     paths = sys.argv[2:]
     rc = 0
     takes_paths = {"measure", "links", "delivery", "compare", "firstuse",
-                   "generator", "specimens"}
+                   "generator", "specimens", "standalone"}
     # `enforcements` takes a git ref rather than a path, because ban list 105
     # is about the file the press runs and that file is only reachable through
     # the commit the deploy was built from.
@@ -2676,11 +3096,15 @@ def main():
                      ("firstuse", firstuse),
                      ("generator", generator),
                      ("specimens", specimens),
+                     ("standalone", standalone),
+                     ("routed", routed),
+                     ("blockrules", blockrules),
                      ("compare", compare), ("selfcheck", selfcheck)):
         if which == name or (which == "all"
                              and name not in ("selfcheck", "compare")):
             print(f"==== {name} ====")
-            if name in ("enforcements", "selfcheck", "candidates", "ledger"):
+            if name in ("enforcements", "selfcheck", "candidates", "ledger",
+                        "routed"):
                 rc |= fn(paths[0]) if (which == name and paths) else fn()
             else:
                 rc |= fn(paths) if (name in takes_paths and paths) else fn()

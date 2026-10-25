@@ -3604,3 +3604,41 @@ gap that the same collision had left empty (incident 25).
     LANDED prompts/digest.md: "The form is described and never drafted"
     LANDED prompts/digest.md: "a position whose reusable part is a shape"
     ```
+
+136. The correction written downstream of the thing that generates the text.
+    Not a prose tell. A tell about where a repair is put, and it belongs on
+    this list because every entry above it is enforced by a change to a file
+    and this is the class where that change is thrown away without anybody
+    touching it.
+    The specimen is the one the owner struck herself. Canon law 13 quotes
+    "You have spent the week watching" and says "so is every tense of it".
+    `site/content/issues/2026-W39.md` has opened on that sentence since
+    2026-09-29 and it opens on it today. The repair was made on 2026-09-24,
+    in `b7d6929`, and it was the right repair: "The agent-building world has
+    spent the week arguing about scaffolding", which `prompts/digest.md` now
+    prints as its own model answer. Five days later `820df48` re-rendered the
+    archived file from the `digests` record and the repair was gone, because
+    the repair had only ever been written into the render.
+    The tell is a question about any fix to reader-facing words. Was this
+    written into the artifact, or into the thing the artifact is produced
+    from? A fix to a rendered file survives exactly until the next render, and
+    nothing announces that it has been lost, because the commit that loses it
+    is about something else and is usually correct on its own terms. Two
+    commits touched that file afterwards and neither re-read the opening.
+    Why it is not entry 131. That entry is the sentence repaired in the
+    machine and left standing in the shipped copy, which is the same two
+    places with the arrow the other way round. This is the sentence repaired
+    in the shipped copy and never carried back, and the two together say the
+    rule plainly: a repair lands in both or it lands in neither.
+    Added 2026-10-24, writer run 49. Enforced by a command rather than by a
+    sentence, because four patches to the generator could not reach a line the
+    generator did not write:
+    ```
+    python3 docs/voice/check_voice.py standalone
+    ```
+    That reads the archive instead of the prompt. The pre-send half is the
+    engineer's and is filed, because `tools/check_digest_quality.py` is the
+    only gate that can stop a send and it has no rule for this law at all.
+    ```
+    LANDED docs/voice/check_voice.py: "no issue tells a reader what they have been doing"
+    ```

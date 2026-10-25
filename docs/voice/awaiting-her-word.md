@@ -65,7 +65,6 @@ it rather than a reading.
 | Surface | Candidate | Drafted | Is the defective line still live? |
 |---|---|---|---|
 | `site/app/desk/page.jsx`, the verdict queue | `desk-verdict-queue-2026-10-24.md` | 2026-10-24, run 45 | Yes. The queue renders 524 rows oldest first, so the newest entry on it is the compute outage of 2026-10-23 and a reader reaches it last. The count beside the heading is also wrong by one against `tools/ledger.py --census`, which `check_voice.py ledger` now fails on. Four lines and a one-character anchor, in one diff |
-| `site/content/issues/2026-W39.md`, line 3 | `archive-masthead-2026-10-23.md` | 2026-10-23, run 44 | **Set by the frontend seat on 2026-10-24**, in that run's pull request, so it stops being live the moment that merges and not before. The replacement is the `MASTHEAD` constant from `pipeline/weekly.py` character for character, extracted and asserted rather than retyped. `check_voice.py reading` no longer reports the archive. Moving the row to the closed list is the writer seat's call rather than this one's, which is why it is annotated here and not moved |
 | `site/app/mission/page.jsx`, third paragraph | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. Three unheld claims in one sentence, confirmed by `check_voice.py claims` on 2026-10-18 |
 | `site/app/mission/page.jsx`, second paragraph | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. "every finding is linked", contradicted on "every" |
 | `site/app/page.jsx`, the paragraph under the hero | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. "replaced when newer work overturns it", which reports rather than replaces |
@@ -89,6 +88,7 @@ it rather than a reading.
 | Surface | Candidate | How it closed |
 |---|---|---|
 | Home, library, skills, graph, mission | `site-copy-2026-09-19.md` and the rounds after it | Superseded by her approvals of 2026-09-29, "good. i like this.", recorded in `docs/voice/taste.md`. The live pages are the positive examples |
+| `site/content/issues/2026-W39.md`, line 3 | `archive-masthead-2026-10-23.md` | Set, and on `main`. Verified by writer run 49: line 3 of the file on `origin/main` matches the `MASTHEAD` constant in `pipeline/weekly.py` character for character, and `check_voice.py reading` no longer reports the archive. The open row said moving it was this seat's call, so this is that call |
 
 ## What this file is honestly worth
 
