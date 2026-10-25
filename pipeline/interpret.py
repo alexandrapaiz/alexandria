@@ -211,7 +211,7 @@ def edges_from(out: dict, valid_ids: set) -> list[tuple]:
 #: confirmation, which is the measurement ADR-10 wanted. A claim whose only
 #: pass is `unknown` is the backfill's bookkeeping, recovered from a corpus
 #: that predates `claim_judgments`, and re-reading it mostly buys a row. Both
-#: are due and both terminate; only the order between them is a choice, and
+#: are due and both terminate, and only the order between them is a choice:
 #: a sweep that is cut short by the cap should be cut short at the cheap end.
 REJUDGE_QUEUE_SQL = """
     select c.id, c.claim, c.embedding
@@ -687,7 +687,7 @@ def drain() -> str:
         "queue is deep enough to crowd it out, which on 2026-10-25 it was not",
         f"of those, {rejudge_known} carry a pass under a known older prompt "
         "and are read first, because a second verdict there is a changed mind "
-        f"or a confirmation; the other {rejudge_depth - rejudge_known} are the "
+        f"or a confirmation, and the other {rejudge_depth - rejudge_known} are the "
         "backfill's unknown rows and buy mostly a row",
         "the graph currently reflects: "
         + (", ".join(f"{n} claims under {psha}" for psha, n in reflects)

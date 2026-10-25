@@ -312,9 +312,35 @@ judged under today's prompt is recorded as judged under today's prompt and is
 correctly left alone, and the pass is dated from the edge rather than from
 `now()`, because those passes happened and on known dates.
 
-Until the drain catches up, everything in this slice is correct and latent: no
-pair in production has a second opinion, so every number in this paragraph's
-list is unchanged today and right tomorrow. The audit's volume metrics (`shape.edges`, `degrees`, `relations`,
+**The drain caught up overnight, in the way nobody was watching for, and the
+sentence this paragraph used to open with was wrong within the day.** It said
+everything in the slice was correct and latent until the drain caught up. On
+2026-10-25 `/api/delivery` reported `interpret_pending: 0`. The queue did not
+drain, it moved one stage upstream: `distill_pending` was 3,680 and no claim
+had been written since 2026-10-22, because the Modal workspace has been
+switched off since 2026-10-23 and distill is what makes claims. An empty fresh
+queue and a deep one look identical to `rejudge_budget`, which takes the
+leftovers either way, so the sweep takes whole runs from the first one after
+deploy rather than none.
+
+Nothing about that is a defect in the trigger. It is bounded by the
+`max_claims` and `CAP_USD` the job already had, so no run costs more than it
+could before, and it terminates because every pass writes a row. What was
+wrong is the claim that it was free, and the reason it was wrong is worth more
+than the correction: a safety argument keyed to a queue depth is a reading
+with an expiry date, and this one was written the day before it expired.
+
+Two things follow from it, both built 2026-10-25. `drain` now prices the sweep
+the way it already priced the backlog, in runs and dollars, and splits the
+depth into the passes under a known older prompt and the backfill's `unknown`
+rows, so the bill can be read before it is spent instead of after. And the
+sweep is ordered by what it buys rather than by `c.id`: a claim carrying a
+comparable prior verdict goes first, because a run the cap cuts short should
+be cut short at the cheap end. The select is a left join rather than an inner
+one, so a claim judged by an image older than the table is still reachable.
+
+No pair in production has a second opinion yet, so every number in this
+paragraph's list is unchanged today and right tomorrow. The audit's volume metrics (`shape.edges`, `degrees`, `relations`,
 `confidence`) still count every opinion ever given, which is the right question
 for "what has the judge done" and the wrong one for "how dense is the graph".
 That choice belongs with slice 2, which is where density is argued, and it is

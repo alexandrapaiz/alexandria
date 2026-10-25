@@ -243,7 +243,7 @@ def test_the_trigger_and_the_backfill_agree_on_what_unknown_is_called():
     assert "'unknown'" in interpret_module().REJUDGE_QUEUE_SQL
     assert "'unknown', null, 0, c.interpreted_at" in SCHEMA, (
         "db/schema.sql records a sha-less pass under this literal and the "
-        "trigger sorts on it; if one is renamed the other silently reorders")
+        "trigger sorts on it, so if one is renamed the other silently reorders")
 
 
 def test_the_sweep_selects_a_claim_whose_pass_predates_the_table():
