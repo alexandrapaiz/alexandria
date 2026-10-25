@@ -19619,3 +19619,109 @@ has nothing to go red against.
   pinned.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-25 — Give the background sweep a rate of its own, not whatever the foreground leaves (engineer seat, message run)
+- Trigger: today's finding, and the craft scan below that names the pattern.
+  `rejudge_budget` returns `max_claims - fresh_taken`, which was argued as safe
+  on the reading that the fresh queue was 2,000-odd deep. `/api/delivery` read
+  `interpret_pending: 0` this morning, so the leftovers are the whole run and
+  the sweep starts at full cap on the next run after deploy. Nothing is broken
+  by that, because the run's `max_claims` and `CAP_USD` are unchanged and the
+  sweep terminates. What changed is that an idle day costs $0.30 instead of $0,
+  and the rule that was supposed to prevent it is the rule that caused it.
+- What: a leftovers rule has no upper bound of its own, so it reads as a brake
+  while the foreground is busy and as an accelerator the moment it is not.
+  PostgreSQL's autovacuum solved the identical problem with an absolute rate,
+  `vacuum_cost_limit`, which is deliberately not a function of how busy the
+  server is: background maintenance gets a fixed slice whether the foreground
+  is saturated or asleep. The equivalent here is one line, a ceiling on the
+  re-judgment share of a run, so an empty fresh queue cannot convert a free job
+  into a capped one. This is deliberately not built today. The `(0, 90, 90)`
+  case is an explicit decision this seat's previous run wrote down as a test
+  parameter, and reversing a day-old decision unilaterally is the thrash a
+  retrospective should not have to find. The number is also a judgment the
+  owner should make, because it trades the speed of a prompt-change sweep
+  against a daily bill.
+- First step: decide the ceiling, then one `min()` in `rejudge_budget` and one
+  parametrized case beside the four already in `tests/test_rejudge_queue.py`.
+  The forecast this run added to `drain` is what the ceiling should be chosen
+  against, because it prints the sweep in runs and dollars.
+- Cost: $0 to build. The decision is about whether an idle interpret day costs
+  $0.30 or less.
+- Status: proposed
+
+### 2026-10-25 — The number that decides a deploy is behind a credential no seat holds (engineer seat, message run)
+- Trigger: this run built a cost forecast for the re-judgment sweep into
+  `interpret.drain`, and then could not read it. `drain` opens
+  `DATABASE_URL`, and no agent seat holds a database credential, which is a
+  constraint three of this seat's run notes already work around by reading
+  `https://libraryofalexandria.dev/api/delivery` instead. So the instrument
+  built today to stop a sweep surprising somebody is readable only by the
+  owner, and the surprise it exists to prevent is one a seat meets first.
+- What: the delivery receipt already carries `queues.interpret_pending`, which
+  is the fresh half of exactly this question. It does not carry the
+  re-judgment depth, so the receipt can say the interpret job has nothing to do
+  while that job is about to spend its whole cap. Add the sweep's depth to the
+  receipt beside the queues it already reports, split the way `drain` now
+  splits it, into passes under a known older prompt and the backfill's
+  `unknown` rows. Then any seat can answer "what will the next interpret run
+  cost" from a public URL, and the daily standup reads it for free.
+- First step: one count in `site/lib/delivery.js` beside the three queue counts
+  already in that query, one field in `site/lib/delivery-core.js`, and the same
+  pair in `tools/delivery_health.py`, which computes the receipt a second way.
+  The version number on the receipt moves from 6 to 7.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 — A blocked card should carry the verification that blocked it (engineer seat, message run)
+- Trigger: `INC-2026-10-25-the-engineer-lane-was-rediscovered-as-owner-blocked-for-the-second-run-running`.
+  Two consecutive runs of this seat each spent part of a run establishing that
+  all four cards in its board lane close with a hand it does not have, and the
+  first run's record of that was a run note, which nothing reads at the moment
+  it would save the second run. The board is the surface a run is sent to. It
+  is the one place the finding was not written.
+- What: when a seat verifies that a card is blocked on something outside its
+  reach, it posts that verification onto the card, with the date, what it
+  checked and what it checked it against. The next run then reads "verified
+  blocked 2026-10-25, Modal workspace still disabled, confirmed against
+  /api/delivery" in the first surface it opens, and spends its turns on work
+  instead of on rediscovery. The two stale cards this run found are the second
+  argument for it: a card whose numbers nobody refreshes drifts away from the
+  condition it describes, in `Deploy`'s case understating it and in `Press`'s
+  case overstating it, and a verification line is also a refresh.
+- First step: agree what the line looks like and where it goes, a comment
+  against the card or a field on it, because this seat writes onto cards the
+  ExO's checks created and that is a shared surface rather than this seat's.
+  Then the posting is a few lines in whatever each seat already uses to reach
+  the board.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 — Craft scan: PostgreSQL's autovacuum rate-limits background work absolutely, where this run's sweep is limited only by how busy the foreground is (engineer seat, message run)
+- Trigger: today's finding needed a name, and the product with the longest
+  history of this exact problem is the database underneath us. Rotated to
+  PostgreSQL's own maintenance machinery rather than a competitor, which the
+  charter allows as an adjacency pick, because the pattern is the one this
+  run's code got wrong.
+- What: autovacuum is background work that must never crowd out queries, and
+  the obvious design is the one this repository picked independently, which is
+  to let maintenance have whatever the foreground is not using. PostgreSQL does
+  not do that. It gives autovacuum a cost budget, `vacuum_cost_limit` spent
+  against `vacuum_cost_delay`, that is an absolute rate rather than a share of
+  idle capacity, and the documentation is explicit that this is so an idle
+  server does not become a saturated one. The thing worth stealing is the shape
+  of the guarantee: "never more than X" survives the foreground going quiet,
+  where "whatever is left over" inverts into its opposite the moment it does.
+  That is precisely the inversion `/api/delivery` caught here this morning.
+- What alexandria does better: autovacuum's budget is denominated in cost
+  units that correspond to nothing an operator can price, which is why tuning
+  it is folklore and why the usual advice is to change it and watch. The same
+  decision here is denominated in dollars and in daily runs, because `drain`
+  prices the sweep at the model's list price before anything is spent. A
+  question an operator can answer in the unit they actually decide in is a
+  better instrument than a more sophisticated controller they cannot aim. The
+  ledger entry above is the half worth stealing, and the pricing is the half
+  worth keeping.
+- First step: the entry above.
+- Cost: $0.
+- Status: proposed
