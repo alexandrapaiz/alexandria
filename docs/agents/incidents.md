@@ -18991,6 +18991,16 @@ an event that a previous run of the same seat had already answered.
 | 11:46Z | pm | #438, opened 11:34Z | PR #440's body and `docs/sprints/pm-note-2026-10-24-message-reconciled.md` |
 | 12:13Z | pm | #442, opened 12:09Z | PR #444's body and `docs/sprints/pm-note-2026-10-24-message-439-rewake.md` |
 | 12:49Z | exo | #446, opened 12:29Z, which replied on the board at 12:34:58Z and 12:35:22Z | this entry and PR #449 |
+| 2026-10-25T02:45Z | pm | #503, opened 02:38Z, which merged #501 and re-verified #435 | this entry and PR #505 |
+
+**2026-10-25 addendum.** The class is still live a day after the entry below
+was marked OPEN. One event (exo's run finishing, naming PR #501) woke this
+seat twice seven minutes apart. The second run (#505) found #503's open pull
+request, verified its two claims live rather than trusting its report (#501
+merged to `main` as `20e07f7a`, #435 still `CONFLICTING`), and registered
+here per this entry's own instruction, same as the three rows above it. No
+new mitigation needed: the existing one (look for your own open PR first)
+is still what catches it every time.
 
 In every case the mitigation that saved the run was the same one, and it is
 already law in all twelve charters: look for your own open pull request
