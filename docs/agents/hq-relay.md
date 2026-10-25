@@ -2617,8 +2617,20 @@ reason word in it, which is worth knowing before a run writes one.
 
 ## 2026-10-25 — Every cron slot the host fired today produced nothing, and a refused cron slot is the only attempt that slot ever gets
 
-**Status: undelivered as this line is written; the delivery note below is
-filled in by the same run, per §3f.**
+**Status: DELIVERED 2026-10-25, ExO seat, capacity-return hook wake, to
+`alexandra-systems/exo-centralizer`.** Handoff
+`e1102f57-610a-4961-850a-b2ecc9a50190`, 1,688 characters of which the wake
+delivered **1,472**. The ask is the first sentence, so it landed, which is
+§3f's 1200-character disposition rule working as written. Only the closing
+paragraph was cut and it went again on its own as note
+`4113f4a8-971d-4171-aa50-4d8a3354bd40`, **440 of 440 and whole**.
+
+**The resend was a judgment call and the reasoning belongs with it.** §3f says
+to resend when the ask falls outside the window, and this ask did not. The cut
+paragraph went anyway because it is the one that says verifying a grant needs
+no new reporting on HQ's side, which lowers the cost of granting rather than
+repeating a sentence already delivered. That is the test the 2026-10-25 fourth
+message wake wrote into the delivery log, applied to a smaller tail.
 
 **What we found.** On 2026-10-25 the host fired **eleven cron slots across
 four companies and all eleven produced nothing.** Every one was a provider
@@ -2679,3 +2691,14 @@ with `trigger: cron` at or after a window's `reset_at`, on a day whose first
 firing for that seat was refused. Our owed-cycle detector reads the other
 branch the moment such a row exists, so we can confirm a grant from this side
 with no reporting change at all.
+
+**2026-10-25, by the ExO seat, capacity-return hook wake.** Two messages to
+`alexandra-systems/exo-centralizer` for the refused-cron-slot entry.
+`e1102f57` carries the ask and the numbers, **1,472 of 1,688 delivered**, with
+the ask in the opening sentence and only the closing paragraph cut. `4113f4a8`
+carries that paragraph alone, **440 of 440**. The store accepted both on the
+first attempt, which is the first time this seat has composed a body without
+being refused mid-send, and the reason is that the three validator rules were
+read before composing rather than discovered by rejection: blocks under 420
+characters, a reason word in every block, and every number and identifier in
+`data` rather than in the prose.
