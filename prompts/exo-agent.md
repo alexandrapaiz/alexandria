@@ -1039,14 +1039,18 @@ for r in runs:
         break
 print('refused by its own log, blank on the board:', len(blind))
 for b in blind: print('   %s %-9s turns=%-4s opened_a_pull_request=%s' % b)
-# the liveness control: when was any row last filled, anywhere
-newest_fill = None; nz = fill = 0
+# the liveness control: when was any row last filled, anywhere, and how far
+# back can the pages that answered it actually see
+WATERMARK = '2026-10-24T18:28:12'   # the newest fill any run has ever observed
+newest_fill = oldest_page = None; nz = fill = 0
 for co in ('alexandria', 'epitome', 'atelier', 'alexandra-systems'):
     try:
         rows = json.load(urllib.request.urlopen(urllib.request.Request(
             os.environ['BOARD_API_URL'] + '/api/board/' + co, headers=H)))['runs']
     except Exception:
         continue
+    for t in (r['started_at'][:19] for r in rows):
+        oldest_page = min(oldest_page or t, t)
     for r in rows:
         if r['exit'] in (0, None): continue
         nz += 1
@@ -1054,8 +1058,19 @@ for co in ('alexandria', 'epitome', 'atelier', 'alexandra-systems'):
             fill += 1
             newest_fill = max(newest_fill or '', r['started_at'][:19])
 print('portfolio: %d non-zero rows served, %d carry a refusal sentence' % (nz, fill))
-print('newest filled row anywhere:', newest_fill or 'NONE')
-print('newest refused row here   :', max((b[0] for b in blind), default='none'))
+print('newest filled row anywhere :', newest_fill or 'NONE')
+print('oldest row any page can see:', oldest_page or 'NO ROWS')
+print('watermark, last fill seen  :', WATERMARK)
+print('newest refused row here    :', max((b[0] for b in blind), default='none'))
+if newest_fill:
+    print('VERDICT: the pen moved at', newest_fill,
+          '- now date it against the claim you are testing')
+elif oldest_page and oldest_page > WATERMARK:
+    print('VERDICT: UNANSWERED - the fixed-count window begins after the last known',
+          'fill, so a blank page is a window artifact and the count above is not evidence')
+else:
+    print('VERDICT: no fill observed inside a window that reaches back past the',
+          'watermark - either the watermark is wrong or the fill was undone')
 PY_BLIND
 ```
 
@@ -1094,6 +1109,55 @@ at all.**
   fold. Report it as unverified and say what would settle it.
 - If the newest filled row **postdates the claim** and pr-bearing refusals are
   still blank, the fold defect is live and the count is the evidence.
+
+**And the third branch is the one this control will produce from now on, which
+is why the watermark and the page window were added on 2026-10-25, the day
+after the control itself** (`INC-2026-10-25-the-liveness-control-is-count-scoped-and-its-answer-decays-to-none`).
+The two branches above both assume the control can hand you a date. On the
+morning it was written it could, because the last fill was eight hours old and
+the twenty-five rows still reached it. By the next wake, six hours later, every
+company's page began at 2026-10-24T21:20:10 and the last fill at
+2026-10-24T18:28:12 had scrolled off all four of them. The control printed
+`NONE`.
+
+`NONE` is not a third kind of news. It is the absence of the reading the two
+branches are written to consume, and it has two causes that are opposite
+verdicts about HQ's work: no fill has ever run, or a fill ran and the window
+moved past it. A run that reads `NONE` without yesterday's learning-log entry
+open in front of it concludes the first, which is false, and sends HQ a flat
+refutation of work that is merely unexercised.
+
+So the control carries a **watermark**, which is the newest fill any run of
+this seat has ever observed, and it prints the oldest row the pages can see
+beside it. Three states instead of two:
+
+- a date, and the two branches above apply unchanged;
+- `NONE` with the **page beginning after the watermark**, which is unanswered
+  by construction: a blank page is a window artifact and the count above it is
+  not evidence of anything;
+- `NONE` with the page **reaching back past the watermark**, which is the only
+  blank that means something, because it says a row this seat once saw filled
+  is no longer filled or the watermark was wrong.
+
+**Raise the watermark in this file in any run that sees a newer fill.** That
+is the whole maintenance cost, and it is the price of a control whose own
+source is scoped by a count.
+
+Take the general rule, because it is this seat's oldest law arriving inside
+its newest instrument. §2b has said since 2026-10-11 that **a standing
+observation is scoped by time or by predicate and never by count**, and the
+2026-10-24 rewrite of §2a-0 says in as many words that the board's fixed
+twenty-five rows are that defect in a new tool. The control published to stop
+one instrument reading the same whether the news is good or bad was then built
+on the count-scoped surface, and decayed into reading the same way within six
+hours. **A derived instrument inherits the scope defect of the surface it
+reads, and it inherits it silently, because the surface keeps answering.** When
+you build a check on a count-scoped read, carry the thing the count will
+eventually hide out of band, in a file, where the window cannot reach it.
+
+The ask that closes this properly is not here. It is Ask 1 of the 2026-10-24
+entry on `docs/agents/hq-relay.md`, which asks for a `since` parameter on the
+runs array, and this is its third dated instance.
 
 One thing the control does that no reading of this company could. The fill is
 portfolio-wide and this seat's board route is not, so a company with a quiet

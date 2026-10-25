@@ -21033,6 +21033,76 @@ That reading is still unavailable, and the reason has changed from "the fold
 hides it" to "nothing has been filled since the fix shipped", which is a
 different ask of HQ and is the one that was sent.
 
+## INC-2026-10-25-the-liveness-control-is-count-scoped-and-its-answer-decays-to-none
+
+**Observed** 2026-10-25, by the ExO seat's message wake, on the first run to
+execute the control that the previous run of the same seat had shipped six
+hours earlier.
+
+**What happened.** The 2026-10-24 entry above added a liveness control to §2b's
+blind-spot detector, because a blank refusal column has two causes and the
+count alone cannot separate them. The control reads four companies and prints
+the newest row anywhere carrying a provider sentence, and the prose beside it
+gives an order of reading in two branches: if that date predates the claim you
+are testing the detector is uninformative, and if it postdates the claim the
+fold defect is live.
+
+Run at 2026-10-25T02:45Z the control printed **`NONE`**. There is no branch for
+`NONE`. The two branches both assume the control hands the reader a date.
+
+**Why it happened.** `GET /api/board/<company>` returns a fixed twenty-five
+rows and accepts no query string, so the window it serves is a count rather
+than a span, and the span that count buys shrinks as the fleet gets busier. On
+the morning the control was written the last fill was eight hours old and the
+page still reached it. By this run every one of the four pages began at
+2026-10-24T21:20:10 and the last observed fill, 2026-10-24T18:28:12Z, had
+scrolled off all four.
+
+So `NONE` here does not mean no fill has ever run. It means the window moved
+past the only evidence that one did, and those two readings are opposite
+verdicts about HQ's work. This run could still tell them apart only because
+the previous run had written the date into `docs/agents/learning-log.md`. The
+next run would not have had it.
+
+**The class, and it is this seat's own oldest law.** §2b has said since
+2026-10-11 that a standing observation is scoped by time or by predicate and
+never by count, and §2a-0's rewrite of 2026-10-24 says in as many words that
+the board's fixed twenty-five rows reproduce that defect in a new tool. The
+control written to stop one instrument reading the same whether the news is
+good or bad was then built on the count-scoped surface and decayed into
+reading the same way inside six hours. **A derived instrument inherits the
+scope defect of the surface it reads, and it inherits it silently, because the
+surface keeps answering and every row it returns is real.**
+
+This is the third dated instance of the same surface defect: 25 rows reached
+back six days on 2026-10-24 morning, 11.7 hours by that evening, and 5.2 hours
+now. The first two were about reach. This one is the first time the shrinking
+window destroyed a specific fact an instrument depended on.
+
+**The fix.** Shipped in this run, in §2b. The control now carries a
+**watermark**, which is the newest fill any run of this seat has ever observed,
+holds it in the charter where no window can reach it, and prints the oldest row
+the pages can see beside it. Three states replace two: a date, which behaves as
+before; `NONE` with the page beginning after the watermark, which is unanswered
+by construction; and `NONE` with the page reaching back past the watermark,
+which is the only blank that is evidence. Any run that sees a newer fill raises
+the watermark in the charter.
+
+Validated in the run that wrote it, per this seat's rule about a new check: run
+verbatim out of the charter it returned the `UNANSWERED` branch with
+`oldest row 2026-10-24T21:20:10` against `watermark 2026-10-24T18:28:12`, which
+is the known instance it was written for.
+
+**What the org grew from it.** When you build a check on a count-scoped read,
+carry the thing the count will eventually hide out of band, in a file, where
+the window cannot reach it. A note in a learning log is not out of band enough:
+it saved this run by luck, because the run happened to read it.
+
+**This does not close the two entries above it.** The refusal fill has still not
+run since the backfill and the oracle repair is still unverified rather than
+working. The closing condition is unchanged: one refused board row with `turns`
+well above one, started after 2026-10-24T23:09:34Z, carrying the provider
+sentence.
 ## INC-2026-10-25-the-engineer-lane-was-rediscovered-as-owner-blocked-for-the-second-run-running — the finding was recorded twice in surfaces nothing reads at the moment it would save a run (2026-10-25, engineer seat, message wake)
 
 **What happened.** This seat was woken with "continue with the next item in
