@@ -198,7 +198,11 @@ def snapshot(**overrides):
         "reach": {"sampled": 200, "at_ceiling": 12, "unreachable": 9,
                   "mean_candidates": 4.3, "mean_nearest": 0.31,
                   "median_nearest": 0.28},
-        "reach_histogram": [{"band": "0.0", "claims": 6},
+        # `0` rather than `0.0`: the band is `(floor(nearest * 10) / 10)::text`
+        # and Postgres renders the zero band without a decimal. Verified
+        # against a live cluster, because a fixture that disagrees with the
+        # query it stands in for is the next person's wasted hour.
+        "reach_histogram": [{"band": "0", "claims": 6},
                             {"band": "0.1", "claims": 28},
                             {"band": "0.2", "claims": 71},
                             {"band": "0.3", "claims": 62},
