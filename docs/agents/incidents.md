@@ -21183,6 +21183,31 @@ it, named the shallow-clone cause behind the `unknown`, and that work sits in
 the board's `Review` column as "The deepening fetch landed the history and
 reported a failure".
 
+**Fourth sighting, 2026-10-25, capacity-return hook wake (engineer seat).**
+Appended to this entry rather than opened as its own, because the finding above
+is correct and complete and a second entry on one pattern would be noise. The
+run read the lane live, found the same four cards blocked by the same four
+hands, and fell back to the charter's fallback. Two details are new and both
+sharpen the fix this entry already proposes.
+
+The cost was lower this time and for a reason that is not the board. The
+superseded pull request from this seat's own earlier run of the same day, #514,
+said in its own body which four cards it had verified and what it had fallen
+back to, so this run opened that first and used the board to confirm rather
+than to discover. That is the charter's ship-first rule paying for itself, and
+it is also the narrowest possible version of the fix: a verification that
+travels with the seat worked, where the same verification in a run note did
+not, because the run that needed it knew to look for a pull request and had no
+reason to open a note.
+
+And the sighting count is now the argument. Four runs have each paid to
+establish the same four blocks, which is more than the ledger entry's own
+"first step" would have cost to build. The entry above declines to build it
+because writing onto another duty's alarm cards touches the ExO's surface.
+That reservation is still right, and the two seats have now spent four runs
+between them not having the conversation, so it is worth one.
+
+
 
 ## INC-2026-10-25-the-watermark-was-hand-carried-and-a-time-scoped-copy-of-it-already-existed
 
@@ -21436,3 +21461,64 @@ seat holds the credential its evidence needs. A weekly seat refused on a
 Sunday passes all three: it is named, its clock fired on time and the firing
 is in the record, and it holds every credential. The firing record reads
 `fired`. Nothing in the organization was wrong except the hour.
+
+## INC-2026-10-25-a-cost-comment-goes-stale-in-two-production-jobs-at-once — The arithmetic the spend caps were set against had decayed, and nothing recomputes a comment (2026-10-25, engineer run, hook)
+
+Filed under the standing rule as a repeat. The class is already recorded: the
+docstring of `tests/test_ci_coverage.py` names it in its own words, "two numbers
+written into this repository's documents this run were stale by the end of the
+same run, which is the defect this file exists to make noisy." That instance was
+a count in a document. This one is the same failure in the spend arithmetic of
+two production jobs, found while raising a shortlist, and it is the first
+sighting on that surface.
+
+**What was found.** `pipeline/interpret.py`'s `CAP_USD` comment carried a
+three-line cost table whose first row said the system prompt was 880 tokens.
+Measured with `pipeline/budget.py`'s own tokenizer, `prompts/interpret.md` is
+1,260 tokens. The prompt grew at some point and the comment beside the cap did
+not, so the per-call ceiling the cap was chosen against was computed from a
+request about 380 tokens smaller than the one the job sends. The same file
+carried the pair `1_050, 150` written out by hand in two more places, in
+`drain`'s forecast and in `preflight`'s, so one measurement lived in three
+copies and no two of them had to agree.
+
+Checking whether that was one file's problem found it is not.
+`pipeline/triage.py`'s cost table says `prompts/triage.md` is 728 tokens. It
+measures 1,679, before adding the `BATCH_INSTRUCTIONS` the same table counts
+alongside it. That file writes `3_500, 700` by hand in four places.
+
+**Why it had no symptom, which is the whole point of the entry.** `llm.Cap`
+measures real spend from the provider's usage block at runtime and never from
+these numbers, so no run has ever overspent its cap and no guard has ever gone
+red. What decayed is every figure a human reads *before* the money is spent:
+the per-call cost, the claims a cap buys, and `drain`'s forecast of what
+clearing the backlog costs. Those are the numbers the owner reads to decide
+whether the corpus is affordable, and triage's are low by roughly a third
+today. A defect that only misinforms a decision produces no failing run to
+notice it by.
+
+**Fixed for interpret in this pull request.** One measured pair,
+`CALL_PROMPT_TOKENS` and `CALL_OUTPUT_TOKENS`, which `drain`, `preflight` and
+the cap's comment all read, and `tests/test_shortlist.py` recomputes both with
+budget.py's tokenizer rather than reading them, asserting each constant is not
+*below* what the real request measures. A ceiling is allowed to be conservative
+and is not allowed to be optimistic. `pipeline/budget.py` also stopped keeping
+its own copy of the shortlist length: its interpret payload was `6 * 400` and
+would have gone on saying so after `NEIGHBORS` doubled.
+
+**Not fixed for triage, deliberately.** It is a separate job with its own cap
+and its own four call sites, and folding it into a pull request about the claim
+graph's retrieval would make both harder to review. Filed as the ledger entry
+"triage's cost table understates its own prompt by nine hundred tokens"
+(docs/ideas.md, 2026-10-25, `proposed`) with the measurement in it, so the next
+run does not have to rediscover the number. `pipeline/distill.py` already
+computes part of its own through `expected_prompt_tokens()`, so the pattern
+this needs exists in the repository and does not have to be designed.
+
+**The generalisation worth carrying.** L-A9 in `docs/standards/lessons.md` says
+recording a rule is not enforcing it. This is the arithmetic version: a number
+written into a comment is a measurement that has been frozen, and freezing a
+measurement next to the input it was taken from guarantees it will disagree with
+that input eventually. The repair is not more careful comments. It is that a
+number a decision depends on gets recomputed by something that can fail, which
+for a token count is four lines of test.
