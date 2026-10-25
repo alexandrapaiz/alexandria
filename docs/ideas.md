@@ -19501,3 +19501,121 @@ has nothing to go red against.
 - Cost: $0 for the scan; the two-clock idea above is a ledger proposal and not
   an action.
 - Status: proposed
+
+### 2026-10-25 — The prompt sha is too coarse a trigger, so a typo will bill a full re-judgment (engineer seat, hook run)
+- Trigger: today's craft scan, below, read against the trigger this run built.
+  `claim_judgments.prompt_sha` is `sha256(prompts/interpret.md)[:12]`, so every
+  byte of that file is in the key, including its comments, its examples and its
+  trailing whitespace. The corpus is roughly 2,900 claims. The moment anybody
+  fixes a typo in that prompt, every one of them becomes due for a second
+  opinion, and the drain will spend days and real Moonshot tokens re-judging a
+  corpus whose judge did not change its mind about anything.
+- What: the trigger needs to distinguish a change that can move a verdict from
+  a change that cannot, which is exactly the distinction dbt draws and
+  documents. Hash a normalised form of the prompt rather than the file: strip
+  trailing whitespace, collapse blank runs, and drop the comment block the file
+  carries for its human readers. The judge reads the instructions, so the
+  instructions are what the key should be about. The honest version of this is
+  narrower still and worth saying: a prompt edit that only rewords an
+  instruction does change the verdict distribution and should count, so the
+  normalisation must stay conservative and be about form rather than meaning.
+  Getting it wrong in the lax direction is a graph that silently stops being
+  re-judged, which is worse than the bill, so the test has to pin both
+  directions.
+- First step: a `prompt_key(text)` function in `pipeline/interpret.py` beside
+  `load_prompt`, with a test that a comment-only edit and a whitespace-only
+  edit leave the key unchanged and that any edit inside an instruction line
+  changes it. Then `claim_judgments.prompt_sha` stores the key. The column stays
+  text and the backfilled 'unknown' rows are unaffected, so there is no
+  migration beyond the next deploy.
+- Cost: $0 to build. Not building it costs the re-judgment of a 2,900-claim
+  corpus the first time anybody edits a comment in that prompt.
+- Status: proposed
+
+### 2026-10-25 — Craft scan: dbt decides what a change is allowed to invalidate, and says so field by field (engineer seat, hook run)
+- Trigger: today's work is a trigger that re-runs a judgment when its
+  definition changes, so the day's scan went to the product whose entire
+  selector language is that question: dbt's `state:modified`. It had never been
+  scanned here, and the design doc for slice 5 had just been wrong twice in a
+  row about what a re-run should key on, which is the sign that somebody else
+  has already paid for the lesson.
+- What: the scan, and one thing worth stealing that this repository can act on
+  without adopting anything of dbt's.
+- What is worth stealing: **a change is not automatically a modification, and
+  which fields count is a documented decision rather than a hash.** dbt
+  compares a resource's code and config against a saved manifest, and its
+  docs then enumerate what deliberately does not count: "Changes to `tags` and
+  `meta` ... don't count as modifications and will not trigger
+  `state:modified`. dbt treats these fields as metadata only, since they don't
+  affect how a resource is materialized." `description` is the sharp case,
+  because it counts only when `persist_docs` is on, which is to say only in the
+  configuration where it actually reaches the output. That is a per-field
+  ruling about whether a difference can change the answer, and this repository
+  has no such ruling anywhere: the trigger built today hashes a whole file, and
+  `tools/skill_registrar.py` pins a whole SKILL.md the same way. The entry
+  above is the first place to act on it.
+- What alexandria does better: **there is no second artifact to go stale.** dbt
+  needs a manifest from a previous run, produced by the right version, saved
+  somewhere a later run can find it, and its own caveat list is largely about
+  that state drifting from reality: a model using a `var` or `env_var` cannot
+  be selected when that value changes, and the v1.9 fix for environment-aware
+  false positives only works if the saved state was built by v1.9 too. The
+  trigger here derives its key from the prompt the container is running and
+  records it on the claim, so the question "has this judge read this claim" is
+  answered by the database rather than by an artifact somebody had to remember
+  to keep. A missed claim is simply still due on the next run, and there is no
+  version skew between the comparison and the thing compared.
+- First step: none of its own. This scan's output is the entry above it, which
+  is where the stealable thing turns into a day of work.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 — No sprint has been planned for thirteen days, so the engineer's priority queue is the ledger by default (engineer seat, hook run)
+- Trigger: this run read the sprint first, as the charter's Observe step
+  requires, and the newest file in `docs/sprints/` is `sprint-2026-10-12.md`.
+  Today is 2026-10-25, so two Mondays have passed with no sprint. The PM seat
+  has been running: there are eight of its pull requests open from yesterday
+  alone. What it has been producing is `pm-note-*` files answering board
+  messages, which is message work rather than the ceremony.
+- What: the charter says the sprint file is the engineer's priority queue and
+  that today's default work is its first unfinished `engineer` item. With a
+  thirteen-day-old sprint that queue is stale: of its five items, item 1 is a
+  send that has since been superseded by the Modal workspace being disabled,
+  and items 2, 3 and 5 all close with a hand this seat does not have. So two
+  runs in a row have taken the charter's fallback, an `accepted` ledger entry
+  no sprint picked up, and have been right to. The cost is not that the
+  fallback is bad work. It is that the owner's commitment mechanism is not
+  running: a sprint the owner merges is what makes the week's order hers rather
+  than the engineer's, and for thirteen days the order has been the engineer's.
+  This is a finding for the PM's ceremony and not a thing this seat can fix,
+  because `docs/sprints/` is a planning surface the charter forbids it to edit.
+- First step: the PM seat plans a sprint for the week of 2026-10-26 and, in
+  its backlog, says what happened to the five items of 2026-10-12 rather than
+  carrying them silently. If the ceremony is not firing because nothing wakes
+  it on a Monday, that is the actual defect and it belongs in this ledger as
+  its own entry.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 — The audit cannot say which prompt the graph it measures was judged by (engineer seat, hook run)
+- Trigger: building `claim_judgments` made a question answerable that nothing
+  asks. `tools/graph_audit.py` is slice 1, the instrument the whole upgrade is
+  measured against, and every number it prints is now ambiguous in a way it was
+  not yesterday: a confidence distribution over a graph that is half September's
+  judge and half October's is two distributions added together, and the audit
+  has no way to say so.
+- What: the audit should report the judge alongside the graph, which is one
+  group-by over the `latest_judgment` view this run added. The shape to print
+  is the one `drain` already prints for an operator: how many claims each prompt
+  currently holds the newest opinion on. A worksheet that says "2,900 claims,
+  all under `a1b2c3d4e5f6`" is a clean reading, and one that says half and half
+  is a warning that the next slice's numbers cannot be compared to the last
+  slice's. That is the difference between an instrument and a number.
+- First step: add a `judges` section to `tools/graph_audit.py`'s report reading
+  `select prompt_sha, count(*) from latest_judgment group by 1 order by 2 desc`,
+  and extend `tests/test_graph_audit.py`, which resolves every relation the
+  audit names against `db/schema.sql` and is one of the files a workflow
+  actually runs, so the new query is guarded on every pull request rather than
+  pinned.
+- Cost: $0.
+- Status: proposed
