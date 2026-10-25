@@ -178,16 +178,86 @@ def test_rejudge_takes_the_leftovers_and_only_the_leftovers(fresh, cap, want):
     assert interpret_module().rejudge_budget(fresh, cap) == want
 
 
-def test_the_loop_is_latent_while_the_corpus_is_still_draining():
-    """The honest claim this slice ships under, as a number.
-
-    The fresh queue was 2,000-odd deep at the last reading, so a run takes its
-    full 90 fresh claims and the trigger returns nothing. That is the correct
-    order of work and it is also the reason this change cannot regress
-    production today.
-    """
+def test_the_loop_yields_whenever_the_fresh_queue_fills_the_run():
+    """A full fresh queue leaves nothing, and that is the whole of the rule."""
     mod = interpret_module()
     assert mod.rejudge_budget(mod.MAX_CLAIMS_PER_RUN, mod.MAX_CLAIMS_PER_RUN) == 0
+
+
+def test_an_idle_fresh_queue_hands_the_whole_run_to_the_sweep():
+    """The case the slice shipped believing it could not happen.
+
+    The docstring on `rejudge_budget` used to say the fresh queue was
+    2,000-odd deep, so the budget returned 0 and the loop stayed latent. That
+    was a reading and not a property. `/api/delivery` reported
+    `interpret_pending: 0` on 2026-10-25, the morning after the trigger
+    merged, because the backlog moved one stage upstream rather than drained:
+    `distill_pending` was 3,680 and no claim had been written since
+    2026-10-22, so there was nothing fresh to judge.
+
+    So this is pinned as the live case rather than the theoretical one. The
+    run is still bounded by `max_claims` and `CAP_USD` and the sweep still
+    terminates, but it is not $0 a day while it runs, and no test said so.
+    """
+    mod = interpret_module()
+    assert mod.rejudge_budget(0, mod.MAX_CLAIMS_PER_RUN) == mod.MAX_CLAIMS_PER_RUN
+
+
+def test_the_budget_docstring_does_not_promise_a_latent_loop():
+    """The claim that expired, kept out by name.
+
+    A docstring is where the next reader checks whether turning this on is
+    safe, and the one that was here answered yes on a queue depth that had
+    already changed. Re-asserting it would be the same mistake with a newer
+    number.
+    """
+    doc = interpret_module().rejudge_budget.__doc__
+    for claim in ("stays latent", "2,000-odd deep"):
+        # Quoting the sentence as the thing that was wrong is the point of the
+        # correction, so what this forbids is asserting it, not naming it.
+        for found in re.finditer(re.escape(claim), doc):
+            quoted = doc.rfind('"', 0, found.start())
+            assert quoted != -1 and '"' in doc[found.end():found.end() + 200], (
+                f"{claim!r} reads as a live claim again rather than as the "
+                "reading that expired")
+    assert "interpret_pending" in doc, (
+        "the correction has to carry the instrument it was read from, or the "
+        "next reader has only a newer number to trust")
+    assert "CAP_USD" in doc, "the bound that does hold has to stay stated"
+
+
+def test_the_sweep_is_ordered_and_not_left_to_the_claim_id():
+    """`order by c.id` was free when the sweep returned nothing. It does not."""
+    sql = interpret_module().REJUDGE_QUEUE_SQL
+    order = sql[sql.index("order by"):]
+    assert "known_at is null" in order, (
+        "a sweep the cap cuts short should be cut short at the cheap end, so "
+        "a pass under a known older prompt is read before the backfill's "
+        "unknown bookkeeping")
+    assert order.index("known_at is null") < order.index("c.id"), (
+        "c.id is the tiebreak now, not the ordering")
+
+
+def test_the_trigger_and_the_backfill_agree_on_what_unknown_is_called():
+    """Two files, one magic string, and the ordering is wrong if they drift."""
+    assert "'unknown'" in interpret_module().REJUDGE_QUEUE_SQL
+    assert "'unknown', null, 0, c.interpreted_at" in SCHEMA, (
+        "db/schema.sql records a sha-less pass under this literal and the "
+        "trigger sorts on it, so if one is renamed the other silently reorders")
+
+
+def test_the_sweep_selects_a_claim_whose_pass_predates_the_table():
+    """A left join, because an inner one would drop a claim forever.
+
+    Every `interpreted_at` claim got a backfill row, so an inner join looks
+    safe. It is not: a claim judged by an image that predates
+    `claim_judgments` but runs after the backfill has `interpreted_at` set and
+    no row at all, and an inner join would make that claim unreachable by the
+    only thing that would ever give it one.
+    """
+    sql = interpret_module().REJUDGE_QUEUE_SQL
+    assert "left join lateral" in sql, (
+        "a claim with no judgment row at all still has to be selectable")
 
 
 # ---------------------------------------------- what the run records and says
@@ -232,6 +302,27 @@ def test_the_dry_run_reports_the_re_judgment_depth():
     assert "re-judgment:" in drain
     assert "the graph currently reflects" in drain
     assert "latest_judgment" in drain
+
+
+def test_the_dry_run_forecasts_what_the_sweep_will_cost():
+    """The asymmetry that let an idle fresh queue become a surprise.
+
+    `drain` priced the fresh backlog in runs and dollars and gave re-judgment
+    a bare count, so the one queue that can take the whole run was the one
+    with no bill attached. Reading this before a deploy is what turns today's
+    finding into a number somebody can decline.
+    """
+    drain = INTERPRET[INTERPRET.index("def drain()"):]
+    assert "rejudge_runs" in drain, "the sweep needs a run count like the drain's"
+    assert "rejudge_depth * per_claim" in drain, (
+        "and a dollar figure, priced the same way the backlog's is")
+
+
+def test_the_dry_run_splits_the_sweep_into_what_it_buys():
+    """Depth alone cannot say whether a sweep is worth its cap."""
+    drain = INTERPRET[INTERPRET.index("def drain()"):]
+    assert "rejudge_known" in drain
+    assert "changed mind" in drain
 
 
 # ------------------------------------------------------ against a real server
@@ -357,6 +448,58 @@ def due(db, sha):
         "%s", f"'{sha}'", 1).replace("%s", "100")
     out = db(f"select id from ({sql}) q")
     return [int(line) for line in out.splitlines() if line]
+
+
+def due_in_order(db, sha):
+    """The trigger's own query, unwrapped, so the row order is the real one.
+
+    `due` wraps the query in a subselect, which is fine for membership and not
+    for sequence: an outer select over a subquery is not promised to keep its
+    ordering. This one reads the first field of each row of the query itself.
+    """
+    sql = interpret_module().REJUDGE_QUEUE_SQL.replace(
+        "%s", f"'{sha}'", 1).replace("%s", "100")
+    out = db(sql)
+    return [int(line.split("|", 1)[0]) for line in out.splitlines() if line]
+
+
+def test_the_sweep_reads_a_changed_mind_before_the_backfills_bookkeeping(corpus):
+    """The ordering, against the corpus the backfill actually recovered.
+
+    Claim 20 drew an edge under September, so its sha is in `claim_links` and
+    the backfill recovered it: October reading it again is the measurement
+    ADR-10 asked for, because the two verdicts are comparable. Claims 10 and
+    30 have no sha to recover and sit under `unknown`, so reading them buys
+    a row and not a comparison.
+
+    All three are due and all three terminate. What this pins is which ones a
+    capped run buys when it cannot buy them all, and it stopped being a free
+    choice on 2026-10-25, when the fresh queue went to 0 and the sweep started
+    taking whole runs instead of none.
+    """
+    assert due_in_order(corpus, OCT)[0] == 20, (
+        "the claim with a comparable prior verdict is the one worth the slot")
+    assert sorted(due_in_order(corpus, OCT)) == [10, 20, 30], (
+        "ordering must not drop anything that was due before it"
+    )
+
+
+def test_the_sweep_still_reaches_a_claim_with_no_judgment_row_at_all(corpus):
+    """The left join, proved rather than asserted on the query text.
+
+    A claim interpreted by an image older than `claim_judgments`, running
+    after the backfill, has `interpreted_at` set and no row. An inner join
+    would make it unreachable by the one job that would ever give it one.
+    """
+    corpus("insert into claims (id, paper_id, claim, embedding, interpreted_at) "
+           "values (50,'p2','Judged by an image that predates the table.',"
+           "array_fill(0.5::real, array[1024])::vector, '2026-10-01 10:00+00')",
+           tuples=False)
+    assert corpus("select count(*) from claim_judgments where claim_id = 50") == "0"
+    order = due_in_order(corpus, OCT)
+    assert 50 in order, "a claim with no pass recorded is still owed one"
+    assert order.index(50) > order.index(20), (
+        "and it sorts with the unknowns rather than ahead of a changed mind")
 
 
 def test_the_backfill_recovers_the_sha_from_the_edges(corpus):

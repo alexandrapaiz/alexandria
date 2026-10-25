@@ -21103,3 +21103,62 @@ run since the backfill and the oracle repair is still unverified rather than
 working. The closing condition is unchanged: one refused board row with `turns`
 well above one, started after 2026-10-24T23:09:34Z, carrying the provider
 sentence.
+## INC-2026-10-25-the-engineer-lane-was-rediscovered-as-owner-blocked-for-the-second-run-running — the finding was recorded twice in surfaces nothing reads at the moment it would save a run (2026-10-25, engineer seat, message wake)
+
+**What happened.** This seat was woken with "continue with the next item in
+your lane on the board". The lane holds four cards in `This sprint`. All four
+close with a hand this seat does not have: re-enabling the Modal workspace,
+a Modal token for `modal deploy`, a Modal token for
+`weekly.py::resend`, and three `POLAR_CHECKOUT_*` values in the site's
+environment. Establishing that cost several turns of reading card bodies and
+checking them against `/api/delivery`.
+
+The run of 2026-10-24 did exactly the same thing. Its run note,
+`docs/agents/engineer-run-note-2026-10-24-shallow-deploy.md`, opens with a
+four-row table of the same four cards and the same conclusion, card id by card
+id. The run before that took the charter's fallback for the same reason, and
+said so in `docs/ideas.md`.
+
+**Why it repeated.** The finding was recorded. It was recorded in a run note
+and in the ledger, and neither of those is read at the moment it would help.
+The moment it would help is the first minute of a run that has just been told
+to go to the board, and the thing that run reads is the board. The card says
+what is wrong and what closes it. Nothing on the card says that a seat has
+already been here, verified the block, and found nothing it could do, so the
+next run has no way to tell a card nobody has looked at from a card two runs
+have each looked at carefully.
+
+This is the class the charter already names for pull request bodies: "the
+first two instances were written up carefully in pull request bodies, which
+nothing sweeps, so the third seat rediscovered the class from scratch"
+(`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`).
+Run notes are the same shape of surface and this is the same failure against
+them.
+
+**What the cards also show, which is the second half of the cost.** Two of the
+four assert specific facts that are no longer true, while their conclusions
+remain correct. `Deploy: weekly is not running main, still on 0cbc51a0e248`
+names a digest production left on 2026-10-19: weekly now records
+`2e313065f5c7`. `Press: no issue for 2026-W41` says "the newest issue on
+record is 2026-W40", where `/api/delivery` reads `2026-W42`, created
+2026-10-19. Both conclusions still hold and both numbers mislead, in opposite
+directions. Weekly is further behind than its card says: it has drifted again,
+to a main this run computed as `8452336438d9`, and so have the other four
+apps. The press is less behind than its card reads: the 2026-W41 gap the card
+names is real and still open, but 2026-W42 shipped on 2026-10-19 and a reader
+who takes "the newest issue on record is 2026-W40" at face value concludes the
+press has been silent for three weeks when it has been silent for one. The
+next issue, 2026-W43, is due tomorrow morning into a workspace that is still
+off.
+
+**What would fix it.** Not another document. A card that a seat has verified
+as blocked should carry that verification, with its date and what was checked,
+so the next run reads it in the first surface it opens. This seat can post to
+the board, so this is buildable rather than an ask. Filed as a ledger entry
+for the owner rather than built today, because changing what a seat writes
+onto another duty's alarm cards touches the ExO's surface as much as this one.
+
+**Not filed as new:** the deploy drift itself. The run of 2026-10-24 measured
+it, named the shallow-clone cause behind the `unknown`, and that work sits in
+the board's `Review` column as "The deepening fetch landed the history and
+reported a failure".
