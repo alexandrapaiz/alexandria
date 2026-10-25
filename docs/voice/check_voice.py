@@ -597,8 +597,10 @@ def measure(paths=None):
                   "above")
             print("    cannot see it, because paragraphs and one standalone line "
                   "are two.")
-            if not off:
-                rc = 1
+            print("    `devices` is the command that holds this. This one "
+                  "measures and reports,")
+            print("    because its exit code is the character gate's and is "
+                  "read by a test.")
         # The colon count, with its specimen and the law it detects. `axes`
         # returns this as a bare number and `measure` printed nothing at all,
         # so the one ruling the owner has had to give TWICE arrived at a grade
@@ -635,6 +637,56 @@ def measure(paths=None):
     print()
     print("Every figure above is printed under the path it was measured on.")
     print("A grade quotes it with that path or does not quote it (ban list 91).")
+    return rc
+
+
+def devices(paths=None):
+    """Canon law 14's two named devices, as an exit code of their own.
+
+    This is deliberately not folded into `measure`. That command's exit code
+    means one thing, which is the character gate, and
+    `tests/test_voice_enforcements.py` asserts on it by name. A second meaning
+    on one return value makes the test report a cause that is not the cause,
+    which is L-A44 in docs/standards/lessons.md, and the first version of this
+    check did exactly that: the test said a served issue carried an em dash
+    about an issue whose em dash count is zero.
+
+    Why these two of the three devices. A list where results are parallel and a
+    written turn inside a long section are the two no furniture can fake. The
+    third, a person on the page, is a reading. The canon describes the reprint
+    the owner rejected in exactly these terms, "no list, no subheading inside
+    any section, one shape".
+    """
+    retired = hidden_weeks()
+    paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    rc = 0
+    for p in paths:
+        p = pathlib.Path(p)
+        if not p.exists():
+            print(f"{p}: missing")
+            rc = 1
+            continue
+        t = p.read_text(encoding="utf-8")
+        paras = [x for x in re.split(r"\n\s*\n", t) if x.strip()]
+        kinds = shapes([b for b in paras if written_here(b)])
+        try:
+            shown = p.resolve().relative_to(ROOT)
+        except ValueError:
+            shown = p.resolve()
+        off = p.stem in retired
+        have = [k for k in ("list", "turn") if kinds.get(k)]
+        if off:
+            print(f"  SKIP    {shown}  retired, not served")
+        elif have:
+            print(f"  OK      {shown}  carries {' and '.join(have)}")
+        else:
+            print(f"  FAIL    {shown}  no list and no written turn")
+            rc = 1
+    print()
+    print("Law 14 names three devices as required rather than available, and")
+    print("two of them are shapes. A pass here is not a verdict on whether the")
+    print("issue is enjoyable, which stays a reading. A failure is a verdict,")
+    print("because the one-shape page is the state she read and rejected.")
     return rc
 
 
@@ -3207,7 +3259,7 @@ def main():
     paths = sys.argv[2:]
     rc = 0
     takes_paths = {"measure", "links", "delivery", "compare", "firstuse",
-                   "generator", "specimens", "standalone"}
+                   "generator", "specimens", "standalone", "devices"}
     # `enforcements` takes a git ref rather than a path, because ban list 105
     # is about the file the press runs and that file is only reachable through
     # the commit the deploy was built from.
@@ -3227,6 +3279,7 @@ def main():
                      ("generator", generator),
                      ("specimens", specimens),
                      ("standalone", standalone),
+                     ("devices", devices),
                      ("routed", routed),
                      ("blockrules", blockrules),
                      ("compare", compare), ("selfcheck", selfcheck)):

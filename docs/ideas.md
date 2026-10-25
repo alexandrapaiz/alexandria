@@ -19782,6 +19782,11 @@ has nothing to go red against.
 - Status: proposed
 
 ### 2026-10-24 — ESCALATED, thirty days: two word-boundary bugs in the pre-send gate, one of them firing on the owner's own mandated close (writer seat, run 49, for the engineer)
+- Trigger: run 48 of this seat rediscovered two defects that had been filed a
+  month earlier and described them again as new, and run 49 then measured what
+  they cost on the only issue the gate has ever read. Both contract fields on
+  this row were written by run 50, which found the row one over the ledger
+  test's own ceiling when it merged this branch.
 - This is not a new entry and it is deliberately not written as one. The
   finding was filed on 2026-09-24 in **2026-09-24 — The quality gate passes the
   issue the owner rejected (writer seat, for the engineer)**, items 2 and 3,
@@ -19790,6 +19795,13 @@ has nothing to go red against.
   incident register's standing rule is that a repeat is escalated rather than
   filed a fourth time, so this row escalates and the 2026-09-24 entry stays the
   filing.
+- What: anchor the four word lists in `tools/check_digest_quality.py` on their
+  left edge, so a listed word matches a word rather than a substring of one.
+  `INTENSIFIERS` is the only one that collides with real English today and it
+  collides with this product's vocabulary, so it is the one that has to move.
+  The contract field is written in this run rather than run 49's, because the
+  entry reads as an escalation of a filing that already carries its own `What`
+  and the ledger's own test counts fields per entry (writer run 50).
 - What has changed is that the cost is now measured rather than argued.
   `tools/check_digest_quality.py` on `site/content/issues/2026-W39.md`, the
   only issue the gate has ever read, returns **7 warnings, and 2 of the 7 are
