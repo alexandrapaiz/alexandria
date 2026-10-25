@@ -3642,3 +3642,47 @@ gap that the same collision had left empty (incident 25).
     ```
     LANDED docs/voice/check_voice.py: "no issue tells a reader what they have been doing"
     ```
+
+137. The trim that keeps a rule's body and takes the line that made it a rule.
+    This is a tell in the governing file rather than in an issue, which puts it
+    beside entries 130 and 136. All three are about the text that writes the
+    text, and this one is the only one where the damage is an absence, so there
+    is nothing to quote and nothing to grep for.
+    The shape. A rule in `prompts/digest.md` is a bullet: a bolded opening line
+    that says what the rule is, then the body that says how to obey it. A pass
+    that removes the specimens underneath such a rule can take the opening line
+    with them, because the specimens are what the opening line introduces. What
+    is left is the body, indented, welded to the end of whatever rule came
+    before it, starting mid-sentence in lower case. It reads as a continuation
+    of the rule above and it is a different rule.
+    Two specimens, both in this seat's own commits, and both were live on
+    `main` when this entry was written. `acb4474d` left canon law 6's evidence
+    grade as "clause inside the item's own prose, not a footnote and not a
+    separate line." hanging off the count-the-links rule. `62b00f2b` left canon
+    law 12's final heading gate as "something: every line beginning with `#`"
+    hanging off the attribution rule. The second is the harder loss, because
+    that gate is the one that stops the framework's internal names reaching a
+    reader, which is the ruling the owner has given twice.
+    Why the trimming rule produces it rather than carelessness. The canon's
+    section on the generator's weight says a run that adds tokens removes at
+    least as many, and it says what the trimming may take: the argument for the
+    rule, the dates, the account of which print produced which clause. Every
+    one of those sits in the body of a bullet. So the pass that obeys the rule
+    is working inside bullets all day, and the opening line is one line above
+    the thing it is allowed to delete.
+    The tell, as a question to ask of a diff rather than of prose. Does every
+    line this pass removed belong to a rule that still has its own opening
+    line? A trim is the one kind of edit that cannot be checked by reading what
+    is left, because what is left reads like prose.
+    Added 2026-10-25, writer run 50. Enforced by a command, because this is the
+    class that reading cannot catch and because the gate that existed for edit
+    damage was reading the opposite direction:
+    ```
+    python3 docs/voice/check_voice.py generator
+    ```
+    `truncations` reads the line a cut landed on, so it skips any line ending
+    in a full stop and could never reach this pair. `headless` is the same
+    defect from the other side, in the same gate, with nine cases pinning it.
+    ```
+    LANDED docs/voice/check_voice.py: "rules whose own opening line was cut"
+    ```
