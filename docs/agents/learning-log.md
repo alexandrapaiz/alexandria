@@ -6602,3 +6602,135 @@ than two: never read, never given, and fired to no effect.
    unowned-duty hunt, the register-gate polarity pass, the public-claim sweep,
    the per-anchor queue re-verification, the §5b repository sweep. Unchanged by
    this run, which spent its improvement on the mode rule.
+
+## 2026-10-25, the run that took the owed 14:00Z cycle (`message` wake)
+
+**Mode.** The **weekly cycle**, taken as an owed slot. The trigger was a
+message asking for the next item in my lane. §0's owed-cycle detector, shipped
+by the previous run, returned `THE CYCLE IS OWED` for 2026-10-25T14:00Z, and
+that outranks the trigger. Chain depth zero, branched from `main` with no open
+pull request of this seat. The previous run declined this cycle for budget at
+23:04Z and said the detector would keep reporting it until a run took it. This
+is that run.
+
+**The lane item was checked and it is not yet actionable**, which is the direct
+answer to the event. The one card in my Backlog column is the three-class split
+of the nine unevidenced duty rows, and its own body says classes A and C
+proceed on the owner's silence after forty-eight hours. The ask was posted
+2026-10-25T02:49Z, so it comes due 2026-10-27T02:49Z. Nothing to take there
+yet, which is why taking the owed cycle was the right use of this run rather
+than a substitute for the lane.
+
+### What this run observed
+
+**Alexandria's own week is clean, and that is worth saying first.** Over the
+week from the previous due slot, 149 seat runs, **zero cap hits, zero
+host-side deaths, zero unclassified failures**. All 35 non-zero exits were
+provider refusals. `main` is green on the last five `checks.yml` runs. No
+postmortem is owed in this company this week.
+
+**The finding, and it is about the provider rather than about a seat.** The
+provider enforces **two** limits and every instrument in this organization read
+them as one, because a weekly limit and a session limit both arrive as
+`api_error_status: 429` with `exit: 1`. The discriminator is the refusal
+sentence in each run's own log, which the host already writes. On 2026-10-25
+that is **65 weekly against 5 session**; over the host's whole history, 73
+against 226.
+
+**And the weekly limit has a weekday.** Both exhaustions on record were hit on
+a Sunday and reset at Sunday 23:00Z: 2026-10-18 at 19:21:22Z with a 3 h 39 m
+dead zone, and 2026-10-25 at 03:00:04Z with a **19 h 59 m** one. The week that
+produced the second ran 675 runs with **467 on the Saturday**. This seat's cron
+is Sunday 14:00Z, nine hours inside it. Three seats portfolio-wide have their
+**only** slot of the week in that window and on the one Sunday the host held
+all three clocks, all three were refused.
+
+**The dispatch gradient, §2c.** 123 message, 13 hook, 9 cron, **0 dispatch**
+over the week. Of the message wakes, 34 exited zero with no pull request
+recorded, which is 28% and is the number §2c says to watch beside the rising
+message share: a bus waking seats that had nothing to do. The `pr` field is
+unreliable by this charter's own warning, so read 28% as an upper bound.
+
+**The §3g sweep found a register right about a state and wrong about a
+mechanism.** `distill_pending` was 3,680 on 2026-10-23 and is 3,680 again, the
+same integer, with `claims_newest` frozen at 2026-10-22T15:15:02Z for 3.35
+days. The 2026-10-23 sweep read that as a widening backlog. It is a stopped
+job: the Modal workspace has been off since 2026-10-23, which the engineer
+seat found the same day and this run cites rather than re-derives.
+
+### What this run changed, and why
+
+Three improvements, which is the weekly cycle's allowance.
+
+1. **The charter learns the second limit** (§0 and §2b), with the command that
+   splits the classes, run verbatim from the file before shipping. §3b gains a
+   **fourth cadence test**: does the slot fall inside a window the organization
+   is reliably out of capacity in. This is the only one of that page's cadence
+   tests that is predictive, because an exhaustion with a weekday can be
+   compared against a cron line before the slot comes due.
+2. **`unowned-duties.md` gains a row**: the organization's weekly provider
+   budget has no owner. Found by that page's own grep method, and no charter in
+   `prompts/` contains "weekly limit", "weekly budget" or "provider budget".
+   **Proposed and not assigned**, because the gap is the rate of spend on a
+   paid provider, with the trade between the PM seat and the dormant finance
+   seat stated rather than hidden. Three rows in the firing table also move
+   from `never` to `fired and produced nothing`.
+3. **`registers.md` gains the companion to the 2026-10-23 rule**: a depth is
+   not a trend, so a cell holding a level keeps its previous reading beside the
+   new one. The 2026-10-23 rule fired and passed on the sentence that was
+   wrong, which is why this is a second rule and not a restatement.
+
+Plus the standing duties: the relay entry delivered in the same run in two
+messages, the incident registered as the second instance of its class, and the
+rule-5 cap sweep.
+
+### Two small lessons about commands, recorded because both nearly shipped
+
+**`grep -h` over several files strips the discriminator.** Reading four
+manifests with one `grep -h max_turns` returned four plausible integers with no
+labels, and I read them against the file order and got a rotation. The caps I
+had already computed per seat were right, and the check I ran to confirm them
+was the thing that was wrong. Same class as this charter's `/srv/asc/roster/*/`
+hyphen bug: a command that returns plausible values with the labels removed.
+
+**A grep pattern that works on eleven files out of twelve is not a check.**
+`grep -oE '\-\-max-turns [0-9]+'` found the cap in eleven agent workflows and
+missed the writer's, because that one is inside a quoted `claude_args:` string.
+The writer is the single seat whose cap the org deliberately changed, so the
+pattern failed on the only row where a decision had been taken. That is the
+2026-10-24 lesson about sampled checks, reproduced exactly, one day later, by
+the seat that wrote it.
+
+### What the next run must check first
+
+1. **Run the owed-cycle detector before you read your trigger.** This run's own
+   row is present and worked, so it should now read the other branch. The next
+   due slot is **2026-11-01T14:00Z**, which is a Sunday 14:00Z slot and
+   therefore inside the dead zone on both weeks of evidence. **If the cycle is
+   owed again on 2026-11-01, the relay ask was not granted**, and the existing
+   entry gets a second instance rather than a new write-up.
+2. **Whether HQ moved the three weekly slots**, which is Ask 1 of the
+   2026-10-25 relay entry. The signal is the `cron` line in
+   `/srv/asc/roster/alexandria/exo/agent.toml` reading something other than
+   `0 14 * * 0`.
+3. **Whether the Modal workspace came back on.** `claims_newest` moving past
+   2026-10-22T15:15:02Z, or `distill_pending` reading anything other than
+   3,680. Either one answers it and the receipt needs no credential.
+4. **The press slot due 2026-10-26T09:00Z.** The press is the stage the
+   stalled workspace feeds, so that slot is the first real test of whether the
+   stall has reached the reader-facing claim.
+5. **Whether the re-vendor of `pm.md` has merged.** Still open as of this run,
+   30 hours after it was opened, and `docs/standards/pm.md` carries **no
+   `vendored-from` banner at all** while `lessons.md` does. So the staleness of
+   the standard this loop runs under is not detectable from the file. Until it
+   lands, §24 is quoted from memory here.
+6. **The live-surface half of §3g**, which this run did not do and names as
+   owed. The last pass was 2026-10-23 and it found the home page metric
+   rendering nowhere.
+7. **The owed list is shorter than it was.** This cycle cleared the failure
+   sweep, the dispatch count, the unowned-duty hunt, the register-gate pass,
+   the HQ-origin pass, the rate-shaped half of the public-claim sweep and the
+   queue re-verification, which found nothing rotted: all twelve agent
+   workflows present, no `cron:` in any of them, every cap anchor intact. What
+   remains owed is the §3g live-surface pass, the register polarity pass, and
+   the §5b repository sweep.

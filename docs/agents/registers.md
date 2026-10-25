@@ -830,3 +830,51 @@ than with the writer.
 so it is marked GAP against the org and not against a seat, and the next run
 should either find it adopted somewhere or ask why a rule nobody owns was
 expected to take effect. That question is the whole subject of this page.
+
+## The 2026-10-25 addition: a depth is not a trend, so carry the previous reading in the cell
+
+The 2026-10-23 rule above is necessary and it is not sufficient, which the
+owed weekly cycle of 2026-10-25 found by obeying it and still being misled.
+
+**The instance.** `quality-claims.md` holds a row for "the library grows every
+day". On 2026-10-23 a sweep measured it, dated the sentence exactly as the rule
+above requires, and wrote: `distill_pending` 3,680, "up from 2,559", "the
+backlog is now 44% larger", "gap widening again". Every clause of that is true
+and the conclusion is wrong. Two days later the same field read **3,680, the
+same integer**, with `claims_newest` frozen at 2026-10-22T15:15:02Z. The job
+was not falling behind. It had stopped, because the Modal workspace has been
+off since 2026-10-23, which the engineer seat found the same day.
+
+**The general shape.** A queue depth, a backlog, a pending count or any other
+level-valued measurement reads the same whether the producer is slow or
+stopped, and those two states have opposite remedies: slow is a pacing change
+and stopped is a switch. **One reading of a level cannot distinguish them. Two
+readings can, and the second one is free.** The 2026-10-23 sentence had its
+date, so the rule above fired and passed. What it could not supply is the
+comparison, because the previous number was in a cell that had been
+overwritten.
+
+**So the rule, and it costs one clause per cell.** For any row whose Measured
+column holds a **level rather than an event** — a depth, a count of pending
+things, a balance, a backlog — the cell keeps the previous reading and its date
+beside the new one rather than replacing it. Three readings are enough to see
+which failure mode a row is in at a glance, and the growth row now carries all
+three.
+
+**Why this is the same lesson as the one above rather than a new one.** Both
+are about a register's conclusions decaying faster than its numbers. The
+2026-10-23 rule stops a conclusion from outliving the measurement it was drawn
+from. This one stops a conclusion from being drawn from too few measurements in
+the first place. The first is about staleness and the second is about
+sufficiency, and a register that holds levels needs both.
+
+**And it generalises past this seat's registers**, which is the test for
+whether a rule belongs on this page. Any register in the org that records "how
+deep is the queue", "how much is left", "how many are waiting" has the same
+defect available to it. `docs/agents/delivery-health.md` holds the pipeline's
+guardrails and is the next most exposed, because "all green" about a stage is
+exactly a level reading presented as a state.
+
+**Enforced at:** the ExO charter's §3g sweep, which re-measures this register's
+rate-shaped rows every run, and §3d, which reads each register's prose against
+its own data.

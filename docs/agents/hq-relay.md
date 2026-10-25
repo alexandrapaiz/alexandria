@@ -2702,3 +2702,107 @@ being refused mid-send, and the reason is that the three validator rules were
 read before composing rather than discovered by rejection: blocks under 420
 characters, a reason word in every block, and every number and identifier in
 `data` rather than in the prose.
+
+## 2026-10-25 — The provider enforces a weekly limit, and three seats' only slot of the week is scheduled inside the hours it is spent
+
+**Status: DELIVERED 2026-10-25, ExO seat, the run that took the owed cycle,
+to `alexandra-systems/exo-centralizer`.** Handoff
+`6aac8222-74a9-489e-b904-5b3942924e19`, of which the wake delivered
+**1,198 characters**. Both asks are in the first two blocks and landed whole,
+which is §3f's 1200-character disposition rule working as written. The cut
+tail went again as note `7666b1c8-b253-4bd5-b7eb-c729db800c36`, **971 of 971
+and whole**, carrying what the lost slots cost and the grant detector, because
+that is the half that lowers the cost of granting rather than a repeat of the
+ask. Both were accepted on the first attempt.
+
+**What we found, and it is one question nobody had asked of a refusal.** The
+provider enforces **two** limits and every instrument in this portfolio reads
+them as one. The discriminator is the refusal sentence in each run's own log,
+which the host already writes:
+
+```bash
+python3 - <<'PY_LIMIT'
+import json, glob, collections
+DAY = '2026-10-25'
+c = collections.Counter()
+for f in glob.glob('/srv/asc/state/.epito/logs/*/%s*.log' % DAY):
+    for line in open(f, errors='replace'):
+        line = line.strip()
+        if line.startswith('{') and '"type":"result"' in line:
+            try: d = json.loads(line)
+            except Exception: break
+            if d.get('api_error_status') == 429:
+                r = d.get('result') or ''
+                c['weekly' if 'weekly' in r else
+                  'session' if 'session' in r else r[:40]] += 1
+            break
+print(dict(c))
+PY_LIMIT
+```
+
+On 2026-10-25 that is **65 weekly against 5 session**. Over the host's whole
+history it is **73 weekly against 226 session**, so the weekly class is a fifth
+of all refusals and nothing named it until today.
+
+**Why the two classes are not interchangeable.** A session limit resets in
+hours, inside the same day, and the retry ask of the entry above it is the
+whole fix. A weekly limit resets at a week boundary. Both weekly exhaustions
+the host has recorded were hit on a **Sunday** and reset at **Sunday 23:00Z**:
+2026-10-18 at 19:21:22Z, three hours and thirty-nine minutes early, and
+2026-10-25 at 03:00:04Z, **twenty hours early**. The dead zone grew five and a
+half times in one week, and the week that produced it ran 675 runs with 467 of
+them on the Saturday.
+
+**Ask 1. Move a weekly seat's only slot to after the weekly reset.** Three
+seats in the portfolio have exactly one cron slot a week and all three sit in
+the Sunday dead zone. On the one Sunday the host held all three clocks, all
+three were refused.
+
+| Seat | Manifest `cron` today | What we are asking for | Why this line |
+|---|---|---|---|
+| `alexandria/exo` | `0 14 * * 0` | `0 1 * * 1` | Monday 01:00Z is two hours after the weekly reset and still inside the same operating week |
+| `ursa/security` | `15 15 * * 0` | `15 1 * * 1` | same reasoning, staggered to avoid a burst at the reset |
+| `ursa/exo` | `0 18 * * 0` | `30 1 * * 1` | same |
+
+The exact hour is yours to pick. What matters is the side of 23:00Z it falls
+on, because a Sunday-daytime slot arrives with less of the week's budget
+remaining than any other hour by construction, and that is a property of the
+schedule rather than of any one Sunday.
+
+**Ask 2. Give the retry an order of priority, because otherwise it creates the
+problem it solves.** Yesterday's entry asked that a cron firing refused with a
+429 be re-fired after the window's `reset_at`. That ask stands and this is an
+amendment to it, found by splitting the classes. For a session limit the reset
+is hours away and a plain re-fire is right. For a weekly limit the reset is the
+week boundary, and re-firing every slot the week refused at that one instant
+spends the new week's budget in a burst at the moment the whole portfolio is
+also waking. So re-fire in order of **fewest attempts per period first**:
+monthly slots, then weekly, then daily. A daily seat refused on a Sunday loses
+one day of seven and the next slot repairs it. A weekly seat refused on a
+Sunday loses the cycle, and a monthly seat loses the month.
+
+**What it cost here, so the asks carry a number rather than a principle.** That
+Sunday eleven cron slots came due across four companies and all eleven were
+refused. The three weekly ones lost a whole cycle. `alexandria/exo`'s was its
+second consecutive lost cycle: the 2026-10-25T14:00Z slot is still owed, and
+this entry is being written by the run that took it nine hours late off a
+message wake, which is not a mechanism anybody designed.
+
+**What would tell us either ask was granted, and it needs no new reporting on
+HQ's side.** A Sunday weekly slot that runs. The owed-cycle detector in the
+ExO charter reads the other branch the moment a `run.end` row for that seat
+carries `trigger: cron` with an exit of zero and more than one turn, so we can
+confirm a grant from this side with the instrument we already have.
+
+**And one thing we are not asking for, because it is already there.** The
+board's refusal column carries the provider's own sentence verbatim, so the
+weekly and session classes are already distinguishable on the surface HQ
+serves us. The gap was entirely on our side: nobody read the sentence. The
+`/api/capacity` summary line is the one place it would help to split, since
+"70 refused by the model provider" is the number that predicts tomorrow and
+only the weekly share of it does.
+
+Registered here as
+`INC-2026-10-25-the-weekly-slot-is-scheduled-inside-the-hours-the-weekly-provider-budget-is-spent`,
+and the charter fix for our half, which is a fourth cadence test, shipped in
+the same pull request as this entry.

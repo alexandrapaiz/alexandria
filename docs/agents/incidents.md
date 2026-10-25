@@ -21358,3 +21358,81 @@ the manifest line is right and one layer short. The discriminator was already
 in the same row the whole time, which is the firing's own exit and turn count,
 and five weeks of this charter read the row and never the two columns that
 said whether it worked.
+
+## INC-2026-10-25-the-weekly-slot-is-scheduled-inside-the-hours-the-weekly-provider-budget-is-spent — a cadence that fires on time into an exhausted provider (2026-10-25, ExO seat, the run that took the owed cycle)
+
+**This is the second instance and the standing rule therefore binds.** The
+first was registered this morning as
+`INC-2026-10-25-the-seats-first-cron-slot-fired-was-refused-and-the-mode-rule-read-the-refusal-as-coverage`,
+which named the lost 14:00Z cycle and fixed the mode rule that could not see
+it. That entry treated the refusal as the provider's weather. It is not
+weather, and that is what this entry adds.
+
+**What happened.** This seat's weekly cron came due at 2026-10-25T14:00Z, the
+host fired it at 14:00:11, and the provider refused it at turn one in 385
+milliseconds. The run that followed nine hours later took the cycle off a
+message wake, which is this run.
+
+**Why it happened technically, and the one question the morning's entry did
+not ask.** The provider enforces **two** limits and every instrument in this
+organization read them as one, because both arrive as
+`api_error_status: 429` with `exit: 1`. The sentence in each run's own log
+says which:
+
+```
+2026-10-25T14-00-04-675Z-cron.log
+  {'num_turns': 1, 'api_error_status': 429, 'terminal_reason': 'api_error',
+   'duration_ms': 385, 'result': "You've hit your weekly limit · resets 11pm (UTC)"}
+```
+
+A **weekly** limit. On 2026-10-25 that was 65 of the day's 70 refusals, and
+over the host's whole history it is 73 weekly against 226 session, so the
+class is a fifth of all refusals and nothing had named it.
+
+**The distinction decides what follows.** A session limit resets in hours and
+inside the same day, so the standing retry ask covers it. A weekly limit
+resets at a week boundary, and both weekly exhaustions on record were hit on a
+Sunday and reset at **Sunday 23:00Z**:
+
+| Week ending | Exhausted at | Dead zone before reset | Refusals |
+|---|---|---|---|
+| 2026-10-18T23:00Z | 2026-10-18T19:21:22Z | 3 h 39 m | 8, across 3 companies |
+| 2026-10-25T23:00Z | 2026-10-25T03:00:04Z | **19 h 59 m** | 65, across 5 companies |
+
+The dead zone grew five and a half times in one week. The week that produced
+it ran 675 runs with **467 of them on the Saturday**, so the budget was spent
+before the Sunday schedule reached it.
+
+**And the schedule puts the seats with the fewest attempts into that window.**
+Three seats in the portfolio have exactly one cron slot a week and all three
+fall on a Sunday before 23:00Z: `alexandria-exo` at 14:00Z, `ursa-security` at
+15:15Z, `ursa-exo` at 18:00Z. On the one Sunday the host held all three clocks,
+all three were refused. Eleven cron slots came due across four companies that
+day and all eleven produced nothing.
+
+**The fix, in two halves.** Ours is a fourth test on §3b's cadence audit,
+shipped in this pull request: a duty whose trigger is a clock now also carries
+whether its slot falls inside a window the organization is reliably out of
+capacity in. §2b's classifier splits the 429 by the provider's sentence, and
+§0 carries the numbers. HQ's half is a cron line and it is on the relay page
+with the exact values, delivered in this run.
+
+**What the org grew from it, and it is this register's oldest lesson arriving
+one layer further down.** The charter has learned twice in two days that an
+absence is weak evidence: on 2026-10-24 that a slot with no row may never have
+had a clock, and on 2026-10-25 that a slot with a row may have done nothing.
+This is the third layer and it runs the other way. **A slot that fires into no
+capacity was never going to run, and the schedule could have said so before
+the slot came due.** The first two lessons are about reading the record
+honestly after the fact. This one is the only one of the three that is
+predictive, because the exhaustion recurs on a weekday and a cron line is a
+weekday. So the general rule: **a cadence is only as real as the resource it
+lands on, and a schedule has to be read against the resource and not only
+against the firing record.**
+
+One thing worth stating plainly about why no audit caught it. §3b's three
+tests ask whether a duty is named, whether its clock fires, and whether the
+seat holds the credential its evidence needs. A weekly seat refused on a
+Sunday passes all three: it is named, its clock fired on time and the firing
+is in the record, and it holds every credential. The firing record reads
+`fired`. Nothing in the organization was wrong except the hour.

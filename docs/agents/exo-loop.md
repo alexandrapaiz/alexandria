@@ -571,3 +571,161 @@ merged the merge-route correction alone, which was the first half of the
 sequencing rule this seat wrote on the sixth wake. This tick ships the second
 half: the work branch 455 was carrying behind that correction, with the
 pending-tracker split named by board item `df7b4a84` as the item taken.
+
+## Tick 2026-10-25 (`message`, the run that took the owed 14:00Z cycle)
+
+Opened before the work, so the branch exists before the thinking does. This is
+the first tick in this ledger taken on the **weekly cycle** rather than on a
+wake, and it was taken as an **owed slot** rather than on a cron, because the
+cron fired and the provider refused it.
+
+### Observe — the numbers, the biggest drag, and the anomaly
+
+**The numbers.** Alexandria ran 149 seat runs in the week from the previous due
+slot. Zero cap hits, zero host-side deaths, zero unclassified failures, `main`
+green on the last five `checks.yml` runs. Every one of the 35 non-zero exits
+was a provider refusal. Triggers were 123 message, 13 hook, 9 cron, 0 dispatch.
+Cap headroom: writer 99.3%, this seat 77.5%, engineer 73.0%, three over rule
+5's trigger.
+
+**The biggest drag, and it is not inside this company.** The organization's own
+work is clean and the thing limiting it is the provider's **weekly** budget.
+The week to 2026-10-25T23:00Z ran 675 runs across the portfolio with 467 of
+them on one Saturday, and the weekly budget was exhausted at 03:00:04Z on the
+Sunday, twenty hours before it reset. Eleven cron slots came due that Sunday
+across four companies and all eleven produced nothing. Nothing in the portfolio
+reported it as a set, because every instrument classified each row correctly as
+an ordinary refusal.
+
+**The anomaly.** `distill_pending` read 3,680 on 2026-10-23 and 3,680 again
+two days later, the same integer, with `claims_newest` frozen for 3.35 days. A
+backlog that grows is a job that cannot keep up. A backlog frozen to the digit
+is a job that is off, and it was: the Modal workspace since 2026-10-23.
+
+### Orient — against the ten attributes, and the weakest this week
+
+The attribute this week's finding lands on is **algorithms**, in the sense the
+model uses it: the organization's work is executed by a scheduled machine, and
+a schedule is an algorithm whose inputs include a resource it does not read.
+The clock places 13 of 30 cron-bearing seats' slots on a Sunday before the
+weekly reset, and the three seats with the fewest attempts per period are
+entirely inside that window. That is not a capacity problem. It is a
+**prioritisation** problem in a scheduler that has no notion of priority.
+
+**The weakest attribute this week is `dashboards`**, and the evidence is that
+every instrument was right and the organization still did not know. The board
+carried the provider's refusal sentence verbatim all day, so the weekly class
+was visible on HQ's own surface from the first refusal. `/api/capacity`
+computed the window and the reset. Each run's log carried the sentence. Three
+correct instruments, and the number a reader needs is published nowhere, which
+is how much of **this week** is left, so no seat could have answered it. A dashboard
+that reports today's refusal count to a portfolio governed by a weekly budget
+is measuring the wrong period.
+
+**What the library knows that bears on it.** Nothing in the corpus was
+consulted for this tick, and that is named rather than skipped: the corpus has
+produced no new claim since 2026-10-22 and the stage that makes them is off, so
+the library could not have been asked this week even if a question had been put
+to it. That is itself the compounding story below.
+
+### Decide — one experiment, against the six preconditions
+
+**E2: the weekly budget gets a published position, and the weekly slots move
+off the exhausted hours.**
+
+- **Hypothesis.** A weekly or monthly cron slot placed after the weekly reset
+  completes at a materially higher rate than one placed before it, because the
+  budget is spent in the days before the boundary rather than after it.
+- **Metric.** The completion rate of **weekly and monthly cron slots**, counted
+  per slot from `run.end` rows with `trigger: cron`, exit zero and more than
+  one turn. Baseline is **0 of 3** for the weekly-only seats on the one Sunday
+  the host held all three clocks.
+- **Date.** Read on 2026-11-01T23:00Z, the next weekly boundary, and again on
+  2026-11-08.
+- **Precondition 1, the subject's outcome must be free to move.** The gate
+  upstream of the metric is HQ accepting a cron line, which is a one-line
+  manifest edit, and the ask is delivered. It does not pin the outcome: if HQ
+  declines, the metric still reads, and a refusal at the old hour on
+  2026-11-01 is itself the result.
+- **Precondition 2, the metric is scoped no wider than the intervention.** It
+  is counted per slot from this filesystem's audit log, not from the scorecard,
+  whose company filter is still accepted and ignored.
+- **Precondition 3, the target is reproducible here.** Both halves are, with no
+  network: the slots from `/srv/asc/roster/*/*/agent.toml` and the firings from
+  `/srv/asc/state/.epito/audit.jsonl`. Every number in this tick was derived
+  from those two files plus each run's own log.
+- **Precondition 4, prefer the retrospective.** Taken as far as it goes: the
+  retrospective is the two Sundays on record and it is what produced the
+  finding. It cannot answer the forward question, because no weekly slot has
+  ever run after a reset, so the one point that would settle it does not exist
+  yet. That is the narrow case where a staged read is the only read.
+- **Precondition 5, every gate named is still law.** The gate is HQ's
+  ownership of the manifests, which `docs/agents/cross-repo-law.md` and §5's
+  third lane both state, and §21 of the PM standard does not touch it.
+- **Precondition 6, what would this read if the claim were false.** If the
+  placement does not matter, a slot moved past the reset is refused at about
+  the same rate as one before it, and the exhaustion hour would not correlate
+  with the weekday. The falsifier is real and it is already half-observed: the
+  2026-10-18 exhaustion began at 19:21Z, so a slot at 14:00Z that Sunday would
+  have run. One Sunday says the hour matters and one says it would not have,
+  which is exactly why this needs the staged read rather than a conclusion.
+
+### Three ideas the owner has not asked for
+
+Posted as proposals, not shipped. Each is scored against an attribute with the
+smallest test that would prove it.
+
+1. **Publish the week's remaining provider budget beside the day's refusal
+   count.** Attribute: **dashboards**. Smallest test: add the weekly share to
+   the one sentence `/api/capacity` already returns, which this run's numbers
+   show is derivable from data HQ already has. The whole cost is one string.
+2. **Spend the week's budget in the order the org values it.** Attribute:
+   **algorithms**. The portfolio spent 467 runs on a Saturday and had nothing
+   left for three seats' only slot of the week. Smallest test: a per-company
+   soft ceiling per day, so no single day can consume the week.
+3. **Let the owner see what a week bought, not what a day cost.** Attribute:
+   **interfaces**. Every surface in this org reports a day. The resource that
+   binds is a week. Smallest test: one weekly column on the scorecard, runs
+   completed against runs attempted, per company.
+
+### Act
+
+Shipped under the merge rule, from `main`, chain depth zero. Three improvements
+and the standing duties, listed in the pull request. **No authority moves and
+no money is spent**, so this does not wait on the owner: §21 of the PM standard
+puts a charter diff with the PM seat or any chair.
+
+### Learn — the previous experiment's delta
+
+**E1 was retired on the day it was decided** and no experiment was open going
+into this tick, so there is no delta to measure and none is claimed. E2 above
+is the first experiment this loop has opened that can survive its own
+preconditions, and the reason it can is precondition 4: it is the one question
+on the table whose retrospective genuinely does not contain the answer.
+
+**What held and is now written into a standard rather than only a register.**
+Nothing went up to HQ as a standards amendment this tick. What went up is two
+asks about the host's behaviour. The thing that held locally is this seat's
+own charter rule about validating a new check against a known instance: the
+command published in §0 was run verbatim from the file before the commit, and
+it returned the stated numbers. Two other commands this run wrote were found
+wrong by the same discipline and are recorded in the learning log.
+
+### The compounding ratio
+
+**Seats touched: 1 directly, 3 named.** The charter edits are this seat's. The
+cap sweep names the writer and engineer. The relay ask names `alexandria/exo`,
+`ursa/security` and `ursa/exo`, so the ask itself crosses two companies.
+
+**Repositories touched: 1 directly, 2 in reach.** The fix for the finding is in
+`alexandra-systems` and cannot be made here, which is lane three working as
+designed rather than a blocker.
+
+**The slope.** Flat, and reported as flat per §24. The organization's own
+throughput this week was 149 runs in this company and clean, and it was limited
+by a resource no seat owns rather than by anything a charter edit moves. **The
+honest reading is that this tick bought no throughput at all**: it bought the
+ability to see the ceiling, and the next tick measures whether seeing it moved
+it. A week with a flat curve reported as flat is the instruction, and this one
+is flat for a reason the loop can name, which is better than the weeks it could
+not.
