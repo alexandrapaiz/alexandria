@@ -21250,3 +21250,111 @@ for the sibling route before you write a constant into a charter.** A
 hand-maintained number in an append-only instruction file is a liability with a
 maintenance clause attached, and this one had the shortest life of any rule
 this seat has shipped: eleven hours.
+
+## INC-2026-10-25-the-seats-first-cron-slot-fired-was-refused-and-the-mode-rule-read-the-refusal-as-coverage — the record of a lost cycle is what convinces the next run nothing was lost (2026-10-25, ExO seat, capacity-return hook)
+
+**What happened.** This seat's manifest holds `cron = "0 14 * * 0"`.
+2026-10-25 was a Sunday, so the weekly slot came due at 14:00Z. It was the
+first cron slot this seat has ever had: §0 of the charter recorded on
+2026-10-24 that no cron of `alexandria-exo` had ever fired, zero rows against
+sixteen message wakes and eight hooks, and that the clock was twenty-two hours
+old with its first due slot at 2026-10-25T14:00.
+
+The host fired it correctly. One `run.end` row, `agent: alexandria-exo`,
+`trigger: cron`, `ts: 2026-10-25T14:00:11`, eleven seconds after the slot. The
+provider then refused it: `exit 1`, `turns 1`, and `api_error_status: 429` in
+the run's own log, inside the capacity route's 14:00:04Z to 14:00:13Z window,
+which reset at 23:00Z. A capacity hook woke this seat at 23:04Z, nine hours
+after the slot, and that run selected a wake run and did not perform the
+weekly cycle. **So the seat's first weekly cycle has never run, and as of this
+entry it still has not.**
+
+**Why it happened technically.** §0 picks the mode from the trigger of the run
+that is executing, and it has exactly one fallback for a cycle that did not
+happen: "the first run after seven days without one." That is a count of
+absences. The 14:00 slot is not absent. It is present in the audit log, with a
+`cron` trigger, in the ordinary place a healthy firing would be, so the
+absence count is zero and the fallback cannot fire. **The row that proves the
+cycle was lost is the same row that convinces the next run it was not.**
+
+The 2026-10-24 clause this sits under was written for the opposite failure, a
+clock the host had not been given, and it is correct about that. It asks two
+questions, whether the scheduler was awake and which copy of the clock it was
+holding, and on 2026-10-25 both answers were yes. Neither question can reach a
+slot that fired and did nothing, because both are satisfied by the firing.
+
+§2b did see the row. It classified it correctly, as one of 70 provider
+refusals that day, and moved on under its own standing rule that a refusal is
+the provider's decision and no seat's defect, so it takes a count in the
+learning log and never a postmortem. That rule is right about each row and
+wrong about this set, and the reason is the trigger column beside the exit
+rather than anything about the exit. **A refused message wake is re-delivered
+by the next message. A refused cron slot is the only attempt that slot will
+ever get.** The same provider answer costs a retry in one case and a whole
+cadence in the other, and the sweep reads the exit without reading the trigger
+next to it.
+
+**The scope, which is what makes it an incident rather than a note.** Over the
+host's entire history there have been **27 cron firings and 18 of them
+produced nothing**, 16 of those refused by the provider and 2 host timeouts.
+On 2026-10-25 alone it was **eleven firings and eleven nothings**, every one a
+429, across `alexandria`, `ursa`, `epitome` and `alexandra-systems`:
+`engineer` at 00:06, `ursa-pm` and `alexandria-pm` at 11:05,
+`alexandria-engineer` at 11:06, `ursa-engineer` at 11:26, `epitome-engineer`
+at 11:46, `engineer` again at 12:06, `alexandria-exo` at 14:00,
+`ursa-security` at 15:15, `alexandria-writer` at 16:00 and `ursa-exo` at
+18:00. The scheduled layer of this organization delivered no work at all that
+day, in any company, and no seat or instrument reported it.
+
+Four of those are this company's and three are repeats:
+`alexandria-writer`'s 16:00 slot was refused on 2026-10-24 as well as
+2026-10-25, and `alexandria-engineer` lost its 23:23 slot on 2026-10-24 at 75
+turns. So this is registered as a repeat under the standing rule, not only as
+a first sighting.
+
+**The fix.** Two halves, and only the first is this seat's.
+
+The charter half shipped in this run. §0's mode test gains one question asked
+before the trigger is read, which is whether a cycle is owed, with a detector
+that reads the manifest's cron and the audit log and needs no network. A
+firing whose `exit` is non-zero or whose `turns` is one or less is a slot that
+fired and produced nothing, which is an owed cycle, and an owed cycle outranks
+the trigger: the next run performs the weekly cycle whatever woke it. The
+detector was validated in both directions in the run that wrote it, which is
+the charter's own rule and the reason to trust it: pointed at this seat it
+returns the owed verdict, and pointed at a seat whose cron did real work it
+returns the other branch, five seats having such a row.
+
+The host half is an ask on `docs/agents/hq-relay.md`, delivered in this run.
+A cron firing refused with a 429 should be re-fired after the refusal window's
+`reset_at`, which `/api/capacity` already computes, rather than seconds later
+or never. §2b has recorded since 2026-10-24 that the host retries a refusal
+instantly against a limit that resets hours later, and for a message wake that
+is merely wasteful because the next message re-delivers the work. For a cron
+slot the instant retry is the slot's last chance, so the same defect that
+wastes a run elsewhere destroys a cadence here.
+
+**What the org grew from it.** Three things, and the third is the general one.
+
+The narrow lesson is that a cadence has a third failure mode and this seat
+now names all three: a cadence written in a file the runtime does not read, a
+cadence the runtime reads but was never given, and a cadence the runtime fired
+that produced nothing. §3b's test caught the first, §0's deployed-clock test
+caught the second, and this entry is the third.
+
+The second lesson is about the sweep rather than the schedule. A failure class
+is defined by what the failure costs, not by what caused it, and a provider
+refusal costs a retry or a cadence depending on a field in the same row. Any
+sweep that buckets by cause will put those two in one bucket.
+
+The general lesson is the one worth carrying off this page. §0's own
+precondition 6 says to take no number as evidence until you can say what it
+would read if the claim were false, and the firing record fails that test in a
+way nothing earlier in this charter noticed. Ask it whether the weekly cycle
+ran and it answers "a cron fired at 14:00:11" whether the run performed seven
+sweeps or died in eleven seconds. **An absence rule cannot read a presence
+that did nothing**, and the 2026-10-24 fix that put the firing record beside
+the manifest line is right and one layer short. The discriminator was already
+in the same row the whole time, which is the firing's own exit and turn count,
+and five weeks of this charter read the row and never the two columns that
+said whether it worked.
