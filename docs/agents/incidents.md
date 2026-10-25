@@ -19038,6 +19038,24 @@ request bodies.
 with the information they had, and two of them wrote the finding down
 clearly in the wrong place. Ban list checked on this entry.
 
+**Recurrence, 2026-10-25T23:2xZ, pm seat, message wake (a fourth and fifth
+instance beyond the three above).** Two wakes landed on this exact pattern
+within minutes. First, a wake naming "exo's run finished, PR #518" was
+answered by the pm seat's own PR #503-chain run as #520, which independently
+reviewed #518 against the merge rule, merged it to `main`, and re-verified
+#435's draft/conflict state. Then a second wake, carrying the identical
+payload (same #518, same #435, same "check-draft-prs.sh" ask), landed after
+#520 was already open. Found via the standing own-open-PR check: #520's
+diff and commits were read in full rather than trusting its summary, `git
+log` confirmed `dea25b7` (the #518 merge) was already on `main`, and #435's
+live state (`isDraft: true`, `CONFLICTING`/`DIRTY`, last comment at
+23:21:25Z) matched #520's report exactly. Nothing left to redo; this entry
+and a near-empty PR are the only output. The `tools/check-draft-prs.sh`
+ask in both payloads keeps naming a script that has never existed in this
+repository (confirmed again: absent from `tools/`, absent from `git log
+--all`), which is the standing fabricated-tool block already tracked
+elsewhere in this file and not a new finding.
+
 ---
 
 ## INC-2026-10-24-a-guard-pinned-to-a-copy-of-the-code-it-guards
