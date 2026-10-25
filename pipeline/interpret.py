@@ -200,14 +200,34 @@ def edges_from(out: dict, valid_ids: set) -> list[tuple]:
 #: `interpret_queue`. A claim nobody has ever judged is a first opinion, it is
 #: already the fresh queue's job, and a claim must not be able to arrive twice
 #: in one run.
+#: The order is the second half of the trigger and it was `c.id`, which is
+#: arbitrary. It stopped being free on 2026-10-25: `interpret_pending` read 0,
+#: so the leftovers are the whole run and the sweep spends the cap rather than
+#: returning nothing. What the sweep buys is not uniform, so the cheap fix is
+#: to buy the valuable half first.
+#:
+#: A claim carrying a pass under a known older sha is the slow loop's own case:
+#: two prompts read it, and the second verdict is a changed mind or a
+#: confirmation, which is the measurement ADR-10 wanted. A claim whose only
+#: pass is `unknown` is the backfill's bookkeeping, recovered from a corpus
+#: that predates `claim_judgments`, and re-reading it mostly buys a row. Both
+#: are due and both terminate; only the order between them is a choice, and
+#: a sweep that is cut short by the cap should be cut short at the cheap end.
 REJUDGE_QUEUE_SQL = """
     select c.id, c.claim, c.embedding
       from claims c
+      left join lateral (
+            select max(j.created_at) filter (where j.prompt_sha <> 'unknown')
+                       as known_at,
+                   max(j.created_at) as any_at
+              from claim_judgments j
+             where j.claim_id = c.id
+           ) p on true
      where c.interpreted_at is not null
        and c.embedding is not null
-       and not exists (select 1 from claim_judgments j
-                        where j.claim_id = c.id and j.prompt_sha = %s)
-     order by c.id
+       and not exists (select 1 from claim_judgments k
+                        where k.claim_id = c.id and k.prompt_sha = %s)
+     order by (p.known_at is null), coalesce(p.known_at, p.any_at), c.id
      limit %s
 """
 
@@ -217,13 +237,28 @@ def rejudge_budget(fresh_taken: int, max_claims: int) -> int:
 
     A first opinion is worth more than a second one. An unjudged claim has no
     edges at all, so judging it can only add to the graph, where re-judging a
-    claim that already has edges usually confirms them. The fresh queue is
-    2,000-odd deep today, so this returns 0 and the slow loop stays latent
-    until the drain catches up, which is the correct order and not a limitation.
+    claim that already has edges usually confirms them. So the fresh queue is
+    served first and re-judgment takes what is left, which is the right order
+    whatever the depths are.
 
-    It is also the spend rule. The run's ceiling is `max_claims` and the cap in
-    dollars, and re-judgment is inside both rather than beside them, so turning
-    the loop on cannot raise this job's bill by a cent.
+    **What this rule does not do is make the loop free, and the sentence that
+    used to stand here said it did.** It read "the fresh queue is 2,000-odd
+    deep today, so this returns 0 and the slow loop stays latent". That was
+    true of the reading it was written from and false the next morning:
+    `/api/delivery` reported `interpret_pending: 0` on 2026-10-25, because the
+    backlog moved one stage upstream rather than drained. `distill_pending` was
+    3,680 and no claim had been written since 2026-10-22, so there was nothing
+    fresh to judge and the leftovers were the entire run. A safety claim keyed
+    to a queue depth expires the moment the queue moves, which is why this
+    paragraph names the instrument instead of a number.
+
+    The bound that does hold is the one that was always here. The run's ceiling
+    is `max_claims` and `CAP_USD`, and re-judgment is inside both rather than
+    beside them, so no run can cost more than it could before the loop existed.
+    The sweep also terminates: every pass writes a row, including the passes
+    that find nothing, and a claim with a row at this sha is never selected
+    again. What it is not is $0 a day while it runs, and `drain` is where that
+    bill is read before it is spent rather than after.
     """
     return max(max_claims - fresh_taken, 0)
 
@@ -615,13 +650,16 @@ def drain() -> str:
             "select count(*) from claims where interpreted_at is null "
             "and embedding is null"
         ).fetchone()[0]
-        rejudge_depth = conn.execute(
-            "select count(*) from claims c where c.interpreted_at is not null "
+        rejudge_depth, rejudge_known = conn.execute(
+            "select count(*), count(*) filter (where exists "
+            "(select 1 from claim_judgments k where k.claim_id = c.id "
+            "and k.prompt_sha <> 'unknown')) "
+            "from claims c where c.interpreted_at is not null "
             "and c.embedding is not null and not exists "
             "(select 1 from claim_judgments j where j.claim_id = c.id "
             "and j.prompt_sha = %s)",
             (sha,),
-        ).fetchone()[0]
+        ).fetchone()
         reflects = conn.execute(
             "select prompt_sha, count(*) from latest_judgment "
             "group by 1 order by 2 desc limit 3"
@@ -630,6 +668,7 @@ def drain() -> str:
     per_claim = guard.cost_usd(1_050, 150, MODELS[0])
     per_run = min(int(CAP_USD / per_claim), MAX_CLAIMS_PER_RUN)
     runs = -(-depth // per_run) if per_run else 0
+    rejudge_runs = -(-rejudge_depth // per_run) if per_run else 0
     lines = [
         f"interpret queue: {depth} claims, oldest {oldest}",
         f"{unembedded} more claims are uninterpreted but unembedded, so they "
@@ -643,6 +682,13 @@ def drain() -> str:
         f"re-judgment: prompt {sha} has never read {rejudge_depth} of the "
         "judged claims, and it takes the slots the fresh queue leaves, which "
         f"is {rejudge_budget(min(depth, per_run), per_run)} at this depth",
+        f"that sweep is {rejudge_runs} daily runs for about "
+        f"${rejudge_depth * per_claim:.2f}, and it is $0 only while the fresh "
+        "queue is deep enough to crowd it out, which on 2026-10-25 it was not",
+        f"of those, {rejudge_known} carry a pass under a known older prompt "
+        "and are read first, because a second verdict there is a changed mind "
+        f"or a confirmation; the other {rejudge_depth - rejudge_known} are the "
+        "backfill's unknown rows and buy mostly a row",
         "the graph currently reflects: "
         + (", ".join(f"{n} claims under {psha}" for psha, n in reflects)
            or "nothing, no claim has been judged yet"),
