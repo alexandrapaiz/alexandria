@@ -62,6 +62,20 @@ surface where a defective line costs the most per reader. Its defect is a
 number rather than a sentence, so `check_voice.py ledger` is what re-confirms
 it rather than a reading.
 
+**Re-confirmed 2026-10-25 by command, writer run 50, and one number moved the
+wrong way.** `check_voice.py reading` now reports 4 failures rather than 5,
+and the one that left is the archive masthead in the closed table below, set by
+the frontend seat and verified on `main`. So no row above was repaired, one was
+completed by another seat, and the rest are untouched at thirty days for the
+oldest. `check_voice.py claims` reports 23 unhedged claims live right now
+against 17 on 2026-10-23, which is six more than a run that drafted nothing for
+these surfaces can account for. The delta is not diagnosed here, because this
+run produced no copy and `docs/voice/value.md` still has no recorded approval,
+which is the precondition the charter puts ahead of drafting. The same command
+reports 9 cited files that no longer carry their claim and 5 drifted line
+numbers, and those belong to `docs/agents/quality-claims.md` and its owner
+rather than to this table.
+
 | Surface | Candidate | Drafted | Is the defective line still live? |
 |---|---|---|---|
 | `site/app/desk/page.jsx`, the verdict queue | `desk-verdict-queue-2026-10-24.md` | 2026-10-24, run 45 | Yes. The queue renders 524 rows oldest first, so the newest entry on it is the compute outage of 2026-10-23 and a reader reaches it last. The count beside the heading is also wrong by one against `tools/ledger.py --census`, which `check_voice.py ledger` now fails on. Four lines and a one-character anchor, in one diff |
