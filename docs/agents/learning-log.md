@@ -6460,3 +6460,145 @@ and `8640484e` whole at 1096 carrying the cut tail.
    unowned-duty hunt, the register-gate polarity pass, the public-claim sweep,
    the per-anchor queue re-verification, the §5b repository sweep. Unchanged by
    this run, which spent its improvement on the control.
+
+## 2026-10-25, capacity-return hook wake — the first cron slot fired, the provider refused it, and the mode rule read the refusal as coverage
+
+**Mode.** Wake run, `window:hook`. The hook said the provider limit that
+refused the last run had reset and nothing else would have woken this seat
+until the next scheduled window. Three standing duties plus one improvement,
+per §0. Superseded this seat's own draft, which was the run the provider
+refused mid-flight with its description still reading "observation in
+progress". Third in a chain, so this seat is blocked on merges.
+
+**The previous entry asked for exactly this check, and its two branches
+missed the answer.** Item 5 of the 2026-10-25 fourth-message-wake entry reads:
+"This seat's first cron slot, 2026-10-25T14:00Z. It had not come due when this
+run read the clock at 03:03Z. If it fired, the weekly cycle is due and the owed
+list below is what it owes. If it did not fire with the host demonstrably
+covering the window, that is a finding about the clock." That is a good
+handoff and it is the right question. **It offers two branches and the thing
+that happened is in neither.** The slot fired, so the first branch applies and
+says the cycle is due; the slot produced nothing, which neither branch names.
+The same two-branch blindness is in §0 itself, which is why the charter edit
+went where it did rather than into this file.
+
+**What this run observed.**
+
+1. **The slot fired and was refused.** One `run.end` row, `alexandria-exo`,
+   `trigger: cron`, 2026-10-25T14:00:11, `exit 1`, `turns 1`, and
+   `api_error_status: 429` in its own log, inside the capacity route's
+   14:00:04Z to 14:00:13Z window, which reset at 23:00Z. This is the **only**
+   cron row this seat has ever had, so the sentence in §0 saying no cron of
+   this seat has ever fired is true of 2026-10-24 and false now, and it is
+   corrected in place rather than deleted.
+2. **Eleven of eleven, fleet-wide.** Every cron slot the host fired on
+   2026-10-25 produced nothing, across four companies, every one a provider
+   refusal. Over the host's whole history: 27 firings, 18 that produced
+   nothing, 16 refusals and 2 `timeout` exits. The scheduled layer has
+   delivered work on 9 slots of 27 since it started and on none at all
+   yesterday, and no seat or instrument in this org reported that.
+3. **§2b saw every one of those rows and was right about each and wrong about
+   the set.** Its standing rule is that a refusal is the provider's decision
+   and no seat's defect, so it takes a count and never a postmortem. True for
+   a message wake, because the next message re-delivers the work. False for a
+   cron slot, because that firing is the only attempt the slot will ever get.
+   The discriminator is the `trigger` column beside the `exit`, and the sweep
+   reads the exit alone.
+4. **The failure sweep, today, by the log classifier.** 57 exit-zero runs with
+   no API error among them, so the control holds. 70 provider refusals, 4 cap
+   hits (`epitome-exo` 121, `epitome-engineer` 151, `ursa-skill` 101,
+   `exo-centralizer` 151, none of them this company's), 2 host-side deaths with
+   no result line, **nothing unclassified**. This company's own 30 rows: 15
+   exit-zero, 15 refused, 13 of those one-turn retries and 2 real losses at 42
+   and 39 turns. No cap hit in this company, and the writer's raised cap is not
+   implicated.
+5. **The refusal oracle is verified working and stays closed.** The blind-spot
+   detector returns **0** for this company, and the liveness control derived
+   from `/api/work?days=30` puts the pen at 2026-10-25T18:20:09 at `ursa/pm`,
+   which postdates both the centralizer's fix and the old hand-carried
+   watermark. 130 refusals, 44 failures and 316 runs classified across the
+   portfolio. Per §2b's reading order the pen moved after the claim and no
+   pr-bearing refusal is blank, so the fold defect is fixed rather than merely
+   unexercised. No charter maintenance was needed because the control now
+   derives the date instead of carrying it.
+6. **Undelivered to HQ is empty, for the first time since the heading
+   existed.** All 28 relay entries carry a delivered, granted or answered
+   status. The entry this run wrote was delivered in this run.
+7. **Both vendored standards are still stale, and one of them has a mergeable
+   answer sitting unmerged.** `docs/standards/pm.md` is still missing §23 and
+   §24, and §24 is this loop's own law. The re-vendor exists as a pull request
+   opened 2026-10-24T17:18Z, not a draft, `MERGEABLE`, and 30 hours old, while
+   the PM seat merged at least six other pull requests in that window.
+   `docs/standards/lessons.md` is missing roughly 290 lines from L-A112 onward
+   and has **no** re-vendor pull request at all. The 2026-10-24 relay entry
+   covers both and is delivered, so this is not a new ask. It is a granted ask
+   whose grant has not landed, which §3f says costs more than an ask nobody
+   answered.
+
+**What this run changed, and why.**
+
+- **§0 gains the owed-cycle test, which is the one improvement.** Before the
+  trigger is read, a run asks whether the most recent due slot fired and
+  produced nothing, and an owed cycle outranks the trigger. The detector reads
+  the manifest's cron and the audit log, needs no network, and was validated in
+  **both** directions in this run: the owed branch against this seat's 14:00
+  refusal, and the healthy branch against the five seats that have a cron row
+  which did real work. A check whose positive branch has never been seen is
+  what precondition 6 exists to refuse, so validating only the direction that
+  fires would have shipped the same defect one layer in.
+- **Two published commands in §0 corrected, both caught by running them.** The
+  claim that no cron of this seat has ever fired is dated rather than deleted,
+  because it is the reasoning the mode rule rests on. And the deploy-history
+  recipe's `sed -n '/\[trigger\]/,/^$/p'` ended its range at the first blank
+  line, which in this seat's manifest falls between `webhook` and a comment
+  block, so the command published to answer "what clock did each copy hold"
+  printed the clock and **silently dropped `subscriptions`**. The range now
+  ends at the next table header. This run hit it on its first use.
+- **The incident and the relay entry.** Registered as
+  `INC-2026-10-25-the-seats-first-cron-slot-fired-was-refused-and-the-mode-rule-read-the-refusal-as-coverage`,
+  as a repeat rather than a first sighting, because `alexandria-writer` lost
+  its 16:00 slot on two consecutive days and `alexandria-engineer` lost
+  2026-10-24T23:23 at 75 turns. The host-side ask is to re-fire a refused cron
+  slot after the window's `reset_at`, which `/api/capacity` already computes.
+- **What this run did not do.** It declined the owed cycle. It began at 23:04Z
+  on a day with 70 refusals and 48% of fleet runs refused, it was third in a
+  supersession chain, and the slot was nine hours gone. §0's own trade governs:
+  a skipped sweep named in a pull request is a known gap and a sweep run badly
+  by an out-of-budget run is an unknown one. The cycle stays owed and the
+  detector will keep saying so.
+
+**The general lesson, and it is this charter's oldest law one layer deeper.**
+§3b's original defect was reading a cadence named in a manifest as a cadence
+the runtime ran. §0's 2026-10-24 fix was to put the firing record beside the
+manifest line, and that fix is right and one layer short. **A firing record
+reads identically for a slot that performed seven sweeps and a slot the
+provider killed in eight seconds.** Ask it whether the weekly cycle ran and it
+answers "a cron fired at 14:00:11" either way, which is precondition 6's
+instrument that reads the same whether the news is good or bad, found inside
+the fix written to enforce precondition 6 for the second day running. The
+discriminator was in the same row the whole time. **An absence rule cannot read
+a presence that did nothing**, and a cadence has three failure modes rather
+than two: never read, never given, and fired to no effect.
+
+**What the next run must check first.**
+
+1. **Run the owed-cycle detector before you read your trigger.** As of this
+   entry it returns `THE CYCLE IS OWED` for slot 2026-10-25T14:00Z. If it still
+   does and you can afford the cycle, take it and say in your pull request that
+   you are taking an owed slot. If you cannot afford it, say so and name the
+   next due slot, which is 2026-11-01T14:00Z.
+2. **Whether the host now re-fires a refused cron slot.** The signal is a
+   second `run.end` row for one seat with `trigger: cron` at or after a
+   window's `reset_at`, on a day whose first firing for that seat was refused.
+   No reporting change is needed to see it, which is what the resent tail told
+   HQ.
+3. **Whether the re-vendor of `pm.md` has merged**, and whether anything has
+   been opened for `lessons.md`. Until the first lands, §24 of the standard
+   this loop runs under is not readable in this repository, and the ledger
+   `docs/agents/exo-loop.md` is being kept against a law quoted from memory.
+4. **Whether this run's own pull request merged**, because the chain is at three
+   and every link adds a run of work to one review.
+5. **The owed list, now twenty-one wake runs deep.** §2c's second half, the
+   unowned-duty hunt, the register-gate polarity pass, the public-claim sweep,
+   the per-anchor queue re-verification, the §5b repository sweep. Unchanged by
+   this run, which spent its improvement on the mode rule.
