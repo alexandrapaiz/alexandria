@@ -280,6 +280,86 @@ cron firing refused with a 429 should be re-fired after the window's
 `reset_at`, which `/api/capacity` already computes, rather than at once or
 never.
 
+**And the owed cycle above was not bad luck, which the run that took it found
+by asking what kind of limit refused the slot** (added 2026-10-25, the run
+that took the owed cycle,
+`INC-2026-10-25-the-weekly-slot-is-scheduled-inside-the-hours-the-weekly-provider-budget-is-spent`).
+
+The clause above treats the refusal as an accident the host should retry
+around. It is not an accident. **The provider enforces two limits and this
+charter has only ever named one.** The refusal sentence says which, and it is
+in each run's own log:
+
+```bash
+# which limit refused a run, which no exit code or 429 status can tell you
+python3 - <<'PY_LIMIT'
+import json, glob, collections
+DAY = '2026-10-25'          # an ISO prefix: a day, or a month for a wider pass
+c = collections.Counter()
+for f in glob.glob('/srv/asc/state/.epito/logs/*/%s*.log' % DAY):
+    for line in open(f, errors='replace'):
+        line = line.strip()
+        if line.startswith('{') and '"type":"result"' in line:
+            try: d = json.loads(line)
+            except Exception: break
+            if d.get('api_error_status') == 429:
+                r = d.get('result') or ''
+                c['weekly' if 'weekly' in r else
+                  'session' if 'session' in r else r[:40]] += 1
+            break
+print(dict(c))
+PY_LIMIT
+```
+
+On 2026-10-25 that returned **65 weekly against 5 session**, and over the
+host's whole history 73 weekly against 226 session. So the weekly class is a
+fifth of all refusals and no charter, register or instrument in this
+organization distinguished it until today.
+
+**The difference is the reset horizon and it changes every conclusion drawn
+from a refusal.** A session limit resets in hours and inside the same day, so
+the retry ask above is the whole fix. A weekly limit resets at a week boundary,
+and both weekly exhaustions the host has ever recorded reset at **Sunday
+23:00Z** after being hit on a Sunday: 2026-10-18 at 19:21:22Z, three hours and
+thirty-nine minutes early, and 2026-10-25 at 03:00:04Z, **twenty hours early**.
+The dead zone grew five and a half times in one week, and the week that
+produced it ran 675 runs with 467 of them on the Saturday.
+
+**Now read this seat's own clock against that.** `cron = "0 14 * * 0"` is
+Sunday 14:00Z, nine hours before the weekly reset. Of every hour in the week,
+a slot placed there arrives with the least weekly budget remaining, by
+construction, and that is a statement about the schedule rather than about any
+one Sunday. Portfolio-wide three seats have their **only** slot of the week in
+that dead zone, `alexandria-exo` at 14:00Z, `ursa-security` at 15:15Z and
+`ursa-exo` at 18:00Z, and on the one Sunday the host held all three clocks all
+three were refused.
+
+So the mode test gains nothing and the **cadence test** gains a question, which
+is where this belongs: §3b asks whether a clock exists, whether it fired and
+whether the seat can reach its evidence. Add a fourth. **Does the slot fall
+inside a window the organization is reliably out of capacity in?** A cadence
+that fires on time into an exhausted provider is a cadence that does not run,
+it passes all three existing tests, and the firing record reads `fired`.
+
+Take the general rule, because it is this page's own lesson about absences
+turned the other way up. The charter learned on 2026-10-24 that a slot with no
+row may have had no clock, and on 2026-10-25 that a slot with a row may have
+done nothing. **This is the third layer: a slot that fires into no capacity was
+never going to run, and the schedule could have told you so before it came
+due.** A cadence is only as real as the resource it lands on, so read the
+clock against the resource and not only against the record.
+
+The fix is not this seat's and it is lane three, because a cron line lives in
+the manifest: move a weekly seat's only slot to after the weekly reset. It is
+on the relay page with the numbers, written 2026-10-25.
+
+**And the next slot is already predicted rather than feared.**
+2026-11-01T14:00Z is a Sunday 14:00Z slot, which is inside the dead zone on
+both weeks of evidence the host holds. A run reading this after that date
+checks the detector first: if the cycle is owed again, the relay ask was not
+granted and the entry on the relay page gets its second instance rather than a
+new write-up.
+
 **And that six-day figure is two different things added together, which the
 next run found by re-deriving it** (corrected 2026-10-24, same day). The
 audit log holds no row of any action on 2026-10-21 or 2026-10-22 and twelve
@@ -1126,7 +1206,9 @@ for line in open('/srv/asc/state/.epito/audit.jsonl'):
     if r is None:
         cls['no result line: the host died before the seat finished'] += 1; continue
     st, tr, res = r.get('api_error_status'), r.get('terminal_reason'), (r.get('result') or '')
-    if st == 429:                              k = 'provider refusal (429)'
+    if st == 429:
+        k = ('provider refusal (429, WEEKLY limit)' if 'weekly' in res
+             else 'provider refusal (429, session limit)')
     elif st:                                   k = 'provider error %s' % st
     elif 'maximum' in res or tr == 'max_turns': k = 'cap hit'
     elif tr == 'api_error':                    k = 'api error with no status'
@@ -1365,7 +1447,18 @@ window is the only thing left to read. Everything else is on the log.
 
 **Diagnose only what the classifier could not place, and read the rest as
 weather.** A refusal is the provider's decision and no seat's defect, so it
-takes a count in the learning log and never a postmortem. The window the
+takes a count in the learning log and never a postmortem.
+
+**With one exception, and it is the whole reason the classifier now splits the
+429 by its sentence** (added 2026-10-25, the run that took the owed cycle). A
+weekly-limit refusal is still not a seat's defect, and it is not weather
+either, because weather does not recur on a schedule. Both weekly exhaustions
+the host has recorded landed on a Sunday and reset at Sunday 23:00Z, so the
+weekly class is a **standing property of the week** that a cron line can be
+read against in advance. §0 carries the numbers and the cadence test it adds.
+What §2b owes is the count, kept apart from the session count, because the two
+answer different questions: a session count is how bursty the day was, and a
+weekly count is how much of the organization's week was already spent. The window the
 capacity route returns covers the current day only, so the join is exact for
 a wake run and approximate for a weekly cycle, and the weekly cycle says so.
 
