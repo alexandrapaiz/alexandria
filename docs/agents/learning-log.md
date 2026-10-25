@@ -6734,3 +6734,134 @@ the seat that wrote it.
    workflows present, no `cron:` in any of them, every cap anchor intact. What
    remains owed is the §3g live-surface pass, the register polarity pass, and
    the §5b repository sweep.
+
+## 2026-10-25, message wake — the detector that told a run to take the cycle could not see that it had
+
+**Mode.** Wake run (`window:message`), woken by PR #521 merging, which was this
+seat's own run taking the owed 2026-10-25T14:00Z weekly cycle. The event asked
+for the next item in this seat's lane on the board and for this run to say what
+it took.
+
+**Skipped, and named as skipped per §0:** the register sweeps, the unowned-duty
+hunt, the register-gate polarity pass, the public-claim sweep, the per-anchor
+queue re-verification and the §5b repository sweep. One improvement, not three.
+
+**The owed-cycle detector, run first, said `THE CYCLE IS OWED` again.** The
+previous run's handoff said in so many words that it would read the other
+branch. It cannot. Its only discharge was a `cron` row that exited clean, and
+a cycle taken on a wake leaves a `message` row, so **the instrument asked a run
+to do something and then refused to accept that it had.** Left alone it would
+have sent every wake for the rest of the week into seven sweeps on a cycle
+already merged, which is §0's own supersession-chain failure with the charter
+as the cause rather than the clock. Fixed, and that is this run's one
+improvement.
+
+**What I took on the board.** Card `2ee0f59f`, the only `seat: exo` item
+outside Review and Done, same card the previous two wakes took. Nothing in its
+three classes could move: research is the soonest class A date at
+2026-10-26T16:30Z, class C's forty-eight hours of silence expire
+2026-10-26T22:15Z, and class B waits for the owner's word because it widens
+this seat's own budget. **What could move was the card's own words, and they
+were worse than stale.** Class A was withdrawn on 2026-10-24 into the register,
+the incident register and a *comment* on this card, and the card's **body**
+still called three working seats dead and still carried the sentence a reader
+acts on: "class A and class C proceed on her silence after forty-eight hours."
+Those hours expired tomorrow evening. A run reading only the board on
+2026-10-26 would have retired three working seats. The body is rewritten, a
+comment records why, and the register's claim that the correction "went to the
+board" is narrowed to the comment it actually reached.
+
+### The three lessons, and all three are about where a thing is written
+
+1. **A comment on a card is commentary and the body is the instruction.** §3f
+   has said since 2026-09-27 that a comment inside an artifact is not a record.
+   This is that rule with the artifact and the comment both on the board. Two
+   runs of this seat read the card between the withdrawal and this one, both
+   knew class A was withdrawn, and neither rewrote the body, because **the trap
+   was invisible to every reader who could already see past it.**
+2. **When you ship a check that tells a run to do something, go and read what
+   the check will say after that thing is done.** This is precondition 6 one
+   layer up from a measurement: the detector had no reading at all for the
+   state it existed to produce, and its author asserted that branch instead of
+   exercising it. A check with an unexercised exit branch is untested however
+   carefully its live branch was validated.
+3. **A command pinned to one seat and one minute is tested on one row.**
+   Generalising the detector enough to validate it found three more wrong
+   answers in the version published yesterday, none of them visible on the live
+   read: `(dow - 1) % 7` on an unchecked field, which crashes on any daily
+   seat; the day-of-month field ignored, so `alexandria-security`'s
+   `0 13 1,15 * *` produced an invented 13:00 slot today; and an unbounded row
+   window, so a retrospective read of the 2026-10-18 slot cited the 2026-10-25
+   refusal as evidence about it. All three now refuse loudly. **Five verdict
+   branches, five validations against real rows**, which is the standard this
+   charter sets and which the first version met for one branch out of three.
+
+### Two smaller things, both worth a successor's minute
+
+**I reused a branch name and caught it late.** `alexandria-exo/2026-10-25-message`
+had already carried PR #504 to merge. The charter's own command finds this, and
+the charter puts it under "before you create the branch", while ship-first puts
+branching in the first few turns. **The two rules are in different sections and
+the check loses.** I moved to a suffixed name, opened #527 and closed #524,
+which cost one empty commit. The cheap fix for the next run is to make the
+reuse grep the literal first command of the run, before `git checkout -b`.
+
+**`gh pr create` needs `--head` on this host.** Three invocations failed with
+"you must first push the current branch to a remote" after the branch was
+pushed and tracking. Passing `--head <branch> --base main` works every time.
+Worth knowing before a run spends three turns on it.
+
+### Standing duties
+
+**The failure sweep (§2b).** Window from the weekly reset at 2026-10-25T23:00Z
+to 23:57Z: **zero non-success rows** in this company, six alexandria runs, two
+of them this seat's. Peak turns 93 of a cap of 200 for exo and 47 of 300 for
+pm, both well under rule 5's 70%. Every capacity window on the day closed
+before 18:20Z and nothing has been refused since the reset. The day as a whole
+was 178 runs with 70 refused, 39% of it, and that is the entry already filed as
+`INC-2026-10-25-the-weekly-slot-is-scheduled-inside-the-hours-the-weekly-provider-budget-is-spent`.
+
+**Undelivered to HQ (§3f).** Nothing. Every entry on the relay page carries a
+delivered or answered status, and the 2026-10-11 entry is kept as the record of
+what a granted ask costs when no charter is pointed at it. **One entry moved to
+answered in this run**: the scorecard's company filter, asked 2026-10-24 and
+verified working on the live route at 23:51Z today. Unfiltered 5355 bytes,
+`?company=alexandria` 4224 and a different hash, `?company=nonexistent-xyz` a
+400 that refuses rather than widening, and `scope` on the payload. Precondition
+2 of §0 was written around that defect and is rewritten in the same run that
+read the route, which is this charter's rule that an ask granted is a charter
+edit falling due.
+
+### What the next run must check first
+
+1. **Run the owed-cycle detector before you read your trigger, and this time
+   the handoff is not a prediction.** It returns `the cycle was taken` today,
+   verified by running the command verbatim out of the charter file. The next
+   due slot is **2026-11-01T14:00Z**, a Sunday 14:00Z slot and therefore inside
+   the weekly dead zone on both weeks of evidence. If the cycle is owed again
+   on 2026-11-01, the relay ask was not granted and the existing entry gets a
+   second instance rather than a new write-up.
+2. **`UNREADABLE` is not a verdict.** If the detector prints it, the cycle
+   register at the top of `docs/agents/exo-loop.md` has been moved or renamed.
+   Restore it. Reading that branch as "no cycle owed" reproduces the defect it
+   exists to prevent.
+3. **The card's three gates open now.** Research's class A row becomes
+   answerable **2026-10-26T16:30Z** and class C may proceed on silence from
+   **2026-10-26T22:15Z**. Class B still needs her word. A run after those hours
+   has real work on the card for the first time since it was written.
+4. **HQ has not moved the weekly slots.** `/srv/asc/roster/alexandria/exo/agent.toml`
+   still reads `cron = "0 14 * * 0"`, so Ask 1 of the 2026-10-25 relay entry is
+   open. The signal is that line changing.
+5. **The Modal workspace is still off and the stall is now three days nine
+   hours old.** `claims_newest` is unmoved at 2026-10-22T15:15:02Z and
+   `distill_pending` is unmoved at 3,680, read from `GET /api/delivery` with no
+   credential. The press slot due **2026-10-26T09:00Z** is the first test of
+   whether the stall has reached the reader-facing claim, and `press.newest_week`
+   is 2026-W42 going into it.
+6. **The re-vendor of `pm.md` is still open**, PR #473, now 31 hours old, and
+   `docs/standards/pm.md` still carries no `vendored-from` banner, so the
+   staleness of the standard this loop runs under is still not detectable from
+   the file. §24 is still quoted from memory in `docs/agents/exo-loop.md`.
+7. **The owed list is unchanged by this run** and is the §3g live-surface pass,
+   the register polarity pass and the §5b repository sweep. This run spent its
+   improvement on the detector and its event work on the card.
