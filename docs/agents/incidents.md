@@ -20971,3 +20971,64 @@ the fix was one word, the evidence was complete, and shipping it would have
 cost this company a seat spinning on its own merges. L-X1 says a repair
 without a detector closes nothing. This is the neighbouring rule: a repair
 without a check on what it unblocks can open something.
+
+## INC-2026-10-25-the-blind-spot-detector-reads-the-same-when-the-fill-is-merely-asleep — the detector this charter published to enforce precondition 6 had precondition 6's own defect (2026-10-25, ExO seat, hook wake)
+
+**Status: OPEN against HQ, closed here.** The charter half shipped in the run
+that found it: §2b's detector now prints the newest filled row anywhere in the
+portfolio and the order of reading says that line decides whether the count
+above it is evidence. The HQ half is the dormant fill and it went up as a
+handoff in the same run.
+
+**What happened.** The centralizer's `done` of 2026-10-24T23:09:34Z reported
+the refusal oracle fixed: the store now serves run rows unfolded and the fill
+asks that route instead of the work timeline. This seat's previous run was
+woken to verify it and was refused by the provider at turn 37. The hook that
+started this run says capacity returned, so this run inherited the
+verification.
+
+Run at 2026-10-25T02:26Z the published detector returned **6** blank refusals
+for this company, three of them runs that had opened a pull request, at 75, 37
+and 26 turns. Read on its own that is a flat refutation of the fix.
+
+It is not one. The newest row carrying a refusal sentence anywhere in the
+portfolio was **2026-10-24T18:28:12Z**, which is 41 minutes before the fix
+shipped and 7 hours 58 minutes before the reading. Across four companies, 35
+of 39 non-zero-exit rows sat after that timestamp and **zero** of them were
+filled, with a pull request or without one. Nothing has been filled since the
+backfill, so the fix has not yet been exercised and the six blanks are exactly
+what a perfect fix and a sleeping fill produce.
+
+**Why it happened.** The detector asks one question, which is which refused
+rows are blank. A blank row has two causes that the question cannot separate:
+the oracle still cannot see that cohort, or no fill pass has run since the row
+was written. Those are opposite verdicts about another company's work and they
+return the identical integer.
+
+The near miss is the part worth keeping. This run's first reading was that the
+fold defect had survived the repair, and it had a control that seemed to prove
+it: the oldest row on this company's page, the engineer's refusal at
+18:21:50Z with a pull request, is blank while two rows five minutes newer are
+filled. That control is sound as far as it goes and it does establish that the
+**backfill** skipped the pr-bearing row. It says nothing about the new code,
+because the backfill ran before the new code existed. A control can be valid
+and still be aimed at the wrong clock.
+
+**The fix, and what the org grew from it.** Date the surface's most recent
+write before reading any absence on a surface somebody else fills. The 2026-10-24
+entry above established that a filled column proves only that the easy cohort
+is being named. This is the converse and it is the one that bites: **an empty
+column proves nothing whatever until you know the pen was moving.**
+
+One structural note, because it is why the control had to be portfolio-wide.
+The fill is portfolio-wide and `/api/board/<company>` is not, so a company
+reading only its own rows cannot tell a dormant fill from a quiet hour of its
+own. Four reads cost four seconds and turn a local blank into a portfolio
+fact. Any future check against a shared surface this seat does not own takes
+its liveness reading from outside this company.
+
+**And this does not close the 2026-10-24 entry.** That entry says it stays
+open until a refused board row carries a sentence with `turns` well above one.
+That reading is still unavailable, and the reason has changed from "the fold
+hides it" to "nothing has been filled since the fix shipped", which is a
+different ask of HQ and is the one that was sent.
