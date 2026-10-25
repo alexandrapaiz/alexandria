@@ -16,6 +16,7 @@ question. That is what the design doc's worked example is for.
 """
 
 import json
+import re
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -86,11 +87,23 @@ def test_every_query_parses_and_only_reads(name):
 
 
 def test_every_relation_the_audit_names_exists():
+    """Schema relations, plus the CTEs each query defines for itself.
+
+    The second half is the same allowance `test_every_column_the_audit_names_
+    exists` already makes for lateral aliases, and it arrived for the same
+    reason: slice 2's `reach` query names its seeded sample once in a `with`
+    clause and reads it twice, and without this the test called that CTE a
+    missing table. Collected per query, so one query's `with` cannot excuse
+    another query's typo about a real table.
+    """
     schema_relations, _ = _schema_names()
     for name, sql in ga.QUERIES.items():
-        for node in _walk(_parse(sql), []):
+        nodes = _walk(_parse(sql), [])
+        ctes = {node.ctename for node in nodes
+                if type(node).__name__ == "CommonTableExpr" and node.ctename}
+        for node in nodes:
             if type(node).__name__ == "RangeVar":
-                assert node.relname in schema_relations, (
+                assert node.relname in schema_relations | ctes, (
                     f"{name} reads {node.relname}, which db/schema.sql does "
                     "not create")
 
@@ -150,7 +163,10 @@ def snapshot(**overrides):
         "collected_at": NOW.isoformat(),
         "seed": "alexandria",
         "shape": {"claims": 100, "interpreted": 80, "unembedded": 4,
-                  "edges": 120, "papers": 30,
+                  # No pair has a second opinion in a healthy graph that has
+                  # never been re-judged, so these two are equal here and the
+                  # gap between them is what slice 5's loop opens up.
+                  "edges": 120, "current_edges": 120, "papers": 30,
                   "newest_edge": (NOW - timedelta(hours=6)).isoformat(),
                   "oldest_edge": "2026-09-17T02:00:00+00:00"},
         "degrees": {"interpreted": 80, "no_out": 12, "isolated": 8,
@@ -176,6 +192,18 @@ def snapshot(**overrides):
                     "first_edge": "2026-09-26T14:00:00+00:00",
                     "last_edge": (NOW - timedelta(hours=6)).isoformat()}],
         "dedup": {"sampled": 200, "near_duplicates": 14, "unmarked": 9},
+        # Slice 2's input-side metric. A healthy corpus offers most claims a
+        # partial shortlist: some candidates inside the floor, rarely all ten,
+        # and a few claims with nothing close enough to judge at all.
+        "reach": {"sampled": 200, "at_ceiling": 12, "unreachable": 9,
+                  "mean_candidates": 4.3, "mean_nearest": 0.31,
+                  "median_nearest": 0.28},
+        "reach_histogram": [{"band": "0.0", "claims": 6},
+                            {"band": "0.1", "claims": 28},
+                            {"band": "0.2", "claims": 71},
+                            {"band": "0.3", "claims": 62},
+                            {"band": "0.4", "claims": 24},
+                            {"band": "0.5", "claims": 9}],
     }
     for key, value in overrides.items():
         if isinstance(value, dict) and isinstance(raw.get(key), dict):
@@ -219,8 +247,107 @@ def test_the_shortlist_ceiling_catches_a_constant_setting_the_density():
     at_ceiling = read(ga.analyze(
         snapshot(degrees={"at_ceiling": 30}), now=NOW), "shortlist ceiling")
     assert at_ceiling.state == ga.FAILING
-    assert at_ceiling.evidence["shortlist"] == ga.SHORTLIST == 5
+    assert at_ceiling.evidence["shortlist"] == ga.SHORTLIST
     assert "NEIGHBORS" in at_ceiling.headline
+
+
+def test_the_audit_measures_the_shortlist_the_job_actually_sends():
+    """Two constants in two files that have to be the same number.
+
+    This file cannot import pipeline/interpret.py: that module builds a
+    `modal.Image` at import time, and the audit is a standalone tool that runs
+    wherever the credential is rather than inside the pipeline. So the audit
+    keeps its own copy of the shortlist's length and the distance floor, and a
+    copy is a thing that drifts.
+
+    The drift would be silent and the report would still look right, which is
+    what makes it worth a test. `shortlist ceiling` counts claims linked to all
+    SHORTLIST of their candidates; if the job offers ten and this file still
+    says five, the metric counts every claim with five or more edges as
+    constant-bound and reports a graph in trouble that is fine. The `reach`
+    metric fails the other way, running a retrieval nobody runs.
+
+    This assertion was hardcoded to `== 5` until slice 2 raised NEIGHBORS, so
+    it caught the change and said nothing about where the other copy was. It
+    reads the job now.
+    """
+    job = (ROOT / "pipeline" / "interpret.py").read_text()
+
+    def literal(name, cast):
+        found = re.search(rf"^{name} = ([\d_.]+)", job, re.M)
+        assert found, (
+            f"pipeline/interpret.py no longer defines {name} at the start of a "
+            "line, so this guard cannot read it. Fix the pattern here rather "
+            "than deleting the test: an unreadable guard is worse than none.")
+        return cast(found.group(1).replace("_", ""))
+
+    assert ga.SHORTLIST == literal("NEIGHBORS", int), (
+        "tools/graph_audit.py SHORTLIST and pipeline/interpret.py NEIGHBORS "
+        "have drifted apart, so the ceiling metric measures a shortlist the "
+        "job does not send")
+    assert ga.CANDIDATE_MAX_DISTANCE == literal("CANDIDATE_MAX_DISTANCE", float), (
+        "tools/graph_audit.py and pipeline/interpret.py disagree about the "
+        "distance floor, so the reach metric reports a retrieval nobody runs")
+
+
+def test_shortlist_reach_reports_the_input_and_never_fails_on_it():
+    """The floor's evidence, and why it carries no bound.
+
+    A short shortlist is the floor working rather than a defect, so this metric
+    is informational on purpose: a bound here would turn "these claims have no
+    close neighbor" into a failure, and that is a fact about the corpus. What
+    the metric owes a reader is the histogram, because moving the floor is a
+    reading of the distribution and the mean alone cannot support it.
+    """
+    reach = read(ga.analyze(snapshot(), now=NOW), "shortlist reach")
+    assert reach.state == ga.OK
+    assert reach.evidence["shortlist"] == ga.SHORTLIST
+    assert reach.evidence["floor"] == ga.CANDIDATE_MAX_DISTANCE
+    assert reach.evidence["at_ceiling_share"] == 12 / 200
+    assert reach.evidence["unreachable_share"] == 9 / 200
+    # The bands either side of the floor are the whole point of printing it:
+    # 24 claims sit in 0.4 and 9 in 0.5, so a reader can see what moving the
+    # floor to 0.5 would let back in before moving it.
+    assert reach.evidence["nearest_histogram"][4] == {"band": "0.4", "claims": 24}
+    assert "0.4 24" in reach.evidence["histogram"]
+
+    # A graph where every claim is offered the full shortlist again is the
+    # state slice 2 was built to end, and it still reads `ok` here, because the
+    # metric with the bound is the one above. This one only has to say so.
+    full = read(ga.analyze(
+        snapshot(reach={"at_ceiling": 200, "unreachable": 0}), now=NOW),
+        "shortlist reach")
+    assert full.state == ga.OK
+    assert full.evidence["at_ceiling_share"] == 1.0
+
+
+def test_an_old_snapshot_with_no_reach_still_reads():
+    """Snapshots in docs/evals/ predate slice 2 and have to stay readable.
+
+    The point of filing a snapshot is to compare it with a later one, so a
+    metric added today must not make yesterday's receipt unreadable. `reach`
+    and `current_edges` are both absent from anything captured before
+    2026-10-25.
+    """
+    old = snapshot()
+    del old["reach"], old["reach_histogram"]
+    del old["shape"]["current_edges"]
+    metrics = ga.analyze(old, now=NOW)
+    assert [m.name for m in metrics if m.name == "shortlist reach"] == []
+    size = read(metrics, "size")
+    assert size.evidence["current_edges"] is None
+    assert size.evidence["superseded_edges"] is None
+    assert "superseded" not in size.headline
+    assert ga.exit_code(metrics) == 0
+
+
+def test_size_says_how_many_verdicts_have_been_superseded():
+    size = read(ga.analyze(
+        snapshot(shape={"edges": 150, "current_edges": 120}), now=NOW), "size")
+    assert size.evidence["superseded_edges"] == 30
+    assert "30 have been superseded" in size.headline
+    # Density is the current verdicts over the claims, not every opinion ever.
+    assert size.evidence["edges_per_interpreted_claim"] == round(120 / 80, 2)
 
 
 def test_a_judge_that_writes_one_confidence_fails_calibration():
