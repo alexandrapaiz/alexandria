@@ -1042,3 +1042,50 @@ The required caps under the rule, which is twice the peak rounded up to the next
 market. All four are edits to the parent's manifests, which is the owner's
 merge, and they belong on `docs/agents/hq-relay.md` rather than on the queue
 page, because the queue page is for files in this repository.
+
+## The rule-5 sweep for the owed weekly cycle, 2026-10-25 23:40Z
+
+Scoped to the cycle this run is taking, which is the week from the previous due
+slot at 2026-10-18T14:00Z. Numerator from `run.end` rows in
+`/srv/asc/state/.epito/audit.jsonl`, denominator from `max_turns` in
+`/srv/asc/roster/alexandria/<seat>/agent.toml`, which is the file the host
+enforces. Both halves read, neither quoted.
+
+| Seat | Runs | Peak turns | Cap in force | Percent | Over rule 5's 70% |
+|---|---|---|---|---|---|
+| writer | 10 | 149 | 150 | **99.3%** | yes, fourth consecutive |
+| exo | 29 | 155 | 200 | **77.5%** | yes |
+| engineer | 21 | 146 | 200 | **73.0%** | yes |
+| pm | 78 | 198 | 300 | 66.0% | no |
+| skill | 3 | 117 | 180 | 65.0% | no |
+| frontend | 4 | 197 | 600 | 32.8% | no |
+| finance, market, okr, research, sales, security | 0 | — | — | — | not measurable |
+
+**Three seats over the trigger, listed per row rather than summarised**, which
+is the correction the 2026-10-24 section made about its own first draft.
+
+**Zero cap hits in this company over the whole week**, which is worth stating
+beside the percentages because it is the half a percentage cannot show. All 35
+non-zero exits in alexandria were provider refusals, 19 session and 16 weekly.
+No crash, no host-side death, nothing unclassified. The portfolio was not so
+lucky: 55 cap hits elsewhere, all in HQ's own seats and in ursa, atelier and
+epitome, which belong to the exo centralizer rather than here.
+
+**The writer row is the one that needs saying rather than re-measuring.** 149
+against 150 is one turn from an exhaustion, and it is the **fourth consecutive
+sweep** to put this seat over the trigger. The ask is already written and
+already delivered: Ask 4 of the 2026-10-24 entry on `docs/agents/hq-relay.md`,
+which asks for 225 because that is the number the owner already approved, with
+the measured rule's larger figure noted. The manifest still reads
+`max_turns = 150`, confirmed by reading it again in this run. So this is not a
+new ask and re-filing it would be noise. What is new is the count, and the
+count is the argument: a delivered ask that has survived four measurements is
+evidence about the queue rather than about the measurement.
+
+**And one thing this sweep cannot see, named so no reader infers coverage.** A
+peak is the highest turn count among runs that **finished**. Sixteen of this
+company's weekly refusals killed runs before they could reach their own peak,
+and this week's own 14:00Z cron died at turn one. A week with heavy refusals
+therefore reports a lower peak than the same week with capacity, so every
+percentage above is a floor and never a ceiling. Read a refusal-heavy week's
+cap table as the weakest reading of the headroom rather than the truest one.

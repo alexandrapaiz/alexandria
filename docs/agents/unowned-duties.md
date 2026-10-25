@@ -399,6 +399,7 @@ ExO and engineer seats. Queued in `docs/agents/hq-relay.md`, 2026-10-18.
 | **A run the event bus started is known to have succeeded or failed** | **pm (§1f), exo (§2b) as backstop** | continuous, 25 runs and 2 failures in the week to 2026-10-24 | daily standup, plus `run.failed` on both | **ASSIGNED 2026-10-24, and the evidence it needs exists: HQ built the receipt on 2026-10-18 and the row stayed "unowned" for six days because nobody checked.** See `INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it` and the note below |
 | **A run that ships nothing is caught before teardown** | **none since 2026-10-17** | every run, and it has fired twice in thirteen days | n/a | **unowned, found 2026-10-18**: the no-ship tripwire is a step in twelve workflows that no longer start any seat, and `cli/src/lib/runner.js`, `cli/src/lib/engine.js` and `cli/src/run.js` in `alexandrapaiz/epitome` contain no shipping check in 1,445 lines. This is incident 3's fix, unowned again, see below |
 | **A seat's cap and model are what the evidence says they are** | exo (turn-caps.md) in words, **and the file it writes is not the file that runs** | per cap change, three since 2026-10-04 | weekly Sun | **capability gap, found 2026-10-18**: the governing value is `max_turns` in a manifest this seat can read and cannot write. The writer's is 150 against a workflow that says 225, see `INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens` |
+| **The organization's weekly provider budget is spent where it buys the most** | **none** | continuous, and it ran out twice: 2026-10-18T19:21Z and 2026-10-25T03:00Z | n/a | **unowned, found 2026-10-25**: the provider enforces a weekly limit as well as a session limit, the week to 2026-10-25 spent 675 runs with 467 of them on one Saturday, and the budget was gone twenty hours before it reset. The three seats with the fewest attempts per period lost their only slot of the week. No charter in `prompts/` contains the words "weekly limit", "weekly budget" or "provider budget". See the note below |
 | **The instructions a seat is woken with resolve in the repository they are delivered to** | **none** | every wake the bus sends, and seven in one day to the PM seat alone on 2026-10-24 | n/a | **unowned, found 2026-10-24**: the host composes a standing block in another repository and names a tool path that exists only there. No charter here names the wake text, so the only record of seven defective instructions is seven refusals one seat chose to write down. See `INC-2026-10-24-the-fabricated-tool-has-a-source-and-it-is-our-own-standing-block` and the note below |
 
 ### The firing state of every row above that rests on a clock
@@ -414,10 +415,10 @@ done.
 | The org knows what the world knows | market, `0 11 * * 5` | never | **unevidenced**, and class A: the seat itself has not run since 2026-10-17 |
 | Ecosystem events steer what we ingest | research, `30 16 * * 1` | never | **unevidenced**, and class A: the seat itself has not run since 2026-10-17 |
 | Upstream compromise is in the threat model | security, `0 13 1,15 * *` | never | **unevidenced**, and class A: the seat itself has not run since 2026-10-17 |
-| The repo describes the system it is | exo, `0 14 * * 0` | never | **unevidenced** |
+| The repo describes the system it is | exo, `0 14 * * 0` | **2026-10-25T14:00:11, refused** | **fired and produced nothing, measured 2026-10-25.** No longer unevidenced and not firing either. The slot fired on time and the provider refused it at turn one on a weekly limit, which is the third state this column did not have |
 | Approved copy reaches the live site | frontend, `0 12 * * 3` | never | **unevidenced**, on top of the lag this page already accepts |
-| An HQ decision is read against local law | exo, `0 14 * * 0` | never | **unevidenced**, on top of the cadence gap already recorded |
-| Evidence from here reaches HQ | exo, `0 14 * * 0` | never | **unevidenced**, and the delivery half now runs on the board channel instead |
+| An HQ decision is read against local law | exo, `0 14 * * 0` | **2026-10-25T14:00:11, refused** | **fired and produced nothing, measured 2026-10-25**, on top of the cadence gap already recorded |
+| Evidence from here reaches HQ | exo, `0 14 * * 0` | **2026-10-25T14:00:11, refused** | **fired and produced nothing, measured 2026-10-25**, and the delivery half now runs on the board channel instead |
 | A skill's measured effect | skill, `0 12 * * 2` | never | **unevidenced**, on top of the capability gap already recorded |
 | A seat's cap and model are what the evidence says they are | exo, `0 14 * * 0` | never | **unevidenced**, on top of the capability gap already recorded |
 | Runs that fail get reported to the owner | pm, `5 11 * * *` | 2026-10-24T11:05Z | firing |
@@ -1714,3 +1715,74 @@ Nine of the twelve rows are the second and this page scored them as though
 they were the first, which is how a liveness finding came out of a clock that
 had not been switched on. **A state that cannot tell "we did not look" from
 "there was nothing to see" will eventually report the second as the first.**
+
+## The 2026-10-25 row
+
+### The organization's weekly provider budget, which is the resource every other row rests on
+
+Found by the method this page prescribes, which is to grep every charter for
+the words a duty would have to use and read absence as the finding.
+
+```bash
+for w in 'weekly limit' 'weekly budget' 'provider budget' 'quota' 'capacity'; do
+  printf '%-18s ' "$w"; grep -ril "$w" prompts/*-agent.md | tr '\n' ' '; echo
+done
+```
+
+The first three return nothing at all. `quota` and `capacity` return
+`prompts/exo-agent.md`, where both words appear in observation instructions
+rather than in a duty, and `capacity` also returns `prompts/pm-agent.md`, where
+the PM accounts for the day's refusals in its standup. So the organization
+counts this resource in two places and nobody owns it.
+
+**Why it is a duty and not a fact about the weather.** The model provider
+enforces two limits. A session limit resets in hours and is genuinely weather.
+A weekly limit resets at a week boundary, and when it is gone the whole
+portfolio stops until the boundary passes. Over the host's history there have
+been 73 weekly-limit refusals against 226 session-limit ones, and both weekly
+exhaustions were hit on a Sunday and reset at Sunday 23:00Z: 2026-10-18 at
+19:21:22Z and 2026-10-25 at 03:00:04Z.
+
+**The cost, measured on the week it was found.** The week ending
+2026-10-25T23:00Z ran 675 runs, **467 of them on the Saturday**. The budget was
+exhausted at 03:00Z on the Sunday, twenty hours before it reset, and on that
+Sunday eleven cron slots came due across four companies and **all eleven were
+refused**. Three of those were the only slot their seat gets in a week:
+`alexandria-exo` at 14:00Z, `ursa-security` at 15:15Z, `ursa-exo` at 18:00Z.
+The seats with the fewest attempts per period were the ones that paid, which is
+the opposite of how a finite budget should be spent.
+
+**What makes it invisible to every other audit on this page.** The three tests
+this register already runs ask whether a duty is named, whether its clock
+fires, and whether the seat holds the credential its evidence needs. A weekly
+seat refused on a Sunday passes all three: it is named, its clock fired on time
+and is in the record, and it holds every credential. The fourth test added to
+the ExO charter on 2026-10-25 asks the missing question, which is whether the
+slot falls inside a window the organization is reliably out of capacity in. But
+a test tells a run that a slot was lost. It does not make anybody responsible
+for the budget being there.
+
+**Proposed check.** One line in whichever seat's charter takes it: each run
+reports the week's provider spend against the week's reset, as runs consumed
+and hours of exhaustion so far, from `/api/capacity` and the host's own logs.
+Both inputs exist today and need no new reporting. The signal to act on is the
+exhaustion hour moving earlier week over week, which it did by sixteen hours
+between the only two weeks on record.
+
+**Proposed owner, and this one is proposed rather than assigned.** This page's
+own rule is that a gap which costs money, touches the owner's exposure or
+activates a dormant seat is hers. This gap is the organization's rate of spend
+on a paid provider, so the assignment is the owner's call. Two candidates, with
+the trade stated rather than hidden. The **PM seat** already reads the
+refusal count daily and already writes the standup the owner reads, so the
+marginal cost is one line and the cadence is right. The **finance seat** is
+where metered usage belongs by subject, and it is dormant, which is the same
+condition that has left the free-tier row on this page unowned since
+2026-09-19. Giving it to finance is correct and inert. Giving it to the PM is
+a smaller fit and would actually run.
+
+**And one thing that is not in scope for whoever takes it.** Deciding what the
+budget should be, or paying for more of it, is the owner's and nobody else's.
+The duty proposed here is only to know where the week stands before it ends,
+which is the thing that was missing when three seats lost a cycle to a budget
+nobody was watching.
