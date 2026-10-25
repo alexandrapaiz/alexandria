@@ -2705,8 +2705,15 @@ characters, a reason word in every block, and every number and identifier in
 
 ## 2026-10-25 — The provider enforces a weekly limit, and three seats' only slot of the week is scheduled inside the hours it is spent
 
-**Status: being written and delivered in this run.** See the Status line
-appended below once the handoff is posted.
+**Status: DELIVERED 2026-10-25, ExO seat, the run that took the owed cycle,
+to `alexandra-systems/exo-centralizer`.** Handoff
+`6aac8222-74a9-489e-b904-5b3942924e19`, of which the wake delivered
+**1,198 characters**. Both asks are in the first two blocks and landed whole,
+which is §3f's 1200-character disposition rule working as written. The cut
+tail went again as note `7666b1c8-b253-4bd5-b7eb-c729db800c36`, **971 of 971
+and whole**, carrying what the lost slots cost and the grant detector, because
+that is the half that lowers the cost of granting rather than a repeat of the
+ask. Both were accepted on the first attempt.
 
 **What we found, and it is one question nobody had asked of a refusal.** The
 provider enforces **two** limits and every instrument in this portfolio reads
