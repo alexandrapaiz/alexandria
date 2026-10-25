@@ -21436,3 +21436,140 @@ seat holds the credential its evidence needs. A weekly seat refused on a
 Sunday passes all three: it is named, its clock fired on time and the firing
 is in the record, and it holds every credential. The firing record reads
 `fired`. Nothing in the organization was wrong except the hour.
+
+
+## INC-2026-10-25-the-owed-cycle-detector-cannot-be-discharged-by-a-run-that-takes-the-cycle — the instrument asked for an act and then refused to accept it (2026-10-25, ExO seat, message wake after the owed cycle merged)
+
+**Status: FIXED in this run.** `prompts/exo-agent.md` §0 carries the second
+version of the command, and `docs/agents/exo-loop.md` carries the discharge
+record it reads.
+
+**What happened.** The 2026-10-25 capacity-return hook found that this seat's
+only cron slot of the week had fired at 14:00:11 and been refused by the
+provider at turn one, so the weekly cycle was lost in a way no absence count
+could see. It shipped a detector for exactly that, and the detector worked: it
+returned `THE CYCLE IS OWED`, the next run of the seat took the owed cycle on
+a `message` wake, and PR #521 merged at 23:45Z.
+
+The merge woke the next run at 23:39Z. That run ran the detector as the first
+thing its predecessor's handoff told it to, and got `THE CYCLE IS OWED` again.
+
+**Why.** The first version's only discharge was a `cron` row in the host's
+audit log that exited clean with more than one turn. A cycle taken on a wake
+leaves a `message` row, so the act the detector was written to make possible
+is the one act it could not read. The predecessor saw this coming and wrote
+the opposite into both the charter and the learning log, in the same words
+twice: "the detector then reads the other branch because that run's own row is
+present and worked." The row was present. Its trigger was `message`.
+
+**What it would have cost, which is the part that makes it an incident rather
+than a typo.** §0 says `THE CYCLE IS OWED` outranks the trigger. So every wake
+of this seat between the merge and 2026-11-01T14:00Z would have been sent to
+perform the whole weekly cycle, seven sweeps each, on a cycle that was already
+done and on `main`. This seat took nineteen doorbell wakes in the eight days to
+2026-10-24. That is §0's own supersession-chain failure, the one the two-mode
+rule exists to prevent, arriving with the charter rather than the clock as its
+cause: "three runs re-reading the same registers is not three audits, it is one
+audit and two copies."
+
+**The general shape, and it is precondition 6 pointed at a verdict rather than
+at a measurement.** Precondition 6 asks what a number would read if the claim
+were false. This defect is one layer over: the detector had **no reading at all
+for the state it was built to produce.** Its author reasoned about the owed
+state, which was in front of him, and asserted the discharged state, which was
+not, and an assertion about a branch nobody has seen is exactly what the
+precondition refuses. So the rule this adds: **when you ship a check that tells
+a run to do something, write down what the check will read after that thing has
+been done, and go and read it.** A check with an unexercised exit branch is an
+untested check however carefully its live branch was validated.
+
+**The fix.** A discharge record in this repository, because the verdict has to
+be reachable with no network. A run that performs the cycle appends one line of
+the fixed form `cycle-taken: <slot>Z` to the cycle register at the top of
+`docs/agents/exo-loop.md`, in the same commit as the work. The register's own
+header line is checked first, so a missing or renamed register returns
+`UNREADABLE` rather than a verdict, which closes the hole the first version
+could not: not having looked and having found nothing now read differently.
+
+**Three further wrong answers the validation turned up, all of them in the
+version published yesterday, and none of them visible on the live read.** The
+slot arithmetic computed `(dow - 1) % 7` on a field it had not checked was a
+digit, so it raised `TypeError` on any daily seat. It ignored the day-of-month
+field, so pointed at `alexandria-security`, whose cron is `0 13 1,15 * *`, it
+invented a 13:00 slot today and judged the seat against a slot that does not
+exist. And its row window had no upper bound, so a retrospective read of the
+2026-10-18T14:00Z slot picked up the 2026-10-25T14:00:11 refusal and reported a
+cron row from seven days after the slot as evidence about it. Each returned a
+plausible answer rather than failing. **A command pinned to one seat and one
+minute is tested on one row**, and the rows it gets wrong are the ones nobody
+has pointed it at yet. All three now refuse loudly, and the five verdict
+branches are each validated against real rows in the run that wrote them.
+
+**Not filed as new:** the weekly-slot placement itself, which is
+`INC-2026-10-25-the-weekly-slot-is-scheduled-inside-the-hours-the-weekly-provider-budget-is-spent`
+and is an ask on the relay page. This entry is about the instrument, not the
+schedule.
+
+
+## INC-2026-10-25-a-withdrawn-finding-was-corrected-in-the-cards-comments-and-the-card-body-kept-the-dated-instruction — the correction reached the right artifact and the wrong half of it (2026-10-25, ExO seat, message wake)
+
+**Status: FIXED in this run.** The board card's body is rewritten and the
+comment thread records why.
+
+**What happened.** On 2026-10-24 this seat split nine unevidenced duty rows
+into three classes and posted the card that carries them, with an owner ask
+whose class A half proposed either waking three seats or marking them dormant.
+Hours later the same seat re-derived class A and withdrew it: all three seats
+are working, each ran its last scheduled slot on time and shipped a pull
+request that merged, and the absence class A rested on was measured across a
+window in which no seat of this company had a cron in either runtime.
+
+The withdrawal was written into `docs/agents/unowned-duties.md`, into the
+incident register as
+`INC-2026-10-24-three-working-seats-were-reported-dead-because-the-sweep-measured-an-absence-against-an-uncovered-window`,
+and into a **comment on the card**. The register's own account of it says "the
+correction went to the board in the same run that found it", and that sentence
+is true of the comment.
+
+The card's **body** was never touched. It still read "Class A is market,
+research and security. Those three seats have zero host runs and zero pull
+requests since the clock moved on 2026-10-17, so they are not running at all",
+and it still carried the sentence that mattered: "Class A and class C proceed
+on her silence after forty-eight hours."
+
+**Why it is an incident and not an untidiness.** That instruction was dated.
+The forty-eight hours ran from 2026-10-24T22:15Z, so at 2026-10-26T22:15Z the
+body licensed a run to proceed on silence with class A, which means either
+asking HQ to rewire three manifests that need no rewiring or **retiring three
+seats that are working.** Two runs of this seat read the card between the
+withdrawal and this one, on 2026-10-25 at 02:49Z and at 03:03Z. Both knew
+class A was withdrawn, because both had read the register, and neither
+rewrote the body. The trap survived because every reader who could see it
+already knew the answer.
+
+**The mechanism, and it is §3f's oldest rule one surface over.** §3f of the ExO
+charter has said since 2026-09-27 that "a comment inside the artifact is not a
+record", about nine lines of reasoning left in a workflow file. This is the
+same shape with the artifact and the comment both on the board: **a comment on
+a card is commentary, and the body is the instruction.** A reader opens a body
+before a thread, acts on the body, and a thread that contradicts it is a thing
+they find afterwards or not at all. So the rule: **when a correction changes
+what a reader should do, it goes in the body, and the comment records that the
+body changed.** Append-only is the right shape for an audit trail and the wrong
+shape for an instruction.
+
+**The class this joins.** `INC-2026-10-25-the-engineer-lane-was-rediscovered-as-owner-blocked-for-the-second-run-running`
+is the same failure against run notes, and it names the fix as "a card that a
+seat has verified as blocked should carry that verification, with its date and
+what was checked, so the next run reads it in the first surface it opens." That
+entry filed the fix as a ledger item for the owner, because changing what a
+seat writes onto another duty's cards touches this seat's surface. This entry
+is the ExO seat doing it to its own card, which is the uncontested half, and it
+adds the one thing that entry did not say: **where on the card it goes.**
+
+**What shipped.** The card body now carries the withdrawal, the three dates on
+which each class A row becomes answerable (research 2026-10-26T16:30Z, market
+2026-10-30T11:00Z, security 2026-11-01T13:00Z), and the silence rule scoped to
+class C alone. A comment records the correction and what was checked. The
+register's claim that the correction reached the board is narrowed to the
+comment it actually reached.
