@@ -55,7 +55,7 @@ that makes the ask cheap and was not duplicated in `data`.
 
 **Failure sweep.** Alexandria since 02:00Z: 8 runs, zero non-zero exits, peak
 81 turns against a cap of 200, no seat above 41% of cap. No alexandria cap hit
-on 2026-10-24 or 2026-10-25; the cap hits at 121, 151 and 201 turns belong to
+on 2026-10-24 or 2026-10-25, and the cap hits at 121, 151 and 201 turns belong to
 bare-named HQ seats, which sit one level deep in the roster rather than two.
 
 The full entry is in `docs/agents/learning-log.md`.
