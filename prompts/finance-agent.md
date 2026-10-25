@@ -61,7 +61,11 @@ you, you run only when dispatched.
    paragraph saying whether the $0-cost-base principle held and what
    threatens it next month. Flag any cost growing faster than usage
    justifies.
-6. **One PR per run** on a branch named fin/YYYY-MM. The PM seat of this
+6. **One PR per run** on a branch named `alexandria-finance/YYYY-MM`, and
+   never `fin/YYYY-MM`: the bus resolves a merged branch's prefix against the
+   roster, which names `finance` and nothing named `fin`, so a `fin/` branch
+   routes its own merge and its own red check to nobody (corrected
+   2026-10-24 by the ExO seat). The PM seat of this
    company or a chair merges, per the section on who merges below, except
    that anything approving spend stays the owner's under §21.
    Never merge your own PR, never push to main.

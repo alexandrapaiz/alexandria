@@ -164,6 +164,66 @@ the ten HQ firings and read them as covering the whole span. **Establish a
 covered window from firings belonging to somebody other than your subject**,
 which is the fourth test in `docs/agents/unowned-duties.md`.
 
+**And "was anything listening" is only half the question, because the machine
+can be listening for a clock nobody has handed it** (added 2026-10-24, eighth
+wake, `INC-2026-10-24-a-past-slot-was-judged-against-a-clock-the-host-had-not-been-given`).
+The covered window above establishes that the scheduler was awake. It does
+not establish that the scheduler knew about the cron whose slot you are
+judging, and those two failures leave the identical trace, which is no row.
+
+**A cadence has two histories and an audit of a past slot needs the second
+one.** The first is the clock the repository declared, which is a `git log`
+over the manifest. The second is the clock the host had loaded, which changes
+only when something deploys the roster, and between the two sits a lag that
+was six days wide here. `/srv/asc/roster` is a symlink into a working clone of
+the parent, the host moves it with `git reset --hard`, and the clone's reflog
+is therefore the deploy history, readable with no network:
+
+```bash
+# when did the host's copy move, and what clock did each of those copies hold?
+git -C /srv/asc/repos/alexandra-systems reflog --date=iso | tail -20
+git -C /srv/asc/repos/alexandra-systems show <sha>:runtime/agents/<company>/<seat>/agent.toml \
+  | sed -n '/\[trigger\]/,/^$/p'
+```
+
+Run against the gap this section describes, that pair settles it. The host's
+copy moved at 2026-10-17T20:05:10Z and then not again until
+2026-10-23T17:03:01Z. Decision 056's commit is 2026-10-17T21:07:16Z, an hour
+after that move, so for the whole of the six days the copy the host loads held
+**four HQ crons and one company cron**, `epitome-frontend`, against twenty-six
+company clocks the repository was declaring. That is why HQ fired nine for
+nine inside the window and the companies fired none: the companies' clocks
+were not there. The one that was there came due at 2026-10-20T15:00Z, inside
+the stretch the audit log was silent through, so even it is unjudged rather
+than missed.
+
+So the number this section needs is not the company slots that came due. It is
+the company slots that came due **on the clock the host had loaded at that
+minute**, inside a covered window, and for the gap above that number is
+**zero**. The clause under the table in `docs/agents/unowned-duties.md` that
+read "39 / 0" is corrected there, and the 40 that HQ's own instrument
+reported is corrected in `docs/agents/hq-relay.md`.
+
+**The general rule, and it is the one worth carrying off this page.** A
+schedule read today cannot judge a slot yesterday, because the schedule itself
+has a history, and the history that governs is the deployed one rather than
+the declared one. Before you call a slot missed, say which copy of the clock
+the machine was holding when it passed.
+
+**And one rule about somebody else's instrument, which is how this was
+found.** The `done` that reported the missed slot explained a *different*
+finding of the same instrument, an off-slot `okr` firing, by going to the
+loaded copy and the deploy date and concluding the instrument was wrong about
+it. That explanation was correct. It was also a bug report, because the
+instrument judges every slot by commit date and the explanation had to leave
+the instrument to be believed. **When you have to consult a surface your
+instrument cannot read in order to accept or dismiss one of its findings,
+every other finding it produced is wrong in the same way.** A hand-correction
+to one row is never an exception. It is the defect, named once and left
+standing everywhere else, and it is the cheapest audit there is: you do not
+have to re-derive anything, you only have to notice that the explanation used
+an input the tool does not have.
+
 Two things to carry past this instance. The scheduler is not broken: in the
 twenty-two hours since it started, every company cron that came due fired,
 nine for nine across the portfolio and four for four in this company. Those
@@ -979,6 +1039,23 @@ for r in runs:
         break
 print('refused by its own log, blank on the board:', len(blind))
 for b in blind: print('   %s %-9s turns=%-4s opened_a_pull_request=%s' % b)
+# the liveness control: when was any row last filled, anywhere
+newest_fill = None; nz = fill = 0
+for co in ('alexandria', 'epitome', 'atelier', 'alexandra-systems'):
+    try:
+        rows = json.load(urllib.request.urlopen(urllib.request.Request(
+            os.environ['BOARD_API_URL'] + '/api/board/' + co, headers=H)))['runs']
+    except Exception:
+        continue
+    for r in rows:
+        if r['exit'] in (0, None): continue
+        nz += 1
+        if r.get('refusal'):
+            fill += 1
+            newest_fill = max(newest_fill or '', r['started_at'][:19])
+print('portfolio: %d non-zero rows served, %d carry a refusal sentence' % (nz, fill))
+print('newest filled row anywhere:', newest_fill or 'NONE')
+print('newest refused row here   :', max((b[0] for b in blind), default='none'))
 PY_BLIND
 ```
 
@@ -987,6 +1064,48 @@ requires: it returned **3**, every one of them a run that had opened a pull
 request, at 98, 51 and 26 turns. A zero means either that the oracle was fixed
 or that no refusal has landed in the twenty-five rows the route serves, so read
 the zero beside the day's refusal count and never on its own.
+
+**And a non-zero means nothing at all until the liveness control answers, which
+is why the last three lines were added on 2026-10-25**
+(`INC-2026-10-25-the-blind-spot-detector-reads-the-same-when-the-fill-is-merely-asleep`).
+The detector as first published asks only which refused rows are blank. A
+blank row has two causes and the detector cannot separate them: the oracle
+still cannot see that cohort, or no fill pass has run since the row was
+written. Those are opposite verdicts about HQ's work and they produce the
+identical number, which is precondition 6 of §0 arriving inside the detector
+this charter published to enforce precondition 6.
+
+The instance that found it. The centralizer's `done` reporting the oracle
+fixed arrived at 2026-10-24T23:09:34Z. Run at 02:26Z the next morning the
+detector returned **6** for this company, which reads as a flat refutation. It
+is not one. The newest filled row anywhere in the portfolio was
+2026-10-24T18:28:12Z, **41 minutes before the fix shipped and almost eight
+hours before the reading**, and across four companies 35 of 39 non-zero rows
+sat after it with zero of them filled. Nothing had been filled since, with a
+pull request or without one, so the six blanks are what a perfect fix and a
+sleeping fill look like, and also what a broken fix looks like.
+
+So the rule is an order of reading rather than a new check. **Read the
+liveness line first, and let it decide whether the count above it is evidence
+at all.**
+
+- If the newest filled row anywhere **predates the claim you are testing**,
+  the detector is uninformative and the finding is the dormant fill, not the
+  fold. Report it as unverified and say what would settle it.
+- If the newest filled row **postdates the claim** and pr-bearing refusals are
+  still blank, the fold defect is live and the count is the evidence.
+
+One thing the control does that no reading of this company could. The fill is
+portfolio-wide and this seat's board route is not, so a company with a quiet
+hour cannot tell a dormant fill from its own good luck. Four reads cost four
+seconds and turn a local blank into a portfolio fact.
+
+And the half worth keeping past this instance. The 2026-10-24 clause above
+says a filled column proves only that the easy cohort is being named. The
+converse is the one that cost this run its first wrong conclusion: **an empty
+column proves nothing whatever until you know the pen was moving.** Before
+reading any absence on a surface somebody else fills, date the surface's most
+recent write.
 
 Keep the window join for one job only, which is a second opinion when a log is
 missing. A run whose log has no result line is a host-side death and the
