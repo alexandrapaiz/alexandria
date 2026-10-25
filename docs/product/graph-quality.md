@@ -1,6 +1,6 @@
 # The claim graph, measured
 
-**Slice 1 built 2026-09-29, slice 5 built 2026-10-24** (engineer seat). This is
+**Slice 1 built 2026-09-29, slice 5 built 2026-10-24 and finished 2026-10-25** (engineer seat). This is
 the design record for the
 ledger entry "Knowledge graph upgraded to industry standard" (docs/ideas.md,
 accepted 2026-09-18), whose first step asks for a graph-quality audit with
@@ -264,13 +264,57 @@ loop as damage. The `contradiction` metric reads `latest_links` too, because its
 last number comes from `deprecated_claims` and a report whose own four numbers
 do not reconcile is worse than one that is merely stale.
 
-**What is left, and it is not in this slice.** Nothing re-queues a judged claim
-yet. `interpreted_at` marks a claim done and the loop needs a trigger that picks
-claims whose newest opinion predates the current prompt sha, which is a job
-rather than a read path and is the natural next day of work here. Until it runs,
-everything above is correct and latent: no pair in production has a second
-opinion, so every number in this paragraph's list is unchanged today and right
-tomorrow. The audit's volume metrics (`shape.edges`, `degrees`, `relations`,
+**The trigger, built 2026-10-25, and the paragraph that asked for it is kept
+below because it was right about the shape and wrong about the inputs.** What it
+asked for: "nothing re-queues a judged claim yet. `interpreted_at` marks a claim
+done and the loop needs a trigger that picks claims whose newest opinion
+predates the current prompt sha, which is a job rather than a read path and is
+the natural next day of work here."
+
+Two things that sentence assumes are not true of the data, and both of them are
+a bill rather than a wrong answer, which is why they are worth writing down.
+
+**A claim's newest opinion is not always a row.** An edge is written when the
+judge found a relation, so a pass that read a claim and found nothing leaves
+nothing behind. In `claim_links` that claim is indistinguishable from one the
+current prompt has never seen, so a trigger reading the edges re-selects it on
+every run and pays for a model call every time, forever, and the graph never
+changes to say otherwise. The pass is therefore the unit rather than the
+finding: `claim_judgments` is append-only, keyed `(claim_id, prompt_sha)`, and
+carries an edge count that is allowed to be zero. The empty passes are the rows
+the table exists for.
+
+**And the sha the trigger compares against is the prompt's, not `method`'s.**
+`method` is `model@sha` and the model is whichever provider answered, which is
+ADR-32's Moonshot normally and Groq's free tier when Moonshot refused. So a
+trigger keyed on `method` re-judges the entire corpus the first time the
+fallback answers, and again when the primary comes back, and neither pass is a
+change of mind. The prompt is the judge's instructions and the model is a
+capacity accident. `method` is still recorded beside the sha, because which
+provider answered is worth knowing and this is now the only place it survives
+per claim.
+
+**What the trigger will not do is spend anything.** Re-judgment takes the slots
+the fresh queue leaves and never one it wanted, inside the same `max_claims` and
+the same dollar cap the run already had. A first opinion is worth more than a
+second one: an unjudged claim has no edges at all, so judging it can only add to
+the graph, where re-judging a claim usually confirms what is already there. The
+fresh queue was 2,000-odd deep at the last reading, so the trigger returns
+nothing today and the loop stays latent until the drain catches up. That is the
+right order of work rather than a limitation, and it is also why turning this on
+cannot regress production this week.
+
+**The backfill is the difference between starting correct and starting with a
+bill.** Every claim judged before the table existed has no row in it, so the
+first run under any prompt would see the whole judged corpus as never-judged.
+The shas are recoverable: they are already in `claim_links.method`, so a claim
+judged under today's prompt is recorded as judged under today's prompt and is
+correctly left alone, and the pass is dated from the edge rather than from
+`now()`, because those passes happened and on known dates.
+
+Until the drain catches up, everything in this slice is correct and latent: no
+pair in production has a second opinion, so every number in this paragraph's
+list is unchanged today and right tomorrow. The audit's volume metrics (`shape.edges`, `degrees`, `relations`,
 `confidence`) still count every opinion ever given, which is the right question
 for "what has the judge done" and the wrong one for "how dense is the graph".
 That choice belongs with slice 2, which is where density is argued, and it is
