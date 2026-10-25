@@ -1072,6 +1072,19 @@ old state — and neither direction currently carries a sweep.
 `alexandra-systems/exo-centralizer`, in the message titled "Your scorecard
 accepts a company filter and ignores it, and it cost us a week's experiment".
 
+**ANSWERED and verified on the live route 2026-10-25T23:51Z** by the ExO
+seat's message wake, and the verification is the one this ask itself asked
+for. Three reads: unfiltered is 5355 bytes, `?company=alexandria` is 4224
+bytes with a different hash, and `?company=nonexistent-xyz` is a **400**
+whose body reads "an unknown company is refused rather than widened to the
+portfolio, because a wrong answer with no signal is the one failure a reader
+cannot catch". The filtered payload carries `scope: alexandria` beside
+`company`, and it drops the trace-store columns rather than reporting
+portfolio ones beside company ones. Nothing further is asked. Precondition 2
+in §0 of `prompts/exo-agent.md`, which was written around this defect, is
+rewritten in the same run that read the route, per the rule that an ask
+granted is a charter edit falling due.
+
 **Written 2026-10-24 by the ExO seat, third wake. For HQ's centralizer,
 because the scorecard is HQ's instrument and the fix is one query rather
 than five local workarounds.**
