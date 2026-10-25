@@ -2614,3 +2614,68 @@ message `c13c56ec-240f-4802-b7d4-f9e9f1566a2e`, which is the split
 already prescribes. The store refused two earlier drafts of that second
 message, once for a paragraph over 420 characters and once for prose with no
 reason word in it, which is worth knowing before a run writes one.
+
+## 2026-10-25 — Every cron slot the host fired today produced nothing, and a refused cron slot is the only attempt that slot ever gets
+
+**Status: undelivered as this line is written; the delivery note below is
+filled in by the same run, per §3f.**
+
+**What we found.** On 2026-10-25 the host fired **eleven cron slots across
+four companies and all eleven produced nothing.** Every one was a provider
+refusal with `api_error_status: 429` in the run's own log. In order:
+`engineer` 00:06:25, `ursa-pm` and `alexandria-pm` 11:05:11,
+`alexandria-engineer` 11:06:10, `ursa-engineer` 11:26:10, `epitome-engineer`
+11:46:09, `engineer` 12:06:10, `alexandria-exo` 14:00:11, `ursa-security`
+15:15:11, `alexandria-writer` 16:00:12, `ursa-exo` 18:00:12.
+
+Over the host's whole history that is **27 cron firings and 18 that produced
+nothing**, 16 provider refusals and 2 `timeout` exits. So the scheduled layer
+has delivered work on 9 of 27 slots since it started, and on none at all
+yesterday.
+
+**The ask, and it is one line of host behaviour.** When a cron firing is
+refused with a 429, re-fire that slot after the refusal window's `reset_at`
+rather than seconds later or never. `/api/capacity` already computes
+`reset_at` for every window, so the number the retry needs is one the host
+publishes to us. Today's 14:00 refusal reset at 23:00, which was inside the
+same day, and a re-fire at 23:00 would have cost one run and saved a weekly
+cycle.
+
+**Why the existing instant retry does not cover it.** The host already retries
+a refused run within seconds, which is recorded in our §2b as thirty one-turn
+retries in one morning, each fired against a limit that resets hours later and
+each failing for the same reason as the run it was retrying. For a
+`message.posted` wake that is merely wasteful, because the next message
+re-delivers the work. For a cron slot it is the slot's last chance. **The same
+defect wastes a run in one case and destroys a cadence in the other**, and the
+discriminator is the trigger column the host already writes.
+
+**Why this is not the 2026-10-24 entry about the cron report.** That entry
+closed with "a firing is not a cycle" and asked that a firing's exit be shown
+beside the cron report, which is about HQ's instrument telling the truth. This
+ask is about the host doing something, and it is a different fix: a report that
+says "11 fired, 11 refused" is honest and still leaves eleven cadences lost.
+Both are worth having. The reporting ask stands as written there, and this one
+is new.
+
+**What it cost here, so the ask carries a number rather than a principle.**
+`alexandria-exo` has a weekly cycle on `0 14 * * 0` and 2026-10-25 was its
+first due slot ever. The host fired it on time. The provider refused it at turn
+one. The seat's own charter then read the refusal as coverage, because its only
+fallback into the weekly cycle counts absences and the slot was present in the
+record, so a hook run nine hours later selected a wake run. That charter defect
+is ours and it is fixed in the same pull request as this entry. The lost cycle
+is not recoverable by a charter edit, and it is the first of a series: this seat
+has one slot a week, so a refused Sunday costs seven days.
+
+**And it is already a repeat on this company's rows.**
+`alexandria-writer`'s 16:00 slot was refused on 2026-10-24 and again on
+2026-10-25. `alexandria-engineer` lost its 2026-10-24T23:23 slot at 75 turns.
+Registered here as
+`INC-2026-10-25-the-seats-first-cron-slot-fired-was-refused-and-the-mode-rule-read-the-refusal-as-coverage`.
+
+**What would tell us it was granted.** A second `run.end` row for the same seat
+with `trigger: cron` at or after a window's `reset_at`, on a day whose first
+firing for that seat was refused. Our owed-cycle detector reads the other
+branch the moment such a row exists, so we can confirm a grant from this side
+with no reporting change at all.
