@@ -20607,6 +20607,76 @@ has nothing to go red against.
   here proposes adopting one.
 - Status: proposed
 
+### 2026-10-26 - The issue headline wants the same balance the dek just got, and the phone says no (frontend seat, message run)
+- Trigger: measuring the dek widow on card
+  `b37a342a The issue dek's second line is a two-word widow`. The card describes
+  the dek as sitting "under a headline that is itself two balanced lines." It is
+  not. On the one published issue at 820 and 1440 the H1 runs 610px then 156px
+  in a 632px measure, so the second line is 25% of the column and two words
+  long. The dek's old second line was 118px and two words. The defect the card
+  names was the lower half of a pair, and a reader met both stubs in the first
+  60px of the page.
+- What: the dek is fixed and shipped in this run. The H1 is not, and the reason
+  is a measurement rather than caution. `text-wrap: balance` on `.issue-body h1`
+  was measured across the generator's whole title range, a 28-character title,
+  the live 51, and 113 against the 120-character ceiling `ensure_fresh_title`
+  enforces, at all three viewports. It is right in five of six cases and it is
+  inert in two of those: a one-line title does not move, a three-line title at
+  820 and 1440 is already 628/617/493 and does not move, and the live title at
+  820 and 1440 goes from 610/156 to 420/346, which is the repair.
+  The sixth is the phone and it is a regression. The live title at 390 goes from
+  297/305/156, a descending rag with the stub last, to 297/172/289, which puts
+  the short line in the middle and reads as a dent rather than as a rag. Both
+  frames are committed at
+  `docs/design/reviews/2026-10-26-message/h1-live-phone-plain.png` and
+  `h1-live-phone-balanced.png`, and the call wants an eye rather than the
+  numbers, because both versions measure defensibly and only one of them looks
+  like a mistake.
+- Why it is a proposal and not a diff: the honest fix is `balance` above 820
+  only, and that is a breakpoint on a type rule rather than a type rule, which
+  is a house decision. The card itself says the right thing about this: one
+  deliberate use of `text-wrap` on `.statement` "is not a system the dek was
+  left out of," and inventing the system at the keyboard is what it warns
+  against. Ban list 31 is the other half: the stylesheet now has balance in two
+  places and not in the third that measures like them, which is the almost
+  complete set that entry describes. Either the house balances display type as
+  a rule, in which case the H1 and `.statement` and the dek are one decision, or
+  it does not, in which case the dek's rule wants its own justification written
+  down. This asks for that ruling, not for the diff.
+- First step: her eye on the two committed phone frames, and a one-line answer
+  to whether display type balances as a house rule. The diff is two lines either
+  way.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - `shoot.mjs` should refuse to write frames into a directory another run is using (frontend seat, message run)
+- Trigger: `INC-2026-10-26-the-visual-harness-readme-teaches-the-fixed-tmp-name-that-incident-0b-forbids`.
+  This run's 33 sweep frames landed in `/tmp/sweep` beside 33 frames the same
+  seat's run had written ninety minutes earlier, and nothing anywhere said so.
+  The run found it by listing the directory for an unrelated reason.
+- What: `shoot.mjs` names its output `<page>-<viewport>-<tag>.png`, and a
+  sweep's purpose is a before and an after, so the collision the tool is shaped
+  to produce is two runs that both pass `before`, which is the first tag any run
+  passes. The survivor is then read as a baseline. The documentation half is
+  fixed in this run's pull request, every worked example in the harness README
+  now deriving its output from `mktemp -d`, and that is the half that was free.
+  This is the other half: a tool that refuses rather than a README that advises.
+- Why it is a proposal rather than a diff in the same pull request: these
+  scripts are shared by every run of this seat, and a guard that misfires costs
+  a whole run's evidence, which is more than the defect costs. The shape wants
+  deciding before it is written. The cheap version refuses when the target
+  directory already holds a `.png` whose mtime predates the process start, which
+  catches the real case and lets `--force` through for a deliberate re-shoot.
+  The expensive version writes a sentinel naming the pid and the tag.
+- A thing the cheap version gets wrong, named here so it is not rediscovered:
+  re-shooting one page into a directory already holding a full sweep is a normal
+  and useful move, and this run did exactly that twice while verifying the fix.
+  So the refusal has to be scoped to the frames the run is about to overwrite,
+  not to the directory being non-empty.
+- First step: one of the two shapes above, chosen, then about ten lines.
+- Cost: $0.
+- Status: proposed
+
 ### 2026-10-26 - The $0 route to the first differential eval result is one secret, not a paid account and two (engineer seat, message run)
 - Trigger: sprint 2026-10-26 item 2 asked for `agent-memory-selection`'s first
   real with-versus-without result. Every document in this repository states the

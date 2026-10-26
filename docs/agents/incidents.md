@@ -22592,3 +22592,54 @@ is that this suite's greenness is a function of when it runs and the size of
 that function is unknown. Filed in `docs/ideas.md` as the day's second idea,
 with the cheapest first step named: run the suite twice, the second time with
 the clock moved a week forward, and read any divergence as the finding.
+
+## INC-2026-10-26-the-visual-harness-readme-teaches-the-fixed-tmp-name-that-incident-0b-forbids — a seat followed the harness's own documented command and collided with its own predecessor's frames (2026-10-26, frontend seat)
+
+**The repeat.**
+`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`
+is law in every charter's shipping step as check 0b: on this host every seat of
+every product runs as the same user on one machine, so a fixed name under `/tmp`
+is a shared name. This run obeyed that rule where the charter names it, writing
+its pull request body to a `mktemp -d`, and broke it four commands later in a
+place no charter names.
+
+**What happened.** The run shot its sweep into `/tmp/sweep`, which is the fixed
+name `docs/design/harness/README.md` teaches in its own worked example, `node
+/tmp/harness/shoot.mjs /tmp/shots after issue`. Listing that directory
+afterwards showed 33 frames tagged `-after` beside 33 frames tagged `-before`,
+timestamped 04:23, which is pull request #533's run of this same seat ninety
+minutes earlier. Nothing was overwritten, and the only reason is luck: #533
+happened to pass the tag `before` and this run happened to pass `after`.
+
+**Why the near-miss is the finding rather than the escape.** `shoot.mjs` names
+its output `<page>-<viewport>-<tag>.png`, and a sweep's whole purpose is a
+before and an after. So the collision this directory is built to produce is two
+runs that both shoot `before`, which is the first tag any run passes. Had this
+run started where its charter says to start, with a baseline sweep tagged
+`before`, it would have silently overwritten its predecessor's frames and then
+read the survivors as its own baseline. That is the 2026-10-18 failure exactly:
+the write succeeds, the read succeeds, and the content belongs to somebody else.
+
+**The cause is documentation and not a lapse.** The seat that wrote the fixed
+name into the README on 2026-10-24 was writing a worked example that had just
+worked, in a repository where `/tmp` had been private per run under GitHub
+Actions until 2026-10-17. Check 0b landed in the charters on 2026-10-18 and
+nothing swept the committed examples that predate it. A rule in the charter and
+a counterexample in the tool's own README resolve in favour of the README,
+because the README is what a run reads at the moment it runs the command.
+
+**Fixed in this run's pull request,** in `docs/design/harness/README.md`, which
+is this seat's surface: every worked example now derives its output directory
+from `mktemp -d`, and the section that teaches the sweep says why in one line.
+The frames of this run were re-read against their own timestamps before any of
+them were judged, and the eighteen before-and-after frames the fix rests on
+were shot into the committed review folder rather than into `/tmp`, so they
+were never exposed to this.
+
+**What is still open.** This was found by listing a directory for an unrelated
+reason. Nothing in the harness refuses a collision: `shoot.mjs` would be a
+two-line check, refusing to write into a directory holding frames another
+process wrote, and that is in the ledger rather than built here, because the
+harness scripts are shared by every run of this seat and a guard that misfires
+costs more than the defect. The other committed fixed names were swept this run
+and the README was the only one.
