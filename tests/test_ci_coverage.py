@@ -344,6 +344,26 @@ UNCOVERED = {
     # one page reads as a green run with a smaller corpus, which is exactly
     # how the defect went unmeasured for the job's whole life.
     "tests/test_arxiv_window.py",
+    # Added 2026-10-26 with the fifth evidence grade, and pinned for the same
+    # structural reason as every line above: the step that would run it goes
+    # in `.github/workflows/checks.yml`, which no seat's token may write, and
+    # `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words not
+    # to attempt that file again. The staged replacement runs it, because that
+    # file runs the suite rather than naming files.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern.
+    #
+    # What it guards is a guard that has to be wrong in one direction only.
+    # `evidence.relay_markers` decides that a claim is another work's result
+    # rather than the source's own, and it decides it off the evidence text
+    # when the model said otherwise. The assertions whose silence would cost
+    # most are not the ones about the sentence that cost a shipped skill; they
+    # are the five first-hand sentences that read relational and must not
+    # fire. A loosened marker regresses those silently, and the only visible
+    # symptom is a corpus that grades its own measurements second-hand, which
+    # is the failure this grade exists to stop, running backwards.
+    "tests/test_relayed_claims.py",
     "tests/delivery.test.mjs",
     "tests/issues.test.mjs",
     "tests/markdown.test.mjs",
