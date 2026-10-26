@@ -349,3 +349,102 @@ docstring insists the skill seat authors the tasks rather than the harness or
 the skill's own author: cases written by the author in the same session are the
 contamination the corpus warns about, and no reviewer downstream of them can
 undo it.
+
+## Slice 4, the merge (2026-10-26), and why the token was the fourth blocker
+
+`tools/panel_merge.py`, with `tests/test_panel_merge.py`. Sprint 2026-10-26
+item 1 asked for the specific gap between "the panel runs and writes a verdict"
+and "a verdict merges a pull request," with nothing hand-wavy left in it. The
+list above said that gap was one thing, a PR-merge-scoped token the owner has
+not minted. It is four things, and the token is the last of them.
+
+**One. Nothing had ever filed a verdict about a pull request.** All three
+reviewers read skills from `main`, over the GitHub API, in step 2 of
+`pipeline/skill_revision.py`. Every row in `panel_verdicts` therefore describes
+text that is already merged, so `panel_consensus` could only ever be unanimous
+about a proposal that no longer needed merging. ADR-13's sentence is "unanimous
+pass merges the PR" and the panel could not name a PR. `--review` is the first
+thing in this repository to point a reviewer at a branch: it fetches
+`refs/pull/N/head`, lays the proposal's whole `skills/` tree down with `git
+archive`, and calls each reviewer's own `review(skills_dir=...)` with
+`conn=None`.
+
+Those file-half verdicts inform and never decide, which is the one design
+choice in this slice worth arguing. The validator's suite asserts that its two
+halves return the same verdict, so a pass from its file half is a pass. The
+provenance reviewer's file half runs a subset of its checks, so the same word
+means something weaker and arrives as `unknown`. The adversary has no file half
+at all by the decision slice 2 argues, so a proposal can never be unanimous
+from a checkout. Counting any of them toward unanimity would make
+`panel_verdicts` claim a duty nobody ran, and the trail is the whole point.
+
+**Two. ADR-12's whitelist refuses every proposal the panel will ever see, and
+this is measured rather than reasoned.** Of the 21 pull requests the skill seat
+has opened in this repository's life, 21 carry at least one path outside
+`skills/`, `prompts/*.md` and `sources.yaml`. None is whitelist-clean. The
+cause is not carelessness. `prompts/skill-agent.md` requires the seat to append
+its ideas to `docs/ideas.md` and its repeats to `docs/agents/incidents.md` on
+the same branch, so the org's own charter contract guarantees that every skill
+proposal is out of scope for the gate meant to merge it. A whitelist that
+refuses 21 of 21 inputs is an unreachable gate rather than a safety margin, and
+the repair is the owner's: either the ledger append moves to its own pull
+request, or ADR-12's whitelist admits the two append-only registers by name.
+Filed in `docs/ideas.md` on 2026-10-26.
+
+**Three. `prompts/*.md` is refused here on purpose, one step stricter than the
+ADR that authorises it.** ADR-12 wrote that line on 2026-09-17, when `prompts/`
+held the weekly agent's own prompt. It holds twelve seat charters today, and HQ
+standard §21 reserves a change to a seat's own authority to the owner with no
+silence rule attached. An autonomous merge there would be the panel granting a
+seat a right the owner never granted. So `scope_findings` reports
+`charter-reserved` as its own check, separately from `machinery`, because two
+different asks of the owner arriving as one finding is how the second one
+becomes invisible.
+
+**Four. The token, and the credential this file will not accept instead of
+it.** The merge call reads `PANEL_MERGE_TOKEN` and nothing else. Every agent
+seat on this host already holds `GH_TOKEN`, which can merge, so a fallback
+would turn "the panel merged it" into "a seat merged it from inside a review
+tool", which is the one thing every charter in this repository forbids. The
+refusal is two tests rather than a comment, and the finding names the ambient
+credential so a reader knows it was seen and declined. `do_merge` also sends
+the head sha with the call, so GitHub refuses it if the branch moved between
+the verdict and the merge: the same pin `target_sha` is, one level up.
+
+### What a verdict can reach today, and the one checkbox that stops it
+
+The item also asked for a verdict landed all the way to a CI check status on
+one real pull request. That cannot be done from this seat, and the blocker is
+one permission rather than a design.
+
+Probed 2026-10-26 against the token every seat on this host holds:
+`GET /repos/{repo}/commits/{sha}/statuses` returns 200, and
+`POST /repos/{repo}/statuses/{sha}` returns 403, *Resource not accessible by
+personal access token*. The missing grant is **Commit statuses: Read and
+write** on this repository. A check run is not the way around it either: the
+check-runs API is writable by a GitHub App installation and never by a personal
+token, so the panel would need an App before it needed a permission.
+
+What does reach a pull request today is the comment, and ADR-13 asks for it in
+its own words: any failure "leaves the PR open with the verdicts attached."
+`--comment` files the verdict and every blocking finding, labelled advisory,
+and the first one is on #535 (2026-10-26). It found something the merge gate
+was not looking for: both skills on that branch carry an eval suite and no
+`results.json`, so the trial was written and never run.
+
+### The remaining step, named
+
+One autonomous merge needs all four, in this order, and three of them are
+nobody's build work:
+
+1. A whitelist a real proposal can satisfy (owner, ADR-12 amendment or a
+   change to the skill seat's charter).
+2. A verdict filed about a branch by the full reviewers, which needs the daily
+   job to review open pull requests as well as `main`. This is build work and
+   it is the next slice: `pipeline/skill_revision.py` holds the `neon` secret
+   and already reads skills over the API, so pointing it at
+   `refs/pull/N/head` through `panel_merge.review_proposal` is the change.
+3. `PANEL_MERGE_TOKEN`, scoped to `contents: write` and `pull_requests: write`
+   on this repository and held by nothing else (owner).
+4. **Commit statuses: Read and write**, if the verdict is to be visible as a
+   check rather than only as a comment (owner, one checkbox).
