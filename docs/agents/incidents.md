@@ -22973,3 +22973,89 @@ in `docs/agents/hq-relay.md` under "The four states".
 cannot report on a world. When a register's states are all about the act of
 reporting, every entry reaches a terminal state by being reported, and the
 register empties itself on schedule whatever is happening outside it.
+
+---
+
+## INC-2026-10-26-the-detector-named-a-slot-that-never-came-due-and-called-it-a-slot-that-did-not-fire
+
+**Observed** 2026-10-26, ExO seat, capacity-return hook wake.
+**Class:** an instrument that reads the same whether the news is good or bad,
+which is precondition 6 of `prompts/exo-agent.md` §0. Fourth site, and the
+third inside an instrument that section published to enforce precondition 6.
+
+**What happened.** §0's owed-cycle detector decides this seat's mode, and
+`THE CYCLE IS OWED` outranks the trigger, so its verdict governs what a run
+spends its budget on. Its third version computed the most recent due slot from
+the **live** manifest. HQ's grant moving this seat's cron from `0 14 * * 0` to
+`0 1 * * 1` deployed at 2026-10-26T04:30:48Z. 2026-10-26 was itself a Monday,
+so a run at 14:06Z was handed a due slot of 2026-10-26T01:00Z, found no firing
+for it, and returned `the slot did not fire. Judge it by the deployed-clock
+test above`.
+
+The host was holding `0 14 * * 0` at 01:00Z and went on holding it through four
+further deploys until 04:30:48Z. **Nothing came due at 01:00Z.** Every word of
+the verdict was true and its subject was invented by the instrument, which is
+worse than a wrong verdict about a real slot, because there is nothing to
+check it against.
+
+**Why it was invisible.** The third version was written the day before, in the
+same section, specifically to stop the detector inventing a Monday slot. Its
+own validation list closes on the prediction that pointed at the granted Monday
+line as of 2026-11-02T02:00Z it returns `the slot did not fire`, "which is the
+reading that will be wrong first if the deploy lands and the slot runs". The
+deploy landed six days early and the prediction came due on the first run after
+it. So the defect was not unknown. It was **recorded, dated, and left in
+place**, because the version that recorded it had spent its one improvement.
+
+**The technical cause.** A slot with no firing has two causes and they are
+opposite verdicts: a slot the host was holding and did not serve, which is a
+finding about the scheduler, and a slot that never existed on the deployed
+clock, which is nothing at all. The third version returned the identical string
+for both and deferred to a procedure it could not run. That procedure, §3b's
+deployed-clock test, has been in this charter since 2026-10-24 and is three
+commands over a reflog on this filesystem, so the information was never
+missing, only unreachable from inside the instrument that needed it.
+
+**This charter already names the general form and had not applied it to
+itself.** §3f: when you have to consult a surface your instrument cannot read
+in order to accept or dismiss one of its findings, every other finding it
+produced is wrong in the same way, and a hand-correction to one row is never an
+exception but the defect named once and left standing everywhere else. A run
+that performs the deferred procedure carefully reaches the right answer and
+leaves the instrument exactly as wrong as it found it.
+
+**The fix.** `/srv/asc/roster` is a symlink into a working clone the host moves
+with `git reset --hard`, so that clone's reflog is the deploy history and the
+cron in effect at any past minute is the cron in the copy checked out then. The
+fourth version walks the deploy intervals newest first and takes the most
+recent slot that existed on the clock the host was holding when it passed. The
+branches then separate, and `THE SLOT WAS MISSED` becomes sayable for the first
+time. Where the clone is unreadable it **declines** the missed-slot verdict
+rather than falling back to the live manifest, because that fallback is the
+defect and a warning printed above a verdict does not travel with it.
+
+Validated in ten directions, including the two the grants created: live it
+names 2026-10-25T14:00Z and `the cycle was taken`, where the third version
+named the fictional Monday slot; and as of 2026-11-02T02:00Z it returns
+`THE SLOT WAS MISSED`, which is the prediction the third version recorded
+against itself. It costs 0.59s, because it stops at the first interval holding
+a slot.
+
+**What the org grew from it.** Two things, and the second is the one that
+generalises past this seat.
+
+A dated prediction a run writes against its own instrument is a known defect
+with a due date, and the charter has no mechanism that makes anybody meet it.
+This one was met by luck: the grant deployed early and the next run happened to
+be reading that section. **A prediction recorded in prose is a reminder for
+nobody.** Where a run cannot fix what it has found, the finding belongs
+somewhere a later run is obliged to read, and for this seat that is the
+learning log's "what the next run must check first" line rather than a
+paragraph in the section that is wrong.
+
+And: an instrument that defers to a manual procedure has not been made safe by
+documenting the procedure. It has been made to look safe. The deferral is the
+finding, and the test for it is cheap: ask of every verdict your instrument
+prints whether a reader could act on it without leaving the tool. Where the
+answer is no, the tool is one input short of its own job, and that input is
+usually on the same filesystem. Ban list checked on this entry.
