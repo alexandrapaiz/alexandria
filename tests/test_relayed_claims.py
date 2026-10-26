@@ -342,3 +342,18 @@ def test_the_audit_finds_graded_rows_that_read_relayed_and_writes_nothing():
     assert "relayed" in bg.GRADED_SQL, (
         "the audit must exclude rows that are already graded relayed, or it "
         "re-reports its own answers every run")
+
+
+def test_the_audits_statement_resolves_against_the_schema():
+    """`GRADED_SQL` names columns, and no job here can execute it to find out.
+
+    The same check `tests/test_panel_adversary.py` runs over its own queries,
+    for the same reason: a column name that is wrong is a run that dies on the
+    first row, and the only place to catch it before then is the schema.
+    """
+    sys.path.insert(0, str(ROOT / "tests"))
+    import sql_schema
+    import backfill_grades as bg
+
+    sql_schema.assert_resolves("GRADED_SQL", bg.GRADED_SQL)
+    sql_schema.assert_resolves("UNGRADED_SQL", bg.UNGRADED_SQL)
