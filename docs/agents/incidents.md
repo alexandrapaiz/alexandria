@@ -22592,3 +22592,65 @@ is that this suite's greenness is a function of when it runs and the size of
 that function is unknown. Filed in `docs/ideas.md` as the day's second idea,
 with the cheapest first step named: run the suite twice, the second time with
 the clock moved a week forward, and read any divergence as the finding.
+
+---
+
+## INC-2026-10-26-paced-caller-check-is-a-literal-grep-and-a-correct-copy-can-still-miss-it (2026-10-26, PM seat, message run reviewing PR #549, NOT FIXED — handed to the engineer seat)
+
+**Observed by:** this run, reviewing PR #549 against the merge rule
+(`docs/standards/pm.md` §10 Tier B, rule 3: checks green or none defined).
+One check was defined and red: `gh pr checks 549` → "digest request fits the
+model's budget  fail". Reproduced off GitHub in a throwaway worktree, so not
+a runner-only flake.
+
+**What happened.** `tests/test_corpus_drain.py::test_every_paced_caller_tells_pace_how_big_its_call_was`
+enforces the pacing convention `budget.check_fallback_pacing()` already
+checks mechanically, plus one thing it cannot: that every file in
+`budget.PACED_CALLERS` passes `pace()` a provider-counted call size rather
+than reading from requests-a-minute alone. It checks this by reading each
+file's own source text and asserting the literal substring `cap.last_tokens`
+appears somewhere in it, because that is the one place in the repository
+every existing paced caller (`pipeline/triage.py`, `pipeline/distill.py`,
+`pipeline/interpret.py`, `pipeline/retag_threads.py`) spells the value: they
+all pace directly off a shared `client.Cap` instance named `cap` in that
+function's scope.
+
+PR #549 added `tools/skill_eval.py` to `PACED_CALLERS` and that file's
+`Subject.pace()` genuinely reads a provider-counted size, not a hardcoded
+one: `Subject.ask()` copies `Cap.last_tokens` into a field scoped to the one
+`Subject` instance immediately after every real call, deliberately, because
+`skill_eval.py`'s subject and judge are two `Subject` instances sharing one
+`Cap`, and reading `self.cap.last_tokens` at pace time (rather than copying
+it right after each instance's own call) would let one instance pace off
+the other instance's last call size, which is the identical single-limit
+mistake the pacing fix exists to close. That correct, deliberate design
+is spelled `getattr(self.cap, "last_tokens", 0) or 0`, which never renders
+the contiguous text `cap.last_tokens`, so the literal check cannot see it
+and fails a line of code that is not wrong.
+
+**Why it is a repeat and not only a new instance.** This is the same shape
+as the other "green or red for a reason unrelated to the thing being
+checked" entries above (`INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason`
+and this file's newest entry, just above): a guard built as a textual proxy
+for a semantic property, meeting a correct implementation that expresses
+the property in different text. There, the proxy was a clock; here it is a
+variable name.
+
+**The fix, verified but not shipped from this seat (product code, outside
+the PM's writable surface).** One line, `tools/skill_eval.py:2137`:
+`self.last_tokens = self.cap.last_tokens if hasattr(self.cap, "last_tokens") else 0`
+in place of the `getattr` form. Same value, same per-instance timing, and
+the `hasattr` guard is kept because `tests/test_skill_eval.py`'s `FakeCap`
+test double (around line 1601) has no `last_tokens` attribute. Reproduced
+clean on the PR branch: `python3 -m pytest tests/test_corpus_drain.py::test_every_paced_caller_tells_pace_how_big_its_call_was tests/test_skill_eval.py -q`
+→ 138 passed. Handed to the engineer's seat on the board rather than
+applied here.
+
+**What is still open.** The convention itself — "provider-counted pacing is
+spelled `cap.last_tokens` literally" — lives only in the test's own
+docstring and `budget.check_fallback_pacing`'s message, not in any doc a
+new `PACED_CALLERS` entry's author would read first. The next file added to
+that list that assigns the value through any other variable name, however
+correctly, meets this exact finding again. Not built in this run; worth a
+line in whichever doc documents `PACED_CALLERS` for a future author, as a
+ledger proposal rather than a charter edit this seat does not own.

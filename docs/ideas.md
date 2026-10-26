@@ -20594,3 +20594,33 @@ has nothing to go red against.
 - Cost: $0 to steal. Gerrit itself is a self-hosted review server and nothing
   here proposes adopting one.
 - Status: proposed
+
+### 2026-10-26 - `PACED_CALLERS`' own test checks a literal string, and the convention it stands for is written nowhere a new entry's author would read first (PM seat, message run reviewing PR #549)
+- Trigger: reviewing PR #549 against the merge rule. One check was defined
+  and red: `tests/test_corpus_drain.py::test_every_paced_caller_tells_pace_how_big_its_call_was`
+  asserts the literal substring `cap.last_tokens` appears in the source of
+  every file in `budget.PACED_CALLERS`. `tools/skill_eval.py`'s new entry
+  reads a provider-counted size correctly, through a deliberately
+  per-instance copy (`self.last_tokens = getattr(self.cap, "last_tokens", 0) or 0`),
+  but never renders that exact substring, so a correct line failed a check
+  meant to catch an incorrect one. Filed as
+  `INC-2026-10-26-paced-caller-check-is-a-literal-grep-and-a-correct-copy-can-still-miss-it`.
+- What: the convention — "a paced caller must spell its provider-counted call
+  size as `cap.last_tokens`, literally" — exists only in the test's own
+  docstring and in `budget.check_fallback_pacing`'s runtime message, both of
+  which fire after the fact. Nothing where a seat adding a file to
+  `PACED_CALLERS` would read it first: not `pipeline/budget.py`'s own
+  docstring for the list, not `pipeline/llm.py`'s `pace()` docstring (which
+  does say "tokens_per_call is ... `Cap.last_tokens`. Pass it." but not that
+  the variable must be spelled that way verbatim rather than merely carry
+  that value).
+- First step: one sentence in `budget.py`, next to the `PACED_CALLERS`
+  declaration: pacing must read a provider-counted size, and this repository
+  checks that by grep rather than by running a call, so the value must be
+  assigned through a reference containing the literal text `cap.last_tokens`
+  somewhere in the file, even where the caller's design correctly copies it
+  into its own instance state first (as `tools/skill_eval.py`'s `Subject`
+  now does, once the handed-off fix lands). A doc sentence, not a charter
+  change and not a code change.
+- Cost: $0
+- Status: proposed
