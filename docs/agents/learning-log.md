@@ -7408,3 +7408,156 @@ rather than of the world: is the thing I am reading the thing that decides?
    register polarity sweep, the unowned-duty hunt, the queue re-verification
    and the §5b repository sweep, all weekly-cycle work a wake run skips, plus
    the duty-classes card whose class B still waits on the owner.
+
+---
+
+## 2026-10-26 — Fifth wake of the day, message, the next item in the lane
+
+**Mode: wake run.** Trigger `window:message`. The wake was a `pr.merged` for
+this seat's own #575, with the instruction to continue with the next item in
+this seat's lane on the board. Not a doorbell for the weekly cycle and no
+`week.started` wording in the wake text, so the §0 branch for a hook carrying
+a refused slot does not apply either. Next due cron slot **2026-11-02T01:00Z**,
+unchanged.
+
+**Superseded #580** (depth 2), merged into this branch at turn one, closed with
+the containment proof after this PR was pushed. #580 had been readied twenty
+minutes before this run started and touches four of the files this run had to
+touch.
+
+### What the event asked for, and what the lane actually held
+
+Two cards in the exo lane's Backlog. One was the card for #532, which #575
+superseded, so its work had landed and its own link was dead; **moved to Done**
+with a comment saying so. The other is the duty-classes card, and it was the
+next item.
+
+**None of its three gates had come due**, which is exactly what the previous
+run of this seat found at 00:34Z, so this run did what that one did and took
+what the gates rest on. The useful finding is that what they rest on turned out
+to be narrower than the card thought.
+
+1. **The three class-A dates are right, and now checked against the surface
+   that acts.** `/srv/asc/state/.epito/state.json` carries the loaded roster's
+   own `nextCron` per seat: research `2026-10-26T16:30:00Z`, market
+   `2026-10-30T11:00:00Z`, security `2026-11-01T13:00:00Z`. All three match
+   the card. Worth the command because #580 had just shown the disk and the
+   loaded copy disagreeing about a cap.
+2. **Each is a cold start, not a seat running again.** Zero `cron` dispatches
+   have ever reached those three seats. Their only rows on this host are two or
+   three hand-opened windows apiece, last on 2026-10-05, all ending `exit 143`.
+3. **The merged PRs the card cites as proof they work were made by the retired
+   runtime**, under `research/`, `sec/` and `market/`, none of which is the
+   host's prefix. §2d, aimed at this seat's own card.
+4. **Five of twelve seats have never been woken by the bus at all.** research,
+   market, security, finance, sales: four subscriptions each, zero routed wakes
+   in 8,334 audit rows since 2026-09-24, against 229 for pm. Three of the five
+   silences are correct. The two that are not sit under one structure: a seat
+   that never runs opens no PR, owns no moving card and is addressed by nobody,
+   so it creates none of the events that would wake it. **The clock is the only
+   route in**, which makes every class-A date a single point of failure.
+5. **The gate has two outcomes and the thing it measures has four.** Read each
+   slot with `tools/cron_firing.py`: `shipped`, `cut`, `lost` with a reason,
+   `unseen`. The portfolio refused 100 of 346 runs today, 56 before their first
+   turn.
+
+### The improvement — `tools/wake_routes.py`
+
+The 2026-10-24 relay entry's closing paragraph said the prefix sweep "is cheap
+and nothing in any repository runs it. It belongs beside the cron-slot
+instrument." Two days later nothing did. It does now, with twelve tests, four
+states, and exit 1 only on `deaf`, because an unused route and an impossible
+one must not read the same — which is `cron_firing.py`'s own lesson one layer
+up.
+
+**Two of its findings were defects in its own first draft and both are worth
+more than the fix.** It read each charter line by line and reported `exo` and
+`frontend` as declaring no branch prefix, because both wrap that sentence over
+a line break — **a false positive on two of twelve, in the file whose whole job
+is to find a false negative.** And it printed only the first path segment of a
+type name, so `pr.merged` and `pr.opened` collapsed and the PM row printed
+`pr=` twice. Both are tests now.
+
+It also prints both reasons when one type has two defects, because the known
+pathology on this page is a prefix masking a cadence word.
+
+### Two fixes that were owed rather than new
+
+**`prompts/research-agent.md` was the only charter of twelve naming no branch
+prefix at all.** Eleven were audited for whether their prefix resolves and none
+for whether one exists, and an absent instruction passes a grep for a wrong
+one. Its runs invented `research/`, which resolved, which is the only reason it
+cost nothing.
+
+**The refspec line landed in all twelve charters.** The engineer seat filed the
+second occurrence this morning, wrote the fix out as two shell lines, and said
+plainly that the charter edit was this seat's. It bit this run at turn ten
+anyway. The gap is the handoff cadence: the engineer wrote to "the ExO seat
+that reads this file weekly", and §0 has known since 2026-10-24 that this is a
+daily-doorbell seat whose weekly sweeps a wake run skips. **A fix handed to a
+weekly reader waits a week, and the reader reads that file on the cycle it
+skips.**
+
+### §2b — the failure sweep
+
+Window 2026-10-26T14:58:58Z (this seat's previous run end) to 15:20Z. **This
+company: three runs, zero non-success** — exo 101 turns exit 0, engineer 85
+exit 0, pm 54 exit 0. `checks.yml` on `main`: **success** on the last five,
+newest `a4fd50df`.
+
+**One portfolio row, and it is the third cap kill of the day in a second
+company.** `ursa-skill`, 15:05:17Z, **101 turns, exit 1**, against
+`max_turns = 100` on disk. That is `turn-caps.md` rule 1's `cap + 1` censored
+signature, after the writer's two at 151/150 this morning. Not this company's
+to fix; it is the third independent confirmation that the mechanism binds, and
+it strengthens #580's reading that the writer's 153-turn **exit 0** row is an
+anomaly against a working mechanism. **And the loaded cap for that seat cannot
+be read at all**, because `state.json` carries `model`, `repo` and `cron` and
+no `max_turns`, which is #580's finding arriving as a limit on somebody else's
+diagnosis.
+
+### Two board gates no charter in `prompts/` names
+
+Both refused this run's first attempt and both were right. `prose_violation`
+refuses PR numbers in prose and tells the writer to put ids in "the data
+field", which **two of its three write surfaces have no parameter for** — the
+relay ask. `conversation_violation` refused a handoff body written as asks and
+tables: "the prose must carry its reason in words (so that, because,
+otherwise)." The rewrite that passed is a better message. A seat that writes to
+the board for the first time will hit both, and nothing warns it.
+
+### What the next run checks first
+
+1. **Research's 16:30:00Z slot, with `tools/cron_firing.py` and never from the
+   absence of a pull request.** First clock dispatch of that seat's life on
+   this host. Four outcomes, not two. A `lost` with reason `weekly-limit` or a
+   `143` is not evidence that the seat is broken.
+2. **The writer's 16:00:00Z cron**, which is #580's live test for the loaded
+   cap. `turns 151, exit 1` confirms it; anything past 151 means the daemon
+   restarted and the three-state check is owed across all twelve seats.
+3. **Class C of the duty-classes card proceeds on the owner's silence at
+   2026-10-26T22:15Z.** Class B does not, and waits for her word.
+4. **Market 2026-10-30T11:00Z and security 2026-11-01T13:00Z** are the other
+   two class-A gates, both cold starts, both reading the same four ways.
+5. **`python3 tools/wake_routes.py` must exit 1 on `security` and nothing
+   else.** A second `deaf` row is a new defect; a `deaf` row going `open`
+   without a charter diff means somebody renamed a seat.
+6. **`week.started` on 2026-11-01**, unchanged, still never fired.
+7. **Owed and still owed:** the rule-5 re-derivations for engineer (81.0%) and
+   skill (71.7%), now **three** wake runs deep; the §3g live-surface pass, the
+   register polarity sweep, the unowned-duty hunt, the queue re-verification
+   and the §5b repository sweep, all weekly-cycle work.
+8. **Not shipped, deliberately:** the charter change that would make a filing
+   seat hand a written-out fix to its owner as a board handoff rather than as a
+   line in a weekly-read file. It widens another seat's duties and this was a
+   wake run with one improvement in it.
+
+### The rule this run owes the org
+
+**A subscription list is a claim about reachability, and nothing anywhere had
+ever checked one.** Four tests on `unowned-duties.md` asked whether a duty was
+owned, fast enough, credentialled and clocked, and all four took the
+subscription on trust. The fifth test is one command. The general form is the
+one that travels: **a route that cannot exist and a route nobody used leave the
+identical silence**, so any check that answers reachable-or-not answers the
+wrong question.
