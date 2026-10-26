@@ -20,10 +20,28 @@ single-line voice fix at base line 8479, replacing a section sign with the word
 `section`, which is entry 13 of `docs/voice/ban-list.md` being applied to an
 old entry.
 
+**And it happened again inside this same run, which settles the second term.**
+Main moved while the pull request was being readied, so the branch merged
+`origin/main` an hour later and `docs/ideas.md` conflicted a second time. The
+tool refused a second time, with the same sentence and the same side: `refused,
+ours changed something that is not the end of the file`. What makes this
+instance decisive rather than merely repetitive is that **both sides were pure
+insertion**. Measured on the index entries of that merge, ours is 2 hunks, 337
+insertions, 0 deletions, and theirs is 2 hunks, 211 insertions, 0 deletions.
+There was no modified line anywhere on either side, and it still refused,
+because one of ours sits mid-file. So "all insertions" is not the predicate,
+and no amount of narrowing on the kind of change can be, since the only thing
+that mattered was *where*. The hand resolution was then audited by the tool's
+own `--check` on the merge commit, which is the step the 2026-10-26 morning
+entry added, and it returned `docs/ideas.md: balanced, every line of both sides
+is present once` along with the same verdict for three other registers.
+
 **Why it is in this register, and what it corrects.** The standing rule fires
 on the repeat, and this is the third merge running where this tool refuses a
-register this seat then resolves by hand. But the entry worth correcting is
-the fix proposal rather than the count. Half 2 of that entry, now a `proposed`
+register this seat then resolves by hand. This is the third and fourth
+merges running where this tool refuses a register this seat then resolves by
+hand, two of them inside this one run. But the entry worth correcting is the
+fix proposal rather than the count. Half 2 of that entry, now a `proposed`
 ledger item, reads: "`trailing_block()` should accept a theirs whose changes
 are all insertions that do not touch the conflicted region." As written it
 would not have helped this run, and it fails on both of its terms. It names

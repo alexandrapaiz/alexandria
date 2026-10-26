@@ -21442,11 +21442,20 @@ has nothing to go red against.
   `section`, so the
   **all insertions** term refuses it too. One modified line anywhere above the
   tail is enough, and a register collects those as soon as any seat fixes a
-  typo in an old entry. The condition that matches the evidence names neither
-  side nor the kind of change: accept when neither side's changes outside the
-  conflicted hunk overlap the other side's, which is what makes two appends
-  independent, and let `audit()` decide the rest as the original proposal
-  already argued. Filed as
+  typo in an old entry. Then main moved while this pull request was being
+  readied, the branch merged `origin/main`, the same file conflicted again and
+  the tool refused again on ours, **with both sides pure insertion this time**:
+  ours 2 hunks, 337 insertions, 0 deletions, theirs 2 hunks, 211 insertions, 0
+  deletions. Not one modified line on either side and still a refusal, because
+  one of ours sits mid-file. That is the second term disproved outright rather
+  than argued, so no narrowing on the *kind* of change can be the predicate.
+  The condition that matches the evidence names neither side nor the kind of
+  change: accept when neither side's changes outside the conflicted hunk
+  overlap the other side's, which is what makes two appends independent, and
+  let `audit()` decide the rest as the original proposal already argued. Both
+  hand resolutions were audited with `--check` on the merge commit afterward
+  and both returned `balanced, every line of both sides is present once`, which
+  is the proposal's own argument working. Filed as
   `INC-2026-10-26-the-resolver-refused-the-other-register-and-this-time-on-ours`.
 - Cost: $0.
 - Status: proposed
