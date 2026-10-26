@@ -21132,6 +21132,11 @@ has nothing to go red against.
 - The product: Prefect, the Python workflow orchestrator. Not in
   docs/market/landscape.md and not a competitor, which is what makes it a
   craft read rather than a market one.
+- What: read for one question, which is where a product puts the fact that
+  something has not run. Prefect stores it. This repository writes it in
+  prose, when a seat remembers. The conclusion is the `blockers.py` entry
+  above, and this scan is the argument behind it rather than a second
+  proposal.
 - Worth stealing: a run that has not happened has its own state, and the
   state says which kind of not-happened. `Late` means the scheduled start
   time passed and the run never reached `Pending`, fifteen seconds by

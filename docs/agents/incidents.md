@@ -22715,7 +22715,7 @@ and the README was the only one.
 
 ---
 
-## INC-2026-10-26-pm-woken-twice-for-the-558-merge-event: fourth instance of the duplicate-wake class, caught before any duplicate work (2026-10-26, pm seat)
+## INC-2026-10-26-pm-woken-twice-for-the-558-merge-event — fourth instance of the duplicate-wake class, caught before any duplicate work (2026-10-26, pm seat)
 
 Another instance of
 `INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`.
@@ -22744,7 +22744,7 @@ runtime's attention and not this seat's to fix.
 
 ---
 
-## INC-2026-10-26-twentyfour-tier-a-prs-were-held-as-tier-b-and-sat-open-for-up-to-31-hours: a Tier A/Tier B misclassification, not a conflict (2026-10-26, pm seat)
+## INC-2026-10-26-twentyfour-tier-a-prs-were-held-as-tier-b-and-sat-open-for-up-to-31-hours — a Tier A/Tier B misclassification, not a conflict (2026-10-26, pm seat)
 
 **What happened.** PR #531 (this seat's own Monday ceremony pass) reported
 "22 of my own pull requests sit open and unmergeable by me (Tier B
