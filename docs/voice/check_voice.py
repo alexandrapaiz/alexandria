@@ -137,6 +137,26 @@ def entries(text):
 LANDED = re.compile(r'LANDED\s+(\S+?):\s*"([^"]+)"')
 
 
+def resolves(ref):
+    """Does git know this ref, asked once rather than inferred from a result.
+
+    `at_ref` returns None both for a path that is absent at the ref and for a
+    ref that does not exist, and `added_lines` used to yield nothing in the
+    second case. Both readings blame the artifact for a defect in the
+    instrument's input, which is ban list 144. Callers ask this first so the
+    message names the real cause.
+    """
+    return subprocess.run(["git", "rev-parse", "--verify", "--quiet", ref],
+                          cwd=ROOT, capture_output=True).returncode == 0
+
+
+def dead_ref(check, ref):
+    """The one line a check prints when its base ref is not a ref."""
+    print(f"  FAIL    {ref}: git does not know this ref, so `{check}` read nothing")
+    print("Nothing was measured, so nothing is clean (ban list 144).")
+    return 1
+
+
 def at_ref(ref, path):
     """The bytes of one repository path at one git ref, or None if absent.
 
@@ -167,6 +187,8 @@ def enforcements(ref=None):
     position. A check that cannot tell a ban from a fix reports the ban as a
     pass.
     """
+    if ref and not resolves(ref):
+        return dead_ref("enforcements", ref)
     ban = BAN.read_text()
     cache = {}
     prose, ok, missing = [], [], []
@@ -1000,6 +1022,15 @@ EM = chr(8212)
 FENCE = re.compile(r"^\s*(```|~~~)")
 
 
+class BadRef(Exception):
+    """A base ref git could not resolve.
+
+    Raised rather than returned because a failed diff and a clean diff are the
+    same empty string at every call site, and a gate that cannot tell them
+    apart reports the better of the two.
+    """
+
+
 def added_lines(ref):
     """Every line this diff adds, as (path, line number in the new file, text).
 
@@ -1014,6 +1045,16 @@ def added_lines(ref):
     # measured. A range is passed through, for a grade re-taken after a fix.
     out = subprocess.run(["git", "diff", "-U0", ref], cwd=ROOT,
                          capture_output=True, text=True)
+    # A ref git cannot resolve fails with an empty stdout, and an empty stdout
+    # is the same byte string as a clean diff. Every caller below then reports
+    # no findings and returns 0, so the gate passes without reading anything.
+    # That is ban list 144, and it cost two runs of this seat on 2026-10-26:
+    # one reported "zero em dashes" over a branch the gate exits 1 on, and one
+    # concluded the gate "reports zero on a file already committed", which is a
+    # false belief about the instrument rather than about the prose. Loud here.
+    if out.returncode != 0:
+        detail = (out.stderr.strip().splitlines() or ["git could not resolve it"])[0]
+        raise BadRef(f"{ref}: {detail}")
     path, n = None, 0
     for line in out.stdout.splitlines():
         if line.startswith("+++ b/"):
@@ -1024,6 +1065,29 @@ def added_lines(ref):
         elif line.startswith("+") and not line.startswith("+++"):
             yield path, n, line[1:]
             n += 1
+    # `git diff` compares a ref to the working tree for TRACKED paths only, so
+    # a file this run created is invisible here until `git add`. Every review,
+    # every copy candidate and every incident filing is a new file, which makes
+    # that the whole of this seat's output. Two planted violations in an
+    # untracked file drew zero findings and both appeared the instant it was
+    # staged (ban list 144). The docstring above says this reads the state a run
+    # is about to ask a merger to take, and an uncommitted new file is exactly
+    # that. A range is the one case that excludes them, because a range asks
+    # about two commits and the working tree is not either of them.
+    if ".." in ref:
+        return
+    others = subprocess.run(["git", "ls-files", "--others", "--exclude-standard"],
+                            cwd=ROOT, capture_output=True, text=True)
+    for rel in others.stdout.splitlines():
+        f = ROOT / rel
+        if not f.is_file():
+            continue
+        try:
+            body = f.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        for i, line in enumerate(body.splitlines(), 1):
+            yield rel, i, line
 
 
 def fenced(path):
@@ -1046,6 +1110,45 @@ def fenced(path):
         elif inside:
             out.add(n)
     return out
+
+
+def inline_quoted(line, open_at_start):
+    """The characters of one line that sit inside an inline-code span.
+
+    Returns the quoted characters and whether a span is still open at the end
+    of the line, so a caller can walk a file and know the state each line
+    begins in. `quoting` below reads one line with no memory, which is why it
+    cannot see a span that opens on line 217 and closes on line 218.
+    """
+    out, inside = [], open_at_start
+    for part in re.split(r"(`)", line):
+        if part == "`":
+            inside = not inside
+            continue
+        if inside:
+            out.append(part)
+    return "".join(out), inside
+
+
+def code_state(path):
+    """For every line of a file, whether an inline-code span was already open
+    when the line began.
+
+    A span does not cross a blank line, which is what stops one stray backtick
+    from excusing the rest of a file, and a fenced line resets it because
+    `fenced` already excuses those wholesale.
+    """
+    f = ROOT / path
+    if not f.exists():
+        return {}
+    fences, state, inside = fenced(path), {}, False
+    for n, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
+        state[n] = inside
+        if n in fences or not line.strip():
+            inside = False
+            continue
+        _, inside = inline_quoted(line, inside)
+    return state
 
 
 def quoting(text):
@@ -1074,6 +1177,47 @@ def quoting(text):
     return False
 
 
+#: What the wrapped-span reading has to get right, as data rather than as a
+#: paragraph, in the shape HEADLESS_CASES and STANDS_ALONE_CASES already use.
+#: The true cases are real lines off this seat's own branches on 2026-10-26,
+#: where seven register keys quoted the way `routed` demands were reported as
+#: canon law 1 violations. The false cases are the shapes that look like them
+#: and are not: an em dash in plain prose, and an em dash sitting outside a
+#: span that opened or closed on the same line. A reading that excused those
+#: would make this gate quiet rather than correct.
+#: Fields: (want, the line, whether a span was open when the line began, mark)
+SELFCHECK_CASES = (
+    (True, "named rather than re-described: `2026-10-24 " + EM
+           + " The deepening needs a third", False, EM),
+    (True, "above the fold every day since` and `2026-10-03 " + EM
+           + " Canon law 12's own wording,", True, EM),
+    (True, "the date separator " + EM + " and the key` is what `routed` reads",
+     True, EM),
+    (False, "The seat was named " + EM
+            + " and then forbidden by its own charter.", False, EM),
+    (False, "`docs/ideas.md` holds the list " + EM + " and nothing reads it.",
+     False, EM),
+    (False, "the key` was quoted " + EM + " and then struck.", True, EM),
+    (False, "The rule is stated; nothing enforces it.", False, ";"),
+    (True, "the gate prints `abs/2604.24594; no html` and moves on", False, ";"),
+)
+
+
+def selfcheck_cases():
+    """Every case above, run before a diff is read.
+
+    A reading that fails its own cases either excuses a violation or reports a
+    register key, and the second of those is what sent seven true lines to a
+    review as findings.
+    """
+    bad = []
+    for want, line, start, mark in SELFCHECK_CASES:
+        got = mark in inline_quoted(line, start)[0]
+        if got != want:
+            bad.append((want, line, start))
+    return bad
+
+
 def selfcheck(ref=None):
     """Canon law 1 over the run's own added lines, which was the last
     measurement this seat took by reading.
@@ -1089,17 +1233,41 @@ def selfcheck(ref=None):
     separator. Nowhere else.
     """
     ref = ref or "origin/main"
-    hits, counts, fences = [], collections.Counter(), {}
-    for path, n, text in added_lines(ref):
+    bad = selfcheck_cases()
+    if bad:
+        for want, line, start in bad:
+            print(f"  CASE    wanted {want}: {line.strip()[:62]}")
+        print("The wrapped-span reading changed and SELFCHECK_CASES says how.")
+        print("Nothing below was read.")
+        return 1
+    hits, counts, fences, states = [], collections.Counter(), {}, {}
+    try:
+        lines = list(added_lines(ref))
+    except BadRef as dead:
+        print(f"added lines read from   {ref}")
+        print(f"  FAIL    {dead}")
+        print()
+        print("Nothing was measured, so nothing is clean. This used to print a")
+        print("clean pass and return 0, which is ban list 144.")
+        return 1
+    for path, n, text in lines:
         for mark, name in ((";", "semicolon"), (EM, "em dash")):
             if mark not in text:
                 continue
             counts[(path, name)] += text.count(mark)
             if path not in fences:
                 fences[path] = fenced(path)
+                states[path] = code_state(path)
             if n in fences[path] or quoting(text):
                 continue
             if mark == EM and text.lstrip().startswith("#"):
+                continue
+            # The span that opens on one line and closes on the next. Every
+            # entry in docs/ideas.md and docs/agents/incidents.md carries an
+            # em dash as its own date separator, and `routed` requires a
+            # finding to NAME an entry rather than re-describe it, so obeying
+            # one gate tripped this one on seven lines of one branch.
+            if mark in inline_quoted(text, states[path].get(n, False))[0]:
                 continue
             hits.append((path, n, name, text.strip()))
     print(f"added lines read from   {ref}")
@@ -1931,6 +2099,8 @@ def candidates(ref=None):
     that names it passes. A file that does not has not read it.
     """
     ref = ref or "origin/main"
+    if not resolves(ref):
+        return dead_ref("candidates", ref)
     rows = open_rows()
     out = subprocess.run(["git", "diff", "--name-status", ref],
                          cwd=ROOT, capture_output=True, text=True)
@@ -2080,6 +2250,8 @@ def ledger(ref=None):
     body, flags = literal.rsplit("/", 1)
     desk_pattern = re.compile(body[1:].replace("\\s", r"\s"),
                               re.M if "m" in flags else 0)
+    if ref and not resolves(ref):
+        return dead_ref("ledger", ref)
     text = at_ref(ref, "docs/ideas.md") if ref else LEDGER_MD.read_text()
     if text is None:
         print(f"  FAIL    docs/ideas.md is not readable at {ref}")
@@ -3893,6 +4065,209 @@ def standalone(paths=None):
     return 1 if hits else 0
 
 
+# ---- where an overturn says it came from -------------------------------
+
+#: A phrase that points an overturn back at the work being overturned. The
+#: generator's SOURCE test calls these the first of three dresses, and every
+#: one of them has already told the reader that the two ends of the pairing
+#: are one end. Matched as a span rather than a sentence subject, because the
+#: shape that printed was a mid-sentence "The same paper also overturns".
+BACKREFERENCE = re.compile(
+    r"\b(?:the same (?:paper|work|study|team|authors|group)"
+    r"|this (?:same )?(?:paper|work|study)"
+    r"|the (?:same )?authors)\b[^.]{0,80}?"
+    r"\b(?:also|further|likewise|additionally)\b|"
+    r"\b(?:also|further|likewise)\b[^.]{0,40}?"
+    r"\b(?:overturn|overturns|contradict|contradicts|refute|refutes|"
+    r"upend|upends|overturned|contradicted)\b",
+    re.I,
+)
+
+#: A verb of PRIOR belief. The thing this sentence attributes to its subject is
+#: something that used to be true, so the subject is the overturned end of the
+#: pairing. Where the subject also names a paper the section links, the two
+#: ends are one end and no backreference phrase had to appear.
+PRIOR_BELIEF = re.compile(
+    r"^(?P<who>[A-Z][\w.-]*(?:\s+[A-Z][\w.-]*){0,3})\s+"
+    r"(?:had (?:claimed|shown|held|reported|found|established|demonstrated)"
+    r"|claimed|held)\b",
+)
+
+#: Words a title shares with every other title, so a subject matching one of
+#: them is not evidence that the subject is that paper.
+TITLE_NOISE = frozenset("""
+a an and the for of in on at to with without via from by is are be
+agent agents ai llm llms model models language large towards toward
+benchmark benchmarks system systems learning self new scale scaling
+""".split())
+
+#: Each case is (how many findings, the markdown). They run before any artifact
+#: is read, for the reason `SELFCHECK_CASES` was added on 2026-10-26: a
+#: detector that has drifted reports a clean archive for the wrong reason, and
+#: a provenance gate reporting clean is the exact sentence this seat has
+#: already published three times.
+PROVENANCE_CASES = (
+    # The backreference, as it printed.
+    (1, "## What fell behind\n\nThe same paper also overturns a companion"
+        " claim that simple covert computation leaves no trace.\n"),
+    # The linked work as the subject of a verb of prior belief.
+    (1, "## What fell behind\n\nVosti had claimed bitwise-identical logits"
+        " across all tested execution variations. New work shows otherwise.\n\n"
+        "*Vosti: Specifying and Verifying Deterministic Inference* -"
+        " [full text](https://arxiv.org/abs/2609.38981v1)\n"),
+    # The same shape where the subject is NOT a work this section links. A
+    # field-wide belief with no paper behind it is the legitimate form of a
+    # fell-behind opening and the gate may not fire on it.
+    (0, "## What fell behind\n\nThe field had claimed that scaffolding must run"
+        " at inference. New work from Tsinghua shows otherwise.\n\n"
+        "*Harness-Zero* - [full text](https://arxiv.org/html/2610.10310v1)\n"),
+    # A named work as a prior belief, where the overturning paper is the one
+    # linked and the overturned one is somebody else's. Two papers, no finding.
+    (0, "## What fell behind\n\nAgora had claimed a hard ceiling on coding"
+        " agents. New work shows otherwise.\n\n"
+        "*Harness-Zero* - [full text](https://arxiv.org/html/2610.10310v1)\n"),
+    # "also" near an overturn verb, in a sentence that names a second paper.
+    # The gate reads the phrase and not the paper count, so this fires and the
+    # case records that, rather than a later run discovering it as drift.
+    (1, "## What fell behind\n\nA team at Fudan also overturned the claim"
+        " that typed graphs do not scale.\n"),
+)
+
+
+def section_titles(lines):
+    """The significant words of every paper title cited under each heading.
+
+    Keyed by the heading line's index, so a subject is only ever compared to
+    the works the reader meets in the same section. Comparing against the
+    whole issue would fire on any section that cites a paper another section
+    overturned, which is the ordinary case and the product.
+    """
+    out, head = {}, 0
+    for i, raw in enumerate(lines):
+        if raw.startswith("#"):
+            head = i
+            out.setdefault(head, set())
+        if CITATION.match(raw):
+            title = re.sub(r"\s*[-–]\s*\[.*$", "", raw.strip()).strip("* ")
+            title = title.split(":")[0]
+            words = {w.lower() for w in WORD.findall(title)}
+            out.setdefault(head, set()).update(words - TITLE_NOISE)
+    return out
+
+
+def provenance_findings(body):
+    """Every overturn in `body` whose own text says its two ends are one end.
+
+    Two of the three dresses the generator's SOURCE test names. The third, the
+    belief already standing in the draft as the citing paper's own result,
+    needs the abstract and stays a reading in the claims pass's seventh
+    question. This gate claims only the part it can prove, the way the
+    stands-alone gate claims one shape of four.
+    """
+    lines = body.split("\n")
+    titles = section_titles(lines)
+    heads = sorted(titles)
+    found = []
+    for n, raw in enumerate(lines):
+        if raw.startswith("#") or CITATION.match(raw):
+            continue
+        line = norm(re.sub(r"\]\([^)]*\)", "]", raw).replace("**", "")
+                    .replace("*", "").replace("`", ""))
+        if not line:
+            continue
+        here = max((h for h in heads if h <= n), default=None)
+        mine = titles.get(here, set())
+        for span in SENT.split(line):
+            span = span.strip()
+            if not span:
+                continue
+            if BACKREFERENCE.search(span):
+                found.append((n + 1, "points back at the work it overturns",
+                              span))
+                continue
+            m = PRIOR_BELIEF.match(span)
+            if not m:
+                continue
+            who = {w.lower() for w in WORD.findall(m.group("who"))}
+            shared = (who - TITLE_NOISE) & mine
+            if shared:
+                found.append((n + 1, "the work that held it is a work this "
+                              f"section links ({', '.join(sorted(shared))})",
+                              span))
+    return found
+
+
+def provenance(paths=None):
+    """Two of the three shapes in which one paper overturns itself.
+
+    The claims pass asks six questions about whether an issue is true and
+    every one of them is answered by reading the issue. On 2026-10-26 the
+    research seat read the live 2026-W42's overturn section against the two
+    abstracts it cites and scored it three wrong out of three, seven days
+    after it went live, and this seat's own grade of that same section the
+    same morning had run all sixteen laws and the six passes over it and
+    reported its prose.
+
+    So the gap was never a wording. It was that no instrument in this
+    repository had ever compared a statement in an issue to the source the
+    issue says it came from. Most of that comparison needs the abstract and
+    cannot be a command. Two of the three shapes do not, because the issue's
+    own text has already said the two ends are one end, and those two are
+    this.
+
+    What it cannot see, said here rather than left for a later grade to
+    discover. A pairing whose two papers are genuinely two papers and whose
+    relation is still wrong is invisible here, and so is a figure belonging to
+    a paper the section never names, which is the worst of the three. Both
+    need the abstracts, both are the claims pass's seventh question, and a run
+    that reads this gate's clean exit as a verdict on a section has made the
+    mistake the section's own grade made.
+
+        python3 -I docs/voice/check_voice.py provenance
+        python3 -I docs/voice/check_voice.py provenance --live
+    """
+    wrong = [(want, md) for want, md in PROVENANCE_CASES
+             if len(provenance_findings(md)) != want]
+    for want, md in wrong:
+        got = len(provenance_findings(md))
+        print(f"  BROKEN  a case asserts {want} finding(s) and the detector"
+              f" reports {got}")
+        print(f"            {norm(md.splitlines()[2])[:88]}")
+    if wrong:
+        print()
+        print("The pattern changed and PROVENANCE_CASES says how. Nothing")
+        print("below was read, because a provenance gate reporting clean is")
+        print("the sentence this seat has already published three times.")
+        return 1
+    print(f"  the detector's own cases   {len(PROVENANCE_CASES)} pass")
+    paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    paths = [pathlib.Path(p) for p in paths]
+    retired = hidden_weeks()
+    hits = 0
+    for path in paths:
+        if not path.exists():
+            print(f"  {path}: missing")
+            continue
+        off = path.stem in retired
+        found = provenance_findings(path.read_text(encoding="utf-8"))
+        tag = "   [retired, not served]" if off else ""
+        print(f"  {path.stem}{tag}  {len(found)} finding(s)")
+        for n, why, span in found:
+            print(f"    FAIL  line {n}: {why}")
+            print(f"          {span[:86]}")
+        if not off:
+            hits += len(found)
+    print()
+    print("One paper cannot overturn itself. Each hit is a sentence whose own")
+    print("words name the overturned end as work this section cites, so the")
+    print("repair is to drop the pairing rather than to reword it: the")
+    print("relation is usually `refines` and the item belongs in the new work.")
+    print("A clean exit is not a verdict on the section. The figure under the")
+    print("wrong paper and the mislabelled two-paper edge both need the")
+    print("abstracts, and they are the claims pass's seventh question.")
+    return 1 if hits else 0
+
+
 # ---- the editions a reader can actually open ---------------------------
 
 #: The product's public address. Every pass below reads it with no credential,
@@ -4402,7 +4777,7 @@ def main():
     rc = 0
     takes_paths = {"measure", "links", "delivery", "compare", "firstuse",
                    "generator", "specimens", "standalone", "devices",
-                   "captions", "marks"}
+                   "captions", "marks", "provenance"}
     # `--live` is the answer to `editions`, inside one run. It replaces the
     # archive glob with the editions the product actually serves, fetched from
     # the public pages and un-rendered, so a pass grades what a reader opens
@@ -4438,6 +4813,7 @@ def main():
                      ("generator", generator),
                      ("specimens", specimens),
                      ("standalone", standalone),
+                     ("provenance", provenance),
                      ("devices", devices),
                      ("routed", routed),
                      ("editions", editions),
