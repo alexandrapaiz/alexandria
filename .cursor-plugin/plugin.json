@@ -1,0 +1,19 @@
+{
+  "name": "alexandria-skills",
+  "displayName": "Alexandria Skills",
+  "version": "0.1.0",
+  "description": "Nine skills for building agents, written from AI research papers read in full and revised when the evidence moves. Each skill names the claims and papers behind every section, so a reader can see what it is standing on before taking its advice.",
+  "author": {
+    "name": "Alexandra Paiz"
+  },
+  "homepage": "https://libraryofalexandria.dev/skills",
+  "repository": "https://github.com/alexandrapaiz/alexandria",
+  "keywords": [
+    "agents",
+    "skills",
+    "evals",
+    "harness",
+    "context-engineering",
+    "ai-research"
+  ]
+}
