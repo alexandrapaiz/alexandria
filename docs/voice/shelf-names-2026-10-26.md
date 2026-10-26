@@ -64,9 +64,9 @@ The shelf holds `agent-containment` and `agent-security-measurement`.
 
 The name drops the word "agent" that the subject invites, because
 `Serving and inference` is the precedent on this page and it does not say
-"model serving". "Containment" carries the agent on its own; no reader of a
-page about building agents will take this shelf for a statement about our own
-infrastructure.
+"model serving". "Containment" carries the agent on its own, and no reader
+of a page about building agents will take this shelf for a statement about
+our own infrastructure.
 
 The caption is one sentence rather than the two-part shape four of the six
 existing captions use, and that is deliberate rather than careless. The
@@ -85,7 +85,7 @@ has not met the skill.
 The shelf holds `evaluation-integrity`.
 
 The two nouns are not synonyms here, which was the objection to check before
-accepting the proposal's own phrasing. An evaluation judges a system; a
+accepting the proposal's own phrasing. An evaluation judges a system. A
 measurement is a number somebody has to decide whether to believe. This
 company keeps a separate register for the second one.
 
@@ -171,8 +171,8 @@ two of the nine captions on this page would open on the same two words.
 
 `Context engineering` keeps nearly all of its own words, because it was the
 best line of the six and it needed a verb rather than a rewrite.
-`Serving and inference` is deliberately the shortest of the nine; captions
-that all run to the same length are the other half of the same tell.
+`Serving and inference` is deliberately the shortest of the nine, because
+captions that all run to the same length are the other half of the same tell.
 `Multi-modal systems` trades "read" for "take in", which is the verb canon
 law 15 fixes for that act.
 
@@ -224,8 +224,8 @@ skill against 5.3 with it. The second and third have no mechanism at all.
   each other.
 - `docs/voice/taste.md`, ruling by ruling. Bare-noun headings, 2026-09-29
   verdict 5. Longer undecorated sentences and no fragments, verdict 1, which
-  is what part 3 is about. No colon-led constructions, 2026-09-20 verdict 2;
-  there is not one on this page. Never "read" for ingested, verdict 6. The
+  is what part 3 is about. No colon-led constructions, 2026-09-20 verdict 2,
+  and there is not one on this page. Never "read" for ingested, verdict 6. The
   builder's situation first, verdict 2, which is how eight of the nine open.
   "No more technical. We want to sell", 2026-09-20 verdict 3: no caption here
   defines a term, and the one club word in the old set, "test-time compute",

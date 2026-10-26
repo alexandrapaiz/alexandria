@@ -111,7 +111,8 @@ copy rounds over the page it sits on all read past them, because no single
 caption looks wrong.
 
 So the candidate carries nine captions and not two. Part 1 and part 2 are the
-ask and can be approved alone; the candidate says in one line what that costs,
+ask and can be approved alone, and the candidate says in one line what that
+costs,
 which is nine captions in two registers with the two new shelves looking like
 the odd ones.
 
@@ -151,8 +152,8 @@ deciding which way it goes and nothing else.
 Per the charter's step 1b, against `docs/agents/quality-claims.md`. Eight of
 the nine captions make claims about the research only and each restates the
 subject of a skill whose front matter carries the claim ids. The ninth is the
-catch-all's and it is about our own page; it has no row and does not need one,
-because a reader checks it in the act of reading it. It is **named anyway and
+catch-all's and it is about our own page. It has no row and does not need one,
+since a reader checks it in the act of reading it. It is **named anyway and
 not resolved here**, because the seat that keeps that register is not this one.
 
 No caption says that a skill improves your agent, that the library keeps a
@@ -186,3 +187,4 @@ have no mechanism at all.
 | `incidents.py check` | nothing malformed, 7 in the inbox |
 | conflict markers | none in `docs/`, `prompts/`, `README.md` |
 | `prompts/digest.md` | untouched, deliberately, and the reason is the first line of this review |
+| `check_voice.py selfcheck` | 3 em dashes, no semicolons. Six semicolons this run wrote were struck rather than excused, because canon law 1 binds this seat's own prose first. The three em dashes stand and this is the line saying why: each one is inside the verbatim title of a ledger entry this review routes a finding to, and `routed`'s `entry_name` matcher resolves a name by exact string, so a title retyped without its dash stops naming the entry it is there to name |
