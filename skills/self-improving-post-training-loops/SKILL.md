@@ -1,16 +1,19 @@
 ---
 name: self-improving-post-training-loops
-description: Evidence-backed practices for designing closed-loop post-training pipelines where a model supervises, grades, or teaches its own next training step (self-distillation against a synthetic or gated teacher, verifier-free rubric-based credit assignment, capability-guided data selection). Use when building a training loop that turns a model's own rollouts into its next training signal, when deciding whether a teacher model's outputs can be trusted before distilling from them, when a self-distillation or self-improvement run destabilizes or collapses, when designing a reward or rubric for long-horizon agent training without a verifier, or when converting an agent harness's own interaction logs into training data. Distinct from harness-engineering, which covers the inference-time scaffold around a frozen model; this skill covers the training loop that updates the weights.
-version: 2
-status: active
+description: Evidence-backed decision rules for post-training loops where the model's own rollouts, or a teacher extrapolated from them, become the supervision for its next update. Covers whether a teacher can be trusted per prompt before distilling from it, how often the teacher is rebuilt, what has to be screened out of recorded interactions before they become training data, how a self-generated guidance signal is gated on the verifier's advantage sign, and how to assign per-step credit when no verifier exists. Use when you are about to distil from a larger teacher model and need to know whether that teacher's answers are actually right on the prompts you care about, when a self-distillation or on-policy-distillation run destabilizes or collapses, when deciding whether to spend compute on a teacher at all, when turning an agent harness's own logs into a training mixture, when designing a reward for long-horizon agent training without ground truth, or when a closed loop's second iteration performs worse than its first. Distinct from harness-engineering, which is the inference-time scaffold around frozen weights, and from recursive-harness-self-improvement, where the agent edits its own scaffold and no weights move.
+version: 3
+status: provisional
 provenance:
   extracted: 2026-09-18
-  revised: 2026-09-30
+  revised: 2026-10-26
   validated: ""
+  differential_screen: "not run. This seat has no route to either eval arm: no GROQ_API_KEY reaches the run, and pipeline/budget.py knows no provider that serves the benchmark subject. Both are queued in docs/agents/pending-workflow-changes.md. Every delta below is unscreened, and each Validation tag names what this run expects a bare subject to supply already and what it does not."
   reviews:
     - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
   revisions:
-    - "2026-09-30 (ADR-38 retrofit, owner directive): per-section Validation tags, an Apply checklist, and caveats that name their floor. No claim, number or prescription changed. Every section of this skill rests on claim and paper provenance alone, and the tags now say so at each section head instead of leaving the reader to infer it from one empty validated field."
+    - "2026-10-26 (ADR-38, the quality bar): 185 lines to 112, five prose sections to five deltas each ending in a numbered procedure with its thresholds named, the checklist moved first, and every number in the file re-read against its paper. `status` moved from `active` to `provisional`: ADR-38 rule 7 earns `active` on a positive differential delta on the benchmark subject, no such delta exists for this skill, and `active` had been standing in for a measurement nobody ran."
+    - "2026-10-26 (ADR-35, the paper wins, four corrections): all five papers were re-read in full this run and four statements did not survive. (1) The previous version said the gated teacher 'beat vanilla on-policy distillation across all six single-domain settings'. The paper reports the best distillation score on nine of fourteen benchmark-scale pairs, ties included, which is a weaker result and is now what delta 2 says. (2) NeoHorse-1's macro-average is over ten benchmarks, not eleven. (3) The validation stack before recorded interactions become training data has deduplication and evaluation-overlap screening as its first gate, which the previous version omitted entirely while naming a 'subscene-level labeling' step the read text does not carry. (4) RISE's gain was stated as consistent across four task families; the results read here are mathematical reasoning plus an out-of-domain average, so delta 1 now carries those and no more. All four filed for claim revision in docs/ideas.md; this run had no database and could not identify which claim ids carry them."
+    - "2026-09-30 (ADR-38 retrofit, owner directive): per-section Validation tags, an Apply checklist, and caveats that name their floor. No claim, number or prescription changed."
   claims: [30, 31, 32, 33, 116, 117, 118, 119, 120, 141, 142, 143, 144, 96, 97, 98, 99, 39, 40, 41, 42]
   papers:
     - "RISE: Recursive Improvement via Self-Extrapolating Policy Distillation — arxiv.org/abs/2609.05295"
@@ -22,164 +25,81 @@ provenance:
 
 # Self-improving post-training loops
 
-A self-improving post-training loop is any pipeline where a model's own rollouts,
-or a teacher derived from them, become the supervision signal for the model's
-next update: self-distillation, on-policy distillation, and rubric-based RL
-without a verifier all fit this shape. A competent ML engineer already knows
-how to run supervised fine-tuning and RL. What is not yet common knowledge is
-what breaks specifically when the supervision signal is self-referential: can
-the teacher be trusted, when should it be refreshed, and how do you grade a
-rollout with no ground truth. Five 2026 papers converge on the same handful of
-mechanisms for these questions, cross-supported by real supports and refines
-edges in the claim graph rather than one paper's opinion.
-
-This skill adds to standard post-training practice, it does not replace it.
-Keep doing what already works: hold out an eval suite disjoint from the
-training mixture, log every rollout, and watch entropy and response length for
-collapse. The findings below are the deltas, the places a self-referential
-loop needs something a standard fine-tune does not.
-
-## Refresh the teacher every iteration, do not distill once and stop
-
-*Validation: no trial and no consumer report. Claim and paper provenance only, from one system. Eval task sipt-t1 covers it and has not been run.*
-
-Construct a synthetic teacher directly from the model's own RLVR training
-trajectory, converting sparse outcome-induced updates into dense per-token
-supervision without needing an external or privileged model (RISE). Combine
-outcome-based RLVR reward with on-policy distillation from that synthetic
-teacher in one loop: the reward grounds the extrapolation, and the
-extrapolated teacher refines the token-level decisions (RISE). The step that
-makes this recursive rather than a one-time compression is refreshing the
-synthetic teacher every iteration as the student improves; a teacher built
-once and reused is not implementing the same thing (RISE). Across
-mathematical reasoning, multi-domain STEM, code generation, and multi-turn
-agentic tasks, this consistently outperformed both RLVR-only training and
-one-shot on-policy self-distillation (RISE).
-
-## Gate teacher trust before dense distillation, fall back when it fails
-
-*Validation: no trial and no consumer report. The best-evidenced section here: the gate beat vanilla on-policy distillation in all six single-domain settings and at both scales tested. Eval tasks sipt-t2 and sipt-t3 cover it and have not been run.*
-
-Before running dense on-policy distillation, estimate the teacher's
-reliability on each prompt from a small set of verifier-scored teacher probes
-(Verify Before You Distill). Route each prompt on that estimate: dense
-distillation when the reliability check passes, verifier-grounded GRPO when
-it does not, since a confidently wrong teacher gives misleading updates that
-a fallback signal avoids (Verify Before You Distill). The gate is not only an
-accuracy win, it is a compute win: gating which prompts actually need the
-teacher raised teacher-node GPU utilization from 9.8% to 78.9% in one 4B
-single-domain run, because idle teacher capacity in vanilla asynchronous
-on-policy distillation gets used once the gate decides which prompts are
-worth it (Verify Before You Distill). The gated approach beat vanilla
-on-policy distillation across all six single-domain settings and on
-multi-domain benchmarks, at both 4B and 35B scale (Verify Before You
-Distill).
-
-## Close the loop between evaluation, data selection, and the next mixture
-
-*Validation: no trial and no consumer report. Claim and paper provenance only, from one production system, which is the narrowest evidence in this file. Eval task sipt-t4 covers it and has not been run.*
-
-A training mixture chosen once at the start is not a closed loop. Convert
-evaluation feedback directly into the next training mixture through
-capability-guided allocation, so what the system currently learns to do
-shapes what data it learns from next (NeoHorse-1). Use routing signals, which
-capability tier actually handled a given case, to structure supervised
-fine-tuning into a staged curriculum and to decide which student outputs a
-teacher should supervise through distillation (NeoHorse-1). One concrete data
-source for this loop: recorded harness interactions, including interleaved
-reasoning, tool calls, and harness context, become training examples once
-validated by structural checks, multi-dimensional semantic evaluation, and
-subscene-level labeling before being mixed in (NeoHorse-1). This routing
-harness raised macro-average performance across eleven benchmarks from 58.94
-to 64.87 for a 4B model and from 65.60 to 69.04 for a 9B model (NeoHorse-1).
-
-## Calibrate self-guidance by advantage sign, do not apply it uniformly
-
-*Validation: no trial and no consumer report. Claim and paper provenance only. Eval task sipt-t5 covers it and has not been run.*
-
-When a self-guidance score (an aggregated token-level log-probability gain)
-shapes the training target, calibrate it against the verifier-derived group
-advantage rather than trusting it everywhere: retain the guidance on
-positive-advantage trajectories, reverse it on negative-advantage
-trajectories, and disable it entirely when the rollout group shows no outcome
-preference (FlowBalance). This calibrated signal can replace a separate
-token-level imitation loss: reweight a reference policy with an exponential
-energy function and fit the normalized target with a single log-partition
-estimate per rollout group through trajectory balance (FlowBalance). On
-mathematical reasoning benchmarks this beat FlowRL at two model scales while
-training faster, staying more stable, avoiding response-length collapse, and
-showing more correct-strategy diversity (FlowBalance).
-
-## Assign credit without a verifier through dynamic rubrics
-
-*Validation: no trial and no consumer report. Claim and paper provenance only, with one out-of-domain generalisation result behind it. Eval task sipt-t6 covers it and has not been run.*
-
-When no verifier or ground truth exists for a long-horizon agent task,
-generate rubrics dynamically during training so the grading criteria track
-the policy's evolving capability instead of staying fixed against a moving
-target (DRACO). Redistribute each rubric's score over the specific steps
-responsible for it to produce differentiated per-step advantages through a
-closed-form formula, with no learned attribution module needed (DRACO). On
-the AppWorld benchmark this gained 15.9 points over the base model and 5.3
-points over GRPO trained with a sparse ground-truth reward, and it
-generalized out of domain to Tau-Bench without a frontier judge or any
-verifier (DRACO).
-
-The general principle behind the gating and rubric findings above extends
-past training: before letting anything grade or teach itself, check whether
-that signal can be trusted, and build the fallback so it does not depend on
-trusting it (ours, not the paper's).
+Five findings about the loop where the supervision signal comes from the model being supervised. A competent ML engineer already runs supervised fine-tuning and reinforcement learning, already holds out an eval suite disjoint from the mixture, already logs rollouts, and already watches entropy and response length for collapse. None of that is repeated below. What is specific here is that the signal and the thing being trained on it are one system, so the question a standard fine-tune never has to ask is whether this particular supervision can be trusted on this particular prompt, and what runs instead when it cannot. Each delta ends in a procedure with its thresholds named.
 
 ## Apply: the builder's checklist
 
-Before starting a loop where the model's own output becomes its next training
-signal:
+1. **The teacher is rebuilt every iteration and the distillation phase is actually in the loop**, because adopting the extrapolated checkpoint without it recovers about a tenth of the gain (delta 1).
+2. **Each prompt is routed on three verifier-scored teacher probes with the gate opening at two of three**, and a different signal trains the prompts the gate rejects (delta 2).
+3. **Deduplication and evaluation-overlap screening run before the structural and semantic gates**, because a closed loop feeds its own eval set back into its mixture, and the published loop ran one pass (delta 3).
+4. **Self-generated guidance is multiplied by the sign of the verifier's group advantage and switched off when that advantage is zero**, never applied uniformly (delta 4).
+5. **Where no verifier exists, rubric criteria are regenerated per group of rollouts, criteria nobody in the group failed are dropped, and each score is redistributed over steps with a length normalisation** (delta 5).
+6. **The harness was exhausted first.** These are mechanisms for a loop whose training path is already chosen, and the cheaper fix is usually upstream of the weights.
 
-1. Trust: is there a reliability estimate on the teacher, per prompt, from
-   verifier-scored probes, deciding which prompts get dense distillation at all?
-2. Fallback: when the gate says no, does a different signal take over, rather
-   than the loop distilling anyway from a teacher it just failed?
-3. Refresh: is the teacher rebuilt every iteration as the student improves, or
-   is this a one-time compression wearing a loop's name?
-4. Calibration: is any self-generated guidance signal conditioned on the
-   verifier-derived advantage sign, kept where positive, reversed where
-   negative, and switched off where the rollout group shows no preference?
-5. Credit: where no verifier exists, do the grading criteria regenerate during
-   training so they track the policy, and is each score redistributed onto the
-   steps responsible for it?
-6. Order: have the harness improvements been exhausted first? These mechanisms
-   are for a loop whose training path is already chosen, and the cheaper fix is
-   usually upstream of the weights.
-7. Collapse watch: are entropy, response length and correct-strategy diversity
-   logged every iteration, on a held-out set disjoint from the mixture?
+## Delta 1: the extrapolated teacher is not the gain, the distillation against it is
+
+*Validation: no trial, no consumer report, no bare-arm screen. Eval task sipt-t1. A bare subject will say "distil the RL checkpoint into dense supervision", which is the plan this delta rejects. It is unlikely to supply the ablation number, which is the whole argument.*
+
+RISE builds a teacher out of the model's own reinforcement-learning trajectory rather than out of a privileged external model, extrapolating in weight space or logit space with a coefficient above one, and converts sparse outcome rewards into dense per-token supervision (RISE). The paper's own ablation is the reason to care, and it points the opposite way from intuition: adopting the extrapolated checkpoint directly, with no distillation phase, moves Math Avg from **60.0 to 60.3** on Qwen3-8B and **45.4 to 45.6** on Qwen3-1.7B, against **+2.7** and **+4.8** for the full loop (RISE). The extrapolation is a direction, not a model. Out-of-domain average held at 70.6 to **72.0** on the 8B, so the loop did not buy its gain by narrowing.
+
+1. Refresh the teacher every iteration as the student improves. A teacher built once and reused is one-time compression wearing a loop's name, and the ablation above is roughly what it is worth.
+2. Keep the outcome reward in the loop beside the distillation loss. The reward grounds the extrapolation and the extrapolated teacher refines the token-level decisions.
+3. Decay the extrapolation coefficient on a schedule and hold an exponential-moving-average anchor. The paper offers these as empirical robustness and states plainly that principled detection of when extrapolation stops being meaningful is open (RISE).
+4. Do not run this on a reward you have not audited for hacking. Extrapolation amplifies whatever direction the reward points, including a spurious one (RISE).
+
+## Delta 2: gate the teacher per prompt at two probes of three, and bank the utilisation before the accuracy
+
+*Validation: no trial, no consumer report, no bare-arm screen. Eval tasks sipt-t2, sipt-t3 and sipt-t7. Best-evidenced delta here, and the one this run corrected downward. A bare subject will say "check teacher quality". It is unlikely to supply per-prompt routing rather than per-corpus filtering, the fallback arm, or that the compute win is the larger and more certain half.*
+
+Standard on-policy distillation applies the teacher uniformly, so a confidently wrong teacher supplies a confidently wrong update. Estimate reliability per prompt from a small set of verifier-scored teacher probes and route on it, dense distillation when the check passes and verifier-grounded reinforcement learning when it does not (Verify Before You Distill). The accuracy result is real and it is narrower than this skill previously claimed: the gated method took the best distillation score on **nine of fourteen** benchmark-scale pairs, ties included, across two scales and three domains (Verify Before You Distill). The compute result is cleaner. Teacher-node GPU utilisation went from **9.8 percent to 78.9 percent** in the 4B single-domain run, because idle teacher capacity gets spent once the gate decides which prompts are worth it (Verify Before You Distill).
+
+1. Run **three** probes per prompt and open the gate at **two**, which is the paper's main-experiment setting of three probes at a two-thirds threshold (Verify Before You Distill).
+2. Build the fallback arm before the gate, not after. A gate with nothing on its closed branch distils anyway from a teacher it has just failed, which is worse than not gating.
+3. Judge the gate on teacher utilisation first. That number moved by a factor of eight and the accuracy numbers moved by a benchmark or two, so utilisation is where the gate pays reliably (ours, not the paper's).
+4. Stop at the method's edge: it needs an automatic verifier and routes binarily, so an open-ended task has no gate here (Verify Before You Distill).
+
+## Delta 3: screen the eval set out of the mixture before anything else, and treat one loop pass as one loop pass
+
+*Validation: no trial, no consumer report, no bare-arm screen. Eval task sipt-t4. One production system, the narrowest evidence in this file. A bare subject will say "clean your training data". It is unlikely to supply that decontamination is gate one specifically because the loop is closed, or that the published result is a single iteration.*
+
+Converting evaluation feedback into the next training mixture is what makes a mixture a loop: results are aggregated into a model-deficiency profile and that profile shifts the next mixture toward the underperforming regions (NeoHorse-1). Recorded harness interactions, with interleaved reasoning, tool calls and harness context, become training examples once they clear three gates in order (NeoHorse-1). Macro-average across **ten** benchmarks rose **58.94 to 64.87** at 4B and **65.60 to 69.04** at 9B (NeoHorse-1).
+
+1. **Deduplicate and decontaminate first**: exact and near-duplicate removal, then evaluation-overlap screening. This gate is first because the loop writes its own next mixture, so an eval item that leaks in is scored by the same system that then trains on it.
+2. **Structural validation**: rule-based checks for request and response presence, causal event order, and closure of every tool-call and result pair, each record landing as internally complete, partially recoverable, or quarantined.
+3. **Semantic evaluation on six dimensions**: goal attainment, instruction adherence, tool use, evidence consistency, error recovery, termination, each rated pass, warn, fail or not evaluated. No numeric acceptance threshold is published, so set yours and record it.
+4. Read the headline as one pass. The paper evaluates **a single pass** of the evaluate, select and update loop, so sustained multi-iteration gain is unvalidated, and a second iteration that regresses is inside rather than outside the published evidence (NeoHorse-1).
+
+## Delta 4: multiply self-guidance by the advantage sign, and switch it off at zero
+
+*Validation: no trial, no consumer report, no bare-arm screen. Eval task sipt-t5. A bare subject will say "weight by advantage". It is unlikely to supply the third branch at zero advantage, which is the one that stops a no-preference group from training on confidence alone.*
+
+A self-guidance score, meaning an aggregated token-level log-probability gain, is a measure of the model's own confidence, so applying it uniformly rewards a trajectory for being confidently wrong. FlowBalance gates it on the sign of the verifier-derived group advantage instead: positive advantage retains the guidance, negative advantage reverses it so a confidently scored failure cannot become self-reinforcing supervision, and zero advantage disables the dense branch entirely (FlowBalance). There is no tunable threshold here, only the sign. The calibrated signal then replaces a separate token-level imitation loss through an energy reweighting fitted with one log-partition estimate per rollout group (FlowBalance).
+
+1. Compute the group advantage from the verifier first, then apply guidance, never the other way round.
+2. Implement all three branches. Two branches and no zero case is the common partial implementation and it trains on confidence wherever the group shows no outcome preference.
+3. Expect the gain to be small and the stability to be the point: **+1.67** average at Qwen3-4B and **+1.98** at Qwen3-8B over FlowRL on four mathematics benchmarks, 0.5 validation accuracy on AIME24 in about **100** steps against roughly **143** for standard group-relative policy optimisation, and near-peak accuracy held through **400** steps where the baseline degrades after about **180** (FlowBalance).
+4. Watch response length as a symptom and not as a cause. The paper is explicit that the length comparison diagnoses a correlated failure without establishing causation (FlowBalance).
+
+## Delta 5: regenerate the rubric per group, drop what nobody failed, and normalise credit by step length
+
+*Validation: no trial, no consumer report, no bare-arm screen. Eval tasks sipt-t6 and sipt-t9. A bare subject will say "write a rubric and have a strong model grade the steps". It is unlikely to supply regeneration per group, discriminative dropout, the length normalisation, or that the cheap self-judge was the best out-of-domain arm.*
+
+A fixed rubric grades a moving policy against a standard it has already passed. DRACO generates criteria during training instead: a judge proposes them from the task instruction, extends them once per sampled rollout with the sub-goals that rollout reveals, and merges the proposals with duplicates removed (DRACO). Each rubric's score is then redistributed over the steps responsible for it by a closed-form formula with no learned attribution module, and the formula divides by the step's token count so a step's credit depends on its quality weight rather than on its length (DRACO). On AppWorld test-normal this took task-goal completion **69.4 to 85.3** percent, which is **+15.9** over the base model and **+5.3** over an outcome-reward baseline, with scenario-goal completion **41.1 to 70.6** (DRACO).
+
+1. Regenerate per group, at **G = 6** rollouts per task per training step, not per run and not per epoch.
+2. Apply discriminative dropout: delete any criterion no member of the group failed. It carries no signal and it inflates every score equally. Expect about **5.1** surviving criteria per rollout with a frontier judge and **3.8** with the model judging itself (DRACO).
+3. Redistribute with the length normalisation in place. Without it the longest step absorbs the credit, which is the failure a per-step scheme exists to avoid.
+4. Try the self-judge before buying a frontier one. Out of domain on a 97-task banking benchmark the base model scored **15.8** percent, the frontier-judged variant **20.4**, and the self-judged variant **21.1**, which was the best arm (DRACO).
+5. Do not read end-task gain as proof the credit landed correctly. The paper says in its own words that a judge which is internally consistent can still be systematically wrong, and that end-task validation does not establish that credit reached the right steps (DRACO).
+
+The principle under deltas 2 and 5 generalises past training, and it is the one sentence worth carrying out of this file: before letting anything grade or teach itself, measure whether that signal can be trusted on this case, and build the branch that runs when it cannot (ours, not the papers').
 
 ## Caveats
 
-- Model scales tested top out at 35B students (Verify Before You Distill), and
-  none of these five papers report results at frontier lab scale, so the gating
-  and refresh mechanisms are unverified there. The floor is low, which is the
-  more useful half: the gate was measured at 4B as well as 35B, and the 4B
-  single-domain run is where the teacher-utilisation gain from 9.8 to 78.9
-  percent was recorded, so a small student is enough to see whether the gate
-  pays.
-- Domain coverage is math reasoning, STEM, code generation, and long-horizon
-  agent benchmarks (AppWorld, Tau-Bench, and NeoHorse-1's eleven-benchmark
-  suite). No result here covers open-ended dialogue or safety-tuning
-  objectives.
-- The harness-log-to-training-data pipeline (NeoHorse-1) is evaluated on one
-  production routing-harness system, and its structural-check and
-  semantic-evaluation steps are not shown to generalize to harnesses built
-  differently. The floor it does establish is the validation stack: structural
-  checks, multi-dimensional semantic evaluation and subscene-level labeling all
-  ran before anything was mixed in, so recorded interactions are not training
-  data until all three have.
-- This is a training-time complement to the harness-engineering skill's
-  inference-time scaffold advice, not a substitute for it: when an agent
-  underperforms, exhaust harness improvements first, and reach for the
-  mechanisms here only once fine-tuning is the already-chosen path.
-- The dynamic-rubric result needs no frontier judge and no verifier, which is
-  the floor worth naming on the section most likely to be read as expensive:
-  the out-of-domain transfer to Tau-Bench was obtained without either.
-- These findings carry alexandria claim provenance from 2026 papers. If a
-  source claim is later contradicted, this skill will be revised or
-  deprecated.
+- **This skill is unmeasured.** No delta carries a differential number and no bare-arm screen has run, because this seat has no route to either eval arm. `status: provisional` says exactly that, and it replaced `status: active` on 2026-10-26 for this reason.
+- **Scales top out at 35B students** (Verify Before You Distill), and nothing here is verified at frontier scale. The floor is the useful half: the gate was measured at 4B, and the 4B single-domain run is where the utilisation gain from 9.8 to 78.9 percent was recorded, so one small student is enough to see whether the gate pays.
+- **Domains are mathematics, code, instruction following and long-horizon agent benchmarks** (AppWorld, a 97-task banking benchmark, NeoHorse-1's ten-benchmark suite). FlowBalance's authors state that generalisation beyond mathematical reasoning is open. Nothing here covers open-ended dialogue or safety tuning.
+- **The harness-log pipeline is one production routing-harness system over one loop pass** (NeoHorse-1), and its gates are not shown to transfer to a harness built differently. The floor it does establish is the order of the gates, which costs nothing to copy: decontaminate, then validate structure, then evaluate semantics, and mix nothing in that has not cleared all three.
+- **DRACO's primary numbers come from one frozen judge** (GPT-5.4 at temperature 0.1), with no independent signal that the generated criteria describe the task faithfully. The floor is cheap and it is the finding: the self-judged variant needed no frontier judge and no verifier and was the best out-of-domain arm.
+- **This is a training-time complement to `harness-engineering`, not a substitute.** When an agent underperforms, exhaust the inference-time scaffold first, and reach here only once fine-tuning is the chosen path.
+- Every delta is revised or withdrawn if the claim behind it is contradicted. The claim ids in the provenance block are the addresses a contradiction lands on, and four statements in the previous version are already known wrong: they are listed in the 2026-10-26 revision note and filed in `docs/ideas.md`.
