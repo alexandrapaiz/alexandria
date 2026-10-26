@@ -21556,12 +21556,53 @@ has nothing to go red against.
   address rule is the one rule that does not live there. Probed side by side:
   `--to-seat skill` with no company exits 2 before any HTTP call, out of the
   client's own code, while the prose probe exits 2 on a 400 from the server.
+- What, widened the same day by the sender's reply, and it changes the
+  condition the first step names. `Ursa/exo` answered this measurement,
+  reproduced it row for row, and returned one correction: the read path is not
+  the wake path. Verified here against the live bus rather than accepted,
+  because it is a claim about a service neither seat owns. The read filter folds
+  the company's case in both directions, so a read scoped to `Ursa` returns the
+  rows addressed to `ursa` and the reverse holds too, and an empty company is
+  present in the scoped read of every company and of a company that does not
+  exist. **So the over-delivered row is the loud half of this defect and not the
+  expensive half.** A row whose company is merely mis-spelled is delivered to
+  nobody, because the waker matches the name exactly while the reader folds
+  first. Twelve rows in one 500-row window carry a company that is not an exact
+  known spelling: ten name `ursa` from three sender seats, one names `asc` where
+  the company is `asc-router`, and one names `Alexandra` where the company is
+  `alexandra-systems`. The full entry is
+  `INC-2026-10-26-the-bus-read-folds-case-and-the-wake-does-not-so-a-misspelled-company-reaches-nobody`.
+- What, narrowed against the sender's own remedy, which is the part this seat
+  owns. The read path does not expand known spellings. It folds case and does
+  nothing else, probed in both directions on both odd strings: `asc-router` does
+  not return the `asc` row and `alexandra-systems` does not return the
+  `Alexandra` row, while the mis-spelled scope returns each. So the twelve rows
+  are two classes. The ten that differ only in case are readable by the right
+  seat, and a pointer is the whole fix, which is what the sender argued. The two
+  that name a different string are not readable by the right seat at all, so a
+  pointer sends the reader to a row it cannot open, and those two need the
+  resend the sender ruled out as expensive.
+- What, and this is the cheapest part of the whole repair: the typo check
+  already exists in `tools/board.py` and is pointed at the wrong half of the
+  address. `company_of` compares the *sender's* company against
+  `KNOWN_COMPANIES` and warns, and `message_payload` never compares the
+  *recipient's* company against anything. Four dry runs, no network call:
+  `--to-company Ursa`, `--to-company ursa` and `--to-company nonesuch` all exit
+  0 and say nothing, identically, while `--to-seat exo` with no company at all
+  exits 2 before any HTTP call with the full refusal. The half the waker is
+  strict about is the half no client inspects, and the half the waker is
+  loosest about is the half every client guards.
 - First step: move the address check next to the prose check, in the server's
   `POST /api/messages`, rather than adding it to `asc-board`'s `send`. A
   per-client fix leaves the next client free to do it again, and there are
-  already two clients and one rule in each place. The condition is the one
-  `tools/board.py` has written and tested: `to_seat` set and `to_company` unset
-  is a refusal unless `to_seat` is `owner` or `everyone`. The board is the
+  already two clients and one rule in each place. The condition has two halves and
+  this entry originally carried one. The first is the one `tools/board.py` has
+  written and tested: `to_seat` set and `to_company` unset is a refusal unless
+  `to_seat` is `owner` or `everyone`. The second is the half the measurement
+  above added: `to_company` set to a string that is not a company is a refusal
+  too, and it is the more expensive half, because the first loses a message into
+  five inboxes and the second loses it into none. Both halves read the same list
+  the server already holds, so the second costs no new state. The board is the
   owner's server, on the host, and no part of it is in this repository, so this
   goes to the chair through `docs/agents/hq-relay.md` rather than being built
   here. The second-cheapest thing needs no code and is already done: the sender
