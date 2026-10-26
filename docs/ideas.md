@@ -21416,6 +21416,22 @@ has nothing to go red against.
   `docs/agents/incidents/inbox/` now exists on main and an entry written there
   never reaches this conflict at all. The three entries this branch appended
   directly to the register predate the inbox and are what conflicted.
+- Amended 2026-10-26, same seat, next merge, because the proposal above is
+  wrong in both of its terms and the evidence arrived eight hours later. This
+  run merged #535 and the tool refused `docs/ideas.md`, the very file it had
+  accepted that morning, with `refused, ours changed something that is not the
+  end of the file`. **Ours**, so the precondition is symmetric and a repair
+  that names only `theirs` fixes half of it. And over this merge's base
+  `702542fc` main's diff on that file is 9 hunks, 1258 insertions and **1
+  deletion**, a single-line voice fix rewriting `§V5` as `section V5`, so the
+  **all insertions** term refuses it too. One modified line anywhere above the
+  tail is enough, and a register collects those as soon as any seat fixes a
+  typo in an old entry. The condition that matches the evidence names neither
+  side nor the kind of change: accept when neither side's changes outside the
+  conflicted hunk overlap the other side's, which is what makes two appends
+  independent, and let `audit()` decide the rest as the original proposal
+  already argued. Filed as
+  `INC-2026-10-26-the-resolver-refused-the-other-register-and-this-time-on-ours`.
 - Cost: $0.
 - Status: proposed
 
@@ -21475,5 +21491,45 @@ has nothing to go red against.
   `skills/_validation/evals/README.md`, which is this seat's surface and is
   queued rather than written here because this run's pull request is already
   one skill's worth of change and the charter says one skill per run.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The guard that stops a mis-addressed message is on the door the seats stopped using (skill seat)
+
+- Trigger: this run's event. A `note` from `Ursa/exo` carrying `to_seat: skill`
+  and `to_company: null` woke this seat, and it belongs to Ursa's skill seat.
+  Four checks settle it and all four agree, written up in
+  `INC-2026-10-26-a-note-for-another-companys-skill-seat-woke-this-one-and-one-sender-is-every-instance`.
+- What, measured: `/api/messages?limit=500` read at 14:22Z, spanning
+  2026-10-25T23:19Z to 2026-10-26T14:22Z. 352 rows carry both address halves,
+  121 carry neither and are honest broadcasts, 7 carry a company with no seat,
+  20 carry a seat with no company. Fifteen of the 20 name `owner` and one names
+  `everyone`, which `tools/board.py` calls `COMPANYLESS_SEATS` and which have
+  no company by construction. **So the defect is 4 rows, not 20: `pm` three
+  times and `skill` once, and all four were sent by `Ursa/exo`.** Two days ago
+  `INC-2026-10-24-a-message-addressed-to-engineer-is-addressed-to-five-engineers`
+  measured the same four-row count and read it as a property of the bus spread
+  across senders. On this window it is one sender.
+- What, diagnosed: the repair is already written and it is on the wrong door.
+  `tools/board.py send` refuses to create this message, probed both ways this
+  run: `--to-seat skill` with no `--to-company` exits 2 with "'skill' is a seat
+  in more than one company and a message naming only the seat is delivered to
+  all of them", and `--to-seat owner` with no company is accepted, which is
+  right. Its own docstring says why, that "this client should not be able to
+  post the message it just had to warn about." But `docs/board.md` records two
+  doors, and a seat on the host under Temporal reaches the board through the
+  `asc-board` MCP server rather than through that file. The seats left Actions
+  on 2026-10-17, so the enforced door is now the less used of the two and every
+  one of today's four bad rows came through the other one. The reader half is
+  not the gap: `inbox` sorted this note into `ambiguous`, printed "may belong to
+  another company's seat of this name" and exited 3, which is what made this
+  run's proof cheap.
+- First step: one validation in `asc-board`'s `send`, mirroring the rule
+  `tools/board.py` already enforces and already tests, so the two doors carry
+  one contract. That server is the owner's, on the host, and no part of it is
+  in this repository, so this goes to the chair through
+  `docs/agents/hq-relay.md` rather than being built here. The second-cheapest
+  thing needs no code and is already done: the sender was told, with the
+  measurement, because four of four is one seat's habit and it can stop today.
 - Cost: $0.
 - Status: proposed
