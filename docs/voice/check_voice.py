@@ -453,6 +453,41 @@ def shapes(blocks):
 ARXIV = re.compile(r"arxiv\.org/(abs|html|pdf)/(\d{4}\.\d{4,5})(v\d+)?")
 
 
+#: Whether `arxiv.org/html/<id>` exists, per identifier, for one process.
+_HTML_EXISTS = {}
+
+
+def html_full_text(ident):
+    """Does the HTML full text exist for this arXiv identifier?
+
+    The one question law 8's rule leaves to judgment, answered. The rule says
+    to rewrite `abs` to `html` and then says "fall back to the abs page only
+    when the paper has no HTML version", so an `abs` link is a violation or the
+    rule working, and nothing in the artifact says which. This asks arXiv.
+
+    Returns None when the question could not be reached, and a caller that
+    gets None says the artifact was not graded on this axis rather than
+    grading it clean. A bogus identifier answers 404 on both paths, which is
+    what makes a 200 on `abs` with a 404 on `html` the fallback case rather
+    than a broken link.
+    """
+    if ident in _HTML_EXISTS:
+        return _HTML_EXISTS[ident]
+    out = None
+    for path in ("html",):
+        req = urllib.request.Request(f"https://arxiv.org/{path}/{ident}",
+                                     method="HEAD")
+        try:
+            with urllib.request.urlopen(req, timeout=20) as r:
+                out = 200 <= r.status < 300
+        except urllib.error.HTTPError as e:
+            out = False if e.code == 404 else None
+        except (urllib.error.URLError, OSError, ValueError):
+            out = None
+    _HTML_EXISTS[ident] = out
+    return out
+
+
 def links(paths=None):
     """Canon law 8's FORM half, which a prefix check cannot see (ban list 100).
 
@@ -508,7 +543,44 @@ def links(paths=None):
         bad = [s for s in seg if s != "html"]
         if bad and not off:
             print(f"    law 8 wants the html full text, not {', '.join(sorted(bad))}")
-            rc = 1
+            # Which of those the rule excuses, which is the half this check
+            # used to leave to a reading. The rule's own fallback clause is
+            # "only when the paper has no HTML version", so an abs link is a
+            # violation exactly when the html url the rule asks for resolves.
+            # 2026-W42 printed nine abs links and seven of the papers have a
+            # live full text, so seven of its ten links stop at the abstract
+            # against her ruling of 2026-09-19 in her own words, "you didn't
+            # show me the paper". Entry 100's docstring called the stronger
+            # comparison undecidable while the payload is out of reach. The
+            # payload is, and arXiv is not.
+            if os.environ.get("ALEXANDRIA_OFFLINE"):
+                print( "      NOT CHECKED  whether the full text exists for each,")
+                print( "                   ALEXANDRIA_OFFLINE is set, so every abs")
+                print( "                   above is read as a violation")
+                rc = 1
+            else:
+                excused, broke, unknown = [], [], []
+                for seg_name, ident, v in found:
+                    if seg_name == "html":
+                        continue
+                    exists = html_full_text(f"{ident}{v or ''}")
+                    (broke if exists else
+                     excused if exists is False else unknown
+                     ).append(f"{ident}{v or ''}")
+                print(f"      of those, full text exists  {len(broke)}"
+                      f"   no full text {len(excused)}"
+                      f"   unreached {len(unknown)}")
+                for ident in broke:
+                    print(f"      FAIL    abs/{ident} and arxiv serves"
+                          f" html/{ident}")
+                for ident in excused:
+                    print(f"      OK      abs/{ident}, no html version, which"
+                          f" is the rule's own fallback")
+                for ident in unknown:
+                    print(f"      UNKNOWN abs/{ident}, arxiv unreached, so this"
+                          f" link was not graded")
+                if broke or unknown:
+                    rc = 1
         if len(ver) > 1 and not off:
             print("    one artifact disagrees with itself about the version "
                   "suffix, so at least one identifier was composed rather "
