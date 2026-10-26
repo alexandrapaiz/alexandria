@@ -992,9 +992,13 @@ CRON_REQUESTS = {
         "path": "pipeline/interpret.py",
         "prompt": "prompts/interpret.md",
         "reservation": "MAX_COMPLETION_TOKENS",
-        # one claim plus five candidate claims, each capped by the distiller at
-        # a few hundred characters; 400 each is generous.
-        "payload_chars": 6 * 400,
+        # One claim plus NEIGHBORS candidate claims, each capped by the
+        # distiller at a few hundred characters; 400 each is generous. The
+        # count is read out of the job rather than written here, because slice 2
+        # of docs/product/graph-quality.md widened the shortlist and this line
+        # said `6 * 400` at the time. A fit check measured against a request the
+        # job stopped sending is the failure L-E6 is about.
+        "payload_chars": {"literal": "NEIGHBORS", "plus": 1, "each": 400},
     },
     # Distill was missing from this table until 2026-09-26 and it is the job
     # with the largest request in the pipeline by an order of magnitude: the
@@ -1071,13 +1075,31 @@ def request_reservation(spec) -> tuple[int, str]:
 
 
 def request_payload_chars(spec) -> int:
-    """The largest user message the job builds, as a number or a name to read."""
+    """The largest user message the job builds.
+
+    Three forms, and the reason there are three is that a guard carrying its own
+    copy of a number the job owns is a guard that goes stale without going red.
+
+    An `int` is a payload whose size is the job's own fixed shape. A `str` is
+    the name of a literal in the job's file, read out of it. A `dict` is a
+    payload that is `plus` fixed items and some count of repeated ones, where
+    the count is a literal in the job's file and `each` is the size of one:
+    interpret sends one claim plus NEIGHBORS candidates, so widening the
+    shortlist widens the request, and before 2026-10-25 this table said `6 *
+    400` and would have kept saying it after NEIGHBORS doubled.
+    """
     chars = spec["payload_chars"]
     if isinstance(chars, int):
         return chars
-    source = (ROOT / spec["path"]).read_text()
-    return int(_literal(source, rf"^{chars} = ([\d_]+)",
-                        f"{spec['path']} {chars}").replace("_", ""))
+
+    def literal(name: str) -> int:
+        source = (ROOT / spec["path"]).read_text()
+        return int(_literal(source, rf"^{name} = ([\d_]+)",
+                            f"{spec['path']} {name}").replace("_", ""))
+
+    if isinstance(chars, dict):
+        return (literal(chars["literal"]) + chars.get("plus", 0)) * chars["each"]
+    return literal(chars)
 
 
 def request_text(spec, chars: int) -> str:
