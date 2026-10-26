@@ -1,7 +1,8 @@
 # The claim graph, measured
 
 **Slice 1 built 2026-09-29, slice 5 built 2026-10-24 and finished 2026-10-25,
-slice 2 built 2026-10-25** (engineer seat). This is
+slice 2 built 2026-10-25 and its one open gap closed 2026-10-26** (engineer
+seat). This is
 the design record for the
 ledger entry "Knowledge graph upgraded to industry standard" (docs/ideas.md,
 accepted 2026-09-18), whose first step asks for a graph-quality audit with
@@ -310,6 +311,27 @@ and `tests/test_corpus_drain.py` pins the length at five on purpose. That is a
 small piece of work and it is not this slice's, so it is written down rather
 than rushed. Nothing is urgent about it: the gate cannot run at all until the
 Modal workspace comes back.
+
+**Closed 2026-10-26, and it was two gates rather than one.** The fixture is ten
+candidates now, five that relate and five that do not, and three of the five
+unrelated ones are close to the claim in vocabulary and far from it in finding,
+because a longer list is exactly where a judge starts matching on words. The
+pin moved from the literal five to `interpret.NEIGHBORS`, so the fixture cannot
+fall behind the constant again without a red test.
+
+Looking for the same defect elsewhere found it in triage, older and worse:
+three papers against a `BATCH` of ten, in front of a gate whose own failure
+message is about a model that answers for part of a batch and leaves the rest
+untriaged forever. That failure is a function of batch length, and the
+reservation was sized for ten results the whole time, so the gate had never
+once sent the request it was reserving for. Also ten now, spanning all four
+decisions. Distill was right from the start, padding its body to exactly
+`FULLTEXT_CHARS`, and it is why the repair is a test rather than a rule: the
+correspondence belongs in the expression.
+
+What this does not do is rehearse the widened payload, because the Modal
+workspace is still off. The gate is correct now and unrun, which is a better
+state than incorrect and passing, and it is not the same thing as verified.
 
 **And the done-condition cannot be met today, by anyone in this org.** Both
 halves of it are read off a database. So the run reports the retrieval-side half

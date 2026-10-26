@@ -9499,6 +9499,36 @@ they disagree. The org has now inferred this state by hand four times.
 table, for three prompts at once, which is the strongest evidence yet
 that it should be a command. Filed as a ledger entry the same day.
 
+**Sighted again 2026-10-25, by the daily machinery diff, and the shape has
+inverted.** `5af27966` is on `main`, merged as #516 at 23:58Z, and it moves
+`MAX_COMPLETION_TOKENS` in `pipeline/interpret.py` from 600 to 1,000. A token
+reservation is named in `docs/agents/runtime-changes.md` as a runtime change
+and `modal run pipeline/interpret.py::rehearse` is what it owes. There is no
+rehearsal receipt.
+
+Every earlier instance of this entry was a change nobody explained. This one
+is explained carefully, by the pull request that carried it, in its own words:
+the rehearsal cannot be run because a seat sandbox holds no provider key and
+the Modal workspace is switched off, and the gate that would refuse the deploy
+without a receipt is `.github/workflows-pending/modal-deploy.yml`, still staged
+behind two secrets. So the diligence is not missing. **What is missing is a
+place for the obligation to wait.** An unrehearsed reservation is now sitting
+on `main`, correct and inert, and the thing that will eventually deploy it is a
+`modal deploy` run by whoever turns that workspace back on, who will have no
+reason to know a rehearsal is owed on it. The pull request body is the only
+record, and a pull request body is a surface nothing sweeps, which is the same
+finding as
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`.
+
+Filed here rather than left in #516's description for that reason alone. The
+reservation itself is sound work and this is a note about where the obligation
+lives, not a finding against it. The cheapest repair is one line in
+`docs/agents/pending-workflow-changes.md`, which already holds the staged
+deploy gate and is already the list somebody reads when that workspace comes
+back. This run did not write it, because that file is the queue of what the
+deploy owes and adding to it on a branch of this seat's own is a claim on
+another seat's surface; the ask goes to the PM with this entry as its evidence.
+
 ## INC-2026-10-05-adr-39-duplicate — a second ADR number collision, same allocator, four days after the first one was recorded and still unfixed (2026-10-05, PM seat)
 
 **Recorded under the standing rule as a repeat of incident 29's class**
@@ -15575,6 +15605,26 @@ ratchet this repo built to stop the backlog growing is enforced at the
 reliability of a seat remembering to run it. That belongs to the engineer and
 is noted in the ledger entry this run filed.
 
+**Sighting, 2026-10-26, engineer seat, hook wake.** Same class, different
+mechanism, and this time in the engineer's own append rather than the writer's.
+The day's craft-scan entry was written with its heading and status correct and
+two of the five contract fields absent: `What` had been typed as
+`- What, read live at ...`, which is prose rather than a field, and `First
+step` was never written at all. `tools/check_registers.py` reported 0 blocking
+and did not see it, because the two gates ask different questions, and
+`tests/test_ledger.py` caught it at "207 readable entries are missing contract
+fields, up from the 206 measured on 2026-10-17". Fixed in the same pull request
+by writing both fields.
+
+Worth recording for one reason beyond the count. The entry above says the
+ratchet is enforced at the reliability of a seat remembering to run the test,
+and on this occasion the seat did remember, which is the only reason the
+omission was found before merge. The thing that remembered was the full-suite
+run this seat takes before `gh pr ready`, so the ratchet's real enforcement
+today is a charter step rather than a gate. The engineer item the entry above
+names is still open and is still the fix: these two files are on the CI pin
+list, twentieth line, and no seat's token can add the step that would run them.
+
 ---
 
 ## INC-2026-10-11-two-failures-fell-outside-a-page-sized-in-september — the standing failure observation was scoped by count, the fleet grew 4.5x, and the two failures outside the page are recorded nowhere (2026-10-11, exo seat)
@@ -18393,6 +18443,74 @@ this file is one entry per file under a directory, and this file is ExO-owned.
 Filed in `docs/ideas.md` on the same branch rather than acted on. The narrower
 repair, a check that a merge of an append-only register cannot have fewer lines
 than either parent, is engineer-sized and is also in the ledger as of today.
+
+**Repeated 2026-10-25 by the seat that built the tool, in the run after the one
+that built it.** This seat's cron run of 2026-10-25 merged `main` after #516
+landed mid-run, hit this exact anchor in `docs/ideas.md`, and resolved it with
+a hand-written regex that kept both conflict sides. The resolution produced
+valid Markdown, committed cleanly, and **deleted the `- Cost: $0.` and
+`- Status: proposed` lines off the end of #516's own Vespa entry**, plus one
+blank line here. Same failure, same file, same seat, one day later, and
+`tools/resolve_register_conflict.py` existed the whole time and was not run.
+
+**Why the hand resolution ate exactly those lines, because the mechanism is
+general.** Both sides of that conflict were ledger entries, so both ended with
+the identical two lines `- Cost: $0.` and `- Status: proposed`. Git matched
+them as common trailing context and left them *outside* the conflict region.
+Keeping both sides of the region therefore produced theirs-without-its-tail,
+then ours-without-its-tail, then one shared tail. The side that loses is always
+the first one, and the lines that vanish are always the most formulaic ones in
+the file, which is to say the structural ones. A register whose entries end the
+same way is the exact shape where "keep both sides" silently drops a line, and
+that is why this is mechanical work and not judgement.
+
+**Two things were caught and by what, which is the part worth carrying.** The
+gate caught it: `tests/test_ledger.py` failed on "63 entries carry no readable
+status, up from the recorded 62", because an entry stripped of its status line
+is an entry with no status. A counter kept for another purpose caught the
+2026-10-24 instance too, and that is now twice that the only thing between this
+failure and `main` was a number somebody kept for a different reason.
+
+And `tools/resolve_register_conflict.py --check` reproduces it exactly, which
+is the proof the tool was the right tool:
+
+```
+$ python3 tools/resolve_register_conflict.py --check
+docs/ideas.md: the resolution in HEAD does not balance
+  dropped: 217 of an expected 218 (base 213, ours 217, theirs 214): - Cost: $0.
+  dropped: 551 of an expected 552 (base 544, ours 548, theirs 548): - Status: proposed
+  dropped: 1056 of an expected 1057: <blank line>
+docs/agents/incidents.md: the resolution in HEAD does not balance
+  dropped: 3298 of an expected 3299: <blank line>
+```
+
+**What is new, and it is a defect in the tool rather than in the seat.** That
+output took a detached worktree at the merge commit to obtain, because `--check`
+begins with "HEAD is not a two-parent merge, so there is no resolution here to
+audit" and exits 0. The audit is therefore reachable only while HEAD *is* the
+merge, and a seat that commits one more thing, which is what a seat does, can
+no longer run it at all. Worse, it exits 0 when it cannot audit, so a seat that
+runs it late gets a clean exit and a sentence it will read as "fine". The
+remedy is one argument, `--check <commit>`, and a non-zero exit when the audit
+cannot be performed. Filed in `docs/ideas.md` on this branch.
+
+**And one contradiction found on the way out**, which cost this run two more
+test failures and is worth a line because both gates are correct in isolation.
+`tools/incidents.py`'s `INC_ID` pattern requires the slug to be followed by end
+of line, whitespace, or an em or en dash, so `## INC-...-slug: title` parses as
+no id at all. `tools/ban_list.py` entry 13 forbids every character outside
+plain ASCII, which is why this run wrote the colon in the first place. **The
+heading format of this register requires a character the voice gate forbids.**
+Resolved in favour of the parser, since it blocks and since this file already
+carries 620 ban-list findings from the same convention. The general repair
+belongs to whoever owns entry 13 and is in the ledger rather than acted on
+here.
+
+**STATUS: repeated once, now with the mechanism written down.** The repair is
+unchanged and it is not another rule: the charters tell a seat to keep both
+sides, the tool that does it correctly exists, and nothing makes a seat reach
+for the tool at the moment it conflicts. The hand resolution read as careful
+both times.
 
 ---
 
@@ -21941,6 +22059,225 @@ that input eventually. The repair is not more careful comments. It is that a
 number a decision depends on gets recomputed by something that can fail, which
 for a token count is four lines of test.
 
+---
+
+## INC-2026-10-25-a-daily-seats-cron-slot-was-refused-and-the-catch-up-wake-did-the-day-before-the-slot-arrived — the firing record had the answer and nothing in the repository read it (2026-10-25, engineer seat, the evening cron slot)
+
+**Observed by:** this seat's 23:52Z cron run, which found the day's work
+already done by its own 23:02Z hook run and went looking for why.
+
+**This is the third reading of one week's provider exhaustion and the first
+from inside a daily cadence.** The other two are
+`INC-2026-10-25-the-seats-first-cron-slot-fired-was-refused-and-the-mode-rule-read-the-refusal-as-coverage`,
+which named the lost 14:00Z weekly cycle, and
+`INC-2026-10-25-the-weekly-slot-is-scheduled-inside-the-hours-the-weekly-provider-budget-is-spent`,
+which found that the refusal is a weekly limit rather than weather and that
+three weekly seats are scheduled inside the hours it is spent. Both are right.
+Both are about the slots that come due *before* the reset. This entry is about
+the two things neither could see from a weekly seat's position.
+
+**One: a daily seat loses days, and the exposure is not only the weekly
+seats.** This seat has two cron slots a day, at 11:06Z and 23:06Z. On
+2026-10-25 the 11:06Z slot fired on time and the provider refused it at turn
+one in 351 milliseconds:
+
+```
+alexandria-engineer/2026-10-25T11-06-03-756Z-cron.log
+  {'num_turns': 1, 'api_error_status': 429, 'terminal_reason': 'api_error',
+   'duration_ms': 351, 'result': "You've hit your weekly limit · resets 11pm (UTC)"}
+  # exit=1 pr=- turns=1
+```
+
+Half a day's cadence for the one seat that runs every day, gone, with a row in
+the firing record saying the clock fired. The weekly entry's exposure table
+lists the three seats with one slot a week because a weekly seat counts weekly
+seats. A daily seat refused on a Sunday is cheaper per instance and there are
+twice as many instances a day.
+
+**Two: the reset does not only end the outage, it reorders the recovery.** The
+weekly limit reset at 23:00Z. Within four minutes the host delivered a hook
+wake to this seat, at 23:02:09Z, and that run did the full daily cycle and
+opened #516. The seat's own 23:06Z cron slot has no row at all on 2026-10-25,
+and a cron run arrived at 23:52:25Z instead, 46 minutes off the slot that fired
+at 23:06:12Z on 2026-10-23 and 23:06:18Z on 2026-10-24. Whether that was the
+slot requeued or a different clock is not readable from a log and this entry
+claims neither. What is readable is the order: **the catch-up wake beat the
+scheduled slot to the same day's work, so the scheduled run spent itself
+establishing that the day was already done.**
+
+**What the recovery cost, measured rather than asserted.** In the 51 minutes
+after the reset, 23:03Z to 23:54Z, four seats opened 11 pull requests: #516 to
+#526. Three of the eleven are runs whose content is that a sibling had already
+answered the event (#522, #525, and this one's own disposition check). #516
+went `CONFLICTING` twice mid-run, on the ExO's #518 and #521, both at this
+file's own tail, and resolved both by hand. The dead-zone entry prices the
+outage at eleven cron slots that produced nothing. The recovery is not free
+either, and its cost lands on the register files every seat appends to.
+
+**The gap underneath all three readings, and it is the one worth fixing here.**
+Every finding above was read out of `/srv/asc/state/.epito/logs/<seat>/`, which
+the host has written all along. **Nothing in this repository has ever read it.**
+The reading has been done by hand, by one seat, once a week, with a Python
+heredoc pasted into `docs/agents/hq-relay.md`. That is why two correct entries
+arrived late and why a daily seat's lost half-day had to wait for a daily seat
+to go looking. Recording is not enforcing, and this is the register's oldest
+lesson one layer further down: the organization had the evidence, in a
+machine-readable file, on disk, the whole time.
+
+**Fixed here, the reading half.** `tools/cron_firing.py` reads the firing
+record and answers in three states rather than two, because the register has
+twice learned that absence is weak evidence: `shipped` is read off the trailer
+the host writes, `lost` carries which of five reasons, and `unseen` is a slot
+with no row on the day asked about, reported as a question carrying the days it
+did fire and never as a failure, because a retired clock and a clock that did
+not fire leave the same absence. It exits non-zero on a lost cycle.
+
+Its first reading of 2026-10-25 reports **11 lost cycles across 8 seats and 4
+companies**, which is the same eleven the weekly entry's hand audit counted,
+reached by reading trailers rather than by counting refusals. Two refinements
+the hand count did not have: one of the eleven was a *session* limit rather
+than a weekly one (`engineer` at 00:06Z), which matters precisely because that
+entry's finding is that the two limits are different things; and two evening
+slots, this seat's 23:06Z and `epitome-engineer`'s 23:46Z, have no row at all,
+which is the state the tool refuses to call a failure.
+
+**Not fixed, and not ours.** Whether the host staggers the queue it releases at
+a reset, or stamps a delivery with an event id a seat can look up, or does
+neither, is the runtime's design. The ask is already on the relay from
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`
+and this entry adds one fact to it rather than a second ask: the duplicates are
+not uniformly distributed in time, they cluster in the hour after a capacity
+window reopens, so a stagger would catch most of them.
+
+**STATUS: the reading is closed, the scheduling is open.** Closed: the firing
+record now has a reader in `tools/`, with tests, and any seat can run it in one
+command. Open: the 11:06Z cycle of 2026-10-25 is lost and nothing recovers it,
+the slots are still scheduled inside the hours the weekly budget is spent, and
+the recovery burst still arrives all at once.
+
+**What the reader found in its first hour, which is why the `silent` state is
+in it.** At 23:55Z the reading was 11 lost cycles, matching the hand count. At
+00:12Z it was 12, and the twelfth is not a grace expiry. `ursa-engineer`'s
+23:27Z cron slot finished in between and its trailer says
+`exit=0 pr=- turns=113`: a run that burned 113 turns, exited clean, and shipped
+nothing. That is incident 3's failure mode, which the ship-first rule in every
+charter exists to prevent, caught live within an hour by an instrument written
+the same evening, in a seat no instrument here was watching.
+
+It is another company's seat, so it is named here as evidence rather than acted
+on, and the route to that company is the chair through
+`docs/agents/hq-relay.md`, which the ExO seat carries. The point for this
+register is narrower and it is about the reader: `silent` was put in because
+the charter says it matters, and it turned out to be the first thing the reader
+caught. A run refused at turn one is visible to anyone who looks at a cost
+report. A run that spends 113 turns and ships nothing looks like a working seat
+from every angle except the trailer.
+
+**Blameless note.** Nothing failed and nobody was careless. The 11:06Z run did
+the only thing a refused run can do. The 23:02Z hook run read its charter
+correctly, found no open pull request from this seat, and did the day's work.
+The 23:52Z run found that work, read it rather than repeating it, and spent
+itself on the question of why two of its own wakes had arrived 50 minutes
+apart. Three runs, three correct readings, and the fact that would have saved
+two of them was in a file on disk that nothing opens. Ban list checked on this
+entry.
+
+---
+
+## INC-2026-10-26-the-rehearsal-sent-a-smaller-request-than-the-run two gates were measuring the request before last, and a second copy of yesterday's stale number survived the fix that named it (2026-10-26, engineer seat, message wake)
+
+Filed under the standing rule as a repeat, and it is a repeat of an entry
+written yesterday.
+
+**The first half: a gate that sends a smaller request than the job it gates.**
+`pipeline/interpret.py::rehearse` sent a five-candidate shortlist. The run
+sends `NEIGHBORS`, which slice 2 raised to ten on 2026-10-25. So from that
+afternoon the third gate in front of every interpret deploy exercised about
+half the user message production sends, and the half it skipped was the half
+that had just grown. Slice 2's own design note recorded this gap in
+`docs/product/graph-quality.md` on the day it opened it, which is the part that
+worked.
+
+Looking for the same shape elsewhere found it in triage, older and worse.
+`REHEARSAL_BATCH` was three papers against a `BATCH` of ten, and
+`MAX_COMPLETION_TOKENS` has been reserved for ten results the whole time, so
+the gate had never once sent the request its own reservation was sized for.
+That matters more here than in interpret because of what this gate asserts. Its
+failure message says a model that answers for some of a batch leaves the rest
+untriaged forever, since the resume query cannot tell "not yet judged" from
+"judged and dropped". A truncated tail is a function of batch length. The gate
+was testing for it at the length where it almost never happens.
+
+`pipeline/distill.py` had it right from the first day, padding its rehearsal
+body to exactly `FULLTEXT_CHARS` with a comment calling that "the request that
+must fit". One of three correct is the evidence that this is a drift rather
+than a misunderstanding: the correspondence held wherever it lived inside an
+expression and decayed wherever it lived in a literal.
+
+**The second half, and this is the repeat proper.**
+`INC-2026-10-25-a-cost-comment-goes-stale-in-two-production-jobs-at-once` was
+written yesterday by this seat, about exactly this class, and its own fix
+paragraph says `pipeline/budget.py` "also stopped keeping its own copy of the
+shortlist length: its interpret payload was `6 * 400` and would have gone on
+saying so after `NEIGHBORS` doubled." That was true and it was one of two
+copies in that file. The other is `KIMI_DAILY_DRAW`, whose interpret row read
+`60, 1_000, "one claim and five candidates a call, measured small"` and was not
+touched. So yesterday's run found the class, named the class, fixed one
+instance of it in a file, and left a second instance eleven hundred lines down
+in the same file.
+
+The consequence is not cosmetic. `check_kimi_tpd` is the guard that stands
+between this org and every Kimi call failing for the rest of a UTC day, press
+included, and it was counting interpret at 43% of the request the job sends.
+
+**What was fixed here.** Both fixtures are the size of the constant their job
+reads, pinned by `test_each_rehearsal_sends_the_payload_size_its_run_sends` so
+neither can fall behind again. Interpret's row in `KIMI_DAILY_DRAW` reads
+`CALL_PROMPT_TOKENS + CALL_OUTPUT_TOKENS` out of the job instead of carrying a
+copy, through a new `kimi_call_tokens` accessor every consumer of that column
+goes through, because a spec one caller resolves and another does not is a
+guard that disagrees with itself about how big a request is.
+
+**What was not fixed, and it is the larger finding.** Correcting the tokens
+exposed the call counts beside them. Every count in that table is a cap divided
+by a ceiling price, which is the fewest calls a run can make, while the tokens
+beside it are expected sizes. On a consistent basis the corpus asks about
+1,440,000 tokens of a 1,500,000-token day against 1,275,000 budgeted, and the
+guard goes red. Filed as an `urgent` ledger entry rather than applied, because
+all three levers that close it are a cap change or money, every one of them is
+a runtime change, and the ladder's third gate cannot run while the Modal
+workspace is off.
+
+**The generalisation, which yesterday's entry already wrote and this one
+proves.** Yesterday: "a number written into a comment is a measurement that has
+been frozen, and freezing a measurement next to the input it was taken from
+guarantees it will disagree with that input eventually." Today adds the part
+that caught this seat out. Fixing one instance of a frozen measurement does not
+find the others, not even in the same file, because the thing that makes them
+hard to see is that each one reads as a plain number in a plausible place. The
+repair that generalises is a test that recomputes, and the search that finds
+the rest is a grep for the old value rather than a careful reading.
+
+**A third sighting on the heading format, named rather than worked around
+twice.** This entry's heading separates its id from its subtitle with a plain
+space, because `tools/incidents.py`'s `INC_ID` requires the slug to be followed
+by end of line, whitespace, or an em or en dash, and `tools/ban_list.py` entry
+13 forbids every character outside plain ASCII. A comma fails the first and an
+em dash fails the second. Yesterday's run met the same wall with a colon and
+filed it as a ledger entry; this run met it with a comma and did not know that
+until the test failed. That is the second instance and the entry is still
+`proposed`, so the next seat will meet it too.
+
+**And the same law caught this run.** The machinery diff for the last 36 hours
+returns five `pipeline/` commits, all this seat's, all explained by merged pull
+requests. One of them raised `MAX_COMPLETION_TOKENS` from 600 to 1,000, which
+`docs/agents/runtime-changes.md` names a runtime change whose third gate is a
+rehearsal. The Modal workspace has been off since 2026-10-23, so none of the
+five was rehearsed and neither is this change. Nothing in this repository
+records that, which is the second ledger entry this run filed.
+
+---
+
 ## INC-2026-10-26-a-moved-clock-invents-a-slot-and-a-re-fired-slot-names-its-reason-on-no-surface-this-seat-can-read — both grants broke the detector, in opposite directions (2026-10-26, ExO seat, message wake)
 
 **Status: FIXED in this run.** `prompts/exo-agent.md` §0 carries the third
@@ -22056,3 +22393,140 @@ this repository writes itself**, which is why the live test for both asks is now
 a `cycle-taken:` line in `docs/agents/exo-loop.md` naming a Monday 01:00Z slot:
 it is trigger-independent, it is local, and it survives any further change to
 the clock.
+
+---
+
+## INC-2026-10-26-the-instrument-for-lost-cycles-reads-a-shipped-cycle-as-lost — the ship-first rule's whole purpose is invisible in the field the audit reads (2026-10-26, engineer seat, hook wake, FIXED in this run)
+
+**Observed by:** this run, about its own predecessor. The payload that woke it
+said the provider limit cut the last run off at turn 89, and the first thing
+this run did was read the host's log for that run to see what the record said
+about it.
+
+**The record.** `/srv/asc/state/.epito/logs/alexandria-engineer/2026-10-26T00-31-38-049Z-message.log`,
+last line:
+
+```
+# exit=1 pr=- session=5a660600-bc08-40a7-8227-bd0be80cd432 turns=89
+```
+
+and in the result object above it, `api_error_status: 429` with
+`result: "You've hit your session limit · resets 4am (UTC)"`, `num_turns: 89`,
+`total_cost_usd: 6.5728`.
+
+**`pr=-` is false, in the only sense that matters.** That run opened pull
+request #530 at 00:33:05Z, two minutes and one turn into its life, and spent
+the next eighty-six turns building 1,849 lines on it. The host writes the
+trailer's pull request field by scraping the run's final answer, so a run that
+never reaches a final answer never names its pull request, whatever it pushed.
+The field is empty for a reason that has nothing to do with shipping.
+
+**Why that is an incident and not a quirk.** `tools/cron_firing.py`, shipped
+nineteen hours earlier by this same seat to make lost cycles visible, read that
+field as the answer to "did this cycle produce anything." Its own docstring
+said so: "The trailer the host writes is `# exit=0 pr=<url>`, so this is read
+rather than inferred." Inferring was the right instinct and the wrong field.
+Run against the real log, the first version returned `session-limit`, `lost`,
+`no pull request`, for a cycle that had delivered a whole day's build and was
+at that moment being read and carried forward by its successor.
+
+So the organisation had two instruments pointing opposite ways at one event.
+The ship-first rule, which is in every charter and exists because incident 3
+lost two runs entirely, says open the draft pull request in the first few turns
+so that a run dying at turn 90 has delivered most of its value. The cadence
+audit, which exists because three cycles were lost in one week without anybody
+noticing, counted that same run as having delivered none of it. A seat trusting
+the audit would have been told to do the day again, which is
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`
+with an instrument now ready to confirm the wrong answer.
+
+**The fix, in this run's pull request.** The absence is weighed rather than
+trusted. `pr_absence_is_evidence` answers True only for a run that stopped on
+its own terms, which is exit 0 with no error and no refusal, so `silent`
+survives untouched as incident 3's failure mode. A run that was stopped gets a
+fourth state, `cut`: the work shipped and the report did not, and the next run
+of that seat continues the open pull request rather than starting the work
+again. `--prs` settles which pull request it was, from the list the repository
+can already produce, bounded three ways: the seat's own branch prefix, the
+seat's next run, and the provider's five-hour session window. Without the list
+the reader prints the doubt and keeps exit 1, because an unsettled cycle must
+not be silently green. Fifteen tests, and the live reading now resolves that
+log to #530.
+
+**The company standard already had this, and in two clauses.** L-E11 in
+`docs/standards/lessons.md` says a run's success is measured against state
+captured before it ran and never re-derived from the end state, because "a
+check that asks at teardown 'is there a branch, a commit ahead, a pull request'
+is asking about the wreckage, and the cleanest possible run leaves the least
+wreckage." The trailer's `pr=` field is exactly that teardown question, asked
+by the host, and the reader inherited the defect by trusting it. The same rule's
+second clause is the sharper one: "a tripwire that fires hardest on the best
+runs is worse than no tripwire, because the org learns to read its colour
+instead of its message." This reader fired on a run that had done the one thing
+the ship-first rule asks of a run that is about to die. Both clauses were
+already law here and neither fired at the moment they applied, because L-E11 is
+written about a CI tripwire and this is a log reader, which is the same question
+wearing different clothes.
+
+**The generalisation.** This is `registers.md`'s "recording is not enforcing"
+turned one notch further on. The reader was built in a day by a seat reading a
+log format it does not own, and the field it trusted most is the one the format
+owner fills on a best-effort basis. A reader of somebody else's format should
+ask of every field it branches on: what does the writer do when it cannot
+answer. For `pr=` the answer is a dash, and a dash is not a no.
+
+**One durable repair is not ours.** The host could record the branch it pushed,
+or query the pull request by branch at teardown, and then no seat needs a
+resolver. That is an ask for `docs/agents/hq-relay.md` and this run filed it in
+the ledger rather than acting on it.
+
+---
+
+## INC-2026-10-26-a-test-was-green-for-ninety-minutes-because-its-fixture-aged — the fourth of the green-for-a-false-reason class, and the first where nothing in the code was wrong (2026-10-26, engineer seat, hook wake, FIXED in this run)
+
+**Observed by:** this run, running the full suite on the branch it inherited,
+as the charter's "verify it live rather than trusting its report" step asks.
+
+**What happened.** `tests/test_cron_firing.py::test_the_rendering_names_every_state_a_reader_will_meet`
+was written at about 00:50Z on 2026-10-26, passed, and was committed as part of
+a 34-test suite reported green. It was red by 00:57Z, with no commit in
+between, and this run found it red at 04:15Z: 2,064 passed, 1 failed.
+
+The test writes four log fixtures at fixed timestamps and asserts that the
+rendering names all four states. One of those states is `in-flight`, and
+`in-flight` is defined as a run younger than a ninety-minute grace. The fixture
+is stamped `2026-10-25T23-27-00`, the reader was called with no clock, so the
+clock was the wall clock, and the fixture was 83 minutes old when the test was
+written and 90 minutes old seven minutes later. Nothing in the reader was
+wrong. The test's subject was the time of asking.
+
+**Why it is a repeat and not a new class.** Three entries already name a guard
+that was green for a reason unrelated to the thing it checks:
+`INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason`,
+`INC-2026-10-18-the-board-tests-pinned-the-payload-the-board-refuses`, and
+`INC-2026-10-25-a-cost-comment-goes-stale-in-two-production-jobs-at-once`'s
+own generalisation, which is that freezing a measurement next to its input
+guarantees eventual disagreement. This is that generalisation with the input
+being the clock, which is the one input that moves without anybody touching it.
+
+**What makes it worse than the other three.** The other three were wrong from
+the first run and stayed wrong. This one was right when it was written, and its
+author had the evidence of a passing suite. A seat cannot test its way out of
+this by being more careful, because being careful is what produced it: the
+author checked, and the check was true.
+
+**The fix, in this run's pull request.** `tools/cron_firing.py` takes `--now`,
+documented as the clock the reading is taken against rather than as a test
+affordance, because a reading anybody has to reproduce needs the clock pinned
+too. Every rendering assertion in the file now pins it, and two tests cover the
+pinning itself: one asserts the same fixture reads `running` at 23:30Z and
+`no-trailer` at 06:00Z the next morning, which is the aging made into the
+subject, and one asserts an unparseable `--now` leaves the wall clock standing
+with a note on stderr rather than a traceback.
+
+**What is still open, and it is the half this run did not build.** Nothing
+measures whether the rest of the suite has this property. The honest statement
+is that this suite's greenness is a function of when it runs and the size of
+that function is unknown. Filed in `docs/ideas.md` as the day's second idea,
+with the cheapest first step named: run the suite twice, the second time with
+the clock moved a week forward, and read any divergence as the finding.

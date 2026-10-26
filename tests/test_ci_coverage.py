@@ -493,6 +493,24 @@ UNCOVERED = {
     # which includes recomputing the token pair the spend cap is set against,
     # runs anywhere.
     "tests/test_shortlist.py",
+    # Added 2026-10-25 with the firing-record reader, and pinned by the same
+    # two closed routes as every line above: a step goes in
+    # `.github/workflows/checks.yml` and applying the staged replacement is a
+    # `git mv` out of `.github/workflows-pending/`, and no seat's token writes
+    # either. Twentieth line, counted at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # rather than opening another entry on one pattern.
+    #
+    # This one is cheap to pin and worth saying why. `tools/cron_firing.py`
+    # reads logs the repository does not contain, so the tests build the
+    # host's log format in a temporary directory and assert against that
+    # fixture. A fixture is the one thing CI could run here with no
+    # credential and no server, which makes the pin a straight loss rather
+    # than a limitation of the environment. What it guards is a reader whose
+    # whole failure mode is quiet: the first version matched the result line
+    # as text, read every log on the host correctly, and silently stopped
+    # classifying refusals against a fixture that differed by one space.
+    "tests/test_cron_firing.py",
 }
 
 

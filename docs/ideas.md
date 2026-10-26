@@ -20040,3 +20040,372 @@ has nothing to go red against.
 - Cost: $0 in model spend. One pass over a body already in memory, plus one
   HEAD per distinct link, cacheable by id.
 - Status: proposed
+
+### 2026-10-25 - The cron slots get declared, so an absent row stops being a question (engineer seat, cron run)
+- Trigger: `tools/cron_firing.py`, shipped this run, has to report this seat's
+  own 23:06Z slot of 2026-10-25 as `unseen` rather than as missed. It infers
+  each slot from the firing record over a trailing window, so a clock that was
+  retired and a clock that did not fire produce the same absence and the tool
+  refuses to guess between them. The craft scan below found that
+  Healthchecks.io separates exactly these two cases, and that the separator is
+  a declared schedule rather than a cleverer inference.
+- What: the host holds every seat's cron expression and no file in any of these
+  repositories does, so every instrument that reasons about cadence reasons
+  from firing history. One committed table of slots, each row a seat, a cron
+  expression and a grace, turns three of the reader's weaker answers into
+  strong ones: a slot that came due and left no row is missed rather than
+  unseen, a slot that fired 46 minutes late is late by a number rather than
+  unrecognised, and a slot nobody declared that fires anyway is a finding of
+  its own. The file has to be guarded against falling behind the host, which is
+  one test: every slot the firing record has fired in the trailing fourteen
+  days appears in the table. That test is what makes a declared schedule safer
+  than an inferred one instead of merely more confident.
+- First step: ask the ExO seat where it goes, because that seat already keeps a
+  cadence register in prose and a second register of the same fact is worse
+  than an inferred schedule. Then the table, then the test. One day's work once
+  the location is settled.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 - A lost cycle becomes an owed cycle, in a form a later run can read (engineer seat, cron run)
+- Trigger: this seat's 11:06Z cycle of 2026-10-25 fired, was refused by the
+  provider's weekly limit in 351 milliseconds, and is gone. The 23:52Z run that
+  eventually found out had no way to know a cycle was owed, and found it only
+  because it went looking for why two of its own wakes had arrived 50 minutes
+  apart. The ExO seat is building an owed-cycle detector in prose on its own
+  charter, and #527 adds a discharge record to it.
+- What: `tools/cron_firing.py --owed --since N`, printing the lost cycles of the
+  last N days that no later run on the same day appears to have taken, as rows
+  a seat can read in one command at the top of its run. This is the machine
+  half of the detector the ExO seat is assembling by hand, and the two halves
+  want to agree rather than to exist separately: the prose decides what a seat
+  owes, and a row in the firing record is the evidence it was owed at all. The
+  discharge question is the hard half and it is honestly hard, because "a later
+  run took the cycle" is not readable from a log. The useful version is weaker
+  and still worth having: this slot was lost, and here is every run of the same
+  seat that followed it, so a reader can decide.
+- First step: the `--owed` flag against the existing judgement, with the
+  discharge question left to the reader rather than guessed at. Half a day.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 - The firing record is the host's and the reader is one company's (engineer seat, cron run)
+- Trigger: the reader's first reading of 2026-10-25 named 11 lost cycles across
+  8 seats and 4 companies, which is more than this repository owns. The file is
+  in alexandria's `tools/`, so ursa, epitome and the portfolio's unprefixed
+  seats are visible to it and get no benefit from it.
+- What: the log directory is a property of the host rather than of any product,
+  so a reader of it is portfolio machinery sitting in one product's repository.
+  Three honest options and this entry does not pick one: vendor it the way
+  `docs/standards/lessons.md` is vendored, move it to the centralizer and let
+  every repository call it, or leave it here and accept that three companies
+  read their own cadence by hand. The third is the status quo and it is not
+  obviously wrong, because a tool with one reader is cheaper than a tool with
+  four owners.
+- First step: the relay ask, with the file as it stands as the proposal rather
+  than a description of one. `docs/agents/hq-relay.md` is the route and the ExO
+  seat carries it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 - Craft scan: Healthchecks.io declares the schedule instead of inferring it, and makes one grace do two jobs (engineer seat, cron run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  build. A reader of a cron firing record is a cron monitor with the pings
+  taken away, so the product that has solved it commercially is the one to read.
+  Read live from the product's own configuration documentation this run.
+- What: two things worth stealing and they are the two weakest joints in what
+  shipped today. First, Healthchecks separates a "simple" period check from a
+  cron-expression check, and says in its own words that the cron form "ensures
+  jobs run at the correct time and not just at the correct time intervals." The
+  schedule is declared by whoever owns the job. Today's reader infers it from
+  history with a fifteen-minute tolerance, which is the period check, and the
+  first ledger entry above is that gap. Second, grace time is one number doing
+  two jobs: how late a check may be before it alerts, and, when a job sends a
+  start signal, "the maximum allowed time gap between 'start' and 'success'
+  signals", so a job that begins and never finishes fails rather than hanging
+  as healthy. That is exactly the `in-flight` against `no-trailer` question
+  here, and this run answered it with a flat ninety minutes guessed from the
+  longest run on record. Healthchecks makes it per-check, set by whoever knows
+  the job. Both are the same lesson: the thing the instrument cannot know
+  should be declared by the thing that does, rather than estimated by the
+  instrument.
+- What alexandria does better: a Healthchecks check goes down when a ping does
+  not arrive, and it cannot say why, because the only signal it has is the
+  absence of one. This reader reads the refusal out of the run's own log and
+  names which of the provider's two limits took the cycle, which is the exact
+  distinction all three of this week's cadence incidents turn on. A weekly
+  limit resets at a week boundary and a session limit resets in hours, so
+  "down" would have produced none of those findings. The second difference is
+  bigger and it is about what gets measured at all: Healthchecks needs the job
+  to cooperate, and the eleven cycles lost on 2026-10-25 were refused at turn
+  one in under 400 milliseconds, by a provider, before any instrumented job
+  code could have run. A reader that is passive over a record somebody else
+  already writes sees the failures that happen before the job starts, and those
+  are the ones this week was made of.
+- First step: the first two entries above.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 - The resolution audit is only reachable in the one minute a seat will not run it (engineer seat, cron run)
+- Trigger: this run resolved a register conflict by hand, dropped two lines off
+  another entry, and then could not audit it. `tools/resolve_register_conflict.py
+  --check` answers "HEAD is not a two-parent merge, so there is no resolution
+  here to audit" and exits 0 the moment a seat makes one more commit after the
+  merge, which is what a seat does. Obtaining the audit took a detached
+  worktree at the merge commit, and the audit was correct: it named both
+  dropped lines and the two blank lines exactly.
+- What: two changes, both small, and the second matters more than the first.
+  `--check <commit>` so the audit can be run on a merge that is no longer HEAD,
+  and a non-zero exit when the audit cannot be performed at all. Today it exits
+  0 with an explanatory sentence, so a seat that runs it late gets a clean exit
+  and reads it as a pass. A check that cannot run should never be
+  indistinguishable from a check that ran and found nothing, which is the same
+  shape as `INC-2026-10-25-the-seats-first-cron-slot-fired-was-refused-and-the-mode-rule-read-the-refusal-as-coverage`.
+  Worth doing at the same time: the tool knows how to resolve and how to audit,
+  and nothing calls either at the moment of a conflict, so the third change is
+  a line in the charters' register-check step naming it. That line is a charter
+  edit and so is not this seat's to make.
+- First step: the argument and the exit code, with a test that a merge commit
+  passed by sha audits the same as the same merge at HEAD. Half a day.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 - The incident register's heading format requires a character the voice gate forbids (engineer seat, cron run)
+- Trigger: this run wrote an incident heading with a colon separator to satisfy
+  `tools/ban_list.py` entry 13, which forbids every character outside plain
+  ASCII, and `tests/test_incidents.py` failed because `tools/incidents.py`'s
+  `INC_ID` pattern requires the slug to be followed by end of line, whitespace,
+  or an em or en dash. A colon makes the whole id unparseable. Both gates are
+  correct in isolation and they want opposite characters in the same position.
+- What: `docs/agents/incidents.md` already carries 620 ban-list findings, and
+  almost all of them are this one convention applied 300-odd times, so the
+  voice gate is effectively not enforced on this file and reports a number
+  nobody can act on. Two honest repairs and this entry does not pick one.
+  Widen `INC_ID` to accept a colon and a plain hyphen, which makes the register
+  writable in ASCII and leaves 300 existing headings as they are. Or exempt the
+  register from entry 13 explicitly, in the ban list's own words, so the count
+  it reports is the count of findings a reader should act on. The second is
+  better and it is not this seat's to make, because `docs/voice/ban-list.md` is
+  the writer's surface. The first is this seat's and is one character class in
+  one regex.
+- First step: ask the writer seat which, since the voice is theirs. The regex
+  change is half an hour once that is settled.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The daily Kimi allowance is guarded by a floor wearing an expectation's label (engineer seat, message run)
+- Trigger: correcting one row of `budget.KIMI_DAILY_DRAW` today. Interpret's
+  row said 1,000 tokens a call for a request that measures 2,340, so the fix
+  was arithmetic. Checking the row's other column found the real defect. The
+  table's own header says these are EXPECTED draws, and every call count in it
+  is a cap divided by a CEILING price, which is the fewest calls a run can
+  make rather than the most. Interpret is credited with 50 calls and stops at
+  `MAX_CLAIMS_PER_RUN`, which is 90. Triage is credited with 70 and stops at
+  `MAX_CALLS_PER_RUN`, which is 90. So the guard's two cheap jobs are counted
+  at roughly half the day they can draw.
+- What: on the basis the table claims to use, the corpus asks 1,440,000 tokens
+  of a 1,500,000-token day against 1,275,000 budgeted after the 15% margin,
+  and `check_kimi_tpd` would go red. It is green today because the inputs are
+  low, which is the worst way for a guard to be green. The failure it exists
+  to prevent is not a 413 on one request. It is every Kimi call in the org
+  refused for the rest of the UTC day, press included, and the press is the
+  product. Closing it is a choice between three levers and all three are the
+  owner's or the chair's: lower interpret's `MAX_CLAIMS_PER_RUN` from 90 to
+  about 59, which is a third of the graph's only edge-writing job, lower a
+  spend cap, or raise the Moonshot tier, which is money. Each is also a
+  runtime change under `docs/agents/runtime-changes.md`, whose third gate is a
+  rehearsal that cannot run while the Modal workspace is off.
+- First step: decide the basis in one sentence written into the table's
+  header, then derive both call counts from the job's own ceilings the way
+  distill's paper count already is, and read whatever red comes out of that as
+  the finding rather than as a regression.
+- Cost: $0 to build. The decision behind it trades corpus throughput against
+  the Moonshot tier.
+- Status: urgent
+
+### 2026-10-26 - Nothing records that a corpus rehearsal ran, so a deploy cannot ask (engineer seat, message run)
+- Trigger: this run's machinery diff. Five commits landed in `pipeline/` in 36
+  hours, one of them a token reservation raised from 600 to 1,000 in
+  `pipeline/interpret.py`, which `docs/agents/runtime-changes.md` names a
+  runtime change whose third gate is a rehearsal. The Modal workspace has been
+  off since 2026-10-23, so none of the five was rehearsed, and nothing in this
+  repository says so. The only way to learn it is to notice the workspace is
+  off and reason backwards, which is what this run did and what every run will
+  have to do again.
+- What: the press already solved this. `docs/agents/press-rehearsal.md` names a
+  `press_rehearsals` table, so a press rehearsal leaves a row and a later
+  reader can ask what was proved and when. The three corpus rehearsals print to
+  stdout inside a Modal container and leave nothing, so the deploy ladder's
+  third gate is a step in a chain rather than a fact anybody can query. Give
+  each corpus rehearsal the same shape: the model that answered, the prompt
+  sha, the payload size, the verdict and the timestamp. Then "has this commit
+  been rehearsed" is a lookup, and a day like today reports itself.
+- First step: one table and four lines at the end of each `rehearse()`, reusing
+  whatever `press_rehearsals` already does so there is one shape rather than
+  two. It needs a database credential, which the rehearsal containers do not
+  hold today and the deploy command can pass, so the first slice may be a file
+  in the deploy's own output instead.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The rehearsals now send the right size and nothing says whether the answer was right (engineer seat, message run)
+- Trigger: widening both fixtures today. The gates assert a shape and not a
+  verdict: triage's asks for ten valid decisions and accepts ten `index`
+  answers, and interpret's asks for at least one edge and fewer than ten and
+  accepts any five. Both fixtures now carry a knowable right answer written out
+  in a comment beside them, and nothing compares the model's answer to it.
+- What: the comment is already the assertion, so make it one. Carry the
+  expected decision per rehearsal paper and the expected relation per
+  rehearsal candidate in the fixture itself, then have the gate report
+  agreement as a number and raise only below a floor. A floor rather than an
+  exact match, because the point is to catch a model that has stopped reading
+  rather than to demand one that agrees with a human on every line. This also
+  gives the deploy ladder its first quality signal: today a model that answers
+  confidently and wrongly passes every gate the corpus has.
+- First step: add the expected answer to `REHEARSAL_BATCH` and
+  `REHEARSAL_NEIGHBORS` as a fifth and third field, with the existing
+  length-and-shape tests extended to cover it, and print agreement without
+  raising on it for the first few runs so the floor is chosen from data.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Pact makes the contract an artifact a deploy can query, where these gates make it a step in a chain (engineer seat, message run)
+- Trigger: today's work is a mock that had drifted from the thing it stands
+  for, so the day's scan went to the product whose whole subject is that
+  drift. Pact is consumer-driven contract testing and it had never been
+  scanned here.
+- What: Pact separates the contract from the run of it, and that is the thing
+  worth stealing. The
+  consumer's expectations become a pact file, the provider verifies against
+  that file, the result is published to a broker, and the deploy asks
+  `pact-broker can-i-deploy` rather than re-running anything. The verification
+  is a fact with a timestamp and a version attached, so "is this safe to ship"
+  is a question with a stored answer. This repository's corpus gates are the
+  opposite shape. They are an `&&` chain, so the proof exists for the duration
+  of one terminal session and the next reader cannot tell a gate that passed
+  from a gate that was never run, which is exactly the state five commits are
+  in this morning. That became the ledger entry above it.
+- What alexandria does better: Pact's provider verification replays a recorded
+  mock, so a provider can satisfy every pact and still behave differently for
+  a real client, and the broker reports green either way. These gates call the
+  real provider with the real key, the real reservation and the real timeout,
+  and as of today the real payload size. The fixtures are also hand-written
+  rather than recorded, which costs a few minutes per candidate and buys
+  something a recording cannot: a human reading the rehearsal log can check
+  the verdict line by line, because somebody decided in advance what the right
+  answer was. A recorded expectation only ever asserts that nothing changed.
+- First step: the second entry above, which is the broker's half of this in
+  the smallest form it has here.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - A run that is cut off should leave a resume point, not a report nobody wrote yet (engineer seat, hook run)
+- Trigger: this run's own first fifteen turns. Its predecessor was refused at
+  turn 89 with a draft pull request open and 1,849 lines on it, and the only
+  description of where that run had got to was the twelve commit subjects on
+  the branch. Reconstructing the state from those, re-merging `main`, and
+  resolving a register conflict by hand cost this run most of an hour before it
+  built anything. The run note that explains a run is written at the end, as a
+  report, which is exactly the artifact a run that never reaches the end does
+  not have.
+- What: the run note already exists, `docs/runs/YYYY-MM-DD-seat-trigger.md`, and
+  it is the right file in the wrong tense. Make its first two lines a resume
+  point written in the run's first commit and rewritten whenever the next action
+  changes: the branch, the item being worked, and one sentence of what the next
+  run should do if this one does not come back. Cheap to keep because it is two
+  lines, and worth keeping only because it is written before it is needed. The
+  craft scan below is the same shape in a system built for it: Temporal's worker
+  recovers by replaying a durable event history and continuing from the point of
+  failure, and the reason that works is that the history is written during the
+  run rather than summarised after it.
+- First step: one paragraph in this charter's "Ship first, then work" section
+  and a line in the run-note template, which is a charter edit and therefore the
+  owner's merge rather than this seat's. The ledger entry is the proposal. The
+  mechanical half a seat can do today is to write the resume point into the
+  draft pull request's description at the first push, which costs nothing and
+  needs nobody's permission.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The suite's greenness is a function of when it runs, and nothing measures the size of that function (engineer seat, hook run)
+- Trigger: a test in this seat's own 34-test suite of nineteen hours ago passed
+  when it was written at 00:50Z and was red at 00:57Z with no commit in between.
+  Its fixture asserted a state defined as "younger than ninety minutes" against
+  the wall clock. Filed as
+  `INC-2026-10-26-a-test-was-green-for-ninety-minutes-because-its-fixture-aged`,
+  and fixed by pinning that one file's clock. The class is not fixed. 2,065
+  tests now run on this repository and the honest statement about the rest of
+  them is that nobody knows which ones have this property.
+- What: run the suite twice in `checks.yml`, the second time with the clock
+  moved a week forward, and read any test that changes answer as the finding.
+  There is no mystery about what to do with the result: a test whose verdict
+  depends on the date is either pinning the wrong thing or testing the clock,
+  and both are a two-line fix once named. The cost is one more suite run, about
+  six minutes, on a workflow that already runs on every pull request touching
+  the pipeline. The reason to do it as a second run rather than as a lint is
+  that a lint has to guess which calls are time-dependent and a second run does
+  not have to guess at all.
+- First step: find out whether `faketime` is available on the runner image,
+  because if it is this is one `env:` block and a matrix entry. If it is not,
+  the fallback is a `conftest.py` fixture that offsets a single injected clock
+  the tools already accept, which is narrower and still catches the class that
+  produced this entry.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The host could record the branch a run pushed, and then no seat needs a resolver (engineer seat, hook run)
+- Trigger: the resolver this run wrote. The host's trailer carries
+  `pr=<url>` scraped from a run's final answer, so a run cut off before its
+  final answer reports `pr=-` however much it pushed, and today's reading of one
+  such run called a shipped cycle lost. The repair that shipped is a reader that
+  weighs the absence and settles it against the pull request list, which is
+  twelve lines of matching on a branch prefix and two time bounds. It works and
+  it is a workaround.
+- What: the host knows two facts the trailer does not carry. It knows the branch
+  the run pushed, because the push went through its own credential, and at
+  teardown it can ask GitHub for the pull request whose head is that branch. One
+  more field, `branch=<ref>`, would be enough on its own: every seat's branch
+  carries its seat name and the day, so a reader that has the branch needs no
+  prefix guessing and no time window. This is portfolio machinery and it serves
+  every seat of every company on the host, which is the argument for doing it
+  once there rather than four times in four repositories.
+- First step: the relay ask through `docs/agents/hq-relay.md`, carried by the
+  ExO seat, with today's resolver named as the thing it would replace rather
+  than as a description of the problem. Pair it with the entry of 2026-10-25
+  about where the reader itself should live, because both are the same question
+  about the same boundary.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Temporal recovers a cut-off worker by replaying a log it wrote during the run, where this seat recovers by reading commit subjects (engineer seat, hook run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  situation rather than against the product's feature set. The run was woken to
+  continue work a provider limit had cut off mid-flight, so the scan went to the
+  category that exists for exactly that: durable execution.
+- What: read live at docs.temporal.io/evaluate/understanding-temporal. When a
+  worker crashes, "A new Worker fetches the Event History, replays the Workflow
+  code against it to rebuild local state, and continues from the point of
+  failure as if the failure never happened." The event history is "the durable
+  log behind Durable Execution: a complete, ordered record of everything that
+  happened in a Workflow Execution," and the price of it is a constraint, that
+  "Workflow code must be deterministic because Temporal reruns it to rebuild
+  state after a failure." The stealable thing is not replay, which an agent run
+  cannot have, because an agent's turns are not deterministic and rerunning them
+  is a different run. It is that the record a successor needs is written
+  continuously as a cost of doing the work, rather than composed at the end as a
+  report. The first idea above is that, at the only size this repository can
+  afford: two lines.
+- What alexandria does better: the durable artifact here is the pull request,
+  and it is the deliverable rather than a trace of the deliverable. A crashed
+  Temporal workflow leaves an event history that needs its own UI to read and
+  has shipped no product. The run cut off at turn 89 last night left 1,849
+  reviewed-ready lines that a person can read, merge, or reject without any
+  instrument at all, which is the ship-first rule's real claim and it held under
+  the exact failure it was written for.
+- First step: the first entry above, which is this scan's stealable half at the
+  only size this repository can afford, and the two lines of it that need
+  nobody's permission are the resume point in the draft pull request's own
+  description.
+- Cost: $0 to steal. Temporal itself would be a service and a bill, and nothing
+  here proposes adopting it.
+- Status: proposed
