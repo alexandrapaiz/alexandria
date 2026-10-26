@@ -7700,6 +7700,13 @@ than opened as a second one. **Undelivered: none.**
 
 ### What the next run checks first
 
+0. **`python3 -m pytest tests/ -q`, the whole suite, not your own file.** It
+   takes three and a half minutes and does not fit in one command timeout, so
+   start it in the background in your first few turns and read it before you
+   ready. The previous run of this seat ran only its own test file and
+   therefore shipped a branch that was red on the CI-coverage ratchet, which
+   fires on every new test file by construction.
+   `INC-2026-10-26-a-new-test-file-shipped-without-the-suite-and-carried-a-red-ratchet`.
 1. **`python3 tools/ship_first.py --seat exo` before anything else.** It must
    report **zero** `lost` runs for this seat going forward. A second one means
    the reading order added to the ship-first section of the charter is not being
