@@ -1046,7 +1046,7 @@ written and the drafted prose is not, which is why the count is taken there,
 the way the traction and new-work slots above already count distinct papers
 in the rows they were handed rather than in the items they have drafted.
 
-Judge every edge before you print it, and there are two tests, not one.
+Judge every edge before you print it, and there are three tests, not one.
 
 The first is STRENGTH, and the file has always carried it. A `contradicts`
 edge that is really a scope limit ("the same system scores lower on
@@ -1089,6 +1089,51 @@ two measures do not match and continuing anyway. A true qualifier narrows a
 claim you are keeping. A qualifier that has to be survived before the sentence
 can land is a claim you should have dropped. Delete the sentence, not the
 hedge.
+
+The third is SOURCE, and it is the one both others pass. **Ask where each half
+of the pairing came from, and answer with a paper rather than a sentence.** The
+other two compare the claims to each other, so one paper standing against
+itself satisfies both: same quantity, same task, same people. One paper cannot
+overturn itself.
+
+The lookup is the one the link rule below already sends you on. A `deprecated`
+row carries the OLD paper's title and url and nothing for the work contradicting
+it, so you find that work by its claim text at the front of a `new_claims`
+string. **Do it before you draft, because its answer decides whether there is
+an item.** Set the two titles and the two urls side by side. Either pair
+matching is one paper, and then there is no overturn at any strength and of any
+kind. Drop it. Where the lookup finds nothing you cannot name whose work the
+overturn is, and that is not the third attributive form, which is for work the
+payload names and cannot credit. An overturn with no nameable source does not
+print.
+
+Three dresses, each of which satisfies both other tests.
+
+- **A phrase pointing back at the work being contradicted.** "The same paper
+  also", "this work likewise", "the authors further find". Each has just told
+  you the two ends are one end, and no sentence here may begin that way.
+- **A named system as the subject of a verb of prior belief, where that name is
+  also a paper this section links.** Read your own link list first. If what used
+  to be true and what the reader reaches as the full text are one work, the new
+  work is that work.
+- **The overturned belief already in your draft as the new paper's result.**
+  Read the item from its first word before writing the overturn sentence. A
+  paragraph establishing what a paper proved, then a sentence saying newer
+  evidence overturned it, is one paper against itself with two paragraphs
+  standing in for a second source.
+
+Every figure here comes out of the pairing's two claim strings and nothing else.
+A number absent from them belongs to a paper this section has not named, so the
+reader who checks it has nowhere to go. A mislabelled edge misleads a reader who
+follows it. A figure under the wrong paper cannot be followed at all, and it is
+the one defect here a careful reader cannot catch.
+
+The specimen, invented so that copying it is obviously wrong. A study proves
+that any warehouse robot above a certain size drops a package per thousand, then
+shows the dropped one need not be fragile. An item opens on the proof and three
+sentences later says newer evidence has overturned the belief that large robots
+drop packages. Neither sentence is false about the study. The second is false
+about where it came from.
 
 **None of the words this file uses to reason about the issue are words the
 issue may use.** Two classes, and the sentence above used to break the second
@@ -2055,6 +2100,15 @@ the rule's question to the thing in front of you.
   `superseded` carry no institution and no author, so no attribution is
   available to any of their items, and the repair is never to find the
   institution. It is to write them with no attributive phrase.
+  **A phrase reporting the absence is a phrase, so it fails the third form
+  rather than satisfying it.** This is the dress that looks like compliance,
+  because the sentence is true: the payload named nobody and the words say so.
+  What reaches the reader is a fact about the paper, and no paper has an unnamed
+  institution. Every paper the reader can open through this issue carries
+  authors on its own front page. "A team at an undisclosed lab", "an anonymous
+  group", "researchers who are not named", "a team at an unnamed institution":
+  the third form has one correct execution and it is a sentence with no such
+  clause in it at all. The work did the thing. Say that it did.
 - **Before you output, check the headings. This is a hard gate, not advice.**
   Collect every line in the issue that announces a block instead of saying
   something: every line beginning with `#`, and every run of bold or italic
