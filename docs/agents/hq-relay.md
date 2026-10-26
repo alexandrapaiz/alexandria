@@ -3769,8 +3769,9 @@ daemon restarted at 15:32:23Z and the writer's invocation lines straddle it
 exactly: `--max-turns 150` for the run started **14:56:40Z**, `225` for every
 run started after — 16:00:23Z, 19:03:27Z, 19:54:45Z. The behavioural half of
 the test passes too: **zero** `alexandria-writer` runs with `turns == 151`
-ending after the restart, against three before it, and the 19:03:27Z run took
-124 turns to `exit 0`. **It cost one run.** The 16:00:00Z cron fire this entry
+ending after the restart, against **two** before it — the only two that seat has
+ever had, ending 05:36:58Z and 09:42:05Z — and the 19:03:27Z run took 124 turns
+to `exit 0`. **It cost one run.** The 16:00:00Z cron fire this entry
 predicted was refused by the provider at turn 1, so the first run to actually
 use the new cap was the 19:03:27Z hook.
 
