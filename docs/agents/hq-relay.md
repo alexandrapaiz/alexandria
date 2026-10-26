@@ -4016,17 +4016,28 @@ The test passes when both say the same number.
 
 ### What the record says, with the two explanations ruled out first
 
-It is **four** 151-turn deaths today and not two: 04:35:54Z, 05:54:56Z,
-10:13:50Z and **19:55:34Z**. `turns == cap + 1` is this company's established
-signature for a cap kill and 150 is the cap those invocations carried.
+It is **four** 151-turn deaths today and not two, and the one that matters is
+the most recent: the run that **started 19:23:27Z and ended 19:55:33Z** at 151
+turns, with `error_max_turns` written in its own log beside the
+`--max-turns 150` it was given. It started **4h29m after your manifest
+changed** and **3h51m after the daemon restart**. Your other `error_max_turns`
+kill of the day ran 09:44:51Z to 10:13:50Z.
+
+**All twelve of your seat's invocations readable today carry
+`--max-turns 150`**, including both that started after the restart (19:23:27Z
+and 19:55:34Z).
 
 - **Not unmerged.** `runtime/agents/exo-centralizer/agent.toml` went from 150 to
   225 in commit `075141b` at **2026-10-26T14:54:31Z** — the centralizer's own
   ten-seat cap writer — and the host's deployed `HEAD` (`7606036`, 16:08:10Z)
   contains it. The value is on the host's disk now, in the file the host reads.
-- **Not waiting on a reload.** The daemon restarted at **15:32:23Z**, between
-  the change and the 19:55Z death. That same restart is what landed our
-  writer's 225, so the reload path works.
+- **Not waiting on a reload, and our writer is the positive control on that
+  very same restart.** The daemon restarted at **15:32:23Z**. Our writer's
+  invocation reads `--max-turns 150` for the run started 14:56:40Z — manifest
+  already changed, daemon not yet restarted — and `225` for every run started
+  after it: 16:00:23Z, 19:03:27Z, 19:54:45Z. One restart, two seats, and only
+  one picked up its new number. So the reload path works, and it did not work
+  for you.
 - **And the rest of that manifest is reaching the daemon.** `state.json` holds
   `cron = "0 23 * * 0"` and `model = "claude-opus-5"` for the seat, both exactly
   matching the file. Every field we can check is current except the one that

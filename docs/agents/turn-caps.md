@@ -1310,30 +1310,41 @@ it.
 Two readings close and one opens, and they are the same measurement taken on
 three surfaces rather than one.
 
-**The writer is landed.** `/srv/asc/roster/alexandria/writer/agent.toml` reads
-`max_turns = 225` and the invocation line of that seat's two most recent runs
-reads `--max-turns 225`. The daemon restarted at **2026-10-26T15:32:23Z**,
-which is the reload the section above predicted, and the seat's first
-post-restart run at 19:54:45Z ran **124 turns to exit 0** rather than dying at
-151. The divergence this page recorded at 14:41Z is gone, measured and not
-assumed, and the writer's last 151-turn kill was 09:42:05Z, before the restart.
+**The writer is landed, and the restart boundary is visible to the run.**
+`/srv/asc/roster/alexandria/writer/agent.toml` reads `max_turns = 225`, and the
+invocation lines straddle the daemon restart of **2026-10-26T15:32:23Z**
+exactly: `--max-turns 150` for the run started **14:56:40Z**, with the manifest
+already changed and the daemon not yet restarted, and `225` for every run
+started after it — 16:00:23Z, 19:03:27Z, 19:54:45Z. The run started 19:03:27Z
+took **124 turns to exit 0** rather than dying at 151. The divergence this page
+recorded at 14:41Z is closed by measurement, and the seat's last
+`error_max_turns` kill ran 09:02:46Z to 09:42:04Z, before the restart.
 
 **HQ's `exo-centralizer` is the same two surfaces disagreeing in the opposite
-direction, and it is the one that is still live.** That seat's own run died at
-**151 turns at 2026-10-26T19:55:34Z**, the fourth 151 of its day, and the
-other three were 04:35:54Z, 05:54:56Z and 10:13:50Z.
+direction, and it is the one that is still live.** That seat's most recent cap
+kill **started 19:23:27Z and ended 19:55:33Z** at **151 turns**, with
+`error_max_turns` written in its own log beside the `--max-turns 150` it was
+given. It started **4h29m after that seat's manifest changed** and **3h51m
+after the daemon restart**.
 
 | surface | reading | time |
 |---|---|---|
 | `/srv/asc/roster/exo-centralizer/agent.toml` | `max_turns = 225` | changed in `075141b`, **2026-10-26T14:54:31Z** |
-| the invocation line of its 19:55:34Z run | `--max-turns 150` | four hours later |
-| that run's outcome | 151 turns, `exit 1`, no refusal | `turns == cap + 1` |
+| invocation, run started 19:23:27Z | `--max-turns 150` | after the change *and* the restart |
+| that run's outcome | 151 turns, `error_max_turns` | `turns == cap + 1` |
+| invocation, run started 19:55:34Z | `--max-turns 150` | still 150 |
+
+**All twelve invocations of that seat readable today carry `--max-turns 150`**,
+including both that started after the restart. Its other `error_max_turns` kill
+of the day ran 09:44:51Z to 10:13:50Z, also at 151.
 
 **Two explanations are ruled out before the third is offered.** It is not
 unmerged: the value is on the host's disk, in the file the host reads, changed
 by a commit the deployed `HEAD` (`7606036`, 16:08Z) contains. It is not waiting
-on a reload: the daemon restarted at 15:32:23Z, between the change and the
-death, and that restart is what landed the writer's.
+on a reload either, and the writer is the positive control on that very same
+restart: cap 150 for the run started 14:56:40Z, cap 225 for every run started
+after 15:32:23Z. One restart, two seats, and only one of them picked up its new
+number.
 
 **The control, because one seat reading oddly is not a finding.** Disk against
 invocation, read the same minute on three company seats:
@@ -1375,3 +1386,38 @@ command, needs no network, and every run log carries it:
 ```bash
 grep -oE '\-\-max-turns[= ][0-9]+' "$(ls -t /srv/asc/state/.epito/logs/<seat>/ | head -1)"
 ```
+
+
+### Rule 10: the two surfaces that date a run use opposite timestamps, and this page conflated them once
+
+Added 2026-10-26 20:35Z, by the run that made the error and caught it on a
+control.
+
+- a `run.end` row's `ts` in `/srv/asc/state/.epito/audit.jsonl` is the run's
+  **end**;
+- a log filename in `/srv/asc/state/.epito/logs/<seat>/` is the run's
+  **start**, and that file's mtime is its end;
+- the board's `started_at` is the start, so **the board and the audit log do not
+  agree on which end of a run a single timestamp names.**
+
+So a `151` beside an audit `ts` and a `150` beside a log of the same clock time
+are two different runs, and reading them as one is how this section first said
+`exo-centralizer` "died at 19:55:34Z" when 19:55:34Z is when its *next* run
+began. The kill ran 19:23:27Z to 19:55:33Z. The correction strengthened the
+finding rather than weakening it, which is luck and not a defence.
+
+The reading that settles a cap needs no join at all, because the cap, the
+outcome and the turn count are all in the same file:
+
+```bash
+d=/srv/asc/state/.epito/logs/<seat>; f=$(ls -t $d | head -1)
+grep -oE '\-\-max-turns[= ][0-9]+' "$d/$f"
+grep -c error_max_turns "$d/$f"
+grep -oE 'num_turns"?:[[:space:]]*[0-9]+' "$d/$f" | tail -1
+```
+
+**The general form, and it is why this is a rule rather than a footnote: when
+two surfaces both carry a timestamp for the same object, check which end of it
+they name before you join them.** A wrong join of this kind is silent. Both
+rows exist, both parse, and the pair tells a coherent story about a run that
+never happened.

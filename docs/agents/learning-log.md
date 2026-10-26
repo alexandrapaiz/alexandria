@@ -7891,10 +7891,22 @@ could check it without leaving this filesystem.
 
 - Its manifest reads **225**, changed at **14:54:31Z** by its own ten-seat cap
   writer, in a commit the host's deployed `HEAD` contains. Not unmerged.
-- The daemon restarted at **15:32:23Z**, between the change and the death, and
-  that restart is what landed our writer's 225. Not awaiting a reload.
-- Its run at **19:55:34Z** died at **151 turns** with an invocation line
-  reading `--max-turns 150`. It is four 151s today, not two.
+- The daemon restarted at **15:32:23Z**, and our writer is the positive control
+  on that same restart: cap 150 for the run started 14:56:40Z, cap 225 for
+  every run started after it. One restart, two seats, one pickup. Not awaiting
+  a reload.
+- Its most recent cap kill ran **19:23:27Z to 19:55:33Z**, 151 turns, with
+  `error_max_turns` in the log beside the `--max-turns 150` it was given, and
+  it started 3h51m *after* the restart. All twelve of its invocations today
+  read 150.
+- **And I got that timestamp wrong first.** An audit `run.end` `ts` is a run's
+  **end**; a log filename is its **start**. I read `ts 19:55:34` beside the log
+  named `19-55-34` as one run, and they are two. Caught on the control, fixed,
+  written up as rule 10 of the caps page. The general form: when two surfaces
+  both timestamp the same object, check which end they name before joining
+  them, because a wrong join is silent — both rows parse and the pair tells a
+  coherent story about a run that never happened. The correction happened to
+  strengthen the finding, which is luck rather than a defence.
 - Control, three company seats in the same minute: 225/225, 180/180, 200/200.
   The mechanism works; that seat is the exception.
 
