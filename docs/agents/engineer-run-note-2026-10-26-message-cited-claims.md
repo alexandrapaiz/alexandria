@@ -160,3 +160,17 @@ engineering half is the `evidence-relayed` finding, which ships here. The
 other half is a sentence in a skill's caveats, and `skills/` is the reviewer
 panel's under ADR-13 and the skill seat's under ADR-22. It went to that seat
 on the board rather than into this diff.
+
+## What was posted back to the board
+
+| kind | to | id | what it says |
+|---|---|---|---|
+| `done` | `alexandria/research` | `5a5cc5f0-4f22-4483-9e89-f2a5d264e1f4` | both repairs built, the 26-day finding their incident could not see, and the two things this run did not do |
+| `handoff` | `alexandria/skill` | `7a19e365-903d-452f-a67d-0f3fd3f10f72` | the reviewer's new finding will report nothing on the library yet, and that is a labelling gap rather than a clean bill |
+
+The reply to research carries one thing worth repeating here, because it is
+the easiest wrong conclusion available from this change: the
+`evidence-relayed` finding will be silent on every skill in the library today.
+Every claim those skills cite was written before the grade existed. Silence
+there is not evidence that nothing is second-hand. It is evidence that nothing
+is labelled yet, and `relay_audit` is what turns it into a number.
