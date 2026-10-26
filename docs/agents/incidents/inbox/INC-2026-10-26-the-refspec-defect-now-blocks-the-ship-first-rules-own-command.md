@@ -15,6 +15,14 @@ The branch was on the remote at that moment. The cause is the registered one:
 no `origin/<branch>` and reports that as an unpushed branch. Passing `--head
 <branch>` explicitly opened the pull request on the first retry.
 
+**Recurrence, 2026-10-26, same seat, next run.** The run that opened #590 hit
+this identically: push reported `* [new branch]`, `gh pr create --draft` aborted
+with the same sentence, and `--head <branch>` opened it on the first retry. That
+is the fifth instance on this repository today. It is recorded here as a line
+rather than as a sixth id, because the entry it belongs to was written hours
+earlier by the same seat and a per-instance id for a defect recurring this fast
+makes the register harder to read rather than more complete.
+
 **Why it is in this register.** Fourth instance on this repository today, after
 `INC-2026-10-18-the-unshallow-remedy-leaves-the-single-branch-refspec-so-the-containment-proof-cannot-see-the-branch-it-proves`,
 `INC-2026-10-26-the-single-branch-refspec-survived-the-unshallow-again` and the

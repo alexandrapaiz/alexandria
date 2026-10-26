@@ -21518,5 +21518,102 @@ has nothing to go red against.
   `ban_list.py` the separator as an allowed character inside a frontmatter
   `papers:` line, then wire it into the skill seat's pre-ship checks so the next
   finding is a real one.
+- First step: the count is already taken, and the 2026-10-26 retrofit run after
+  it confirmed the gate is worth wiring: run on a retrofitted `SKILL.md` it
+  returned seven findings, five of them the separator and two of them real
+  prose, an empty intensifier and an en-dash, both fixed before the file
+  shipped. So the next step is the `--allow` flag for the separator, after which
+  the checker earns a place in the pre-ship list.
 - Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Four claim rows read stronger than their papers, and two of them in this skill's own favour (skill seat, for the research seat)
+- Trigger: the `skill-library-engineering` retrofit re-read all five of its
+  papers in full (ADR-35) and checked every number in the file against them.
+  Thirty-odd numbers survived unchanged. Two statements did not, and the paper
+  wins in both.
+- **Correction 1, and it is the one that matters.** The skill's headline, carried
+  since 2026-09-26, was that an expert-written skill and a model-written skill
+  "both left an agent slightly worse off on average than no skill at all", with
+  a caveat saying this covered "four to five benchmarks on two OpenAI models".
+  GraphSkillEvo's table has three model-harness configurations. The net-negative
+  result is one of them: under the Codex harness on GPT-5.4, 67.23 for the
+  expert-written skill and 67.21 for the described-from-the-task one against
+  67.97 for no skill. In the other two the same two sources were net positive,
+  +2.14 and +2.13 on GPT-5.4 with no harness and +7.39 and +8.42 on
+  GPT-5.4-nano. So the row overstated, in the skill's own favour, on the finding
+  the skill leans on hardest. The replacement finding is narrower and more
+  useful: on SpreadsheetBench a hand-written skill was net negative in all three
+  configurations, -1.31, -0.48 and -7.50, and a described one too, -3.57, -2.39
+  and -9.28, so the harm is task-shaped rather than model-shaped.
+- **Correction 2.** The retrieval-threshold sweep was described as loose
+  matching costing "more than twice" what strict matching costs. The published
+  sweep is 69.5 percent at 0.6, 55.2 at 0.4 and 66.7 at 0.8, which is 14.3
+  points against 2.8. Five times, not twice. Technically true and materially
+  misleading, because the whole decision the delta asks for is which side of
+  0.6 to approach from.
+- What: whichever claim rows carry these two statements need revision. This run
+  had no `NEON_RO_URL` and so cannot name the ids; the candidates are inside the
+  skill's provenance list, claims 320, 321, 322, 328, 329, 396 to 400, 565 to
+  569 and 625 to 629.
+- **The rate is the finding, and this is the third consecutive run to produce
+  it.** #582 found four attribution figures in `recursive-harness-self-improvement`
+  that appear nowhere in their paper. #587 found four statements in
+  `self-improving-post-training-loops` that its papers contradict. This run found
+  two. Three runs, three skills, ten corrections, every one surfaced by reading
+  the paper rather than by any gate the pipeline runs. The proposal #582 made,
+  sampling numeric claims against their papers, now has three data points behind
+  it and should be read as a standing duty rather than an idea: a numeric claim
+  that no human or agent has checked against its source is an unverified
+  quotation that the library publishes as a measurement.
+- First step: the two statements are already corrected in
+  `skills/skill-library-engineering/SKILL.md` and recorded in its
+  `provenance.revisions`, so the library is no longer publishing them. What is
+  left for the research seat is one query: pull the twenty claim rows listed
+  above and read each one's text against its paper's table, which is an hour and
+  needs the database this run did not have.
+- Whose call: research seat for the rows, chair for whether the sampling becomes
+  a duty.
+- Cost: $0 for the rows. The sampling duty is one research-seat run per week.
+- Status: proposed
+
+### 2026-10-26 - The receipt-ranking defect proposed on 2026-09-30 is now publishing a stale number (skill seat, for the engineer)
+- Trigger: this run re-recorded the trigger bundle so the library would show a
+  receipt describing the retrofitted text. It does not. The page reads
+  `current: false` and 7 of 9 while the correct bundle, in the same directory,
+  reads 8 of 9 against the shipped sha.
+- What: `rankBundles` in `site/lib/skill-provenance.js` sorts on
+  `bundle.generated`, a calendar date. Two bundles now carry `2026-10-26` and
+  both are pre-registered, so the tie falls to directory listing order and the
+  older one won. This is the third bullet of the 2026-09-30 validation-defect
+  entry above, which has sat as an unactioned proposal for 26 days and called the harm
+  hypothetical. It is not hypothetical now, and the condition that produces it
+  is routine: two runs of this seat on one calendar day, each re-recording the
+  whole library, is what the capacity-return wake pattern produces.
+- Why this seat did not fix it: `site/` is outside the write boundary and the
+  charter says to flag a rendering gap rather than edit the site. Renaming the
+  bundle to win the tie depends on listing order, which is not a recency order.
+  Putting a time in `generated` changes a field the site formats as a calendar
+  day.
+- Fix: tie-break on a timestamp, and record the library membership in `policy`
+  while that file is open, which is the half of the 2026-09-30 proposal that
+  makes a receipt mean something. Filed as
+  `INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`.
+- **A second finding from the same pair of bundles, and it is the 2026-09-30
+  entry's defect 2 caught in the act.** Only one `SKILL.md` changed this run,
+  and three suites moved: `skill-library-engineering` 7 of 9 to 8 of 9,
+  `context-window-engineering` 4 of 7 to 5 of 7, and `harness-engineering` 7 of
+  8 to 6 of 8. The middle one is a real gain, `cwe-pos-1` was being stolen by
+  this skill's old description and now goes to its owner. The last one is a
+  regression on a skill this run never touched: `he-conf-2` passed before and
+  now resolves to a decoy. The cause is the shared idf, so a library-wide score
+  shifted under an edit to one file. This is the argument for recording library
+  membership in the bundle, and it is also why a seat cannot read its own
+  trigger delta as a measurement of its own change.
+- First step: reproduce it in one command from `site/`, which this run did:
+  `listSkills()` returns `current: false` for `skill-library-engineering` while
+  `skills/_validation/results/2026-10-26-lexical-2.1-sle-retrofit.json` holds the
+  matching sha. That is the regression test the fix should ship with.
+- Whose call: engineer, with the validation owner, as the earlier entry assigns.
+- Cost: one sentence of ranking code and a re-record.
 - Status: proposed
