@@ -1,7 +1,7 @@
-# Monthly source census — 2026-10-26 (ADR-29, the zero-gap mandate)
+# Monthly source census -- 2026-10-26 (ADR-29, the zero-gap mandate)
 
 Research seat. Due: the last census is `docs/research/briefs/2026-09-30.md`
-§13, twenty-six days ago. This one is measured against external ground truth,
+section 13, twenty-six days ago. This one is measured against external ground truth,
 as the mandate requires, and it finds a reach gap that is **not** a missing
 source. Every category this run needed is already in `sources.yaml`. The gap
 is the window in front of them.
@@ -57,7 +57,7 @@ literature lives in.
 A daily run at 100 and a category at 116 a day means the overflow is lost on
 most days, every day, and has been for as long as the constant has stood.
 arXiv also announces on weekdays, so a Monday run has to cover Friday plus the
-weekend — the requirement on announcement days is well above the average, and
+weekend -- the requirement on announcement days is well above the average, and
 the gap on those days is worse than this table shows.
 
 ## 3. What the outage costs, in papers rather than in downtime
@@ -99,7 +99,7 @@ outside this seat's ADR-12 whitelist. Both go to the engineer.
    differ fourteenfold. `cs.MA` at 8 a day does not need 100 and `cs.AI` at
    116 is short of one day's worth. A per-category value, or a floor of two
    days' measured volume, closes the gap at a cost that falls only on the two
-   categories that need it. The volumes in §2 are the inputs.
+   categories that need it. The volumes in section 2 above are the inputs.
 2. **Page until the previous run's newest id, instead of stopping at 100.**
    This is the structural fix and it is what makes an outage recoverable.
    `sortBy=submittedDate&sortOrder=descending` plus `start=` gives arXiv's own
@@ -117,9 +117,9 @@ No new feed is proposed, and that is a result rather than an omission.
 `sources.yaml` already carries all nine categories the papers read this run
 live in, both named steering authors (`interconnects`, `raschka-ahead-of-ai`,
 `raschka-blog`), and every framework and containment feed the four-layer
-program names. The thing this seat would have proposed a source for — reaching
-the skills literature in `cs.AI` — is already a listed tier-a category whose
-papers we cannot see, which is §2.
+program names. The thing this seat would have proposed a source for -- reaching
+the skills literature in `cs.AI` -- is already a listed tier-a category whose
+papers we cannot see, which is section 2 above.
 
 One candidate carried forward rather than proposed, because it fails the
 evidence bar as a source and not as a read: the three small skill-discovery

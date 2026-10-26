@@ -1,4 +1,4 @@
-# Evidence note — 2026-W42's "Left behind" section, audited against primary sources
+# Evidence note -- 2026-W42's "Left behind" section, audited against primary sources
 
 Research seat, 2026-10-26. This is the working file behind
 `docs/research/briefs/2026-10-26.md` sections 1 and 5. Every command is here
@@ -18,8 +18,8 @@ modal-http: workspace ac-5DsaR3hWSUxqyNoGYiowja is disabled
 
 Registered by the engineer on 2026-10-23 as `urgent` (#406); not re-filed
 here. What follows is therefore built from the two surfaces that need no
-credential — the public archive, which reads `digests` through
-`site/lib/issues-live.js`, and `/api/delivery` — plus the repository at HEAD.
+credential -- the public archive, which reads `digests` through
+`site/lib/issues-live.js`, and `/api/delivery` -- plus the repository at HEAD.
 
 ```
 $ curl -s https://libraryofalexandria.dev/api/delivery | python3 -m json.tool
@@ -61,8 +61,8 @@ abstract, fetched this run:
 The near-linear-leakage-above-a-model-size-threshold result **is this paper's
 own theorem**. The paper's contribution is the second half, on readability.
 The relation is `refines` and the issue printed `contradicts`. The issue's own
-prose carries the refutation three sentences earlier — *"The leakage need not
-be readable"* — and still calls it a direct contradiction.
+prose carries the refutation three sentences earlier -- *"The leakage need not
+be readable"* -- and still calls it a direct contradiction.
 
 ### 1.2 Another paper's finding, attributed to this one, with the stance inverted
 
@@ -73,7 +73,7 @@ be readable"* — and still calls it a direct contradiction.
 
 Two defects in one sentence.
 
-1. `2609.37312` **asserts** that simple covert computation leaves no trace —
+1. `2609.37312` **asserts** that simple covert computation leaves no trace --
    "Simple computations can be performed covertly" is the abstract's third
    clause. It is named as overturning its own premise.
 2. Tenant-salt provenance and timing side-channels in multi-tenant serving
@@ -117,12 +117,12 @@ not have them, and it published the absence as a fact about the paper.
 
 | Overturn statement | Verdict against the primary source |
 |---|---|
-| near-linear leakage overturned | wrong — it is the citing paper's own theorem (`refines`) |
-| "simple covert computation leaves no trace" overturned | wrong — the paper asserts it; the 93% number is another paper's |
-| Vosti overturned on bitwise determinism | wrong — same paper, and two different systems |
+| near-linear leakage overturned | wrong -- it is the citing paper's own theorem (`refines`) |
+| "simple covert computation leaves no trace" overturned | wrong -- the paper asserts it; the 93% number is another paper's |
+| Vosti overturned on bitwise determinism | wrong -- same paper, and two different systems |
 
-**Three of three.** The section is the product's stated differentiator —
-the issue's own subtitle is *"what newer evidence has overturned"* — and none
+**Three of three.** The section is the product's stated differentiator --
+the issue's own subtitle is *"what newer evidence has overturned"* -- and none
 of it holds.
 
 ## 3. This is the third issue of a known class, and the first measured at 3/3
@@ -144,7 +144,7 @@ holds** (`docs/research/notes/2026-10-12-contradicts-labels.json`,
 This is the part worth a reviewer's minute, because three fixes landed and the
 damage is still unrepairable by any of them.
 
-**Fix 1 — the prompt. Merged 2026-10-12, and it did deploy.** The
+**Fix 1 -- the prompt. Merged 2026-10-12, and it did deploy.** The
 2026-10-12 meta-review proposal (`6fb5d904`, *"a limitation is not refuted by
 a success near it, and size classes do not refute each other"*) is an ancestor
 of the base the interpret image was built from:
@@ -161,15 +161,15 @@ recorded 2026-10-22, so the sharpened prompt ran from 2026-10-17. **This
 closes out `INC-2026-10-12-meta-review-proposal-merged-never-deployed`: the
 proposal reached production five days after the brief registered it as
 frozen.** 2026-W42 was written 2026-10-19, after that, and printed three bad
-overturns anyway — because a prompt governs new edges only.
+overturns anyway -- because a prompt governs new edges only.
 
-**Fix 2 — the schema. Merged 2026-10-24.** `latest_links` now takes the most
+**Fix 2 -- the schema. Merged 2026-10-24.** `latest_links` now takes the most
 recent opinion per `(from_claim, to_claim)` and `deprecated_claims` reads it
 rather than `claim_links`, so a contradiction a later prompt withdraws stops
 deprecating (`db/schema.sql:417-452`). The primary key was replaced so a
 second opinion can land at all. The repair route exists.
 
-**Fix 3 — the shortlist. Merged 2026-10-25, undeployed.** `5af27966` added
+**Fix 3 -- the shortlist. Merged 2026-10-25, undeployed.** `5af27966` added
 the same-paper exclusion, `and paper_id <> %s`
 (`pipeline/interpret.py:303`). It is not in the deployed base:
 
@@ -200,9 +200,9 @@ permanently unrepairable.**
    `(from_claim, to_claim)` pair carrying a different relation. A candidate
    the judge never sees produces no row.
 
-Therefore every same-paper `contradicts` edge written before 2026-10-25 —
+Therefore every same-paper `contradicts` edge written before 2026-10-25 --
 the five the 2026-10-12 run found live and wrong, and whatever stands behind
-2026-W42 section 1.3 — is now **outside the reach of the only repair
+2026-W42 section 1.3 -- is now **outside the reach of the only repair
 mechanism the pipeline has**, and will keep feeding `deprecated_claims` and
 the digest's third section indefinitely. The fix for the backlog has to be a
 one-off withdrawal pass that writes the corrected relation directly, or a
