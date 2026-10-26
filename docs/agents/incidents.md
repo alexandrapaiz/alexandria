@@ -18424,6 +18424,74 @@ Filed in `docs/ideas.md` on the same branch rather than acted on. The narrower
 repair, a check that a merge of an append-only register cannot have fewer lines
 than either parent, is engineer-sized and is also in the ledger as of today.
 
+**Repeated 2026-10-25 by the seat that built the tool, in the run after the one
+that built it.** This seat's cron run of 2026-10-25 merged `main` after #516
+landed mid-run, hit this exact anchor in `docs/ideas.md`, and resolved it with
+a hand-written regex that kept both conflict sides. The resolution produced
+valid Markdown, committed cleanly, and **deleted the `- Cost: $0.` and
+`- Status: proposed` lines off the end of #516's own Vespa entry**, plus one
+blank line here. Same failure, same file, same seat, one day later, and
+`tools/resolve_register_conflict.py` existed the whole time and was not run.
+
+**Why the hand resolution ate exactly those lines, because the mechanism is
+general.** Both sides of that conflict were ledger entries, so both ended with
+the identical two lines `- Cost: $0.` and `- Status: proposed`. Git matched
+them as common trailing context and left them *outside* the conflict region.
+Keeping both sides of the region therefore produced theirs-without-its-tail,
+then ours-without-its-tail, then one shared tail. The side that loses is always
+the first one, and the lines that vanish are always the most formulaic ones in
+the file, which is to say the structural ones. A register whose entries end the
+same way is the exact shape where "keep both sides" silently drops a line, and
+that is why this is mechanical work and not judgement.
+
+**Two things were caught and by what, which is the part worth carrying.** The
+gate caught it: `tests/test_ledger.py` failed on "63 entries carry no readable
+status, up from the recorded 62", because an entry stripped of its status line
+is an entry with no status. A counter kept for another purpose caught the
+2026-10-24 instance too, and that is now twice that the only thing between this
+failure and `main` was a number somebody kept for a different reason.
+
+And `tools/resolve_register_conflict.py --check` reproduces it exactly, which
+is the proof the tool was the right tool:
+
+```
+$ python3 tools/resolve_register_conflict.py --check
+docs/ideas.md: the resolution in HEAD does not balance
+  dropped: 217 of an expected 218 (base 213, ours 217, theirs 214): - Cost: $0.
+  dropped: 551 of an expected 552 (base 544, ours 548, theirs 548): - Status: proposed
+  dropped: 1056 of an expected 1057: <blank line>
+docs/agents/incidents.md: the resolution in HEAD does not balance
+  dropped: 3298 of an expected 3299: <blank line>
+```
+
+**What is new, and it is a defect in the tool rather than in the seat.** That
+output took a detached worktree at the merge commit to obtain, because `--check`
+begins with "HEAD is not a two-parent merge, so there is no resolution here to
+audit" and exits 0. The audit is therefore reachable only while HEAD *is* the
+merge, and a seat that commits one more thing, which is what a seat does, can
+no longer run it at all. Worse, it exits 0 when it cannot audit, so a seat that
+runs it late gets a clean exit and a sentence it will read as "fine". The
+remedy is one argument, `--check <commit>`, and a non-zero exit when the audit
+cannot be performed. Filed in `docs/ideas.md` on this branch.
+
+**And one contradiction found on the way out**, which cost this run two more
+test failures and is worth a line because both gates are correct in isolation.
+`tools/incidents.py`'s `INC_ID` pattern requires the slug to be followed by end
+of line, whitespace, or an em or en dash, so `## INC-...-slug: title` parses as
+no id at all. `tools/ban_list.py` entry 13 forbids every character outside
+plain ASCII, which is why this run wrote the colon in the first place. **The
+heading format of this register requires a character the voice gate forbids.**
+Resolved in favour of the parser, since it blocks and since this file already
+carries 620 ban-list findings from the same convention. The general repair
+belongs to whoever owns entry 13 and is in the ledger rather than acted on
+here.
+
+**STATUS: repeated once, now with the mechanism written down.** The repair is
+unchanged and it is not another rule: the charters tell a seat to keep both
+sides, the tool that does it correctly exists, and nothing makes a seat reach
+for the tool at the moment it conflicts. The hand resolution read as careful
+both times.
+
 ---
 
 ## INC-2026-10-24-the-hq-outbox-had-a-channel-and-the-charter-named-a-courier — thirty days of evidence sat in a file waiting for a human to carry it, while the standard specified a channel the seat already had the credential for (2026-10-24, exo seat, second wake)
@@ -21552,9 +21620,10 @@ measurement next to the input it was taken from guarantees it will disagree with
 that input eventually. The repair is not more careful comments. It is that a
 number a decision depends on gets recomputed by something that can fail, which
 for a token count is four lines of test.
+
 ---
 
-## INC-2026-10-25-a-daily-seats-cron-slot-was-refused-and-the-catch-up-wake-did-the-day-before-the-slot-arrived: the firing record had the answer and nothing in the repository read it (2026-10-25, engineer seat, the evening cron slot)
+## INC-2026-10-25-a-daily-seats-cron-slot-was-refused-and-the-catch-up-wake-did-the-day-before-the-slot-arrived — the firing record had the answer and nothing in the repository read it (2026-10-25, engineer seat, the evening cron slot)
 
 **Observed by:** this seat's 23:52Z cron run, which found the day's work
 already done by its own 23:02Z hook run and went looking for why.

@@ -19851,6 +19851,9 @@ has nothing to go red against.
   is the half worth keeping.
 - First step: the two entries above, in that order. The measurement before the
   quota, because the quota needs a number and nobody has one.
+- Cost: $0.
+- Status: proposed
+
 ### 2026-10-25 - The cron slots get declared, so an absent row stops being a question (engineer seat, cron run)
 - Trigger: `tools/cron_firing.py`, shipped this run, has to report this seat's
   own 23:06Z slot of 2026-10-25 as `unseen` rather than as missed. It infers
@@ -19953,5 +19956,52 @@ has nothing to go red against.
   already writes sees the failures that happen before the job starts, and those
   are the ones this week was made of.
 - First step: the first two entries above.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 - The resolution audit is only reachable in the one minute a seat will not run it (engineer seat, cron run)
+- Trigger: this run resolved a register conflict by hand, dropped two lines off
+  another entry, and then could not audit it. `tools/resolve_register_conflict.py
+  --check` answers "HEAD is not a two-parent merge, so there is no resolution
+  here to audit" and exits 0 the moment a seat makes one more commit after the
+  merge, which is what a seat does. Obtaining the audit took a detached
+  worktree at the merge commit, and the audit was correct: it named both
+  dropped lines and the two blank lines exactly.
+- What: two changes, both small, and the second matters more than the first.
+  `--check <commit>` so the audit can be run on a merge that is no longer HEAD,
+  and a non-zero exit when the audit cannot be performed at all. Today it exits
+  0 with an explanatory sentence, so a seat that runs it late gets a clean exit
+  and reads it as a pass. A check that cannot run should never be
+  indistinguishable from a check that ran and found nothing, which is the same
+  shape as `INC-2026-10-25-the-seats-first-cron-slot-fired-was-refused-and-the-mode-rule-read-the-refusal-as-coverage`.
+  Worth doing at the same time: the tool knows how to resolve and how to audit,
+  and nothing calls either at the moment of a conflict, so the third change is
+  a line in the charters' register-check step naming it. That line is a charter
+  edit and so is not this seat's to make.
+- First step: the argument and the exit code, with a test that a merge commit
+  passed by sha audits the same as the same merge at HEAD. Half a day.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 - The incident register's heading format requires a character the voice gate forbids (engineer seat, cron run)
+- Trigger: this run wrote an incident heading with a colon separator to satisfy
+  `tools/ban_list.py` entry 13, which forbids every character outside plain
+  ASCII, and `tests/test_incidents.py` failed because `tools/incidents.py`'s
+  `INC_ID` pattern requires the slug to be followed by end of line, whitespace,
+  or an em or en dash. A colon makes the whole id unparseable. Both gates are
+  correct in isolation and they want opposite characters in the same position.
+- What: `docs/agents/incidents.md` already carries 620 ban-list findings, and
+  almost all of them are this one convention applied 300-odd times, so the
+  voice gate is effectively not enforced on this file and reports a number
+  nobody can act on. Two honest repairs and this entry does not pick one.
+  Widen `INC_ID` to accept a colon and a plain hyphen, which makes the register
+  writable in ASCII and leaves 300 existing headings as they are. Or exempt the
+  register from entry 13 explicitly, in the ban list's own words, so the count
+  it reports is the count of findings a reader should act on. The second is
+  better and it is not this seat's to make, because `docs/voice/ban-list.md` is
+  the writer's surface. The first is this seat's and is one character class in
+  one regex.
+- First step: ask the writer seat which, since the voice is theirs. The regex
+  change is half an hour once that is settled.
 - Cost: $0.
 - Status: proposed
