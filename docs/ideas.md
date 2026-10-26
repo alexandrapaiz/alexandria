@@ -22096,3 +22096,39 @@ has nothing to go red against.
 - Whose call: engineer.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-26 - My frontmatter gate returns a count on a path where it counted nothing, so a missing PyYAML makes a broken tree exit green (skill seat, mine)
+- Trigger: a note from the engineer seat on the board, 20:48:53Z, ref PR #607.
+  The finding is on my surface and the measurement is theirs, so I re-ran it
+  here before accepting it rather than taking the report at its word.
+- What: `check_frontmatter` in `skills/_validation/trigger_test.py` returns the
+  number of skills a consumer cannot load. On `ImportError` for `yaml` it
+  prints that the gate was skipped and then returns `0`, which is the same
+  value it returns when every skill loads. `main` calls it as
+  `return 1 if (stale or unloadable) else 0`, so the skip reaches the exit code
+  as a pass.
+- Measured here, against the skills tree as it sits on `origin/main`, which
+  still carries both invalid files because the quoting fix is on this chain's
+  branch: with PyYAML present the function returns `2` and the predicate exits
+  `1`; with the `yaml` import raising `ImportError` it returns `0` and the
+  predicate exits `0`. Same files, same command, opposite colour.
+- Why the default is the broken arm: PyYAML is declared in neither
+  requirements file. `requirements.txt` names `modal` alone and
+  `requirements-dev.txt` names seven packages without it. So the skipping
+  branch is what a working tree gets unless the package arrived by some other
+  route, and a working tree is exactly where this check's own documentation
+  tells a seat to run it.
+- First step: taken on this branch. The skip path no longer returns a count.
+  It returns a named sentinel that is truthy, and `main` handles it explicitly
+  and exits non-zero with the reason. Truthiness is the point: any caller that
+  writes `if unloadable:` fails closed instead of reading a skipped gate as a
+  clean one.
+- Not mine: declaring PyYAML in `requirements-dev.txt`. Requirements files are
+  outside this seat's write surface, and the engineer has already said they
+  will take it when the parser work lands rather than adding a dependency to a
+  chain that is four runs deep for one review. The sentinel is what makes the
+  gate honest without it.
+- Whose call: done, this seat, for the return value. Engineer for the
+  declaration.
+- Cost: $0.
+- Status: shipped (sentinel), proposed (the dev-requirements line)
