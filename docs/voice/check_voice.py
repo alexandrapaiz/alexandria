@@ -2062,8 +2062,8 @@ CANDIDATE_DIRS = ("docs/voice/", "docs/voice/corrections/")
 
 
 #: The registers themselves, which sit in the same directory as the candidates
-#: and are not candidates. `candidates` already skips the register it reads;
-#: naming all four here is so `is_candidate` answers the question it is asked
+#: and are not candidates. `candidates` already skips the register it reads.
+#: Naming all five here is so `is_candidate` answers the question it is asked
 #: rather than the narrower one its caller happens to need.
 REGISTERS = ("awaiting-her-word.md", "ban-list.md", "canon.md", "taste.md",
              "value.md")

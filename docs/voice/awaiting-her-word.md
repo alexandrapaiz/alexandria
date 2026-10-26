@@ -139,7 +139,7 @@ floor shipped in this run's diff and the row below is the row it now demands.
 | Are the skill files the paid product, or the free distribution that sells something else? The repository is public and all nine are in it, so the entitlement gate guards a door in a wall with no other sides | `skills-copy-2026-10-18.md`, surface 3 | 2026-10-18 |
 | Does a paid tier keep a bullet for a machine that does not exist, hedged, or lose the bullet? | `claim-repairs-2026-10-18.md`, finding 8 | 2026-10-18 |
 | Is `docs/voice/value.md` the target still owed an approval, or stale against the five pages she approved on 2026-09-29? | `value.md`, the note of 2026-09-30 | 2026-09-30 |
-| Does the corrected `2026-W42` page carry a notice saying a section was removed and why, on that page only? Recommended yes, quoted in full in the candidate. Her 2026-09-19 ban is on an issue narrating its own methodology, and this sentence reports what happened to one page in the past tense | `w42-correction-2026-10-26.md`, the one line that needs her word | 2026-10-26 |
+| Does the corrected `2026-W42` page carry a notice saying a section was removed and why, on that page only? Recommended yes, quoted in full in the candidate. Her 2026-09-19 ban is on an issue narrating its own methodology, and this sentence reports what happened to one page in the past tense | `w42-correction-2026-10-26.md`, the one line that needs her word | 2026-10-26. Posted to her as a formal ask by the PM, and the first row here with a deadline on it: under the company standard's silence rule it proceeds as recommended at about 20:44 UTC on 2026-10-28 |
 
 ## Closed
 
