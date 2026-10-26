@@ -22,6 +22,21 @@ invisible to both.
   against 5 of 7 and 6 of 8 after, with one description changed and no edit to
   either file.
 
+- `2026-10-26-lexical-2.1-sle-retrofit.json` and its `.txt`. Written by the run
+  that retrofitted `skill-library-engineering` (#590, superseded by #596). Moved
+  here by the next run of the same day, which retrofitted
+  `agent-security-measurement`. This one is worth more than the entry above it,
+  because it is the control the tie-break defect needed: the
+  `agent-security-measurement` retrofit changed that skill's body and left its
+  `description` byte-identical, so the library composition did not move, and
+  every one of the other eight skills scored identically across the two bundles
+  (7/8, 6/7, 5/7, 7/8, 6/8, 6/7, 5/6 and 8/9 in both). The only `skill_sha256`
+  that differs is the retrofitted skill's. So a same-day pair is now on record
+  in both regimes: the sipt pair, where one description changed and two
+  untouched skills moved, and this pair, where no description changed and
+  nothing moved. The composition, not the calendar day, is what a receipt is
+  about.
+
 The real repair is in the ledger and in
 `INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`:
 tie-break on a timestamp, and record the library membership in the bundle so a
