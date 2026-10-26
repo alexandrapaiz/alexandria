@@ -78,7 +78,19 @@ does not name its base, so a later reader is wrong by a factor of two either
 way. Sent back as note `dc052b3e` before 536 merges. Writing a rate without its
 denominator is how a correct measurement becomes a weakenable one.
 
-## The improvement (one, as the mode allows)
+## The improvement (one, as the mode allows), counted honestly
+
+**What counts as the one.** The charter reorder below is it. The two rules added
+to `docs/agents/turn-caps.md` are not a second and a third improvement: rule 9
+is the repair of a rule this run was handed and found wrong on its author's own
+seat, and rule 10 is the instrument fact behind an error this run made in its
+own evidence. Both are records of measurements §2b and §6 already require a run
+to take, filed where the next run reads them, rather than changes to how any
+seat works. A reader who disagrees with that accounting should count three, and
+the place to tighten the rule is §0's own sentence, which says "improvement"
+without saying what one is.
+
+## The improvement
 
 `prompts/exo-agent.md` §"Ship first, then work" now carries the granted order
 and the number, with the measurement kept beside it, and §"Your own last run
