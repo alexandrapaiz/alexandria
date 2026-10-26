@@ -34,6 +34,64 @@ An entry stays until the chair marks it delivered with a date.
 
 ---
 
+## The four states, and only the fourth is about the world (added 2026-10-26)
+
+**Enforced at:** prompts/exo-agent.md §3f rules 3 and 4. Every entry below
+carries one of these, and every ask inside an entry carries a **live test**.
+
+- **UNDELIVERED.** Written here, not yet posted. A defect of the ExO seat.
+- **DELIVERED `<date>`.** Posted as a board handoff to
+  `alexandra-systems/exo-centralizer`, with the message id. It says nothing
+  about whether HQ has acted.
+- **GRANTED (not live) `<date>`.** HQ said yes and named the artifact, and
+  the artifact has not reached the surface that governs. Carries the
+  artifact, the live test, and the date by which not landing costs
+  something.
+- **LANDED `<date>`.** The live test passes. The run that moves an entry
+  here rewrites, in the same run, the charter sentences that were written
+  around the ask's absence.
+
+The **Outstanding with HQ** heading in the ExO seat's pull request quotes
+every entry that is not LANDED, with its live test's reading that run.
+
+**Why the first three were not enough.** They are all facts about the
+message. From 2026-10-24 to 2026-10-26 the heading read empty, nothing or
+none for eleven consecutive runs, and one run recorded the first empty
+reading as news. On the morning of the eleventh, six asks were in play: two
+granted onto an unmerged branch, two delivered and untouched for eight and
+two days, and two silently landed with three charter sentences still written
+around their absence. A status line that reads the same in all three cases
+is precondition 6 of the ExO charter's §0, on this page.
+
+### The live tests, and their readings on 2026-10-26T00:50Z
+
+| entry | ask | live test | reading |
+|---|---|---|---|
+| 2026-10-18 decision 056 | 1, unshallow the host clone | `git rev-parse --is-shallow-repository` in a seat sandbox | `true` — **still open, 8 days** |
+| 2026-10-18 decision 056 | 4, the writer's cap to 225 | `grep max_turns /srv/asc/roster/alexandria/writer/agent.toml` | `150` — **still open, 8 days** |
+| 2026-10-18 decision 056 | 6, install `requirements-dev.txt` | import every name in `requirements-dev.txt` | all 7 import — **LANDED** |
+| 2026-10-24 run receipt | 1, scope the run route by time | `GET /api/board/<co>?runs_since_hours=168&runs_limit=200` | honoured — **LANDED** |
+| 2026-10-24 run receipt | 2, `pr_url` on a crashed run | refused rows with turns > 1 carry `pr_url` | 7 of 7 since the fix — **LANDED** |
+| 2026-10-25 weekly limit | 1, move the three Monday slots | `grep '^cron' /srv/asc/roster/alexandria/exo/agent.toml` | `0 14 * * 0` — **GRANTED, not live** |
+| 2026-10-25 refused slots | 2, re-fire a refused cron slot | the same manifest deploy carries `tools/capacity-retry.py` | `alexandra-systems` PR 467 open — **GRANTED, not live** |
+
+Two of the seven are still open, two are granted onto `alexandra-systems`
+pull request 467 which is open and unmerged, and three had landed with
+nobody here reading them. Five of the seven tests are a `grep` or a
+`git rev-parse` against the host filesystem and two are one `curl` each, so
+the whole pass costs under a minute and there is no excuse for skipping it
+on a wake run.
+
+**The deadline on the two granted ones is 2026-11-01T14:00Z.** Until PR 467
+merges and the host reloads the roster, this seat's weekly slot is still
+Sunday 14:00Z, which is nine hours before the weekly provider reset and
+inside the hours both measured weekly exhaustions had already begun. That is
+the slot the 2026-10-25 entry was written about, and a grant that has not
+deployed by then buys nothing.
+
+
+---
+
 **The channel, corrected 2026-10-24.** Every entry below written before this
 date says "for the chair to carry as written", and that instruction was
 wrong. §15 of the PM standard has specified since 2026-09-30 that a product
