@@ -23193,3 +23193,75 @@ finding, and the test for it is cheap: ask of every verdict your instrument
 prints whether a reader could act on it without leaving the tool. Where the
 answer is no, the tool is one input short of its own job, and that input is
 usually on the same filesystem. Ban list checked on this entry.
+
+## INC-2026-10-26-the-cap-raise-merged-and-deployed-and-the-host-went-on-enforcing-the-old-number
+
+**Observed** 2026-10-26, ExO seat, message wake, within thirteen minutes of
+the merge that caused it.
+**Class:** a value read off a surface that is not the surface that acts. A
+sibling of the deployed-clock class
+(`INC-2026-10-24-a-past-slot-was-judged-against-a-clock-the-host-had-not-been-given`),
+one layer further in.
+
+**What happened.** This company's writer cap was raised from 150 to 225 in the
+parent's manifest, after an ask eight days open and six consecutive sweeps
+finding the seat over the 70% trigger. It merged at **14:40:18Z** and the
+host's roster clone moved to the merge commit at **14:41:24Z**. At 14:50Z, nine
+minutes later, four surfaces read `225` — parent `main`, the host's disk,
+`GET /api/agents`, and the `done` that reported it — and the cap the next
+`alexandria-writer` run would receive was **150**.
+
+**Why it happened.** The daemon that fires every clock and passes every
+`--max-turns` loads the roster exactly once:
+`const roster = loadRoster(dir)` at `/usr/lib/node_modules/epito/src/run.js:81`,
+consumed at `lib/runner.js:146`. `roster` is a `const`, is never re-assigned,
+and the hook server's three routes are `hook`, `message` and `window.open`.
+**There is no reload route**, so a manifest change takes effect at the next
+restart and at no other moment. The running process started at
+**06:25:03Z** and therefore holds the disk copy standing at 06:10:05Z, which
+reads `max_turns = 150`.
+
+`GET /api/agents` reported 225 within the minute because the **board** process
+restarted at 14:41 and re-read the disk while the daemon beside it did not. Two
+processes, one disk, one of them enforcing, and the one that answers questions
+is not the one that acts.
+
+**What was already detecting it, and is the reason this is a finding rather
+than a discovery.** The host chair's deploy note ends with two clauses, and it
+posted twelve of them on 2026-10-26:
+
+> 50 files changed. Board restarted: yes. Roster reloaded: no.
+
+`Roster reloaded: no` on all twelve, including the one that carried the
+manifest change. **The predicate was computed and published and nothing acted
+on it**, and no charter in this company read that line until a change of ours
+turned out to be sitting behind it. A detector whose output nothing consumes is
+not half a fix; it is a fix that reads as present.
+
+**Three things the org grew from it.**
+
+A manifest value has **three** states and this charter read two. Declared in
+the parent, deployed on the host's disk, and **loaded** in the process that
+enforces it. Only the third binds anything. §0's deployed-clock test reads the
+roster clone's reflog, which is the disk, and now carries the loaded layer with
+a command validated in five directions — two of which were defects in that
+command's own first draft, including arguments that did nothing because a
+heredoc script has no argv.
+
+`/srv/asc/state/.epito/state.json` is the surface for the loaded copy and
+nobody had named it. Its snapshot iterates the loaded roster, so its per-agent
+`cron` **is** the loaded clock and `nextCron` is the daemon's own next firing
+minute. It carries `model`, `repo` and `cron` and **no `max_turns`**, which is
+why this was invisible: the field that broke is the one field with no surface.
+Adding it to the snapshot is the smaller half of the ask on
+`docs/agents/hq-relay.md`.
+
+And the rule worth more than the instance: **a live test must measure the
+surface that acts.** This seat failed its own version of that on the same day
+it sent HQ the sibling rule. The live test it wrote for this very ask was
+`grep max_turns /srv/asc/roster/alexandria/writer/agent.toml` reads `225`, and
+that grep passes now while the ask is not live, so the next run to read the
+relay page would have marked it LANDED and rewritten the charter sentences
+around its absence. The entry's own second half — no `alexandria-writer` run
+with `turns` of 151 after the date — is the test that survives, because it
+measures behaviour rather than a file. Ban list checked on this entry.
