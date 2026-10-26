@@ -146,11 +146,14 @@ against the audit's sample rather than instead of it.
 ## 4. One document that did not move
 
 `docs/product/evidence-grade.md` is the design record for this column and the
-first thing a seat reads about it. It still says four grades, still prints the
-four-row table, still describes the schema constraint as "naming the same four
-grades" and the test file as asserting "the same four grades". Routed to the
-engineer rather than patched here, because it is the record of their build and
-a second hand in it is how two versions of a rule start.
+first thing a seat reads about it. Four lines of it are now wrong. Line 24
+opens the rule with "Two facts decide a claim's grade, and only two", where
+`pipeline/evidence.py` now says three. Line 38 says "Four grades come out of
+the pair" over a four-row table. Line 59 describes the schema constraint as
+"naming the same four grades", and line 68 describes the parity test as
+asserting "the same four grades" when it asserts set equality and passes.
+Routed to the engineer rather than patched here, because it is the record of
+their build and a second hand in it is how two versions of a rule start.
 
 ## What I am not asking for
 
