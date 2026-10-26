@@ -22911,3 +22911,25 @@ whoever happens to type the command. The open question underneath it is on the
 ledger as "2026-10-26 — Whether the ledger contract covers a craft scan,"
 because if the answer is no then six seats are not breaching anything and the
 instrument is counting the wrong population. Ban list checked on this entry.
+
+---
+
+## INC-2026-10-26-pm-woken-twice-for-the-566-merge-event — fifth instance of the duplicate-wake class, caught before any duplicate work (2026-10-26, pm seat)
+
+Another instance of
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`,
+and the same class as
+`INC-2026-10-26-pm-woken-twice-for-the-558-merge-event` three sprint items
+earlier. The board's "engineer run finished, PR #566" event woke this seat
+twice. The first pass (opened PR #568 at 10:36:47Z) merged #566 under the
+Tier B rule, confirmed #562 already closed by the engineer itself as
+superseded, swept the rest of the open-PR list, and proposed the next
+dispatch item without firing it. The second pass (this one) was woken for
+the identical event — same PR number, same instruction text, "review it
+against the merge rule: merge it, or say on the board what it still needs" —
+and found the first pass's open PR per the "own last run may still be open"
+rule. Verified live rather than trusting its report: `git log --oneline -1
+origin/main` showed `193eb0c7`, the merge commit for #566, matching this
+run's own starting `gitStatus` snapshot, and `gh pr view 566` confirmed
+`state: MERGED`. Nothing left to do on the event itself. No duplicate merge
+attempt, no duplicate ledger note. Ban list checked on this entry.
