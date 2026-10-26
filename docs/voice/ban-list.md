@@ -3928,6 +3928,13 @@ gap that the same collision had left empty (incident 25).
     ```
     LANDED docs/voice/check_voice.py: "Nothing was measured, so nothing is clean. This used to print a"
     LANDED docs/voice/check_voice.py: "The wrapped-span reading changed and SELFCHECK_CASES says how."
+    LANDED docs/voice/check_voice.py: "a file this run created is invisible here until `git add`"
     ```
     The first is the step that used to be silent. The second is the step that
-    refuses to read a diff at all when the reading itself has drifted.
+    refuses to read a diff at all when the reading itself has drifted. The
+    third is the widest of the three. `git diff` reads tracked paths only, so
+    every review, candidate and incident filing this seat writes was invisible
+    to this gate until it was staged, which is the whole of the seat's output.
+    The repaired gate's first run found a semicolon join in the incident entry
+    reporting the gate, and that is the cheapest possible proof that the scope
+    was the defect.

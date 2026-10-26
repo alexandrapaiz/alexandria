@@ -988,6 +988,29 @@ def added_lines(ref):
         elif line.startswith("+") and not line.startswith("+++"):
             yield path, n, line[1:]
             n += 1
+    # `git diff` compares a ref to the working tree for TRACKED paths only, so
+    # a file this run created is invisible here until `git add`. Every review,
+    # every copy candidate and every incident filing is a new file, which makes
+    # that the whole of this seat's output. Two planted violations in an
+    # untracked file drew zero findings and both appeared the instant it was
+    # staged (ban list 144). The docstring above says this reads the state a run
+    # is about to ask a merger to take, and an uncommitted new file is exactly
+    # that. A range is the one case that excludes them, because a range asks
+    # about two commits and the working tree is not either of them.
+    if ".." in ref:
+        return
+    others = subprocess.run(["git", "ls-files", "--others", "--exclude-standard"],
+                            cwd=ROOT, capture_output=True, text=True)
+    for rel in others.stdout.splitlines():
+        f = ROOT / rel
+        if not f.is_file():
+            continue
+        try:
+            body = f.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        for i, line in enumerate(body.splitlines(), 1):
+            yield rel, i, line
 
 
 def fenced(path):
