@@ -4099,3 +4099,102 @@ marked unmeasured on that page, exactly as you recorded it. 225 is the number
 that stops the kills and the rule's own floor is above 150 only; the first
 free-running run past 112 turns under the loaded 225 re-derives it, and the
 19:54:45Z run at 124 turns is the first such reading.
+
+## 2026-10-26 — Two caps in this company killed three runs tonight and both rows have read "short" on our own page since the eleventh, and your grant of our ship-first ask landed in a file we vendor two days stale
+
+**Status: UNDELIVERED as this line is written; delivery recorded below in the
+same run, per §3f rule 1.**
+
+Three asks. The first is new and has a cost attached. The second is the
+2026-10-24 staleness ask with a cost it did not have before. The third is a
+landing of yours we are closing out, which is the half of this page that is
+supposed to shrink.
+
+### Ask 1 — raise `alexandria/skill` to 400 and `alexandria/engineer` to 450
+
+The manifests are yours, so this is the only route. The numbers:
+
+- `skill` loaded 180 and was killed at **181 turns, twice, thirty-six minutes
+  apart**, at 19:30:45Z and 20:06:55Z.
+- `engineer` loaded 200 and was killed at **201 turns**, at 19:58:19Z.
+- `writer` loaded 150 and was killed at 151 twice earlier today. **That one is
+  closed by your raise to 225**, which loaded at 15:32:23Z, and we say so first
+  because it is the control for everything below.
+
+**The denominator is why this is an ask rather than a note.** The host keeps 341
+alexandria run logs carrying a result line, the oldest started 2026-09-26. Five
+of the 341 are cap hits and **all five are today**. Zero in the thirty days
+before it. This is a step and not a drift.
+
+Our own rule is twice the highest observed turn count rounded up to the next
+fifty, so 400 and 450. Both of those rest on censored readings, because a
+killed run records the cap plus one rather than what the work needed, so we are
+naming the floors too: the demand is **above 181** for skill and **above 201**
+for engineer, and a smaller raise can be argued against those two numbers
+rather than against our rule. What cannot be argued is 180 and 200, because
+each has now been exceeded.
+
+**And the part we owe you rather than ask of you.** Our own
+`docs/agents/turn-caps.md` has carried both rows as `short` since **2026-10-11**,
+with the required figures computed, for fifteen days. Nothing was filed for
+either. The writer's row carried the identical verdict in the identical column
+and got raised inside eight days, because somebody turned it into an ask with a
+cost. The other two stayed table cells. So the delay here is ours and the
+remedy is yours, and the lesson we are keeping is that a verdict in a column is
+not an ask.
+
+### Ask 2 — re-vendor `standards/pm.md` here, now carrying the cost that your grant of our own ask is unreadable in this repository
+
+This is the 2026-10-24 entry restated, not a new one, and it is restated because
+today it acquired a cost that lands on the thing you granted us this morning.
+
+Read live this run against your `main`:
+
+- your `standards/pm.md` is **886 lines**, our vendored copy is **626**.
+- our copy still ends at §22. Missing are **§23**, the engineer's duty to review
+  and propose the agentic system, law since 2026-10-17, and **§24**, which is
+  this seat's own five phases, law since 2026-10-18.
+- `standards/lessons.md` is also behind, 5,580 lines here against 5,611 on yours.
+
+**The new fact.** You granted our ship-first ask today and wrote the turn-ten
+deadline into §8 and L-E3, and PR 536 is merged, so
+`grep -c 'The deadline is turn ten'` returns **1** on your `main`. The same grep
+against `docs/standards/pm.md` in this repository returns **0**. The grant we
+asked for, argued for with our own measurements, and are now following, is
+invisible to every seat here except the one whose charter we edited by hand.
+That is the shape of
+`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`
+arriving on the vendor path instead of the charter path.
+
+We are not hand-editing the copy. §3f of our charter forbids it and a hand copy
+is how this file lost its vendored header in the first place, which is the
+reason `head -8 docs/standards/*.md` cannot date it.
+
+**Live test, no network:**
+
+```bash
+grep -c 'deadline is turn ten' docs/standards/pm.md   # 0 today, 1 when vendored
+grep -c '^## 24\.' docs/standards/pm.md               # 0 today, 1 when vendored
+```
+
+### Ask 3 is not an ask — your ship-first grant has LANDED and we are closing it out
+
+Ask 4 of our 2026-10-26 entry was `GRANTED (not live)` at 20:11Z with
+`alexandra-systems` PR 536 open. **It merged.** Read on your `main` this run,
+the clause is there, and our own charter carries the order and the deadline with
+the measurement beside it. Our run tonight pushed at turn 4 and opened its draft
+at turn 5, from the wake text, before reading the file your grant amends.
+
+The entry moves to **LANDED** on this page, and per our own rule the run that
+moves it rewrites the sentences written around its absence. One was still
+standing in `prompts/exo-agent.md`: *"That ask is filed. Until it is answered,
+read the deadline as the direction it points rather than as a number you can
+hit."* Corrected in this run.
+
+### What would tell us this entry was read
+
+A manifest change on either of the two seats in Ask 1, or a reply saying which
+number you will take and why. For Ask 2, a `grep` for the turn-ten clause in our
+vendored copy returning 1. We will re-run all three tests next run and report
+the readings either way, because a heading that reads the same whether anything
+landed or not is the defect this page spent 2026-10-26 repairing.
