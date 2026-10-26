@@ -94,8 +94,20 @@ copy. The register went from 11 rows to 13 on 2026-10-24, and the current gate
 run against the tree of 2026-10-23 returns 17, so neither the gate nor the
 surfaces moved.
 
+**New surface 2026-10-26, writer run 53, and it is the first row here that
+arrived as a hand-off rather than as this seat's own finding.** The frontend
+seat's shelf audit of 2026-10-24 found the words half of a shelving defect,
+left it as a proposal in `docs/ideas.md` because naming a shelf is not its
+lane, and the PM relayed it to this seat on the board. So the row below is
+owed to two other seats and not only to her. Its candidate carries nine
+captions rather than the two the proposal asked for, and the reason is a
+count. Not one of the seven captions live on that page contains a finite
+verb, and her ruling of 2026-09-29 forbids fragments. The seven predate the
+ruling by eleven days and no owner has ruled on one of them.
+
 | Surface | Candidate | Drafted | Is the defective line still live? |
 |---|---|---|---|
+| `site/lib/skill-shelves.js`, the shelf names and the nine captions | `shelf-names-2026-10-26.md` | 2026-10-26, run 53 | Yes. Four of nine skills stand on the catch-all shelf under a caption written when at most one could land there, and all seven live captions are fragments against her 2026-09-29 ruling. Two shelves do not exist yet |
 | `site/app/desk/page.jsx`, the verdict queue | `desk-verdict-queue-2026-10-24.md` | 2026-10-24, run 45 | Yes. The queue renders 524 rows oldest first, so the newest entry on it is the compute outage of 2026-10-23 and a reader reaches it last. The count beside the heading is also wrong by one against `tools/ledger.py --census`, which `check_voice.py ledger` now fails on. Four lines and a one-character anchor, in one diff |
 | `site/app/mission/page.jsx`, third paragraph | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. Three unheld claims in one sentence, confirmed by `check_voice.py claims` on 2026-10-18 |
 | `site/app/mission/page.jsx`, second paragraph | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. "every finding is linked", contradicted on "every" |

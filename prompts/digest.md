@@ -41,9 +41,9 @@ beside it, which is the one thing law 9 forbids.
 
 A daily is 150 to 400 words on an ordinary day. It runs longer when the day
 earned it and shorter when it did not, because law 11 outranks that range.
-Four slots, her order, same as Monday: what gained ground, what is genuinely
-new, what fell behind, what to read yourself. The difference is that a single
-day rarely fills all four. Print the slots the day actually fills, in her
+Four slots, her order, same as Monday: Gaining traction, Trailblazing, Left
+behind, Read these yourself. The difference is that a single day rarely fills
+all four. Print the slots the day actually fills, in her
 order, and print no heading over a slot with nothing in it. Two slots is a
 normal Tuesday. One slot is a fine issue. Do not reach into the other three to
 balance the shape, and never carry an item forward from yesterday to fill one.
@@ -370,7 +370,7 @@ same fixed template, that is the failure mode this section exists to prevent.
   items in that slot actually show, in plain words, in the register of the
   issue: "Context beats architecture this week" over a traction section carried
   by context-management results, "Dense rewards won three separate bets" over new
-  work that converges, "The 23.9% ceiling was wrong" over what fell behind.
+  work that converges, "The 23.9% ceiling was wrong" over Left behind.
   Sentence case, no colon explaining itself, no coined term, and the heading
   must be FALSE for yesterday's issue. If it would fit any issue on any day, it
   is a label wearing a sentence's clothes, so rewrite it. The same craft binds
@@ -1522,9 +1522,9 @@ the rule's question to the thing in front of you.
   to run long on a day that earned it.
 - **The weekly argues, it does not list.** Name one case in the opening, in a
   sentence you would be willing to defend, and then have every section pick it
-  up: what is gaining ground supports it, what is new tests it, what fell
-  behind is the position it replaces. The test is blunt. If the sections could
-  be reordered or published separately with nothing lost, there is no argument
+  up: Gaining traction supports it, Trailblazing tests it, Left behind is the
+  position it replaces. The test is blunt. If the sections could be reordered
+  or published separately with nothing lost, there is no argument
   and you have written a feed.
 - **Attribute by institution.** The `institutions` field first, every time,
   because readers know labs and not author names. "A team led by <first

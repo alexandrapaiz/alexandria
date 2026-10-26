@@ -65,3 +65,41 @@ seat runs over the archive reads that directory, which means `measure`,
 stale unless a path is passed by hand. That is the engineer's surface and it is
 reported rather than filed here, because this run cannot tell whether the
 directory is meant to be a mirror of the record or a build input.
+
+**Fifth sighting, 2026-10-26, writer run 54, and the remedy above is why it is
+here.** The entry closes with the sentence that the gates read the archive
+directory, that `measure`, `devices`, `standalone` and `firstuse` therefore
+"describe a product two editions stale unless a path is passed by hand", and
+that this is "the engineer's surface and it is reported rather than filed here,
+because this run cannot tell whether the directory is meant to be a mirror of
+the record or a build input."
+
+Three of those sentences are right and the conclusion does not follow from
+them. The commands do not need the directory to change and they do not need
+that question answered. They need a source, and the product publishes one with
+no credential on it. Run 54 added `editions` and a `--live` flag that reads the
+served pages and un-renders them to the markdown the press stored. The
+un-renderer is proved rather than asserted: for every served week the
+repository also holds, the gate diffs the un-rendered page against the file,
+and `2026-W39` round-trips exactly.
+
+What that cost, measured rather than estimated, in the four hours between the
+fourth sighting and this one:
+
+| the gate | what it says when it can finally read the editions |
+| --- | --- |
+| `links` | `2026-W42` prints ten paper links, nine of them to the abstract, and arXiv serves the full text for seven of those nine. Her ruling of 2026-09-19 in her own words, "you didn't show me the paper" |
+| `measure` | `2026-W40` prints three headings in the shape canon law 12 forbids, which is the ruling she has given twice. The detector for it has existed since 2026-10-06 |
+| `marks` | eleven semicolons across the three served editions against a target the generator states as zero with no budget |
+| `devices` | all three served editions carry no list and no written turn |
+
+So the entry's own framing is the thing that repeated. The first four sightings
+were a grade reading the wrong artifact. The fifth is the REMEDY for that
+reading stopping at the reading: a command was added to tell a run which
+edition is newest, and nothing was pointed at it. The ruling she gave twice
+printed to readers on 2026-10-05 with a working detector in the repository and
+twenty-one days of grading in front of it.
+
+The general form, and it is narrower than L-A9. When a scope defect is fixed by
+telling the next reader where to look, ask which COMMANDS were looking in the
+old place, because a reader can be instructed and a glob cannot.
