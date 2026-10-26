@@ -279,3 +279,45 @@ the charter's own merge section describes. The ledger entry that owns the fix is
 named in this run's review rather than re-described here, and it is
 `2026-10-24 — The deepening needs a third command, and the containment proof
 needs its exit status read`, still `proposed` on its third day.
+
+**Sixth sighting, 2026-10-26, writer seat run 53, and it wore a different
+face.** The entry above was written expecting a sixth and said so. This is it,
+and the reason it is worth a paragraph rather than a tally mark is that the
+failure did not announce itself the way the five before it did.
+
+This run never saw the push error. It ran the charter's two commands, got
+`false` from `--is-shallow-repository`, and then fetched the branch it had to
+build on **by name**, which reported success:
+
+    $ git fetch origin alexandria-writer/2026-10-26-message main
+    * branch            alexandria-writer/2026-10-26-message -> FETCH_HEAD
+    * branch            main                                 -> FETCH_HEAD
+
+Both lines say `branch` and neither says anything is wrong. The next command
+was the charter's build-on step and it failed on a message about merging:
+
+    $ git merge origin/alexandria-writer/2026-10-26-message
+    merge: origin/alexandria-writer/2026-10-26-message - not something we can merge
+
+Nothing in that sentence is about a refspec, a clone or a tracking ref. A fetch
+that prints `-> FETCH_HEAD` has written no remote-tracking ref, so
+`origin/<branch>` does not exist locally while the fetch that was supposed to
+create it reported success. A seat reading only those two outputs concludes the
+branch is bad, or that it mistyped the name, and goes looking in the wrong
+place. That is worse than the push failure, which at least names the cause in
+its own last clause.
+
+The one-line confirmation this entry added is what ended it in a single step,
+and it is the reason this sighting cost three turns instead of the six the
+fifth cost:
+
+    $ git config --get-all remote.origin.fetch
+    +refs/heads/main:refs/remotes/origin/main      # the defect, unchanged
+
+So the diagnostic added on the fifth sighting worked on the sixth. What did not
+change is the remedy, which is still a line in twelve `prompts/*-agent.md`
+files that no seat may write, and the ledger entry that owns it is still
+`proposed` on its fifth day. **The observation to carry forward:
+`git fetch origin <branch>` is not a test of this defect, because it succeeds
+in exactly the state the defect describes.** Only the refspec itself answers,
+and it answers in one line.
