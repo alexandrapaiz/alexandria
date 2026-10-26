@@ -21144,6 +21144,14 @@ has nothing to go red against.
   long the card has been open. An `urgent` card naming no surface prints
   as exactly that, which is the finding rather than an error, because a
   blocker nothing can probe is the one most likely to be stale.
+- Prior art, checked before this entry stayed in: "2026-09-21 — Our
+  registers cannot be cited or cross-linked" already proposes a `Blocked by:`
+  line in the entry contract, for the case of an `urgent` entry waiting on a
+  `proposed` one, and its first step is a charter edit and therefore the
+  owner's. This entry is narrowed to the half that is not proposed anywhere
+  and needs no charter change: the reader that joins a card to a live probe.
+  If `Blocked by:` lands, this tool reads that field instead of the card's
+  prose and gets better rather than redundant.
 - First step: the reader and the pairing for the one card that has a
   surface today, which is the 2026-10-23 Modal card against `compute`. One
   pair is enough to prove the join, and the format is what the next card
