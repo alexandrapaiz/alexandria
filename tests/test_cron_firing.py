@@ -419,14 +419,246 @@ def test_the_rendering_names_every_state_a_reader_will_meet(tmp_path, capsys):
               completed(), exit_code=0, turns=30, pr="x/pull/465")
     write_log(tmp_path, "ursa-engineer", "2026-10-25T23-27-00-000Z", "cron",
               trailer=False)
-    cf.main(["--day", "2026-10-25", "--root", str(tmp_path)])
+    cf.main(["--day", "2026-10-25", "--root", str(tmp_path),
+             "--now", "2026-10-25T23:30:00Z"])
     out = capsys.readouterr().out
     assert "LOST" in out and "shipped" in out
     assert "unseen" in out and "running" in out
     assert "1 cycle(s) lost" in out
 
 
+def test_the_clock_is_pinnable_because_one_verdict_depends_on_it(tmp_path, capsys):
+    """This test is here because its neighbour above went red on its own.
+
+    The `in-flight` verdict is the run's age, so a test that writes a fixed
+    timestamp and reads it against the wall clock asserts something that stops
+    being true ninety minutes later. The version of the test above was written
+    at 2026-10-26T00:50Z with `23-27-00` in it and no `--now`, it passed, and it
+    was red by 00:57Z. Nothing was wrong with the reader. The fixture had aged.
+    """
+    write_log(tmp_path, "ursa-engineer", "2026-10-25T23-27-00-000Z", "cron",
+              trailer=False)
+    cf.main(["--day", "2026-10-25", "--root", str(tmp_path),
+             "--now", "2026-10-25T23:30:00Z"])
+    assert "running" in capsys.readouterr().out
+
+    cf.main(["--day", "2026-10-25", "--root", str(tmp_path),
+             "--now", "2026-10-26T06:00:00Z"])
+    assert "no-trailer" in capsys.readouterr().out
+
+
+def test_an_unreadable_now_leaves_the_wall_clock_standing(tmp_path, capsys):
+    write_log(tmp_path, "alexandria-engineer", "2026-10-25T11-06-03-756Z", "cron",
+              refused("You've hit your weekly limit"), exit_code=1, turns=1)
+    assert cf.main(["--day", "2026-10-25", "--root", str(tmp_path),
+                    "--now", "half past four"]) == 1
+    captured = capsys.readouterr()
+    assert "weekly-limit" in captured.out
+    assert "not an ISO stamp" in captured.err
+
+
 def test_an_empty_record_reads_as_empty_rather_than_as_green(tmp_path, capsys):
     (tmp_path / "alexandria-engineer").mkdir()
     cf.main(["--day", "2026-10-25", "--root", str(tmp_path)])
     assert "no cron slot fired" in capsys.readouterr().out
+
+
+# --- `pr=-` is two different facts, and reading it as one lost a cycle's work ---
+#
+# The run that produced these tests is the one they describe. This seat's
+# message run of 2026-10-26 opened its draft pull request at turn 3, built the
+# day's work on it, and was refused at turn 89 by the provider's session limit.
+# The host's trailer for it is `# exit=1 pr=- session=5a660600 turns=89`,
+# because the pull request url is scraped from a final answer the run never got
+# to give. The first version of the reader called that a lost cycle.
+
+def cut_off(sentence="You've hit your session limit · resets 4am (UTC)"):
+    """The real shape of a run stopped mid-work, at turn 89 rather than turn 1."""
+    return {"type": "result", "is_error": True, "num_turns": 89,
+            "api_error_status": 429, "result": sentence,
+            "terminal_reason": "api_error", "duration_ms": 1729034}
+
+
+def pr_entry(number, branch, created):
+    return {"number": number, "url": f"https://github.com/o/r/pull/{number}",
+            "headRefName": branch, "createdAt": created}
+
+
+def test_a_clean_exit_with_no_pull_request_really_did_ship_nothing(tmp_path):
+    path = write_log(tmp_path, "alexandria-engineer",
+                     "2026-10-25T11-06-03-756Z", "cron",
+                     completed(), exit_code=0, turns=25)
+    assert cf.pr_absence_is_evidence(cf.parse_run(path)) is True
+
+
+def test_a_refused_run_cannot_prove_it_shipped_nothing(tmp_path):
+    path = write_log(tmp_path, "alexandria-engineer",
+                     "2026-10-26T00-31-38-049Z", "message",
+                     cut_off(), exit_code=1, turns=89)
+    assert cf.pr_absence_is_evidence(cf.parse_run(path)) is False
+
+
+def test_a_run_with_no_trailer_at_all_cannot_prove_it_either(tmp_path):
+    path = write_log(tmp_path, "alexandria-engineer",
+                     "2026-10-26T00-31-38-049Z", "cron", trailer=False)
+    assert cf.pr_absence_is_evidence(cf.parse_run(path)) is False
+
+
+def test_a_trailer_that_names_a_pull_request_needs_no_judgement(tmp_path):
+    path = write_log(tmp_path, "alexandria-engineer",
+                     "2026-10-25T11-06-03-756Z", "cron",
+                     completed(), exit_code=0, turns=25, pr="x/pull/9")
+    assert cf.pr_absence_is_evidence(cf.parse_run(path)) is True
+
+
+def test_the_pull_request_list_settles_a_cut_off_slot(tmp_path):
+    write_log(tmp_path, "alexandria-engineer", "2026-10-26T00-31-38-049Z",
+              "cron", cut_off(), exit_code=1, turns=89)
+    runs = cf.read_runs(tmp_path)
+    index = [pr_entry(530, "alexandria-engineer/2026-10-26-message",
+                      "2026-10-26T00:33:05Z")]
+    result = cf.judge(runs, "2026-10-26", pr_index=index,
+                      now=datetime(2026, 10, 26, 6, tzinfo=UTC))
+    assert result["lost"] == []
+    finding = result["cut"][0]
+    assert finding["why"] == "session-limit"
+    assert finding["pr"] == "https://github.com/o/r/pull/530"
+    assert finding["pr_source"] == "pull request list"
+    assert finding["turns"] == 89
+
+
+def test_a_cut_off_cycle_is_not_counted_as_lost_and_is_still_reported(tmp_path, capsys):
+    write_log(tmp_path, "alexandria-engineer", "2026-10-26T00-31-38-049Z",
+              "cron", cut_off(), exit_code=1, turns=89)
+    index = tmp_path / "prs.json"
+    index.write_text(json.dumps([
+        pr_entry(530, "alexandria-engineer/2026-10-26-message",
+                 "2026-10-26T00:33:05Z")]))
+    code = cf.main(["--day", "2026-10-26", "--root", str(tmp_path),
+                    "--prs", str(index), "--now", "2026-10-26T06:00:00Z"])
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "cut      alexandria-engineer 00:31Z session-limit at turn 89" in out
+    assert "cut off after shipping" in out
+    assert "LOST" not in out
+
+
+def test_without_the_list_the_doubt_is_stated_rather_than_resolved(tmp_path, capsys):
+    write_log(tmp_path, "alexandria-engineer", "2026-10-26T00-31-38-049Z",
+              "cron", cut_off(), exit_code=1, turns=89)
+    code = cf.main(["--day", "2026-10-26", "--root", str(tmp_path),
+                    "--now", "2026-10-26T06:00:00Z"])
+    out = capsys.readouterr().out
+    assert code == 1, "an unsettled cycle is not silently green"
+    assert "LOST?" in out
+    assert "is not evidence" in out
+    assert "--prs to settle it" in out
+
+
+def test_a_silent_run_stays_silent_even_with_the_list(tmp_path, capsys):
+    """The state the ship-first rule exists to prevent must not be explained away.
+
+    A run that exited 0 and shipped nothing is `silent`, and a pull request
+    another run of the same seat opened in the same window must not be lent to
+    it. Only a run that was stopped gets resolved.
+    """
+    write_log(tmp_path, "alexandria-engineer", "2026-10-26T00-31-38-049Z",
+              "cron", completed(), exit_code=0, turns=25)
+    index = tmp_path / "prs.json"
+    index.write_text(json.dumps([
+        pr_entry(530, "alexandria-engineer/2026-10-26-message",
+                 "2026-10-26T00:33:05Z")]))
+    code = cf.main(["--day", "2026-10-26", "--root", str(tmp_path),
+                    "--prs", str(index), "--now", "2026-10-26T06:00:00Z"])
+    out = capsys.readouterr().out
+    assert code == 1
+    assert "LOST     alexandria-engineer 00:31Z silent" in out
+    assert "no pull request" in out
+
+
+def test_another_seats_pull_request_is_never_borrowed(tmp_path):
+    write_log(tmp_path, "alexandria-engineer", "2026-10-26T00-31-38-049Z",
+              "cron", cut_off(), exit_code=1, turns=89)
+    runs = cf.read_runs(tmp_path)
+    index = [pr_entry(531, "alexandria-pm/2026-10-26-message",
+                      "2026-10-26T00:34:34Z")]
+    result = cf.judge(runs, "2026-10-26", pr_index=index,
+                      now=datetime(2026, 10, 26, 6, tzinfo=UTC))
+    assert result["cut"] == []
+    assert result["lost"][0]["pr_unknown"] is True
+
+
+def test_the_bare_role_branch_prefix_still_matches(tmp_path):
+    """`engineer/2026-10-18-slug` is the older convention and it is still live."""
+    write_log(tmp_path, "alexandria-engineer", "2026-10-26T00-31-38-049Z",
+              "cron", cut_off(), exit_code=1, turns=89)
+    runs = cf.read_runs(tmp_path)
+    index = [pr_entry(481, "engineer/2026-10-26-slug", "2026-10-26T00:40:00Z")]
+    result = cf.judge(runs, "2026-10-26", pr_index=index,
+                      now=datetime(2026, 10, 26, 6, tzinfo=UTC))
+    assert result["cut"][0]["pr"].endswith("/481")
+
+
+def test_a_pull_request_opened_before_the_run_started_is_not_its_own(tmp_path):
+    write_log(tmp_path, "alexandria-engineer", "2026-10-26T00-31-38-049Z",
+              "cron", cut_off(), exit_code=1, turns=89)
+    runs = cf.read_runs(tmp_path)
+    index = [pr_entry(526, "alexandria-engineer/2026-10-25-cron",
+                      "2026-10-25T23:58:00Z")]
+    result = cf.judge(runs, "2026-10-26", pr_index=index,
+                      now=datetime(2026, 10, 26, 6, tzinfo=UTC))
+    assert result["cut"] == []
+
+
+def test_the_next_run_of_the_seat_closes_the_window(tmp_path):
+    """Two runs an hour apart must not both claim the later one's pull request."""
+    write_log(tmp_path, "alexandria-engineer", "2026-10-26T00-31-38-049Z",
+              "cron", cut_off(), exit_code=1, turns=89)
+    write_log(tmp_path, "alexandria-engineer", "2026-10-26T04-02-26-533Z",
+              "cron", cut_off(), exit_code=1, turns=40)
+    runs = cf.read_runs(tmp_path)
+    index = [pr_entry(536, "alexandria-engineer/2026-10-26-hook",
+                      "2026-10-26T04:10:00Z")]
+    result = cf.judge(runs, "2026-10-26", pr_index=index,
+                      now=datetime(2026, 10, 26, 8, tzinfo=UTC))
+    claimed = {f["slot"]: f["pr"] for f in result["findings"]}
+    assert claimed["00:31Z"] is None
+    assert claimed["04:02Z"].endswith("/536")
+
+
+def test_a_pull_request_past_the_longest_plausible_run_is_not_claimed(tmp_path):
+    """With no later run to bound it, the session window does the bounding."""
+    write_log(tmp_path, "alexandria-engineer", "2026-10-26T00-31-38-049Z",
+              "cron", cut_off(), exit_code=1, turns=89)
+    runs = cf.read_runs(tmp_path)
+    index = [pr_entry(540, "alexandria-engineer/2026-10-26-later",
+                      "2026-10-26T09:00:00Z")]
+    result = cf.judge(runs, "2026-10-26", pr_index=index,
+                      now=datetime(2026, 10, 26, 12, tzinfo=UTC))
+    assert result["cut"] == []
+
+
+def test_an_unreadable_pull_request_file_is_a_note_and_not_a_traceback(tmp_path, capsys):
+    write_log(tmp_path, "alexandria-engineer", "2026-10-26T00-31-38-049Z",
+              "cron", cut_off(), exit_code=1, turns=89)
+    code = cf.main(["--day", "2026-10-26", "--root", str(tmp_path),
+                    "--prs", str(tmp_path / "nope.json"),
+                    "--now", "2026-10-26T06:00:00Z"])
+    captured = capsys.readouterr()
+    assert code == 1
+    assert "LOST?" in captured.out
+    assert "could not be read" in captured.err
+
+
+def test_the_json_surface_carries_the_cut_state_too(tmp_path, capsys):
+    write_log(tmp_path, "alexandria-engineer", "2026-10-26T00-31-38-049Z",
+              "cron", cut_off(), exit_code=1, turns=89)
+    index = tmp_path / "prs.json"
+    index.write_text(json.dumps([
+        pr_entry(530, "alexandria-engineer/2026-10-26-message",
+                 "2026-10-26T00:33:05Z")]))
+    cf.main(["--day", "2026-10-26", "--root", str(tmp_path), "--json",
+             "--prs", str(index), "--now", "2026-10-26T06:00:00Z"])
+    payload = json.loads(capsys.readouterr().out)
+    assert [f["state"] for f in payload["findings"]] == ["cut"]
+    assert payload["cut"][0]["why"] == "session-limit"

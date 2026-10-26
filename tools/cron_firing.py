@@ -6,6 +6,9 @@
     python3 tools/cron_firing.py --seat alexandria-engineer
     python3 tools/cron_firing.py --json                  # the verdict as a script reads it
     python3 tools/cron_firing.py --root /path/to/logs    # for tests and for other hosts
+    gh pr list --state all --limit 200 \
+      --json number,url,headRefName,createdAt > /tmp/prs.json
+    python3 tools/cron_firing.py --prs /tmp/prs.json      # settles a cut-off run's shipping
 
 Exit 0 when every cron slot that came due on the day either shipped something
 or was never on the clock. Exit 1 when one fired and produced nothing, which
@@ -43,6 +46,13 @@ one answers three.
     The slot fired and the run reached a pull request. The trailer the host
     writes is `# exit=0 pr=<url>`, so this is read rather than inferred.
 
+`cut`
+    The slot fired, the run opened a pull request, and something cut it off
+    before it finished. The cycle delivered its work and did not deliver its
+    report, which is a different thing from a lost cycle and has to be named
+    separately, because the next run of the seat has to continue it rather
+    than start it again.
+
 `lost`
     The slot fired and the run reached no pull request. The reason is carried
     with it: `weekly-limit` and `session-limit` are the provider's two refusals,
@@ -59,6 +69,30 @@ one answers three.
     absence, and this file cannot tell them apart. It is reported as a question
     carrying the evidence that formed it: the days the slot did fire. A seat
     that reads it can go and look.
+
+## Why `pr=-` is not the same fact as "shipped nothing"
+
+The trailer's pull request field is scraped from what a run says when it
+finishes, so a run that never finishes never names its pull request and the
+host writes `pr=-`. That absence is trustworthy for a run that ended under its
+own control and worthless for a run that was cut off, and the ship-first rule
+in every charter is what makes the difference matter: a seat opens its draft
+pull request in its first few turns precisely so that a run dying at turn 90
+still delivers.
+
+This file's first version read `pr=-` as "no pull request" in both cases, and
+the run that found it was its own. On 2026-10-26 at 00:31:38Z this seat's
+message run opened pull request 530 at 00:33:05Z, built the day's work on it,
+and was refused at turn 89 by the provider's session limit. Its trailer is
+`# exit=1 pr=- session=5a660600 turns=89`. The first version called that a lost
+cycle. The cycle had in fact shipped 1,849 lines, and the next run of the seat
+read them and carried them forward, which is the ship-first rule working
+exactly as written and an instrument that could not see it.
+
+So the absence is only evidence when the run ended cleanly, which is
+`pr_absence_is_evidence`. When it is not evidence, this file says so rather
+than guessing, and `--prs` settles it from the pull request list the repository
+can already produce.
 
 ## What it reads out of a log, and what it refuses to read
 
@@ -105,6 +139,12 @@ LOG_ROOT = pathlib.Path("/srv/asc/state/.epito/logs")
 # How long after a run starts its missing trailer still means "working"
 # rather than "killed". See `verdict_of`.
 GRACE_MINUTES = 90
+
+# How long a run can plausibly still be the one that opened a given pull
+# request. See `resolve_shipped`. Four hours is bounded by the provider's own
+# session window, which is five hours: a run cut off by the session limit
+# cannot have been running longer than the session it exhausted.
+MAX_RUN_HOURS = 4
 
 UTC = timezone.utc
 
@@ -256,8 +296,109 @@ def _slot_label(minute):
     return f"{minute // 60:02d}:{minute % 60:02d}Z"
 
 
-def verdict_of(run, now=None, grace_minutes=GRACE_MINUTES):
-    """`shipped`, `in-flight`, or the one word for why no pull request.
+def pr_absence_is_evidence(run):
+    """Does `pr=-` mean this run shipped nothing, or only that it never said.
+
+    The host scrapes the pull request out of a run's final answer, so the field
+    is absent for two different reasons and they need telling apart. A run that
+    exited 0 with no error chose to stop, and if it had opened a pull request it
+    would have named it, so `pr=-` is evidence: that is `silent`, incident 3's
+    failure mode. A run that was refused, errored, exited non-zero or left no
+    trailer at all was stopped, and under the ship-first rule its draft pull
+    request is more likely open than not, so `pr=-` is evidence of nothing.
+
+    A run with a url needs no judgement, which is why that case answers True:
+    there is no absence to weigh.
+    """
+    if run["pr"]:
+        return True
+    if run["truncated"]:
+        return False
+    return (not run["refusal"]
+            and not run["api_error_status"]
+            and run["exit_code"] == 0)
+
+
+def _branch_prefixes(seat):
+    """The branch prefixes a seat's own pull requests use.
+
+    Seat directories are named `alexandria-engineer` and today's branches are
+    `alexandria-engineer/2026-10-26-hook`, but the convention in this
+    repository's history is the bare role, `engineer/2026-10-18-slug`, and both
+    are still in the pull request list. Matching on either is what makes a
+    reading of an older day work.
+    """
+    prefixes = {seat}
+    if "-" in seat:
+        prefixes.add(seat.split("-", 1)[1])
+    return prefixes
+
+
+def resolve_shipped(runs, pr_index, max_run_hours=MAX_RUN_HOURS):
+    """Fill in the pull request a cut-off run opened and never got to name.
+
+    `pr_index` is what `gh pr list --json number,url,headRefName,createdAt`
+    prints, which is a list of dicts. A pull request belongs to a run when its
+    branch carries the seat's prefix and it was created after that run started
+    and before whichever came first: the seat's next run, or `max_run_hours`.
+    Both bounds are needed. The next run is the tight one and it does not exist
+    for the newest run of a seat, which is exactly the run a reading of today
+    asks about.
+
+    Only runs whose absence is not evidence are resolved, so a `silent` run
+    stays silent. Nothing here is a fallback for a trailer that already has a
+    url; a url the host wrote is better evidence than a timestamp match.
+    """
+    if not pr_index:
+        return runs
+    by_seat = {}
+    for run in runs:
+        by_seat.setdefault(run["seat"], []).append(run)
+
+    for seat, seat_runs in by_seat.items():
+        seat_runs.sort(key=lambda r: r["started"])
+        prefixes = _branch_prefixes(seat)
+        candidates = []
+        for entry in pr_index:
+            branch = entry.get("headRefName") or ""
+            if not any(branch.startswith(f"{prefix}/") for prefix in prefixes):
+                continue
+            created = _parse_iso(entry.get("createdAt"))
+            if created is not None:
+                candidates.append((created, entry))
+        candidates.sort()
+
+        for index, run in enumerate(seat_runs):
+            if pr_absence_is_evidence(run):
+                continue
+            opens = run["started"]
+            closes = opens + timedelta(hours=max_run_hours)
+            if index + 1 < len(seat_runs):
+                closes = min(closes, seat_runs[index + 1]["started"])
+            for created, entry in candidates:
+                if opens <= created < closes:
+                    run["pr"] = entry.get("url") or f"#{entry.get('number')}"
+                    run["pr_source"] = "pull request list"
+                    break
+    return runs
+
+
+def _parse_iso(stamp):
+    """`2026-10-26T00:33:05Z` as an aware datetime, or None.
+
+    GitHub writes `Z` and `datetime.fromisoformat` did not accept it before
+    3.11, so the replacement is not decoration.
+    """
+    if not stamp:
+        return None
+    try:
+        return datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def reason_of(run, now=None, grace_minutes=GRACE_MINUTES):
+    """Why this run stopped, or None when it stopped on its own terms.
 
     A log with no trailer is a run the host has not finished writing, and from
     the log alone a run still working and a run killed mid-turn are the same
@@ -270,9 +411,12 @@ def verdict_of(run, now=None, grace_minutes=GRACE_MINUTES):
     purpose: the cost of calling a live run lost is a false alarm in every
     report, and the cost of waiting is that a killed run is named in the next
     reading rather than this one.
+
+    This is separate from the verdict because a run can stop badly and still
+    have shipped. Reading the two as one question is what made a cut-off run
+    that opened a pull request indistinguishable from a cycle that produced
+    nothing.
     """
-    if run["pr"]:
-        return "shipped"
     if run["refusal"]:
         return run["refusal"]
     if run["api_error_status"]:
@@ -283,17 +427,38 @@ def verdict_of(run, now=None, grace_minutes=GRACE_MINUTES):
         return "in-flight" if age < grace_minutes else "no-trailer"
     if run["exit_code"]:
         return "nonzero-exit"
-    return "silent"
+    return None
 
 
-def judge(runs, day, tolerance=15, history_days=14, now=None):
-    """What every cron slot that came due on `day` did, in the three states.
+def verdict_of(run, now=None, grace_minutes=GRACE_MINUTES):
+    """`shipped`, `in-flight`, or the one word for why the run stopped.
+
+    A run with a pull request and no reason to have stopped is `shipped`. A run
+    with a pull request and a reason is reported under that reason, and `judge`
+    reads the pair as `cut`: it delivered the work and not the report. A run
+    with no pull request and no reason is `silent`, which is the worst state in
+    the file and the one the ship-first rule exists to prevent.
+    """
+    reason = reason_of(run, now=now, grace_minutes=grace_minutes)
+    if run["pr"]:
+        return "shipped" if reason is None else reason
+    return reason or "silent"
+
+
+def judge(runs, day, tolerance=15, history_days=14, now=None, pr_index=None):
+    """What every cron slot that came due on `day` did, in the four states.
 
     `tolerance` is how many minutes apart two firings can be and still be the
     same slot. The host's own record is tight, 11:06:03 against 11:06:07 on
     consecutive days, so fifteen minutes is loose enough to absorb a queue and
     far short of the twelve hours between this seat's two slots.
+
+    `pr_index` is optional and it is what settles a cut-off run: without it a
+    run whose trailer says `pr=-` for a reason that is not evidence is reported
+    as lost with that doubt stated, and with it the same run is reported as
+    `cut` naming the pull request it opened.
     """
+    runs = resolve_shipped(runs, pr_index)
     day_runs = [r for r in runs if r["day"] == day]
     asked = datetime.strptime(day, "%Y-%m-%d").replace(tzinfo=UTC)
     now = now or datetime.now(UTC)
@@ -310,15 +475,20 @@ def judge(runs, day, tolerance=15, history_days=14, now=None):
         if run["trigger"] != "cron":
             continue
         verdict = verdict_of(run, now=now)
+        state = {"shipped": "shipped",
+                 "in-flight": "in-flight"}.get(verdict)
+        if state is None:
+            state = "cut" if run["pr"] else "lost"
         findings.append({
             "seat": run["seat"],
             "slot": _slot_label(slot(run)),
-            "state": {"shipped": "shipped",
-                      "in-flight": "in-flight"}.get(verdict, "lost"),
+            "state": state,
             "why": verdict,
             "run_id": run["run_id"],
             "turns": run["turns"],
             "pr": run["pr"],
+            "pr_source": run.get("pr_source", "trailer" if run["pr"] else None),
+            "pr_unknown": not pr_absence_is_evidence(run),
         })
 
     fired = {(r["seat"], slot(r)) for r in day_runs if r["trigger"] == "cron"}
@@ -346,6 +516,7 @@ def judge(runs, day, tolerance=15, history_days=14, now=None):
         "day": day,
         "findings": findings,
         "lost": [f for f in findings if f["state"] == "lost"],
+        "cut": [f for f in findings if f["state"] == "cut"],
         "history_days": history_days,
     }
 
@@ -368,11 +539,24 @@ def render(result, root):
             lines.append(f"  running  {finding['seat']} {finding['slot']} "
                          f"no trailer yet, and young enough that the run is "
                          f"more likely working than killed")
+        elif finding["state"] == "cut":
+            turns = finding["turns"]
+            turns = f" at turn {turns}" if turns else ""
+            lines.append(f"  cut      {finding['seat']} {finding['slot']} "
+                         f"{finding['why']}{turns}, after opening "
+                         f"{finding['pr']} ({finding['pr_source']}). The work "
+                         f"shipped and the report did not")
         elif finding["state"] == "lost":
             turns = finding["turns"]
             turns = f", {turns} turn{'' if turns == 1 else 's'}" if turns else ""
-            lines.append(f"  LOST     {finding['seat']} {finding['slot']} "
-                         f"{finding['why']}{turns}, no pull request")
+            if finding["pr_unknown"]:
+                lines.append(f"  LOST?    {finding['seat']} {finding['slot']} "
+                             f"{finding['why']}{turns}. The run was stopped "
+                             f"rather than finished, so `pr=-` is not evidence "
+                             f"it shipped nothing. Pass --prs to settle it")
+            else:
+                lines.append(f"  LOST     {finding['seat']} {finding['slot']} "
+                             f"{finding['why']}{turns}, no pull request")
         else:
             days = ", ".join(finding["evidence"])
             lines.append(f"  unseen   {finding['seat']} {finding['slot']} "
@@ -383,6 +567,11 @@ def render(result, root):
         lines.append(f"{len(result['lost'])} cycle(s) lost. A cron slot that "
                      f"fires and produces nothing is the cadence failing while "
                      f"the firing record says it worked.")
+    if result.get("cut"):
+        lines.append("")
+        lines.append(f"{len(result['cut'])} cycle(s) cut off after shipping. "
+                     f"The next run of that seat continues the open pull "
+                     f"request rather than starting the work again.")
     return "\n".join(lines)
 
 
@@ -396,6 +585,16 @@ def main(argv=None):
                         help="the host's log directory")
     parser.add_argument("--history-days", type=int, default=14,
                         help="how far back to look for a slot's other firings")
+    parser.add_argument("--now", default=None,
+                        help="an ISO stamp to read the day as of, rather than "
+                             "the wall clock. The grace window in `reason_of` "
+                             "makes one verdict a function of the time of "
+                             "asking, so a reading that has to be reproduced "
+                             "needs the clock pinned")
+    parser.add_argument("--prs", default=None,
+                        help="a file of `gh pr list --json "
+                             "number,url,headRefName,createdAt` output, which "
+                             "settles whether a cut-off run shipped")
     parser.add_argument("--json", action="store_true",
                         help="the verdict as a script reads it")
     args = parser.parse_args(argv)
@@ -411,7 +610,24 @@ def main(argv=None):
               if args.json else message)
         return 0
 
-    result = judge(runs, day, history_days=args.history_days)
+    pr_index = None
+    if args.prs:
+        try:
+            pr_index = json.loads(pathlib.Path(args.prs).read_text())
+        except (OSError, ValueError) as exc:
+            # A bad index must not turn a reading into a traceback. The reading
+            # without it is still correct, it is only less decided, and saying
+            # so beats failing.
+            print(f"note: --prs could not be read ({exc}), so a cut-off run "
+                  f"stays unsettled", file=sys.stderr)
+
+    now = _parse_iso(args.now) if args.now else None
+    if args.now and now is None:
+        print(f"note: --now {args.now!r} is not an ISO stamp, so the wall "
+              f"clock stands", file=sys.stderr)
+
+    result = judge(runs, day, history_days=args.history_days,
+                   pr_index=pr_index, now=now)
     print(json.dumps(result, indent=2, default=str) if args.json
           else render(result, root))
     return 1 if result["lost"] else 0
