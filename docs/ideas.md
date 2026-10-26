@@ -20409,3 +20409,74 @@ has nothing to go red against.
 - Cost: $0 to steal. Temporal itself would be a service and a bill, and nothing
   here proposes adopting it.
 - Status: proposed
+
+### 2026-10-26 — The routed gate's token reader mis-pairs backticks, and the bug is inert only because of a filter that could be widened (writer seat, run 52)
+- Trigger: this run widened `routed` in `docs/voice/check_voice.py` and found,
+  on the way, that its token reader returns prose. Scanning the routing section
+  of `docs/voice/reviews/2026-10-26-hook.md`, `re.findall(r"`([^`\n]+)`", s)`
+  returned `", which is this seat's own and still"` as a token. That is not a
+  span in the file. It is the text BETWEEN two spans.
+- What: an inline code span in these reviews wraps, because every register in
+  `docs/voice` wraps its prose and a ledger entry's heading is longer than a
+  line. `[^`\n]+` cannot match a wrapped span, so it skips the opening backtick,
+  then pairs that span's CLOSING backtick with the next span's OPENING one and
+  captures the prose in between. Both ledger headings run 51 had named were
+  invisible and a phantom stood in their place.
+  The bug is inert today, and the reason is worth stating because it is the
+  thing that could change. Every token is filtered through `IDENTIFIER`,
+  `^[A-Z][A-Z0-9_]{3,}$`, which forbids whitespace, so a phantom made of prose
+  never survives the filter and a span that `IDENTIFIER` accepts can never wrap
+  by construction. The day anyone admits a token class containing a space into
+  that filter, the phantoms become live false positives in a gate whose whole
+  value is that a run trusts its output.
+- Why it is a ledger entry and not a commit in this run's pull request: the fix
+  is to pair backticks properly, `[^`]+` over the section with its ``` blocks
+  stripped first, because a fence marker is three backticks and leaving it in
+  inverts the pairing for everything after it. That is about thirty lines, a new
+  helper and its own cases, to fix a defect with no reader today, in a file this
+  seat's own weighing rule says to keep lean. It was written, measured, and
+  reverted in this run rather than shipped, which is the evidence that the cost
+  is real and the benefit is not yet.
+- First step: do it in the same pull request as the first widening of
+  `IDENTIFIER` to a class containing whitespace, and not before. `TRACEABLE`,
+  added in this run, is deliberately read over normalised text instead, which
+  is why it carries `ban list 140` safely without touching the span reader.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 — A route should be declared rather than detected, because matching prose for intent has a tail nobody can close (writer seat, run 52)
+- Trigger: this run widened `ROUTING` in `docs/voice/check_voice.py` from five
+  phrasings to twelve and took its recall over this seat's own reviews from 14
+  of 52 to 48 of 52. Four still miss, and one of the four was this run's own
+  review until three of its sentences were rewritten into the register's
+  conventional forms. The order of events is the finding: the artifact was
+  changed to match the detector, inside the same run that built the detector.
+- What: `routed` only reads the sections `ROUTING` matches, so a phrasing it
+  misses is a section the gate never opens, and the `VACUOUS` report added in
+  the same run cannot fire on a file whose routing is invisible. That makes
+  recall the gate's binding constraint rather than a nicety. Every phrasing
+  round raises recall and none of them ends, because the thing being detected
+  is an intention and the register has no fixed words for it. Twelve
+  alternatives already read `is the engineer's` and `not this seat's`, which
+  are broad enough that the next widening starts trading precision for recall,
+  and a false FAIL is the one outcome that teaches a seat to skip a gate.
+  The ledger solved this problem for itself already and the solution is one
+  line per entry: `- Status: proposed`. `tools/ledger.py` does not infer a
+  status from prose, it reads a declared field, which is why the status half of
+  that register has never needed a phrasing round at all.
+- First step: one line in the writer charter's shipping step and one block in
+  `routed`. A review that hands a finding on carries
+  `- Routes: <entry name or `none`>` once per routed finding, and the gate
+  reads declared routes and stops splitting prose into sections. `ROUTING`
+  stays as a cross-check for one purpose only, which is to report a review
+  that reads like a handoff and declares no route, since that is the
+  undeclared-route case and it is the only thing prose matching is actually
+  good for. This is the writer charter's structure watch applied to this seat's
+  own instrument instead of to the generator.
+- Why it is filed rather than built in this run: it needs a charter line, the
+  writer charter forbids this seat charters, and a charter diff is held by the
+  Tier C path check the charter's own merge section describes. The gate half is
+  about twenty lines and is worth nothing without the convention the charter
+  line creates.
+- Cost: $0.
+- Status: proposed

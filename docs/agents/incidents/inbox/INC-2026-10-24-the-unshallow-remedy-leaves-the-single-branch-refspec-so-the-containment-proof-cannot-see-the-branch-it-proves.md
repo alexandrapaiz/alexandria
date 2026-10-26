@@ -228,3 +228,54 @@ in none of them, and the charter that paid for it this time is the same writer
 charter that paid for it on 2026-10-24. One seat has now met this defect twice,
 two days apart, through the same clause, and the second time it cost the pull
 request rather than a comparison.
+
+### Fifth sighting, 2026-10-26, writer seat again, and a one-line discriminator
+
+Recorded under the standing rule at the top of the register. This is the fifth
+sighting, the third through the writer charter's clause, and the second inside
+one calendar day: the fourth sighting above is run 51 of this seat and this is
+run 52, woken by the merge of run 51's own pull request.
+
+The sequence was identical and the cost was the same three turns at the
+ship-first step. `git rev-parse --is-shallow-repository` printed `true`,
+`git fetch --unshallow` succeeded, `git push -u origin <branch>` printed
+`branch '<branch>' set up to track '<branch>'` and exited zero, and
+`gh pr create --draft` then aborted with "you must first push the current
+branch to a remote". Every command reported success, including the push whose
+tracking config `gh` went on to find missing.
+
+**What this sighting adds, because the four above have the diagnosis and none
+of them has a test.** The defect is one line of config and it can be read
+directly rather than inferred from `gh`'s misleading abort:
+
+    git config --get-all remote.origin.fetch
+    +refs/heads/main:refs/remotes/origin/main      # the defect, in one line
+
+A clone in this state is the one whose refspec names a single branch instead of
+`+refs/heads/*:refs/remotes/origin/*`. The sharpest confirmation is a pair of
+commands that disagree, which is worth having because each alone looks fine:
+
+    git ls-remote origin 'refs/heads/<branch>'     # the sha: it IS pushed
+    git rev-parse --symbolic-full-name '@{u}'      # exits 128: no tracking ref
+    # fatal: upstream branch '<branch>' not stored as a remote-tracking branch
+
+That second message is the true cause and `gh` never prints it. A seat that
+reads it knows in one command that the branch is on GitHub and that the local
+clone cannot name it, which is precisely the state in which the charter's
+containment proof, `git log --oneline origin/<older-branch> ^HEAD`, exits 128
+while printing the nothing it is required to print.
+
+The repair used here was the narrower pair, equivalent to the entry's
+`git remote set-branches origin '*'`:
+
+    git config --unset-all remote.origin.fetch
+    git config --add remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
+    git fetch origin                               # 2 remote branches before, 166 after
+
+No charter was edited to prevent the sixth, and this run cannot edit one: the
+remedy is a line in twelve `prompts/*-agent.md` files, the writer charter
+forbids this seat charters, and a charter diff is held by the Tier C path check
+the charter's own merge section describes. The ledger entry that owns the fix is
+named in this run's review rather than re-described here, and it is
+`2026-10-24 — The deepening needs a third command, and the containment proof
+needs its exit status read`, still `proposed` on its third day.

@@ -3136,13 +3136,41 @@ TOO_BROAD = 2
 TRACEABLE = re.compile(r"INC-\d{4}-\d{2}-\d{2}-[a-z0-9-]+"
                        r"|ban list(?: entry)? \d+", re.I)
 
-#: The sentences that say a finding is being handed to another seat. Taken from
-#: this seat's own reviews, which have used all of these.
+#: The seats a finding can be handed to, which is every seat but this one plus
+#: the two authorities above them.
+SEATS = r"engineer|frontend|exo|pm|research|skill|owner|chair"
+
+#: The sentences that say a finding is being handed to another seat. The first
+#: version of this took five phrasings from the reviews that existed when the
+#: gate was written, and five is not how many this seat uses. Measured over all
+#: 55 reviews in `docs/voice/reviews` on 2026-10-26, 52 of them hand something
+#: on and the five phrasings found 14. Everything below `in the ledger for the`
+#: is the widening, and it takes the same measurement to 47 of 52.
+#:
+#: That recall number is why the widening is not cosmetic. `routed` reads only
+#: the sections this pattern matches, so a phrasing it misses is a section the
+#: gate never opens, and the `VACUOUS` report added in the same run as this
+#: widening cannot fire on a file whose routing the pattern cannot see. The
+#: specimen was this run's own review, which routed two findings and which the
+#: five phrasings called a review that "routes nothing".
+#:
+#: The recurring forms the five missed, all of them live in this register:
+#: "Filed in `docs/ideas.md`", "Filed, not patched", "filed rather than
+#: anchored", "is filed as urgent", "The cause is the engineer's", "retiring it
+#: is the frontend seat's call", and "not this seat's file to renumber".
 ROUTING = re.compile(
-    r"routed rather than patched|filed rather than patched"
-    r"|rout(?:ed|es?) (?:it |them |both )?to the ledger"
-    r"|(?:goes|go) to the ledger|filed in the ledger"
-    r"|in the ledger for the engineer", re.I)
+    r"(?:fil|rout)(?:ed|es|ing) (?:rather than|and not|not) "
+    r"(?:patched|anchored|fixed|acted)"
+    r"|fil(?:ed|es|ing)(?:,| it| them)? (?:not|rather than) patched"
+    r"|fil(?:ed|es|ing) (?:in|for) (?:the ledger|`?docs/ideas)"
+    r"|fil(?:ed|es|ing) elsewhere"
+    r"|fil(?:ed|es|ing) for the (?:" + SEATS + r")"
+    r"|rout(?:ed|es?) (?:it |them |both )?to the (?:ledger|" + SEATS + r")"
+    r"|(?:goes|go) to the (?:ledger|" + SEATS + r")"
+    r"|in the ledger for the (?:" + SEATS + r")"
+    r"|is the (?:" + SEATS + r")(?:\'s| seat\'s)"
+    r"|(?:is|are) not this seat\'s"
+    r"|escalat\w+ (?:rather than|in|to) ", re.I)
 
 
 #: What `routed_tokens` must and must not pull out of a routing section. The
@@ -3181,6 +3209,30 @@ ROUTED_CASES = (
 )
 
 
+#: What `ROUTING` must and must not read as handing a finding on. Every true
+#: case is a sentence taken verbatim from a review in this register, and the
+#: first five are forms the original five phrasings missed. The false cases are
+#: the shapes that look like a route and are not: a finding this run FIXED, a
+#: count of rulings in a gate's own output, and a sentence about this seat's own
+#: file, which is the lane rather than a handoff.
+ROUTING_CASES = (
+    (True, "Filed in `docs/ideas.md` for the engineer, with the query fix."),
+    (True, "Filed, not patched. For the engineer."),
+    (True, "all 49 anchored entries, with 43 and 44 filed rather than anchored"),
+    (True, "The cause is the engineer's, is filed as urgent, and is not "
+     "restated here."),
+    (True, "retiring it is the frontend seat's call, not this run's"),
+    (True, "docs/agents/incidents.md, which is not this seat's file to "
+     "renumber"),
+    (True, "Law 8's form half goes to the engineer instead."),
+    (True, "routed rather than patched, about `INTENSIFIERS`"),
+    (False, "The procedure now renders as a list, which is the one prompt "
+     "patch in this diff."),
+    (False, "`check_voice.py taste` reports 31 rulings, 27 enforced and "
+     "quoted."),
+    (False, "The generator is this seat's own surface and the patch is here."),
+)
+
 #: What `entry_name` must strip and must keep. The first is run 51's entry,
 #: the specimen that proved the matcher wrong. The last two are the shapes
 #: that would break if the pattern were greedy or unanchored: a title whose
@@ -3217,6 +3269,9 @@ def routed_cases():
     for head, want in NAME_CASES:
         if entry_name(head) != want:
             bad.append((want, entry_name(head)))
+    for want, line in ROUTING_CASES:
+        if bool(ROUTING.search(line)) != want:
+            bad.append((want, line))
     return bad
 
 
@@ -3309,6 +3364,7 @@ def routed(ref=None):
         return 1
     print(f"  the token cases               {len(ROUTED_CASES)} pass")
     print(f"  the entry-name cases          {len(NAME_CASES)} pass")
+    print(f"  the routing cases             {len(ROUTING_CASES)} pass")
     out = subprocess.run(["git", "diff", "--name-status", ref],
                          cwd=ROOT, capture_output=True, text=True)
     reviews = []
