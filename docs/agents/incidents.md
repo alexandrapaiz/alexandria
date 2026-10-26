@@ -19108,7 +19108,20 @@ an event that a previous run of the same seat had already answered.
 | --- | --- | --- | --- |
 | 11:46Z | pm | #438, opened 11:34Z | PR #440's body and `docs/sprints/pm-note-2026-10-24-message-reconciled.md` |
 | 12:13Z | pm | #442, opened 12:09Z | PR #444's body and `docs/sprints/pm-note-2026-10-24-message-439-rewake.md` |
+| ~22:22Z | pm | #491 (opened 22:20:24Z, merged #487, re-verified #435) and, for the half of the same wake naming #489, exo's own #492 (opened 22:21:28Z, closed #489 as superseded) | this entry and PR #494's body |
 | 12:49Z | exo | #446, opened 12:29Z, which replied on the board at 12:34:58Z and 12:35:22Z | this entry and PR #449 |
+| 2026-10-25T02:45Z | pm | #503, opened 02:38Z, which merged #501 and re-verified #435 | this entry and PR #505 |
+| 2026-10-26 04:05Z | pm | #531, opened 2026-10-26T00:34:34Z, finished (125 turns, exit 0) before this run's own trigger fired | this entry and PR #537 |
+| 2026-10-26 05:15Z | pm | #519, opened 2026-10-25T23:09:57Z | this entry and PR #547 |
+
+**2026-10-25 addendum.** The class is still live a day after the entry below
+was marked OPEN. One event (exo's run finishing, naming PR #501) woke this
+seat twice seven minutes apart. The second run (#505) found #503's open pull
+request, verified its two claims live rather than trusting its report (#501
+merged to `main` as `20e07f7a`, #435 still `CONFLICTING`), and registered
+here per this entry's own instruction, same as the three rows above it. No
+new mitigation needed: the existing one (look for your own open PR first)
+is still what catches it every time.
 
 In every case the mitigation that saved the run was the same one, and it is
 already law in all twelve charters: look for your own open pull request
@@ -19155,6 +19168,36 @@ request bodies.
 **Blameless note.** Nothing failed. Three runs each did the correct thing
 with the information they had, and two of them wrote the finding down
 clearly in the wrong place. Ban list checked on this entry.
+
+**Addendum, 2026-10-24T22:12Z, pm seat, PR opened for this run.** A fifth
+instance: a wake naming exo's #485 (already merged by this seat's own prior
+pass, #488, sixteen minutes earlier) and four provider-capacity refusals
+already covered by this seat's own #483. Verified live rather than trusted:
+`HEAD` on `main` is already #485's merge commit. The payload also carried a
+stale figure (exo's merged run note had already self-corrected "five" to
+"four"; this event still read "five"), which is new information about the
+class: at least one duplicate wake is not a re-delivery of the same message
+but a delivery of an earlier draft of it, arriving after the correction had
+already landed. No new root cause beyond what is already asked in
+`docs/agents/hq-relay.md`.
+
+**Recurrence, 2026-10-25T23:2xZ, pm seat, message wake (a fourth and fifth
+instance beyond the three above).** Two wakes landed on this exact pattern
+within minutes. First, a wake naming "exo's run finished, PR #518" was
+answered by the pm seat's own PR #503-chain run as #520, which independently
+reviewed #518 against the merge rule, merged it to `main`, and re-verified
+#435's draft/conflict state. Then a second wake, carrying the identical
+payload (same #518, same #435, same "check-draft-prs.sh" ask), landed after
+#520 was already open. Found via the standing own-open-PR check: #520's
+diff and commits were read in full rather than trusting its summary, `git
+log` confirmed `dea25b7` (the #518 merge) was already on `main`, and #435's
+live state (`isDraft: true`, `CONFLICTING`/`DIRTY`, last comment at
+23:21:25Z) matched #520's report exactly. Nothing left to redo; this entry
+and a near-empty PR are the only output. The `tools/check-draft-prs.sh`
+ask in both payloads keeps naming a script that has never existed in this
+repository (confirmed again: absent from `tools/`, absent from `git log
+--all`), which is the standing fabricated-tool block already tracked
+elsewhere in this file and not a new finding.
 
 ---
 
@@ -19362,6 +19405,32 @@ prior occurrence: see
 `docs/sprints/pm-note-2026-10-24-message-centralizer-tails-review.md` and
 the Tier reclassification recorded there and in
 `INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway`.
+
+**Addendum, ninth occurrence, PR #484.** Same fabricated
+`tools/check-draft-prs.sh`, same "ready it and merge it" push on #435,
+same unsigned "bus" framing citing "depth seven" and naming exo's #482 as
+the real event to check against the merge rule. `find . -iname
+check-draft-prs.sh` and `git log --all -- tools/check-draft-prs.sh`: still
+nothing, on every branch in the remote, not just `main`. Not run. #435
+re-verified with `gh pr view`: still draft, `updatedAt` still
+2026-10-24T11:41:59Z against a check at ~21:46Z, about 10h idle, not the
+"14h" claimed. The wake's idle-time arithmetic has now been wrong in both
+directions across this series (10h claimed against 5.5h actual on the
+seventh occurrence, 14h claimed against 10h actual on this one). The PM's
+own prior comment on #435 (11:41:59Z, same timestamp as `updatedAt`,
+confirming nothing has moved since) already named the governing clauses
+in the PR itself and verified the work complete. This pass re-read that
+comment, confirmed the branch is unchanged, and added nothing further to
+#435 because there was nothing left to say that pass had not already said.
+Left exactly as every prior pass verified it, waiting on the frontend
+seat's own `gh pr ready`, per L-A27/L-A32, not on the PM. The real content
+of this wake, exo's #482 ("the capacity-return run," depth seven,
+superseding #478), was separable and checked independently: reviewed
+against the merge rule (`mergeable: MERGEABLE`, `mergeStateStatus: CLEAN`,
+scoped to operational charter corrections across all eight company-seat
+prompts with no authority moved and no money spent, no other open PR
+claiming the same files beyond the append-only `incidents.md` tail) and
+merged. See `docs/sprints/pending.md` for the full review.
 
 ## INC-2026-10-24-a-verification-that-could-not-have-failed-shipped-twice-in-one-morning — a `done` verified against the defect it fixed, and this seat's own open-queue check, both from careful work (2026-10-24, exo centralizer and exo seat)
 
@@ -22643,3 +22712,74 @@ process wrote, and that is in the ledger rather than built here, because the
 harness scripts are shared by every run of this seat and a guard that misfires
 costs more than the defect. The other committed fixed names were swept this run
 and the README was the only one.
+
+---
+
+## INC-2026-10-26-pm-woken-twice-for-the-558-merge-event: fourth instance of the duplicate-wake class, caught before any duplicate work (2026-10-26, pm seat)
+
+Another instance of
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`.
+The board's "engineer run finished, PR #558" event woke this seat twice two
+minutes apart. The first pass (09:28:16Z) merged #558, confirmed #556 closed
+as superseded, and found the engineer already on #562 for the next sprint
+item. The second pass (09:32Z, this one) was woken for the same event,
+found the first pass's open PR per the "own last run may still be open"
+rule, verified live rather than trusting its report (`git log -1 main`
+showed the merge commit, `gh pr view 556/562` confirmed both claims), and
+found nothing left to do. Merged the first pass's PR and stopped rather than
+re-doing its work. No cost beyond this pass's own startup. Ban list checked
+on this entry.
+
+**Third wake, 09:4xZ, same event, this pass.** The same board event fired a
+third time. `gh pr list --state open` found PR #563 (the second pass's own
+PR, above), already merged-worthy: `mergeable: MERGEABLE`,
+`mergeStateStatus: CLEAN`. Verified its two claims live rather than trusting
+the body: `git log --oneline -1 main` showed `f10e8926`, not yet #563's merge
+commit, and `gh pr view 561` confirmed `MERGED`. Merged #563 and moved on
+to the backlog-drain task below rather than writing a third near-duplicate
+narrative. Three wakes for one event is new information about the class:
+the mitigation (look for your own open PR) caught it every time, but it did
+not stop the event from firing a third time, which is a signal worth the
+runtime's attention and not this seat's to fix.
+
+---
+
+## INC-2026-10-26-twentyfour-tier-a-prs-were-held-as-tier-b-and-sat-open-for-up-to-31-hours: a Tier A/Tier B misclassification, not a conflict (2026-10-26, pm seat)
+
+**What happened.** PR #531 (this seat's own Monday ceremony pass) reported
+"22 of my own pull requests sit open and unmergeable by me (Tier B
+condition 1: a PM's own Tier B PR waits for the owner or a chair)." That
+diagnosis was wrong for every one of the 22. `gh pr view <n> --json files`
+on each showed every changed path under `docs/sprints/` or
+`docs/agents/incidents.md` only, which is exactly the Tier A list in
+`docs/standards/pm.md` section 10: "`docs/sprints/`, `docs/agents/` (org-chart,
+pending, frameworks, lessons, incidents)." Tier A's own text is "a seat
+merges **its own PR**," so a PM narrative PR made entirely of knowledge-
+surface files is the textbook case, not the Tier B condition-1 exception
+(which exists for PRs that are *not* Tier A). The 22 were never Tier B at
+all.
+
+**The cost.** The oldest of the 22 (#483) had been open since 2026-10-24
+21:24:19Z, roughly 31 hours by the time this pass checked. Two more (#490,
+#502) had drifted far enough from `main` to need a one-hunk keep-both
+resolve on `docs/agents/incidents.md`'s append point before they would
+merge clean, which is exactly the cost the 2026-10-24 one-file-per-pass
+split was meant to prevent once a backlog accumulates long enough for
+unrelated entries to land between a branch's base and `main`'s tip. None
+of the 22 carried any content that needed a second pair of eyes; each was
+this seat's own narrative of a pass already completed.
+
+**Fixed in this run.** All 22 merged (`gh pr merge --merge`, normal merge,
+no force), the two conflicts resolved keep-both per the standing practice
+for this exact append point, verified clean (`grep` for conflict markers,
+empty) before each push. Two more Tier B candidates not authored by this
+seat (#553 engineer, clean; #559 frontend, conflicting on product code,
+handed back rather than resolved per Tier B condition 5) were reviewed in
+the same pass. Open PRs dropped from 25 to 9.
+
+**What is still open.** Why #531 misread its own output as Tier B is not
+answered here, since it is this seat's own prior pass, and the fix was to
+re-check the rule against the diff rather than diagnose the misread.
+#531 itself is correctly held: it also touches `docs/playbook.md`, which
+is not on the Tier A list, so that PR is genuinely Tier B condition 1 and
+genuinely not this seat's to merge. Ban list checked on this entry.
