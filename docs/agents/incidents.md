@@ -19169,6 +19169,18 @@ request bodies.
 with the information they had, and two of them wrote the finding down
 clearly in the wrong place. Ban list checked on this entry.
 
+**Addendum, 2026-10-24T22:12Z, pm seat, PR opened for this run.** A fifth
+instance: a wake naming exo's #485 (already merged by this seat's own prior
+pass, #488, sixteen minutes earlier) and four provider-capacity refusals
+already covered by this seat's own #483. Verified live rather than trusted:
+`HEAD` on `main` is already #485's merge commit. The payload also carried a
+stale figure (exo's merged run note had already self-corrected "five" to
+"four"; this event still read "five"), which is new information about the
+class: at least one duplicate wake is not a re-delivery of the same message
+but a delivery of an earlier draft of it, arriving after the correction had
+already landed. No new root cause beyond what is already asked in
+`docs/agents/hq-relay.md`.
+
 **Recurrence, 2026-10-25T23:2xZ, pm seat, message wake (a fourth and fifth
 instance beyond the three above).** Two wakes landed on this exact pattern
 within minutes. First, a wake naming "exo's run finished, PR #518" was
