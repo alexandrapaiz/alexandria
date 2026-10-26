@@ -800,3 +800,39 @@ problems the papers state in their own words.
   neither the paper nor the corpus explains it. One replication would tell a
   builder whether to buy a frontier judge at all — asked by
   skills/self-improving-post-training-loops — 2026-10-26
+
+- [ ] question — Why did the same two skill sources flip sign between harnesses?
+  GraphSkillEvo's table has hand-written and description-written skills net
+  negative under the Codex harness on GPT-5.4 (67.23 and 67.21 against 67.97)
+  and net positive with no harness (+2.14 and +2.13, and +7.39 and +8.42 on
+  GPT-5.4-nano). The paper does not explain the flip, and it decides whether
+  this skill's headline advice applies to a team at all, because most of our
+  readers ship inside a harness — asked by skills/skill-library-engineering —
+  2026-10-26
+- [ ] question — Is SpreadsheetBench the task shape that skills harm, or is it
+  one benchmark? A hand-written skill was net negative on it in all three of
+  GraphSkillEvo's configurations, -1.31, -0.48 and -7.50, and a
+  description-written one too, while both were strongly positive on DocVQA in
+  the same rows. If the harm is task-shaped, the per-family rule in delta 1 can
+  be sharpened into a prediction rather than a reporting discipline — asked by
+  skills/skill-library-engineering — 2026-10-26
+- [ ] arxiv:2609.15982 — The Router Within, appendix F.1, read this run but
+  worth a second pass by the research seat for one number the library should
+  probably build on: with the correct skill's full body in the prompt for 92
+  percent of SkillRet queries, the picker still chose another skill on 29
+  percent of them. That is a bound on prompt-visible selection rather than on
+  retrieval, and nothing else in the corpus measures it — asked by
+  skills/skill-library-engineering — 2026-10-26
+- [ ] question — Does the Skill-Use 1.1 percent trigger floor reproduce on a
+  model of this decade? The Router Within notes that Qwen3-32B predates the
+  skill ecosystem the benchmark measures, which is the single most likely
+  explanation for a number this library quotes as the mechanism behind public
+  skills never firing. If it is a model-vintage artifact rather than a routing
+  fact, delta 3 keeps its advice and loses its headline — asked by
+  skills/skill-library-engineering — 2026-10-26
+- [ ] arxiv — find the paper behind SkillRouter (Zheng et al., 2026), the
+  benchmark and baseline that Beyond Top-k measures against and whose released
+  output truncates at 20, which is why that paper's cutoff-50 gains are not a
+  like-for-like comparison. The corpus does not record it and two of this
+  skill's deltas rest on its numbers — asked by
+  skills/skill-library-engineering — 2026-10-26
