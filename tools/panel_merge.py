@@ -70,6 +70,7 @@ import urllib.request
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
 import panel                                                 # noqa: E402
+import skill_registrar as registrar                           # noqa: E402
 from panel import Finding, verdict_of                         # noqa: E402
 
 REPO = "alexandrapaiz/alexandria"
@@ -138,11 +139,18 @@ def skill_targets(paths: list[str]) -> list[str]:
     `panel_verdicts.target` is `skills/<slug>` and `promotions.path` is the same
     string. A PR that edits only a skill's eval suite proposes no new text to
     review, so it has no target here and `pin_findings` says so.
+
+    `skill_registrar.NOT_A_SKILL` is read rather than restated, because a
+    directory under `skills/` that is harness rather than a skill is already
+    one set in one file, and a second copy here would admit a new one as a
+    merge candidate on the day it was added.
     """
     out = []
     for path in paths:
         parts = path.split("/")
-        if len(parts) >= 3 and parts[0] == "skills" and parts[-1] == "SKILL.md":
+        if (len(parts) >= 3 and parts[0] == "skills"
+                and parts[-1] == "SKILL.md"
+                and parts[1] not in registrar.NOT_A_SKILL):
             target = f"skills/{parts[1]}"
             if target not in out:
                 out.append(target)
