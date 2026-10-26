@@ -447,3 +447,287 @@ A policy can be the best available way to cover an input and still be the worst
 available way to carry one chain, and multi-hop is exactly where those come
 apart. That reconciliation is what the skill should carry, and neither paper
 states it.
+
+---
+
+## Delta 2: the condition the skill does not state, and two papers that state it
+
+Delta 2 tells a builder to chunk, bind a reader to each chunk, and run rounds.
+It does not say when chunking is the wrong move. Four of the fifteen are about
+exactly that, and two of them hand the skill its missing condition.
+
+### `2506.16411` -- When Does Divide and Conquer Work for Long Context LLM? (Xu, Zhu, Wang, Wang, Athiwaratkun, Wang, Zou, Zhang; Chicago / Together AI / Duke / Google DeepMind / Stanford, v2 28 Feb 2026)
+
+Queued as "the paper that says when chunking fails," and it is, with a
+decomposition the skill can use as written. Three noise terms:
+
+- **task noise** -- cross-chunk dependence, which chunking creates,
+- **model noise** -- confusion that grows with context size, which chunking removes,
+- **aggregator noise** -- imperfect integration of partial results, which chunking adds.
+
+Chunking wins when the model noise it removes exceeds the task and aggregator
+noise it adds, and the paper's experiments on retrieval, QA and summarisation
+confirm both the analysis and the conditions. **That is the conditional delta 2
+is missing.** The skill's step 1 reads "chunk, and keep chunks small," full
+stop; the honest version is to chunk when the input is long enough that model
+noise dominates, keep chunks large enough that cross-chunk dependence stays
+inside them, and treat the aggregator as a noise source to be measured rather
+than a wire.
+
+It also independently predicts the skill's most quotable number. Delta 2 cites
+PARSER's 9B beating a frontier model with a native million-token window by 6.3
+points. This paper derives and demonstrates the same inversion from the
+accelerated decay of model fidelity with input length: for large inputs **a
+weaker model with chunk-based processing can surpass a stronger model applied
+in a single shot**, naming GPT-4o. Earlier, theoretical, and independent of
+PARSER. The frontier-model inversion is therefore a property of the regime, not
+a property of PARSER, and the skill can say so.
+
+### `2505.20625` -- XpandA (Xiao, Lin, Gao, Chen, Zhang; Zhejiang / Westlake, v3 28 Sep 2025)
+
+Queued to "separate the architecture's contribution from the reinforcement
+learning's," and it separates them cleanly: **XpandA is untrained.** Dynamic
+partitioning, question-driven updates to keep knowledge consistent across
+partitions, and selective replay of partitions to handle information presented
+out of order. Evaluated from 1k to 1M tokens, it reports **20% improvement and
+1.5x inference speedup over full-context, RAG and prior agent-based baselines.**
+
+**The answer to the queue's question is that the architecture carries most of
+it and needs no training.** A builder reading delta 2 today might reasonably
+conclude the prescription requires training a lead agent. It does not: the
+question-driven, replay-capable partition loop delivers 20% over three baseline
+families with no training at all, and PARSER's training buys the increment on
+top. Delta 2's step 4, "train only the lead if you train anything," is right and
+its conditional is now load-bearing rather than decorative.
+
+Note the design difference, because it is the one knob between them. XpandA
+**replays selected partitions** when the order of information demands it;
+PARSER **re-reads every chunk every round**. Replay-on-demand is the cheaper
+half of the property delta 2 says matters, and both beat one-shot map-reduce.
+
+### `2603.09835` -- Chow-Liu Ordering for Long-Context Reasoning in Chain-of-Agents (Gupta, Singh, Iyer, Shiragur, Grover, Bairi, Maiti, Damle, Mishra Gupta, Maurya, Vageesh D. C.; Microsoft, 10 Mar 2026)
+
+Queued as the paper on "whether the order chunks are visited can be chosen
+rather than inherited, which is the assumption PARSER removes by reading all
+chunks every round." The queue line is exactly right and the paper confirms the
+framing from the other side.
+
+Chain-of-Agents passes bounded summaries between sequential workers, which the
+paper describes as a lossy information bottleneck that makes the final evidence
+state **depend on the order chunks were processed in**. They learn a Chow-Liu
+tree over chunk dependencies and visit chunks by breadth-first traversal of it,
+which beats both default document order and semantic-score ordering on answer
+relevance and exact match across three long-context benchmarks.
+
+**Read against delta 2, this is the cost of the sequential family stated as a
+positive result.** Order dependence is real and large enough that choosing the
+order well is worth a paper; a method that re-reads every chunk under a fresh
+query each round has no order to choose, which is the same property claim 293
+reports as flatness under permuted evidence position and dependency order. The
+two findings are the same fact from the two sides, and the skill can cite the
+sequential side now instead of asserting the parallel side alone.
+
+### `2605.15184` -- Is Grep All You Need? (Sen, Kasturi, Lumer, Gulati, Subbiah; PricewaterhouseCoopers, 14 May 2026)
+
+Queued because "PARSER runs shell-tool subagents as a drop-in variant, and this
+skill's suggestion that subagents return a checkable span leans on that line of
+work." It does more than lean. **It is the first evidence in this batch for
+delta 2's step 5, which the skill labels "ours, not the paper's."**
+
+116 questions from LongMemEval-S, four harnesses (a custom one called Chronos
+plus Claude Code, Codex and Gemini CLI), grep-only against vector-only, under
+two delivery paths: results inline in the tool message, or written to a file the
+model must open.
+
+- **Inline grep exceeds inline vector for every harness-model pair evaluated.**
+  The paper's reading is that LongMemEval answers "are often licensed by a small
+  set of literal spans," so lexical precision wins.
+- **The harness moves the result more than the retriever does.** Scores depend
+  strongly on harness and tool-calling style with the conversation data fixed,
+  and file-based delivery or a provider CLI shell can "invert or erase the
+  lexical advantage without any change to the corpus."
+- **File-based delivery is the context-pressure trade, priced.** Writing results
+  to disk "decouples retrieval result size from context window pressure," and
+  the cost is that the agent must complete a locate-open-integrate cycle. Where
+  that cycle is brittle, "accuracy can collapse independently of retrieval
+  quality." They record an extreme regression for Codex with GPT-5.4 under
+  programmatic grep and draw the rule: programmatic routing trades context
+  bandwidth for compositional tool competence.
+
+Two things for this library. First, a grep hit **is** a quoted span with a
+location, so lexical retrieval supplies delta 2's step-5 verifiability by
+construction rather than by instruction, and it is the retrieval mode that won
+inline in every pair here. Second, "retrieval is really
+retrieval-plus-orchestration" is a harness-engineering finding found inside a
+retrieval paper, and it belongs in that skill's lane as much as this one.
+
+### `2605.29307` -- GrepSeek (Salemi, Zeng, Nijasure, Chung, Rahimi, Diaz, Zamani; UMass Amherst / Princeton / CMU, v2 30 Sep 2026)
+
+"The trained half of the same question," as queued. The agent treats the corpus
+as the environment and finds evidence with executable shell commands. Two-stage
+training: initialise on verified, causally grounded trajectories from an
+answer-aware Tutor and an answer-blind Planner, then refine with GRPO. Across
+eight open-domain QA benchmarks it is strongest overall, a statistically
+significant **5.7% relative improvement over the best baseline**.
+
+The systems numbers are the part worth the corpus's space, because they answer
+the obvious objection to shell-based search: **Pruned Adaptive Command
+Execution cuts shell search latency by up to 77x on a 14GB corpus of 21 million
+documents** using a compact auxiliary structure, and **Sharded-Parallel Corpus
+Search adds up to 7.6x**, both semantics-preserving. Direct corpus interaction
+is not slow; the naive implementation of it was.
+
+The answer-aware Tutor and answer-blind Planner split is worth one more line,
+because it is the same shape as PARSER's lead that never sees the document.
+Both keep the component that composes the query from seeing what it is supposed
+to find. Two papers, two subfields, one design rule.
+
+### `2404.06654` -- RULER (Hsieh, Sun, Kriman, Acharya, Rekesh, Jia, Zhang, Ginsburg; NVIDIA, v3 06 Aug 2024)
+
+Queued because "PARSER reports ten additional tasks on it in its appendix; the
+skill cites the multi-hop QA result and cannot say what happens on the non-QA
+half." The non-QA half is three further categories, and this is what they test:
+retrieval with diverse needle types and counts, **multi-hop tracing** by variable
+tracking as a proxy for coreference chains, and **aggregation**. Seventeen
+long-context models, thirteen tasks. The headline is still the useful one two
+years on: **nearly perfect vanilla needle-in-a-haystack accuracy coexists with
+large drops as context grows, and of the models claiming 32K or more, only half
+hold up at 32K.**
+
+RULER settles a different queue line than the one it was filed under, and that
+is recorded in the no-id section below.
+
+Also worth knowing before anyone leans on `2605.18053`: its limitations name
+strict needle-in-a-haystack retrieval "(e.g. RULER)" as untested. The
+protection result is measured on LongBench QA, multi-document summarisation and
+a 64K needle probe on one model, and the benchmark built to catch long-context
+over-claiming is the one it has not run.
+
+---
+
+## The four works with no arXiv id
+
+- **MemAgent (Yu et al., ICLR 2026)** -- still needs its own route, but its
+  design is now in the corpus by description from two citing papers.
+  `2602.10560` states it precisely: chunk-by-chunk processing in an RNN-like
+  loop with a textual memory updated at each step, and the two defects that
+  motivated its successor (indiscriminate updates, including on evidence-free
+  chunks, and no exit once enough evidence is in hand). A claim about MemAgent's
+  **design** can be sourced; a claim about its **numbers** cannot.
+- **ReMemR1 (Shi et al., 2026)** -- nothing in this batch supplies a route. Stays
+  queued.
+- **Context rot (Hong et al., 2025, Chroma technical report)** -- **resolved, and
+  the line can be struck.** It was queued as "the named source for the premise
+  that accuracy degrades before the window is full, which this skill states in
+  its description." That premise does not need a vendor technical report. RULER
+  (`2404.06654`) measures it across seventeen models and thirteen tasks, and
+  three separate papers in this batch cite RULER as Hsieh et al. 2024 for
+  exactly that premise (`2506.16411`, `2603.09835`, and `2512.12008` in its
+  introduction). **Point the skill's description at RULER.** The Chroma report
+  may still be interesting, but nothing load-bearing depends on it now.
+- **Lost in the middle (Liu et al., TACL 2024)** -- **substitutable on the same
+  grounds, with a bonus.** It was queued as "the positional-bias result the
+  buried-evidence activation condition rests on." `2606.29563` re-measures
+  positional bias **inside the eviction setting**, which is stronger for this
+  skill's purpose than the original: its Figure 3 shows retained token coverage
+  skewing heavily toward the end of the input "despite the correct answer
+  appearing first in this example." `2605.18053` reports the same thing as
+  "position-stratified retention explains the H2O reversal." So the activation
+  condition has in-corpus, arXiv-identified support, and it now rests on
+  measurements of the compaction systems rather than on a result about raw
+  prompts.
+
+---
+
+## The three questions, answered
+
+### Q1 -- "How often do real agent traces contain a fact stated once and needed more than a budget later?"
+
+**Still not measured, and the question is now better posed: the quantity that
+binds is not frequency, it is dependency depth.**
+
+Nothing in the batch counts the frequency, and the batch makes a good case that
+counting it would not settle the decision anyway.
+
+- `2604.17935` gives the shape of the cost. Under random cache selection with
+  oblivious caches the joint success probability decays **exponentially in the
+  number of stages T**; with adaptive caches it is s/n, flat in T. So one fact
+  needed once later is survivable and a chain of k such facts is not, and the
+  penalty is a function of the chain, not of the trace length. A frequency
+  statistic over traces would average over exactly the variable that matters.
+- `2608.26070` supplies a measured instance class rather than a rate.
+  LiveCodeBench is the case: a reference written early and consumed thousands of
+  tokens later, costing a 4x larger window (16384 against 4096) to match full
+  attention. One benchmark in a suite, which is an existence proof and an order
+  of magnitude for the price.
+- `2512.12008` supplies the nearest thing to a measurement, and it is a good
+  proxy nobody has pointed at this question. Its **critical-token retention
+  rate** is the fraction of the question's critical tokens (names, quantities,
+  key entities) still in cache at the final decoding step, reported per method
+  across models and budgets in its Table 8. That is "a fact stated once and
+  needed later" instrumented directly. It is measured on GSM8K questions rather
+  than on agent traces, so the number does not transfer, but **the instrument
+  does**, and it is cheap.
+- `2605.15184` says the case is the normal case in long-memory QA rather than the
+  exception: LongMemEval answers "are often licensed by a small set of literal
+  spans," which is why lexical retrieval beat dense inline in every pair.
+
+**Restated for whoever takes it next:** instrument critical-token retention over
+real agent traces, stratified by the number of hops between a fact's statement
+and its use, and report retention as a function of hop distance rather than a
+single rate. The `2512.12008` definition is reusable as written.
+
+### Q2 -- "Does the protect-the-input finding survive on architectures without per-head independence, such as multi-head latent attention or multi-query attention?"
+
+**Partly answered, and the part that landed is stronger than the question
+expected. The two named architectures are still untested, in both papers.**
+
+`2605.18053` replicates protection across ten models in five vendor families,
+and three of its points span the head-diversity axis the question is about:
+
+- **Phi-3.5-mini, full multi-head attention, 32 KV heads.**
+- **Mistral-7B-Instruct-v0.3, grouped-query attention, 8 KV heads.**
+- **Qwen3.5-27B, hybrid DeltaNet plus GQA, where only 25% of layers evict a KV
+  cache at all** and the rest carry recurrent state. The author calls this the
+  strongest generality test and the reasoning is right: if protection still
+  helps where three quarters of the layers are not doing attention, the
+  vulnerability belongs to KV-cache eviction rather than to transformers.
+  Protection held there.
+
+So the **protection** half transfers from 32 KV heads down to 8 and across into
+a hybrid recurrent stack. The **per-head scoring** half is the one that depends
+on head diversity, and the paper measures its size rather than asserting it:
+faithful per-head Ada-KV and QUEST recover near-ceiling quality at both K=32
+(Phi-3.5, 93% and 92%) and K=8 (Mistral-7B, 95% and 94%), worth roughly
+0.03-0.04 F1 over the simplified variants against a protection lift of
+0.11-0.14 F1. The skill's caveat that "under multi-query or latent attention
+only the prompt protection carries over" is a reasonable inference and is now
+**supported in direction** by a hybrid result, while remaining unmeasured on the
+two architectures it names: `2605.18053` states plainly that "mixture-of-experts
+and multi-latent-attention architectures remain untested," and Random Attention
+tested four grouped-query models. **Keep the caveat, and cite the hybrid result
+as the reason to believe it rather than leaving it an inference.**
+
+### Q3 -- "Is there a text-agent equivalent of the shallow-layer index, where a cheap partial forward pass builds the retrieval structure and the full model only runs at answer time?"
+
+**No, and the two nearest results in this batch both put the cheap layer
+somewhere better than shallow depth, which is the more useful answer.**
+
+- **Below the model.** `2605.09490` is a placement layer, not a scoring method,
+  in its own words. Four tiers, cumulative attention scoring, and zero
+  approximation error because offloaded tokens are prefetched back at full
+  precision. The cheap tier is DDR rather than a shallow forward pass, the price
+  is 5-7% transfer overhead, and the payoff is the finding that accuracy tracks
+  the eviction ratio and ignores HBM occupancy. This is the text result the
+  video-only tiering caveat asked for, at 7B, 14B and 32B.
+- **Outside the model.** `2605.29307` makes the corpus the index: a compact
+  auxiliary structure plus pruned adaptive command execution gives up to 77x
+  latency reduction over 21 million documents, with sharding adding 7.6x, both
+  semantics-preserving. The retrieval structure is built once, cheaply, and is
+  not a forward pass at all.
+
+Nothing in the batch builds a retrieval structure from a partial forward pass of
+the same model on text. **The question stays open in its original form and
+should probably be retired in it**: the two measured text answers move the cheap
+layer out of the network rather than up to its shallow layers, and both report
+real numbers, which the shallow-layer framing does not have outside video.
