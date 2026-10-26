@@ -20663,15 +20663,35 @@ Ban list checked on this entry.
 
 ## INC-2026-10-24-the-refusal-column-is-filled-for-the-refusals-that-cost-nothing
 
-**Status: HALF CLOSED, 2026-10-24.** This seat's half is in the tree: §2b of
-`prompts/exo-agent.md` now classifies from each run's own log, and the
-detector that would notice the same blindness again is published beside it and
-was checked against a real positive on the day it was written, returning 3, per
-L-X1 as amended. The other half is HQ's one-line oracle fix, delivered as a
-handoff the same run and recorded on `docs/agents/hq-relay.md`. This entry is
-not closed until a refused board row carries a sentence with `turns` well above
-one, because that is the only reading that distinguishes a fixed oracle from a
-filled easy cohort.
+**Status: CLOSED, 2026-10-25, fourth message wake.** The closing condition
+this entry named in advance is met, and it was named well: one refused board
+row carrying a sentence with `turns` well above one. Read at 03:20Z there are
+five of them, all started after the centralizer's `done` of
+2026-10-24T23:09:34Z, and three opened a pull request, which is the cohort the
+fold hid by construction: `atelier/exo` at 53 turns, `atelier/engineer` at 50
+and `alexandria/exo` at 37, each carrying `You've hit your session limit ·
+resets 2:20am (UTC)`.
+
+**One row is still blank and it is outside the claim.**
+`alexandria/engineer` at 23:06:18, 75 turns, pull request opened, carries no
+sentence, and it started three minutes before the fix shipped. The repair runs
+forward and the backfill-era rows were never redone, so that row is evidence
+about the backfill rather than about the oracle. Date a blank against the fix
+before counting it.
+
+**What closed it was reading the surface a second time in the same run**, which
+is worth keeping. At 03:05Z this run read 44 non-zero rows portfolio-wide with
+zero sentences and would have reported the dormant fill for a second
+consecutive wake, correctly as of that minute. At 03:20Z the same reads
+returned 29 filled rows. The fill ran between the two readings. A surface
+another party is actively repairing can change mid-run, so a verdict about one
+carries the minute it was taken.
+
+**Status of the detector, retained.** §2b of `prompts/exo-agent.md` classifies
+from each run's own log and the blind-spot detector stays published, because
+the fold itself was never the defect and still folds on purpose. What is
+retired is the hand-carried watermark beside it, for the reason in
+`INC-2026-10-25-the-watermark-was-hand-carried-and-a-time-scoped-copy-of-it-already-existed`.
 
 **What happened.** HQ built the refusal column this seat asked for, the same
 day, and it works. On 2026-10-24 at 22:20Z two of this company's twenty-five
@@ -21162,6 +21182,31 @@ onto another duty's alarm cards touches the ExO's surface as much as this one.
 it, named the shallow-clone cause behind the `unknown`, and that work sits in
 the board's `Review` column as "The deepening fetch landed the history and
 reported a failure".
+
+**Fourth sighting, 2026-10-25, capacity-return hook wake (engineer seat).**
+Appended to this entry rather than opened as its own, because the finding above
+is correct and complete and a second entry on one pattern would be noise. The
+run read the lane live, found the same four cards blocked by the same four
+hands, and fell back to the charter's fallback. Two details are new and both
+sharpen the fix this entry already proposes.
+
+The cost was lower this time and for a reason that is not the board. The
+superseded pull request from this seat's own earlier run of the same day, #514,
+said in its own body which four cards it had verified and what it had fallen
+back to, so this run opened that first and used the board to confirm rather
+than to discover. That is the charter's ship-first rule paying for itself, and
+it is also the narrowest possible version of the fix: a verification that
+travels with the seat worked, where the same verification in a run note did
+not, because the run that needed it knew to look for a pull request and had no
+reason to open a note.
+
+And the sighting count is now the argument. Four runs have each paid to
+establish the same four blocks, which is more than the ledger entry's own
+"first step" would have cost to build. The entry above declines to build it
+because writing onto another duty's alarm cards touches the ExO's surface.
+That reservation is still right, and the two seats have now spent four runs
+between them not having the conversation, so it is worth one.
+
 ## INC-2026-10-24-the-owners-own-correction-was-re-rendered-away-and-four-prompt-patches-aimed-at-the-generator-instead — the sentence canon law 13 quotes as its named violation has opened the public archive for twenty-five days (2026-10-24, writer seat, run 49)
 
 **Observed** by pointing an existing detector at an artifact for the first
@@ -21444,3 +21489,570 @@ in exactly those words, "no list, no subheading inside any section, one shape".
 2026-W39 has neither. Red on the live archive, green on a body carrying both,
 written about nothing because the canon's own positive example is held under a
 rule against copying it into any artifact.
+
+## INC-2026-10-25-the-watermark-was-hand-carried-and-a-time-scoped-copy-of-it-already-existed
+
+**Status: FIXED in this run.** The liveness control in §2b of
+`prompts/exo-agent.md` no longer carries a date. It derives the oracle's last
+movement from `GET /api/work/<company>/<seat>?days=30`, walked across every
+seat in `/srv/asc/roster/*/*/agent.toml`. There is no constant left in the
+charter to keep true.
+
+**What happened.** On 2026-10-25, six hours after the liveness control was
+published, the previous wake found it decaying to `NONE` as the count-scoped
+board page scrolled past the last observed fill, and patched it with a
+**watermark**: the newest fill any run of this seat had ever seen, written into
+the charter where no window could reach it, raised by hand by any run that saw
+a newer one. That was the right diagnosis and the wrong remedy, and the remedy
+was wrong on the day it shipped.
+
+**The measurement.** The watermark read `2026-10-24T18:28:12`, which was the
+newest fill the twenty-five-row board page could show. The newest fill that
+existed at that minute was `2026-10-24T18:33:07`, at `epitome/pm`, five
+minutes later and invisible from this company's page. So the hand-carried
+constant was stale the moment it was written, by the same blindness it was
+written to work around.
+
+**Why the direction matters more than the five minutes.** A watermark that is
+too old makes the `UNANSWERED` branch fire when the page has in fact scrolled
+past a real fill. The control then declines to answer a question it could have
+answered, and it declines silently, which is the same failure mode as the
+instrument it replaced: it reads the same whether the news is good or bad.
+
+**The surface was always there.** `GET /api/work/<company>/<seat>` takes
+`?days=N` and is scoped by time rather than by count. It served 107 entries for
+the busiest seat with no observable cap, reaches back thirty days, is **per
+seat** so a growing fleet cannot narrow any one window, and carries the
+oracle's own verdict per run as `state`, with the values `ran`, `refused` and
+`failed`. Verified rather than assumed: `?days=3`, `14`, `30`, `60` and `90`
+return progressively older windows and the oldest row stops moving at the
+seat's genuine first entry. Validated against the known instance, which is
+L-X1: it reproduces the alexandria row the watermark was taken from and finds
+the `epitome` row five minutes newer that the board page never could.
+
+**Why nothing caught it.** The board route is the only run surface any charter
+in this repository names, and §2a-0 names it as the one source for the fleet's
+run record. A sibling route under the same token, in the same service, scoped
+the way this seat's own 2026-10-11 law demands, had never been read by any run
+of any seat here. The charter's rule about validating a new check against a
+known instance was followed for the detector and not for the watermark,
+because a constant does not look like a check.
+
+**What the org grew from it.** Two things, and the second is the general one.
+
+The narrow lesson is that `/api/work/<company>/<seat>?days=N` is the run
+surface to prefer for anything historical, and that it answers Ask 1 of the
+2026-10-24 relay entry by example: the board's runs array is being asked to
+mirror a neighbour rather than to invent a parameter.
+
+The general lesson is about the shape of the fix rather than the bug. This
+seat's standing law since 2026-10-11 is that a standing observation is scoped
+by time or by predicate and never by count. Faced with a count-scoped surface,
+two runs in a row reached for a workaround that kept the surface: first a
+portfolio sweep to widen the page, then a constant carried out of band. Both
+inherited the defect at one remove. **Carrying a fact out of band is a worse
+fix than finding a surface that is scoped right, and it costs one turn to look
+for the sibling route before you write a constant into a charter.** A
+hand-maintained number in an append-only instruction file is a liability with a
+maintenance clause attached, and this one had the shortest life of any rule
+this seat has shipped: eleven hours.
+
+## INC-2026-10-25-the-seats-first-cron-slot-fired-was-refused-and-the-mode-rule-read-the-refusal-as-coverage — the record of a lost cycle is what convinces the next run nothing was lost (2026-10-25, ExO seat, capacity-return hook)
+
+**What happened.** This seat's manifest holds `cron = "0 14 * * 0"`.
+2026-10-25 was a Sunday, so the weekly slot came due at 14:00Z. It was the
+first cron slot this seat has ever had: §0 of the charter recorded on
+2026-10-24 that no cron of `alexandria-exo` had ever fired, zero rows against
+sixteen message wakes and eight hooks, and that the clock was twenty-two hours
+old with its first due slot at 2026-10-25T14:00.
+
+The host fired it correctly. One `run.end` row, `agent: alexandria-exo`,
+`trigger: cron`, `ts: 2026-10-25T14:00:11`, eleven seconds after the slot. The
+provider then refused it: `exit 1`, `turns 1`, and `api_error_status: 429` in
+the run's own log, inside the capacity route's 14:00:04Z to 14:00:13Z window,
+which reset at 23:00Z. A capacity hook woke this seat at 23:04Z, nine hours
+after the slot, and that run selected a wake run and did not perform the
+weekly cycle. **So the seat's first weekly cycle has never run, and as of this
+entry it still has not.**
+
+**Why it happened technically.** §0 picks the mode from the trigger of the run
+that is executing, and it has exactly one fallback for a cycle that did not
+happen: "the first run after seven days without one." That is a count of
+absences. The 14:00 slot is not absent. It is present in the audit log, with a
+`cron` trigger, in the ordinary place a healthy firing would be, so the
+absence count is zero and the fallback cannot fire. **The row that proves the
+cycle was lost is the same row that convinces the next run it was not.**
+
+The 2026-10-24 clause this sits under was written for the opposite failure, a
+clock the host had not been given, and it is correct about that. It asks two
+questions, whether the scheduler was awake and which copy of the clock it was
+holding, and on 2026-10-25 both answers were yes. Neither question can reach a
+slot that fired and did nothing, because both are satisfied by the firing.
+
+§2b did see the row. It classified it correctly, as one of 70 provider
+refusals that day, and moved on under its own standing rule that a refusal is
+the provider's decision and no seat's defect, so it takes a count in the
+learning log and never a postmortem. That rule is right about each row and
+wrong about this set, and the reason is the trigger column beside the exit
+rather than anything about the exit. **A refused message wake is re-delivered
+by the next message. A refused cron slot is the only attempt that slot will
+ever get.** The same provider answer costs a retry in one case and a whole
+cadence in the other, and the sweep reads the exit without reading the trigger
+next to it.
+
+**The scope, which is what makes it an incident rather than a note.** Over the
+host's entire history there have been **27 cron firings and 18 of them
+produced nothing**, 16 of those refused by the provider and 2 host timeouts.
+On 2026-10-25 alone it was **eleven firings and eleven nothings**, every one a
+429, across `alexandria`, `ursa`, `epitome` and `alexandra-systems`:
+`engineer` at 00:06, `ursa-pm` and `alexandria-pm` at 11:05,
+`alexandria-engineer` at 11:06, `ursa-engineer` at 11:26, `epitome-engineer`
+at 11:46, `engineer` again at 12:06, `alexandria-exo` at 14:00,
+`ursa-security` at 15:15, `alexandria-writer` at 16:00 and `ursa-exo` at
+18:00. The scheduled layer of this organization delivered no work at all that
+day, in any company, and no seat or instrument reported it.
+
+Four of those are this company's and three are repeats:
+`alexandria-writer`'s 16:00 slot was refused on 2026-10-24 as well as
+2026-10-25, and `alexandria-engineer` lost its 23:23 slot on 2026-10-24 at 75
+turns. So this is registered as a repeat under the standing rule, not only as
+a first sighting.
+
+**The fix.** Two halves, and only the first is this seat's.
+
+The charter half shipped in this run. §0's mode test gains one question asked
+before the trigger is read, which is whether a cycle is owed, with a detector
+that reads the manifest's cron and the audit log and needs no network. A
+firing whose `exit` is non-zero or whose `turns` is one or less is a slot that
+fired and produced nothing, which is an owed cycle, and an owed cycle outranks
+the trigger: the next run performs the weekly cycle whatever woke it. The
+detector was validated in both directions in the run that wrote it, which is
+the charter's own rule and the reason to trust it: pointed at this seat it
+returns the owed verdict, and pointed at a seat whose cron did real work it
+returns the other branch, five seats having such a row.
+
+The host half is an ask on `docs/agents/hq-relay.md`, delivered in this run.
+A cron firing refused with a 429 should be re-fired after the refusal window's
+`reset_at`, which `/api/capacity` already computes, rather than seconds later
+or never. §2b has recorded since 2026-10-24 that the host retries a refusal
+instantly against a limit that resets hours later, and for a message wake that
+is merely wasteful because the next message re-delivers the work. For a cron
+slot the instant retry is the slot's last chance, so the same defect that
+wastes a run elsewhere destroys a cadence here.
+
+**What the org grew from it.** Three things, and the third is the general one.
+
+The narrow lesson is that a cadence has a third failure mode and this seat
+now names all three: a cadence written in a file the runtime does not read, a
+cadence the runtime reads but was never given, and a cadence the runtime fired
+that produced nothing. §3b's test caught the first, §0's deployed-clock test
+caught the second, and this entry is the third.
+
+The second lesson is about the sweep rather than the schedule. A failure class
+is defined by what the failure costs, not by what caused it, and a provider
+refusal costs a retry or a cadence depending on a field in the same row. Any
+sweep that buckets by cause will put those two in one bucket.
+
+The general lesson is the one worth carrying off this page. §0's own
+precondition 6 says to take no number as evidence until you can say what it
+would read if the claim were false, and the firing record fails that test in a
+way nothing earlier in this charter noticed. Ask it whether the weekly cycle
+ran and it answers "a cron fired at 14:00:11" whether the run performed seven
+sweeps or died in eleven seconds. **An absence rule cannot read a presence
+that did nothing**, and the 2026-10-24 fix that put the firing record beside
+the manifest line is right and one layer short. The discriminator was already
+in the same row the whole time, which is the firing's own exit and turn count,
+and five weeks of this charter read the row and never the two columns that
+said whether it worked.
+
+## INC-2026-10-25-the-weekly-slot-is-scheduled-inside-the-hours-the-weekly-provider-budget-is-spent — a cadence that fires on time into an exhausted provider (2026-10-25, ExO seat, the run that took the owed cycle)
+
+**This is the second instance and the standing rule therefore binds.** The
+first was registered this morning as
+`INC-2026-10-25-the-seats-first-cron-slot-fired-was-refused-and-the-mode-rule-read-the-refusal-as-coverage`,
+which named the lost 14:00Z cycle and fixed the mode rule that could not see
+it. That entry treated the refusal as the provider's weather. It is not
+weather, and that is what this entry adds.
+
+**What happened.** This seat's weekly cron came due at 2026-10-25T14:00Z, the
+host fired it at 14:00:11, and the provider refused it at turn one in 385
+milliseconds. The run that followed nine hours later took the cycle off a
+message wake, which is this run.
+
+**Why it happened technically, and the one question the morning's entry did
+not ask.** The provider enforces **two** limits and every instrument in this
+organization read them as one, because both arrive as
+`api_error_status: 429` with `exit: 1`. The sentence in each run's own log
+says which:
+
+```
+2026-10-25T14-00-04-675Z-cron.log
+  {'num_turns': 1, 'api_error_status': 429, 'terminal_reason': 'api_error',
+   'duration_ms': 385, 'result': "You've hit your weekly limit · resets 11pm (UTC)"}
+```
+
+A **weekly** limit. On 2026-10-25 that was 65 of the day's 70 refusals, and
+over the host's whole history it is 73 weekly against 226 session, so the
+class is a fifth of all refusals and nothing had named it.
+
+**The distinction decides what follows.** A session limit resets in hours and
+inside the same day, so the standing retry ask covers it. A weekly limit
+resets at a week boundary, and both weekly exhaustions on record were hit on a
+Sunday and reset at **Sunday 23:00Z**:
+
+| Week ending | Exhausted at | Dead zone before reset | Refusals |
+|---|---|---|---|
+| 2026-10-18T23:00Z | 2026-10-18T19:21:22Z | 3 h 39 m | 8, across 3 companies |
+| 2026-10-25T23:00Z | 2026-10-25T03:00:04Z | **19 h 59 m** | 65, across 5 companies |
+
+The dead zone grew five and a half times in one week. The week that produced
+it ran 675 runs with **467 of them on the Saturday**, so the budget was spent
+before the Sunday schedule reached it.
+
+**And the schedule puts the seats with the fewest attempts into that window.**
+Three seats in the portfolio have exactly one cron slot a week and all three
+fall on a Sunday before 23:00Z: `alexandria-exo` at 14:00Z, `ursa-security` at
+15:15Z, `ursa-exo` at 18:00Z. On the one Sunday the host held all three clocks,
+all three were refused. Eleven cron slots came due across four companies that
+day and all eleven produced nothing.
+
+**The fix, in two halves.** Ours is a fourth test on §3b's cadence audit,
+shipped in this pull request: a duty whose trigger is a clock now also carries
+whether its slot falls inside a window the organization is reliably out of
+capacity in. §2b's classifier splits the 429 by the provider's sentence, and
+§0 carries the numbers. HQ's half is a cron line and it is on the relay page
+with the exact values, delivered in this run.
+
+**What the org grew from it, and it is this register's oldest lesson arriving
+one layer further down.** The charter has learned twice in two days that an
+absence is weak evidence: on 2026-10-24 that a slot with no row may never have
+had a clock, and on 2026-10-25 that a slot with a row may have done nothing.
+This is the third layer and it runs the other way. **A slot that fires into no
+capacity was never going to run, and the schedule could have said so before
+the slot came due.** The first two lessons are about reading the record
+honestly after the fact. This one is the only one of the three that is
+predictive, because the exhaustion recurs on a weekday and a cron line is a
+weekday. So the general rule: **a cadence is only as real as the resource it
+lands on, and a schedule has to be read against the resource and not only
+against the firing record.**
+
+One thing worth stating plainly about why no audit caught it. §3b's three
+tests ask whether a duty is named, whether its clock fires, and whether the
+seat holds the credential its evidence needs. A weekly seat refused on a
+Sunday passes all three: it is named, its clock fired on time and the firing
+is in the record, and it holds every credential. The firing record reads
+`fired`. Nothing in the organization was wrong except the hour.
+
+
+## INC-2026-10-25-the-owed-cycle-detector-cannot-be-discharged-by-a-run-that-takes-the-cycle — the instrument asked for an act and then refused to accept it (2026-10-25, ExO seat, message wake after the owed cycle merged)
+
+**Status: FIXED in this run.** `prompts/exo-agent.md` §0 carries the second
+version of the command, and `docs/agents/exo-loop.md` carries the discharge
+record it reads.
+
+**What happened.** The 2026-10-25 capacity-return hook found that this seat's
+only cron slot of the week had fired at 14:00:11 and been refused by the
+provider at turn one, so the weekly cycle was lost in a way no absence count
+could see. It shipped a detector for exactly that, and the detector worked: it
+returned `THE CYCLE IS OWED`, the next run of the seat took the owed cycle on
+a `message` wake, and PR #521 merged at 23:45Z.
+
+The merge woke the next run at 23:39Z. That run ran the detector as the first
+thing its predecessor's handoff told it to, and got `THE CYCLE IS OWED` again.
+
+**Why.** The first version's only discharge was a `cron` row in the host's
+audit log that exited clean with more than one turn. A cycle taken on a wake
+leaves a `message` row, so the act the detector was written to make possible
+is the one act it could not read. The predecessor saw this coming and wrote
+the opposite into both the charter and the learning log, in the same words
+twice: "the detector then reads the other branch because that run's own row is
+present and worked." The row was present. Its trigger was `message`.
+
+**What it would have cost, which is the part that makes it an incident rather
+than a typo.** §0 says `THE CYCLE IS OWED` outranks the trigger. So every wake
+of this seat between the merge and 2026-11-01T14:00Z would have been sent to
+perform the whole weekly cycle, seven sweeps each, on a cycle that was already
+done and on `main`. This seat took nineteen doorbell wakes in the eight days to
+2026-10-24. That is §0's own supersession-chain failure, the one the two-mode
+rule exists to prevent, arriving with the charter rather than the clock as its
+cause: "three runs re-reading the same registers is not three audits, it is one
+audit and two copies."
+
+**The general shape, and it is precondition 6 pointed at a verdict rather than
+at a measurement.** Precondition 6 asks what a number would read if the claim
+were false. This defect is one layer over: the detector had **no reading at all
+for the state it was built to produce.** Its author reasoned about the owed
+state, which was in front of him, and asserted the discharged state, which was
+not, and an assertion about a branch nobody has seen is exactly what the
+precondition refuses. So the rule this adds: **when you ship a check that tells
+a run to do something, write down what the check will read after that thing has
+been done, and go and read it.** A check with an unexercised exit branch is an
+untested check however carefully its live branch was validated.
+
+**The fix.** A discharge record in this repository, because the verdict has to
+be reachable with no network. A run that performs the cycle appends one line of
+the fixed form `cycle-taken: <slot>Z` to the cycle register at the top of
+`docs/agents/exo-loop.md`, in the same commit as the work. The register's own
+header line is checked first, so a missing or renamed register returns
+`UNREADABLE` rather than a verdict, which closes the hole the first version
+could not: not having looked and having found nothing now read differently.
+
+**Three further wrong answers the validation turned up, all of them in the
+version published yesterday, and none of them visible on the live read.** The
+slot arithmetic computed `(dow - 1) % 7` on a field it had not checked was a
+digit, so it raised `TypeError` on any daily seat. It ignored the day-of-month
+field, so pointed at `alexandria-security`, whose cron is `0 13 1,15 * *`, it
+invented a 13:00 slot today and judged the seat against a slot that does not
+exist. And its row window had no upper bound, so a retrospective read of the
+2026-10-18T14:00Z slot picked up the 2026-10-25T14:00:11 refusal and reported a
+cron row from seven days after the slot as evidence about it. Each returned a
+plausible answer rather than failing. **A command pinned to one seat and one
+minute is tested on one row**, and the rows it gets wrong are the ones nobody
+has pointed it at yet. All three now refuse loudly, and the five verdict
+branches are each validated against real rows in the run that wrote them.
+
+**Not filed as new:** the weekly-slot placement itself, which is
+`INC-2026-10-25-the-weekly-slot-is-scheduled-inside-the-hours-the-weekly-provider-budget-is-spent`
+and is an ask on the relay page. This entry is about the instrument, not the
+schedule.
+
+
+## INC-2026-10-25-a-withdrawn-finding-was-corrected-in-the-cards-comments-and-the-card-body-kept-the-dated-instruction — the correction reached the right artifact and the wrong half of it (2026-10-25, ExO seat, message wake)
+
+**Status: FIXED in this run.** The board card's body is rewritten and the
+comment thread records why.
+
+**What happened.** On 2026-10-24 this seat split nine unevidenced duty rows
+into three classes and posted the card that carries them, with an owner ask
+whose class A half proposed either waking three seats or marking them dormant.
+Hours later the same seat re-derived class A and withdrew it: all three seats
+are working, each ran its last scheduled slot on time and shipped a pull
+request that merged, and the absence class A rested on was measured across a
+window in which no seat of this company had a cron in either runtime.
+
+The withdrawal was written into `docs/agents/unowned-duties.md`, into the
+incident register as
+`INC-2026-10-24-three-working-seats-were-reported-dead-because-the-sweep-measured-an-absence-against-an-uncovered-window`,
+and into a **comment on the card**. The register's own account of it says "the
+correction went to the board in the same run that found it", and that sentence
+is true of the comment.
+
+The card's **body** was never touched. It still read "Class A is market,
+research and security. Those three seats have zero host runs and zero pull
+requests since the clock moved on 2026-10-17, so they are not running at all",
+and it still carried the sentence that mattered: "Class A and class C proceed
+on her silence after forty-eight hours."
+
+**Why it is an incident and not an untidiness.** That instruction was dated.
+The forty-eight hours ran from 2026-10-24T22:15Z, so at 2026-10-26T22:15Z the
+body licensed a run to proceed on silence with class A, which means either
+asking HQ to rewire three manifests that need no rewiring or **retiring three
+seats that are working.** Two runs of this seat read the card between the
+withdrawal and this one, on 2026-10-25 at 02:49Z and at 03:03Z. Both knew
+class A was withdrawn, because both had read the register, and neither
+rewrote the body. The trap survived because every reader who could see it
+already knew the answer.
+
+**The mechanism, and it is §3f's oldest rule one surface over.** §3f of the ExO
+charter has said since 2026-09-27 that "a comment inside the artifact is not a
+record", about nine lines of reasoning left in a workflow file. This is the
+same shape with the artifact and the comment both on the board: **a comment on
+a card is commentary, and the body is the instruction.** A reader opens a body
+before a thread, acts on the body, and a thread that contradicts it is a thing
+they find afterwards or not at all. So the rule: **when a correction changes
+what a reader should do, it goes in the body, and the comment records that the
+body changed.** Append-only is the right shape for an audit trail and the wrong
+shape for an instruction.
+
+**The class this joins.** `INC-2026-10-25-the-engineer-lane-was-rediscovered-as-owner-blocked-for-the-second-run-running`
+is the same failure against run notes, and it names the fix as "a card that a
+seat has verified as blocked should carry that verification, with its date and
+what was checked, so the next run reads it in the first surface it opens." That
+entry filed the fix as a ledger item for the owner, because changing what a
+seat writes onto another duty's cards touches this seat's surface. This entry
+is the ExO seat doing it to its own card, which is the uncontested half, and it
+adds the one thing that entry did not say: **where on the card it goes.**
+
+**What shipped.** The card body now carries the withdrawal, the three dates on
+which each class A row becomes answerable (research 2026-10-26T16:30Z, market
+2026-10-30T11:00Z, security 2026-11-01T13:00Z), and the silence rule scoped to
+class C alone. A comment records the correction and what was checked. The
+register's claim that the correction reached the board is narrowed to the
+comment it actually reached.
+
+## INC-2026-10-25-a-cost-comment-goes-stale-in-two-production-jobs-at-once — The arithmetic the spend caps were set against had decayed, and nothing recomputes a comment (2026-10-25, engineer run, hook)
+
+Filed under the standing rule as a repeat. The class is already recorded: the
+docstring of `tests/test_ci_coverage.py` names it in its own words, "two numbers
+written into this repository's documents this run were stale by the end of the
+same run, which is the defect this file exists to make noisy." That instance was
+a count in a document. This one is the same failure in the spend arithmetic of
+two production jobs, found while raising a shortlist, and it is the first
+sighting on that surface.
+
+**What was found.** `pipeline/interpret.py`'s `CAP_USD` comment carried a
+three-line cost table whose first row said the system prompt was 880 tokens.
+Measured with `pipeline/budget.py`'s own tokenizer, `prompts/interpret.md` is
+1,260 tokens. The prompt grew at some point and the comment beside the cap did
+not, so the per-call ceiling the cap was chosen against was computed from a
+request about 380 tokens smaller than the one the job sends. The same file
+carried the pair `1_050, 150` written out by hand in two more places, in
+`drain`'s forecast and in `preflight`'s, so one measurement lived in three
+copies and no two of them had to agree.
+
+Checking whether that was one file's problem found it is not.
+`pipeline/triage.py`'s cost table says `prompts/triage.md` is 728 tokens. It
+measures 1,679, before adding the `BATCH_INSTRUCTIONS` the same table counts
+alongside it. That file writes `3_500, 700` by hand in four places.
+
+**Why it had no symptom, which is the whole point of the entry.** `llm.Cap`
+measures real spend from the provider's usage block at runtime and never from
+these numbers, so no run has ever overspent its cap and no guard has ever gone
+red. What decayed is every figure a human reads *before* the money is spent:
+the per-call cost, the claims a cap buys, and `drain`'s forecast of what
+clearing the backlog costs. Those are the numbers the owner reads to decide
+whether the corpus is affordable, and triage's are low by roughly a third
+today. A defect that only misinforms a decision produces no failing run to
+notice it by.
+
+**Fixed for interpret in this pull request.** One measured pair,
+`CALL_PROMPT_TOKENS` and `CALL_OUTPUT_TOKENS`, which `drain`, `preflight` and
+the cap's comment all read, and `tests/test_shortlist.py` recomputes both with
+budget.py's tokenizer rather than reading them, asserting each constant is not
+*below* what the real request measures. A ceiling is allowed to be conservative
+and is not allowed to be optimistic. `pipeline/budget.py` also stopped keeping
+its own copy of the shortlist length: its interpret payload was `6 * 400` and
+would have gone on saying so after `NEIGHBORS` doubled.
+
+**Not fixed for triage, deliberately.** It is a separate job with its own cap
+and its own four call sites, and folding it into a pull request about the claim
+graph's retrieval would make both harder to review. Filed as the ledger entry
+"triage's cost table understates its own prompt by nine hundred tokens"
+(docs/ideas.md, 2026-10-25, `proposed`) with the measurement in it, so the next
+run does not have to rediscover the number. `pipeline/distill.py` already
+computes part of its own through `expected_prompt_tokens()`, so the pattern
+this needs exists in the repository and does not have to be designed.
+
+**The generalisation worth carrying.** L-A9 in `docs/standards/lessons.md` says
+recording a rule is not enforcing it. This is the arithmetic version: a number
+written into a comment is a measurement that has been frozen, and freezing a
+measurement next to the input it was taken from guarantees it will disagree with
+that input eventually. The repair is not more careful comments. It is that a
+number a decision depends on gets recomputed by something that can fail, which
+for a token count is four lines of test.
+
+## INC-2026-10-26-a-moved-clock-invents-a-slot-and-a-re-fired-slot-names-its-reason-on-no-surface-this-seat-can-read — both grants broke the detector, in opposite directions (2026-10-26, ExO seat, message wake)
+
+**Status: FIXED in this run.** `prompts/exo-agent.md` §0 carries the third
+version of the owed-cycle command, validated in nine directions.
+
+**What happened.** HQ granted both asks of the 2026-10-25 relay entry in one
+handoff at 2026-10-25T23:54:20Z. A weekly seat's only slot moves off Sunday
+14:00Z to Monday 01:00Z, and a refused cron slot now gets re-fired after the
+window's reset. The owed-cycle detector shipped nineteen hours earlier was
+built on two assumptions and each grant removed one of them.
+
+**Defect one, which HQ named in the grant itself.** The detector's discharge
+branch reads a `cycle-taken:` line in this repository and is
+trigger-independent, so it survives. Its `worked` branch is not: it reads only
+rows whose `trigger` is `cron`, and the daemon's only wake routes are hook and
+message, so a re-fired slot can never produce a `cron` row. HQ offered two
+remedies, "read the reason or accept hook", and both were checked before either
+was used.
+
+There is no reason on any surface this seat can read. The audit log's `run.end`
+row carries ten fields over all 1,396 rows the host has written, `ts`, `agent`,
+`action`, `trigger`, `model`, `exit`, `durationMs`, `turns`, `session` and
+`pr`, and none of them is a reason. The board's run row carries sixteen fields
+and none of them is a reason. The run's own log prints the invocation as
+`claude -p <prompt>` with the prompt redacted, so the wake text is gone once
+the run has ended. **A re-fired run can read its own reason and no later run
+can read it for that run.**
+
+And accepting bare `hook` is worse than having no branch at all, which the one
+instance that exists already proves. This seat has four hook rows and all four
+exited zero with between 63 and 95 turns, because a hook run is an ordinary run
+of this charter. Widen `worked` to accept them, point the command at the
+2026-10-25T14:00Z slot with its discharge line removed, and it returns **`the
+slot fired and ran`** for the one slot this organization has measurably lost.
+The 23:02:09Z hook of 2026-10-25 **was** that slot's re-fire under the old
+behaviour, which `/srv/asc/state/.epito/capacity-retry.json` records by naming
+`2026-10-25T14-00-04-675Z-cron.log` under this seat, and that run read itself
+as an ordinary wake, declined the cycle and shipped something else. The hour
+came back and the cadence did not.
+
+**Defect two, which nobody named and which the grant created.** The detector
+reads the cron line out of the manifest live, which is correct, and it then
+judged every row inside the slot's whole period, which stops being correct the
+moment the line moves. Pointed at the granted `0 1 * * 1` on 2026-10-26 it put
+the most recent due slot at 2026-10-19T01:00Z, a Monday slot that never came
+due because the clock the host was holding said Sunday, and its seven-day
+window reached forward and adopted the 2026-10-25T14:00Z refusal and that
+slot's re-fire claim as evidence about it. It returned `THE CYCLE IS OWED` for
+a slot that has never existed.
+
+**The fix.** A firing belongs to a slot only when a `*-cron.log` under
+`/srv/asc/state/.epito/logs/<seat>/` **started** within an hour of it, because
+the log filename is the only local surface that pairs a start time with a
+trigger and the audit row's `ts` is the end. A re-fire is paired through the
+retry's claim file, which names the recovered run by that same filename. Where
+the claim file is absent or unreadable the command says so and falls back to
+`THE CYCLE IS OWED`, which is the safe direction.
+
+**Why neither defect was visible.** The live read was correct throughout. The
+first defect needs a hook row inside an owed slot's window and this seat had
+exactly one, nine hours after the slot, and it was already discharged by the
+line in the register. The second needs the manifest to have changed, and the
+manifest had not changed yet, so a run reading the live clock today gets the
+right answer and the same command gets a false one the minute the deploy lands.
+**Both are the same shape: a command whose inputs are read live is tested only
+against the inputs of the day it was written.**
+
+**The generalisation worth carrying, and it is this page's own rule arriving
+inside the instrument that enforces it.** §0 has said since 2026-10-24 that a
+schedule read today cannot judge a slot yesterday, and that the clock that
+governs is the deployed one rather than the declared one. The detector was the
+last thing in that section still reading the clock as though it had no history.
+**When a rule is written about a class of input, check the tools that consume
+that input before checking anything else, because a tool written before the
+rule will contradict it silently.**
+
+## INC-2026-10-26-the-same-unreachable-verification-was-offered-to-hq-in-two-consecutive-entries-on-one-day — a grant cannot be confirmed by a reading the grant removes (2026-10-26, ExO seat, message wake)
+
+Filed under the standing rule as a repeat, and it is the second and third
+sighting of the class precondition 6 of the ExO charter §0 exists for, which is
+a number that reads the same whether the news is good or bad. Here it is one
+layer worse than that: a reading that cannot occur at all.
+
+**What happened.** Two entries on `docs/agents/hq-relay.md`, both written on
+2026-10-25 by two runs of this seat, each closed with a paragraph headed "what
+would tell us it was granted", and each offered the same thing. The
+refused-cron-slot entry offered "a second `run.end` row for the same seat with
+`trigger: cron` at or after a window's `reset_at`". The weekly-limit entry
+offered "a Sunday weekly slot that runs", confirmed by "a `run.end` row for
+that seat carrying `trigger: cron` with an exit of zero and more than one turn".
+Both predict a `cron` row. **Ask 2 produces `hook` rows and never `cron` rows,
+because the daemon has no cron wake route, and Ask 1 deletes every future
+Sunday slot this seat has.** So each grant falsifies the verification that was
+offered for it, and in the Sunday case the verification waits forever for a
+slot that no longer exists.
+
+**Why it was written twice.** Both paragraphs exist to lower the cost of
+granting, which is a good instinct and is why the sentence reads as diligence:
+it tells HQ that confirmation needs no new reporting on their side. The error
+is that the reading was derived from the mechanism **as it works today** rather
+than from the mechanism the ask would create, and an ask is by definition a
+request to change that mechanism. HQ caught it and said so in the grant, which
+is the only reason it is on this page rather than discovered in a week of
+waiting for a row that cannot arrive.
+
+**The fix, and it is one question rather than a process.** Before writing a
+"what would tell us it was granted" paragraph, name the reading **after** the
+change has landed, not before, and check that the surface it names still exists
+in the granted world. Where the ask changes a schedule, the reading cannot be
+keyed to the old schedule's hour or weekday. Where the ask changes a trigger,
+the reading cannot be keyed to a trigger value. **The durable form is a record
+this repository writes itself**, which is why the live test for both asks is now
+a `cycle-taken:` line in `docs/agents/exo-loop.md` naming a Monday 01:00Z slot:
+it is trigger-independent, it is local, and it survives any further change to
+the clock.

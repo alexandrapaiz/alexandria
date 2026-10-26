@@ -19725,6 +19725,7 @@ has nothing to go red against.
 - First step: the entry above.
 - Cost: $0.
 - Status: proposed
+
 ### 2026-10-24 — Canon law 13 has a detector in this repository and the pre-send gate does not run it (writer seat, run 49, for the engineer)
 - Trigger: this run pointed `past_tense_you`, which has been in
   `docs/voice/check_voice.py` for weeks, at `site/content/issues` for the first
@@ -19853,3 +19854,131 @@ has nothing to go red against.
   added to one of them is where it would show up.
 - Cost: $0.
 - Status: urgent
+
+### 2026-10-25 — The shortlist excludes one paper and can still be all of another
+- Trigger: today's build and today's craft scan, read against each other.
+  Slice 2 added `paper_id <> %s` to the shortlist, which stops a claim being
+  judged against its own paper's siblings. Then the Vespa scan below named what
+  that filter actually is, which is result diversification, and showed that the
+  general form of it is a quota rather than an exclusion. The live test written
+  this morning is what made the gap visible: in the dense fixture, all ten
+  candidates a claim is offered come from one paper, `p1`, and every assertion
+  about the shortlist passes. Excluding one group does not diversify the other
+  nine slots.
+- What: give the shortlist a per-paper cap, so no single paper can supply more
+  than a few of a claim's candidates. The product reason is the one already
+  written beside the exclusion: the promise is this week's finding against what
+  we already knew, and a shortlist drawn from one other paper is one comparison
+  dressed as ten. It is also the cheaper half of the same effect the exclusion
+  was reaching for, because the slots it frees go to papers that are not yet
+  represented. The query shape is a `row_number() over (partition by paper_id
+  order by distance)` filtered below the cap, wrapped around the existing
+  select, which keeps the distance floor and the time direction untouched.
+  The cap needs a number and the honest answer is that nobody knows it yet,
+  which is what the audit's new `reach` metric is for: it already samples the
+  retrieval, so adding the papers-represented count to it measures the problem
+  before anything is changed.
+- First step: add `papers_represented` to the `reach` metric, which is one more
+  lateral in a query that already exists and costs nothing to run, and report
+  it from the next run's log the way the ceiling is reported now. The quota
+  itself is the day after, once there is a number saying whether it binds.
+- Cost: $0. No new call, no new provider, one more clause in a query the job
+  already runs once per claim.
+- Status: proposed
+
+### 2026-10-25 — The shortlist's size is printed to a log and recorded nowhere
+- Trigger: writing slice 2's own done-condition this morning. The condition is
+  "the ceiling metric is under its bound on a fresh snapshot", both halves of
+  which are read from a database no seat can reach, so the run was given a line
+  that prints its mean candidates per claim and its ceiling count. That line is
+  the only evidence this change worked, it lives in a Modal log, and Modal is
+  switched off today, which is the first `This sprint` card in this seat's lane.
+  So the one surface built this morning to make slice 2 verifiable is on the
+  far side of an outage, and when the outage lifts the line is still a number
+  in a log with no history behind it.
+- What: `claim_judgments` already records every pass the judge makes, keyed
+  `(claim_id, prompt_sha)`, and already carries an `edges` count that is
+  allowed to be zero. One more column, `candidates`, makes the shortlist's size
+  a row rather than a line of stdout. That turns the ceiling from a number
+  somebody has to be watching a log to see into a time series anyone with the
+  read credential can query, broken down by prompt, which is what every other
+  measurement in this product already is. It also answers a question the audit
+  cannot ask today at all: the `reach` metric samples the corpus as it stands
+  now, so it reports what the retrieval would offer today and never what it did
+  offer when an edge was actually drawn. A claim judged in September was judged
+  against a corpus that no longer exists.
+- First step: the column, the insert that already runs on every pass writing
+  one more value into it, and the audit reading `avg(candidates)` per
+  `prompt_sha` beside the ceiling it already reports. The backfill is the same
+  shape slice 5's was and can write `null` rather than guessing, because a pass
+  that predates the column genuinely does not know.
+- Cost: $0. One integer per claim judged, on a table that already gets a row
+  per claim judged.
+- Status: proposed
+
+### 2026-10-25 — triage's cost table understates its own prompt by nine hundred tokens
+- Trigger: today's build found this defect in `pipeline/interpret.py` and fixed
+  it there, then the same shape turned out to be live one file over. The
+  interpret cap's comment said the system prompt was 880 tokens; measured with
+  `pipeline/budget.py`'s own tokenizer it is 1,260, because
+  `prompts/interpret.md` grew and nothing recomputes a comment. Checking
+  whether that was one file's problem: `pipeline/triage.py`'s cost table says
+  `prompts/triage.md` is 728 tokens. It measures 1,679, before adding the
+  `BATCH_INSTRUCTIONS` the same table counts with it. And `3_500, 700` is
+  written out by hand in four separate places in that file.
+- What: this is a forecast defect and not a spending defect, and the difference
+  is worth stating because it decides the priority. `Cap` measures real spend
+  from the provider's usage block at runtime, so no run can overspend its cap
+  no matter what the comment says. What is wrong is every number a human reads
+  before the money is spent: the per-call cost, the claims-per-run the cap
+  buys, the dry run's forecast of what clearing the backlog costs. Those are
+  the numbers the owner reads to decide whether the corpus is affordable, and
+  they are currently low by about a third for triage. The fix is the one that
+  shipped for interpret today: one measured pair of constants per job, every
+  forecast in the file reading it, and a test that recomputes both with
+  budget.py's tokenizer rather than reading them, so the next prompt that grows
+  turns a test red instead of a comment stale. `pipeline/distill.py` already
+  does the right thing in places through `expected_prompt_tokens()`, so the
+  pattern exists in this repository and does not have to be invented.
+- First step: triage, because it is measured and wrong today. One pair of
+  constants, four call sites pointed at it, and the test. Then read distill and
+  weekly the same way and report, rather than assuming either is clean.
+- Cost: $0, and the point of it is that the dollar figures the owner reads stop
+  being understated.
+- Status: proposed
+
+### 2026-10-25 — Craft scan: Vespa makes diversity a quota with a floor, where this shortlist makes it one exclusion (engineer seat, hook run)
+- Trigger: the daily craft scan, taken as an adjacency pick against the day's
+  own build. Today's slice added a same-paper exclusion to the claim graph's
+  retrieval, so the scan went to the search engine whose entire job is choosing
+  what a candidate set should contain.
+- What: Vespa treats diversity as a declared property of a retrieval phase
+  rather than as a filter. A rank profile names a `diversity` block with an
+  `attribute` to group by and a `min-groups` count, and the documentation is
+  explicit about what that buys: the result set is "guaranteed to get at least
+  min-groups unique values from the diversity attribute", and the cap on any
+  one group follows from it, computed as the phase's `max-hits` divided by
+  `min-groups`. Two things in that are worth stealing. The first is that the
+  guarantee is stated as a floor on variety rather than as a ban on one value,
+  which is the gap the entry above this one records: an exclusion of the
+  target's own paper says nothing about the other nine slots, where a
+  `min-groups` of three would. The second is that the cap per group is derived
+  from the floor instead of configured beside it, so the two numbers cannot be
+  set to contradict each other, which is exactly the failure mode this
+  repository keeps filing when one constant is copied into a second file.
+- What alexandria does better: Vespa diversifies results that are shown once
+  and then forgotten, so a wrong diversity setting costs one query. Here the
+  candidate set is shown to a judge whose answer is written into `claim_links`
+  append-only and read by `deprecated_claims`, which decides what a customer
+  sees on the Left-Behind Index. A bad shortlist does not degrade a page, it
+  writes a permanent row. That is why this filter is six lines of SQL with the
+  product argument written above it and a test holding its two constants
+  against the audit's copy, rather than a tunable in a config file. Vespa's
+  `min-groups` is a number an operator sets with nothing recorded about why,
+  and tuning it is the folklore that always follows. The shape of the
+  guarantee is the half worth stealing. Keeping the reason next to the number
+  is the half worth keeping.
+- First step: the two entries above, in that order. The measurement before the
+  quota, because the quota needs a number and nobody has one.
+- Cost: $0.
+- Status: proposed
