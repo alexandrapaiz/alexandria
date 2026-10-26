@@ -9529,6 +9529,36 @@ back. This run did not write it, because that file is the queue of what the
 deploy owes and adding to it on a branch of this seat's own is a claim on
 another seat's surface; the ask goes to the PM with this entry as its evidence.
 
+**Sighted a third time 2026-10-26, by the same daily machinery diff, and the
+count went from one to three while the repair sat unqueued.** `main` carries
+`f4da8c89` (merged as #536, interpret's per-call size read out of the job
+rather than frozen beside it) and `85866beb` (merged as #536, the rehearsal's
+triage and interpret sample sizes moved from 3 and 5 to 10 and 10 and pinned to
+their jobs' constants) on top of `5af27966` above. All three are reservations or
+rehearsal shapes, all three are named by `docs/agents/runtime-changes.md`, and
+none has a rehearsal receipt, for the same reason: the Modal workspace has been
+disabled since 2026-10-23 and a seat sandbox holds no provider key.
+
+**The repeat is not the unrehearsed change. It is that the repair this entry
+already named has not been made, and the entry correctly predicted why.** The
+2026-10-25 run declined to write
+`docs/agents/pending-workflow-changes.md` because that page is the ExO seat's
+enforcement surface (`prompts/exo-agent.md` §5 verifies every item on it each
+run) and writing another seat's queue from this seat's branch is a claim on it.
+This run read the page and reached the same conclusion, so the ask has now been
+deferred for the same correct reason twice, and the obligation has spent two
+days with nowhere to live while the number of changes owing it tripled.
+
+**A place that is this seat's own, offered because the ask keeps not landing.**
+The deploy surface of `tools/delivery_health.py` already lists the undeployed
+commits per app, it is read daily by every seat, and it is the thing whoever
+turns the workspace back on will look at before running `modal deploy`. That is
+the reader this obligation needs. The work is not one line: it needs each
+undeployed commit classified against `runtime-changes.md`, which is a day-sized
+slice rather than an addendum, so it is in `docs/ideas.md` as this run's third
+entry with its first step named and it is not built here. Recording this is not
+a substitute for queueing it, which is still the PM's or the ExO's to do.
+
 ## INC-2026-10-05-adr-39-duplicate — a second ADR number collision, same allocator, four days after the first one was recorded and still unfixed (2026-10-05, PM seat)
 
 **Recorded under the standing rule as a repeat of incident 29's class**
@@ -16492,6 +16522,23 @@ the ask it was made in before the owner acted on it, and the gap between the
 module's two anchors is now named here rather than living only in a board
 reply and a docstring that only covers half of it.
 
+**Repaired 2026-10-26 by the engineer seat, which is the surface this entry
+was addressed to.** `gather` takes a window, `week_window(week)` builds the
+exact span the Monday cron would have read, and both callers that write an
+issue pass it, so the queries this entry cites by line number are now anchored
+to the same week as the label above them. `weekly` also takes the week by name
+(`modal run pipeline/weekly.py::weekly --week 2026-W41`), which is the verb the
+withdrawn recovery needed and did not have, and a named-week run mails nobody:
+it writes the row and prints the `resend` command. The property is pinned in
+`tests/test_press_backfill.py::test_the_scheduled_path_reads_the_week_it_prints`,
+which fails on any return to the old anchor. Two things this does not close.
+Nothing has rehearsed it, because the Modal workspace has been disabled since
+2026-10-23, and the module's own deploy command runs `rehearse` before
+`modal deploy`, so the rehearsal is the gate and it is in the deploy path
+rather than skipped. And whether 2026-W41 should be written at all is still
+the owner's call, unchanged by this: what changed is that the command now
+writes the week it names.
+
 **The lesson for this seat.** A recommendation that prices an action in cost
 and names what it buys back is a claim that the action does what it says.
 This seat priced a command without reading whether it wrote the content its
@@ -22661,6 +22708,70 @@ is that this suite's greenness is a function of when it runs and the size of
 that function is unknown. Filed in `docs/ideas.md` as the day's second idea,
 with the cheapest first step named: run the suite twice, the second time with
 the clock moved a week forward, and read any divergence as the finding.
+
+## INC-2026-10-26-the-archive-surface-answered-green-over-a-gap-that-was-inside-its-own-evidence — the fifth of the green-for-a-false-reason class, and the first where the instrument had already fetched the proof (2026-10-26, engineer seat, scheduled hook run)
+
+**Observed by:** this run, reading `tools/delivery_health.py --surface archive
+--json` before picking the day's work.
+
+**What happened.** The verdict and the evidence under it, verbatim, at 14:10Z:
+
+```
+archive  ok  the record and the archive both end at 2026-W42
+         published: ["2026-W42", "2026-W40", "2026-W39"]
+```
+
+2026-W41 is missing from that list. The board card `Press: no issue for
+2026-W41` was open at the time and had been opened by a person. The surface
+whose job is the archive had the gap in its own payload and answered `ok`.
+
+`judge_archive` compared `max(published)` against the newest week in `digests`.
+`check_site` hands it the whole list. Nothing between 2026-10-01, when the
+surface was built, and today read past element zero.
+
+**Why it is a repeat and not a new class.** Four entries already name a guard
+that was green for a reason unrelated to the thing it checks:
+`INC-2026-10-18-the-board-tests-pinned-the-payload-the-board-refuses`,
+`INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason`,
+`INC-2026-10-25-a-cost-comment-goes-stale-in-two-production-jobs-at-once`, and
+`INC-2026-10-26-a-test-was-green-for-ninety-minutes-because-its-fixture-aged`.
+It is also the fifth on the narrower shape this seat keeps hitting, a guard
+narrower than the evidence available to it, after
+`INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see` and
+`INC-2026-10-24-the-drift-guard-reported-on-the-apps-it-could-measure-and-not-on-the-ones-it-could-not`,
+which its own heading calls the fourth entry on one shape.
+
+**What makes this one different from the other four.** In every prior instance
+the instrument could not see the thing it missed: a shallow checkout, two apps
+with no row, a fixture that aged, a payload nobody had tried. Here the instrument
+fetched the proof over the network, parsed it, put it in a dict, printed it in
+`--json`, and then asked the dict one question that could not reach it. No
+credential, no deploy and no second request stood between the check and the
+right answer. That removes the usual excuse from the class, which is worth
+recording precisely because the remedies the prior four produced were all about
+widening access, and none of them would have caught this.
+
+**The generalisation, offered for the next instrument rather than for this one.**
+When a check reduces a collection to one element and judges on that, the reduction
+is a claim about the rest of the collection and it is almost never stated. `max`,
+`[0]`, `order by ... limit 1` and `newest` are the four spellings of it in this
+repository. The question that catches it is "the evidence has N items and the
+verdict cites one, so what is being asserted about the other N-1."
+
+**The fix, in this run's pull request.** `archive_gaps` in
+`tools/delivery_health.py` walks the span between the oldest and newest
+published week and names every week in it that is neither published nor hidden;
+the surface reads FAILING when that list is non-empty and prints the `modal run
+pipeline/weekly.py::weekly --week <label>` that fills each. Seventeen assertions
+in `tests/test_delivery_health.py`, including a control that a complete span
+stays green. Live after the fix, the same command names 2026-W41 and the command
+that writes it. Written up at the surface's specification in
+`docs/agents/delivery-health.md`.
+
+**What is still open.** The generalisation above is a reading habit and nothing
+enforces it. Filed in `docs/ideas.md` as this run's first idea, with the first
+step named: a census of every `limit 1`, `[0]` and `max(` that feeds a verdict
+in `tools/`, read for what it assumes about the rows it dropped.
 
 ## INC-2026-10-26-the-visual-harness-readme-teaches-the-fixed-tmp-name-that-incident-0b-forbids — a seat followed the harness's own documented command and collided with its own predecessor's frames (2026-10-26, frontend seat)
 
