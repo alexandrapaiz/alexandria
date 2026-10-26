@@ -21494,7 +21494,7 @@ has nothing to go red against.
 - First step: the measurement, not the patch, because this one can be wrong in
   the expensive direction. Run both predicates over the `papers` titles already
   in the database and count the rows they disagree on, per term. If the answer
-  is zero the entry closes as a comment; if it is not, the number says which
+  is zero the entry closes as a comment. If it is not, the number says which
   terms need the edge and which need a better term. It needs a read-only
   database handle, so it waits on `NEON_RO_URL` having a usable value or on the
   Modal workspace being back, whichever comes first.
@@ -21552,7 +21552,7 @@ has nothing to go red against.
   `skeleton-heading`, and it scopes itself with an ad-hoc `line.startswith("#")`
   in its own loop. Vale makes the scope a field, which is how it has heading
   rules and prose rules without two dialects of rule.
-- **What alexandria does better.** Vale reports and a person decides; its
+- **What alexandria does better.** Vale reports and a person decides, and its
   severity is advice to whoever is looking at the editor. This gate sits inside
   the send path, and a blocking finding stops the email and triggers one
   rewrite against the findings before it holds the issue. And every rule here
