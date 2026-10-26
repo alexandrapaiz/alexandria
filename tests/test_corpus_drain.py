@@ -1423,7 +1423,7 @@ def test_the_share_is_checked_before_the_call_in_every_corpus_job():
             ("pipeline/triage.py", "for chunk in plan:",
              "out, model = client.ask_json("),
             ("pipeline/interpret.py",
-             "for claim_id, claim_text, embedding in queue:",
+             "for claim_id, claim_text, paper_id, embedding in queue:",
              "out, model = client.ask_json(")):
         body = (ROOT / path).read_text()
         body = body[body.index(loop):]

@@ -469,11 +469,35 @@ UNCOVERED = {
     # needs rows, including the backfill recovering September's shas out of
     # `claim_links.method`, runs on the company host and skips in CI.
     "tests/test_rejudge_queue.py",
+    # Added 2026-10-25 with slice 2 of the graph upgrade, and pinned for the
+    # same structural reason as every line above: the step that would run it
+    # goes in `.github/workflows/checks.yml`, which no seat's token may write,
+    # and `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words
+    # not to attempt that file again because four runs already have. The staged
+    # replacement runs it, because that file runs the suite rather than naming
+    # files. `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # is already this finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern.
+    #
+    # What it guards had no test at all until the day it was pinned, which is
+    # the part worth reading. The six lines of SQL that choose which older
+    # claims a new claim is judged against decide the shape of the entire claim
+    # graph, and every metric `tools/graph_audit.py` reports is downstream of
+    # them. Three of the four properties asserted here are silent failures: a
+    # shortlist that offers a claim its own paper's siblings produces edges
+    # that are true and worthless, a shortlist that pads itself to its limit
+    # pays a model to answer `unrelated`, and a shortlist that looked forward
+    # in time would write edges the audit can only catch after they are rows.
+    # None of the three turns anything red. The live half of the file needs a
+    # cluster with pgvector and runs on the company host; the structural half,
+    # which includes recomputing the token pair the spend cap is set against,
+    # runs anywhere.
+    "tests/test_shortlist.py",
     # Added 2026-10-25 with the firing-record reader, and pinned by the same
     # two closed routes as every line above: a step goes in
     # `.github/workflows/checks.yml` and applying the staged replacement is a
     # `git mv` out of `.github/workflows-pending/`, and no seat's token writes
-    # either. Nineteenth line, counted at
+    # either. Twentieth line, counted at
     # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
     # rather than opening another entry on one pattern.
     #

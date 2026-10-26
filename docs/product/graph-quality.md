@@ -1,6 +1,7 @@
 # The claim graph, measured
 
-**Slice 1 built 2026-09-29, slice 5 built 2026-10-24 and finished 2026-10-25** (engineer seat). This is
+**Slice 1 built 2026-09-29, slice 5 built 2026-10-24 and finished 2026-10-25,
+slice 2 built 2026-10-25** (engineer seat). This is
 the design record for the
 ledger entry "Knowledge graph upgraded to industry standard" (docs/ideas.md,
 accepted 2026-09-18), whose first step asks for a graph-quality audit with
@@ -28,7 +29,7 @@ Four files hold all of it.
 | --- | --- | --- |
 | The edges | `db/schema.sql`, `claim_links` | `(from_claim, to_claim, relation)` as the primary key, plus `confidence`, `method`, `created_at` |
 | The judge | `pipeline/interpret.py` | daily Modal cron at 14:00 UTC, oldest claim first |
-| The shortlist | `pipeline/interpret.py`, `NEIGHBORS = 5` | pgvector kNN over `claims.embedding` against strictly older claims |
+| The shortlist | `pipeline/interpret.py`, `SHORTLIST_SQL` | pgvector kNN over `claims.embedding` against strictly older claims, excluding the new claim's own paper and anything past `CANDIDATE_MAX_DISTANCE`, capped at `NEIGHBORS` |
 | The rubric | `prompts/interpret.md` | the four relations and what each one means |
 | The consumers | `db/schema.sql`, `deprecated_claims` and `site/lib/graph-live.js` | a view gating on an incoming `contradicts` edge at confidence >= 0.7, and the `/graph` page, which reads every edge live |
 
@@ -75,13 +76,23 @@ argument is in the tool beside the number so the next person can move it.
 Three of those deserve their reasoning in prose, because they are the ones a
 reader is most likely to think are arbitrary.
 
-**The shortlist ceiling.** `NEIGHBORS = 5` decides how many candidates a claim
-is judged against, so five is the most distinct neighbors any claim can be
-linked to on the run that interpreted it. A claim sitting exactly at five is a
+**The shortlist ceiling.** `NEIGHBORS` decides how many candidates a claim is
+judged against, so it is the most distinct neighbors any claim can be linked to
+on the run that interpreted it. A claim sitting exactly at that number is a
 claim whose edge count was decided by a Python constant instead of by the
 corpus. One claim in ten at the ceiling is tolerable. Three in ten means the
 cheapest available upgrade is a larger integer, and every clever change made
 before that one is measured against a graph that was truncated.
+
+It was five when this was written and it is ten since slice 2, which is the
+cheapest upgrade being taken rather than this metric being satisfied. The
+numbers above are shares, so they do not move when the constant does, and the
+metric is still the one that says whether the new constant binds too. The audit
+keeps its own copy of the number and a test holds it against the job's, because
+a ceiling metric measuring a shortlist nobody sends reads as a healthy graph.
+`reach`, added in the same slice, asks the same question of the candidates
+rather than of the edges, and it is the one of the two a seat can run before the
+credential exists.
 
 **Confidence calibration.** `prompts/interpret.md` does define the value. It
 says confidence is "your probability that the relation label is right" and warns
@@ -185,8 +196,8 @@ costs the ability to say whether anything improved.
 **Slice 1, the instrument. Built 2026-09-29.** Done when the audit runs against
 the real graph and its snapshot is filed.
 
-**Slice 2, stop the shortlist deciding the density.** Three changes in
-`pipeline/interpret.py`, all small: exclude candidates from the same
+**Slice 2, stop the shortlist deciding the density. Built 2026-10-25.** Three
+changes in `pipeline/interpret.py`, all small: exclude candidates from the same
 `paper_id` as the new claim, raise `NEIGHBORS`, and add a distance floor so a
 claim with no genuinely close neighbor is judged against fewer than five
 candidates rather than being handed five distant ones. The floor is the one that
@@ -195,6 +206,127 @@ comes from. Cost is bounded by the same `CAP_USD` already in that file, because
 more candidates means a longer user message and not more calls.
 **Done when:** the ceiling metric is under its bound on a fresh snapshot and the
 same-paper share has fallen, with both snapshots committed.
+
+All three shipped, as `SHORTLIST_SQL`, `NEIGHBORS = 10` and
+`CANDIDATE_MAX_DISTANCE = 0.40`. Four things the paragraph above did not
+anticipate are worth more than the three it did.
+
+**The query had never been tested, and that is the finding rather than the
+chore.** The retrieval that decides the shape of this graph was six lines of
+SQL inline in the run loop. Every metric slice 1 built measures something
+downstream of it, the audit's own `integrity` check exists to catch an edge
+pointing backwards through time, and nothing anywhere asserted that the query
+only ever looked backwards. `tests/test_shortlist.py` is nine live assertions
+against a real cluster with pgvector, one for each way out of the list, and the
+fixture is built so that the target's own sibling is the nearest claim in the
+corpus, because that is what the defect looked like in production. Deleting any
+one clause takes the suite to ten failures. The audit could only ever have
+caught the symptom, after the bad edges were already rows.
+
+**The cost comment was wrong before this slice touched it.** It said the system
+prompt was 880 tokens. Measured with `pipeline/budget.py`'s own tokenizer it is
+1,260, because `prompts/interpret.md` has grown since somebody wrote 880 down
+and nothing recomputes a comment. So the cap had been set against a request
+smaller than the one being sent. `drain` and `preflight` each carried a third
+copy of the pair as `1_050, 150`. There is one measured pair now,
+`CALL_PROMPT_TOKENS` and `CALL_OUTPUT_TOKENS`, every forecast reads it, and a
+test recomputes both rather than reading them, because the failure here is not
+arithmetic anybody got wrong. It is a number that was right on the day and
+decays with no symptom.
+
+**The raise is not free, and "bounded by `CAP_USD`" was the wrong frame.** It is
+true that a wider shortlist is a longer message and not a second call, so the
+cap still holds and no run can overspend. What changes is what the cap buys: the
+ceiling per call goes from $0.00400 to $0.00594, so $0.30 buys 50 claims in the
+worst case where it bought 74, and about 95 in practice where it bought 135. A
+fallback day falls further, from 56 claims to 23, because the free tier's
+allowance is a token budget and the call got bigger. That is the price of slice
+2 and it is worth paying at today's depths, where `interpret_pending` is 0 and
+the backlog is upstream in distill. It would be worth re-reading if the fresh
+queue is ever thousands deep again, and this paragraph exists so that re-reading
+does not have to start by rediscovering the arithmetic.
+
+**The floor's number is the weakest thing here, so it ships with the instrument
+that moves it.** The paragraph above says the dedup probe's distance histogram
+is where the number comes from, and no probe has ever run, because no seat holds
+a database credential. So 0.40 comes from the band already recorded beside
+`NEAR_DUPLICATE_DISTANCE`: Qwen3-Embedding-0.6B puts paraphrases below 0.1 and
+unrelated sentences between 0.4 and 0.8, and 0.40 is the near edge of the
+unrelated band. That is an argument and not a measurement, the same as every
+bound in section 2. The audit's new `reach` metric is the measurement when
+somebody can run it: it runs the job's own retrieval against a seeded sample and
+reports how many candidates the shortlist offers, how many claims are offered
+none, and a histogram of nearest cross-paper distance in tenths. The histogram
+is deliberately not truncated at the floor, because the whole question a reader
+has is how much of the corpus sits just outside it. `reach` carries no bound, on
+purpose: a short shortlist is the floor working, and a bound there would call a
+fact about the corpus a failure.
+
+**The question a filter over a vector index always raises, asked and closed.**
+`claims` carries an HNSW index (`claims_embedding_idx`, `vector_cosine_ops`),
+and an HNSW scan can only evaluate the distance ordering. The other two clauses
+of this shortlist, `id < %s` and `paper_id <> %s`, are therefore post-filters,
+and a post-filtered approximate scan is the standard way a query like this
+quietly returns fewer rows than its `limit`: the index hands back a bounded
+number of candidates, the filters delete some of them, and nothing goes back
+for more. If that happened here, raising `NEIGHBORS` from 5 to 10 would buy
+nothing and the audit would report a low ceiling for the wrong reason.
+
+Measured rather than reasoned about. On a 1,200-claim corpus across 50 papers
+with the index built, the shortlist returns 10 candidates of 10, with the floor
+active and with the floor disabled, and identically whether the index is
+allowed or `enable_indexscan` is off. The plan says why: Postgres chooses
+`Limit -> Sort` on an exact distance computation rather than the index at all,
+at this size and with these filters. So the recall is exact and the raise
+delivers what it claims.
+
+What that does not say is that it is exact forever. The planner switches to the
+index when the table is large enough for the sort to look expensive, and that is
+the point where the post-filter behaviour starts to matter. Two things are worth
+knowing then. The server's pgvector version decides whether a filtered scan can
+widen its own search, since `hnsw.iterative_scan` arrived in 0.8.0 and the host
+this was measured on runs 0.6.0, and nothing in this repository records which
+version Neon runs, because no seat can read the database to ask. And the
+instrument already exists: the run's own ceiling line falls when the shortlist
+stops filling, so a scan that silently returns six candidates where ten qualify
+shows up as a ceiling share collapsing without the corpus changing.
+
+**One gap this slice opens and does not close, recorded here because the next
+person to touch the reservation needs it.** Raising
+`MAX_COMPLETION_TOKENS` makes this a runtime change under
+`docs/agents/runtime-changes.md`, whose third gate is
+`modal run pipeline/interpret.py::rehearse`, and that law's own words are that
+a rehearsal uses "the real provider, the real key, the real token reservation,
+the real timeout". The reservation it sends is real. The payload is not:
+`REHEARSAL_NEIGHBORS` is a fixed five-candidate shortlist, so the rehearsal now
+exercises about half the user message production sends, which is the half of
+the request that grew. It would still catch a dead key, a missing model, a
+timeout and a judge that labels everything or nothing, so it is not useless. It
+would not catch a model that handles five candidates and degrades at ten.
+
+Extending it means five more hand-written claims whose right answer is
+knowable, because that fixture's value is that a reader can check the verdict,
+and `tests/test_corpus_drain.py` pins the length at five on purpose. That is a
+small piece of work and it is not this slice's, so it is written down rather
+than rushed. Nothing is urgent about it: the gate cannot run at all until the
+Modal workspace comes back.
+
+**And the done-condition cannot be met today, by anyone in this org.** Both
+halves of it are read off a database. So the run reports the retrieval-side half
+of the same question in its own log, which is the one surface a seat can reach:
+every run now prints its mean candidates per claim and how many claims hit the
+`NEIGHBORS` ceiling. Above a tenth there, `NEIGHBORS` is binding again and the
+next raise is cheaper than any cleverness. The snapshots the done-condition
+names are still owed and still belong to whoever holds the credential, which is
+the ledger entry of 2026-09-28.
+
+The audit also settled the question slice 5 handed forward. A metric that gates
+a bound reads `latest_links` now, a metric that asks what the judges have done
+reads `claim_links`, `integrity` keeps reading the rows because a view would
+hide the rows it hunts for, and `shape` reports both so the gap between them
+says whether anything has ever been re-judged. No pair in production carries a
+second opinion yet, so every number that split touches is unchanged today and
+right tomorrow.
 
 **Slice 3, anchor the confidence.** `prompts/interpret.md` defines confidence as
 a probability and names the 0.7 consequence, and it stops there. Give it three
@@ -345,6 +477,18 @@ paragraph's list is unchanged today and right tomorrow. The audit's volume metri
 for "what has the judge done" and the wrong one for "how dense is the graph".
 That choice belongs with slice 2, which is where density is argued, and it is
 recorded here rather than guessed at now.
+
+**Settled 2026-10-25 by slice 2, in the direction this paragraph expected.** A
+metric that gates a bound reads `latest_links`, because every one of those
+bounds is a claim about the graph as it stands: `degrees` feeds isolation and the
+ceiling, `confidence` feeds calibration and the 0.7 gate, `provenance` feeds the
+same-paper share. A metric that asks what the judges have done keeps reading
+`claim_links`, which is `judges` and also `integrity`, and `integrity` is the one
+where reading the view would have been a defect rather than an imprecision,
+because it hunts for rows that should not exist and the view hides all but the
+newest row per pair. `shape` reports both as `edges` and `current_edges`, so the
+gap between them is the cheapest way for a reader to see whether the slow loop
+has ever run.
 
 **Slice 6, richer relation semantics.** Four verbs may be too few. They may also
 be exactly right, and the honest position today is that nobody knows, because
