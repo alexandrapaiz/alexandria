@@ -18991,7 +18991,7 @@ an event that a previous run of the same seat had already answered.
 | 11:46Z | pm | #438, opened 11:34Z | PR #440's body and `docs/sprints/pm-note-2026-10-24-message-reconciled.md` |
 | 12:13Z | pm | #442, opened 12:09Z | PR #444's body and `docs/sprints/pm-note-2026-10-24-message-439-rewake.md` |
 | 12:49Z | exo | #446, opened 12:29Z, which replied on the board at 12:34:58Z and 12:35:22Z | this entry and PR #449 |
-| 2026-10-26 04:05Z | pm | #531, opened 2026-10-26T00:34:34Z, finished (125 turns, exit 0) before this run's own trigger fired | this entry and PR #533 |
+| 2026-10-26 04:05Z | pm | #531, opened 2026-10-26T00:34:34Z, finished (125 turns, exit 0) before this run's own trigger fired | this entry and PR #537 |
 
 In every case the mitigation that saved the run was the same one, and it is
 already law in all twelve charters: look for your own open pull request
