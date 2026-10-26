@@ -3117,13 +3117,190 @@ IDENTIFIER = re.compile(r"^[A-Z][A-Z0-9_]{3,}$")
 #: check that guesses is one a run learns to skip.
 TOO_BROAD = 2
 
-#: The sentences that say a finding is being handed to another seat. Taken from
-#: this seat's own reviews, which have used all of these.
+#: Identifiers written in prose rather than in backticks that still name one
+#: thing. Measured over the 687 unsettled entries in `docs/ideas.md` on
+#: 2026-10-26, by the same test `IDENTIFIER` was measured by against paths,
+#: which is how many unsettled entries each distinct token sits in:
+#:
+#:     an INC id        96 distinct, 74 in exactly one entry,  7 over TOO_BROAD
+#:     `ban list N`     46 distinct, 34 in exactly one entry,  3 over TOO_BROAD
+#:     `law N`          15 distinct,  4 in exactly one entry,  8 over TOO_BROAD
+#:
+#: So the first two name a defect and the third names a building. Law 15 sits
+#: in THIRTEEN unsettled entries and law 12 in eight, which is worse than the
+#: nine of `check_digest_quality.py`, the path this gate already refuses for
+#: precisely that reason. Run 51 left this widening for the next run and named
+#: "a law, a rule or a file path" as the three invisible classes. Two of those
+#: three are rejected here on the measurement, and the class it did not name
+#: is the one admitted.
+TRACEABLE = re.compile(r"INC-\d{4}-\d{2}-\d{2}-[a-z0-9-]+"
+                       r"|ban list(?: entry)? \d+", re.I)
+
+#: The seats a finding can be handed to, which is every seat but this one plus
+#: the two authorities above them.
+SEATS = r"engineer|frontend|exo|pm|research|skill|owner|chair"
+
+#: The sentences that say a finding is being handed to another seat. The first
+#: version of this took five phrasings from the reviews that existed when the
+#: gate was written, and five is not how many this seat uses. Measured over all
+#: 55 reviews in `docs/voice/reviews` on 2026-10-26, 52 of them hand something
+#: on and the five phrasings found 14. Everything below `in the ledger for the`
+#: is the widening, and it takes the same measurement to 47 of 52.
+#:
+#: That recall number is why the widening is not cosmetic. `routed` reads only
+#: the sections this pattern matches, so a phrasing it misses is a section the
+#: gate never opens, and the `VACUOUS` report added in the same run as this
+#: widening cannot fire on a file whose routing the pattern cannot see. The
+#: specimen was this run's own review, which routed two findings and which the
+#: five phrasings called a review that "routes nothing".
+#:
+#: The recurring forms the five missed, all of them live in this register:
+#: "Filed in `docs/ideas.md`", "Filed, not patched", "filed rather than
+#: anchored", "is filed as urgent", "The cause is the engineer's", "retiring it
+#: is the frontend seat's call", and "not this seat's file to renumber".
 ROUTING = re.compile(
-    r"routed rather than patched|filed rather than patched"
-    r"|rout(?:ed|es?) (?:it |them |both )?to the ledger"
-    r"|(?:goes|go) to the ledger|filed in the ledger"
-    r"|in the ledger for the engineer", re.I)
+    r"(?:fil|rout)(?:ed|es|ing) (?:rather than|and not|not) "
+    r"(?:patched|anchored|fixed|acted)"
+    r"|fil(?:ed|es|ing)(?:,| it| them)? (?:not|rather than) patched"
+    r"|fil(?:ed|es|ing) (?:in|for) (?:the ledger|`?docs/ideas)"
+    r"|fil(?:ed|es|ing) elsewhere"
+    r"|fil(?:ed|es|ing) for the (?:" + SEATS + r")"
+    r"|rout(?:ed|es?) (?:it |them |both )?to the (?:ledger|" + SEATS + r")"
+    r"|(?:goes|go) to the (?:ledger|" + SEATS + r")"
+    r"|in the ledger for the (?:" + SEATS + r")"
+    r"|is the (?:" + SEATS + r")(?:\'s| seat\'s)"
+    r"|(?:is|are) not this seat\'s"
+    r"|escalat\w+ (?:rather than|in|to) ", re.I)
+
+
+#: What `routed_tokens` must and must not pull out of a routing section. The
+#: true cases are the two admitted classes on live specimens and the constant
+#: this gate already read, which is the case that proves the widening took
+#: nothing away. The false cases are the shapes the widening could have
+#: bought. A law number, which the measurement above rejects as a building. A
+#: path, which this gate has always refused for the same reason. And a ledger
+#: heading, which a routing section names as its ESCAPE rather than as its
+#: finding, and which therefore belongs to `acknowledged` and not here.
+ROUTED_CASES = (
+    (True, "filed in the ledger, and INC-2026-10-18-the-duplicate-candidate-"
+     "register-is-not-in-the-charters-read-list is the fourth count",
+     "INC-2026-10-18-the-duplicate-candidate-register-is-not-in-the-charters-"
+     "read-list"),
+    (True, "routed to the ledger. Ban list 140 carries the sweep.",
+     "Ban list 140"),
+    (True, "routed to the ledger, and ban list entry 93's unenforced half",
+     "ban list entry 93"),
+    (True, "routed rather than patched, about `INTENSIFIERS` matching \"very\"",
+     "INTENSIFIERS"),
+    (False, "routed to the ledger, because canon law 15 has no gate.",
+     "law 15"),
+    (False, "routed to the ledger, naming `pipeline/weekly.py` as the file.",
+     "pipeline/weekly.py"),
+    (False, "duplicates\n`2026-10-05 \u2014 Coverage of links and evidence "
+     "grades is a pipeline gate, not a\nprompt rule`, which is this seat's",
+     "2026-10-05 \u2014 Coverage of links and evidence grades is a pipeline "
+     "gate, not a prompt rule"),
+    # An identifier that wraps still comes out, because `TRACEABLE` is read
+    # over normalised text. The backticked half of this reader is not: a span
+    # is matched within one line. That costs nothing, because `IDENTIFIER`
+    # forbids whitespace, so a span it matches cannot wrap by construction.
+    (True, "filed in the ledger. INC-2026-09-30-branch-name-reuse-is-systemic\n"
+     "is the entry.", "INC-2026-09-30-branch-name-reuse-is-systemic"),
+)
+
+
+#: What `ROUTING` must and must not read as handing a finding on. Every true
+#: case is a sentence taken verbatim from a review in this register, and the
+#: first five are forms the original five phrasings missed. The false cases are
+#: the shapes that look like a route and are not: a finding this run FIXED, a
+#: count of rulings in a gate's own output, and a sentence about this seat's own
+#: file, which is the lane rather than a handoff.
+ROUTING_CASES = (
+    (True, "Filed in `docs/ideas.md` for the engineer, with the query fix."),
+    (True, "Filed, not patched. For the engineer."),
+    (True, "all 49 anchored entries, with 43 and 44 filed rather than anchored"),
+    (True, "The cause is the engineer's, is filed as urgent, and is not "
+     "restated here."),
+    (True, "retiring it is the frontend seat's call, not this run's"),
+    (True, "docs/agents/incidents.md, which is not this seat's file to "
+     "renumber"),
+    (True, "Law 8's form half goes to the engineer instead."),
+    (True, "routed rather than patched, about `INTENSIFIERS`"),
+    (False, "The procedure now renders as a list, which is the one prompt "
+     "patch in this diff."),
+    (False, "`check_voice.py taste` reports 31 rulings, 27 enforced and "
+     "quoted."),
+    (False, "The generator is this seat's own surface and the patch is here."),
+)
+
+#: What `entry_name` must strip and must keep. The first is run 51's entry,
+#: the specimen that proved the matcher wrong. The last two are the shapes
+#: that would break if the pattern were greedy or unanchored: a title whose
+#: own words end in a parenthesis it needs, and a heading with no attribution
+#: at all, which most of the older entries are.
+NAME_CASES = (
+    ("2026-10-05 — Coverage of links and evidence grades is a pipeline gate, "
+     "not a prompt rule (writer seat)",
+     "2026-10-05 — Coverage of links and evidence grades is a pipeline gate, "
+     "not a prompt rule"),
+    ("2026-10-26 — The rewrite is a substitution (writer seat, run 51)",
+     "2026-10-26 — The rewrite is a substitution"),
+    ("2026-10-24 — The outsider gate (law 12a) belongs in the pre-send pass",
+     "2026-10-24 — The outsider gate (law 12a) belongs in the pre-send pass"),
+    ("2026-09-24 — The quality gate passes the issue she rejected",
+     "2026-09-24 — The quality gate passes the issue she rejected"),
+)
+
+
+def routed_cases():
+    """Every case above, run before any review is read.
+
+    `headless_cases` and `state_cases` are the precedent and the reason is the
+    same: a detector that fails its own cases reports a clean diff for the
+    wrong reason. This gate spent its whole life so far doing exactly that,
+    and the proof is that run 51's review routed a finding and the gate found
+    nothing in it to check.
+    """
+    bad = []
+    for want, section, token in ROUTED_CASES:
+        got = token in routed_tokens(section)
+        if got != want:
+            bad.append((want, token))
+    for head, want in NAME_CASES:
+        if entry_name(head) != want:
+            bad.append((want, entry_name(head)))
+    for want, line in ROUTING_CASES:
+        if bool(ROUTING.search(line)) != want:
+            bad.append((want, line))
+    return bad
+
+
+def routed_tokens(section):
+    """What one routing section names that can be looked up in the ledger.
+
+    Two classes, kept apart because they are matched differently. A constant
+    is matched exactly, as this gate always has. A `TRACEABLE` identifier is
+    matched case-insensitively over normalised text, because "ban list 140"
+    wraps in a ledger body and this register capitalises it both ways.
+    """
+    out = {t.strip() for t in re.findall(r"`([^`\n]+)`", section)
+           if IDENTIFIER.match(t.strip())}
+    out |= {norm(m.group(0)) for m in TRACEABLE.finditer(norm(section))}
+    return out
+
+
+#: A ledger heading ends in its attribution, "(writer seat, run 51)" or
+#: "(frontend seat, for the writer seat)", and that parenthetical is metadata
+#: about who filed the entry rather than part of the entry's name. A run
+#: naming an entry writes the title and drops it, which is what run 51 did:
+#: it named "2026-10-05 — Coverage of links and evidence grades is a pipeline
+#: gate, not a prompt rule" and the heading carries "(writer seat)" after it,
+#: so an exact match on the heading said the entry had not been named. Matching
+#: the name and not the attribution is why `routed` does not report that
+#: review as a run that routed a finding blindly.
+ATTRIBUTION = re.compile(r"\s*\([^()]*\)\s*$")
+
+entry_name = lambda head: norm(ATTRIBUTION.sub("", norm(head)))
 
 
 def ledger_entries(text=None):
@@ -3178,6 +3355,16 @@ def routed(ref=None):
         python3 -I docs/voice/check_voice.py routed origin/main
     """
     ref = ref or "origin/main"
+    bad = routed_cases()
+    if bad:
+        for want, token in bad:
+            print(f"  CASE    wanted {want}: {token[:62]}")
+        print("The token reader is broken and ROUTED_CASES says how. Nothing")
+        print("below was read.")
+        return 1
+    print(f"  the token cases               {len(ROUTED_CASES)} pass")
+    print(f"  the entry-name cases          {len(NAME_CASES)} pass")
+    print(f"  the routing cases             {len(ROUTING_CASES)} pass")
     out = subprocess.run(["git", "diff", "--name-status", ref],
                          cwd=ROOT, capture_output=True, text=True)
     reviews = []
@@ -3205,7 +3392,12 @@ def routed(ref=None):
         [(ROOT / r).read_text() for r in reviews]
         + [text for path, _, text in added_lines(ref)
            if path == "docs/ideas.md"]))
-    clashes, broad = [], []
+    # The entries this diff names anywhere, counted once. A routing section
+    # that hands a finding on is doing the right thing when the run names the
+    # entry it is not duplicating, and that naming may sit in the review or in
+    # the ledger append beside it, which is why the scope is the whole diff.
+    named = [h for h, _, _ in entries if entry_name(h) in acknowledged]
+    clashes, broad, vacuous = [], [], []
     for path in reviews:
         body = (ROOT / path).read_text()
         if not ROUTING.search(body):
@@ -3218,18 +3410,37 @@ def routed(ref=None):
         # own two real rows under fifteen.
         sections = [s for s in re.split(r"(?m)^(?=#{2,}\s)", body)
                     if ROUTING.search(s)]
-        tokens = {t.strip() for s in sections
-                  for t in re.findall(r"`([^`\n]+)`", s)
-                  if IDENTIFIER.match(t.strip())}
+        tokens = {t for s in sections for t in routed_tokens(s)}
+        # Vacuity is asked per file and the escape above is asked across the
+        # diff, and the two scopes are not in tension. The escape answers "did
+        # this run escalate by name", where the name may sit in the ledger
+        # append. This answers "did the gate read anything at all in THIS
+        # review", and one named entry in a second file is no evidence about
+        # this one. Scoped diff-wide it never fires: the first review in the
+        # diff to name an entry excuses every other review's routes.
+        if not tokens and not [h for h, _, _ in entries
+                               if entry_name(h) in norm(body)]:
+            # The case this gate could not report, and the reason it is here:
+            # zero checkable identifiers and no entry named is a pass that
+            # verified nothing, printed in the same words as a pass that
+            # verified something. That is incident 20's shape and it is the
+            # bias run 51 found in `claims`, where the state a row LEAVES was
+            # the state the gate read. A gate whose silence reassures is worse
+            # than no gate, so this one says which silence it is.
+            vacuous.append((path, len(sections)))
         for token in sorted(tokens):
-            held = [(h, st) for h, e, st in entries if token in e]
+            if TRACEABLE.fullmatch(token):
+                held = [(h, st) for h, e, st in entries
+                        if token.lower() in norm(e).lower()]
+            else:
+                held = [(h, st) for h, e, st in entries if token in e]
             if not held:
                 continue
             if len(held) > TOO_BROAD:
                 broad.append((path, token, len(held)))
                 continue
             for head, status in held:
-                if norm(head) in acknowledged:
+                if entry_name(head) in acknowledged:
                     continue
                 clashes.append((path, token, status, head))
     print(f"  review files this diff adds   {len(reviews)}")
@@ -3238,6 +3449,11 @@ def routed(ref=None):
             (ROOT / path).read_text()) else "routes nothing"
         print(f"    {path}  ({routes})")
     print(f"  unsettled entries in docs/ideas.md   {len(entries)}")
+    print(f"  entries this diff names               {len(named)}")
+    for path, n in vacuous:
+        print(f"  VACUOUS {path}")
+        print(f"            {n} section(s) route a finding, no identifier the "
+              f"ledger can be searched for, no entry named")
     for path, token, status, head in clashes:
         print(f"  FAIL    {path}")
         print(f"            routes `{token}`, which is already filed and "
@@ -3247,12 +3463,16 @@ def routed(ref=None):
         print(f"  BROAD   {path}")
         print(f"            `{token}` sits in {n} unsettled entries, so it "
               f"names a machine rather than a finding")
-    if not clashes:
+    if not clashes and not vacuous:
         print("  no finding routed here is one the ledger already holds")
     print()
     print("A run may route a finding the ledger already holds. It may not do")
     print("so without naming the entry, because that is the difference")
     print("between escalating a stale finding and not knowing it exists.")
+    # VACUOUS is reported and not failed on, the way BROAD is. The gate cannot
+    # tell a run that routed nothing checkable from a run that routed a
+    # finding this register has never held, and a check that guesses is one a
+    # run learns to skip. What it can do is stop printing the all-clear.
     return 1 if clashes else 0
 
 
@@ -3363,6 +3583,147 @@ def standalone(paths=None):
     return 1 if hits else 0
 
 
+# ---- captions ---------------------------------------------------------
+
+#: The sibling caption sets on the site. One entry per set, because the tell
+#: this reads is a property of a SET and is invisible in any one member. Today
+#: the skill library's shelves are the only set in the repository that renders
+#: a caption under every member of a list. A second set is one line here.
+CAPTION_SETS = (("site/lib/skill-shelves.js", "the skill library's shelves"),)
+
+#: A caption built as a short verbless opener, a full stop, and a list. The
+#: length bound is what makes it a FRAME rather than an ordinary two-sentence
+#: caption: the opener is too short to be an argument, so its only job is to
+#: announce the subject before the list arrives.
+CAPTION_FRAME = re.compile(r"^[^.]{1,45}\.\s+[A-Z]")
+
+#: What `CAPTION_FRAME` must and must not read as the frame. Every case is a
+#: caption string taken verbatim from the surface, so a case here is evidence
+#: rather than an illustration. Run before any file is opened, because a
+#: pattern that reports the wrong count reports it in the same format as the
+#: right one.
+CAPTION_CASES = (
+    (True, "The scaffold around a model. Tools, prompts, loop structure, and "
+     "the feedback the loop runs on."),
+    (True, "Several agents dividing work. How they are organised, how they "
+     "hand off, and how they fail."),
+    (True, "Post-training that updates the weights. Distillation, reward "
+     "design, and self-improvement."),
+    (True, "Getting an answer out fast and cheap. Decoding, caching, and "
+     "test-time compute."),
+    (False, "What goes into the window, in what order, and what to do when it "
+     "will not fit."),
+    (False, "Models that read and act beyond text, across images, audio, and "
+     "the world."),
+    (False, "Distilled and shelved, on a shelf of its own for now."),
+    # The drafted repairs of 2026-10-26, which the frame must not read as the
+    # frame it was written to replace. The first is the long one and the last
+    # is the short one, which are the two a length-bounded pattern is most
+    # likely to get wrong.
+    (False, "Most of what makes an agent reliable sits outside the model, in "
+     "the tools it is given, the loop it runs in and the corrections it gets "
+     "back."),
+    (False, "Once the answer is right, the remaining job is getting it out "
+     "fast and cheap."),
+    (False, "A skill lands here when its subject is not one of the headings "
+     "above."),
+    # A caption whose FIRST sentence is long enough to carry an argument is
+    # two sentences rather than this frame, however the second one reads.
+    (False, "An agent that can act needs a boundary somewhere, and where you "
+     "put it decides whether the defence does anything. Both halves matter."),
+)
+
+#: A caption as the surface declares it, which is a `blurb:` key whose value
+#: may wrap across lines the way every string in that file does.
+CAPTION = re.compile(r"blurb:\s*\n?\s*((?:\"(?:[^\"\\]|\\.)*\"\s*\+?\s*)+)")
+
+
+def caption_cases():
+    """`CAPTION_FRAME` against the captions it is a verdict about."""
+    bad = [(want, s) for want, s in CAPTION_CASES
+           if bool(CAPTION_FRAME.match(s)) != want]
+    print(f"CAPTION_FRAME cases                        "
+          f"{len(CAPTION_CASES) - len(bad)} of {len(CAPTION_CASES)}")
+    for want, s in bad:
+        print(f"  FAIL    wanted {want}, got {not want}: {s[:60]}")
+    return 1 if bad else 0
+
+
+def captions_of(path):
+    """The caption strings one surface declares, in declaration order."""
+    text = (ROOT / path).read_text(encoding="utf-8")
+    out = []
+    for m in CAPTION.finditer(text):
+        parts = re.findall(r'"((?:[^"\\]|\\.)*)"', m.group(1))
+        out.append(re.sub(r"\s+", " ", "".join(parts)).strip())
+    return out
+
+
+def captions(paths=None):
+    """A set of sibling captions written in one grammar, ban list 3 and 142.
+
+    Entry 3 says vary or die and it has never carried a count, so it has only
+    ever been a reading. Entry 113 is the lesson this one is built from in its
+    own words: "Every gate in that list that holds was turned into a count
+    after a print walked past it."
+
+    What walked past was the skill library's shelf page. Six captions, four of
+    them the identical frame, and the set survived three visual sweeps of that
+    page and two copy rounds that read the page it sits on, because no single
+    caption looks wrong. That is the whole class. A tell that lives in a SET
+    is invisible to any gate pointed at a member, and every other check in
+    this file is pointed at a member.
+
+    Two counts, both exact string work, both the technique entry 113 already
+    settled for evidence grades.
+
+      more than one caption in a set on the same frame,
+      two captions in a set opening on the same two words.
+
+    What it deliberately does not count, because the proxy would be worse
+    than the reading. Her ruling of 2026-09-29 forbids fragments, and all
+    seven captions on that page are fragments, which is the sharper finding
+    and the one that needed a person. Deciding whether a clause carries a
+    finite verb is not string work, and a fragile detector reporting a verdict
+    in this format would be trusted exactly as far as the honest counts above.
+    So the fragment count stays in `docs/voice/shelf-names-2026-10-26.md`,
+    where a reader can check it, and this gate claims only what it can prove.
+    """
+    rc = caption_cases()
+    print()
+    sets = [(p, label) for p, label in CAPTION_SETS
+            if not paths or p in paths]
+    for path, label in sets:
+        if not (ROOT / path).exists():
+            print(f"  FAIL    {path}  missing")
+            rc = 1
+            continue
+        found = captions_of(path)
+        framed = [c for c in found if CAPTION_FRAME.match(c)]
+        stems = {}
+        for c in found:
+            stems.setdefault(" ".join(c.lower().split()[:2]), []).append(c)
+        shared = {k: v for k, v in stems.items() if len(v) > 1}
+        print(f"  {path}  ({label})")
+        print(f"    captions                               {len(found)}")
+        print(f"    on the opener-then-list frame          {len(framed)}")
+        print(f"    opening on a stem another one uses     {len(shared)}")
+        if len(framed) > 1:
+            rc = 1
+            print(f"    FAIL    {len(framed)} captions share one frame")
+            for c in framed:
+                print(f"              {c}")
+        for stem, members in sorted(shared.items()):
+            rc = 1
+            print(f'    FAIL    {len(members)} captions open on "{stem}"')
+    print()
+    print("A caption set is read as one thing by anybody who scrolls the page,")
+    print("so one grammar repeated down it is the unit of the tell. Each")
+    print("caption above is accurate about its own shelf, which is what makes")
+    print("this prose rather than error.")
+    return rc
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -3373,7 +3734,8 @@ def main():
     paths = sys.argv[2:]
     rc = 0
     takes_paths = {"measure", "links", "delivery", "compare", "firstuse",
-                   "generator", "specimens", "standalone", "devices"}
+                   "generator", "specimens", "standalone", "devices",
+                   "captions"}
     # `enforcements` takes a git ref rather than a path, because ban list 105
     # is about the file the press runs and that file is only reachable through
     # the commit the deploy was built from.
@@ -3395,6 +3757,7 @@ def main():
                      ("standalone", standalone),
                      ("devices", devices),
                      ("routed", routed),
+                     ("captions", captions),
                      ("blockrules", blockrules),
                      ("compare", compare), ("selfcheck", selfcheck)):
         if which == name or (which == "all"
