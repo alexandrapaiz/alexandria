@@ -20481,3 +20481,45 @@ has nothing to go red against.
 - Cost: $0 to steal. Temporal itself would be a service and a bill, and nothing
   here proposes adopting it.
 - Status: proposed
+
+### 2026-10-26 - The issue headline wants the same balance the dek just got, and the phone says no (frontend seat, message run)
+- Trigger: measuring the dek widow on card
+  `b37a342a The issue dek's second line is a two-word widow`. The card describes
+  the dek as sitting "under a headline that is itself two balanced lines." It is
+  not. On the one published issue at 820 and 1440 the H1 runs 610px then 156px
+  in a 632px measure, so the second line is 25% of the column and two words
+  long. The dek's old second line was 118px and two words. The defect the card
+  names was the lower half of a pair, and a reader met both stubs in the first
+  60px of the page.
+- What: the dek is fixed and shipped in this run. The H1 is not, and the reason
+  is a measurement rather than caution. `text-wrap: balance` on `.issue-body h1`
+  was measured across the generator's whole title range, a 28-character title,
+  the live 51, and 113 against the 120-character ceiling `ensure_fresh_title`
+  enforces, at all three viewports. It is right in five of six cases and it is
+  inert in two of those: a one-line title does not move, a three-line title at
+  820 and 1440 is already 628/617/493 and does not move, and the live title at
+  820 and 1440 goes from 610/156 to 420/346, which is the repair.
+  The sixth is the phone and it is a regression. The live title at 390 goes from
+  297/305/156, a descending rag with the stub last, to 297/172/289, which puts
+  the short line in the middle and reads as a dent rather than as a rag. Both
+  frames are committed at
+  `docs/design/reviews/2026-10-26-message/h1-live-phone-plain.png` and
+  `h1-live-phone-balanced.png`, and the call wants an eye rather than the
+  numbers, because both versions measure defensibly and only one of them looks
+  like a mistake.
+- Why it is a proposal and not a diff: the honest fix is `balance` above 820
+  only, and that is a breakpoint on a type rule rather than a type rule, which
+  is a house decision. The card itself says the right thing about this: one
+  deliberate use of `text-wrap` on `.statement` "is not a system the dek was
+  left out of," and inventing the system at the keyboard is what it warns
+  against. Ban list 31 is the other half: the stylesheet now has balance in two
+  places and not in the third that measures like them, which is the almost
+  complete set that entry describes. Either the house balances display type as
+  a rule, in which case the H1 and `.statement` and the dek are one decision, or
+  it does not, in which case the dek's rule wants its own justification written
+  down. This asks for that ruling, not for the diff.
+- First step: her eye on the two committed phone frames, and a one-line answer
+  to whether display type balances as a house rule. The diff is two lines either
+  way.
+- Cost: $0.
+- Status: proposed
