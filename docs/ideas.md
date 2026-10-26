@@ -4773,6 +4773,18 @@ is watching.
   time, or the workflow will keep ignoring changes to its own subject. Read
   this against whichever version of `checks.yml` is on main when it is picked
   up: PR #94 edits the same file and should merge first.
+- ESCALATED, nineteen days (engineer, 2026-10-26). The glob this entry asks
+  for has existed since 2026-10-07 as line 110 of
+  `.github/workflows-pending/checks.yml`, and applying it is still the `git
+  mv` above rather than an edit. What the wait now costs is measured rather
+  than argued. `python3 -m pytest tests/ -q` on a tree merged clean from
+  `main` returned 2 failed this morning, both of them registers' own
+  self-gates and both named in the `UNCOVERED` pin of
+  `tests/test_ci_coverage.py`, so neither could have turned a check red on
+  the pull request that broke it. One of the two had already gone red the
+  same way on 2026-10-24 and been fixed by the run that found it, and it was
+  back over its bound inside 48 hours. Filed as
+  `INC-2026-10-26-the-ledger-ratchet-went-red-twice-in-48-hours-and-both-gates-are-in-the-uncovered-pin`.
 - Cost: $0
 - Status: proposed
 
@@ -16631,6 +16643,10 @@ the market seat's surface, so this is a note to that seat.
   `docs/market/landscape.md` whose whole surface is a rate-limited API, last
   observed 2026-09-18 and a month stale. Read directly:
   [semanticscholar.org/product/api](https://www.semanticscholar.org/product/api).
+- What: read for one question, which is how a product states a limit it does
+  not control. Semantic Scholar publishes the ceiling and says nothing about
+  the behaviour at the ceiling, and the conclusion is the landscape update in
+  First step below rather than a second proposal.
 - What is worth stealing: the ceiling is published as a SHARED number.
   "Rate-limited to 1000 requests per second shared among all unauthenticated
   users" tells a caller something a per-caller quota cannot, which is that its
@@ -18466,6 +18482,10 @@ cutting gates to make a budget.
   as of today the deploy surface names the apps it could not place in the same
   headline that alarms about the ones it could. Consensus is a bigger product
   with a better corpus and no visible equivalent of that rule.
+- First step: give "papers read this week" its denominator wherever it is
+  printed, which is the home page and the `pm` card already on the board
+  saying that metric has no quality-claims row. One number on its own
+  misrepresents in whichever direction the reader guesses.
 - Cost: $0, read from the vendor's own published page.
 - Status: proposed
 
@@ -18566,6 +18586,11 @@ cutting gates to make a budget.
   distinction this org has spent four incident entries and company lesson
   L-A21 forcing into its own guards, and as of this week every health surface
   here separates `unknown` from `FAILING` by law.
+- First step: carry the paper's read depth onto the claim row the press
+  already selects, so an issue can say whether the paper behind a claim was
+  read in full or in abstract. The label belongs on the claim because that is
+  where the reader's trust is spent. Nothing here proposes copying Elicit's
+  table.
 - Cost: $0, read from the vendor's own published support pages.
 - Status: proposed
 
@@ -20933,6 +20958,10 @@ has nothing to go red against.
   and
   [docs.aurelio.ai](https://docs.aurelio.ai/docs/semantic-router/user-guide/features/threshold-optimization),
   2026-10-26.
+- What: read for one question, which is what a router thresholds on. Semantic
+  Router fits a calibration first and thresholds the probability; this run's
+  scope thresholds the raw BM25 score. The conclusion is the calibration entry
+  named in First step below rather than a second proposal.
 - What is worth stealing: the threshold is not a score. In its v1 routers a
   `confidence_threshold` sits on the router and on each route, with a
   per-call override, and `fit()` learns a map from the raw retrieval score to
@@ -21172,39 +21201,15 @@ has nothing to go red against.
 - Cost: $0. Read for its design, not adopted.
 - Status: proposed
 
-### 2026-10-26 — The test suite has 64 files and CI runs twelve of them
-- Trigger: the local checks before readying today's pull request.
-  `python3 -m pytest tests/ -q` on a tree merged clean from `origin/main`
-  returned `2 failed, 2185 passed, 1 skipped` in 315 seconds, and both
-  failures were already on `main`. Then every test file any workflow names,
-  counted with `grep -ohE 'tests/test_[a-z_]+\.py' .github/workflows/*.yml |
-  sort -u`, came to twelve, against 64 `test_*.py` files in `tests/`. So 52
-  are run by nothing, on any branch. Filed as
-  `INC-2026-10-26-fifty-two-test-files-are-run-by-nothing-in-ci`.
-- What: one more job in `checks.yml` that runs the whole suite, unfiltered by
-  path, on every pull request and on every push to `main`. The twelve named
-  steps stay exactly as they are, because each one carries a comment
-  explaining the incident it holds and several are deliberately `if:
-  always()`. This job is the floor underneath them rather than a replacement.
-  Two details matter. It needs no key, no network and no database, which the
-  315-second run above proves, so it costs only runner minutes on a free
-  tier. And it should be added with the suite already green, which is why the
-  two failures were fixed or named today rather than left for the job to
-  discover.
-- First step: not this seat's. No agent seat may push a workflow file
-  (ADR-14, and the token refuses it), so the first step is the owner's
-  commit or a chair's. The repository-side preparation is done: one failure
-  is repaired in today's pull request and the other is named with its cause.
-- Cost: $0. GitHub Actions minutes on a public repository are free, and the
-  suite makes no paid call.
-- Status: proposed
-
 ### 2026-10-26 — Whether the ledger contract covers a craft scan
-- Trigger: the second of today's two failures, above.
-  `tests/test_ledger.py` holds a ratchet at 206 readable entries missing
-  contract fields, dated 2026-10-17 in its own message, and
-  `docs/ideas.md` on `main` measures 209. The breach is only three, and the
-  drift behind it is not. Of the entries added in the eight days since that
+- Trigger: `tests/test_ledger.py` was red on `main` this morning at 209
+  readable entries missing contract fields, against a bound of 206 dated
+  2026-10-17, and it was red the same way on 2026-10-24 at 207. Both times a
+  run supplied the missing fields rather than raising the ratchet, which is
+  the right remedy, and the second time came 48 hours after the first. Filed
+  as
+  `INC-2026-10-26-the-ledger-ratchet-went-red-twice-in-48-hours-and-both-gates-are-in-the-uncovered-pin`.
+  The breach is three. The drift behind it is not. Of the entries added in the eight days since that
   baseline, nearly every one is missing `What`, `First step`, or both, across
   the engineer, writer and frontend seats. Most are craft scans and findings,
   and their shape is `Trigger / Worth stealing / What alexandria does better
@@ -21220,6 +21225,9 @@ has nothing to go red against.
   it counts.
 - First step: the owner's or the PM's call on which shape a scan is. The
   parser change is an hour either way once that is settled, and nothing
-  should move the 206 until it is.
+  should move the 206 until it is. This matters more than three entries,
+  because a bound that a daily append crosses by accident is one that a run
+  reaches back to repair every second day, and every one of those repairs is
+  a seat editing entries rather than building.
 - Cost: $0.
 - Status: proposed

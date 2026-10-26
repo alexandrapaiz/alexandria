@@ -22844,65 +22844,70 @@ for how long'", because the join this wants is between the ledger's `urgent`
 cards and the delivery-health surfaces that can probe them, and that is a tool
 rather than a sentence. Ban list checked on this entry.
 
-## INC-2026-10-26-fifty-two-test-files-are-run-by-nothing-in-ci — the repository's own test command was two failures red on `main` and the only reader was a seat who typed it by hand (2026-10-26, engineer seat)
+## INC-2026-10-26-the-ledger-ratchet-went-red-twice-in-48-hours-and-both-gates-are-in-the-uncovered-pin — the remedy is applied by the run that finds it and does not survive two days (2026-10-26, engineer seat)
 
 **Observed** while running the local checks before readying this run's pull
-request. `python3 -m pytest tests/ -q` on a tree merged clean from `origin/main`
-returned `2 failed, 2185 passed, 1 skipped` in 315 seconds. Both failures are
-registers' own self-gates, and both were red on `main` rather than caused by
-this branch, which was confirmed by running the same two assertions against
+request. `python3 -m pytest tests/ -q` on a tree merged clean from
+`origin/main` returned `2 failed, 2185 passed, 1 skipped` in 315 seconds. Both
+failures were already on `main`, confirmed by re-running each assertion against
 `git show origin/main:docs/ideas.md` and the merged register.
 
-1. `tests/test_incidents.py::test_the_live_register_ids_all_parse`. Two
+1. `tests/test_ledger.py::test_every_live_entry_carrying_a_readable_status_has_the_contract_fields`.
+   209 readable entries in `docs/ideas.md` are missing contract fields,
+   against a bound of 206 that its own message dates to 2026-10-17.
+2. `tests/test_incidents.py::test_the_live_register_ids_all_parse`. Two
    headings in this file, both written today by the PM seat, separate the
    `INC-` id from its summary with a colon where the convention at the top of
    this file uses an em dash. The id parses, the date does not, so
    `Entry.date` comes back `None` and a charter that cites the entry by id
-   gets nothing. Repaired in this pull request, punctuation only, with both
-   seats' wording untouched.
-2. `tests/test_ledger.py::test_every_live_entry_carrying_a_readable_status_has_the_contract_fields`.
-   209 readable entries in `docs/ideas.md` are missing contract fields,
-   against a ratchet of 206 that its own message dates to 2026-10-17. Not
-   repaired, for the reason below.
+   gets nothing.
 
-**The finding is not either failure. It is that neither could have been seen.**
-Every test file any workflow in `.github/workflows/` names, counted with
-`grep -ohE 'tests/test_[a-z_]+\.py' .github/workflows/*.yml | sort -u`, is
-twelve: nine run under `pytest` and three run as scripts because they predate
-the fixtures. `tests/` holds 64 `test_*.py` files. **So 52 of them are run by
-nothing in this repository, on any branch, at any time.** `checks.yml` is also
-path-filtered, and neither `tests/test_ledger.py` nor `tests/test_incidents.py`
-is in its paths, so a change that breaks them cannot turn a check red even on
-the pull request that makes it. The suite has one reader, which is a seat who
-chooses to type the command, and this run is the reader.
+**What is not new here, said first, because this run drafted it as a discovery
+before reading the repository properly.** That `tests/` has far more files than
+any workflow runs is known, measured and already escalated. It is
+`INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had`. It has an
+instrument, `tools/ci_coverage.py`, and a gate, `tests/test_ci_coverage.py`,
+whose `UNCOVERED` pin lists every test file no workflow executes and names
+both of today's failing files explicitly. Twelve test files are run by CI,
+nine under `pytest` and three as scripts, against 64 `test_*.py` files. And
+the fix is written: line 110 of `.github/workflows-pending/checks.yml` is
+`python3 -m pytest tests/ -q`, staged since 2026-10-07 because applying it
+needs a `workflows` permission no agent seat holds. Nineteen days. The ledger
+entry of 2026-09-24 that asks for it now carries that count.
 
-**The repeat.** This is incident 20's mechanism, which the engineer charter
-carries as its own paragraph: every register needs two gates, one that decides
-something gets written down and one that decides something gets checked before
-it ships, and the second is the one the org keeps forgetting. It is also
-`INC-2026-09-30-the-guard-went-red-and-nobody-read-it` with the polarity
-changed. That incident was a guard that went red and stayed red for six days
-because nothing read it. This is a guard that cannot go red at all, because
-nothing runs it. The 2026-09-29 repair for that one added a push-on-`main`
-trigger to `checks.yml`, and it only helps the files `checks.yml` names.
+**What is new is that the remedy has a half-life of two days.** On 2026-10-24
+this same gate was red on `main` at 207 against the same bound of 206, by the
+same mechanism, and the run that found it fixed it by supplying the missing
+fields rather than by raising the ratchet. That is the right remedy and it is
+recorded in `docs/ideas.md` in that run's own words. The file was back over
+the bound within 48 hours, at 209, and nothing anywhere said so. Six seats
+append to this ledger daily and most of what they append is craft scans and
+findings, whose shape is `Trigger / Worth stealing / What alexandria does
+better / First step / Cost / Status`, so each day's appends push the count up
+by one or two and each repair is a single run reaching back over its own
+entries. A floor defended only by a test nothing runs is a floor that holds
+until the next append.
 
-**Why the ledger ratchet was not fixed, said plainly so the next run does not
-re-decide it.** The cheap way to clear it is to add the missing field to three
-entries and watch the number dip under the line. That would be padding, and it
-would delete the finding. The drift behind the number is systemic: of the
-entries added to `docs/ideas.md` in the eight days since the baseline, nearly
-every one is missing `What`, `First step`, or both, and most of them are craft
-scans and findings whose own shape is `Trigger / Worth stealing / What
-alexandria does better / First step / Cost / Status`. So either the contract
-covers scans and six seats have been breaking it daily, or it does not and the
-instrument is counting the wrong population. That is a question for the owner's
-contract in `prompts/engineer-agent.md` and not a number to adjust. **This
-run's own entries were brought into compliance** so that the branch adds zero
-to the count, verified at 209 before and 209 after. The ratchet stays red and
-stays honest.
+**And the heading defect is the same shape in the other register.** A colon
+instead of an em dash is a defect a gate catches in under a second, the gate
+exists and passes 31 assertions, and it reported nothing on the pull request
+that introduced it, because `tests/test_incidents.py` is in the same pin. Two
+registers, two gates, one reason neither spoke.
 
-**Fixed in this pull request.** Both heading separators, so
-`tests/test_incidents.py` is 31 passed. The CI half cannot be fixed by this
-seat, because no agent seat may push a workflow file, so it is proposed in
-`docs/ideas.md` as "2026-10-26 — The test suite has 64 files and CI runs
-twelve of them" and addressed to the owner there. Ban list checked on this entry.
+**Fixed in this pull request.** Both heading separators, punctuation only, both
+seats' wording untouched, so `tests/test_incidents.py` is 31 passed. And the
+contract fields supplied on four entries, all of them this seat's own craft
+scans, following the 2026-10-24 precedent of supplying rather than raising:
+the Semantic Router scan of this morning, the Elicit and Consensus scans of
+2026-10-24, and the Semantic Scholar scan of 2026-10-16. `docs/ideas.md` goes
+from 209 to 205, one under the bound, and this branch's own appends add
+nothing to the count. Nothing moved the 206.
+
+**What is not fixed, and it is the whole entry.** The CI half is a workflow
+edit and no agent seat may push one, so it stays with the owner as the
+nineteen-day escalation above. Until it lands, this gate goes red again the
+next time two seats append a scan on the same day, and the next reader will be
+whoever happens to type the command. The open question underneath it is on the
+ledger as "2026-10-26 — Whether the ledger contract covers a craft scan,"
+because if the answer is no then six seats are not breaching anything and the
+instrument is counting the wrong population. Ban list checked on this entry.
