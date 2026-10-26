@@ -2052,6 +2052,77 @@ AWAITING = ROOT / "docs/voice/awaiting-her-word.md"
 SURFACE = re.compile(r"`(site/[A-Za-z0-9_./-]+\.(?:jsx|js|txt|md))")
 CANDIDATE_FILE = re.compile(r"`([a-z0-9][A-Za-z0-9_.-]*\.md)`")
 
+#: Where a copy CANDIDATE lives, as against a graded review or a preference
+#: record. The distinction is the whole basis of the floor below and it is
+#: structural rather than a guess at content: a review's job is to cite a live
+#: line as evidence, so it names surfaces by the dozen and must not be asked to
+#: open a row for one. A candidate's job is to replace a line, so a surface it
+#: names with no row behind it is the defect.
+CANDIDATE_DIRS = ("docs/voice/", "docs/voice/corrections/")
+
+
+#: The registers themselves, which sit in the same directory as the candidates
+#: and are not candidates. `candidates` already skips the register it reads;
+#: naming all four here is so `is_candidate` answers the question it is asked
+#: rather than the narrower one its caller happens to need.
+REGISTERS = ("awaiting-her-word.md", "ban-list.md", "canon.md", "taste.md",
+             "value.md")
+
+
+def is_candidate(path):
+    """Is this added file a copy candidate rather than a review or a record?"""
+    p = pathlib.PurePosixPath(path)
+    return p.name not in REGISTERS and str(p.parent) + "/" in CANDIDATE_DIRS
+
+
+#: The one judgement the floor rests on, pinned the way SELFCHECK_CASES pins
+#: its reading. Every path here is a real file on this seat's branches. The
+#: false cases matter more than the true ones: a review and a preference record
+#: both live under `docs/voice/`, both quote live surfaces by path as evidence,
+#: and a floor that caught them would fail every grade this seat writes.
+#: Fields: (is it a candidate, the path)
+FLOOR_CASES = (
+    (True, "docs/voice/w42-correction-2026-10-26.md"),
+    (True, "docs/voice/corrections/2026-W42-corrected.md"),
+    (True, "docs/voice/shelf-names-2026-10-26.md"),
+    (False, "docs/voice/reviews/2026-10-26-message-overturn-audit.md"),
+    (False, "docs/voice/preferences/2026-09-19.md"),
+    (False, "docs/voice/awaiting-her-word.md"),
+)
+
+
+def floor_cases():
+    """Every case above, run before a diff is read."""
+    return [(want, path) for want, path in FLOOR_CASES
+            if is_candidate(path) != want]
+
+
+def registered_candidates():
+    """Every candidate filename `awaiting-her-word.md` names, open or closed.
+
+    The unit of that register is the candidate and not the surface: one row
+    carries one candidate file and the surface it is for. So the floor in
+    `candidates` asks whether the draft is registered at all, rather than
+    whether every path it mentions has a row. A candidate quotes the mechanism
+    it works through and the sibling page it learned from, and neither of those
+    is a line it proposes to replace. Asking for a row apiece would put rows in
+    the register for surfaces nobody drafted, which is worse than the silence
+    it replaces.
+
+    Closed rows count. A row leaves the open table because she ruled or the
+    frontend seat set the line, and either way the draft is no longer a thing
+    nobody can find.
+    """
+    if not AWAITING.exists():
+        return set()
+    named = set()
+    for line in AWAITING.read_text().split("\n"):
+        cells = [c.strip() for c in line.split("|")]
+        if len(cells) < 4:
+            continue
+        named |= set(CANDIDATE_FILE.findall(cells[2]))
+    return named
+
 
 def open_rows():
     """docs/voice/awaiting-her-word.md's open table, as {surface: candidates}.
@@ -2097,8 +2168,39 @@ def candidates(ref=None):
     draft for a listed surface when it builds on the open candidate or says why
     it supersedes it, and naming that candidate file is how it says so. A file
     that names it passes. A file that does not has not read it.
+
+    **And there is a floor under that, because the clash test has no opinion
+    about a surface nobody has opened a row for.** Until run 58 this reported
+    only the collision between two candidates, so a candidate for a surface the
+    register has never held registered nothing and passed, and the pass line
+    read the same as it reads for a run that did the bookkeeping right. Run 57
+    is the instance: `w42-correction-2026-10-26.md` rules on the live
+    `site/content/issues/2026-W42.md`, carries one line that needs her word,
+    and reached `main` in #600 with no row anywhere. The regex above was
+    widened on an earlier run precisely so an issue page would be visible here,
+    which fixed what the gate could see and not what it would say about it.
+
+    So a candidate file that names a live surface and that no row names back
+    now fails, and the bookkeeping that clears it is one row. Two scope
+    decisions are load-bearing and both were made by running the thing. The
+    floor applies to candidate files only, per `is_candidate`, because a review
+    cites surfaces as evidence and failing a grade for quoting the line it
+    grades would make the gate unusable by the work it governs. And it asks for
+    one row per candidate rather than one per surface, per
+    `registered_candidates`: the first draft of this check asked per surface
+    and reported three failures for the one W42 candidate, because that file
+    also cites the W39 page it learned from and the module the correction
+    serves through. Clearing it would have put two rows in the register for
+    surfaces nobody drafted.
     """
     ref = ref or "origin/main"
+    bad = floor_cases()
+    if bad:
+        for want, path in bad:
+            print(f"  CASE    wanted {want}: {path}")
+        print("The floor's scope changed and FLOOR_CASES says how. Nothing")
+        print("below was read.")
+        return 1
     if not resolves(ref):
         return dead_ref("candidates", ref)
     rows = open_rows()
@@ -2114,11 +2216,17 @@ def candidates(ref=None):
                 and (ROOT / path).exists() and (ROOT / path) != AWAITING:
             new.append(path)
     clashes = []
+    unregistered = []
+    registered = registered_candidates()
     for path in new:
         body = (ROOT / path).read_text()
         named = set(CANDIDATE_FILE.findall(body)) | {m for m in re.findall(
             r"([a-z0-9][A-Za-z0-9_.-]*\.md)", body)}
-        for surface in sorted(set(SURFACE.findall(body))):
+        surfaces = sorted(set(SURFACE.findall(body)))
+        if surfaces and is_candidate(path) \
+                and pathlib.Path(path).name not in registered:
+            unregistered.append((path, surfaces))
+        for surface in surfaces:
             held = rows.get(surface, set())
             # A surface held only by THIS candidate is not a clash, it is this
             # run doing the bookkeeping correctly: the row in the register and
@@ -2139,13 +2247,22 @@ def candidates(ref=None):
         print(f"  FAIL    {path}")
         print(f"            drafts for {surface}, which is already open in "
               f"{', '.join(held)}")
-    if not clashes:
-        print("  no candidate here redrafts a surface already awaiting her word")
+    for path, surfaces in unregistered:
+        print(f"  FAIL    {path}")
+        print(f"            no row in awaiting-her-word.md names it, and it "
+              f"names {len(surfaces)} live surface(s):")
+        for surface in surfaces:
+            print(f"              {surface}")
+    if not clashes and not unregistered:
+        print("  every candidate here either opens a row or names the one "
+              "already open")
     print()
     print("A run may draft for a listed surface. It may not do so without")
     print("naming the candidate already open on it, because that is the")
     print("difference between superseding a draft and not knowing it exists.")
-    return 1 if clashes else 0
+    print("And a candidate for a surface with no row at all opens one, because")
+    print("an unregistered draft is a line nobody will ever come back to.")
+    return 1 if (clashes or unregistered) else 0
 
 
 # ---- ledger -----------------------------------------------------------
