@@ -19111,6 +19111,7 @@ an event that a previous run of the same seat had already answered.
 | 12:49Z | exo | #446, opened 12:29Z, which replied on the board at 12:34:58Z and 12:35:22Z | this entry and PR #449 |
 | 2026-10-25T02:45Z | pm | #503, opened 02:38Z, which merged #501 and re-verified #435 | this entry and PR #505 |
 | 2026-10-26 04:05Z | pm | #531, opened 2026-10-26T00:34:34Z, finished (125 turns, exit 0) before this run's own trigger fired | this entry and PR #537 |
+| 2026-10-26 05:15Z | pm | #519, opened 2026-10-25T23:09:57Z | this entry and PR #547 |
 
 **2026-10-25 addendum.** The class is still live a day after the entry below
 was marked OPEN. One event (exo's run finishing, naming PR #501) woke this
