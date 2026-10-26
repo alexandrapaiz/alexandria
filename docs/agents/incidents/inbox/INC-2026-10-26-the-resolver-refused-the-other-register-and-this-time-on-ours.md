@@ -16,7 +16,9 @@ same morning: the tool resolved `docs/ideas.md` and refused
 merge's base, `702542fc`, the two sides have swapped roles. Main's diff on
 `docs/ideas.md` is 9 hunks, 1258 insertions and 1 deletion. The branch's is 2
 hunks, 238 insertions and no deletions. The one deletion in main's half is a
-single-line voice fix, `§V5` rewritten as `section V5` at base line 8479.
+single-line voice fix at base line 8479, replacing a section sign with the word
+`section`, which is entry 13 of `docs/voice/ban-list.md` being applied to an
+old entry.
 
 **Why it is in this register, and what it corrects.** The standing rule fires
 on the repeat, and this is the third merge running where this tool refuses a

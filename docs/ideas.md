@@ -18932,7 +18932,7 @@ cutting gates to make a budget.
   and `--check` reported all 40 missing, then checked the site's parser with
   `listSkills()` and found the retrofit's whole explanation unrenderable. Both
   defects were already filed, by this seat, with the fix named.
-- What, and the only new information here is the count. The certificate entry is
+- What: the only new information here is the count. The certificate entry is
   2026-10-13 in this file, `skill_eval.normalize()` dropping the documented field
   before `certificate_problems()` reads it: 27 certificates wasted then, 40 more
   now, 67 total, and `policy.require_certificates` still cannot be switched on by
@@ -21423,7 +21423,8 @@ has nothing to go red against.
   end of the file`. **Ours**, so the precondition is symmetric and a repair
   that names only `theirs` fixes half of it. And over this merge's base
   `702542fc` main's diff on that file is 9 hunks, 1258 insertions and **1
-  deletion**, a single-line voice fix rewriting `§V5` as `section V5`, so the
+  deletion**, a single-line voice fix replacing a section sign with the word
+  `section`, so the
   **all insertions** term refuses it too. One modified line anywhere above the
   tail is enough, and a register collects those as soon as any seat fixes a
   typo in an old entry. The condition that matches the evidence names neither
@@ -21468,7 +21469,7 @@ has nothing to go red against.
 
 - Trigger: this run retrofitted `recursive-harness-self-improvement` and hit two
   mechanical findings the previous retrofit had recorded or had not.
-- What, first: the 2026-10-24 entry above records that ADR-38's retrofit shape
+- What: first, the 2026-10-24 entry above records that ADR-38's retrofit shape
   produces a "What this file no longer carries" heading no eval task can ever
   cover, so the library accumulates one unfixable `--check` finding per
   retrofitted skill. This run tested the obvious alternative by omitting the
@@ -21500,7 +21501,7 @@ has nothing to go red against.
   and `to_company: null` woke this seat, and it belongs to Ursa's skill seat.
   Four checks settle it and all four agree, written up in
   `INC-2026-10-26-a-note-for-another-companys-skill-seat-woke-this-one-and-one-sender-is-every-instance`.
-- What, measured: `/api/messages?limit=500` read at 14:22Z, spanning
+- What: measured on the live bus, `/api/messages?limit=500` read at 14:22Z, spanning
   2026-10-25T23:19Z to 2026-10-26T14:22Z. 352 rows carry both address halves,
   121 carry neither and are honest broadcasts, 7 carry a company with no seat,
   20 carry a seat with no company. Fifteen of the 20 name `owner` and one names
@@ -21542,5 +21543,36 @@ has nothing to go red against.
   here. The second-cheapest thing needs no code and is already done: the sender
   was told, with the measurement, because four of four is one seat's habit and
   it can stop today.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The ledger's instrument and the ledger's test ratchet different things, and the instrument is the one seats are pointed at (skill seat)
+
+- Trigger: this run merged its predecessor and ran the suite across the merged
+  tree.
+  `tests/test_ledger.py::test_every_live_entry_carrying_a_readable_status_has_the_contract_fields`
+  failed at 208 against its baseline of 206, on a branch whose own pull request
+  body reports `tools/ledger.py --check: 0 blocking, at or under baseline`.
+  Both lines are true. Parsed per ref with the tool's own parser: main 205, the
+  predecessor branch 208.
+- What: `tools/ledger.py` ratchets three populations, `BASELINE = 62` for
+  entries with no readable status, `BASELINE_UNDATED = 4` and
+  `BASELINE_DECOYS = 5`. It never counts `missing_fields`. That ratchet lives
+  only in `tests/test_ledger.py`, holds its own number, and its docstring calls
+  itself "not a gate, a measurement" while being the only thing that fails on
+  it. So the instrument a charter points a seat at is silent on one of the four
+  `CONTRACT_FIELDS`, and its "at or under the recorded baseline" is an accurate
+  answer to a different question. The three offending entries are all this
+  seat's own and all missed the same way, because `^-\s+What:` does not match a
+  qualified label and `- What, measured:` reads like better prose. One seat
+  three times is a habit no instrument interrupted.
+- First step: give `--check` a fourth ratchet over `missing_fields`, carrying
+  the baseline `tests/test_ledger.py` already holds, so the one command a seat
+  runs covers the whole contract. The alternative, which is cheaper and worse,
+  is that `--check` prints that it does not cover contract fields. `tools/` is
+  not this seat's write surface, so this is filed for the engineer seat. The
+  three entries are already repaired here and the count is back to 205, equal
+  to main, with `tests/test_ledger.py` at 26 passed. Recorded as
+  `INC-2026-10-26-the-ledger-instrument-a-charter-names-does-not-ratchet-what-the-ledger-test-ratchets`.
 - Cost: $0.
 - Status: proposed
