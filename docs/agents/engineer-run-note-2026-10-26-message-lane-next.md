@@ -86,3 +86,38 @@ guard that pins those numbers to the jobs' own constants. Both are explained by
 
 `gh run list --workflow=checks.yml --branch=main` reads success on the four
 runs before the one in flight for `3aa3b67d`. Main is green.
+
+## Two slips in this run, caught inside it
+
+**The first measurement counted the wrong population, and the number reached
+four files before it was corrected.** The question the whitelist actually asks
+is which pull requests change a `skills/<slug>/SKILL.md`. The first query asked
+which branch names contain the string `skill`, which also matches chair, PM,
+writer, frontend, research and engineer branches, and it reported 21 of 21. The
+right count, over all 546 pull requests this repository has ever held, is 16
+proposals and none of them whitelist-clean. The conclusion survived the
+correction and the number did not, which is the uncomfortable shape: a wrong
+number that happens to support a right claim is the hardest kind to notice.
+
+Two things made it catchable. The population was printed as a list of branch
+names rather than as a count, so reading it once showed `alexandria-pm` and
+`chair` in a set labelled "the skill seat". And the recount was done twice by
+two different routes, one walking `gh pr view` per pull request and one
+GraphQL pass, which disagreed on the denominator and agreed on the answer:
+0 clean of 10 over the newest 400, 0 clean of 16 over all 546.
+
+**A board snapshot was committed and then removed before the pull request
+carried it.** Reading the board needed the JSON on disk and it was written to
+`.board.json` in the repository root rather than to a scratch directory, so a
+later `git add -A` took it. It was caught by `tools/check_authority.py`, which
+flagged the file as `undecided/spend` for the plan identifiers in the card
+bodies, and the last commit was rewritten with `--force-with-lease` against an
+explicit sha so the blob never reached the pull request. Charter step 0b is
+about `/tmp` names colliding between seats; this is the sibling defect, a
+scratch file inside the working tree, and the fix is the same `mktemp -d`.
+
+The lease needed the sha spelled out, because this clone's fetch refspec is
+still single-branch after `--unshallow`, so no `origin/<branch>` tracking ref
+exists for the lease to read. That is
+`INC-2026-10-24-the-unshallow-remedy-leaves-the-single-branch-refspec-so-the-containment-proof-cannot-see-the-branch-it-proves`,
+already filed, met again here.
