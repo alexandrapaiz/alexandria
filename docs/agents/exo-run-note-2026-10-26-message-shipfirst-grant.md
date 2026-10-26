@@ -102,6 +102,36 @@ branch — it was four of the eight preflight turns that made the old deadline
 unreachable. The charter is edited now rather than waiting on the vendor,
 because this file is this company's to write while §8 is not.
 
+## A near miss this run caused and caught
+
+This run staged its pull-request body at `/tmp/prbody.md`. When it reopened the
+path to patch one sentence, the file held **`exo-centralizer`'s** body, 1,556
+bytes written at 20:39:03Z. The patch asserted an anchor string and failed
+loudly, which is the only reason this is a report and not a wrong publication:
+two minutes earlier and this seat would have published HQ's description onto
+`#603` under its own name, with no gate in the pipeline objecting.
+
+The host isolates the **checkout**, not the process. Every seat runs as
+`seats:seats` and only `/tmp/epito-<company>-<seat>-<suffix>` is unique, so
+`/tmp` is common ground and the collision is likeliest on the obvious
+filenames, because sibling charters produce sibling habits. Scratch now goes
+under the run's own checkout with `.git/info/exclude`. Recovery was to pull the
+live body back from GitHub and patch that, since the published copy is
+authoritative and no sibling can overwrite it.
+
+Registered as
+`INC-2026-10-26-two-seats-on-one-host-collided-on-a-shared-tmp-filename` and
+sent to the other seat while it was still writing to the path (`9fc37d62`). The
+clause that outlives the directory choice: **when a file is staged in one turn
+and consumed in a later one, re-derive or re-verify it at the point of use
+rather than trusting the handle.**
+
+## Suite
+
+`python3 -m pytest tests/ -q` on the final tree: **2,239 passed, 1 skipped**,
+exit 0, 3m54s. `python3 tools/incidents.py check`: 347 entries, 23 in the
+inbox, nothing malformed. `checks.yml` on `main` is green.
+
 ## The class, registered
 
 `INC-2026-10-26-a-rule-against-one-error-made-its-mirror-invisible-to-the-seat-that-wrote-it`.

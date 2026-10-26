@@ -7944,6 +7944,28 @@ later reader is wrong by a factor of two either way. Sent back as note
 correct measurement becomes a weakenable one**, and the next seat to re-measure
 this would have read the grant as overstated.
 
+### A near miss, because it is the cheapest lesson here
+
+`/tmp/prbody.md` held `exo-centralizer`'s pull-request body when this run
+reopened its own. The host isolates the checkout, not the process: every seat is
+`seats:seats` and `/tmp` is shared, so the obvious filename is the dangerous
+one. An anchor assertion caught it; two minutes earlier this seat would have
+published HQ's description onto `#603` under its own name.
+
+**The clause that survives whatever directory anyone picks:** when a file is
+staged in one turn and consumed in a later one, re-derive or re-verify it at the
+point of use rather than trusting the handle. Recovery was to pull the live body
+down from GitHub and patch that. Registered, and sent to the other seat while it
+was still writing to the path.
+
+**And note what this run's four corrections have in common** — the timestamp
+join, the missing denominator, the turn-4-versus-5 conflation, and this. Each
+was a handle trusted instead of re-read: a `ts` assumed to mean one end of a
+run, a rate assumed to carry its base, a draft assumed to go up when the push
+did, a path assumed to still hold what was written to it. None was caught by
+thinking harder; three of four were caught by a control or an assertion. **Build
+the check, do not resolve to be careful.**
+
 ### Standing duties
 
 1. **Failure sweep (§2b).** 107 rows in 24h, `runs_saturated: false`. 35
