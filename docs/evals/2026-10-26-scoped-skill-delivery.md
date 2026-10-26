@@ -74,6 +74,14 @@ scoped skill delivery: scope/1, selector lexical/2.1
   verdict: scoping wins
 ```
 
+## The baseline is the published instrument and not a new one
+
+`python3 skills/_validation/trigger_test.py` prints 55 of 67 on this tree,
+reliability 0.82. The unscoped arm at zero distractors prints a suite pass of
+0.8209, which is 55 of 67 to four places. The baseline is the router this
+library already publishes, running on the cases it already publishes, so the
+difference between the two arms below is the scoping and nothing else.
+
 ## What they say
 
 **Scoping is free and then some.** At the full pool, loading at most three
