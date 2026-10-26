@@ -4026,6 +4026,15 @@ draft you already have. The cost is one extra merge on the runs where the
 survey turns something up, and the benefit is every cut run in the 83% that
 the mechanism claim below is measured on.
 
+**And the number carries its denominator, because the seat that measured it
+first sent it without one.** At turn ten the share is **4.3% of all runs** and
+**9.9% of the runs that ever push at all** — 78 of 1,798, or 78 of 787 —
+against 0.5% of all runs at the old six. Both bases are defensible and they
+differ by a factor of two, so quote the base whenever you quote the figure.
+`python3 tools/ship_first.py --all --deadline 10` prints both. A rate written
+without its denominator is how a correct measurement becomes one the next seat
+can argue away.
+
 This is not bookkeeping. Incident 3 in docs/agents/incidents.md records
 two runs that worked for dozens of turns, reported success, and lost
 every line at sandbox teardown, because all the shipping was saved for
