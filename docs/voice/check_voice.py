@@ -1110,6 +1110,70 @@ HEDGE = re.compile(r"\b(not built|not yet|yet to|never been|has never|"
 
 STATES = ("held", "unproven", "contradicted", "not built", "queued")
 
+# The register writes its verdict as the FIRST bolded span of the state cell
+# and then keeps writing: the transition that produced it, the date, and the
+# reading behind it. Every one of those is prose about the row's history, and
+# one of the words it uses is `held`, because a row that moved says what it
+# moved from. So a resolver that searches the whole cell finds two verdicts on
+# such a row, and the one it picks decides whether a sentence may ship.
+STATE_CASES = (
+    ("contradicted", "**contradicted**"),
+    ("queued", "**queued**"),
+    ("not built", "**not built**"),
+    ("held", "**held**"),
+    ("contradicted", '**contradicted on "every"**'),
+    ("contradicted", "**contradicted on the universal reading**"),
+    ("contradicted", "**contradicted on the verb, and dark on the live site**"),
+    # The live row, 2026-10-24 onward, and the case this resolver was written
+    # for. A whole-cell search reads `held` here and the home page's "The
+    # library grows every day" reports ok while the corpus has not grown.
+    ("contradicted",
+     "**contradicted**, moved from `held` 2026-10-11, and the mechanism is a "
+     "**stopped job rather than a widening gap**"),
+    # The mirror, which is the one that would be dangerous the other way: a row
+    # genuinely held whose cell recounts the contradiction it came out of.
+    ("held", "**held** since 2026-10-20, after the `contradicted` reading of "
+             "2026-10-11 was repaired"),
+    # No state word at all. The verdict is the register's own phrase, it is not
+    # `held`, and the row ships hedged or not at all.
+    ("**reports, does not replace**", "**reports, does not replace**"),
+    # Substrings, because `held` hides inside two ordinary English words and a
+    # row that withholds a verdict is not a row that holds one.
+    ("contradicted", "**contradicted**, the earlier verdict upheld"),
+    ("not built", "**not built**, the receipt withheld"),
+    # Unbolded, which no row uses today. The whole cell is the verdict then,
+    # and the ambiguity rule below still governs it.
+    ("queued", "queued"),
+)
+
+
+def claim_state(cell):
+    """One row's verdict, and `held` never wins a tie.
+
+    Returns `(state, ambiguous)`. The scope is the first bolded span, because
+    that is where the register writes the verdict and everything after it is
+    the row's history. Where two verdicts still survive inside that span, the
+    strictest reading is taken and the caller reports it, because the
+    permissive reading is the one that lets a false sentence ship and a gate
+    that guesses in the shipping direction is worse than no gate.
+    """
+    bold = re.search(r"\*\*(.+?)\*\*", cell)
+    scope = (bold.group(1) if bold else cell).lower()
+    hits = [s for s in STATES
+            if re.search(r"\b" + re.escape(s) + r"\b", scope)]
+    if not hits:
+        return cell, False
+    if len(hits) == 1:
+        return hits[0], False
+    strict = [s for s in hits if s != "held"]
+    return strict[0], True
+
+
+def state_cases():
+    """Every case above, run before the register is read."""
+    return [(want, cell) for want, cell in STATE_CASES
+            if claim_state(cell)[0] != want]
+
 
 def claim_words(phrase):
     """The content words of a claim, lightly stemmed, as a set."""
@@ -1136,8 +1200,9 @@ def claim_rows():
             continue
         where = [(p.split(":")[0], int(p.split(":")[1]) if ":" in p else 0)
                  for p in re.findall(r"`([^`]+)`", cells[1])]
-        state = next((s for s in STATES if s in cells[3].lower()), cells[3])
+        state, ambiguous = claim_state(cells[3])
         rows.append({"phrases": phrases, "where": where, "state": state,
+                     "ambiguous": ambiguous, "cell": cells[3],
                      "label": phrases[0], "measured": cells[4] if len(cells) > 4 else ""})
     return rows
 
@@ -1240,6 +1305,14 @@ def claims():
     whether a sentence is a claim about our artifact is the judgment this check
     does not have.
     """
+    bad = state_cases()
+    if bad:
+        for want, cell in bad:
+            print(f"  CASE    wanted {want}: {cell[:62]}")
+        print("The register's verdict convention changed and STATE_CASES says")
+        print("how. Nothing below was read.")
+        return 1
+    print(f"  the verdict cases                         {len(STATE_CASES)} pass")
     rows, fails = claim_rows(), []
     hedged, moved, spread, gone = [], [], [], []
     surfaces = []
@@ -1269,6 +1342,10 @@ def claims():
                 if score >= 0.6 and max(len(w & have) for w in words) >= 3:
                     hits.append((rel, line, body, score))
         print(f"{row['state']:>13}  \"{row['label'][:58]}\"")
+        if row["ambiguous"]:
+            print(f"  AMBIGUOUS the state cell names more than one verdict; "
+                  f"the strictest is read")
+            print(f"            {row['cell'][:96]}")
         for rel, line, body, score in hits:
             tag = "ok      "
             if row["state"] != "held" and not HEDGE.search(body):
