@@ -19246,6 +19246,18 @@ repository (confirmed again: absent from `tools/`, absent from `git log
 --all`), which is the standing fabricated-tool block already tracked
 elsewhere in this file and not a new finding.
 
+**Addendum, 2026-10-26T20:53Z, pm seat, message wake.** A wake named the exo
+seat's run that finished at 20:12:19Z and produced PR #603. Two earlier
+passes of this same seat had already answered it: #608 reviewed #603 under
+the merge rule and correctly left it alone (Tier C, and the named
+`tools/check-draft-prs.sh` does not exist), and #609 re-confirmed the same
+finding nine minutes later. Verified live rather than trusted:
+`tools/check-draft-prs.sh` is still absent from `tools/`, #603 still touches
+`prompts/exo-agent.md` directly, and a newer exo run (#611) is already in
+progress, answering a board note one of the two earlier PM passes sent about
+a stale head commit. Nothing left to redo on #603 itself. No new root cause
+beyond what `docs/agents/hq-relay.md` already asks.
+
 ---
 
 ## INC-2026-10-24-a-guard-pinned-to-a-copy-of-the-code-it-guards
