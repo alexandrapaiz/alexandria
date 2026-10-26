@@ -224,3 +224,26 @@ def test_a_wrong_roster_path_exits_two_rather_than_reporting_all_clear(tmp_path)
     assert wr.main(["--company", "nosuchco", "--roster", str(tmp_path),
                     "--prompts", str(tmp_path), "--audit", str(tmp_path / "none"),
                     "--company-yaml", str(tmp_path / "none.yaml")]) == 2
+
+
+def test_the_prefix_column_says_which_world_it_describes():
+    """Added 2026-10-26, after this file's own tool produced a false finding in
+    the next run of the seat that shipped it.
+
+    The prefix is read from the working checkout and the wake counts from the
+    host's audit log, so on a branch the report mixes a charter that exists only
+    here with routing that happened only out there. `alexandria-research` was
+    read as a prefix fix taking effect on the bus; the fix was on an unmerged
+    branch and the two wakes were a capacity re-fire and the message its pull
+    request produced, neither of which needs a prefix to route."""
+    note = wr.prefix_provenance('prompts')
+    assert 'prompts' in note
+    assert 'origin/main' in note
+
+
+def test_an_undeterminable_comparison_says_so_rather_than_claiming_a_match():
+    """The one wrong answer this helper could give is silence that reads as
+    agreement. A path git cannot compare must not return "matches origin/main"."""
+    note = wr.prefix_provenance('/nonexistent-path-outside-any-repo')
+    assert 'could not be' in note or 'DIFFERS' in note
+    assert 'which matches origin/main' not in note

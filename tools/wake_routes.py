@@ -269,12 +269,13 @@ def verdict(company, roster, prompts, audit, company_yaml):
     return rows
 
 
-def render(rows, company):
+def render(rows, company, prompts=None):
     deaf = [(r["seat"], t, d[1], d[2]) for r in rows for t, d in sorted(r["types"].items())
             if d[0] == "deaf"]
     silent = [r for r in rows if not r["ever_woken"]]
     print("wake routes — %s, rules transcribed %s from %s"
           % (company, ROUTING_READ_AT, ROUTING_SOURCE))
+    print(prefix_provenance(prompts))
     print()
     print("%-10s %-22s %-6s %s" % ("seat", "prefix", "wakes", "every subscribed type"))
     for r in rows:
@@ -308,6 +309,45 @@ def render(rows, company):
     else:
         print("No seat is deaf on a subscribed type.")
     return 1 if deaf else 0
+
+
+def prefix_provenance(prompts):
+    """Which world the `prefix` column describes, which is not the world the
+    `wakes` column describes (added 2026-10-26).
+
+    The prefix is read out of the working checkout and the wake counts are read
+    out of the host's audit log, so on a branch this report mixes a charter that
+    only exists here with routing that only happened out there, and prints them
+    side by side as though they were one world. It cost a false finding in the
+    run after the one that shipped this file: `alexandria-research` appeared
+    with a resolving prefix and two wakes, and was reported as a prefix fix
+    taking effect on the bus. The prefix fix was on an unmerged branch. The two
+    wakes were a capacity re-fire and the message its pull request produced,
+    and neither needs a prefix to route at all.
+
+    So the line below says which charters were read and whether they match the
+    branch everything else here is about. Nothing is suppressed: a defect found
+    on a branch is still a defect, it is just not yet a defect of `main`."""
+    note = "prefixes read from %s" % (prompts or "prompts")
+    try:
+        import subprocess
+        changed = subprocess.run(
+            ["git", "diff", "--name-only", "origin/main", "--", prompts or "prompts"],
+            capture_output=True, text=True, timeout=15)
+        if changed.returncode == 0:
+            names = [n for n in changed.stdout.split() if n]
+            if names:
+                return (note + " — WHICH DIFFERS FROM origin/main IN %d FILE(S). "
+                        "The prefix column describes this checkout and the wakes "
+                        "column describes the deployed world. A prefix that "
+                        "resolves only here has not changed any routing yet."
+                        % len(names))
+            return note + ", which matches origin/main"
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return (note + " — and whether that matches origin/main could not be "
+            "determined, so read the prefix column as a statement about this "
+            "checkout only")
 
 
 def main(argv=None):
@@ -345,7 +385,7 @@ def main(argv=None):
         print(json.dumps({"company": a.company, "routing_read_at": ROUTING_READ_AT,
                           "routing_source": ROUTING_SOURCE, "seats": rows}, indent=2))
         return 1 if any(d[0] == "deaf" for r in rows for d in r["types"].values()) else 0
-    return render(rows, a.company)
+    return render(rows, a.company, a.prompts)
 
 
 if __name__ == "__main__":
