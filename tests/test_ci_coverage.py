@@ -305,6 +305,24 @@ UNCOVERED = {
     # watchers now share and has no command of its own: a regression there is
     # silent in every one of them at once.
     "tests/test_checkout_watch.py",
+    # Added 2026-10-26 with the self-improvement loop's closing condition, and
+    # pinned for the same structural reason as every line above: the step that
+    # would run it goes in `.github/workflows/checks.yml`, which no seat's
+    # token may write, and `docs/sprints/sprint-2026-10-12.md` tells this seat
+    # in its own words not to attempt that file again.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern.
+    #
+    # What it guards is the rule that decides when a proposal the system made
+    # about itself is done. The failure it was written for has already
+    # happened once: a prompt merged on 2026-10-05 and the job reading it went
+    # on reading the old one for twelve days, 8,861 rows deep. The dangerous
+    # direction here is a wrong `live`, because that writes `promotions.live_at`
+    # and a closed loop is never asked about again, and the assertions that an
+    # unknown stops a close are the ones that would be silent on a pull
+    # request.
+    "tests/test_loop_close.py",
     "tests/delivery.test.mjs",
     "tests/issues.test.mjs",
     "tests/markdown.test.mjs",
