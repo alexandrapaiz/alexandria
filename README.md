@@ -406,14 +406,16 @@ The pipeline, built bottom-up.
       complete and `panel_consensus`'s three passes on one text are reachable
       for the first time. The merge is built as well
       (`tools/panel_merge.py`, PR #542), and **what is left is four things
-      rather than one**: nothing had ever filed a verdict about a pull request,
-      ADR-12's whitelist refuses all 16 real proposals in this repository's
-      history, that whitelist admits `prompts/*.md` and so would authorise the
-      panel to merge a charter HQ standard section 21 reserves to the owner, and
-      `PANEL_MERGE_TOKEN` does not exist. The four are numbered with their
-      owners at the end of docs/product/reviewer-panel.md. This paragraph said
-      "the merge is the only slice left" for one day after that was measured to
-      be wrong, which is the stale-duplicate defect filed as
+      rather than one**, three of them nobody's build work: a whitelist a real
+      proposal can satisfy, since ADR-12's refuses all 16 in this repository's
+      history; a verdict filed about a branch rather than about `main`;
+      `PANEL_MERGE_TOKEN`; and the **Commit statuses: Read and write** grant,
+      probed 2026-10-26 and returning 403 on the token every seat holds. They
+      are numbered with their owners and their order under "The remaining step,
+      named" at the end of docs/product/reviewer-panel.md, which is the one
+      place that list lives. This paragraph said "the merge is the only slice
+      left" for a day after that was measured wrong, which is the
+      stale-duplicate defect filed as
       `INC-2026-10-26-the-corrected-sentence-was-corrected-in-one-register-of-two`.
       Until the panel passes a skill, the owner's merge is still the gate
 - [ ] Meta-review recursive loop running on its own cadence. The `propose_change`
