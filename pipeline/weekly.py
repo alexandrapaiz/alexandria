@@ -107,7 +107,7 @@ import hashlib
 import pathlib
 import re
 import time
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from urllib.parse import quote
 
 import modal
@@ -279,8 +279,24 @@ def check_citations(conn, max_papers: int = MAX_PAPERS_PER_RUN) -> int:
 
 # ---------------- digest ----------------
 
-def gather(conn) -> dict:
-    """Fixed queries; the model never chooses what to retrieve."""
+def gather(conn, window: dict | None = None) -> dict:
+    """Fixed queries; the model never chooses what to retrieve.
+
+    `window` is the span of time the issue reports on, as
+    `{"since": datetime, "until": datetime}`. `week_window` builds it from a
+    week label. Both keys may be None, and None means the default every one of
+    these queries carried inline until now: the seven days ending at the
+    moment the query runs.
+
+    That default is correct for a cron that fires on time and wrong for every
+    other run, which is the half of the 2026-W38 incident that was never
+    fixed. The label was repaired on 2026-09-24 so an off-schedule run writes
+    under the week it is reporting on. The payload was not, so the same run
+    still gathered the seven days before *itself*. An issue labelled 2026-W38
+    and filled with the week of 2026-09-23 is a worse artifact than one
+    labelled wrongly, because nothing downstream can tell.
+    """
+    window = window or {"since": None, "until": None}
     # The five numbers the pipeline can honestly account for, one per step.
     #
     # Owner's directive 2026-09-25: "the stats line in the issue says 'read N
@@ -305,24 +321,28 @@ def gather(conn) -> dict:
         """
         select
           (select count(*) from papers
-            where fetched_at > now() - interval '7 days'),
+            where fetched_at > coalesce(%(since)s::timestamptz, now() - interval '7 days')
+              and fetched_at <= coalesce(%(until)s::timestamptz, now())),
           -- Papers judged for the FIRST time this week, not decisions written.
           -- Re-triage under a revised rubric appends a second row per paper, and
           -- counting rows would let the issue say it triaged 47 papers it had
           -- already triaged in September. The issue never claims work it did not
           -- do (writer's law 13).
           (select count(*) from triage_log t
-            where t.created_at > now() - interval '7 days'
+            where t.created_at > coalesce(%(since)s::timestamptz, now() - interval '7 days')
+              and t.created_at <= coalesce(%(until)s::timestamptz, now())
               and t.model != 'rule:backfill'
               and not exists (select 1 from triage_log e
                                where e.paper_id = t.paper_id
                                  and (e.created_at < t.created_at
                                       or (e.created_at = t.created_at and e.id < t.id)))),
           (select count(*) from papers
-            where distilled_at > now() - interval '7 days'
+            where distilled_at > coalesce(%(since)s::timestamptz, now() - interval '7 days')
+              and distilled_at <= coalesce(%(until)s::timestamptz, now())
               and fulltext_chars is not null),
           (select count(*) from claims
-            where created_at > now() - interval '7 days'),
+            where created_at > coalesce(%(since)s::timestamptz, now() - interval '7 days')
+              and created_at <= coalesce(%(until)s::timestamptz, now())),
           -- Connections, not opinions. prompts/digest.md tells the writer
           -- this number counts "the connections drawn between findings", and
           -- re-judgment appends a row for a pair that was already connected
@@ -333,9 +353,11 @@ def gather(conn) -> dict:
           (select count(*) from (
              select from_claim, to_claim from claim_links
              group by from_claim, to_claim
-             having min(created_at) > now() - interval '7 days'
+             having min(created_at) > coalesce(%(since)s::timestamptz, now() - interval '7 days')
+                and min(created_at) <= coalesce(%(until)s::timestamptz, now())
            ) connections_drawn)
-        """
+        """,
+        window,
     ).fetchone()
 
     new_claims = conn.execute(
@@ -356,13 +378,15 @@ def gather(conn) -> dict:
         -- September's verdict and October's on one pair, side by side, as
         -- though the judge held two opinions at once.
         left join latest_links l on l.from_claim = c.id
-        where c.created_at > now() - interval '7 days'
+        where c.created_at > coalesce(%(since)s::timestamptz, now() - interval '7 days')
+          and c.created_at <= coalesce(%(until)s::timestamptz, now())
         group by c.id, c.claim, c.topics, p.title, p.url, p.tier, t.decision, t.score,
                  c.evidence, c.procedure, p.authors, p.institutions
         order by case t.decision when 'deep_read' then 0 else 1 end,
                  t.score desc nulls last
         limit 22
-        """
+        """,
+        window,
     ).fetchall()
 
     superseded = conn.execute(
@@ -379,11 +403,13 @@ def gather(conn) -> dict:
         join papers pn on pn.id = new.paper_id
         where l.relation = 'refines'
           and coalesce(l.confidence, 0) >= 0.75
-          and l.created_at > now() - interval '7 days'
+          and l.created_at > coalesce(%(since)s::timestamptz, now() - interval '7 days')
+          and l.created_at <= coalesce(%(until)s::timestamptz, now())
           and old.paper_id != new.paper_id  -- a paper refining itself is not a supersession
         order by l.confidence desc
         limit 10
-        """
+        """,
+        window,
     ).fetchall()
 
     supported = conn.execute(
@@ -395,11 +421,18 @@ def gather(conn) -> dict:
         -- prompts agreeing that one claim supports another is one support,
         -- and on claim_links it would read as the two this list requires.
         join latest_links l on l.to_claim = c.id and l.relation = 'supports'
+        -- No lower bound: a claim two papers support is traction whenever the
+        -- support was drawn. An upper bound, though, is the difference between
+        -- what this week's issue can say and what a regenerated past week's
+        -- issue may say, and without it a backfilled issue reports support
+        -- drawn after the week it is labelled with.
+        and l.created_at <= coalesce(%(until)s::timestamptz, now())
         group by c.id, c.claim, p.title, p.url
         having count(*) >= 2
         order by count(*) desc
         limit 12
-        """
+        """,
+        window,
     ).fetchall()
 
     movers = conn.execute(
@@ -408,6 +441,9 @@ def gather(conn) -> dict:
             select paper_id, citations, checked_at,
                    row_number() over (partition by paper_id order by checked_at desc) as rn
             from citation_log
+            -- the same upper bound and the same reason as `supported` above:
+            -- a check run after the labelled week is not that week's movement
+            where checked_at <= coalesce(%(until)s::timestamptz, now())
         )
         select p.title, p.url, prev.citations, latest.citations
         from checks latest
@@ -416,7 +452,8 @@ def gather(conn) -> dict:
         where latest.rn = 1 and latest.citations > prev.citations
         order by latest.citations - prev.citations desc
         limit 12
-        """
+        """,
+        window,
     ).fetchall()
 
     deprecated = conn.execute(
@@ -430,10 +467,12 @@ def gather(conn) -> dict:
         join papers p on p.id = old.paper_id
         where l.relation = 'contradicts'
           and coalesce(l.confidence, 0) >= 0.7
-          and l.created_at > now() - interval '7 days'
+          and l.created_at > coalesce(%(since)s::timestamptz, now() - interval '7 days')
+          and l.created_at <= coalesce(%(until)s::timestamptz, now())
         order by l.confidence desc
         limit 8
-        """
+        """,
+        window,
     ).fetchall()
 
     deep_reads = conn.execute(
@@ -442,9 +481,11 @@ def gather(conn) -> dict:
         from triage_log t
         join papers p on p.id = t.paper_id
         where t.decision = 'deep_read'
-          and t.created_at > now() - interval '7 days'
+          and t.created_at > coalesce(%(since)s::timestamptz, now() - interval '7 days')
+          and t.created_at <= coalesce(%(until)s::timestamptz, now())
         limit 10
-        """
+        """,
+        window,
     ).fetchall()
 
     return {
@@ -1508,6 +1549,19 @@ def dates_of(sunday: date) -> str:
             f"{sunday.strftime('%B')} {sunday.day}, {sunday.year}")
 
 
+# The hour of the Monday cron, as a number, because `week_window` has to
+# reconstruct the span a scheduled run would have read and the schedule is the
+# only place that span is written down. The Cron on `weekly` below is the
+# authority, never this line; tests/test_press_backfill.py pins this constant
+# to that decorator and to `PRESS_CRON` in tools/delivery_health.py, so the
+# three cannot drift apart silently. Changing it is a runtime change under
+# docs/agents/runtime-changes.md.
+#
+# Written as a bare number rather than a cron string on purpose: a test two
+# files away greps this module for the cron expression and expects to find
+# exactly one, which is the schedule itself.
+PRESS_CRON_HOUR = 9
+
 WEEK_LABEL = re.compile(r"^(\d{4})-W(\d{1,2})$")
 
 
@@ -1548,6 +1602,33 @@ def week_from_label(label: str, today: date | None = None) -> tuple[str, str]:
             "The press only writes weeks that are over, because a week "
             "written early is upserted over by its own Monday cron.")
     return label_of(sunday), dates_of(sunday)
+
+
+def week_window(week: str, today: date | None = None) -> dict:
+    """The rows a run of the press for `week` reports on, as `gather`'s window.
+
+    Exactly the span the Monday cron would have read: from that week's own
+    Monday at `PRESS_CRON_HOUR` to the following Monday at the same hour. The
+    cron's SQL says "the last seven days" and fires at 09:00 on the Monday
+    after the week ends, so those are the same seven days whenever the cron is
+    on time, and they stay the same seven days when it is not. That is the
+    whole point. A run on a Wednesday gets the week it was asked for rather
+    than the week it is standing in.
+
+    Both ends are UTC, because Modal's clock, the cron's clock and every
+    `created_at` in this database are UTC, and an issue whose window shifted
+    by the operator's timezone would report a different week to two people
+    asking the same question.
+
+    `today` is injectable for the same reason it is on `week_from_label`,
+    which is also the only gate this function has: it refuses exactly what
+    that one refuses, by calling it.
+    """
+    label, _ = week_from_label(week, today)
+    monday = date.fromisocalendar(int(label[:4]), int(label[6:]), 1)
+    since = datetime(monday.year, monday.month, monday.day,
+                     PRESS_CRON_HOUR, tzinfo=timezone.utc)
+    return {"since": since, "until": since + timedelta(days=7)}
 
 
 def payload_line(week: str, payload: dict) -> str:
@@ -1726,12 +1807,46 @@ def preflight() -> str:
              modal.Secret.from_name("Gmail"), modal.Secret.from_name("gmail_pass")],
     timeout=1800,
 )
-def weekly() -> str:
+def weekly(week: str = "") -> str:
+    """Write this week's issue, or rewrite a week you name.
+
+    With no argument it is the Monday cron: the week that just ended, read
+    from the calendar, written, saved and mailed. That path is unchanged.
+
+    With `--week 2026-W38` it is a backfill. The ledger has asked since
+    2026-09-17 for "regenerate the digest and resend", and until now the
+    pipeline had no verb for the first half: `week_just_ended` reads the
+    calendar and nothing could ask it for a week that had passed. A named week
+    gets its own date range, its own seven-day payload window, and, because it
+    is a rewrite of something a reader may already have, **no send**. The row
+    lands in `digests`, the log prints the `resend` command, and mailing it
+    stays a second deliberate act.
+
+        modal run pipeline/weekly.py::weekly --week 2026-W38
+        modal run pipeline/weekly.py::resend --week 2026-W38
+    """
     import os
 
     import psycopg
 
-    week, dates = week_just_ended()
+    # Before the try, on purpose: a malformed week label is an operator's typo
+    # at the command line, and the right answer to it is the traceback they are
+    # watching for rather than an alarm mail to the owner saying the press
+    # failed.
+    regenerating = bool(week.strip())
+    if regenerating:
+        week, dates = week_from_label(week)
+        window = week_window(week)
+    else:
+        week, dates = week_just_ended()
+        # None, which is the rolling seven days this query has always read.
+        # `week_window(week)` would be the same seven days whenever the cron
+        # is on time and the honest answer when it is not, and it is not used
+        # here on purpose: it changes what the scheduled press prints, so it
+        # belongs behind `rehearse`, and no rehearsal can run while the Modal
+        # workspace is disabled. Carried as a ledger entry of 2026-10-26, "The
+        # scheduled press still reads the week it is standing in".
+        window = None
     prompt = open("/root/prompts/digest.md").read()
     short_prompt = open("/root/prompts/digest-short.md").read()
     # Which prompt wrote the issue is not known until the walk is over, so the
@@ -1755,12 +1870,21 @@ def weekly() -> str:
             # actually running before anything else happens. It cannot raise and
             # cannot abort this transaction; pipeline/runtime_sha.py says how.
             print(runtime_guard().record_runtime(conn, "weekly", __file__)[1])
-            try:
-                check_citations(conn)
-            except Exception as exc:
-                print(f"citation check failed ({exc}); digest proceeds without "
-                      "fresh citations")
-            payload = gather(conn)
+            if regenerating:
+                # The citation pass writes today's counts into citation_log,
+                # and this run reports on a week that is over. Refreshing
+                # trajectories would move numbers the regenerated issue is not
+                # allowed to read anyway, because gather's window ends with
+                # the week. A backfill reads the record; it does not add to it.
+                print(f"citation check skipped: {week} is a rewrite, so the "
+                      "trajectories stay as the week left them")
+            else:
+                try:
+                    check_citations(conn)
+                except Exception as exc:
+                    print(f"citation check failed ({exc}); digest proceeds "
+                          "without fresh citations")
+            payload = gather(conn, window)
             payload["week"] = week
             payload["dates"] = dates
             # Titles already used, so the generator and the guard below can
@@ -1776,6 +1900,26 @@ def weekly() -> str:
             ]
             payload["prior_titles"] = prior_titles
             print(payload_line(week, payload))
+            if regenerating:
+                print(f"window: {window['since'].isoformat()} to "
+                      f"{window['until'].isoformat()}, which is the span the "
+                      f"{week} cron would have read")
+                prior = conn.execute(
+                    "select model, created_at, body from digests "
+                    "where week = %s", (week,)
+                ).fetchone()
+                if prior is None:
+                    print(f"{week} has no row yet, so this writes one rather "
+                          "than replacing one")
+                else:
+                    # `digests` is keyed on week and the insert below upserts,
+                    # so the body about to be overwritten is only in this log.
+                    # Say what it was, because an operator who meant a
+                    # different week needs to find that out from the run
+                    # rather than from a reader.
+                    print(f"{week} already holds an issue titled "
+                          f"{title_of(prior[2])!r}, written by {prior[0]} at "
+                          f"{prior[1]}. It is about to be replaced.")
         # The read connection closes here, on purpose. Kimi reasons for
         # minutes before it writes, and Neon terminates a connection left
         # idle inside a transaction (IdleInTransactionSessionTimeout,
@@ -1854,6 +1998,16 @@ def weekly() -> str:
                     "What needs a decision is the issue itself: send it as it "
                     "is with `resend`, or let the prompt take the correction "
                     "and let next week's print be the fix."))
+                return body
+            if regenerating:
+                # A rewrite is not a delivery. Readers may already have the
+                # issue this replaces, and mailing a second copy of a past
+                # week unasked is the kind of thing a backfill does once and
+                # apologises for. The ledger entry asks for "regenerate and
+                # resend"; `resend` is the second verb and it is deliberate.
+                print(f"{week} rewritten and sent to nobody. The row is in "
+                      "digests and on the site. To mail it: "
+                      f"modal run pipeline/weekly.py::resend --week {week}")
                 return body
             try:
                 print(send_newsletter(conn, week, body))

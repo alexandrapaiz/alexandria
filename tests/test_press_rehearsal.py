@@ -271,7 +271,7 @@ def test_the_report_shows_every_failure_the_incident_found():
 def test_the_alarm_subjects_printed_are_the_ones_weekly_actually_sends():
     """A rehearsal that prints a copy of the subject proves nothing."""
     print("the alarm subjects are shared, not copied")
-    weekly_body = SOURCE.split("def weekly()")[1].split("@app.function")[0]
+    weekly_body = SOURCE.split("def weekly(")[1].split("@app.function")[0]
     check("weekly passes ALARM_SUBJECT_CANNOT_PRINT to notify_owner",
           "ALARM_SUBJECT_CANNOT_PRINT" in weekly_body, weekly_body[-400:])
     check("weekly passes ALARM_SUBJECT_NOT_SENT to notify_owner",
@@ -338,7 +338,7 @@ def test_the_client_timeout_is_one_name_in_two_places():
 def test_the_scheduled_run_is_unchanged_by_the_trace():
     """weekly() passes no trace, so its call is byte-for-byte what it was."""
     print("the trace is an addition to the rehearsal, not to Monday")
-    weekly_body = SOURCE.split("def weekly()")[1].split("@app.function")[0]
+    weekly_body = SOURCE.split("def weekly(")[1].split("@app.function")[0]
     # `print_issue` since 2026-10-12, which is `write_digest` plus the short
     # edition behind it. The property under test is unchanged and is the whole
     # point of the assertion: Monday passes no trace, so Monday's call is
@@ -472,7 +472,7 @@ def test_the_stats_line_is_the_one_weekly_prints():
     check("the week leads it", line.startswith("2026-W39:"), line)
     check("it counts the new claims", "new_claims=2" in line, line)
     check("it counts the deprecations", "deprecated=0" in line, line)
-    weekly_body = SOURCE.split("def weekly()")[1].split("@app.function")[0]
+    weekly_body = SOURCE.split("def weekly(")[1].split("@app.function")[0]
     check("weekly prints it through the same function",
           "payload_line(week, payload)" in weekly_body, weekly_body[:900])
     counts = weekly.payload_counts(payload)
