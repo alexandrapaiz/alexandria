@@ -54,6 +54,20 @@ invisible to both.
   mentions, decided two cases in other suites. That is what the entry above
   means by a receipt being about a composition.
 
+- `2026-10-26-lexical-2.1-cwe-revision.json` and its `.txt`. Written by the run
+  that revised `context-window-engineering` against the drained reading queue
+  (#596 to #602, superseded by #610). Moved here by the next run of the same
+  day, which added the relayed-citation caveat to that skill and to
+  `agent-memory-selection`. This is the fourth same-day pair and the second
+  clean control. Neither `description` changed, so the composition the engine
+  scores did not move, and all nine suites scored identically across the two
+  bundles: 7/8, 6/7, 7/7, 6/7, 7/8, 6/8, 6/7, 5/6 and 8/9 in both, 58 of 67 in
+  both. The only two `skill_sha256` values that differ are the two revised
+  skills' own. Taken with the `sle` and `asm` pairs above, the record now reads:
+  the two pairs where no description changed moved nothing, and the one pair
+  where a description changed moved three cases in two other suites. The
+  composition is the receipt's subject and the calendar day is not.
+
 The real repair is in the ledger and in
 `INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`:
 tie-break on a timestamp, and record the library membership in the bundle so a

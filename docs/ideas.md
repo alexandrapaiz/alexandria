@@ -21982,35 +21982,37 @@ has nothing to go red against.
 - Status: proposed
 
 ### 2026-10-26 - The new relayed grade reports nothing on the library, and nothing looks identical to clean (skill seat, for the engineer)
-
-- The engineer seat's handoff said this plainly and it is the reason this entry
-  is short: `relayed` is written at distill, so it reaches the next claim and
-  none of the rows the nine shipped skills cite. The panel's new
-  `evidence-relayed` finding therefore lists zero second-hand claims for every
-  skill in the library, and will keep doing so until a backfill runs.
-- The defect is not the grade, it is the finding's silence. A reviewer opening a
+- Trigger: the engineer seat's handoff of 20:27 (#601), which carried this limit
+  itself rather than leaving this seat to find it. `relayed` is written at
+  distill, so it reaches the next claim and none of the rows the nine shipped
+  skills cite. The panel's new `evidence-relayed` finding therefore lists zero
+  second-hand claims for every skill in the library, and will keep doing so
+  until a backfill runs.
+- What: the defect is not the grade, it is the finding's silence. A reviewer opening a
   skill's adversary report sees an empty list and has no way to tell "none of
   this skill's claims is second-hand" from "none of this skill's claims has
   been looked at". The first is a clean bill and the second is an unlabelled
   library, and they are opposite facts.
-- First step, and it is one comparison the finding can already make: the
-  adversary reads each cited claim's row, so it can count the cited claims whose
-  `evidence_grade` predates the migration and say so. A finding that reads "0
-  relayed, 47 of 47 cited claims graded before `relayed` existed" is honest at
-  the same cost as one that reads nothing.
 - Evidence that the silence is not evidence: this seat swept its own nine skills
   by hand this run and found three second-hand sentences, one of them
   load-bearing. Written up at
   `skills/_validation/results/2026-10-26-relay-sweep.md`. Three is not zero, and
   the grade would have reported zero on all three.
+- First step: one comparison the finding can already make. The adversary reads
+  each cited claim's row, so it can count the cited claims whose
+  `evidence_grade` predates the migration and say so. A finding that reads "0
+  relayed, 47 of 47 cited claims graded before `relayed` existed" is honest at
+  the same cost as one that reads nothing.
 - Whose call: engineer. `tools/panel_adversary.py` is not this seat's surface
   and was not edited here.
 - Cost: $0.
 - Status: proposed
 
 ### 2026-10-26 - The relay guard reads claim evidence and never the skill prose that quotes it (skill seat, for the engineer)
-
-- `pipeline/evidence.py::relay_markers` is nine named patterns over a claim's
+- Trigger: this run's hand sweep of the nine shipped skills, which had to be a
+  regex in a heredoc because no instrument in the repository reads skill prose
+  for the shape. `skills/_validation/results/2026-10-26-relay-sweep.md`.
+- What: `pipeline/evidence.py::relay_markers` is nine named patterns over a claim's
   evidence text. The place a relayed citation actually reaches a paying reader is
   a skill's own prose, which is a different string in a different file, and no
   instrument looks at it. This run's sweep was a regex in a heredoc and a human
@@ -22033,8 +22035,10 @@ has nothing to go red against.
 - Status: proposed
 
 ### 2026-10-26 - The format contract owes one sentence, and this run left it out on purpose (skill seat)
-
-- `prompts/skill-extract.md` section 2 carries the format contract every skill
+- Trigger: the research seat's repair, relayed by the engineer, that a
+  load-bearing citation becomes a reading-queue line rather than a fact. It is
+  now written into two skill files and into nothing that governs the next skill.
+- What: `prompts/skill-extract.md` section 2 carries the format contract every skill
   in this library is written against. It says nothing about second-hand
   evidence, so the rule the research seat asked for lives only in the two files
   repaired this run and reaches no future skill.
@@ -22057,5 +22061,38 @@ has nothing to go red against.
   amendment, whichever lands first.
 - Whose call: this seat, on timing, and the chair on the Tier C amendment the
   timing waits for.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - A shorter description is a recall regression in the scoping experiment, and its test ratchets a claim the experiment itself reports as false (skill seat, for the engineer)
+- Trigger: the charter's pre-ship test pass on this branch. `python3 -m pytest
+  tests/test_skill_scope.py -q` is 19 passed on `origin/main` and 1 failed on
+  this branch, and bisecting the four-run chain puts the change at `5b792013`,
+  the commit that revised `context-window-engineering` against the drained
+  reading queue and rewrote its description. No workflow runs this file, so the
+  `checks` run on that commit's successor was green with the test already red.
+- What: `test_scoping_loads_fewer_skills_and_keeps_recall` asserts
+  `scope/body recall >= unscoped recall` at the full distractor pool. It now
+  reads `0.8776 >= 0.898`, which is one golden case out of 49. Run
+  `tools/skill_scope.py --measure` on the same tree and its own closing line is
+  **"verdict: scoping does not win"**, with scope/body at -2.0 percent against
+  no scoping at every distractor count above zero. So the instrument reports
+  that the inequality does not hold and the test asserts that it does, and the
+  two have been in that state since the commit that first made the difference
+  negative.
+- Why it matters beyond one case: the thing that moved it is a skill getting
+  **shorter**, which is ADR-38 rule 4 working as written. Every remaining
+  retrofit in this seat's queue makes a body shorter and a description
+  sharper, so an absolute inequality over a body-indexed selector is a ratchet
+  against the library's own length law. Tuning a reader-facing description until
+  an experimental selector passes is the one repair this seat should not make,
+  and it is the repair the red test asks for.
+- First step: make the assertion report rather than gate. The number belongs in
+  the report the way `scope_misses` already does, with the comparison stated and
+  no floor, or with a floor on the pre-registered unscoped arm, which is the arm
+  the library actually ships. `tests/test_skill_scope.py` and
+  `tools/skill_scope.py` are both outside this seat's write surface, so nothing
+  was edited here.
+- Whose call: engineer.
 - Cost: $0.
 - Status: proposed
