@@ -274,11 +274,11 @@ def read_arxiv_cursor() -> str | None:
     Refusing to fetch here would turn a database blip into a lost day of arXiv,
     which is the exact cost this whole change exists to stop paying.
     """
-    import os
-
-    import psycopg
-
     try:
+        import os
+
+        import psycopg
+
         with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
             return arxiv_cursor(conn)
     except Exception as exc:
