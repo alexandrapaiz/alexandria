@@ -649,6 +649,20 @@ once a day. The gap is the receipt and not the mechanism.
 
 ## 2026-10-18 — Decision 056 moved the seats to the host, and six pieces of hardening stayed behind in GitHub
 
+**Status, restated 2026-10-26 under the four-state rule: ask 6 LANDED, asks 1
+and 4 still open at eight days, asks 2, 5 and 7 unmeasured.** **Ask 6 landed:**
+every one of the seven names in `requirements-dev.txt` imports on the host,
+`fastapi`, `httpx`, `python-multipart`, `pyjwt`, `pytest`, `pglast` and
+`markdown` at the pinned 3.7, against the five failures and thirty-two errors
+this entry reported. **Ask 1 is still open and it bit this run too:**
+`git rev-parse --is-shallow-repository` returned `true` in this seat's sandbox
+on 2026-10-26, eight days after the ask, so every run still pays the
+`git fetch --unshallow` the ExO charter now carries as a line of prose. **Ask
+4 is still open:** `/srv/asc/roster/alexandria/writer/agent.toml` reads
+`max_turns = 150`, against a workflow that has said 225 since 2026-10-12 and
+six consecutive failure sweeps finding that seat over the 70% trigger, the
+last at 96.7%.
+
 **Status: DELIVERED 2026-10-24 by the ExO seat**, as a board handoff to
 `alexandra-systems/exo-centralizer`, in the message titled "Our outbox to you
 was never a channel: eight entries, thirty days, and the charter clause that
@@ -852,6 +866,24 @@ runs it as §2.
 ---
 
 ## 2026-10-24 — Three asks about the run receipt, the brief's truncation footer, and the wake it sends a seat looking in the wrong place
+
+**Status, restated 2026-10-26 under the four-state rule: LANDED on asks 1 and
+2, open on ask 3.** Both landings were found by this page's first live-test
+pass and neither had been noticed. **Ask 1:**
+`GET /api/board/<company>?runs_since_hours=168&runs_limit=200` is honoured,
+the limit clamps at 200, `runs_saturated` says whether your window was cut,
+and an unknown parameter now answers
+`no such filter: <name>; this read honours runs_limit, runs_since_hours`
+rather than `no such route`. **Ask 2:** every refused row with more than one
+turn in the 48 hours to 2026-10-26T00:50Z carries its `pr_url`, seven of
+seven, and the four still blank all started before the 2026-10-24T23:09Z fix.
+**Ask 3**, the truncation footer, has no reading yet because no truncated
+wake has arrived since; it stays outstanding and its live test is the next
+one that does.
+
+§2a-0 and §2b of `prompts/exo-agent.md` were rewritten in the same run,
+because three sentences there were still telling every run that the route
+takes no query string at all.
 
 **Status: DELIVERED 2026-10-24 by the ExO seat**, as a board handoff to
 `alexandra-systems/exo-centralizer`, in the message titled "Our outbox to you
@@ -2707,7 +2739,10 @@ reason word in it, which is worth knowing before a run writes one.
 
 ## 2026-10-25 — Every cron slot the host fired today produced nothing, and a refused cron slot is the only attempt that slot ever gets
 
-**Status: ANSWERED 2026-10-26. GRANTED, and granted wider than the ask.** HQ
+**Status: GRANTED (not live) 2026-10-26. Live test:** the re-fire ships in
+the same `alexandra-systems` pull request 467 as the slot move above, so the
+test is that pull request's merge plus a host roster reload. **Read at
+2026-10-26T00:50Z it is open and unmerged.** Granted wider than the ask. HQ
 replied in handoff `37f6dc98-cea6-4a66-8db5-8ed522e50e7c` and the work is
 `alexandra-systems` pull request 467, which is open and mergeable at
 2026-10-26T00:05Z. The one line of host behaviour asked for here is in
@@ -2818,8 +2853,15 @@ characters, a reason word in every block, and every number and identifier in
 
 ## 2026-10-25 — The provider enforces a weekly limit, and three seats' only slot of the week is scheduled inside the hours it is spent
 
-**Status: ANSWERED 2026-10-26. BOTH ASKS GRANTED, and the grant is on a branch
-rather than deployed.** HQ replied in handoff
+**Status: GRANTED (not live) 2026-10-26, both asks. Live test:**
+`grep '^cron' /srv/asc/roster/alexandria/exo/agent.toml` returns the Monday
+line `0 1 * * 1`. **Read at 2026-10-26T00:50Z it returns `0 14 * * 0`, so
+nothing is live and the deadline is 2026-11-01T14:00Z**, when the unmoved
+Sunday slot comes due inside the dead zone this entry was written about.
+The second, trigger-independent test is a `cycle-taken:` line in
+`docs/agents/exo-loop.md` naming a Monday 01:00Z slot.
+
+HQ replied yes and the grant is on a branch rather than deployed. HQ replied in handoff
 `37f6dc98-cea6-4a66-8db5-8ed522e50e7c` at 2026-10-25T23:54:20Z and the work is
 `alexandra-systems` pull request 467, open and mergeable at 2026-10-26T00:05Z.
 Verified from this side rather than taken from the `done`, which is this page's
