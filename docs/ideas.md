@@ -20814,3 +20814,69 @@ has nothing to go red against.
   own, because it converts an invisible disagreement into a red tick.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-26 - Display type balances as a house rule, and the rule needs two properties because the variable is break points (frontend seat, hook run)
+- Trigger: board card `2d4370ee`, filed by this seat's own run as it shipped the
+  issue dek's widow fix. The card asked whether the house balances display type
+  as a rule or whether the dek's new rule stands alone, and it said in its own
+  words that it wanted an eye rather than the numbers. This run rendered the
+  three blocks, measured them across the generator's whole title range at three
+  viewports plus a thirteen-width sweep, and looked at every frame.
+- The answer is that it is a rule, and that the rule the earlier run was
+  reaching for is not the one the evidence supports. That run framed the choice
+  as balance everywhere against a breakpoint on a type rule, and it read the
+  breakpoint as the dishonest option because a breakpoint is a width and a type
+  rule should not care about width. The breakpoint is real, but width is not
+  what it is measuring.
+- What the variable actually is: candidate break points. `text-wrap: balance`
+  evens every line in a block, and it can only do that well when the block has
+  enough places to break. The dek is 17px reading type in a 632px measure, so
+  it has about ten words to a line, and balance repaired it at all three
+  viewports. The issue H1 is 34px display type, and at the phone's 342px measure
+  it has about three words to a line, so the balancer has almost nothing to
+  choose from and settles on a bad local optimum. The live title goes from
+  297/305/156, an ordinary descending rag, to 297/172/289, which puts the short
+  line in the middle. A 75-character title dents the same way at line 3 of 4.
+  So the same property is right for one block and wrong for another at the same
+  moment, and the thing that differs is not the viewport, it is the type size
+  against the measure.
+- Why a two-line block cannot go wrong, which is what makes the breakpoint
+  defensible: a dent needs a middle line. At 820 and 1440 the generator's range
+  wraps this title to two lines, and evening a pair can only shorten the long
+  line and lengthen the short one. Swept across thirteen widths the last dent is
+  at 440 and every width from 470 to 1440 is clean, so the rule ships at the
+  house's existing 560 breakpoint, which has four other uses in this stylesheet
+  and clears the last dent by 120px rather than being fitted to it.
+- Two cases the earlier measurement recorded as inert are live defects, and
+  finding them is the reason this is a rule rather than a patch. That run
+  measured the short title only at the wide viewports, where it is one line and
+  genuinely does not move, and recorded it as inert. On the phone a 27-character
+  title wraps to 333/67 with "logs" alone, which at 20 per cent of the measure is
+  a worse stub than the 25 per cent one the card was filed about. A title at the
+  120-character ceiling `ensure_fresh_title` enforces ends on a 40px "on", which
+  is 12 per cent and the worst in the whole range, and `balance` cannot reach it
+  at all because Chromium stops balancing past its line cap. `text-wrap: pretty`
+  repairs both, because its job is the last line's break rather than an even
+  block, which is exactly what a narrow measure wants.
+- Shipped in this run's pull request: `.issue-body h1` takes `balance`, with
+  `pretty` below 560. Verified on the live page rather than on injected styles,
+  at 390, 820, 1440 and on both sides of the breakpoint. The reported widow goes
+  from 610/156 to 420/346, the phone keeps its rag, and the dek is byte-identical
+  at all three viewports.
+- The proposal, which is the part that is not mine to write: one paragraph in
+  `docs/design/canon.md` under the measurement system, saying that display type
+  never ends on a stub, that `balance` is the property where the block has the
+  break points to be evened or is centred, and that `pretty` is the property
+  where it does not. `.statement` is centred and balances correctly today at all
+  three viewports and wants no change, and naming it in the canon entry is ban
+  list 31's lesson applied before the fact rather than after: the set is three
+  blocks, two of them had a rule, and the third was the one nobody had measured
+  on a phone.
+- A thing the canon paragraph should carry, because it is the part a later run
+  will otherwise rediscover: the 560 is a proxy for "this block is two lines at
+  this type size and this measure". If the issue measure, the H1 size or the
+  title cap moves, the number has to be re-swept rather than kept.
+- First step: the sentence above into `canon.md`, which this seat may propose
+  and does not write.
+- Cost: $0.
+- Status: proposed

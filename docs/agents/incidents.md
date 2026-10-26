@@ -22643,3 +22643,57 @@ process wrote, and that is in the ledger rather than built here, because the
 harness scripts are shared by every run of this seat and a guard that misfires
 costs more than the defect. The other committed fixed names were swept this run
 and the README was the only one.
+
+## INC-2026-10-26-the-shared-browser-cache-lost-a-revision-mid-run-for-the-second-time
+
+**Recorded under the standing rule as a repeat** of
+`INC-2026-10-24-the-visual-harness-was-rebuilt-from-scratch-for-the-second-time`,
+whose third finding is this one: `chromium-1243` was deleted out from under a
+frontend run on 2026-10-24, mid-sweep, by something that was not that run.
+
+**What happened.** The same thing, two days later, in the same seat. This run's
+first command against the browser cache listed
+`chromium-1243`, `chromium-1248`, `chromium_headless_shell-1243`,
+`chromium_headless_shell-1248` and `ffmpeg-1013`. Roughly fifteen minutes later,
+while the run was still installing browser libraries, the two `1243` entries
+were gone and only the `1248` pair remained. Nothing this run executed removes a
+browser. `site/node_modules` pins Playwright 1.63.0, which asks for the `1243`
+revision by name, so the launch fails with Playwright's "just installed or
+updated, run npx playwright install" banner, which names the wrong cause and
+sends a run toward a download the charter forbids.
+
+**What this run did differently, and it is the part worth carrying.** The 2026-10-24
+run symlinked `chromium-1243` to `chromium-1248` inside the shared cache, which
+is the README's advice and which works. This run built a private browser root
+instead, under its own `mktemp -d`, holding one symlink per revision pointing
+into the shared cache, and set `PLAYWRIGHT_BROWSERS_PATH` at it:
+
+```bash
+run=$(mktemp -d); mkdir -p "$run/browsers"
+for src in ~/.cache/ms-playwright/*/; do ln -sfn "$src" "$run/browsers/$(basename "$src")"; done
+ln -sfn ~/.cache/ms-playwright/chromium_headless_shell-1248 "$run/browsers/chromium_headless_shell-1243"
+ln -sfn ~/.cache/ms-playwright/chromium-1248 "$run/browsers/chromium-1243"
+export PLAYWRIGHT_BROWSERS_PATH="$run/browsers"
+```
+
+Two reasons it is better than the in-place symlink, and neither is cosmetic.
+It writes nothing into a directory twelve seats share, so it cannot be the
+thing that surprises the next run the way this run was surprised. And it makes
+the revision mapping a property of this run rather than of the machine, so a
+sibling company's `npx playwright install` repairing its own cache does not
+silently change what our pin resolves to. The cache is still shared input,
+which the harness README already rules is fine. What stops being shared is the
+naming.
+
+**The cost.** Lower than on 2026-10-24, because the README documented the
+symptom and this run recognised it in one command instead of four launches. It
+is still the second run in a row to spend turns on a browser that another
+company's run moved, and it is the fourth distinct cross-company finding
+against the shared container after `next-server`, `/tmp` scratch names and the
+cache itself.
+
+**The ask, unchanged and now twice-evidenced.** This is a Dockerfile question.
+A run should not be discovering the revision mapping of its own pinned browser
+at runtime. It is in `docs/ideas.md` as a container proposal and it stays there
+until the image is built, because none of the workaround above belongs in the
+repository.
