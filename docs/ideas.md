@@ -20928,3 +20928,103 @@ has nothing to go red against.
 - Cost: $0 to steal. Semantic Router is open source and nothing here proposes
   adopting it.
 - Status: proposed
+
+### 2026-10-26 — The dark window should be a count of rows, not a count of days (engineer seat, message run)
+- Trigger: today's own build. `tools/loop_close.py` reports that the
+  2026-10-05 triage proposal was dark for at most 12.3 days, computed from
+  `deploy_runtime.first_seen_at` against the merge. The number the incident
+  actually turned on is a different one: 8,861 rows judged against the
+  superseded prompt. Days are a property of the clock and rows are a property
+  of the harm, and a job that is dark over a quiet weekend costs nothing
+  while one that is dark on a busy Tuesday costs thousands of judgements.
+- What: `triage_log.prompt_sha` and `claims.prompt_sha` already record which
+  prompt wrote each row, which is how the 8,861 was counted by hand in
+  `docs/research/notes/2026-10-12-graph-precision-evidence.md`. So the
+  surface can count it rather than infer it: for a dark proposal, the number
+  of rows written since its merge whose `prompt_sha` is not the merged file's
+  sha. That is the cost of the gap in the units the gap is paid in, and it
+  turns "merged twelve days ago" into "merged twelve days ago and 8,861 rows
+  were judged by the prompt it replaced." It also sharpens `live`: a
+  proposal whose image contains the merge but which has written zero rows
+  with the new sha has not actually been read yet, and today this instrument
+  would call that done.
+- First step: publish `prompt_sha` counts on the delivery receipt, the way
+  `deploy` is already published, since the site holds `DATABASE_URL` and no
+  seat does. One query grouped by `prompt_sha` over `triage_log` and
+  `claims`, two new keys under a `prompts` block, and the receipt version
+  bumped with a line in `READABLE_VERSIONS`. The reader in `loop_close` is
+  the second day.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 — A seat cannot write the done event it can compute, and five tools now say so (engineer seat, message run)
+- Trigger: today's own build, which is the fifth instance of one shape rather
+  than a new one. `tools/loop_close.py` can judge perfectly well whether a
+  self-improvement proposal is running, and cannot write `promotions.live_at`
+  when the answer is yes, because the write needs a database and the
+  judgement needs a git checkout and no runtime in this organization holds
+  both. `tools/delivery_health.py`'s deploy alarm has the same hole and has
+  mailed nobody since 2026-10-08. `tools/drift_watch.py`,
+  `tools/press_watch.py` and `tools/checkout_watch.py` are each a whole file
+  written to route around it, and `docs/agents/pending-workflow-changes.md`
+  item 6 has been asking for the read-only URL since before any of them.
+- What: the ask has been framed each time as one guard needing one
+  credential, and it is cheaper read as an inventory. Four tools carry a
+  board channel that exists only because they cannot write a database, and
+  the board channel is strictly worse for two of the four: a cooldown kept in
+  a card title cannot record *when* something became true, only that it is,
+  so `notified_at`, `live_at` and `decided_at` all stay null forever and the
+  org loses the history it would need to say whether the loop is getting
+  faster. One read-only `NEON_RO_URL` in a seat's environment does not fix
+  this, because three of these writes are writes. What closes it is one
+  narrow write role scoped to four columns on three tables.
+- First step: name the four columns and the exact grants in one paragraph on
+  `docs/agents/pending-workflow-changes.md` item 6, so the owner's decision
+  is a yes or no on a bounded role rather than on "database access for
+  agents". No code.
+- Cost: $0. Neon's free tier includes additional roles.
+- Status: proposed
+
+### 2026-10-26 — Craft scan: Sentry reports a release's adoption, not its deployment, and Argo splits "synced" from "healthy" (engineer seat, message run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  build. The item was "a merged prompt change counts as done only once it is
+  deployed," so the products to read are the ones whose whole job is the gap
+  between a merge and a running system: Sentry's release tracking
+  ([docs.sentry.io](https://docs.sentry.io/product/releases/)), new to this
+  ledger, and Argo CD ([argo-cd.readthedocs.io](https://argo-cd.readthedocs.io)),
+  both read 2026-10-26. **Argo CD was already scanned on 2026-10-24** by this
+  seat, for auto-sync and sync windows; this is a different page of the same
+  product and the entry above it says so rather than rediscovering the first
+  one. Sentry is the half that is new, and it is the half worth stealing.
+- What: steal one idea that these two products hold between them. Argo CD refuses
+  to answer "is it deployed" with one word. An application carries a **sync
+  status**, which compares the cluster against the git revision, and a
+  separate **health status**, which asks whether the workload that resulted
+  is actually serving, and `Progressing` is a first-class value of the second
+  rather than an absence of the first. This organization had one word,
+  `deploy`, doing both jobs, and that is exactly why the triage prompt could
+  be twelve days stale under a green report: the grace window made a pending
+  deploy correctly not a fault, and nothing else was asking. Today's `loop`
+  surface is the health half, and it was built because the sync half was
+  already green. Sentry's half is sharper still: a release is not reported
+  as shipped or not, it carries an **adoption** figure, the share of sessions
+  already running it, because a release that is deployed and that nothing has
+  executed is not in production in any sense a user would recognise. That is
+  the entry above this one, arrived at independently and named here because
+  the shape is somebody else's and already proven.
+- What alexandria does better: both of those read a version the deployer
+  declared. Argo compares against the manifest in git and Sentry against the
+  release string the SDK is configured with, so a build that silently lost a
+  file reports the same version it would have reported if it had not.
+  `pipeline/runtime_sha.py` writes a digest the running job computes over its
+  own image, with the file list parsed out of the module's own
+  `add_local_file` calls rather than declared anywhere, and a missing file
+  hashes as the literal word `missing` rather than being dropped. So a deploy
+  that lost a prompt is a different sha here and an identical version string
+  there. That is a smaller product making a stronger claim, and it is the
+  reason `undeployed_commits` can name the commit an image was built from
+  without anything ever having recorded it.
+- First step: none of its own. The stealable half is the entry two above,
+  which this scan is the argument for rather than a second proposal.
+- Cost: $0 to steal. Both are read for their design and neither is adopted.
+- Status: proposed
