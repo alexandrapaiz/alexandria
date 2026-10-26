@@ -124,6 +124,14 @@ one frame and two captions opening on the same two words. It reads 7 of the 7
 the surface declares, fails today naming the four, and goes green on the nine
 drafted to replace them. Twelve cases run before the file is opened.
 
+**The cold read at the end of the run caught this seat writing a fragment into
+the table that argues fragments are the defect.** The first draft of the
+`Multi-modal systems` caption was a noun phrase, as was the line it replaces,
+and the draft for `Training loops` made "it" the subject of its second clause,
+which is the word her ruling on round eight names. Both were struck. It is
+recorded here rather than quietly fixed, because it is the strongest available
+evidence for the thing the gate below cannot do.
+
 What the gate deliberately does not count is the sharper half. Whether a clause
 carries a finite verb is not string work, and a fragile detector would print
 that verdict in the same format as the two honest counts, so the fragment

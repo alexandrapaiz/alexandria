@@ -165,16 +165,22 @@ two of the nine captions on this page would open on the same two words.
 | Agent harnesses | Most of what makes an agent reliable sits outside the model, in the tools it is given, the loop it runs in and the corrections it gets back. |
 | Context engineering | The window is finite, so what matters is what goes into it, in what order, and what to do when the work will not fit. |
 | Multi-agent systems | Split a job across several agents and the hard part stops being the model and becomes the hand-offs between them. |
-| Training loops | Changing the weights is a different job from changing the prompt, and it covers distillation, reward design and self-improvement. |
+| Training loops | Post-training changes the weights rather than the prompt, and that is where distillation, reward design and self-improvement happen. |
 | Serving and inference | Once the answer is right, the remaining job is getting it out fast and cheap. |
-| Multi-modal systems | Models that take in images, audio and the world beyond text, and act on what they find. |
+| Multi-modal systems | Some models take in images and audio as well as text, and act on what they find there. |
 
 `Context engineering` keeps nearly all of its own words, because it was the
 best line of the six and it needed a verb rather than a rewrite.
 `Serving and inference` is deliberately the shortest of the nine, because
 captions that all run to the same length are the other half of the same tell.
 `Multi-modal systems` trades "read" for "take in", which is the verb canon
-law 15 fixes for that act.
+law 15 fixes for that act, and it gains a finite verb in doing so. The line it
+replaces was a noun phrase, and so was the first draft of its replacement,
+which is worth recording rather than quietly fixing. This seat wrote a fragment
+into the very table arguing that fragments are the defect, and the only thing
+that caught it was reading the nine cold at the end of the run. A gate that
+could have caught it is the one this run declined to build, for the reason
+stated in ban list 142.
 
 **If only parts 1 and 2 are approved**, the page carries nine captions in two
 registers, two of them sentences and seven of them fragments, and the two new
