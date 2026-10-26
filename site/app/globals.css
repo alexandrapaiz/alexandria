@@ -969,6 +969,47 @@ button.pill {
   font-style: normal;
 }
 
+/* The dek, which is the standing line under an issue's title. It is the one
+   paragraph on the site whose string never changes, so its rag is not a
+   property of a week's writing: every issue the press prints wraps it the
+   same way, and it broke the same way on all of them. Measured on
+   2026-W39 at 17px: two lines at 820 and 1440 with "has overturned." alone
+   on the second at 118px of a 632px measure, and three lines at 390 with
+   "overturned." alone on the third at 86px of 342. A single-word last line
+   under a title that often ends in a stub of its own put two ragged
+   fragments in the first 60px a reader sees.
+
+   `balance` rather than `pretty`, because `pretty` was measured here and
+   changed nothing at 820 or 1440: it only shifts the last line's break and
+   this dek has no better break to shift to. `balance` evens the lines
+   instead, to 409/316 at 820 and 1440 and 253/225/242 at 390, so the phone
+   gains from the rule rather than paying for it.
+
+   The selector is the adjacent paragraph rather than a shape test, and it is
+   exact by construction rather than by luck: `add_masthead` in
+   pipeline/weekly.py splices this block directly under the H1 for every
+   issue, including the short edition, where the edition note lands after it
+   and not before. The one body that has no masthead is the hand-committed
+   2026-W37, and `balance` was measured on its eight-line lead paragraph and
+   left it byte-identical, because Chromium does not balance past its line
+   cap. So the rule is inert on everything it is not for. Ban list 26: this
+   was the browser's wrapping standing where the house had written
+   `text-wrap` for the one block it designed on purpose.
+
+   Scoped to `.issue-body` and not to `.digest`, which is the second half of
+   the same point. `.digest` is the house's reading type and two surfaces
+   wear it: the issue, and the skill file an entitled member opens in the
+   catalogue. Every skill file is also an H1 followed by a paragraph, so the
+   unscoped selector reached a surface this rule was never measured against.
+   `.issue-body` names what the rule is for, the way `.skill-body` already
+   names the other one, so a third surface taking the reading type inherits
+   nothing it did not ask for. Ban list 31: the defect there is a set that
+   is almost complete, and an unscoped selector is the same error pointing
+   outward. */
+.issue-body h1 + p {
+  text-wrap: balance;
+}
+
 .digest a {
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -1522,12 +1563,21 @@ button.pill {
   margin-bottom: 4px;
 }
 
+/* 600px was inherited from .skill-row-summary directly above it, and a width
+   is not a measure: the summary is 17px and runs 59 characters to the line at
+   600, which is the canon's target, while this block is 14px and ran 84 at the
+   same width. The canon's rule is "at or near 65 characters, never past 75",
+   so the smaller type needs the narrower column, not the same one. 480 puts
+   this at 67. Measured with Range rects down the rendered block rather than
+   estimated from the width, because the estimate was wrong by 35 on the
+   sibling note and nearly cost this run a fix it did not need.
+   (Found 2026-10-26, at 54 skills.) */
 .skill-routing {
   margin-top: 12px;
   font-size: 14px;
   line-height: 1.6;
   color: var(--gray);
-  max-width: 600px;
+  max-width: 480px;
 }
 
 /* The receipts, inside the open row. A definition list because that is what

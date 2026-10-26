@@ -147,14 +147,22 @@ def assert_resolves(name: str, sql: str, system: set[str] | None = None):
     nothing an INSERT or an UPDATE writes may be excused by the statement
     itself. Columns it only reads may also be names the statement invents, so
     output aliases and column aliases are allowed there.
+
+    A relation the statement defines for itself in a WITH clause is allowed the
+    same way an alias is. Without that, the one query in `pipeline/weekly.py`
+    that uses a CTE fails for naming the CTE, which is the guard reporting its
+    own blind spot rather than a defect.
     """
     schema_relations, schema_columns = schema_names()
     stmt = parse_one(sql).stmt
     nodes = walk(stmt)
 
+    ctes = {node.ctename for node in nodes
+            if type(node).__name__ == "CommonTableExpr" and node.ctename}
+
     for node in nodes:
         if type(node).__name__ == "RangeVar":
-            assert node.relname in schema_relations, (
+            assert node.relname in schema_relations | ctes, (
                 f"{name} names {node.relname}, which db/schema.sql does not "
                 "create")
 

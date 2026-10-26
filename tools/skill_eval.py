@@ -453,6 +453,34 @@ def gate_problems(result: dict, previous: dict | None) -> list[str]:
     if result["verdict"] != "gain":
         problems.append(f"the verdict is {result['verdict']!r} rather than a gain")
 
+    # Rule 1, and it is a gate clause rather than a note because the gate's
+    # whole question is whether a revision merges on its own evidence. A delta
+    # measured on a subject or a judge nobody registered, or at a repetition
+    # count nobody registered, is evidence about the dial that moved. Both
+    # dials are named here so that one rule is not enforced two ways: before
+    # 2026-10-26 `--reps` recorded its override and `--subject` recorded
+    # nothing, and neither reached the gate.
+    for key, over in sorted((result.get("policy_overrides") or {}).items()):
+        if over.get("registered"):
+            problems.append(
+                f"the {key} was overridden on the command line: the suite "
+                f"pre-registered {over['registered']!r} and this run measured "
+                f"on {over['ran']!r}, so this delta is not the policy's "
+                "delta (rule 1, docs/product/skill-validation.md section V5). "
+                f"Register {over['ran']!r} in the suite and measure again, or "
+                f"drop {over['flag']}")
+        else:
+            problems.append(
+                f"the {key} was chosen on the command line ({over['ran']!r}) "
+                "and the suite pre-registers none, so nothing about this "
+                f"measurement was pre-registered. Put the model id in "
+                f"`policy.{key}` (rule 1)")
+    if result.get("repetitions_overridden"):
+        problems.append(
+            f"the repetitions were overridden to {result.get('repetitions')}; "
+            "the suite pre-registers its own count and rule 1 says the run "
+            "copies it rather than choosing it")
+
     # ADR-40 item 5. An exploited rubric is not a measurement, so it fails the
     # gate ahead of the delta: a delta computed by a rubric that scores an answer
     # written to game it is a number about the rubric.
@@ -519,7 +547,16 @@ def history_entries(doc: dict) -> list[dict]:
 
 ENTRY_FIELDS = ("version", "date", "subject_model", "judge_model", "tasks",
                 "repetitions", "verdict", "skill_md_sha256", "trigger",
-                "spend_usd")
+                "spend_usd",
+                # The two deviation fields travel with the entry, because
+                # `history` is the only place a reader compares runs and the
+                # top level holds just the newest. Without them a history of
+                # six deltas gives no way to tell which were measured under
+                # the policy the suite registered, which is the whole question
+                # rule 1 asks. Added 2026-10-26 with `policy_overrides`
+                # itself; `repetitions_overridden` had been written at the top
+                # level since it existed and dropped here every time.
+                "policy_overrides", "repetitions_overridden")
 
 
 def summary_entry(result: dict, version: str = "", trigger: str = "") -> dict:
@@ -823,6 +860,43 @@ def looks_like_a_model_id(value) -> bool:
         not any(c.isspace() for c in value.strip())
 
 
+def criterion(raw: dict) -> dict:
+    """One rubric criterion in this harness's vocabulary, keeping every key.
+
+    Renaming is the whole job, and until 2026-10-26 it was done by building a
+    fresh dict of three keys, which silently discarded every other key the
+    author had written. Two downstream readers look for exactly those discarded
+    keys:
+
+    * `certificate_problems` and `certificate_counts` want `certificate`, which
+      ADR-40 item 5 requires and which `skills/_validation/evals/README.md`
+      documents inside `check.criteria[]`. All 27 of `harness-engineering`'s
+      criteria carry one in that form and `--check` counted none of them, so
+      the requirement was satisfiable only by writing against the undocumented
+      top-level `rubric` form and `policy.require_certificates` could not be
+      turned on by a suite that complied. Filed by the skill seat in
+      docs/ideas.md on 2026-10-13.
+    * `criterion_sections` and `conformance` want `section`, which is ADR-40
+      item 7's precise form of per-section credit. No suite writes it yet, so
+      that half was latent rather than live, and it would have failed the same
+      way on the first suite that did.
+
+    The general rule is the one the vocabulary table above already states: a key
+    the skill seat wrote and this harness has never heard of is this harness's
+    problem and not the task's. So carry everything, rename the two keys that
+    have a different spelling here, and let the conformance checks be the thing
+    that rejects a key rather than a dict literal that cannot see it.
+    """
+    item = dict(raw)
+    item["id"] = raw.get("id")
+    item["asks"] = raw.get("criterion") or raw.get("asks")
+    item["anchors"] = raw.get("anchors")
+    # One spelling downstream. Popping rather than keeping both also makes this
+    # idempotent: a second pass finds no `criterion` and reads `asks`.
+    item.pop("criterion", None)
+    return item
+
+
 def normalize(spec: dict) -> dict:
     """The skill seat's suite in this harness's vocabulary. Idempotent."""
     out = dict(spec)
@@ -858,11 +932,8 @@ def normalize(spec: dict) -> dict:
             task["ask"] = task["prompt"]
         check = dict(task.get("check") or {})
         if check.get("type") == "rubric":
-            task["rubric"] = [
-                {"id": c.get("id"), "asks": c.get("criterion") or c.get("asks"),
-                 "anchors": c.get("anchors")}
-                for c in (check.get("criteria") or [])
-            ]
+            task["rubric"] = [criterion(c)
+                              for c in (check.get("criteria") or [])]
             task.pop("check", None)
         elif check:
             task["check"] = check
@@ -1983,7 +2054,7 @@ class Subject:
     temperature and the reservation are.
     """
 
-    def __init__(self, model: str, env, cap, available=None):
+    def __init__(self, model: str, env, cap, available=None, sleep=time.sleep):
         import llm
 
         self.llm = llm
@@ -1991,8 +2062,46 @@ class Subject:
         self.env = env
         self.cap = cap
         self.available = available
+        self.sleep = sleep
+        self.last_tokens = 0
+        self.paused = 0.0
+
+    def pace(self) -> float:
+        """Wait out this model's published minute before the next call.
+
+        An eval run is dozens of calls in a row and this class took none of
+        them: every pause it ever paid was `pipeline/llm.py`'s 429 backoff,
+        after the provider had already refused. That is the defect of
+        2026-10-11 (`llm.pace`, and `budget.check_fallback_pacing` which was
+        written to catch it) reproduced in the one multi-call job the guard's
+        `PACED_CALLERS` list did not name. It is worth stating in numbers
+        because both routes into this harness are rate-limited rather than
+        priced:
+
+        * The subject `agent-memory-selection` pre-registers is `kimi-k2.6`, at
+          3 requests a minute on this account. A 42-call run therefore needs 20
+          seconds between calls and took none, so every call after the first
+          earned a 429 and recovered on a 30-second backoff.
+        * The only $0 route, a free-tier subject, is bound by tokens instead:
+          8,000 a minute against a measured ~3,000-token with-skill call is
+          22.5 seconds between calls, and `llm.pace` is the one function that
+          reads whichever of the two limits binds.
+
+        So the pause is taken here, once per `Subject`, sized by the call this
+        one just made. Per instance rather than per `Cap`, because the subject
+        and the judge share a cap and are different models with their own
+        minutes, and a judge-sized pause on a subject call is the same
+        single-limit mistake one layer up.
+        """
+        if not self.last_tokens:                   # nothing measured yet
+            return 0.0
+        wait = self.llm.pace(self.model, self.last_tokens)
+        self.paused += wait
+        self.sleep(wait)
+        return wait
 
     def ask(self, system: str, user: str, max_tokens: int) -> dict:
+        self.pace()
         # The seed goes only where the provider honours one. `pipeline/llm.py`
         # omits the key entirely when it is None, so a Moonshot call is byte for
         # byte the call it was before ADR-40, which is what keeps this change
@@ -2012,12 +2121,30 @@ class Subject:
             # a second failure is the real thing and propagates as before.
             print(f"  {self.model}: retrying once with {2 * max_tokens} tokens "
                   f"after: {str(exc).splitlines()[-1][:160]}")
-            time.sleep(20)
+            # The retry's own pause, and 20 seconds is kimi-k2.6's minute
+            # rather than every model's: `pace` reads whichever of requests and
+            # tokens binds on the model actually in hand, and the reservation
+            # has just been doubled, so the call about to be made is the larger
+            # one. Floor it at the old number so this is never shorter than
+            # what was here before.
+            self.last_tokens = max(self.last_tokens, 2 * max_tokens)
+            self.sleep(max(self.llm.pace(self.model, self.last_tokens), 20))
             answer, _ = self.llm.ask_json([self.model], system, user, self.env,
                                           self.cap,
                                           max_completion=2 * max_tokens,
                                           temperature=EVAL_TEMPERATURE,
                                           available=self.available, seed=seed)
+        # `cap.last_tokens` spelled out rather than fetched with getattr, and
+        # the spelling is load-bearing twice. It is the provider's own count of
+        # the call just made, which is the only number `llm.pace` can size a
+        # pause from honestly, and
+        # `tests/test_corpus_drain.py::test_every_paced_caller_tells_pace_how_big_its_call_was`
+        # asserts this literal appears in the source of every entry in
+        # `budget.PACED_CALLERS`. A defensive getattr satisfied
+        # `budget.check_fallback_pacing()` and failed that assertion, which is
+        # two gates on one rule disagreeing about what counts as paced; see
+        # INC-2026-10-26-the-pacing-rule-has-two-gates-and-they-do-not-agree.
+        self.last_tokens = self.cap.last_tokens or 0
         return answer
 
 
@@ -2471,7 +2598,9 @@ def render(result: dict) -> str:
     lines = [
         f"{result['skill']}, {result['date']}",
         f"  subject {result['subject_model']}, judged by "
-        f"{result['judge_model']}",
+        f"{result['judge_model']}"
+        + (", not the pre-registered pair"
+           if result.get("policy_overrides") else ""),
         f"  {result['tasks']} tasks, {result['repetitions']} repetitions per "
         f"arm, {result['scored_by_hard_check']} scored by a hard check",
     ]
@@ -2786,6 +2915,30 @@ def main(argv=None) -> int:
         print(f"note: repetitions overridden to {reps}; the file registered "
               f"{policy.get('repetitions')}, and the result says so")
 
+    # Rule 1 of docs/product/skill-validation.md section V5: the policy is
+    # pre-registered and the run copies it rather than choosing it. `--reps`
+    # has said so since it was written, in a printed note and in
+    # `repetitions_overridden`. `--subject` and `--judge` are the other two
+    # dials rule 1 names and they said nothing at all, so a run that moved the
+    # subject off the registered model wrote a result whose `subject_model`
+    # field reads exactly like a pre-registered one. The model is the dial most
+    # likely to move, because the registered subject is the paid one and the
+    # only $0 route is an override.
+    overrides = {}
+    for flag, key, used in (("--subject", "subject", subject_model),
+                            ("--judge", "judge", judge_model)):
+        registered = policy.get(key)
+        chosen = args.subject if key == "subject" else args.judge
+        if chosen and registered and chosen != registered:
+            overrides[key] = {"registered": registered, "ran": used,
+                              "flag": flag}
+            print(f"note: {key} overridden to {used}; the file registered "
+                  f"{registered}, and the result says so")
+        elif chosen and not registered:
+            overrides[key] = {"registered": None, "ran": used, "flag": flag}
+            print(f"note: {key} was chosen on the command line ({used}) and "
+                  f"the file registers none, so nothing pre-registered it")
+
     if subject_model == judge_model:
         print(f"refusing to run: the subject and the judge are both "
               f"{subject_model}. ADR-36 requires them to differ, and a model "
@@ -2933,6 +3086,8 @@ def main(argv=None) -> int:
         result["verdict"] = "incomplete: " + result["verdict"]
     if args.reps:
         result["repetitions_overridden"] = True
+    if overrides:
+        result["policy_overrides"] = overrides
     out = results_path(args.skill)
     # Read before writing. `history` is ADR-37's version history: one entry per
     # measured version, with the trigger that asked for it. It is appended to

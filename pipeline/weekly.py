@@ -323,8 +323,18 @@ def gather(conn) -> dict:
               and fulltext_chars is not null),
           (select count(*) from claims
             where created_at > now() - interval '7 days'),
-          (select count(*) from claim_links
-            where created_at > now() - interval '7 days')
+          -- Connections, not opinions. prompts/digest.md tells the writer
+          -- this number counts "the connections drawn between findings", and
+          -- re-judgment appends a row for a pair that was already connected
+          -- (see claim_links), so counting rows would let a prompt re-run
+          -- inflate the issue's own headline. That is the same directive as
+          -- the comment above: a count the issue prints may not flatter the
+          -- pipeline. A connection is dated by its first sighting.
+          (select count(*) from (
+             select from_claim, to_claim from claim_links
+             group by from_claim, to_claim
+             having min(created_at) > now() - interval '7 days'
+           ) connections_drawn)
         """
     ).fetchone()
 
@@ -341,7 +351,11 @@ def gather(conn) -> dict:
         -- decision its paper has ever had, so one re-triaged paper would put the
         -- same claim in the digest payload twice.
         left join latest_triage t on t.paper_id = c.paper_id
-        left join claim_links l on l.from_claim = c.id
+        -- latest_links for the same reason as latest_triage directly above:
+        -- re-judgment appends, so joining claim_links here would print both
+        -- September's verdict and October's on one pair, side by side, as
+        -- though the judge held two opinions at once.
+        left join latest_links l on l.from_claim = c.id
         where c.created_at > now() - interval '7 days'
         group by c.id, c.claim, c.topics, p.title, p.url, p.tier, t.decision, t.score,
                  c.evidence, c.procedure, p.authors, p.institutions
@@ -355,7 +369,10 @@ def gather(conn) -> dict:
         """
         select old.claim, new.claim, l.confidence,
                po.title, po.url, pn.title, pn.url
-        from claim_links l
+        -- latest_links: a supersession a later prompt withdrew is not news,
+        -- and on this view created_at is the date the current verdict was
+        -- reached, so the seven-day window reads as "decided this week".
+        from latest_links l
         join claims old on old.id = l.to_claim
         join claims new on new.id = l.from_claim
         join papers po on po.id = old.paper_id
@@ -374,7 +391,10 @@ def gather(conn) -> dict:
         select c.id, c.claim, p.title, p.url, count(*) as supports
         from claims c
         join papers p on p.id = c.paper_id
-        join claim_links l on l.to_claim = c.id and l.relation = 'supports'
+        -- latest_links, or the count is wrong rather than merely stale: two
+        -- prompts agreeing that one claim supports another is one support,
+        -- and on claim_links it would read as the two this list requires.
+        join latest_links l on l.to_claim = c.id and l.relation = 'supports'
         group by c.id, c.claim, p.title, p.url
         having count(*) >= 2
         order by count(*) desc
@@ -402,7 +422,9 @@ def gather(conn) -> dict:
     deprecated = conn.execute(
         """
         select old.claim, new.claim, l.confidence, p.title, p.url
-        from claim_links l
+        -- latest_links, the same reason deprecated_claims reads it: a
+        -- contradiction a later prompt withdrew is not a deprecation.
+        from latest_links l
         join claims old on old.id = l.to_claim
         join claims new on new.id = l.from_claim
         join papers p on p.id = old.paper_id

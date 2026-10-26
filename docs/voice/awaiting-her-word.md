@@ -62,10 +62,41 @@ surface where a defective line costs the most per reader. Its defect is a
 number rather than a sentence, so `check_voice.py ledger` is what re-confirms
 it rather than a reading.
 
+**Re-confirmed 2026-10-25 by command, writer run 50, and one number moved the
+wrong way.** `check_voice.py reading` now reports 4 failures rather than 5,
+and the one that left is the archive masthead in the closed table below, set by
+the frontend seat and verified on `main`. So no row above was repaired, one was
+completed by another seat, and the rest are untouched at thirty days for the
+oldest. `check_voice.py claims` reports 23 unhedged claims live right now
+against 17 on 2026-10-23, which is six more than a run that drafted nothing for
+these surfaces can account for. The delta is not diagnosed here, because this
+run produced no copy and `docs/voice/value.md` still has no recorded approval,
+which is the precondition the charter puts ahead of drafting. The same command
+reports 9 cited files that no longer carry their claim and 5 drifted line
+numbers, and those belong to `docs/agents/quality-claims.md` and its owner
+rather than to this table.
+
+**Re-confirmed 2026-10-26 by command, writer run 51, and one number moved
+because a gate was repaired rather than because a page changed.**
+`check_voice.py reading` reports the same 4 failures on the same 4 lines as on
+2026-10-25, so no row below was repaired and the oldest is thirty-one days.
+`check_voice.py claims` reports 24 against 23 yesterday, and the one that moved
+is this run's own repair: the row for "the library grows every day" has read
+`contradicted` since 2026-10-11 and the gate was resolving it to `held`, because
+its state cell records what it moved from and `held` was first in the list the
+gate searched. So `site/app/page.jsx:33` was printing a sentence the register
+calls false while this seat's instrument printed `ok` beside it. That line is
+not added to the table below, because the row for that same paragraph is
+already open as `claim-repairs-2026-10-18.md` and the charter's precondition
+for drafting is unmet: `docs/voice/value.md` still has no recorded approval.
+The delta run 50 could not account for is also answered and it was not the
+copy. The register went from 11 rows to 13 on 2026-10-24, and the current gate
+run against the tree of 2026-10-23 returns 17, so neither the gate nor the
+surfaces moved.
+
 | Surface | Candidate | Drafted | Is the defective line still live? |
 |---|---|---|---|
 | `site/app/desk/page.jsx`, the verdict queue | `desk-verdict-queue-2026-10-24.md` | 2026-10-24, run 45 | Yes. The queue renders 524 rows oldest first, so the newest entry on it is the compute outage of 2026-10-23 and a reader reaches it last. The count beside the heading is also wrong by one against `tools/ledger.py --census`, which `check_voice.py ledger` now fails on. Four lines and a one-character anchor, in one diff |
-| `site/content/issues/2026-W39.md`, line 3 | `archive-masthead-2026-10-23.md` | 2026-10-23, run 44 | **Set by the frontend seat on 2026-10-24**, in that run's pull request, so it stops being live the moment that merges and not before. The replacement is the `MASTHEAD` constant from `pipeline/weekly.py` character for character, extracted and asserted rather than retyped. `check_voice.py reading` no longer reports the archive. Moving the row to the closed list is the writer seat's call rather than this one's, which is why it is annotated here and not moved |
 | `site/app/mission/page.jsx`, third paragraph | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. Three unheld claims in one sentence, confirmed by `check_voice.py claims` on 2026-10-18 |
 | `site/app/mission/page.jsx`, second paragraph | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. "every finding is linked", contradicted on "every" |
 | `site/app/page.jsx`, the paragraph under the hero | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. "replaced when newer work overturns it", which reports rather than replaces |
@@ -89,6 +120,7 @@ it rather than a reading.
 | Surface | Candidate | How it closed |
 |---|---|---|
 | Home, library, skills, graph, mission | `site-copy-2026-09-19.md` and the rounds after it | Superseded by her approvals of 2026-09-29, "good. i like this.", recorded in `docs/voice/taste.md`. The live pages are the positive examples |
+| `site/content/issues/2026-W39.md`, line 3 | `archive-masthead-2026-10-23.md` | Set, and on `main`. Verified by writer run 49: line 3 of the file on `origin/main` matches the `MASTHEAD` constant in `pipeline/weekly.py` character for character, and `check_voice.py reading` no longer reports the archive. The open row said moving it was this seat's call, so this is that call |
 
 ## What this file is honestly worth
 

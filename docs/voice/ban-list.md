@@ -3604,3 +3604,271 @@ gap that the same collision had left empty (incident 25).
     LANDED prompts/digest.md: "The form is described and never drafted"
     LANDED prompts/digest.md: "a position whose reusable part is a shape"
     ```
+
+136. The correction written downstream of the thing that generates the text.
+    Not a prose tell. A tell about where a repair is put, and it belongs on
+    this list because every entry above it is enforced by a change to a file
+    and this is the class where that change is thrown away without anybody
+    touching it.
+    The specimen is the one the owner struck herself. Canon law 13 quotes
+    "You have spent the week watching" and says "so is every tense of it".
+    `site/content/issues/2026-W39.md` has opened on that sentence since
+    2026-09-29 and it opens on it today. The repair was made on 2026-09-24,
+    in `b7d6929`, and it was the right repair: "The agent-building world has
+    spent the week arguing about scaffolding", which `prompts/digest.md` now
+    prints as its own model answer. Five days later `820df48` re-rendered the
+    archived file from the `digests` record and the repair was gone, because
+    the repair had only ever been written into the render.
+    The tell is a question about any fix to reader-facing words. Was this
+    written into the artifact, or into the thing the artifact is produced
+    from? A fix to a rendered file survives exactly until the next render, and
+    nothing announces that it has been lost, because the commit that loses it
+    is about something else and is usually correct on its own terms. Two
+    commits touched that file afterwards and neither re-read the opening.
+    Why it is not entry 131. That entry is the sentence repaired in the
+    machine and left standing in the shipped copy, which is the same two
+    places with the arrow the other way round. This is the sentence repaired
+    in the shipped copy and never carried back, and the two together say the
+    rule plainly: a repair lands in both or it lands in neither.
+    Added 2026-10-24, writer run 49. Enforced by a command rather than by a
+    sentence, because four patches to the generator could not reach a line the
+    generator did not write:
+    ```
+    python3 docs/voice/check_voice.py standalone
+    ```
+    That reads the archive instead of the prompt. The pre-send half is the
+    engineer's and is filed, because `tools/check_digest_quality.py` is the
+    only gate that can stop a send and it has no rule for this law at all.
+    ```
+    LANDED docs/voice/check_voice.py: "no issue tells a reader what they have been doing"
+    ```
+
+137. The trim that keeps a rule's body and takes the line that made it a rule.
+    This is a tell in the governing file rather than in an issue, which puts it
+    beside entries 130 and 136. All three are about the text that writes the
+    text, and this one is the only one where the damage is an absence, so there
+    is nothing to quote and nothing to grep for.
+    The shape. A rule in `prompts/digest.md` is a bullet: a bolded opening line
+    that says what the rule is, then the body that says how to obey it. A pass
+    that removes the specimens underneath such a rule can take the opening line
+    with them, because the specimens are what the opening line introduces. What
+    is left is the body, indented, welded to the end of whatever rule came
+    before it, starting mid-sentence in lower case. It reads as a continuation
+    of the rule above and it is a different rule.
+    Two specimens, both in this seat's own commits, and both were live on
+    `main` when this entry was written. `acb4474d` left canon law 6's evidence
+    grade as "clause inside the item's own prose, not a footnote and not a
+    separate line." hanging off the count-the-links rule. `62b00f2b` left canon
+    law 12's final heading gate as "something: every line beginning with `#`"
+    hanging off the attribution rule. The second is the harder loss, because
+    that gate is the one that stops the framework's internal names reaching a
+    reader, which is the ruling the owner has given twice.
+    Why the trimming rule produces it rather than carelessness. The canon's
+    section on the generator's weight says a run that adds tokens removes at
+    least as many, and it says what the trimming may take: the argument for the
+    rule, the dates, the account of which print produced which clause. Every
+    one of those sits in the body of a bullet. So the pass that obeys the rule
+    is working inside bullets all day, and the opening line is one line above
+    the thing it is allowed to delete.
+    The tell, as a question to ask of a diff rather than of prose. Does every
+    line this pass removed belong to a rule that still has its own opening
+    line? A trim is the one kind of edit that cannot be checked by reading what
+    is left, because what is left reads like prose.
+    Added 2026-10-25, writer run 50. Enforced by a command, because this is the
+    class that reading cannot catch and because the gate that existed for edit
+    damage was reading the opposite direction:
+    ```
+    python3 docs/voice/check_voice.py generator
+    ```
+    `truncations` reads the line a cut landed on, so it skips any line ending
+    in a full stop and could never reach this pair. `headless` is the same
+    defect from the other side, in the same gate, with nine cases pinning it.
+    ```
+    LANDED docs/voice/check_voice.py: "rules whose own opening line was cut"
+    ```
+    **Widened 2026-10-26, writer run 51, after the third specimen turned up
+    where the gate could not look.** Both narrowings came from the one
+    specimen this entry was written from. `headless` required the body line to
+    be INDENTED, because a bullet's continuation is, and it skipped every line
+    inside a ``` fence, because `fenced()` reasons that a fence quotes output.
+    `prompts/digest.md:621` is the same cut in a plain paragraph inside the
+    issue template: `d022e79a` on 2026-10-18, a trim under the weight rule,
+    removed "**A stranger has to enjoy that sentence.** This is the test it has
+    to pass" and the blank line above it, so the opening slot's outsider rule
+    began "and it is the reason the line exists" welded to the rule about
+    greetings. Neither narrowing could reach it, and the fence one is the
+    worse of the two: this file's fence runs 520 to 1353, which is 39% of the
+    generator and is the template rather than quoted output.
+    The unit is a sentence, which is what the defect is about. The indent and
+    the fence were never part of it, and the guard that does the work is the
+    full stop on the line before, because a wrapped line never carries one.
+    Fourteen cases now, three of them pinning the false positives the widening
+    could have bought.
+
+138. The verdict read out of a field that also records what the verdict used
+    to be.
+    This is a tell in a gate rather than in prose, which puts it beside
+    entries 130, 136 and 137. It differs from all three in one way that
+    matters: the other three leave a defect a reader could find by reading,
+    and this one makes the gate say the opposite of what the register says,
+    so reading the register and reading the gate's output both look like
+    diligence and only one of them is right.
+    The shape. A register records a state per row, and a row that changes
+    state says what it changed from, because the transition is the evidence.
+    So the field carries two state words and the gate searching it finds two
+    verdicts. Which one it returns is decided by the order of the list it
+    searches, and the list is written in the order somebody thought of the
+    states.
+    The specimen, live on `main` from 2026-10-24 and read by a grade on
+    2026-10-25. `docs/agents/quality-claims.md` has a row for "the library
+    grows every day" whose state cell is `**contradicted**, moved from
+    `held` 2026-10-11`. `STATES` in `docs/voice/check_voice.py` opened with
+    `held`, so the row resolved to held and the gate printed `ok` beside the
+    sentence on `site/app/page.jsx:33`. The register's own measurement in the
+    next cell is that the corpus had not grown for 3.35 days.
+    Why the permissive verdict is the one that wins, and it is not chance.
+    `held` is the state a row leaves, because a claim that was always false
+    was never recorded as held, so the word appears in the history of exactly
+    the rows whose verdict is now something else. It is also the state that
+    means the sentence ships as written. A substring search over a field that
+    narrates its own history is therefore biased toward shipping, on the rows
+    that have most recently been found false.
+    The tell, as a question to put to a gate rather than to prose. Does this
+    gate read a field that a person also writes prose into, and if that prose
+    mentions another possible value, which one does the gate return? Where
+    the answer is "the first one in the list", the gate has no verdict, it has
+    an ordering.
+    Added 2026-10-26, writer run 51. Enforced by a command, because the
+    defect is in the resolver and never in the text either side of it:
+    ```
+    python3 docs/voice/check_voice.py claims
+    ```
+    The scope is now the state cell's first bolded span, which is where this
+    register writes its verdict, and the rest of the cell is the row's
+    history. Where two verdicts survive inside that span the strictest is
+    read and the row prints AMBIGUOUS, because a gate that guesses in the
+    shipping direction is worse than no gate. Thirteen cases pin it, run
+    before the register is read. Swept: one other first-match-wins resolution
+    of a verdict exists in this seat's files and there is none, so the count
+    is one and the entry closes on its own specimen.
+    ```
+    LANDED docs/voice/check_voice.py: "the strictest reading is taken and the"
+    ```
+
+139. The figure with two inputs, quoted with neither.
+    A gate that reads a register against a set of surfaces produces a count
+    that moves when either side moves. The count is the headline, the two
+    inputs are printed above it, and a review quotes the headline, so the
+    delta arrives in the grade with nothing to attribute it to.
+    The specimen is this seat's own grade of 2026-10-25, which recorded that
+    `check_voice.py claims` reported 23 unhedged claims "against 17 on
+    2026-10-23, which is six more than a run that drafted nothing for these
+    surfaces can account for", and then said in its own words that the delta
+    was not diagnosed. It was diagnosable and it cost one command: the
+    current gate run against the tree of 2026-10-23 returns 17, so no part of
+    the rise was the gate and no part of it was the copy. The register went
+    from 11 rows to 13 when the ExO seat's split landed on 2026-10-24, and
+    two more rows of claims to check found four more sentences to fail.
+    Why it reads as news about the copy. The count's name is about the
+    surfaces, "unhedged or unnamed, live right now", so a run that has
+    drafted no copy reads a rise as copy getting worse somewhere it was not
+    looking. The other input is a file this seat may not edit, kept by
+    another seat, on its own weekly cycle, and a row added there raises this
+    seat's number without a word of copy changing.
+    The tell, as a question to put to a figure before quoting it. How many
+    things have to hold still for this number to mean what its name says, and
+    is the number printed next to them? That is L-A47 in the company
+    standard, an instrument's scope is part of its answer, applied to the one
+    figure this seat quotes most.
+    Added 2026-10-26, writer run 51. Enforced by a sentence rather than a
+    gate, because the inputs were already on screen and the failure was
+    quoting the headline away from them:
+    ```
+    LANDED docs/voice/check_voice.py: "(over {len(rows)} register rows and {len(scanned)} surfaces)"
+    ```
+    The count now carries its own scope on its own line, so a grade that
+    quotes the figure quotes the two numbers that produce it.
+
+140. The payload's field name used as the label over the thing it names.
+    Entry 14 and the vocabulary rule in the generator both ban the payload's
+    field names from reaching a reader, and the generator lists the shape by
+    name: "carries a procedure", "flagged for deep reading", "scored highly in
+    triage". Those are all the field name used as a FACT about the paper. This
+    entry is the other grammar, and it is the one that got through: the field
+    name used as the LABEL announcing the thing the rule is about to render.
+    The specimen is 2026-W42, three times in one issue, every one of them the
+    same construction. "The procedure is extractable:", then the steps as a
+    comma-run. "The procedure is clean:", then the steps as a comma-run. "The
+    procedure runs:", then the steps as a comma-run.
+    Why it defeats the rule that was pointed at it. The vocabulary rule tests
+    whether a clause makes a claim the subscriber cannot check, and asks
+    "flagged by whom?" There is no such question to ask here. "The procedure
+    is clean" claims nothing about the paper and nothing about alexandria; it
+    is a stage direction, read as a transition, and the ban reads it as
+    neither. The word is also an ordinary English noun, so no count of it
+    separates the label from a legitimate use.
+    **And the label costs more than a word, which is why this is not a tone
+    entry.** The rule it sits under says a procedure is always list-shaped and
+    must render as a numbered list. All three of these rendered as prose. A
+    procedure is the only reliable supply of a list in this generator, and the
+    issue that converted three of them printed `shapes 1`, which the shape rule
+    calls a failing issue in its own words. The one tell carried the one law
+    the issue most needed.
+    The tell, as a question to put to a rule rather than to prose. Does this
+    rule name a payload field and then ask for a render, and if so, does
+    anything stop the field's name becoming the render's caption? A rule that
+    says "render the `x`" has handed the model a word and a colon.
+    Added 2026-10-26, writer run 51. Enforced by a sentence in the rule that
+    produces the defect, which is where the canon's own generalisation step
+    says the gate belongs:
+    ```
+    LANDED prompts/digest.md: "The list is the shape and not a suggestion, and this field's name is never"
+    ```
+    Swept: the generator names a payload field and asks for a render in one
+    other place, the `citation_movers` translation at the vocabulary rule
+    itself, and that rule already supplies the reader-facing words to use
+    instead ("three separate papers built on it this week"), so it carries its
+    own answer and needs nothing. The count is two and one was already closed.
+
+141. The newest artifact named from the files on disk, when the product serves
+    more than the repository holds.
+    This is a tell in a grading procedure rather than in prose, and it is the
+    fourth instance of one class. The canon already records three: which COPY
+    of an issue to grade, which GENERATOR wrote it, and which EDITION the
+    newest artifact is. Each one was a check that read the thing in front of it
+    without asking whether that thing was the thing it was supposed to read.
+    This is which SURFACE.
+    The specimen. Runs 49 and 50 both opened on the sentence that
+    `site/content/issues/2026-W39.md` was "the newest issue this runtime can
+    reach", and run 50 spent its reasoning on why re-deriving a 27-day-old
+    grade would be waste. It was waste. The archive directory holds two files
+    and the live site was serving three issues, the newest of them `2026-W42`,
+    seven days old and never graded by anybody.
+    ```
+    curl -s https://libraryofalexandria.dev/library | grep -oE '2026-W[0-9]+'
+    2026-W39   2026-W40   2026-W42
+    ```
+    Why the wrong answer was the reachable one. The charter says to read "the
+    newest published issue in the repo **or site**", and the procedure's own
+    first question is which artifact by path. A path is a file, so the whole
+    check reads as a question about the repository, and `NEON_RO_URL` being
+    unset was taken to mean that everything outside the repository was shut.
+    The site needs no credential. Neither does
+    `tools/delivery_health.py --surface press`, which has answered this exact
+    question since 2026-10-12 and names the newest week in one line.
+    The tell, as a question to ask before a grade begins rather than of prose.
+    What is the newest artifact a READER can reach, and is that the one in
+    front of me? The repository is where this seat works and it is not where
+    the product lives, so the two drift apart by exactly the number of issues
+    nobody has committed.
+    Added 2026-10-26, writer run 51. Enforced by a command, because this is the
+    class where reading the file in front of you is the defect:
+    ```
+    python3 tools/delivery_health.py --surface press --no-notify
+    ```
+    It reports the newest week the press has written and whether the next is
+    due, from a public endpoint with no credential, and it is the first step of
+    a grade from here on. Swept: the canon's grading procedure names "the
+    newest issue" in four places and every one of them now has this command
+    above it in the order of work, which is the ordering the charter's step 1
+    already implies and no run executed.

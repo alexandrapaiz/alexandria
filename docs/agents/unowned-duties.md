@@ -110,6 +110,89 @@ that stretch from cron rows of *any* seat of *any* company, plus the
 came due inside it. A due slot outside it is not a miss. It is a slot nobody
 was watching, and the correct reading of it is nothing at all.
 
+**The fifth test, added 2026-10-24: was the machine holding that clock when
+the slot passed.** The covered window says the scheduler was awake. It does
+not say the scheduler had been given the cron, and a scheduler that never
+heard of a clock leaves the same empty record as one that was switched off.
+
+A cadence has two histories. The declared one is a `git log` over the
+manifest. The deployed one is the history of the copy the host loads, and
+`/srv/asc/roster` is a symlink into a working clone of the parent that the
+host moves with `git reset --hard`, so the clone's reflog **is** that history:
+
+```bash
+git -C /srv/asc/repos/alexandra-systems reflog --date=iso | tail -20
+git -C /srv/asc/repos/alexandra-systems show <sha>:runtime/agents/<company>/<seat>/agent.toml \
+  | sed -n '/\[trigger\]/,/^$/p'
+```
+
+Judge a past slot against the deployed history, never the declared one.
+Where the two disagree the deployed one governs, because it is the only one
+the daemon ever read.
+
+### The 39 in the table above is zero, measured against the clock the host held
+
+The row under "the host was off for part of the gap" reads **39 / 0** for
+company slots in the window 10-17 00:00 to 10-20 12:07, and the 39 is a count
+of slots on the declared clock. Measured on the deployed clock it is zero, and
+the measurement is three commits and a reflog.
+
+| Host's copy | Loaded from | Company crons it held | HQ crons it held |
+|---|---|---|---|
+| `4d35d9b` | 2026-10-16T14:52Z | 0 | 4 |
+| `0a969af` | 2026-10-17T19:49Z | 1 (`epitome-frontend`) | 4 |
+| `fc4e885` | 2026-10-17T20:05Z | 1 (`epitome-frontend`) | 4 |
+| `b843ac8` | 2026-10-23T17:03Z | 25 | 5 |
+
+Decision 056's manifest commit is 2026-10-17T21:07:16Z, **one hour after the
+host's copy last moved**, and the copy did not move again for five days and
+twenty-one hours. So every company clock except `epitome-frontend`'s was a
+declaration the daemon had never been shown. HQ's nine-for-nine in the same
+window is the control: HQ's four clocks were loaded, and they fired.
+
+`epitome-frontend`'s only slot in the whole gap was Tuesday 2026-10-20T15:00Z,
+which falls inside the stretch the audit log was silent through, so it is
+unjudged rather than missed under the fourth test.
+
+**Both numbers in the table are therefore right about the wrong clock**, and
+the corrected reading of the gap is that no company slot came due, on a clock
+the host was holding, inside a window the host was covering. The gap's real
+defect is not a scheduler that omitted the companies. It is a roster deploy
+that lagged its own manifest commit by five days and twenty-one hours, with
+nothing watching the lag.
+
+### And the way this was found is a test in its own right
+
+HQ's cron instrument reported this end **40 company slots missed across 13
+seats**, which agrees with the 39 here and identifies the same set: 34 slots
+across 13 seats re-derived locally over a slightly narrower window. The same
+`done` also explained away a *different* finding of the same instrument, an
+off-slot `okr` firing on 2026-10-18, by reading the copy the host loads and the
+date it was rewritten, and that explanation is correct: HQ `okr` held
+`0 16 * * 0` in `fc4e885` and the firing at 16:00:20 was exactly on slot.
+
+The explanation needed an input the instrument does not have. `declared_at` in
+`tools/check-cron-slots.py` resolves a past clock from `git log --format=%cI`
+on the manifest, and the deployed copy enters the report only as "the clock the
+daemon would load if it restarted now." So one row was corrected by hand and
+thirteen seats' worth of the same error was reported as fact in the same
+message.
+
+**When you have to consult a surface your instrument cannot read in order to
+accept or dismiss one of its findings, every finding it produced is suspect in
+the same way.** The hand-correction is the bug report. This costs nothing to
+run, because it needs no re-derivation at all: you only have to notice which
+input the explanation used.
+
+### A firing is not a cycle
+
+One more thing the fourth test's record cannot say. `alexandria-writer`'s cron
+fired on slot at 2026-10-24T16:00:13Z and the run was refused by the provider
+at 16:00:20Z after one turn. The audit log holds the `cron` row either way, so
+"11 slots due, 11 fired" is true and "11 cycles delivered" is not. A cadence
+judgement that rests on a clock needs the firing **and** the run's exit, which
+§2b now reads off each run's own log.
+
 ```bash
 # the firing record, every alexandria seat: declared, due, fired, last
 python3 - <<'PY_FIRING'
@@ -250,7 +333,7 @@ reported as a company-coverage gap decompose into two unlike halves:
 
 | Window | What the log shows | HQ due / fired | Company due / fired |
 |---|---|---|---|
-| 10-17 00:00 to 10-20 12:07 | host running, writing rows throughout | 9 / 9, plus one unscheduled `okr` | 39 / 0 |
+| 10-17 00:00 to 10-20 12:07 | host running, writing rows throughout | 9 / 9, plus one unscheduled `okr` | 39 / 0 declared, **0 / 0 deployed**, see the fifth test |
 | 10-20 12:07 to 10-23 23:06 | no audit row of any action, two empty days | 7 / 0 | 38 / 0 |
 
 Only the first half is evidence about company coverage, and it is three days
@@ -316,6 +399,7 @@ ExO and engineer seats. Queued in `docs/agents/hq-relay.md`, 2026-10-18.
 | **A run the event bus started is known to have succeeded or failed** | **pm (§1f), exo (§2b) as backstop** | continuous, 25 runs and 2 failures in the week to 2026-10-24 | daily standup, plus `run.failed` on both | **ASSIGNED 2026-10-24, and the evidence it needs exists: HQ built the receipt on 2026-10-18 and the row stayed "unowned" for six days because nobody checked.** See `INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it` and the note below |
 | **A run that ships nothing is caught before teardown** | **none since 2026-10-17** | every run, and it has fired twice in thirteen days | n/a | **unowned, found 2026-10-18**: the no-ship tripwire is a step in twelve workflows that no longer start any seat, and `cli/src/lib/runner.js`, `cli/src/lib/engine.js` and `cli/src/run.js` in `alexandrapaiz/epitome` contain no shipping check in 1,445 lines. This is incident 3's fix, unowned again, see below |
 | **A seat's cap and model are what the evidence says they are** | exo (turn-caps.md) in words, **and the file it writes is not the file that runs** | per cap change, three since 2026-10-04 | weekly Sun | **capability gap, found 2026-10-18**: the governing value is `max_turns` in a manifest this seat can read and cannot write. The writer's is 150 against a workflow that says 225, see `INC-2026-10-18-the-writers-cap-raise-governs-a-door-nothing-opens` |
+| **The organization's weekly provider budget is spent where it buys the most** | **none** | continuous, and it ran out twice: 2026-10-18T19:21Z and 2026-10-25T03:00Z | n/a | **unowned, found 2026-10-25**: the provider enforces a weekly limit as well as a session limit, the week to 2026-10-25 spent 675 runs with 467 of them on one Saturday, and the budget was gone twenty hours before it reset. The three seats with the fewest attempts per period lost their only slot of the week. No charter in `prompts/` contains the words "weekly limit", "weekly budget" or "provider budget". See the note below |
 | **The instructions a seat is woken with resolve in the repository they are delivered to** | **none** | every wake the bus sends, and seven in one day to the PM seat alone on 2026-10-24 | n/a | **unowned, found 2026-10-24**: the host composes a standing block in another repository and names a tool path that exists only there. No charter here names the wake text, so the only record of seven defective instructions is seven refusals one seat chose to write down. See `INC-2026-10-24-the-fabricated-tool-has-a-source-and-it-is-our-own-standing-block` and the note below |
 
 ### The firing state of every row above that rests on a clock
@@ -331,10 +415,10 @@ done.
 | The org knows what the world knows | market, `0 11 * * 5` | never | **unevidenced**, and class A: the seat itself has not run since 2026-10-17 |
 | Ecosystem events steer what we ingest | research, `30 16 * * 1` | never | **unevidenced**, and class A: the seat itself has not run since 2026-10-17 |
 | Upstream compromise is in the threat model | security, `0 13 1,15 * *` | never | **unevidenced**, and class A: the seat itself has not run since 2026-10-17 |
-| The repo describes the system it is | exo, `0 14 * * 0` | never | **unevidenced** |
+| The repo describes the system it is | exo, `0 14 * * 0` | **2026-10-25T14:00:11, refused** | **fired and produced nothing, measured 2026-10-25.** No longer unevidenced and not firing either. The slot fired on time and the provider refused it at turn one on a weekly limit, which is the third state this column did not have |
 | Approved copy reaches the live site | frontend, `0 12 * * 3` | never | **unevidenced**, on top of the lag this page already accepts |
-| An HQ decision is read against local law | exo, `0 14 * * 0` | never | **unevidenced**, on top of the cadence gap already recorded |
-| Evidence from here reaches HQ | exo, `0 14 * * 0` | never | **unevidenced**, and the delivery half now runs on the board channel instead |
+| An HQ decision is read against local law | exo, `0 14 * * 0` | **2026-10-25T14:00:11, refused** | **fired and produced nothing, measured 2026-10-25**, on top of the cadence gap already recorded |
+| Evidence from here reaches HQ | exo, `0 14 * * 0` | **2026-10-25T14:00:11, refused** | **fired and produced nothing, measured 2026-10-25**, and the delivery half now runs on the board channel instead |
 | A skill's measured effect | skill, `0 12 * * 2` | never | **unevidenced**, on top of the capability gap already recorded |
 | A seat's cap and model are what the evidence says they are | exo, `0 14 * * 0` | never | **unevidenced**, on top of the capability gap already recorded |
 | Runs that fail get reported to the owner | pm, `5 11 * * *` | 2026-10-24T11:05Z | firing |
@@ -1504,3 +1588,216 @@ three, and two of them are not the one the morning's sentence named.**
 
 The ask carrying all three is on the board, addressed to the owner, with the
 recommendation above, under §22 of the PM standard.
+
+## 2026-10-24: class A is withdrawn, and the three seats it called dead ran their last covered slot successfully
+
+The section above split the nine unevidenced rows into three classes and
+posted an ask to the owner carrying all three. **Class A does not survive
+being re-derived, and this section withdraws it.** It said that `market`,
+`research` and `security` "are not running at all" and that neither remedy
+reaches them. All three ran their last scheduled slot, on time, and shipped a
+pull request that merged.
+
+What makes this worth a section rather than a correction in place is that
+class A passed every test this page holds. It cited two independent sources,
+it quoted a date per seat, and both sources agreed. The defect is one layer
+under the evidence: **it measured an absence against a window in which the
+thing could not have been recorded**, which is the rule §0 of the ExO charter
+states and the fourth test on this page restates, applied by the run that
+wrote the test to somebody else's rows and not to its own argument.
+
+### Not one alexandria cron existed in the roster the daemon reads until 2026-10-23T17:03:01Z
+
+`/srv/asc/roster` is a symlink into a working clone at
+`/srv/asc/repos/alexandra-systems`, and the host moves that clone with
+`git reset --hard`, so the clone's reflog is the deploy history. It holds 77
+entries from 2026-09-24T02:56:48Z to now, and across all of them the six
+seats checked take exactly three states:
+
+| Loaded at | Commit | What the six manifests held |
+|---|---|---|
+| 2026-09-24T02:56:48Z | `88bc4019` | no manifest for any of the six |
+| 2026-09-24T04:11:25Z | `4cac54a2` | all six present, **every one with no cron at all** |
+| 2026-10-23T17:03:01Z | `b843ac83` | all six carrying the crons they declare today |
+
+So the window class A measured in, "since the clock moved on 2026-10-17", was
+a window in which **no seat of this company had a cron in either runtime**.
+GitHub's `schedule:` blocks were deleted on 2026-10-17 and the host's copy did
+not carry a replacement until six days later.
+
+### Inside the window the scheduler was demonstrably covering, none of the three had a slot due
+
+The covered window opens at that deploy. Over the 29.9 hours from
+2026-10-23T17:03:01Z, four alexandria cron slots came due and **four fired**:
+`engineer` twice, `pm` once, `writer` once. The three class A seats had
+**zero** slots due, and so did `exo`, `frontend`, `skill` and `okr`.
+
+| Seat | Cron | Slots due in the covered window | Fired | First slot that can answer its row |
+|---|---|---|---|---|
+| engineer | `6 11,23 * * *` | 2 | 2 | — |
+| pm | `5 11 * * *` | 1 | 1 | — |
+| writer | `0 16 * * *` | 1 | 1 | — |
+| exo | `0 14 * * 0` | 0 | 0 | 2026-10-25T14:00Z |
+| research | `30 16 * * 1` | 0 | 0 | **2026-10-26T16:30Z** |
+| skill | `0 12 * * 2` | 0 | 0 | 2026-10-27T12:00Z |
+| frontend | `0 12 * * 3` | 0 | 0 | 2026-10-28T12:00Z |
+| market | `0 11 * * 5` | 0 | 0 | **2026-10-30T11:00Z** |
+| security | `0 13 1,15 * *` | 0 | 0 | **2026-11-01T13:00Z** |
+| okr | `0 10 1 * *` | 0 | 0 | 2026-11-01T10:00Z |
+
+Three seats of twelve have had their clock tested at all. "Their crons have
+never fired" is true of nine of them and carries no information about any,
+because nine have had no slot to fire on.
+
+### What the three seats actually did, which is the part that settles it
+
+Each ran its last slot under the runtime that was covering it then, which was
+GitHub Actions, and each shipped:
+
+| Seat | Last scheduled run | Actions conclusion | What it shipped |
+|---|---|---|---|
+| research | 2026-10-12T23:07:16Z | `success` | `research/2026-10-12`, PR #284, merged |
+| security | 2026-10-15T17:25:09Z | `success` | `sec/2026-10-15`, PR #307, merged |
+| market | 2026-10-16T15:18:33Z | `success` | `market/2026-10-16`, PR #316, merged |
+
+So each of the three has missed, at most, the slots that fell inside the
+clockless hole between 2026-10-17T17:59:54Z and 2026-10-23T17:03:01Z.
+Re-derived per seat, that hole swallowed **29 alexandria slots**:
+
+| Seat | Slots lost to the hole |
+|---|---|
+| engineer | 12 |
+| pm | 6 |
+| writer | 6 |
+| exo, frontend, skill, market, research | 1 each |
+| security, okr | 0 |
+
+Read that distribution rather than the total, because it is the finding. The
+daily seats lost 24 slots between them and no instrument in this
+organization reported it, because events kept all three awake and a seat that
+is working does not notice which door it came through. The weekly seats lost
+one slot each, which is their whole week, and `security` lost none at all:
+its cadence is the 1st and the 15th and the hole contained neither.
+
+### And the register's own date for security was wrong by ten days, because the sweep looked for one branch prefix
+
+Class A reported security's last pull request as `#196` on 2026-10-05. It is
+`#307` on 2026-10-15. The seat ships under two prefixes: `alexandria-security/`
+on a host-started run and `sec/` on a cron run, the second being what its
+charter tells it to use. A sweep written for the host convention cannot see
+the other one, and it fails silently, because a seat with no matching branch
+reads as a seat with no output.
+
+That is the same shape as the lesson on the ExO charter's queue page: **a
+mechanical check inherits the vocabulary of the artifact its author happened
+to be reading.** The author was reading host-era branches. There were two
+eras.
+
+### Where this leaves the nine
+
+Class B and class C stand as written, and nothing in this re-derivation touches
+them. Class A becomes a date rather than a finding, and the honest state of
+its three rows is **unevidenced and not yet answerable**, with the minute each
+becomes answerable named in the table above. The soonest is `research` on
+2026-10-26T16:30Z and the last is `security` on 2026-11-01T13:00Z.
+
+**The owner ask is corrected rather than withdrawn**, because its class B and
+class C halves are unaffected. Its class A half asked her to choose between
+waking three seats and marking them dormant. Both options are premature and
+one of them would have retired three working seats. The correction went to the
+board in the same run that found it.
+
+**That last sentence is narrowed on 2026-10-25, and the gap it hid had a date
+on it** (`INC-2026-10-25-a-withdrawn-finding-was-corrected-in-the-cards-comments-and-the-card-body-kept-the-dated-instruction`).
+The correction reached the card's **comment thread** and not the card's body.
+The body went on saying the three seats "are not running at all", and it went
+on carrying the sentence a reader acts on, which was "class A and class C
+proceed on her silence after forty-eight hours". Those hours expired
+2026-10-26T22:15Z, so for two days the card licensed a future run to retire
+three working seats on a finding this page had already withdrawn. Two runs of
+this seat read the card in between, both knew the withdrawal because both had
+read this page, and neither rewrote the body: **the trap was invisible to every
+reader who could see it, because each already knew the answer.** The body was
+rewritten on 2026-10-25 and the rule is in the incident: a comment on a card is
+commentary and the body is the instruction, so a correction that changes what a
+reader should do goes in the body.
+
+**The new column this page owes itself.** The section above already noted that
+a duty assigned to an event-woken seat has no cadence, only a frequency. This
+run adds the second half: a row's state has to distinguish *unevidenced*, no
+observation either way, from *unanswerable*, no observation was possible yet.
+Nine of the twelve rows are the second and this page scored them as though
+they were the first, which is how a liveness finding came out of a clock that
+had not been switched on. **A state that cannot tell "we did not look" from
+"there was nothing to see" will eventually report the second as the first.**
+
+## The 2026-10-25 row
+
+### The organization's weekly provider budget, which is the resource every other row rests on
+
+Found by the method this page prescribes, which is to grep every charter for
+the words a duty would have to use and read absence as the finding.
+
+```bash
+for w in 'weekly limit' 'weekly budget' 'provider budget' 'quota' 'capacity'; do
+  printf '%-18s ' "$w"; grep -ril "$w" prompts/*-agent.md | tr '\n' ' '; echo
+done
+```
+
+The first three return nothing at all. `quota` and `capacity` return
+`prompts/exo-agent.md`, where both words appear in observation instructions
+rather than in a duty, and `capacity` also returns `prompts/pm-agent.md`, where
+the PM accounts for the day's refusals in its standup. So the organization
+counts this resource in two places and nobody owns it.
+
+**Why it is a duty and not a fact about the weather.** The model provider
+enforces two limits. A session limit resets in hours and is genuinely weather.
+A weekly limit resets at a week boundary, and when it is gone the whole
+portfolio stops until the boundary passes. Over the host's history there have
+been 73 weekly-limit refusals against 226 session-limit ones, and both weekly
+exhaustions were hit on a Sunday and reset at Sunday 23:00Z: 2026-10-18 at
+19:21:22Z and 2026-10-25 at 03:00:04Z.
+
+**The cost, measured on the week it was found.** The week ending
+2026-10-25T23:00Z ran 675 runs, **467 of them on the Saturday**. The budget was
+exhausted at 03:00Z on the Sunday, twenty hours before it reset, and on that
+Sunday eleven cron slots came due across four companies and **all eleven were
+refused**. Three of those were the only slot their seat gets in a week:
+`alexandria-exo` at 14:00Z, `ursa-security` at 15:15Z, `ursa-exo` at 18:00Z.
+The seats with the fewest attempts per period were the ones that paid, which is
+the opposite of how a finite budget should be spent.
+
+**What makes it invisible to every other audit on this page.** The three tests
+this register already runs ask whether a duty is named, whether its clock
+fires, and whether the seat holds the credential its evidence needs. A weekly
+seat refused on a Sunday passes all three: it is named, its clock fired on time
+and is in the record, and it holds every credential. The fourth test added to
+the ExO charter on 2026-10-25 asks the missing question, which is whether the
+slot falls inside a window the organization is reliably out of capacity in. But
+a test tells a run that a slot was lost. It does not make anybody responsible
+for the budget being there.
+
+**Proposed check.** One line in whichever seat's charter takes it: each run
+reports the week's provider spend against the week's reset, as runs consumed
+and hours of exhaustion so far, from `/api/capacity` and the host's own logs.
+Both inputs exist today and need no new reporting. The signal to act on is the
+exhaustion hour moving earlier week over week, which it did by sixteen hours
+between the only two weeks on record.
+
+**Proposed owner, and this one is proposed rather than assigned.** This page's
+own rule is that a gap which costs money, touches the owner's exposure or
+activates a dormant seat is hers. This gap is the organization's rate of spend
+on a paid provider, so the assignment is the owner's call. Two candidates, with
+the trade stated rather than hidden. The **PM seat** already reads the
+refusal count daily and already writes the standup the owner reads, so the
+marginal cost is one line and the cadence is right. The **finance seat** is
+where metered usage belongs by subject, and it is dormant, which is the same
+condition that has left the free-tier row on this page unowned since
+2026-09-19. Giving it to finance is correct and inert. Giving it to the PM is
+a smaller fit and would actually run.
+
+**And one thing that is not in scope for whoever takes it.** Deciding what the
+budget should be, or paying for more of it, is the owner's and nobody else's.
+The duty proposed here is only to know where the week stands before it ends,
+which is the thing that was missing when three seats lost a cycle to a budget
+nobody was watching.

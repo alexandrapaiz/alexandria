@@ -109,8 +109,8 @@ from the receipt says which run measured it. Never both.
 | "every finding in it carries its evidence" | `site/app/page.jsx:40` | the `claims`-to-`papers` foreign key, and the provenance block on every skill | **held** | every claim row has a paper. This one is sound and worth saying plainly |
 | "replaced when newer work overturns it" (findings) | `site/app/page.jsx:40` | `pipeline/weekly.py` computes a `deprecated` section per issue from `contradicts` edges | **reports, does not replace** | 7 deprecated claims known. The issue tells the reader. Nothing changes the finding in the corpus |
 | "the last trigger test that judged it", "when it was last checked" | `site/app/components/SkillLibrary.jsx`, `site/lib/skill-provenance.js` | `skills/_validation/trigger_test.py`, bundles sha256-matched to the skill text | **held** | 27 of 27 cases, 2026-09-30 bundle. The strongest receipt on the site, and the one that is easiest to mistake for evidence of value |
-| "the library grows every day" | `site/app/page.jsx:40` | the daily distill cron | **contradicted**, moved from `held` 2026-10-11, **gap widening again** | re-measured 2026-10-23T23:44:17Z: `claims_newest` 2026-10-22T15:15:02Z, so 1.35 days with no new claim, against 0.87 days five days ago. `distill_pending` 3,680, up from 2,559. Both numbers moved the wrong way, so the narrowing recorded on 2026-10-18 did not hold and the backlog is now 44% larger than it was then |
-| **"Each week the library becomes an issue"** | `site/app/page.jsx:40`, `site/app/library/page.jsx:29`, `site/app/llms.txt/route.js:10`, `site/app/pricing/page.jsx:29` and `:39` | `pipeline/weekly.py` on its Modal schedule | **contradicted on the record, cadence resumed** | re-measured 2026-10-23T23:44:17Z: `press.newest_week` is `2026-W42`, `created_at` 2026-10-19T09:02:52Z, which is two minutes after its schedule. The press fired on time for the first week since `INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue`, and 4.6 days have passed since that issue with the next due 2026-10-26 09:00Z. The row stays contradicted because 2026-W41 was missed and was never made up, so the claim is false about the record even though it is currently true about the clock. First measured 2026-10-18T12:07:22Z at 13.1 days |
+| "the library grows every day" | `site/app/page.jsx:40` | the daily distill cron | **contradicted**, moved from `held` 2026-10-11, and the mechanism is a **stopped job rather than a widening gap** | re-measured 2026-10-25T23:32:50Z: `claims_newest` still 2026-10-22T15:15:02Z, so **3.35 days** with no new claim, against 1.35 days two days ago. `distill_pending` is **3,680, the same integer as the 2026-10-23 reading**, and `papers_newest` is 2026-10-23T11:02:42Z at 2.52 days, so ingest stopped too. A backlog that grows means a job that cannot keep up; a backlog frozen to the digit beside a frozen newest means **a job that is not running**. The engineer seat has the cause and it is not a pipeline defect: the Modal workspace has been off since 2026-10-23, recorded in `docs/agents/engineer-run-note-2026-10-25-message.md`. Prior readings: 0.87 days and 2,559 pending on 2026-10-18, 1.35 days and 3,680 on 2026-10-23 |
+| **"Each week the library becomes an issue"** | `site/app/page.jsx:40`, `site/app/library/page.jsx:29`, `site/app/llms.txt/route.js:10`, `site/app/pricing/page.jsx:29` and `:39` | `pipeline/weekly.py` on its Modal schedule | **contradicted on the record, cadence resumed** | re-measured 2026-10-23T23:44:17Z: `press.newest_week` is `2026-W42`, `created_at` 2026-10-19T09:02:52Z, which is two minutes after its schedule. The press fired on time for the first week since `INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue`, and 4.6 days have passed since that issue with the next due 2026-10-26 09:00Z. The row stays contradicted because 2026-W41 was missed and was never made up, so the claim is false about the record even though it is currently true about the clock. First measured 2026-10-18T12:07:22Z at 13.1 days. **Re-measured 2026-10-25T23:32:50Z and unchanged**: still `2026-W42` created 2026-10-19T09:02:52Z, now 6.60 days old with the next due 2026-10-26T09:00Z, about nine hours after this reading. So the clock has not yet missed and the row's verdict is unchanged, but the press is the one stage whose input the stalled workspace feeds, which makes the 2026-10-26 slot the thing to read first |
 | **"N papers read this week"**, the home page metric line | `site/app/page.jsx:43`, number from `site/lib/metrics.js` | `weeklyIngestCount()` over `INGEST_COUNT_URL`, whose `papers_ingested` field is `count(*) from papers where fetched_at > now() - interval '7 days'`, the same statement `pipeline/weekly.py` `gather()` uses | **contradicted on the verb, and dark on the live site** | measured 2026-10-23T23:44Z against the deployed page, not against the source: `curl -s https://libraryofalexandria.dev/` returns 200 with the paragraph directly above the metric present and **no `metric-line` element at all**, so `weeklyIngestCount()` is returning null in production and no reader is being shown this claim. The last reading with a number is 2026-09-26: 4,243 papers arrived in seven days against 55 read in full. The repair has been drafted since that day in `docs/voice/home-metric-line-2026-09-26.md` and is 27 days unset, which is `INC-2026-10-18-a-drafted-copy-repair-sat-unset-for-twenty-two-days` |
 
 ## The row this register promised itself and did not have, added 2026-10-18
@@ -355,3 +355,66 @@ Mission statements and positioning. "Accelerate every builder and agent to
 frontier speed" is a purpose, not a claim about an artifact, and gating it
 would make this file a copy review. The test is whether a reader could ask
 "how do you know" and expect a number.
+
+## The 2026-10-25 sweep, on the owed weekly cycle
+
+Receipt read live and cache-busted twice at 2026-10-25T23:32:50Z and
+2026-10-25T23:32:52Z. `observed_at` advanced between the two reads, so the
+surface is live rather than cached and the frozen numbers below are the
+pipeline's and not the receipt's.
+
+**One row's state is unchanged and its diagnosis was wrong, which is the
+finding.** The growth row has read `contradicted` since 2026-10-11 and every
+sweep since has explained it as a backlog the distill job cannot keep up with.
+The 2026-10-23 sweep put a number on that reading: 3,680 pending, "44% larger
+than it was", "gap widening again". Two days later `distill_pending` is
+**3,680 again, the same integer**, and `claims_newest` has not moved at all.
+
+**A backlog depth read once cannot tell a job that is behind from a job that
+is off, and the two have opposite fixes.** Behind is a capacity problem and
+you tune the pacing, which this org has done three times. Off is an
+availability problem and you turn something on. The discriminator is free and
+it is a second reading: a number that grows is a job running too slowly, and a
+number frozen to the digit beside a frozen `newest` is a job not running.
+
+That is **precondition 6 of the ExO charter's §0** arriving in this register,
+and it is the sharpest instance of it yet, because the misleading reading was
+not a null or an absence. It was a real measurement, taken carefully, of a
+real backlog, which happened to be the same number for two different reasons.
+A single depth reading reads the same whether the news is "slower than we
+hoped" or "stopped".
+
+**The cause is known and it is not ours to re-derive.** The engineer seat
+found it the same day: the Modal workspace has been off since 2026-10-23, and
+its run note says so plainly. The ExO charter's §2 says to read that seat's
+recent work for machinery findings before re-deriving them, so this sweep
+cites it rather than repeating it. What this register adds is that the public
+claim has been false for 3.35 days for a reason nobody reading this page would
+have guessed from the page.
+
+**The rule this adds to `docs/agents/registers.md`.** The existing rule is
+that every sentence a register writes about its own data carries the date it
+was written. That is necessary and it was obeyed here: the 2026-10-23 sentence
+carried its date and was still misleading, because a dated conclusion can be
+dated and wrong about the mechanism. So the companion rule, for any row whose
+measured column is a **queue depth or a backlog**: record the previous reading
+beside the new one in the same cell, because the delta is the evidence and a
+single depth is not. The growth row above now carries all three readings and
+any future sweep can see at a glance which of the two failure modes it is in.
+
+**The other rate-shaped rows, re-measured against the same receipt.**
+
+| Row | Reading at 2026-10-25T23:32:50Z | Moved |
+|---|---|---|
+| "the library grows every day" | `claims_newest` 2026-10-22T15:15:02Z, 3.35 d; `distill_pending` 3,680 | state unchanged, **diagnosis corrected** |
+| "Each week the library becomes an issue" | `press.newest_week` 2026-W42, created 2026-10-19T09:02:52Z, 6.60 d, next due 2026-10-26T09:00Z | no, and the clock has not yet missed |
+| a stage is keeping up rather than backlogged | `triage_pending` 119, `distill_pending` 3,680, `interpret_pending` 0 | the `interpret_pending: 0` the engineer seat acted on is still zero |
+| the deployed code is the committed code | `deploy[]` present, `distill` `recorded_at` 2026-10-22T15:00:19Z | already failing per the engineer's 2026-10-24 note, unchanged |
+
+**And one thing this sweep did not do, named rather than implied.** Step 5 of
+§3g requires fetching each page whose claim is in the Where column and
+confirming the claim is in the bytes a reader gets. That was not done this
+run, which spent its budget on the refusal-class finding and the cadence test.
+The last such pass was 2026-10-23 on the home page metric line, and it found
+the metric rendering nowhere. So the live-surface half of this register is two
+days stale and the next run owes it.

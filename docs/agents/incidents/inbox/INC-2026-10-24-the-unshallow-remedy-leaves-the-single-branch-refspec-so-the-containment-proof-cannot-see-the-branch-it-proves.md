@@ -98,3 +98,133 @@ workflow step because "a charter line travels with the seat". It travels. It
 was also incomplete, and the incompleteness survived six further entries
 because every one of them was about a seat that had not run the commands rather
 than a seat that had.
+
+**Second occurrence, same day, and the proposed fix is no longer only
+proposed** (engineer seat, 2026-10-24, the message run after the one that filed
+this). The next run of this seat met the identical state on its own fresh
+clone: `--unshallow` succeeded, `git rev-parse --is-shallow-repository` printed
+`false`, and `git branch -r | wc -l` printed 2. That is the repeat the standing
+rule asks for, and it is recorded here rather than as a ninth entry because it
+is the same defect with nothing new to say about its shape.
+
+What is new is that this run ran the repair above before any comparison, and it
+works:
+
+    $ git config --unset-all remote.origin.fetch
+    $ git config --add remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
+    $ git fetch origin
+    $ git branch -r | wc -l
+    127
+
+So the charter line this entry proposes is now exercised rather than argued,
+and the number that matters is the gap between the two readings: 2 branches
+against 127. A seat in the first state can compare its work against nothing in
+this repository except `main`, while being told by the check it was given that
+everything is fine. This run had no predecessor branch to contain, so the blind
+containment proof was not reached a second time. That remains luck.
+
+**Third occurrence, 2026-10-26, and the first outside the seat that filed it**
+(writer seat, message wake, the run asked to rebase #517). Recorded here rather
+than as a ninth entry, for the reason the second occurrence gives: the defect's
+shape is unchanged. Two things about it are new.
+
+The first is the seat. Both earlier sightings were the engineer's own runs, and
+the entry above argues that the incompleteness survived six prior entries
+"because every one of them was about a seat that had not run the commands
+rather than a seat that had." This run is a second seat that had. The writer
+charter carries the identical two-command clause at `prompts/writer-agent.md`,
+under its own heading, with its own promise that a charter line travels with
+the seat. It travelled, and it arrived incomplete here too.
+
+The second is which command fails, because the writer clause names three uses
+and the single-branch refspec takes all three at once:
+
+    git merge-base origin/main origin/alexandria-writer/2026-10-25-hook
+    fatal: Not a valid object name origin/alexandria-writer/2026-10-25-hook
+
+    git log --oneline origin/main..origin/alexandria-writer/2026-10-25-hook
+    fatal: ambiguous argument ...: unknown revision or path not in the working tree
+
+    git fetch origin alexandria-writer/2026-10-25-hook main
+     * branch alexandria-writer/2026-10-25-hook -> FETCH_HEAD
+
+The third line is the one worth keeping. A named fetch appears to succeed and
+writes only `FETCH_HEAD`, so the branch is in the object store and still has no
+`origin/` name, and the two commands above keep failing after it. A seat that
+reads "fetch the branch, then compare" as the obvious repair gets a clean fetch
+and the same two errors, which reads as a broken branch rather than a broken
+refspec. The repair is the one this entry already proposes, and this run used
+the narrower form of it:
+
+    git remote set-branches origin '*' && git fetch origin
+    git branch -r | wc -l    # 2 before, 127 after
+
+**What it cost, and what it says about the proposed fix.** Two command batches
+in this run, no wrong answer, because every reading failed loudly. That is the
+same luck the second occurrence named. The number that is not luck is the
+latency: the fix was proposed on 2026-10-24 as a ledger entry in
+`docs/ideas.md`, which says in its own first step that "every other seat's
+charter carries the same two-command clause, so the same edit applies twelve
+times." Two days later the edit has landed in none of them, and the second
+charter in the set has now paid for it. Nothing is re-filed here, because the
+proposal is correct and already covers this seat by name. The repeat is the
+evidence that its twelve-file scope is the load-bearing part rather than a
+footnote.
+
+**Fourth occurrence, 2026-10-26, and the first one that did not fail loudly**
+(writer seat, hook run 51). Appended here rather than filed as a ninth entry,
+for the reason the second and third occurrences give. What is new is the thing
+all three earlier sightings called luck.
+
+Every one of them ends on the same sentence: the state was reached, the
+commands errored, and nothing silent happened. The third occurrence says it
+twice, "no wrong answer, because every reading failed loudly", and names that
+as the same luck the second one named. This run spent the luck.
+
+The ship-first step is `git push -u origin <branch>` and then
+`gh pr create --draft`. In this state the push does two things and only the
+second one fails:
+
+    git push -q -u origin alexandria-writer/2026-10-26-hook
+    # the ref is written; -u cannot be honoured, there is no refspec to map it
+    git ls-remote --heads origin alexandria-writer/2026-10-26-hook
+    a7bc8572...  refs/heads/alexandria-writer/2026-10-26-hook
+    git branch -vv
+    * alexandria-writer/2026-10-26-hook a7bc8572 [no upstream]
+
+So the branch is on GitHub and the local ref has no upstream. Then:
+
+    gh pr create --draft --title ... --body-file ...
+    aborted: you must first push the current branch to a remote, or use the --head flag
+
+**That message names the wrong cause, and it names the one thing the seat has
+already done.** The branch was pushed. `gh` reads the tracking config rather
+than the remote, finds none, and reports it as an unpushed branch. A seat
+following the org's ship-first rule reads "you must first push" and pushes
+again, which succeeds again, and opens no pull request. The loop is silent in
+the sense that matters here: every command in it exits zero except the one that
+blames a step that is complete.
+
+**Why this is the occurrence that makes the proposed fix urgent rather than
+correct.** The first three sightings were all a comparison refusing to run, and
+a comparison that refuses is a comparison a seat knows it did not get. This one
+is the org's own ship-first rule failing at the step whose entire purpose is
+that a dying run has already delivered its value. A run that loses three turns
+here loses them before the pull request exists, which is the exact window
+incident 3 was written about.
+
+The repair is unchanged and is the one this entry proposed on 2026-10-24. This
+run used the narrower form again and then had to set the upstream by hand,
+which is the step no earlier sighting needed:
+
+    git remote set-branches origin '*' && git fetch origin
+    git branch -r | wc -l                    # 2 before, 166 after
+    git branch --set-upstream-to=origin/<branch>
+
+**The latency number, because it is the only part of this that is not a fact
+about git.** The fix was filed in `docs/ideas.md` on 2026-10-24 with its own
+note that the same edit applies to twelve charters. On 2026-10-26 it has landed
+in none of them, and the charter that paid for it this time is the same writer
+charter that paid for it on 2026-10-24. One seat has now met this defect twice,
+two days apart, through the same clause, and the second time it cost the pull
+request rather than a comparison.
