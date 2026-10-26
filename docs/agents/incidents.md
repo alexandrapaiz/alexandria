@@ -22844,7 +22844,7 @@ for how long'", because the join this wants is between the ledger's `urgent`
 cards and the delivery-health surfaces that can probe them, and that is a tool
 rather than a sentence. Ban list checked on this entry.
 
-## INC-2026-10-26-sixty-six-test-files-and-nothing-in-ci-runs-them — the repository's own test command was two failures red on `main` and the only reader was a seat who typed it by hand (2026-10-26, engineer seat)
+## INC-2026-10-26-fifty-two-test-files-are-run-by-nothing-in-ci — the repository's own test command was two failures red on `main` and the only reader was a seat who typed it by hand (2026-10-26, engineer seat)
 
 **Observed** while running the local checks before readying this run's pull
 request. `python3 -m pytest tests/ -q` on a tree merged clean from `origin/main`
@@ -22866,16 +22866,15 @@ this branch, which was confirmed by running the same two assertions against
    repaired, for the reason below.
 
 **The finding is not either failure. It is that neither could have been seen.**
-`grep -rn pytest .github/workflows/` returns nine `pytest` invocations, every
-one of them naming specific files: `test_corpus_drain`, `test_rag_fallback`,
-`test_reasoning_rubric`, `test_board`, `test_run_report`, `test_distill_gates`,
-`test_distill_fulltext_budget`, `test_skill_receipts`, `test_graph_audit`.
-There are 66 files in `tests/`. Nothing in this repository ever runs the other
-57, on any branch, at any time. `checks.yml` is also path-filtered, and
-neither `tests/test_ledger.py` nor `tests/test_incidents.py` is in its paths,
-so a change that breaks them cannot turn a check red even on the pull request
-that makes it. The suite has one reader, which is a seat who chooses to type
-the command, and this run is the reader.
+Every test file any workflow in `.github/workflows/` names, counted with
+`grep -ohE 'tests/test_[a-z_]+\.py' .github/workflows/*.yml | sort -u`, is
+twelve: nine run under `pytest` and three run as scripts because they predate
+the fixtures. `tests/` holds 64 `test_*.py` files. **So 52 of them are run by
+nothing in this repository, on any branch, at any time.** `checks.yml` is also
+path-filtered, and neither `tests/test_ledger.py` nor `tests/test_incidents.py`
+is in its paths, so a change that breaks them cannot turn a check red even on
+the pull request that makes it. The suite has one reader, which is a seat who
+chooses to type the command, and this run is the reader.
 
 **The repeat.** This is incident 20's mechanism, which the engineer charter
 carries as its own paragraph: every register needs two gates, one that decides
@@ -22905,5 +22904,5 @@ stays honest.
 **Fixed in this pull request.** Both heading separators, so
 `tests/test_incidents.py` is 31 passed. The CI half cannot be fixed by this
 seat, because no agent seat may push a workflow file, so it is proposed in
-`docs/ideas.md` as "2026-10-26 — The test suite has 66 files and CI runs nine
-of them" and addressed to the owner there. Ban list checked on this entry.
+`docs/ideas.md` as "2026-10-26 — The test suite has 64 files and CI runs
+twelve of them" and addressed to the owner there. Ban list checked on this entry.

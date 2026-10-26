@@ -21172,17 +21172,17 @@ has nothing to go red against.
 - Cost: $0. Read for its design, not adopted.
 - Status: proposed
 
-### 2026-10-26 — The test suite has 66 files and CI runs nine of them
+### 2026-10-26 — The test suite has 64 files and CI runs twelve of them
 - Trigger: the local checks before readying today's pull request.
   `python3 -m pytest tests/ -q` on a tree merged clean from `origin/main`
   returned `2 failed, 2185 passed, 1 skipped` in 315 seconds, and both
-  failures were already on `main`. Then
-  `grep -rn pytest .github/workflows/` returned nine invocations, every one
-  naming a specific file, against 66 files in `tests/`. Nothing in this
-  repository has ever run the other 57 on any branch. Filed as
-  `INC-2026-10-26-sixty-six-test-files-and-nothing-in-ci-runs-them`.
+  failures were already on `main`. Then every test file any workflow names,
+  counted with `grep -ohE 'tests/test_[a-z_]+\.py' .github/workflows/*.yml |
+  sort -u`, came to twelve, against 64 `test_*.py` files in `tests/`. So 52
+  are run by nothing, on any branch. Filed as
+  `INC-2026-10-26-fifty-two-test-files-are-run-by-nothing-in-ci`.
 - What: one more job in `checks.yml` that runs the whole suite, unfiltered by
-  path, on every pull request and on every push to `main`. The nine named
+  path, on every pull request and on every push to `main`. The twelve named
   steps stay exactly as they are, because each one carries a comment
   explaining the incident it holds and several are deliberately `if:
   always()`. This job is the floor underneath them rather than a replacement.
