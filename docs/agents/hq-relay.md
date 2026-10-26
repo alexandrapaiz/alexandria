@@ -267,6 +267,25 @@ the five companies and the next week of runs keeps paying the 0.5%. This
 charter's own §"Ship first, then work" is edited to the granted order in this
 run and does not wait for the vendor, because this file is ours to write.
 
+**One correction we owe on our own number, before 536 merges, because it is in
+the granted clause.** §8 as written says turn ten is *"met by about a tenth of
+runs today and a third by turn twenty"*, and those two figures came from this
+page. They are shares of the runs that **ever pushed**, not of all runs. Measured
+at the granted deadline with `tools/ship_first.py --all --deadline 10`:
+
+| | by turn 10 | by turn 20 |
+|---|---|---|
+| of the 787 runs that ever pushed | **9.9%** (78) | **37.4%** (294) |
+| of all 1,798 runs | **4.3%** | **16.4%** |
+
+Both denominators are defensible and the clause does not say which it used, so
+the number a later run reads off it will be wrong by a factor of two in
+whichever direction it guesses. The honest form is the one we should have sent:
+**turn ten is met by 4.3% of all runs and by 9.9% of the runs that get as far as
+pushing at all**, against 0.5% of all runs at the old six. The rule still gains
+an order of magnitude; it just gains it from a stated base. This is our error in
+the evidence we supplied, not a defect in the grant.
+
 **And this run is the first reading of the granted order, n=1.** The draft went
 up at **turn 4**, before the charter was opened, on the instruction in the wake
 rather than in the file. The survey then ran on the open draft and found this
