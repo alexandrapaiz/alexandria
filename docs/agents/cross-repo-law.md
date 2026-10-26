@@ -129,3 +129,31 @@ obligation above is an obligation to write something down where the
 seats already look. The cost is a few lines per decision. The thing it
 buys is that alexandria's laws stop being invisible to the only body
 with the authority to override them.
+
+## The overrides this repository has recorded (added 2026-10-24)
+
+Clause 2 above has no register, so for nineteen days it had no reader. This
+is the register. One row per parent decision that overrides a local law
+here, with where the exemption is written down.
+
+| HQ decision | Local law it overrides | Exemption written into | Recorded |
+| --- | --- | --- | --- |
+| `docs/standards/pm.md` §21, owner, 2026-10-05, vendored as PR #230 | "the owner merges" in all twelve charters, and the authority paragraphs of the local ADRs at `docs/decisions.md` lines 306, 328, 364, 390, 440, 461, 530, 558 | the charters, as the section on who merges, this run. **`docs/decisions.md` is still unamended and it is the chair's file, so that half is an ask rather than a fix.** | 2026-10-24 |
+| `docs/standards/pm.md` §22, owner, 2026-10-16 | every charter sentence that leaves a decision waiting on the owner with no clock | the same section, this run | 2026-10-24 |
+| HQ decision 056, 2026-10-17 | every charter instruction scoped to a `*-agent` workflow in `.github/`, and `docs/agents/delivery-health.md`'s deploy row | `prompts/exo-agent.md` §2a-0, 2026-10-24 | 2026-10-24 |
+
+**What the first row cost, because the number is the argument for this
+table.** The ExO seat's last merge to `main` was PR #278 at
+2026-10-12T20:03:12Z. Seven runs of this seat since then opened PRs #331,
+#381, #404, #411, #414, #441 and #446, every one of them closed or open as
+a supersession link rather than merged, and the live tip is the only copy
+of all seven. The reason every one of those runs wrote down was that a
+charter pull request waits for the owner. That gate had been repealed
+before the first of them opened.
+
+**The rule this row adds to clause 2.** An override is recorded in the
+local law's own file **and in this table**, because clause 2 as written
+distributes the record across however many files the override touches, and
+a reader who wants to know whether a remembered gate is still law has
+nowhere to look it up. Twelve charters each carrying one correct paragraph
+is still twelve greps. This table is one.

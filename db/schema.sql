@@ -155,10 +155,109 @@ create table if not exists claim_links (
     confidence real,
     method     text,                       -- model + prompt sha that produced the edge
     created_at timestamptz not null default now(),
+    -- Dropped a few lines below and replaced by claim_links_opinion_idx. It is
+    -- declared here because this is what fresh databases got until 2026-10-24
+    -- and the migration governs both cases from one place; read the end state
+    -- there rather than here.
     primary key (from_claim, to_claim, relation)
 );
 
 create index if not exists claim_links_to_idx on claim_links (to_claim);
+
+-- Re-judgment needs a row to land in, and until 2026-10-24 it had none. The
+-- primary key above was (from_claim, to_claim, relation), so a second opinion
+-- that agreed with the first collided with it and `pipeline/interpret.py`'s
+-- `on conflict do nothing` dropped it without a word. That made the slow loop
+-- ADR-10 promised impossible to record, and it threw away the outcome most
+-- worth keeping: a new prompt confirming what an old prompt already said.
+--
+-- The opinion is the unit, so `method` belongs in the key. It is NULL on every
+-- edge drawn before that column existed, and a NULL is never equal to itself in
+-- a key, so the index folds NULL to the empty string and reads the whole
+-- unattributed era as one opinion. Re-running the same method stays idempotent,
+-- which is the job `on conflict do nothing` is actually there for.
+create unique index if not exists claim_links_opinion_idx
+    on claim_links (from_claim, to_claim, relation, coalesce(method, ''));
+
+-- Then the old key goes, and the order of these two matters. The index above is
+-- strictly finer than the key it replaces, so it cannot fail on rows the key
+-- already accepted, and creating it first leaves no window where the table has
+-- neither. It also carries the (from_claim, to_claim) prefix that the dropped
+-- key was quietly serving as an index.
+do $$
+begin
+    if exists (select 1 from pg_constraint
+                where conrelid = 'claim_links'::regclass and contype = 'p') then
+        alter table claim_links drop constraint claim_links_pkey;
+    end if;
+end $$;
+
+-- ============ claim graph: which judge has seen which claim ============
+-- Slice 5 gave a second opinion somewhere to land. It did not give anything a
+-- way to ask for one, and `docs/product/graph-quality.md` named the gap in its
+-- own words: the loop needs a trigger that picks claims whose newest opinion
+-- predates the current prompt. This table is what that trigger reads.
+--
+-- Why `claim_links` cannot answer it. An edge is written when the judge found a
+-- relation, so a claim judged under October's prompt that found nothing leaves
+-- no row at all, and it is indistinguishable from a claim October never read.
+-- A trigger keyed on the absence of an edge therefore re-judges the silent
+-- claims on every single run, forever, and pays a model call each time. The
+-- judgment pass is the thing being tracked, so the judgment pass is the row,
+-- and the empty ones are exactly the rows that matter.
+--
+-- Why the key is the prompt sha and not `method`. `method` is `model@sha` and
+-- the model is whichever provider answered: ADR-32's Moonshot normally, Groq's
+-- free tier when it did not. Keying re-judgment on `method` would therefore
+-- re-judge the whole corpus every time the fallback answered, and again when
+-- the primary came back, which is a bill rather than a second opinion. The
+-- prompt is the judge's instructions and the model is a capacity accident, so
+-- the prompt is what a change of mind is measured against. `method` is kept
+-- beside it, because which provider answered is still worth knowing and it is
+-- the only place that survives.
+create table if not exists claim_judgments (
+    claim_id   bigint not null references claims(id),
+    prompt_sha text not null,              -- the 12-char sha of prompts/interpret.md
+    method     text,                       -- model@sha that answered, NULL if unknown
+    edges      integer not null default 0, -- how many relations this pass wrote
+    created_at timestamptz not null default now(),
+    primary key (claim_id, prompt_sha)
+);
+
+create index if not exists claim_judgments_prompt_idx on claim_judgments (prompt_sha);
+
+-- Backfill, and it is the difference between the loop starting correct and the
+-- loop starting with a bill. Every claim interpreted before this table existed
+-- has no row, so without this the first run under any prompt sees the entire
+-- judged corpus as never-judged. The shas already in `claim_links.method` are
+-- the real history and they are recoverable, so a claim already judged under
+-- today's prompt is recorded as judged under today's prompt and is correctly
+-- left alone.
+--
+-- `created_at` comes from the edges rather than from `now()`: these passes
+-- happened, they happened on known dates, and stamping them today would make
+-- the table's first reading of its own history a lie.
+insert into claim_judgments (claim_id, prompt_sha, method, edges, created_at)
+select l.from_claim,
+       case when position('@' in coalesce(l.method, '')) > 0
+            then split_part(l.method, '@', 2)
+            else 'unknown' end,
+       min(l.method),
+       count(*),
+       min(l.created_at)
+  from claim_links l
+ group by 1, 2
+    on conflict do nothing;
+
+-- Then the silent ones: interpreted, no edge to recover a sha from. They are
+-- the rows the paragraph above is about, and they are recorded under 'unknown'
+-- so the next real prompt reads them once and then never again.
+insert into claim_judgments (claim_id, prompt_sha, method, edges, created_at)
+select c.id, 'unknown', null, 0, c.interpreted_at
+  from claims c
+ where c.interpreted_at is not null
+   and not exists (select 1 from claim_judgments j where j.claim_id = c.id)
+    on conflict do nothing;
 
 -- ============ gold: promotions (human-approved only) ============
 create table if not exists promotions (
@@ -309,12 +408,46 @@ create or replace view interpret_queue as
     where c.interpreted_at is null
       and c.embedding is not null;
 
+-- The current answer per pair, and the same shape as `latest_triage` above.
+-- Re-judgment appends (see claim_links), so a pair judged `contradicts` under
+-- September's prompt and `supports` under October's has two rows and exactly one
+-- current answer. A read that wants today's verdict reads this view. A read that
+-- wants how a pair has been judged over time reads `claim_links` and says so.
+--
+-- `created_at desc` is the recency. The two sort keys after it only break a tie
+-- inside a single transaction, where `now()` is identical for every row the run
+-- wrote, and they are there so the view answers the same way twice running
+-- rather than to carry a meaning of their own.
+create or replace view latest_links as
+    select distinct on (from_claim, to_claim)
+           from_claim, to_claim, relation, confidence, method, created_at
+    from claim_links
+    order by from_claim, to_claim, created_at desc, method desc, relation desc;
+
+-- Which prompt the graph currently reflects, one row per claim, and the same
+-- `distinct on` shape as the two views above it. The trigger itself does not
+-- read this, because the trigger asks "has this claim been judged under sha X"
+-- and X is a runtime value no view can carry. This answers the question a
+-- reader has instead: for each claim, which judge spoke last and what it found.
+-- A corpus where every row still says 'unknown' has never been re-judged, and
+-- that is a fact worth being able to see in one query.
+create or replace view latest_judgment as
+    select distinct on (claim_id)
+           claim_id, prompt_sha, method, edges, created_at
+    from claim_judgments
+    order by claim_id, created_at desc, prompt_sha desc;
+
 -- a claim is deprecated when a newer claim contradicts it with confidence;
--- this is ADR-8's "deprecated" digest section as a view
+-- this is ADR-8's "deprecated" digest section as a view.
+--
+-- It reads latest_links rather than claim_links because a contradiction that a
+-- later prompt withdrew is not a deprecation. Before 2026-10-24 this view had no
+-- way to tell the two apart, so the older verdict outvoted the newer one for as
+-- long as the row existed.
 create or replace view deprecated_claims as
     select distinct c.*
     from claims c
-    join claim_links l on l.to_claim = c.id
+    join latest_links l on l.to_claim = c.id
         and l.relation = 'contradicts'
         and coalesce(l.confidence, 0) >= 0.7;
 

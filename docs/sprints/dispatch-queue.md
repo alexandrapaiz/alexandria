@@ -1,118 +1,80 @@
-# Dispatch queue
-
-Maintained by the PM agent's daily standup (charter §4). Replaced in full
-each run, because it is a queue rather than a log.
-
-## 2026-10-24, message pass (~01:00-01:10 UTC)
-
-**Nothing dispatched this run, and the queue holds none.** `PM_DISPATCH_ENABLED`
-read directly from this run's own environment: empty, not `true`, so
-section 5 is inactive regardless of what follows. Checked the rest of the
-criteria anyway, because an inactive switch is not a reason to skip the
-read.
-
-Every dispatchable seat but one either has an open pull request from its
-own last run right now (`engineer`, `writer`, `frontend`, all three
-visibly still in progress, draft bodies still reading "filling in") or has
-no evidenced trigger this pass can cite without inventing one
-(`market`, `skill`, `security` last opened a pull request nineteen days
-ago; `okr` six days ago; none of the four has a sprint item naming it this
-week, because the real current sprint is the one stuck inside `#403` and
-has not reached `main` or the board's sprint object). `research`'s own
-board card already says fresh work needs the owner's word first, which is
-the relay rule answering itself: naming it here instead of queuing it.
-
-## Merge call this run: held, not Tier A/B
-
-**`#414`** (the ExO seat's, sixth in a chain, every seat's charter file in
-one diff) was read in full rather than deferred on the strength of the
-prior pass's call alone. `gh pr diff --name-only`: eleven `docs/agents/*`
-knowledge-surface files (Tier A) and twelve `prompts/*-agent.md` charter
-files, one per seat. None of the twelve charter diffs changes a dispatch
-ceiling, who may dispatch whom, or a merge-tier definition; every change
-read is mechanical (the board-API read replacing the blind `gh run list`,
-a shallow-clone caution, a `/tmp`-scratch caution, the `pending.md` writer
-split this seat itself asked for on the board). So the amendment's
-"except a change to a seat's own authority" carve-out arguably does not
-bind here.
-
-Held anyway, for three reasons: this seat's own immediately prior run
-read the same diff forty minutes earlier and called it not self-mergeable,
-and reversing that with no new fact is not applying the rule, it is
-re-litigating it; the standard's §9 and §10 both still name "Charters
-(`prompts/`)" as their own enumerated owner-only category, separately
-from the authority carve-out, and nothing resolves which of the two
-readings governs a routine, non-authority charter fix; and the blast
-radius is every seat's next run at once, so the cost of holding one more
-cycle is cheap against the cost of a wrong charter merge. Asked plainly in
-`docs/sprints/pending.md` rather than guessed either way. `#414`'s own
-predecessor chain (`#272`, `#331`, `#381`, `#404`, `#411`) is already
-fully closed by the ExO seat itself; nothing left to close there.
-
-## Held, not resolved — the conflict is in code, not prose
-
-Carried unchanged: `#416` was itself superseded and closed by the
-frontend seat's own `#421`, which contains the rebase this queue
-previously asked for. No action needed from this seat.
-
-## Failures (`docs/standards/pm.md` §11.7)
-
-Two non-successes since the last standup, read off the board because
-`gh run list` is blind to every agent seat's run since 2026-10-17
-(confirmed again this pass: the newest 30 rows are all `checks` /
-`deploy-main` merge pushes). `exo` at 2026-10-23T19:04:14Z, exit 1 at 48
-of 200 turns; `pm` at 2026-10-23T19:09:06Z, exit 1 at turn 1, seven
-seconds later. Both already drafted as one incident inside `#414`
-(unmerged); not duplicating that entry on `main` while it sits one merge
-away, to avoid the allocator collision the charter already warns about.
-If `#414` is still unmerged by the next ceremony, the registration still
-has to land, by whichever seat opens next.
-
-## Run health
-
-Fleet: the two failures above, both already triaged, nothing new since.
-Cap ratio: `exo`'s run on `#414`, 155 of 200, 77.5%, over the 70% line.
-`writer`'s last two runs, 140 and 113 turns: the workflow file's
-`--max-turns 225` reads both under the line, but `#414` reports that
-number is stale since cadence moved to host manifests, and gives the live
-cap as 150, which reads both over (93% and 75%), the first a third
-consecutive measurement over the line per `#414`. Could not independently
-confirm 150 — this seat's token 404s against the host-manifest repo.
-Reporting both readings rather than picking one.
-
-## Delivery health (`docs/agents/delivery-health.md`, via `tools/delivery_health.py`)
-
-**ok:** press (2026-W42, newest, caught up), site, archive. **FAILING,
-unchanged:** compute / pipeline / mcp (Modal workspace disabled, `#406`
-urgent, 2026-10-26 09:00 UTC deadline, owner-only); checkout (the three
-Polar env vars still unset, owner-only); deploy (distill 8.0 days, ingest
-7.4 days, weekly 8.2 days undeployed behind `origin/main`). **unknown:**
-payments.
+# Dispatch queue — 2026-10-24, ~18:10 UTC (message pass)
 
 ## Queue gauge, four numbers
 
-1. `main`'s newest commit: the merge of `#409`, 2026-10-24T00:47:16Z,
-   about fourteen minutes old at this writing. `checks.yml` fires only on
-   specific paths (pipeline, digest/daily prompts, named tests,
-   `skills/**`); its newest matching run is `success` from the merge of
-   `#400`, and nothing since has touched one of its paths, which is why
-   nothing newer shows and that is not a gap.
-2. Open pull requests: 6 (`#403`, `#414`, `#419`, `#420`, `#421`, `#422`,
-   this seat's own), 3 opened since the last merge to `main` (`#420`,
-   `#421`, `#422`).
-3. 7-day conversion: 73 merged / 100 opened (0.73).
-4. Deepest open chain: 6 (`#414`), unchanged. `#403` next at 4.
+1. **`main`'s age and check state.** Tip is this pass's own merge of #452,
+   `5768a7c`, about 6 minutes old at this writing. `checks.yml` fires only
+   on pipeline/digest/tests/skills paths; nothing in this pass's merges
+   touched one, so its last matching run (13:00:24Z, success) is still the
+   newest relevant signal. No 48-hour stall.
+2. **Open pull requests, total, and since the last merge.** 9 open
+   (`#476`, `#475`, `#473`, `#471`, `#466`, `#461`, `#455`, `#442`, `#435`),
+   0 opened since the last merge to `main`.
+3. **Conversion, 7 days.** 91 merged / 150 opened (0.607).
+4. **Deepest open chain.** `#455` (exo), eighth in its chain, depth 8,
+   unchanged, and as of this pass also `CONFLICTING` against `main`.
 
-No 48-hour stall; `main` moved fourteen minutes ago.
+No stall. `main` moved under this seat's own hand this pass (ten merges:
+#470, #474, and eight of this seat's own sibling PRs reconciled — see
+`docs/sprints/pending.md` and `docs/agents/incidents.md`).
 
-## Board
+## Cap ratio
 
-Commented on the ExO seat's own board card (`df7b4a84`) with the merge
-status above, and left it in Review rather than moving it to Done, since
-the code is not on `main` yet. Walked the whole board for an orphaned
-item to hand a seat; the one candidate (the issue dek's widow on tablet
-and desktop) already has a card, filed before this pass. Nothing else
-needed a new card.
+`writer` at 149 turns: 66% of the workflow file's `--max-turns 225`, 99%
+of the live manifest cap of 150 that `#414`/`#455` both report (still
+unconfirmable directly — this seat's token 404s on the manifest repo).
+Third consecutive over-threshold reading on the second number. `exo`
+(126/200, 63%) and `skill` (117/180, 65%) are both under the line either
+way.
+
+## Failures (`docs/standards/pm.md` §11.7)
+
+Board run record, 25 rows back to 13:49:15Z today (short of the 24-hour
+floor). Three non-zero exits in that window: 13:49:15 (skill, 1 turn) and
+the 16:00:13/16:00:22 pair (writer, pm). All three are already registered
+as the two dated instances of the provider-capacity fingerprint in
+`docs/agents/turn-caps.md` ("2026-10-24T13:49 (one), 2026-10-24T16:00
+(two)"). Already triaged. Nothing new, no rerun needed.
+
+## Delivery health (`docs/agents/delivery-health.md`)
+
+Not re-run fresh this pass (a message trigger answers what it was woken
+for; last full read was the 16:40 pass). Carried forward: press / site /
+archive **ok**. compute / pipeline / mcp (Modal workspace disabled),
+checkout (Polar env vars unset), deploy (lag 8-9 days) **FAILING**, all
+three owner-only. payments **unknown**.
+
+## This pass's own act, in place of a dispatch
+
+No dispatch criterion fired, and `PM_DISPATCH_ENABLED` (read from this
+run's own environment, the corrected method per the still-unmerged #455
+fix, not `gh variable list`) is unset, so §5 stays inactive regardless.
+What this pass did instead of queuing anything:
+
+- **Merged #474 (exo)** under Tier B after finding its own "Tier C by its
+  file list" self-label was the exact misread
+  `INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway`
+  already names as its seventh instance. Content review (and, after the
+  fact, the engineer's new `tools/check_authority.py`) both say `CLEAR`.
+- **Reconciled nine of this seat's own sibling PRs** (#440, #442, #444,
+  #445, #447, #448, #450, #452, #454) that piled up unmerged across three
+  earlier passes today, each a clean fresh fork of `main` that none of the
+  others could see. Eight merged (four clean, four keep-both conflict
+  resolutions on the `pending.md` anchor). #442 stays open: Tier B, this
+  seat's own, needs the owner or a chair. Filed as
+  `INC-2026-10-24-nine-of-the-pm-seats-own-prs-forked-the-same-anchor-and-none-contained-any-other`.
+- **Left #455 alone, correctly, for a better reason than the last six
+  passes gave.** The detector says `RESERVED`: one line sits inside
+  `prompts/pm-agent.md` §5 itself, which §21 names as always the owner's.
+  It's also now conflicting against the `main` this pass moved. #476
+  (exo, draft, `CLEAR`) is already the clean split for the same fix and is
+  this seat's to merge the moment it leaves draft.
+- **Left #435 (frontend) alone,** eighth fabricated-tool push caught and
+  not run, verified unchanged at ~6h15m idle (not the claimed 10h), still
+  waiting only on frontend's own `gh pr ready`.
+
+Nothing here needed a seat woken that wasn't already awake on its own
+open work. The queue holds no proposed entries this pass.
 
 ## Dispatched by the PM
 

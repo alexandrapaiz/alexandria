@@ -18347,3 +18347,1546 @@ cutting gates to make a budget.
   "Distilled and shelved, on a shelf of its own for now." It was written when
   at most one skill could land there and it now sits above four.
 - Status: proposed
+
+### 2026-10-24 — Craft scan: Consensus names the corpora it covers and never the ones it does not (engineer seat, message run)
+- Trigger: today's build was about a guard that reported on the apps it could
+  measure and said nothing about the apps it could not, so the scan asked the
+  same question of a product in alexandria's own category: when a research tool
+  answers a question, does it tell you what it did not look at. Consensus,
+  rotating off three consecutive observability scans (Modal 2026-10-23, Sentry
+  2026-10-23, Datadog 2026-10-24 earlier today).
+- What: Consensus's own explanation of how it works gives a corpus size, "over
+  200 million academic papers," and then does something better than the number,
+  which is the thing worth stealing. It names the corpora by name: "nearly all
+  of the highest-impact journals and the entirety of PubMed," from four
+  aggregators plus direct publisher partnerships, "primarily peer-reviewed
+  journal articles, along with some conference papers and preprints." A reader
+  who knows their field can tell from that sentence whether their literature is
+  in it, which a count of 200 million cannot tell anyone. What the page does not
+  carry anywhere is the other half: no excluded set, no unindexed or paywalled
+  caveat, no completeness statement on a result. The framing is uniformly what
+  is included, and the closest it comes to a limit is a claim about ranking
+  quality, that results are "more likely to reflect high-quality, credible
+  science," which is an argument about the papers it found rather than about the
+  ones it did not.
+- Worth stealing: scope a coverage claim by naming its sources rather than by
+  sizing them. alexandria's home page says "papers read this week" and the
+  number stands alone, and the board already carries a `pm` card saying that
+  metric has no quality-claims row. The press's own corrected arithmetic is the
+  evidence that the denominator is where the meaning is: 164 papers read in
+  full out of 8,956 ingested is a true sentence that one of those two numbers
+  on its own would misrepresent in opposite directions.
+- Where alexandria is ahead, and today is why: its guards are being made to
+  report their own blind spots as a matter of law rather than of taste. L-A21
+  says a gate that saw nothing must not read as a quiet pass, four entries in
+  the incident register are enforcement of it against this org's own code, and
+  as of today the deploy surface names the apps it could not place in the same
+  headline that alarms about the ones it could. Consensus is a bigger product
+  with a better corpus and no visible equivalent of that rule.
+- Cost: $0, read from the vendor's own published page.
+- Status: proposed
+
+### 2026-10-24 — Every guard declares the runtime inputs it needs, and one command says which guards this runtime can be trusted to run
+- Trigger: two findings one day apart, both from this seat, both the same
+  missing thing.
+  `INC-2026-10-23-the-drift-guard-answered-green-from-a-checkout-that-could-not-see`
+  closes with "every seat runs shallow, and no guard in this repository says
+  anywhere what depth of history it needs." Today's run found the sibling bug
+  and also found the reason nobody looked: `_last_commit_at`'s docstring
+  promised "the seat workflows check out with `fetch-depth: 0`, so in the place
+  this actually runs daily the answer is real," which was true until `ab4e5bb`
+  moved every seat's cadence onto the host manifests on 2026-10-17 and the host
+  began cloning one commit deep. A runtime change outside this repository
+  falsified a comment inside it, and the comment went on telling every reader
+  not to check.
+- What: each guard declares what it needs from the runtime as data rather than
+  as prose, in a module-level constant on the file that needs it:
+  `NEEDS = {"git_history": "full", "egress": True, "database": False}` is the
+  whole shape, and `tools/delivery_health.py`, `tools/drift_watch.py`,
+  `tools/press_watch.py`, `tools/checkout_watch.py` and `tools/deploy_gate.py`
+  are the five that have unwritten requirements today. Then one command,
+  `tools/guard_inputs.py`, probes the runtime it is actually in, `git rev-parse
+  --is-shallow-repository` and the rest, and prints one line per guard saying
+  whether this environment can run it. The value is not the probe, which today's
+  pull request already wrote for the one case it needed. It is that the
+  declaration is a fact in a file that a changed runtime can be checked against,
+  instead of a reassurance in a docstring that a changed runtime silently
+  falsifies. The shape is deliberately the same as `pipeline/budget.py`, which
+  already answers "does this request fit" before a job runs rather than after it
+  fails.
+- First step: the constant on `tools/delivery_health.py` and
+  `tools/drift_watch.py` only, the probe for `git_history` only, since the probe
+  is `_is_shallow` and already exists and is tested, and one line in each
+  guard's own output saying which of its declared inputs this runtime is
+  missing. Two files, no new dependency, and it is a day-sized slice that leaves
+  the other three guards for the next one.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A verdict that aggregates per-item states gets one test per state with a mixed input
+- Trigger: today's bug, and specifically the one-day gap between the fix that
+  caused it and the fix that closed it. Yesterday's run added a third state,
+  `unknown`, to `judge_deploy` at the per-app level, wired `drift_watch` to exit
+  2 on it, and tested it with a depth-one clone, which makes every app unknown
+  at once. The test passed, the fix was real, and the mixed case, one app
+  behind and one app unmeasurable, still returned `failing` with the unknowns
+  discarded on the way out and the watcher exiting 1. The new state was written
+  per-app and read per-surface, and nothing in the suite had an input where
+  those two levels could disagree.
+- What: a convention, and a check that enforces it where it is mechanical. Any
+  function that reduces a mapping of per-item states to one verdict gets, for
+  each state it can produce, a test whose input holds that state alongside a
+  different one, because a reducer's branch order is only observable on a mixed
+  input and a uniform input tests the item and not the reduction. This
+  repository has at least four such reducers:
+  `delivery_health.judge_deploy`, `judge_pipeline`, `tools/panel.py`'s verdict
+  roll-up, and `tools/skill_gate.py`. The mechanical half is a test that reads
+  each reducer's state constants and asserts a named test exists per state. The
+  judgement half, whether the mixed input is a real one, stays with the author.
+- First step: write the four mixed-input tests by hand against the reducers
+  named above and record which of them already drop a state, before building
+  anything that enforces the convention. If none of the other three has the bug,
+  this is a lesson for `docs/standards/lessons.md` through the ExO relay rather
+  than a gate, and that is a cheaper and better outcome than a check nobody
+  needed.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Elicit labels coverage on the row and gives one label to two different states (engineer seat, scheduled run)
+- Trigger: today's build is two instruments about queues and resolutions that
+  could not be read, and the two engineer runs before it were both about a
+  guard reporting on what it could measure and staying silent on what it could
+  not. So the scan asked the same question of the product in alexandria's own
+  category that has the most mature answer to it. Elicit, rotating off
+  Consensus earlier today and three observability products before that.
+- What: Elicit puts a coverage label on every paper in a review table, and the
+  wording is first-hand from its own support page. "Full text" means "We have
+  the full text of this paper available for data extraction." "Abstract only"
+  means "We only have the paper's abstract. This appears either before we've
+  attempted to retrieve the full text (during abstract screening) or if
+  retrieval wasn't successful." The corpus claim beside it is 138 million
+  papers from Semantic Scholar, PubMed and OpenAlex, with full text reachable
+  when a paper is open access or when the reader's own browser extension and
+  journal subscription fetch it.
+- Worth stealing, and it is the placement rather than the label. The coverage
+  fact sits on the row the reader is already looking at, next to the extracted
+  value, so a thin answer and the reason it is thin arrive together. alexandria
+  has the same fact and keeps it somewhere else: 164 papers read in full out of
+  8,956 ingested is a true sentence in the press's arithmetic, and no claim in
+  an issue says whether the paper behind it was read in full or in abstract.
+  The claim is where the reader's trust is spent, so the claim is where the
+  label belongs.
+- Where alexandria is ahead, and it is the half Elicit's own page admits. One
+  label covers two states that mean opposite things: "we have not tried yet"
+  and "we tried and failed". A reader cannot tell a review that is still
+  running from one that has finished and come up short, which is exactly the
+  distinction this org has spent four incident entries and company lesson
+  L-A21 forcing into its own guards, and as of this week every health surface
+  here separates `unknown` from `FAILING` by law.
+- Cost: $0, read from the vendor's own published support pages.
+- Status: proposed
+
+### 2026-10-24 — The merge order is measurable, and the standup's queue gauge is the reader that should carry it
+- Trigger: `tools/merge_order.py`, built today, run against this repository's
+  live queue on its first execution: 4 of 5 open pull requests merge in
+  sequence oldest-first, 5 of the 10 pairs are mutually exclusive, all 5 of
+  those over nothing but prose, and the top anchor is
+  `docs/agents/incidents.md` blocking 4 of them. `#414` cannot merge in
+  sequence at all. Every one of those five pull requests is individually
+  `MERGEABLE` against `main`, which is the only question any check in this
+  repository has ever asked.
+- What: the PM's daily standup already prints a four-number "Queue gauge" in
+  `docs/sprints/dispatch-queue.md`: newest commit on main, open pull request
+  count, seven-day conversion, deepest open chain. All four describe the
+  queue's size and none of them can see its shape, so the gauge has reported a
+  healthy-looking queue on days when half of it was mutually exclusive. One
+  more line, from `python3 tools/merge_order.py --json`, gives the owner the
+  order to merge in and the one file to fix first. The instrument is built,
+  tested and $0. What is missing is the reader, and the reader is a line in
+  `prompts/pm-agent.md`, which is not this seat's file.
+- First step: the PM seat runs the command in one standup and pastes its three
+  numbers into the gauge. If the numbers change the merge order that pass
+  chose, the charter line is worth writing. If they do not, this entry is
+  closed cheaply and that is a better outcome than a rule nobody needed.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The incident register is this repository's worst merge anchor, and its repair is the file layout
+- Trigger: the first measurement this repository has ever taken of its own
+  queue, above. `docs/agents/incidents.md` blocks four of five open pull
+  requests today. Company lesson L-A48 measured the same shape across four
+  repositories on 2026-10-18 and named alexandria's worst anchor as
+  `docs/sprints/pending.md` at 15. Six days later the contention has moved to
+  the incident register, which is the same relocation L-A49 records for Ursa,
+  whose contention moved to `docs/agents/learning-log.md` the moment the ledger
+  was handled.
+- What: L-A48's own fix, applied to this file. One entry per file under
+  `docs/agents/incidents/`, named `INC-YYYY-MM-DD-slug.md`, with the current
+  monolith frozen as the archive rather than rewritten. Nothing needs a
+  generated index, because an index is a second shared anchor: the readers are
+  `tools/check_registers.py` and the seats' own greps, and both can read a
+  directory. The attribute shortcut is closed by measurement rather than by
+  taste, because L-A49 is explicit that `.gitattributes` changes nothing about GitHub's merge
+  button and that `union` destroyed records in Ursa's probe, two entries in and
+  one and a half out, exit 0 and no marker. So layout is the only arm left.
+- Why it is not this seat's to do: the file is ExO-owned, the standing rule at
+  its top binds twelve seats, and the id allocator described in its own header
+  would need to read a directory. The engineer half, when someone decides it,
+  is a day: the directory, both readers, and a frozen monolith.
+- First step, which is cheap and is somebody's today: run
+  `python3 tools/merge_order.py` and read the anchor table. The decision is
+  only hard while the number is a guess.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The charter's machinery-diff gate becomes a script that satisfies its own precondition (engineer seat, message run)
+- Trigger: this run ran the gate at turn seven on the one-commit checkout the
+  host hands every seat, read its single row as a real finding, and called the
+  gate green. The true answer, from the same tree after the fetch, is that
+  nothing touched `.github/` or `pipeline/` in thirty-six hours. The row was
+  the shallow boundary presenting its root commit as adding every file in the
+  tree. Filed as
+  `INC-2026-10-24-the-machinery-diff-gate-named-this-runs-own-commit-as-a-runtime-change`,
+  the fifth entry on this shape and the first where the gate was wrong in the
+  direction that produces a finding rather than a silence.
+- What: `tools/machinery_diff.py`, owning the whole of what twelve charters
+  currently recite as a command. It ensures the history it needs before it
+  looks, runs the diff against `.github/` and `pipeline/`, and for every commit
+  it returns answers the two questions `docs/agents/runtime-changes.md` exists
+  to ask, by reading `gh pr list` for the pull request that explains it and
+  `gh run list` for the smoke run behind it, rather than leaving both to a
+  seat's memory. It exits non-zero on a commit it cannot account for. The
+  charters then name one script instead of one command, which is the move that
+  worked today: the four previous repairs for this were all sentences telling a
+  seat to fetch first, and the seats did not, including the seat that wrote the
+  sentence.
+- First step: the script and its tests, with the shallow case as the first
+  test, because the shallow case is the one four charter sentences have failed
+  to cover. The charter edits are a separate owner's merge and are not in it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The history a guard needs becomes one shared precondition instead of a side effect of whichever guard ran first (engineer seat, message run)
+- Trigger: measuring today's own change. The first A/B this run tried was
+  invalid, because the run that was supposed to show the old behaviour read a
+  clone that an earlier run of the same tool had already deepened. The
+  contamination was mine and it took one fresh clone to clear. The general
+  version is worse than the measurement error: as of today a seat that happens
+  to run `tools/delivery_health.py` early has a full history for the rest of
+  its run, and a seat that does not, does not. So the answer every other
+  git-reading guard in that run gives, the machinery diff included, now depends
+  on the order the guards ran in, invisibly.
+- What: `tools/ensure_history.py`, one function and one command, which asks
+  `git rev-parse --is-shallow-repository`, fetches if the answer is yes,
+  remembers the result for the process, and prints what it did. Every guard
+  that reads git history calls it instead of fetching on its own behalf, and
+  the run's prose can then say once that the history was deepened rather than
+  having it discovered later by somebody reading an inconsistency. Today's
+  `_deepen` in `tools/delivery_health.py` is that function living in the wrong
+  file, and moving it is most of the work.
+- First step: lift `_deepen` and its memo out of `tools/delivery_health.py`
+  into the new module with its five tests, leaving a re-export so nothing else
+  moves in the same change.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A surface that answers `unknown` should publish how often it does (engineer seat, message run)
+- Trigger: today's craft scan, below. Undermind publishes the number for where
+  its own process stops, "a production search stops on its own after 2.9
+  minutes on average," and a recall figure beside it, so a reader knows how
+  complete a typical answer is before reading one. Alexandria's delivery
+  surfaces answer `unknown` and nobody in this org can say how often. That gap
+  is not theoretical: the `deploy` row answered `unknown` to every seat's run
+  for six days, the exit code said so each time, and the standing board card it
+  was supposed to be answering carried a number from 2026-10-17 the whole
+  while. One run reading `unknown` is a fact about a checkout. Six days of them
+  is a fact about the instrument, and nothing was counting.
+- What: `tools/delivery_health.py` records one row per surface per run, state
+  and cause only, and grows a `--census` flag that reads them back: "deploy has
+  answered unknown on 14 of its last 20 runs, all 14 naming a shallow
+  checkout." A surface whose unknown-rate is high is a surface that needs
+  fixing rather than reading, and that is a different repair from whatever the
+  surface is reporting about.
+- First step: the rows, written to the board as a comment on one card rather
+  than to a table, because the database is the thing no seat can write and the
+  census is worth having before it is worth having properly.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Undermind tells you its search stopped early and makes you the one who resumes it (engineer seat, message run)
+- Trigger: the rotation through docs/market/landscape.md, where Undermind has
+  been an entry since 2026-09-18 and had not had a craft read from this seat.
+  Read today at undermind.ai.
+- Worth stealing: it publishes the number for its own incompleteness, and it
+  publishes it before you have asked a question. "A production search stops on
+  its own after 2.9 minutes on average," with resubmission offered to continue,
+  and 85% recall on the twenty most relevant papers against its own benchmark.
+  That is a product telling a stranger how complete a typical answer is as part
+  of the pitch, which is a thing you can only do if you measure it. Alexandria
+  measures nothing of the kind about its own guards, and today's run is the
+  evidence: the one surface watching production said "I cannot tell" to every
+  reader for six days and no number anywhere counted that. The ledger entry
+  above is this scan's output.
+- What alexandria does better: Undermind stops, says it stopped, and hands the
+  resume button to the user. Its own FAQ asks "It didn't find my paper. Why?"
+  and the page gives no answer, so the incomplete result names no cause. Both
+  halves are the thing this seat spent today removing. The `deploy` row names
+  the exact reason it cannot answer, by asking rather than guessing, and since
+  this run it does the resuming itself: one depth-one clone, one minute apart,
+  `unknown` and nothing posted against `FAILING`, weekly 8.7 days behind with
+  23 commits named, and three board cards. Four and a half seconds. A guard
+  that hands its reader the resume button is a guard whose reader is a cron,
+  and a cron does not press buttons.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The deploy grace window outlasts the schedule it is protecting (engineer seat, message run)
+- Trigger: building the deadline into the deploy surface today made the
+  arithmetic visible. `DEPLOY_GRACE_HOURS` is 24 and four of the five
+  scheduled jobs are daily, so an undeployed image is forgiven for longer
+  than the gap between its own runs. The window does not cover a deploy in
+  flight in those cases. It guarantees that the stale image serves at least
+  one production run before the guard says a single word, and `weekly` is
+  the only app the number is actually right for, because Monday is more than
+  a day away six days out of seven.
+- What: make the grace per app rather than per org, at
+  `min(DEPLOY_GRACE_HOURS, hours until this app next fires)`. A merge at noon
+  is still not an alarm at one, which is the window's whole argument, but a
+  merge at noon against a job that runs at three stops being green at three
+  rather than at noon tomorrow. The surface already computes both numbers as
+  of today, so this is a comparison and not new machinery.
+- First step: it is one expression and about six tests, and the tests are the
+  work: every existing pending-deploy case has to be re-read against the new
+  threshold, because this re-grades every pending deploy the org will ever
+  have and some of the current fixtures are green only because of the number
+  it changes.
+- Cost: $0. It is a threshold, not a service. The real cost is noise, which is
+  why it is a proposal: a guard that goes red on the afternoon of every merge
+  is a guard seats learn to scroll past, and that judgment is the owner's.
+  Today's run named the case in the headline and deliberately changed no
+  state, so the decision is readable rather than made.
+- Status: proposed
+
+### 2026-10-24 — Deploy on merge, so the drift cannot accumulate at all (engineer seat, message run)
+- Trigger: today's craft scan. Argo CD's product is this exact question and
+  its answer to a drift that needs a hand is `selfHeal: true`, which removes
+  the hand. The deploy card in this lane is eight days old, it has four
+  comments from this seat measuring it more precisely each time, and every one
+  of them ends in the same sentence: this closes with one command by somebody
+  holding a Modal token. Four runs of measurement is four runs of not fixing
+  it.
+- What: a workflow that runs `modal deploy` for each app whose files changed,
+  on merge to main, behind the rehearsal ladder in
+  docs/agents/press-rehearsal.md. The drift guard then watches for the case
+  the automation misses rather than for the ordinary case, which is the state
+  it was built for and has never been in. Today's work makes this safer to
+  propose than it was yesterday, because the guard can now say which app is
+  about to run and therefore which deploy is urgent.
+- First step: not a build step, because this seat cannot write a workflow
+  file or set a secret, and four prior runs of this lane have proved that the
+  staged-file route needs an owner's hand anyway
+  (docs/agents/pending-workflow-changes.md). The first step is the owner's
+  decision on whether a merge to main may deploy without a human in the loop,
+  which is an ADR-14 question and the reason this is a ledger line.
+- Cost: $0 in services. GitHub Actions minutes are already paid for by every
+  other job in this repository, and `modal deploy` costs nothing beyond the
+  compute the crons already use. It needs the two Modal token secrets that
+  docs/agents/pending-workflow-changes.md has wanted since 2026-10-07.
+- Status: proposed
+
+### 2026-10-24 — PRESS_CRON is the last hand-kept copy of a schedule, and there is a reader for it now (engineer seat, message run)
+- Trigger: writing `runtime_sha.schedule_of` today. Its own docstring argues
+  that a hand-kept copy of a list disagrees with the deploy on the day it
+  matters, which is the argument `manifest` has carried since it shipped, and
+  `delivery_health.PRESS_CRON = "0 9 * * 1"` is a hand-kept copy of exactly
+  the fact that function now reads. The constant knows it: its comment says
+  "so it is a copy, and this file's standing argument is that a copy agrees
+  with the original only by luck", and it is held honest by a test rather
+  than by a reader.
+- What: read the press's cron at call time through `schedule_of("weekly")`,
+  and keep the constant only as the fallback for a caller with no checkout.
+  The test that pins the copy to the decorator then has nothing left to pin
+  and becomes a test that the reader resolves, which is a smaller claim about
+  a bigger surface.
+- First step: `press_deadline` is the only function that splits the constant,
+  so this is one function, one fallback and one rewritten test. Do it in the
+  same change as anything else that touches that region, because on its own
+  it is twenty minutes and a diff nobody needs to review separately.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Argo CD puts a cron on the deploy's permission and never on the stale thing's next use (engineer seat, message run)
+- Trigger: the rotation, taken off the landscape's academic-tools list today
+  and onto the instrument this run was building, because the question "is the
+  running code the declared code" has an industry-standard product behind it
+  and this repository had been answering it from first principles for three
+  weeks. Read today at argo-cd.readthedocs.io, the auto-sync and sync-windows
+  pages.
+- Worth stealing: `OutOfSync` is a named state and not an error, and auto-sync
+  refuses to act on an application that is in an error state. Two separate
+  ideas and both are good. A deploy that has not happened is a legitimate
+  condition of a healthy system rather than a fault, which is the distinction
+  the pending-deploy window in this repository is reaching for. And an
+  automation that declines to act while the thing it acts on is already broken
+  is the rule today's run arrived at from the other direction: the deadline
+  this surface now prints is qualified by the compute outage, because a
+  deadline read off a cron that is not firing is a clock handed over stopped.
+  The one to steal properly is `selfHeal`, which is the ledger entry above.
+- What alexandria does better: Argo CD has cron arithmetic and spends it on
+  the wrong side of the question. `schedule` and `duration` on a sync window
+  say when a deploy is *permitted*, and nothing in either page says when the
+  drift starts to cost anything. An application can sit `OutOfSync` forever
+  and the product's only answer about time is that it re-checks every two to
+  three minutes. So the deadline is on the remedy and never on the harm. As of
+  today this repository puts it on the harm: the row says weekly is 8.7 days
+  behind *and* that distill is the first of the three to get its turn, at
+  15:00 UTC, on the `0 15 * * *` schedule it was read from. That is the half a
+  reader can act on, and it is the half the mature product in the category
+  does not print.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The charter tells every run to build the rehearsal ladder, and the ladder shipped a month ago (engineer seat, message run)
+- Trigger: the ship check in prompts/engineer-agent.md, run today as written.
+  It says of docs/agents/press-rehearsal.md that "it does not exist as code
+  yet, and until it does the ladder has two working links and a paragraph",
+  sizes it as "one Modal function, one scratch table, one more `&&` in the
+  deploy command", and instructs the run to either take it or write a
+  declination. All three parts exist. `rehearse()` is at
+  pipeline/weekly.py:1821, `press_rehearsals` is in db/schema.sql at line 201,
+  the one-line chain with the extra `&&` is in that module's own docstring,
+  and tests/test_press_rehearsal.py holds thirteen tests. It landed in PR #94
+  on 2026-09-24 and reached the corpus crons in PR #118 on 2026-09-26.
+- What: delete the paragraph's claim and keep its instruction. The clause is
+  doing real work, because it is the thing that tells a seat the third gate
+  exists and must not be skipped for a provider change, and that half is
+  correct and enforced. Only the "does not exist yet" sentence and the sizing
+  are wrong, and they are the half that costs a run: today's run spent four
+  tool calls proving the ladder was already there, and the clause's own
+  closing instruction is that a run which declines it must write down why, so
+  every future run either rebuilds something that exists or files a
+  declination against a finished feature.
+- First step: the owner's, because charters are owner-merged and this seat is
+  forbidden from including a charter edit in its daily pull request. The edit
+  is two sentences. The reason it is in the ledger rather than in the diff is
+  the boundary itself.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A seat's scratch file belongs under its working directory, because /tmp is shared (engineer seat, message run)
+- Trigger: this run wrote its pull request description to `/tmp/prbody.md`,
+  another process on the host overwrote that path with a different seat's
+  prose, and this seat pushed the other seat's text onto its own pull request
+  before noticing. Caught within two commands and restored from context, so
+  the cost was one bad revision of one description. Nothing in the diff was
+  touched and no other pull request was written to.
+- What: every seat on this host is handed a private working directory and runs
+  concurrently with the others, so `/tmp` is the one directory they all share
+  and a filename like `prbody.md` is one every seat would pick. The fix is a
+  convention rather than code: scratch goes under the working directory, where
+  the path is already unique per run, and `.gitignore` or a dot-prefix keeps it
+  out of the diff. `/tmp` is for things a seat does not mind losing and does
+  not mind another seat replacing.
+- First step: one line in the shared section of the charters, which is the
+  owner's to merge. Two cheaper things this seat can do in the meantime and did
+  today: write to `./.prbody.md` instead, and read a file's own first line back
+  before piping it anywhere that publishes. The second is the part that caught
+  this one.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The deepening fetch should report how long it took, so the ceiling on it is a distribution rather than one measurement (engineer seat, message run)
+- Trigger: today's incident. `DEEPEN_TIMEOUT_SECONDS` is 90 and its comment
+  says the number was measured rather than guessed, at 4.5 seconds for this
+  repository's whole history on 2026-10-24. That measurement was taken on an
+  idle container. The first production failure of the function it protects
+  happened in a container that was also running the full test suite, and the
+  surface could not tell a fetch that timed out from a fetch that lost a lock
+  from a fetch that found the work already done, because all three arrive as
+  the same `False`.
+- What: record the elapsed seconds of the fetch and the reason it ended in
+  the deploy row's evidence, next to `deepened` and `fetch_forbidden` which
+  are already there. Then the ceiling stops being one reading from one
+  machine, and the next reader of an undatable drift gets the one fact that
+  separates a slow remote from a busy host. Nothing about the verdict
+  changes, because as of today the verdict is read off the checkout and not
+  off the fetch.
+- First step: one `time.monotonic()` pair in `_deepen`, one key in the
+  evidence dict, and a line in the `unknown` branch's reason. The tests that
+  assert on that branch already read the evidence, so they are where the new
+  key gets its assertion.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Every card in this lane closes with a hand no seat holds, and nothing counts that (engineer seat, message run)
+- Trigger: today's board read. The engineer lane has four cards in `This
+  sprint` and every one of them ends in the same sentence. Checkout needs
+  three values in the site's environment. Compute needs the owner to switch
+  the Modal workspace back on. Deploy needs `modal deploy` from a hand
+  holding a Modal token. Press needs either `modal run ... ::resend` or a
+  written decision. The oldest was filed on 2026-10-14, which is ten days.
+  This seat has opened five pull requests in the last twenty four hours and
+  every one of them was an instrument pointed at those four cards rather than
+  a card closing, which is the honest description of the lane and is a
+  sentence somebody has to write by hand every time.
+- What: a card can say what it is waiting on, and the standup can count it. A
+  line in the body with a fixed shape, `Blocked on: <the hand>`, read by
+  `tools/board.py show --seat <x>` and summarised in one sentence: how many
+  of a lane's open cards are blocked, on how many distinct hands, and how old
+  the oldest is. The value is not the dashboard. It is that a lane which is
+  100% blocked looks identical, from main, to a lane that is merely slow, and
+  the difference decides whether the right response is to build harder or to
+  ask the owner for ten minutes.
+- First step: the convention and the reader, nothing else. One regex over the
+  card bodies the board already returns, one summary line in
+  `tools/board.py show`, and the four cards above get the line added in the
+  same change as examples that are true on the day they are written.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A guard that runs a command for its side effect judges the side effect, which belongs in the company standards (engineer seat, message run, for the ExO seat's relay)
+- Trigger: `INC-2026-10-24-the-deepening-fetch-landed-the-history-and-called-it-a-failure`,
+  filed in this run. A repair shipped yesterday and the first run to need it
+  reported its own success as a failure, because it ended on the fetch's exit
+  status instead of on the question the fetch exists to answer. The guard was
+  looking at the right repository and talked itself out of what it saw.
+- What: one rule, in the `any` section, in about two sentences. When a check
+  runs a command for a side effect, the verdict is read from the world
+  afterwards and never from the command's return code, because the two differ
+  every time the world has more than one writer in it. Ansible is the
+  worked example in the industry and it is worth naming: `changed_when` and
+  `failed_when` exist precisely so a task's outcome can be decided from
+  observed output rather than from `rc`, which is the same correction made
+  in configuration management long before this repository existed.
+- First step: the relay, not a commit. `docs/standards/lessons.md` is a
+  vendored copy and no seat here may edit it, so this goes to the chair
+  through `docs/agents/hq-relay.md`. If it is rejected as too narrow for a
+  company standard, the fallback is a line in this repository's own
+  `docs/agents/delivery-health.md`, which is where every guard this rule
+  would bind already lives.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Ansible makes the outcome a declaration, so a return code is one input rather than the answer (engineer seat, message run)
+- Trigger: the rotation, taken off the landscape and onto the craft this run
+  was working in, the way the Argo CD and Datadog scans earlier today were.
+  The landscape's academic-tools shelf has been read four times today by
+  three runs of this seat, and the question in front of this one was not
+  about search. Read live at
+  docs.ansible.com/ansible/latest/playbook_guide/playbooks_error_handling.html.
+- **Worth stealing: the outcome is a declaration, not an inference.**
+  `failed_when` and `changed_when` both take a condition over the task's
+  observed output, and the documentation's own words are that you define what
+  failure means in each task, "based on return codes or output". Two things
+  are good about that and they are separable. The first is that `rc` is
+  demoted to one input among several rather than being the answer. The second
+  is that `changed` is a first-class third state beside ok and failed, so a
+  run that did nothing because nothing needed doing is reported differently
+  from a run that did something, and neither is an error. This repository's
+  guards have the first half as of today and do not have the second: a
+  deepening fetch that found the history already present and one that
+  fetched it both return the same `True`, and those are different facts about
+  the runtime.
+- **What alexandria does better: the remedy is in the failure, not in the
+  runbook.** Ansible will tell you a task failed and show you the module's
+  output, and what to do about it lives in the author's head or a wiki. Every
+  unknown on the delivery surface names the one command that closes it, in
+  the sentence that reports the unknown, and since today it also refuses to
+  name a command the run has already tried. That is a small thing and it is
+  the difference between a reader who acts and a reader who files.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The drift card's dedupe key is the thing that changes when the drift is fixed, so a deploy leaves the old card open and opens a new one (engineer seat, message run)
+- Trigger: `python3 tools/drift_watch.py --dry-run`, run this afternoon to
+  check the second door into the fix this run shipped. It printed
+  `would create: Deploy: weekly is not running main, still on 2e313065f5c7`,
+  and the board already carries an open card reading `Deploy: weekly is not
+  running main, still on 0cbc51a0e248`. Same app, same drift, same seat, two
+  cards. The same is true for distill and ingest.
+- What is happening: `TITLE` puts the running image's key in the card title
+  and `find_card` matches on the app and that key, so the dedupe holds only
+  for as long as production does not move. The running image did move,
+  between 2026-10-18 and today, without closing the drift, because a deploy
+  of some apps is not a deploy of weekly. Every such move orphans the card
+  that was tracking the problem and starts a fresh one with no history on it,
+  which is the opposite of what the key was for. The comment above `TITLE`
+  argues the key belongs in the title so the list view reads as distinct
+  alarms, and that argument is about the app and not about the image.
+- What: dedupe on the app, which is the thing the card is about, and put the
+  running image in the body where it is already printed and where `nudge_body`
+  already updates it. A card then follows one app's drift from the day it
+  starts to the day a deploy closes it, including across an intermediate
+  deploy that did not help, and the board stops accumulating one card per
+  image per app.
+- First step: `find_card(payload, [app], prefix=TITLE_PREFIX)` and a `TITLE`
+  without the key, then the two existing cards per app get merged by hand or
+  the older ones closed with a comment naming the newer. The tests for
+  `board_alarm.find_card` already cover prefix-plus-terms matching, so this is
+  a change to the terms and a rewritten dedupe test, not new machinery.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A tool that declares an exit-status contract should be required to have a test that reads it back (engineer seat, hook run)
+- Trigger: this run. `tools/check_authority.py` shipped in #456 with 714
+  lines, three verdicts, an exit-status contract written out in its docstring,
+  and nothing in the suite reading any of it. Writing the tests found a false
+  `clear` in the one direction the docstring forbids itself, which means the
+  promise and the code had disagreed since the moment both were written.
+  Fourteen instruments in `tools/` print a verdict and exit on it, and nothing
+  in this repository knows which of them have a test behind that exit status
+  and which only have the paragraph.
+- What: one meta-test, in the shape `tests/test_ci_coverage.py` already uses
+  for a different invisible defect. For every file in `tools/` whose docstring
+  contains an exit-status table, require a test file that imports it and
+  asserts the mapping. The pin list is the model: today's set is written down,
+  it may shrink and may not grow, and a new instrument with a contract and no
+  test fails the gate on the pull request that adds it rather than six days
+  later. This is L-A9's amendment with one more rung on it: the amendment says
+  name the command and say what its exit status means, and this run's evidence
+  is that a docstring saying so is still a specification. The rung that makes
+  it a gate is a test that reads the status back, because that is the first
+  moment the promise and the code are in the same room.
+- First step: the detector for the contract, which is the only part with any
+  judgement in it. A docstring table of `0 clear` / `2 reserved` shaped lines,
+  or a module-level `EXIT` dict, are both unambiguous and both already present
+  in the two instruments that have one. Start by printing the set across
+  `tools/` and reading it before writing any assertion, because the set size
+  decides whether this is a gate or a six-month migration.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A detector cannot be edited without flagging its own pattern definitions, and there is no way to say read, ruled, waived (engineer seat, hook run)
+- Trigger: `python3 tools/check_authority.py --range origin/main...HEAD`, run
+  against this run's own branch after the fixtures were rebuilt. Verdict
+  `undecided`, exit 3, ten findings, and all ten are lines inside the tool's
+  own regex definitions: `SECRET_KEY`, `SECRET_LITERAL`, `CREDENTIAL_SHAPE`,
+  `SPEND` and `ACCOUNT` describe the shapes they look for, so they contain
+  them. These ten are a one-time artifact of the file being new, because once
+  it merges those lines become context. They come back on every future edit to
+  a pattern, which is to say on every improvement to the detector.
+- What: an auditable waiver, in the `# noqa` idiom and not in its semantics.
+  The difference that matters: a waiver marker is a claim that a human read the
+  line and ruled on it, so the tool should report waived lines in its output
+  and count them, never silently skip them. A `clear` with three waivers on it
+  is a different fact from a `clear` with none, and a surface that hides the
+  difference is how a suppression list becomes permanent.
+- First step: do not build it yet, because the design has an authority question
+  inside it that this seat should not answer alone. If any seat may write the
+  marker, then the gate on the owner's four reserved things is a gate any seat
+  can open with a comment, which is the one thing the tool exists to prevent.
+  The first step is the question, on the board, to the PM: who may waive, and
+  does a waiver expire. The code after that is an afternoon.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The suite's own module loader breaks on dataclasses, and ten test files carry the broken copy (engineer seat, hook run)
+- Trigger: `tests/test_check_authority.py` failed at collection, not at an
+  assertion, with `AttributeError: 'NoneType' object has no attribute
+  '__dict__'` raised from inside `dataclasses`. The cause is that the loader
+  pattern this suite copies between files, `spec_from_file_location` followed
+  by `exec_module`, never puts the module into `sys.modules`, and
+  `dataclasses` resolves a field's annotations by looking the defining class's
+  own module up there. For a module loaded by path and never registered that
+  lookup returns `None` and the decorator raises while the file is still
+  importing. `tools/merge_order.py` has no dataclasses, which is the only
+  reason the copy that was pasted from it works.
+- What: one shared helper, `tests/_load.py`, holding the loader once with the
+  `sys.modules` registration in it, and the ten or so files that carry their
+  own `_module()` calling it instead. The value is not the deduplication. It is
+  that the current failure mode is a collection error, which under
+  `pytest tests/ -q` is not one red test but a file that contributes no tests
+  at all, and the next seat to add a dataclass to any tool in `tools/` meets it
+  with no idea why. This is the same copy argument
+  `INC-2026-10-24-a-guard-pinned-to-a-copy-of-the-code-it-guards` makes one
+  level up: a hand-kept copy of a loader disagrees with reality on the day a
+  tool grows a dataclass.
+- First step: write the helper and convert one file, `test_check_authority.py`,
+  which is the only file that currently needs the registration. Converting the
+  other nine is mechanical and separable, and doing it in the same change would
+  put nine unrelated files in a diff whose point is one helper.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The bus should fill the recipient's company in from the sender's, because a blank half is a fan-out (engineer seat, message run)
+
+- Trigger: this run was woken by a `done` the dispatch described as "addressed
+  to you". The bus disagreed. The message carried `to_seat: engineer` and
+  `to_company: null`, it was answering a handoff sent nine minutes earlier by
+  `alexandra-systems/engineer`, and its reference was a pull request in the HQ
+  repository. A second message in the same inbox, from `Ursa/exo`, had the
+  identical shape and belonged to the Ursa engineer. Measured over the 500 rows
+  the bus returns: 374 carry both address fields, 108 carry neither, 15 carry a
+  seat with no company, 3 carry a company with no seat.
+- What: `POST /api/messages` defaults `to_company` to the sender's company
+  whenever `to_seat` is set and `to_company` is not, and stores the filled-in
+  value rather than the blank. Both of today's mis-deliveries were a seat
+  writing to its own company's counterpart and omitting a field it never
+  thought about, so the sender's own company is the right default in both,
+  and it is the right default in the general case for the same reason: a seat
+  that means to cross a company boundary is doing a deliberate thing and will
+  name it. The seats that genuinely have no company, `owner` and `everyone`,
+  are the exception the default skips.
+- Why this rather than a rejection: a rejection turns every existing client
+  into a broken one on the day it ships, and three of the four clients that
+  post to this bus are not ours to update. A default is invisible to a correct
+  caller and corrects an incorrect one.
+- Why it is the owner's and not mine: it is her server, and a rule there binds
+  twelve seats in five companies at once. `tools/board.py` now refuses to send
+  the bare row and `tools/board.py inbox` exits non-zero on one it receives,
+  which is the client half and the only half this repository owns.
+- First step: the measurement above, which is done, and one question to the
+  owner through the ExO relay: default it, reject it, or leave it and let each
+  client guard itself. The code behind any of the three is an afternoon.
+- Cost: $0.
+- Status: urgent
+- Why urgent rather than proposed: fifteen of these went out today and the
+  shape reproduces every hour nobody changes it, the half that would stop it
+  is on the owner's server and not in any repository a seat can push to, and
+  the client guard shipped today protects exactly one of the four clients that
+  post to this bus. Marked urgent so tomorrow's run and the PM see it without
+  re-deriving it from a mis-delivered message, which is what this run spent
+  its first twenty turns on.
+
+### 2026-10-24 — A dispatch that paraphrases a board message drops the field that says whose it is (engineer seat, message run)
+
+- Trigger: the event payload for this run quoted the body of the `done` in
+  full and introduced it as "a done from alexandra-systems/pm addressed to
+  you". Every word of the body was accurate. The addressing was not, and the
+  payload could not have said so, because the prose of a message does not
+  carry `to_company` and the paraphrase had no field left to put it in. The
+  run spent its first twenty turns re-deriving from the bus what one field
+  would have said.
+- What: the wake payload carries the message's `id`, `to_seat` and
+  `to_company` verbatim alongside the prose, and says "addressed to
+  `<company>/<seat>`" rather than "addressed to you" when the company is
+  blank. A seat reading "addressed to `engineer`, company not set" knows in
+  one line what this run measured in twenty turns.
+- Why it is worth more than the twenty turns: the four other seats named
+  `engineer` get the same payload with the same "addressed to you", and the
+  one most likely to act on a `done` is the one whose recent work rhymes with
+  the subject line. The payload is the last place the ambiguity could be
+  surfaced before a seat acts on it.
+- First step: this is the host runtime's payload builder and not this
+  repository's, so the first step is the ExO relay rather than a commit. The
+  evidence to send with it is this run's inbox read, which is three directed
+  messages of which one was ours.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — A proposal that carries a measurement should carry the date the measurement expires (engineer seat, message run)
+
+- Trigger: the 2026-10-18 entry that proposed this run's own work is still
+  `proposed`, and two of its three measurements are now false. It recorded
+  that the bus has five kinds and that `handoff` is not one of them, and the
+  bus has six with `handoff` among them. It recorded that every message
+  carries a null `to_seat`, and 374 of 500 now carry both address fields. The
+  addressing was built in the six days between. Nothing read the entry in
+  those six days, so nothing noticed.
+- What: `tools/ledger.py` learns to spot an entry whose body contains a
+  measurement, which is a number next to a noun, and reports any such entry
+  still `proposed` after thirty days as stale rather than as pending. Not a
+  failure, a separate count in `--census`, because a stale measurement is a
+  different thing from a backlog and the owner triages them differently.
+- Why: the ledger's whole claim is that an observation written down is an
+  observation kept. A measurement decays on a schedule the prose never states,
+  and an entry whose numbers are wrong argues for the wrong fix with the
+  authority of having been checked. That is worse than an entry with no
+  numbers at all.
+- First step: count how many `proposed` entries older than thirty days carry a
+  number, on the live file, before writing anything. If the answer is three the
+  idea is not worth a command.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Temporal makes the second half of an address impossible to omit, and pays for it with a silent default (engineer seat, message run)
+
+- Trigger: the daily craft scan, taken as an adjacency pick rather than a
+  rotation through `docs/market/landscape.md`, because the run's finding is
+  about addressing between agents and the landscape's shelves are research
+  tools and newsletters. Temporal is named in
+  `docs/agents/durable-execution.md` and it is the engine the host runs these
+  seats on, so it is the nearest system that has already solved the problem
+  this run found. Read live at `docs.temporal.io/namespaces`.
+- What: the steal is that the second half of an address is completed at the
+  client and never sent blank, and the counterpoint is that a default which
+  silently resolves is worse than a blank which is flagged. Both halves below,
+  and the first is filed as its own proposal earlier in this run.
+
+**Observed 2026-10-24, from `docs.temporal.io/namespaces`.** Temporal has the
+identical structure to the board's bus. A workflow is addressed by a workflow
+id inside a namespace, and in its own words, "Temporal guarantees a unique
+Workflow Id within a Namespace. Workflow Executions may have the same Workflow
+Id if they are in different Namespaces." So the id alone is ambiguous across
+namespaces, exactly as `engineer` is ambiguous across companies.
+
+**The thing worth stealing.** Temporal never lets the second half be empty.
+"If no Namespace is specified, the Temporal Service uses the Namespace
+`default` for all Temporal SDKs and the Temporal CLI." The address is
+completed at the client, so nothing ambiguous ever reaches the wire, and the
+namespace has to exist first: "You must create a Namespace before using it in
+your Client." You cannot address a namespace into being. The board's bus does
+the opposite. It stores the blank, and the blank becomes a delivery to five
+seats. The proposal above is this steal with one change, which is that the
+sensible default here is the sender's own company rather than a literal named
+`default`, because both of today's mis-deliveries were a seat writing to its
+own company's counterpart.
+
+**The thing alexandria does better, and it is the half Temporal gets wrong.** A
+default that is wrong is harder to see than a blank that is flagged. A
+Temporal client that forgot its namespace does not fail, it addresses the
+`default` namespace successfully and silently, and the operator finds out when
+the workflow is not where they looked. `tools/board.py inbox` as of today
+refuses to resolve the ambiguity on the reader's behalf: it prints the message
+in a bucket named for its uncertainty and exits non-zero. The right shape is
+both halves and they are not the same half. Default at the sender, where the
+answer is known. Flag at the reader, where it is not.
+- First step: the steal is already filed as the first proposal of this run,
+  which is the one the owner answers. What is left over is the reader half,
+  and that shipped today: `tools/board.py inbox` names its own uncertainty and
+  exits on it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 - The corrected capacity fingerprint has no scheduled reader, and four of today's six events are unregistered (engineer seat, hook run)
+- Trigger: `INC-2026-10-24-twenty-runs-across-five-companies-ended-inside-one-minute-and-the-fingerprint-counted-one`
+  was filed this morning and ends by stating the corrected test in one line,
+  which is that two or more `exit: 1` rows from different seats inside sixty
+  seconds is one event whatever their turn counts. This run is the first to
+  apply it. Over the whole of 2026-10-24 it finds six multi-seat events
+  carrying 45 killed runs and 2,740 turns, and four of the six are in no
+  register, including the largest of the day at 18:27Z and one at 02:07Z that
+  has been invisible for nineteen hours.
+- What: the test is prose in a register, and prose does not fire. Lift it into
+  `tools/capacity_sweep.py` with a `--since` window, so the claim is a command
+  any seat can run in one line rather than a paragraph a seat has to decide to
+  believe. Then give it a reader. The register that holds the fingerprint is
+  `docs/agents/turn-caps.md`, owned by the ExO seat, and the ExO seat was
+  killed inside four of the six events it would have been diagnosing. The one
+  seat that runs every day and came up alive is this one, so the cheapest
+  reader is the engineer's own observation step, next to the machinery diff
+  and the green-main check that already live there.
+- First step: the twenty-five lines are already written and already verified,
+  embedded in the incident this run filed. Lift them into the tool with a
+  test over a fixture log and a test over the live one. The charter line that
+  calls it daily is an edit to this seat's own charter, so it is the owner's
+  merge and not this seat's to write.
+- Cost: $0.
+- Status: urgent
+
+### 2026-10-24 - A one-turn refusal is a wake spent, and nothing counts wakes (engineer seat, hook run)
+- Trigger: the same sweep. Across the day's six events there are 27 rows at
+  exactly one turn, and the timestamps show what they are. `alexandria-pm`
+  ended at 18:27:11.476Z, its replacement started at 18:27:11.483Z, seven
+  milliseconds later, and died after one turn at 18:27:24.274Z. A third
+  started and died the same way at 18:28:19.846Z. `atelier-pm` and HQ's `pm`
+  each burned two re-wakes inside twenty seconds.
+- What: an outage does not cost a seat one run. It costs the run, plus every
+  wake the host spends re-entering the outage, and the seat with the deepest
+  message queue behind it pays the most because each queued message buys
+  another immediate refusal. Nothing counts that anywhere. The turn ledger
+  counts turns and the board counts runs, so a wake spent on a refusal is
+  recorded as a run that did nothing rather than as capacity consumed.
+- First step: the sweep above grows one column, refused wakes per seat per
+  event, which is already derivable from the rows it reads. If the ratio is
+  as high as the 18:27Z window suggests, the fix is a backoff before the host
+  re-wakes a seat whose own previous run exited non-zero inside the last
+  minute. That is the host's code rather than ours, so it goes to the chair
+  through `docs/agents/hq-relay.md` with the measurement attached, which is
+  the pattern the bus-addressing finding already follows.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 - The inbox built for the incident register should cover the other registers two seats append to (engineer seat, hook run)
+- Trigger: today the append anchor collided twice in two different files.
+  Merging #462 into #475 conflicted in `docs/agents/incidents.md`, and four
+  of the PM seat's nine sibling branches conflicted on the top anchor of
+  `docs/sprints/pending.md`
+  (`INC-2026-10-24-nine-of-the-pm-seats-own-prs-forked-the-same-anchor-and-none-contained-any-other`).
+  This run fixed one file. The mechanism is not specific to it.
+- What: `tools/incidents.py` is already written against a register, an inbox
+  directory, an id pattern and a baseline, so the generalisation is a table
+  rather than a rewrite. The two registers that would benefit most are the
+  ones that collided today. Neither is this seat's to restructure: `pending.md`
+  is the PM's planning surface and this charter forbids editing it, and
+  `docs/ideas.md` is appended by every seat, so the owner and the PM decide
+  whether the ledger's readers can be pointed at a directory. HQ's own ledger
+  carries this proposal twice already for its growth register, per L-A18, so
+  a decision here is worth relaying either way.
+- First step: parameterise the tool over a small register table, then propose
+  the ledger as the first adopter in a separate pull request that changes no
+  prose, only where new entries land. Keep the fold optional, because the
+  reason this run's gate does not demand an empty inbox is that a gate able
+  to redden `main` over bookkeeping is worse than the collision it fixes.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 - Craft scan: Changesets solved today's problem first, and names its files to never collide (engineer seat, hook run)
+- Trigger: this run built an inbox for the incident register and had to choose
+  a filename scheme. Looking for prior art on the exact problem, which is many
+  contributors appending to one changelog, turned up the tool that is the
+  reference implementation of it.
+- What: the steal is the affordance for the contributor who has nothing to
+  file, and the counterpoint is the filename, where alexandria made the
+  opposite choice on purpose. Both below.
+
+**Observed 2026-10-24, from the Changesets project (`github.com/changesets/changesets`).**
+Changesets exists because a monorepo's `CHANGELOG.md` is an append-only file
+that every contributor writes to, which is the shape of every register this
+company keeps. Its answer is the one this run arrived at independently. A
+contributor runs `changeset add`, which writes one Markdown file into
+`.changeset/` holding the packages affected and a summary. Nothing touches
+the changelog. At release, `changeset version` consumes every file in that
+directory, writes the entries into the changelogs, and deletes the files it
+consumed. One author, one snapshot, exactly like the fold this run wrote.
+
+**The thing worth stealing, and it is not the mechanism.** The mechanism we
+already have. What Changesets has that this run does not is an answer for the
+contributor with nothing to file. It ships `changeset add --empty`, which
+writes a deliberately empty entry, and a bot that comments on any pull request
+carrying no changeset at all. Together those turn "I considered whether this
+needs an entry" into a recorded act rather than a silence. The incident
+register has the opposite default. Its standing rule fires on a repeat, so a
+run that looked for repeats and honestly found none leaves exactly the same
+trace as a run that never looked. That is the shape of incident 20, which is
+that recording is not enforcing, and it is also why
+`docs/agents/registers.md` exists. An empty filing is the cheapest instrument
+this company does not have.
+
+**The thing alexandria does better, and the filename is a real disagreement.**
+Changesets names its files with random human-readable triples like
+`lucky-pandas-wander.md`, and the reason is sound, because a random name
+cannot collide and therefore needs no coordination at all. The cost is that
+the filename carries nothing. You cannot grep the directory for the change you
+remember, and the name is discarded at release, so it never becomes a
+citation. This register's ids are cited by charters, by standards and by other
+incidents, so the file is named `INC-YYYY-MM-DD-slug.md` after the id inside
+it, which makes the directory greppable by the same string a charter quotes.
+That reintroduces the possibility of two seats choosing one name, so the gate
+this run shipped checks for exactly that: an id already in the register, two
+inbox files claiming one id, and a filename that disagrees with the heading
+inside it. The right read is that Changesets optimised for a name nobody ever
+cites and we optimised for a name everybody cites, and each choice owes a
+different check.
+
+**The second thing we do better, and it is small.** Changesets trusts its
+release step. `changeset version` is not asked to prove that the changelog it
+wrote contains every entry it consumed. This run's fold states the arithmetic
+and refuses itself when it fails, which is the discipline
+`tools/resolve_register_conflict.py` already applies to a merge resolution,
+and the reason it matters here is on the record:
+`INC-2026-10-24-a-hand-resolved-register-append-deleted-another-seats-line-with-no-marker`
+is a resolution that left valid Markdown and deleted a third seat's line.
+A fold is a resolution with better odds, not a different kind of act.
+- First step: `changeset add --empty` is the one worth copying, as
+  `python3 tools/incidents.py new --none`, writing a dated line into the
+  inbox saying a run swept for repeats and found none. It is a day-sized
+  piece of work and it would make the register's silences readable for the
+  first time.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The deepening needs a third command, and the containment proof needs its exit status read (engineer seat, message run)
+- Trigger: this run ran the charter's two shallow-clone commands at turn six,
+  exactly as written. `git fetch --unshallow` succeeded,
+  `git rev-parse --is-shallow-repository` then printed `false`, and the next
+  `git push -u origin HEAD` failed because the clone still held
+  `+refs/heads/main:refs/remotes/origin/main` and could not store a
+  remote-tracking branch. Reproduced on a fresh clone and filed as
+  `INC-2026-10-24-the-unshallow-remedy-leaves-the-single-branch-refspec-so-the-containment-proof-cannot-see-the-branch-it-proves`,
+  the eighth entry on the shallow clone and the first where the written remedy
+  is the defect.
+- What: `--depth 1` implies `--single-branch`, which writes a refspec, and
+  `--unshallow` deepens history without touching it. So a seat can hold a
+  complete history of `main`, get a true `false` from the check it was told to
+  trust, and still be unable to name any other branch in the repository. The
+  expensive consequence is not the failed push. It is the charter's containment
+  proof, `git log --oneline origin/<the-older-branch> ^HEAD   # must print
+  nothing`, which in that state prints nothing to stdout and exits 128. The one
+  proof standing between a seat and closing another run's pull request reads as
+  passed at the exact moment it cannot see that run's work.
+- First step: two charter lines in `prompts/engineer-agent.md`, which is why
+  this is a ledger entry and not a commit. Add
+  `git config --replace-all remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*' && git fetch origin`
+  as the third command beside the two already there, and give the containment
+  proof a `|| exit 1`. Every other seat's charter carries the same two-command
+  clause, so the same edit applies twelve times.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Entropy is the discriminator the secret gate is missing, and `regexTarget` is the name for what it hardcodes (engineer seat, message run)
+- Trigger: today's fix to `tools/check_authority.py` had to invent, in code,
+  the distinction between "the line matched" and "the matched span sits inside
+  a pattern definition". The craft scan below found that gitleaks ships that
+  distinction as a named config field, and ships a second discriminator this
+  gate does not have at all.
+- What: `CREDENTIAL_SHAPE` is `[A-Za-z0-9_\-+/=.]{20,}`, which is length and
+  charset and nothing else. The tool's own comment already concedes the cost:
+  "a long constant like `READ_WRITE_ALL_THINGS_HERE` now reads reserved", and
+  it keeps that because a false `reserved` is the cheap error. Minimum Shannon
+  entropy on the matched value separates a long English constant from a real
+  token without giving up the fail-closed direction, because a credential that
+  is genuinely low-entropy still fails the threshold and still reads reserved.
+  Roughly fifteen lines and no new dependency.
+- First step: add `shannon(value)` beside `CREDENTIAL_SHAPE` and a threshold,
+  then measure it against the fixtures `tests/test_check_authority.py` already
+  carries before changing any verdict, since those fixtures are the only real
+  labelled set of credential-shaped and setting-shaped values in the tree.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Four items in one lane, every one of them closing with a hand the seat does not have (engineer seat, message run)
+- Trigger: this run was told to take the next item in its lane on the board.
+  All four engineer items in `This sprint` say in their own bodies that they
+  close with a hand on a Modal token or on the site's environment: the weekly
+  deploy drift, the disabled Modal workspace, the missing 2026-W41 issue, and
+  the three unset `POLAR_CHECKOUT_*` values. The oldest has sat there since
+  2026-10-14. Finding that out cost this run five turns of reading, and it will
+  cost the next run the same five.
+- What: these cards are correct, they are well written, and they are in the
+  wrong place. A card in a seat's lane is a promise that the seat can act on
+  it, and a card that names its own blocker in paragraph four is not that. The
+  cards already know the answer, so the board could read it: a lane with an
+  owner-handed blocker belongs in a column of its own, where the owner reads
+  four asks in one screen rather than four seats rediscovering them one run at
+  a time.
+- First step: not a column, which is the board owner's call, but the cheap half
+  that belongs to this seat. `tools/board.py show` already prints a lane; have
+  it mark an item whose body names an owner-handed blocker, using the same
+  phrases the four cards independently chose ("needs your hand", "it is not
+  mine", "no agent seat"). A seat then sees the blocked ones before it reads
+  them, and the count is evidence for the PM's Monday about how much of this
+  lane is actually workable.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Craft scan: gitleaks names the thing this run hardcoded, and hands every escape hatch to the author (engineer seat, message run)
+- Trigger: today's item was a pattern-matching gate that matched its own
+  patterns. Secret scanners have had that exact problem for years, so the scan
+  went to the one with the largest installed base rather than to another
+  research product.
+- What: one field worth stealing, one design this repository already does
+  better. Both below.
+
+**Observed 2026-10-24, from gitleaks (`github.com/gitleaks/gitleaks`, README on
+`master`).** A gitleaks rule carries an allowlist, and the allowlist has five
+criteria: `paths`, `regexes`, `stopwords`, `commits`, and a `condition` of
+`"OR"` or `"AND"` over them. A rule may also carry an `entropy` field, which
+sets a minimum Shannon entropy the matched secret has to clear before it is
+reported. Outside the config there are two more hatches: a `gitleaks:allow`
+comment on a line, and a `.gitleaksignore` file listing findings by
+fingerprint.
+
+**The thing worth stealing is one field name, `regexTarget`.** It takes
+`"secret"`, `"match"` or `"line"`, and it says which of those three texts the
+allowlist is tested against. Today's run spent most of its thinking on exactly
+that choice and then hardcoded one answer per question: span containment for
+spend and account, the right-hand side for a secret assignment, the whole line
+for a comment. Gitleaks learned the same lesson and lifted it into
+vocabulary, which is what makes it reviewable. A reader of
+`tools/check_authority.py` cannot today ask "what is this exemption matched
+against" and get an answer shorter than the function. That is a refactor rather
+than a fix, and it is cheap: three call sites.
+
+**What alexandria does better, and it is the half gitleaks got wrong.** Every
+one of those five hatches is author-asserted and nothing re-reads it. A `paths`
+entry blinds the scanner to that path forever, silently, and a
+`.gitleaksignore` fingerprint survives the rewrite of the code it was granted
+for. The 2026-10-24 incident on this gate named both candidate fixes and chose
+against the gitleaks one deliberately: excluding
+`tools/check_authority.py` by path is one line, and it blinds the gate to a
+real credential pasted into the one file a reader would least expect to be
+unwatched. What shipped instead exempts a position, carries no file name, and
+is pinned by a test that reads the gate's live source rather than a fixture
+copied out of it. An exemption that grows too broad goes red on the next run of
+the suite. Gitleaks has no equivalent, because an allowlist in a config file
+has nothing to go red against.
+- First step: give `tools/check_authority.py` the field gitleaks named, which
+  is one argument on the three exemption call sites saying what the exemption
+  is matched against, so a reader can ask the question without reading the
+  function. Added 2026-10-24 by the next run of this seat: this entry and the
+  Graphiti one below it were the two that pushed
+  `test_every_live_entry_carrying_a_readable_status_has_the_contract_fields`
+  from its 206 to 208, and that bound is a ratchet, so the fields are supplied
+  rather than the number raised.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — A real Postgres is already on the seat host, so SQL can be tested on rows
+- Trigger: slice 5 needed to prove that a view returns one current answer per
+  pair, which is a fact about a server and not about a string. Probing for
+  `psql` found `initdb`, the whole PostgreSQL 16 server and pgvector already
+  installed on the company host, and `db/schema.sql` loaded into a throwaway
+  cluster on the first attempt. Five test files in this repository open with
+  some version of the sentence "no database runs anywhere in this org", and
+  that sentence is true of CI and false of the machine every seat runs on.
+- What: lift the throwaway-cluster fixture out of
+  `tests/test_latest_links.py`, where it is written once already, into a shared
+  `tests/pg_fixture.py` that starts a cluster when the binaries exist and skips
+  when they do not. Then any seat can test a view, a constraint, a migration or
+  an `on conflict` clause against rows rather than against a substring of its
+  own source. The parser-level guards stay exactly as they are, because they
+  are the half that runs in CI; this adds the half that catches a statement
+  which parses, resolves, and answers the wrong question, which is the failure
+  every one of those docstrings names as the one they cannot catch.
+- First step: move the fixture, then point one existing suite at it, starting
+  with `tests/test_graph_audit.py`, whose `integrity` metric now has a defect
+  that only rows can distinguish from a correct answer.
+- And the part of this that is not in this seat's hands, recorded here because
+  the register it belongs to already has it and nothing has acted on it:
+  `checks.yml` enumerates test files one step at a time, 12 of this
+  repository's 58, so `tests/test_latest_links.py` runs for any seat on this
+  host and in no CI run.
+  `INC-2026-10-06-a-guard-defined-below-its-own-runner-never-ran` names the
+  class, says no seat's token carries `workflows` permission so the seat that
+  writes a test cannot enrol it, and sets the honest order as green `main`
+  first and then one `python3 -m pytest tests/ -q` glob, because `main` held 19
+  failing tests when that was written. **Both halves of that order are now
+  done except the move.** The glob is written: it is line 110 of
+  `.github/workflows-pending/checks.yml`, which `docs/agents/pending-workflow-changes.md`
+  tracks as a standing lane-one item, and applying it is a `git mv` one
+  directory up rather than an edit. And the green-`main` condition it waited on
+  is met, with one correction worth having: `main` was red tonight on
+  `tests/test_ledger.py`, at 207 against a bound of 206, because the previous
+  run of this seat appended a scan note without its contract fields and
+  `tests/test_ledger.py` is itself one of the 46 files no workflow runs. That
+  is the pin list's own thesis arriving as a real red: the gate that measures
+  the ledger is silent on the pull request that pushes its count up. Fixed in
+  the same run that found it, by supplying the fields rather than raising the
+  ratchet.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — `on conflict do nothing` reports success for work it refused
+- Trigger: the defect slice 5 fixed had been live for a month and nothing could
+  have noticed it. `pipeline/interpret.py` inserts an edge with `on conflict do
+  nothing` and then counts `linked += 1` unconditionally, so a run that wrote
+  nothing at all reported the same number as a run that wrote every edge. The
+  reproduction on a real server printed `INSERT 0 0` and the pipeline's own log
+  would have printed `linked 5`.
+- What: count what the server says it did. `cur.rowcount` after that insert
+  separates edges written from edges the key refused, and the run's closing
+  line prints both. A refusal is not an error and should not raise; it is a
+  number that was zero every day for a month and would have named the defect
+  the first time anybody read it.
+- First step: read `rowcount` at the one insert in `pipeline/interpret.py`,
+  carry a second counter, and print "N edges written, M refused by the key" in
+  the line that prints `linked` today.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — The press cannot be rehearsed while the workspace is off, so rehearse it locally
+- Trigger: this run changed five SQL reads in `pipeline/weekly.py`, and
+  `docs/agents/press-rehearsal.md` is the third gate in the runtime-change
+  ladder for exactly that kind of change. The rehearsal is a Modal function, the
+  workspace is switched off (this lane's own card, 2026-10-23), and no agent
+  seat holds a Modal token, so the gate cannot be satisfied by any seat on any
+  day until the owner's hand returns. The change ships unrehearsed or it does
+  not ship.
+- What: a local rehearsal for the digest's SQL alone. Seed a throwaway cluster
+  with a committed fixture shaped to exercise each of the issue's five sections,
+  run the queries `pipeline/weekly.py` actually hands the server, and assert
+  what each section returns. It does not replace the Modal rehearsal, which is
+  the only thing that exercises the model call, the spend cap and the send. It
+  does cover the half that broke most recently, which is a query whose meaning
+  changed under it, and it covers that half without a token, without production
+  data and without the workspace being on.
+- First step: the fixture, built from the shapes the five sections need, and one
+  assertion per section against the queries the test suite already extracts out
+  of `pipeline/weekly.py`'s AST.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Graphiti closes an edge with a second write, where this graph answers at read time (engineer seat, message run)
+- Trigger: slice 5 is the read path for re-judgment, so the day's scan went to
+  the product whose whole design is re-judgment: Graphiti, Zep's open-source
+  temporal knowledge graph for agent memory. It is the closest adjacent product
+  to the thing this run built, and it had never been scanned here.
+- What: the scan, and one thing worth stealing from it that this repository
+  can act on without adopting anything of Graphiti's storage or its model.
+- What is worth stealing: **two clocks, not one.** Graphiti separates when a
+  fact was true in the world from when the system learned it, and it carries
+  both on the edge. `claim_links` has one timestamp, `created_at`, and it means
+  the second thing while every read in this repository treats it as the first.
+  That is why the digest's `superseded` and `deprecated` sections needed a view
+  before their seven-day window read correctly: a re-judgment of a September
+  pair gives it an October `created_at`, and the query asking "what changed this
+  week" cannot tell a new finding from a second look at an old one. Today
+  `latest_links` papers over that by making `created_at` mean "when the current
+  verdict was reached", which is a third meaning and the honest one for that
+  view, but the underlying column still has only one hand. A `valid_at` beside
+  the `created_at` would let the issue say what the evidence changed and when we
+  noticed, which are different sentences and the product sells the first.
+- What alexandria does better: **nothing is withdrawn by a write.** Graphiti
+  invalidates a superseded edge by writing an invalidation onto it, so the
+  correctness of the current answer depends on a second write having happened,
+  having happened in the right order, and having happened at all. A crash
+  between the new fact and the invalidation leaves a stale edge live and
+  indistinguishable from a true one. Slice 5 writes nothing when a verdict
+  changes: the new opinion is appended and `latest_links` computes which one is
+  current at read time, so there is no second write to lose, no ordering to get
+  right, and the history stays legible rather than being overwritten by its own
+  correction. The test that proves it also proves the reverse, that a
+  re-contradiction after a withdrawal deprecates again, which is the case an
+  invalidation flag has to be careful about and a `distinct on` cannot get
+  wrong.
+- First step: add `valid_at date` to `claim_links`, nullable, written at
+  interpret from the `published_at` of the paper the newer claim came from,
+  which is a date this database already holds. Then the digest's two seven-day
+  sections can ask when the evidence changed rather than when we looked, and
+  the column is honestly NULL for every edge drawn before it existed.
+- Cost: $0 for the scan; the two-clock idea above is a ledger proposal and not
+  an action.
+- Status: proposed
+
+### 2026-10-25 — The prompt sha is too coarse a trigger, so a typo will bill a full re-judgment (engineer seat, hook run)
+- Trigger: today's craft scan, below, read against the trigger this run built.
+  `claim_judgments.prompt_sha` is `sha256(prompts/interpret.md)[:12]`, so every
+  byte of that file is in the key, including its comments, its examples and its
+  trailing whitespace. The corpus is roughly 2,900 claims. The moment anybody
+  fixes a typo in that prompt, every one of them becomes due for a second
+  opinion, and the drain will spend days and real Moonshot tokens re-judging a
+  corpus whose judge did not change its mind about anything.
+- What: the trigger needs to distinguish a change that can move a verdict from
+  a change that cannot, which is exactly the distinction dbt draws and
+  documents. Hash a normalised form of the prompt rather than the file: strip
+  trailing whitespace, collapse blank runs, and drop the comment block the file
+  carries for its human readers. The judge reads the instructions, so the
+  instructions are what the key should be about. The honest version of this is
+  narrower still and worth saying: a prompt edit that only rewords an
+  instruction does change the verdict distribution and should count, so the
+  normalisation must stay conservative and be about form rather than meaning.
+  Getting it wrong in the lax direction is a graph that silently stops being
+  re-judged, which is worse than the bill, so the test has to pin both
+  directions.
+- First step: a `prompt_key(text)` function in `pipeline/interpret.py` beside
+  `load_prompt`, with a test that a comment-only edit and a whitespace-only
+  edit leave the key unchanged and that any edit inside an instruction line
+  changes it. Then `claim_judgments.prompt_sha` stores the key. The column stays
+  text and the backfilled 'unknown' rows are unaffected, so there is no
+  migration beyond the next deploy.
+- Cost: $0 to build. Not building it costs the re-judgment of a 2,900-claim
+  corpus the first time anybody edits a comment in that prompt.
+- Status: proposed
+
+### 2026-10-25 — Craft scan: dbt decides what a change is allowed to invalidate, and says so field by field (engineer seat, hook run)
+- Trigger: today's work is a trigger that re-runs a judgment when its
+  definition changes, so the day's scan went to the product whose entire
+  selector language is that question: dbt's `state:modified`. It had never been
+  scanned here, and the design doc for slice 5 had just been wrong twice in a
+  row about what a re-run should key on, which is the sign that somebody else
+  has already paid for the lesson.
+- What: the scan, and one thing worth stealing that this repository can act on
+  without adopting anything of dbt's.
+- What is worth stealing: **a change is not automatically a modification, and
+  which fields count is a documented decision rather than a hash.** dbt
+  compares a resource's code and config against a saved manifest, and its
+  docs then enumerate what deliberately does not count: "Changes to `tags` and
+  `meta` ... don't count as modifications and will not trigger
+  `state:modified`. dbt treats these fields as metadata only, since they don't
+  affect how a resource is materialized." `description` is the sharp case,
+  because it counts only when `persist_docs` is on, which is to say only in the
+  configuration where it actually reaches the output. That is a per-field
+  ruling about whether a difference can change the answer, and this repository
+  has no such ruling anywhere: the trigger built today hashes a whole file, and
+  `tools/skill_registrar.py` pins a whole SKILL.md the same way. The entry
+  above is the first place to act on it.
+- What alexandria does better: **there is no second artifact to go stale.** dbt
+  needs a manifest from a previous run, produced by the right version, saved
+  somewhere a later run can find it, and its own caveat list is largely about
+  that state drifting from reality: a model using a `var` or `env_var` cannot
+  be selected when that value changes, and the v1.9 fix for environment-aware
+  false positives only works if the saved state was built by v1.9 too. The
+  trigger here derives its key from the prompt the container is running and
+  records it on the claim, so the question "has this judge read this claim" is
+  answered by the database rather than by an artifact somebody had to remember
+  to keep. A missed claim is simply still due on the next run, and there is no
+  version skew between the comparison and the thing compared.
+- First step: none of its own. This scan's output is the entry above it, which
+  is where the stealable thing turns into a day of work.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 — No sprint has been planned for thirteen days, so the engineer's priority queue is the ledger by default (engineer seat, hook run)
+- Trigger: this run read the sprint first, as the charter's Observe step
+  requires, and the newest file in `docs/sprints/` is `sprint-2026-10-12.md`.
+  Today is 2026-10-25, so two Mondays have passed with no sprint. The PM seat
+  has been running: there are eight of its pull requests open from yesterday
+  alone. What it has been producing is `pm-note-*` files answering board
+  messages, which is message work rather than the ceremony.
+- What: the charter says the sprint file is the engineer's priority queue and
+  that today's default work is its first unfinished `engineer` item. With a
+  thirteen-day-old sprint that queue is stale: of its five items, item 1 is a
+  send that has since been superseded by the Modal workspace being disabled,
+  and items 2, 3 and 5 all close with a hand this seat does not have. So two
+  runs in a row have taken the charter's fallback, an `accepted` ledger entry
+  no sprint picked up, and have been right to. The cost is not that the
+  fallback is bad work. It is that the owner's commitment mechanism is not
+  running: a sprint the owner merges is what makes the week's order hers rather
+  than the engineer's, and for thirteen days the order has been the engineer's.
+  This is a finding for the PM's ceremony and not a thing this seat can fix,
+  because `docs/sprints/` is a planning surface the charter forbids it to edit.
+- First step: the PM seat plans a sprint for the week of 2026-10-26 and, in
+  its backlog, says what happened to the five items of 2026-10-12 rather than
+  carrying them silently. If the ceremony is not firing because nothing wakes
+  it on a Monday, that is the actual defect and it belongs in this ledger as
+  its own entry.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 — The audit cannot say which prompt the graph it measures was judged by (engineer seat, hook run)
+- Trigger: building `claim_judgments` made a question answerable that nothing
+  asks. `tools/graph_audit.py` is slice 1, the instrument the whole upgrade is
+  measured against, and every number it prints is now ambiguous in a way it was
+  not yesterday: a confidence distribution over a graph that is half September's
+  judge and half October's is two distributions added together, and the audit
+  has no way to say so.
+- What: the audit should report the judge alongside the graph, which is one
+  group-by over the `latest_judgment` view this run added. The shape to print
+  is the one `drain` already prints for an operator: how many claims each prompt
+  currently holds the newest opinion on. A worksheet that says "2,900 claims,
+  all under `a1b2c3d4e5f6`" is a clean reading, and one that says half and half
+  is a warning that the next slice's numbers cannot be compared to the last
+  slice's. That is the difference between an instrument and a number.
+- First step: add a `judges` section to `tools/graph_audit.py`'s report reading
+  `select prompt_sha, count(*) from latest_judgment group by 1 order by 2 desc`,
+  and extend `tests/test_graph_audit.py`, which resolves every relation the
+  audit names against `db/schema.sql` and is one of the files a workflow
+  actually runs, so the new query is guarded on every pull request rather than
+  pinned.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 — Give the background sweep a rate of its own, not whatever the foreground leaves (engineer seat, message run)
+- Trigger: today's finding, and the craft scan below that names the pattern.
+  `rejudge_budget` returns `max_claims - fresh_taken`, which was argued as safe
+  on the reading that the fresh queue was 2,000-odd deep. `/api/delivery` read
+  `interpret_pending: 0` this morning, so the leftovers are the whole run and
+  the sweep starts at full cap on the next run after deploy. Nothing is broken
+  by that, because the run's `max_claims` and `CAP_USD` are unchanged and the
+  sweep terminates. What changed is that an idle day costs $0.30 instead of $0,
+  and the rule that was supposed to prevent it is the rule that caused it.
+- What: a leftovers rule has no upper bound of its own, so it reads as a brake
+  while the foreground is busy and as an accelerator the moment it is not.
+  PostgreSQL's autovacuum solved the identical problem with an absolute rate,
+  `vacuum_cost_limit`, which is deliberately not a function of how busy the
+  server is: background maintenance gets a fixed slice whether the foreground
+  is saturated or asleep. The equivalent here is one line, a ceiling on the
+  re-judgment share of a run, so an empty fresh queue cannot convert a free job
+  into a capped one. This is deliberately not built today. The `(0, 90, 90)`
+  case is an explicit decision this seat's previous run wrote down as a test
+  parameter, and reversing a day-old decision unilaterally is the thrash a
+  retrospective should not have to find. The number is also a judgment the
+  owner should make, because it trades the speed of a prompt-change sweep
+  against a daily bill.
+- First step: decide the ceiling, then one `min()` in `rejudge_budget` and one
+  parametrized case beside the four already in `tests/test_rejudge_queue.py`.
+  The forecast this run added to `drain` is what the ceiling should be chosen
+  against, because it prints the sweep in runs and dollars.
+- Cost: $0 to build. The decision is about whether an idle interpret day costs
+  $0.30 or less.
+- Status: proposed
+
+### 2026-10-25 — The number that decides a deploy is behind a credential no seat holds (engineer seat, message run)
+- Trigger: this run built a cost forecast for the re-judgment sweep into
+  `interpret.drain`, and then could not read it. `drain` opens
+  `DATABASE_URL`, and no agent seat holds a database credential, which is a
+  constraint three of this seat's run notes already work around by reading
+  `https://libraryofalexandria.dev/api/delivery` instead. So the instrument
+  built today to stop a sweep surprising somebody is readable only by the
+  owner, and the surprise it exists to prevent is one a seat meets first.
+- What: the delivery receipt already carries `queues.interpret_pending`, which
+  is the fresh half of exactly this question. It does not carry the
+  re-judgment depth, so the receipt can say the interpret job has nothing to do
+  while that job is about to spend its whole cap. Add the sweep's depth to the
+  receipt beside the queues it already reports, split the way `drain` now
+  splits it, into passes under a known older prompt and the backfill's
+  `unknown` rows. Then any seat can answer "what will the next interpret run
+  cost" from a public URL, and the daily standup reads it for free.
+- First step: one count in `site/lib/delivery.js` beside the three queue counts
+  already in that query, one field in `site/lib/delivery-core.js`, and the same
+  pair in `tools/delivery_health.py`, which computes the receipt a second way.
+  The version number on the receipt moves from 6 to 7.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 — A blocked card should carry the verification that blocked it (engineer seat, message run)
+- Trigger: `INC-2026-10-25-the-engineer-lane-was-rediscovered-as-owner-blocked-for-the-second-run-running`.
+  Two consecutive runs of this seat each spent part of a run establishing that
+  all four cards in its board lane close with a hand it does not have, and the
+  first run's record of that was a run note, which nothing reads at the moment
+  it would save the second run. The board is the surface a run is sent to. It
+  is the one place the finding was not written.
+- What: when a seat verifies that a card is blocked on something outside its
+  reach, it posts that verification onto the card, with the date, what it
+  checked and what it checked it against. The next run then reads "verified
+  blocked 2026-10-25, Modal workspace still disabled, confirmed against
+  /api/delivery" in the first surface it opens, and spends its turns on work
+  instead of on rediscovery. The two stale cards this run found are the second
+  argument for it: a card whose numbers nobody refreshes drifts away from the
+  condition it describes, in `Deploy`'s case understating it and in `Press`'s
+  case overstating it, and a verification line is also a refresh.
+- First step: agree what the line looks like and where it goes, a comment
+  against the card or a field on it, because this seat writes onto cards the
+  ExO's checks created and that is a shared surface rather than this seat's.
+  Then the posting is a few lines in whatever each seat already uses to reach
+  the board.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 — Craft scan: PostgreSQL's autovacuum rate-limits background work absolutely, where this run's sweep is limited only by how busy the foreground is (engineer seat, message run)
+- Trigger: today's finding needed a name, and the product with the longest
+  history of this exact problem is the database underneath us. Rotated to
+  PostgreSQL's own maintenance machinery rather than a competitor, which the
+  charter allows as an adjacency pick, because the pattern is the one this
+  run's code got wrong.
+- What: autovacuum is background work that must never crowd out queries, and
+  the obvious design is the one this repository picked independently, which is
+  to let maintenance have whatever the foreground is not using. PostgreSQL does
+  not do that. It gives autovacuum a cost budget, `vacuum_cost_limit` spent
+  against `vacuum_cost_delay`, that is an absolute rate rather than a share of
+  idle capacity, and the documentation is explicit that this is so an idle
+  server does not become a saturated one. The thing worth stealing is the shape
+  of the guarantee: "never more than X" survives the foreground going quiet,
+  where "whatever is left over" inverts into its opposite the moment it does.
+  That is precisely the inversion `/api/delivery` caught here this morning.
+- What alexandria does better: autovacuum's budget is denominated in cost
+  units that correspond to nothing an operator can price, which is why tuning
+  it is folklore and why the usual advice is to change it and watch. The same
+  decision here is denominated in dollars and in daily runs, because `drain`
+  prices the sweep at the model's list price before anything is spent. A
+  question an operator can answer in the unit they actually decide in is a
+  better instrument than a more sophisticated controller they cannot aim. The
+  ledger entry above is the half worth stealing, and the pricing is the half
+  worth keeping.
+- First step: the entry above.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 — The shortlist excludes one paper and can still be all of another
+- Trigger: today's build and today's craft scan, read against each other.
+  Slice 2 added `paper_id <> %s` to the shortlist, which stops a claim being
+  judged against its own paper's siblings. Then the Vespa scan below named what
+  that filter actually is, which is result diversification, and showed that the
+  general form of it is a quota rather than an exclusion. The live test written
+  this morning is what made the gap visible: in the dense fixture, all ten
+  candidates a claim is offered come from one paper, `p1`, and every assertion
+  about the shortlist passes. Excluding one group does not diversify the other
+  nine slots.
+- What: give the shortlist a per-paper cap, so no single paper can supply more
+  than a few of a claim's candidates. The product reason is the one already
+  written beside the exclusion: the promise is this week's finding against what
+  we already knew, and a shortlist drawn from one other paper is one comparison
+  dressed as ten. It is also the cheaper half of the same effect the exclusion
+  was reaching for, because the slots it frees go to papers that are not yet
+  represented. The query shape is a `row_number() over (partition by paper_id
+  order by distance)` filtered below the cap, wrapped around the existing
+  select, which keeps the distance floor and the time direction untouched.
+  The cap needs a number and the honest answer is that nobody knows it yet,
+  which is what the audit's new `reach` metric is for: it already samples the
+  retrieval, so adding the papers-represented count to it measures the problem
+  before anything is changed.
+- First step: add `papers_represented` to the `reach` metric, which is one more
+  lateral in a query that already exists and costs nothing to run, and report
+  it from the next run's log the way the ceiling is reported now. The quota
+  itself is the day after, once there is a number saying whether it binds.
+- Cost: $0. No new call, no new provider, one more clause in a query the job
+  already runs once per claim.
+- Status: proposed
+
+### 2026-10-25 — The shortlist's size is printed to a log and recorded nowhere
+- Trigger: writing slice 2's own done-condition this morning. The condition is
+  "the ceiling metric is under its bound on a fresh snapshot", both halves of
+  which are read from a database no seat can reach, so the run was given a line
+  that prints its mean candidates per claim and its ceiling count. That line is
+  the only evidence this change worked, it lives in a Modal log, and Modal is
+  switched off today, which is the first `This sprint` card in this seat's lane.
+  So the one surface built this morning to make slice 2 verifiable is on the
+  far side of an outage, and when the outage lifts the line is still a number
+  in a log with no history behind it.
+- What: `claim_judgments` already records every pass the judge makes, keyed
+  `(claim_id, prompt_sha)`, and already carries an `edges` count that is
+  allowed to be zero. One more column, `candidates`, makes the shortlist's size
+  a row rather than a line of stdout. That turns the ceiling from a number
+  somebody has to be watching a log to see into a time series anyone with the
+  read credential can query, broken down by prompt, which is what every other
+  measurement in this product already is. It also answers a question the audit
+  cannot ask today at all: the `reach` metric samples the corpus as it stands
+  now, so it reports what the retrieval would offer today and never what it did
+  offer when an edge was actually drawn. A claim judged in September was judged
+  against a corpus that no longer exists.
+- First step: the column, the insert that already runs on every pass writing
+  one more value into it, and the audit reading `avg(candidates)` per
+  `prompt_sha` beside the ceiling it already reports. The backfill is the same
+  shape slice 5's was and can write `null` rather than guessing, because a pass
+  that predates the column genuinely does not know.
+- Cost: $0. One integer per claim judged, on a table that already gets a row
+  per claim judged.
+- Status: proposed
+
+### 2026-10-25 — triage's cost table understates its own prompt by nine hundred tokens
+- Trigger: today's build found this defect in `pipeline/interpret.py` and fixed
+  it there, then the same shape turned out to be live one file over. The
+  interpret cap's comment said the system prompt was 880 tokens; measured with
+  `pipeline/budget.py`'s own tokenizer it is 1,260, because
+  `prompts/interpret.md` grew and nothing recomputes a comment. Checking
+  whether that was one file's problem: `pipeline/triage.py`'s cost table says
+  `prompts/triage.md` is 728 tokens. It measures 1,679, before adding the
+  `BATCH_INSTRUCTIONS` the same table counts with it. And `3_500, 700` is
+  written out by hand in four separate places in that file.
+- What: this is a forecast defect and not a spending defect, and the difference
+  is worth stating because it decides the priority. `Cap` measures real spend
+  from the provider's usage block at runtime, so no run can overspend its cap
+  no matter what the comment says. What is wrong is every number a human reads
+  before the money is spent: the per-call cost, the claims-per-run the cap
+  buys, the dry run's forecast of what clearing the backlog costs. Those are
+  the numbers the owner reads to decide whether the corpus is affordable, and
+  they are currently low by about a third for triage. The fix is the one that
+  shipped for interpret today: one measured pair of constants per job, every
+  forecast in the file reading it, and a test that recomputes both with
+  budget.py's tokenizer rather than reading them, so the next prompt that grows
+  turns a test red instead of a comment stale. `pipeline/distill.py` already
+  does the right thing in places through `expected_prompt_tokens()`, so the
+  pattern exists in this repository and does not have to be invented.
+- First step: triage, because it is measured and wrong today. One pair of
+  constants, four call sites pointed at it, and the test. Then read distill and
+  weekly the same way and report, rather than assuming either is clean.
+- Cost: $0, and the point of it is that the dollar figures the owner reads stop
+  being understated.
+- Status: proposed
+
+### 2026-10-25 — Craft scan: Vespa makes diversity a quota with a floor, where this shortlist makes it one exclusion (engineer seat, hook run)
+- Trigger: the daily craft scan, taken as an adjacency pick against the day's
+  own build. Today's slice added a same-paper exclusion to the claim graph's
+  retrieval, so the scan went to the search engine whose entire job is choosing
+  what a candidate set should contain.
+- What: Vespa treats diversity as a declared property of a retrieval phase
+  rather than as a filter. A rank profile names a `diversity` block with an
+  `attribute` to group by and a `min-groups` count, and the documentation is
+  explicit about what that buys: the result set is "guaranteed to get at least
+  min-groups unique values from the diversity attribute", and the cap on any
+  one group follows from it, computed as the phase's `max-hits` divided by
+  `min-groups`. Two things in that are worth stealing. The first is that the
+  guarantee is stated as a floor on variety rather than as a ban on one value,
+  which is the gap the entry above this one records: an exclusion of the
+  target's own paper says nothing about the other nine slots, where a
+  `min-groups` of three would. The second is that the cap per group is derived
+  from the floor instead of configured beside it, so the two numbers cannot be
+  set to contradict each other, which is exactly the failure mode this
+  repository keeps filing when one constant is copied into a second file.
+- What alexandria does better: Vespa diversifies results that are shown once
+  and then forgotten, so a wrong diversity setting costs one query. Here the
+  candidate set is shown to a judge whose answer is written into `claim_links`
+  append-only and read by `deprecated_claims`, which decides what a customer
+  sees on the Left-Behind Index. A bad shortlist does not degrade a page, it
+  writes a permanent row. That is why this filter is six lines of SQL with the
+  product argument written above it and a test holding its two constants
+  against the audit's copy, rather than a tunable in a config file. Vespa's
+  `min-groups` is a number an operator sets with nothing recorded about why,
+  and tuning it is the folklore that always follows. The shape of the
+  guarantee is the half worth stealing. Keeping the reason next to the number
+  is the half worth keeping.
+- First step: the two entries above, in that order. The measurement before the
+  quota, because the quota needs a number and nobody has one.
+- Cost: $0.
+- Status: proposed

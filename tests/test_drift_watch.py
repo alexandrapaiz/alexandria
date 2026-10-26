@@ -233,6 +233,79 @@ def test_every_block_of_the_card_fits_what_the_board_accepts(stale_repo):
             f"board refuses anything over {board.BODY_BLOCK_LIMIT}")
 
 
+def test_the_card_names_the_deadline_the_deploy_has_to_beat(stale_repo):
+    """The card used to say how old the image was and never when it mattered.
+
+    So the owner was left to work the cron out of a decorator. The ExO seat
+    did exactly that by hand on 2026-10-24, on the compute card, and wrote
+    the answer in as a comment. One paragraph here is cheaper than that, and
+    it is right every day rather than on the day somebody bothered.
+    """
+    deploy = surface({app: "0000stale000" for app in drift.rs.APPS},
+                     days_ago=9, repo=stale_repo)
+    record = dw.behind(deploy)[0]
+    body = dw.card_body(record, deploy, NOW)
+    app = record["app"]
+    assert f"The next run of {app} is" in body, body
+    assert "away. That is the deadline on this card" in body, body
+    assert record["evidence"]["cron"], record["evidence"]
+    # The schedule itself, so a reader can check the arithmetic rather than
+    # trust it.
+    assert record["evidence"]["cron"] in body, body
+
+
+def test_the_card_does_not_hand_over_a_deadline_while_nothing_is_firing(stale_repo):
+    """A clock that has stopped is not a deadline, and 2026-10-24 was that day.
+
+    The Modal workspace was disabled, so a card reading "weekly fires Monday
+    09:00" would have told the owner to work to a schedule that was not
+    running. The outage belongs inside the deadline sentence, because a reader
+    who skips a footnote has been misled by the part they did read.
+    """
+    outage = "Modal's edge says workspace ac-1 is disabled."
+    deploy = surface({app: "0000stale000" for app in drift.rs.APPS},
+                     days_ago=9, repo=stale_repo)
+    deploy.evidence["compute_outage"] = outage
+    body = dw.card_body(dw.behind(deploy)[0], deploy, NOW)
+    assert outage in body, body
+    assert "no cron in this pipeline is firing at all" in body, body
+    assert "from the moment compute comes back" in body, body
+    assert "That is the deadline on this card" not in body, body
+
+
+def test_a_schedule_that_cannot_be_read_leaves_the_card_without_a_deadline(stale_repo):
+    """And says so, rather than printing an age with an implied deadline.
+
+    `deadline` is the only new sentence on this card and it is the one a
+    reader acts on, so the failure mode that matters is a confident wrong
+    time. There is no third option where it quietly says nothing: a card with
+    the paragraph missing reads as a card whose deadline is not urgent.
+    """
+    deploy = surface({app: "0000stale000" for app in drift.rs.APPS},
+                     days_ago=9, repo=stale_repo)
+    record = dw.behind(deploy)[0]
+    record["evidence"] = {**record["evidence"], "next_run_at": None,
+                          "next_run_why": "its module puts nothing on a cron"}
+    body = dw.card_body(record, deploy, NOW)
+    assert "I cannot say when this image next serves a run" in body, body
+    assert "its module puts nothing on a cron" in body, body
+
+
+def test_the_nudge_carries_the_deadline_too(stale_repo):
+    """A nudge is read instead of the card, not alongside it.
+
+    The card is written once per image and nudged once a day after that, so
+    on day eight the sentence the owner sees is the nudge. A deadline only on
+    the card is a deadline that expires from view on day two.
+    """
+    deploy = surface({app: "0000stale000" for app in drift.rs.APPS},
+                     days_ago=9, repo=stale_repo)
+    record = dw.behind(deploy)[0]
+    assert "Next run" in dw.nudge_body(record, NOW)
+    bare = {**record, "evidence": {**record["evidence"], "next_run_at": None}}
+    assert "Next run" not in dw.nudge_body(bare, NOW)
+
+
 @pytest.mark.parametrize("hours,expected", [
     (24.5, "24.5 hours"),
     (47.9, "47.9 hours"),
@@ -501,3 +574,148 @@ def test_the_judgement_is_called_and_not_copied():
                 for target in node.targets if isinstance(target, ast.Name)}
     assert "APPS" not in assigned and "DEPLOY_GRACE_HOURS" not in assigned, (
         "this file keeps its own copy of something the judgement owns")
+
+
+# ------------------------------- the apps this run could not measure at all
+
+def mixed_surface(repo: Path):
+    """One app past the window, one app nothing in this checkout can place.
+
+    `distill`'s module does not ask for a row in this fixture, so it has none
+    and `recording_asked_at` finds nothing: `unknown`. `weekly` reports an
+    image the checkout cannot place and the only commit is nine days old:
+    `failing`. `judge_deploy` tests its alarm branch first, so the surface
+    itself reads `failing` and the unknown app is not visible in its state.
+    """
+    rows = {app: {"runtime_sha": drift.rs.digest(
+                      drift.rs.local_entries(app, repo)),
+                  "recorded_at": NOW - timedelta(hours=2),
+                  "first_seen_at": NOW - timedelta(hours=2),
+                  "notified_at": None}
+            for app in drift.rs.APPS if app != "distill"}
+    rows["weekly"]["runtime_sha"] = "0ldc0dec0de"
+    return dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+
+
+@pytest.fixture(scope="module")
+def mixed_repo():
+    with tempfile.TemporaryDirectory() as tmp:
+        yield drift.fixture_never_records(Path(tmp), "distill", days_ago=9)
+
+
+def test_undated_reads_the_apps_the_surface_could_not_place(mixed_repo):
+    found = dw.undated(mixed_surface(mixed_repo))
+    assert [r["app"] for r in found] == ["distill"]
+    assert found[0]["why"], "an unmeasured app with no reason is half an answer"
+
+
+def test_the_scalar_shallow_flag_is_not_mistaken_for_an_app(mixed_repo):
+    """`judge_deploy` puts `shallow_checkout` in the evidence beside the apps."""
+    surface = mixed_surface(mixed_repo)
+    assert "shallow_checkout" in surface.evidence
+    assert "shallow_checkout" not in [r["app"] for r in dw.undated(surface)]
+    assert "shallow_checkout" not in [r["app"] for r in dw.behind(surface)]
+
+
+def test_an_app_that_could_not_be_measured_is_not_a_quiet_pass(
+        monkeypatch, mixed_repo):
+    """Exit 2, and the card for the app that did alarm is still posted.
+
+    This is the narrow hole L-A21 names and this file used to fall into. The
+    surface reads `failing`, so the `unknown` guard at the top of `watch()`
+    never fired, `behind()` filtered the unmeasured app out, and the run
+    exited 1: a claim that production is stale and the board carries it, made
+    by a run that could not see one of the three jobs it was talking about.
+    """
+    surface = mixed_surface(mixed_repo)
+    monkeypatch.setattr(dw, "read_deploy", lambda today=None: surface)
+
+    answer = dw.watch(today=NOW, dry_run=True)
+
+    assert answer["exit"] == 2, "a run that measured two of three is not green"
+    assert answer["undated"] == ["distill"]
+    assert answer["behind"] == ["weekly"]
+    posted = [a for a in answer["board"] if a.get("app") == "weekly"]
+    assert posted and posted[0]["action"] == "would create", \
+        "the drift that was found must not be lost to the exit code"
+
+    printed = dw.render(answer)
+    assert "distill" in printed and "unmeasured" in printed, printed
+    assert "could not be placed against production" in printed, printed
+
+
+def test_an_unmeasurable_app_alone_is_also_not_a_quiet_pass(monkeypatch):
+    """No app behind, one app unplaceable, nothing inside the window either.
+
+    The surface reads `unknown` here and the top of `watch()` already caught
+    that. The case this adds is the one where `late` is empty for an innocent
+    reason and `blind` is not, which used to return exit 0.
+    """
+    class Fake:
+        state = dh.FAILING   # not `unknown`, so the early return is skipped
+        evidence = {"read_via": dh.RECEIPT_URL, "ref": "origin/main",
+                    "shallow_checkout": True,
+                    "weekly": {"state": dh.UNKNOWN,
+                               "why": "the drift cannot be dated"},
+                    "ingest": {"state": dh.OK},
+                    "distill": {"state": dh.OK}}
+
+        def as_dict(self):
+            return {"state": self.state, "headline": "mixed",
+                    "evidence": self.evidence}
+
+    monkeypatch.setattr(dw, "read_deploy", lambda today=None: Fake())
+    answer = dw.watch(today=NOW, dry_run=True)
+
+    assert answer["behind"] == []
+    assert answer["undated"] == ["weekly"]
+    assert answer["exit"] == 2, "nothing to post is not the same as nothing wrong"
+
+
+def test_the_card_says_why_it_could_not_name_the_commits_rather_than_guessing(
+        monkeypatch, mixed_repo):
+    """"Usually a shallow clone" was a guess, and the flag is now a fact.
+
+    Two readings share one sentence and they have different fixes. A shallow
+    clone is closed by one command. An image matching no commit on the trunk
+    is a deploy from somewhere that is not the trunk, which is a different
+    problem entirely, and a card that called it "usually a shallow clone"
+    would send its reader after the wrong one.
+    """
+    surface = mixed_surface(mixed_repo)
+    record = dw.behind(surface)[0]
+    assert record["app"] == "weekly"
+
+    body = dw.card_body(record, surface, NOW)
+    assert "is not shallow" in body, body
+    assert dh.UNSHALLOW not in body, body
+
+    surface.evidence["shallow_checkout"] = True
+    shallow_body = dw.card_body(record, surface, NOW)
+    assert dh.UNSHALLOW in shallow_body, shallow_body
+
+
+def test_a_board_that_refuses_the_card_still_reports_the_unmeasured_app(
+        monkeypatch, mixed_repo):
+    """The exit-code rule holds on the path where the board itself fails.
+
+    Three returns in `watch()` can be reached with an unmeasured app in hand,
+    and a rule that is true of two of them is not a rule.
+    """
+    surface = mixed_surface(mixed_repo)
+    monkeypatch.setattr(dw, "read_deploy", lambda today=None: surface)
+    monkeypatch.setattr(board_alarm_module(), "company_here", lambda c: "x")
+    monkeypatch.setattr(dw.board, "read_board",
+                        lambda company: (_ for _ in ()).throw(
+                            board.BoardError("no board here")))
+
+    answer = dw.watch(today=NOW, dry_run=False)
+
+    assert answer["undated"] == ["distill"]
+    assert answer["exit"] == 2, "an unplaced app outranks a board that refused"
+    assert all(a["action"] == "not posted" for a in answer["board"])
+
+
+def board_alarm_module():
+    from tools import board_alarm
+    return board_alarm

@@ -38,7 +38,9 @@ which of two code paths the whole file exercises.
 Run with `python3 tests/test_deploy_drift.py` or under pytest.
 """
 
+import contextlib
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -1251,6 +1253,756 @@ def test_an_undatable_drift_falls_back_to_the_old_anchor():
               str(triage.get("drift_anchor")))
         check("and the drift is still reported rather than withheld",
               triage["drift_hours"] > dh.DEPLOY_GRACE_HOURS, str(triage["drift_hours"]))
+
+
+
+
+# ------------------------- what the verdict says about what it could not see
+
+def fixture_shallow(tmp: Path, days_ago: float = 0.1) -> Path:
+    """A genuinely shallow checkout, cloned one commit deep from a real repo.
+
+    Not simulated. `_is_shallow` shells out to `git rev-parse
+    --is-shallow-repository`, and the whole value of asking git rather than
+    inferring from a failed digest replay is that the answer comes from the
+    same place the broken reads came from. So the fixture is a two-commit
+    repository and a `git clone --depth 1` of it, which is what the host
+    harness hands every seat.
+    """
+    origin = fixture_repo(tmp / "origin", days_ago=30)
+    (origin / "NOTE.md").write_text("a change the shallow clone cannot see\n",
+                                    encoding="utf-8")
+    _commit(origin, "a second commit the shallow clone will not be able to see",
+            datetime.now(timezone.utc) - timedelta(days=days_ago))
+    repo = tmp / "shallow"
+    subprocess.run(["git", "clone", "-q", "--depth", "1",
+                    f"file://{origin}", str(repo)], check=True,
+                   capture_output=True)
+    return repo
+
+
+@contextlib.contextmanager
+def no_fetch():
+    """Forbid the deepening fetch for the body of the block.
+
+    Two reasons every test that wants a shallow checkout to stay shallow goes
+    through here. The fixture's origin is a `file://` remote in the same
+    temporary directory, so it is reachable, so `judge_deploy` would deepen it
+    and the case under test would stop existing. And the memo in `_deepen` is
+    process-wide, so a test that left it set would decide the answer for every
+    test that ran after it.
+    """
+    before = os.environ.get(dh.NO_FETCH_ENV)
+    os.environ[dh.NO_FETCH_ENV] = "1"
+    dh._deepen_attempted.clear()
+    try:
+        yield
+    finally:
+        dh._deepen_attempted.clear()
+        if before is None:
+            os.environ.pop(dh.NO_FETCH_ENV, None)
+        else:
+            os.environ[dh.NO_FETCH_ENV] = before
+
+
+def test_an_undatable_drift_names_the_command_that_closes_it():
+    """`unknown` is honest. `unknown` with no next step is a dead end.
+
+    The deploy row read "the drift cannot be dated from this checkout" for
+    every agent seat and named nothing a reader could do about it, while the
+    one command that fixes it was `git fetch --unshallow` the whole time. The
+    payments row on this same surface took the same correction on 2026-10-24.
+
+    The fetch is forbidden here because on 2026-10-24 the surface started
+    running that command itself when it can, so an unforbidden shallow
+    fixture with a reachable origin no longer reaches this branch. The branch
+    is still the live one wherever the fetch cannot run, which is any run
+    without a network or with `--no-fetch`, so it keeps its test.
+    """
+    with tempfile.TemporaryDirectory() as tmp, no_fetch():
+        repo = fixture_shallow(Path(tmp))
+        check("the fixture is actually shallow", dh._is_shallow(repo))
+
+        rows = {app: {"runtime_sha": "0ldc0dec0de", "recorded_at": None,
+                      "first_seen_at": None, "notified_at": None}
+                for app in rs.APPS}
+        surface = dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+
+        check("an image it cannot place is not a verdict", surface.state == dh.UNKNOWN,
+              surface.headline)
+        check("the headline names the one command",
+              dh.UNSHALLOW in surface.headline, surface.headline)
+        check("the evidence says the checkout is shallow",
+              surface.evidence.get("shallow_checkout") is True)
+        for app in rs.APPS:
+            check(f"{app}'s own reason names it too",
+                  dh.UNSHALLOW in surface.evidence[app]["why"],
+                  surface.evidence[app]["why"])
+
+
+def test_a_full_clone_that_cannot_date_a_drift_does_not_blame_a_shallow_clone():
+    """The hint is a fact about the checkout, so it is only printed when true.
+
+    `drift_watch`'s card body used to guess, "which is usually a shallow clone
+    rather than an empty gap". A guess that is right most of the time is the
+    shape that sent four prior runs after the wrong cause.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_repo(Path(tmp), days_ago=0.1)
+        check("the fixture is not shallow", not dh._is_shallow(repo))
+
+        rows = {app: {"runtime_sha": "0ldc0dec0de", "recorded_at": None,
+                      "first_seen_at": None, "notified_at": None}
+                for app in rs.APPS}
+        surface = dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+
+        check("still an unknown", surface.state == dh.UNKNOWN, surface.headline)
+        check("and it does not claim a shallow clone",
+              dh.UNSHALLOW not in surface.headline, surface.headline)
+
+
+def test_a_shallow_checkout_is_deepened_so_the_drift_can_be_dated():
+    """The acceptance criterion for 2026-10-24: the row answers, not advises.
+
+    This is the whole point of the change. The host clones every seat's run one
+    commit deep, so the `deploy` row answered `unknown` on every run this org
+    makes, and the command that closes it was a command no seat ran. Naming it
+    (#436) was better than guessing at it and still left the reader to do the
+    work. Here the surface does the fetch itself and reaches a verdict.
+
+    One fixture, read twice, which is the only way to show a change rather
+    than assert one. The fixture commits the app's files 30 days ago, then
+    adds a second commit two hours ago, and the `--depth 1` clone is cut at
+    the second. So the shallow read has one commit of history, dates the app's
+    files to that recent commit, finds itself inside the 24-hour window and
+    answers `unknown`. The deep read sees the real commit and answers
+    `failing` at 30 days.
+
+    That A and that B are the production numbers in miniature. On 2026-10-24
+    this surface read `unknown` for all three apps from a seat's checkout, and
+    `weekly is 8.7 days behind, 23 undeployed commits` from the same tree one
+    fetch later.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_shallow(Path(tmp), days_ago=0.1)
+        rows = {app: {"runtime_sha": "0ldc0dec0de", "recorded_at": None,
+                      "first_seen_at": None, "notified_at": None}
+                for app in rs.APPS}
+
+        with no_fetch():
+            check("the fixture starts shallow", dh._is_shallow(repo))
+            before = dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+        check("without the fetch the drift cannot be dated",
+              before.state == dh.UNKNOWN, before.headline)
+
+        dh._deepen_attempted.clear()
+        try:
+            after = dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+
+            check("the checkout was deepened",
+                  after.evidence.get("deepened") is True, after.evidence)
+            check("and it no longer reports itself shallow",
+                  after.evidence.get("shallow_checkout") is False,
+                  after.evidence)
+            check("the fetch actually landed the history",
+                  not dh._is_shallow(repo))
+            check("the same tree and the same rows now reach a verdict",
+                  after.state == dh.FAILING, after.headline)
+            check("dated from the real commit, not the shallow boundary",
+                  "30.0 days behind" in after.headline, after.headline)
+            check("so the headline stops asking the reader to fetch",
+                  dh.UNSHALLOW not in after.headline, after.headline)
+        finally:
+            dh._deepen_attempted.clear()
+
+
+def test_the_deepening_fetch_is_forbidden_by_the_switch():
+    """`--no-fetch` has to actually reach the fetch, through one env var.
+
+    A guard that touches the network needs an off switch, and the switch is an
+    environment variable rather than an argument because `judge_deploy` is
+    reached from `tools/drift_watch.py` and the PM's standup as well as from
+    this file's own CLI. With it set the row is exactly what it was before
+    today: `unknown`, naming the command, having run nothing.
+    """
+    with tempfile.TemporaryDirectory() as tmp, no_fetch():
+        # Inside the 24-hour fallback window, which is the only state that
+        # reaches the `unknown` branch: an undated app whose fallback clock
+        # already puts it past the window alarms instead, by design.
+        repo = fixture_shallow(Path(tmp), days_ago=0.1)
+
+        rows = {app: {"runtime_sha": "0ldc0dec0de", "recorded_at": None,
+                      "first_seen_at": None, "notified_at": None}
+                for app in rs.APPS}
+        surface = dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+
+        check("nothing was fetched", surface.evidence.get("deepened") is False,
+              surface.evidence)
+        check("the checkout is still shallow", dh._is_shallow(repo))
+        check("the verdict is the old one", surface.state == dh.UNKNOWN,
+              surface.headline)
+        check("and it names the command for the reader who can run it",
+              dh.UNSHALLOW in surface.headline, surface.headline)
+        check("without claiming it was tried",
+              "could not complete" not in surface.headline, surface.headline)
+
+
+def test_a_fetch_that_cannot_reach_its_remote_says_so_rather_than_advising_it():
+    """Telling a reader to run the command that just failed is bad advice.
+
+    The failure mode this guards: a shallow checkout whose origin is gone, on
+    a run with no network. The surface must still answer `unknown`, because it
+    genuinely cannot date the drift, and it must not print "which is shallow:
+    git fetch --unshallow" as though that were an untried next step, since
+    this process has already tried it from here. It still names the command,
+    because the reader is usually somewhere the run was not.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        dh._deepen_attempted.clear()
+        try:
+            repo = fixture_shallow(Path(tmp), days_ago=0.1)
+            # The origin the clone came from, removed. The remote stays
+            # configured, so the fetch is attempted and fails, which is the
+            # case under test rather than a repository with no remote at all.
+            shutil.rmtree(tmp + "/origin")
+
+            rows = {app: {"runtime_sha": "0ldc0dec0de", "recorded_at": None,
+                          "first_seen_at": None, "notified_at": None}
+                    for app in rs.APPS}
+            surface = dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+
+            check("the fetch failed", surface.evidence.get("deepened") is False,
+                  surface.evidence)
+            check("so the checkout is still shallow",
+                  surface.evidence.get("shallow_checkout") is True,
+                  surface.evidence)
+            check("and the verdict degrades to the old one",
+                  surface.state == dh.UNKNOWN, surface.headline)
+            check("the headline says the command was tried from here",
+                  "could not complete here" in surface.headline,
+                  surface.headline)
+            for app in rs.APPS:
+                check(f"{app}'s reason says it was tried too",
+                      "was tried from here" in surface.evidence[app]["why"],
+                      surface.evidence[app]["why"])
+        finally:
+            dh._deepen_attempted.clear()
+
+
+def test_the_fetch_is_attempted_once_per_checkout_per_process():
+    """Three doors reach `judge_deploy`, so the memo is load-bearing.
+
+    Without it a run that asks twice fetches twice, and a repository whose
+    remote is slow or unreachable pays the timeout again on every call. The
+    memo is keyed by checkout, so two repositories in one process still get
+    one attempt each.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        dh._deepen_attempted.clear()
+        try:
+            repo = fixture_shallow(Path(tmp), days_ago=40)
+            check("first call deepens", dh._deepen(repo) is True)
+            # The answer is remembered, so a second call must not shell out at
+            # all. Proved by removing the origin: a real second fetch against
+            # a missing remote would fail and flip the answer.
+            shutil.rmtree(tmp + "/origin")
+            check("second call answers from the memo",
+                  dh._deepen(repo) is True)
+            check("one entry, keyed by the checkout",
+                  list(dh._deepen_attempted) == [str(repo)],
+                  str(dh._deepen_attempted))
+        finally:
+            dh._deepen_attempted.clear()
+
+
+def test_history_that_arrived_another_way_is_not_reported_as_a_failed_fetch():
+    """The checkout decides this, not the fetch's exit status.
+
+    `INC-2026-10-24-the-deepening-fetch-landed-the-history-and-called-it-a-failure`.
+    The deepening fetch shipped on 2026-10-24 and the very next run of this
+    seat read `the drift cannot be dated from this checkout, which is
+    shallow: git fetch --unshallow could not complete here` out of a clone
+    that held all 2,346 commits one command later. `_deepen` returned
+    `ok and not _is_shallow(...)`, so a non-zero exit overruled the look.
+
+    Three ordinary things produce that exit with the objects already landed:
+    the 90 second timeout killing git after `.git/shallow` is gone, a lock on
+    `.git` held by something else in the runtime, and the case modelled here,
+    which is a second reader deepening the same checkout first. The last one
+    is deterministic and needs no clock, so it is the one with a test:
+    `judge_deploy` reads the checkout as shallow, something else deepens it,
+    and the `--unshallow` this process then runs exits 128 with `fatal:
+    --unshallow on a complete repository does not make sense`.
+
+    The assertion is not about the return code. It is that the row reaches a
+    verdict, because an `unknown` printed over history the guard is standing
+    on is the failure this whole fetch exists to stop.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        dh._deepen_attempted.clear()
+        try:
+            repo = fixture_shallow(Path(tmp), days_ago=0.1)
+            check("the fixture starts shallow", dh._is_shallow(repo))
+
+            # The other reader, finishing first. Real git, not a stub: the
+            # exit code this test is about is one only git produces.
+            subprocess.run(["git", "-C", str(repo), "fetch", "--unshallow",
+                            "--quiet"], check=True, capture_output=True)
+            check("the history is here now", not dh._is_shallow(repo))
+            after = subprocess.run(
+                ["git", "-C", str(repo), "fetch", "--unshallow", "--quiet"],
+                capture_output=True, text=True)
+            check("and a second --unshallow does fail, which is the premise",
+                  after.returncode != 0, after.stderr)
+
+            check("so the deepening answers for the checkout it is looking at",
+                  dh._deepen(repo) is True)
+
+            dh._deepen_attempted.clear()
+            rows = {app: {"runtime_sha": "0ldc0dec0de", "recorded_at": None,
+                          "first_seen_at": None, "notified_at": None}
+                    for app in rs.APPS}
+            surface = dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+
+            check("the row does not call itself shallow over its own history",
+                  surface.evidence.get("shallow_checkout") is False,
+                  surface.evidence)
+            check("and it reaches a verdict", surface.state == dh.FAILING,
+                  surface.headline)
+            check("dated from the real commit", "30.0 days behind" in surface.headline,
+                  surface.headline)
+            check("so it never advises the command it could not run",
+                  "could not complete here" not in surface.headline,
+                  surface.headline)
+        finally:
+            dh._deepen_attempted.clear()
+
+
+def test_a_remembered_failure_does_not_outlive_the_checkout_it_described():
+    """One attempt per process is a budget, not a verdict with a memory.
+
+    The memo exists so a slow or missing remote is not paid for on every one
+    of the three doors into `judge_deploy`. It must not go on answering
+    `still shallow` after the history has arrived, because the second door is
+    often the one that matters: `tools/drift_watch.py` writes the board card
+    that a seat's `delivery_health` run only printed.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        dh._deepen_attempted.clear()
+        try:
+            repo = fixture_shallow(Path(tmp), days_ago=40)
+            # The switch is set by hand rather than through `no_fetch()`,
+            # because that helper clears the memo on the way out and the memo
+            # surviving the block is the thing under test.
+            before = os.environ.get(dh.NO_FETCH_ENV)
+            os.environ[dh.NO_FETCH_ENV] = "1"
+            try:
+                check("forbidden, so this attempt fails and is remembered",
+                      dh._deepen(repo) is False)
+                check("and it was remembered as a failure",
+                      dh._deepen_attempted.get(str(repo)) is False,
+                      str(dh._deepen_attempted))
+            finally:
+                if before is None:
+                    os.environ.pop(dh.NO_FETCH_ENV, None)
+                else:
+                    os.environ[dh.NO_FETCH_ENV] = before
+
+            subprocess.run(["git", "-C", str(repo), "fetch", "--unshallow",
+                            "--quiet"], check=True, capture_output=True)
+            check("the next call looks rather than quotes itself",
+                  dh._deepen(repo) is True)
+        finally:
+            dh._deepen_attempted.clear()
+
+
+def test_a_git_that_cannot_answer_is_not_read_as_a_landed_history():
+    """"Cannot say" must not collapse into "yes" on the way back.
+
+    `_is_shallow` folds an unanswerable `rev-parse` into `False`, which is
+    right for a caller deciding whether to print the shallow hint and wrong
+    for a caller asking whether the history arrived. `_shallow_state` keeps
+    the third answer so `_deepen` can refuse it.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        not_a_repo = Path(tmp) / "nothing"
+        not_a_repo.mkdir()
+        check("git cannot answer here", dh._shallow_state(not_a_repo) is None)
+        check("and the hint-printing caller still reads False",
+              dh._is_shallow(not_a_repo) is False)
+
+        dh._deepen_attempted.clear()
+        try:
+            # The fetch is allowed to run here and touches no network: git
+            # refuses a directory that is not a repository before it opens a
+            # transport. So this exercises the real post-fetch read rather
+            # than the off switch, which is a different branch with its own
+            # test above.
+            check("so the deepening does not claim success",
+                  dh._deepen(not_a_repo) is False)
+        finally:
+            dh._deepen_attempted.clear()
+
+
+def test_a_full_clone_is_never_fetched():
+    """The fetch is a repair, so it only runs where there is damage.
+
+    A full checkout, which is what a human's working copy is, must not have
+    its remote touched by a read-only health check.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        dh._deepen_attempted.clear()
+        try:
+            repo = fixture_repo(Path(tmp), days_ago=40)
+            check("the fixture is not shallow", not dh._is_shallow(repo))
+
+            rows = {app: {"runtime_sha": "0ldc0dec0de", "recorded_at": None,
+                          "first_seen_at": None, "notified_at": None}
+                    for app in rs.APPS}
+            surface = dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+
+            check("no fetch was reported",
+                  surface.evidence.get("deepened") is False, surface.evidence)
+            check("and none was attempted", dh._deepen_attempted == {},
+                  str(dh._deepen_attempted))
+        finally:
+            dh._deepen_attempted.clear()
+
+
+def test_a_failing_deploy_still_names_the_apps_it_could_not_measure():
+    """One app behind and one app unmeasurable is not a report about one app.
+
+    `judge_deploy` tests its alarm branch before its unknown branch, so this
+    surface reads `failing`, and until 2026-10-24 the `unknowns` list it had
+    already built was discarded on the way out. A reader was told that weekly
+    was eight days behind and was never told that distill could not be placed
+    at all. L-A21, and this surface's own
+    INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        # `distill`'s module does not ask for a row, so it has none and
+        # nothing dates it: unknown. `weekly` reports an image this checkout
+        # cannot place, and the one commit is nine days old: failing.
+        repo = fixture_never_records(Path(tmp), "distill", days_ago=9)
+        rows = {app: {"runtime_sha": rs.digest(rs.local_entries(app, repo)),
+                      "recorded_at": datetime.now(timezone.utc),
+                      "first_seen_at": datetime.now(timezone.utc),
+                      "notified_at": None}
+                for app in rs.APPS if app != "distill"}
+        rows["weekly"]["runtime_sha"] = "0ldc0dec0de"
+        surface = dh.judge_deploy(rows, repo, source=dh.RECEIPT_URL)
+
+        check("the app that is behind still alarms", surface.state == dh.FAILING,
+              surface.headline)
+        check("weekly is named", "weekly" in surface.headline, surface.headline)
+        check("and so is the app nothing could measure",
+              "distill" in surface.headline, surface.headline)
+        check("with the word that says it was not measured",
+              "cannot be compared" in surface.headline, surface.headline)
+        check("distill's own state is unknown",
+              surface.evidence["distill"]["state"] == dh.UNKNOWN)
+
+# ------------------------------------------------- the deadline on the drift
+#
+# Every number this guard printed until 2026-10-24 was backwards-looking. It
+# could say an image was 8.7 days behind and not say when that image next
+# serves a run, which is the only half a reader can act on: 8.7 days behind
+# with the next fire on Monday morning and 8.7 days behind with the next fire
+# in two hours are the same sentence about two different emergencies.
+
+def test_the_schedule_is_read_out_of_the_module_and_not_kept_beside_it():
+    """The manifest's own argument, applied to the clock.
+
+    `manifest` has been derived from source since this module shipped, because
+    a hand-kept copy of a list disagrees with the deploy on the day it
+    matters. A schedule is the same kind of fact, and the one copy of it this
+    repository holds, `delivery_health.PRESS_CRON`, needed a test of its own
+    to stay honest.
+    """
+    for app in sorted(rs.APPS):
+        found = rs.schedule_of(app, ROOT)
+        check(f"{app} has a schedule read from {rs.APPS[app]}",
+              "cron" in found, str(found))
+
+    check("a commented-out schedule is not a schedule",
+          rs.schedules('    # schedule=modal.Cron("0 16 * * *"),') == [],
+          "a job somebody switched off by commenting it would be reported live")
+    check("and prose naming modal.Cron is not one either",
+          rs.schedules("    ADR-12 recorded that job's own `modal.Cron` as") == [],
+          "a docstring would be mistaken for a decorator")
+    check("two schedules in one module is a refusal, not a pick",
+          rs.schedules('schedule=modal.Cron("0 9 * * 1")\n'
+                       'schedule=modal.Cron("0 9 * * 2")') ==
+          ["0 9 * * 1", "0 9 * * 2"],
+          "an app with two deadlines must not have one of them chosen for it")
+
+
+def test_a_cron_this_evaluator_cannot_read_is_a_why_and_never_a_guess():
+    """The whole value of the deadline is that a reader acts on it.
+
+    So a field this code misreads has to produce no deadline rather than a
+    wrong one. A card that says "deploy before 15:00" when the job runs at
+    03:00 is worse than a card that says the schedule could not be read.
+    """
+    now = datetime(2026, 10, 24, 13, 0, tzinfo=timezone.utc)
+    for expr in ["", "nonsense", "0 9 * *", "0 9 * * * *", "0 25 * * *",
+                 "0 9 32 * *", "0 9 * 13 *", "@daily", "0 9 * * MON",
+                 "0 9 * * */0",
+                 # Vixie cron reads this as 5-59/2 and a naive reading takes
+                 # it as the single value 5, which reports a later next run
+                 # than the real one. The unsafe direction, so it is refused.
+                 "5/2 9 * * *"]:
+        check(f"{expr!r} is refused rather than guessed at",
+              dh.next_fire(expr, now) is None, str(dh.next_fire(expr, now)))
+
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_repo(Path(tmp), days_ago=1)
+        target = repo / rs.APPS["weekly"]
+        target.write_text(
+            target.read_text(encoding="utf-8").replace(
+                'schedule=modal.Cron("0 9 * * 1")', "# unscheduled"),
+            encoding="utf-8")
+        # Committed, because the deadline is read at the ref and not off the
+        # disk, which is the subject of the next test.
+        _commit(repo, "the schedule is taken off weekly",
+                datetime.now(timezone.utc))
+        found = dh.next_run("weekly", repo, now, ref="HEAD")
+        check("an app on no schedule answers with a why and no deadline",
+              "at" not in found and "why" in found, str(found))
+
+
+def test_the_next_fire_is_the_next_one_and_never_one_that_has_passed():
+    """The arithmetic, at the boundaries that are easy to get wrong by an hour."""
+    cases = [
+        # The press, from a Saturday: Monday morning and not yesterday.
+        ("0 9 * * 1", datetime(2026, 10, 24, 13, 0, tzinfo=timezone.utc),
+         datetime(2026, 10, 26, 9, 0, tzinfo=timezone.utc)),
+        # A minute before its turn.
+        ("0 9 * * 1", datetime(2026, 10, 26, 8, 59, tzinfo=timezone.utc),
+         datetime(2026, 10, 26, 9, 0, tzinfo=timezone.utc)),
+        # On the minute is now and not next week: a run starting this second
+        # is a run the stale image serves.
+        ("0 9 * * 1", datetime(2026, 10, 26, 9, 0, tzinfo=timezone.utc),
+         datetime(2026, 10, 26, 9, 0, tzinfo=timezone.utc)),
+        # One minute late, and the next turn is a week away.
+        ("0 9 * * 1", datetime(2026, 10, 26, 9, 1, tzinfo=timezone.utc),
+         datetime(2026, 11, 2, 9, 0, tzinfo=timezone.utc)),
+        # A daily job whose hour is gone rolls to tomorrow.
+        ("0 15 * * *", datetime(2026, 10, 24, 15, 30, tzinfo=timezone.utc),
+         datetime(2026, 10, 25, 15, 0, tzinfo=timezone.utc)),
+        # Crontab's two spellings of Sunday agree.
+        ("0 9 * * 0", datetime(2026, 10, 24, 13, 0, tzinfo=timezone.utc),
+         datetime(2026, 10, 25, 9, 0, tzinfo=timezone.utc)),
+        ("0 9 * * 7", datetime(2026, 10, 24, 13, 0, tzinfo=timezone.utc),
+         datetime(2026, 10, 25, 9, 0, tzinfo=timezone.utc)),
+        # Across a year end, because the walk is over days and not over a month.
+        ("0 9 1 1 *", datetime(2026, 10, 24, 13, 0, tzinfo=timezone.utc),
+         datetime(2027, 1, 1, 9, 0, tzinfo=timezone.utc)),
+    ]
+    for expr, now, expected in cases:
+        got = dh.next_fire(expr, now)
+        check(f"{expr!r} after {now:%a %Y-%m-%d %H:%M} fires {expected:%a %H:%M}",
+              got == expected, str(got))
+
+    # Day-of-month and day-of-week are OR'd when both are restricted, which is
+    # crontab's rule and the one piece of this that surprises people. No
+    # deployed schedule restricts both; the branch is here to be right.
+    check("a step on an explicit range is still read",
+          dh.next_fire("0 9-17/4 * * *",
+                       datetime(2026, 10, 24, 10, 0, tzinfo=timezone.utc))
+          == datetime(2026, 10, 24, 13, 0, tzinfo=timezone.utc),
+          str(dh.next_fire("0 9-17/4 * * *",
+                           datetime(2026, 10, 24, 10, 0, tzinfo=timezone.utc))))
+
+    check("both day fields restricted is an OR and not an AND",
+          dh.next_fire("0 9 3 * 1",
+                       datetime(2026, 10, 1, 0, 0, tzinfo=timezone.utc))
+          == datetime(2026, 10, 3, 9, 0, tzinfo=timezone.utc),
+          "Saturday the 3rd matches on the day of month alone")
+
+
+def test_a_seat_s_own_branch_does_not_move_the_deadline():
+    """Company standard L-A72, and the same defect the drift clock had.
+
+    The schedule is a declaration in a repository, and the repository a seat
+    is standing in is its own branch. A branch that edits a cron would
+    otherwise report its own deadline as production's, which is exactly
+    `INC-2026-10-09-the-deploy-guard-judged-the-branch-it-ran-from` one field
+    along. So the cron is read at the ref the rest of this surface judges
+    against.
+
+    The limit that remains, and it is stated in the surface's own words
+    because no code here can close it: this is the trunk's schedule, not the
+    running image's. An app that is behind could be carrying a different cron,
+    and only a reading from inside the container would settle it.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_history(Path(tmp),
+                               [("pipeline/triage.py", "A merged change")],
+                               base_days_ago=5.0)
+        on_main = dh.next_run("weekly", repo, datetime.now(timezone.utc),
+                              ref="main")
+        subprocess.run(["git", "-C", str(repo), "checkout", "-q", "-b",
+                        "engineer/today"], check=True, capture_output=True)
+        target = repo / rs.APPS["weekly"]
+        target.write_text(
+            target.read_text(encoding="utf-8").replace(
+                'schedule=modal.Cron("0 9 * * 1")',
+                'schedule=modal.Cron("0 3 * * *")'),
+            encoding="utf-8")
+        check("an uncommitted edit to the cron does not move the deadline",
+              dh.next_run("weekly", repo, datetime.now(timezone.utc),
+                          ref="main")["cron"] == on_main["cron"],
+              str(dh.next_run("weekly", repo, datetime.now(timezone.utc),
+                              ref="main")))
+        _commit(repo, "the branch reschedules the press",
+                datetime.now(timezone.utc))
+        after = dh.next_run("weekly", repo, datetime.now(timezone.utc),
+                            ref="main")
+        check("and nor does committing it on a branch",
+              after["cron"] == "0 9 * * 1", str(after))
+        check("and the surface says which ref the schedule came from",
+              after["read_from"] == "main", str(after.get("read_from")))
+
+        rows = [row_for(app, repo, sha="0ldc0dec0de") for app in rs.APPS]
+        surface = dh.check_deploy(FakeConn(rows), repo, notify=False)
+        check("and the headline says the trunk's schedule is not the image's",
+              "which a behind image may not be the one carrying"
+              in surface.headline, surface.headline)
+
+
+def test_a_deadline_nobody_can_compute_is_said_and_not_omitted():
+    """Company standard L-A21: a gate that saw nothing is not a quiet pass.
+
+    The deadline sentence was an empty string when no app had a readable
+    schedule, which drops it out of the headline with no trace. A reader who
+    has learned to expect a deadline reads its absence as "nothing is due
+    soon", and that is the one wrong answer this sentence can give.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_repo(Path(tmp), days_ago=9)
+        for app in rs.APPS:
+            target = repo / rs.APPS[app]
+            target.write_text(
+                re.sub(r"schedule=modal\.Cron\([^)]*\)", "# unscheduled",
+                       target.read_text(encoding="utf-8")),
+                encoding="utf-8")
+        # Dated with the fixture rather than now, so this stays a nine-day
+        # drift: a fresh commit resets the clock and the surface would answer
+        # `unknown` about the dating instead of FAILING about the deploy.
+        _commit(repo, "every schedule taken off",
+                datetime.now(timezone.utc) - timedelta(days=9))
+        rows = [row_for(app, repo, sha="0ldc0dec0de") for app in rs.APPS]
+        surface = dh.check_deploy(FakeConn(rows), repo, notify=False)
+        check("the missing deadline is named rather than dropped",
+              "I cannot say which of these serves a run first"
+              in surface.headline, surface.headline)
+        check("and it names one cause rather than none",
+              "puts nothing on a modal.Cron schedule" in surface.headline,
+              surface.headline)
+        check("and it is still a failing deploy",
+              surface.state == dh.FAILING, surface.state)
+
+
+def test_a_stale_deploy_names_the_first_app_to_serve_a_run_with_it():
+    """The deadline, in the headline a seat reads every day.
+
+    The app is computed here from the same schedules rather than written in,
+    because pinning a weekday would make this test's answer depend on the day
+    it runs, and the claim under test is that the headline and the schedules
+    agree.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_repo(Path(tmp), days_ago=9)
+        now = datetime.now(timezone.utc)
+        conn = FakeConn([row_for(app, repo, sha="0ldc0dec0de") for app in rs.APPS])
+        surface = dh.check_deploy(conn, repo, now=now, notify=False)
+        due = {app: dh.next_run(app, repo, now, surface.evidence["ref"])
+               for app in rs.APPS}
+        first = min(due, key=lambda app: due[app]["at"])
+        check("the headline names the first stale app to get its turn",
+              f"first of these to serve a real run is {first}"
+              in surface.headline, surface.headline)
+        check("and says a deploy after it is too late",
+              "a deploy after that is a run too late" in surface.headline,
+              surface.headline)
+        check("and says which ref the schedule was read at",
+              all(surface.evidence[app]["next_run_read_from"]
+                  == surface.evidence["ref"] for app in rs.APPS),
+              str({app: surface.evidence[app].get("next_run_read_from")
+                   for app in rs.APPS}))
+        check("and every app carries its own deadline in the evidence",
+              all(surface.evidence[app]["next_run_at"]
+                  and surface.evidence[app]["next_run_in_hours"] is not None
+                  for app in rs.APPS),
+              str({app: surface.evidence[app].get("next_run_at")
+                   for app in rs.APPS}))
+        check("including the cron it was read from",
+              surface.evidence["weekly"]["cron"] == "0 9 * * 1",
+              str(surface.evidence["weekly"].get("cron")))
+
+
+def test_a_deadline_is_qualified_when_no_cron_is_firing_at_all():
+    """2026-10-24, and the reason `judge_deploy` takes the outage.
+
+    The Modal workspace was disabled, so none of the five schedules fired. A
+    headline reading "weekly fires Monday 09:00" would have been this guard
+    reading a promise out of a decorator and handing the owner a clock that
+    had stopped.
+    """
+    outage = "Modal's edge says workspace ac-1 is disabled"
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_repo(Path(tmp), days_ago=9)
+        conn = FakeConn([row_for(app, repo, sha="0ldc0dec0de") for app in rs.APPS])
+        surface = dh.check_deploy(conn, repo, notify=False, compute=outage)
+        check("the outage is part of the deadline sentence",
+              outage in surface.headline, surface.headline)
+        check("and the deadline is not offered as a time to work to",
+              "a deploy after that is a run too late" not in surface.headline
+              and "from the moment compute is back" in surface.headline,
+              surface.headline)
+        check("and it is still a failing deploy",
+              surface.state == dh.FAILING, surface.state)
+        check("and the outage is in the evidence for a reader of the json",
+              surface.evidence["compute_outage"] == outage,
+              str(surface.evidence.get("compute_outage")))
+
+
+def test_the_grace_window_that_outlasts_the_schedule_is_said_out_loud():
+    """The quiet case, and the finding this run is reporting rather than fixing.
+
+    A pending deploy is forgiven for 24 hours because a merge at noon is not
+    an alarm at one. That reasoning holds only while nothing runs inside those
+    24 hours, and four of the five jobs here are daily, so the window
+    guarantees the undeployed image serves at least one production run before
+    the guard says a word.
+
+    The state is deliberately unchanged: moving the threshold re-grades every
+    pending deploy the org will ever have and that is the owner's call. What
+    this asserts is that the case stops being silent.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_history(Path(tmp), [
+            ("pipeline/llm.py", "A change merged two hours ago"),
+        ], base_days_ago=1.1)
+        deployed = {app: dh._digest_at(repo, app, "HEAD~1", {}) for app in rs.APPS}
+        conn = FakeConn([row_for(app, repo, sha=deployed[app]) for app in rs.APPS])
+        surface = dh.check_deploy(conn, repo, notify=False)
+        check("a two-hour-old drift is still not red",
+              surface.state == dh.OK, f"{surface.state}: {surface.headline}")
+        check("and the headline says the grace outlasts the schedule",
+              "the window outlasts the schedule for" in surface.headline,
+              surface.headline)
+        inside = surface.evidence.get("fires_inside_grace") or []
+        check("and names at least one daily job that fires inside it",
+              any(app in " ".join(inside)
+                  for app in ("ingest", "triage", "interpret", "distill")),
+              str(inside))
+        check("the press is not named, because Monday is outside a day",
+              not any(line.startswith("weekly") for line in inside)
+              or dh.next_run("weekly", repo,
+                             datetime.now(timezone.utc))["hours"] <= 24,
+              str(inside))
 
 
 def main() -> int:

@@ -64,14 +64,15 @@ it; untriggered brainstorming does not count.
   acceptance criteria exactly; they are what "done" means.
 - Open ONE pull request, written as the standup report: which sprint item
   this is, what changed, evidence the acceptance criteria hold, how to
-  roll it back, and anything that blocked or deviated. The owner merges.
+  roll it back, and anything that blocked or deviated. The PM seat of this
+  company or a chair merges, per the section on who merges below.
   Never merge your own PR, never push to main, never enable auto-merge.
 - Append today's new ideas and the competitive-scan note to
   `docs/ideas.md` on the same branch. First run `gh pr list --state open`
   for other open PRs that also touch `docs/ideas.md`. If one exists,
   name it and the merge order you expect at the top of your PR
   description, since two open PRs that both append to the ledger will
-  conflict when the owner merges the second one.
+  conflict when the second one is merged.
 - If observation found something urgent you cannot fix today, record it in
   the ledger with status `urgent` so tomorrow's run and the PM both see it.
 
@@ -113,6 +114,64 @@ owner moves `proposed` to `accepted` or `rejected`. You move `accepted` to
 `built` when the PR that finishes it merges. The PM grooms accepted
 entries into sprints; your job is to ship them.
 
+## Who merges your pull request, and it is not the owner (HQ standard §21, 2026-10-05, recorded here 2026-10-24)
+
+Every charter in this repository said "the owner merges" and every one of
+them had been stale for nineteen days when this section was written.
+
+`docs/standards/pm.md` §21 is an owner directive of 2026-10-05, vendored
+here as PR #230 on 2026-10-06. It says a pull request is merged by the PM
+seat of the company it belongs to, or by any chair, as soon as it meets the
+conditions the tiers already state: the run is green, the change is scoped
+to what the seat was asked, the report says what shipped, and no other seat
+holds a claim on the surface. It names standards, charters, workflows and
+decisions as included. It says the owner merges nothing in the ordinary
+course.
+
+What stays hers is narrow, and it is worth carrying exactly, because every
+instance of the defect below is a seat guessing at it. Only a change to a
+seat's own authority, which §21 lists as itself, §10, §19 and the PM
+charter's grant, plus anything that spends money, opens an account or
+writes a secret.
+
+**So do not describe your own pull request as waiting on the owner unless
+it moves authority or money.** §10's three-tier list still reads as live
+prose with its repeal in one banner line above it, so a seat that greps for
+`Tier C` lands in the list and never sees the amendment. That has now cost
+eight misreads here, recorded as
+`INC-2026-10-09-tier-c-carve-out-misread-for-four-days`,
+`INC-2026-10-18-tier-c-carve-out-misread-a-sixth-time`,
+`INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway`
+and
+`INC-2026-10-24-the-amendment-sends-the-merger-back-into-the-clause-it-repealed`.
+The first six were content prompts mistaken for charters. The seventh was a
+charter correctly identified and held anyway, because the shorthand every
+seat carries is "prompts/ is Tier C" rather than "an authority change is
+the owner's."
+
+**The eighth is not a misread, and it is why this section has to be read on
+`main` rather than on somebody's branch.** §10's Tier B gives the merger a
+fourth condition, which is a path check against Tier C's list, and that list
+is unamended and still names `prompts/`. So a seat that reads §21 correctly
+and then works the checklist still refuses a charter diff, which means the
+careful readings here were the checklist working as written rather than
+carelessness. The repair for that is one condition in a standard this
+repository does not own, it has gone up through `docs/agents/hq-relay.md`,
+and until it lands a charter diff is held by the rule it corrects.
+
+**And nothing waits on her indefinitely even when it is genuinely hers.**
+§22 of the same standard, law since 2026-10-16, says a reservation a
+charter makes for the owner is posted by the PM as an `ask` carrying the
+PM's own recommendation, and proceeds as recommended after forty-eight
+hours of her silence. Money, accounts, secrets and widening a seat's own
+authority are the exceptions, and they wait for her word.
+
+Two things this does not change, so read them before you act on the rest.
+You still never merge your own pull request, and you still never push to
+`main`. Widening your own authority is the one thing §21 reserves to her
+with no silence rule attached, so a charter edit that would grant your seat
+a right it does not hold today is hers and waits.
+
 ## Ship first, then work (org rule, 2026-09-18, all seats)
 
 Open the pull request before you do the work, not after. In your first
@@ -141,12 +200,52 @@ gh pr list --state open --json number,headRefName,title,createdAt
 
 and look for a pull request from your own seat. Your runs write the
 files that no other seat touches, so an unmerged PR from your last run
-is the single thing most likely to collide with this one. The owner
-merges on her own schedule, and a run that assumes main holds its
+is the single thing most likely to collide with this one. Merges happen
+on somebody else's schedule, and a run that assumes main holds its
 predecessor's work is often wrong.
+
+**And read what you find, because it may be this event's answer rather
+than a collision** (added 2026-10-24,
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`).
+One event can wake two runs. Three times in ninety minutes on 2026-10-24 a
+seat was woken for an event a previous run of the same seat had already
+answered, and the payload gave no sign of it either time. If the open pull
+request you found already did this event's work, verify that live rather
+than trusting its report, then say so and append one line to
+`docs/agents/incidents.md`. The first two instances were written up
+carefully in pull request bodies, which nothing sweeps, so the third seat
+rediscovered the class from scratch.
 
 If you find one, choose deliberately between two options, and say which
 one you chose at the top of your PR description.
+
+**First, unshallow the clone, before you run a single command that compares
+two branches** (added 2026-10-18, `INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register`).
+
+The host clones this repository shallow. A shallow clone does not only hide
+history. `--depth 1` implies `--single-branch`, so the default branch is
+grafted with no parents, and a three-way merge between two close branches
+reads as unrelated histories. The merge then produces garbage that commits
+cleanly. On 2026-10-17 the ExO seat's own run merged its predecessor's branch
+in that state and committed 2,456 lines of conflict markers into
+`docs/agents/incidents.md`, and the pull request sat open that way for 21
+hours.
+
+Two commands, always, before any merge, `git merge-base`, `A...B` diff, or
+staleness check:
+
+```bash
+git rev-parse --is-shallow-repository    # true means every comparison below lies
+git fetch --unshallow                    # harmless when it is already full
+```
+
+This was filed for a charter on 2026-09-24 as
+`INC-2026-09-24-shallow-clone-merge-base-repeat`, which offered two remedies.
+The mechanical one shipped as `fetch-depth: 0` in all twelve workflows and
+stopped governing on 2026-10-17 when the seats left GitHub Actions. This
+sentence is the other one, and it is here rather than in a workflow because
+a charter line travels with the seat and a workflow step does not.
+
 
 - **Build on it.** Merge that branch into yours early, in your first
   few turns, before you write anything. Your PR then supersedes it, and
@@ -248,6 +347,19 @@ a command before a specific act.
 
 ## Check the register before you ship (org rule, 2026-09-19, all seats)
 
+**0. No conflict markers in anything you are shipping** (added 2026-10-18,
+`INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register`).
+This is step zero because it is the only one whose failure is silent after
+the first time. A committed marker conflicts once and is ordinary text
+forever after, so the merge that created it is the only merge that will warn
+anybody. On 2026-10-17 the ExO seat committed markers into two files on one
+branch, and the next run's merge flagged one of the two and carried the other
+in without a word.
+
+```bash
+grep -rn '^<<<<<<< \|^=======$\|^>>>>>>> ' docs/ prompts/ README.md   # must print nothing
+```
+
 Recording is not enforcing. Incident 20 in docs/agents/incidents.md is a
 taste ruling that was written into the right register, by the right
 seat, within the hour, and violated by the very next artifact anyway,
@@ -276,7 +388,11 @@ failures in one evening (INC-2026-09-24-press-provider-migration).
 
 For every commit it returns, ask the two questions
 docs/agents/runtime-changes.md exists to ask. Did a merged pull request
-explain it, and was there a smoke run behind it in `gh run list`. A
+explain it, and was there a smoke run behind it in `gh run list`. **The
+second question can only be answered for `checks.yml` and `deploy-main.yml`
+now** (added 2026-10-24 by the ExO seat): decision 056 retired every
+`*-agent` schedule on 2026-10-17 and those runs live on the board,
+`$BOARD_API_URL/api/board/alexandria`, under `runs`. A
 change to the image, to `claude_args`, to a cap, a timeout, a cron, a
 secret a run reads, or to a `container:` block is a runtime change even
 when it is two lines and obviously correct. **So is a change to a model
@@ -318,6 +434,22 @@ Incident 23 is what that cost: open routing landed on a Friday evening
 with no smoke run, and the first seat to meet it failed completely
 fourteen hours before the weekly audit that would have caught it. A
 daily check by the daily seat is the fix, and it costs you one command.
+
+**0b. No scratch file under a fixed name in `/tmp`** (added 2026-10-18,
+`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`).
+On the company host every seat of every product runs as the same user on one
+machine, so `/tmp/body.md` is a shared name and not a private one. In GitHub
+Actions each run had its own filesystem and this was safe. On 2026-10-18 the
+ExO seat's pull request description was overwritten by a concurrent seat
+between the write and the publish, and it reached GitHub wrong.
+
+```bash
+scratch=$(mktemp -d); cat > "$scratch/body.md"   # unique per run
+```
+
+The failure is silent: the write succeeds, the read succeeds, and the content
+belongs to somebody else. A run that writes once and ships once never finds
+out.
 
 **1. The registers your output is bound by.**
 

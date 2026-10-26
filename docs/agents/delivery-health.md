@@ -134,7 +134,25 @@ workflow change first and as a charter line second, and the surface
 stays marked unwatched until the secret lands. A guardrail whose input
 is missing is worse than an absent one, because it reports.
 
-## The known state of each surface, 2026-09-27
+## The known state of each surface, 2026-09-27 — **STALE, read the 2026-10-24 note below first**
+
+**Dated-conclusion warning, added 2026-10-24.** The table below was written
+on 2026-09-27 and has not been regenerated in 27 days, while eight dated
+notes were appended beneath it. Its "Trigger" column says "Modal cron" for
+the two press rows, and on 2026-10-23 the Modal workspace was switched off at
+its spend limit, so both of those triggers are dead as of this writing. Its
+"Watched daily" column predates five of the readers that now exist. **A
+reader who stops at the table gets a picture of the org from before half of
+its instruments were built and from before its scheduler was switched off.**
+
+This is the register's own rule arriving on the register: every sentence a
+register writes about its own data carries the date it was written, and a
+table of running systems is the most perishable sentence of all. The
+regeneration is a weekly-cycle job and is named in this run's pull request
+as the one duty deliberately left; the warning is here so the staleness is
+loud in the meantime.
+
+## The known state of each surface, as of 2026-09-27
 
 | Surface | Trigger | Artifact to check | Guardrails 1 to 3 | Watched daily |
 | --- | --- | --- | --- | --- |
@@ -748,3 +766,45 @@ watcher names above. And nothing schedules this one: its step would go in
 `.github/workflows/checks.yml` or a new workflow file, and no seat's token may
 write either, so `tests/test_checkout_watch.py` joins the pin list in
 `tests/test_ci_coverage.py` as the twelfth line in fifteen days.
+
+## 2026-10-24: the deploy surface says what it could not measure, in the same breath as what it did
+
+**The gap yesterday's fix left, in one sentence.** `judge_deploy` grew a third
+state and `drift_watch` was wired to read it at the surface level, but
+`judge_deploy` tests its alarm branch before its unknown branch, so the
+surface state is `unknown` only when nothing at all alarms. A mixed read, one
+app past the window and one app the checkout could not place, came back
+`failing` with the unknowns discarded on the way out, and the watcher exited 1
+and posted a card about one app while saying nothing about the other.
+
+**What changed, and the contract that moved with it.** The `failing` headline
+now carries the undated apps. `drift_watch.undated()` reads them,
+`drift_watch.render()` names them on every path, and any of them makes the run
+exit **2** rather than 1 or 0. That is a change to this surface's published
+exit codes and it is deliberate: 2 is a statement that the run's answer cannot
+be trusted as a whole, and a run that measured two apps out of three cannot
+be, because exit 1 reads as a claim about the fleet. The cards for the apps
+that did alarm are posted before that return, so a real drift is never traded
+away for the honest exit code.
+
+**The reason it is `unknown` and not a guess, now asked rather than inferred.**
+`delivery_health._is_shallow` shells out to `git rev-parse
+--is-shallow-repository`. Three things in this repository used to infer the
+shallow clone from a failed digest replay and then describe it as "usually a
+shallow clone", which is a sentence with two readings and two different fixes:
+a truncated history, closed by one command, or an image matching no commit on
+the trunk, which is a deploy from somewhere that is not the trunk. The undated
+row and the card body now say which, and when it is the first they name
+`git fetch --unshallow`.
+
+**And one stale promise, removed, because it is why nobody looked.**
+`_last_commit_at` used to reassure its reader that "the seat workflows check
+out with `fetch-depth: 0`, so in the place this actually runs daily the answer
+is real." True when written, false since 2026-10-17: `ab4e5bb` moved every
+seat's cadence off GitHub schedules and onto the host manifests, the twelve
+workflow files still say `fetch-depth: 0` and are no longer what checks out a
+scheduled run, and the host clones one commit deep. A runtime change outside
+this repository falsified a comment inside it. The question above, which of
+its inputs the runtime actually has, is unanswerable from a docstring for
+exactly this reason, and the ledger carries a `proposed` entry of 2026-10-24
+asking for the declaration to be data instead.

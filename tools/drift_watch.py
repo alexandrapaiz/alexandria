@@ -81,9 +81,20 @@ headline under-reports it.
 ## Exit codes, and why a blind run is not a quiet pass
 
     0   every app is running the trunk, or is behind and still inside the
-        grace window
+        grace window, and every app could be placed against production
     1   at least one app is past the window, and the board now carries it
-    2   the deploy surface could not be read at all from here
+    2   at least one app could not be placed against production at all, or
+        the deploy surface could not be read from here at all
+
+The second half of 2 was added on 2026-10-24 and it is the narrow case the
+first half was always meant to cover. `judge_deploy` tests its alarm branch
+before its unknown branch, so a surface with one app behind and one app it
+could not date reads `failing` rather than `unknown`, and this file used to
+exit 1 on it: a run that measured two apps out of three reported the two and
+said nothing about the third. Any app in `unknown` now reaches 2, the cards
+for the apps that did alarm are posted first so no real drift is lost, and
+`render` names the unmeasured apps on every path. L-A21, and the surface's
+own `INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see`.
 
 The third is the one to be careful about, for the reason
 `INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see` and company
@@ -135,7 +146,7 @@ NUDGE_AFTER = timedelta(hours=24)
 
 #: Evidence keys on the deploy surface that are about the read rather than
 #: about an app. Everything else in that mapping is an app.
-NOT_AN_APP = {"read_via", "ref", "alarm"}
+NOT_AN_APP = {"read_via", "ref", "alarm", "shallow_checkout"}
 
 
 # ------------------------------------------------------------ the pure core
@@ -161,6 +172,41 @@ def behind(deploy) -> list[dict]:
         if here.get("state") != dh.FAILING:
             continue
         found.append({"app": app, "key": cooldown_key(here), "evidence": here})
+    return found
+
+
+def undated(deploy) -> list[dict]:
+    """The apps this run could not measure at all, each with its reason.
+
+    `behind()` filters the evidence to `failing` and that is right: those are
+    the apps worth a card. The gap it leaves is every other state, and one of
+    them is not a pass. An app the surface marked `unknown` is an app whose
+    production image this run could not place, and reporting nothing about it
+    is reporting that there was nothing to report.
+
+    This read was missing until 2026-10-24 and the hole it left was narrow and
+    total. `watch()` checked the *surface's* state for `unknown`, which is only
+    reached when no app alarms, because `judge_deploy` tests its alarm branch
+    first. So a run with one app past the window and one app it could not date
+    came back `failing`, posted a card for the first, exited 1, and never
+    mentioned the second. Company standard L-A21 is the rule it broke and
+    `INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see` is the same
+    surface's own precedent for breaking it.
+
+    The mixed state is not hypothetical. Two routes reach it with no shallow
+    clone at all: an app that has never recorded a runtime and whose code does
+    not ask it to is `unknown` while its siblings compare fine, and a clone
+    deep enough to date one app's handful of commits and not another's twenty
+    dates exactly one of them. Depth is a knob on the host harness, and every
+    value of it between one and full produces this.
+    """
+    found = []
+    for app, here in sorted((deploy.evidence or {}).items()):
+        if app in NOT_AN_APP or not isinstance(here, dict):
+            continue
+        if here.get("state") != dh.UNKNOWN:
+            continue
+        found.append({"app": app, "why": str(here.get("why") or "no reason given")})
     return found
 
 
@@ -248,10 +294,26 @@ def card_body(record: dict, deploy, now: datetime) -> str:
                    + (f". The running image was built from {deployed} of "
                       f"{deployed_at:%Y-%m-%d}." if deployed and deployed_at
                       else "."))
+    elif (deploy.evidence or {}).get("shallow_checkout"):
+        # Still shallow after `judge_deploy` had its turn, which since
+        # 2026-10-24 means the deepening fetch was either forbidden or tried
+        # and failed. This card is read by the owner, so it does not tell her
+        # to run a command the run already ran: it says the run tried.
+        history = ("The commits behind it could not be named from this "
+                   "checkout, because the checkout is a shallow clone, so "
+                   "read the number above as a floor. "
+                   + (f"`{dh.UNSHALLOW}` was tried from the run that wrote "
+                      "this and did not complete, so the history has to come "
+                      "from somewhere the fetch works."
+                      if (deploy.evidence or {}).get("deepened") is False
+                      and not (deploy.evidence or {}).get("fetch_forbidden")
+                      else f"`{dh.UNSHALLOW}` and this command will name "
+                           "them."))
     else:
         history = ("The commits behind it could not be named from this "
-                   "checkout, which is usually a shallow clone rather than an "
-                   "empty gap, so read the number above as a floor.")
+                   "checkout, and the checkout is not shallow, so this is an "
+                   "image that matches no commit on the trunk rather than a "
+                   "gap in the history. Read the number above as a floor.")
 
     return board.scannable("\n\n".join([
         f"{what} It has been behind for {behind_for}, which is past the "
@@ -260,6 +322,8 @@ def card_body(record: dict, deploy, now: datetime) -> str:
         "deploy in flight.",
 
         history,
+
+        deadline(record, deploy),
 
         f"I am reading this from {(deploy.evidence or {}).get('read_via')} "
         "rather than from the database, because no agent seat holds a "
@@ -274,6 +338,49 @@ def card_body(record: dict, deploy, now: datetime) -> str:
         "ladder in docs/agents/press-rehearsal.md. The next run of the job "
         "records its own sha and this surface goes green on its own.",
     ]))
+
+
+def deadline(record: dict, deploy) -> str:
+    """When this stale image next serves a run, for the card.
+
+    The card used to say how old the image was and never when it mattered,
+    which left the owner to work the cron out of a decorator. The ExO seat did
+    exactly that by hand on 2026-10-24, on the compute card, and wrote the
+    answer in as a comment. One paragraph here is cheaper than that, every day.
+
+    An outage is part of the deadline rather than a footnote to it, because a
+    card that says "weekly fires Monday morning" while the whole workspace is
+    switched off is telling the reader to work to a clock that has stopped.
+
+    Times go through this file's own `ageing` rather than the health tool's,
+    so that one card does not render the same quantity two ways: the age above
+    this paragraph and the wait below it are both hours, and a reader
+    comparing "behind for 8.5 days" with "2.4h away" is doing a unit
+    conversion the card should have done.
+    """
+    app, here = record["app"], record["evidence"]
+    at, hours = here.get("next_run_at"), here.get("next_run_in_hours")
+    if not at:
+        why = here.get("next_run_why") or "nothing here could read its schedule"
+        return (f"I cannot say when this image next serves a run, because "
+                f"{why}, so read the age above without a deadline on it.")
+    # Formatted here rather than in the evidence, which keeps the full
+    # timestamp a script can parse and gives the card the one a person reads.
+    stamp = dh._parse_iso(str(at))
+    when = (f"{stamp:%Y-%m-%d %H:%M} UTC" if stamp else str(at))
+    when = f"{when}, on the {here.get('cron')} schedule"
+    outage = (deploy.evidence or {}).get("compute_outage")
+    if outage:
+        return (f"The next run of {app} would be {when}, which is "
+                f"{ageing(hours)} away, but no cron in this "
+                f"pipeline is firing at all right now: {outage}. So that is "
+                f"the deadline from the moment compute comes back rather than "
+                f"a time to work to, and the deploy still has to happen "
+                f"before it.")
+    return (f"The next run of {app} is {when}, which is "
+            f"{ageing(hours)} away. That is the deadline on this "
+            f"card: a deploy after it leaves this image serving one more "
+            f"production run.")
 
 
 def find_card(payload: dict, app: str, key: str) -> dict | None:
@@ -307,7 +414,10 @@ def nudge_body(record: dict, now: datetime) -> str:
         f"nothing has run {deploy_command(record['app'])} yet. Production is "
         f"on {here.get('recorded_sha') or 'an image it has never recorded'} "
         f"and {here.get('ref', 'origin/main')} is at "
-        f"{here.get('expected_sha')}.")
+        f"{here.get('expected_sha')}."
+        + (f" Next run {dh._parse_iso(str(here['next_run_at'])):%Y-%m-%d %H:%M}"
+           f" UTC, {ageing(here.get('next_run_in_hours'))} away."
+           if dh._parse_iso(str(here.get("next_run_at"))) else ""))
 
 
 # ------------------------------------------------------------------- the run
@@ -355,8 +465,11 @@ def watch(today=None, dry_run: bool = False, company: str | None = None) -> dict
     deploy = read_deploy(today)
     now = dh._instant(today)
     late = behind(deploy)
+    blind = undated(deploy)
     answer = {"checked_at": now.isoformat(), "deploy": deploy.as_dict(),
-              "behind": [r["app"] for r in late]}
+              "behind": [r["app"] for r in late],
+              "undated": [r["app"] for r in blind],
+              "undated_why": {r["app"]: r["why"] for r in blind}}
 
     if deploy.state == dh.UNKNOWN:
         answer["board"] = [{"action": "nothing posted",
@@ -366,8 +479,13 @@ def watch(today=None, dry_run: bool = False, company: str | None = None) -> dict
         answer["exit"] = 2
         return answer
     if not late:
+        # Nothing to post is only a green run when there was also nothing this
+        # run could not see. An app in `unknown` with no app alarming reaches
+        # the surface-level branch above and exits 2; an app in `unknown`
+        # alongside an app that is merely inside the grace window does not,
+        # and that is this line.
         answer["board"] = [{"action": "nothing to post"}]
-        answer["exit"] = 0
+        answer["exit"] = 2 if blind else 0
         return answer
 
     # One read of the board for the whole run, shared by every card below.
@@ -382,7 +500,10 @@ def watch(today=None, dry_run: bool = False, company: str | None = None) -> dict
         except board.BoardError as exc:
             answer["board"] = [{"app": r["app"], "action": "not posted",
                                 "why": str(exc)} for r in late]
-            answer["exit"] = 1
+            # Same rule as the success path below, so that "any app this run
+            # could not place makes it exit 2" is true of every return in this
+            # function rather than of most of them.
+            answer["exit"] = 2 if blind else 1
             return answer
 
     done = []
@@ -397,7 +518,13 @@ def watch(today=None, dry_run: bool = False, company: str | None = None) -> dict
             done.append({"app": record["app"], "action": "not posted",
                          "why": str(exc)})
     answer["board"] = done
-    answer["exit"] = 1
+    # 2 beats 1 when both are true, and the cards are posted either way. The
+    # exit code is a statement about whether this run's answer can be trusted
+    # as a whole, and a run that measured two apps out of three cannot be: a
+    # reader who sees 1 is told "production is stale and the board carries
+    # it", which is a claim about every app. The drift that was found is not
+    # lost by this, because it is on the board before the code returns.
+    answer["exit"] = 2 if blind else 1
     return answer
 
 
@@ -415,15 +542,28 @@ def render(answer: dict) -> str:
         lines.append(f"  board      {action.get('app', '-')}: "
                      f"{action.get('action', '-')}"
                      + (f": {detail}" if detail else ""))
+    # Printed whatever the exit code is, because the apps this run could not
+    # measure are the scope of every other line above and a reader cannot
+    # infer them from a headline about the apps it could.
+    for record in answer.get("undated_why", {}).items():
+        lines.append(f"  unmeasured {record[0]}: {record[1]}")
     lines.append("")
-    lines.append({
-        0: "Every job is running the trunk, or is behind and still inside "
-           "the grace window.",
-        1: "A merged change has not reached the jobs that run it. The "
-           "card above is the whole point of this command.",
-        2: "Nothing was posted and this is not a green report: the deploy "
-           "surface could not be read at all from here.",
-    }[answer["exit"]])
+    blind = answer.get("undated") or []
+    if answer["exit"] == 2 and blind:
+        lines.append("Not a green report: "
+                     + board.plural(len(blind), "app") + " could not be "
+                     "placed against production at all ("
+                     + ", ".join(blind) + "), so this run cannot say whether "
+                     "the rest of the pipeline is deployed.")
+    else:
+        lines.append({
+            0: "Every job is running the trunk, or is behind and still inside "
+               "the grace window.",
+            1: "A merged change has not reached the jobs that run it. The "
+               "card above is the whole point of this command.",
+            2: "Nothing was posted and this is not a green report: the deploy "
+               "surface could not be read at all from here.",
+        }[answer["exit"]])
     return "\n".join(lines)
 
 
