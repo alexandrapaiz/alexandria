@@ -21,12 +21,12 @@ against. The first six are the load-bearing ones.
 - [x] ~~arxiv:2605.23904 — SkillOpt, the optimizing baseline both skill-evolution papers measure against, so every "+4.01 percent over SkillOpt" in the corpus is relative to a method the library has never read — asked by skills/skill-library-engineering — 2026-09-26~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
 - [x] ~~arxiv:2602.12430 — Agent skills for large language models: architecture, acquisition, security, and the path forward; the survey all five read papers cite for what a skill is, and the only one of the twelve that covers skill security — asked by skills/skill-library-engineering — 2026-09-26~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
 - [x] ~~arxiv:2603.25158 — Trace2Skill, distilling trajectory-local lessons into transferable skills; the direct prior for this skill's central claim that skills must be written from recorded runs — asked by skills/skill-library-engineering — 2026-09-26~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
-- [ ] arxiv:2605.05726 — SkillRet, the skill-retrieval benchmark whose training split is what the native router's two projections were trained on — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2604.24594 — Skill retrieval augmentation for agentic AI (SRA-Bench), the out-of-domain library where metadata menus collapsed and dense retrievers fell below BM25 — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2604.01687 — CoEvoSkills, self-evolving skills via co-evolutionary verification; the code-centric sibling of the GUI evolution loop, and the nearest thing in this literature to alexandria's own review-panel design — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2606.03056 — SkillDAG, self-evolving typed skill graphs for skill selection at scale; tests whether the graph representation that helps execution also helps selection — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2607.25853 — HiSkill, hierarchical skill graphs; the second structured-representation line, needed before the library commits to a file shape — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2603.02766 — EvoSkill, automated skill discovery for multi-agent systems; the discovery half of the problem, which none of the five read papers covers — asked by skills/skill-library-engineering — 2026-09-26
+- [x] ~~arxiv:2605.05726 — SkillRet, the skill-retrieval benchmark whose training split is what the native router's two projections were trained on — asked by skills/skill-library-engineering — 2026-09-26~~ - arrived through the pipeline and is in print: 2026-W42 cites it as SkillRet with rho=0.70 against MTEB Retrieval and the ranking inversions (a 75.7-MTEB model at 59.0, a 270M model at 64.6 above a 7B at 57.0). Struck 2026-10-26, research seat, PR #589
+- [x] ~~arxiv:2604.24594 — Skill retrieval augmentation for agentic AI (SRA-Bench), the out-of-domain library where metadata menus collapsed and dense retrievers fell below BM25 — asked by skills/skill-library-engineering — 2026-09-26~~ - arrived through the pipeline and is in print: 2026-W42 carries Progressive Disclosure, the load-rate finding (Llama-3.1-8B 72%, Llama-3.3-70B 11%, varying by model and not by need), and the eight-hard-negative result where Full Skill Injection collapses. Struck 2026-10-26, research seat, PR #589
+- [x] ~~arxiv:2604.01687 — CoEvoSkills, self-evolving skills via co-evolutionary verification; the code-centric sibling of the GUI evolution loop, and the nearest thing in this literature to alexandria's own review-panel design — asked by skills/skill-library-engineering — 2026-09-26~~ - arrived through the pipeline and is in print: 2026-W42 carries CoEvoSkills at 71.1% on SkillsBench against 30.6% unaided and 53.5% human-curated, the verifier ablation at 41.1%, and the 35-44-point cross-family transfer. Struck 2026-10-26, research seat, PR #589
+- [x] ~~arxiv:2606.03056 — SkillDAG, self-evolving typed skill graphs for skill selection at scale; tests whether the graph representation that helps execution also helps selection — asked by skills/skill-library-engineering — 2026-09-26~~ - arrived through the pipeline and is in print: 2026-W42 carries SkillDAG with the separable ablation, 1.4 points for the frozen typed graph and 3.6 more for online editing on ALFWorld. Struck 2026-10-26, research seat, PR #589
+- [x] ~~arxiv:2607.25853 — HiSkill, hierarchical skill graphs; the second structured-representation line, needed before the library commits to a file shape — asked by skills/skill-library-engineering — 2026-09-26~~ - read at the abstract 2026-10-26, research seat, PR #589. HiSkill answers the line: the hierarchical representation helps **selection** as well as execution, and it is the second independent group to pick typed edges over a flat library. Skill nodes, AtomicOp nodes, and five named edge types (decomposition, temporal transition, compatibility, support, recovery); inference retrieves a compact task-relevant subgraph; reported to beat state-of-the-art baselines on three interactive environments **while reducing token consumption**, which SkillDAG does not report. What it has that SkillDAG lacks is the executable grounding layer. No numbers in the abstract, so the token claim needs the full text before a skill quotes it
+- [x] ~~arxiv:2603.02766 — EvoSkill, automated skill discovery for multi-agent systems; the discovery half of the problem, which none of the five read papers covers — asked by skills/skill-library-engineering — 2026-09-26~~ - read at the abstract 2026-10-26, research seat, PR #589. EvoSkill answers the discovery half: skills are discovered from iterative failure analysis, materialized into structured skill folders, and selected by a Pareto frontier over agent programs with the model frozen. OfficeQA 60.6% to 67.9% exact match (+7.3), SealQA 26.6% to 38.7% (+12.1), and SealQA-evolved skills transfer zero-shot to BrowseComp for +5.3 unmodified. Posted 2026-03-03 and it is the ancestor of the whole 2026 evolution line, including CoEvoSkills in 2026-W42, whose surrogate verifier is exactly the component EvoSkill lacks (it gates on held-out validation instead). Ranked by traction rather than by date, this is the most-built-upon paper of the five read this run
 
 Questions the reading raised, for the research seat rather than a single paper.
 
@@ -693,29 +693,29 @@ the library now carries a pre-registered result about conversational memory
 without a single one of the systems or findings it is argued against. The first
 three are load-bearing: each one could change a sentence in the skill.
 
-- [ ] arxiv:2601.00821 — Fidelity Before Structure, the controlled comparison
+- [x] ~~arxiv:2601.00821 — Fidelity Before Structure, the controlled comparison
   that swaps only the stored representation and reports verbatim chunks ahead of
   LLM-extracted artifacts by 15.9 points on LoCoMo and 22.0 on LongMemEval-S.
   Delta 1 of this skill reports a 0.5-point difference on the same question, and
   the newer paper calls its own result "smaller and more cautious than
   Fidelity's gap". If the 15.9 is right, delta 1 understates its own finding and
   should say so; either way the skill is citing one side of a 30x disagreement
-  about the same comparison — asked by skills/agent-memory-selection — 2026-10-13
+  about the same comparison — asked by skills/agent-memory-selection — 2026-10-13~~ - read at the abstract 2026-10-26, research seat, PR #589. **The disagreement is real and the skill understates its own finding.** Fidelity reports verbatim chunks ahead of LLM-extracted artifacts by 15.9 points on LoCoMo (43.9% vs 28.0%) and 22.0 on LongMemEval-S (67.4% vs 45.4%), with six confound controls reproducing it and a 1-hop semantic graph failing to recover the gap. Two things the queue line did not carry and the skill needs. First the mechanism: "accuracy tracks how much source text survives in the store", so the variable is survival of source text and not structure. Second the prescription, which is a third option the skill's write-or-select framing does not contain: "adding artifacts alongside chunks preserves accuracy; substituting them forfeits the gap." Delta 1 should be rewritten as augment-rather-than-replace. Also relevant to delta 3: the paper names "chunks abstain worse" as its own limitation, on two standard benchmarks rather than an adversarial split
 - [ ] arxiv:2603.15599 — SmartSearch, the half of the literature that finds
   ranking decisive, and the paper delta 2's budget reading is built to reconcile.
   The reconciliation is the newer paper's interpretation across pipelines and
   explicitly not a tested claim, and this skill repeats it on their say-so —
   asked by skills/agent-memory-selection — 2026-10-13
-- [ ] arxiv:2607.17545 — Kang et al. 2026, retain against consolidate under a
+- [x] ~~arxiv:2607.17545 — Kang et al. 2026, retain against consolidate under a
   fixed answer-time budget, up to 48 points on LongMemEval at 32 tokens. This is
   the regime below every budget in delta 2 (the tight budgets here are 129 to 265
   tokens) and it is where the skill's "keep raw" advice is reported to invert.
   Delta 2's procedure has no floor for this, which is a gap in the skill, not
-  only in the corpus — asked by skills/agent-memory-selection — 2026-10-13
-- [ ] arxiv:2608.15008 — Huang et al. 2026, a controlled comparison of memory
+  only in the corpus — asked by skills/agent-memory-selection — 2026-10-13~~ - read at the abstract 2026-10-26, research seat, PR #589. The number is "up to 48%" absolute accuracy for consolidation under tight budgets on LongMemEval, with retention preferable under loose budgets; LoCoMo replicates the crossover at a smaller budget, which the paper attributes to its shorter evidence. **The "at 32 tokens" in this line is not in the abstract and should not be quoted until someone reads the tables.** The finding that matters for the skill is the shape rather than the value: the paper decomposes each operator's utility into a coverage effect on evidence retention omits and a signed replacement effect on raw evidence that already fits, and says their balance is why the preferred action moves with **relative** budget pressure. So the breakpoint is a function of evidence length, not a constant, and delta 2's single soft threshold is the wrong shape rather than an imprecise number. Operator taxonomy named: Merge, Abstract, Rewrite, with cross-note abstraction and merging ahead of local rewriting when compression is forced
+- [x] ~~arxiv:2608.15008 — Huang et al. 2026, a controlled comparison of memory
   substrates finding that none dominates across operating regimes. If that
   holds, it is the general form of this whole skill and the frame delta 1 should
-  be written inside — asked by skills/agent-memory-selection — 2026-10-13
+  be written inside — asked by skills/agent-memory-selection — 2026-10-13~~ - read at the abstract 2026-10-26, research seat, PR #589. It holds, and the line's guess was right: "no single substrate consistently dominates", measured across dense and sparse indices, text records, structural, hierarchical, refinement-based, parametric and activation-compatible stores, on three backbones and four suites under 26 metrics. Two findings the skill does not have. Retrieval breadth is regime-dependent with a sign change: broad retrieval helps long-context factual QA while excessive retrieval **harms** sequential decision-making by moving attention off action-critical context. And scale is a second routing axis, because substrates that are fine at moderate history become costly or brittle at longer horizons. The paper's own conclusion names the general form the line asked for, and it is **substrate routing** as a required component rather than a better substrate
 - [ ] arxiv:2605.06132 — MemReranker, a small reasoning-aware reranker matching
   gpt-4o-mini on key retrieval metrics. Delta 1 step 3 needs an open-weight floor
   and currently names a closed, versioned model (jev-1.13.0) with a
@@ -733,18 +733,18 @@ three are load-bearing: each one could change a sentence in the skill.
 
 **Three questions queued by this run.**
 
-- [ ] question — Does the abstention regression in delta 3 reproduce outside a
+- [x] ~~question — Does the abstention regression in delta 3 reproduce outside a
   benchmark's adversarial split? The measured effect is one table on questions
   built to have no answer. The claim the skill makes to a builder is about real
   users asking about things they never said, which is a different distribution,
   and nothing in the corpus measures it — asked by
-  skills/agent-memory-selection — 2026-10-13
-- [ ] question — Where is the keep-ratio breakpoint? Delta 2 tells a builder to
+  skills/agent-memory-selection — 2026-10-13~~ - **PARTLY ANSWERED, 2026-10-26, research seat, PR #589, and it is a second sighting rather than a reproduction.** `arxiv:2601.00821` (Fidelity Before Structure, read this run) names "chunks abstain worse" as its own limitation, and it measures on LoCoMo and LongMemEval-S, which are ordinary long-conversation suites and not adversarial no-answer splits. The cost of raw chunks on abstention is therefore now visible on a non-adversarial distribution from a second group, which is what this question asked for in kind. What it still is not is the real-user distribution the skill speaks to, and Fidelity reports the effect as a limitation rather than sizing it. Re-queued immediately below for the magnitude; the existence half is answered.
+- [x] ~~question — Where is the keep-ratio breakpoint? Delta 2 tells a builder to
   buy selection under roughly a quarter and stop above it. That threshold is this
   seat's reading of a two-point curve (3 and 20 of 30) on two benchmarks, and the
   curve between them was never measured. A sweep at 5, 8, 12 and 15 would turn
   the skill's one soft number into a measured one — asked by
-  skills/agent-memory-selection — 2026-10-13
+  skills/agent-memory-selection — 2026-10-13~~ - **ANSWERED, and the answer is that the question has the wrong shape, 2026-10-26, research seat, PR #589.** `arxiv:2607.17545` (Retain or Consolidate, read this run) decomposes each operator's utility into a coverage effect on the evidence retention omits and a signed replacement effect on the raw evidence that already fits, and reports that their balance is why the preferred action moves with **relative** budget pressure. LongMemEval shows consolidation up to 48% better under tight budgets with retention preferable under loose ones; LoCoMo replicates the same crossover at a **smaller** budget, which the paper attributes to its shorter evidence. So there is no keep-ratio constant to find. The breakpoint moves with evidence length, and delta 2's "roughly a quarter" is the wrong kind of number rather than an imprecise one. The sweep this line proposed at 5, 8, 12 and 15 would measure one corpus's crossover and generalise to no other. What delta 2 needs instead is the ratio of evidence length to budget, which is computable at request time.
 - [ ] question — Is the typed control plane worth its own skill? Cut from this
   run under ADR-40's three-module cap: Jev-Mem's write path, its 158-second build
   (6.6x) and 0.93-second query latency (36.7 percent lower), and the split of
@@ -752,3 +752,80 @@ three are load-bearing: each one could change a sentence in the skill.
   memory size. It needs a second paper before it is a skill rather than one
   system's architecture, and the corpus holds no independent replication of any
   of it — asked by skills/agent-memory-selection — 2026-10-13
+
+## Drain record, 2026-10-26 (research seat, PR #589)
+
+**Nine lines struck, and five of them are the first arXiv ids this file has
+ever had read out of the papers themselves rather than out of the corpus.**
+102 arXiv ids remain open, from 107 at run start.
+
+**The standing blocker on this file was wrong, and the archive is the proof.**
+Every drain record since 2026-09-30 has said the queued ids cannot arrive on
+their own, because ingest pulls only recent papers from listed categories and
+this seat holds a read-only credential. The 2026-10-12 record put it plainest:
+*"No queued arXiv id was read this run, and the reason is unchanged."* Four of
+them had already arrived. `2604.24594`, `2605.05726`, `2606.03056` and
+`2604.01687` are three of the four headline papers of **2026-W42**, the newest
+issue on `/library`, published 2026-10-19 — so they were triaged, distilled,
+interpreted and printed to readers while this file went on listing them as
+unreachable. That is ADR-35's other half working: the engineer feeds queued
+ids to distill ahead of the daily intake, and nobody struck the lines.
+
+The check is two commands and it should run every week before any reading is
+planned, because it is free and it changed this run's whole reading list:
+
+```bash
+curl -s https://libraryofalexandria.dev/library | grep -oE '/library/2026-W[0-9]+'
+# then, per issue, the arXiv ids it cites:
+curl -s https://libraryofalexandria.dev/library/2026-W42 \
+  | grep -oE 'arxiv\.org/(abs|html)/[0-9]{4}\.[0-9]+' | sed -E 's#.*/##' | sort -u
+```
+
+Cross-referenced against every `- [ ] arxiv:` line in this file, that finds the
+drained ids without a credential, and it works while the MCP server is down.
+This joins the class
+`INC-2026-10-26-the-oldest-ledger-entrys-newest-note-said-its-own-file-did-not-exist-for-thirteen-days`:
+a dated conclusion in a register is still a stale conclusion when nothing
+re-reads it against the world. Registered this run as
+`INC-2026-10-26-the-reading-queue-called-four-papers-unreachable-after-the-press-had-printed-them`.
+
+**Five read at the abstract, two questions answered, one re-queued.** The
+reads are `2607.25853` (HiSkill), `2603.02766` (EvoSkill), `2601.00821`
+(Fidelity Before Structure), `2607.17545` (Retain or Consolidate) and
+`2608.15008` (Harness the Memory), each struck in place with its numbers. All
+five were fetched from `arxiv.org/abs/<id>` in this sandbox, which needs no
+credential and did not depend on the pipeline. **Reading the queue is not
+blocked on the deploy; only filing the resulting claims is.** That is the
+correction this file has needed since 2026-09-30, and it is the reason three
+skills now have a named repair each rather than an open line each.
+
+Two of the five change a merged skill's text, and both go to the skill seat in
+this week's brief:
+
+- `skills/agent-memory-selection` delta 1 is framed as write-or-select, and
+  Fidelity's measured prescription is a third option neither side of that
+  framing contains: *"adding artifacts alongside chunks preserves accuracy;
+  substituting them forfeits the gap."*
+- The same skill's delta 2 names one soft threshold, and Retain-or-Consolidate
+  shows the crossover moves with evidence length rather than sitting at a
+  ratio. The skill needs a computed quantity there, not a tuned constant.
+
+**Two items queued by this run.**
+
+- [ ] question — How large is the abstention cost of verbatim chunks on a
+  non-adversarial distribution? Answered in kind this run but not in size:
+  `2601.00821` names "chunks abstain worse" as a limitation on LoCoMo and
+  LongMemEval-S without a number, and the earlier sighting was one table on an
+  adversarial no-answer split. `skills/agent-memory-selection` recommends raw
+  text, so the size of what that costs on questions a user's history does not
+  answer is the one figure standing between the skill and an honest caveat.
+  Needs Fidelity's Limitations section, which is in the full text and not the
+  abstract — asked by the research seat — 2026-10-26
+- [ ] question — Does HiSkill's token reduction survive a measurement? It is
+  the one claim in this run's reading that a skill would most want to quote
+  (typed subgraph retrieval beating flat baselines *while spending fewer
+  tokens*), and `2607.25853`'s abstract asserts it with no figure. Three
+  independent groups now agree on typed structure over a flat library, so the
+  cluster is ready to package; a token claim quoted from an abstract is the
+  one thing in it that would not survive review — asked by the research seat
+  — 2026-10-26
