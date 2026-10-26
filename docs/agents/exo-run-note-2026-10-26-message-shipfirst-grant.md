@@ -18,7 +18,10 @@ before the charter read and the rest of the preflight, and the deadline is turn
 ten."* This run took that instruction from the wake, before it had read the
 file the instruction amends.
 
-**The draft went up at turn 4.** Branch from `main`, one commit, push,
+**First `git push` at turn 4, `gh pr create --draft` at turn 5**, measured on
+this run's own transcript with `ship_first.read_transcript` rather than counted
+by hand. The rule's metric is the push, so this run is `shipped` at 4 against a
+deadline of 10. Branch from `main`, one commit, push,
 `gh pr create --draft` — none of the four needed anything read first, which is
 the whole argument for the order. The charter read came at turn 5. The survey
 came after that, found this seat's live tip `#599`, and the draft was rebased

@@ -286,9 +286,12 @@ pushing at all**, against 0.5% of all runs at the old six. The rule still gains
 an order of magnitude; it just gains it from a stated base. This is our error in
 the evidence we supplied, not a defect in the grant.
 
-**And this run is the first reading of the granted order, n=1.** The draft went
-up at **turn 4**, before the charter was opened, on the instruction in the wake
-rather than in the file. The survey then ran on the open draft and found this
+**And this run is the first reading of the granted order, n=1.** Measured with
+the tool's own reader rather than by counting by hand: **first `git push` at
+turn 4, `gh pr create --draft` at turn 5**, both before the charter was opened
+and both on the instruction in the wake rather than in the file. The `shipped`
+state keys on the push, so this run is `shipped` at 4 against a deadline of
+10. The survey then ran on the open draft and found this
 seat's live tip, `#599`, which the draft was rebased onto — which is the
 supersede-from-something-that-exists case the grant describes, taken once and
 working. The old order would have put the same four acts past turn 13, because

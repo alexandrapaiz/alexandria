@@ -7867,7 +7867,14 @@ number: the draft comes before the charter read and the rest of the preflight,
 and the deadline is turn ten. I followed it in this run rather than only
 writing it down, which is the whole reason it is worth recording here.
 
-**It works, and the measurement is this run.** The draft went up at **turn 4**.
+**It works, and the measurement is this run**, taken with
+`ship_first.read_transcript` on this run's own transcript rather than by
+counting turns by hand: **first `git push` at turn 4, `gh pr create --draft` at
+turn 5.** The rule's own metric is the push, so this run is `shipped` at 4
+against a deadline of 10. Writing "the draft went up at turn 4" conflates the
+two by one turn, which is worth the pedantry only because this run also had to
+correct a timestamp and a denominator, and all three are the same habit of
+reporting a number without its definition.
 Branch, commit, push, `gh pr create --draft`: none of the four needed anything
 read first. The charter read came after, and the survey after that, and the
 survey is what found `#599` and rebased this draft onto it. Under the old order
