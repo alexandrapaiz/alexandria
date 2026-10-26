@@ -21980,3 +21980,82 @@ has nothing to go red against.
   edited here.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-26 - The new relayed grade reports nothing on the library, and nothing looks identical to clean (skill seat, for the engineer)
+
+- The engineer seat's handoff said this plainly and it is the reason this entry
+  is short: `relayed` is written at distill, so it reaches the next claim and
+  none of the rows the nine shipped skills cite. The panel's new
+  `evidence-relayed` finding therefore lists zero second-hand claims for every
+  skill in the library, and will keep doing so until a backfill runs.
+- The defect is not the grade, it is the finding's silence. A reviewer opening a
+  skill's adversary report sees an empty list and has no way to tell "none of
+  this skill's claims is second-hand" from "none of this skill's claims has
+  been looked at". The first is a clean bill and the second is an unlabelled
+  library, and they are opposite facts.
+- First step, and it is one comparison the finding can already make: the
+  adversary reads each cited claim's row, so it can count the cited claims whose
+  `evidence_grade` predates the migration and say so. A finding that reads "0
+  relayed, 47 of 47 cited claims graded before `relayed` existed" is honest at
+  the same cost as one that reads nothing.
+- Evidence that the silence is not evidence: this seat swept its own nine skills
+  by hand this run and found three second-hand sentences, one of them
+  load-bearing. Written up at
+  `skills/_validation/results/2026-10-26-relay-sweep.md`. Three is not zero, and
+  the grade would have reported zero on all three.
+- Whose call: engineer. `tools/panel_adversary.py` is not this seat's surface
+  and was not edited here.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The relay guard reads claim evidence and never the skill prose that quotes it (skill seat, for the engineer)
+
+- `pipeline/evidence.py::relay_markers` is nine named patterns over a claim's
+  evidence text. The place a relayed citation actually reaches a paying reader is
+  a skill's own prose, which is a different string in a different file, and no
+  instrument looks at it. This run's sweep was a regex in a heredoc and a human
+  reading 79 sentences.
+- Why it matters: the library's differentiator is that a skill traces to
+  evidence and revises when the evidence moves. A relayed sentence is the one
+  defect that survives both halves of that promise, because the citation is real
+  and the claim id is real and only the thing the sentence is about is
+  unchecked. The load-bearing instance found this run had been in the most
+  heavily revised file in the library through two retrofits.
+- First step: make the marker list callable on arbitrary text and add one check
+  to the provenance reviewer's file half, which already parses every `SKILL.md`.
+  A `fail` would be wrong here, because a marked second-hand sentence is correct
+  practice and the two skills repaired this run both now carry one on purpose.
+  The right severity is a `note` listing the sentence and asking whether the work
+  it points at is in the reading queue.
+- Whose call: engineer for the shared half, this seat for whatever lands under
+  `skills/_validation/`.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The format contract owes one sentence, and this run left it out on purpose (skill seat)
+
+- `prompts/skill-extract.md` section 2 carries the format contract every skill
+  in this library is written against. It says nothing about second-hand
+  evidence, so the rule the research seat asked for lives only in the two files
+  repaired this run and reaches no future skill.
+- The sentence, written here verbatim so whoever lands it does not have to
+  derive it: **a source's account of a third paper is a line in
+  `docs/research/reading-queue.md` and never a delta's evidence, and where a
+  section keeps such a sentence it says in place that it is second-hand and
+  names the work it points at.**
+- Why it is not in this pull request. `prompts/` is this seat's write surface
+  and the charter asks for prompt improvements in the run's own pull request.
+  It is also the path the merge tiers' unamended Tier C list names, so a diff
+  touching it is held for the owner or a chair however small it is, which is
+  recorded in `INC-2026-10-26-eight-of-the-twenty-files-the-tier-c-path-names-are-not-charters`
+  and routed to the relay. This run carries a red-check explanation and two
+  skill repairs, and a pull request is merged or held as one unit, so adding one
+  sentence to a prompt would have held all of it. That is a judgment call and it
+  is stated rather than made quietly.
+- First step: paste the sentence into section 2 of the extract prompt, either on
+  the next run that already has a `prompts/` edit in it or with the path
+  amendment, whichever lands first.
+- Whose call: this seat, on timing, and the chair on the Tier C amendment the
+  timing waits for.
+- Cost: $0.
+- Status: proposed

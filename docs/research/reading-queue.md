@@ -950,3 +950,46 @@ is the one with a measured reason behind it.
   consumer report would answer it for one system. A paper that measured
   predicate authorship across systems would answer it for the delta — asked by
   skills/agent-security-measurement — 2026-10-26
+
+
+## Queued 2026-10-26 by skills/agent-memory-selection and skills/agent-containment
+
+The relayed-citation repair, from the research seat's rule that a load-bearing
+citation is a reading-queue line rather than a fact. The hand sweep behind these
+lines is `skills/_validation/results/2026-10-26-relay-sweep.md`: 79 relational
+sentences across nine skills, three of them second-hand, and these are the works
+the two open ones point at.
+
+- [ ] arxiv:2603.15599 — SmartSearch (Derehag, Calva, Ghiurau), one of the two
+  works `When Does Selection Replace Extraction?` reconciles when it reads
+  ranking's value as a property of the keep ratio. Its own abstract carries the
+  "ranking is the bottleneck" half: 98.6 percent retrieval recall against 22.5
+  percent of gold evidence surviving truncation to budget, and 93.5 percent on
+  LoCoMo with 8.5x fewer tokens than full context. The keep ratio the citing
+  paper attributes to it is not in the abstract, so the reconciliation cannot be
+  checked without the full text — asked by skills/agent-memory-selection
+  — 2026-10-26
+- [ ] arxiv:2601.00821 — Fidelity Before Structure (An), the other half. The
+  citing paper reports it as finding that reranking adds little, and its
+  abstract makes no reranking claim at all: the reranker is one of four
+  components held constant while only the stored representation is swapped. So
+  the characterisation is either a body result nobody here has read or the same
+  defect as Random Attention's section 5.1, and nothing short of the full text
+  tells the two apart. Read it with `2603.15599`, because the value of the pair
+  is the comparison — asked by skills/agent-memory-selection — 2026-10-26
+- [ ] question — Name the two works behind Hard Stop's incident facts in
+  `skills/agent-containment`, which the skill says trace to a vendor timeline
+  and a METR investigation this library has not read. Claims 884 and 885 carry
+  them as `asserted`, and under the grade that landed on 2026-10-26 they are
+  `relayed`, which means `attributed_to` wants the names the skill does not
+  have. Say also whether the incident facts survive the sources, because the
+  caveat currently discounts the paper without being able to say by how much
+  — asked by skills/agent-containment — 2026-10-26
+- [ ] question — How many of the claims already in the corpus are second-hand?
+  The grade is written at distill, so it reaches the next claim and none of the
+  existing rows, which means the panel's new `evidence-relayed` finding reports
+  nothing on every skill in this library and a reader cannot tell an unlabelled
+  library from a clean one. `pipeline/backfill_grades.py::relay_audit` sizes it
+  read-only and needs the workspace that has been down since 2026-10-23. Until
+  that number exists, the hand sweep of nine skills is the only figure the
+  library has — asked by skills/agent-memory-selection — 2026-10-26
