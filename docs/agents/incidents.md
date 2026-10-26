@@ -22433,6 +22433,21 @@ the reader prints the doubt and keeps exit 1, because an unsettled cycle must
 not be silently green. Fifteen tests, and the live reading now resolves that
 log to #530.
 
+**The company standard already had this, and in two clauses.** L-E11 in
+`docs/standards/lessons.md` says a run's success is measured against state
+captured before it ran and never re-derived from the end state, because "a
+check that asks at teardown 'is there a branch, a commit ahead, a pull request'
+is asking about the wreckage, and the cleanest possible run leaves the least
+wreckage." The trailer's `pr=` field is exactly that teardown question, asked
+by the host, and the reader inherited the defect by trusting it. The same rule's
+second clause is the sharper one: "a tripwire that fires hardest on the best
+runs is worse than no tripwire, because the org learns to read its colour
+instead of its message." This reader fired on a run that had done the one thing
+the ship-first rule asks of a run that is about to die. Both clauses were
+already law here and neither fired at the moment they applied, because L-E11 is
+written about a CI tripwire and this is a log reader, which is the same question
+wearing different clothes.
+
 **The generalisation.** This is `registers.md`'s "recording is not enforcing"
 turned one notch further on. The reader was built in a day by a seat reading a
 log format it does not own, and the field it trusted most is the one the format
