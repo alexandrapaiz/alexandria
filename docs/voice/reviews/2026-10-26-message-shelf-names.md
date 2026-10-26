@@ -179,7 +179,7 @@ have no mechanism at all.
 
 | check | result |
 | --- | --- |
-| `check_voice.py all` | 10 FAIL rows against a baseline of 9. The one added is `captions`, which is this run's new gate reporting the live defect it was written for, and it goes green on the drafted repair. The other 9 are unchanged, every one a standing defect on another seat's surface |
+| `check_voice.py all` | 10 FAIL rows against a baseline of 9. The one added is `captions`, which is this run's new gate reporting the live defect it was written for, and it goes green on the drafted repair. Of the other 9, eight are byte-identical to the baseline. The ninth is `ledger`, whose two numbers moved from 577 and 578 to 579 and 580 because this run appended two ledger entries. Its verdict is unchanged and so is the defect, which is that the two counts are one apart. Every one of the nine is a standing defect on another seat's surface |
 | `check_voice.py captions` | 11 of 11 cases, 7 of 7 captions read, FAIL on the four sharing one frame |
 | `check_voice.py candidates` | clean. This file and the candidate both name `skills-copy-2026-10-18.md`, the open row on the same page |
 | `check_voice.py enforcements` | entry 142's two LANDED lines resolve. Checkable endings 56 to 57, prose-only 31 to 30 |
