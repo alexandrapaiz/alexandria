@@ -1485,14 +1485,69 @@ def week_just_ended(today: date | None = None) -> tuple[str, str]:
     `today` is injectable so the tests can stand on a Wednesday.
     """
     y = last_sunday(today or date.today())
-    week = f"{y.isocalendar().year}-W{y.isocalendar().week:02d}"
-    monday = y - timedelta(days=6)
-    if monday.month == y.month:
-        dates = f"{monday.strftime('%B')} {monday.day}–{y.day}, {y.year}"
-    else:
-        dates = (f"{monday.strftime('%B')} {monday.day} – "
-                 f"{y.strftime('%B')} {y.day}, {y.year}")
-    return week, dates
+    return label_of(y), dates_of(y)
+
+
+def label_of(sunday: date) -> str:
+    """The ISO week label of the week ending on `sunday`."""
+    return f"{sunday.isocalendar().year}-W{sunday.isocalendar().week:02d}"
+
+
+def dates_of(sunday: date) -> str:
+    """The reader-facing Monday-to-Sunday range of the week ending `sunday`.
+
+    Extracted from `week_just_ended` so that `week_from_label` renders its
+    range with the same code rather than a second copy of it. An issue
+    regenerated for a past week has to read identically to the one the cron
+    would have written, and two renderers are two chances for it not to.
+    """
+    monday = sunday - timedelta(days=6)
+    if monday.month == sunday.month:
+        return f"{monday.strftime('%B')} {monday.day}–{sunday.day}, {sunday.year}"
+    return (f"{monday.strftime('%B')} {monday.day} – "
+            f"{sunday.strftime('%B')} {sunday.day}, {sunday.year}")
+
+
+WEEK_LABEL = re.compile(r"^(\d{4})-W(\d{1,2})$")
+
+
+def week_from_label(label: str, today: date | None = None) -> tuple[str, str]:
+    """The same answer as `week_just_ended`, for a week you name instead.
+
+    `week_just_ended` reads the calendar, which is correct for a cron and is
+    the only thing this pipeline could do until now. The docstring above says
+    why that is not enough: "A press whose week label depends on the day
+    someone happens to run it cannot be backfilled." This is the inverse
+    function, so a week can be asked for by name.
+
+    It refuses three things rather than composing an issue nobody wants:
+    a label that is not a label, a week number the year does not have (2026
+    has 53 ISO weeks and 2025 has 52), and a week that has not finished. The
+    third is the 2026-W38 incident in the other direction. A run that writes
+    an in-progress week is writing an issue the next Monday's cron will upsert
+    over, which is exactly what happened on 2026-09-23.
+
+    `today` is injectable for the same reason it is above.
+    """
+    m = WEEK_LABEL.match(label.strip())
+    if not m:
+        raise ValueError(
+            f"{label!r} is not an ISO week label: expected YYYY-Www, "
+            "for example 2026-W42")
+    year, number = int(m.group(1)), int(m.group(2))
+    try:
+        monday = date.fromisocalendar(year, number, 1)
+    except ValueError:
+        raise ValueError(
+            f"{label!r} is not a week {year} has: ISO years run to 52 or 53 "
+            "weeks and this one does not reach that number") from None
+    sunday = monday + timedelta(days=6)
+    if sunday >= (today or date.today()):
+        raise ValueError(
+            f"{label!r} has not finished yet: it ends {sunday.isoformat()}. "
+            "The press only writes weeks that are over, because a week "
+            "written early is upserted over by its own Monday cron.")
+    return label_of(sunday), dates_of(sunday)
 
 
 def payload_line(week: str, payload: dict) -> str:
