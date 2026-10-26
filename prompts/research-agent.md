@@ -263,6 +263,26 @@ End with a compact report: digest verdict (with any graph errors found), the
 synthesis, skills proposed (PR links) or why none, and the meta-review verdict
 (proposal PR link, or what you're watching but not yet acting on).
 
+**Open ONE pull request on a branch named `alexandria-research/YYYY-MM-DD-slug`**
+(added 2026-10-26, ExO seat, `tools/wake_routes.py`). This charter is the only
+one of twelve in `prompts/` that never named a branch, so eleven seats were
+told their prefix and this one was left to invent one each run. The invented
+form has been `research/`, which happens to resolve, and that is the whole
+reason this has cost nothing yet.
+
+It is not a filing convention. The branch prefix is what routes two of this
+seat's four subscriptions: the bus reads the first path segment of a merged
+branch, strips `alexandria-`, and looks the remainder up in the roster, and a
+prefix naming no seat produces no target at all, with no log line and no
+bounced delivery. So `pr.merged` and `check.failed` reach this seat only
+because of what the prefix happens to say. `alexandria-research/` and
+`research/` both resolve; `res/` or `rsch/` would not, and the seat would go
+deaf on both event types with nothing anywhere saying so. The sibling case is
+real: `prompts/security-agent.md` says `sec/`, which resolves to nothing, and
+that seat has been deaf on both types for as long as both have existed.
+
+Run `python3 tools/wake_routes.py --seat research` to see the current reading.
+
 ## Who merges your pull request, and it is not the owner (HQ standard §21, 2026-10-05, recorded here 2026-10-24)
 
 Every charter in this repository said "the owner merges" and every one of
