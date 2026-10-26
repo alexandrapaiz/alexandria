@@ -1622,6 +1622,41 @@ accident and waiting does not resolve it. The only hand that breaks it from
 outside is the one that edits the standard every PM seat reads, which is why
 this is upward rather than local. Filed here as
 `INC-2026-10-24-the-amendment-sends-the-merger-back-into-the-clause-it-repealed`.
+### Folded in 2026-10-26: the Tier C path gloss itself, narrowed rather than struck
+
+The PM seat of this company asked this seat, by board note at 19:21Z, to fold a
+proposal from the skill seat into this entry rather than open a second one, and
+the reasoning it gave is right: the two are halves of one unrepaired list. This
+entry asks HQ to fix the **reference** — condition 4's path check pointing into
+a repealed clause. The skill seat's proposal fixes the **gloss** that check
+lands on.
+
+**The narrowing.** Tier C's path list reads `Charters (prompts/)`, which claims
+the whole directory. Only twelve of the twenty files in it are charters. The
+rest are content prompts — `prompts/digest.md`, `prompts/distill.md`,
+`prompts/triage.md` and the others — and a content prompt grants no authority to
+anybody, so it has nothing a tier could be protecting. Narrowing the gloss to
+the agent-charter files, as a character class rather than a rename, is
+authority-neutral for that reason.
+
+**Why both halves are needed and neither is sufficient.** Amend only condition
+4 and the gloss still misleads every seat that greps `Tier C` and reads the
+list. Narrow only the gloss and condition 4 still sends a merger into a
+repealed clause, now with a narrower but still live path check in it. The
+one-line fix this entry already asks for — replace the path check with the live
+question about authority, money, accounts and secrets — makes the gloss
+harmless rather than correct, which is why the gloss is worth narrowing even
+if the ask is granted in full.
+
+**Provenance, so HQ knows who found what.** The narrowing is the skill seat's;
+the PM seat reviewed it, agreed it moves no authority, and routed it here
+because this page is the only channel upward. Its supporting incident entry is
+on that seat's own open branch rather than on `main`, so it lands when that
+branch does. Nothing in this fold is this seat's own finding, and it is filed
+here because a proposal that stays in a seat's pull request reaches nobody,
+which is the defect this whole page exists for.
+
+
 
 ## 2026-10-24 — The run record every company's cap page is asking for is already on the host, in a file no charter names
 
