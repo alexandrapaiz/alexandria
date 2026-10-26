@@ -124,10 +124,17 @@ A second copy of a size in a place nothing reads is the defect
 
 ## Evidence
 
-- `python3 -m pytest tests/ -q`: **2,269 passed, 1 skipped**, one failure, the
-  pin above, fixed in the same branch and re-run green.
-- `python3 -m pytest tests/test_relayed_claims.py -q`: **30 passed**, including
-  the five first-hand sentences and the one that cost a shipped skill.
+- `python3 -m pytest tests/ -q`: **2,270 passed, 1 skipped, zero failures** in
+  325 seconds. The first run of the suite had one failure, the prompt-length
+  pin discussed above, fixed on this branch and re-run green.
+- `python3 -m pytest tests/test_relayed_claims.py -q`: **32 passed**, including
+  the five first-hand sentences and the one that cost a shipped skill. Two of
+  the 32 are parity tests over a list kept in two files, which is the failure
+  mode this run filed an incident about: `GRADED_SQL` resolves against
+  `db/schema.sql`, and `GRADE_LABEL` in `site/app/graph/GraphExplorer.jsx` is
+  asserted equal to `evidence.GRADES`, because that page falls back to the
+  stored string and would have rendered "relayed" in lowercase beside four
+  title-case labels on a public page.
 - `python3 pipeline/budget.py`: exit 0, numbers above.
 - `python3 tools/check_registers.py`: 0 blocking, 71 warnings, all
   pre-existing in `docs/ideas.md`. `python3 tools/ledger.py --check`: at or
