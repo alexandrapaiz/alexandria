@@ -1843,26 +1843,23 @@ def weekly(week: str = "") -> str:
     # watching for rather than an alarm mail to the owner saying the press
     # failed.
     regenerating = bool(week.strip())
-    if regenerating:
-        week, dates = week_from_label(week)
-        window = week_window(week)
-    else:
-        week, dates = week_just_ended()
-        # The same window, and this line is the repair for
-        # `INC-2026-10-18-press-recovery-content-anchor`. The label and the
-        # date range were put on one anchor on 2026-09-28 and the queries that
-        # fill the body were left on `now() - interval '7 days'`, so a run on
-        # any day but Monday printed the right week on the masthead and the
-        # seven days before itself underneath it. That is why the 2026-W41
-        # recovery was withdrawn on 2026-10-18 rather than run: the one-off
-        # manual run in this module's own docstring is exactly a recovery, and
-        # it would have written the wrong content under the missing week's
-        # label, permanently, because `digests` upserts on week.
-        #
-        # For an on-time cron this changes the window by the seconds the run
-        # takes to start. For a late one it changes it to the week the issue
-        # says it is about. Both are what the masthead already claims.
-        window = week_window(week)
+    week, dates = week_from_label(week) if regenerating else week_just_ended()
+
+    # One line for both paths, and that is the repair for
+    # `INC-2026-10-18-press-recovery-content-anchor`. The label and the date
+    # range were put on one anchor on 2026-09-28 and the nine queries that fill
+    # the body were left on `now() - interval '7 days'`, independently. On a
+    # Monday the two agree closely enough that nobody notices. On any other
+    # day, which is what a recovery always is, the issue prints the right week
+    # on the masthead and the seven days before the run underneath it,
+    # permanently, because `digests` upserts on week. That is why the 2026-W41
+    # recovery was withdrawn on 2026-10-18 rather than run, and the one-off
+    # manual run in this module's own docstring is exactly such a recovery.
+    #
+    # For an on-time cron this moves the bound by the seconds the run takes to
+    # start. For a late one it moves it to the week the issue says it is about.
+    # Both are what the masthead already claims.
+    window = week_window(week)
     prompt = open("/root/prompts/digest.md").read()
     short_prompt = open("/root/prompts/digest-short.md").read()
     # Which prompt wrote the issue is not known until the walk is over, so the
