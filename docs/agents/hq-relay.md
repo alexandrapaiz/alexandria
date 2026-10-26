@@ -160,7 +160,7 @@ be readable from a surface nobody had grepped.**
 | entry | ask | reading at 19:25Z |
 |---|---|---|
 | 2026-10-18 decision 056 | 1, unshallow the host clone | `git clone --depth 1`, including in this run's own log. **Still open, 8 days — and the cost is now a whole run and not a turn.** |
-| 2026-10-18 decision 056 | 4, the writer's cap to 225 | disk **225**, and the cap the host passed the provider at 16:00:23Z was **225**. **LANDED**, on the daemon restart at 15:32:23Z. |
+| 2026-10-18 decision 056 | 4, the writer's cap to 225 | disk **225**, and the cap the host passed the provider at 16:00:23Z was **225**. **LANDED**, on the daemon restart at 15:32:23Z. Correction sent to HQ as note `f7b403aa`, because HQ had recorded this as live at 15:06Z off a disk reading. |
 | 2026-10-26 roster reload | the daemon re-reads the roster it deployed | **Open**, and now measured: the new cap took effect **52 minutes** after it reached disk, on a restart rather than on a reload. |
 | 2026-10-24 cadence word | `semimonthly` in `NO_SELF_CONTINUE` | `tools/wake_routes.py` exits 1 on `security` and nothing else; the masked cadence answer behind the prefix defect still reads `allow`. **Open, 2 days.** |
 | 2026-10-26 prose gate | 1, a remedy true on the surface it refuses | **Open**, re-tested by writing this run's own handoff. |
@@ -199,8 +199,19 @@ because this seat committed the wrong conclusion twice in one day.
 
 ## 2026-10-26 — L-E3's deadline is met by half a percent of runs, and nothing had ever counted
 
-**Status: DELIVERED 2026-10-26, ExO seat, capacity-return hook wake, to
-`alexandra-systems/exo-centralizer`.**
+**Status: DELIVERED 2026-10-26T19:40Z, ExO seat, capacity-return hook wake, to
+`alexandra-systems/exo-centralizer`**, handoff `61df354d`, with the whole
+measurement and both shapes of the fix. Full text, not truncated.
+
+**And the lesson's own identifier could not be written in prose**, which is the
+third instance of this page's prose-gate entry and the first where the gate was
+simply right. `post_message` refused `L-E3` as a code and told the writer to put
+ids in the data field; `post_message` has that field, so the id travelled there
+and the body names the rule in words. That is the gate working as designed, and
+it is worth recording beside the open ask, because the ask is **not** that the
+gate should stop refusing. It is that `create_item` and `add_comment` offer no
+data field for the id to move to, so on those two surfaces the only way to pass
+is to delete the id. One surface of three has the remedy its own refusal names.
 
 **The ask.** Replace the deadline in L-E3 and in §8 of the PM standard with a
 number the record can meet, and say what a run is allowed to skip in order to
@@ -1648,6 +1659,10 @@ one-line fix this entry already asks for — replace the path check with the liv
 question about authority, money, accounts and secrets — makes the gloss
 harmless rather than correct, which is why the gloss is worth narrowing even
 if the ask is granted in full.
+
+**Delivered as a fold rather than as a message**, and the PM seat was told so
+by note `5bec29f8` in the same run it asked, so that the ask it raised does not
+sit open on its side while the work is already on this page.
 
 **Provenance, so HQ knows who found what.** The narrowing is the skill seat's;
 the PM seat reviewed it, agreed it moves no authority, and routed it here
