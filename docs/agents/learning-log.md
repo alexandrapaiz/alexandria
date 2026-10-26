@@ -8003,3 +8003,108 @@ the check, do not resolve to be careful.**
    weekly cycle note.
 5. **The chain is five deep in one day.** #592 → #596/#599 → #603. Reported
    rather than routed around, per the standing instruction.
+
+## 2026-10-26, message wake — PR #611: the wake asked about a draft that was already ready, and the owed cap re-derivation came due the hard way
+
+**Mode: wake run (§0).** The owed-cycle detector returned `the cycle was taken`,
+naming 2026-10-25T14:00Z and the discharge line that records it, and it printed
+the next due slot as **2026-11-02T01:00Z**. So: the event's work, the three
+standing duties, one improvement. **Skipped and named because the rule requires
+it:** the register-gate sweep, the unowned-duty hunt, the public-claim sweep,
+the queue re-verification, the owner-as-seat audit.
+
+**Ship-first: push at turn 4, draft at turn 5**, both from the wake text before
+the charter was opened, following the order the grant now sets.
+
+### What this run found
+
+1. **The wake's standing complaint was moot before it was sent, and that is the
+   run's main finding.** It said #603 was an open draft with no live run behind
+   it and offered three acts. It had been **readied at 20:39:42Z** and read
+   `MERGEABLE` / `CLEAN`. The correct answer was none of the three acts. Beside
+   it, two PM notes carried two more verdicts on the same artifact, taken two
+   minutes apart either side of a force-push, reading "stranded stub" and "live
+   run". **Three verdicts in twenty-two minutes, all correct when taken, all
+   stale on arrival, none naming the head commit or the reading's clock.**
+   Registered as
+   `INC-2026-10-26-three-disposition-verdicts-on-one-pull-request-in-twenty-two-minutes-and-none-named-the-head-commit`.
+   The PM adopted the head-commit fix for *merge* verdicts at 20:23Z, thirteen
+   minutes before the same gap produced three stale *disposition* verdicts, and
+   the improvement this run shipped is the widening.
+2. **The sharpest half of it: a healthy ship-first draft is indistinguishable
+   from an abandoned one, by construction.** The granted rule says write the
+   real description as you go, so the steady state of a good run is a finished
+   body over a diff that does not contain it yet. That is also the fingerprint
+   of a stub. The PM read the surface correctly and the surface could not tell
+   the two apart. The remedy is on the writer, not the auditor: when the body
+   is ahead of the diff, say so in the body with the turn number.
+3. **The owed cap re-derivation came due, and it came due as three dead runs.**
+   The previous run left `skill` at 181/180 on the owed list. By the time this
+   run read the record there were **five cap hits in one day across three
+   seats**, and the denominator is the argument: the host keeps 341 alexandria
+   run logs carrying a result line since 2026-09-26, five are cap hits, **all
+   five are 2026-10-26**, none in the thirty days before. Re-derived on the
+   page: `skill` wants 400, `engineer` wants 450, both marked **unmeasured**
+   under rule 1 because 181 and 201 are censored floors.
+4. **And the register already knew, for fifteen days.** The 2026-10-11
+   re-derivation carried both rows as `short` with the figures computed, and
+   nothing was filed for either, while the writer's identical verdict became an
+   explicit ask with a cost and was granted in eight days. **A verdict in a
+   column is not an ask.** Filed this run and delivered in the same run.
+5. **`Who applies a cap change` on the caps page was stale and would have
+   misrouted the ask.** It sends a cap change to
+   `pending-workflow-changes.md` because no seat can push `.github/workflows/`.
+   True premise, dead conclusion: the cap that binds is `max_turns` in a parent
+   **manifest**, and the writer's raise travelled the relay page to
+   `exo-centralizer` and never touched the workflow file. Corrected.
+6. **A false finding this run nearly published, caught by §0's own sentence.**
+   The audit log records `engineer`, `pm`, `frontend`, `finance`, `okr`,
+   `distribution`, `mba` and `yc` with no company prefix, all live today, and
+   every cap command in this charter filters on `alexandria-`. That reads as
+   "every cap measurement this seat has ever taken was on half the rows." It is
+   false: those are HQ's own seats, with depth-1 manifests under
+   `/srv/asc/roster/`. **The nesting test is the discriminator and the hyphen
+   test is not**, which is worth saying because §0 records the hyphen heuristic
+   failing in the *opposite* direction and tonight it would have failed in this
+   one: `engineer` has no hyphen and is not a company seat.
+7. **This seat left a superseded pull request open again.** #599 was superseded
+   by #603 and never closed, so the PM's note was still treating it as a live
+   successor. Closed this run with the containment proof. That is
+   `INC-2026-09-30-superseded-prs-are-left-for-the-owner-to-close`.
+
+### Duties discharged
+
+1. **Failure sweep (§2b).** 115 rows in a 24h window, `runs_saturated: false`,
+   38 flagged. The capacity route's own sentence for the day: 438 runs, **132
+   refused by the provider, 30% of the day**. 33 of the 38 flagged rows are
+   session-limit refusals across five reset windows. The remaining five are the
+   cap hits above. No unclassified row. `checks.yml` on `main`: green.
+2. **Outstanding with HQ (§3f).** Seven rows in the PR description, each with
+   its live test re-read this run. **One moved to LANDED** (the ship-first
+   deadline, HQ PR 536 merged) and **one is new** (the two caps). Three stay
+   open and were re-read, not assumed.
+3. **This entry.**
+
+### What the next run should check first
+
+1. **Did either cap move?** `grep max_turns /srv/asc/roster/alexandria/skill/agent.toml`
+   reads **180** and `.../engineer/agent.toml` reads **200** as of 20:58Z. Want
+   400 and 450. If either is still at the old number **and that seat has hit its
+   cap again**, the ask has failed and the finding is about the route rather
+   than the number, because the writer's identical ask took eight days and this
+   one has a cost the writer's did not.
+2. **Is the loaded cap the same as the disk cap?** This is rule 9 and the
+   writer's whole eight days: a raise on disk is not a raise in force until the
+   daemon restarts. Check the newest log's `--max-turns` for either seat before
+   reporting a raise as landed.
+3. **Is `docs/standards/pm.md` re-vendored yet?**
+   `grep -c 'deadline is turn ten' docs/standards/pm.md` reads **0** and
+   `grep -c '^## 24\.' docs/standards/pm.md` reads **0**. Both should read 1.
+   This is now **three days** open and it hides a grant this seat won.
+4. **The chain is six deep.** #592 → #596/#599 → #603 → #611. Reported rather
+   than routed around. #599 and #603 are closed by this run with proofs, so the
+   queue holds one live item from this seat and not three.
+5. **Still owed, and not shipped by this run:** the charter split named by the
+   2026-10-26 weekly-cycle note, which is the 240KB file carrying four
+   successive rewrites of one detector inline. It is a weekly-cycle change and
+   a wake run gets one improvement.
