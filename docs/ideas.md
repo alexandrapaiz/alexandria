@@ -21124,6 +21124,21 @@ has nothing to go red against.
 - Cost: $0 to build. Each regeneration spends one digest-sized model call,
   the same as a scheduled Monday, and nothing spends it without a person
   typing the week.
+- Built 2026-10-26 in PR #569, with two corrections to this entry's own plan,
+  written here because the next reader should see them beside the proposal
+  rather than only in a pull request body. **The refusal this entry asked for
+  is not there, and it would have been wrong.** "A refusal to rewrite a week
+  that has no row" assumed every gap is a bad row. `/library` publishes
+  2026-W39, W40 and W42, so the two weeks a named-week verb exists for,
+  2026-W38 and 2026-W41, have no row at all and the refusal would have
+  rejected both. The run says which case it is in before it writes instead,
+  which is what the refusal was reaching for. **And the week did not need
+  threading through `write_digest`.** The payload already carries the week and
+  the date range. What needed it was `gather`, whose nine time filters were
+  anchored on `now()` independently of the label, so a named week would have
+  printed the right masthead over the wrong seven days. That gap is
+  `INC-2026-10-18-press-recovery-content-anchor` and this entry did not see
+  it, which is the more useful of the two corrections.
 - Status: proposed
 
 ### 2026-10-26 — One command for "what is blocked right now, and for how long"
@@ -21237,5 +21252,129 @@ has nothing to go red against.
   because a bound that a daily append crosses by accident is one that a run
   reaches back to repair every second day, and every one of those repairs is
   a seat editing entries rather than building.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 — `resend` can mail an issue the quality gate refused to send
+- Trigger: wiring the no-send rule for a rewrite meant reading the hold path
+  beside it, and the hold's own alarm points at the bypass. When
+  `hold_for_quality` cannot get a blocking finding fixed in one rewrite,
+  `weekly` keeps the issue out of every inbox and mails the owner a note whose
+  closing sentence is "send it as it is with `resend`". `resend` reads one
+  column and calls `send_newsletter`. It opens no gate, reads no finding, and
+  leaves no record that a held issue was sent anyway. So the pre-send gate is
+  one command away from being advisory, and the command is the one the alarm
+  recommends.
+- What: `resend` reads the gate before it sends. If the body it is about to
+  mail has blocking findings, it refuses and prints them, and an explicit
+  `--override` is what sends it, with the findings and the override written
+  into the run's own output so the decision is on the record rather than in
+  somebody's memory of a Tuesday. The gate already runs on a body with no
+  database and no key, which is why this is cheap: `gate_issue(body, label)`
+  is the whole dependency and `tools/check_digest_quality.py` already travels
+  in the image.
+- First step: call `gate_issue` in `resend` between the `select` and the send,
+  and add the `override: bool = False` parameter. The test is a scripted body
+  with one blocking finding, asserting no send without the flag and a send
+  with it. `docs/product/digest-quality.md` is the standard that decides
+  whether an override should exist at all, and that reading comes first,
+  because a gate nobody may override is also a defensible answer and is one
+  fewer parameter.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 — A week's rewrite cannot be read before it is paid for
+- Trigger: `weekly --week 2026-W38` shipped today and nothing in this
+  repository can tell you what it will produce. The window is arithmetic and
+  is tested, but what that window returns is a database question, and no agent
+  seat holds a database credential. So the first real backfill will also be
+  the first time anybody sees how many claims a past week's window actually
+  contains, and it will see it after a model call has been spent and an issue
+  has been upserted over.
+- What: a `--dry-run` on `weekly` that stops after `gather`. It prints the
+  window, the payload line, the five stats, the row counts per evidence
+  stream, and the title and model of the issue it would replace, then returns
+  without calling a model and without writing. That is the difference between
+  backfilling a quarter of issues as a decision and backfilling them as a
+  discovery: a week whose window returns two claims should not be rewritten at
+  all, and today the only way to learn that is to rewrite it.
+- First step: `def weekly(week: str = "", dry_run: bool = False)` and an early
+  return after the `print(payload_line(...))` that already runs. The payload
+  line, the window line and the replaced-issue line are all printed before the
+  model call today, so the body of this is the return statement and a test
+  that no model and no write happen. `tests/test_press_backfill.py` already
+  drives `weekly()` against recorders, so the test is four lines in a file
+  that exists.
+- Cost: $0, and it saves tokens rather than spending them.
+- Status: proposed
+
+### 2026-10-26 — The issue says what the press read and never what it missed
+- Trigger: today's craft scan, below. Undermind publishes a recall number as a
+  product claim: 85% of the twenty most relevant papers inside ten minutes,
+  against 50%, 47% and 43% for three named competitors. Alexandria's issue
+  prints five counts and every one of them is work the pipeline did:
+  ingested, triaged, read in full, claims, links. Not one of them is a
+  denominator. A reader cannot tell a week when the press read everything
+  worth reading from a week when ingest fetched eleven papers because a feed
+  was down, and the second kind of week has happened: the availability check
+  in `pipeline/ingest.py` exists because ingest used to report success on an
+  empty run.
+- What: one more number in the stats line, with a denominator. "Of the N
+  papers these feeds published this week, M were triaged." Ingest already
+  knows N, because it fetched them and wrote `papers`, and `gather` already
+  counts M. The honest version of this number is coverage of what alexandria's
+  own sources published rather than coverage of the literature, and it should
+  say so in those words, because the second claim is one this product cannot
+  support and Undermind's is measured against a benchmark it built itself.
+- First step: add the denominator to `gather`'s stats query as a sixth count,
+  `papers` in the window with no triage row, and decide with the writer seat
+  whether it reaches the issue or only `/api/delivery`. The arithmetic is one
+  subquery in a query this change has already parameterised. The editorial
+  call on whether a reader should see a coverage number is the writer's and
+  the owner's.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Undermind publishes a recall number, where this press publishes five counts and no denominator (engineer seat, message run)
+- Trigger: the day's item was the press's backfill verb, so the scan went
+  looking for a product that makes a claim about how much of the literature it
+  found rather than how much work it did. Undermind was the stalest entry in
+  `docs/market/landscape.md` that is actually a competitor: added 2026-09-18,
+  last observed the same day, marked "search-snippet confidence only," 38 days
+  ago.
+- The product: Undermind (undermind.ai), an AI research assistant for
+  scientific-literature discovery and novelty checking. Already in the
+  landscape file under academic research tools, where the whole entry is four
+  lines and two of them are hedged.
+- What: read for one question, which is what number a search product puts in
+  front of a buyer. Undermind puts recall. This press puts throughput. The
+  conclusion is the entry directly above this one, and this scan is the
+  argument behind it rather than a second proposal.
+- Worth stealing: the number is a denominator, and it is on the landing page.
+  Undermind states 85% recall of "the 20 most relevant papers" inside ten
+  minutes against 50%, 47% and 43% for three competing systems, and separately
+  that its first engine was "10x better results than Google Scholar." Two
+  things make that worth stealing rather than only worth noting. The claim is
+  about completeness, which is the one property a literature product's buyer
+  cannot check for themselves, so saying a number at all is the move. And the
+  number is bounded by a benchmark Undermind defined, which it says plainly,
+  so the claim survives a sceptical read. A press that says "we triaged 47
+  papers" has told the reader nothing they can calibrate, and the same press
+  saying "47 of the 61 our sources published" has.
+- What alexandria does better: a report and a claim graph answer different
+  questions, and the difference shows up a month later. Undermind's unit is a
+  report produced for a query, with alerts when something new matches. Nothing
+  in it goes back and marks a finding superseded, because a report is finished
+  when it is written. This repository's `claim_links` carries `refines` and
+  `contradicts` as dated edges, the `deprecated_claims` view reads the
+  contradictions, and an issue can therefore tell a reader that something it
+  printed in September stopped being true in October. That is also why the
+  second-best thing here is the pricing comp rather than the product: Pro at
+  $16 a month billed annually sits just under this product's $20, and it buys
+  a search tool rather than a standing record.
+- First step: update the Undermind entry in `docs/market/landscape.md` with
+  today's pricing and the recall claim, and move it out of
+  "search-snippet confidence only." That file belongs to the market seat, so
+  this is a note addressed to it rather than an edit this seat makes.
 - Cost: $0.
 - Status: proposed

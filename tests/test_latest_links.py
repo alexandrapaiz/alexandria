@@ -131,6 +131,12 @@ def weekly_queries() -> dict[str, str]:
     moves or gains a line is still collected. Named by the line it starts on,
     which is what a failure needs in order to be findable. `%s` is psycopg's
     placeholder and `$1` is what the server sees.
+
+    Named placeholders are translated too, as of 2026-10-26, when `gather`
+    gained `%(since)s` and `%(until)s` so a regenerated issue can read the
+    week it is labelled with. This guard knew one of psycopg's two placeholder
+    styles and reported the other as a syntax error, which is a parse failure
+    in the instrument reported as a parse failure in the query.
     """
     found = {}
     for node in ast.walk(ast.parse(WEEKLY)):
@@ -140,8 +146,9 @@ def weekly_queries() -> dict[str, str]:
             continue
         if node.args and isinstance(node.args[0], ast.Constant) \
                 and isinstance(node.args[0].value, str):
-            found[f"weekly.py:{node.lineno}"] = \
-                node.args[0].value.replace("%s", "$1")
+            found[f"weekly.py:{node.lineno}"] = re.sub(
+                r"%\((\w+)\)s", "$1",
+                node.args[0].value.replace("%s", "$1"))
     return found
 
 
@@ -188,7 +195,19 @@ def test_the_issues_own_headline_counts_connections_and_not_opinions():
     class of flattery the owner's 2026-09-25 directive on the stats line
     ruled out.
     """
-    assert "having min(created_at) > now() - interval '7 days'" in WEEKLY
+    # The lower bound is now `coalesce(%(since)s::timestamptz, now() -
+    # interval '7 days')`, so the assertion names the `min()` and the default
+    # rather than the whole line. What it is actually pinning is the `min`: a
+    # connection is dated by its first sighting, so counting rows would let a
+    # prompt re-run inflate the issue's own headline. The window change moved
+    # the bound and left the `min` alone, which is why this assertion is
+    # narrowed rather than deleted.
+    assert "having min(created_at) > coalesce(" in WEEKLY
+    assert "now() - interval '7 days'" in WEEKLY
+    assert "and min(created_at) <= coalesce(" in WEEKLY, (
+        "the upper bound is what stops a regenerated past week from counting "
+        "connections drawn after the week it is labelled with"
+    )
     assert "connections_drawn" in WEEKLY
 
 

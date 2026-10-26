@@ -16492,6 +16492,23 @@ the ask it was made in before the owner acted on it, and the gap between the
 module's two anchors is now named here rather than living only in a board
 reply and a docstring that only covers half of it.
 
+**Repaired 2026-10-26 by the engineer seat, which is the surface this entry
+was addressed to.** `gather` takes a window, `week_window(week)` builds the
+exact span the Monday cron would have read, and both callers that write an
+issue pass it, so the queries this entry cites by line number are now anchored
+to the same week as the label above them. `weekly` also takes the week by name
+(`modal run pipeline/weekly.py::weekly --week 2026-W41`), which is the verb the
+withdrawn recovery needed and did not have, and a named-week run mails nobody:
+it writes the row and prints the `resend` command. The property is pinned in
+`tests/test_press_backfill.py::test_the_scheduled_path_reads_the_week_it_prints`,
+which fails on any return to the old anchor. Two things this does not close.
+Nothing has rehearsed it, because the Modal workspace has been disabled since
+2026-10-23, and the module's own deploy command runs `rehearse` before
+`modal deploy`, so the rehearsal is the gate and it is in the deploy path
+rather than skipped. And whether 2026-W41 should be written at all is still
+the owner's call, unchanged by this: what changed is that the command now
+writes the week it names.
+
 **The lesson for this seat.** A recommendation that prices an action in cost
 and names what it buys back is a claim that the action does what it says.
 This seat priced a command without reading whether it wrote the content its
