@@ -21024,3 +21024,61 @@ has nothing to go red against.
   the choice above to whoever wrote them.
 - Cost: $0. One test file edit or two ledger entries completed.
 - Status: proposed
+
+### 2026-10-26 — The pre-send gate blocks on eight rules and five of the generator's absolute rules have no gate at all (writer seat, run 54)
+- Trigger: grading `2026-W40` for the first time, twenty-one days after it was
+  sent, and re-reading `2026-W42` with commands that can finally see it. Every
+  live defect in both editions is a rule `prompts/digest.md` already states in
+  its most explicit available form, and not one of them can hold a send.
+- The command, which is this entry's work list and re-derives it on demand:
+  ```
+  python3 docs/voice/check_voice.py ungated
+    absolute rules in digest.md            11
+    BLOCK rules in check_digest_quality.py  8
+    of those the press can hold             6
+    of those nothing can hold               5
+      UNGATED    the semicolon
+      UNGATED    the em dash
+      UNGATED    law 8, the link reaches the full text
+      UNGATED    law 8, every item carries its link
+      UNGATED    law 14, a list and a written turn
+  ```
+- `check_voice.py blockrules` has asked this question in one direction since it
+  was written, whether every rule the pre-send gate blocks on is answered in
+  the prompt that writes the short edition. Nothing had ever asked it in the
+  other direction, and the other direction is the one where issues go out
+  wrong. A rule with a target of zero and nothing in the pipeline able to
+  refuse the send is enforced at the reliability of a model reading a
+  thirty-four-thousand-token file, which is L-A22 in one sentence.
+- The sharpest row is the semicolon, because the gate that would hold it is
+  already there and is pointed at four other characters. `TYPESETTER` in
+  `tools/check_digest_quality.py` blocks the non-breaking hyphen, the narrow
+  no-break space, the thin space and the multiplication sign. The generator
+  says of the semicolon and the em dash that "the target is zero and there is
+  no budget", twice, and names the exact construction that produces them, "two
+  finished sentences in a balanced contrast". `check_voice.py marks --live`
+  counts eleven across the three served editions: one on `2026-W39`, eight on
+  `2026-W40`, two on `2026-W42`, and both of 2026-W42's are that construction.
+  Two dictionary keys and one `add(BLOCK, ...)` is the whole change for that
+  row, and `quoting()` in `docs/voice/check_voice.py` already holds the
+  exemption logic for a mark inside a quotation.
+- This does not re-file
+  `2026-10-26 — The abs-to-html rewrite is a string substitution, so stop asking a model to do it`,
+  which is run 51's, filed four hours earlier, and is the right entry for the
+  two law 8 rows above. It measured seven of nine links by hand with `curl`.
+  What this run added there is the gate rather than the finding:
+  `check_voice.py links` now asks arXiv per identifier and prints the
+  violations apart from the fallback, so the measurement re-runs on every
+  edition instead of once. The pipeline change that entry asks for is
+  unchanged and still the fix.
+- Nor does it re-file
+  `2026-10-03 — The masthead recites three of the four internal slot names, in the second line of every issue`,
+  which is the third filing on `MASTHEAD` and is about a line the model never
+  writes. The rows above are about rules the model does write and nothing
+  checks.
+- First step, and it is one row rather than five: the semicolon and the em dash
+  as `add(BLOCK, "join-punctuation", ...)` in the pre-send gate, with the
+  quotation exemption. That converts the one defect live in the current edition
+  into a held send, and it is the row with no judgment in it at all.
+- Cost: $0. Two keys and one block in a file that already has eight.
+- Status: proposed
