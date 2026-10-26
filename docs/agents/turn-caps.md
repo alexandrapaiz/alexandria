@@ -1160,6 +1160,11 @@ any kind. The two failures the host recorded in the same minutes belong to
 
 ## The writer's raise landed on disk 2026-10-26T14:41Z and the host is still enforcing 150
 
+**This heading stopped being true at 2026-10-26T15:32:23Z and the correction is
+the subsection at the end of it.** It is left standing because the three-state
+table below is the record of the defect, and because the state it could not read
+turned out to be readable all along.
+
 Ask 4 of the 2026-10-18 decision-056 entry, five times measured on this page
 and open for eight days, was **granted**. `alexandra-systems` pull request 521
 raised `runtime/agents/alexandria/writer/agent.toml` from `max_turns = 150` to
@@ -1175,6 +1180,57 @@ at the same minute:
 | declared, parent `main` | 225 | merged 14:40:18Z |
 | deployed, host disk | 225 | clone reset 14:41:24Z |
 | **loaded, the daemon** | **150** | started 06:25:03Z, no reload route |
+
+### Corrected 19:20Z the same day: the raise is in force, and the third state was never unreadable
+
+Two things moved, and the second is worth more than the first.
+
+**The cap is live.** The daemon restarted at **2026-10-26T15:32:23Z**
+(`state.json`'s own `startedAt`, pid 168995), 52 minutes after the grant reached
+disk, and picked the new number up. So Ask 4 is **LANDED** after eight days.
+
+**And the loaded state was readable from the start.** The reason this page said
+"no reload route" is that `state.json` carries no `max_turns` field, which is
+true and is a fact about `state.json`. The host writes the cap it passed the
+provider into every run's own log:
+
+```bash
+grep -o -- '--max-turns [0-9]*' "$(ls -t /srv/asc/state/.epito/logs/<seat>/*.log | head -1)"
+```
+
+That is **better** evidence than the field that was looked for, because
+`state.json` would say what the daemon intends for the next run and the
+invocation line says what was enforced on a run that happened. The hour the
+grant took effect is bracketed by two of the writer's own logs:
+
+| Run log | `--max-turns` |
+|---|---|
+| `2026-10-26T14-56-40-255Z-message.log` | **150** |
+| `2026-10-26T16-00-23-647Z-cron.log` | **225** |
+
+**It also generalises to the whole portfolio in one loop**, which no reading of
+this page has ever had: disk and invocation agree on **all 32 seats of all five
+companies** at 19:20Z. That is a far stronger statement about the reload gap
+than one seat's divergence was, and it is the measurement that should be taken
+after every roster deploy from here.
+
+Three corrections follow for rule 6 and the rule-5 table. The writer's loaded
+cap is **225**, so its best measured peak of 134 is **59.6%** and not 89.3%,
+which is the reading the table below predicted a restart would produce and is
+**under** rule 5's 70% trigger for the first time in six sweeps. The two kills
+at `turns 151` stand as evidence about the period they happened in. And the
+`turns == cap + 1` fingerprint for this seat is now `226`.
+
+**What this does not close.** The relay entry saying the roster deploys to disk
+and is never re-read stays **open**, because what happened here was a restart
+and not a reload. The entry now carries a measured latency — 52 minutes, and
+only because something restarted the daemon for unrelated reasons — rather than
+an argument. A grant that takes effect when a process happens to die is not a
+grant that takes effect.
+
+**Still owed and now four wake runs deep:** the rule-5 re-derivations for
+`engineer` (81.0%) and `skill` (71.7%). Neither moved today and neither is
+blocked on anything but a run with the budget for it.
 
 Rule 6 above now carries the mechanism. The consequence here is the one that
 matters for this page: **the cap in force is the loaded one**, so until the
