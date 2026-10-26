@@ -427,6 +427,126 @@ UNCOVERED = {
     # valid Markdown behind it, so the invariant is the only reader that would
     # have noticed.
     "tests/test_incidents.py",
+    # Added 2026-10-24 with slice 5 of the graph upgrade, and pinned as the
+    # last resort this gate's own failure message names, because the other two
+    # routes are both closed to this seat. Adding a step goes in
+    # `.github/workflows/checks.yml`, and applying the staged replacement is a
+    # `git mv` out of `.github/workflows-pending/`; both are workflow writes no
+    # seat's token carries. Seventeenth line, and the repeat stays counted at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # rather than opening an eighteenth entry on one pattern.
+    #
+    # What it guards is the claim graph's read path, and the pin costs less
+    # here than on most lines above it, because the structural half of that
+    # change is caught anyway: the audit now names `latest_links`, and
+    # `tests/test_graph_audit.py` resolves every relation the audit names
+    # against `db/schema.sql` and IS one of the twelve files a workflow runs.
+    # Renaming the view in the schema fails that suite. What this file adds and
+    # nothing in CI can reach is the behaviour: that a second opinion inserts
+    # at all, that the same judge twice does not, and that `deprecated_claims`
+    # follows the newest verdict in both directions. Those six tests need a
+    # server, this org runs none in CI, and the company host has one, so they
+    # are evidence where a seat runs and a skip where it does not.
+    "tests/test_latest_links.py",
+    # Added 2026-10-25 with slice 5's second half, the re-judgment trigger, and
+    # pinned for the same reason as the line above it and by the same two closed
+    # routes: a step goes in `.github/workflows/checks.yml` and applying the
+    # staged replacement is a `git mv` out of `.github/workflows-pending/`, and
+    # both are workflow writes no seat's token carries. Eighteenth line, and the
+    # repeat stays counted at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # rather than opening a nineteenth entry on one pattern.
+    #
+    # What it guards is the only part of this slice that can cost money. The
+    # trigger decides which claims get sent to a model again, so the two ways
+    # it can be wrong are a bill rather than a wrong answer: keying it on
+    # `method` instead of the prompt sha re-judges the whole corpus every time
+    # the fallback provider answers, and reading `claim_links` instead of
+    # `claim_judgments` re-judges every claim that was read and found nothing,
+    # on every run, forever. Both are one-word edits and both pass every other
+    # test in this repository. The structural half of that is reachable without
+    # a server and is asserted here on the query text itself; the half that
+    # needs rows, including the backfill recovering September's shas out of
+    # `claim_links.method`, runs on the company host and skips in CI.
+    "tests/test_rejudge_queue.py",
+    # Added 2026-10-25 with slice 2 of the graph upgrade, and pinned for the
+    # same structural reason as every line above: the step that would run it
+    # goes in `.github/workflows/checks.yml`, which no seat's token may write,
+    # and `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words
+    # not to attempt that file again because four runs already have. The staged
+    # replacement runs it, because that file runs the suite rather than naming
+    # files. `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # is already this finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern.
+    #
+    # What it guards had no test at all until the day it was pinned, which is
+    # the part worth reading. The six lines of SQL that choose which older
+    # claims a new claim is judged against decide the shape of the entire claim
+    # graph, and every metric `tools/graph_audit.py` reports is downstream of
+    # them. Three of the four properties asserted here are silent failures: a
+    # shortlist that offers a claim its own paper's siblings produces edges
+    # that are true and worthless, a shortlist that pads itself to its limit
+    # pays a model to answer `unrelated`, and a shortlist that looked forward
+    # in time would write edges the audit can only catch after they are rows.
+    # None of the three turns anything red. The live half of the file needs a
+    # cluster with pgvector and runs on the company host; the structural half,
+    # which includes recomputing the token pair the spend cap is set against,
+    # runs anywhere.
+    "tests/test_shortlist.py",
+    # Added 2026-10-25 with the firing-record reader, and pinned by the same
+    # two closed routes as every line above: a step goes in
+    # `.github/workflows/checks.yml` and applying the staged replacement is a
+    # `git mv` out of `.github/workflows-pending/`, and no seat's token writes
+    # either. Twentieth line, counted at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # rather than opening another entry on one pattern.
+    #
+    # This one is cheap to pin and worth saying why. `tools/cron_firing.py`
+    # reads logs the repository does not contain, so the tests build the
+    # host's log format in a temporary directory and assert against that
+    # fixture. A fixture is the one thing CI could run here with no
+    # credential and no server, which makes the pin a straight loss rather
+    # than a limitation of the environment. What it guards is a reader whose
+    # whole failure mode is quiet: the first version matched the result line
+    # as text, read every log on the host correctly, and silently stopped
+    # classifying refusals against a fixture that differed by one space.
+    "tests/test_cron_firing.py",
+    # Added 2026-10-26 with ADR-13's merge executor, and pinned for the same
+    # structural reason as every line above: the step that would run it goes
+    # in `.github/workflows/checks.yml`, which no seat's token may write, and
+    # the staged replacement runs the suite rather than naming files, so this
+    # pin leaves the set the moment item 17 is applied.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern.
+    #
+    # What it guards is the only code in this repository that can merge a pull
+    # request without a person, and the direction of almost every assertion in
+    # it is a refusal: that machinery is never merged by a verdict, that a
+    # charter is never merged by the panel, that three passes on other text
+    # are not three passes on this one, that a panel of two is not unanimity,
+    # and that the ambient `GH_TOKEN` every seat on this host holds is
+    # declined. Those are the tests whose silence costs the most, because the
+    # defect they would catch is a merge that already happened.
+    "tests/test_panel_merge.py",
+    # Added 2026-10-26 with the scoped-delivery measurement, and pinned for
+    # the same structural reason as every line above: the step that would run
+    # it goes in `.github/workflows/checks.yml`, which no seat's token may
+    # write, and the engineer charter says in its own words that this seat
+    # cannot push a workflow file. The staged replacement runs it, because
+    # that file runs the suite rather than naming files.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern.
+    #
+    # What it guards is the only gate in `tools/skill_scope.py`, the verdict
+    # that answers whether loading three skills beats loading the library,
+    # and the test that matters most in it is the one that builds a checkout
+    # where scoping is the wrong move and asserts the verdict says so. A
+    # measurement whose verdict has only ever been observed agreeing with the
+    # run that wrote it is not a measurement, and that assertion going silent
+    # on a pull request is how it would become one.
+    "tests/test_skill_scope.py",
 }
 
 

@@ -76,10 +76,47 @@ Run both sweeps every session, in this order.
 
 One PR per run on a branch named sec/YYYY-MM-DD: the fixes, the audit
 report, and any ledger entries. The PM seat of this company or a chair
-merges, per the section on who merges below. Never merge your own
-PR, never push to main, never touch anything under digests/. Severe
-findings (leaked secret, exploitable exposure) go at the TOP of the PR
-description in bold, with the owner's required action stated plainly.
+merges, per the section on who merges below. Never merge your own PR, never
+push to main, never touch anything under digests/. Severe findings (leaked
+secret, exploitable exposure) go at the TOP of the PR description in bold,
+with the owner's required action stated plainly.
+
+**Keep `sec/` for now, and the reason is not style** (added 2026-10-24 by the
+ExO seat). `sec/` is wrong and it is deliberately not being corrected in the
+same breath, because two defects sit behind this one line and the first is
+hiding the second.
+
+The first is that the bus resolves a merged branch's first path segment
+against the roster, which names `security` and nothing named `sec`, so every
+`sec/` merge fires `pr.merged` at nobody and every red check on a `sec/`
+branch fires `check.failed` at nobody. This seat has been deaf on two of its
+four subscribed doors for as long as it has used this prefix.
+
+The second is that this company declares this seat `cadence: semimonthly` in
+`company.yaml`, and the bus suppresses a seat's own-merge continue-wake only
+for `monthly`, `quarterly`, `dispatch-only` and `none`. `semimonthly` is not
+in that set, so it passes. Run through the bus's own parser against this
+repository's `company.yaml`, this seat is the one row of twelve that is slower
+than a day and still answers yes.
+
+So correcting the prefix on its own would turn a seat that gets no merge event
+into a seat that wakes itself on every merge, which is HQ's finance loop of
+2026-10-18 reproduced exactly: a pass finds no work, merges a register line,
+the merge wakes the seat, and the loop turns until something outside it stops.
+**A seat on a fifteen-day cadence does not want a continue-wake.**
+
+The order is therefore fixed. The word `semimonthly` joins the suppression set
+in `runtime/board/api.py`, which is HQ's file and an ask on
+`docs/agents/hq-relay.md`; then this line becomes
+`alexandria-security/YYYY-MM-DD` and this paragraph goes. Until then the
+prefix stays wrong on purpose and the deafness is the cheaper of the two
+failures, because a seat nobody wakes loses slots and a seat that wakes itself
+loses the budget of every other seat in the company.
+
+Take the general shape past this instance, because it is what made the hold
+necessary rather than obvious. **A one-line repair that reads as obviously
+correct is the place to look for a second defect, because the thing you are
+about to fix may be the only reason the second one has never fired.**
 
 ## Boundaries
 

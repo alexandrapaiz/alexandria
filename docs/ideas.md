@@ -8479,7 +8479,7 @@ graphs.
   `tools/skill_eval.py --check` rejects and `--skill` refuses to run. Three open
   pull requests carry eight of these files each: #151, #152 and #159. The same
   files also carry `subject_model` and `judge` at the top level and no `policy`
-  block at all, so rule 1 of `docs/product/skill-validation.md` §V5 is unmet on
+  block at all, so rule 1 of `docs/product/skill-validation.md` section V5 is unmet on
   every one of them: the repetitions and the threshold are not registered
   anywhere, and `normalize` quietly supplies a default of three repetitions,
   which is the run choosing its own n.
@@ -14366,6 +14366,18 @@ that triggered it, per the charter.
   `policy.require_certificates: true` becomes settable, and `ams-t5` moves back
   to the documented form.
 - Cost: $0.
+- Update, 2026-10-26 (engineer seat): the first step is built, inside sprint
+  2026-10-26 item 2, as `skill_eval.criterion()`. `--check` moved from "4 of
+  265 rubric criteria are tied to a certificate" to "31 of 265" and from 416
+  findings to 389, the 27 cleared being `harness-engineering`'s, which had
+  carried a certificate on every criterion all along. `section` was being
+  dropped by the same literal and is carried now too; no suite writes it yet,
+  so that half was latent. The two edits this entry asks of the suite files,
+  turning `require_certificates` on and moving `ams-t5` back to the documented
+  form, are the skill seat's: the engineer charter does not write into
+  `skills/`. **The status line is left as the owner set it**, because this
+  entry was never moved to `accepted` and `proposed` to `built` is not a
+  transition this seat may make.
 - Status: proposed
 
 ### 2026-10-13 — Nothing in CI runs the two checks that grade the skill library (skill seat)
@@ -18311,6 +18323,78 @@ cutting gates to make a budget.
   Ban list 135 is the entry.
 - Status: proposed
 
+### 2026-10-24 — The skill library's shelves are the research program's shape, and four of nine skills have no shelf that names them (frontend seat)
+- Trigger: board item `a1a2f14a`, taken this run, and the shelf audit under
+  `docs/design/reviews/2026-10-24-catalog-shelves/NOTES.md`. The code half is
+  fixed in this pull request and this is the half that is words rather than
+  code, so it stops here per the copy pipeline.
+- What the fix exposed. `site/lib/skill-shelves.js` was filing four of the nine
+  skills under a heading that misdescribed them, because it matched shelf
+  keywords against the whole `description`, which after its first sentence is a
+  list of "use when" triggers written for an agent's router. Matching the
+  subject sentence instead is correct and it is now what the page does. The
+  four skills then land on the catch-all shelf, which is honest and is not
+  organisation.
+- The finding underneath. The six shelves come from docs/vision.md section 2
+  and the owner's coverage areas of 2026-09-18, so they are the research
+  program's four layers rather than the library's contents. The library has
+  grown past them. It holds `agent-containment` and `agent-security-measurement`,
+  which are about the boundary an agent runs inside and the defences around it,
+  `evaluation-integrity`, which is about the instrument that judges an output,
+  and `skill-library-engineering`, which is about the skill file itself. No
+  shelf names any of those subjects. Meanwhile `Multi-agent systems`,
+  `Serving and inference` and `Multi-modal systems` all read `NONE YET`.
+- Why this seat is not fixing it. A shelf carries a name and a blurb, and both
+  are reader-facing copy. The owner's division of 2026-09-19 is that the writer
+  drafts and this seat sets, so naming a shelf at the keyboard while staring at
+  the layout is exactly the move the division forbids. What this run can report
+  is the surface and the gap, which is this entry.
+- What is proposed, for the writer's copy round and then the owner's verdict.
+  Two shelves, one covering agent security and containment and one covering
+  evaluation and measurement, drafted as name plus blurb in the same shape the
+  six existing shelves use. Worth noting that agent containment is already a
+  named priority inside Layer 4 of the research program, so a shelf for it is
+  consistent with the source the other six came from rather than an invention.
+- One smaller line in the same round. The catch-all shelf's blurb reads
+  "Distilled and shelved, on a shelf of its own for now." It was written when
+  at most one skill could land there and it now sits above four.
+- Status: proposed
+
+### 2026-10-26 — /skills is the only route not on the house page shell, and the fix costs one wrapped name (frontend seat)
+- Trigger: ban list entry 29's own test, run this run on ten routes at 1440.
+  The entry says to measure the h1's left edge on every route at the widest
+  viewport and read the numbers side by side, because each page is
+  individually fine and only the comparison shows the drift.
+- The numbers. Nine routes put the h1 at x=404 at 1440 and x=94 at 820, off a
+  `.page` shell of 680px: library, pricing, mission, graph, routines, the
+  issue, the 404 and left-behind. `/skills` puts it at 364 and 54, because
+  `.skills-page` overrides the shell to 760px. So moving between pages slides
+  the masthead 40px. The override arrived in the "Rebuild the skills library
+  to read at fifty skills" commit and carries no comment giving a reason.
+- Why this seat did not simply change it. Rendered at 54 skills, 680 works:
+  no overflow at any viewport, columns stay declared, the metadata holds its
+  baseline. But the name column drops from 409px to 344px and one of the 54
+  names wraps to two lines, taking that row from 50px to 75px. The name is
+  `fixture-15-batch-scheduling-under-latency-objectives`, 51 characters,
+  longer than any skill the library actually holds, so nothing in the real
+  catalogue wraps today and a long future name would.
+- Why it is a proposal and not a diff. Entry 29's test flags this and entry
+  29's diagnosis does not fit it: that entry is about a shell sized for a
+  state most visitors never reach, and every visitor to `/skills` reaches the
+  table the 760 was sized for. Reversing a deliberate decision from the
+  fifty-skill rebuild on a 40px drift is a call that wants the owner's eye on
+  the two frames rather than this seat's judgement at the keyboard.
+- The evidence is committed, so the decision can be made from pixels rather
+  than from this paragraph: `docs/design/reviews/2026-10-26-continuation/`
+  holds `zoom-skills-shell680-trial.png` (the 680 trial, scrolled to the row
+  that wraps) beside the shipped `skills-desktop-after.png` at 760.
+- What is proposed. Either `.skills-page` goes to 680 and joins the house
+  shell, accepting the wrap, or it keeps 760 and gains the comment it never
+  had, saying the table is why. Both are one line. The thing this entry is
+  against is the third option, which is that it stays 760 with no reason
+  recorded and the next run measures it again.
+- Status: proposed
+
 ### 2026-10-24 — Craft scan: Consensus names the corpora it covers and never the ones it does not (engineer seat, message run)
 - Trigger: today's build was about a guard that reported on the apps it could
   measure and said nothing about the apps it could not, so the scan asked the
@@ -19247,4 +19331,1600 @@ A fold is a resolution with better odds, not a different kind of act.
   piece of work and it would make the register's silences readable for the
   first time.
 - Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — The deepening needs a third command, and the containment proof needs its exit status read (engineer seat, message run)
+- Trigger: this run ran the charter's two shallow-clone commands at turn six,
+  exactly as written. `git fetch --unshallow` succeeded,
+  `git rev-parse --is-shallow-repository` then printed `false`, and the next
+  `git push -u origin HEAD` failed because the clone still held
+  `+refs/heads/main:refs/remotes/origin/main` and could not store a
+  remote-tracking branch. Reproduced on a fresh clone and filed as
+  `INC-2026-10-24-the-unshallow-remedy-leaves-the-single-branch-refspec-so-the-containment-proof-cannot-see-the-branch-it-proves`,
+  the eighth entry on the shallow clone and the first where the written remedy
+  is the defect.
+- What: `--depth 1` implies `--single-branch`, which writes a refspec, and
+  `--unshallow` deepens history without touching it. So a seat can hold a
+  complete history of `main`, get a true `false` from the check it was told to
+  trust, and still be unable to name any other branch in the repository. The
+  expensive consequence is not the failed push. It is the charter's containment
+  proof, `git log --oneline origin/<the-older-branch> ^HEAD   # must print
+  nothing`, which in that state prints nothing to stdout and exits 128. The one
+  proof standing between a seat and closing another run's pull request reads as
+  passed at the exact moment it cannot see that run's work.
+- First step: two charter lines in `prompts/engineer-agent.md`, which is why
+  this is a ledger entry and not a commit. Add
+  `git config --replace-all remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*' && git fetch origin`
+  as the third command beside the two already there, and give the containment
+  proof a `|| exit 1`. Every other seat's charter carries the same two-command
+  clause, so the same edit applies twelve times.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Entropy is the discriminator the secret gate is missing, and `regexTarget` is the name for what it hardcodes (engineer seat, message run)
+- Trigger: today's fix to `tools/check_authority.py` had to invent, in code,
+  the distinction between "the line matched" and "the matched span sits inside
+  a pattern definition". The craft scan below found that gitleaks ships that
+  distinction as a named config field, and ships a second discriminator this
+  gate does not have at all.
+- What: `CREDENTIAL_SHAPE` is `[A-Za-z0-9_\-+/=.]{20,}`, which is length and
+  charset and nothing else. The tool's own comment already concedes the cost:
+  "a long constant like `READ_WRITE_ALL_THINGS_HERE` now reads reserved", and
+  it keeps that because a false `reserved` is the cheap error. Minimum Shannon
+  entropy on the matched value separates a long English constant from a real
+  token without giving up the fail-closed direction, because a credential that
+  is genuinely low-entropy still fails the threshold and still reads reserved.
+  Roughly fifteen lines and no new dependency.
+- First step: add `shannon(value)` beside `CREDENTIAL_SHAPE` and a threshold,
+  then measure it against the fixtures `tests/test_check_authority.py` already
+  carries before changing any verdict, since those fixtures are the only real
+  labelled set of credential-shaped and setting-shaped values in the tree.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Four items in one lane, every one of them closing with a hand the seat does not have (engineer seat, message run)
+- Trigger: this run was told to take the next item in its lane on the board.
+  All four engineer items in `This sprint` say in their own bodies that they
+  close with a hand on a Modal token or on the site's environment: the weekly
+  deploy drift, the disabled Modal workspace, the missing 2026-W41 issue, and
+  the three unset `POLAR_CHECKOUT_*` values. The oldest has sat there since
+  2026-10-14. Finding that out cost this run five turns of reading, and it will
+  cost the next run the same five.
+- What: these cards are correct, they are well written, and they are in the
+  wrong place. A card in a seat's lane is a promise that the seat can act on
+  it, and a card that names its own blocker in paragraph four is not that. The
+  cards already know the answer, so the board could read it: a lane with an
+  owner-handed blocker belongs in a column of its own, where the owner reads
+  four asks in one screen rather than four seats rediscovering them one run at
+  a time.
+- First step: not a column, which is the board owner's call, but the cheap half
+  that belongs to this seat. `tools/board.py show` already prints a lane; have
+  it mark an item whose body names an owner-handed blocker, using the same
+  phrases the four cards independently chose ("needs your hand", "it is not
+  mine", "no agent seat"). A seat then sees the blocked ones before it reads
+  them, and the count is evidence for the PM's Monday about how much of this
+  lane is actually workable.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Craft scan: gitleaks names the thing this run hardcoded, and hands every escape hatch to the author (engineer seat, message run)
+- Trigger: today's item was a pattern-matching gate that matched its own
+  patterns. Secret scanners have had that exact problem for years, so the scan
+  went to the one with the largest installed base rather than to another
+  research product.
+- What: one field worth stealing, one design this repository already does
+  better. Both below.
+
+**Observed 2026-10-24, from gitleaks (`github.com/gitleaks/gitleaks`, README on
+`master`).** A gitleaks rule carries an allowlist, and the allowlist has five
+criteria: `paths`, `regexes`, `stopwords`, `commits`, and a `condition` of
+`"OR"` or `"AND"` over them. A rule may also carry an `entropy` field, which
+sets a minimum Shannon entropy the matched secret has to clear before it is
+reported. Outside the config there are two more hatches: a `gitleaks:allow`
+comment on a line, and a `.gitleaksignore` file listing findings by
+fingerprint.
+
+**The thing worth stealing is one field name, `regexTarget`.** It takes
+`"secret"`, `"match"` or `"line"`, and it says which of those three texts the
+allowlist is tested against. Today's run spent most of its thinking on exactly
+that choice and then hardcoded one answer per question: span containment for
+spend and account, the right-hand side for a secret assignment, the whole line
+for a comment. Gitleaks learned the same lesson and lifted it into
+vocabulary, which is what makes it reviewable. A reader of
+`tools/check_authority.py` cannot today ask "what is this exemption matched
+against" and get an answer shorter than the function. That is a refactor rather
+than a fix, and it is cheap: three call sites.
+
+**What alexandria does better, and it is the half gitleaks got wrong.** Every
+one of those five hatches is author-asserted and nothing re-reads it. A `paths`
+entry blinds the scanner to that path forever, silently, and a
+`.gitleaksignore` fingerprint survives the rewrite of the code it was granted
+for. The 2026-10-24 incident on this gate named both candidate fixes and chose
+against the gitleaks one deliberately: excluding
+`tools/check_authority.py` by path is one line, and it blinds the gate to a
+real credential pasted into the one file a reader would least expect to be
+unwatched. What shipped instead exempts a position, carries no file name, and
+is pinned by a test that reads the gate's live source rather than a fixture
+copied out of it. An exemption that grows too broad goes red on the next run of
+the suite. Gitleaks has no equivalent, because an allowlist in a config file
+has nothing to go red against.
+- First step: give `tools/check_authority.py` the field gitleaks named, which
+  is one argument on the three exemption call sites saying what the exemption
+  is matched against, so a reader can ask the question without reading the
+  function. Added 2026-10-24 by the next run of this seat: this entry and the
+  Graphiti one below it were the two that pushed
+  `test_every_live_entry_carrying_a_readable_status_has_the_contract_fields`
+  from its 206 to 208, and that bound is a ratchet, so the fields are supplied
+  rather than the number raised.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — A real Postgres is already on the seat host, so SQL can be tested on rows
+- Trigger: slice 5 needed to prove that a view returns one current answer per
+  pair, which is a fact about a server and not about a string. Probing for
+  `psql` found `initdb`, the whole PostgreSQL 16 server and pgvector already
+  installed on the company host, and `db/schema.sql` loaded into a throwaway
+  cluster on the first attempt. Five test files in this repository open with
+  some version of the sentence "no database runs anywhere in this org", and
+  that sentence is true of CI and false of the machine every seat runs on.
+- What: lift the throwaway-cluster fixture out of
+  `tests/test_latest_links.py`, where it is written once already, into a shared
+  `tests/pg_fixture.py` that starts a cluster when the binaries exist and skips
+  when they do not. Then any seat can test a view, a constraint, a migration or
+  an `on conflict` clause against rows rather than against a substring of its
+  own source. The parser-level guards stay exactly as they are, because they
+  are the half that runs in CI; this adds the half that catches a statement
+  which parses, resolves, and answers the wrong question, which is the failure
+  every one of those docstrings names as the one they cannot catch.
+- First step: move the fixture, then point one existing suite at it, starting
+  with `tests/test_graph_audit.py`, whose `integrity` metric now has a defect
+  that only rows can distinguish from a correct answer.
+- And the part of this that is not in this seat's hands, recorded here because
+  the register it belongs to already has it and nothing has acted on it:
+  `checks.yml` enumerates test files one step at a time, 12 of this
+  repository's 58, so `tests/test_latest_links.py` runs for any seat on this
+  host and in no CI run.
+  `INC-2026-10-06-a-guard-defined-below-its-own-runner-never-ran` names the
+  class, says no seat's token carries `workflows` permission so the seat that
+  writes a test cannot enrol it, and sets the honest order as green `main`
+  first and then one `python3 -m pytest tests/ -q` glob, because `main` held 19
+  failing tests when that was written. **Both halves of that order are now
+  done except the move.** The glob is written: it is line 110 of
+  `.github/workflows-pending/checks.yml`, which `docs/agents/pending-workflow-changes.md`
+  tracks as a standing lane-one item, and applying it is a `git mv` one
+  directory up rather than an edit. And the green-`main` condition it waited on
+  is met, with one correction worth having: `main` was red tonight on
+  `tests/test_ledger.py`, at 207 against a bound of 206, because the previous
+  run of this seat appended a scan note without its contract fields and
+  `tests/test_ledger.py` is itself one of the 46 files no workflow runs. That
+  is the pin list's own thesis arriving as a real red: the gate that measures
+  the ledger is silent on the pull request that pushes its count up. Fixed in
+  the same run that found it, by supplying the fields rather than raising the
+  ratchet.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — `on conflict do nothing` reports success for work it refused
+- Trigger: the defect slice 5 fixed had been live for a month and nothing could
+  have noticed it. `pipeline/interpret.py` inserts an edge with `on conflict do
+  nothing` and then counts `linked += 1` unconditionally, so a run that wrote
+  nothing at all reported the same number as a run that wrote every edge. The
+  reproduction on a real server printed `INSERT 0 0` and the pipeline's own log
+  would have printed `linked 5`.
+- What: count what the server says it did. `cur.rowcount` after that insert
+  separates edges written from edges the key refused, and the run's closing
+  line prints both. A refusal is not an error and should not raise; it is a
+  number that was zero every day for a month and would have named the defect
+  the first time anybody read it.
+- First step: read `rowcount` at the one insert in `pipeline/interpret.py`,
+  carry a second counter, and print "N edges written, M refused by the key" in
+  the line that prints `linked` today.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — The press cannot be rehearsed while the workspace is off, so rehearse it locally
+- Trigger: this run changed five SQL reads in `pipeline/weekly.py`, and
+  `docs/agents/press-rehearsal.md` is the third gate in the runtime-change
+  ladder for exactly that kind of change. The rehearsal is a Modal function, the
+  workspace is switched off (this lane's own card, 2026-10-23), and no agent
+  seat holds a Modal token, so the gate cannot be satisfied by any seat on any
+  day until the owner's hand returns. The change ships unrehearsed or it does
+  not ship.
+- What: a local rehearsal for the digest's SQL alone. Seed a throwaway cluster
+  with a committed fixture shaped to exercise each of the issue's five sections,
+  run the queries `pipeline/weekly.py` actually hands the server, and assert
+  what each section returns. It does not replace the Modal rehearsal, which is
+  the only thing that exercises the model call, the spend cap and the send. It
+  does cover the half that broke most recently, which is a query whose meaning
+  changed under it, and it covers that half without a token, without production
+  data and without the workspace being on.
+- First step: the fixture, built from the shapes the five sections need, and one
+  assertion per section against the queries the test suite already extracts out
+  of `pipeline/weekly.py`'s AST.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-24 — Craft scan: Graphiti closes an edge with a second write, where this graph answers at read time (engineer seat, message run)
+- Trigger: slice 5 is the read path for re-judgment, so the day's scan went to
+  the product whose whole design is re-judgment: Graphiti, Zep's open-source
+  temporal knowledge graph for agent memory. It is the closest adjacent product
+  to the thing this run built, and it had never been scanned here.
+- What: the scan, and one thing worth stealing from it that this repository
+  can act on without adopting anything of Graphiti's storage or its model.
+- What is worth stealing: **two clocks, not one.** Graphiti separates when a
+  fact was true in the world from when the system learned it, and it carries
+  both on the edge. `claim_links` has one timestamp, `created_at`, and it means
+  the second thing while every read in this repository treats it as the first.
+  That is why the digest's `superseded` and `deprecated` sections needed a view
+  before their seven-day window read correctly: a re-judgment of a September
+  pair gives it an October `created_at`, and the query asking "what changed this
+  week" cannot tell a new finding from a second look at an old one. Today
+  `latest_links` papers over that by making `created_at` mean "when the current
+  verdict was reached", which is a third meaning and the honest one for that
+  view, but the underlying column still has only one hand. A `valid_at` beside
+  the `created_at` would let the issue say what the evidence changed and when we
+  noticed, which are different sentences and the product sells the first.
+- What alexandria does better: **nothing is withdrawn by a write.** Graphiti
+  invalidates a superseded edge by writing an invalidation onto it, so the
+  correctness of the current answer depends on a second write having happened,
+  having happened in the right order, and having happened at all. A crash
+  between the new fact and the invalidation leaves a stale edge live and
+  indistinguishable from a true one. Slice 5 writes nothing when a verdict
+  changes: the new opinion is appended and `latest_links` computes which one is
+  current at read time, so there is no second write to lose, no ordering to get
+  right, and the history stays legible rather than being overwritten by its own
+  correction. The test that proves it also proves the reverse, that a
+  re-contradiction after a withdrawal deprecates again, which is the case an
+  invalidation flag has to be careful about and a `distinct on` cannot get
+  wrong.
+- First step: add `valid_at date` to `claim_links`, nullable, written at
+  interpret from the `published_at` of the paper the newer claim came from,
+  which is a date this database already holds. Then the digest's two seven-day
+  sections can ask when the evidence changed rather than when we looked, and
+  the column is honestly NULL for every edge drawn before it existed.
+- Cost: $0 for the scan; the two-clock idea above is a ledger proposal and not
+  an action.
+- Status: proposed
+
+### 2026-10-25 — The prompt sha is too coarse a trigger, so a typo will bill a full re-judgment (engineer seat, hook run)
+- Trigger: today's craft scan, below, read against the trigger this run built.
+  `claim_judgments.prompt_sha` is `sha256(prompts/interpret.md)[:12]`, so every
+  byte of that file is in the key, including its comments, its examples and its
+  trailing whitespace. The corpus is roughly 2,900 claims. The moment anybody
+  fixes a typo in that prompt, every one of them becomes due for a second
+  opinion, and the drain will spend days and real Moonshot tokens re-judging a
+  corpus whose judge did not change its mind about anything.
+- What: the trigger needs to distinguish a change that can move a verdict from
+  a change that cannot, which is exactly the distinction dbt draws and
+  documents. Hash a normalised form of the prompt rather than the file: strip
+  trailing whitespace, collapse blank runs, and drop the comment block the file
+  carries for its human readers. The judge reads the instructions, so the
+  instructions are what the key should be about. The honest version of this is
+  narrower still and worth saying: a prompt edit that only rewords an
+  instruction does change the verdict distribution and should count, so the
+  normalisation must stay conservative and be about form rather than meaning.
+  Getting it wrong in the lax direction is a graph that silently stops being
+  re-judged, which is worse than the bill, so the test has to pin both
+  directions.
+- First step: a `prompt_key(text)` function in `pipeline/interpret.py` beside
+  `load_prompt`, with a test that a comment-only edit and a whitespace-only
+  edit leave the key unchanged and that any edit inside an instruction line
+  changes it. Then `claim_judgments.prompt_sha` stores the key. The column stays
+  text and the backfilled 'unknown' rows are unaffected, so there is no
+  migration beyond the next deploy.
+- Cost: $0 to build. Not building it costs the re-judgment of a 2,900-claim
+  corpus the first time anybody edits a comment in that prompt.
+- Status: proposed
+
+### 2026-10-25 — Craft scan: dbt decides what a change is allowed to invalidate, and says so field by field (engineer seat, hook run)
+- Trigger: today's work is a trigger that re-runs a judgment when its
+  definition changes, so the day's scan went to the product whose entire
+  selector language is that question: dbt's `state:modified`. It had never been
+  scanned here, and the design doc for slice 5 had just been wrong twice in a
+  row about what a re-run should key on, which is the sign that somebody else
+  has already paid for the lesson.
+- What: the scan, and one thing worth stealing that this repository can act on
+  without adopting anything of dbt's.
+- What is worth stealing: **a change is not automatically a modification, and
+  which fields count is a documented decision rather than a hash.** dbt
+  compares a resource's code and config against a saved manifest, and its
+  docs then enumerate what deliberately does not count: "Changes to `tags` and
+  `meta` ... don't count as modifications and will not trigger
+  `state:modified`. dbt treats these fields as metadata only, since they don't
+  affect how a resource is materialized." `description` is the sharp case,
+  because it counts only when `persist_docs` is on, which is to say only in the
+  configuration where it actually reaches the output. That is a per-field
+  ruling about whether a difference can change the answer, and this repository
+  has no such ruling anywhere: the trigger built today hashes a whole file, and
+  `tools/skill_registrar.py` pins a whole SKILL.md the same way. The entry
+  above is the first place to act on it.
+- What alexandria does better: **there is no second artifact to go stale.** dbt
+  needs a manifest from a previous run, produced by the right version, saved
+  somewhere a later run can find it, and its own caveat list is largely about
+  that state drifting from reality: a model using a `var` or `env_var` cannot
+  be selected when that value changes, and the v1.9 fix for environment-aware
+  false positives only works if the saved state was built by v1.9 too. The
+  trigger here derives its key from the prompt the container is running and
+  records it on the claim, so the question "has this judge read this claim" is
+  answered by the database rather than by an artifact somebody had to remember
+  to keep. A missed claim is simply still due on the next run, and there is no
+  version skew between the comparison and the thing compared.
+- First step: none of its own. This scan's output is the entry above it, which
+  is where the stealable thing turns into a day of work.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 — No sprint has been planned for thirteen days, so the engineer's priority queue is the ledger by default (engineer seat, hook run)
+- Trigger: this run read the sprint first, as the charter's Observe step
+  requires, and the newest file in `docs/sprints/` is `sprint-2026-10-12.md`.
+  Today is 2026-10-25, so two Mondays have passed with no sprint. The PM seat
+  has been running: there are eight of its pull requests open from yesterday
+  alone. What it has been producing is `pm-note-*` files answering board
+  messages, which is message work rather than the ceremony.
+- What: the charter says the sprint file is the engineer's priority queue and
+  that today's default work is its first unfinished `engineer` item. With a
+  thirteen-day-old sprint that queue is stale: of its five items, item 1 is a
+  send that has since been superseded by the Modal workspace being disabled,
+  and items 2, 3 and 5 all close with a hand this seat does not have. So two
+  runs in a row have taken the charter's fallback, an `accepted` ledger entry
+  no sprint picked up, and have been right to. The cost is not that the
+  fallback is bad work. It is that the owner's commitment mechanism is not
+  running: a sprint the owner merges is what makes the week's order hers rather
+  than the engineer's, and for thirteen days the order has been the engineer's.
+  This is a finding for the PM's ceremony and not a thing this seat can fix,
+  because `docs/sprints/` is a planning surface the charter forbids it to edit.
+- First step: the PM seat plans a sprint for the week of 2026-10-26 and, in
+  its backlog, says what happened to the five items of 2026-10-12 rather than
+  carrying them silently. If the ceremony is not firing because nothing wakes
+  it on a Monday, that is the actual defect and it belongs in this ledger as
+  its own entry.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 — The audit cannot say which prompt the graph it measures was judged by (engineer seat, hook run)
+- Trigger: building `claim_judgments` made a question answerable that nothing
+  asks. `tools/graph_audit.py` is slice 1, the instrument the whole upgrade is
+  measured against, and every number it prints is now ambiguous in a way it was
+  not yesterday: a confidence distribution over a graph that is half September's
+  judge and half October's is two distributions added together, and the audit
+  has no way to say so.
+- What: the audit should report the judge alongside the graph, which is one
+  group-by over the `latest_judgment` view this run added. The shape to print
+  is the one `drain` already prints for an operator: how many claims each prompt
+  currently holds the newest opinion on. A worksheet that says "2,900 claims,
+  all under `a1b2c3d4e5f6`" is a clean reading, and one that says half and half
+  is a warning that the next slice's numbers cannot be compared to the last
+  slice's. That is the difference between an instrument and a number.
+- First step: add a `judges` section to `tools/graph_audit.py`'s report reading
+  `select prompt_sha, count(*) from latest_judgment group by 1 order by 2 desc`,
+  and extend `tests/test_graph_audit.py`, which resolves every relation the
+  audit names against `db/schema.sql` and is one of the files a workflow
+  actually runs, so the new query is guarded on every pull request rather than
+  pinned.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 — Give the background sweep a rate of its own, not whatever the foreground leaves (engineer seat, message run)
+- Trigger: today's finding, and the craft scan below that names the pattern.
+  `rejudge_budget` returns `max_claims - fresh_taken`, which was argued as safe
+  on the reading that the fresh queue was 2,000-odd deep. `/api/delivery` read
+  `interpret_pending: 0` this morning, so the leftovers are the whole run and
+  the sweep starts at full cap on the next run after deploy. Nothing is broken
+  by that, because the run's `max_claims` and `CAP_USD` are unchanged and the
+  sweep terminates. What changed is that an idle day costs $0.30 instead of $0,
+  and the rule that was supposed to prevent it is the rule that caused it.
+- What: a leftovers rule has no upper bound of its own, so it reads as a brake
+  while the foreground is busy and as an accelerator the moment it is not.
+  PostgreSQL's autovacuum solved the identical problem with an absolute rate,
+  `vacuum_cost_limit`, which is deliberately not a function of how busy the
+  server is: background maintenance gets a fixed slice whether the foreground
+  is saturated or asleep. The equivalent here is one line, a ceiling on the
+  re-judgment share of a run, so an empty fresh queue cannot convert a free job
+  into a capped one. This is deliberately not built today. The `(0, 90, 90)`
+  case is an explicit decision this seat's previous run wrote down as a test
+  parameter, and reversing a day-old decision unilaterally is the thrash a
+  retrospective should not have to find. The number is also a judgment the
+  owner should make, because it trades the speed of a prompt-change sweep
+  against a daily bill.
+- First step: decide the ceiling, then one `min()` in `rejudge_budget` and one
+  parametrized case beside the four already in `tests/test_rejudge_queue.py`.
+  The forecast this run added to `drain` is what the ceiling should be chosen
+  against, because it prints the sweep in runs and dollars.
+- Cost: $0 to build. The decision is about whether an idle interpret day costs
+  $0.30 or less.
+- Status: proposed
+
+### 2026-10-25 — The number that decides a deploy is behind a credential no seat holds (engineer seat, message run)
+- Trigger: this run built a cost forecast for the re-judgment sweep into
+  `interpret.drain`, and then could not read it. `drain` opens
+  `DATABASE_URL`, and no agent seat holds a database credential, which is a
+  constraint three of this seat's run notes already work around by reading
+  `https://libraryofalexandria.dev/api/delivery` instead. So the instrument
+  built today to stop a sweep surprising somebody is readable only by the
+  owner, and the surprise it exists to prevent is one a seat meets first.
+- What: the delivery receipt already carries `queues.interpret_pending`, which
+  is the fresh half of exactly this question. It does not carry the
+  re-judgment depth, so the receipt can say the interpret job has nothing to do
+  while that job is about to spend its whole cap. Add the sweep's depth to the
+  receipt beside the queues it already reports, split the way `drain` now
+  splits it, into passes under a known older prompt and the backfill's
+  `unknown` rows. Then any seat can answer "what will the next interpret run
+  cost" from a public URL, and the daily standup reads it for free.
+- First step: one count in `site/lib/delivery.js` beside the three queue counts
+  already in that query, one field in `site/lib/delivery-core.js`, and the same
+  pair in `tools/delivery_health.py`, which computes the receipt a second way.
+  The version number on the receipt moves from 6 to 7.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 — A blocked card should carry the verification that blocked it (engineer seat, message run)
+- Trigger: `INC-2026-10-25-the-engineer-lane-was-rediscovered-as-owner-blocked-for-the-second-run-running`.
+  Two consecutive runs of this seat each spent part of a run establishing that
+  all four cards in its board lane close with a hand it does not have, and the
+  first run's record of that was a run note, which nothing reads at the moment
+  it would save the second run. The board is the surface a run is sent to. It
+  is the one place the finding was not written.
+- What: when a seat verifies that a card is blocked on something outside its
+  reach, it posts that verification onto the card, with the date, what it
+  checked and what it checked it against. The next run then reads "verified
+  blocked 2026-10-25, Modal workspace still disabled, confirmed against
+  /api/delivery" in the first surface it opens, and spends its turns on work
+  instead of on rediscovery. The two stale cards this run found are the second
+  argument for it: a card whose numbers nobody refreshes drifts away from the
+  condition it describes, in `Deploy`'s case understating it and in `Press`'s
+  case overstating it, and a verification line is also a refresh.
+- First step: agree what the line looks like and where it goes, a comment
+  against the card or a field on it, because this seat writes onto cards the
+  ExO's checks created and that is a shared surface rather than this seat's.
+  Then the posting is a few lines in whatever each seat already uses to reach
+  the board.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 — Craft scan: PostgreSQL's autovacuum rate-limits background work absolutely, where this run's sweep is limited only by how busy the foreground is (engineer seat, message run)
+- Trigger: today's finding needed a name, and the product with the longest
+  history of this exact problem is the database underneath us. Rotated to
+  PostgreSQL's own maintenance machinery rather than a competitor, which the
+  charter allows as an adjacency pick, because the pattern is the one this
+  run's code got wrong.
+- What: autovacuum is background work that must never crowd out queries, and
+  the obvious design is the one this repository picked independently, which is
+  to let maintenance have whatever the foreground is not using. PostgreSQL does
+  not do that. It gives autovacuum a cost budget, `vacuum_cost_limit` spent
+  against `vacuum_cost_delay`, that is an absolute rate rather than a share of
+  idle capacity, and the documentation is explicit that this is so an idle
+  server does not become a saturated one. The thing worth stealing is the shape
+  of the guarantee: "never more than X" survives the foreground going quiet,
+  where "whatever is left over" inverts into its opposite the moment it does.
+  That is precisely the inversion `/api/delivery` caught here this morning.
+- What alexandria does better: autovacuum's budget is denominated in cost
+  units that correspond to nothing an operator can price, which is why tuning
+  it is folklore and why the usual advice is to change it and watch. The same
+  decision here is denominated in dollars and in daily runs, because `drain`
+  prices the sweep at the model's list price before anything is spent. A
+  question an operator can answer in the unit they actually decide in is a
+  better instrument than a more sophisticated controller they cannot aim. The
+  ledger entry above is the half worth stealing, and the pricing is the half
+  worth keeping.
+- First step: the entry above.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Canon law 13 has a detector in this repository and the pre-send gate does not run it (writer seat, run 49, for the engineer)
+- Trigger: this run pointed `past_tense_you`, which has been in
+  `docs/voice/check_voice.py` for weeks, at `site/content/issues` for the first
+  time. It found the opening the owner struck on 2026-09-24, live in the public
+  archive. `prompts/digest.md` has been patched four times on this law and says
+  in its own gate section that three specimens of it have shipped.
+- What: the rule belongs in `tools/check_digest_quality.py` as a BLOCK, because
+  that is the only gate between a written issue and a reader. The new
+  `standalone` check in this seat's file reads the archive, which catches an
+  issue that has already been sent. The pattern is written and tested and can
+  be lifted verbatim from `past_tense_you`, with `STANDS_ALONE_CASES` in
+  `docs/voice/check_voice.py` as the seventeen cases it has to satisfy.
+- Why the prompt is the wrong place, and this is the part worth reading: the
+  generator did not fail here. Her correction landed in `b7d6929` on
+  2026-09-24 as "The agent-building world has spent the week arguing about
+  scaffolding", which is the exact sentence `prompts/digest.md` now holds up as
+  the model repair. Five days later `820df48`, "2026-W39 is Monday's print (the
+  digests record), not Thursday's preview", replaced the file wholesale with
+  what the press actually sent and discarded her correction, because the
+  correction had only ever been written into the rendered archive and never
+  into the record the archive renders from. A fifth prompt paragraph does not
+  reach that.
+- The second half, and it is the larger one, stated as a question because this
+  seat cannot answer it: **is `site/content/issues/` a faithful record of what
+  subscribers received, or a maintained product surface?** `820df48` assumed
+  the first and was right to, which is why it replaced the file with Monday's
+  actual print. Every repair to a published issue's prose assumes the second.
+  The two readings cannot both hold, and nothing in the repository says which
+  it is.
+  - If it is a **record**, the sentence stays, this gate's verdict should
+    become a report rather than a failure, and the whole fix is the pre-send
+    rule above so that no future send carries the shape.
+  - If it is a **surface**, a correction has to go upstream into the `digests`
+    record or the render has to refuse to overwrite a corrected issue, and the
+    replacement line is a copy candidate this seat drafts.
+- Every hand this needs, per `L-A41`, because the first draft of this entry
+  named one of three and read as complete:
+  1. **The engineer**, for the pre-send BLOCK rule. After that lands, no
+     future issue ships the shape, and the live archive is unchanged.
+  2. **The owner, or the engineer as a design call**, for the record-or-surface
+     question above. Nothing else can be sequenced until this is answered,
+     which is why it is the first step and not the second.
+  3. **This seat, and only if the answer is "surface"**, for the replacement
+     line, with the frontend seat setting it. This run deliberately drafted no
+     candidate. `docs/voice/value.md` still reads "Status: awaiting her
+     approval" and the copy pipeline's phase 0 gates drafting on it, and the
+     stronger reason is that a replacement line is the wrong artifact until
+     question 2 is answered. Restoring `b7d6929`'s paragraph verbatim is not
+     available either: it describes Thursday's preview, a different set of
+     papers, so a repair here is new prose and not a restoration.
+- First step: question 2. The BLOCK rule is small and tested and can go in
+  parallel.
+- Blocked by: nothing.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — ESCALATED, thirty days: two word-boundary bugs in the pre-send gate, one of them firing on the owner's own mandated close (writer seat, run 49, for the engineer)
+- Trigger: run 48 of this seat rediscovered two defects that had been filed a
+  month earlier and described them again as new, and run 49 then measured what
+  they cost on the only issue the gate has ever read. Both contract fields on
+  this row were written by run 50, which found the row one over the ledger
+  test's own ceiling when it merged this branch.
+- This is not a new entry and it is deliberately not written as one. The
+  finding was filed on 2026-09-24 in **2026-09-24 — The quality gate passes the
+  issue the owner rejected (writer seat, for the engineer)**, items 2 and 3,
+  and that entry has read `proposed` ever since. Run 48 of this seat
+  rediscovered both defects a month later and described them again as new. The
+  incident register's standing rule is that a repeat is escalated rather than
+  filed a fourth time, so this row escalates and the 2026-09-24 entry stays the
+  filing.
+- What: anchor the four word lists in `tools/check_digest_quality.py` on their
+  left edge, so a listed word matches a word rather than a substring of one.
+  `INTENSIFIERS` is the only one that collides with real English today and it
+  collides with this product's vocabulary, so it is the one that has to move.
+  The contract field is written in this run rather than run 49's, because the
+  entry reads as an escalation of a filing that already carries its own `What`
+  and the ledger's own test counts fields per entry (writer run 50).
+- What has changed is that the cost is now measured rather than argued.
+  `tools/check_digest_quality.py` on `site/content/issues/2026-W39.md`, the
+  only issue the gate has ever read, returns **7 warnings, and 2 of the 7 are
+  not real**:
+
+  ```
+  [warn] empty-intensifier (2x, ban list 5)
+      line 54: 'very'      <- "behavioral recovery rate"
+      line 56: 'very'      <- "Accelerate every builder and agent to
+                              frontier speed.", which canon law 10 and her
+                              ruling of 2026-09-30 require in every issue
+  ```
+
+  `INTENSIFIERS` holds `"very "` and the test is `if word in low`, a substring
+  match with no word boundary, so the close she mandated raises a finding
+  forever and nothing can ever clear it. Under `--strict` it exits 1.
+- The third defect in the same class, found this run: `past_tense_you` in
+  `docs/voice/check_voice.py` read `\w+(?:ed|en|t|ne)\b` with no floor on the
+  stem, so it fired on "What to read if you have one hour", a standing heading.
+  That one is this seat's surface and is fixed in this pull request, with the
+  floor and nine collision cases asserted in `STANDS_ALONE_CASES`, which the
+  gate runs before it reads an issue.
+  Three gates, three patterns matching inside a word instead of at its edge,
+  two of them still live. The class is worth one pass rather than three fixes.
+- `TYPESETTER` is the other half of the 2026-09-24 filing and is unchanged:
+  four characters where ban list 13 is the class of every non-ASCII character,
+  and `pipeline/weekly.py` builds the payload's `dates` with an en dash the
+  check passes, every week, by construction.
+- The blast radius, swept this run rather than assumed, because calling this a
+  class and fixing one instance would be the same mistake again. Every entry in
+  `SLOP_ALWAYS`, `SLOP_MAYBE`, `HEDGES` and `INTENSIFIERS` is matched with
+  `if word in low`, so none of them is anchored on its left edge. Most collide
+  with nothing real. `INTENSIFIERS` collides with ordinary research English:
+
+  ```
+  'every'      -> fires on 'very '
+  'delivery'   -> fires on 'very '
+  'discovery'  -> fires on 'very '
+  'recovery'   -> fires on 'very '
+  ```
+
+  A newsletter about research discoveries raises a false finding on the word
+  "discovery". Under `\b` word boundaries all four clear and "very" and "truly"
+  still fire, which is the one-line fix.
+- First step: word boundaries on `INTENSIFIERS`, which is one line, and the
+  ASCII class question on `TYPESETTER`, which is a few. Both were specified in
+  the 2026-09-24 entry. The other three lists need the same anchor for
+  correctness even though nothing in them collides today, because the next word
+  added to one of them is where it would show up.
+- Cost: $0.
+- Status: urgent
+
+### 2026-10-25 — The shortlist excludes one paper and can still be all of another
+- Trigger: today's build and today's craft scan, read against each other.
+  Slice 2 added `paper_id <> %s` to the shortlist, which stops a claim being
+  judged against its own paper's siblings. Then the Vespa scan below named what
+  that filter actually is, which is result diversification, and showed that the
+  general form of it is a quota rather than an exclusion. The live test written
+  this morning is what made the gap visible: in the dense fixture, all ten
+  candidates a claim is offered come from one paper, `p1`, and every assertion
+  about the shortlist passes. Excluding one group does not diversify the other
+  nine slots.
+- What: give the shortlist a per-paper cap, so no single paper can supply more
+  than a few of a claim's candidates. The product reason is the one already
+  written beside the exclusion: the promise is this week's finding against what
+  we already knew, and a shortlist drawn from one other paper is one comparison
+  dressed as ten. It is also the cheaper half of the same effect the exclusion
+  was reaching for, because the slots it frees go to papers that are not yet
+  represented. The query shape is a `row_number() over (partition by paper_id
+  order by distance)` filtered below the cap, wrapped around the existing
+  select, which keeps the distance floor and the time direction untouched.
+  The cap needs a number and the honest answer is that nobody knows it yet,
+  which is what the audit's new `reach` metric is for: it already samples the
+  retrieval, so adding the papers-represented count to it measures the problem
+  before anything is changed.
+- First step: add `papers_represented` to the `reach` metric, which is one more
+  lateral in a query that already exists and costs nothing to run, and report
+  it from the next run's log the way the ceiling is reported now. The quota
+  itself is the day after, once there is a number saying whether it binds.
+- Cost: $0. No new call, no new provider, one more clause in a query the job
+  already runs once per claim.
+- Status: proposed
+
+### 2026-10-25 — The shortlist's size is printed to a log and recorded nowhere
+- Trigger: writing slice 2's own done-condition this morning. The condition is
+  "the ceiling metric is under its bound on a fresh snapshot", both halves of
+  which are read from a database no seat can reach, so the run was given a line
+  that prints its mean candidates per claim and its ceiling count. That line is
+  the only evidence this change worked, it lives in a Modal log, and Modal is
+  switched off today, which is the first `This sprint` card in this seat's lane.
+  So the one surface built this morning to make slice 2 verifiable is on the
+  far side of an outage, and when the outage lifts the line is still a number
+  in a log with no history behind it.
+- What: `claim_judgments` already records every pass the judge makes, keyed
+  `(claim_id, prompt_sha)`, and already carries an `edges` count that is
+  allowed to be zero. One more column, `candidates`, makes the shortlist's size
+  a row rather than a line of stdout. That turns the ceiling from a number
+  somebody has to be watching a log to see into a time series anyone with the
+  read credential can query, broken down by prompt, which is what every other
+  measurement in this product already is. It also answers a question the audit
+  cannot ask today at all: the `reach` metric samples the corpus as it stands
+  now, so it reports what the retrieval would offer today and never what it did
+  offer when an edge was actually drawn. A claim judged in September was judged
+  against a corpus that no longer exists.
+- First step: the column, the insert that already runs on every pass writing
+  one more value into it, and the audit reading `avg(candidates)` per
+  `prompt_sha` beside the ceiling it already reports. The backfill is the same
+  shape slice 5's was and can write `null` rather than guessing, because a pass
+  that predates the column genuinely does not know.
+- Cost: $0. One integer per claim judged, on a table that already gets a row
+  per claim judged.
+- Status: proposed
+
+### 2026-10-25 — triage's cost table understates its own prompt by nine hundred tokens
+- Trigger: today's build found this defect in `pipeline/interpret.py` and fixed
+  it there, then the same shape turned out to be live one file over. The
+  interpret cap's comment said the system prompt was 880 tokens; measured with
+  `pipeline/budget.py`'s own tokenizer it is 1,260, because
+  `prompts/interpret.md` grew and nothing recomputes a comment. Checking
+  whether that was one file's problem: `pipeline/triage.py`'s cost table says
+  `prompts/triage.md` is 728 tokens. It measures 1,679, before adding the
+  `BATCH_INSTRUCTIONS` the same table counts with it. And `3_500, 700` is
+  written out by hand in four separate places in that file.
+- What: this is a forecast defect and not a spending defect, and the difference
+  is worth stating because it decides the priority. `Cap` measures real spend
+  from the provider's usage block at runtime, so no run can overspend its cap
+  no matter what the comment says. What is wrong is every number a human reads
+  before the money is spent: the per-call cost, the claims-per-run the cap
+  buys, the dry run's forecast of what clearing the backlog costs. Those are
+  the numbers the owner reads to decide whether the corpus is affordable, and
+  they are currently low by about a third for triage. The fix is the one that
+  shipped for interpret today: one measured pair of constants per job, every
+  forecast in the file reading it, and a test that recomputes both with
+  budget.py's tokenizer rather than reading them, so the next prompt that grows
+  turns a test red instead of a comment stale. `pipeline/distill.py` already
+  does the right thing in places through `expected_prompt_tokens()`, so the
+  pattern exists in this repository and does not have to be invented.
+- First step: triage, because it is measured and wrong today. One pair of
+  constants, four call sites pointed at it, and the test. Then read distill and
+  weekly the same way and report, rather than assuming either is clean.
+- Cost: $0, and the point of it is that the dollar figures the owner reads stop
+  being understated.
+- Status: proposed
+
+### 2026-10-25 — Craft scan: Vespa makes diversity a quota with a floor, where this shortlist makes it one exclusion (engineer seat, hook run)
+- Trigger: the daily craft scan, taken as an adjacency pick against the day's
+  own build. Today's slice added a same-paper exclusion to the claim graph's
+  retrieval, so the scan went to the search engine whose entire job is choosing
+  what a candidate set should contain.
+- What: Vespa treats diversity as a declared property of a retrieval phase
+  rather than as a filter. A rank profile names a `diversity` block with an
+  `attribute` to group by and a `min-groups` count, and the documentation is
+  explicit about what that buys: the result set is "guaranteed to get at least
+  min-groups unique values from the diversity attribute", and the cap on any
+  one group follows from it, computed as the phase's `max-hits` divided by
+  `min-groups`. Two things in that are worth stealing. The first is that the
+  guarantee is stated as a floor on variety rather than as a ban on one value,
+  which is the gap the entry above this one records: an exclusion of the
+  target's own paper says nothing about the other nine slots, where a
+  `min-groups` of three would. The second is that the cap per group is derived
+  from the floor instead of configured beside it, so the two numbers cannot be
+  set to contradict each other, which is exactly the failure mode this
+  repository keeps filing when one constant is copied into a second file.
+- What alexandria does better: Vespa diversifies results that are shown once
+  and then forgotten, so a wrong diversity setting costs one query. Here the
+  candidate set is shown to a judge whose answer is written into `claim_links`
+  append-only and read by `deprecated_claims`, which decides what a customer
+  sees on the Left-Behind Index. A bad shortlist does not degrade a page, it
+  writes a permanent row. That is why this filter is six lines of SQL with the
+  product argument written above it and a test holding its two constants
+  against the audit's copy, rather than a tunable in a config file. Vespa's
+  `min-groups` is a number an operator sets with nothing recorded about why,
+  and tuning it is the folklore that always follows. The shape of the
+  guarantee is the half worth stealing. Keeping the reason next to the number
+  is the half worth keeping.
+- First step: the two entries above, in that order. The measurement before the
+  quota, because the quota needs a number and nobody has one.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 — The abs-to-html rewrite is a string substitution, so stop asking a model to do it (writer seat, run 51)
+
+- Trigger: law 8 on `2026-W42`, the current edition, measured on the live page
+  and then probed link by link. Ten arXiv links, one `html`, nine `abs`. Two of
+  the nine have no HTML at arXiv, so `abs` is the correct fallback there and the
+  rule is satisfied. **The other seven have HTML and the issue linked the
+  abstract page anyway**, verified by `curl` against `arxiv.org/html/<id>` for
+  all ten identifiers. 2026-W39, twenty-three days older, scored four of four.
+- This does not re-file
+  `2026-10-05 — Coverage of links and evidence grades is a pipeline gate, not a
+  prompt rule`, which is this seat's own, still `proposed` twenty-one days
+  later, and still correct. That entry is about COVERAGE, meaning whether every
+  named work carries a link at all, and it argues correctly that the check needs
+  the payload and the draft held at once. Coverage is in good shape on this
+  edition: every one of the ten papers named is linked, against three of
+  thirteen on the print that produced the filing.
+- **What that entry does not cover is the half that needs no payload.** The
+  form of a link is a string substitution plus one existence check. `abs`
+  becomes `html`, and where arXiv serves no HTML the `abs` url stands. Nothing
+  about that decision requires the payload, the body's meaning, or a judgment,
+  and it is therefore the cheapest possible gate and the one that has been
+  asked of a model for the longest.
+- Why no further prompt wording. The rule in `prompts/digest.md` already says
+  it in the most explicit form this seat can write: it gives the worked example
+  `arxiv.org/abs/2609.11042v2` becoming `https://arxiv.org/html/2609.11042v2`,
+  it says "Fall back to the abs page only when the paper has no HTML version",
+  and it says "`abs` becomes `html` and nothing else moves". The canon also
+  records link form as one of only two UNDETERMINED axes, meaning two prints of
+  a byte-identical prompt disagreed on it, so a fourth wording would not be a
+  test of anything. The writer charter's structure watch sends this to the
+  engineer rather than to a third prompt pass, and this is that.
+- **The code already exists in this repository.** `tools/read_paper.py` holds
+  `normalize_id()` at line 74 and `ARXIV_HTML` at line 53, and its comment at
+  line 63 already handles the one hard case: an arXiv "HTML" page that is
+  really a stub saying no HTML exists for this paper. So the gate is an import
+  rather than an implementation.
+- What: in the press, after generation and before the insert into `digests`,
+  rewrite every `arxiv.org/abs/<id>` in the body to `arxiv.org/html/<id>`,
+  keeping the identifier character for character, and keep the `abs` url only
+  where the HTML fetch says there is none. Report the two integers, links
+  rewritten and links correctly left alone, the way the other press counts
+  report.
+- The version-suffix half comes free and is the more serious one. `2026-W42`
+  carries four versioned identifiers and six bare ones, which
+  `check_voice.py links` already flags as proof that at least one identifier
+  was composed rather than copied. Every one of the ten resolves this week, so
+  nothing reached a reader broken, and that is luck rather than design: a
+  composed identifier is one digit away from a dead link in the product whose
+  single promise is that the link reaches the paper. The press holds the
+  payload's url, so it can substitute the whole identifier rather than trust
+  the model to copy it, and then no identifier in any issue is ever composed.
+- First step: the rewrite reported and not enforced for one week, with the two
+  counts, the same way the 2026-10-05 entry asks for its counts first. A gate
+  that fails a send on its first day gets switched off.
+- Cost: $0 in model spend. One pass over a body already in memory, plus one
+  HEAD per distinct link, cacheable by id.
+- Status: proposed
+
+### 2026-10-25 - The cron slots get declared, so an absent row stops being a question (engineer seat, cron run)
+- Trigger: `tools/cron_firing.py`, shipped this run, has to report this seat's
+  own 23:06Z slot of 2026-10-25 as `unseen` rather than as missed. It infers
+  each slot from the firing record over a trailing window, so a clock that was
+  retired and a clock that did not fire produce the same absence and the tool
+  refuses to guess between them. The craft scan below found that
+  Healthchecks.io separates exactly these two cases, and that the separator is
+  a declared schedule rather than a cleverer inference.
+- What: the host holds every seat's cron expression and no file in any of these
+  repositories does, so every instrument that reasons about cadence reasons
+  from firing history. One committed table of slots, each row a seat, a cron
+  expression and a grace, turns three of the reader's weaker answers into
+  strong ones: a slot that came due and left no row is missed rather than
+  unseen, a slot that fired 46 minutes late is late by a number rather than
+  unrecognised, and a slot nobody declared that fires anyway is a finding of
+  its own. The file has to be guarded against falling behind the host, which is
+  one test: every slot the firing record has fired in the trailing fourteen
+  days appears in the table. That test is what makes a declared schedule safer
+  than an inferred one instead of merely more confident.
+- First step: ask the ExO seat where it goes, because that seat already keeps a
+  cadence register in prose and a second register of the same fact is worse
+  than an inferred schedule. Then the table, then the test. One day's work once
+  the location is settled.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 - A lost cycle becomes an owed cycle, in a form a later run can read (engineer seat, cron run)
+- Trigger: this seat's 11:06Z cycle of 2026-10-25 fired, was refused by the
+  provider's weekly limit in 351 milliseconds, and is gone. The 23:52Z run that
+  eventually found out had no way to know a cycle was owed, and found it only
+  because it went looking for why two of its own wakes had arrived 50 minutes
+  apart. The ExO seat is building an owed-cycle detector in prose on its own
+  charter, and #527 adds a discharge record to it.
+- What: `tools/cron_firing.py --owed --since N`, printing the lost cycles of the
+  last N days that no later run on the same day appears to have taken, as rows
+  a seat can read in one command at the top of its run. This is the machine
+  half of the detector the ExO seat is assembling by hand, and the two halves
+  want to agree rather than to exist separately: the prose decides what a seat
+  owes, and a row in the firing record is the evidence it was owed at all. The
+  discharge question is the hard half and it is honestly hard, because "a later
+  run took the cycle" is not readable from a log. The useful version is weaker
+  and still worth having: this slot was lost, and here is every run of the same
+  seat that followed it, so a reader can decide.
+- First step: the `--owed` flag against the existing judgement, with the
+  discharge question left to the reader rather than guessed at. Half a day.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 - The firing record is the host's and the reader is one company's (engineer seat, cron run)
+- Trigger: the reader's first reading of 2026-10-25 named 11 lost cycles across
+  8 seats and 4 companies, which is more than this repository owns. The file is
+  in alexandria's `tools/`, so ursa, epitome and the portfolio's unprefixed
+  seats are visible to it and get no benefit from it.
+- What: the log directory is a property of the host rather than of any product,
+  so a reader of it is portfolio machinery sitting in one product's repository.
+  Three honest options and this entry does not pick one: vendor it the way
+  `docs/standards/lessons.md` is vendored, move it to the centralizer and let
+  every repository call it, or leave it here and accept that three companies
+  read their own cadence by hand. The third is the status quo and it is not
+  obviously wrong, because a tool with one reader is cheaper than a tool with
+  four owners.
+- First step: the relay ask, with the file as it stands as the proposal rather
+  than a description of one. `docs/agents/hq-relay.md` is the route and the ExO
+  seat carries it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 - Craft scan: Healthchecks.io declares the schedule instead of inferring it, and makes one grace do two jobs (engineer seat, cron run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  build. A reader of a cron firing record is a cron monitor with the pings
+  taken away, so the product that has solved it commercially is the one to read.
+  Read live from the product's own configuration documentation this run.
+- What: two things worth stealing and they are the two weakest joints in what
+  shipped today. First, Healthchecks separates a "simple" period check from a
+  cron-expression check, and says in its own words that the cron form "ensures
+  jobs run at the correct time and not just at the correct time intervals." The
+  schedule is declared by whoever owns the job. Today's reader infers it from
+  history with a fifteen-minute tolerance, which is the period check, and the
+  first ledger entry above is that gap. Second, grace time is one number doing
+  two jobs: how late a check may be before it alerts, and, when a job sends a
+  start signal, "the maximum allowed time gap between 'start' and 'success'
+  signals", so a job that begins and never finishes fails rather than hanging
+  as healthy. That is exactly the `in-flight` against `no-trailer` question
+  here, and this run answered it with a flat ninety minutes guessed from the
+  longest run on record. Healthchecks makes it per-check, set by whoever knows
+  the job. Both are the same lesson: the thing the instrument cannot know
+  should be declared by the thing that does, rather than estimated by the
+  instrument.
+- What alexandria does better: a Healthchecks check goes down when a ping does
+  not arrive, and it cannot say why, because the only signal it has is the
+  absence of one. This reader reads the refusal out of the run's own log and
+  names which of the provider's two limits took the cycle, which is the exact
+  distinction all three of this week's cadence incidents turn on. A weekly
+  limit resets at a week boundary and a session limit resets in hours, so
+  "down" would have produced none of those findings. The second difference is
+  bigger and it is about what gets measured at all: Healthchecks needs the job
+  to cooperate, and the eleven cycles lost on 2026-10-25 were refused at turn
+  one in under 400 milliseconds, by a provider, before any instrumented job
+  code could have run. A reader that is passive over a record somebody else
+  already writes sees the failures that happen before the job starts, and those
+  are the ones this week was made of.
+- First step: the first two entries above.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 - The resolution audit is only reachable in the one minute a seat will not run it (engineer seat, cron run)
+- Trigger: this run resolved a register conflict by hand, dropped two lines off
+  another entry, and then could not audit it. `tools/resolve_register_conflict.py
+  --check` answers "HEAD is not a two-parent merge, so there is no resolution
+  here to audit" and exits 0 the moment a seat makes one more commit after the
+  merge, which is what a seat does. Obtaining the audit took a detached
+  worktree at the merge commit, and the audit was correct: it named both
+  dropped lines and the two blank lines exactly.
+- What: two changes, both small, and the second matters more than the first.
+  `--check <commit>` so the audit can be run on a merge that is no longer HEAD,
+  and a non-zero exit when the audit cannot be performed at all. Today it exits
+  0 with an explanatory sentence, so a seat that runs it late gets a clean exit
+  and reads it as a pass. A check that cannot run should never be
+  indistinguishable from a check that ran and found nothing, which is the same
+  shape as `INC-2026-10-25-the-seats-first-cron-slot-fired-was-refused-and-the-mode-rule-read-the-refusal-as-coverage`.
+  Worth doing at the same time: the tool knows how to resolve and how to audit,
+  and nothing calls either at the moment of a conflict, so the third change is
+  a line in the charters' register-check step naming it. That line is a charter
+  edit and so is not this seat's to make.
+- First step: the argument and the exit code, with a test that a merge commit
+  passed by sha audits the same as the same merge at HEAD. Half a day.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 - The incident register's heading format requires a character the voice gate forbids (engineer seat, cron run)
+- Trigger: this run wrote an incident heading with a colon separator to satisfy
+  `tools/ban_list.py` entry 13, which forbids every character outside plain
+  ASCII, and `tests/test_incidents.py` failed because `tools/incidents.py`'s
+  `INC_ID` pattern requires the slug to be followed by end of line, whitespace,
+  or an em or en dash. A colon makes the whole id unparseable. Both gates are
+  correct in isolation and they want opposite characters in the same position.
+- What: `docs/agents/incidents.md` already carries 620 ban-list findings, and
+  almost all of them are this one convention applied 300-odd times, so the
+  voice gate is effectively not enforced on this file and reports a number
+  nobody can act on. Two honest repairs and this entry does not pick one.
+  Widen `INC_ID` to accept a colon and a plain hyphen, which makes the register
+  writable in ASCII and leaves 300 existing headings as they are. Or exempt the
+  register from entry 13 explicitly, in the ban list's own words, so the count
+  it reports is the count of findings a reader should act on. The second is
+  better and it is not this seat's to make, because `docs/voice/ban-list.md` is
+  the writer's surface. The first is this seat's and is one character class in
+  one regex.
+- First step: ask the writer seat which, since the voice is theirs. The regex
+  change is half an hour once that is settled.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The daily Kimi allowance is guarded by a floor wearing an expectation's label (engineer seat, message run)
+- Trigger: correcting one row of `budget.KIMI_DAILY_DRAW` today. Interpret's
+  row said 1,000 tokens a call for a request that measures 2,340, so the fix
+  was arithmetic. Checking the row's other column found the real defect. The
+  table's own header says these are EXPECTED draws, and every call count in it
+  is a cap divided by a CEILING price, which is the fewest calls a run can
+  make rather than the most. Interpret is credited with 50 calls and stops at
+  `MAX_CLAIMS_PER_RUN`, which is 90. Triage is credited with 70 and stops at
+  `MAX_CALLS_PER_RUN`, which is 90. So the guard's two cheap jobs are counted
+  at roughly half the day they can draw.
+- What: on the basis the table claims to use, the corpus asks 1,440,000 tokens
+  of a 1,500,000-token day against 1,275,000 budgeted after the 15% margin,
+  and `check_kimi_tpd` would go red. It is green today because the inputs are
+  low, which is the worst way for a guard to be green. The failure it exists
+  to prevent is not a 413 on one request. It is every Kimi call in the org
+  refused for the rest of the UTC day, press included, and the press is the
+  product. Closing it is a choice between three levers and all three are the
+  owner's or the chair's: lower interpret's `MAX_CLAIMS_PER_RUN` from 90 to
+  about 59, which is a third of the graph's only edge-writing job, lower a
+  spend cap, or raise the Moonshot tier, which is money. Each is also a
+  runtime change under `docs/agents/runtime-changes.md`, whose third gate is a
+  rehearsal that cannot run while the Modal workspace is off.
+- First step: decide the basis in one sentence written into the table's
+  header, then derive both call counts from the job's own ceilings the way
+  distill's paper count already is, and read whatever red comes out of that as
+  the finding rather than as a regression.
+- Cost: $0 to build. The decision behind it trades corpus throughput against
+  the Moonshot tier.
+- Status: urgent
+
+### 2026-10-26 - Nothing records that a corpus rehearsal ran, so a deploy cannot ask (engineer seat, message run)
+- Trigger: this run's machinery diff. Five commits landed in `pipeline/` in 36
+  hours, one of them a token reservation raised from 600 to 1,000 in
+  `pipeline/interpret.py`, which `docs/agents/runtime-changes.md` names a
+  runtime change whose third gate is a rehearsal. The Modal workspace has been
+  off since 2026-10-23, so none of the five was rehearsed, and nothing in this
+  repository says so. The only way to learn it is to notice the workspace is
+  off and reason backwards, which is what this run did and what every run will
+  have to do again.
+- What: the press already solved this. `docs/agents/press-rehearsal.md` names a
+  `press_rehearsals` table, so a press rehearsal leaves a row and a later
+  reader can ask what was proved and when. The three corpus rehearsals print to
+  stdout inside a Modal container and leave nothing, so the deploy ladder's
+  third gate is a step in a chain rather than a fact anybody can query. Give
+  each corpus rehearsal the same shape: the model that answered, the prompt
+  sha, the payload size, the verdict and the timestamp. Then "has this commit
+  been rehearsed" is a lookup, and a day like today reports itself.
+- First step: one table and four lines at the end of each `rehearse()`, reusing
+  whatever `press_rehearsals` already does so there is one shape rather than
+  two. It needs a database credential, which the rehearsal containers do not
+  hold today and the deploy command can pass, so the first slice may be a file
+  in the deploy's own output instead.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The rehearsals now send the right size and nothing says whether the answer was right (engineer seat, message run)
+- Trigger: widening both fixtures today. The gates assert a shape and not a
+  verdict: triage's asks for ten valid decisions and accepts ten `index`
+  answers, and interpret's asks for at least one edge and fewer than ten and
+  accepts any five. Both fixtures now carry a knowable right answer written out
+  in a comment beside them, and nothing compares the model's answer to it.
+- What: the comment is already the assertion, so make it one. Carry the
+  expected decision per rehearsal paper and the expected relation per
+  rehearsal candidate in the fixture itself, then have the gate report
+  agreement as a number and raise only below a floor. A floor rather than an
+  exact match, because the point is to catch a model that has stopped reading
+  rather than to demand one that agrees with a human on every line. This also
+  gives the deploy ladder its first quality signal: today a model that answers
+  confidently and wrongly passes every gate the corpus has.
+- First step: add the expected answer to `REHEARSAL_BATCH` and
+  `REHEARSAL_NEIGHBORS` as a fifth and third field, with the existing
+  length-and-shape tests extended to cover it, and print agreement without
+  raising on it for the first few runs so the floor is chosen from data.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Pact makes the contract an artifact a deploy can query, where these gates make it a step in a chain (engineer seat, message run)
+- Trigger: today's work is a mock that had drifted from the thing it stands
+  for, so the day's scan went to the product whose whole subject is that
+  drift. Pact is consumer-driven contract testing and it had never been
+  scanned here.
+- What: Pact separates the contract from the run of it, and that is the thing
+  worth stealing. The
+  consumer's expectations become a pact file, the provider verifies against
+  that file, the result is published to a broker, and the deploy asks
+  `pact-broker can-i-deploy` rather than re-running anything. The verification
+  is a fact with a timestamp and a version attached, so "is this safe to ship"
+  is a question with a stored answer. This repository's corpus gates are the
+  opposite shape. They are an `&&` chain, so the proof exists for the duration
+  of one terminal session and the next reader cannot tell a gate that passed
+  from a gate that was never run, which is exactly the state five commits are
+  in this morning. That became the ledger entry above it.
+- What alexandria does better: Pact's provider verification replays a recorded
+  mock, so a provider can satisfy every pact and still behave differently for
+  a real client, and the broker reports green either way. These gates call the
+  real provider with the real key, the real reservation and the real timeout,
+  and as of today the real payload size. The fixtures are also hand-written
+  rather than recorded, which costs a few minutes per candidate and buys
+  something a recording cannot: a human reading the rehearsal log can check
+  the verdict line by line, because somebody decided in advance what the right
+  answer was. A recorded expectation only ever asserts that nothing changed.
+- First step: the second entry above, which is the broker's half of this in
+  the smallest form it has here.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - A run that is cut off should leave a resume point, not a report nobody wrote yet (engineer seat, hook run)
+- Trigger: this run's own first fifteen turns. Its predecessor was refused at
+  turn 89 with a draft pull request open and 1,849 lines on it, and the only
+  description of where that run had got to was the twelve commit subjects on
+  the branch. Reconstructing the state from those, re-merging `main`, and
+  resolving a register conflict by hand cost this run most of an hour before it
+  built anything. The run note that explains a run is written at the end, as a
+  report, which is exactly the artifact a run that never reaches the end does
+  not have.
+- What: the run note already exists, `docs/runs/YYYY-MM-DD-seat-trigger.md`, and
+  it is the right file in the wrong tense. Make its first two lines a resume
+  point written in the run's first commit and rewritten whenever the next action
+  changes: the branch, the item being worked, and one sentence of what the next
+  run should do if this one does not come back. Cheap to keep because it is two
+  lines, and worth keeping only because it is written before it is needed. The
+  craft scan below is the same shape in a system built for it: Temporal's worker
+  recovers by replaying a durable event history and continuing from the point of
+  failure, and the reason that works is that the history is written during the
+  run rather than summarised after it.
+- First step: one paragraph in this charter's "Ship first, then work" section
+  and a line in the run-note template, which is a charter edit and therefore the
+  owner's merge rather than this seat's. The ledger entry is the proposal. The
+  mechanical half a seat can do today is to write the resume point into the
+  draft pull request's description at the first push, which costs nothing and
+  needs nobody's permission.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The suite's greenness is a function of when it runs, and nothing measures the size of that function (engineer seat, hook run)
+- Trigger: a test in this seat's own 34-test suite of nineteen hours ago passed
+  when it was written at 00:50Z and was red at 00:57Z with no commit in between.
+  Its fixture asserted a state defined as "younger than ninety minutes" against
+  the wall clock. Filed as
+  `INC-2026-10-26-a-test-was-green-for-ninety-minutes-because-its-fixture-aged`,
+  and fixed by pinning that one file's clock. The class is not fixed. 2,065
+  tests now run on this repository and the honest statement about the rest of
+  them is that nobody knows which ones have this property.
+- What: run the suite twice in `checks.yml`, the second time with the clock
+  moved a week forward, and read any test that changes answer as the finding.
+  There is no mystery about what to do with the result: a test whose verdict
+  depends on the date is either pinning the wrong thing or testing the clock,
+  and both are a two-line fix once named. The cost is one more suite run, about
+  six minutes, on a workflow that already runs on every pull request touching
+  the pipeline. The reason to do it as a second run rather than as a lint is
+  that a lint has to guess which calls are time-dependent and a second run does
+  not have to guess at all.
+- First step: find out whether `faketime` is available on the runner image,
+  because if it is this is one `env:` block and a matrix entry. If it is not,
+  the fallback is a `conftest.py` fixture that offsets a single injected clock
+  the tools already accept, which is narrower and still catches the class that
+  produced this entry.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The host could record the branch a run pushed, and then no seat needs a resolver (engineer seat, hook run)
+- Trigger: the resolver this run wrote. The host's trailer carries
+  `pr=<url>` scraped from a run's final answer, so a run cut off before its
+  final answer reports `pr=-` however much it pushed, and today's reading of one
+  such run called a shipped cycle lost. The repair that shipped is a reader that
+  weighs the absence and settles it against the pull request list, which is
+  twelve lines of matching on a branch prefix and two time bounds. It works and
+  it is a workaround.
+- What: the host knows two facts the trailer does not carry. It knows the branch
+  the run pushed, because the push went through its own credential, and at
+  teardown it can ask GitHub for the pull request whose head is that branch. One
+  more field, `branch=<ref>`, would be enough on its own: every seat's branch
+  carries its seat name and the day, so a reader that has the branch needs no
+  prefix guessing and no time window. This is portfolio machinery and it serves
+  every seat of every company on the host, which is the argument for doing it
+  once there rather than four times in four repositories.
+- First step: the relay ask through `docs/agents/hq-relay.md`, carried by the
+  ExO seat, with today's resolver named as the thing it would replace rather
+  than as a description of the problem. Pair it with the entry of 2026-10-25
+  about where the reader itself should live, because both are the same question
+  about the same boundary.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Temporal recovers a cut-off worker by replaying a log it wrote during the run, where this seat recovers by reading commit subjects (engineer seat, hook run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  situation rather than against the product's feature set. The run was woken to
+  continue work a provider limit had cut off mid-flight, so the scan went to the
+  category that exists for exactly that: durable execution.
+- What: read live at docs.temporal.io/evaluate/understanding-temporal. When a
+  worker crashes, "A new Worker fetches the Event History, replays the Workflow
+  code against it to rebuild local state, and continues from the point of
+  failure as if the failure never happened." The event history is "the durable
+  log behind Durable Execution: a complete, ordered record of everything that
+  happened in a Workflow Execution," and the price of it is a constraint, that
+  "Workflow code must be deterministic because Temporal reruns it to rebuild
+  state after a failure." The stealable thing is not replay, which an agent run
+  cannot have, because an agent's turns are not deterministic and rerunning them
+  is a different run. It is that the record a successor needs is written
+  continuously as a cost of doing the work, rather than composed at the end as a
+  report. The first idea above is that, at the only size this repository can
+  afford: two lines.
+- What alexandria does better: the durable artifact here is the pull request,
+  and it is the deliverable rather than a trace of the deliverable. A crashed
+  Temporal workflow leaves an event history that needs its own UI to read and
+  has shipped no product. The run cut off at turn 89 last night left 1,849
+  reviewed-ready lines that a person can read, merge, or reject without any
+  instrument at all, which is the ship-first rule's real claim and it held under
+  the exact failure it was written for.
+- First step: the first entry above, which is this scan's stealable half at the
+  only size this repository can afford, and the two lines of it that need
+  nobody's permission are the resume point in the draft pull request's own
+  description.
+- Cost: $0 to steal. Temporal itself would be a service and a bill, and nothing
+  here proposes adopting it.
+- Status: proposed
+
+### 2026-10-26 - A gate says what it applies to, so a rule nobody can satisfy is a number rather than a discovery
+- Trigger: of the 546 pull requests this repository has ever held, 16 change a
+  `skills/<slug>/SKILL.md` and ADR-12's whitelist refuses all 16, measured in
+  today's run. None is whitelist-clean, and the cause is the org's own
+  contract: `prompts/skill-agent.md` requires the
+  seat to append its ideas to `docs/ideas.md` and its repeats to
+  `docs/agents/incidents.md` on the same branch, so every proposal is
+  guaranteed out of scope for the gate meant to merge it. The gate has been
+  live since 2026-09-17 and nothing ever reported that its pass rate could not
+  exceed zero.
+- What: today's craft scan below is the mechanism. Gerrit's submit requirements
+  separate `applicableIf` from `submittableIf` and give the result five
+  statuses, of which `NOT_APPLICABLE` and `UNSATISFIED` are different words: a
+  rule that does not apply is hidden and blocks nothing, and a rule that
+  applies and is unmet is visible and blocks. ADR-12's whitelist has only the
+  second word. It is applied to the whole diff, so one out-of-scope path
+  refuses the whole proposal, and the refusal reads the same whether the
+  proposal was wrong or the rule was unreachable. Two halves to steal, and the
+  cheap one is not the amendment. First, a gate reports its own reach: for each
+  gate in this repository, how many of its last fifty real inputs it could ever
+  have passed, so a ceiling of zero is a line in a report rather than something
+  a build run discovers three weeks later. Second, and this one is the owner's,
+  scope ADR-12 per path rather than per diff, so a pull request mixing judgment
+  and machinery has its `skills/` half judged by the panel and its machinery
+  half routed to ADR-14's human merge, instead of the whole thing refused.
+- First step: `tools/gate_reach.py`, one gate at a time, starting with the two
+  whose inputs are already enumerable from the GitHub API: ADR-12's whitelist
+  over the skill seat's pull requests, and `tools/check_authority.py` over the
+  seats' charters. The number for the first is in today's pull request
+  description and the instrument is what makes it repeatable.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The skill seat's ledger append moves to its own pull request, so a proposal can be in scope for the gate that judges it
+- Trigger: the same 16-of-16 measurement. The out-of-scope paths are not
+  incidental: `docs/ideas.md` and `docs/agents/incidents.md` appear on nearly
+  every skill pull request because that seat's charter requires both appends on
+  the branch that carries the work, exactly as the engineer charter requires
+  them here.
+- What: the append is a different act from the proposal and it is addressed to
+  a different reader. A skill promotion is text the panel judges against
+  claims; a ledger append is a note to the PM and the owner. Splitting them
+  costs the skill seat one extra `gh pr create` and makes the difference
+  between a proposal ADR-13 can merge and one it structurally cannot. The
+  alternative is the amendment in the entry above, which is larger: it changes
+  a decision rather than a charter, and it has to answer what else `docs/`
+  admits once two files in it are admitted. Either repair works and they are
+  mutually exclusive, so this entry exists to put both in front of the owner
+  rather than to argue for one.
+- First step: a charter diff to `prompts/skill-agent.md`, which is the owner's
+  under HQ standard section 21 because it changes what a seat is required to do, so
+  this stays a proposal and no part of it is in today's pull request.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The daily reviewer pass reads open pull requests as well as main, so a verdict can describe something that still needs merging
+- Trigger: building ADR-13's merge executor today found that every row in
+  `panel_verdicts` describes text already on `main`. All three reviewers run in
+  step 2 of `pipeline/skill_revision.py`, which reads skills from `main` over
+  the GitHub API, so `panel_consensus` can be unanimous only about a proposal
+  that no longer needs merging. The ADR's sentence is "unanimous pass merges the
+  PR" and the panel could not name a pull request.
+- What: the same job gains a second pass over open pull requests that change a
+  `skills/<slug>/SKILL.md`. `tools/panel_merge.py`'s `review_proposal` already
+  does the hard half with no credential, by fetching `refs/pull/N/head` and
+  calling each reviewer's own `review(skills_dir=...)` against the branch's
+  tree, and this run proved it against #535. What it cannot do is file the
+  rows, because a file-half verdict is weaker than a reviewer's whole duty and
+  `panel_verdicts` is the audit trail that replaces an approval. The job is the
+  one place that holds the `neon` secret and can therefore run all three
+  reviewers in full and file honest rows against a branch's sha.
+- First step: `review_pass` in `pipeline/skill_revision.py` takes a
+  `skills_dir`, which it almost does already, and the job loops over the open
+  proposals before it loops over `main`. One Modal function, no new secret, no
+  new schedule. It needs the Modal workspace back to run, so the slice is
+  writable today and unverifiable until then, and that is worth saying out loud
+  rather than discovering at deploy.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Gerrit separates a rule that does not apply from a rule that is not met, where ADR-12's whitelist has one word for both (engineer seat, message run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  build rather than against the product's feature set. The run built the thing
+  that merges a pull request without a person, so the scan went to the most
+  mature system that does it: Gerrit's submit requirements.
+- What: read live at
+  gerrit-review.googlesource.com/Documentation/config-submit-requirements.html.
+  A submit requirement carries three expressions and not one. `applicableIf`
+  decides whether the rule is in play at all, `submittableIf` decides whether
+  it is met, and `overrideIf` decides when it is bypassed on purpose, by a
+  trusted user or in an emergency. The result is one of five statuses, and the
+  two that matter here are `NOT_APPLICABLE`, which is hidden and blocks
+  nothing, and `UNSATISFIED`, which is visible and blocks. The stealable thing
+  is that split. A gate with only `submittableIf` cannot tell a reader whether
+  a refusal is about the input or about the rule, which is exactly how ADR-12's
+  whitelist refused 16 of 16 inputs for three weeks without anybody noticing
+  that its ceiling was zero. The third expression is worth naming too, because
+  this repository has no `overrideIf` anywhere and instead has prose: section 22's
+  forty-eight-hour silence rule is an override with a timer, written in a
+  standard rather than in the gate, so no instrument can read it.
+- What alexandria does better: the verdict carries its own evidence. Gerrit's
+  submit record says which requirement was unsatisfied and which label was
+  missing, and the reasoning behind a human's vote is not in the record.
+  `panel_verdicts` holds the findings that produced the verdict as jsonb, the
+  sha256 of the exact text judged, and the git blob sha of the reviewer's own
+  code, append-only, so a re-review preserves the disagreement instead of
+  replacing it. That is a verdict a stranger can re-derive. A vote is not.
+- First step: the first entry above, and its cheap half is one instrument
+  rather than a decision.
+- Cost: $0 to steal. Gerrit itself is a self-hosted review server and nothing
+  here proposes adopting one.
+- Status: proposed
+
+### 2026-10-26 - The issue headline wants the same balance the dek just got, and the phone says no (frontend seat, message run)
+- Trigger: measuring the dek widow on card
+  `b37a342a The issue dek's second line is a two-word widow`. The card describes
+  the dek as sitting "under a headline that is itself two balanced lines." It is
+  not. On the one published issue at 820 and 1440 the H1 runs 610px then 156px
+  in a 632px measure, so the second line is 25% of the column and two words
+  long. The dek's old second line was 118px and two words. The defect the card
+  names was the lower half of a pair, and a reader met both stubs in the first
+  60px of the page.
+- What: the dek is fixed and shipped in this run. The H1 is not, and the reason
+  is a measurement rather than caution. `text-wrap: balance` on `.issue-body h1`
+  was measured across the generator's whole title range, a 28-character title,
+  the live 51, and 113 against the 120-character ceiling `ensure_fresh_title`
+  enforces, at all three viewports. It is right in five of six cases and it is
+  inert in two of those: a one-line title does not move, a three-line title at
+  820 and 1440 is already 628/617/493 and does not move, and the live title at
+  820 and 1440 goes from 610/156 to 420/346, which is the repair.
+  The sixth is the phone and it is a regression. The live title at 390 goes from
+  297/305/156, a descending rag with the stub last, to 297/172/289, which puts
+  the short line in the middle and reads as a dent rather than as a rag. Both
+  frames are committed at
+  `docs/design/reviews/2026-10-26-message/h1-live-phone-plain.png` and
+  `h1-live-phone-balanced.png`, and the call wants an eye rather than the
+  numbers, because both versions measure defensibly and only one of them looks
+  like a mistake.
+- Why it is a proposal and not a diff: the honest fix is `balance` above 820
+  only, and that is a breakpoint on a type rule rather than a type rule, which
+  is a house decision. The card itself says the right thing about this: one
+  deliberate use of `text-wrap` on `.statement` "is not a system the dek was
+  left out of," and inventing the system at the keyboard is what it warns
+  against. Ban list 31 is the other half: the stylesheet now has balance in two
+  places and not in the third that measures like them, which is the almost
+  complete set that entry describes. Either the house balances display type as
+  a rule, in which case the H1 and `.statement` and the dek are one decision, or
+  it does not, in which case the dek's rule wants its own justification written
+  down. This asks for that ruling, not for the diff.
+- First step: her eye on the two committed phone frames, and a one-line answer
+  to whether display type balances as a house rule. The diff is two lines either
+  way.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - `shoot.mjs` should refuse to write frames into a directory another run is using (frontend seat, message run)
+- Trigger: `INC-2026-10-26-the-visual-harness-readme-teaches-the-fixed-tmp-name-that-incident-0b-forbids`.
+  This run's 33 sweep frames landed in `/tmp/sweep` beside 33 frames the same
+  seat's run had written ninety minutes earlier, and nothing anywhere said so.
+  The run found it by listing the directory for an unrelated reason.
+- What: `shoot.mjs` names its output `<page>-<viewport>-<tag>.png`, and a
+  sweep's purpose is a before and an after, so the collision the tool is shaped
+  to produce is two runs that both pass `before`, which is the first tag any run
+  passes. The survivor is then read as a baseline. The documentation half is
+  fixed in this run's pull request, every worked example in the harness README
+  now deriving its output from `mktemp -d`, and that is the half that was free.
+  This is the other half: a tool that refuses rather than a README that advises.
+- Why it is a proposal rather than a diff in the same pull request: these
+  scripts are shared by every run of this seat, and a guard that misfires costs
+  a whole run's evidence, which is more than the defect costs. The shape wants
+  deciding before it is written. The cheap version refuses when the target
+  directory already holds a `.png` whose mtime predates the process start, which
+  catches the real case and lets `--force` through for a deliberate re-shoot.
+  The expensive version writes a sentinel naming the pid and the tag.
+- A thing the cheap version gets wrong, named here so it is not rediscovered:
+  re-shooting one page into a directory already holding a full sweep is a normal
+  and useful move, and this run did exactly that twice while verifying the fix.
+  So the refusal has to be scoped to the frames the run is about to overwrite,
+  not to the directory being non-empty.
+- First step: one of the two shapes above, chosen, then about ten lines.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The $0 route to the first differential eval result is one secret, not a paid account and two (engineer seat, message run)
+- Trigger: sprint 2026-10-26 item 2 asked for `agent-memory-selection`'s first
+  real with-versus-without result. Every document in this repository states the
+  blocker the same way, and `skills/agent-memory-selection/SKILL.md` states it
+  in the skill's own provenance block: "no route to either eval arm (no
+  `GROQ_API_KEY` in `.github/workflows/agent-skill.yml`, no benchmark provider
+  in `pipeline/budget.py`)". The second half of that sentence is wrong.
+  `pipeline/budget.py`'s table holds three Groq models priced at $0.00 per
+  million, `openai/gpt-oss-120b`, `openai/gpt-oss-20b` and `qwen/qwen3.8-27b`,
+  so a subject and a judge that differ, which is the one thing ADR-36 refuses
+  to run without, both exist on the free tier.
+- What: the run that produces the first result needs one credential and no
+  budget. Measured on this branch rather than estimated:
+  `python3 tools/skill_eval.py --skill agent-memory-selection --plan --subject
+  openai/gpt-oss-20b` prints "$0.00 a call, so the $0.75 cap cannot bind". The
+  numbers behind it are 42 subject calls at about 92,600 tokens, 45 judge calls
+  at about 135,900, a worst-case with-skill request of 3,023 tokens against the
+  free tier's 6,800-token margined minute, and roughly 34 minutes of wall clock
+  that is all pacing. The subject's day lands on `openai/gpt-oss-20b` and the
+  judge's on `openai/gpt-oss-120b`, which matters because the corpus fallback's
+  whole day is sized against the latter in `budget.fallback_daily_draw`, so
+  splitting the two arms across two models keeps an eval run out of the
+  fallback's allowance.
+- And the cheapest first result is cheaper still. The 7 findings `--check`
+  reports against this skill are all ADR-40 item 6 audits, which are judge-only:
+  7 calls, about 25,000 tokens, 13 percent of one free-tier day, three minutes.
+  That closes every open finding on the skill the sprint picked and needs no
+  subject arm at all.
+- The one thing it is not: free in the pre-registered sense. The suite registers
+  `kimi-k2.6`, rule 1 of `docs/product/skill-validation.md` section V5 says the run
+  copies the policy rather than choosing it, and as of this branch a
+  `--subject` override is recorded in `result.policy_overrides` and fails
+  ADR-37's gate. So the free route is the skill seat's to pre-register, in the
+  suite, before the run. The engineer's half is done and the authoring half is
+  not the engineer's to do.
+- First step: the owner puts `GROQ_API_KEY` in the engineer and skill seats'
+  runtime (one value, already held as the Modal secret named `groq`), and
+  `docs/agents/pending-workflow-changes.md` item 12 is amended to say what it
+  actually unblocks: not a CI step on a workflow decision 056 retired, but 7
+  judge calls that close the last findings on one skill.
+- Cost: $0, and this entry exists partly to say so, because the ask has read as
+  "a funded Moonshot account plus two secrets" since 2026-09-30.
+- Status: proposed
+
+### 2026-10-26 - A correction should not be able to leave a verbatim copy of what it corrected (engineer seat, message run)
+- Trigger: `INC-2026-10-26-the-corrected-sentence-was-corrected-in-one-register-of-two`,
+  filed on this branch. PR #542 measured that the reviewer panel's gap is four
+  things, corrected `docs/product/reviewer-panel.md`, and named the second copy
+  of the disproved sentence in its own pull request body: "`README.md`'s status
+  checklist says the same sentence." `README.md` is not among #542's seven
+  changed files, so the front page carried "the merge is the only slice left"
+  for a day after that was measured to be false, by the same seat, in writing.
+- What: a check in `tools/check_registers.py` that reads the diff rather than
+  the tree. For every line a commit removed from a document under `docs/`, ask
+  whether a near-identical line still exists anywhere in `docs/` or
+  `README.md`, and report the survivors. Near-identical rather than exact,
+  because the two copies in this instance were not byte-equal: one said "the
+  only thing between ADR-13 and a working loop" and the other "the merge is the
+  only slice left". A normalized shingle comparison over sentences is enough
+  and needs no model. The output is a finding and not a failure, for the reason
+  the certificate checks give: a gate that fails on every rewording would be
+  turned off within a week.
+- Why it is this check and not a rule: the charter already tells every seat to
+  check the registers before shipping, and this failure happened inside a run
+  that did exactly that. The thing missing was not attention. It was that
+  nothing between the correction and the duplicate ever opened the second file,
+  which is incident 20's sentence word for word.
+- First step: the removed-line extraction and the shingle comparison, against
+  #542's own diff as the fixture, since it is a known positive with a known
+  answer.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: OSF Registries makes a deviation from the plan its own timestamped document, where this harness writes it into the result it deviated on (engineer seat, message run)
+- Trigger: the daily craft scan, taken against this run's own build. The run
+  spent the day in a pre-registered A/B harness, so the scan went to the
+  product category that sells pre-registration itself rather than to a research
+  tool: OSF Registries, the Center for Open Science's registry, read live at
+  help.osf.io and osf.io/registries.
+- What: a registration on OSF is frozen at submission and cannot be edited. A
+  change to the plan afterwards is not an edit to the registration; it is a
+  separate object, an update with its own timestamp, its own justification
+  field and its own DOI, attached to the original and rendered beside it. The
+  registry shows the chain. The stealable thing is where the deviation lives.
+  This harness now records a moved dial in `result.policy_overrides` and
+  carries it into `history`, which is better than the nothing it recorded this
+  morning, but the record still lives with the run that deviated. OSF's record
+  lives with the plan, so the question "has anybody ever run this suite off its
+  registered policy" is answered by opening the registration rather than by
+  opening every result. Here the equivalent is the suite file, and the suite
+  file is the skill seat's.
+- What alexandria does better, and it is the half OSF deliberately does not
+  do: disclosure is not the gate. A registered report may deviate from its plan
+  and still publish, as long as it says so; the reader is left to decide what
+  the deviation did to the claim. `tools/skill_eval.py --gate` refuses. As of
+  this branch a delta measured on a subject the suite did not register does not
+  clear ADR-37's gate at all, which is a stronger instrument than a disclosure
+  field and the right one when the thing downstream of the verdict is an
+  automatic merge rather than a human reader.
+- First step: a `deviations` array in the suite's own file, appended to rather
+  than replaced, one entry per run that moved a dial, written by the runner at
+  the moment it moves one. It is three lines in `tools/skill_eval.py` and it
+  writes into `skills/<slug>/evals/`, which the engineer charter does not write
+  to, so it is a proposal for the skill seat and the owner rather than an
+  engineer task.
+- Cost: $0 to steal. OSF Registries is free and nothing here proposes adopting
+  it.
+- Status: proposed
+
+### 2026-10-26 - The pacing rule is enforced twice, by two gates that disagree (engineer seat, message run)
+- Trigger: `INC-2026-10-26-the-pacing-rule-has-two-gates-and-they-do-not-agree`,
+  filed on this branch. Adding `tools/skill_eval.py` to
+  `budget.PACED_CALLERS` passed `budget.check_fallback_pacing()` and
+  `python3 pipeline/budget.py`, both clean, and then failed
+  `tests/test_corpus_drain.py::test_every_paced_caller_tells_pace_how_big_its_call_was`,
+  which asserts the same guard plus one thing more: the literal
+  `cap.last_tokens` in each paced caller's source.
+- What: move that source assertion into `budget.check_fallback_pacing`, beside
+  the regex that already reads each caller's source for a bare `pace(x)` call,
+  so the function whose docstring tells a seat the source is the only place to
+  ask the question is the function that actually asks all of it. The test then
+  keeps its one line, `check_fallback_pacing() == []`, and stops holding a rule
+  of its own. Three paragraphs of that docstring exist to explain why the check
+  lives in the source, and a reader who follows them lands in a function that
+  enforces most of the rule.
+- Why it is worth a day rather than a commit: this changes what fails a deploy.
+  `python3 pipeline/budget.py` is the pre-deploy check, so folding an assertion
+  in means a caller that passes the test today but not the stricter reading
+  would start blocking deploys. The right order is to confirm the four existing
+  callers all satisfy the folded version first, which they do by inspection and
+  should by test, and only then move it.
+- First step: a test that asserts the two enforcers agree on every entry in
+  `PACED_CALLERS`, which fails today on nothing and would have failed on this
+  run's first attempt. That is the cheap half and it is worth landing on its
+  own, because it converts an invisible disagreement into a red tick.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Calibrate the scope cutoff instead of choosing it (engineer seat, hook run)
+- Trigger: `tools/skill_scope.py`, shipped on this branch, keeps a candidate
+  when its BM25 score clears half the top score, and three at most. Both
+  numbers were fixed before the suite ran and neither was fitted, which is
+  the honest way to run a first measurement and is also the reason the
+  result cannot say whether a different cutoff would be better. The run
+  measured four scope misses out of 49 golden cases, 8.2%, and has no way to
+  say what a cutoff of 0.3 or a K_MAX of 2 would do to that number or to the
+  74% context saving it bought.
+- What: sweep `KEEP_RATIO` and `K_MAX` over the 67 trigger cases and publish
+  the frontier, one point per policy, so the cutoff is chosen from a curve
+  rather than from a hunch. The craft scan below is the shape to copy and the
+  trap to avoid: Semantic Router's `fit()` learns a map from raw score to the
+  probability that the top route is right, which makes a cutoff mean
+  something a reader can reason about, and it fits on the same utterances it
+  then evaluates on, which makes the number it prints an in-sample number. So
+  the sweep here holds out the cases it does not fit on, and the published
+  policy carries both halves.
+- First step: a `--sweep` flag that prints the frontier and writes a bundle,
+  with the 67 cases split by suite so no skill's own cases set the cutoff
+  that then scores them. Half a day, and it needs no new instrument.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The flat baseline is the finding, so build the near-neighbour distractor pool (engineer seat, hook run)
+- Trigger: today's measurement, `docs/evals/2026-10-26-scoped-skill-delivery.md`.
+  The unscoped baseline held 83.7% recall at zero distractors and 83.7% at
+  twenty, where the market brief of 2026-10-16 reports a fall from 73.6% to
+  27.4%. The twenty distractors are the real Clerk skills vendored under
+  `.agents/skills/`, and they are too far from this library's subject to take
+  a single case from it. The brief's collapse needs near neighbours, and this
+  checkout cannot stage one.
+- What: a distractor pool drawn from the agent-engineering skills the market
+  seat already tracks in `docs/market/landscape.md`, the skillbay and
+  ComposioHQ directories among them, filtered to the subject this library
+  serves rather than away from it. Then the sweep says something about the
+  regime the product will actually ship into, which is a reader who has
+  installed three agent-skill libraries and not one.
+- Why it matters more than the win: the scoped arm beat the unscoped arm on
+  this tree, and the honest reading of that win is small, because the failure
+  it was built to prevent did not happen here. A measurement that cannot
+  stage the failure it is about reports a safety margin and not a rescue, and
+  the entry that says so is worth more than the one that claims the rescue.
+- First step: collect twenty to forty real descriptions from the public
+  directories, store them the way `skills/_validation/decoys.json` stores the
+  null panel, and re-run the sweep against both pools side by side. The
+  distractors are somebody else's published text, so the file records where
+  each one came from and the date it was read.
+- Cost: $0. Public directories, read once, no account.
+- Status: proposed
+
+### 2026-10-26 - Scoped delivery exists and is not yet what the plugin does on install (engineer seat, hook run)
+- Trigger: sprint-2026-10-26 item 3 asked for the mechanism and its numbers,
+  and both shipped on this branch. The word in the item's title is "by
+  default", and the default is still the whole library, because the two
+  places the default lives are not this seat's to write. A router entry in
+  the library is skill content and belongs to the ADR-13 panel. A scoping
+  hook in `.claude-plugin/plugin.json` is not something the host exposes
+  today, so the manifest has nowhere to put one.
+- What: name which of the two it is, then do that one. The panel route is a
+  router skill whose description is the only text a harness holds, and whose
+  body names which of the nine to load; `tools/skill_scope.py --query` is
+  already the mechanism behind it and the router skill is the surface. The
+  host route is a question for the platform rather than a build, and the
+  honest version of it is a sentence in `docs/product/install.md` saying what
+  a reader can run by hand until the host has the hook.
+- First step: the owner or the PM picks the route, because the panel route
+  spends the skill seat's week and the host route spends nobody's. Then one
+  of the two is a day.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Semantic Router turns a raw score into a probability before it thresholds, where this scope thresholds the raw score (engineer seat, hook run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  build. The run shipped a two-stage skill router with a cutoff at half the
+  top BM25 score, so the adjacency is the most mature open-source product
+  that does exactly this job for tools rather than for skills:
+  aurelio-labs/semantic-router, read live at
+  [github.com/aurelio-labs/semantic-router](https://github.com/aurelio-labs/semantic-router)
+  and
+  [docs.aurelio.ai](https://docs.aurelio.ai/docs/semantic-router/user-guide/features/threshold-optimization),
+  2026-10-26.
+- What is worth stealing: the threshold is not a score. In its v1 routers a
+  `confidence_threshold` sits on the router and on each route, with a
+  per-call override, and `fit()` learns a map from the raw retrieval score to
+  the probability that the top route is the right one, by Platt or isotonic
+  calibration, returning a report that carries accuracy and calibration error
+  side by side. Two things fall out of that and both are missing here. A
+  cutoff stated as a probability means something a reader can argue with,
+  where `KEEP_RATIO = 0.5` means only "half of whatever the top score
+  happened to be" and is not comparable across two engines or two libraries.
+  And a calibration error is the number that says whether the threshold is
+  trustworthy at all, which a raw-score cutoff cannot report because it never
+  claims a probability to be wrong about.
+- What alexandria does better, and it is the half the fitting buys at a
+  price: `fit()` and `evaluate()` are documented against the same
+  `(utterance, target route)` examples, and nothing in the product names a
+  held-out split, so the accuracy a router reports after fitting is an
+  in-sample number. This instrument cannot do that. `SCOPE_VERSION` and
+  `ENGINE_VERSION` are printed in every bundle, the policy history in both
+  files says why each retired version was retired, `lexical/3` sits
+  implemented and deliberately not adopted because the run that wrote it also
+  changed the artifact it judges, and `tools/skill_eval.py --gate` refuses a
+  delta measured off the registered policy outright. Their accuracy is
+  probably better than ours. Our number is evidence and theirs is a
+  measurement of the data it was tuned on, and when the thing downstream of
+  the verdict is an automatic merge rather than a human reader, that is the
+  side to be on.
+- First step: there is one, and it is the entry above about calibrating the
+  cutoff, so this scan does not open a second.
+- Cost: $0 to steal. Semantic Router is open source and nothing here proposes
+  adopting it.
 - Status: proposed

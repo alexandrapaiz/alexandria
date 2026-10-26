@@ -488,6 +488,137 @@ def test_describing_an_account_in_prose_opens_none():
     assert verdict(text) == ca.CLEAR
 
 
+# ------------------------------------- the one diff this gate cannot walk away from
+
+def whole_file(path):
+    """Every line of a real file in this tree, as a diff that adds all of it.
+
+    This is the shape the defect below arrived in: the commit that introduced
+    `tools/check_authority.py` added 725 lines, and the gate read its own
+    patterns as findings against it.
+    """
+    lines = (ROOT / path).read_text().splitlines()
+    return diff(path, [(1, ["+" + line for line in lines])], old_path="dev/null")
+
+
+def test_the_gate_keeps_itself_out_of_its_own_verdict():
+    """`INC-2026-10-24-the-authority-gate-declines-to-answer-on-any-diff-that-touches-the-authority-gate`.
+
+    It shipped answering `undecided` on the commit that added it: ten findings,
+    all ten of them lines of its own patterns. This assertion is the one that
+    cannot go stale, because it reads the file as it is today rather than a
+    fixture copied out of it, so a pattern added tomorrow is covered the day it
+    lands.
+    """
+    result = ca.examine(whole_file("tools/check_authority.py"))
+    assert result["verdict"] == ca.CLEAR, result["findings"]
+
+
+def test_a_pattern_that_names_secrets_does_not_write_one():
+    text = diff("pipeline/weekly.py",
+                [(10, [" context",
+                       added("SECRET", "_KEY = r", Q, "[A-Za-z0-9_]*(?:TOKEN|SECRET)", Q)])])
+    assert verdict(text) == ca.CLEAR
+    text = diff("pipeline/weekly.py",
+                [(10, [" context", added("SECRET", "_READ = re.compile(")])])
+    assert verdict(text) == ca.CLEAR
+
+
+def test_a_pattern_that_names_prices_spends_nothing():
+    text = diff("pipeline/checkout.py",
+                [(10, [" context",
+                       added("SPEND = re.compile(r", Q, "\\b(price_cents|plan_id)\\b", Q, ")")])])
+    assert verdict(text) == ca.CLEAR
+
+
+def test_a_pattern_that_names_account_calls_opens_none():
+    text = diff("pipeline/checkout.py",
+                [(10, [" context",
+                       added("ACCOUNT = re.compile(r", Q, "\\b(new account|open an account)", Q,
+                             ")")])])
+    assert verdict(text) == ca.CLEAR
+
+
+def test_a_credential_written_as_a_raw_string_is_not_a_pattern():
+    """The hole a looser exemption opens, closed by requiring regex syntax.
+
+    `r"..."` is Python's notation for a regex and it is also a perfectly good
+    way to paste a credential. A pattern definition has to read as one.
+    """
+    text = diff("pipeline/weekly.py",
+                [(10, [" context", added("MY_API_KEY", " = r", Q, "a1b2c3d4e5" * 4, Q)])])
+    assert verdict(text) != ca.CLEAR
+
+
+def test_a_credential_beside_a_comment_about_a_pattern_is_not_cleared():
+    """The right-hand side has to BE a pattern, not merely mention one."""
+    text = diff("pipeline/weekly.py",
+                [(10, [" context",
+                       added("MY_API_KEY", " = ", Q, "a value with spaces", Q,
+                             "  # see re.compile(r", Q, "\\d+|x", Q, ")")])])
+    assert verdict(text) != ca.CLEAR
+
+
+def test_a_match_beside_a_pattern_on_one_line_is_still_found():
+    """The exemption is the matched span and not the line that carries it."""
+    text = diff("pipeline/checkout.py",
+                [(10, [" context",
+                       added("plan", "_id = fetch(RE)  # RE = r", Q, "\\b(plan", "_id)\\b", Q)])])
+    assert verdict(text) == ca.UNDECIDED
+    assert "spend" in questions(text)
+
+
+def test_a_comment_in_a_file_that_can_act_acts_on_nothing():
+    text = diff("pipeline/checkout.py",
+                [(10, [" context",
+                       added("# the monthly tier is ", DOLLAR, "20.00 a month")])])
+    assert verdict(text) == ca.CLEAR
+
+
+def test_a_credential_commented_out_is_still_a_credential():
+    """What the comment exemption must not reach. It gates the `undecided`
+    branch only, so the two `reserved` branches read a comment as they read
+    anything else."""
+    gh_shaped = "ghp" + "_" + "A" * 25
+    text = diff("pipeline/weekly.py",
+                [(10, [" context", added("# TOKEN", " = ", Q, gh_shaped, Q)])])
+    assert verdict(text) == ca.RESERVED
+
+
+def test_the_exemption_is_a_position_and_never_a_path():
+    """Excluding the gate's own file by name was the other candidate fix.
+
+    It is one line and it blinds this command to a real credential pasted into
+    that file, which is the one place a reader would least expect to be
+    unwatched. So the same pattern clears wherever it is written, and a real
+    credential is reserved even in the gate's own source.
+    """
+    pattern = added("SECRET", "_KEY = r", Q, "[A-Za-z0-9_]*(?:TOKEN|SECRET)", Q)
+    for path in ("tools/check_authority.py", "pipeline/weekly.py", "tests/test_x.py"):
+        assert verdict(diff(path, [(10, [" context", pattern])])) == ca.CLEAR, path
+
+    real = added("MY_API_KEY", " = ", Q, "a1b2c3d4e5" * 4, Q)
+    for path in ("tools/check_authority.py", "pipeline/weekly.py", "tests/test_x.py"):
+        assert verdict(diff(path, [(10, [" context", real])])) == ca.RESERVED, path
+
+
+def test_a_hard_wrapped_pattern_is_read_to_the_end_of_its_line():
+    """A pattern this repository writes spans lines, and the literal on all but
+    the last of them is left open. An exemption that needed a closing quote
+    would miss `SECRET_KEY`'s own first line."""
+    line = "".join(("SECRET", "_KEY = (r", Q, "[A-Za-z0-9_]*(?:TOKEN|SECRET"))
+    spans = ca.pattern_spans(line)
+    assert spans, line
+    start, end = spans[0]
+    assert end == len(line), "an unterminated literal runs to the end of the line"
+    assert "TOKEN" in line[start:end]
+
+
+def test_a_plain_string_is_not_a_pattern_without_a_constructor():
+    assert ca.pattern_spans('label = "a|b"') == []
+    assert ca.pattern_spans('label = re.compile("a|b")')
+
+
 # ------------------------------------------------------------ the fail-closed direction
 
 def test_reserved_outranks_undecided_outranks_clear():

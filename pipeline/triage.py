@@ -581,8 +581,11 @@ def rehearse(allow_fallback: bool = False) -> str:
     provider, and every one of the four failures of
     INC-2026-09-24-press-provider-migration was on this question. The prompt,
     the provider, the key, the reservation and the timeout are all the real
-    ones. What is fake is the batch, which is a fixed sample carried in this
-    file, and what is absent is the database.
+    ones, and since 2026-10-26 so is the batch length: REHEARSAL_BATCH is BATCH
+    papers, the same number the run sends, rather than the three it sent while
+    the reservation was sized for ten. What is fake is the content of the batch,
+    which is a fixed sample carried in this file, and what is absent is the
+    database.
 
     It raises on any failure, so the chair's `&&` chain stops before the deploy,
     and it refuses to pass on a fallback: a receipt from a different model is
@@ -868,11 +871,31 @@ def drain() -> str:
     return lines[-1]
 
 
-# A fixed sample for the rehearsal: one paper that should clearly be read, one
-# that should clearly be discarded, and one in between, so a model answering
-# 'index' to everything fails the gate rather than passing it. Abstracts are
-# written here rather than fetched, because a rehearsal must not depend on the
-# database being in any particular state.
+# A fixed sample for the rehearsal: BATCH papers, which is the batch the run
+# sends, spanning all four decisions so a model answering 'index' to everything
+# fails the gate rather than passing it. Abstracts are written here rather than
+# fetched, because a rehearsal must not depend on the database being in any
+# particular state.
+#
+# It was three papers until 2026-10-26, and the length is the point rather than
+# a detail. This gate's own failure message says a model that answers for some
+# of a batch leaves the rest untriaged forever, because the resume query cannot
+# tell "not yet judged" from "judged and dropped". That failure is a function of
+# batch length: a model drops the tail of ten long before it drops the tail of
+# three, and MAX_COMPLETION_TOKENS is reserved for ten results, so at three the
+# gate sent a third of the request it was reserving for and never once put the
+# reservation under the pressure it exists to survive.
+#
+# The right answers, so the printed verdicts can be read rather than counted:
+#
+#   deep_read   1 (design-changing, and the weekly budget is 5)
+#   distill     4, 6, 9   (a recipe, a practice report with numbers, a method)
+#   index       3, 7, 10  (searchable, no mechanism to apply)
+#   discard     2, 5, 8   (out of scope, a routine release, a launch post)
+#
+# A model is not required to agree on every line and the gate does not ask it
+# to. The gate asks for ten valid decisions. The spread is here so that a human
+# reading the log can see whether the answers are judgements or a default.
 REHEARSAL_BATCH = [
     ("rehearsal:1",
      "Context Rot: Compaction Strategies for Million-Token Agent Loops",
@@ -894,6 +917,59 @@ REHEARSAL_BATCH = [
      "It supports 8,192-token inputs and costs less than our previous model. "
      "Read the docs to get started.",
      "d"),
+    ("rehearsal:4",
+     "Process Rewards from an Executor: Training Tool-Use Reasoning Without "
+     "Human Traces",
+     "We train a 14B model to plan multi-step tool calls using a reward "
+     "grounded in the executor rather than in human preference. The verifier "
+     "runs each proposed call in a sandbox and scores the trace on whether the "
+     "call succeeded and whether its output was used. We give the curriculum, "
+     "the three ablations that matter, and the two reward-hacking modes the "
+     "sandbox had to be hardened against.",
+     "a"),
+    ("rehearsal:5",
+     "Sheaf-Theoretic Foundations of Distributed Consensus",
+     "We give a categorical account of consensus protocols as sections of a "
+     "sheaf over the network topology, and prove that the FLP impossibility "
+     "result follows from the non-existence of a global section. No "
+     "implementation is given and no existing protocol is changed.",
+     "a-low"),
+    ("rehearsal:6",
+     "What it cost us to run a 400-agent code review fleet for six months",
+     "We ran a fleet of review agents against every pull request in a "
+     "1.2M-line monorepo. This post gives the harness, the per-review token "
+     "spend ($0.31 median, $4.20 at the 99th percentile), the three prompt "
+     "revisions that halved it, and the two outages we caused: a retry storm "
+     "against our own CI, and a context leak that put one team's diff in "
+     "another team's review.",
+     "c"),
+    ("rehearsal:7",
+     "AgentBench-Long: Measuring Tool-Use Degradation Across Context Lengths",
+     "We introduce a benchmark of 2,800 long-horizon tool-use episodes and "
+     "report results for eleven models across four context budgets. "
+     "Performance falls for every model past 100K tokens. We offer no method "
+     "for improving it.",
+     "a"),
+    ("rehearsal:8",
+     "v4.2.1: dependency bumps and a fix for the Windows path separator",
+     "Updates six transitive dependencies, fixes a path-separator bug on "
+     "Windows reported in #4417, and corrects two typos in the README. No API "
+     "changes.",
+     "d"),
+    ("rehearsal:9",
+     "Selective KV Eviction Beats Summarization for Agent Memory at 1M Tokens",
+     "We compare four memory strategies for agents operating past 1M tokens of "
+     "accumulated context. A learned eviction policy over the KV cache retains "
+     "94% of full-context task success at 12% of the memory, where recursive "
+     "summarization retains 61%. We release the policy and the training "
+     "procedure.",
+     "a"),
+    ("rehearsal:10",
+     "Our new agent platform is now generally available",
+     "Today we are opening our agent platform to all customers. Build, deploy "
+     "and monitor agents in one place, with enterprise-grade security and "
+     "99.9% uptime. Talk to sales to get started.",
+     "c"),
 ]
 
 

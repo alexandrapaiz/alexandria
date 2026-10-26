@@ -29,8 +29,38 @@ it started, and it proves the served stylesheet is the one on disk.
 Environment is inherited, so anything the pages need goes in front of it:
 
 ```bash
-LEFT_BEHIND_FIXTURE=/tmp/lb.json docs/design/harness/serve.sh
+run=$(mktemp -d)                                  # see the next section
+node docs/design/harness/make-left-behind-fixture.mjs "$run/lb.json"
+LEFT_BEHIND_FIXTURE="$run/lb.json" docs/design/harness/serve.sh
 ```
+
+## Every path this run WRITES to comes from `mktemp -d`
+
+Added 2026-10-26, from a run that collided with its own predecessor
+(`INC-2026-10-26-the-visual-harness-readme-teaches-the-fixed-tmp-name-that-incident-0b-forbids`).
+
+Until 2026-10-17 the seats ran under GitHub Actions, where each run had its own
+filesystem and a fixed `/tmp` name was private. On this host every seat of every
+product runs as the same user on one machine, so `/tmp/shots` is a shared name.
+This file taught `/tmp/shots` and `/tmp/lb.json` in its own worked examples for
+two days after check 0b made fixed names a charter violation, and a run reads
+the worked example rather than the charter at the moment it types the command.
+
+The collision this directory is built to produce is two runs that both shoot the
+tag `before`, because `shoot.mjs` names frames `<page>-<viewport>-<tag>.png` and
+`before` is the first tag any run passes. The 2026-10-26 run escaped only
+because the run ninety minutes ahead of it had used `before` and it was shooting
+`after`, and it found the other run's 33 frames sitting in its output directory.
+
+```bash
+run=$(mktemp -d)          # once, at the top of the run; everything below hangs off it
+```
+
+The exception is deliberate and worth keeping: `/tmp/ptroot` and `/tmp/ptdeps`
+below are a cache of 54 identical `.deb` files, so two runs sharing them share
+the same bytes and the second one saves the download. Shared input is fine.
+Shared output is the defect. The test is whether a second run writing the same
+path would change what the first one reads.
 
 ## Then
 
@@ -107,10 +137,14 @@ working directory, so running them in place can never see `site/node_modules`.
 Copy them out and link the modules in:
 
 ```bash
-mkdir -p /tmp/harness && cp docs/design/harness/*.mjs /tmp/harness/
-ln -sfn "$PWD/site/node_modules" /tmp/harness/node_modules
-node /tmp/harness/shoot.mjs /tmp/shots after issue
+run=$(mktemp -d) && cp docs/design/harness/*.mjs "$run/"
+ln -sfn "$PWD/site/node_modules" "$run/node_modules"
+node "$run/shoot.mjs" "$run/shots" after issue
 ```
+
+The copied scripts go under the same `mktemp -d` as the frames, because a run
+that edits one of these scripts mid-flight, which is a normal thing to do, must
+not be editing the copy another run is executing.
 
 ## Guard 3 and the `only` filter
 

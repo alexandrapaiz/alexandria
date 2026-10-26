@@ -1600,6 +1600,9 @@ def test_the_seed_reaches_the_client_only_where_the_provider_honours_one():
 
     class FakeCap:
         spent = 0.0
+        # The real `llm.Cap` sets this in __init__, so a fake that omits it
+        # makes `Subject.ask` look optional about reading it.
+        last_tokens = 0
 
         def require(self):
             pass
@@ -1624,3 +1627,224 @@ def test_the_seed_reaches_the_client_only_where_the_provider_honours_one():
     import inspect
     for fn in (llm.ask_json, llm.call_one, llm._post):
         assert inspect.signature(fn).parameters["seed"].default is None
+
+
+# ------------------- the three defects of 2026-10-26, each with its number
+
+def test_a_criterion_keeps_every_key_its_author_wrote():
+    """`normalize` renames. Until 2026-10-26 it also silently discarded.
+
+    The rebuild was a dict literal of three keys, so `certificate` and
+    `section` were gone before anything looked for them. Both are ADR-40
+    requirements and both are documented inside `check.criteria[]`, which is
+    the form `skills/_validation/evals/README.md` describes and the form eight
+    of the nine real suites are written in.
+    """
+    raw = {"id": "c1", "criterion": "does it cite the number",
+           "anchors": {"0": "no", "1": "yes"},
+           "certificate": {"kind": "number", "names": "the 3,061x write cost"},
+           "section": "Delta 1", "weight": 2}
+    item = ev.criterion(raw)
+    assert item["asks"] == "does it cite the number"
+    assert "criterion" not in item, "one spelling downstream"
+    assert item["certificate"] == {"kind": "number",
+                                   "names": "the 3,061x write cost"}
+    assert item["section"] == "Delta 1"
+    assert item["weight"] == 2, (
+        "a key this harness has never heard of is this harness's problem and "
+        "not the task's, which is what the vocabulary table in normalize says")
+
+
+def test_the_documented_form_counts_the_same_as_the_harness_s_own():
+    """The two forms must agree, because the requirement was satisfiable in
+    only one of them and it was the undocumented one."""
+    cert = {"kind": "test", "names": "tests/test_x.py"}
+    documented = ev.normalize({
+        "tasks": [{"id": "t", "prompt": "?", "check": {
+            "type": "rubric",
+            "criteria": [{"id": "a", "criterion": "?", "certificate": cert}]}}]})
+    harness_own = ev.normalize({
+        "tasks": [{"id": "t", "ask": "?",
+                   "rubric": [{"id": "a", "asks": "?", "certificate": cert}]}]})
+    assert ev.certificate_counts(documented) == (1, 1)
+    assert ev.certificate_counts(harness_own) == (1, 1)
+    assert ev.certificate_problems(documented, "s") == []
+
+
+def test_the_live_library_s_certificate_count_is_not_zero(capsys):
+    """Measured on the real suites rather than asserted on a fixture.
+
+    `harness-engineering` carries a certificate on all 27 of its criteria in
+    the documented form and `--check` reported "4 of 265" for thirteen days.
+    This test fails if the rebuild ever starts dropping keys again, and it is
+    phrased as a floor rather than an exact count so that a suite adding
+    certificates does not break it.
+    """
+    report = ev.check_library()
+    certified, criteria = 0, 0
+    for slug in ev.library_slugs():
+        spec, problems = ev.load_tasks(slug)
+        if problems:
+            continue
+        have, total = ev.certificate_counts(spec)
+        certified, criteria = certified + have, criteria + total
+    assert criteria > 200, "the library's suites should still be loadable"
+    assert certified >= 31, (
+        f"only {certified} of {criteria} criteria carry a certificate the "
+        "checker can read; the documented form is being dropped again")
+    assert report["exit"] == 0
+
+
+class _FakeCap:
+    """Enough of `llm.Cap` for a Subject: a spend limit and a last call size."""
+
+    spent = 0.0
+
+    def __init__(self, last_tokens=0):
+        self.last_tokens = last_tokens
+
+    def require(self):
+        pass
+
+
+def _recording_subject(model, tokens_per_call):
+    """A Subject whose provider is fake and whose pauses are recorded."""
+    import llm
+
+    waits = []
+    cap = _FakeCap()
+
+    class Provider:
+        pace = staticmethod(llm.pace)
+        NoModelAnswered = llm.NoModelAnswered
+
+        def ask_json(self, models, system, user, env, c, **kw):
+            c.last_tokens = tokens_per_call
+            return ({"answer": "x"}, models[0])
+
+    subject = ev.Subject(model, {}, cap, sleep=waits.append)
+    subject.llm = Provider()
+    return subject, waits
+
+
+def test_an_eval_run_paces_itself_against_whichever_limit_binds():
+    """42 calls in a row against a 3 RPM model took no pause until 2026-10-26.
+
+    The two routes are bound by different limits, which is the whole reason
+    `llm.pace` exists and the reason a hardcoded number here would be wrong on
+    one of them.
+    """
+    kimi, kimi_waits = _recording_subject("kimi-k2.6", 3_000)
+    for _ in range(3):
+        kimi.ask("s", "u", 1_200)
+    assert kimi_waits == [20.0, 20.0], (
+        "Moonshot publishes 3 requests a minute on this account, so the pause "
+        "is 20 seconds and tokens never bind")
+
+    free, free_waits = _recording_subject("openai/gpt-oss-20b", 3_000)
+    for _ in range(3):
+        free.ask("s", "u", 1_200)
+    assert free_waits == [22.5, 22.5], (
+        "the free tier publishes 8,000 tokens a minute, so a 3,000-token call "
+        "needs 22.5 seconds and the 2-second request pause is not the one "
+        "that binds")
+
+
+def test_the_first_call_is_never_paced_and_the_last_pays_nothing():
+    """A pause sized by the previous call cannot be taken before there is one,
+    and taking it after the final call would be a wait nobody is waiting for."""
+    subject, waits = _recording_subject("kimi-k2.6", 3_000)
+    subject.ask("s", "u", 1_200)
+    assert waits == []
+    subject.ask("s", "u", 1_200)
+    assert waits == [20.0]
+    assert subject.paused == 20.0
+
+
+def test_the_subject_and_the_judge_are_paced_on_their_own_minutes():
+    """They share one `Cap`, so a pause read off the cap would be whichever of
+    the two called last. The state is per Subject for that reason."""
+    subject, subject_waits = _recording_subject("kimi-k2.6", 3_000)
+    judge, judge_waits = _recording_subject("openai/gpt-oss-120b", 3_000)
+    for _ in range(2):
+        subject.ask("s", "u", 1_200)
+        judge.ask("s", "u", 2_000)
+    assert subject_waits == [20.0]
+    assert judge_waits == [22.5]
+
+
+def test_the_pacing_guard_names_this_harness():
+    """`budget.check_fallback_pacing` was written for exactly this defect on
+    2026-10-11 and this was the one multi-call caller outside its list."""
+    import budget
+
+    assert "tools/skill_eval.py" in budget.PACED_CALLERS
+    assert budget.check_fallback_pacing() == []
+
+
+def test_a_subject_override_is_printed_recorded_and_gated(monkeypatch, capsys):
+    """Rule 1 is one rule and `--reps` was the only dial enforcing it."""
+    spec = {"contract": 1, "skill": "x",
+            "policy": {"repetitions": 2, "subject": "kimi-k2.6",
+                       "judge": "openai/gpt-oss-120b"},
+            "tasks": [{"id": "a", "ask": "?",
+                       "check": {"type": "contains_all", "patterns": ["x"]}}]}
+    monkeypatch.setattr(ev, "load_tasks", lambda slug: (spec, []))
+    assert ev.main(["--skill", "x", "--plan",
+                    "--subject", "openai/gpt-oss-20b"]) == 0
+    out = capsys.readouterr().out
+    assert "subject overridden to openai/gpt-oss-20b" in out
+    assert "the file registered kimi-k2.6" in out
+
+    problems = ev.gate_problems(
+        {"verdict": "gain", "delta": {"mean": 0.3, "ci95": [0.1, 0.5]},
+         "subject_model": "openai/gpt-oss-20b", "contract": 1,
+         "policy_overrides": {"subject": {"registered": "kimi-k2.6",
+                                          "ran": "openai/gpt-oss-20b",
+                                          "flag": "--subject"}}}, None)
+    assert len(problems) == 1
+    assert "pre-registered 'kimi-k2.6'" in problems[0]
+    assert "not the policy's delta" in problems[0]
+
+
+def test_an_unregistered_subject_chosen_by_hand_is_its_own_finding():
+    """A suite with no `policy.subject` and a run that chose one is not the
+    same defect as a run that moved a registered one, and a reader of the
+    result file should be able to tell which happened."""
+    problems = ev.gate_problems(
+        {"verdict": "gain", "delta": {"mean": 0.3, "ci95": [0.1, 0.5]},
+         "subject_model": "openai/gpt-oss-20b", "contract": 1,
+         "policy_overrides": {"judge": {"registered": None,
+                                        "ran": "openai/gpt-oss-120b",
+                                        "flag": "--judge"}}}, None)
+    assert len(problems) == 1
+    assert "pre-registers none" in problems[0]
+    assert "`policy.judge`" in problems[0]
+
+
+def test_an_overridden_repetition_count_reaches_the_gate_too():
+    """It was recorded in the result from the start and never read."""
+    problems = ev.gate_problems(
+        {"verdict": "gain", "delta": {"mean": 0.3, "ci95": [0.1, 0.5]},
+         "subject_model": "kimi-k2.6", "contract": 1, "repetitions": 7,
+         "repetitions_overridden": True}, None)
+    assert len(problems) == 1 and "overridden to 7" in problems[0]
+
+
+def test_a_deviation_travels_into_the_history_with_its_run():
+    """`history` is the only place a reader compares runs, and the top level
+    holds only the newest. A list of six deltas with no deviation field gives
+    no way to tell which of them were measured under the registered policy."""
+    overrides = {"subject": {"registered": "kimi-k2.6",
+                             "ran": "openai/gpt-oss-20b", "flag": "--subject"}}
+    result = {"skill": "x", "date": "2026-10-26", "version": "v2",
+              "subject_model": "openai/gpt-oss-20b",
+              "judge_model": "openai/gpt-oss-120b", "tasks": 5,
+              "repetitions": 3, "verdict": "gain", "trigger": "by hand",
+              "delta": {"mean": 0.3, "ci95": [0.1, 0.5]},
+              "policy_overrides": overrides, "repetitions_overridden": True}
+    entry = ev.summary_entry(result)
+    assert entry["policy_overrides"] == overrides
+    assert entry["repetitions_overridden"] is True
+    history = ev.appended_history(None, result)
+    assert history[-1]["policy_overrides"] == overrides

@@ -80,7 +80,7 @@ file spent a day describing a policy the org had abandoned.
 | `docs/standards/pm.md` | HQ, vendored here | HQ ADRs, synced as a copy | PM charter | changes by HQ ADR, gated daily | enforced |
 | `docs/agents/cross-repo-law.md` | ExO | ExO writes the rule | ExO §3f, plus every charter's ship check clause 3 | HQ decided twice in a week, gated weekly here and per run in the seats | new 2026-09-24, incident 23 |
 | `docs/agents/hq-relay.md` | ExO | ExO writes entries **and posts them**, chair or HQ answers | ExO §3f, rewritten 2026-10-24: the entry is posted as a board handoff to `alexandra-systems/exo-centralizer` in the run that writes it, and the undelivered heading in the PR description records only what was not sent | as incidents implicate HQ, gated weekly | new 2026-09-24. **The delivery gate is the one GAP on this page that two mechanisms have now failed to close.** Eight entries, 105 cumulative days, nothing ever delivered. And on 2026-10-18 the premise under the whole design was measured and found false: the seat's token is the owner's, with admin on the parent. The ask is a *smaller* credential and then one narrow grant, not a third surface. See `INC-2026-10-18-the-host-runs-every-seat-as-the-owner`. **GAP CLOSED 2026-10-24, and not by a third surface.** The channel was §15 of the PM standard all along and this seat held the credential: over the thirty days to 2026-10-24 the PM seat posted to the centralizer seven times and this seat posted one message in total. Nine entries delivered that day in three handoffs. `INC-2026-10-24-the-hq-outbox-had-a-channel-and-the-charter-named-a-courier`, whose general rule is that a charter naming the wrong delivery path makes every downstream audit measure compliance with the wrong mechanism |
-| `docs/agents/exo-loop.md` | ExO | ExO writes one entry per tick | ExO §0, every run woken by `brief.sent`, which is the loop's own five phases; the experiment's metric is re-read from `GET /api/scorecard` before anything else | a brief arrives daily and an experiment runs weekly, gated per wake | new 2026-10-24, and it is the mechanism §24 of the PM standard had required since 2026-10-18 with nothing to perform it. Born from `INC-2026-10-24-the-law-this-run-ran-under-was-not-in-the-repository`. **The gate to watch is the Learn phase**, because an experiment with no measured delta is the same defect as a rejection-only taste register: it records activity and cannot converge. The first tick's own Learn phase measured nothing, by necessity, and said so |
+| `docs/agents/exo-loop.md` | ExO | ExO writes one entry per tick | ExO §0, every run woken by `brief.sent`, which is the loop's own five phases; the experiment's metric is re-read from `GET /api/scorecard` before anything else | a brief arrives daily and an experiment runs weekly, gated per wake | new 2026-10-24, and it is the mechanism §24 of the PM standard had required since 2026-10-18 with nothing to perform it. Born from `INC-2026-10-24-the-law-this-run-ran-under-was-not-in-the-repository`. **The gate to watch is the Learn phase**, because an experiment with no measured delta is the same defect as a rejection-only taste register: it records activity and cannot converge. The first tick's own Learn phase measured nothing, by necessity, and said so. **And it carries a second register inside it as of 2026-10-25**: the cycle register at the top of the file, written by any run that performs the weekly cycle and read by the owed-cycle command in ExO §0 on every run, whatever woke it. That pairing is the rare case on this page where the artifact-side gate fires more often than the archive-side one, which is the shape to want. Its own failure mode is covered rather than open: a missing or renamed register makes the command print `UNREADABLE` instead of a verdict, because `INC-2026-10-25-the-owed-cycle-detector-cannot-be-discharged-by-a-run-that-takes-the-cycle` is a register whose absence used to read as an answer. |
 | `docs/agents/delivery-health.md` | ExO | ExO writes the guardrails | `python3 tools/delivery_health.py`, from PM §1f delivery half, daily | the product ships weekly and daily, gated daily | new 2026-09-24, incident 24. The artifact-side gate was prose until 2026-09-28 and the seat holding the duty could not perform it, INC-2026-09-28-guardrail-4-had-no-reader. Three of its five surfaces answered `unknown` in every seat sandbox for want of a read-only `DATABASE_URL`, INC-2026-09-28-guardrail-4-had-no-reader, and that is closed as of 2026-10-01: the site publishes the rows at `GET /api/delivery` and the command reads them with no credential, so all five surfaces answer from any sandbox. One thing a credential-free reader cannot do is write, so the deploy-drift alarm's once-a-day cooldown needs the direct reader and a drift seen through the receipt is reported rather than mailed. `NEON_RO_URL` is no longer this register's blocker; it is still `graph-quality.md`'s |
 | `docs/agents/durable-execution.md` | ExO | ExO, on the owner's question | none, and correctly none | a decision note rather than a rule | new 2026-09-24, not a register and listed so nobody gates it |
 | `panel_verdicts` (the ADR-13 audit trail, `docs/product/reviewer-panel.md`) | engineer builds, ADR-13 owns | `pipeline/skill_revision.py` step 2 files one verdict per skill daily, derived rather than typed | **queued, not firing**: item 18 of `docs/agents/pending-workflow-changes.md`, amended 2026-10-03, adds all three reviewers' suites to `checks.yml` and no reviewer command (the entry argues each of the three exclusions separately). This cell said the first of those already ran, from the day it was written, and no workflow has ever named it (INC-2026-10-03-panel-reviewer-claims-a-ci-step-it-never-had) | a skill changes weekly, the reviewer fires daily once the job is deployed | new 2026-10-02, filed by the engineer seat; corrected 2026-10-03 by the same seat. The register is a table rather than a file because ADR-13 says every verdict is a structured row. All three reviewers exist as of 2026-10-03 (provenance, adversary, validator), so `panel_consensus`'s three passes on one text are reachable for the first time; no skill earns them today, and the validator fails all six on ADR-36 part 2. The write gate fires. The pre-ship gate is queued and needs the chair's hand, and this row is the reason that distinction is now stated rather than assumed |
@@ -830,3 +830,51 @@ than with the writer.
 so it is marked GAP against the org and not against a seat, and the next run
 should either find it adopted somewhere or ask why a rule nobody owns was
 expected to take effect. That question is the whole subject of this page.
+
+## The 2026-10-25 addition: a depth is not a trend, so carry the previous reading in the cell
+
+The 2026-10-23 rule above is necessary and it is not sufficient, which the
+owed weekly cycle of 2026-10-25 found by obeying it and still being misled.
+
+**The instance.** `quality-claims.md` holds a row for "the library grows every
+day". On 2026-10-23 a sweep measured it, dated the sentence exactly as the rule
+above requires, and wrote: `distill_pending` 3,680, "up from 2,559", "the
+backlog is now 44% larger", "gap widening again". Every clause of that is true
+and the conclusion is wrong. Two days later the same field read **3,680, the
+same integer**, with `claims_newest` frozen at 2026-10-22T15:15:02Z. The job
+was not falling behind. It had stopped, because the Modal workspace has been
+off since 2026-10-23, which the engineer seat found the same day.
+
+**The general shape.** A queue depth, a backlog, a pending count or any other
+level-valued measurement reads the same whether the producer is slow or
+stopped, and those two states have opposite remedies: slow is a pacing change
+and stopped is a switch. **One reading of a level cannot distinguish them. Two
+readings can, and the second one is free.** The 2026-10-23 sentence had its
+date, so the rule above fired and passed. What it could not supply is the
+comparison, because the previous number was in a cell that had been
+overwritten.
+
+**So the rule, and it costs one clause per cell.** For any row whose Measured
+column holds a **level rather than an event** — a depth, a count of pending
+things, a balance, a backlog — the cell keeps the previous reading and its date
+beside the new one rather than replacing it. Three readings are enough to see
+which failure mode a row is in at a glance, and the growth row now carries all
+three.
+
+**Why this is the same lesson as the one above rather than a new one.** Both
+are about a register's conclusions decaying faster than its numbers. The
+2026-10-23 rule stops a conclusion from outliving the measurement it was drawn
+from. This one stops a conclusion from being drawn from too few measurements in
+the first place. The first is about staleness and the second is about
+sufficiency, and a register that holds levels needs both.
+
+**And it generalises past this seat's registers**, which is the test for
+whether a rule belongs on this page. Any register in the org that records "how
+deep is the queue", "how much is left", "how many are waiting" has the same
+defect available to it. `docs/agents/delivery-health.md` holds the pipeline's
+guardrails and is the next most exposed, because "all green" about a stage is
+exactly a level reading presented as a state.
+
+**Enforced at:** the ExO charter's §3g sweep, which re-measures this register's
+rate-shaped rows every run, and §3d, which reads each register's prose against
+its own data.

@@ -68,31 +68,102 @@ MODELS = [
 ]
 MODEL = MODELS[0]
 
-NEIGHBORS = 5
+# The shortlist's length, raised from 5 to 10 on 2026-10-25 as slice 2 of
+# docs/product/graph-quality.md.
+#
+# Five was the number a claim's edge count was decided by. Five candidates is
+# the most distinct neighbors any claim can be linked to on the run that
+# interpreted it, so a claim sitting exactly at five is a claim whose density
+# came out of this file rather than out of the corpus, and the audit's ceiling
+# metric exists to count how often that happened.
+#
+# Ten is a number the corpus can still reach and will rarely need to, because
+# the two filters in SHORTLIST_SQL take candidates out of the list before the
+# limit applies. It is not larger because the shortlist is paid for twice, in
+# the user message and in the output reservation, and the arithmetic under
+# MAX_COMPLETION_TOKENS is what that raise costs.
+NEIGHBORS = 10
+
 RELATIONS = ("supports", "refines", "contradicts", "duplicates")
 
-# One claim against five candidates returns at most five short objects. 600 is
-# roughly four times what a full answer needs, which leaves room for a model
-# that pads its JSON without leaving room for one that writes an essay.
-MAX_COMPLETION_TOKENS = 600
+# Cosine distance past which a candidate is not shown to the judge at all.
+#
+# This is the half of slice 2 that lets a shortlist be shorter than its limit.
+# Before it, `limit NEIGHBORS` returned NEIGHBORS candidates whenever the corpus
+# held that many older claims, so a genuinely novel claim had its shortlist
+# filled with whatever happened to be nearest and the run paid a call to be told
+# `unrelated` five times.
+#
+# The number comes from the only embedding calibration this repository holds,
+# which is tools/graph_audit.py NEAR_DUPLICATE_DISTANCE and the band recorded
+# beside it: Qwen3-Embedding-0.6B, the model that wrote every row in
+# `claims.embedding`, puts paraphrases below 0.1 and unrelated sentences between
+# 0.4 and 0.8. So 0.40 is the near edge of the unrelated band, and a candidate
+# past it is one the embedding has already called unrelated. Cutting there
+# declines to pay a model to confirm it.
+#
+# It is a first bar rather than a measurement, the same way every bound in the
+# audit is, and the audit's `reach` metric is the histogram that moves it: it
+# reports how far a claim's nearest cross-paper neighbors actually sit, so the
+# next person reads the distribution instead of re-deriving the band from this
+# comment. Loosening it to make a run look busier is the failure mode to watch
+# for, and it is the same one the audit's own bounds section names.
+CANDIDATE_MAX_DISTANCE = 0.40
+
+# One claim against NEIGHBORS candidates returns at most NEIGHBORS short
+# objects. Measured with pipeline/budget.py's tokenizer against the real prompt
+# and a full-length answer: ten results are 299 tokens where five were 154.
+#
+# 1,000 leaves 700 tokens of slack, which is more absolute room than the 446
+# the old 600 left at five candidates, and the reason for the slack has not
+# changed. A model that pads its JSON has to fit. A model that writes an essay
+# must not.
+MAX_COMPLETION_TOKENS = 1_000
+
+# The measured size of one call. Every forecast in this file reads these two
+# numbers, so `drain`, `preflight` and the cap's arithmetic below cannot drift
+# apart from each other the way they would if each carried its own pair. Both
+# come from pipeline/budget.py's tokenizer, which is also what
+# `python3 pipeline/budget.py` prints, and both moved when the shortlist did.
+#
+#   system  prompts/interpret.md                     1,260 tokens
+#   user    one claim plus ten neighbors               781 tokens worst case
+#   output  up to ten relations with confidences       299 tokens measured
+#
+# The system figure is worth one note. The old comment here said 880 tokens,
+# which was true of the prompt when it was written and had been wrong for a
+# while: prompts/interpret.md has grown since. A cost comment that nothing
+# recomputes decays silently, which is why these are constants now and why
+# tests/test_shortlist.py measures them rather than reading them.
+#
+# `python3 pipeline/budget.py` prints 1,973 for the same request and the
+# difference is not a disagreement. The guard builds its payload from filler
+# standing in for 400 characters a candidate, and real distilled claims
+# tokenize a little more expensively than filler does, so 781 comes from
+# render_candidates on real prose where the guard's 713 comes from the stand-in.
+# The larger number is the one the cap is set against, which is the direction a
+# ceiling should err in.
+CALL_PROMPT_TOKENS = 2_041
+CALL_OUTPUT_TOKENS = 299
 
 # What one run may spend, in USD, measured from the provider's usage block and
-# never estimated. The arithmetic, from real token counts at kimi-k2.6's list
-# price ($0.95 per million in, $4.00 per million out):
+# never estimated. At kimi-k2.6's list price ($0.95 per million in, $4.00 per
+# million out) and the token counts above:
 #
-#   system  prompts/interpret.md                      880 tokens
-#   user    one claim plus five neighbors             ~390 tokens worst case
-#   output  up to five relations with confidences     ~150 tokens measured
+#   expected cost of a call   2,041 * 0.95/1e6 +   299 * 4.00/1e6 = $0.00313
+#   ceiling, which charges
+#   the whole reservation     2,041 * 0.95/1e6 + 1,000 * 4.00/1e6 = $0.00594
 #
-# Expected cost of a call: 1,270 * 0.95/1e6 + 150 * 4.00/1e6 = $0.0018. The
-# ceiling `python3 pipeline/budget.py` prints, which charges the whole 600-token
-# reservation whether the model uses it or not, is $0.00364.
+# The cap is set against the ceiling, so $0.30 buys 50 claims in the worst case
+# and about 95 in practice. Both numbers fell when the shortlist was widened,
+# from 74 and 135, and that is the whole price of slice 2: the same money buys
+# about two thirds as many claims, and each one is judged against twice as many
+# candidates with its own paper's siblings and the unrelated band taken out.
+# Nothing here buys more calls, because a wider shortlist is a longer message
+# and not a second request.
 #
-# The cap is set against the ceiling, so $0.30 buys 82 claims in the worst case
-# and about 165 in practice. At 3 requests a minute the clock is what binds
-# first either way, and the cap is the guard behind it. The 487-claim backlog
-# clears in 3 to 6 runs and costs $0.88 to $1.77 in total. See
-# docs/finance/opex.md.
+# At 3 requests a minute the clock still binds before the cap does on an
+# expected-cost run, and the cap is the guard behind it. See docs/finance/opex.md.
 CAP_USD = 0.30
 
 # Enough claims that the clock and the cap stop the run rather than this number.
@@ -107,9 +178,12 @@ MAX_CLAIMS_PER_RUN = 90
 # and the claim count is the only bound left; on Groq's free tier the binding
 # resource is not calls or money but the 200,000 tokens a day it allows per
 # model, shared with triage at 12:00 UTC and distill at 15:00. This job's
-# calls are the smallest in the pipeline at a measured 1,000 tokens, so its
-# share is generous in calls: 56 of them, where 90 would be 90,000 tokens and
-# half of what is left after triage.
+# calls are still the smallest in the pipeline, at a measured
+# CALL_PROMPT_TOKENS + CALL_OUTPUT_TOKENS = 2,340, so its share buys 23 of
+# them. That was 56 before the shortlist was widened on 2026-10-25, and the
+# share itself did not move: the allowance is the provider's and the call got
+# bigger. A fallback day therefore judges 23 claims rather than 56, which is
+# the degraded path costing more per claim and not the budget being wrong.
 #
 # 56,000 is the equal share of the allowance after the 15% margin, derived in
 # `budget.fallback_share` from the provider's published `tpd` and held against
@@ -187,6 +261,124 @@ def edges_from(out: dict, valid_ids: set) -> list[tuple]:
         if cid in valid_ids and rel in RELATIONS:
             kept.append((cid, rel, r.get("confidence")))
     return kept
+
+
+#: The shortlist: which older claims this one is judged against. Slice 2 of
+#: docs/product/graph-quality.md is the second and third clauses of the `where`,
+#: and this query was an inline string in the run loop until that slice, which
+#: is why nothing had ever tested the retrieval that decides the graph's shape.
+#:
+#: `id < %s` is ADR-10's time direction and predates slice 2. `from_claim` is
+#: always the newer claim and ids are a bigserial, so a candidate is always a
+#: strictly older claim and the graph cannot grow an edge pointing backwards
+#: through time.
+#:
+#: `paper_id <> %s` is the same-paper exclusion. Two claims distilled from one
+#: paper are near-neighbors in embedding space almost by construction, so kNN
+#: hands the judge a paper's own siblings before it hands it anything from
+#: another paper. Those edges are usually true and worth nothing, because the
+#: product's promise is this week's finding against what we already knew, and a
+#: paper agreeing with itself is not that. Each one also spent one of the five
+#: slots, which is why the audit reads its same-paper metric and its ceiling
+#: metric together rather than one at a time. `claims.paper_id` is `not null`,
+#: so a plain `<>` is total here and no NULL case is being quietly dropped.
+#:
+#: `embedding <=> %s <= %s` is the distance floor, and it is the clause that
+#: lets the shortlist come back shorter than its limit. Filtering before the
+#: ordering rather than after it is not a choice between two behaviours: the
+#: filter is monotone in the same distance the ordering uses, so the nearest
+#: candidates under the floor are exactly the candidates under the floor among
+#: the nearest. Both forms select the same rows, and this one says so without a
+#: subquery.
+#:
+#: The embedding is passed twice because it is used twice, once in the filter
+#: and once in the ordering. Postgres resolves the untyped parameter against
+#: `<=>`, whose only operand pair is (vector, vector), the same way the inline
+#: query's single `order by` always has.
+SHORTLIST_SQL = """
+    select id, claim
+      from claims
+     where id < %s
+       and embedding is not null
+       and paper_id <> %s
+       and embedding <=> %s <= %s
+     order by embedding <=> %s
+     limit %s
+"""
+
+
+#: The trigger slice 5 asked for and did not build. A claim is due for a second
+#: opinion when the current prompt has never read it, which is a question about
+#: `claim_judgments` and not about `claim_links`: a pass that found no relation
+#: wrote no edge, and the absence of an edge cannot tell "October read this and
+#: found nothing" from "October never read it". db/schema.sql says why that
+#: distinction is worth a table.
+#:
+#: `interpreted_at is not null` is what keeps this disjoint from
+#: `interpret_queue`. A claim nobody has ever judged is a first opinion, it is
+#: already the fresh queue's job, and a claim must not be able to arrive twice
+#: in one run.
+#: The order is the second half of the trigger and it was `c.id`, which is
+#: arbitrary. It stopped being free on 2026-10-25: `interpret_pending` read 0,
+#: so the leftovers are the whole run and the sweep spends the cap rather than
+#: returning nothing. What the sweep buys is not uniform, so the cheap fix is
+#: to buy the valuable half first.
+#:
+#: A claim carrying a pass under a known older sha is the slow loop's own case:
+#: two prompts read it, and the second verdict is a changed mind or a
+#: confirmation, which is the measurement ADR-10 wanted. A claim whose only
+#: pass is `unknown` is the backfill's bookkeeping, recovered from a corpus
+#: that predates `claim_judgments`, and re-reading it mostly buys a row. Both
+#: are due and both terminate, and only the order between them is a choice:
+#: a sweep that is cut short by the cap should be cut short at the cheap end.
+REJUDGE_QUEUE_SQL = """
+    select c.id, c.claim, c.paper_id, c.embedding
+      from claims c
+      left join lateral (
+            select max(j.created_at) filter (where j.prompt_sha <> 'unknown')
+                       as known_at,
+                   max(j.created_at) as any_at
+              from claim_judgments j
+             where j.claim_id = c.id
+           ) p on true
+     where c.interpreted_at is not null
+       and c.embedding is not null
+       and not exists (select 1 from claim_judgments k
+                        where k.claim_id = c.id and k.prompt_sha = %s)
+     order by (p.known_at is null), coalesce(p.known_at, p.any_at), c.id
+     limit %s
+"""
+
+
+def rejudge_budget(fresh_taken: int, max_claims: int) -> int:
+    """How many re-judgments this run may take: the leftovers, and only those.
+
+    A first opinion is worth more than a second one. An unjudged claim has no
+    edges at all, so judging it can only add to the graph, where re-judging a
+    claim that already has edges usually confirms them. So the fresh queue is
+    served first and re-judgment takes what is left, which is the right order
+    whatever the depths are.
+
+    **What this rule does not do is make the loop free, and the sentence that
+    used to stand here said it did.** It read "the fresh queue is 2,000-odd
+    deep today, so this returns 0 and the slow loop stays latent". That was
+    true of the reading it was written from and false the next morning:
+    `/api/delivery` reported `interpret_pending: 0` on 2026-10-25, because the
+    backlog moved one stage upstream rather than drained. `distill_pending` was
+    3,680 and no claim had been written since 2026-10-22, so there was nothing
+    fresh to judge and the leftovers were the entire run. A safety claim keyed
+    to a queue depth expires the moment the queue moves, which is why this
+    paragraph names the instrument instead of a number.
+
+    The bound that does hold is the one that was always here. The run's ceiling
+    is `max_claims` and `CAP_USD`, and re-judgment is inside both rather than
+    beside them, so no run can cost more than it could before the loop existed.
+    The sweep also terminates: every pass writes a row, including the passes
+    that find nothing, and a claim with a row at this sha is never selected
+    again. What it is not is $0 a day while it runs, and `drain` is where that
+    bill is read before it is spent rather than after.
+    """
+    return max(max_claims - fresh_taken, 0)
 
 
 def drain_forecast(remaining: int, per_run: int) -> str:
@@ -296,10 +488,31 @@ def interpret(max_claims: int = MAX_CLAIMS_PER_RUN, cap_usd: float = CAP_USD):
         # owner asked for it by name: an old claim's neighbors are already in the
         # graph, so it is the claim whose edges connect the most.
         queue = conn.execute(
-            "select id, claim, embedding from interpret_queue order by id limit %s",
+            "select id, claim, paper_id, embedding "
+            "from interpret_queue order by id limit %s",
             (max_claims,),
         ).fetchall()
         print(f"{depth} claims queued, {len(queue)} taken this run, oldest first")
+        # The slow loop, on the leftovers. Oldest first here too, and for the
+        # same reason: an old claim has the most neighbors to have changed its
+        # mind about.
+        rejudge_depth = conn.execute(
+            "select count(*) from claims c where c.interpreted_at is not null "
+            "and c.embedding is not null and not exists "
+            "(select 1 from claim_judgments j where j.claim_id = c.id "
+            "and j.prompt_sha = %s)",
+            (sha,),
+        ).fetchone()[0]
+        room = rejudge_budget(len(queue), max_claims)
+        rejudged = conn.execute(REJUDGE_QUEUE_SQL, (sha, room)).fetchall() if room else []
+        print(f"prompt {sha}: {rejudge_depth} judged claims it has never read, "
+              f"{len(rejudged)} taken on this run's {room} leftover slots")
+        # Fresh first in the list, because the walk below stops on a cap or a
+        # 429 and whatever it did not reach is what gets dropped. It is also
+        # what lets the count be split after the fact: the walk is in order, so
+        # anything past the first `fresh_taken` entries is a re-judgment.
+        fresh_taken = len(queue)
+        queue = queue + rejudged
         # The rule, not a number: the pause is chosen after each call from the
         # model that answered it and the tokens it drew. See llm.pace.
         print("pacing: chosen per call from the answering model's published "
@@ -314,11 +527,20 @@ def interpret(max_claims: int = MAX_CLAIMS_PER_RUN, cap_usd: float = CAP_USD):
         seen = 0
         no_neighbors = 0
         stopped = "queue exhausted"
+        # The retrieval's own report, slice 2. The audit's ceiling metric is
+        # read off the database and no seat in this org holds a credential for
+        # it, so the one place the shortlist's behaviour is observable today is
+        # this job's own log. `at_ceiling` counts the claims whose shortlist
+        # came back full, which is the retrieval-side half of the same question
+        # the audit asks of the edges: a claim at the ceiling is a claim whose
+        # candidate count was decided by NEIGHBORS and not by the corpus.
+        at_ceiling = 0
+        shortlisted = 0
         # Tokens drawn on a model that is not the primary's, and only those:
         # the ceiling below is a share of the free tier's day, so a call
         # Moonshot answered does not spend it.
         fallback_drawn = 0
-        for claim_id, claim_text, embedding in queue:
+        for claim_id, claim_text, paper_id, embedding in queue:
             # Before the call, so the run stops at its share rather than one
             # call past it. Leaving this day's remainder to distill is the
             # whole point: this job holds 14:00 UTC and distill holds 15:00.
@@ -329,16 +551,16 @@ def interpret(max_claims: int = MAX_CLAIMS_PER_RUN, cap_usd: float = CAP_USD):
                       "free tier's day. The next run resumes from the same "
                       "queue.")
                 break
-            # time-directional: only judge against strictly older claims
+            # Strictly older, not from this claim's own paper, and inside the
+            # distance floor. SHORTLIST_SQL carries the argument for each.
             neighbors = conn.execute(
-                """
-                select id, claim from claims
-                where id < %s and embedding is not null
-                order by embedding <=> %s
-                limit %s
-                """,
-                (claim_id, embedding, NEIGHBORS),
+                SHORTLIST_SQL,
+                (claim_id, paper_id, embedding, CANDIDATE_MAX_DISTANCE,
+                 embedding, NEIGHBORS),
             ).fetchall()
+            shortlisted += len(neighbors)
+            if len(neighbors) >= NEIGHBORS:
+                at_ceiling += 1
             if neighbors:
                 try:
                     out, model = client.ask_json(
@@ -355,8 +577,8 @@ def interpret(max_claims: int = MAX_CLAIMS_PER_RUN, cap_usd: float = CAP_USD):
                     stopped = "rate limited"
                     break
                 method = f"{model}@{sha}"
-                for cid, rel, confidence in edges_from(
-                        out, {nid for nid, _ in neighbors}):
+                kept = edges_from(out, {nid for nid, _ in neighbors})
+                for cid, rel, confidence in kept:
                     conn.execute(
                         """
                         insert into claim_links (from_claim, to_claim, relation, confidence, method)
@@ -374,20 +596,62 @@ def interpret(max_claims: int = MAX_CLAIMS_PER_RUN, cap_usd: float = CAP_USD):
                 if client.on_fallback(model):
                     fallback_drawn += cap.last_tokens
                 time.sleep(client.pace(model, cap.last_tokens))
+                wrote, answered = len(kept), method
             else:
                 no_neighbors += 1
+                wrote, answered = 0, None
+            # The pass itself, including the empty ones, and this is the row
+            # that makes the loop terminate. Without it a claim the current
+            # prompt read and found nothing in looks identical to one the
+            # current prompt has never seen, so it would come back on every
+            # run and pay for a model call every time.
+            conn.execute(
+                """
+                insert into claim_judgments (claim_id, prompt_sha, method, edges)
+                values (%s, %s, %s, %s)
+                on conflict (claim_id, prompt_sha) do nothing
+                """,
+                (claim_id, sha, answered, wrote),
+            )
             # The marker is written whether or not the claim had neighbors: a
             # claim with none is interpreted, it simply has no edges, and
             # leaving it unmarked is how a queue stops draining.
-            conn.execute("update claims set interpreted_at = now() where id = %s", (claim_id,))
+            #
+            # `is null` is the slow loop's half. This timestamp says when a
+            # claim was first judged, `claim_judgments` carries every pass
+            # since, and a re-judgment that moved the marker would date
+            # September's claim to today and put it back in the seven-day
+            # sections of the issue as new.
+            conn.execute("update claims set interpreted_at = now() "
+                         "where id = %s and interpreted_at is null", (claim_id,))
             conn.commit()
             seen += 1
 
+        # Split, because the two halves answer different questions and one
+        # number for both would answer neither. `seen` counts the claims this
+        # run judged; the drain is about the queue, and a re-judgment takes
+        # nothing out of it.
+        fresh_seen = min(seen, fresh_taken)
         print(f"interpreted {seen} claims, wrote {linked} edges "
               f"({no_neighbors} had no older neighbor and cost no call), "
+              f"of which {fresh_seen} were first opinions and "
+              f"{seen - fresh_seen} were second ones, "
               f"stopped on: {stopped}")
+        # Slice 2's done-condition, as far as a run without a database
+        # credential can carry it. The audit measures the ceiling on the edges
+        # the judge drew; this measures it on the candidates the judge was
+        # offered, which is the input that bound it. Above a tenth, NEIGHBORS is
+        # binding again and the next raise is cheaper than any cleverness.
+        if seen:
+            print(f"shortlist: {shortlisted / seen:.1f} candidates per claim on "
+                  f"average, {at_ceiling} of {seen} at the {NEIGHBORS}-candidate "
+                  f"ceiling ({at_ceiling / seen:.0%}), same-paper candidates and "
+                  f"anything past {CANDIDATE_MAX_DISTANCE} cosine excluded")
         print(cap.line())
-        print(drain_forecast(max(depth - seen, 0), seen))
+        # Fresh only. Counting a re-judgment as drain progress would forecast a
+        # queue emptying at a rate nothing is emptying it at, and the forecast
+        # is the number the owner reads to decide whether the corpus is moving.
+        print(drain_forecast(max(depth - fresh_seen, 0), fresh_seen))
         return linked
 
 
@@ -415,7 +679,8 @@ def preflight() -> str:
             "for these keys, so no edge can be drawn. Fix "
             "pipeline/interpret.py MODELS and pipeline/budget.py MODELS together.")
     print("cost at list price: "
-          + client.calls_within(CAP_USD, 1_050, 150, usable[0]))
+          + client.calls_within(CAP_USD, CALL_PROMPT_TOKENS,
+                                CALL_OUTPUT_TOKENS, usable[0]))
     if usable[0] != MODELS[0]:
         print(f"  NOTE: {MODELS[0]} is not usable here, so the run would fall "
               f"back to {usable[0]} and the graph grows at the free tier's pace "
@@ -435,12 +700,16 @@ def rehearse(allow_fallback: bool = False) -> str:
         modal run pipeline/interpret.py::rehearse
         modal run pipeline/interpret.py::rehearse --allow-fallback
 
-    The real prompt, provider, key, reservation and timeout. The claim and its
-    five candidates are a fixed sample carried in this file, chosen so that the
-    right answer is knowable: candidate 101 is the same finding (duplicates or
-    supports), 102 narrows it (refines), 103 reports the opposite
-    (contradicts), and 104 and 105 are unrelated and should draw nothing. A
-    model that labels all five, or none, fails the gate.
+    The real prompt, provider, key, reservation and timeout, and since
+    2026-10-26 the real payload: the shortlist is NEIGHBORS candidates, the
+    same number the run sends, rather than the five it sent while slice 2's
+    widening went unrehearsed. The claim and its candidates are a fixed sample
+    carried in this file, chosen so that the right answer is knowable: 101 is
+    the same finding (duplicates or supports), 102 narrows it (refines), 103
+    reports the opposite (contradicts), 106 agrees from a second experiment
+    (supports) and 107 bounds it (refines). The other five are unrelated and
+    should draw nothing, and three of those five are deliberately close in
+    vocabulary. A model that labels all ten, or none, fails the gate.
 
     `--allow-fallback` is the hatch for the day the head of the list is itself
     what is broken and the change in the image is the degraded path the outage
@@ -515,6 +784,7 @@ def drain() -> str:
 
     client = llm()
     guard = client.budget()
+    _, sha = load_prompt()
     with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
         depth, oldest = conn.execute(
             "select count(*), min(created_at) from interpret_queue"
@@ -523,10 +793,28 @@ def drain() -> str:
             "select count(*) from claims where interpreted_at is null "
             "and embedding is null"
         ).fetchone()[0]
+        rejudge_depth, rejudge_known = conn.execute(
+            "select count(*), count(*) filter (where exists "
+            "(select 1 from claim_judgments k where k.claim_id = c.id "
+            "and k.prompt_sha <> 'unknown')) "
+            "from claims c where c.interpreted_at is not null "
+            "and c.embedding is not null and not exists "
+            "(select 1 from claim_judgments j where j.claim_id = c.id "
+            "and j.prompt_sha = %s)",
+            (sha,),
+        ).fetchone()
+        reflects = conn.execute(
+            "select prompt_sha, count(*) from latest_judgment "
+            "group by 1 order by 2 desc limit 3"
+        ).fetchall()
 
-    per_claim = guard.cost_usd(1_050, 150, MODELS[0])
+    # The same measured pair the cap's arithmetic uses, so the forecast a
+    # reader gets from the dry run and the ceiling the cap was set against
+    # cannot disagree. Both moved on 2026-10-25 when the shortlist widened.
+    per_claim = guard.cost_usd(CALL_PROMPT_TOKENS, CALL_OUTPUT_TOKENS, MODELS[0])
     per_run = min(int(CAP_USD / per_claim), MAX_CLAIMS_PER_RUN)
     runs = -(-depth // per_run) if per_run else 0
+    rejudge_runs = -(-rejudge_depth // per_run) if per_run else 0
     lines = [
         f"interpret queue: {depth} claims, oldest {oldest}",
         f"{unembedded} more claims are uninterpreted but unembedded, so they "
@@ -537,6 +825,19 @@ def drain() -> str:
         f"(MAX_CLAIMS_PER_RUN is {MAX_CLAIMS_PER_RUN})",
         f"the backlog clears in {runs} daily runs for about "
         f"${depth * per_claim:.2f} in total",
+        f"re-judgment: prompt {sha} has never read {rejudge_depth} of the "
+        "judged claims, and it takes the slots the fresh queue leaves, which "
+        f"is {rejudge_budget(min(depth, per_run), per_run)} at this depth",
+        f"that sweep is {rejudge_runs} daily runs for about "
+        f"${rejudge_depth * per_claim:.2f}, and it is $0 only while the fresh "
+        "queue is deep enough to crowd it out, which on 2026-10-25 it was not",
+        f"of those, {rejudge_known} carry a pass under a known older prompt "
+        "and are read first, because a second verdict there is a changed mind "
+        f"or a confirmation, and the other {rejudge_depth - rejudge_known} are the "
+        "backfill's unknown rows and buy mostly a row",
+        "the graph currently reflects: "
+        + (", ".join(f"{n} claims under {psha}" for psha, n in reflects)
+           or "nothing, no claim has been judged yet"),
     ]
     print("\n".join(lines))
     return lines[-1]
@@ -545,6 +846,27 @@ def drain() -> str:
 # The rehearsal's fixed shortlist. Ids are small on purpose: they are never
 # written anywhere, and a reader who sees 101 in a log knows immediately that it
 # is not a real claim id.
+#
+# Ten of them, because NEIGHBORS is ten and a rehearsal that sends five proves
+# the request before last. It was five until 2026-10-26, which is to say that
+# from the moment slice 2 widened the shortlist the gate in front of every
+# interpret deploy exercised about half the user message production sends, and
+# the half it skipped was the half that grew. The five added here are not
+# filler: three of them are surface-similar to the new claim and unrelated to
+# it, because the thing a wider shortlist actually risks is a judge that starts
+# matching on vocabulary once the list is long enough to make reading it work.
+#
+# The right answer is knowable, which is the whole value of a fixed sample:
+#
+#   relate     101 duplicates, 102 refines, 103 contradicts,
+#              106 supports, 107 refines
+#   unrelated  104 (a different field entirely), 105 (AI, different finding),
+#              108 (shares "scratchpad"), 109 (shares the context length),
+#              110 (shares nothing but the register)
+#
+# Five and five, so a model that labels everything draws ten and fails, a model
+# that labels nothing draws none and fails, and the count in between is a number
+# a human reading the rehearsal log can check line by line.
 REHEARSAL_CLAIM = (
     "Explicit scratchpad eviction keeps tool-call accuracy within 4 percent of "
     "baseline past 200K tokens of agent context, where recursive summarization "
@@ -562,6 +884,20 @@ REHEARSAL_NEIGHBORS = [
           "for radio interferometry correlators."),
     (105, "Instruction tuning on 1,000 curated examples matches the "
           "performance of tuning on 50,000 noisy ones."),
+    (106, "Agents whose scratchpad is pruned by an explicit eviction policy "
+          "hold task success steady out to 250K tokens of context, where "
+          "summarization-based compaction falls away over the same range."),
+    (107, "The gap between explicit eviction and recursive summarization opens "
+          "only once context passes roughly 150K tokens; below that the two "
+          "compaction strategies are indistinguishable on tool-call accuracy."),
+    (108, "Scratchpad prompting raises grade-school arithmetic accuracy by 18 "
+          "points for a 7B model when the intermediate steps are written out "
+          "before the answer."),
+    (109, "A 200K-token context window can be served at 1.4x the throughput of "
+          "a 128K one by paging the KV cache to host memory between decode "
+          "steps."),
+    (110, "Federated averaging converges in fewer rounds when client updates "
+          "are clipped before aggregation rather than after."),
 ]
 
 
