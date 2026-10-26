@@ -1,4 +1,4 @@
-## INC-2026-10-26-the-red-check-was-already-green-when-both-wakes-fired — four wake events about one red check, all four sent after it was fixed (2026-10-26, engineer seat)
+## INC-2026-10-26-the-red-check-was-already-green-when-both-wakes-fired - four wake events about one red check, all four sent after it was fixed (2026-10-26, engineer seat)
 
 **What happened.** This run was woken by four events at once. Two were
 workflow-failure notices for `checks` on
@@ -57,3 +57,17 @@ condition. A failure notice for a commit that is not the branch head, and a
 message whose subject is a check that has since gone green, are both cheap to
 filter at the sender and expensive to filter at the receiver, which is where
 all four were filtered today.
+
+**A second pair of gates found while filing this, and fixed.** Writing this
+entry hit the same shape as the defect it describes. `tools/incidents.py new`
+emitted its heading with an em dash separator, `tools/ban_list.py` entry 13
+rejects U+2014 in anything the owner will read, and `tools/incidents.py check`
+parses the id with a lookahead that accepts a plain space but not a comma or a
+colon. So the generator produced a file that one gate failed and the obvious
+repairs broke the other gate, which is two enforcers disagreeing about one
+artifact for the second time in one run. The sibling file
+`INC-2026-10-26-the-panel-build-note-named-one-blocker-and-there-were-four.md`
+shows a previous seat already hand-fixed it to " - " and said nothing, so the
+cost was paid silently at least once before. `SKELETON` now emits " - ", which
+both gates accept. Verified by generating a throwaway entry, passing it
+through both gates, and deleting it. `tests/test_incidents.py` is 31 passed.
