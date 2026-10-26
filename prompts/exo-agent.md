@@ -225,52 +225,155 @@ cycle owed?** It needs no network and it is exact over any window.
 
 ```bash
 python3 - <<'PY_OWED'
-import json, re, datetime as dt, glob, os, sys
+import json, re, datetime as dt, glob, os, sys, subprocess
 SEAT   = sys.argv[1] if len(sys.argv) > 1 else 'alexandria-exo'
 LEDGER = sys.argv[2] if len(sys.argv) > 2 else 'docs/agents/exo-loop.md'
-MANI   = os.environ.get('MANI') or '/srv/asc/roster/%s/%s/agent.toml' % tuple(SEAT.split('-', 1))
 NOW    = os.environ.get('NOW')
 LOGS   = os.environ.get('LOGS', '/srv/asc/state/.epito/logs')
 CLAIM  = os.environ.get('CLAIM', '/srv/asc/state/.epito/capacity-retry.json')
-TOL    = dt.timedelta(hours=1)        # the host fires within seconds of a slot
-m = re.search(r'^cron\s*=\s*"([^"]+)"', open(MANI).read(), re.M)
-if not m:
-    print('no cron in the manifest: this seat has no weekly cycle'); raise SystemExit
-mi, hr, dom, mon, dow = m.group(1).split()[:5]
-if (dom, mon) != ('*', '*'):
-    print('this command reads a day-of-week cadence only, and the manifest says',
-          m.group(1), '- a day-of-month cadence needs its own slot arithmetic')
+CLONE  = os.environ.get('CLONE', '/srv/asc/repos/alexandra-systems')
+MANI   = os.environ.get('MANI')            # live manifest, the fallback only
+TOL    = dt.timedelta(hours=1)             # the host fires within seconds of a slot
+now = (dt.datetime.fromisoformat(NOW) if NOW
+       else dt.datetime.now(dt.UTC)).replace(tzinfo=None)
+company, seat = SEAT.split('-', 1)
+PATH = 'runtime/agents/%s/%s/agent.toml' % (company, seat)
+
+def slots_of(cron, lo, hi):
+    """Every slot a cron line puts inside [lo, hi). Refuses loudly rather than
+    guessing on a cadence this arithmetic cannot read."""
+    mi, hr, dom, mon, dow = (cron.split() + ['*'] * 5)[:5]
+    if (dom, mon) != ('*', '*'):
+        return None, ('a day-of-month cadence needs its own slot arithmetic: %s' % cron)
+    if not (mi.isdigit() and hr.isdigit()):
+        return None, ('a fixed hour and minute only, and this line says: %s' % cron)
+    days = None if dow == '*' else [(int(d) - 1) % 7 for d in dow.split(',') if d.isdigit()]
+    if dow != '*' and not days:
+        return None, ('a numeric day-of-week only, and this line says: %s' % cron)
+    out, t = [], hi.replace(hour=int(hr), minute=int(mi), second=0, microsecond=0)
+    while t >= hi: t -= dt.timedelta(days=1)
+    while t >= lo:
+        if days is None or t.weekday() in days: out.append(t)
+        t -= dt.timedelta(days=1)
+    return out, None
+
+# THE DEPLOYED CLOCK, NOT THE DECLARED ONE. `/srv/asc/roster` is a symlink into
+# a working clone the host moves with `git reset --hard`, so that clone's reflog
+# is the deploy history and the cron in effect at any past minute is the cron in
+# the copy that was checked out then. A slot computed from the live manifest is a
+# slot on today's clock, and a clock that moved yesterday never had it.
+timeline, tl_note = [], None
+try:
+    raw = subprocess.run(['git', '-C', CLONE, 'reflog', '--date=iso',
+                          '--format=%h%x09%gd'], capture_output=True, text=True,
+                         check=True, timeout=30).stdout
+    for line in raw.splitlines():
+        sha, _, gd = line.partition('\t')
+        m = re.search(r'\{([0-9-]{10}) ([0-9:]{8}) ([+-][0-9]{4})\}', gd)
+        if not (sha and m): continue
+        at = dt.datetime.fromisoformat('%sT%s%s:%s' % (m.group(1), m.group(2),
+                                                       m.group(3)[:3], m.group(3)[3:]))
+        timeline.append((at.astimezone(dt.UTC).replace(tzinfo=None), sha))
+    timeline.sort()
+except (OSError, subprocess.SubprocessError) as why:
+    tl_note = 'the deploy history is unreadable (%s)' % why
+if not timeline and tl_note is None:
+    tl_note = 'the deploy history is empty: %s has no reflog' % CLONE
+
+def cron_at(sha):
+    """The cron line this deployed copy held for this seat, or None if the copy
+    did not carry the seat at all, which is a different fact from a seat with
+    no cron and the thing a live read of the manifest can never tell you."""
+    r = subprocess.run(['git', '-C', CLONE, 'show', '%s:%s' % (sha, PATH)],
+                       capture_output=True, text=True)
+    if r.returncode != 0: return None
+    m = re.search(r'^cron\s*=\s*"([^"]+)"', r.stdout, re.M)
+    return m.group(1) if m else ''
+
+# the most recent slot that EXISTED on the clock the host was holding when it
+# passed. Walk the deploy intervals newest first and stop at the first hit.
+slot = slot_cron = None
+refusals, spans, unseated = [], [], []
+if timeline:
+    bounds = [(timeline[i][0], timeline[i][1],
+               timeline[i + 1][0] if i + 1 < len(timeline) else now)
+              for i in range(len(timeline))]
+    for lo, sha, hi in reversed(bounds):
+        if lo >= now: continue
+        hi = min(hi, now)
+        cron = cron_at(sha)
+        if cron is None:
+            unseated.append((lo.isoformat(), sha)); continue
+        if cron == '':
+            spans.append((lo.isoformat(), sha, 'no cron in this copy')); continue
+        found, why = slots_of(cron, lo, hi)
+        if why:
+            refusals.append((lo.isoformat(), sha, why)); continue
+        if found:
+            slot, slot_cron = found[0], cron
+            break
+        spans.append((lo.isoformat(), sha, 'cron %s, no slot inside this span' % cron))
+elif MANI or os.path.exists('/srv/asc/roster/%s/%s/agent.toml' % (company, seat)):
+    path = MANI or '/srv/asc/roster/%s/%s/agent.toml' % (company, seat)
+    m = re.search(r'^cron\s*=\s*"([^"]+)"', open(path).read(), re.M)
+    if m:
+        found, why = slots_of(m.group(1), now - dt.timedelta(days=60), now)
+        if found: slot, slot_cron = found[0], m.group(1)
+        if why: refusals.append(('live manifest', path, why))
+
+print('deploy history:            ', '%d moves, %s -> %s'
+      % (len(timeline), timeline[0][0].isoformat(), timeline[-1][0].isoformat())
+      if timeline else (tl_note or 'none'))
+if tl_note:
+    print('WARNING: %s, so the slot below was computed from the LIVE manifest and'
+          ' cannot be trusted about any minute before the last deploy.' % tl_note)
+# one line per distinct cadence rather than one per deploy: the roster moves
+# dozens of times a day and the same unreadable line would print dozens of times
+for why in dict.fromkeys(r[2] for r in refusals):
+    n = sum(1 for r in refusals if r[2] == why)
+    print('    refused to read a cadence (%d deployed copies): %s' % (n, why))
+if slot is None and refusals:
+    print('VERDICT: UNREADABLE CADENCE. Every deployed copy carried a cron line this'
+          ' arithmetic refuses, so no slot was computed and no verdict is available.'
+          ' Not having looked is not the same as having found nothing.')
     raise SystemExit
-if not (mi.isdigit() and hr.isdigit()):
-    print('this command reads a fixed hour and minute only, and the manifest says',
-          m.group(1)); raise SystemExit
-now  = (dt.datetime.fromisoformat(NOW) if NOW
-        else dt.datetime.now(dt.UTC)).replace(tzinfo=None)
-slot = now.replace(hour=int(hr), minute=int(mi), second=0, microsecond=0)
-days = None if dow == '*' else [(int(d) - 1) % 7 for d in dow.split(',') if d.isdigit()]
-if dow != '*' and not days:
-    print('this command reads a numeric day-of-week only, and the manifest says',
-          m.group(1)); raise SystemExit
-while slot > now or (days is not None and slot.weekday() not in days):
-    slot -= dt.timedelta(days=1)
-nxt = slot + dt.timedelta(days=1)          # the slot after it, so a retrospective
-while days is not None and nxt.weekday() not in days:   # read cannot borrow a later
-    nxt += dt.timedelta(days=1)            # slot's rows as evidence about this one
-lo, hi = slot.isoformat(), min(nxt, now).isoformat()
+if slot is None:
+    print('VERDICT: NO SLOT HAS EVER COME DUE ON A DEPLOYED CLOCK for this seat.')
+    if unseated:
+        print('    the seat was absent from %d of the deployed copies, the newest'
+              ' in effect from %s' % (len(unseated), unseated[0][0]))
+    for s in spans[:4]: print('    ', s)
+    print('    This is not a missed cycle. Nothing was watching for one.')
+    raise SystemExit
+
+print('deployed cron at that time:', slot_cron)
+print('most recent due slot (UTC):', slot.isoformat())
+if unseated and unseated[0][0] > slot.isoformat():
+    print('    the seat is absent from %d deployed copies newer than this slot'
+          % len(unseated))
+# the clock that governs from here, and the next slot it will produce. A moved
+# clock is the one thing a run needs told rather than left to work out by hand,
+# because the slot it invents is the slot this command used to report.
+live_cron = cron_at(timeline[-1][1]) if timeline else slot_cron
+if live_cron and live_cron != slot_cron:
+    ahead, why = slots_of(live_cron, now, now + dt.timedelta(days=14))
+    nextdue = min(ahead) if ahead else None
+    print('the clock has MOVED since that slot: it read %r then and reads %r in the'
+          ' copy deployed at %s.' % (slot_cron, live_cron, timeline[-1][0].isoformat()))
+    print('    no slot of the new line has come due yet, so there is nothing to read'
+          ' about it. Its first is %s.'
+          % (nextdue.isoformat() if nextdue else 'not computable: ' + str(why)))
 
 def started(fn):
-    """A run log's name is `<startTs>-<trigger>.log`, so the filename carries the
-    two fields the audit row does not pair: when the run STARTED and what woke
-    it. The audit row's `ts` is the END, which is why it cannot attribute a
+    """A run log is `<startTs>-<trigger>.log`, so the filename pairs the START
+    with the trigger. The audit row's `ts` is the END and cannot attribute a
     firing to a slot on its own."""
     c = re.match(r'(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})-\d+Z-(\w+)\.log$', fn)
     return (dt.datetime.fromisoformat('%sT%s:%s:%s' % c.groups()[:4]), c.group(5)) \
         if c else (None, None)
 
-# WHICH FIRING IS THIS SLOT'S. Not "a cron row somewhere in the period": that
-# reads a Sunday slot's refusal as a Monday slot's, which is what a clock move
-# does to every retrospective read. A firing belongs to this slot only if it
-# STARTED within an hour of it.
+nxt = slot + dt.timedelta(days=1)
+lo, hi = slot.isoformat(), min(nxt, now).isoformat()
 firings = []
 for path in sorted(glob.glob(os.path.join(LOGS, SEAT, '*-cron.log'))):
     at, _ = started(os.path.basename(path))
@@ -282,52 +385,48 @@ for line in open('/srv/asc/state/.epito/audit.jsonl'):
     if d.get('action') != 'run.end' or d.get('agent') != SEAT: continue
     if lo <= d['ts'][:19] < hi:
         rows.append((d['ts'][:19], d.get('trigger'), d.get('exit'), d.get('turns')))
-# the firing's outcome: the first cron row to END at or after it started
 outcomes = []
 for at, fn in firings:
     after = [r for r in rows if r[1] == 'cron' and r[0] >= at.isoformat()]
     outcomes.append((fn, after[0] if after else None))
 worked = [o for _, o in outcomes if o and o[2] in (0, None) and (o[3] or 0) > 1]
 hooks  = [r for r in rows if r[1] == 'hook']
-# THE RE-FIRE PAIRING. A re-fired slot arrives as `hook` and no surface this
-# seat can read carries the reason: the audit row has no reason field and the
-# run log prints `claude -p <prompt>` with the prompt redacted. The retry's
-# claim file is the one local record, and it names the refused run it
-# recovered by log filename -- so a claim is this slot's only when the name it
-# holds is one of the firings above.
 claimed, claim_note = [], None
 try:
     names = {fn for _, fn in firings}
     claimed = [fn for fn in json.load(open(CLAIM)).get(SEAT, []) if fn in names]
 except (OSError, ValueError) as unreadable:
     claim_note = 'claim file unreadable (%s): no re-fire reading is claimed' % unreadable
-print('most recent due slot (UTC):', slot.isoformat())
 print('firings attributed to it: ', [fn for _, fn in firings] or 'none')
 for fn, o in outcomes: print('    outcome of %s: %s' % (fn, o))
 print('hook runs since the slot:  ', [r[0] for r in hooks] or 'none')
 print('re-fires claimed for it:   ', claimed or 'none')
 if claim_note: print('   ', claim_note)
-try:
-    led = open(LEDGER).read()
-except OSError:
-    led = None
+try: led = open(LEDGER).read()
+except OSError: led = None
 if led is None or not re.search(r'^cycle-register:', led, re.M):
     print('VERDICT: UNREADABLE. The discharge record is missing from %s, so this'
           ' command cannot tell a cycle nobody took from a record it cannot read.'
           ' Restore the register before you read any verdict below it.' % LEDGER)
     raise SystemExit
-taken = [t for t in re.findall(r'^cycle-taken:\s*([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2})Z',
-                               led, re.M)
-         if t == slot.strftime('%Y-%m-%dT%H:%M')]
+taken = [t for t in re.findall(
+    r'^cycle-taken:\s*([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2})Z', led, re.M)
+    if t == slot.strftime('%Y-%m-%dT%H:%M')]
 print('discharge lines naming it: ', taken or 'none')
 if taken:
     print('VERDICT: the cycle was taken. This run is a wake run.')
 elif worked:
     print('VERDICT: the slot fired and ran. This run is a wake run.')
+elif not firings and tl_note:
+    print('VERDICT: UNREADABLE DEPLOY HISTORY. No firing was attributed to this slot,'
+          ' and the only branch that reads that as a missed slot needs the clock the'
+          ' host was holding when it passed. %s, so this command declines the verdict'
+          ' rather than inventing one.' % tl_note)
 elif not firings:
-    print('VERDICT: the slot did not fire. Judge it by the deployed-clock test above,'
-          ' and if the cron line moved recently, check that this slot existed on the'
-          ' clock the host was holding when it passed.')
+    print('VERDICT: THE SLOT WAS MISSED. This slot existed on the clock the host'
+          ' was holding when it passed and no cron run started within the hour,'
+          ' so the scheduler owes an explanation and the cycle is owed. This is a'
+          ' finding about the host, not about the clock.')
 elif claimed and hooks:
     print('VERDICT: THE CYCLE IS OWED AND ITS RE-FIRE IS SPENT. The slot fired,'
           ' produced nothing, was re-fired as a hook, and no run has recorded taking'
@@ -479,6 +578,96 @@ it attributes that firing correctly, which exercises the slot arithmetic on a
 seat this charter does not own. And pointed at `alexandria-security`, whose
 cron is `0 13 1,15 * *`, it still refuses loudly.
 
+**And the fourth version was written the day the deploy landed, because the
+third one handed every reader a homework assignment it could have done itself**
+(rewritten 2026-10-26, capacity-return hook,
+`INC-2026-10-26-the-detector-named-a-slot-that-never-came-due-and-called-it-a-slot-that-did-not-fire`).
+
+The third version's own validation list ends on a prediction: pointed at the
+granted Monday line as of 2026-11-02T02:00Z it returns `the slot did not fire`,
+"which is the reading that will be wrong first if the deploy lands and the slot
+runs". **The deploy landed at 2026-10-26T04:30:48Z** and the prediction came
+due nine and a half hours later, on the first run after it.
+
+The numbers. The grant merged and the host reloaded, so `cron = "0 1 * * 1"` is
+now in both copies of the clock. 2026-10-26 is a Monday, so the live manifest
+puts a slot at 01:00Z. **The host was still holding `0 14 * * 0` at 01:00Z**,
+and went on holding it through four more deploys until 04:30:48Z, so nothing
+was due at 01:00Z and nothing fired. The third version computed the slot from
+the live manifest, found no firing for it, and returned `the slot did not fire.
+Judge it by the deployed-clock test above`.
+
+**Every word of that is true and the slot in it is fictional.** The line reads
+as a statement about a slot that came due and was not served. Nothing came due.
+So the verdict's own subject was invented by the instrument, which is one worse
+than a wrong verdict about a real slot, and the only thing that stopped it
+becoming a finding was a run going off and performing a separate procedure by
+hand.
+
+**That procedure is the defect, not the remedy.** The deployed-clock test has
+been in §3b since 2026-10-24 and it is three commands over a reflog on this
+filesystem. The detector could not run it, so it deferred, and this page's own
+oldest rule about somebody else's instrument says what that means: **when you
+have to consult a surface your instrument cannot read in order to interpret one
+of its findings, the instrument is wrong and not merely incomplete.** A
+hand-correction to one reading is never an exception to an instrument. It is
+the instrument's defect, performed once by a careful run and left standing for
+every run that is in a hurry.
+
+And the two causes it cannot separate are opposite verdicts. A slot with no
+firing is either a slot the host was holding and did not serve, which is a
+finding about the scheduler, or a slot that never existed on the deployed
+clock, which is nothing at all. **Both returned the identical string**, which
+is precondition 6 of this section arriving inside the instrument this section
+publishes to enforce precondition 6, for the third time.
+
+The fix is to stop reading the clock live. `/srv/asc/roster` is a symlink into
+a working clone the host moves with `git reset --hard`, so that clone's reflog
+is the deploy history, and the cron in effect at any past minute is the cron in
+the copy that was checked out then. The command now walks the deploy intervals
+newest first and takes **the most recent slot that existed on the clock the
+host was holding when it passed**, which is the only slot any record can be
+evidence about. The branches then separate, and the one that was missing is the
+one that matters: `THE SLOT WAS MISSED` is a finding about the host, and it had
+no way to be said before today.
+
+Three properties worth knowing before you trust it. It reads the deploy history
+and nothing else for the clock, so **it never needs the deployed-clock test run
+by hand again**, and §3b's copy of that test is now the explanation rather than
+the procedure. It costs 0.59s live, because it stops at the first interval that
+holds a slot and only a seat with no readable cadence walks all 108 moves. And
+where the clone is gone it **declines the missed-slot verdict** rather than
+falling back to the live manifest's answer, because that fallback is precisely
+the defect being repaired and a warning above a verdict does not travel with
+the verdict.
+
+**Validated in ten directions, and the two that matter are the prediction and
+the refusal.** Live it returns `the cycle was taken` and names
+2026-10-25T14:00Z, which is the last slot that genuinely came due, where the
+third version named the fictional Monday one. **As of 2026-11-02T02:00Z it
+returns `THE SLOT WAS MISSED`**, which is the prediction the third version
+recorded against itself, now answered rather than deferred. With the discharge
+line removed, `THE CYCLE IS OWED AND ITS RE-FIRE IS SPENT`. With the register
+header removed or the file absent, `UNREADABLE`. With the claim file absent,
+plain `THE CYCLE IS OWED`. As of 2026-10-18T15:00Z, inside the clockless hole,
+`NO SLOT HAS EVER COME DUE ON A DEPLOYED CLOCK`, and the reason it prints is
+sharper than the one this charter carried: the deployed manifest held
+`# cron: none while GitHub Actions is the async heartbeat`, so the clock was not
+missing from that copy, it was switched off in it. With the clone unreadable,
+`UNREADABLE DEPLOY HISTORY` and no verdict. Pointed at `alexandria-pm`, whose
+cron is daily, it attributes the 2026-10-25T11:05Z firing correctly. And
+pointed at `alexandria-security`, whose cron is `0 13 1,15 * *`, it returns
+`UNREADABLE CADENCE` rather than the old silence, because refusing 98 times in
+a row and then printing a verdict about no slot is how a refusal gets read as
+an absence.
+
+**One thing the fourth version does that no run has to do again.** §0 said on
+2026-10-25 that "the next due slot is one of two dates and the deploy decides
+which", and left a run to work out whether the merge beat 01:00Z. The command
+now prints it: the clock moved, no slot of the new line has come due, and the
+first is **2026-11-02T01:00Z**. A date this page used to carry by hand is
+derived, which is the same rule that retired the hand-carried watermark in §2b.
+
 One limit of that list, named so no reader infers coverage. The discharge
 branch reads `docs/agents/exo-loop.md`, which is this seat's register, so
 pointing the command at another seat exercises the firing arithmetic and never
@@ -501,10 +690,26 @@ What a run does with each answer.
   reading it.** The retry has claimed the slot and no hook run has arrived yet.
   If the wake you are reading says it is re-firing a named slot, you are that
   run and the cycle is yours to take.
-- **`UNREADABLE` is not a verdict and is never treated as one.** Restore the
-  register, or say in the pull request that you could not, and read the trigger
-  as a wake run meanwhile. A run that reads this branch as "no cycle owed" has
-  reproduced the defect the branch exists to prevent.
+- **`THE SLOT WAS MISSED` is the one finding here that is about the host**
+  (added 2026-10-26). The slot existed on the clock the host was holding when
+  it passed and no cron run started inside the hour, so the cycle is owed on
+  the same terms as every branch above it, and the gap goes up through
+  `docs/agents/hq-relay.md` as well, because a scheduler that drops a slot it
+  holds is not this seat's to fix. Take the cycle, and name the slot in both
+  places.
+- **`NO SLOT HAS EVER COME DUE ON A DEPLOYED CLOCK` is nothing at all**, and it
+  is the answer the clockless hole of 2026-10-17 to 2026-10-23 produces. Read
+  the trigger as a wake run and do not report a missed cycle, because no
+  scheduler was ever holding a clock to miss one with.
+- **`UNREADABLE`, `UNREADABLE CADENCE` and `UNREADABLE DEPLOY HISTORY` are not
+  verdicts and are never treated as ones.** The first means the discharge
+  register is missing or renamed, the second that every deployed copy carried a
+  cadence the arithmetic refuses, and the third that the clone holding the
+  deploy history is gone. Restore the thing each names, or say in the pull
+  request that you could not, and read the trigger as a wake run meanwhile. A
+  run that reads any of these as "no cycle owed" has reproduced the defect the
+  branch exists to prevent: not having looked and having found nothing are
+  different facts and this command keeps them apart on purpose.
 - **Unless the run cannot afford it**, and then it says so rather than running
   seven sweeps badly. This section already holds the trade: a skipped sweep
   named in a pull request is a known gap and a sweep run badly by an
@@ -615,12 +820,22 @@ and carries all three manifests, and both copies of the clock still read
 and the parent's on `main`, read separately. The host reloads the roster when
 the deploy timer runs, so the move takes effect on merge and not before.
 
-So the next due slot is one of two dates and the deploy decides which.
-2026-10-26 is itself a Monday, so if the merge and the reload both land before
-01:00Z the first Monday slot is today. Otherwise it is 2026-11-02T01:00Z. A run
-reading this need not work that out by hand, because the detector reads the
-manifest live and the firing guard added the same day stops it inventing a
-Monday slot out of a week the clock said Sunday. Run it and believe it.
+**The deploy has since landed and the date is settled** (updated 2026-10-26,
+capacity-return hook). The paragraph above left the next due slot as one of two
+dates, to be decided by whether the merge and the reload beat 01:00Z. They did
+not. The host's copy moved to the Monday line at **2026-10-26T04:30:48Z**,
+three and a half hours after the 01:00Z slot had already passed, and it went on
+holding `0 14 * * 0` through four deploys in between. So no Monday slot came
+due on 2026-10-26 and **the first one is 2026-11-02T01:00Z.**
+
+A run reading this need not work any of that out by hand, and since the fourth
+version of the command it need not run the deployed-clock test by hand either.
+The detector derives the clock from the deploy history, names the slot that
+genuinely came due, and prints the next one. Run it and believe it. The reason
+the sentence above is kept rather than deleted is that its reasoning was right
+and its instrument was the thing that had to change: **a schedule read today
+cannot judge a slot yesterday**, which this section has said since 2026-10-24
+and its own command went on doing for two more days.
 
 **What would now tell us the grant worked, because the sentence we gave HQ no
 longer can.** The relay entry closed by offering a `run.end` row with
@@ -677,6 +892,14 @@ all, silently and with a plausible-looking answer. Ending the range at the next
 table header is what reads a TOML table. This is the charter's own rule about
 validating a check against a known instance, and the known instance was the
 file the run already had open.
+
+**And since 2026-10-26 the owed-cycle command in §0 does this itself, so read
+the pair below as the explanation rather than as the procedure.** That command
+walks the same reflog, resolves the cron in effect at the slot's own minute, and
+separates a slot the host dropped from a slot that never existed on its clock.
+Run these two by hand when you are auditing a seat the command refuses, or when
+you want the deploy minute itself; do not run them to interpret a verdict, which
+is what the third version of that command required and what made it wrong.
 
 Run against the gap this section describes, that pair settles it. The host's
 copy moved at 2026-10-17T20:05:10Z and then not again until
