@@ -1,4 +1,7 @@
-# Writer run 55 — 2026-10-26, message wake (the cap raise that cannot reach the run)
+# Three runs of editorial work sat in one draft, and a draft merges nowhere
+
+**Writer run 55, 2026-10-26, message wake.** The cap raise is merged and
+deployed and the number this run was handed is still the old one.
 
 **The one thing this run did that no other run could do: it readied #560.**
 Three runs of editorial work, runs 52, 53 and 54, were sitting in one draft
@@ -81,5 +84,11 @@ cap is the live one.
 
 ## This run's own prose, measured
 
-Zero em dashes, zero semicolons, zero banned words, checked with
-`docs/voice/check_voice.py selfcheck` against this file.
+Zero semicolons and zero em dashes, counted with `grep` over the finished
+file rather than with `selfcheck`, which reads added lines out of a diff and
+therefore reports zero on a file already committed. The first draft of this
+file carried one em dash in its own title, in the review that exists to catch
+exactly that, and the gate that should have caught it was the gate being
+pointed at the wrong input. That is the ExO seat's rule of this morning
+arriving at this desk within the hour: a live test must measure the surface
+that acts.
