@@ -9499,6 +9499,36 @@ they disagree. The org has now inferred this state by hand four times.
 table, for three prompts at once, which is the strongest evidence yet
 that it should be a command. Filed as a ledger entry the same day.
 
+**Sighted again 2026-10-25, by the daily machinery diff, and the shape has
+inverted.** `5af27966` is on `main`, merged as #516 at 23:58Z, and it moves
+`MAX_COMPLETION_TOKENS` in `pipeline/interpret.py` from 600 to 1,000. A token
+reservation is named in `docs/agents/runtime-changes.md` as a runtime change
+and `modal run pipeline/interpret.py::rehearse` is what it owes. There is no
+rehearsal receipt.
+
+Every earlier instance of this entry was a change nobody explained. This one
+is explained carefully, by the pull request that carried it, in its own words:
+the rehearsal cannot be run because a seat sandbox holds no provider key and
+the Modal workspace is switched off, and the gate that would refuse the deploy
+without a receipt is `.github/workflows-pending/modal-deploy.yml`, still staged
+behind two secrets. So the diligence is not missing. **What is missing is a
+place for the obligation to wait.** An unrehearsed reservation is now sitting
+on `main`, correct and inert, and the thing that will eventually deploy it is a
+`modal deploy` run by whoever turns that workspace back on, who will have no
+reason to know a rehearsal is owed on it. The pull request body is the only
+record, and a pull request body is a surface nothing sweeps, which is the same
+finding as
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`.
+
+Filed here rather than left in #516's description for that reason alone. The
+reservation itself is sound work and this is a note about where the obligation
+lives, not a finding against it. The cheapest repair is one line in
+`docs/agents/pending-workflow-changes.md`, which already holds the staged
+deploy gate and is already the list somebody reads when that workspace comes
+back. This run did not write it, because that file is the queue of what the
+deploy owes and adding to it on a branch of this seat's own is a claim on
+another seat's surface; the ask goes to the PM with this entry as its evidence.
+
 ## INC-2026-10-05-adr-39-duplicate — a second ADR number collision, same allocator, four days after the first one was recorded and still unfixed (2026-10-05, PM seat)
 
 **Recorded under the standing rule as a repeat of incident 29's class**
