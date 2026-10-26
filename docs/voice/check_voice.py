@@ -87,13 +87,17 @@ Exit:   1 if any check reports a finding, 0 if clean.
 import collections
 import contextlib
 import html
+import html.parser
 import io
 import os
 import pathlib
 import re
 import subprocess
 import sys
+import tempfile
 import unicodedata
+import urllib.error
+import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 BAN = ROOT / "docs/voice/ban-list.md"
@@ -3564,8 +3568,15 @@ def standalone(paths=None):
             # refinements layer on top of it, never beside it. The exemption is
             # computed from her register for the reason the taste gate gives.
             (exempt if hers(span) else hits).append((path, n, span))
-    print(f"  read from   site/content/issues, {len(paths)} issue(s): "
-          f"{', '.join(p.stem for p in paths)}")
+    # Where the paths came from, and not the directory this pass used to
+    # assume they came from. L-A47 says an instrument's scope is part of its
+    # answer, and this line printed `site/content/issues` for a path given on
+    # the command line, so the one pass that reported its own scope reported
+    # somebody else's directory. Found by pointing it at a served edition.
+    inside = all(str(x).startswith(str(ROOT / "site/content/issues"))
+                 for x in paths)
+    print(f"  read from   {'site/content/issues' if inside else 'paths given'},"
+          f" {len(paths)} issue(s): {', '.join(p.stem for p in paths)}")
     print(f"  sentences whose subject is 'you' and whose verb is past  "
           f"{len(hits) + len(exempt)}")
     for path, n, span in hits:
@@ -3581,6 +3592,363 @@ def standalone(paths=None):
     print("reader's actual job rather than deletion. The generator's own")
     print("worked answer is the b7d6929 line quoted above.")
     return 1 if hits else 0
+
+
+# ---- the editions a reader can actually open ---------------------------
+
+#: The product's public address. Every pass below reads it with no credential,
+#: which is the whole finding behind this section: `NEON_RO_URL` guards the
+#: send record and nothing guards the pages that record renders into.
+LIVE_SITE = os.environ.get("ALEXANDRIA_SITE", "https://libraryofalexandria.dev")
+
+#: One cache directory per process, created on first use. Not a fixed name
+#: under /tmp: twelve seats of this company run as one user on one host, so
+#: `/tmp/editions` is a shared name and a concurrent seat's issue would be read
+#: under this one's week number
+#: (`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`).
+_CACHE = None
+
+#: `<a href="/library/2026-W42">` on the public index. The served list is the
+#: product's own answer to which editions exist, and it is three where the
+#: repository holds one.
+LIVE_WEEK = re.compile(r'href="/library/(\d{4}-W\d{2})"')
+
+#: The inverse of `site/lib/markdown.js` over the subset an issue uses. This is
+#: proved rather than asserted: `editions` below un-renders the served copy of
+#: an edition the repository also holds and diffs the two, so a change to the
+#: site's renderer that this misses shows up as a failing round trip rather
+#: than as a silently wrong grade.
+_INLINE_OPEN = {"strong": "**", "b": "**", "em": "*", "i": "*", "del": "~~"}
+
+
+class _Unrender(html.parser.HTMLParser):
+    """Rendered issue HTML back to the markdown the press stored.
+
+    The gates below are written against markdown, because the press writes
+    markdown and `site/content/issues/*.md` is markdown. Re-deriving it from
+    the page is what lets a gate read an edition nobody committed, which is
+    every edition since 2026-10-05.
+    """
+
+    HEAD = {f"h{n}": "#" * n + " " for n in range(1, 7)}
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.out, self.buf, self.lists, self.counts = [], [], [], []
+        self.href, self.pre = None, False
+
+    def _flush(self):
+        text = "".join(self.buf).strip()
+        self.buf = []
+        return text
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "pre":
+            self.pre, self.buf = True, []
+            return
+        if tag in _INLINE_OPEN:
+            self.buf.append(_INLINE_OPEN[tag])
+        elif tag == "code" and not self.pre:
+            self.buf.append("`")
+        elif tag == "a":
+            self.href = dict(attrs).get("href")
+            self.buf.append("[")
+        elif tag == "br":
+            self.buf.append("  \n")
+        elif tag == "hr":
+            self.out.append("---")
+        elif tag == "ul":
+            self.lists.append("ul")
+        elif tag == "ol":
+            self.lists.append("ol")
+            self.counts.append(0)
+
+    def handle_endtag(self, tag):
+        if tag in _INLINE_OPEN:
+            self.buf.append(_INLINE_OPEN[tag])
+        elif tag == "code" and not self.pre:
+            self.buf.append("`")
+        elif tag == "a":
+            self.buf.append(f"]({self.href})" if self.href else "]")
+            self.href = None
+        elif tag in self.HEAD:
+            self.out.append(self.HEAD[tag] + self._flush())
+        elif tag == "p":
+            text = self._flush()
+            if text:
+                self.out.append(text)
+        elif tag == "li":
+            text = self._flush()
+            if self.lists[-1:] == ["ol"]:
+                self.counts[-1] += 1
+                self.out.append(f"{self.counts[-1]}. {text}")
+            else:
+                self.out.append(f"- {text}")
+        elif tag == "ul" and self.lists:
+            self.lists.pop()
+        elif tag == "ol":
+            if self.lists:
+                self.lists.pop()
+            if self.counts:
+                self.counts.pop()
+        elif tag == "pre":
+            self.pre = False
+            self.out.append("```\n" + "".join(self.buf).strip("\n") + "\n```")
+            self.buf = []
+
+    def handle_data(self, data):
+        self.buf.append(data)
+
+
+def unrender(fragment):
+    """The markdown behind one rendered `<article class="digest issue-body">`."""
+    parser = _Unrender()
+    parser.feed(fragment)
+    parser.close()
+    return "\n\n".join(parser.out).strip() + "\n"
+
+
+def _fetch(url, timeout=25):
+    """The page, or None and the reason printed. Never raises.
+
+    A gate that throws on a slow network is a gate somebody deletes. A gate
+    that returns a clean verdict on a network it never reached is the defect
+    this whole section exists to repair, so the failure is loud and the caller
+    is obliged to say it answered nothing.
+    """
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as r:
+            return r.read().decode("utf-8", "replace")
+    except (urllib.error.URLError, OSError, ValueError) as e:
+        print(f"  UNREACHED {url}")
+        print(f"            {type(e).__name__}: {e}")
+        return None
+
+
+def served_weeks():
+    """The weeks the product serves, newest last, or None when unreached."""
+    page = _fetch(f"{LIVE_SITE}/library")
+    if page is None:
+        return None
+    return sorted(set(LIVE_WEEK.findall(page)))
+
+
+ARTICLE = re.compile(r'<article class="digest issue-body"[^>]*>(.*?)</article>',
+                     re.S)
+
+
+def served_issue(week):
+    """One served edition as a markdown file on disk, or None when unreached."""
+    global _CACHE
+    if _CACHE is None:
+        _CACHE = pathlib.Path(tempfile.mkdtemp(prefix="check_voice-editions-"))
+    cached = _CACHE / f"{week}.md"
+    if cached.exists():
+        return cached
+    page = _fetch(f"{LIVE_SITE}/library/{week}")
+    if page is None:
+        return None
+    body = ARTICLE.search(page)
+    if not body:
+        print(f"  UNREADABLE {LIVE_SITE}/library/{week}")
+        print( "             no <article class=\"digest issue-body\"> on the page,")
+        print( "             so the route's markup moved and this parser is stale")
+        return None
+    cached.write_text(unrender(body.group(1)), encoding="utf-8")
+    return cached
+
+
+def served_paths():
+    """Every served edition as a path, for the passes that take paths."""
+    weeks = served_weeks()
+    if weeks is None:
+        return None
+    paths = [served_issue(w) for w in weeks]
+    return [p for p in paths if p is not None]
+
+
+def round_trip():
+    """Is the un-renderer faithful? Asked of an edition we hold both copies of.
+
+    The proof and not the claim. For every served week the repository also
+    holds as a file, the served page is un-rendered and diffed against that
+    file, ignoring blank lines and trailing space, which are the only things
+    the render does not carry. A mismatch means a figure taken off the live
+    page belongs to a document the press did not write, which is ban list 91
+    with a longer fuse.
+    """
+    weeks = served_weeks()
+    if weeks is None:
+        return None, []
+    rows = []
+    for w in weeks:
+        on_disk = ROOT / f"site/content/issues/{w}.md"
+        if not on_disk.exists():
+            continue
+        live = served_issue(w)
+        if live is None:
+            continue
+        norm = lambda t: [x.rstrip() for x in t.split("\n") if x.strip()]
+        rows.append((w, norm(on_disk.read_text(encoding="utf-8"))
+                     == norm(live.read_text(encoding="utf-8"))))
+    return True, rows
+
+
+def editions(paths=None):
+    """Does this file's default scope reach every edition a reader can open?
+
+    The gate entry 141 needed and did not get. That entry closed the reading
+    half of its class on the day it was written: a run now starts a grade by
+    asking the press which week is newest. It left the commands alone, and
+    eight passes in this file glob `site/content/issues/*.md` and print
+    verdicts about "the issues". That directory holds two files, one of them
+    retired, and the product serves three. So on the day the class was named
+    and banned, every count in this file still described one edition out of
+    three, and the two it could not see had never been read by any command or
+    any review.
+
+    What the blindness cost, and it is not hypothetical.
+    `2026-W40` went to readers on 2026-10-05 and printed three headings:
+
+        ## What is gaining ground: recursive self-improvement with fewer guardrails
+        ## What is genuinely new: where memory lives and who can pull the plug
+        ## What fell behind: the assumptions that let agents run unchecked
+
+    Those are the framework's internal names, printed, which is canon law 12
+    and incident 20, the one ruling the owner has had to give twice. `measure`
+    has detected that exact shape since 2026-10-06. It never fired, because the
+    edition was never a file here. A ruling given twice, a gate written for it,
+    and a print that carried it anyway, all at once, because the gate's scope
+    was the repository and the ruling's scope is the product.
+
+    This pass fails on the gap itself rather than on any issue's prose, so the
+    blindness is a red line somebody has to answer instead of a sentence in a
+    docstring that the counts quietly contradict. `--live` on the passes that
+    take paths is the way to answer it inside one run:
+
+        python3 docs/voice/check_voice.py editions
+        python3 docs/voice/check_voice.py devices --live
+    """
+    if os.environ.get("ALEXANDRIA_OFFLINE"):
+        print("  SKIP    ALEXANDRIA_OFFLINE is set, so this run declared that")
+        print("          it cannot reach the product. A declared blind spot is")
+        print("          the one honest kind. Nothing below was read")
+        print()
+        return 0
+    ok, trips = round_trip()
+    if ok is None:
+        print()
+        print("This pass answered nothing, and that is why it is red. The")
+        print("question it asks is whether the gates can see the product, and")
+        print("an unreached product cannot be reported as a scope that")
+        print("matches. Set ALEXANDRIA_OFFLINE=1 to declare the blind spot")
+        print("instead of hiding behind it.")
+        return 1
+    rc = 0
+    weeks = served_weeks()
+    retired = hidden_weeks()
+    held = {p.stem for p in (ROOT / "site/content/issues").glob("*.md")}
+    unread = [w for w in weeks if w not in held]
+    print(f"  served by the product     {len(weeks)}: {', '.join(weeks)}")
+    print(f"  held in the repository    {len(held)}: "
+          f"{', '.join(sorted(held))}")
+    print(f"  retired at the serving layer  {len(retired & set(weeks))}")
+    print(f"  round trip verified on     {len(trips)} edition(s) held both ways")
+    for week, same in trips:
+        if same:
+            print(f"    OK      {week}  the served page un-renders to the file")
+        else:
+            rc = 1
+            print(f"    FAIL    {week}  the served page does not un-render to")
+            print( "              the file, so the parser is stale and every")
+            print( "              figure taken off the live site is suspect")
+    if not trips:
+        rc = 1
+        print( "    FAIL    no edition is held both ways, so nothing here")
+        print( "              proves the un-renderer and `--live` is unsafe")
+    print(f"  served and unreadable here {len(unread)}"
+          + (f": {', '.join(unread)}" if unread else ""))
+    for week in unread:
+        rc = 1
+        print(f"  FAIL    {week} reached readers and is not a file here, so")
+        print( "            every default-scope count in this file excludes it")
+    if not unread:
+        print("  every served edition is readable from the repository")
+    print()
+    print("A gate's scope is part of its answer (L-A47) and this file's")
+    print("default scope is a directory, while the product's scope is a")
+    print("table. They have disagreed since 2026-10-05 and the disagreement")
+    print("printed canon law 12 to readers. `--live` closes it per run and")
+    print("committing the print closes it for good.")
+    return rc
+
+
+# ---- canon law 1's two marks, over the artifact ------------------------
+
+def marks(paths=None):
+    """The em dash and the semicolon, with the generator's own zero target.
+
+    Split out of `measure` for the reason `devices` was: that command's exit
+    code means the character gate and a test reads it by name, so a second
+    meaning on it reports a cause that is not the cause (L-A44).
+
+    This is not a new rule. `prompts/digest.md` states it twice in its own
+    words, "the target is zero and there is no budget, the same as the em
+    dash", and canon law 1 bans the semicolon join outright. What was missing
+    is the half this file applies to its own author and not to the product:
+    `selfcheck` fails this seat's run when a diff adds one semicolon, and
+    nothing in `all` ruled on a semicolon in the issue. `measure` printed the
+    count and moved on, so the number was visible and never a verdict.
+
+    The current edition carries two, and both are the plainest form of the
+    join, two independent clauses with a mark between them:
+
+        Llama-3.1-8B loads skills 72% of the time overall; Llama-3.3-70B
+        loads them 11% of the time.
+
+    The exemptions are `selfcheck`'s, for its reasons: a mark inside a
+    quotation of a source is the source's, and editing it falsifies the quote.
+    """
+    paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    retired = hidden_weeks()
+    rc = 0
+    for p in paths:
+        p = pathlib.Path(p)
+        if not p.exists():
+            print(f"  {p}: missing")
+            rc = 1
+            continue
+        try:
+            shown = p.resolve().relative_to(ROOT)
+        except ValueError:
+            # A served edition, un-rendered into this process's cache. Named by
+            # its week and its source rather than by a temporary path, because
+            # ban list 91 says a figure is quoted with the artifact it was
+            # measured on and `/tmp/check_voice-editions-oqj97_z6` is not a
+            # name a review can carry.
+            shown = f"{p.stem} (served, un-rendered from {LIVE_SITE})"
+        if p.stem in retired:
+            print(f"  SKIP    {shown}  retired, not served")
+            continue
+        inside = fenced(p)
+        hits = []
+        for n, line in enumerate(p.read_text(encoding="utf-8").split("\n"), 1):
+            if n in inside or quoting(line):
+                continue
+            for mark, name in ((";", "semicolon"), (EM, "em dash")):
+                if mark in line:
+                    hits.append((n, name, line.strip()))
+        print(f"  {shown}   marks outside a quotation  {len(hits)}")
+        for n, name, line in hits:
+            rc = 1
+            print(f"    FAIL    {shown}:{n}  {name}")
+            print(f"              {line[:104]}")
+    print()
+    print("Zero is the generator's own target and it says there is no budget.")
+    print("A count without a verdict is what let two of these print: this")
+    print("seat's own prose has been failing on the same mark since")
+    print("2026-10-10 and the product's prose was only ever measured.")
+    return rc
 
 
 # ---- captions ---------------------------------------------------------
@@ -3735,7 +4103,23 @@ def main():
     rc = 0
     takes_paths = {"measure", "links", "delivery", "compare", "firstuse",
                    "generator", "specimens", "standalone", "devices",
-                   "captions"}
+                   "captions", "marks"}
+    # `--live` is the answer to `editions`, inside one run. It replaces the
+    # archive glob with the editions the product actually serves, fetched from
+    # the public pages and un-rendered, so a pass grades what a reader opens
+    # rather than what somebody committed. Entry 141 named this class on
+    # 2026-10-26 and enforced the reading half of it; this is the half that
+    # points the commands at the right artifact instead of the run.
+    if "--live" in paths:
+        paths = [x for x in paths if x != "--live"]
+        live = served_paths()
+        if live is None:
+            print("--live could not reach the product, so nothing was read.")
+            print("A grade on an unreached artifact is the defect entry 141")
+            print("names, so this exits rather than falling back to the")
+            print("archive under the name `live`.")
+            return 1
+        paths = [str(x) for x in live] + paths
     # `enforcements` takes a git ref rather than a path, because ban list 105
     # is about the file the press runs and that file is only reachable through
     # the commit the deploy was built from.
@@ -3757,6 +4141,8 @@ def main():
                      ("standalone", standalone),
                      ("devices", devices),
                      ("routed", routed),
+                     ("editions", editions),
+                     ("marks", marks),
                      ("captions", captions),
                      ("blockrules", blockrules),
                      ("compare", compare), ("selfcheck", selfcheck)):
