@@ -22843,3 +22843,67 @@ that outlives it. The general repair is proposed rather than built, as
 for how long'", because the join this wants is between the ledger's `urgent`
 cards and the delivery-health surfaces that can probe them, and that is a tool
 rather than a sentence. Ban list checked on this entry.
+
+## INC-2026-10-26-sixty-six-test-files-and-nothing-in-ci-runs-them — the repository's own test command was two failures red on `main` and the only reader was a seat who typed it by hand (2026-10-26, engineer seat)
+
+**Observed** while running the local checks before readying this run's pull
+request. `python3 -m pytest tests/ -q` on a tree merged clean from `origin/main`
+returned `2 failed, 2185 passed, 1 skipped` in 315 seconds. Both failures are
+registers' own self-gates, and both were red on `main` rather than caused by
+this branch, which was confirmed by running the same two assertions against
+`git show origin/main:docs/ideas.md` and the merged register.
+
+1. `tests/test_incidents.py::test_the_live_register_ids_all_parse`. Two
+   headings in this file, both written today by the PM seat, separate the
+   `INC-` id from its summary with a colon where the convention at the top of
+   this file uses an em dash. The id parses, the date does not, so
+   `Entry.date` comes back `None` and a charter that cites the entry by id
+   gets nothing. Repaired in this pull request, punctuation only, with both
+   seats' wording untouched.
+2. `tests/test_ledger.py::test_every_live_entry_carrying_a_readable_status_has_the_contract_fields`.
+   209 readable entries in `docs/ideas.md` are missing contract fields,
+   against a ratchet of 206 that its own message dates to 2026-10-17. Not
+   repaired, for the reason below.
+
+**The finding is not either failure. It is that neither could have been seen.**
+`grep -rn pytest .github/workflows/` returns nine `pytest` invocations, every
+one of them naming specific files: `test_corpus_drain`, `test_rag_fallback`,
+`test_reasoning_rubric`, `test_board`, `test_run_report`, `test_distill_gates`,
+`test_distill_fulltext_budget`, `test_skill_receipts`, `test_graph_audit`.
+There are 66 files in `tests/`. Nothing in this repository ever runs the other
+57, on any branch, at any time. `checks.yml` is also path-filtered, and
+neither `tests/test_ledger.py` nor `tests/test_incidents.py` is in its paths,
+so a change that breaks them cannot turn a check red even on the pull request
+that makes it. The suite has one reader, which is a seat who chooses to type
+the command, and this run is the reader.
+
+**The repeat.** This is incident 20's mechanism, which the engineer charter
+carries as its own paragraph: every register needs two gates, one that decides
+something gets written down and one that decides something gets checked before
+it ships, and the second is the one the org keeps forgetting. It is also
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it` with the polarity
+changed. That incident was a guard that went red and stayed red for six days
+because nothing read it. This is a guard that cannot go red at all, because
+nothing runs it. The 2026-09-29 repair for that one added a push-on-`main`
+trigger to `checks.yml`, and it only helps the files `checks.yml` names.
+
+**Why the ledger ratchet was not fixed, said plainly so the next run does not
+re-decide it.** The cheap way to clear it is to add the missing field to three
+entries and watch the number dip under the line. That would be padding, and it
+would delete the finding. The drift behind the number is systemic: of the
+entries added to `docs/ideas.md` in the eight days since the baseline, nearly
+every one is missing `What`, `First step`, or both, and most of them are craft
+scans and findings whose own shape is `Trigger / Worth stealing / What
+alexandria does better / First step / Cost / Status`. So either the contract
+covers scans and six seats have been breaking it daily, or it does not and the
+instrument is counting the wrong population. That is a question for the owner's
+contract in `prompts/engineer-agent.md` and not a number to adjust. **This
+run's own entries were brought into compliance** so that the branch adds zero
+to the count, verified at 209 before and 209 after. The ratchet stays red and
+stays honest.
+
+**Fixed in this pull request.** Both heading separators, so
+`tests/test_incidents.py` is 31 passed. The CI half cannot be fixed by this
+seat, because no agent seat may push a workflow file, so it is proposed in
+`docs/ideas.md` as "2026-10-26 — The test suite has 66 files and CI runs nine
+of them" and addressed to the owner there. Ban list checked on this entry.

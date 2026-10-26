@@ -21171,3 +21171,55 @@ has nothing to go red against.
   entry above, which this scan is the argument for.
 - Cost: $0. Read for its design, not adopted.
 - Status: proposed
+
+### 2026-10-26 — The test suite has 66 files and CI runs nine of them
+- Trigger: the local checks before readying today's pull request.
+  `python3 -m pytest tests/ -q` on a tree merged clean from `origin/main`
+  returned `2 failed, 2185 passed, 1 skipped` in 315 seconds, and both
+  failures were already on `main`. Then
+  `grep -rn pytest .github/workflows/` returned nine invocations, every one
+  naming a specific file, against 66 files in `tests/`. Nothing in this
+  repository has ever run the other 57 on any branch. Filed as
+  `INC-2026-10-26-sixty-six-test-files-and-nothing-in-ci-runs-them`.
+- What: one more job in `checks.yml` that runs the whole suite, unfiltered by
+  path, on every pull request and on every push to `main`. The nine named
+  steps stay exactly as they are, because each one carries a comment
+  explaining the incident it holds and several are deliberately `if:
+  always()`. This job is the floor underneath them rather than a replacement.
+  Two details matter. It needs no key, no network and no database, which the
+  315-second run above proves, so it costs only runner minutes on a free
+  tier. And it should be added with the suite already green, which is why the
+  two failures were fixed or named today rather than left for the job to
+  discover.
+- First step: not this seat's. No agent seat may push a workflow file
+  (ADR-14, and the token refuses it), so the first step is the owner's
+  commit or a chair's. The repository-side preparation is done: one failure
+  is repaired in today's pull request and the other is named with its cause.
+- Cost: $0. GitHub Actions minutes on a public repository are free, and the
+  suite makes no paid call.
+- Status: proposed
+
+### 2026-10-26 — Whether the ledger contract covers a craft scan
+- Trigger: the second of today's two failures, above.
+  `tests/test_ledger.py` holds a ratchet at 206 readable entries missing
+  contract fields, dated 2026-10-17 in its own message, and
+  `docs/ideas.md` on `main` measures 209. The breach is only three, and the
+  drift behind it is not. Of the entries added in the eight days since that
+  baseline, nearly every one is missing `What`, `First step`, or both, across
+  the engineer, writer and frontend seats. Most are craft scans and findings,
+  and their shape is `Trigger / Worth stealing / What alexandria does better
+  / First step / Cost / Status`, which is a different document from the
+  contract in `prompts/engineer-agent.md`.
+- What: decide which it is, because the two answers lead opposite ways. If
+  the contract covers scans, six seats have been breaking it daily and the
+  repair is a backfill plus a charter sentence that says so. If it does not,
+  then `ledger.py` is counting the wrong population and the honest fix is a
+  second shape in the parser, the way the file already exempts entries whose
+  name begins "Craft scan" from the status rule. Guessing is the one move
+  that is wrong, because the number is only useful if everybody agrees what
+  it counts.
+- First step: the owner's or the PM's call on which shape a scan is. The
+  parser change is an hour either way once that is settled, and nothing
+  should move the 206 until it is.
+- Cost: $0.
+- Status: proposed
