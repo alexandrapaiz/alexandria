@@ -7652,7 +7652,11 @@ Over the **1,765 runs** both surfaces cover, across five companies:
 
 Median first push **turn 25**, p90 turn 50. **No seat in any company has a
 median inside the deadline**, best `ursa-research` at 8, worst HQ's own `pm` at
-55. **And the rule's mechanism claim holds at 83%**: of the 195 runs cut
+55. **Eight of the nine compliant runs are `ursa` seats**, five of them
+`ursa-research`, which pushed at turn 3 once and turn 5 three times. So the
+deadline is reachable by a real seat doing real work. Why those seats manage it
+is not answered here and it is the question worth asking next, because the
+clustering suggests a practice rather than a limit. **And the rule's mechanism claim holds at 83%**: of the 195 runs cut
 non-zero after a turn, 161 had pushed first. The rule is right about why and
 wrong about when, and the deadline is in a vendored standard, so the correction
 left through the relay rather than by editing `docs/standards/`.
