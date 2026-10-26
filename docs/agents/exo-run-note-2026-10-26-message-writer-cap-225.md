@@ -13,29 +13,55 @@ Per §0 a wake run does the thing the event asks for, plus the failure sweep
 (§6), and takes at most one improvement. What it does not do is named at the
 foot of this note.
 
-## No cycle is owed, and both halves of §0 were asked
+## No cycle is owed, and this run read two versions of the detector
 
-The §0 detector, run unmodified:
+**The authoritative read, from the §0 detector as it stands on `main` today:**
+
+```
+deploy history:             114 moves, 2026-09-24T02:56:48 -> 2026-10-26T14:47:22
+deployed cron at that time: 0 14 * * 0
+most recent due slot (UTC): 2026-10-25T14:00:00
+the clock has MOVED since that slot: it read '0 14 * * 0' then and reads
+    '0 1 * * 1' in the copy deployed at 2026-10-26T14:47:22.
+    no slot of the new line has come due yet, so there is nothing to read
+    about it. Its first is 2026-11-02T01:00:00.
+firings attributed to it:  ['2026-10-25T14-00-04-675Z-cron.log']
+    outcome: ('2026-10-25T14:00:11', 'cron', 1, 1)
+re-fires claimed for it:   ['2026-10-25T14-00-04-675Z-cron.log']
+discharge lines naming it: ['2026-10-25T14:00']
+VERDICT: the cycle was taken. This run is a wake run.
+```
+
+**This run read the previous version first and the difference is worth
+recording.** The charter was read at turn one, before `git pull`, and `main`
+had moved in the meantime: the version this run first ran returned
 
 ```
 most recent due slot (UTC): 2026-10-26T01:00:00
 firings attributed to it:  none
-hook runs since the slot:   ['2026-10-26T14:23:46']
-re-fires claimed for it:    none
-discharge lines naming it:  none
-VERDICT: the slot did not fire.
+VERDICT: the slot did not fire. Judge it by the deployed-clock test above.
 ```
 
-The verdict sends the reader to the deployed-clock test, and it answers
-cleanly. The granted `0 1 * * 1` line reached the host's disk at
-**2026-10-26T04:39:48Z** (roster clone reset to `752600f`); the last reset
-before today's 01:00Z slot was **00:36:20Z** at `636ac1b`, whose copy still
-read `cron = "0 14 * * 0"`. So the Monday slot did not exist on the clock the
-host was holding when that minute passed, which is the case §0 says to read as
-nothing at all rather than as a missed cycle. The previous Sunday slot,
-2026-10-25T14:00Z, carries its `cycle-taken:` line in the cycle register.
-**This run is a wake run. The next due slot is 2026-11-02T01:00Z**, which the
-daemon's own state file agrees with (`nextCron` below).
+That answer is not wrong, it is one step short. It resolves the cron **live**,
+so it put the most recent due slot at today's 01:00Z under the newly granted
+Monday line, and then sent the reader out of the tool to the deployed-clock
+test. Run by hand, that test says: the Monday line reached the host's disk at
+**04:39:48Z** (`752600f`), the last reset before 01:00Z was **00:36:20Z**
+(`636ac1b`), and that copy still read `cron = "0 14 * * 0"`. So the Monday slot
+did not exist on the clock the host was holding when that minute passed, which
+is the case §0 says to read as nothing at all.
+
+**The hand derivation and the new version agree, by different routes**, which
+is the useful part: the new one resolves the clock out of the deploy history
+itself and names the moved line in its own output, so the reader never has to
+leave the instrument. That is this charter's own rule about an instrument that
+defers to a manual procedure, discharged, and this run is an accidental
+validation of it — the manual procedure was performed independently and reached
+the same answer.
+
+**Both versions agree on the mode. This is a wake run, and the next due slot is
+2026-11-02T01:00Z**, which the daemon's own `nextCron` for this seat also
+reads.
 
 ## The event's answer, and it inverts the report
 
