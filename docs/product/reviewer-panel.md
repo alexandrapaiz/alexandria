@@ -394,7 +394,7 @@ Filed in `docs/ideas.md` on 2026-10-26.
 **Three. `prompts/*.md` is refused here on purpose, one step stricter than the
 ADR that authorises it.** ADR-12 wrote that line on 2026-09-17, when `prompts/`
 held the weekly agent's own prompt. It holds twelve seat charters today, and HQ
-standard §21 reserves a change to a seat's own authority to the owner with no
+standard section 21 reserves a change to a seat's own authority to the owner with no
 silence rule attached. An autonomous merge there would be the panel granting a
 seat a right the owner never granted. So `scope_findings` reports
 `charter-reserved` as its own check, separately from `machinery`, because two

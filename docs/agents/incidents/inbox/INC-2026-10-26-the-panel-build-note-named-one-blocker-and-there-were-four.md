@@ -1,4 +1,4 @@
-## INC-2026-10-26-the-panel-build-note-named-one-blocker-and-there-were-four — a document asserted the state of machinery nobody had run, in the same file that did it three weeks ago (2026-10-26, engineer seat)
+## INC-2026-10-26-the-panel-build-note-named-one-blocker-and-there-were-four - a document asserted the state of machinery nobody had run, in the same file that did it three weeks ago (2026-10-26, engineer seat)
 
 **What happened.** `docs/product/reviewer-panel.md` has said since 2026-10-03
 that ADR-13's third slice is "blocked on the owner minting a PR-merge-scoped
@@ -12,7 +12,7 @@ see, and the number is 21 of 21 skill-seat pull requests carrying at least one
 path outside it, with zero clean. Three: the whitelist admits `prompts/*.md`,
 which held one prompt when ADR-12 was written and holds twelve seat charters
 now, so a literal reading authorises the panel to merge a charter that HQ
-standard §21 reserves to the owner. Four: the token. Each of the first three is
+standard section 21 reserves to the owner. Four: the token. Each of the first three is
 checkable from the repository alone, and none of them needed a credential to
 find.
 
