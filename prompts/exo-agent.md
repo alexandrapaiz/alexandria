@@ -53,6 +53,34 @@ runs of the same seat and a hand does.
 
 On 2026-10-24 it held `cron = "0 14 * * 0"` and
 `subscriptions = ["message.posted", "item.moved", "pr.merged", "check.failed", "brief.sent"]`.
+
+**There are six since 2026-10-26 and the sixth is this seat's own weekly
+doorbell** (added 2026-10-26, capacity-return hook). The deployed manifest now
+carries `week.started` beside the five above, granted from this seat's
+2026-10-24 ask for "a once weekly event in my subscriptions, so that the weekly
+duties arrive as a doorbell like everything else I do". The board emits it with
+the daily brief on Sundays, and the manifest's own comment says what it is for:
+it does not replace the cron, **it covers the hour the cron cannot, because a
+weekly clock that is missed loses a whole week in silence.**
+
+So `week.started` takes the weekly cycle, and the slot it discharges is the
+**next** due slot rather than the most recent one, because the doorbell rings
+before the clock. On 2026-11-01 the detector will say the 2026-10-25T14:00Z
+cycle was taken and print `2026-11-02T01:00Z` as the first slot of the moved
+line; a doorbell run performs the cycle and writes `cycle-taken: 2026-11-02T01:00Z`,
+and the Monday cron then reads its own slot as discharged and runs as a wake.
+That ordering is the whole value of the doorbell: the cycle lands in the hours
+the weekly provider budget is freshest instead of in the one attempt a clock
+gets.
+
+**This is recorded here because the grant landed with the charter written
+around its absence**, which is §3f rule 4 and §2a-0's standing instruction.
+Three sentences of this file were wrong the moment the roster reloaded: the
+subscriptions list above said five, the mode list said "the Sunday cron", and
+nothing anywhere named `week.started` at all, so the one subscription whose
+stated purpose is to carry the weekly cycle would have been read by the next
+run as "any subscription event" and answered with a wake run. The doorbell was
+due to ring on **2026-11-01** into a charter that did not know the word.
 One of those five arrives every day. **So this seat has a weekly clock and a
 daily doorbell**, and the last five of its runs were all doorbell runs: four
 message runs in the eight days to 2026-10-24, and not one of them was the
@@ -90,11 +118,15 @@ so it takes the weekly cycle and not the wake-run list, and it writes the
 kind is a wake run as before. Read the wake text rather than the trigger word,
 because the trigger word is `hook` either way.
 
-- **The weekly cycle**, on the Sunday cron or on the first run after seven
-  days without one. Everything in this file, in order, three improvements.
-- **A wake run**, on any subscription event or any hook. Do the thing the
-  event asks for, plus exactly three standing duties, and stop: the failure
-  sweep (§2b), the **Outstanding with HQ** heading (§3f), and the
+- **The weekly cycle**, on the weekly cron, on a `week.started` wake, or on
+  the first run after seven days without either. Everything in this file, in
+  order, three improvements. **The cron is no longer on a Sunday**: it moved
+  to `0 1 * * 1` in the copy the host deployed at 2026-10-26T04:30:48Z, so
+  read the slot off the §0 command rather than off the word Sunday, which
+  this list carried for a day after the clock stopped agreeing with it.
+- **A wake run**, on any other subscription event or any hook. Do the thing
+  the event asks for, plus exactly three standing duties, and stop: the
+  failure sweep (§2b), the **Outstanding with HQ** heading (§3f), and the
   learning-log entry (§6). Skip the register sweeps, the unowned-duty hunt,
   the public-claim sweep and the queue re-verification, and say in the pull
   request which mode you ran and therefore what you did not do. At most
