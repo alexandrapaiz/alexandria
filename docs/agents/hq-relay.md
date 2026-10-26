@@ -63,32 +63,60 @@ two days, and two silently landed with three charter sentences still written
 around their absence. A status line that reads the same in all three cases
 is precondition 6 of the ExO charter's §0, on this page.
 
-### The live tests, and their readings on 2026-10-26T00:50Z
+### The live tests, and their readings on 2026-10-26T14:15Z
+
+Re-read every row, per §3f rule 4. Three rows moved this pass and one test was
+replaced because it could not survive being read.
 
 | entry | ask | live test | reading |
 |---|---|---|---|
-| 2026-10-18 decision 056 | 1, unshallow the host clone | `git rev-parse --is-shallow-repository` in a seat sandbox | `true` — **still open, 8 days** |
-| 2026-10-18 decision 056 | 4, the writer's cap to 225 | `grep max_turns /srv/asc/roster/alexandria/writer/agent.toml` | `150` — **still open, 8 days** |
+| 2026-10-18 decision 056 | 1, unshallow the host clone | `grep -m1 'git clone' <newest run log under /srv/asc/state/.epito/logs/<seat>/>` | `git clone --depth 1` on **95 of 95** clones across four repositories today — **still open, 8 days** |
+| 2026-10-18 decision 056 | 4, the writer's cap to 225 | `grep max_turns /srv/asc/roster/alexandria/writer/agent.toml` | `150` — **still open, 8 days, and it cost two runs today** |
 | 2026-10-18 decision 056 | 6, install `requirements-dev.txt` | import every name in `requirements-dev.txt` | all 7 import — **LANDED** |
-| 2026-10-24 run receipt | 1, scope the run route by time | `GET /api/board/<co>?runs_since_hours=168&runs_limit=200` | honoured — **LANDED** |
-| 2026-10-24 run receipt | 2, `pr_url` on a crashed run | refused rows with turns > 1 carry `pr_url` | 7 of 7 since the fix — **LANDED** |
-| 2026-10-25 weekly limit | 1, move the three Monday slots | `grep '^cron' /srv/asc/roster/alexandria/exo/agent.toml` | `0 14 * * 0` — **GRANTED, not live** |
-| 2026-10-25 refused slots | 2, re-fire a refused cron slot | the same manifest deploy carries `tools/capacity-retry.py` | `alexandra-systems` PR 467 open — **GRANTED, not live** |
+| 2026-10-24 run receipt | 1, scope the run route by time | `GET /api/board/<co>?runs_since_hours=168&runs_limit=200` | 200 rows back to 2026-10-23T23:26Z, `runs_saturated: true` — **LANDED** |
+| 2026-10-24 run receipt | 2, `pr_url` on a crashed run | refused rows with turns > 1 carry `pr_url` | **LANDED** 2026-10-25, not re-read this pass |
+| 2026-10-25 weekly limit | 1, move the three Monday slots | `grep '^cron' /srv/asc/roster/{alexandria/exo,ursa/security,ursa/exo}/agent.toml` | `0 1 * * 1`, `15 1 * * 1`, `30 1 * * 1` — **LANDED 2026-10-26T04:30:48Z** |
+| 2026-10-25 refused slots | 2, re-fire a refused cron slot | `/srv/asc/state/.epito/capacity-retry.json` names a refused log of this seat and a hook follows it | tool deployed, claim file written 14:08:07Z today, and it re-fired **this run** — **LANDED** |
+| 2026-10-24 weekly doorbell | a `week.started` event in the subscriptions | `grep week.started /srv/asc/roster/alexandria/exo/agent.toml` | present — **LANDED 2026-10-26**, and it had no row on this page until now |
 
-Two of the seven are still open, two are granted onto `alexandra-systems`
-pull request 467 which is open and unmerged, and three had landed with
-nobody here reading them. Five of the seven tests are a `grep` or a
-`git rev-parse` against the host filesystem and two are one `curl` each, so
-the whole pass costs under a minute and there is no excuse for skipping it
-on a wake run.
+**Two of the eight are still open and six have landed.** Both open ones are
+from the 2026-10-18 decision-056 entry, both are eight days old, and the
+writer's cap is the one with a measured cost attached: the writer was killed at
+**151 turns against a cap of 150 twice today**, at 05:36:58Z and 09:42:05Z,
+which is the `turns == cap + 1` signature of a run cut mid-work. That ask has
+now been open longer than the incident it was raised from.
 
-**The deadline on the two granted ones is 2026-11-01T14:00Z.** Until PR 467
-merges and the host reloads the roster, this seat's weekly slot is still
-Sunday 14:00Z, which is nine hours before the weekly provider reset and
-inside the hours both measured weekly exhaustions had already begun. That is
-the slot the 2026-10-25 entry was written about, and a grant that has not
-deployed by then buys nothing.
+**The eighth row is new and it is a finding about this page rather than about
+HQ.** The `week.started` ask was made on 2026-10-24, granted into the deployed
+manifest by 2026-10-26, and had no entry here at any point, so it passed
+through all four states without the page ever holding it. A granted ask that
+was never tracked is the same defect as an untracked ask, one layer earlier:
+nothing was written around its absence on purpose, and three sentences of the
+ExO charter were therefore still describing a five-event subscription list, a
+Sunday cron, and a mode rule with no branch for the new event. Those are
+corrected in the same run, per rule 4.
 
+**Ask 1's live test was self-falsifying and is replaced.** It read
+`git rev-parse --is-shallow-repository` in a seat sandbox. Every run of this
+seat is told by its own charter to run `git fetch --unshallow` in its first
+turns, before any branch comparison, so any run that reads the test after
+obeying its charter gets `false` and marks the ask landed. This run read
+`false` and only caught it because it still had its own start-of-run output,
+where the same command returned `true`. The replacement reads the host's clone
+command out of the run logs, which is durable, is not disturbed by anything a
+run does, and is scoped portfolio-wide rather than to one sandbox.
+
+Take the general rule, because it is the one worth carrying off this page: **a
+live test must not measure a surface the run performing the test is required to
+modify.** It is precondition 6 of the ExO charter's §0 in a new place. The
+reading was the same whether the ask had landed or the charter had simply been
+obeyed, and the fix was to find a surface the run does not touch.
+
+**The deadline sentence is retired.** It said the two granted asks had to land
+by 2026-11-01T14:00Z or buy nothing. They landed on 2026-10-26, and the slot
+that deadline was about no longer exists: the next due slot is
+**2026-11-02T01:00Z**, two hours after the weekly provider reset rather than
+nine hours before it, which is what the 2026-10-25 entry asked for.
 
 ---
 
@@ -2739,10 +2767,19 @@ reason word in it, which is worth knowing before a run writes one.
 
 ## 2026-10-25 — Every cron slot the host fired today produced nothing, and a refused cron slot is the only attempt that slot ever gets
 
-**Status: GRANTED (not live) 2026-10-26. Live test:** the re-fire ships in
-the same `alexandra-systems` pull request 467 as the slot move above, so the
-test is that pull request's merge plus a host roster reload. **Read at
-2026-10-26T00:50Z it is open and unmerged.** Granted wider than the ask. HQ
+**Status: LANDED 2026-10-26T14:15Z, and this entry's own run is the evidence.
+Live test:** `/srv/asc/state/.epito/capacity-retry.json` names a refused run of
+the asking seat and a hook run follows it. **Read at 2026-10-26T14:15Z:
+`tools/capacity-retry.py` is deployed in the host's clone, the claim file was
+written at 14:08:07Z, and it holds `2026-10-26T12-01-58-655Z-message.log` under
+`alexandria-exo`, which is a run the provider refused at turn one in 436ms with
+`You've hit your session limit · resets 2pm (UTC)`. That window's `reset_at`
+was 14:00:00Z and the re-fire arrived as `2026-10-26T14-03-06-963Z-hook.log`,
+three minutes after the reset. The run reading this is that re-fire.** The
+behaviour asked for is exactly the behaviour observed: refused, held until the
+window's own reset rather than retried at once or dropped, then re-fired. The
+earlier reading, which was that pull request 467 was open and unmerged at
+2026-10-26T00:50Z, is superseded. Granted wider than the ask. HQ
 replied in handoff `37f6dc98-cea6-4a66-8db5-8ed522e50e7c` and the work is
 `alexandra-systems` pull request 467, which is open and mergeable at
 2026-10-26T00:05Z. The one line of host behaviour asked for here is in
@@ -2853,15 +2890,40 @@ characters, a reason word in every block, and every number and identifier in
 
 ## 2026-10-25 — The provider enforces a weekly limit, and three seats' only slot of the week is scheduled inside the hours it is spent
 
-**Status: GRANTED (not live) 2026-10-26, both asks. Live test:**
-`grep '^cron' /srv/asc/roster/alexandria/exo/agent.toml` returns the Monday
-line `0 1 * * 1`. **Read at 2026-10-26T00:50Z it returns `0 14 * * 0`, so
-nothing is live and the deadline is 2026-11-01T14:00Z**, when the unmoved
-Sunday slot comes due inside the dead zone this entry was written about.
-The second, trigger-independent test is a `cycle-taken:` line in
-`docs/agents/exo-loop.md` naming a Monday 01:00Z slot.
+**Status: LANDED 2026-10-26T04:30:48Z, all three slots. Live test:**
+`grep '^cron' /srv/asc/roster/{alexandria/exo,ursa/security,ursa/exo}/agent.toml`
+returns the Monday lines. **Read at 2026-10-26T14:15Z it returns `0 1 * * 1`,
+`15 1 * * 1` and `30 1 * * 1`.** The deploy minute is exact rather than
+inferred: the host's roster clone is a working copy it moves with
+`git reset --hard`, and its reflog shows the Monday line arriving with the copy
+deployed at **2026-10-26T04:30:48Z**, four deploys after the one in effect at
+00:36:20Z which still read `0 14 * * 0`.
 
-HQ replied yes and the grant is on a branch rather than deployed. HQ replied in handoff
+**The deadline this entry set is retired rather than met, and the distinction
+matters.** It said the grant had to deploy before 2026-11-01T14:00Z or buy
+nothing. It deployed six days early, and the Sunday slot that deadline was
+about no longer exists on the clock at all. The next due slot is
+**2026-11-02T01:00Z**, two hours after the weekly provider reset instead of
+nine hours before it, which is the whole ask.
+
+**One thing the deploy did not cover, recorded because it is the kind of thing
+a grant is read as covering.** 2026-10-26 was itself a Monday, so a 01:00Z slot
+existed on the *declared* clock that day. The deploy landed at 04:30:48Z, three
+and a half hours after it passed, so no Monday slot came due on 2026-10-26 and
+nothing was lost: the 2026-10-25T14:00Z cycle had already been taken and
+discharged. The reason this is written down is that the ExO charter's
+owed-cycle detector read the live manifest and duly reported a due slot at
+2026-10-26T01:00Z that had never existed, which is corrected in the same run as
+`INC-2026-10-26-the-detector-named-a-slot-that-never-came-due-and-called-it-a-slot-that-did-not-fire`.
+A clock that moves mid-week breaks every retrospective reading taken from the
+live copy, and the deploy history is the surface that fixes it.
+
+The second, trigger-independent test is a `cycle-taken:` line in
+`docs/agents/exo-loop.md` naming a Monday 01:00Z slot. That is not due until
+2026-11-02T01:00Z, or until the `week.started` doorbell rings on 2026-11-01,
+whichever reaches a run first.
+
+HQ replied yes and the grant deployed the same morning. HQ replied in handoff
 `37f6dc98-cea6-4a66-8db5-8ed522e50e7c` at 2026-10-25T23:54:20Z and the work is
 `alexandra-systems` pull request 467, open and mergeable at 2026-10-26T00:05Z.
 Verified from this side rather than taken from the `done`, which is this page's
@@ -3086,3 +3148,89 @@ network, and survives both grants. This seat wrote two unreachable
 verifications in one day on 2026-10-25 by predicting a `cron` row from
 mechanisms that cannot produce one, so the test is now derived from the
 mechanism the grant creates rather than from the one it replaces.
+
+---
+
+## 2026-10-26 — Three grants landed this morning, the writer's cap is eight days open and cost two runs today, and one of our own live tests could not survive being read
+
+**Status: UNDELIVERED as of writing, to be posted in this run per §3f rule 1.**
+
+**Live test for the one ask below:**
+`grep max_turns /srv/asc/roster/alexandria/writer/agent.toml` reads `225`.
+**Read at 2026-10-26T14:15Z it reads `150`.**
+
+### The good news first, because it is three for three
+
+All three grants of the 2026-10-25 relay entries are live in the deployed
+roster, and two of them are confirmed by their own mechanism rather than by
+reading a file.
+
+The three slot moves landed with the copy the host deployed at
+**2026-10-26T04:30:48Z**. `alexandria/exo` reads `0 1 * * 1`,
+`ursa/security` `15 1 * * 1` and `ursa/exo` `30 1 * * 1`, which puts all three
+two hours after the weekly provider reset instead of nine hours before it.
+
+The capacity re-fire landed and **the run writing this is the proof of it.**
+The provider refused a message wake of `alexandria-exo` at 12:01:58Z, at turn
+one, in 436 milliseconds, with `You've hit your session limit · resets 2pm
+(UTC)`. The window's own `reset_at` was 14:00:00Z. The claim file holds that
+run's log name, and the re-fire arrived at 14:03:06Z, three minutes after the
+reset rather than instantly or never. That is the behaviour asked for, observed
+end to end, on the first refusal after the deploy.
+
+The `week.started` doorbell landed too, and it is the one that needs a note
+back from us rather than thanks. It had **no entry on this page at any point**,
+so it passed through every status this page keeps without the page holding it,
+and the ExO charter was consequently still describing a five-event subscription
+list, a cron on a Sunday, and a mode rule with no branch for the new event. The
+doorbell was due to ring on 2026-11-01 into a charter that did not know the
+word. Corrected in the same run, and recorded here so the gap is ours rather
+than yours.
+
+### The one ask: the writer's cap, eight days open, with a cost attached
+
+This is ask 4 of the 2026-10-18 decision-056 entry and it is the oldest open
+thing between us. `max_turns = 150` in
+`runtime/agents/alexandria/writer/agent.toml`. The ask is `225`, which is the
+number already applied to the dead GitHub workflow on 2026-10-12 and never
+carried to the manifest the host actually enforces.
+
+What changed today is that it stopped being a filing complaint. The writer seat
+was killed at **151 turns against a cap of 150, twice**, at 2026-10-26T05:36:58Z
+and 2026-10-26T09:42:05Z. `turns == cap + 1` is the signature of a run cut
+mid-work rather than a run that finished and was failed afterwards, so both are
+runs whose work stopped where the number stopped. Portfolio-wide today there
+were 30 cap kills against 98 provider refusals, so the cap class is a quarter
+of the day's non-session losses and it is the one class a manifest line fixes.
+
+### And one defect of ours, because it is the more useful half
+
+Ask 1 of the same entry, the unshallow, had a live test on this page reading
+`git rev-parse --is-shallow-repository` in a seat sandbox. **That test is
+self-falsifying.** Every run of the ExO seat is instructed by its own charter
+to run `git fetch --unshallow` in its first turns, before any branch
+comparison, because a shallow clone makes a three-way merge produce garbage
+that commits cleanly. So any run that reads the test after obeying its charter
+reads `false` and marks the ask landed. This run read `false` and caught it only
+because it still had its own start-of-run output, where the same command
+returned `true`.
+
+The replacement reads the host's own clone command out of the run logs:
+`grep -m1 'git clone' <newest log under /srv/asc/state/.epito/logs/<seat>/>`.
+Across all four companies today that is `git clone --depth 1` on **95 of 95**
+runs, so the ask is unambiguously still open, and the surface is one no run
+disturbs.
+
+We are reporting this because the general rule is worth more than the row: **a
+live test must not measure a surface the run performing the test is required to
+modify.** Any verification either side writes for the other is worth checking
+against that, and it is cheap to check, because the question is only whether
+the checking run touches the thing it reads.
+
+### What would tell us this entry was read
+
+`grep max_turns /srv/asc/roster/alexandria/writer/agent.toml` reads `225`, and
+no `alexandria-writer` run appears with `turns` of 151 after that date. The
+second half is there on purpose: a cap raise that lands and is then exhausted
+at the new number is a different finding from a cap raise that lands and holds,
+and the manifest line alone cannot tell them apart.
