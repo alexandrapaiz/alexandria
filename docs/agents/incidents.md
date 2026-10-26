@@ -22729,3 +22729,57 @@ showed the merge commit, `gh pr view 556/562` confirmed both claims), and
 found nothing left to do. Merged the first pass's PR and stopped rather than
 re-doing its work. No cost beyond this pass's own startup. Ban list checked
 on this entry.
+
+**Third wake, 09:4xZ, same event, this pass.** The same board event fired a
+third time. `gh pr list --state open` found PR #563 (the second pass's own
+PR, above), already merged-worthy: `mergeable: MERGEABLE`,
+`mergeStateStatus: CLEAN`. Verified its two claims live rather than trusting
+the body: `git log --oneline -1 main` showed `f10e8926`, not yet #563's merge
+commit, and `gh pr view 561` confirmed `MERGED`. Merged #563 and moved on
+to the backlog-drain task below rather than writing a third near-duplicate
+narrative. Three wakes for one event is new information about the class:
+the mitigation (look for your own open PR) caught it every time, but it did
+not stop the event from firing a third time, which is a signal worth the
+runtime's attention and not this seat's to fix.
+
+---
+
+## INC-2026-10-26-twentyfour-tier-a-prs-were-held-as-tier-b-and-sat-open-for-up-to-31-hours: a Tier A/Tier B misclassification, not a conflict (2026-10-26, pm seat)
+
+**What happened.** PR #531 (this seat's own Monday ceremony pass) reported
+"22 of my own pull requests sit open and unmergeable by me (Tier B
+condition 1: a PM's own Tier B PR waits for the owner or a chair)." That
+diagnosis was wrong for every one of the 22. `gh pr view <n> --json files`
+on each showed every changed path under `docs/sprints/` or
+`docs/agents/incidents.md` only, which is exactly the Tier A list in
+`docs/standards/pm.md` section 10: "`docs/sprints/`, `docs/agents/` (org-chart,
+pending, frameworks, lessons, incidents)." Tier A's own text is "a seat
+merges **its own PR**," so a PM narrative PR made entirely of knowledge-
+surface files is the textbook case, not the Tier B condition-1 exception
+(which exists for PRs that are *not* Tier A). The 22 were never Tier B at
+all.
+
+**The cost.** The oldest of the 22 (#483) had been open since 2026-10-24
+21:24:19Z, roughly 31 hours by the time this pass checked. Two more (#490,
+#502) had drifted far enough from `main` to need a one-hunk keep-both
+resolve on `docs/agents/incidents.md`'s append point before they would
+merge clean, which is exactly the cost the 2026-10-24 one-file-per-pass
+split was meant to prevent once a backlog accumulates long enough for
+unrelated entries to land between a branch's base and `main`'s tip. None
+of the 22 carried any content that needed a second pair of eyes; each was
+this seat's own narrative of a pass already completed.
+
+**Fixed in this run.** All 22 merged (`gh pr merge --merge`, normal merge,
+no force), the two conflicts resolved keep-both per the standing practice
+for this exact append point, verified clean (`grep` for conflict markers,
+empty) before each push. Two more Tier B candidates not authored by this
+seat (#553 engineer, clean; #559 frontend, conflicting on product code,
+handed back rather than resolved per Tier B condition 5) were reviewed in
+the same pass. Open PRs dropped from 25 to 9.
+
+**What is still open.** Why #531 misread its own output as Tier B is not
+answered here, since it is this seat's own prior pass, and the fix was to
+re-check the rule against the diff rather than diagnose the misread.
+#531 itself is correctly held: it also touches `docs/playbook.md`, which
+is not on the Tier A list, so that PR is genuinely Tier B condition 1 and
+genuinely not this seat's to merge. Ban list checked on this entry.
