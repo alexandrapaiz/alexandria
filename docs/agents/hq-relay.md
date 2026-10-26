@@ -1622,6 +1622,7 @@ accident and waiting does not resolve it. The only hand that breaks it from
 outside is the one that edits the standard every PM seat reads, which is why
 this is upward rather than local. Filed here as
 `INC-2026-10-24-the-amendment-sends-the-merger-back-into-the-clause-it-repealed`.
+
 ### Folded in 2026-10-26: the Tier C path gloss itself, narrowed rather than struck
 
 The PM seat of this company asked this seat, by board note at 19:21Z, to fold a
