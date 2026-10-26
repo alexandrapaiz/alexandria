@@ -21775,3 +21775,66 @@ this repository writes itself**, which is why the live test for both asks is now
 a `cycle-taken:` line in `docs/agents/exo-loop.md` naming a Monday 01:00Z slot:
 it is trigger-independent, it is local, and it survives any further change to
 the clock.
+
+---
+
+## INC-2026-10-26-the-hq-heading-reads-the-same-whether-an-ask-landed-or-not
+
+**Observed** 2026-10-26, ExO seat, second message wake of the day.
+**Class:** an instrument that reads the same whether the news is good or
+bad, which is precondition 6 of `prompts/exo-agent.md` §0. Third site.
+
+**What happened.** The **Undelivered to HQ** heading, which §3f puts in this
+seat's pull request description because that is the one surface the owner
+provably reads, reported empty, nothing or none for **eleven consecutive
+runs** between 2026-10-24 and 2026-10-26. One of those runs recorded the
+first empty reading as news. On the morning of the eleventh, six asks were
+in play with HQ and the heading named none of them.
+
+Two of the six were granted onto `alexandra-systems` pull request 467, open
+and unmerged, so this seat's weekly cron slot is still Sunday 14:00Z and is
+still nine hours inside the dead zone the ask was written to escape. Two
+were delivered and untouched, the host's shallow clone at eight days and the
+writer's cap raise at eight days with six consecutive sweeps finding that
+seat over the 70% trigger. Two had silently landed, the time-scoped run
+route and `pr_url` on a crashed run, with three sentences in this charter
+still telling every run the opposite.
+
+**Why it happened.** §3f's three states were UNDELIVERED, DELIVERED and
+GRANTED, and the heading was keyed to the first. **All three are facts about
+the message.** None of them is a fact about whether the thing exists, so an
+entry left the heading at the moment it was posted, which is the moment its
+age starts mattering. §3f's own stated purpose for the heading is "the point
+is the age rather than the news", and the age it was counting was the age of
+a message rather than the age of an ask.
+
+The rule that was supposed to cover this was §3f rule 4: "check whether each
+open ask has already been built, before you read it." It is the right
+instruction and it had no mechanism. It asked every future run to re-derive,
+from the prose of an ask, what the world would look like if it had been
+granted. It was obeyed by nobody and read as satisfied by everybody, which
+is exactly `INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`
+one layer up: that incident was one granted ask nobody noticed, and this one
+is the absence of any mechanism that would have noticed.
+
+**The fix, shipped in the pull request that registered this.** Four states
+rather than three, with **LANDED** as the only one that is about the world,
+and the heading renamed **Outstanding with HQ** and keyed to it. Every ask
+carries a **live test**: one command, preferring one that needs no network,
+whose reading differs according to whether the thing exists. The test is
+written when the ask is written, because the run that writes the ask is the
+only run that knows what it was asking for. The tests are run every run,
+wake runs included.
+
+**Validated by running it across the whole artifact in the run that wrote
+it**, which is this charter's standing rule for a new mechanical check.
+Seven live tests over the relay page's four entries with live asks: two
+still open, two granted and not live, three landed. Five of the seven are a
+`grep` or a `git rev-parse` against the host filesystem and two are one
+`curl` each, so the pass cost under a minute. The table and the readings are
+in `docs/agents/hq-relay.md` under "The four states".
+
+**What the org grew from it.** A status vocabulary that describes a message
+cannot report on a world. When a register's states are all about the act of
+reporting, every entry reaches a terminal state by being reported, and the
+register empties itself on schedule whatever is happening outside it.
