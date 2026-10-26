@@ -148,3 +148,113 @@ So the trace is not nearly free to cut. Cutting it buys cache and spends
 decode, and the skill currently prices only the first. The skill's own caveat
 already flags claim 80's redundancy as "inferred, not measured"; this is the
 measurement, and it goes the other way.
+
+---
+
+## The best thing in the batch: the null policy's mechanism has a name, and a
+## bound, from a group that was not trying to explain it
+
+Two more of the fifteen, read against each other, supply what Random Attention
+never offered: **why** evicting at random per head works.
+
+### `2606.29563` — Coverage-Driven KV Cache Eviction / K-VEC (Roy et al., RBC Borealis, 28 Jun 2026)
+
+Queued as "a selection rule built on coverage rather than importance scoring,
+which is the one family the null policy does not obviously subsume." It is not
+a rival family. It is the null policy's mechanism, written down on purpose.
+
+The paper's diagnosis, in its own words: existing eviction policies "often
+select overlapping tokens across heads, resulting in reduced coverage across
+the heads of a layer," and its Figure 3 shows the retained set skewing hard
+toward the end of the input "despite the correct answer appearing first." It
+then proves a bound: performance is floored by phi(alpha log C) where C is
+coverage of unique tokens, so **a drop in coverage during eviction forces the
+input-output mutual information down**, which is the mechanism of the collapse.
+Its fix is two modules, cross-head coverage and cross-layer coverage, and it
+buys **up to 10.35 points over existing methods at the same eviction rate and
+memory constraint** on 16 LongBench subsets.
+
+**Per-head uniform random eviction maximises cross-head coverage by
+construction.** Different heads keep different tokens because nothing
+correlates their draws, so the union over heads covers the input. That is
+exactly the quantity K-VEC's theory says bounds accuracy, and K-VEC spends a
+module to get it because importance scoring destroys it: scores are correlated
+across heads, so every head keeps the same tokens.
+
+So the three results stop being three results:
+
+- Random Attention: per-head random is competitive, **and only per head** —
+  the skill already records that the per-head property is the floor of the
+  regime.
+- K-VEC: cross-head coverage is the quantity with the bound, and buying it
+  deliberately is worth up to 10.35 points.
+- `2605.18053`: **learned credit estimation adds nothing** over LRU+protection
+  at every capacity (all p>0.12). Credit learning is better importance scoring,
+  which is the thing that does not help.
+
+**The claim this supports, which no single paper states: once the prompt is
+protected, the remaining headroom is in coverage, not in importance.** Better
+scoring is the direction with the measured null result; coverage is the
+direction with both the bound and the 10.35 points. For this skill that
+replaces a flat "almost nothing beats the null" with a rule that tells a
+builder where to spend: protect bilaterally, then decorrelate across heads, and
+stop buying scorers.
+
+### `2605.09649` — Make Each Token Count / TrimKV (Bui et al., Yale/CUHK, 10 May 2026)
+
+Queued as "the boundary case ... cited by Random Attention as prior work in the
+regime this skill explicitly excludes." It is the boundary case and it is worth
+holding for one sentence that is not a boundary at all: **full-cache attention
+is not always optimal**, because irrelevant tokens dilute attention away from
+the evidence, so eviction can *improve* generation rather than approximate it.
+TrimKV is a trained method (learned retention gates, one global scoring
+projection shared across layers and heads, so tokens from different layers,
+heads and modalities compete for one budget) and therefore sits outside this
+skill's training-free regime. It reports matching or surpassing full-cache
+inference across long-context language, vision-language and multi-turn
+dialogue.
+
+`2512.12008` reports the same inversion independently and empirically: on
+non-reasoning Llama-3.1-8B every compression strategy beats full cache on at
+least one setting, and SnapKV-D beats full cache on reasoning models too. Two
+sources, one direction. **A builder should not treat full cache as the
+ceiling**, which is a different statement from anything in the skill today.
+
+### `2602.10560` — GRU-Mem (abstract only; arXiv serves no HTML)
+
+The only one of the fifteen that did not yield full text, and the exit code
+says so (`tools/read_paper.py` returns 3). Gated recurrent memory over MemAgent
+with two text-controlled gates trained by end-to-end RL with their own reward
+signals: the memory updates only when the update gate opens, and the loop exits
+the moment the exit gate opens. Reported as generally outperforming vanilla
+MemAgent **with up to 400% inference speed acceleration**.
+
+**This matters for delta 2 and the skill should know it.** Delta 2's headline
+is PARSER beating "the strongest sequential-memory baseline" by 5.7 points
+average and 12.0 at 896K. PARSER's baselines are MemAgent and ReMemR1. GRU-Mem
+is a later sequential-memory design that fixes the two defects PARSER's
+argument exploits — indiscriminate memory updates on evidence-free chunks, and
+no exit once the evidence is in hand. Nobody has run PARSER against it. The
+margin in claim 292 is therefore against the state of the art as of PARSER's
+submission, not as of now, and the skill's confidence in "sequential memory
+swings, parallel reading stays flat" rests on the older design.
+
+### `2603.01229` — RMBench (Chen et al., HKU/PKU/THU and others, v4 15 Oct 2026)
+
+Queued as "the benchmark defining the task split" under a contradiction this
+skill resolves. **The line is largely moot and the reason is this skill's own
+history**: the sections that cited that cluster (claims 68-71, 111, 112, 115)
+were cut on 2026-09-30 under ADR-38, so the skill no longer rests on it.
+
+Worth one line anyway, because the finding generalises past robotics and lands
+on how this library decides what a skill should contain. Nine memory-dependent
+manipulation tasks, eight policies in simulation and four on physical hardware,
+plus Mem-0, a modular policy whose memory components ablate independently. The
+result: **the benefit of a memory component depends on whether the same
+information is already reachable elsewhere in the policy hierarchy**, and the
+dominant bottleneck is subtask termination detection rather than memory
+representation. That is the same shape as this library's bare-arm screen — a
+component is worth its cost only where the capability is not already present by
+another route — arrived at independently in a field with hardware. It is
+robotics, so it is an analogy and not evidence for an agent claim, and this note
+says so rather than importing it.
