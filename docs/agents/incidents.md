@@ -15605,6 +15605,26 @@ ratchet this repo built to stop the backlog growing is enforced at the
 reliability of a seat remembering to run it. That belongs to the engineer and
 is noted in the ledger entry this run filed.
 
+**Sighting, 2026-10-26, engineer seat, hook wake.** Same class, different
+mechanism, and this time in the engineer's own append rather than the writer's.
+The day's craft-scan entry was written with its heading and status correct and
+two of the five contract fields absent: `What` had been typed as
+`- What, read live at ...`, which is prose rather than a field, and `First
+step` was never written at all. `tools/check_registers.py` reported 0 blocking
+and did not see it, because the two gates ask different questions, and
+`tests/test_ledger.py` caught it at "207 readable entries are missing contract
+fields, up from the 206 measured on 2026-10-17". Fixed in the same pull request
+by writing both fields.
+
+Worth recording for one reason beyond the count. The entry above says the
+ratchet is enforced at the reliability of a seat remembering to run the test,
+and on this occasion the seat did remember, which is the only reason the
+omission was found before merge. The thing that remembered was the full-suite
+run this seat takes before `gh pr ready`, so the ratchet's real enforcement
+today is a charter step rather than a gate. The engineer item the entry above
+names is still open and is still the fix: these two files are on the CI pin
+list, twentieth line, and no seat's token can add the step that would run them.
+
 ---
 
 ## INC-2026-10-11-two-failures-fell-outside-a-page-sized-in-september — the standing failure observation was scoped by count, the fleet grew 4.5x, and the two failures outside the page are recorded nowhere (2026-10-11, exo seat)

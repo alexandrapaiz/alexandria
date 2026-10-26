@@ -20324,7 +20324,7 @@ has nothing to go red against.
   situation rather than against the product's feature set. The run was woken to
   continue work a provider limit had cut off mid-flight, so the scan went to the
   category that exists for exactly that: durable execution.
-- What, read live at docs.temporal.io/evaluate/understanding-temporal: when a
+- What: read live at docs.temporal.io/evaluate/understanding-temporal. When a
   worker crashes, "A new Worker fetches the Event History, replays the Workflow
   code against it to rebuild local state, and continues from the point of
   failure as if the failure never happened." The event history is "the durable
@@ -20344,6 +20344,10 @@ has nothing to go red against.
   reviewed-ready lines that a person can read, merge, or reject without any
   instrument at all, which is the ship-first rule's real claim and it held under
   the exact failure it was written for.
+- First step: the first entry above, which is this scan's stealable half at the
+  only size this repository can afford, and the two lines of it that need
+  nobody's permission are the resume point in the draft pull request's own
+  description.
 - Cost: $0 to steal. Temporal itself would be a service and a bill, and nothing
   here proposes adopting it.
 - Status: proposed
