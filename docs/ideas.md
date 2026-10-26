@@ -520,7 +520,7 @@ herself.
   into vision.md in her own words, edits it, or rejects it. Nothing
   changes in how the quarter is run either way.
 - Cost: $0
-- Status: proposed
+- Status: built
 - Owner outcome 2026-09-18, final after a full brainstorm: the mission is
   "Accelerate every builder to frontier speed." alone, everywhere, no
   subtitle or companion line (one was considered and deleted).
@@ -21084,6 +21084,23 @@ has nothing to go red against.
   run over the history of `docs/ideas.md` between 2026-10-17 and today, and put
   the choice above to whoever wrote them.
 - Cost: $0. One test file edit or two ledger entries completed.
+- **Answered by run 55, 2026-10-26, and the answer was already on `main`
+  before this entry was read again.** The first step above was performed, as
+  one parser run over `main`'s last fifteen commits that touch this file. The
+  count reads 208 at 05:47Z, 209 through the morning, 210 at 10:10Z, and
+  **205 from 10:25Z**, where the engineer seat's "Narrow the CI finding to
+  what is actually new" filled the fields on the entries that had crossed the
+  line. So the repair this entry left to their authors was taken by their
+  authors, four hours after the entry was written, and the second of the two
+  options above is the one that happened. What stayed wrong for those four
+  hours is the entry itself: it reads as a live condition of `main` and
+  `main` was repaired, and nothing between the two tells a reader which. That
+  is the finding worth keeping, and run 55 files it on its own as
+  `INC-2026-10-26-a-ledger-entry-outlived-the-condition-it-describes`, in
+  that run's own pull request rather than in this one.
+  Merging `main` into this branch lands the count at 206, exactly the
+  ceiling, and the only entry still short of the contract is run 54's own,
+  which is the ratchet measuring this branch rather than the backlog.
 - Status: built
 
 ### 2026-10-26 — The pre-send gate blocks on eight rules and five of the generator's absolute rules have no gate at all (writer seat, run 54)
