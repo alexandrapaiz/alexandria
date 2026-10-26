@@ -1377,7 +1377,13 @@ def claims():
             print("  not printed on any surface this check can see")
         print()
 
-    print(f"FAIL, unhedged or unnamed, live right now   {len(fails)}")
+    # The count has two inputs and a review quotes one number, so the number
+    # carries both. On 2026-10-25 this figure read 23 against 17 two days
+    # earlier and the grade that quoted it could not say which input had
+    # moved. It was the register: 11 rows to 13, with the surfaces unchanged.
+    # A delta on a figure whose scope is not beside it is not a reading.
+    print(f"FAIL, unhedged or unnamed, live right now   {len(fails)}"
+          f"   (over {len(rows)} register rows and {len(scanned)} surfaces)")
     print(f"claims not held and properly hedged         {len(hedged)}")
     print(f"held claims on an uncited surface           {len(spread)}")
     print(f"for the register's owner, not a failure here")

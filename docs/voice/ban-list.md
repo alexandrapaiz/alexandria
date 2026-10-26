@@ -3686,3 +3686,87 @@ gap that the same collision had left empty (incident 25).
     ```
     LANDED docs/voice/check_voice.py: "rules whose own opening line was cut"
     ```
+
+138. The verdict read out of a field that also records what the verdict used
+    to be.
+    This is a tell in a gate rather than in prose, which puts it beside
+    entries 130, 136 and 137. It differs from all three in one way that
+    matters: the other three leave a defect a reader could find by reading,
+    and this one makes the gate say the opposite of what the register says,
+    so reading the register and reading the gate's output both look like
+    diligence and only one of them is right.
+    The shape. A register records a state per row, and a row that changes
+    state says what it changed from, because the transition is the evidence.
+    So the field carries two state words and the gate searching it finds two
+    verdicts. Which one it returns is decided by the order of the list it
+    searches, and the list is written in the order somebody thought of the
+    states.
+    The specimen, live on `main` from 2026-10-24 and read by a grade on
+    2026-10-25. `docs/agents/quality-claims.md` has a row for "the library
+    grows every day" whose state cell is `**contradicted**, moved from
+    `held` 2026-10-11`. `STATES` in `docs/voice/check_voice.py` opened with
+    `held`, so the row resolved to held and the gate printed `ok` beside the
+    sentence on `site/app/page.jsx:33`. The register's own measurement in the
+    next cell is that the corpus had not grown for 3.35 days.
+    Why the permissive verdict is the one that wins, and it is not chance.
+    `held` is the state a row leaves, because a claim that was always false
+    was never recorded as held, so the word appears in the history of exactly
+    the rows whose verdict is now something else. It is also the state that
+    means the sentence ships as written. A substring search over a field that
+    narrates its own history is therefore biased toward shipping, on the rows
+    that have most recently been found false.
+    The tell, as a question to put to a gate rather than to prose. Does this
+    gate read a field that a person also writes prose into, and if that prose
+    mentions another possible value, which one does the gate return? Where
+    the answer is "the first one in the list", the gate has no verdict, it has
+    an ordering.
+    Added 2026-10-26, writer run 51. Enforced by a command, because the
+    defect is in the resolver and never in the text either side of it:
+    ```
+    python3 docs/voice/check_voice.py claims
+    ```
+    The scope is now the state cell's first bolded span, which is where this
+    register writes its verdict, and the rest of the cell is the row's
+    history. Where two verdicts survive inside that span the strictest is
+    read and the row prints AMBIGUOUS, because a gate that guesses in the
+    shipping direction is worse than no gate. Thirteen cases pin it, run
+    before the register is read. Swept: one other first-match-wins resolution
+    of a verdict exists in this seat's files and there is none, so the count
+    is one and the entry closes on its own specimen.
+    ```
+    LANDED docs/voice/check_voice.py: "the strictest reading is taken and the"
+    ```
+
+139. The figure with two inputs, quoted with neither.
+    A gate that reads a register against a set of surfaces produces a count
+    that moves when either side moves. The count is the headline, the two
+    inputs are printed above it, and a review quotes the headline, so the
+    delta arrives in the grade with nothing to attribute it to.
+    The specimen is this seat's own grade of 2026-10-25, which recorded that
+    `check_voice.py claims` reported 23 unhedged claims "against 17 on
+    2026-10-23, which is six more than a run that drafted nothing for these
+    surfaces can account for", and then said in its own words that the delta
+    was not diagnosed. It was diagnosable and it cost one command: the
+    current gate run against the tree of 2026-10-23 returns 17, so no part of
+    the rise was the gate and no part of it was the copy. The register went
+    from 11 rows to 13 when the ExO seat's split landed on 2026-10-24, and
+    two more rows of claims to check found four more sentences to fail.
+    Why it reads as news about the copy. The count's name is about the
+    surfaces, "unhedged or unnamed, live right now", so a run that has
+    drafted no copy reads a rise as copy getting worse somewhere it was not
+    looking. The other input is a file this seat may not edit, kept by
+    another seat, on its own weekly cycle, and a row added there raises this
+    seat's number without a word of copy changing.
+    The tell, as a question to put to a figure before quoting it. How many
+    things have to hold still for this number to mean what its name says, and
+    is the number printed next to them? That is L-A47 in the company
+    standard, an instrument's scope is part of its answer, applied to the one
+    figure this seat quotes most.
+    Added 2026-10-26, writer run 51. Enforced by a sentence rather than a
+    gate, because the inputs were already on screen and the failure was
+    quoting the headline away from them:
+    ```
+    LANDED docs/voice/check_voice.py: "(over {len(rows)} register rows and {len(scanned)} surfaces)"
+    ```
+    The count now carries its own scope on its own line, so a grade that
+    quotes the figure quotes the two numbers that produce it.
