@@ -8479,7 +8479,7 @@ graphs.
   `tools/skill_eval.py --check` rejects and `--skill` refuses to run. Three open
   pull requests carry eight of these files each: #151, #152 and #159. The same
   files also carry `subject_model` and `judge` at the top level and no `policy`
-  block at all, so rule 1 of `docs/product/skill-validation.md` §V5 is unmet on
+  block at all, so rule 1 of `docs/product/skill-validation.md` section V5 is unmet on
   every one of them: the repetitions and the threshold are not registered
   anywhere, and `normalize` quietly supplies a default of three repetitions,
   which is the run choosing its own n.
@@ -14366,6 +14366,18 @@ that triggered it, per the charter.
   `policy.require_certificates: true` becomes settable, and `ams-t5` moves back
   to the documented form.
 - Cost: $0.
+- Update, 2026-10-26 (engineer seat): the first step is built, inside sprint
+  2026-10-26 item 2, as `skill_eval.criterion()`. `--check` moved from "4 of
+  265 rubric criteria are tied to a certificate" to "31 of 265" and from 416
+  findings to 389, the 27 cleared being `harness-engineering`'s, which had
+  carried a certificate on every criterion all along. `section` was being
+  dropped by the same literal and is carried now too; no suite writes it yet,
+  so that half was latent. The two edits this entry asks of the suite files,
+  turning `require_certificates` on and moving `ams-t5` back to the documented
+  form, are the skill seat's: the engineer charter does not write into
+  `skills/`. **The status line is left as the owner set it**, because this
+  entry was never moved to `accepted` and `proposed` to `built` is not a
+  transition this seat may make.
 - Status: proposed
 
 ### 2026-10-13 — Nothing in CI runs the two checks that grade the skill library (skill seat)
@@ -20663,4 +20675,142 @@ has nothing to go red against.
   not to the directory being non-empty.
 - First step: one of the two shapes above, chosen, then about ten lines.
 - Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The $0 route to the first differential eval result is one secret, not a paid account and two (engineer seat, message run)
+- Trigger: sprint 2026-10-26 item 2 asked for `agent-memory-selection`'s first
+  real with-versus-without result. Every document in this repository states the
+  blocker the same way, and `skills/agent-memory-selection/SKILL.md` states it
+  in the skill's own provenance block: "no route to either eval arm (no
+  `GROQ_API_KEY` in `.github/workflows/agent-skill.yml`, no benchmark provider
+  in `pipeline/budget.py`)". The second half of that sentence is wrong.
+  `pipeline/budget.py`'s table holds three Groq models priced at $0.00 per
+  million, `openai/gpt-oss-120b`, `openai/gpt-oss-20b` and `qwen/qwen3.8-27b`,
+  so a subject and a judge that differ, which is the one thing ADR-36 refuses
+  to run without, both exist on the free tier.
+- What: the run that produces the first result needs one credential and no
+  budget. Measured on this branch rather than estimated:
+  `python3 tools/skill_eval.py --skill agent-memory-selection --plan --subject
+  openai/gpt-oss-20b` prints "$0.00 a call, so the $0.75 cap cannot bind". The
+  numbers behind it are 42 subject calls at about 92,600 tokens, 45 judge calls
+  at about 135,900, a worst-case with-skill request of 3,023 tokens against the
+  free tier's 6,800-token margined minute, and roughly 34 minutes of wall clock
+  that is all pacing. The subject's day lands on `openai/gpt-oss-20b` and the
+  judge's on `openai/gpt-oss-120b`, which matters because the corpus fallback's
+  whole day is sized against the latter in `budget.fallback_daily_draw`, so
+  splitting the two arms across two models keeps an eval run out of the
+  fallback's allowance.
+- And the cheapest first result is cheaper still. The 7 findings `--check`
+  reports against this skill are all ADR-40 item 6 audits, which are judge-only:
+  7 calls, about 25,000 tokens, 13 percent of one free-tier day, three minutes.
+  That closes every open finding on the skill the sprint picked and needs no
+  subject arm at all.
+- The one thing it is not: free in the pre-registered sense. The suite registers
+  `kimi-k2.6`, rule 1 of `docs/product/skill-validation.md` section V5 says the run
+  copies the policy rather than choosing it, and as of this branch a
+  `--subject` override is recorded in `result.policy_overrides` and fails
+  ADR-37's gate. So the free route is the skill seat's to pre-register, in the
+  suite, before the run. The engineer's half is done and the authoring half is
+  not the engineer's to do.
+- First step: the owner puts `GROQ_API_KEY` in the engineer and skill seats'
+  runtime (one value, already held as the Modal secret named `groq`), and
+  `docs/agents/pending-workflow-changes.md` item 12 is amended to say what it
+  actually unblocks: not a CI step on a workflow decision 056 retired, but 7
+  judge calls that close the last findings on one skill.
+- Cost: $0, and this entry exists partly to say so, because the ask has read as
+  "a funded Moonshot account plus two secrets" since 2026-09-30.
+- Status: proposed
+
+### 2026-10-26 - A correction should not be able to leave a verbatim copy of what it corrected (engineer seat, message run)
+- Trigger: `INC-2026-10-26-the-corrected-sentence-was-corrected-in-one-register-of-two`,
+  filed on this branch. PR #542 measured that the reviewer panel's gap is four
+  things, corrected `docs/product/reviewer-panel.md`, and named the second copy
+  of the disproved sentence in its own pull request body: "`README.md`'s status
+  checklist says the same sentence." `README.md` is not among #542's seven
+  changed files, so the front page carried "the merge is the only slice left"
+  for a day after that was measured to be false, by the same seat, in writing.
+- What: a check in `tools/check_registers.py` that reads the diff rather than
+  the tree. For every line a commit removed from a document under `docs/`, ask
+  whether a near-identical line still exists anywhere in `docs/` or
+  `README.md`, and report the survivors. Near-identical rather than exact,
+  because the two copies in this instance were not byte-equal: one said "the
+  only thing between ADR-13 and a working loop" and the other "the merge is the
+  only slice left". A normalized shingle comparison over sentences is enough
+  and needs no model. The output is a finding and not a failure, for the reason
+  the certificate checks give: a gate that fails on every rewording would be
+  turned off within a week.
+- Why it is this check and not a rule: the charter already tells every seat to
+  check the registers before shipping, and this failure happened inside a run
+  that did exactly that. The thing missing was not attention. It was that
+  nothing between the correction and the duplicate ever opened the second file,
+  which is incident 20's sentence word for word.
+- First step: the removed-line extraction and the shingle comparison, against
+  #542's own diff as the fixture, since it is a known positive with a known
+  answer.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: OSF Registries makes a deviation from the plan its own timestamped document, where this harness writes it into the result it deviated on (engineer seat, message run)
+- Trigger: the daily craft scan, taken against this run's own build. The run
+  spent the day in a pre-registered A/B harness, so the scan went to the
+  product category that sells pre-registration itself rather than to a research
+  tool: OSF Registries, the Center for Open Science's registry, read live at
+  help.osf.io and osf.io/registries.
+- What: a registration on OSF is frozen at submission and cannot be edited. A
+  change to the plan afterwards is not an edit to the registration; it is a
+  separate object, an update with its own timestamp, its own justification
+  field and its own DOI, attached to the original and rendered beside it. The
+  registry shows the chain. The stealable thing is where the deviation lives.
+  This harness now records a moved dial in `result.policy_overrides` and
+  carries it into `history`, which is better than the nothing it recorded this
+  morning, but the record still lives with the run that deviated. OSF's record
+  lives with the plan, so the question "has anybody ever run this suite off its
+  registered policy" is answered by opening the registration rather than by
+  opening every result. Here the equivalent is the suite file, and the suite
+  file is the skill seat's.
+- What alexandria does better, and it is the half OSF deliberately does not
+  do: disclosure is not the gate. A registered report may deviate from its plan
+  and still publish, as long as it says so; the reader is left to decide what
+  the deviation did to the claim. `tools/skill_eval.py --gate` refuses. As of
+  this branch a delta measured on a subject the suite did not register does not
+  clear ADR-37's gate at all, which is a stronger instrument than a disclosure
+  field and the right one when the thing downstream of the verdict is an
+  automatic merge rather than a human reader.
+- First step: a `deviations` array in the suite's own file, appended to rather
+  than replaced, one entry per run that moved a dial, written by the runner at
+  the moment it moves one. It is three lines in `tools/skill_eval.py` and it
+  writes into `skills/<slug>/evals/`, which the engineer charter does not write
+  to, so it is a proposal for the skill seat and the owner rather than an
+  engineer task.
+- Cost: $0 to steal. OSF Registries is free and nothing here proposes adopting
+  it.
+- Status: proposed
+
+### 2026-10-26 - The pacing rule is enforced twice, by two gates that disagree (engineer seat, message run)
+- Trigger: `INC-2026-10-26-the-pacing-rule-has-two-gates-and-they-do-not-agree`,
+  filed on this branch. Adding `tools/skill_eval.py` to
+  `budget.PACED_CALLERS` passed `budget.check_fallback_pacing()` and
+  `python3 pipeline/budget.py`, both clean, and then failed
+  `tests/test_corpus_drain.py::test_every_paced_caller_tells_pace_how_big_its_call_was`,
+  which asserts the same guard plus one thing more: the literal
+  `cap.last_tokens` in each paced caller's source.
+- What: move that source assertion into `budget.check_fallback_pacing`, beside
+  the regex that already reads each caller's source for a bare `pace(x)` call,
+  so the function whose docstring tells a seat the source is the only place to
+  ask the question is the function that actually asks all of it. The test then
+  keeps its one line, `check_fallback_pacing() == []`, and stops holding a rule
+  of its own. Three paragraphs of that docstring exist to explain why the check
+  lives in the source, and a reader who follows them lands in a function that
+  enforces most of the rule.
+- Why it is worth a day rather than a commit: this changes what fails a deploy.
+  `python3 pipeline/budget.py` is the pre-deploy check, so folding an assertion
+  in means a caller that passes the test today but not the stricter reading
+  would start blocking deploys. The right order is to confirm the four existing
+  callers all satisfy the folded version first, which they do by inspection and
+  should by test, and only then move it.
+- First step: a test that asserts the two enforcers agree on every entry in
+  `PACED_CALLERS`, which fails today on nothing and would have failed on this
+  run's first attempt. That is the cheap half and it is worth landing on its
+  own, because it converts an invisible disagreement into a red tick.
+- Cost: $0
 - Status: proposed
