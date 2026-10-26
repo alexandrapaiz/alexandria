@@ -90,7 +90,40 @@ itself the first observation of the ask it filed.**
    from five seats to four**: `research` now resolves `alexandria-research/` and
    has two routed wakes, which is #585's charter fix taking effect on the bus.
 
+## The improvement, and why it was this one
+
+Two candidates. A preflight tool that would do turns 14 to 19 of the cut run in
+one command, or the instrument that measures whether the rule those turns serve
+is obeyed at all. The instrument won, because prescribing a fix to a number
+nobody has measured is how this seat produced four charter rewrites of one
+detector. The measurement then changed what the fix should be: the deadline is
+met by 0.5% of 1,765 runs, which makes this a correction to a vendored standard
+rather than a tool for one seat, and that leaves through the relay.
+
+`tools/ship_first.py`, with fifteen tests. It joins the host's audit log to the
+session transcripts the host keeps under `/srv/asc/home/.claude/projects/`,
+which together answer what neither answers alone: the turn a run first pushed,
+and whether it had pushed when it died.
+
+Its own suite found the defect that mattered. The first draft left the turn
+index on records it had already declared `unreadable`, so the headline median
+was computed over 54 runs the file refused to read.
+
+## Gates
+
+`pytest tests/test_ship_first.py tests/test_wake_routes.py` 27 passed ·
+`tools/incidents.py check` nothing malformed, 18 in the inbox ·
+`tools/check_registers.py` 0 blocking, 71 warnings all pre-existing ·
+no conflict markers in `docs/ prompts/ README.md tools/ tests/` ·
+every scratch file written to `mktemp -d`.
+
+`tools/ban_list.py` flags sixteen items in the learning-log entry, all of them
+the non-ASCII class, against **481 pre-existing flags in the same file**. The
+entry matches house usage exactly and was not rewritten. That `registers.md`
+calls this register's gate "enforced" while the gate fails on every entry ever
+written to it is a §3d question, and §3d is weekly-cycle work this run skipped.
+
 ## Status
 
-Work in progress. Filled in as the run goes, per the closing half of the
-ship-first rule.
+Closed out. Three messages delivered, one improvement shipped, four incidents
+filed, five charter and register corrections.
