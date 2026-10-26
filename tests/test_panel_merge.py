@@ -327,3 +327,115 @@ def test_a_clean_pass_files_a_green_status():
     state, desc = pm.status_of(result)
     assert state == "success"
     assert str(pm.PANEL_SIZE) in desc
+
+
+# --------------------------------------------- the proposal's own text (slice 4)
+
+def file_rows(verdict, reviewer="validator", detail="d"):
+    return [{"target": "skills/x", "reviewer": reviewer, "verdict": verdict,
+             "target_sha": SHA_A, "detail": detail}]
+
+
+def test_a_file_half_pass_counts_only_from_the_reviewer_whose_halves_agree():
+    """The validator's suite asserts its two halves return one verdict.
+
+    So a pass from its file half is a pass. The provenance reviewer's file half
+    runs a subset of its checks and says so in its own build note, which makes
+    the same word mean something weaker, and `proposal_findings` has to keep
+    the two apart or the panel's trail says more than the panel measured.
+    """
+    whole = [f.as_dict() for f in proposal_of(file_rows("pass", "validator"))]
+    partial = [f.as_dict() for f in
+               proposal_of(file_rows("pass", "provenance"))]
+    assert "note" in severities(whole, "proposal-review")
+    assert "unknown" in severities(partial, "proposal-review")
+
+
+def proposal_of(rows):
+    """`proposal_findings` without the adversary's standing unknown."""
+    return [f for f in pm.proposal_findings(rows)
+            if "no file half by design" not in f.detail]
+
+
+def test_a_file_half_fail_is_a_fail_from_any_reviewer():
+    """A check that can fail from files alone is a fact about the file."""
+    for reviewer in ("provenance", "validator"):
+        findings = [f.as_dict() for f in
+                    proposal_of(file_rows("fail", reviewer))]
+        assert severities(findings, "proposal-review") == ["fail"]
+
+
+def test_the_adversary_is_always_an_unknown_from_a_checkout():
+    """Its build note argues it has no file half, so nothing can fake one.
+
+    Nothing the adversary decides is in the SKILL.md, because a disagreement is
+    a row somebody wrote after the skill was merged. A reviewer silently
+    omitted here would let a panel of two read as unanimous, which is the one
+    thing `panel_consensus` was written to prevent.
+    """
+    findings = [f.as_dict() for f in pm.proposal_findings(file_rows("pass"))]
+    adversary = [f for f in findings if "adversary" in f["detail"]]
+    assert [f["severity"] for f in adversary] == ["unknown"]
+
+
+def test_a_file_half_review_never_opens_the_merge_gate():
+    """Even three file-half passes do not merge, and that is deliberate.
+
+    `panel_verdicts` is the audit trail ADR-13 replaces an approval with. A row
+    filed from half a reviewer would make the trail claim a duty nobody ran, so
+    the file halves inform and the database rows decide.
+    """
+    rows = [dict(r, reviewer=who) for who in pm.REVIEWERS
+            for r in file_rows("pass")]
+    result = pm.judge(OPEN_PR, ["skills/x/SKILL.md"], {"skills/x": SHA_A},
+                      [], env={pm.MERGE_TOKEN: "x"}, proposal=rows)
+    assert result["merge_allowed"] is False
+
+
+def test_the_reviewers_run_against_a_directory_rather_than_the_checkout():
+    """`review_proposal` has to point the reviewers at the branch's own tree.
+
+    This runs the two credential-free halves against this repository's real
+    skills, which is the same call `--review` makes against a materialized pull
+    request. A reviewer that ignored `skills_dir` would review `main` here and
+    pass this test only by accident, so the assertion is the target it named.
+    """
+    rows = pm.review_proposal(ROOT / "skills", ["skills/agent-memory-selection"])
+    assert {r["reviewer"] for r in rows} == {"provenance", "validator"}
+    assert {r["target"] for r in rows} == {"skills/agent-memory-selection"}
+    assert all(len(r["target_sha"]) == 64 for r in rows)
+
+
+def test_the_status_write_is_refused_by_the_seats_token_with_the_grant_named(monkeypatch):
+    """A 403 here is a permission, not an outage, so it must not read as one.
+
+    Probed 2026-10-26: reads of `/commits/{sha}/statuses` return 200 and writes
+    to `/statuses/{sha}` return 403 for the token every seat holds. A traceback
+    would send the next run to look for a broken endpoint.
+    """
+    import urllib.error
+
+    def forbidden(path, token=None, method="GET", body=None):
+        raise urllib.error.HTTPError(path, 403, "Forbidden", {}, None)
+
+    monkeypatch.setattr(pm, "api", forbidden)
+    out = pm.post_status("c" * 40, pm.judge(OPEN_PR, ["skills/x/SKILL.md"],
+                                            {}, [], env=NO_TOKENS))
+    assert out["refused"] == 403
+    assert "Commit statuses" in out["needs"]
+
+
+def test_the_comment_carries_every_blocking_finding_and_claims_nothing_more():
+    """ADR-13's "verdicts attached" is this, and it must not read as a gate.
+
+    The panel holds no required check in this repository, so a comment that
+    looked like one would change how a human merges without any decision
+    saying so.
+    """
+    result = pm.judge(OPEN_PR, ["pipeline/weekly.py"], {}, [], env=NO_TOKENS)
+    body = pm.comment_body(result)
+    assert "advisory" in body
+    assert "no required check" in body
+    for f in result["findings"]:
+        if f["severity"] != "note":
+            assert f["check"] in body
