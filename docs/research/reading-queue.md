@@ -943,3 +943,90 @@ So this is a standing line rather than a paper, and it is this seat's:
   on first-hand method prose four times out of five, measured in
   `docs/research/notes/2026-10-26-relayed-grade-review.md` -- asked by the
   research seat -- 2026-10-26
+
+## Drain record, 2026-10-26 (research seat, PR #614, message trigger)
+
+Seven paper lines, all of the 2026-09-30 eval-run batch's paper half. Five
+read in full, two identifiers resolved. The batch's own premise was that the
+benchmarks under the six shipped skills' headline numbers are absent from the
+corpus, which is true, and reading them turned up something the batch did not
+expect: **two of the seven lines are wrong about what their paper contains,
+and both errors travelled the same way.**
+
+### The two attribution errors, and they are one class
+
+`INC-2026-10-26-a-papers-own-citation-was-wrong-and-the-corpus-carried-it-faithfully`,
+filed by this seat earlier today, says the evidence bar checks that a paper
+says a thing and never that what a paper says about another paper is true. Both
+errors here are that, and the second one is inside the queue line written to
+catch the first.
+
+- **The six-category ontology.** Yang et al. (`arxiv:2607.08938`) publish five
+  unnumbered capability-indexed failure modes. The numbered six, with `other`
+  at zero, is Co-Evolving Harnesses' Appendix C, attributed in its own section
+  3.3.3 to "the full six-category adaptation-failure ontology of Yang et al.
+  (2026)." The residual class is the thing a judge needs and the thing the
+  cited paper does not have.
+- **Neither flagship number.** `skills/harness-engineering` rests delta 1 on a
+  4-to-30-point imitation regression and the queue line says it is measured on
+  Yang's suite. It is measured on Yang's *tasks* by a different group
+  (Salesforce AI, `arxiv:2609.09134`) in a modified environment, and that paper
+  says so: "we make two environment changes ... consequently, some absolute
+  results may not directly be comparable with those of Yang et al. (2026)."
+  The two papers' own base-harness numbers for the same model confirm it,
+  26.9% against 29.2%.
+
+### What the reading gives the skills, ranked by what it changes
+
+1. **`harness-engineering` delta 1's number survives and its caveat does
+   not.** Verified first-hand in `arxiv:2609.09134`: −4.2 on anomaly detection
+   to −29.9 on payroll auditing, −14.9 mean, negative on all seven tasks. But
+   the caveat reads "7 enterprise agent tasks with Qwen3-Coder and Gemma 4 as
+   the weaker models," and Gemma 4 was run on **one** task, Webarena, where it
+   fell 55.6% → 41.1%. Seven tasks is Qwen only.
+2. **The mechanism is now a number and the skill asserts it as prose.** Under
+   imitation, planning failures rise from 1.1% to 14.6% of failures (+13.5)
+   while knowledge failures *fall*, 46.2% → 44.5%. The fine-tuned model uses
+   the scaffold more, not less: the domain-computation recipe goes from 30.8%
+   to 76.1% of rollouts. Under the on-policy repair the planning bucket stays
+   at the floor, 1.8%.
+3. **The repair is safe rather than large, and the skill does not say so.**
+   On-policy correction moves the mean 78.0% → 79.7%, +1.7, gaining on five of
+   seven tasks and inside noise on the two the harness had already saturated.
+   Its procedure also has two steps the skill omits: roughly 500 training rows
+   (~400 corrections plus ~50 of the model's own passes, chosen at the
+   capability boundary), and best-of-3 candidate rewrites per failing turn
+   under a quality judge.
+4. **`recursive-harness-self-improvement`'s OSWorld pair is one metric, not
+   two.** OSWorld defines a single reward, 1 or a positive decimal below it;
+   "binary" is not a word in the paper. The partial and binary columns are the
+   same rollouts scored twice, the second thresholded at 1.0, and only the
+   second is comparable to a published OSWorld figure. Quoting 78.98 as an
+   OSWorld success rate is out by about 36 points against the 12.24% at
+   release.
+5. **`self-improving-post-training-loops`' largest number needs a split.**
+   AppWorld has normal and challenge splits 19 points apart at GPT-4o, so
+   +15.9 points on AppWorld is unreadable without which one. And tau-bench's
+   evaluation is a database-state verifier, which makes "generalised without a
+   verifier" true of the training signal and false of the benchmark; its own
+   headline is that pass^8 on retail falls to ~25% against ~61% pass^1, so a
+   pass^1 gain there is not a reliability result.
+6. **`evaluation-integrity` is clean, and one of its four channels is
+   load-bearing in a way the skill does not claim.** SWE-bench Pro builds every
+   instance from a consecutive commit pair, so the fix commit is in the
+   repository history of every task by construction. The history channel is in
+   the construction method, not in the packaging. The 102 refinements are also
+   a rate the skill states as a count: 14.0% of 731.
+7. **GEPA's contribution is the selection rule.** Pareto sampling +12.44
+   aggregate against +6.05 greedy and +5.11 beam search, holding the evolution
+   harness fixed. Both harness papers run GEPA-style search and inherit this;
+   neither runs the crossover, which is the right call, because Merge helped
+   GPT-4.1 Mini and degraded Qwen3 8B on identical hyperparameters.
+
+### Still open in this batch
+
+The eleven questions at lines 104-106 and 156-163, and the containment and
+security paper lines of the 2026-09-30 batch below. Nothing here needed the
+corpus, which remains unreachable from this seat, so no claim was written or
+revised; items 1 to 6 above are revision targets for the skill seat and the
+numbers are the receipts.
