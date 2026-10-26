@@ -20240,3 +20240,110 @@ has nothing to go red against.
   the smallest form it has here.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-26 - A run that is cut off should leave a resume point, not a report nobody wrote yet (engineer seat, hook run)
+- Trigger: this run's own first fifteen turns. Its predecessor was refused at
+  turn 89 with a draft pull request open and 1,849 lines on it, and the only
+  description of where that run had got to was the twelve commit subjects on
+  the branch. Reconstructing the state from those, re-merging `main`, and
+  resolving a register conflict by hand cost this run most of an hour before it
+  built anything. The run note that explains a run is written at the end, as a
+  report, which is exactly the artifact a run that never reaches the end does
+  not have.
+- What: the run note already exists, `docs/runs/YYYY-MM-DD-seat-trigger.md`, and
+  it is the right file in the wrong tense. Make its first two lines a resume
+  point written in the run's first commit and rewritten whenever the next action
+  changes: the branch, the item being worked, and one sentence of what the next
+  run should do if this one does not come back. Cheap to keep because it is two
+  lines, and worth keeping only because it is written before it is needed. The
+  craft scan below is the same shape in a system built for it: Temporal's worker
+  recovers by replaying a durable event history and continuing from the point of
+  failure, and the reason that works is that the history is written during the
+  run rather than summarised after it.
+- First step: one paragraph in this charter's "Ship first, then work" section
+  and a line in the run-note template, which is a charter edit and therefore the
+  owner's merge rather than this seat's. The ledger entry is the proposal. The
+  mechanical half a seat can do today is to write the resume point into the
+  draft pull request's description at the first push, which costs nothing and
+  needs nobody's permission.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The suite's greenness is a function of when it runs, and nothing measures the size of that function (engineer seat, hook run)
+- Trigger: a test in this seat's own 34-test suite of nineteen hours ago passed
+  when it was written at 00:50Z and was red at 00:57Z with no commit in between.
+  Its fixture asserted a state defined as "younger than ninety minutes" against
+  the wall clock. Filed as
+  `INC-2026-10-26-a-test-was-green-for-ninety-minutes-because-its-fixture-aged`,
+  and fixed by pinning that one file's clock. The class is not fixed. 2,065
+  tests now run on this repository and the honest statement about the rest of
+  them is that nobody knows which ones have this property.
+- What: run the suite twice in `checks.yml`, the second time with the clock
+  moved a week forward, and read any test that changes answer as the finding.
+  There is no mystery about what to do with the result: a test whose verdict
+  depends on the date is either pinning the wrong thing or testing the clock,
+  and both are a two-line fix once named. The cost is one more suite run, about
+  six minutes, on a workflow that already runs on every pull request touching
+  the pipeline. The reason to do it as a second run rather than as a lint is
+  that a lint has to guess which calls are time-dependent and a second run does
+  not have to guess at all.
+- First step: find out whether `faketime` is available on the runner image,
+  because if it is this is one `env:` block and a matrix entry. If it is not,
+  the fallback is a `conftest.py` fixture that offsets a single injected clock
+  the tools already accept, which is narrower and still catches the class that
+  produced this entry.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The host could record the branch a run pushed, and then no seat needs a resolver (engineer seat, hook run)
+- Trigger: the resolver this run wrote. The host's trailer carries
+  `pr=<url>` scraped from a run's final answer, so a run cut off before its
+  final answer reports `pr=-` however much it pushed, and today's reading of one
+  such run called a shipped cycle lost. The repair that shipped is a reader that
+  weighs the absence and settles it against the pull request list, which is
+  twelve lines of matching on a branch prefix and two time bounds. It works and
+  it is a workaround.
+- What: the host knows two facts the trailer does not carry. It knows the branch
+  the run pushed, because the push went through its own credential, and at
+  teardown it can ask GitHub for the pull request whose head is that branch. One
+  more field, `branch=<ref>`, would be enough on its own: every seat's branch
+  carries its seat name and the day, so a reader that has the branch needs no
+  prefix guessing and no time window. This is portfolio machinery and it serves
+  every seat of every company on the host, which is the argument for doing it
+  once there rather than four times in four repositories.
+- First step: the relay ask through `docs/agents/hq-relay.md`, carried by the
+  ExO seat, with today's resolver named as the thing it would replace rather
+  than as a description of the problem. Pair it with the entry of 2026-10-25
+  about where the reader itself should live, because both are the same question
+  about the same boundary.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Temporal recovers a cut-off worker by replaying a log it wrote during the run, where this seat recovers by reading commit subjects (engineer seat, hook run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  situation rather than against the product's feature set. The run was woken to
+  continue work a provider limit had cut off mid-flight, so the scan went to the
+  category that exists for exactly that: durable execution.
+- What, read live at docs.temporal.io/evaluate/understanding-temporal: when a
+  worker crashes, "A new Worker fetches the Event History, replays the Workflow
+  code against it to rebuild local state, and continues from the point of
+  failure as if the failure never happened." The event history is "the durable
+  log behind Durable Execution: a complete, ordered record of everything that
+  happened in a Workflow Execution," and the price of it is a constraint, that
+  "Workflow code must be deterministic because Temporal reruns it to rebuild
+  state after a failure." The stealable thing is not replay, which an agent run
+  cannot have, because an agent's turns are not deterministic and rerunning them
+  is a different run. It is that the record a successor needs is written
+  continuously as a cost of doing the work, rather than composed at the end as a
+  report. The first idea above is that, at the only size this repository can
+  afford: two lines.
+- What alexandria does better: the durable artifact here is the pull request,
+  and it is the deliverable rather than a trace of the deliverable. A crashed
+  Temporal workflow leaves an event history that needs its own UI to read and
+  has shipped no product. The run cut off at turn 89 last night left 1,849
+  reviewed-ready lines that a person can read, merge, or reject without any
+  instrument at all, which is the ship-first rule's real claim and it held under
+  the exact failure it was written for.
+- Cost: $0 to steal. Temporal itself would be a service and a bill, and nothing
+  here proposes adopting it.
+- Status: proposed

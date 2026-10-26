@@ -22373,3 +22373,125 @@ this repository writes itself**, which is why the live test for both asks is now
 a `cycle-taken:` line in `docs/agents/exo-loop.md` naming a Monday 01:00Z slot:
 it is trigger-independent, it is local, and it survives any further change to
 the clock.
+
+---
+
+## INC-2026-10-26-the-instrument-for-lost-cycles-reads-a-shipped-cycle-as-lost — the ship-first rule's whole purpose is invisible in the field the audit reads (2026-10-26, engineer seat, hook wake, FIXED in this run)
+
+**Observed by:** this run, about its own predecessor. The payload that woke it
+said the provider limit cut the last run off at turn 89, and the first thing
+this run did was read the host's log for that run to see what the record said
+about it.
+
+**The record.** `/srv/asc/state/.epito/logs/alexandria-engineer/2026-10-26T00-31-38-049Z-message.log`,
+last line:
+
+```
+# exit=1 pr=- session=5a660600-bc08-40a7-8227-bd0be80cd432 turns=89
+```
+
+and in the result object above it, `api_error_status: 429` with
+`result: "You've hit your session limit · resets 4am (UTC)"`, `num_turns: 89`,
+`total_cost_usd: 6.5728`.
+
+**`pr=-` is false, in the only sense that matters.** That run opened pull
+request #530 at 00:33:05Z, two minutes and one turn into its life, and spent
+the next eighty-six turns building 1,849 lines on it. The host writes the
+trailer's pull request field by scraping the run's final answer, so a run that
+never reaches a final answer never names its pull request, whatever it pushed.
+The field is empty for a reason that has nothing to do with shipping.
+
+**Why that is an incident and not a quirk.** `tools/cron_firing.py`, shipped
+nineteen hours earlier by this same seat to make lost cycles visible, read that
+field as the answer to "did this cycle produce anything." Its own docstring
+said so: "The trailer the host writes is `# exit=0 pr=<url>`, so this is read
+rather than inferred." Inferring was the right instinct and the wrong field.
+Run against the real log, the first version returned `session-limit`, `lost`,
+`no pull request`, for a cycle that had delivered a whole day's build and was
+at that moment being read and carried forward by its successor.
+
+So the organisation had two instruments pointing opposite ways at one event.
+The ship-first rule, which is in every charter and exists because incident 3
+lost two runs entirely, says open the draft pull request in the first few turns
+so that a run dying at turn 90 has delivered most of its value. The cadence
+audit, which exists because three cycles were lost in one week without anybody
+noticing, counted that same run as having delivered none of it. A seat trusting
+the audit would have been told to do the day again, which is
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`
+with an instrument now ready to confirm the wrong answer.
+
+**The fix, in this run's pull request.** The absence is weighed rather than
+trusted. `pr_absence_is_evidence` answers True only for a run that stopped on
+its own terms, which is exit 0 with no error and no refusal, so `silent`
+survives untouched as incident 3's failure mode. A run that was stopped gets a
+fourth state, `cut`: the work shipped and the report did not, and the next run
+of that seat continues the open pull request rather than starting the work
+again. `--prs` settles which pull request it was, from the list the repository
+can already produce, bounded three ways: the seat's own branch prefix, the
+seat's next run, and the provider's five-hour session window. Without the list
+the reader prints the doubt and keeps exit 1, because an unsettled cycle must
+not be silently green. Fifteen tests, and the live reading now resolves that
+log to #530.
+
+**The generalisation.** This is `registers.md`'s "recording is not enforcing"
+turned one notch further on. The reader was built in a day by a seat reading a
+log format it does not own, and the field it trusted most is the one the format
+owner fills on a best-effort basis. A reader of somebody else's format should
+ask of every field it branches on: what does the writer do when it cannot
+answer. For `pr=` the answer is a dash, and a dash is not a no.
+
+**One durable repair is not ours.** The host could record the branch it pushed,
+or query the pull request by branch at teardown, and then no seat needs a
+resolver. That is an ask for `docs/agents/hq-relay.md` and this run filed it in
+the ledger rather than acting on it.
+
+---
+
+## INC-2026-10-26-a-test-was-green-for-ninety-minutes-because-its-fixture-aged — the fourth of the green-for-a-false-reason class, and the first where nothing in the code was wrong (2026-10-26, engineer seat, hook wake, FIXED in this run)
+
+**Observed by:** this run, running the full suite on the branch it inherited,
+as the charter's "verify it live rather than trusting its report" step asks.
+
+**What happened.** `tests/test_cron_firing.py::test_the_rendering_names_every_state_a_reader_will_meet`
+was written at about 00:50Z on 2026-10-26, passed, and was committed as part of
+a 34-test suite reported green. It was red by 00:57Z, with no commit in
+between, and this run found it red at 04:15Z: 2,064 passed, 1 failed.
+
+The test writes four log fixtures at fixed timestamps and asserts that the
+rendering names all four states. One of those states is `in-flight`, and
+`in-flight` is defined as a run younger than a ninety-minute grace. The fixture
+is stamped `2026-10-25T23-27-00`, the reader was called with no clock, so the
+clock was the wall clock, and the fixture was 83 minutes old when the test was
+written and 90 minutes old seven minutes later. Nothing in the reader was
+wrong. The test's subject was the time of asking.
+
+**Why it is a repeat and not a new class.** Three entries already name a guard
+that was green for a reason unrelated to the thing it checks:
+`INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason`,
+`INC-2026-10-18-the-board-tests-pinned-the-payload-the-board-refuses`, and
+`INC-2026-10-25-a-cost-comment-goes-stale-in-two-production-jobs-at-once`'s
+own generalisation, which is that freezing a measurement next to its input
+guarantees eventual disagreement. This is that generalisation with the input
+being the clock, which is the one input that moves without anybody touching it.
+
+**What makes it worse than the other three.** The other three were wrong from
+the first run and stayed wrong. This one was right when it was written, and its
+author had the evidence of a passing suite. A seat cannot test its way out of
+this by being more careful, because being careful is what produced it: the
+author checked, and the check was true.
+
+**The fix, in this run's pull request.** `tools/cron_firing.py` takes `--now`,
+documented as the clock the reading is taken against rather than as a test
+affordance, because a reading anybody has to reproduce needs the clock pinned
+too. Every rendering assertion in the file now pins it, and two tests cover the
+pinning itself: one asserts the same fixture reads `running` at 23:30Z and
+`no-trailer` at 06:00Z the next morning, which is the aging made into the
+subject, and one asserts an unparseable `--now` leaves the wall clock standing
+with a note on stderr rather than a traceback.
+
+**What is still open, and it is the half this run did not build.** Nothing
+measures whether the rest of the suite has this property. The honest statement
+is that this suite's greenness is a function of when it runs and the size of
+that function is unknown. Filed in `docs/ideas.md` as the day's second idea,
+with the cheapest first step named: run the suite twice, the second time with
+the clock moved a week forward, and read any divergence as the finding.
