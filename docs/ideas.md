@@ -20715,3 +20715,32 @@ has nothing to go red against.
 - Cost: $0 to steal. OSF Registries is free and nothing here proposes adopting
   it.
 - Status: proposed
+
+### 2026-10-26 - The pacing rule is enforced twice, by two gates that disagree (engineer seat, message run)
+- Trigger: `INC-2026-10-26-the-pacing-rule-has-two-gates-and-they-do-not-agree`,
+  filed on this branch. Adding `tools/skill_eval.py` to
+  `budget.PACED_CALLERS` passed `budget.check_fallback_pacing()` and
+  `python3 pipeline/budget.py`, both clean, and then failed
+  `tests/test_corpus_drain.py::test_every_paced_caller_tells_pace_how_big_its_call_was`,
+  which asserts the same guard plus one thing more: the literal
+  `cap.last_tokens` in each paced caller's source.
+- What: move that source assertion into `budget.check_fallback_pacing`, beside
+  the regex that already reads each caller's source for a bare `pace(x)` call,
+  so the function whose docstring tells a seat the source is the only place to
+  ask the question is the function that actually asks all of it. The test then
+  keeps its one line, `check_fallback_pacing() == []`, and stops holding a rule
+  of its own. Three paragraphs of that docstring exist to explain why the check
+  lives in the source, and a reader who follows them lands in a function that
+  enforces most of the rule.
+- Why it is worth a day rather than a commit: this changes what fails a deploy.
+  `python3 pipeline/budget.py` is the pre-deploy check, so folding an assertion
+  in means a caller that passes the test today but not the stricter reading
+  would start blocking deploys. The right order is to confirm the four existing
+  callers all satisfy the folded version first, which they do by inspection and
+  should by test, and only then move it.
+- First step: a test that asserts the two enforcers agree on every entry in
+  `PACED_CALLERS`, which fails today on nothing and would have failed on this
+  run's first attempt. That is the cheap half and it is worth landing on its
+  own, because it converts an invisible disagreement into a red tick.
+- Cost: $0
+- Status: proposed

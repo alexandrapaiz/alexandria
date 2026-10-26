@@ -1600,6 +1600,9 @@ def test_the_seed_reaches_the_client_only_where_the_provider_honours_one():
 
     class FakeCap:
         spent = 0.0
+        # The real `llm.Cap` sets this in __init__, so a fake that omits it
+        # makes `Subject.ask` look optional about reading it.
+        last_tokens = 0
 
         def require(self):
             pass

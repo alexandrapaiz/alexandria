@@ -2134,7 +2134,17 @@ class Subject:
                                           max_completion=2 * max_tokens,
                                           temperature=EVAL_TEMPERATURE,
                                           available=self.available, seed=seed)
-        self.last_tokens = getattr(self.cap, "last_tokens", 0) or 0
+        # `cap.last_tokens` spelled out rather than fetched with getattr, and
+        # the spelling is load-bearing twice. It is the provider's own count of
+        # the call just made, which is the only number `llm.pace` can size a
+        # pause from honestly, and
+        # `tests/test_corpus_drain.py::test_every_paced_caller_tells_pace_how_big_its_call_was`
+        # asserts this literal appears in the source of every entry in
+        # `budget.PACED_CALLERS`. A defensive getattr satisfied
+        # `budget.check_fallback_pacing()` and failed that assertion, which is
+        # two gates on one rule disagreeing about what counts as paced; see
+        # INC-2026-10-26-the-pacing-rule-has-two-gates-and-they-do-not-agree.
+        self.last_tokens = self.cap.last_tokens or 0
         return answer
 
 
