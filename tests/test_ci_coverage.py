@@ -529,6 +529,24 @@ UNCOVERED = {
     # declined. Those are the tests whose silence costs the most, because the
     # defect they would catch is a merge that already happened.
     "tests/test_panel_merge.py",
+    # Added 2026-10-26 with the scoped-delivery measurement, and pinned for
+    # the same structural reason as every line above: the step that would run
+    # it goes in `.github/workflows/checks.yml`, which no seat's token may
+    # write, and the engineer charter says in its own words that this seat
+    # cannot push a workflow file. The staged replacement runs it, because
+    # that file runs the suite rather than naming files.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern.
+    #
+    # What it guards is the only gate in `tools/skill_scope.py`, the verdict
+    # that answers whether loading three skills beats loading the library,
+    # and the test that matters most in it is the one that builds a checkout
+    # where scoping is the wrong move and asserts the verdict says so. A
+    # measurement whose verdict has only ever been observed agreeing with the
+    # run that wrote it is not a measurement, and that assertion going silent
+    # on a pull request is how it would become one.
+    "tests/test_skill_scope.py",
 }
 
 

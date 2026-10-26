@@ -20814,3 +20814,117 @@ has nothing to go red against.
   own, because it converts an invisible disagreement into a red tick.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-26 - Calibrate the scope cutoff instead of choosing it (engineer seat, hook run)
+- Trigger: `tools/skill_scope.py`, shipped on this branch, keeps a candidate
+  when its BM25 score clears half the top score, and three at most. Both
+  numbers were fixed before the suite ran and neither was fitted, which is
+  the honest way to run a first measurement and is also the reason the
+  result cannot say whether a different cutoff would be better. The run
+  measured four scope misses out of 49 golden cases, 8.2%, and has no way to
+  say what a cutoff of 0.3 or a K_MAX of 2 would do to that number or to the
+  74% context saving it bought.
+- What: sweep `KEEP_RATIO` and `K_MAX` over the 67 trigger cases and publish
+  the frontier, one point per policy, so the cutoff is chosen from a curve
+  rather than from a hunch. The craft scan below is the shape to copy and the
+  trap to avoid: Semantic Router's `fit()` learns a map from raw score to the
+  probability that the top route is right, which makes a cutoff mean
+  something a reader can reason about, and it fits on the same utterances it
+  then evaluates on, which makes the number it prints an in-sample number. So
+  the sweep here holds out the cases it does not fit on, and the published
+  policy carries both halves.
+- First step: a `--sweep` flag that prints the frontier and writes a bundle,
+  with the 67 cases split by suite so no skill's own cases set the cutoff
+  that then scores them. Half a day, and it needs no new instrument.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The flat baseline is the finding, so build the near-neighbour distractor pool (engineer seat, hook run)
+- Trigger: today's measurement, `docs/evals/2026-10-26-scoped-skill-delivery.md`.
+  The unscoped baseline held 83.7% recall at zero distractors and 83.7% at
+  twenty, where the market brief of 2026-10-16 reports a fall from 73.6% to
+  27.4%. The twenty distractors are the real Clerk skills vendored under
+  `.agents/skills/`, and they are too far from this library's subject to take
+  a single case from it. The brief's collapse needs near neighbours, and this
+  checkout cannot stage one.
+- What: a distractor pool drawn from the agent-engineering skills the market
+  seat already tracks in `docs/market/landscape.md`, the skillbay and
+  ComposioHQ directories among them, filtered to the subject this library
+  serves rather than away from it. Then the sweep says something about the
+  regime the product will actually ship into, which is a reader who has
+  installed three agent-skill libraries and not one.
+- Why it matters more than the win: the scoped arm beat the unscoped arm on
+  this tree, and the honest reading of that win is small, because the failure
+  it was built to prevent did not happen here. A measurement that cannot
+  stage the failure it is about reports a safety margin and not a rescue, and
+  the entry that says so is worth more than the one that claims the rescue.
+- First step: collect twenty to forty real descriptions from the public
+  directories, store them the way `skills/_validation/decoys.json` stores the
+  null panel, and re-run the sweep against both pools side by side. The
+  distractors are somebody else's published text, so the file records where
+  each one came from and the date it was read.
+- Cost: $0. Public directories, read once, no account.
+- Status: proposed
+
+### 2026-10-26 - Scoped delivery exists and is not yet what the plugin does on install (engineer seat, hook run)
+- Trigger: sprint-2026-10-26 item 3 asked for the mechanism and its numbers,
+  and both shipped on this branch. The word in the item's title is "by
+  default", and the default is still the whole library, because the two
+  places the default lives are not this seat's to write. A router entry in
+  the library is skill content and belongs to the ADR-13 panel. A scoping
+  hook in `.claude-plugin/plugin.json` is not something the host exposes
+  today, so the manifest has nowhere to put one.
+- What: name which of the two it is, then do that one. The panel route is a
+  router skill whose description is the only text a harness holds, and whose
+  body names which of the nine to load; `tools/skill_scope.py --query` is
+  already the mechanism behind it and the router skill is the surface. The
+  host route is a question for the platform rather than a build, and the
+  honest version of it is a sentence in `docs/product/install.md` saying what
+  a reader can run by hand until the host has the hook.
+- First step: the owner or the PM picks the route, because the panel route
+  spends the skill seat's week and the host route spends nobody's. Then one
+  of the two is a day.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Semantic Router turns a raw score into a probability before it thresholds, where this scope thresholds the raw score (engineer seat, hook run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  build. The run shipped a two-stage skill router with a cutoff at half the
+  top BM25 score, so the adjacency is the most mature open-source product
+  that does exactly this job for tools rather than for skills:
+  aurelio-labs/semantic-router, read live at
+  [github.com/aurelio-labs/semantic-router](https://github.com/aurelio-labs/semantic-router)
+  and
+  [docs.aurelio.ai](https://docs.aurelio.ai/docs/semantic-router/user-guide/features/threshold-optimization),
+  2026-10-26.
+- What is worth stealing: the threshold is not a score. In its v1 routers a
+  `confidence_threshold` sits on the router and on each route, with a
+  per-call override, and `fit()` learns a map from the raw retrieval score to
+  the probability that the top route is the right one, by Platt or isotonic
+  calibration, returning a report that carries accuracy and calibration error
+  side by side. Two things fall out of that and both are missing here. A
+  cutoff stated as a probability means something a reader can argue with,
+  where `KEEP_RATIO = 0.5` means only "half of whatever the top score
+  happened to be" and is not comparable across two engines or two libraries.
+  And a calibration error is the number that says whether the threshold is
+  trustworthy at all, which a raw-score cutoff cannot report because it never
+  claims a probability to be wrong about.
+- What alexandria does better, and it is the half the fitting buys at a
+  price: `fit()` and `evaluate()` are documented against the same
+  `(utterance, target route)` examples, and nothing in the product names a
+  held-out split, so the accuracy a router reports after fitting is an
+  in-sample number. This instrument cannot do that. `SCOPE_VERSION` and
+  `ENGINE_VERSION` are printed in every bundle, the policy history in both
+  files says why each retired version was retired, `lexical/3` sits
+  implemented and deliberately not adopted because the run that wrote it also
+  changed the artifact it judges, and `tools/skill_eval.py --gate` refuses a
+  delta measured off the registered policy outright. Their accuracy is
+  probably better than ours. Our number is evidence and theirs is a
+  measurement of the data it was tuned on, and when the thing downstream of
+  the verdict is an automatic merge rather than a human reader, that is the
+  side to be on.
+- First step: there is one, and it is the entry above about calibrating the
+  cutoff, so this scan does not open a second.
+- Cost: $0 to steal. Semantic Router is open source and nothing here proposes
+  adopting it.
+- Status: proposed
