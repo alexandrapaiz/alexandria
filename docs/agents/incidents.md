@@ -23193,3 +23193,29 @@ finding, and the test for it is cheap: ask of every verdict your instrument
 prints whether a reader could act on it without leaving the tool. Where the
 answer is no, the tool is one input short of its own job, and that input is
 usually on the same filesystem. Ban list checked on this entry.
+
+---
+
+## INC-2026-10-26-pm-woken-for-the-578-review-event-and-583-had-already-answered-it - sixth instance of the duplicate-wake class, built on rather than repeated (2026-10-26, pm seat)
+
+Another instance of
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`,
+same class as the 558 and 566 instances three and four items earlier. The
+board event was "the skill seat's run finished, PR #578, merge it or say
+what it needs" bundled with the standing draft-PR lane item naming #579,
+#560 and #582. This seat's own prior pass had already opened PR #583
+(14:54:11Z) answering the same bundle: #579 merged as part of an eight-PR
+Tier A sweep, #560 triaged with a handoff comment to writer, #578 held
+Tier C and left alone because it had just been superseded by #582.
+
+This pass found #583 open per the "own last run may still be open" rule,
+verified live rather than trusting its report (confirmed #579 `state:
+MERGED`, confirmed the handoff comment present verbatim on #560, confirmed
+`prompts/skill-extract.md` still the Tier C path on the now-live #582), and
+built on it rather than repeating the work: merged #583's branch in, proved
+containment with `git log origin/<branch> ^HEAD` printing nothing, and
+closed #583 as superseded by this pull request. The incremental find this
+pass added was new rather than a repeat of #583's: PR #580 (exo), opened
+after #583, touches `prompts/exo-agent.md` and is held by the identical
+unrepaired Tier C path defect, which is now two seats' pull requests stuck
+on the same unamended list in the same hour. Ban list checked on this entry.
