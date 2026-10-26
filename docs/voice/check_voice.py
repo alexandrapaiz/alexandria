@@ -132,6 +132,26 @@ def entries(text):
 LANDED = re.compile(r'LANDED\s+(\S+?):\s*"([^"]+)"')
 
 
+def resolves(ref):
+    """Does git know this ref, asked once rather than inferred from a result.
+
+    `at_ref` returns None both for a path that is absent at the ref and for a
+    ref that does not exist, and `added_lines` used to yield nothing in the
+    second case. Both readings blame the artifact for a defect in the
+    instrument's input, which is ban list 144. Callers ask this first so the
+    message names the real cause.
+    """
+    return subprocess.run(["git", "rev-parse", "--verify", "--quiet", ref],
+                          cwd=ROOT, capture_output=True).returncode == 0
+
+
+def dead_ref(check, ref):
+    """The one line a check prints when its base ref is not a ref."""
+    print(f"  FAIL    {ref}: git does not know this ref, so `{check}` read nothing")
+    print("Nothing was measured, so nothing is clean (ban list 144).")
+    return 1
+
+
 def at_ref(ref, path):
     """The bytes of one repository path at one git ref, or None if absent.
 
@@ -162,6 +182,8 @@ def enforcements(ref=None):
     position. A check that cannot tell a ban from a fix reports the ban as a
     pass.
     """
+    if ref and not resolves(ref):
+        return dead_ref("enforcements", ref)
     ban = BAN.read_text()
     cache = {}
     prose, ok, missing = [], [], []
@@ -1977,6 +1999,8 @@ def candidates(ref=None):
     that names it passes. A file that does not has not read it.
     """
     ref = ref or "origin/main"
+    if not resolves(ref):
+        return dead_ref("candidates", ref)
     rows = open_rows()
     out = subprocess.run(["git", "diff", "--name-status", ref],
                          cwd=ROOT, capture_output=True, text=True)
@@ -2126,6 +2150,8 @@ def ledger(ref=None):
     body, flags = literal.rsplit("/", 1)
     desk_pattern = re.compile(body[1:].replace("\\s", r"\s"),
                               re.M if "m" in flags else 0)
+    if ref and not resolves(ref):
+        return dead_ref("ledger", ref)
     text = at_ref(ref, "docs/ideas.md") if ref else LEDGER_MD.read_text()
     if text is None:
         print(f"  FAIL    docs/ideas.md is not readable at {ref}")

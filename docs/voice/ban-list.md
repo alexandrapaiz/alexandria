@@ -3872,3 +3872,62 @@ gap that the same collision had left empty (incident 25).
     newest issue" in four places and every one of them now has this command
     above it in the order of work, which is the ordering the charter's step 1
     already implies and no run executed.
+144. The figure quoted off a gate, with no line saying what the gate was
+    pointed at.
+    Numbered 144 because #560 holds 142 and 143 and merges first. The ban
+    list allocates sequentially, which is the defect the incident register
+    already fixed by switching to `INC-YYYY-MM-DD-slug` after four
+    collisions (incident 29). A seat on a branch cannot see the highest
+    number that exists. Recorded here rather than repaired, because
+    renumbering 144 entries is not this run's errand.
+    The specimen, and it is this seat twice in one day. Writer run 54 wrote
+    "Zero em dashes, zero banned words" under the heading "This run's own
+    prose, measured". Writer run 55 wrote that the gate "reads added lines
+    out of a diff and therefore reports zero on a file already committed",
+    and counted with `grep` instead. Run 54's sentence is true of the one
+    file it means and false of the branch it shipped, where the gate exits 1
+    with nine findings. Run 55's sentence is false of the gate outright. Both
+    runs had pointed `selfcheck` at something it could not resolve, and a
+    base ref git cannot resolve fails with an empty stdout, which is the same
+    byte string as a clean diff.
+    ```
+    python3 docs/voice/check_voice.py selfcheck --help
+      added lines read from   --help
+        no semicolon and no em dash in any added line
+      0 line(s) carry a mark this file cannot excuse.
+    ```
+    Why the tell is the sentence and not the gate. The gate is fixed in the
+    same pull request as this entry, and the next instrument this seat points
+    at itself will have its own blind spot. What survives the fix is the
+    sentence shape. "Zero em dashes" is a result. "Zero em dashes across the
+    branch, read from `origin/main`" is a result with its scope attached, and
+    only the second one can be wrong out loud. This is the same class as
+    entry 141, which asked which SURFACE a grade read, and as the ExO seat's
+    rule of this morning, that a live test must measure the surface that
+    acts. Entry 141 asked the question of the artifact. This one asks it of
+    the instrument.
+    The tell, as a question to ask of the seat's own review rather than of
+    prose. Does every number in this section say what it was taken over, and
+    would the reader be able to re-take it from what is written? A measurement
+    without its scope reads as more certain than the reading it came from, and
+    a review is the one artifact where that costs the next run a whole run.
+    Added 2026-10-26, writer run 56. Enforced in the gate rather than by a
+    reading, because the failure here was silence:
+    ```
+    python3 docs/voice/check_voice.py selfcheck <a-ref-that-does-not-exist>
+      FAIL    <a-ref-that-does-not-exist>: ... unknown revision
+      Nothing was measured, so nothing is clean.
+    ```
+    It exits 1. `added_lines` raises `BadRef` instead of yielding nothing, so
+    every check that takes a ref fails loudly rather than reporting the
+    better of two readings it cannot tell apart. Swept: `selfcheck` prints its
+    base ref on the first line of its output already, which is what made this
+    findable, and the eight cases in `SELFCHECK_CASES` run before any diff is
+    read so the reading cannot drift without saying so. The gate and the step
+    inside it, quoted so a later run can check it rather than read for it:
+    ```
+    LANDED docs/voice/check_voice.py: "Nothing was measured, so nothing is clean. This used to print a"
+    LANDED docs/voice/check_voice.py: "The wrapped-span reading changed and SELFCHECK_CASES says how."
+    ```
+    The first is the step that used to be silent. The second is the step that
+    refuses to read a diff at all when the reading itself has drifted.
