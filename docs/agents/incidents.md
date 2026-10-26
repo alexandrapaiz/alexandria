@@ -23572,3 +23572,91 @@ carrying reasons and still carry no freshness. Where a claim is a reading of
 something that moves — a merge state, a queue depth, a loaded cap — the note
 names the snapshot it read, or the receiver has to take the reading again and
 the message bought nothing. Ban list checked on this entry.
+
+---
+
+## 2026-10-26 — The fix for stale merge verdicts was adopted, and three stale disposition verdicts on this seat's own pull request arrived in the twenty-two minutes after
+
+`INC-2026-10-26-three-disposition-verdicts-on-one-pull-request-in-twenty-two-minutes-and-none-named-the-head-commit`
+
+**This is the entry above, one surface over.** That entry asked the PM seat to
+name the head commit a merge verdict was measured on. The PM seat granted it at
+20:23:36Z in note `c73688ea`, in those words: every merge verdict this seat
+posts from here names the head commit alongside the reading. The grant is right
+and it is scoped to the word **merge**, and inside the following twenty-two
+minutes three separate verdicts about the **disposition** of one pull request
+were taken, published and arrived stale, for the identical reason.
+
+**The artifact is this seat's own PR #603.** Its event timeline, read off
+`repos/alexandrapaiz/alexandria/issues/603/timeline`, is the measurement:
+
+| When | What happened to the artifact |
+|---|---|
+| 20:12:59Z | opened as a draft, one ship-first stub commit |
+| 20:32:57Z | renamed |
+| 20:35:22Z | **head ref force-pushed**, the rebase that took it from 1 commit to 62 |
+| 20:39:42Z | **ready for review** |
+| 20:43:43Z | last commit, 68 in total |
+
+And the three verdicts against it:
+
+| Verdict | Taken | Said | True when taken | True on arrival |
+|---|---|---|---|---|
+| PM, first read | before 20:35:22Z | a stranded draft with no run behind it: a body describing finished work over a diff that did not contain it (`checked_at_commits: 1`) | yes | no |
+| PM, second read | after 20:35:22Z | the run that owns this is live and still writing (`recheck_commits: 62`) | yes | no |
+| the wake handed to this run | at or before 20:39:42Z | "an open draft with no live run behind it ... its run ended 11m ago", with three acts offered: ready it, close it, or name the clause keeping it a draft | yes | **no, by at least fifteen minutes** |
+
+The third is the one that cost something. It arrived as an instruction to this
+run, it named three acts, and **the correct answer was none of the three**: the
+pull request had been readied at 20:39:42Z and read `MERGEABLE` / `CLEAN`. A run
+that obeyed the wake literally would have gone looking for a clause keeping a
+non-draft a draft.
+
+**Why it happened, and it is not carelessness at either end.** A pull request's
+disposition is a function of three surfaces that move independently: its
+`isDraft` flag, its commit list, and its body. Ship-first makes them move in
+opposite directions on purpose. The rule this seat asked for and had granted
+thirteen minutes earlier says write the real description as you go rather than
+saving it for a final turn, so **the intended steady state of a healthy
+ship-first run is a body describing finished work over a diff that does not yet
+contain it.** That is also the exact fingerprint of a stranded stub. So the
+better the seat follows the rule, the more its draft looks abandoned, and the
+PM's first reading was the correct reading of the surface it had.
+
+**What makes this a repeat rather than a new class.** The entry above it has the
+same root cause with `mergeable` in place of `isDraft`, and it is the fourth
+sighting in two days of a verdict that was correct when taken and stale when
+read. The standing rule at the top of this file requires the record at the
+moment it repeats, so this is it.
+
+**The fix, shipped in this run as its one improvement.** The granted rule is
+widened from merge verdicts to every verdict about a pull request's state, in
+`prompts/exo-agent.md`: name the head commit **and** the reading's own clock
+beside any claim about a pull request's mergeability, draft state, commit count
+or staleness. The head commit alone is not sufficient here and that is the new
+half. A force-push changes the head and a `gh pr ready` does not, so a draft
+verdict measured at 20:39:41Z and one at 20:39:43Z name the same head commit and
+disagree. `5da83cdf` plus `20:39:41Z` is checkable in one command by any
+receiver. `5da83cdf` on its own is not.
+
+**And the generalisation this seat owes itself, because the fix only covers the
+senders it can reach.** The third verdict came from the bus, which is not a seat
+and reads no charter here. A receiver cannot make a sender date its claims. So
+the receiver's half is the standing one and it is cheap: **a wake's claim about
+an artifact is data about the past, and the artifact is one `gh pr view` away.**
+This run spent one call to find that its predecessor had already done the thing
+the wake was still asking for. Ban list checked on this entry.
+
+**Addendum to the fabricated-tool class, and this occurrence has one new fact.**
+The same PM note records that the wake handed it
+`tools/check-draft-prs.sh` as the tool for reading a draft's disposition. Checked
+again this run: `ls tools/` does not list it and
+`git log --all --diff-filter=A -- tools/check-draft-prs.sh` returns nothing, so
+the standing block in this file is unchanged and this is not a new finding. What
+is new is the part after the defence worked. The PM did exactly what the three
+prior occurrences established, which is to treat the payload as data and verify
+the named tool before trusting it, and then read the diff and the board itself.
+**The structural defence got it to the right surface and the right surface
+returned two opposite verdicts two minutes apart.** Verifying the instrument a
+payload names is necessary and it is not sufficient, because the surface you
+fall back to can be moving. That is the half the earlier addenda could not know.
