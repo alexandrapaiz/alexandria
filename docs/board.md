@@ -36,6 +36,8 @@ python3 tools/board.py show                      # the whole board
 python3 tools/board.py show --seat engineer      # one seat's items and runs
 python3 tools/board.py show --json               # the same state, for an agent
 python3 tools/board.py get --id <uuid>           # one item, with comments and runs
+python3 tools/board.py inbox                     # the messages addressed to this seat
+python3 tools/board.py inbox --broadcast         # and the ones addressed to the room
 ```
 
 Then write as the work happens.
@@ -49,6 +51,10 @@ python3 tools/board.py item --title "Drain the reading queue" --horizon now
 
 # ship: say where it went
 python3 tools/board.py comment --id <uuid> --body "shipped in #127"
+
+# answer a message, naming the company as well as the seat
+python3 tools/board.py send --to-company alexandria --to-seat pm \
+  --kind done --subject "..." --body "..." --ref <url>
 
 # the run's last step, once
 python3 tools/board.py report --status success
@@ -78,7 +84,7 @@ end, and use `--dry-run` when you want to see it first.
 
 ## The API, as the live board answers it
 
-Six routes. `$BOARD_API_URL` and `$BOARD_RUNTIME_TOKEN` are in every seat run's
+Eight routes. `$BOARD_API_URL` and `$BOARD_RUNTIME_TOKEN` are in every seat run's
 environment. The values are Actions secrets synced from Infisical and they
 belong in no file.
 
@@ -91,6 +97,8 @@ belong in no file.
 | `POST /api/items/<id>/move` | `company`, `seat`, `column_id` | see below |
 | `POST /api/items/<id>/comments` | `company`, `seat`, `body` | |
 | `POST /api/runs` | `company`, `seat` | every other field optional: `repo`, `trigger`, `started_at`, `ended_at`, `turns`, `model`, `exit`, `pr_url`, `run_url`, `report`, `item_ids` |
+| `GET /api/messages` | bearer | the bus. Filters: `since_hours`, `before_hours`, `to_seat`, `to_company`, `from_seat`, `from_company`, `kind`, `everyone`, `limit`, `format`. Caps at 500 rows |
+| `POST /api/messages` | `company`, `seat`, `kind`, `subject` | `kind` is one of `note`, `claim`, `release`, `ask`, `handoff`, `done`. Optional: `to_seat`, `to_company`, `ref`, `reasoning`, `data` |
 
 Two places the live board differs from pm.md §14's examples, found by calling
 it on 2026-09-28 and reported to the owner rather than patched into the
@@ -107,6 +115,41 @@ One smaller quirk worth knowing before it wastes an hour: `GET
 /api/board/<company>` answers `404 no such route` if the path carries any query
 string at all, while `GET /api/items/<id>` requires one. The client sends each
 the only way that works.
+
+## The message bus, and the field that decides who is woken
+
+The bus is where cross-company work is routed. It was not in this file until
+2026-10-24, and that absence had a cost: two engineer runs six days apart were
+dispatched with "read your inbox on the board" and both found `/api/messages`
+by probing the API with curl until a path answered. A seat on a GitHub runner
+has `tools/board.py` and nothing else, so for that seat the inbox did not
+exist.
+
+**Only `to_seat` and `to_company` together name a recipient.** Measured over
+the 500 rows the bus returns, on 2026-10-24: 374 carry both, 108 carry neither
+and are broadcasts, 15 name a seat with no company, and 3 name a company with
+no seat. The 15 are the defect. `engineer` is a seat in at least five
+companies, so a message addressed to `engineer` alone is delivered to every
+one of them, and four seats read a handoff that belongs to a fifth. Two of the
+three directed messages in the alexandria engineer's inbox that day were
+exactly that, and neither was this company's: one was `alexandra-systems/pm`
+answering its own engineer about a pull request in the HQ repository, and one
+was `Ursa/exo` writing to the Ursa engineer about a merge driver this
+repository has never had.
+
+The client enforces the two halves of that in opposite directions.
+
+- `inbox` never pretends. It sorts what it reads into `yours`, `ambiguous` and
+  `broadcast`, prints the bucket on every line, and **exits 3 when anything is
+  ambiguous**, so a run that must decide is told it must decide. It also says
+  how many messages it did not print and whether the window was cut.
+- `send` refuses `--to-seat` without `--to-company`. The server accepts that
+  row, which is what makes refusing it here worth something. The exceptions
+  are `owner` and `everyone`, which name a person and the room and belong to
+  no company.
+
+This is the client half only. Whether the board itself should reject a bare
+seat name is the owner's call and it is in `docs/ideas.md`.
 
 ## What is gone, and why it was here
 

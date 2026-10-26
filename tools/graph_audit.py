@@ -74,12 +74,26 @@ from datetime import datetime, timezone
 OK, FAILING, UNKNOWN = "ok", "failing", "unknown"
 
 # pipeline/interpret.py NEIGHBORS. The shortlist a claim is judged against is
-# five candidates long, so five is the largest number of distinct neighbors any
-# claim can be linked to on the run that interpreted it. A claim sitting exactly
-# at that number is a claim whose edge count was decided by a constant in a
-# Python file rather than by the corpus, and the share of claims in that state
-# is how you find out whether the constant is binding.
-SHORTLIST = 5
+# this many candidates long, so this is the largest number of distinct neighbors
+# any claim can be linked to on the run that interpreted it. A claim sitting
+# exactly at that number is a claim whose edge count was decided by a constant
+# in a Python file rather than by the corpus, and the share of claims in that
+# state is how you find out whether the constant is binding.
+#
+# It was 5 until 2026-10-25, when slice 2 raised the job's NEIGHBORS to 10. The
+# two numbers have to agree or the ceiling metric measures a shortlist nobody
+# sends, and this file is not importable from that one, so a test holds them
+# together instead: tests/test_graph_audit.py reads NEIGHBORS out of
+# pipeline/interpret.py and fails when it stops matching this line.
+SHORTLIST = 10
+
+# pipeline/interpret.py CANDIDATE_MAX_DISTANCE, the distance past which the job
+# does not show a candidate to the judge at all. Held against the job by the
+# same test that holds SHORTLIST, and for the same reason: the `reach` metric
+# below reports how many candidates the shortlist offers, and a copy of this
+# number that has drifted from the job's makes that report a measurement of a
+# retrieval nobody runs.
+CANDIDATE_MAX_DISTANCE = 0.40
 
 # Cosine distance under which two claims are treated as saying the same thing
 # for the purposes of the dedup probe. Qwen3-Embedding-0.6B puts unrelated
@@ -165,6 +179,37 @@ class Metric:
 # Every one of these is a SELECT. `%s` is psycopg's placeholder; the test suite
 # rewrites it to `$1` and parses each statement with libpg_query, so a typo in
 # here fails a pull request rather than a production run.
+#
+# ## Which table each one reads, which is a decision and not a detail
+#
+# Since slice 5 there are two defensible answers to "how many edges are there".
+# `claim_links` is append-only, so a pair judged under two prompts has two rows,
+# and `latest_links` is the view that reduces a pair to its current verdict.
+# Slice 5 moved `deprecated_claims` and the `contradiction` metric onto the view
+# and wrote down that the rest of this file was still counting every opinion
+# ever given. It also said where the decision belonged, in its own words: that
+# choice "belongs with slice 2, which is where density is argued". This is that
+# slice, so here is the split.
+#
+# A metric that gates a bound reads `latest_links`, because every one of those
+# bounds is a claim about the graph as it stands. `degrees` feeds isolation and
+# the ceiling, `confidence` feeds calibration and the 0.7 gate under the
+# Left-Behind Index, `provenance` feeds the same-paper share, and `relations` is
+# read as the current vocabulary. On `claim_links` all four inflate the moment
+# the slow loop confirms anything: two prompts agreeing that a pair `supports`
+# is one relation and two rows, and a density metric that counts it twice is
+# measuring the judge's effort and calling it the graph's shape.
+#
+# A metric that asks what the judges have done reads `claim_links`, because
+# that question is about the rows. `judges` is exactly that question.
+# `integrity` is too, and it is the one where reading the view would be a bug
+# rather than an imprecision: it hunts for rows that should not exist, and a
+# view that hides all but the newest row per pair would hide them.
+#
+# `shape` answers both and so reports both, `edges` and `current_edges`, which
+# is also the cheapest way for a reader to see whether any re-judgment has
+# happened at all. No pair in production carries a second opinion yet, so every
+# number this split touches is unchanged today and correct tomorrow.
 
 QUERIES = {
     "shape": """
@@ -173,6 +218,7 @@ QUERIES = {
             (select count(*) from claims where interpreted_at is not null) as interpreted,
             (select count(*) from claims where embedding is null) as unembedded,
             (select count(*) from claim_links) as edges,
+            (select count(*) from latest_links) as current_edges,
             (select count(*) from papers) as papers,
             (select max(created_at) from claim_links) as newest_edge,
             (select min(created_at) from claim_links) as oldest_edge
@@ -193,10 +239,10 @@ QUERIES = {
         from claims c
         cross join lateral (
             select count(*) as edges, count(distinct l.to_claim) as neighbors
-            from claim_links l where l.from_claim = c.id
+            from latest_links l where l.from_claim = c.id
         ) o
         cross join lateral (
-            select count(*) as edges from claim_links l where l.to_claim = c.id
+            select count(*) as edges from latest_links l where l.to_claim = c.id
         ) i
         where c.interpreted_at is not null
     """,
@@ -205,7 +251,7 @@ QUERIES = {
                count(*) as edges,
                count(*) filter (where confidence is null) as unscored,
                round(avg(confidence)::numeric, 3) as mean_confidence
-        from claim_links
+        from latest_links
         group by relation
         order by count(*) desc
     """,
@@ -214,14 +260,22 @@ QUERIES = {
     "confidence": """
         select coalesce(round(confidence::numeric, 2)::text, 'null') as value,
                count(*) as edges
-        from claim_links
+        from latest_links
         group by 1
         order by count(*) desc
     """,
     # Every count here should be zero. ADR-10 says from_claim is always the
     # newer claim and ids are a bigserial, so a smaller from_claim is an edge
     # pointing backwards through time. `supports` and `contradicts` on one
-    # ordered pair both fit the primary key and cannot both be true.
+    # ordered pair cannot both be true at once.
+    #
+    # "At once" is doing the work in that sentence since 2026-10-24, and the
+    # grouping below is where it lives. Re-judgment is allowed to change its
+    # mind: a pair that September's prompt called `supports` and October's
+    # calls `contradicts` is the slow loop working, and grouping by the pair
+    # alone would have counted every one of those as corruption. Grouping by
+    # the opinion instead still catches the defect this was written for, which
+    # is one judge asserting both in one breath.
     "integrity": """
         select
             (select count(*) from claim_links where from_claim = to_claim) as self_edges,
@@ -230,24 +284,38 @@ QUERIES = {
             (select count(*) from (
                 select from_claim, to_claim from claim_links
                 where relation in ('supports', 'contradicts')
-                group by from_claim, to_claim
+                group by from_claim, to_claim, coalesce(method, '')
                 having count(distinct relation) > 1
             ) both_ways) as self_contradictory
     """,
     # How much of the graph is one paper talking to itself.
+    #
+    # This is slice 2's own before-and-after number, so it is worth saying what
+    # it will and will not show. The job stopped offering same-paper candidates
+    # on 2026-10-25, which means this share can only fall from here, and it
+    # falls by dilution rather than by correction: the edges already drawn
+    # between siblings are still rows, because `claim_links` is append-only and
+    # nothing in this repository deletes an edge. A graph whose same-paper share
+    # is still high after the change is not evidence the change failed. It is
+    # evidence the corpus has not grown much since.
     "provenance": """
         select count(*) as edges,
                count(*) filter (where a.paper_id = b.paper_id) as same_paper
-        from claim_links l
+        from latest_links l
         join claims a on a.id = l.from_claim
         join claims b on b.id = l.to_claim
     """,
+    # Current answers, not every answer ever given, because the last number in
+    # here comes from `deprecated_claims` and that view reads `latest_links`.
+    # A withdrawn contradiction counted in the first three and absent from the
+    # fourth is a report whose own numbers do not reconcile, and this metric is
+    # read as evidence for the Left-Behind Index.
     "contradiction": """
         select
-            (select count(*) from claim_links where relation = 'contradicts') as edges,
-            (select count(*) from claim_links
+            (select count(*) from latest_links where relation = 'contradicts') as edges,
+            (select count(*) from latest_links
               where relation = 'contradicts' and coalesce(confidence, 0) >= 0.7) as confident,
-            (select count(distinct to_claim) from claim_links
+            (select count(distinct to_claim) from latest_links
               where relation = 'contradicts') as claims_contradicted,
             (select count(*) from deprecated_claims) as deprecated
     """,
@@ -279,7 +347,7 @@ QUERIES = {
             select o.id as other,
                    s.embedding <=> o.embedding as distance,
                    exists (
-                       select 1 from claim_links l
+                       select 1 from latest_links l
                        where l.relation = 'duplicates'
                          and ((l.from_claim = s.id and l.to_claim = o.id)
                            or (l.from_claim = o.id and l.to_claim = s.id))
@@ -289,6 +357,87 @@ QUERIES = {
             order by s.embedding <=> o.embedding
             limit 1
         ) n
+    """,
+    # The shortlist, measured on the input side instead of the output side.
+    #
+    # Every other metric in this file reads edges, which means it can only see
+    # what the judge did with the candidates it was given. This one asks what
+    # the candidates are, by running the job's own retrieval against a seeded
+    # sample of claims: strictly older, not from the same paper, inside the
+    # distance floor, capped at the shortlist's length. It is the metric the
+    # distance floor is argued from, and slice 2's own comment in
+    # pipeline/interpret.py points here for the number.
+    #
+    # `candidates` counts what the judge would be offered today. `nearest` is
+    # deliberately measured with no floor at all, because a histogram truncated
+    # at the floor cannot tell you whether the floor is in the right place: the
+    # whole question is how much of the corpus sits just outside it. A claim
+    # whose nearest cross-paper neighbour is at 0.45 is a claim the floor is
+    # currently refusing to let anyone judge, and whether that is right is a
+    # reading of the distribution rather than of this comment.
+    #
+    # Both laterals are `order by ... limit`, which is the indexed shape, and
+    # the sample is the same size and the same seeded draw as the dedup probe.
+    "reach": """
+        with sampled as (
+            select id, paper_id, embedding from claims
+            where embedding is not null and interpreted_at is not null
+            order by md5(%s || id::text)
+            limit %s
+        )
+        select count(*)                                  as sampled,
+               count(*) filter (where f.candidates >= %s) as at_ceiling,
+               count(*) filter (where f.candidates = 0)   as unreachable,
+               round(avg(f.candidates)::numeric, 2)       as mean_candidates,
+               round(avg(n.nearest)::numeric, 3)          as mean_nearest,
+               round((percentile_cont(0.5)
+                      within group (order by n.nearest))::numeric, 3)
+                                                          as median_nearest
+        from sampled s
+        cross join lateral (
+            select count(*) as candidates from (
+                select o.id from claims o
+                where o.id < s.id and o.embedding is not null
+                  and o.paper_id <> s.paper_id
+                  and o.embedding <=> s.embedding <= %s
+                order by o.embedding <=> s.embedding
+                limit %s
+            ) offered
+        ) f
+        cross join lateral (
+            select o.embedding <=> s.embedding as nearest
+            from claims o
+            where o.id < s.id and o.embedding is not null
+              and o.paper_id <> s.paper_id
+            order by o.embedding <=> s.embedding
+            limit 1
+        ) n
+    """,
+    # The distribution behind the number above, in tenths of cosine distance.
+    # This is the histogram docs/product/graph-quality.md asks the floor to come
+    # from, and it is a row list rather than a scalar for the same reason the
+    # confidence histogram is: a bound set from a mean is a bound set from the
+    # wrong statistic when the distribution has two humps.
+    "reach_histogram": """
+        with sampled as (
+            select id, paper_id, embedding from claims
+            where embedding is not null and interpreted_at is not null
+            order by md5(%s || id::text)
+            limit %s
+        )
+        select (floor(n.nearest * 10) / 10)::text as band,
+               count(*) as claims
+        from sampled s
+        cross join lateral (
+            select o.embedding <=> s.embedding as nearest
+            from claims o
+            where o.id < s.id and o.embedding is not null
+              and o.paper_id <> s.paper_id
+            order by o.embedding <=> s.embedding
+            limit 1
+        ) n
+        group by 1
+        order by 1
     """,
     # The precision worksheet. Ordering by a hash of the seed and the edge's own
     # key makes the draw reproducible without a session setting, so the same
@@ -345,6 +494,11 @@ def collect(conn, seed: str = SEED) -> dict:
         "dedup": _rows(conn, QUERIES["dedup"],
                        (NEAR_DUPLICATE_DISTANCE, NEAR_DUPLICATE_DISTANCE,
                         seed, DEDUP_SAMPLE))[0],
+        "reach": _rows(conn, QUERIES["reach"],
+                       (seed, DEDUP_SAMPLE, SHORTLIST,
+                        CANDIDATE_MAX_DISTANCE, SHORTLIST))[0],
+        "reach_histogram": _rows(conn, QUERIES["reach_histogram"],
+                                 (seed, DEDUP_SAMPLE)),
     }
 
 
@@ -381,15 +535,28 @@ def analyze(raw: dict, now: datetime | None = None) -> list[Metric]:
     out: list[Metric] = []
 
     edges, claims = shape["edges"], shape["claims"]
+    # `current_edges` is the one number in this file that says whether the slow
+    # loop has ever run: it equals `edges` until some pair gets a second
+    # opinion, and the gap between them is how many opinions have been
+    # superseded. Absent from snapshots captured before slice 2, so it is read
+    # defensively rather than assumed, and the density metrics below are the
+    # ones computed from the view.
+    current = shape.get("current_edges")
+    superseded = None if current is None else edges - current
     out.append(Metric(
         "size", OK,
         f"{claims} claims over {shape['papers']} papers, {edges} edges, "
         f"{shape['interpreted']} claims interpreted and "
-        f"{claims - shape['interpreted']} still queued",
-        {"claims": claims, "edges": edges, "papers": shape["papers"],
+        f"{claims - shape['interpreted']} still queued"
+        + ("" if superseded is None else
+           f"; {current} of those edges are current verdicts and "
+           f"{superseded} have been superseded by a later prompt"),
+        {"claims": claims, "edges": edges, "current_edges": current,
+         "superseded_edges": superseded, "papers": shape["papers"],
          "interpreted": shape["interpreted"], "unembedded": shape["unembedded"],
          "edges_per_interpreted_claim":
-             round(edges / shape["interpreted"], 2) if shape["interpreted"] else None}))
+             round((current if current is not None else edges)
+                   / shape["interpreted"], 2) if shape["interpreted"] else None}))
 
     isolated = _share(deg["isolated"], deg["interpreted"])
     out.append(Metric(
@@ -413,6 +580,37 @@ def analyze(raw: dict, now: datetime | None = None) -> list[Metric]:
         {"at_ceiling": deg["at_ceiling"], "interpreted": deg["interpreted"],
          "shortlist": SHORTLIST, "share": ceiling,
          "bound": BOUNDS["ceiling_share"]}))
+
+    # The same question asked of the input, and it reads `informational`
+    # deliberately. The metric above has a bound because being at the ceiling is
+    # a defect in the graph. Being offered a short shortlist is not a defect at
+    # all: it is what the distance floor is for, and a corpus of genuinely
+    # unrelated claims should produce exactly that. What this metric is for is
+    # moving the floor, which is a decision a reader makes from the histogram
+    # rather than one a bound can make for them.
+    reach = raw.get("reach")
+    if reach:
+        offered = _share(reach["at_ceiling"], reach["sampled"])
+        bare = _share(reach["unreachable"], reach["sampled"])
+        bands = ", ".join(f"{b['band']} {b['claims']}"
+                          for b in raw.get("reach_histogram", []))
+        out.append(Metric(
+            "shortlist reach", OK,
+            f"on {reach['sampled']} sampled claims the shortlist offers "
+            f"{reach['mean_candidates']} candidates on average, "
+            f"{_pct(offered)} are offered all {SHORTLIST}, and {_pct(bare)} are "
+            f"offered none because every older claim outside their own paper "
+            f"sits past {CANDIDATE_MAX_DISTANCE}; nearest cross-paper neighbor "
+            f"median {reach['median_nearest']}, mean {reach['mean_nearest']}",
+            {"sampled": reach["sampled"], "at_ceiling": reach["at_ceiling"],
+             "unreachable": reach["unreachable"],
+             "mean_candidates": reach["mean_candidates"],
+             "median_nearest": reach["median_nearest"],
+             "mean_nearest": reach["mean_nearest"],
+             "shortlist": SHORTLIST, "floor": CANDIDATE_MAX_DISTANCE,
+             "at_ceiling_share": offered, "unreachable_share": bare,
+             "nearest_histogram": raw.get("reach_histogram", []),
+             "histogram": bands}))
 
     mix = {r["relation"]: r["edges"] for r in raw["relations"]}
     out.append(Metric(

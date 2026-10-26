@@ -127,16 +127,72 @@ grow two answers" in `delivery-health.md`.
 So the overlap lives here, once, and the ExO charter's §5 regenerates it
 every run from the corrected sweep rather than asking each item to remember.
 
-| Workflow file | Items that touch it | What each edits, so the order can be judged |
+**Regenerated 2026-10-24 17:50Z, and the regeneration found the table
+understating every seat workflow.** See the correction under it.
+
+**Four items edit all twelve `agent-*.yml` files**, so they are stated once
+here rather than repeated in twelve rows: **8** adds a run-report step, **9**
+adds a concurrency block, **10** replaces the run-report step's body, and
+**2026-10-24-dead-trace-wiring** deletes the tracing `env:` keys and the
+tracing step. Read every seat row below as that set plus the items named in
+it.
+
+| Workflow file | Items that touch it, beyond the four universal ones | What each edits, so the order can be judged |
 |---|---|---|
 | `checks.yml` | 12-CI, 13-CI, 14-CI, 15-CI, 16, 17, 19, 20 | **the only real hazard on this page.** All eight add entries to the same two `paths:` lists and steps to the same job. Apply in ascending order and read each item's own "if item N is applied first" note; several already carry one |
-| `agent-engineer.yml` | 5, 6, 9, 10, 14 | 5 adds a step, 6 adds an `env:` line, 9 adds a concurrency block, 10 replaces a step body, 14 edits `claude_args`. Disjoint; any order |
-| `agent-pm.yml` | 5, 6, 14, 15 | 5 a step, 6 an `env:` line, 14 `claude_args`, 15 a `prompt:` block. Disjoint; any order |
-| `agent-skill.yml` | 6, 12, 13, 14 | 6 and 12 both add to the `env:` block, so whichever lands second appends rather than replaces. 13 a `prompt:` block, 14 `claude_args` |
-| `agent-writer.yml` | 4a, 6, `2026-10-11-writers-cap` | 4a a `prompt:` block, 6 an `env:` line, the slug a `claude_args` line. Disjoint, any order. **The slug was "item 21" until 2026-10-18**, when a second item 21 on main forced the rename |
-| `agent-research.yml` | 6, 14 | an `env:` line and a `claude_args` line. Disjoint |
+| `agent-engineer.yml` | 5, 6, 14 | 5 adds a step, 6 adds an `env:` line, 14 edits `claude_args`. Disjoint from each other. **Apply the trace item before 6**, which appends to the same `env:` block |
+| `agent-pm.yml` | 5, 6, 14, 15 | 5 a step, 6 an `env:` line, 14 `claude_args`, 15 a `prompt:` block. Disjoint. **Trace item before 6** |
+| `agent-skill.yml` | 6, 12, 13, 14 | 6 and 12 both add to the `env:` block, so whichever lands second appends rather than replaces. 13 a `prompt:` block, 14 `claude_args`. **Trace item before 6 and 12** |
+| `agent-writer.yml` | 4a, 6 | 4a a `prompt:` block, 6 an `env:` line. **Trace item before 6.** Item 14 names this file only to say the writer is excluded from it, which is a mention and not an edit, and `2026-10-11-writers-cap` was cancelled on 2026-10-24 |
+| `agent-research.yml` | 6, 14 | an `env:` line and a `claude_args` line. **Trace item before 6** |
 | `agent-exo.yml` | 7, 14 | 7 rewrites a prompt paragraph, 14 edits `claude_args`. Disjoint |
-| `agent-market.yml`, `agent-security.yml`, `agent-frontend.yml`, `hq-origin-notice.yml` | one item each (14, 14, 10, 5) | nothing to order |
+| `agent-market.yml`, `agent-security.yml` | 14 each | a `claude_args` line. Nothing to order |
+| `agent-finance.yml`, `agent-frontend.yml`, `agent-okr.yml`, `agent-sales.yml` | none | the four universal items only |
+| `hq-origin-notice.yml` | 5 | nothing to order |
+| `skill-gate.yml`, `subscriber-list.yml`, `press-watch.yml` | 20, 17, 21 | all three are lane-one files in `.github/workflows-pending/`, so they are moves rather than edits |
+
+### The correction, and it is about the sweep rather than about the table
+
+The command this table is regenerated from is published in
+`prompts/exo-agent.md` §5 and it is:
+
+```bash
+grep -oE '\.github/workflows/[a-z-]+\.yml' docs/agents/pending-workflow-changes.md | sort | uniq -c | sort -rn
+```
+
+**That regex cannot match `agent-*.yml`.** The `*` is not in `[a-z-]`, so an
+item that names a class of files instead of a filename is invisible to the
+sweep, and three items do exactly that: 8, 9 and 10 each edit all twelve seat
+workflows and each says so in those words. The sweep saw item 9 under
+`agent-engineer.yml` and item 10 under `agent-engineer.yml` and
+`agent-frontend.yml`, because those two items happen to quote one file as an
+example, and it saw item 8 nowhere at all.
+
+So from 2026-10-11 to today this table said `agent-finance.yml`,
+`agent-okr.yml` and `agent-sales.yml` were touched by **no item** when three
+items edit each of them, and it understated nine of the other twelve rows.
+The failure direction is the bad one: a reader checking whether their edit
+collides is told nothing collides.
+
+**The fixed sweep is two commands, because one regex cannot do it.**
+
+```bash
+# literal filenames, including the pending lane the old regex also missed
+grep -oE '\.github/workflows(-pending)?/[a-z-]+\.yml' docs/agents/pending-workflow-changes.md \
+  | sort | uniq -c | sort -rn
+# the class form, which no filename sweep can see
+grep -n 'agent-\*\.yml' docs/agents/pending-workflow-changes.md
+```
+
+**The lesson, and it is the third time this page has learned a version of
+it.** A mechanical check inherits the vocabulary of whoever wrote it. This one
+was written by a run looking at items that named files, so it tests for files,
+and it reports zero rather than an error when an item speaks a different way.
+Discount rule 4 below already says the regex is blind to the pending lane,
+which is the same blindness found a fortnight earlier and patched with a
+sentence instead of with the regex. **A known-blind check that stays blind is
+worse than no check, because the next run trusts its output and the warning
+lives somewhere the output does not.**
 
 **The first version of this table, written an hour before this one, had three
 errors in it**, and they are left on the record because they are the argument
@@ -321,6 +377,33 @@ one week without a pull request, so that is not a hypothetical here.
 
 Where a queued edit has grown too large to read as a diff, split the
 item. Do not switch its lane.
+
+### A third lane, added 2026-10-24: the same edit to many files, carried by a tool
+
+The two lanes above are a complete answer for one file. They are the wrong
+answer for one edit repeated across twelve, which is what arrived on
+2026-10-24: HQ's centralizer sent a command that strips the dead Langfuse
+wiring out of every `agent-*.yml` in this repository. Queued as twelve diffs
+it would be twelve copies of one hunk, each anchored separately, each able to
+rot alone, and the overlap table would gain twelve rows about one change. That
+is the "nineteen paragraphs rotting alone" defect this page already names, set
+up deliberately.
+
+| The change | The lane | What the owner does |
+|---|---|---|
+| One mechanical edit across many workflow files | name the tool, its repository and the exact command, with its `--check` output quoted at the time of queuing | run two commands: the check, then the tool |
+
+**The precondition, because this lane is only better when all three hold.**
+The tool must locate its edit **by test rather than by context line**, so
+there is no anchor to rot. It must be **idempotent**, so applying it twice is
+applying it once. And it must ship a **check mode that exits non-zero while
+any file still carries the change**, so the item's own staleness is a command
+and not a reader's judgment. A tool meeting all three cannot carry the silent
+failure the full-copy lane was refused for: there is no stored copy of the
+file, so there is nothing to revert, and the check is the proof.
+
+Where any of the three fails, the change goes back to being diffs, one per
+file, split as the rule above says.
 
 ---
 
@@ -2362,6 +2445,70 @@ The new anchor was checked with `grep -c -F -e` against the live file on
 that the writer's next dispatched run prints `--max-turns 350`, and if it
 prints 225 the edit did not land.
 
+
+### 2026-10-24-dead-trace-wiring: strip the Langfuse wiring out of all twelve seat workflows
+
+**Lane three** (the lane is defined above and was defined for this item).
+**Queued 2026-10-24 by the ExO seat, at HQ's centralizer's request.**
+
+**What is wrong.** Every one of the twelve `.github/workflows/agent-*.yml`
+files in this repository carries a job-level `env:` block of eleven
+OpenTelemetry variables pointing at `${{ secrets.LANGFUSE_HOST }}`, and a step
+named "Trace this run to Langfuse" that builds a Basic-auth header out of
+`LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` and writes it to `GITHUB_ENV`.
+The Langfuse stack was removed from the host on 2026-10-23 for filling the only
+disk. The endpoint refuses the connection and the credential opens nothing, so
+what remains is a dead credential echo in twelve files.
+
+**The command.** The tool is `tools/trace-seat-workflows.py` in
+`alexandrapaiz/alexandra-systems`, on `main`, with nine tests pinning it. It
+removes the tracing keys from a job `env:` block and nothing adjacent, and it
+removes the step whole rather than leaving an orphan body.
+
+```bash
+# from a hand that may write under .github/workflows/
+python3 tools/trace-seat-workflows.py --check /path/to/alexandria   # names what still carries it; exits 1 while any does
+python3 tools/trace-seat-workflows.py        /path/to/alexandria   # removes it
+python3 tools/trace-seat-workflows.py --check /path/to/alexandria   # must now exit 0
+```
+
+**The check output at the time of queuing**, 2026-10-24 17:42Z, run by this
+seat against this repository's working tree:
+
+```
+agent-engineer.yml: still carries the Langfuse env, step
+agent-exo.yml:      still carries the Langfuse env, step
+... all twelve, identically ...
+EXIT=1
+```
+
+Twelve of twelve. There is no partial state to reason about.
+
+**Why this seat did not run it.** The push would probably succeed, which is the
+finding at the top of this page. The standing instruction this run carries says
+never to touch workflows, and §15 of the project management standard gives
+`.github/workflows/` to HQ in every product repository. Both reasons are
+independent of the credential, so the credential question does not decide it.
+
+**Ordering.** This item touches all twelve `agent-*.yml` files, so it touches
+every file named in the overlap table except `checks.yml` and
+`hq-origin-notice.yml`. It is disjoint from all of them: every other item edits
+a `prompt:` block, a `claude_args` line, a concurrency block, a step body or a
+single non-tracing `env:` line, and this one deletes the tracing `env:` keys and
+the tracing step. **The one real interaction is with item 6**, which adds
+`NEON_RO_URL` to the `env:` block of `agent-engineer.yml`, `agent-pm.yml` and
+`agent-skill.yml`. Apply this item **first** in those three files: it shrinks
+the block item 6 appends to, and item 6's anchor is the block's existing
+non-tracing lines, which this item does not touch. In the other order item 6
+still applies, but the tool then has to parse a block it has not seen, and the
+tool is the artifact here rather than a diff, so give it the file it was tested
+against.
+
+**What this does not decide.** The owner's 2026-09-29 decision that she wanted
+to see what agents do stands. Only the Actions-side implementation of it is
+dead. Tracing that returns will return on the host runtime with the keys read
+from the process environment, which is the engineer's lane and a different
+tool.
 
 ## Not queued here, because it needs a key rather than a hand
 

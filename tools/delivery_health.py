@@ -1435,8 +1435,23 @@ def _is_shallow(repo_root: Path) -> bool:
     moving (INC-2026-10-18-the-machinery-diff-reads-clean-on-a-shallow-clone,
     INC-2026-10-23-the-drift-guard-answered-green-from-a-checkout-that-could-not-see).
     """
+    return _shallow_state(repo_root) is True
+
+
+def _shallow_state(repo_root: Path) -> bool | None:
+    """True shallow, False complete, None when git could not answer.
+
+    `_is_shallow` folds the third case into `False` on purpose, because its
+    callers are asking "should I print the shallow hint" and a git that
+    cannot answer should print nothing. `_deepen` is asking the opposite
+    question, "is the history here now", and for that one "cannot say" has to
+    stay distinct from "yes". Collapsing them would let a checkout with no
+    usable git report that its history had arrived.
+    """
     status, out = _git(repo_root, "rev-parse", "--is-shallow-repository")
-    return status == 0 and out.strip() == "true"
+    if status != 0:
+        return None
+    return out.strip() == "true"
 
 
 #: What closes an undatable drift, for the reader who has one. Named rather
@@ -1488,28 +1503,55 @@ def _deepen(repo_root: Path) -> bool:
     False, the checkout stays shallow, and every message downstream is the one
     this file printed before today, which names `UNSHALLOW` for a reader who
     can run it in a place where the fetch could not.
+
+    **The exit status is not the answer, the checkout is** (2026-10-24,
+    `INC-2026-10-24-the-deepening-fetch-landed-the-history-and-called-it-a-failure`).
+    This used to return `ok and not _is_shallow(...)`, and the `ok` half
+    overruled the half that was actually looking. A fetch can land every
+    object and still exit non-zero: the timeout can kill it after
+    `.git/shallow` is gone, a second guard in the same runtime can finish the
+    deepening first and leave this one holding `fatal: --unshallow on a
+    complete repository does not make sense`, and a lock on `.git` reads the
+    same way. In all three the history is sitting in the checkout and the row
+    said `unknown` over the top of it, which is the one outcome this whole
+    function exists to stop. The first run after it shipped hit exactly that:
+    the surface printed `the drift cannot be dated from this checkout, which
+    is shallow: git fetch --unshallow could not complete here` and the same
+    clone held all 2,346 commits one command later.
     """
     import os
     import subprocess
 
     key = str(repo_root)
+    if _deepen_attempted.get(key):
+        return True
+    # Ask the checkout before anything else. "Is the history here" is the
+    # question the caller has, and it has the same answer whether this
+    # process, another guard in the same runtime, or a seat's own hand is
+    # what put it there.
+    if _shallow_state(repo_root) is False:
+        _deepen_attempted[key] = True
+        return True
     if key in _deepen_attempted:
-        return _deepen_attempted[key]
+        # A remembered failure, re-examined against the checkout above and
+        # still true. One attempt per process, which is what the memo is for.
+        return False
     if os.environ.get(NO_FETCH_ENV):
         _deepen_attempted[key] = False
         return False
     try:
-        done = subprocess.run(
+        subprocess.run(
             ["git", "-C", key, "fetch", "--unshallow", "--quiet"],
             capture_output=True, text=True,
             timeout=DEEPEN_TIMEOUT_SECONDS)
-        ok = done.returncode == 0
     except (OSError, subprocess.SubprocessError):
-        ok = False
-    # Asked again rather than trusted: a fetch can exit 0 and leave a
-    # repository shallow if the remote itself is a shallow mirror, and the
-    # thing the caller needs to know is whether the history is here now.
-    _deepen_attempted[key] = ok and not _is_shallow(repo_root)
+        pass
+    # Asked again rather than trusted, and asked instead of the return code: a
+    # fetch can exit 0 and leave a repository shallow if the remote itself is
+    # a shallow mirror, and it can exit non-zero having landed everything.
+    # `is False` rather than `not _is_shallow` because a git that cannot
+    # answer at all must not read as success.
+    _deepen_attempted[key] = _shallow_state(repo_root) is False
     return _deepen_attempted[key]
 
 

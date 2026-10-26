@@ -383,6 +383,116 @@ UNCOVERED = {
     # thing in this repository that would notice the next one.
     "tests/test_merge_order.py",
     "tests/test_resolve_register_conflict.py",
+    # Added 2026-10-24 with the authority gate's tests, and pinned for the one
+    # structural reason every line above is pinned: the step that would run it
+    # goes in `.github/workflows/checks.yml`, no seat's token may write that
+    # file (`docs/agents/pending-workflow-changes.md`), and
+    # `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words not
+    # to attempt it again. Counted at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # rather than opening a second incident on one pattern. Fifteenth line in
+    # seventeen days.
+    #
+    # What it guards is `tools/check_authority.py`, which decides whether a
+    # diff is the owner's to merge. That tool is itself a gate, so the exit
+    # status is its whole interface, and L-A9's 2026-10-05 amendment is
+    # explicit that a gate is real only when the command is named and its exit
+    # status means something. The tests pin that mapping and the four questions
+    # behind it, including the three verdicts the tool may not confuse: a
+    # charter line that rules the owner, a secret NAME in prose and a price in
+    # prose all read `clear`, and each of those three is a false `reserved`
+    # away from making the gate useless.
+    "tests/test_check_authority.py",
+    # Added 2026-10-24 with the incident register's inbox, and pinned for the
+    # same structural reason as every line above: the step that would run it
+    # goes in `.github/workflows/checks.yml`, which no seat's token may write,
+    # and `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words
+    # not to attempt that file again. The staged replacement runs it, measured
+    # by `tools/ci_coverage.py --only .github/workflows-pending/checks.yml`,
+    # which reports an empty uncovered set with this file present. Counted at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # rather than opening another incident on one pattern. Sixteenth line in
+    # eighteen days.
+    #
+    # What it guards is the append surface of `docs/agents/incidents.md`, and
+    # the pin is pointed in the same way `tests/test_ci_coverage.py` above is.
+    # This register is where every seat records a repeat, so a defect in the
+    # thing that accepts those filings is the defect that hides every other
+    # defect. The tests that matter most in it are the ones that fail when a
+    # collision could come back: an id already in the register, two inbox
+    # files claiming one id, a filename that disagrees with the heading inside
+    # it, and the three-part arithmetic that refuses a fold which dropped or
+    # duplicated a line. That last one is not hypothetical. A hand resolution
+    # on this same file deleted another seat's line on 2026-10-24 and left
+    # valid Markdown behind it, so the invariant is the only reader that would
+    # have noticed.
+    "tests/test_incidents.py",
+    # Added 2026-10-24 with slice 5 of the graph upgrade, and pinned as the
+    # last resort this gate's own failure message names, because the other two
+    # routes are both closed to this seat. Adding a step goes in
+    # `.github/workflows/checks.yml`, and applying the staged replacement is a
+    # `git mv` out of `.github/workflows-pending/`; both are workflow writes no
+    # seat's token carries. Seventeenth line, and the repeat stays counted at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # rather than opening an eighteenth entry on one pattern.
+    #
+    # What it guards is the claim graph's read path, and the pin costs less
+    # here than on most lines above it, because the structural half of that
+    # change is caught anyway: the audit now names `latest_links`, and
+    # `tests/test_graph_audit.py` resolves every relation the audit names
+    # against `db/schema.sql` and IS one of the twelve files a workflow runs.
+    # Renaming the view in the schema fails that suite. What this file adds and
+    # nothing in CI can reach is the behaviour: that a second opinion inserts
+    # at all, that the same judge twice does not, and that `deprecated_claims`
+    # follows the newest verdict in both directions. Those six tests need a
+    # server, this org runs none in CI, and the company host has one, so they
+    # are evidence where a seat runs and a skip where it does not.
+    "tests/test_latest_links.py",
+    # Added 2026-10-25 with slice 5's second half, the re-judgment trigger, and
+    # pinned for the same reason as the line above it and by the same two closed
+    # routes: a step goes in `.github/workflows/checks.yml` and applying the
+    # staged replacement is a `git mv` out of `.github/workflows-pending/`, and
+    # both are workflow writes no seat's token carries. Eighteenth line, and the
+    # repeat stays counted at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # rather than opening a nineteenth entry on one pattern.
+    #
+    # What it guards is the only part of this slice that can cost money. The
+    # trigger decides which claims get sent to a model again, so the two ways
+    # it can be wrong are a bill rather than a wrong answer: keying it on
+    # `method` instead of the prompt sha re-judges the whole corpus every time
+    # the fallback provider answers, and reading `claim_links` instead of
+    # `claim_judgments` re-judges every claim that was read and found nothing,
+    # on every run, forever. Both are one-word edits and both pass every other
+    # test in this repository. The structural half of that is reachable without
+    # a server and is asserted here on the query text itself; the half that
+    # needs rows, including the backfill recovering September's shas out of
+    # `claim_links.method`, runs on the company host and skips in CI.
+    "tests/test_rejudge_queue.py",
+    # Added 2026-10-25 with slice 2 of the graph upgrade, and pinned for the
+    # same structural reason as every line above: the step that would run it
+    # goes in `.github/workflows/checks.yml`, which no seat's token may write,
+    # and `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words
+    # not to attempt that file again because four runs already have. The staged
+    # replacement runs it, because that file runs the suite rather than naming
+    # files. `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # is already this finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern.
+    #
+    # What it guards had no test at all until the day it was pinned, which is
+    # the part worth reading. The six lines of SQL that choose which older
+    # claims a new claim is judged against decide the shape of the entire claim
+    # graph, and every metric `tools/graph_audit.py` reports is downstream of
+    # them. Three of the four properties asserted here are silent failures: a
+    # shortlist that offers a claim its own paper's siblings produces edges
+    # that are true and worthless, a shortlist that pads itself to its limit
+    # pays a model to answer `unrelated`, and a shortlist that looked forward
+    # in time would write edges the audit can only catch after they are rows.
+    # None of the three turns anything red. The live half of the file needs a
+    # cluster with pgvector and runs on the company host; the structural half,
+    # which includes recomputing the token pair the spend cap is set against,
+    # runs anywhere.
+    "tests/test_shortlist.py",
 }
 
 
