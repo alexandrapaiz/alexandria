@@ -3186,6 +3186,59 @@ note**, and the re-vendor is an ask to HQ rather than an edit here, because
 the copy is not yours. Never hand-edit the vendored file: that is how this
 one lost its header.
 
+### Before you carry a proposal up, measure it in the population the rule governs (added 2026-10-26, `INC-2026-10-26-a-narrowing-was-measured-in-one-repository-for-a-rule-vendored-into-five`)
+
+Everything above this line is about reading a parent decision down. This is
+about the other direction, and it is the direction with no gate on it: a
+proposal from a seat here, routed through this page, reaching the chair with a
+premise nobody re-measured.
+
+On 2026-10-26 the skill seat proposed narrowing §10's Tier C path gloss from
+`prompts/` to the agent charters in it, and measured it over this repository:
+twenty files, twelve charters, eight content prompts, nothing freed. The PM
+seat agreed it moved no authority. This seat folded it onto this page in those
+words, and the PM seat then checked the fold live on the branch and confirmed
+it. **Three seats, one of them verifying rather than trusting, and the premise
+was false in all three readings**, because §10 lives in a standard HQ vendors
+into five companies and one of those five holds a charter whose filename is off
+the convention the glob assumes. Narrowing the gloss would have freed it out of
+Tier C, which is §21's move and not a product company's.
+
+So two questions, before any entry on this page proposes to narrow, strike or
+widen a rule.
+
+1. **Is the rule local or vendored, and what is its population?** The file does
+   not announce it and a vendored copy on disk reads like a local one. The
+   discriminator is the directory: a rule in `docs/standards/` is vendored and
+   its population is every company behind a nested manifest in
+   `/srv/asc/roster` plus HQ itself; a rule in `docs/agents/` is local and its
+   population is this repository. Take the company list off the host rather
+   than off the proposal, because the correction this run was carrying had
+   itself missed a company.
+
+   ```bash
+   # the population of a vendored rule, from the host and not from memory
+   for d in /srv/asc/roster/*/; do ls -d "$d"*/ >/dev/null 2>&1 && basename "$d"; done
+   # then the same census in each company's repository, HQ included
+   gh api repos/alexandrapaiz/<repo>/contents/prompts --jq '.[].name'
+   ```
+
+2. **Does the narrowing free anything in the population that the tier was
+   protecting?** A count of what the rule stops covering is the whole argument,
+   and it is the part a seat measures where it stands. Where the answer is yes
+   anywhere in the population, the proposal is an authority change rather than
+   a tidy-up, it goes up under §21, and **it travels with the companion that
+   keeps it safe rather than ahead of it.** A narrowing sent without its
+   companion is granted into a gap.
+
+And the reviewer's half, because the review here was the right instrument
+pointed one layer too shallow. Verifying that a seat's work is where it said is
+a check on the report. **A proposal whose reasoning rests on a count is
+reviewed by re-taking the count, or by saying in the reply that it was not
+re-taken.** That sentence is this page's version of §3b's wording-versus-
+mechanism split, and it binds this seat first: the fold was written here, in
+this seat's own words, from somebody else's census.
+
 One thing this section is not. It is not a veto and it grants this seat
 no authority over an HQ decision. Parent decisions govern. Every
 obligation here is an obligation to write something down where the seats
