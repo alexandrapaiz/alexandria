@@ -536,6 +536,128 @@ def report(res: dict, verbose: bool) -> None:
               f"honest limit here, not a result to advertise.")
 
 
+# ---------------------------------------------------------------------------
+# Is every receipt about today's text? (--receipts)
+#
+# A result bundle pins a per-skill `skill_sha256`, because a pass rate carried
+# over from an earlier revision is a claim about a document the reader cannot
+# see. tests/test_skill_receipts.py asserts that every skill the page receives
+# has a receipt describing today's file, and site/lib/skill-provenance.js tells
+# the reader when it does not.
+#
+# That invariant spans two files, SKILL.md and the newest bundle under
+# results/, and a run edits the first several commits before it writes the
+# second. CI runs on every push, so the branch is red by construction for the
+# window in between, and the receipts step has gone red that way on this seat's
+# branches on 2026-10-13 and twice on 2026-10-24
+# (INC-2026-10-24-the-receipts-step-has-been-red-on-four-of-this-seats-branches).
+#
+# Incident 31's lesson is the reason this lives here rather than in a prompt: a
+# rule written into a prompt is checked when someone reads the prompt, and a
+# rule written into the runner is checked every time anything ships. This mode
+# is offline and takes no engine, so it costs nothing to run before a commit.
+# ---------------------------------------------------------------------------
+
+def rank_bundles(bundles: list[dict]) -> list[dict]:
+    """The ranking rule of rankBundles() in site/lib/skill-provenance.js, and
+    it has to stay the same rule or this check and the page disagree about
+    which bundle is the library's result. Newest first, and at one date the
+    pre-registered engine wins, because an experimental engine's run measures
+    the engine rather than judging the skill."""
+    usable = [b for b in bundles if isinstance(b.get("generated"), str)]
+    return sorted(
+        usable,
+        key=lambda b: (
+            _NEGATED(b["generated"]),
+            0 if (b.get("policy") or {}).get("pre_registered") else 1,
+        ),
+    )
+
+
+class _NEGATED:
+    """Descending order on a string key without reversing the whole sort, so
+    the pre-registered tie-break still reads ascending."""
+
+    __slots__ = ("s",)
+
+    def __init__(self, s: str) -> None:
+        self.s = s
+
+    def __lt__(self, other: "_NEGATED") -> bool:
+        return self.s > other.s
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, _NEGATED) and self.s == other.s
+
+
+def load_bundles(results_dir: str) -> list[dict]:
+    out = []
+    for path in sorted(glob.glob(os.path.join(results_dir, "*.json"))):
+        try:
+            data = json.load(open(path, encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if isinstance(data, dict):
+            data["_path"] = os.path.relpath(path)
+            out.append(data)
+    return out
+
+
+def latest_receipt(bundles: list[dict], skill: str) -> dict | None:
+    for bundle in rank_bundles(bundles):
+        for suite in bundle.get("suites") or []:
+            if not isinstance(suite, dict):
+                continue
+            if suite.get("skill") == skill and suite.get("total"):
+                return {
+                    "date": bundle.get("generated", ""),
+                    "engine": bundle.get("engine", ""),
+                    "path": bundle.get("_path", ""),
+                    "sha256": suite.get("skill_sha256", ""),
+                    "passed": suite.get("passed", 0),
+                    "total": suite.get("total", 0),
+                }
+    return None
+
+
+def check_receipts(skills_dir: str, results_dir: str) -> int:
+    """Print, per skill, whether the newest recorded receipt describes the
+    file as it stands now. Returns the number of skills that fail, which is
+    the number tests/test_skill_receipts.py will fail on."""
+    skills = load_skills(skills_dir)
+    bundles = load_bundles(results_dir)
+    stale = []
+    print(f"receipts: {len(skills)} skills against "
+          f"{len(bundles)} result bundles in {os.path.relpath(results_dir)}\n")
+    for name in sorted(skills):
+        sha = skills[name]["sha256"]
+        receipt = latest_receipt(bundles, name)
+        if receipt is None:
+            stale.append(name)
+            print(f"  MISSING  {name}: no bundle scores this skill, so the page "
+                  f"has no receipt to show")
+            continue
+        if receipt["sha256"] == sha:
+            print(f"  ok       {name}: {receipt['passed']}/{receipt['total']} on "
+                  f"{receipt['date']}, sha {sha}")
+            continue
+        stale.append(name)
+        print(f"  STALE    {name}: SKILL.md is sha {sha}, newest receipt "
+              f"({receipt['date']}, {receipt['path']}) measured "
+              f"{receipt['sha256']}")
+    if stale:
+        print(f"\n{len(stale)} of {len(skills)} receipts do not describe today's "
+              f"text: {', '.join(stale)}.")
+        print("The page will say so and tests/test_skill_receipts.py will fail. "
+              "Re-run the trigger test and commit its bundle in the same commit "
+              "as the SKILL.md edit, not a later one:")
+        print("  python3 skills/_validation/trigger_test.py "
+              "--json skills/_validation/results/<date>-<engine>-<slug>.json")
+    else:
+        print(f"\nall {len(skills)} receipts describe today's text.")
+    return len(stale)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description="Trigger test for the alexandria skill library.")
@@ -548,8 +670,19 @@ def main() -> int:
     ap.add_argument("--engine", default=ENGINE_VERSION, choices=sorted(ENGINES),
                     help="scoring engine; the default is the pre-registered "
                          "policy and anything else is an experiment")
+    ap.add_argument("--results", metavar="DIR",
+                    default=os.path.join(here, "results"),
+                    help="directory of recorded result bundles (for --receipts)")
+    ap.add_argument("--receipts", action="store_true",
+                    help="offline check: does every skill's newest recorded "
+                         "receipt describe its SKILL.md as it stands now? Run "
+                         "this before committing a SKILL.md edit. No engine, "
+                         "no cases, exits non-zero on a stale receipt.")
     ap.add_argument("-v", "--verbose", action="store_true")
     args = ap.parse_args()
+
+    if args.receipts:
+        return 1 if check_receipts(args.skills_dir, args.results) else 0
 
     res = run(args.skills_dir, args.decoys, args.engine)
     report(res, args.verbose)

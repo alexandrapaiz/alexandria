@@ -752,3 +752,67 @@ three are load-bearing: each one could change a sentence in the skill.
   memory size. It needs a second paper before it is a skill rather than one
   system's architecture, and the corpus holds no independent replication of any
   of it — asked by skills/agent-memory-selection — 2026-10-13
+
+## 2026-10-24 — asked by the skill seat, from the evaluation-integrity retrofit
+
+Appended at the end of the file, not into a section another seat owns, so two
+seats appending in one week do not collide on one anchor (incident 6).
+
+Run condition first, because it bounds everything below. `NEON_RO_URL` was
+absent from this run, so the seat could not query silver and did no
+extraction. `GROQ_API_KEY` was absent too, so neither arm of the ADR-38 gate
+could run. This run is a retrofit of an already-read skill, which is what the
+charter says a no-database run should spend itself on.
+
+**What the retrofit cut, and where it should land.** Three findings left
+`evaluation-integrity` because they are about an agent under test rather than
+about an instrument, which is that skill's stated subject. None is wrong and
+none should be lost, so each is queued here rather than deleted.
+
+- [ ] arxiv:2609.18605 — *PACT*, the pressure magnitude: ordinary user pressure
+  raised rule-violation rates by an average of 65 percent across 22 models, and
+  the strongest assistants still misapplied a compliance rule on 6 to 10 percent
+  of items. The pressure in question was a persistent user, a hurried manager and
+  an attractive shortcut, not adversarial jailbreaking, which is what makes it a
+  finding rather than a restatement. It belongs in `agent-security-measurement`,
+  whose subject is the operating point a defence buys. What stayed behind in
+  `evaluation-integrity` is only the item-audit half — asked by
+  skills/evaluation-integrity
+- [ ] arxiv:2609.17320 — *Emergence World*, the long-horizon world-stress design:
+  multi-agent worlds run for days with a phishing campaign injected on days four
+  to seven, a misinformation claim on day ten and a memory breach through a search
+  tool on day thirteen, with no evaluated world fully resilient across all three,
+  and alignment not compositional, so the same model behaved differently in a
+  mixed population than in a homogeneous one. The non-compositionality result is
+  the one this library has no other home for, and it is the one a team assembling
+  a system from separately-evaluated models most needs. The separate-axes half
+  stayed behind and is now the only thing eval task ei-t12 scores — asked by
+  skills/evaluation-integrity
+- [ ] arxiv:2609.08126 — *SchemeArena*, the detector's own F1 of 90.73 percent
+  against human validation. Cut because a detector's accuracy is a fact about the
+  detector rather than about the instrument that uses it, and
+  `agent-security-measurement` already carries detector recall as a subject. The
+  factorized-scenario construction and the 3.21-of-4 realism score stayed
+  behind — asked by skills/evaluation-integrity
+
+**One provenance note the next run with a database has to settle.** This run had
+no `NEON_RO_URL`, so it could not re-verify the id-to-paper mapping in
+`evaluation-integrity`'s `provenance.claims`, and therefore removed no id even
+though three papers lost prose. The frontmatter still lists all 30 ids and all
+ten papers, and every paper is still cited by title somewhere in the body, so
+the file satisfies the contract's "every id traces to a citation" check at the
+paper level and not necessarily at the sentence level. The four ids this seat
+infers are PACT's, from the frontmatter's ordering alone, are 557, 559, 560 and
+561. Inferred, not verified, and recorded here so the ADR-13 provenance reviewer
+has somewhere to start rather than a silent gap.
+
+**A question the retrofit raised and could not answer.**
+
+- [ ] question — Does delta 3's channel half belong in this skill at all? It is
+  the one delta this seat expects a strong bare model to supply unprompted
+  ("close the shortcut in the environment, not in the instructions"), and ADR-38
+  rule 1 says a section whose advice is already in the bare answer is cut. No
+  bare-arm screen has run on this skill, so the question is unanswerable today
+  and is the first thing the eval route should settle when it lands. The defect
+  ordering (narrow tests at 75 of 119) and the four named channels are the parts
+  that would survive even a bad screen — asked by skills/evaluation-integrity
