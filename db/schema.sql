@@ -676,6 +676,31 @@ create index if not exists consumed_codes_expires_idx on consumed_codes (expires
 create unique index if not exists promotions_skill_path_idx
     on promotions (path) where kind = 'skill';
 
+-- `live_at`: when a self-improvement proposal actually started running.
+-- Sprint 2026-10-26 item 4, and the column the 2026-10-18 OKR check-in was
+-- reaching for when it graded O3 KR2 "met on the letter, not on the spirit."
+--
+-- `status` and `decided_at` are about the human gate (ADR-7): a merge is the
+-- approval. They were also, until this column, the only thing the loop could
+-- call its own ending, and that is the defect. `modal deploy` bakes the
+-- repository into an image, so a merge and a deploy are two events, and
+-- `INC-2026-10-12-meta-review-proposal-merged-never-deployed` is what lives in
+-- between them: `prompts/triage.md` changed on 2026-10-05, the triage job went
+-- on running the prompt of 2026-09-29, and 8,861 rows were judged against the
+-- old one.
+--
+-- So the two facts get two columns. `decided_at` says a human approved it.
+-- `live_at` says the image that reads the file is running code that contains
+-- the merge, which is the question `tools/loop_close.py` asks and the only
+-- answer that closes the loop. A row with `decided_at` set and `live_at` null
+-- is a merge that has bought nothing yet, and that row is now countable.
+alter table promotions add column if not exists live_at timestamptz;
+
+-- Partial, because the query this serves is "what is still open" and a loop
+-- that has closed is never asked about again.
+create index if not exists promotions_open_system_diff_idx
+    on promotions (id) where kind = 'system_diff' and live_at is null;
+
 -- ============ deploy_runtime: what each scheduled job is actually running ============
 -- Sprint 2026-09-28 item 2. `modal deploy` bakes the repository into an image,
 -- so a merge to main and a deploy are two events, and the org has twice

@@ -486,7 +486,17 @@ def serve():
         as a pull request (ADR-7 — the human merge is the gate). Only
         prompts/*.md and sources.yaml may be targeted. `new_content` is the
         complete new file; `rationale` must cite the evidence (triage stats,
-        graph errors, human verdicts) that justifies the change."""
+        graph errors, human verdicts) that justifies the change.
+
+        The merge is the gate and it is not the end. `modal deploy` bakes this
+        repository into an image, so the job that reads the file goes on
+        reading the old one until somebody rebuilds it, and the only proposal
+        this product has ever merged spent twelve days in that gap with 8,861
+        rows judged against the prompt it replaced
+        (`INC-2026-10-12-meta-review-proposal-merged-never-deployed`). The row
+        written below therefore opens with `live_at` null, and
+        `tools/loop_close.py` sets it after reading the deploy — never at the
+        merge."""
         if not re.match(r"^(prompts/[a-z0-9_-]+\.md|sources\.yaml)$", path):
             return {"error": "only prompts/*.md and sources.yaml can be changed by proposal"}
         gh = httpx.Client(
@@ -505,13 +515,21 @@ def serve():
             put["sha"] = existing.json()["sha"]
         gh.put(f"/contents/{path}", json=put).raise_for_status()
         body = (f"{rationale}\n\n"
-                "Proposed by the alexandria meta-review — merging this PR is the approval (ADR-7).")
+                "Proposed by the alexandria meta-review — merging this PR is the "
+                "approval (ADR-7), and it is not the end of the loop. The job "
+                f"that reads `{path}` keeps reading the deployed image until "
+                "somebody rebuilds it, so this proposal counts as done only "
+                "once `tools/loop_close.py` can see the running code contain "
+                "this merge. Until then it is dark, and the board says so.")
         pr = gh.post(
             "/pulls",
             json={"title": f"meta: {path}", "head": branch, "base": "main", "body": body},
         ).raise_for_status().json()
         with db() as conn:
             conn.execute(
+                # `live_at` stays null here on purpose: the row is opened by
+                # the proposal and closed by `tools/loop_close.py` after a
+                # deploy-confirmation read, which is sprint-2026-10-26 item 4.
                 "insert into promotions (claim_ids, kind, path) values ('{}', 'system_diff', %s)",
                 (pr["html_url"],),
             )

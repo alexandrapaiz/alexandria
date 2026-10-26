@@ -808,3 +808,57 @@ this repository falsified a comment inside it. The question above, which of
 its inputs the runtime actually has, is unanswerable from a docstring for
 exactly this reason, and the ledger carries a `proposed` entry of 2026-10-24
 asking for the declaration to be data instead.
+
+## 2026-10-26 (engineer seat): a ninth surface, for the change the product made to itself
+
+Every surface above this one watches something the product does for a reader.
+This one watches something it does to itself, and it is here because the
+existing surfaces were all green while it failed.
+
+`deploy` asks whether the running image is the trunk, and inside its grace
+window a pending deploy is correctly not a fault. `loop` asks a narrower
+question that a green `deploy` does not answer: is one specific merged change
+the system proposed about its own prompts actually inside the image that reads
+it. On 2026-10-05 the meta-review merged a new `prompts/triage.md`. The triage
+job went on reading the prompt of 2026-09-29 for twelve days and judged 8,861
+papers with it, and nothing in this report said so, because every surface here
+was about delivery to a reader and the stale prompt delivered an issue every
+week (`INC-2026-10-12-meta-review-proposal-merged-never-deployed`).
+
+The 2026-10-18 OKR check-in graded O3 KR2 "met on the letter, not on the
+spirit" for exactly that gap: a loop that closes at the merge has not closed.
+`sprint-2026-10-26` item 4 is the instruction to move the closing condition,
+and this surface is where the moved condition is read.
+
+**What `loop` reads.** `tools/loop_close.py`, called and not copied. Open
+`system_diff` rows in `promotions`, each one a pull request `propose_change`
+opened; then GitHub for whether it merged and into which commit; then the
+`deploy_runtime` row for the app whose image contains the file, through the
+same `undeployed_commits` replay the `deploy` surface uses; then
+`git merge-base --is-ancestor`.
+
+**Four answers, and one of them is new to this page.** `live` is the merge
+inside the running image. `dark` is merged and not inside it, which is the
+state the organization used to call done and the only one that fails this
+surface. `open` is a proposal still in review. `no_reader` is a file no
+scheduled image adds, where there is no deploy to confirm and the surface says
+so rather than passing.
+
+**It refuses to answer rather than guess, in one specific place.**
+`--is-ancestor` on a grafted history answers "not an ancestor" for a commit
+that is one, and the host clones one commit deep. So the deepening fetch runs
+first, and a checkout still shallow after it reads `unknown`. An unknown
+anywhere also stops the write: closing a row is the one thing the next run
+cannot take back.
+
+**The write has nowhere to run yet, and that is a finding rather than a
+caveat.** `promotions.live_at` is the done event in the data. Setting it needs
+a database, a git checkout with real history, and GitHub, all at once, and no
+runtime here holds all three: the Modal container has the credential and no
+`.git`, a seat has the checkout and no credential. A step wired into
+`pipeline/skill_revision.py` was written during this work and taken back out
+rather than shipped inert, because an unrunnable closing step is this item's
+own defect one level down. Until a seat holds a read-only database URL
+(`docs/agents/pending-workflow-changes.md` item 6), the done event the org can
+see is this surface and the board card `--post` writes, and both fire on a
+deploy-confirmation read rather than on a merge.

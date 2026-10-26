@@ -22715,7 +22715,7 @@ and the README was the only one.
 
 ---
 
-## INC-2026-10-26-pm-woken-twice-for-the-558-merge-event: fourth instance of the duplicate-wake class, caught before any duplicate work (2026-10-26, pm seat)
+## INC-2026-10-26-pm-woken-twice-for-the-558-merge-event — fourth instance of the duplicate-wake class, caught before any duplicate work (2026-10-26, pm seat)
 
 Another instance of
 `INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`.
@@ -22744,7 +22744,7 @@ runtime's attention and not this seat's to fix.
 
 ---
 
-## INC-2026-10-26-twentyfour-tier-a-prs-were-held-as-tier-b-and-sat-open-for-up-to-31-hours: a Tier A/Tier B misclassification, not a conflict (2026-10-26, pm seat)
+## INC-2026-10-26-twentyfour-tier-a-prs-were-held-as-tier-b-and-sat-open-for-up-to-31-hours — a Tier A/Tier B misclassification, not a conflict (2026-10-26, pm seat)
 
 **What happened.** PR #531 (this seat's own Monday ceremony pass) reported
 "22 of my own pull requests sit open and unmergeable by me (Tier B
@@ -22783,3 +22783,131 @@ re-check the rule against the diff rather than diagnose the misread.
 #531 itself is correctly held: it also touches `docs/playbook.md`, which
 is not on the Tier A list, so that PR is genuinely Tier B condition 1 and
 genuinely not this seat's to merge. Ban list checked on this entry.
+
+## INC-2026-10-26-the-oldest-ledger-entrys-newest-note-said-its-own-file-did-not-exist-for-thirteen-days — a dated note is still a stale conclusion when nothing re-reads it against the tree (2026-10-26, engineer seat, sprint item 5)
+
+**Observed** while answering `sprint-2026-10-26` item 5, which asked whether
+the institution backfill can run this week. The ledger entry it points at,
+`docs/ideas.md` "2026-09-17 — Institution backfill, then regenerate and
+resend digest", is the oldest `accepted` entry in the file. Its most recent
+reading before today was the PM's Monday grooming of 2026-10-12, and that
+note says, in its own words:
+
+> No `backfill_institutions.py` exists anywhere in the tree (only
+> `backfill_topics.py`, `backfill_grades.py`)
+
+`pipeline/backfill_institutions.py` landed on 2026-10-13 in commit `7b418b90`,
+one day later. Its extractor moved to `pipeline/institutions.py` on 2026-10-15
+so the live insert and the repair could not disagree, and
+`python3 -m pytest tests/test_institution_backfill.py` is 41 passed in 0.26s
+today. So the entry's newest note told every reader for thirteen days that the
+work had no code, while the code sat in the tree, tested, 342 lines long, and
+one `modal run` from done.
+
+**The repeat.** This is the mechanism of
+`INC-2026-10-23-a-registers-summary-contradicted-its-own-table-four-times-in-twelve-days`,
+which counted four instances on one page and named the cause: a number in a
+register carries the moment it was taken, and the prose next to it carries no
+date, so a reader discounts a stale measurement and reads a stale conclusion
+as current forever.
+
+**And it adds the half that incident's fix does not cover, which is the
+reason to write it down rather than cite it.** That entry's repair was to put
+the date in the sentence. This note already had one. It opens "Groomed
+2026-10-12 (PM, Monday ceremony)" and it misled anyway, because a date tells a
+reader when a claim was made and not whether anything has happened since. On a
+register of standing work the two are different questions. A measurement in
+`quality-claims.md` is about a corpus that moves on its own, so its date is a
+decay estimate. A grooming note is about this repository, so its date is only
+useful beside the question nobody asks: has the tree changed under it. The
+ledger's oldest entries are exactly where the gap is widest, because an entry
+accepted five weeks ago has had five weeks of commits land under a note that
+was true the hour it was written.
+
+**What it cost, and what it nearly cost.** Nothing was rebuilt, because this
+run read the tree before it read the note. The near miss is the shape to
+record: item 5's done condition was a plain statement about whether the job can
+run, and the note in front of it said there was no job. A run that trusted the
+ledger would have reported "no implementation exists, carried again" and been
+wrong in the one sentence the item existed to produce. Three sprints have now
+carried this entry, and `sprint-2026-10-05` ranked it #1 by leverage against
+the whole accepted backlog while the file it says is missing was two days from
+landing.
+
+**Fixed in this pull request.** The entry gains a dated 2026-10-26 note that
+corrects the 2026-10-12 claim in its own words rather than quietly, states the
+live block (Modal's workspace, off since 2026-10-23, probed this morning), and
+separates the block in the platform from the second block in the resend path
+that outlives it. The general repair is proposed rather than built, as
+`docs/ideas.md` "2026-10-26 — One command for 'what is blocked right now, and
+for how long'", because the join this wants is between the ledger's `urgent`
+cards and the delivery-health surfaces that can probe them, and that is a tool
+rather than a sentence. Ban list checked on this entry.
+
+## INC-2026-10-26-the-ledger-ratchet-went-red-twice-in-48-hours-and-both-gates-are-in-the-uncovered-pin — the remedy is applied by the run that finds it and does not survive two days (2026-10-26, engineer seat)
+
+**Observed** while running the local checks before readying this run's pull
+request. `python3 -m pytest tests/ -q` on a tree merged clean from
+`origin/main` returned `2 failed, 2185 passed, 1 skipped` in 315 seconds. Both
+failures were already on `main`, confirmed by re-running each assertion against
+`git show origin/main:docs/ideas.md` and the merged register.
+
+1. `tests/test_ledger.py::test_every_live_entry_carrying_a_readable_status_has_the_contract_fields`.
+   209 readable entries in `docs/ideas.md` are missing contract fields,
+   against a bound of 206 that its own message dates to 2026-10-17.
+2. `tests/test_incidents.py::test_the_live_register_ids_all_parse`. Two
+   headings in this file, both written today by the PM seat, separate the
+   `INC-` id from its summary with a colon where the convention at the top of
+   this file uses an em dash. The id parses, the date does not, so
+   `Entry.date` comes back `None` and a charter that cites the entry by id
+   gets nothing.
+
+**What is not new here, said first, because this run drafted it as a discovery
+before reading the repository properly.** That `tests/` has far more files than
+any workflow runs is known, measured and already escalated. It is
+`INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had`. It has an
+instrument, `tools/ci_coverage.py`, and a gate, `tests/test_ci_coverage.py`,
+whose `UNCOVERED` pin lists every test file no workflow executes and names
+both of today's failing files explicitly. Twelve test files are run by CI,
+nine under `pytest` and three as scripts, against 64 `test_*.py` files. And
+the fix is written: line 110 of `.github/workflows-pending/checks.yml` is
+`python3 -m pytest tests/ -q`, staged since 2026-10-07 because applying it
+needs a `workflows` permission no agent seat holds. Nineteen days. The ledger
+entry of 2026-09-24 that asks for it now carries that count.
+
+**What is new is that the remedy has a half-life of two days.** On 2026-10-24
+this same gate was red on `main` at 207 against the same bound of 206, by the
+same mechanism, and the run that found it fixed it by supplying the missing
+fields rather than by raising the ratchet. That is the right remedy and it is
+recorded in `docs/ideas.md` in that run's own words. The file was back over
+the bound within 48 hours, at 209, and nothing anywhere said so. Six seats
+append to this ledger daily and most of what they append is craft scans and
+findings, whose shape is `Trigger / Worth stealing / What alexandria does
+better / First step / Cost / Status`, so each day's appends push the count up
+by one or two and each repair is a single run reaching back over its own
+entries. A floor defended only by a test nothing runs is a floor that holds
+until the next append.
+
+**And the heading defect is the same shape in the other register.** A colon
+instead of an em dash is a defect a gate catches in under a second, the gate
+exists and passes 31 assertions, and it reported nothing on the pull request
+that introduced it, because `tests/test_incidents.py` is in the same pin. Two
+registers, two gates, one reason neither spoke.
+
+**Fixed in this pull request.** Both heading separators, punctuation only, both
+seats' wording untouched, so `tests/test_incidents.py` is 31 passed. And the
+contract fields supplied on four entries, all of them this seat's own craft
+scans, following the 2026-10-24 precedent of supplying rather than raising:
+the Semantic Router scan of this morning, the Elicit and Consensus scans of
+2026-10-24, and the Semantic Scholar scan of 2026-10-16. `docs/ideas.md` goes
+from 209 to 205, one under the bound, and this branch's own appends add
+nothing to the count. Nothing moved the 206.
+
+**What is not fixed, and it is the whole entry.** The CI half is a workflow
+edit and no agent seat may push one, so it stays with the owner as the
+nineteen-day escalation above. Until it lands, this gate goes red again the
+next time two seats append a scan on the same day, and the next reader will be
+whoever happens to type the command. The open question underneath it is on the
+ledger as "2026-10-26 — Whether the ledger contract covers a craft scan,"
+because if the answer is no then six seats are not breaching anything and the
+instrument is counting the wrong population. Ban list checked on this entry.
