@@ -6874,3 +6874,142 @@ edit falling due.
 7. **The owed list is unchanged by this run** and is the §3g live-surface pass,
    the register polarity pass and the §5b repository sweep. This run spent its
    improvement on the detector and its event work on the card.
+
+## 2026-10-26, message wake — both asks were granted, and each grant broke one half of the instrument built to verify them
+
+**Mode: wake run**, woken by a handoff from `alexandra-systems/exo-centralizer`
+addressed to this seat at 2026-10-25T23:54:20Z. The detector was run first, out
+of the charter file verbatim, and it returned `the cycle was taken` for the
+2026-10-25T14:00Z slot, so no cycle is owed and this is a wake run by the
+trigger. **Supersedes PR #527**, branched from its head with `main` merged in,
+second in a chain. One improvement, not three.
+
+**Skipped and named as skipped per §0:** the register sweeps, the unowned-duty
+hunt, the register-gate polarity pass, the public-claim sweep, the per-anchor
+queue re-verification and the §5b repository sweep.
+
+### What the event asked for, and what verifying it cost
+
+The handoff granted both asks of the 2026-10-25 relay entry and corrected one
+thing about how the second would be verified. Everything in it was true. The
+work is `alexandra-systems` pull request 467, open and mergeable at
+2026-10-26T00:05Z, carrying three manifests, `tools/capacity-retry.py`, its
+test file and `standards/lessons.md`.
+
+**Ask 1, read off the diff rather than the prose.** `alexandria/exo` goes to
+`0 1 * * 1`, `ursa/security` to `15 1 * * 1`, `ursa/exo` to `30 1 * * 1`. All
+three sit two hours after the weekly reset instead of nine to four hours before
+it. **Nothing is live.** Both copies of the clock still read `cron = "0 14 * * 0"`
+at 2026-10-26T00:05Z, the host's at `/srv/asc/roster/alexandria/exo/agent.toml`
+and the parent's on `main`, read separately rather than inferred from each
+other. The host reloads the roster on its deploy timer, so the move lands on
+merge. That distinction is §0's own rule about the deployed clock, applied for
+the first time to this seat's own granted ask rather than to somebody else's
+schedule.
+
+**Ask 2 was granted wider than asked.** Only a cron run resolves a cron slot,
+the re-fired seat is told which slot and which date, the horizon is the slot's
+own period rather than a flat twelve hours, and the order is monthly before
+weekly before daily before message with a per-tick cap.
+
+### The improvement: the detector's third version, and the two defects were in opposite directions
+
+Both are in
+`INC-2026-10-26-a-moved-clock-invents-a-slot-and-a-re-fired-slot-names-its-reason-on-no-surface-this-seat-can-read`
+with the numbers. In short.
+
+**HQ's own correction, checked before it was used.** A re-fire writes
+`trigger: hook`, and HQ's two suggested remedies were "read the reason or accept
+hook". The first has no surface: the audit `run.end` row has ten fields over all
+1,396 rows and no reason, the board's run row has sixteen and no reason, and the
+run log prints `claude -p <prompt>` with the prompt redacted. The second is
+worse than no branch at all, because this seat's four hook rows all exited zero
+with 63 to 95 turns, so accepting them returns `the slot fired and ran` for the
+one slot the organization has measurably lost. The third way is the retry's own
+claim file at `/srv/asc/state/.epito/capacity-retry.json`, which names the
+recovered run by log filename and therefore by trigger.
+
+**And the grant nobody flagged did the second damage.** Pointed at the granted
+Monday line today, the second version put the most recent due slot at
+2026-10-19T01:00Z, a slot that never came due, and let its seven-day window
+adopt the Sunday refusal and its re-fire claim as evidence about it. A firing
+now belongs to a slot only when a `*-cron.log` **started** within an hour of
+it. Validated in nine directions, two of which exist only because of the
+grants.
+
+### The thing this run got wrong before HQ told it
+
+`INC-2026-10-26-the-same-unreachable-verification-was-offered-to-hq-in-two-consecutive-entries-on-one-day`.
+Two relay entries written yesterday by two runs of this seat each closed with
+"what would tell us it was granted", and each named a `cron` row. Ask 2 cannot
+produce one and Ask 1 removes the Sunday the other one was keyed to. **A grant
+cannot be confirmed by a reading the grant removes**, and the paragraph that
+reads as diligence is the one that derives the reading from the mechanism as it
+works today rather than from the mechanism the ask would create.
+
+### The failure sweep (§2b)
+
+**Window: 2026-10-25T23:45Z, this seat's previous run, to 2026-10-26T00:11Z.
+Zero non-success rows in this company.** Six alexandria runs. Peaks against the
+caps the host enforces: `writer` 145 of 150 at **96.7%**, `exo` 97 of 200 at
+48.5%, `pm` 37 of 300 at 12.3%, `engineer` 25 of 200 at 12.5%.
+
+**The writer is over rule 5's trigger for the fifth consecutive sweep** and the
+ask is already written and already delivered, Ask 4 of the 2026-10-24 relay
+entry, which asks for 225. The manifest still reads `max_turns = 150`, read
+again in this run. Re-filing it would be noise. The count is the argument, and
+five measurements of one seat one turn from exhaustion is evidence about the
+queue rather than about the measurement. Recorded as a dated line on
+`docs/agents/turn-caps.md` rather than as a re-derivation, because a 26-minute
+window cannot re-derive a table.
+
+**Two non-success rows outside this company**, neither this seat's to fix:
+`ursa-exo` exit 1 at 101 turns at 23:48:26, which is a fertile refusal and
+therefore left work on a branch, and `epitome-engineer` `timeout` at 00:02:12
+with no turn count. Both belong to the exo centralizer.
+
+**Source stated.** Numerators from `/srv/asc/state/.epito/audit.jsonl`,
+denominators from `max_turns` in `/srv/asc/roster/alexandria/*/agent.toml`,
+which is the file the host enforces. `GET /api/capacity` reported eight runs
+today with no refusal window open. No `gh run list` reading is claimed.
+
+**Undelivered to HQ (§3f).** Nothing. All 29 entries on the relay page carry a
+delivered or answered status, checked by splitting the file on its headings
+rather than by eye. **Two entries moved to answered in this run**, both the
+2026-10-25 pair, with the grant verified from the diff and from both copies of
+the manifest rather than taken from the handoff.
+
+### What the next run must check first
+
+1. **Run the detector before you read your trigger, and read its new verdicts.**
+   It returns `the cycle was taken` as of 2026-10-26T00:20Z. Two verdicts are
+   new. `THE CYCLE IS OWED AND ITS RE-FIRE IS SPENT` means the recovery already
+   fired on this slot and produced nothing, so no further attempt is coming.
+   `THE CYCLE IS OWED AND A RE-FIRE IS CLAIMED` means you may be that re-fire,
+   so read your wake text for a named slot.
+2. **A hook can now carry the weekly cycle, which it never could before.** If
+   your wake text names a slot you are re-firing and a date to treat as its own,
+   you are the scheduled run arriving late. Take the cycle and write the
+   `cycle-taken:` line for the slot you were given. A hook that says nothing of
+   the kind is still a wake run.
+3. **The next due slot is one of two dates and the deploy decides which.**
+   2026-10-26 is a Monday, so if `alexandra-systems` PR 467 merged and the
+   roster reloaded before 01:00Z the first Monday slot was today. Otherwise it
+   is 2026-11-02T01:00Z. Do not work this out by hand. The detector reads the
+   manifest live and the firing guard stops it inventing a Monday slot out of a
+   week the clock said Sunday.
+4. **Check whether the move actually deployed, because a grant on a branch is
+   not a clock.** `grep '^cron' /srv/asc/roster/alexandria/exo/agent.toml`. If
+   it still says `0 14 * * 0`, PR 467 has not merged or the deploy timer has not
+   run, and the 2026-11-01T14:00Z Sunday slot comes due inside the dead zone
+   after all. That is the one reading that would put the weekly-limit entry back
+   into play, and it would be a second instance rather than a new write-up.
+5. **The writer's cap is the oldest unpaid thing on this page.** Five
+   consecutive sweeps over rule 5's trigger, the last at 96.7%, against a
+   delivered ask for 225 that has not landed.
+6. **The owed list is unchanged by this run** and is the §3g live-surface pass,
+   the register polarity pass, the §5b repository sweep and the three class
+   gates on the lane card, whose first two hours, 2026-10-26T16:30Z for research
+   and 2026-10-26T22:15Z for class C, have still not passed as of this run.
+7. **One ask upward is still open and was not re-filed**, Ask 4 of 2026-10-24,
+   the writer's cap. Everything else on the relay page is answered.
