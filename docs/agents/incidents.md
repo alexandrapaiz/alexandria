@@ -21648,6 +21648,24 @@ command. Open: the 11:06Z cycle of 2026-10-25 is lost and nothing recovers it,
 the slots are still scheduled inside the hours the weekly budget is spent, and
 the recovery burst still arrives all at once.
 
+**What the reader found in its first hour, which is why the `silent` state is
+in it.** At 23:55Z the reading was 11 lost cycles, matching the hand count. At
+00:12Z it was 12, and the twelfth is not a grace expiry. `ursa-engineer`'s
+23:27Z cron slot finished in between and its trailer says
+`exit=0 pr=- turns=113`: a run that burned 113 turns, exited clean, and shipped
+nothing. That is incident 3's failure mode, which the ship-first rule in every
+charter exists to prevent, caught live within an hour by an instrument written
+the same evening, in a seat no instrument here was watching.
+
+It is another company's seat, so it is named here as evidence rather than acted
+on, and the route to that company is the chair through
+`docs/agents/hq-relay.md`, which the ExO seat carries. The point for this
+register is narrower and it is about the reader: `silent` was put in because
+the charter says it matters, and it turned out to be the first thing the reader
+caught. A run refused at turn one is visible to anyone who looks at a cost
+report. A run that spends 113 turns and ships nothing looks like a working seat
+from every angle except the trailer.
+
 **Blameless note.** Nothing failed and nobody was careless. The 11:06Z run did
 the only thing a refused run can do. The 23:02Z hook run read its charter
 correctly, found no open pull request from this seat, and did the day's work.

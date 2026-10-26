@@ -322,6 +322,26 @@ def test_a_firing_far_off_the_habitual_slot_leaves_the_question_standing(tmp_pat
         ("23:06Z", "unseen"), ("23:52Z", "in-flight")]
 
 
+def test_a_log_outside_the_window_is_skipped_on_its_name(tmp_path):
+    """The archive only grows, so the reader may not open all of it every day.
+
+    1,714 logs and 9.8 MB after five weeks on this host. Reading the lot to
+    answer about one day took 2.6 seconds; reading the window takes 0.22.
+    """
+    write_log(tmp_path, "alexandria-engineer", "2026-01-01T11-06-00-000Z",
+              "cron", completed(), exit_code=0, turns=4, pr="x/pull/1")
+    write_log(tmp_path, "alexandria-engineer", "2026-10-25T11-06-00-000Z",
+              "cron", completed(), exit_code=0, turns=4, pr="x/pull/2")
+    window = cf.days_back("2026-10-25", 14)
+    assert len(cf.read_runs(tmp_path)) == 2
+    assert [r["day"] for r in cf.read_runs(tmp_path, days=window)] == ["2026-10-25"]
+
+
+def test_the_window_covers_the_day_asked_about_and_the_days_before_it():
+    window = cf.days_back("2026-10-25", 2)
+    assert window == {"2026-10-25", "2026-10-24", "2026-10-23"}
+
+
 def test_the_history_window_is_what_bounds_the_question(tmp_path):
     write_log(tmp_path, "okr", "2026-09-01T16-00-00-000Z", "cron",
               completed(), exit_code=0, turns=9, pr="x/pull/3")

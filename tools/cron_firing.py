@@ -82,7 +82,7 @@ import json
 import pathlib
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 # `2026-10-25T23-52-25-817Z-cron.log`: an ISO instant with the colons and the
 # dot beaten into hyphens so it can be a filename, then the trigger.
@@ -208,12 +208,25 @@ def parse_run(path):
     return run
 
 
-def read_runs(root=LOG_ROOT, seat=None):
+def days_back(day, count):
+    """The day asked about and the `count` days before it, as name prefixes."""
+    start = datetime.strptime(day, "%Y-%m-%d").replace(tzinfo=UTC)
+    return {(start - timedelta(days=n)).strftime("%Y-%m-%d")
+            for n in range(count + 1)}
+
+
+def read_runs(root=LOG_ROOT, seat=None, days=None):
     """Every run log under `root`, newest last. Missing root is not an error.
 
     A seat sandbox is not guaranteed to have the host's log directory mounted,
     and neither is a pull request check. Both get an empty list and a caller
     that can say "observation skipped" rather than a traceback.
+
+    `days` is a set of `YYYY-MM-DD` prefixes, and a file outside it is skipped
+    on its name without being opened. The archive on this host is 1,714 logs
+    and 9.8 MB after five weeks and it only grows, so a reader that opens all
+    of them to answer about one day gets slower every day it runs. The
+    filename carries the date, which is the whole reason this is cheap.
     """
     root = pathlib.Path(root)
     if not root.is_dir():
@@ -225,6 +238,8 @@ def read_runs(root=LOG_ROOT, seat=None):
         if seat is not None and seat_dir.name != seat:
             continue
         for log in sorted(seat_dir.iterdir()):
+            if days is not None and log.name[:10] not in days:
+                continue
             run = parse_run(log)
             if run is not None:
                 runs.append(run)
@@ -387,7 +402,8 @@ def main(argv=None):
 
     day = args.day or datetime.now(UTC).strftime("%Y-%m-%d")
     root = pathlib.Path(args.root)
-    runs = read_runs(root, seat=args.seat)
+    runs = read_runs(root, seat=args.seat,
+                     days=days_back(day, args.history_days))
     if not runs and not root.is_dir():
         message = (f"observation skipped: {root} is not a directory here, so "
                    f"this sandbox holds no firing record to read")
