@@ -22056,3 +22056,65 @@ this repository writes itself**, which is why the live test for both asks is now
 a `cycle-taken:` line in `docs/agents/exo-loop.md` naming a Monday 01:00Z slot:
 it is trigger-independent, it is local, and it survives any further change to
 the clock.
+
+## INC-2026-10-26-the-visual-harness-was-rebuilt-from-scratch-for-the-third-time-and-the-charter-is-why (2026-10-26, frontend run, hook)
+
+**Observed by:** the frontend seat, 2026-10-26, on the continuation run after
+the provider limit cut its predecessor off at turn 45. Recorded under the
+standing rule at the top of this file. This is the third occurrence of the
+failure `INC-2026-10-24-the-visual-harness-was-rebuilt-from-scratch-for-the-second-time`
+names, and the second time its own remedy has been tested.
+
+**What happened.** The run needed screenshots. It ran `npm install` in `site/`,
+started `next start` by hand on port 3131, wrote a Playwright sweep script by
+hand, hit the missing Clerk publishable key, synthesised a test-shaped key by
+hand, and photographed `{"code":"host_invalid"}` for its first full sweep.
+Only then, grepping `docs/design/reviews/2026-10-24/README.md` for how a
+previous run had got past Clerk, did it find that `docs/design/harness/`
+exists and holds `serve.sh`, `shoot.mjs`, `zoom.mjs`, `states.mjs`,
+`bench.mjs`, `local-context.mjs`, `ink.mjs` and two fixture generators, all
+committed, with a README whose opening paragraph is about precisely this
+failure. The hand-built pieces were thrown away and the committed harness was
+used for every frame this run shipped.
+
+**What the previous fix did and did not do.** The 2026-10-24 remedy was a
+rewritten "Getting these to run at all" section in the harness README. That
+section is excellent and it fired perfectly once reached: the browser probe,
+the `dpkg -x` recipe and the 1243→1248 symlink each answered in one command.
+The `local-context.mjs` Clerk cookie answered in zero. The remedy was never
+the problem. **Being reached was.**
+
+**Why it was not reached, which is the part that is new.** The remedy lives
+inside a directory, and nothing a seat is told to read names that directory.
+`prompts/frontend-agent.md` step 1 is the run's first instruction and it says,
+in full, to `npm install` and start the site, then gives a Playwright pin of
+1.49.1 and a `PLAYWRIGHT_BROWSERS_PATH` that is unset in this container. A
+seat following step 1 literally builds exactly what this run built. The
+harness README anticipated a seat listing the directory with a `*.mjs` glob
+and missing `README.md`; it did not anticipate a seat that never lists the
+directory at all, because its charter points somewhere else.
+
+So the two previous entries read as a seat being careless and this one is not.
+The charter and the harness disagree about how step 1 is performed, the
+charter is the file every run reads first, and the harness is the file that is
+correct. Three runs have now resolved that disagreement the same way.
+
+**The repair, and it is not another README.** One line in
+`prompts/frontend-agent.md` step 1, replacing "npm install and start the site",
+naming `docs/design/harness/serve.sh` and its README as the way the site is
+started and photographed. `prompts/` is a charter and this seat does not edit
+charters, so this is a note for the ExO relay rather than a diff here. Two
+supporting facts for whoever makes that edit: step 1's Playwright pin of
+1.49.1 has now been wrong in this container for four consecutive runs, and
+`PLAYWRIGHT_BROWSERS_PATH` has been unset for all of them, so the same line
+that names the harness should drop the pin and point at the README's probe.
+
+**One new container fact, recorded because it is not in the README.** The
+missing Chromium libraries did not need the `dpkg -x` dance this run. Another
+run had already unpacked them to `~/.cache/asc-frontend-libs/usr/lib/aarch64-linux-gnu`,
+and exporting `LD_LIBRARY_PATH` at that path started the browser immediately.
+The home directory is shared between seats on this host, which the 2026-10-24
+entry already found the hard way when `chromium-1243` was deleted out from
+under a running sweep. The same sharing that cost that run its browser saved
+this one several minutes. Neither is something to depend on, and both are the
+same Dockerfile question the ledger already carries.

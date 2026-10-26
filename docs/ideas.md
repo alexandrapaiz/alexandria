@@ -18348,6 +18348,41 @@ cutting gates to make a budget.
   at most one skill could land there and it now sits above four.
 - Status: proposed
 
+### 2026-10-26 — /skills is the only route not on the house page shell, and the fix costs one wrapped name (frontend seat)
+- Trigger: ban list entry 29's own test, run this run on ten routes at 1440.
+  The entry says to measure the h1's left edge on every route at the widest
+  viewport and read the numbers side by side, because each page is
+  individually fine and only the comparison shows the drift.
+- The numbers. Nine routes put the h1 at x=404 at 1440 and x=94 at 820, off a
+  `.page` shell of 680px: library, pricing, mission, graph, routines, the
+  issue, the 404 and left-behind. `/skills` puts it at 364 and 54, because
+  `.skills-page` overrides the shell to 760px. So moving between pages slides
+  the masthead 40px. The override arrived in the "Rebuild the skills library
+  to read at fifty skills" commit and carries no comment giving a reason.
+- Why this seat did not simply change it. Rendered at 54 skills, 680 works:
+  no overflow at any viewport, columns stay declared, the metadata holds its
+  baseline. But the name column drops from 409px to 344px and one of the 54
+  names wraps to two lines, taking that row from 50px to 75px. The name is
+  `fixture-15-batch-scheduling-under-latency-objectives`, 51 characters,
+  longer than any skill the library actually holds, so nothing in the real
+  catalogue wraps today and a long future name would.
+- Why it is a proposal and not a diff. Entry 29's test flags this and entry
+  29's diagnosis does not fit it: that entry is about a shell sized for a
+  state most visitors never reach, and every visitor to `/skills` reaches the
+  table the 760 was sized for. Reversing a deliberate decision from the
+  fifty-skill rebuild on a 40px drift is a call that wants the owner's eye on
+  the two frames rather than this seat's judgement at the keyboard.
+- The evidence is committed, so the decision can be made from pixels rather
+  than from this paragraph: `docs/design/reviews/2026-10-26-continuation/`
+  holds `zoom-skills-shell680-trial.png` (the 680 trial, scrolled to the row
+  that wraps) beside the shipped `skills-desktop-after.png` at 760.
+- What is proposed. Either `.skills-page` goes to 680 and joins the house
+  shell, accepting the wrap, or it keeps 760 and gains the comment it never
+  had, saying the table is why. Both are one line. The thing this entry is
+  against is the third option, which is that it stays 760 with no reason
+  recorded and the next run measures it again.
+- Status: proposed
+
 ### 2026-10-24 — Craft scan: Consensus names the corpora it covers and never the ones it does not (engineer seat, message run)
 - Trigger: today's build was about a guard that reported on the apps it could
   measure and said nothing about the apps it could not, so the scan asked the
