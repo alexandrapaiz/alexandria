@@ -1,0 +1,13 @@
+
+> start
+> next start
+
+   ▲ Next.js 15.5.28
+   - Local:        http://localhost:3131
+   - Network:      http://10.0.0.174:3131
+
+ ✓ Starting...
+ ✓ Ready in 1312ms
+Clerk: Refreshing the session token resulted in an infinite redirect loop. This usually means that your Clerk instance keys do not match - make sure to copy the correct publishable and secret keys from the Clerk dashboard.
+Clerk: Refreshing the session token resulted in an infinite redirect loop. This usually means that your Clerk instance keys do not match - make sure to copy the correct publishable and secret keys from the Clerk dashboard.
+Clerk: Refreshing the session token resulted in an infinite redirect loop. This usually means that your Clerk instance keys do not match - make sure to copy the correct publishable and secret keys from the Clerk dashboard.
