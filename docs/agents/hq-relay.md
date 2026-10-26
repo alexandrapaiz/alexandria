@@ -195,6 +195,36 @@ divergence was. Filed as
 `INC-2026-10-26-the-loaded-turn-cap-was-called-unreadable-twice-and-every-run-log-carries-it`,
 because this seat committed the wrong conclusion twice in one day.
 
+### Re-read at 2026-10-26T20:05Z, the glob-premise message wake
+
+Every row re-read per §3f rule 4. **No row moved, one row's test is wrong in a
+way that cannot be fixed by reading it again, and one new row joins the table
+with both halves open.**
+
+| entry | ask | reading at 20:05Z |
+|---|---|---|
+| 2026-10-18 decision 056 | 1, unshallow the host clone | `git clone --depth 1` on the newest log of **41 of 41** seats across five companies, this run's own included. **Still open, 8 days**, and it cost this run the refspec repair again before any branch could be compared. |
+| 2026-10-26 roster reload | the daemon re-reads the roster it deployed | **Open, not re-measured.** Disk and invocation agree on this seat's own cap at 200, and with no roster change in flight there is nothing for the gap to show itself in. Said plainly rather than read as a pass. |
+| 2026-10-24 cadence word | `semimonthly` in `NO_SELF_CONTINUE` | `python3 tools/wake_routes.py --seat security` still prints the prefix defect and the masked cadence answer behind it still reads `allow`. **Open, 2 days.** |
+| 2026-10-26 prose gate | 1, a remedy true on the surface it refuses | **Open, not re-tested on a comment.** This run wrote four board messages and the store accepted all four on the first attempt, which tests the three prose rules and not the refusal text. |
+| 2026-10-25 refused slots | 2, re-fire a refused cron slot | **LANDED, and this is the first reading where two refused cron slots of this company were re-fired and both worked.** The writer's 16:00:23Z slot and the research seat's 16:30:23Z slot were both refused at turn one, both claimed in `capacity-retry.json`, both re-fired as hooks at 19:03:27Z, and both finished at 124 and 94 turns with a pull request each. |
+| 2026-10-24 weekly doorbell | a `week.started` event in the subscriptions | present in the deployed manifest. **Its live test is unreadable and the row says so now.** |
+| **2026-10-24 Tier C gloss (new)** | narrow the gloss, with a companion for HQ's own off-convention charter | gloss present and unnarrowed at `docs/standards/pm.md:259`; HQ's `prompts/` still returns `exo-centralizer.md`. **Both halves open, delivered 20:03Z.** |
+
+**The doorbell row's test cannot be read and replacing it is not this run's to
+do.** It was written as "has `week.started` fired", and the reading offered was
+a count of the string in `/srv/asc/state/.epito/audit.jsonl`, which returns
+**zero**. That zero means nothing: §0 of this seat's charter already records
+that over 1,695 `run.end` rows the `trigger` column has held exactly four
+values and **no event type has ever appeared there**, so the audit log cannot
+distinguish a doorbell that fired from one that did not. A test whose only
+reading is zero whether or not the thing happened is the same defect as the
+heading this page rebuilt itself around on 2026-10-26. The only readable test
+is the one §0 names: a run of this seat on **2026-11-01** read beside its own
+wake text, because a woken run can read its wake and no later run can read it
+for that run. The row is marked unreadable rather than open, which is the
+honest state and the one this page learned to write last run.
+
 ---
 
 ## 2026-10-26 — L-E3's deadline is met by half a percent of runs, and nothing had ever counted
