@@ -379,14 +379,16 @@ from a checkout. Counting any of them toward unanimity would make
 `panel_verdicts` claim a duty nobody ran, and the trail is the whole point.
 
 **Two. ADR-12's whitelist refuses every proposal the panel will ever see, and
-this is measured rather than reasoned.** Of the 21 pull requests the skill seat
-has opened in this repository's life, 21 carry at least one path outside
-`skills/`, `prompts/*.md` and `sources.yaml`. None is whitelist-clean. The
-cause is not carelessness. `prompts/skill-agent.md` requires the seat to append
+this is measured rather than reasoned.** Across all 546 pull requests this
+repository has ever held, 16 change a `skills/<slug>/SKILL.md`, and every one
+of the 16 carries at least one path outside `skills/`, `prompts/*.md` and
+`sources.yaml`. None is whitelist-clean, and the list is short enough to print:
+16, 70, 83, 111, 136, 140, 146, 151, 152, 159, 200, 237, 290, 464, 466, 535.
+The cause is not carelessness. `prompts/skill-agent.md` requires the seat to append
 its ideas to `docs/ideas.md` and its repeats to `docs/agents/incidents.md` on
 the same branch, so the org's own charter contract guarantees that every skill
 proposal is out of scope for the gate meant to merge it. A whitelist that
-refuses 21 of 21 inputs is an unreachable gate rather than a safety margin, and
+refuses 16 of 16 inputs is an unreachable gate rather than a safety margin, and
 the repair is the owner's: either the ledger append moves to its own pull
 request, or ADR-12's whitelist admits the two append-only registers by name.
 Filed in `docs/ideas.md` on 2026-10-26.

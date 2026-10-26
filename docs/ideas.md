@@ -20353,9 +20353,10 @@ has nothing to go red against.
 - Status: proposed
 
 ### 2026-10-26 - A gate says what it applies to, so a rule nobody can satisfy is a number rather than a discovery
-- Trigger: ADR-12's whitelist refuses 21 of 21 skill-seat pull requests in this
-  repository's history, measured in today's run. None is whitelist-clean, and
-  the cause is the org's own contract: `prompts/skill-agent.md` requires the
+- Trigger: of the 546 pull requests this repository has ever held, 16 change a
+  `skills/<slug>/SKILL.md` and ADR-12's whitelist refuses all 16, measured in
+  today's run. None is whitelist-clean, and the cause is the org's own
+  contract: `prompts/skill-agent.md` requires the
   seat to append its ideas to `docs/ideas.md` and its repeats to
   `docs/agents/incidents.md` on the same branch, so every proposal is
   guaranteed out of scope for the gate meant to merge it. The gate has been
@@ -20385,7 +20386,7 @@ has nothing to go red against.
 - Status: proposed
 
 ### 2026-10-26 - The skill seat's ledger append moves to its own pull request, so a proposal can be in scope for the gate that judges it
-- Trigger: the same 21-of-21 measurement. The out-of-scope paths are not
+- Trigger: the same 16-of-16 measurement. The out-of-scope paths are not
   incidental: `docs/ideas.md` and `docs/agents/incidents.md` appear on nearly
   every skill pull request because that seat's charter requires both appends on
   the branch that carries the work, exactly as the engineer charter requires
@@ -20446,7 +20447,7 @@ has nothing to go red against.
   nothing, and `UNSATISFIED`, which is visible and blocks. The stealable thing
   is that split. A gate with only `submittableIf` cannot tell a reader whether
   a refusal is about the input or about the rule, which is exactly how ADR-12's
-  whitelist refused 21 of 21 inputs for three weeks without anybody noticing
+  whitelist refused 16 of 16 inputs for three weeks without anybody noticing
   that its ceiling was zero. The third expression is worth naming too, because
   this repository has no `overrideIf` anywhere and instead has prose: section 22's
   forty-eight-hour silence rule is an override with a timer, written in a

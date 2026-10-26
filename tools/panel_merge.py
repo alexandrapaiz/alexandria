@@ -23,16 +23,17 @@ PR"; the panel as built cannot name a PR.
 
 **The second is that ADR-12's whitelist excludes every proposal the panel will
 ever see, and this was measured rather than reasoned.** The whitelist is
-`skills/`, `prompts/*.md` and `sources.yaml`, and never machinery. Of the 21
-pull requests the skill seat has opened in this repository's life, **21 carry at
-least one path outside it** and none is whitelist-clean. The cause is not
-carelessness: `prompts/skill-agent.md` requires the seat to append its ideas to
-`docs/ideas.md` and its repeats to `docs/agents/incidents.md` on the same
-branch, so the org's own charter contract guarantees that every skill proposal
-is out of scope for the gate meant to merge it. A whitelist that refuses 21 of
-21 inputs is not a safety margin, it is an unreachable gate, and the fix is the
-owner's: either the skill seat's ledger append moves to its own pull request, or
-ADR-12's whitelist admits the two append-only registers by name.
+`skills/`, `prompts/*.md` and `sources.yaml`, and never machinery. Across all
+546 pull requests this repository has ever held, **16 change a
+`skills/<slug>/SKILL.md` and none of the 16 is whitelist-clean.** The cause is
+not carelessness: `prompts/skill-agent.md` requires the seat to append its
+ideas to `docs/ideas.md` and its repeats to `docs/agents/incidents.md` on the
+same branch, so the org's own charter contract guarantees that every skill
+proposal is out of scope for the gate meant to merge it. A whitelist that
+refuses 16 of 16 inputs is not a safety margin, it is an unreachable gate, and
+the fix is the owner's: either the skill seat's ledger append moves to its own
+pull request, or ADR-12's whitelist admits the two append-only registers by
+name.
 
 **The third is `prompts/*.md`, which this file refuses on purpose.** ADR-12
 wrote that line on 2026-09-17, when `prompts/` held the weekly agent's own
