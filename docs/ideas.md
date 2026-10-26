@@ -20460,10 +20460,11 @@ has nothing to go red against.
   alternatives already read `is the engineer's` and `not this seat's`, which
   are broad enough that the next widening starts trading precision for recall,
   and a false FAIL is the one outcome that teaches a seat to skip a gate.
-  The ledger solved this problem for itself already and the solution is one
-  line per entry: `- Status: proposed`. `tools/ledger.py` does not infer a
-  status from prose, it reads a declared field, which is why the status half of
-  that register has never needed a phrasing round at all.
+  The ledger solved this problem for itself already and the solution is the
+  one declared field every entry here ends on, the status line that
+  `LEDGER_STATUS` matches. `tools/ledger.py` does not infer a verdict from
+  prose, it reads that field, which is why the status half of this register has
+  never needed a phrasing round at all.
 - First step: one line in the writer charter's shipping step and one block in
   `routed`. A review that hands a finding on carries
   `- Routes: <entry name or `none`>` once per routed finding, and the gate

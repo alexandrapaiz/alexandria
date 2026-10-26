@@ -3177,8 +3177,8 @@ ROUTING = re.compile(
 #: true cases are the two admitted classes on live specimens and the constant
 #: this gate already read, which is the case that proves the widening took
 #: nothing away. The false cases are the shapes the widening could have
-#: bought: a law number, which the measurement above rejects as a building; a
-#: path, which this gate has always refused for the same reason; and a ledger
+#: bought. A law number, which the measurement above rejects as a building. A
+#: path, which this gate has always refused for the same reason. And a ledger
 #: heading, which a routing section names as its ESCAPE rather than as its
 #: finding, and which therefore belongs to `acknowledged` and not here.
 ROUTED_CASES = (
