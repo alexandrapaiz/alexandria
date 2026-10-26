@@ -105,8 +105,21 @@ count. Not one of the seven captions live on that page contains a finite
 verb, and her ruling of 2026-09-29 forbids fragments. The seven predate the
 ruling by eleven days and no owner has ruled on one of them.
 
+**Missing row added 2026-10-26, writer run 58, and it was written nine hours
+late by the gate that exists to ask for it.** `check_voice.py candidates`
+failed a candidate only where the surface it drafted for was already held by
+another candidate. A candidate for a surface this register had never held
+registered nothing and passed, and the pass line read the same as it reads for
+a run that did the bookkeeping right. So run 57 ruled on the live `2026-W42`
+page, wrote the exact words, raised one line for her, and reached `main` with
+no row anywhere. The regex that reads a surface out of a candidate was widened
+on an earlier run precisely so an issue page would be visible here, which fixed
+what the gate could see and left untouched what it would say about it. The
+floor shipped in this run's diff and the row below is the row it now demands.
+
 | Surface | Candidate | Drafted | Is the defective line still live? |
 |---|---|---|---|
+| `site/content/issues/2026-W42.md`, the overturn section at lines 43 to 53, the lead's third sentence and the lead's count | `w42-correction-2026-10-26.md`, whose corrected body is `2026-W42-corrected.md` | 2026-10-26, run 57 | Yes. Read live at 20:49Z on 2026-10-26, after the ruling merged: the heading "Hidden reasoning can be encrypted, not merely hidden" still serves, and the research seat scored that section three wrong out of three against the abstracts the issue itself cites. The ruling is to pull the section rather than reword it. Setting it is the frontend seat's diff, and the file does not exist under `site/content/issues/` yet, so the correction lands as a new file that overrides the stored row |
 | `site/lib/skill-shelves.js`, the shelf names and the nine captions | `shelf-names-2026-10-26.md` | 2026-10-26, run 53 | Yes. Four of nine skills stand on the catch-all shelf under a caption written when at most one could land there, and all seven live captions are fragments against her 2026-09-29 ruling. Two shelves do not exist yet |
 | `site/app/desk/page.jsx`, the verdict queue | `desk-verdict-queue-2026-10-24.md` | 2026-10-24, run 45 | Yes. The queue renders 524 rows oldest first, so the newest entry on it is the compute outage of 2026-10-23 and a reader reaches it last. The count beside the heading is also wrong by one against `tools/ledger.py --census`, which `check_voice.py ledger` now fails on. Four lines and a one-character anchor, in one diff |
 | `site/app/mission/page.jsx`, third paragraph | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. Three unheld claims in one sentence, confirmed by `check_voice.py claims` on 2026-10-18 |
@@ -126,6 +139,7 @@ ruling by eleven days and no owner has ruled on one of them.
 | Are the skill files the paid product, or the free distribution that sells something else? The repository is public and all nine are in it, so the entitlement gate guards a door in a wall with no other sides | `skills-copy-2026-10-18.md`, surface 3 | 2026-10-18 |
 | Does a paid tier keep a bullet for a machine that does not exist, hedged, or lose the bullet? | `claim-repairs-2026-10-18.md`, finding 8 | 2026-10-18 |
 | Is `docs/voice/value.md` the target still owed an approval, or stale against the five pages she approved on 2026-09-29? | `value.md`, the note of 2026-09-30 | 2026-09-30 |
+| Does the corrected `2026-W42` page carry a notice saying a section was removed and why, on that page only? Recommended yes, quoted in full in the candidate. Her 2026-09-19 ban is on an issue narrating its own methodology, and this sentence reports what happened to one page in the past tense | `w42-correction-2026-10-26.md`, the one line that needs her word | 2026-10-26 |
 
 ## Closed
 
