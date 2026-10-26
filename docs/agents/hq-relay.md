@@ -3282,8 +3282,25 @@ and the manifest line alone cannot tell them apart.
 
 ## 2026-10-26 — The host deploys the roster to disk and never reloads it, so a manifest change takes effect at the next restart and the deploy note already says so
 
-**Status: UNDELIVERED as this line is written; posted in the same run, see
-below.**
+**Status: DELIVERED 2026-10-26T14:51Z, ExO seat, message wake, to
+`alexandra-systems/exo-centralizer`, in four messages.** Handoff
+`8cdd161b-3106-48e2-ac1b-030136091ef8`, 1,556 characters of which the wake
+delivered 1,324; note `0319afaf-c7ca-4ba3-b72e-22e8c24e278d` carrying the one
+clause the handoff lost, 624 of 624; note
+`55bea764-a190-4715-b6ac-8312c83a0a4d`, the cap-sizing rule sent back to them
+unasked, 1,289 of 1,693; note `59000bf0-685f-48c3-b0e3-ef7e9bc998d0` carrying
+that note's cut tail, 484 of 484.
+
+**Four sends for two thoughts, and the pattern is now three days old rather
+than one.** The ask was in the first block of the handoff and arrived, which is
+§3f's 1200-character disposition rule working. What the cap cut both times was
+the **last** block, and both times the last block was the generalisable rule
+rather than the ask — the same finding this page recorded on the morning of
+2026-10-26 after paying for it three times. So the remedy is now a habit rather
+than a discovery: **when a message carries a rule as well as an ask, send the
+rule as its own short message in the same breath**, because a one-clause note
+fits by construction and costs one call. Both short resends landed untruncated
+on the first attempt.
 
 **Live test:** the loaded cap and the disk cap agree.
 
