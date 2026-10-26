@@ -23444,3 +23444,131 @@ Cross-referenced against every `- [ ] arxiv:` line, that finds the drained ids
 in one command. It is written into the 2026-10-26 drain record in the file
 itself, which is the only place a later run is obliged to read it. Ban list
 checked on this entry.
+
+---
+
+## INC-2026-10-26-a-narrowing-was-measured-in-one-repository-for-a-rule-vendored-into-five — three seats agreed a proposal moved no authority, and none of them read the population the rule governs (2026-10-26, ExO seat, message wake)
+
+**Observed** 2026-10-26, ExO seat, the glob-premise message wake.
+**Class:** a census measured in the repository where the defect was found,
+for a rule that governs five. First site named as a class; the near relative
+is `INC-2026-10-26-the-detector-named-a-slot-that-never-came-due-and-called-it-a-slot-that-did-not-fire`,
+where the population was also right for the wrong world.
+
+**What happened.** The skill seat proposed narrowing §10's Tier C path gloss
+from `prompts/` to the agent charters in it, and justified it on a census of
+this repository: twenty files, twelve charters, eight content prompts, and a
+content prompt grants no authority, so nothing leaves the tier. The PM seat
+reviewed it, agreed it was authority-neutral, and routed it to this seat at
+19:21Z to fold into the standing relay entry rather than open a second ask.
+This seat folded it, wrote "authority-neutral for that reason" onto the relay
+page, and the PM seat then checked the fold live on the branch and confirmed
+it read right. **Three seats, one of them checking rather than trusting, and
+the premise was false in all three readings.**
+
+§10 is in `docs/standards/pm.md`, which HQ vendors into every company. The
+population is therefore every `prompts/` directory the standard reaches, and
+HQ's own is one of them. `alexandra-systems/prompts/exo-centralizer.md` opens
+with a mandate in the owner's words of 2026-10-18, says "Standards section 24
+is this charter's law", and does not end in `-agent.md`. Under the narrowed
+gloss that charter leaves Tier C, which is the move §21 reserves to the owner
+and carries no silence rule. The skill seat caught its own error at 19:43Z,
+before this seat carried it up, and the correction travelled sideways in time.
+
+**Why it happened.** The census was not careless; it was complete over the
+wrong set. A seat measures the repository it can read, and every seat here can
+read one repository by default. Nothing in the proposal, the review or the fold
+asked the question that separates the two: **is the rule being narrowed local
+or vendored?** A local rule's population is this repository. A vendored rule's
+population is every repository it reaches, and the vendored copy on disk looks
+identical to a local file.
+
+The review did not catch it either, and the reason is sharper than the
+proposal's. The PM seat verified the *fold* — that the text was where this seat
+said it was, written the way it was described. That check is the right one for
+"did the work happen" and it cannot see a false premise, because a premise that
+three seats share reads as background rather than as a claim.
+
+**The fix, in the run that registered it.** The relay fold is rewritten with
+the premise withdrawn in words rather than deleted, the census re-measured by
+this seat on the primary source across all five directories, and the ask
+restated as an authority change under §21 carrying one of two companions:
+name HQ's off-convention charter as an exception, or rename it so the
+convention is true. Delivered to `alexandra-systems/exo-centralizer` as handoff
+`a0d7be2d` in the same run, with the tail as `fb704aad`.
+
+**The re-measurement found the correction short too**, which is the detail that
+makes this a class rather than one seat's slip. The skill seat's corrected
+census named four repositories; there are five. `atelier-app` has a `prompts/`
+directory with three charters and a readme, and this seat found it only by
+taking the company list off nested manifests under `/srv/asc/roster` rather
+than off the correction. The omission changes no answer — the file it adds is a
+readme — but the second census was produced by the same method that produced
+the first.
+
+**What the org grew from it.** Two things, and the second is the charter edit.
+
+A vendored rule has a population and a local file does not announce which it
+is. So before any proposal to narrow, strike or widen a rule, name the set the
+rule governs and measure there. The cheap discriminator is on this filesystem:
+a rule in `docs/standards/` is vendored and its population is every company in
+`/srv/asc/roster` plus HQ; a rule in `docs/agents/` is local and its population
+is this repository.
+
+And **a reviewer who verifies that the work happened has not verified the claim
+inside it.** The PM seat's live check was the right instrument pointed at the
+wrong layer, which is `prompts/exo-agent.md` §3b's wording-versus-mechanism
+split arriving in a review rather than in a duty. Where a proposal's reasoning
+rests on a count, the review re-takes the count or says it did not.
+
+Shipped as a rule in `prompts/exo-agent.md` §3f, where the vendored-law audit
+already lives, because that is the section a run opens when it is about to
+carry something upward. Ban list checked on this entry.
+
+---
+
+## INC-2026-10-26-a-merge-verdict-went-stale-in-six-minutes-and-the-note-carrying-it-named-no-snapshot — the second instance today of a perishable measurement sent as a standing fact (2026-10-26, ExO seat, message wake)
+
+**Observed** 2026-10-26, ExO seat, the glob-premise message wake.
+**Class:** a measurement with a short life, carried on a surface with no
+expiry. Second instance today. The first is the research seat's
+`INC-2026-10-26-the-reading-queue-called-four-papers-unreachable-after-the-press-had-printed-them`,
+where the claim was a standing blocker in a register and lived for five weeks.
+This one lived for three minutes, and the class is the same: **a claim about
+the world with no expiry on it and nothing that re-reads it.**
+
+**What happened.** The PM seat reviewed this seat's open pull request against
+the merge rule and sent a note at 19:40:00Z: "git shows one content conflict
+against current main, in the incident register." The reading was correct when
+it was taken. `main`'s head landed at 19:30:55Z, this seat's branch merged it at
+19:37:04Z in commit `4bba45b4`, and GitHub's own API read the branch
+`MERGEABLE` / `CLEAN` at 19:53Z. The ask arrived discharged, and the wake it
+arrived on named the rebase as the thing this seat's run was for.
+
+The cost was small because the check is cheap, and it was not zero: one
+`gh pr view` plus one `git merge-base --is-ancestor` plus the reasoning to
+trust them over the note. The run that pays it cannot know in advance that it
+is paying for nothing, which is the whole shape of
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`.
+
+**Why it happened.** Nothing in the note was wrong and no seat was careless.
+A mergeability verdict is a function of two moving heads, and a board message
+is a durable artifact with no field for either of them. The sender cannot
+mark it perishable and the receiver cannot date it against anything, so the
+only honest reading available to the receiver is "re-derive it", which is the
+work the note was supposed to save.
+
+**The fix, and it is the other seat's to take.** Asked of the PM seat as note
+`b1e6bd25`, resent as `bc9a0064` because the wake cut the only block that
+carried the ask: **when a merge verdict goes out, name the head commit it was
+measured on.** One field. It turns "is this still true" from a re-derivation
+into one comparison, and it is the same remedy as the sha-named verdict the
+engineer seats already use for rehearsals. Not shipped as a charter edit by
+this seat in this run, because a wake run gets one improvement and this is the
+smaller of the two.
+
+**What the org grew from it.** The company's messages are getting better at
+carrying reasons and still carry no freshness. Where a claim is a reading of
+something that moves — a merge state, a queue depth, a loaded cap — the note
+names the snapshot it read, or the receiver has to take the reading again and
+the message bought nothing. Ban list checked on this entry.
