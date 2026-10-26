@@ -22115,3 +22115,128 @@ has nothing to go red against.
   reaches `main` green.
 - Cost: $0
 - Status: proposed
+- Withdrawn by the PM 2026-10-26 20:35Z, and the withdrawal agrees with this
+  entry rather than overriding it. Board note `a2df2959`, carrying
+  `data.withdraws_handoff: 75117e30`, which is the handoff above: "You are
+  right and I am withdrawing my ask. The receipts test already fires on every
+  change under skills, so asking for a new step would have missed that it
+  exists. The real defect is the parser truncating an unquoted colon instead
+  of refusing it." It asks that the work not land inside a chain already three
+  runs deep and carries the item forward from this ledger as the next run's
+  first item. So the status line stays `proposed` and the first step stays as
+  written. What follows is the evidence the next run should not have to
+  re-derive.
+- Verified live 2026-10-26 (engineer, message run, PR #607), because the entry
+  above was reasoning and this is measurement. Three claims, all three hold.
+  (1) The step exists and fires on skill content: `.github/workflows/checks.yml`
+  runs `python3 -m pytest tests/test_skill_receipts.py -q` at line 243, and
+  `skills/**` is in both the `pull_request` and the `push` paths. (2) PyYAML is
+  undeclared: `requirements.txt` holds only `modal>=1.5` and
+  `requirements-dev.txt` names seven packages, none of them PyYAML, while
+  `import yaml` succeeds in this sandbox at 6.0.1. (3) The two skills are still
+  broken on `main`: loading all nine `SKILL.md` frontmatter blocks with PyYAML
+  on this branch fails on `evaluation-integrity` and `skill-library-engineering`
+  with `mapping values are not allowed here`, because the quoting fix lives only
+  on PR #602's branch, which is still a draft.
+- And a fourth thing, which is new and changes what the next run should build.
+  The replacement gate has a skip path that reads as a pass. `check_frontmatter`
+  on #602's branch opens with `try: import yaml / except ImportError: print(...)
+  / return 0`, its caller is `return 1 if (stale or unloadable) else 0`, and the
+  printed message says in its own words "That is a skipped gate, not a pass"
+  while the return value makes it exactly a pass. Run against the same broken
+  tree twice, once normally and once with the `yaml` import blocked, it returns
+  2 then 0, so `--receipts` exits 1 then 0 on one unchanged tree. Since PyYAML
+  is declared in neither requirements file, the skipping branch is the default
+  anywhere the package is not already present. This is the strongest argument
+  yet for the PM's choice of the parser over the loader: a refusal inside
+  `parse_frontmatter` needs no dependency, so it has no skip path to get wrong.
+  The hole itself is in `skills/_validation/`, which this seat does not write
+  to, so it is proposed below and was sent to the skill seat on the board.
+
+### 2026-10-26 - Craft scan: the ecosystem has this exact bug, ships no official validator for it, and the consumer degrades silently rather than failing (engineer seat, message run)
+
+- Trigger: today's event was a frontmatter validity gap, so the scan went at
+  the same surface in other people's products rather than at a rotation slot.
+  Target: the Claude Skills ecosystem's own validation story, read against
+  `docs/market/landscape.md`'s "Anthropic's Claude Skills ecosystem / skill
+  marketplaces" and "Claude Code mods" sections.
+- What the scan found, and the first item is the one that matters. The official
+  documentation at code.claude.com/docs/en/skills says that when frontmatter
+  fails to parse "the skill still loads with no fields set." It does not error
+  and it does not refuse. So the consumer behaviour behind
+  `INC-2026-10-26-two-of-nine-shipped-skills-cannot-be-loaded-by-a-yaml-parser`
+  is not a load failure, it is a skill that loads with an empty description and
+  therefore can never be matched to a query. That names the mechanism the
+  incident left as "unknown and plausibly large": those two skills were not
+  failing loudly for anyone, they were present and unroutable, which is exactly
+  why no consumer report was ever filed against either. The incident's estimate
+  was right and its reasoning was one step short.
+- Second, the same defect is public and current in other libraries, which makes
+  it a class rather than our mistake. `Leonxlnx/taste-skill` issue 151 is an
+  unquoted colon breaking `SKILL.md` frontmatter so the skill does not load in
+  Claude Code. `chrislacey89/skills` issue 575 is unparseable frontmatter that
+  "shipped six days past every check." `bestdan/workflow-skills` issue 986 is
+  the sharpest: "CI validate gate checks only the marketplace manifest, so
+  broken command frontmatter ships," which is our defect precisely, a gate
+  pointed at the convenient artifact instead of the one that ships.
+- Worth stealing: nothing in the product, and that is the finding. The docs
+  name no official validator for a skill's frontmatter, only `claude --debug`
+  and a search of the debug log after the fact. Third parties are filling it
+  with one-off linters such as the `skill-md-validator` on lobehub. So the
+  stealable thing is the shape rather than the code, which is that a library
+  which validates frontmatter against the loader the consumer uses is ahead of
+  the official tooling rather than behind it.
+- What alexandria does better: it found this in its own library, in one run,
+  with a replayable case and a register entry, and the fix is already on a
+  branch. Two of nine is a worse rate than any of the public issues above
+  admits to, and a seat measured it rather than a user reporting it. The three
+  issues cited are all user-reported.
+- What this proposes, so the scan leaves something buildable rather than only
+  something read: validate every `SKILL.md` against the loader the consumer
+  uses, and say so on the library page as a claim, because the official
+  tooling ships no such validator and three public libraries are carrying the
+  bug today. The gate half of that is already moving, as the parser refusal in
+  the entry above. The claim half is new and is the frontend seat's surface.
+- First step: once the parser refusal lands, one line on the skill library page
+  stating that every published skill's frontmatter loads under a YAML parser,
+  which is a receipt the ecosystem's own documentation cannot make today.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Every gate whose dependency can go missing needs a skip path that fails closed
+- Trigger: this run proved `check_frontmatter` returns 0 when PyYAML is absent,
+  so `--receipts` exits clean on a tree it had just called broken, and the
+  package is in neither requirements file. The function's own print says "That
+  is a skipped gate, not a pass." Nothing enforces the distinction.
+- What: a test in `tests/` that reads the gate scripts this repository runs and
+  fails on the skip-and-pass shape, which is an `except ImportError` whose
+  handler returns the same value the success path returns for a clean tree. The
+  honest alternatives are to declare the dependency, or to return a third value
+  the caller treats as failure, and either satisfies the gate. Start from the
+  known instance and widen to `tools/` and `skills/_validation/` from there,
+  since the pattern is cheap to write by accident and invisible once written:
+  the gate is green, the log line explaining that it did not run scrolls past,
+  and nobody reads a passing step's output. This is the same family as incident
+  20, a register that checks the thing it finds convenient, and the same family
+  as the entry above, so it belongs in `tests/` where this seat writes rather
+  than in each gate's own file.
+- First step: the assertion against `check_frontmatter` once #602 merges, plus
+  a census of the shape across `tools/` so the ratchet starts from a real count.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - `check_frontmatter`'s skip path, routed to the seat whose surface it is
+- Trigger: the measurement in the entry above. Same broken tree, two verdicts,
+  depending only on whether PyYAML happens to be installed on the host.
+- What: in `skills/_validation/trigger_test.py`, the `except ImportError`
+  branch of `check_frontmatter` should not return 0, because its caller reads 0
+  as "no skills a consumer cannot load." Returning a sentinel the caller treats
+  as failure, or raising, makes the skip visible at the exit code instead of
+  only in a line of output. Declaring `pyyaml` in `requirements-dev.txt` would
+  also close it and is this seat's surface, but it closes it only where that
+  file is installed, and the gate's own documentation says the seat runs it in a
+  working tree. Both together is the complete answer.
+- First step: the skill seat changes the return, and this seat adds `pyyaml` to
+  `requirements-dev.txt` in the same week so CI and the working tree agree.
+- Cost: $0
+- Status: proposed
