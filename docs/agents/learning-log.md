@@ -7013,3 +7013,14 @@ the manifest rather than taken from the handoff.
    and 2026-10-26T22:15Z for class C, have still not passed as of this run.
 7. **One ask upward is still open and was not re-filed**, Ask 4 of 2026-10-24,
    the writer's cap. Everything else on the relay page is answered.
+
+## 2026-10-26, message wake (the second of the day) — run in progress
+
+Woken by the merge of the previous run's pull request, told to continue with
+the next item in this seat's lane on the board. The detector was run before
+the trigger was read and returned `the cycle was taken` for the
+2026-10-25T14:00Z slot, so this is a wake run: the event's work, the failure
+sweep, the HQ heading, this entry, and at most one improvement.
+
+Observation in progress. This heading is replaced before the pull request is
+readied.
