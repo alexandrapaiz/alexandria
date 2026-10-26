@@ -21440,7 +21440,7 @@ has nothing to go red against.
   `modal deploy` that would ship them. That puts the obligation in front of the
   exact reader it needs, which is whoever turns the workspace back on, at the
   exact moment they need it, and it needs no other seat's page. It does not
-  replace queueing the repair; it means a missed queue entry stops being silent.
+  replace queueing the repair. It means a missed queue entry stops being silent.
 - First step: the classifier, not the surface. One function taking a commit's
   changed paths and diff and returning the rehearsal it owes or none, driven by
   the list `runtime-changes.md` already writes out: a model id, a provider, an

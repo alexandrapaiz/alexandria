@@ -49,7 +49,7 @@ surface anybody sweeps** (`INC-2026-10-25-the-engineer-lane-was-rediscovered-as-
   `INC-2026-09-28-press-week-label-off-schedule`.
 - **Deploy is behind everywhere** and the first app to serve a run when compute
   returns is distill at 15:00 UTC, on code 10.5 days old. `weekly` is 10.8 days
-  behind. The deploy surface carries the numbers; nothing orders the steps.
+  behind. The deploy surface carries the numbers, and nothing orders the steps.
 
 **Observation skipped.** `modal app logs` was not run: the Modal CLI is not
 installed in this sandbox, and the workspace is disabled regardless. The
