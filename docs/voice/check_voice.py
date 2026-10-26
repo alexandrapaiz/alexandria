@@ -2579,6 +2579,22 @@ HEADLESS_CASES = (
      "  Ask it of every line and every fragment you collected."),
     (False, "the issue is NOT finished, and the fix is to write that line",
      "  again from the items actually underneath it."),
+    # The 2026-10-26 widenings. An unindented paragraph, which is the live
+    # specimen at prompts/digest.md:621, and the same shape where a fence used
+    # to stop the gate reading at all.
+    (True, "never from pleasantries and never from claiming to know their history.",
+     "and it is the reason the line exists (owner's dispatch, 2026-09-25). Read it"),
+    (True, "Then the source line, on its own line.",
+     "steps as a compact numbered list inside the item, indented under it."),
+    # And the false positives the widenings could have bought. A paragraph
+    # that legitimately opens on a named thing in lower case, a wrapped line
+    # whose predecessor carries no full stop, and a fence marker itself.
+    (False, "A reader never sees a comment, so a comment is not a surface.",
+     "`procedure` is the payload's own name for the field, never the reader's."),
+    (False, "The warmth comes from knowing what the reader's job is",
+     "like, never from pleasantries and never from claiming to know history."),
+    (False, "Count the semicolons. The target is zero.",
+     "```"),
 )
 
 
@@ -2586,25 +2602,40 @@ def headless(lines):
     """A rule whose own opening line was cut, leaving its body standing.
 
     The shape is one pair of lines: the one before ends a sentence, the one
-    after is indented, is not a block of its own, and opens mid-sentence in
-    lower case. Nothing else in these files does that, because a wrapped
-    sentence never has a full stop in front of it.
+    after is not a block of its own and opens mid-sentence in lower case.
+    Nothing else in these files does that, because a wrapped sentence never
+    has a full stop in front of it.
+
+    **Two narrowings came off this on 2026-10-26, because the defect was found
+    again in a place both of them hid.** The first version required the body
+    line to be INDENTED and skipped every line inside a ``` fence, and both
+    choices came from the one specimen it was built from, which was a bullet's
+    indented continuation outside the template.
+
+    `prompts/digest.md:621` is the same cut in a plain paragraph inside the
+    template. `d022e79a` on 2026-10-18, a trim under the weight rule, removed
+    "**A stranger has to enjoy that sentence.** This is the test it has to
+    pass" and the blank line above it, so the opening slot's outsider rule now
+    begins "and it is the reason the line exists" welded to the end of the rule
+    about greetings. The indent test missed it because a paragraph is not
+    indented. The fence test missed it because this file's fence runs 520 to
+    1353, which is 39% of the generator and is the issue TEMPLATE rather than
+    quoted output, so the reasoning `fenced()` uses for review prose is false
+    about the one file this gate exists to read.
+
+    So the unit is a sentence, which is what the defect is about, and the
+    indent and the fence are not part of it. The guard that does the work is
+    the full stop on the line before: a wrapped line never carries one.
     """
     out = []
-    fence = False
     for i in range(1, len(lines)):
         prev, cur = lines[i - 1].rstrip(), lines[i]
-        if FENCE.match(cur):
-            fence = not fence
-            continue
-        if fence or not prev.strip() or not cur.strip():
+        if FENCE.match(cur) or not prev.strip() or not cur.strip():
             continue
         # The cut landed on the line before: that is `truncations`, not this.
         if not prev.endswith((".", "!", "?")):
             continue
-        if not re.match(r"^\s+\S", cur):
-            continue
-        if re.match(r"^\s*([-*+]\s|\d+\.\s|#|>|\|)", cur):
+        if re.match(r"^\s*([-*+]\s|\d+\.\s|#|>|\||```|~~~)", cur):
             continue
         if SHOUTED.match(cur):
             continue
