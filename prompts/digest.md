@@ -1397,6 +1397,7 @@ the rule's question to the thing in front of you.
   results and carried no link at all, and the grade of that issue also
   recorded a pass, because what this rule forbids is an absence and an absence
   cannot be quoted.
+- **Grade the evidence in-line, on every item that carries a number.** A short
   clause inside the item's own prose, not a footnote and not a separate line.
   **Four model grades stood in this sentence and all four are deleted, and none
   of them is repeated here.** A stem quoted at this rule is the stem the rule
@@ -2054,6 +2055,8 @@ the rule's question to the thing in front of you.
   `superseded` carry no institution and no author, so no attribution is
   available to any of their items, and the repair is never to find the
   institution. It is to write them with no attributive phrase.
+- **Before you output, check the headings. This is a hard gate, not advice.**
+  Collect every line in the issue that announces a block instead of saying
   something: every line beginning with `#`, and every run of bold or italic
   text sitting alone on its own line. The standing close is the one
   exception, because it is required to be identical in every issue and is
@@ -2067,12 +2070,7 @@ the rule's question to the thing in front of you.
   front of a sentence is a piece of a line, and a line whose second half is
   real writing passes a question its first half would fail, which is the
   whole reason this shape keeps getting through.
-  **The first unit is positional rather than punctuational on purpose.** A unit
-  defined by a punctuation mark can always be escaped by changing the mark, and
-  labels have shipped welded by a colon, welded by a full stop, and wearing no
-  mark at all. So the unit is the position: anything bold or italic at the start
-  of a line is a label until the question below clears it. Take the fragment,
-  drop whatever punctuates it, and write the sentence whole.
+  Take the fragment, drop whatever punctuates it, and write the sentence whole.
   Then put ONE question to everything you collected, lines and fragments
   alike, and it is the question that decides, never a list. Could
   this exact line sit over a different day's items without changing a word? If it could, it is a

@@ -3604,3 +3604,85 @@ gap that the same collision had left empty (incident 25).
     LANDED prompts/digest.md: "The form is described and never drafted"
     LANDED prompts/digest.md: "a position whose reusable part is a shape"
     ```
+
+136. The correction written downstream of the thing that generates the text.
+    Not a prose tell. A tell about where a repair is put, and it belongs on
+    this list because every entry above it is enforced by a change to a file
+    and this is the class where that change is thrown away without anybody
+    touching it.
+    The specimen is the one the owner struck herself. Canon law 13 quotes
+    "You have spent the week watching" and says "so is every tense of it".
+    `site/content/issues/2026-W39.md` has opened on that sentence since
+    2026-09-29 and it opens on it today. The repair was made on 2026-09-24,
+    in `b7d6929`, and it was the right repair: "The agent-building world has
+    spent the week arguing about scaffolding", which `prompts/digest.md` now
+    prints as its own model answer. Five days later `820df48` re-rendered the
+    archived file from the `digests` record and the repair was gone, because
+    the repair had only ever been written into the render.
+    The tell is a question about any fix to reader-facing words. Was this
+    written into the artifact, or into the thing the artifact is produced
+    from? A fix to a rendered file survives exactly until the next render, and
+    nothing announces that it has been lost, because the commit that loses it
+    is about something else and is usually correct on its own terms. Two
+    commits touched that file afterwards and neither re-read the opening.
+    Why it is not entry 131. That entry is the sentence repaired in the
+    machine and left standing in the shipped copy, which is the same two
+    places with the arrow the other way round. This is the sentence repaired
+    in the shipped copy and never carried back, and the two together say the
+    rule plainly: a repair lands in both or it lands in neither.
+    Added 2026-10-24, writer run 49. Enforced by a command rather than by a
+    sentence, because four patches to the generator could not reach a line the
+    generator did not write:
+    ```
+    python3 docs/voice/check_voice.py standalone
+    ```
+    That reads the archive instead of the prompt. The pre-send half is the
+    engineer's and is filed, because `tools/check_digest_quality.py` is the
+    only gate that can stop a send and it has no rule for this law at all.
+    ```
+    LANDED docs/voice/check_voice.py: "no issue tells a reader what they have been doing"
+    ```
+
+137. The trim that keeps a rule's body and takes the line that made it a rule.
+    This is a tell in the governing file rather than in an issue, which puts it
+    beside entries 130 and 136. All three are about the text that writes the
+    text, and this one is the only one where the damage is an absence, so there
+    is nothing to quote and nothing to grep for.
+    The shape. A rule in `prompts/digest.md` is a bullet: a bolded opening line
+    that says what the rule is, then the body that says how to obey it. A pass
+    that removes the specimens underneath such a rule can take the opening line
+    with them, because the specimens are what the opening line introduces. What
+    is left is the body, indented, welded to the end of whatever rule came
+    before it, starting mid-sentence in lower case. It reads as a continuation
+    of the rule above and it is a different rule.
+    Two specimens, both in this seat's own commits, and both were live on
+    `main` when this entry was written. `acb4474d` left canon law 6's evidence
+    grade as "clause inside the item's own prose, not a footnote and not a
+    separate line." hanging off the count-the-links rule. `62b00f2b` left canon
+    law 12's final heading gate as "something: every line beginning with `#`"
+    hanging off the attribution rule. The second is the harder loss, because
+    that gate is the one that stops the framework's internal names reaching a
+    reader, which is the ruling the owner has given twice.
+    Why the trimming rule produces it rather than carelessness. The canon's
+    section on the generator's weight says a run that adds tokens removes at
+    least as many, and it says what the trimming may take: the argument for the
+    rule, the dates, the account of which print produced which clause. Every
+    one of those sits in the body of a bullet. So the pass that obeys the rule
+    is working inside bullets all day, and the opening line is one line above
+    the thing it is allowed to delete.
+    The tell, as a question to ask of a diff rather than of prose. Does every
+    line this pass removed belong to a rule that still has its own opening
+    line? A trim is the one kind of edit that cannot be checked by reading what
+    is left, because what is left reads like prose.
+    Added 2026-10-25, writer run 50. Enforced by a command, because this is the
+    class that reading cannot catch and because the gate that existed for edit
+    damage was reading the opposite direction:
+    ```
+    python3 docs/voice/check_voice.py generator
+    ```
+    `truncations` reads the line a cut landed on, so it skips any line ending
+    in a full stop and could never reach this pair. `headless` is the same
+    defect from the other side, in the same gate, with nine cases pinning it.
+    ```
+    LANDED docs/voice/check_voice.py: "rules whose own opening line was cut"
+    ```
