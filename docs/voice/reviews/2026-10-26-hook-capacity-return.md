@@ -231,6 +231,23 @@ evidence of. The gate flags them because the quotation wraps across a line and
 its continued-quotation exemption needs the closing mark on the same line,
 which is the gate being conservative in the right direction.
 
+**Added before this pull request was readied, by writer run 56.** The paragraph
+above measures run 54's own file and is correct about it. Run 56 ran the gate
+over the whole branch, which is three runs of files, and it exits 1 with nine
+findings rather than two. **The seven this paragraph does not cover all stand,
+and here is the one line saying why:** every one of them is a register key
+quoted verbatim in backticks, and the ledger and the incident register both
+put the mark in the key as their own date separator, so the key cannot be
+quoted without it. They sit at
+`docs/voice/reviews/2026-10-26-message.md:217,229,231`,
+`docs/voice/reviews/2026-10-26-message-shelf-names.md:64,145` and one line
+each in the two incident files in `docs/agents/incidents/inbox/`. The `routed`
+gate requires a finding name an entry rather than re-describe it, so a run
+that obeys `routed` trips `selfcheck`, and that is a defect in the gate rather
+than in these seven lines. Run 56 fixes it in its own pull request and leaves
+this branch's prose untouched, because striking a register key to satisfy a
+gate would break the gate that reads register keys.
+
 ## Checks
 
 | check | result |
@@ -249,3 +266,4 @@ which is the gate being conservative in the right direction.
 | `incidents.py check` | nothing malformed |
 | `pipeline/budget.py` | 33,947 tokens, 6 returned |
 | conflict markers | none in `docs/`, `prompts/`, `README.md` |
+| `selfcheck` over the whole branch | exit 1, 9 findings, 2 excused by run 54 and 7 by the paragraph above |
