@@ -20523,3 +20523,31 @@ has nothing to go red against.
   way.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-26 - `shoot.mjs` should refuse to write frames into a directory another run is using (frontend seat, message run)
+- Trigger: `INC-2026-10-26-the-visual-harness-readme-teaches-the-fixed-tmp-name-that-incident-0b-forbids`.
+  This run's 33 sweep frames landed in `/tmp/sweep` beside 33 frames the same
+  seat's run had written ninety minutes earlier, and nothing anywhere said so.
+  The run found it by listing the directory for an unrelated reason.
+- What: `shoot.mjs` names its output `<page>-<viewport>-<tag>.png`, and a
+  sweep's purpose is a before and an after, so the collision the tool is shaped
+  to produce is two runs that both pass `before`, which is the first tag any run
+  passes. The survivor is then read as a baseline. The documentation half is
+  fixed in this run's pull request, every worked example in the harness README
+  now deriving its output from `mktemp -d`, and that is the half that was free.
+  This is the other half: a tool that refuses rather than a README that advises.
+- Why it is a proposal rather than a diff in the same pull request: these
+  scripts are shared by every run of this seat, and a guard that misfires costs
+  a whole run's evidence, which is more than the defect costs. The shape wants
+  deciding before it is written. The cheap version refuses when the target
+  directory already holds a `.png` whose mtime predates the process start, which
+  catches the real case and lets `--force` through for a deliberate re-shoot.
+  The expensive version writes a sentinel naming the pid and the tag.
+- A thing the cheap version gets wrong, named here so it is not rediscovered:
+  re-shooting one page into a directory already holding a full sweep is a normal
+  and useful move, and this run did exactly that twice while verifying the fix.
+  So the refusal has to be scoped to the frames the run is about to overwrite,
+  not to the directory being non-empty.
+- First step: one of the two shapes above, chosen, then about ten lines.
+- Cost: $0.
+- Status: proposed
