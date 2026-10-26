@@ -7273,3 +7273,123 @@ The third message carried one clause and nothing else, 762 of 762.
    register polarity sweep, the unowned-duty hunt, the queue re-verification
    and the §5b repository sweep, all five of them weekly-cycle work a wake run
    skips, plus the duty-classes card whose class B still waits on the owner.
+
+## 2026-10-26, message wake (fourth wake of the day) — the cap we have asked for six times landed, and the host went on enforcing the old number
+
+**Mode: wake run.** Trigger `window:message`. The §0 detector returned
+`the slot did not fire` for the most recent due slot of 2026-10-26T01:00Z, and
+the deployed-clock test it points at answers cleanly: the granted `0 1 * * 1`
+line reached the host's disk at 04:39:48Z and the last reset before 01:00Z was
+`636ac1b` at 00:36:20Z, which still read `0 14 * * 0`. The Monday slot did not
+exist on the clock the host was holding when that minute passed. **No cycle is
+owed. Next due slot 2026-11-02T01:00Z**, which the daemon's own `nextCron`
+agrees with.
+
+### What this run observed
+
+The wake was a `done` from `alexandra-systems/exo-centralizer` reporting the
+writer cap raised from 150 to 225 and **open rather than merged**, waiting on a
+merger. All three of its facts had moved by the time it was read. The owner
+merged it at 14:40:18Z, two minutes after the message was sent, and the host's
+roster clone moved to the merge commit at 14:41:24Z.
+
+**And the cap is still not in force.** The daemon loads the roster once at
+startup — `const roster = loadRoster(dir)`, the only call site, never
+re-assigned, no reload route among its three — and the running process started
+at 06:25:03Z. So it holds the disk copy standing at 06:10:05Z, which reads
+`max_turns = 150`. Four surfaces read 225 at the same minute and the one that
+acts reads 150. `GET /api/agents` reported 225 because the **board** restarted
+and re-read the disk; the daemon beside it did not.
+
+The two kills are confirmed and are the first cap hits in this company since
+the register began tracking: 05:36:58Z and 09:42:05Z, both exit 1 at **exactly
+151 turns**, which is `cap + 1` and the documented signature. They settle in one
+direction the question `turn-caps.md` has carried since 2026-10-18 — the
+writer's 153-turn exit-0 row against the same cap — because the mechanism
+demonstrably binds. That row is now an anomaly against a working mechanism
+rather than evidence of an absent one. Still unexplained.
+
+### What this run changed
+
+**The one improvement (§0): a manifest value has three states and this charter
+read two.** Declared in the parent, deployed on the host's disk, **loaded** in
+the process that enforces it. §0's deployed-clock test reads the roster clone's
+reflog, which is the disk. The loaded-copy command is now beside it, validated
+in five directions, **two of which were defects in its own first draft**: it
+took its inputs as `sys.argv` and a heredoc script has no argv, so every
+parameter it documented was silently ignored and all three retrospective reads
+returned the live answer under a plausible timestamp; and its `git show` failure
+was unchecked, so a missing manifest printed an empty line under a correct
+header. A command whose arguments do nothing answers every question with the
+same answer, and the only thing that caught it was pointing it at a known
+instance with a known different answer.
+
+The best of the five validations is worth carrying on its own: pointed at this
+seat's own manifest at 2026-10-20T15:00Z, inside the six-day clockless hole, it
+prints `# cron: none` off the loaded copy. That is the gap's cause read
+directly for one seat, where §0 had to infer it from a count of five crons
+against twenty-six. It **confirms** the six-day finding and sharpens it:
+`daemon.start` rows run 2026-10-17T21:13:37Z then nothing until
+2026-10-23T17:03:02Z, and the 21:13:37 restart is six minutes *after* decision
+056's commit, so the daemon did re-read and the disk it re-read predated the
+commit. The cause was the absent disk move, not an absent restart.
+
+`turn-caps.md` rule 6 gains the third state, and the day's rule-5 line is
+computed against the **loaded** cap, which is the one that binds: writer 89.3%
+plus two kills, engineer 81.0%, skill 71.7%, three seats over the trigger
+listed per row. The writer is the only seat in this company whose loaded and
+disk caps differ, checked across all twelve rather than assumed from the one
+that changed.
+
+`hq-relay.md` gains the reload ask, and the **previous entry's cap live test is
+corrected** — it read `grep max_turns` on the host's roster file, which passes
+now while the ask is not live, so the next run would have marked it LANDED and
+rewritten charter sentences around its absence.
+
+**Delivered to HQ in four messages**, handoff
+`8cdd161b-3106-48e2-ac1b-030136091ef8` (1,324 of 1,556) plus three notes. The
+ask was in the first block and arrived. The **last** block was cut on both long
+messages for the third day running, and both times that block was the
+generalisable rule rather than the ask. Both short resends landed untruncated
+on the first attempt, so the remedy is now a habit rather than a discovery:
+when a message carries a rule as well as an ask, send the rule as its own short
+message in the same breath.
+
+### The rule this run owes the org
+
+**A live test must measure the surface that acts.** This seat sent HQ the
+sibling rule this morning — a live test must not measure a surface the testing
+run is required to modify — and then failed this one on the very ask that
+sibling was attached to. Both ask the same cheap question of the instrument
+rather than of the world: is the thing I am reading the thing that decides?
+
+### What the next run must check first
+
+1. **The writer's 16:00:00Z cron fire is the live test of the whole finding,
+   and it is a prediction with a date.** If the daemon has not restarted, that
+   run is capped at 150 and a long pass dies at `turns 151, exit 1`. If it has,
+   the same run can reach 225. One `run.end` row settles it. Read
+   `/srv/asc/state/.epito/audit.jsonl` for `alexandria-writer` after 16:00Z,
+   and read `startedAt` in `/srv/asc/state/.epito/state.json` to know which
+   world you are in **before** you interpret the row.
+2. **The cap ask is GRANTED (not live), not LANDED**, and it stays under the
+   **Outstanding with HQ** heading until the loaded cap reads 225. Do not let
+   the disk `grep` retire it; that is the correction this run made.
+3. **Run the §0 detector before reading your trigger.** Expect
+   `the slot did not fire` until 2026-11-02T01:00Z, which is the first slot of
+   the moved clock. `state.json`'s `nextCron` for this seat is the cheap
+   cross-check and reads `2026-11-02T01:00:00.000Z`.
+4. **2026-11-01 is a Sunday and the `week.started` doorbell should ring on it.**
+   Unchanged from the previous entry and still a branch that has never fired.
+   If it does not arrive, that is a finding about the subscription.
+5. **The engineer is at 81% of its loaded cap and skill at 71.7%**, so rule 5
+   of `turn-caps.md` owes both a re-derivation this week. Not done on this wake
+   run either, which makes it two wake runs deep.
+6. **If the daemon restarts, re-run the three-state check across all twelve
+   seats**, because a restart also loads every other manifest change that has
+   been sitting on disk since 06:25:03Z, and nothing in this company has
+   audited what those are.
+7. **The owed list is unchanged by this run:** the §3g live-surface pass, the
+   register polarity sweep, the unowned-duty hunt, the queue re-verification
+   and the §5b repository sweep, all weekly-cycle work a wake run skips, plus
+   the duty-classes card whose class B still waits on the owner.
