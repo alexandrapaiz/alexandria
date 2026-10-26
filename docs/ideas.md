@@ -20161,3 +20161,62 @@ has nothing to go red against.
   directly to the register predate the inbox and are what conflicted.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-26 — Three claim rows to re-verify: the attribution numbers no reading of the paper supports (skill seat)
+
+- Trigger: the ADR-38 retrofit of `recursive-harness-self-improvement` read
+  `arxiv.org/abs/2609.13463` in full, which the charter's retrofit clause does
+  not require and which is the only reason this was found. Section 3's six
+  attribution figures do not match the paper. Four of them, 0.478, 0.620, 0.401
+  and 0.559, appear nowhere in its text. The other two appear in two unrelated
+  tables and not in the comparison the sentence made.
+- What: the skill cites claims 593, 594 and 597 for that section, per eval task
+  `rhsi-t4`'s `source.claims`. One or more of those rows carries numbers the
+  paper does not. This run had no `NEON_RO_URL`, so it could not read the rows
+  and could not say which. The skill text and the eval task are corrected
+  against the paper in this run's pull request. The rows are not, and a
+  corrected skill sitting on an uncorrected row re-introduces the error the
+  next time anything is written from the graph.
+- The paper's actual figures, for whoever does the re-verification: Table 2 is
+  MegaRCA-Mix Opus-4.8 0.471 single-turn to 0.608 continual against 0.479
+  passive, TRAIL weighted F1 0.482 to 0.543 against 0.488, TELBench 0.091 to
+  0.152 against 0.091. Table 3 is the reversal on short logs, AgentRx GPT-5.5
+  0.310 to 0.241 and Who&When GPT-5.5 0.516 to 0.437. The model-tier ablation
+  is Sonnet-5 at 0.505 against Fable-5's 0.498 at about 64 percent of the cost.
+- First step: a run with a database reads rows 593, 594 and 597 against those
+  figures and deprecates or corrects whichever is wrong. Filed for the research
+  seat, since `claims` is not this seat's write surface.
+- Registered as
+  `INC-2026-10-26-a-shipped-skill-carried-four-numbers-that-are-not-in-its-paper`.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 — The retrofit shape that avoids the uncoverable heading, and the one that trips the suite reader (skill seat)
+
+- Trigger: this run retrofitted `recursive-harness-self-improvement` and hit two
+  mechanical findings the previous retrofit had recorded or had not.
+- What, first: the 2026-10-24 entry above records that ADR-38's retrofit shape
+  produces a "What this file no longer carries" heading no eval task can ever
+  cover, so the library accumulates one unfixable `--check` finding per
+  retrofitted skill. This run tested the obvious alternative by omitting the
+  heading and putting the same account in the frontmatter `revisions` list and
+  the pull request instead. It works: `tools/skill_eval.py --check` reports
+  every section of this skill exercised, and the three skills carrying the
+  heading (`agent-containment`, `evaluation-integrity`, `harness-engineering`)
+  each still carry their finding. The frontmatter is also the better home,
+  because `revisions` is already the field a reader consults for what changed
+  and the site renders it.
+- What, second: `suite_version` reads like a revision counter and is not one.
+  `tools/skill_eval.py` has `SUITE_CONTRACTS = (1, 2)` and refuses a suite
+  outright with "contract is 3, this harness speaks 1 and 2". The 2026-09-30
+  note in two eval files says "the suite moved to version 2" in the counter
+  sense, which is what led this run to write 3 and find out. No code change is
+  needed, only a line in `skills/_validation/evals/README.md` saying the field
+  is the format contract and that a revision is recorded in `revision`.
+- First step: for the first finding, nothing. It is a shape this seat can adopt
+  on the next retrofit and has. For the second, one sentence in
+  `skills/_validation/evals/README.md`, which is this seat's surface and is
+  queued rather than written here because this run's pull request is already
+  one skill's worth of change and the charter says one skill per run.
+- Cost: $0.
+- Status: proposed

@@ -816,3 +816,58 @@ has somewhere to start rather than a silent gap.
   and is the first thing the eval route should settle when it lands. The defect
   ordering (narrow tests at 75 of 119) and the four named channels are the parts
   that would survive even a bad screen — asked by skills/evaluation-integrity
+
+## 2026-10-26 — asked by the skill seat, from the recursive-harness-self-improvement retrofit
+
+Appended at the end of the file, not into a section another seat owns, so two
+seats appending in one week do not collide on one anchor (incident 6).
+
+Run condition first. `NEON_RO_URL` was absent, so this run queried no claims and
+did no extraction. `GROQ_API_KEY` was absent too, so neither arm of the ADR-38
+gate could run. The charter's retrofit clause says steps 1 and 2 are skipped
+because the reading is already done, and the central finding of this run is that
+for one of the nine papers it was not.
+
+**Which papers this run read in full, and which it did not.** Read in full from
+arXiv HTML and checked against the skill's numbers: `arxiv:2609.13463`
+(Root-Cause Attribution), `arxiv:2609.20519` (SoL-Pi), `arxiv:2609.15364`
+(RSIAgent). SoL-Pi's and RSIAgent's figures are exact. Root-Cause's were not,
+and the correction is this run's main change. Not re-read, and therefore
+unverified at the sentence level: `arxiv:2609.14857` (ModularRSI),
+`arxiv:2609.17523` (ScienceBuddy), `arxiv:2609.14858` (Dream-RSI),
+`arxiv:2609.09153` (Procedural Graphs), `arxiv:2609.18094` (Agora),
+`arxiv:2609.09219` (Discovery Certification Protocol, read in full on
+2026-09-30 by the run that narrowed section 9).
+
+- [ ] question — Three of nine papers were spot-checked and one carried four
+  numbers that are not in it. At that rate the five never-verified papers in
+  this skill hold more. The cheap version is to check only each skill's
+  load-bearing figures, which is what caught this one, and the question for the
+  research seat is whether the error entered at distill, at interpret or at
+  extraction, because the repair is in a different place for each — asked by
+  skills/recursive-harness-self-improvement
+- [ ] arxiv:2609.20519 — *SoL-Pi*, the fourth mechanism. The paper names four
+  mechanisms and this skill carries three. The missing one is the
+  Evidence-Preserving Reducer: a low-cost model compacts tool results, a
+  deterministic verification step checks the compaction, and it falls back to
+  the original output when the check fails. That is a cheap-model-plus-verifier
+  pattern with an explicit fallback, which this library has no other instance
+  of, and it was left out for length rather than for evidence. It belongs in
+  `context-window-engineering` as much as here — asked by
+  skills/recursive-harness-self-improvement
+- [ ] reference — *Harbor Index* (Shi et al., 2026), the source of MegaRCA-Mix's
+  50 human-annotated failure trials, spanning 29 benchmarks across seven
+  domains. Root-Cause Attribution builds its hardest benchmark on it and the
+  corpus holds neither. A library that wants to say anything about long-horizon
+  agent failure needs the failure corpus and not only the papers that read it —
+  asked by skills/recursive-harness-self-improvement
+- [ ] reference — the interaction-centric failure taxonomy of Raj et al. (2026),
+  which is what every MegaRCA-Mix trial is annotated against, so it is the
+  schema behind the attribution numbers delta 3 now quotes. Absent from the
+  corpus — asked by skills/recursive-harness-self-improvement
+- [ ] question — Delta 6 rests on one 12-day Agora run, and the library has no
+  second population study of self-editing agents on one repository. Either a
+  replication exists and the corpus is missing it, or delta 6 is a single
+  observation dressed as a finding and should be cut on the next pass. Which of
+  those is true is a corpus question, not a judgment call — asked by
+  skills/recursive-harness-self-improvement
