@@ -554,6 +554,90 @@ def hidden_weeks(repo_root: Path | None = None) -> set[str]:
     return set(re.findall(r"\d{4}-W\d{2}", m.group(1))) if m else set()
 
 
+def _monday_of(label: str) -> date:
+    """The ISO Monday the `YYYY-Www` label names."""
+    year, week = label.split("-W")
+    return date.fromisocalendar(int(year), int(week), 1)
+
+
+def _label_of(monday: date) -> str:
+    """The inverse of `_monday_of`, and a formatter rather than a clock rule.
+
+    `week_label` is the clock rule and it is delegated to the press, because
+    which week the press owes today is policy and a second copy of policy can
+    only agree with the first by luck. Turning a Monday back into the label for
+    its own week is arithmetic ISO already fixes, so it lives here.
+    """
+    year, week, _ = monday.isocalendar()
+    return f"{year}-W{week:02d}"
+
+
+def archive_gaps(published, hidden=()) -> list[str]:
+    """The weeks inside the archive's own span that a reader cannot open.
+
+    Interior gaps only, and deliberately. A trailing gap, which is the press
+    running behind the clock, is already the press surface's verdict and the
+    site surface's, and a third surface reporting the same week would make one
+    fault read as three. What no surface reported until now is a hole in the
+    middle. On 2026-10-26 `judge_archive` answered `ok` over a published list
+    of 2026-W42, 2026-W40 and 2026-W39, with 2026-W41 absent from the list it
+    was holding and a board card open about exactly that week. The hole was in
+    this check's own evidence and the check read past it.
+
+    The floor is the oldest week a reader can open rather than the first week
+    the press ever ran, because nothing here can know the latter and a guess at
+    it would report every week before the archive began. 2026-W38 sits below
+    that floor by design: it was lost for good
+    (`INC-2026-09-28-press-week-label-off-schedule`) and no run will fill it.
+
+    A label that is not a real ISO week is dropped rather than raised on. The
+    list comes from a regex over rendered HTML, so `2026-W99` is reachable from
+    a page this tool does not control, and an instrument that crashes on a bad
+    page reports nothing about the good part of it.
+    """
+    mondays = {}
+    for label in published:
+        try:
+            mondays[label] = _monday_of(label)
+        except ValueError:
+            continue
+    if len(mondays) < 2:
+        return []
+    hidden = set(hidden)
+    first, last = min(mondays.values()), max(mondays.values())
+    out = []
+    monday = first + timedelta(days=7)
+    while monday < last:
+        label = _label_of(monday)
+        if label not in mondays and label not in hidden:
+            out.append(label)
+        monday += timedelta(days=7)
+    return out
+
+
+def _archive_verdict(headline: str, gaps: list[str], evidence: dict) -> Surface:
+    """Green unless the span the archive claims to cover has a hole in it.
+
+    Every `ok` this surface can reach goes through here, so a hole cannot be
+    hidden behind a sentence about the two ends agreeing. FAILING and not a
+    softer word: a weekly archive with a week missing from the middle is a
+    defect a reader meets, and the escape hatch for a week that is never coming
+    already exists and is the owner's, which is `HIDDEN_WEEKS` in
+    `site/lib/content.js`. So a red that stays red is a decision nobody has
+    taken rather than an alarm with no answer.
+    """
+    if not gaps:
+        return Surface("archive", OK, headline, evidence)
+    runs = "; ".join(f"modal run pipeline/weekly.py::weekly --week {w}"
+                     for w in gaps)
+    return Surface("archive", FAILING,
+                   f"{headline}, and {len(gaps)} week(s) inside that span "
+                   f"cannot be opened at all: {', '.join(gaps)}. Each one is a "
+                   f"single command once the Modal workspace is back ({runs}), "
+                   "and a week that is never coming is hidden instead, in "
+                   "HIDDEN_WEEKS in site/lib/content.js", evidence)
+
+
 def judge_archive(press: Surface | None, site: Surface | None,
                   hidden: set[str] | None = None) -> Surface:
     """Does the public archive show the week the press recorded.
@@ -572,6 +656,15 @@ def judge_archive(press: Surface | None, site: Surface | None,
     `digests`. The site surface knows the newest week a reader can open. When
     they agree, the connection between them is working, and that is the only
     evidence that it is.
+
+    **And the agreement of the two ends says nothing about the middle**, which
+    is this surface's second duty and was added 2026-10-26. The site surface
+    hands over every week it found, not only the newest, so the hole is already
+    in this function's evidence; until today nothing read it. `archive_gaps`
+    does, and the reason it is worth reading now rather than a month ago is
+    that a named week became fillable: `weekly --week` landed the same day, so
+    a gap this check names is a command somebody can run rather than a fact
+    nobody can act on.
     """
     hidden = hidden if hidden is not None else hidden_weeks()
     if press is None or site is None:
@@ -585,15 +678,15 @@ def judge_archive(press: Surface | None, site: Surface | None,
 
     recorded = press.evidence.get("newest_week")
     published = [w for w in site.evidence.get("published", []) if w not in hidden]
+    gaps = archive_gaps(published, hidden)
     evidence = {"recorded": recorded, "published": published,
-                "hidden": sorted(hidden)}
+                "hidden": sorted(hidden), "gaps": gaps}
     if not recorded:
         return Surface("archive", UNKNOWN,
                        "the press surface reported no week to compare", evidence)
     if recorded in hidden:
-        return Surface("archive", OK,
-                       f"{recorded} is the newest record and is deliberately "
-                       "unpublished", evidence)
+        return _archive_verdict(f"{recorded} is the newest record and is "
+                                "deliberately unpublished", gaps, evidence)
     if not published:
         return Surface("archive", FAILING,
                        f"the record holds {recorded} and the archive publishes "
@@ -601,9 +694,9 @@ def judge_archive(press: Surface | None, site: Surface | None,
 
     newest_published = max(published)
     if newest_published == recorded:
-        return Surface("archive", OK,
-                       f"the record and the archive both end at {recorded}",
-                       evidence)
+        return _archive_verdict(
+            f"the record and the archive both end at {recorded}", gaps,
+            evidence)
     if newest_published < recorded:
         return Surface("archive", FAILING,
                        f"the press recorded {recorded} and the newest issue a "
@@ -612,11 +705,10 @@ def judge_archive(press: Surface | None, site: Surface | None,
                        "archive is serving the committed files and the record "
                        "path is dead, or that week is hidden and this list "
                        "does not know it", evidence)
-    return Surface("archive", OK,
-                   f"the archive publishes {newest_published} and the record "
-                   f"does not hold it. The newest record is {recorded}. A week "
-                   "published by hand is the old path still working, not a "
-                   "failure", evidence)
+    return _archive_verdict(
+        f"the archive publishes {newest_published} and the record does not "
+        f"hold it. The newest record is {recorded}. A week published by hand "
+        "is the old path still working, not a failure", gaps, evidence)
 
 
 # Modal's HTTP edge answers for every app in the workspace, including the ones
@@ -2805,11 +2897,7 @@ def check_payments(conn) -> Surface:
 
 def _weeks_between(have: str, want: str) -> int:
     """How many issues are missing between the newest row and the week that ended."""
-    def monday(label: str) -> date:
-        year, week = label.split("-W")
-        return date.fromisocalendar(int(year), int(week), 1)
-
-    return max(0, (monday(want) - monday(have)).days // 7)
+    return max(0, (_monday_of(want) - _monday_of(have)).days // 7)
 
 
 # ------------------------------------------------- the credential-free reader
@@ -3017,11 +3105,66 @@ def _from_database(url: str, today: date | None, repo_root: Path | None,
         return None, f"DATABASE_URL is set but the connection failed: {exc}"
 
 
+def check_loop(repo_root: Path | None = None) -> Surface:
+    """Has the system's own last proposal about itself reached production.
+
+    `loop` sits immediately after `deploy` because it is the same question one
+    level up. `deploy` asks whether the running image is the trunk. This asks
+    whether a specific merged change the product made to its own prompts is in
+    that image, which is the question
+    `INC-2026-10-12-meta-review-proposal-merged-never-deployed` was about and
+    the one nothing in this report could answer: triage was green on `deploy`
+    for days at a time while it judged 8,861 papers against a prompt a merge
+    had already replaced, because a deploy inside the grace window is not a
+    drift and a proposal that is not running is still not running.
+
+    The judgement is `tools/loop_close.py`, called and not copied, for the
+    reason every other surface here gives about every other rule it reads.
+
+    It costs one `gh` call plus one per open proposal, and there are usually
+    none, because `propose_change` has fired once in this product's life. A
+    seat with no `gh` gets `unknown`, which is the honest answer and not a
+    pass.
+    """
+    try:
+        from tools import loop_close
+    except Exception as exc:
+        return Surface("loop", UNKNOWN,
+                       f"tools/loop_close.py could not be read here: {exc}")
+    root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
+    try:
+        proposals, deploy = loop_close.gather(root, None, None)
+        verdict = loop_close.judge(proposals, deploy, root)
+    except Exception as exc:
+        return Surface("loop", UNKNOWN,
+                       f"the self-improvement loop could not be judged here: {exc}")
+
+    state = {"ok": OK, "failing": FAILING}.get(verdict["verdict"], UNKNOWN)
+    dark = [p for p in verdict["proposals"] if p.get("state") == loop_close.DARK]
+    headline = verdict["why"]
+    if dark:
+        headline = (
+            "; ".join(f"{p.get('pr_url')} changed "
+                      f"{', '.join(p.get('files') or [])} and merged, and "
+                      f"{p.get('why')}" for p in dark)
+            + ". A merged prompt the job does not read has bought nothing, "
+              "which is the whole of incident "
+              "INC-2026-10-12-meta-review-proposal-merged-never-deployed")
+    return Surface("loop", state, headline,
+                   {"ref": verdict.get("ref"),
+                    "proposals": verdict.get("proposals")})
+
+
 # `checkout` sits next to `payments` on purpose. One asks whether a sale can
 # happen and the other whether a sale that happened became access, and a reader
 # scanning this report for the state of the till should meet both in one glance.
+#
+# `loop` sits after `deploy` for the same kind of reason: one says whether the
+# running image is the trunk and the other whether the system's own last
+# proposal about itself is inside it, and the second has been false while the
+# first was green.
 ORDER = ["press", "compute", "pipeline", "payments", "checkout", "deploy",
-         "site", "archive", "mcp"]
+         "loop", "site", "archive", "mcp"]
 
 
 def run(surfaces: list[str], today: date | None = None,
@@ -3064,6 +3207,8 @@ def run(surfaces: list[str], today: date | None = None,
         out.append(judge_archive(by_name.get("press"), by_name.get("site")))
     if "checkout" in asked:
         out.append(check_checkout(repo_root))
+    if "loop" in asked:
+        out.append(check_loop(repo_root))
     if "mcp" in asked:
         out.append(check_mcp())
 

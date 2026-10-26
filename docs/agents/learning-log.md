@@ -7013,3 +7013,263 @@ the manifest rather than taken from the handoff.
    and 2026-10-26T22:15Z for class C, have still not passed as of this run.
 7. **One ask upward is still open and was not re-filed**, Ask 4 of 2026-10-24,
    the writer's cap. Everything else on the relay page is answered.
+
+## 2026-10-26, message wake (the second of the day) — the outbox heading read clear eleven runs running
+
+Woken by the merge of the previous run's pull request and told to continue
+with the next item in this seat's lane. **The detector was run before the
+trigger was read** and returned `the cycle was taken` for the
+2026-10-25T14:00Z slot, so this is a wake run: the event's work, the failure
+sweep, the HQ heading, this entry, one improvement, and none of the register
+sweeps.
+
+### What was taken, and why it was not the card at the top of the lane
+
+The lane holds five cards: two in Done, two in Review and handed upward, and
+one in Backlog. The Backlog card is the duty-classes card and **all three of
+its gates were still in the future at 00:34Z**: research's slot at 16:30Z,
+class C's forty-eight-hour silence at 22:15Z, and class B waiting on the
+owner's word with no silence rule because it widens this seat's own budget.
+So there was nothing on the card to take yet, and the honest alternative was
+to take the thing the gates are waiting on, which is the surface that is
+supposed to notice when an ask of ours moves.
+
+### The improvement: four states for an HQ ask, and only the fourth is about the world
+
+`INC-2026-10-26-the-hq-heading-reads-the-same-whether-an-ask-landed-or-not`.
+
+§3f puts an **Undelivered to HQ** heading in this seat's pull request
+because that is the one surface the owner provably reads, and its stated
+purpose is that "the point is the age rather than the news". **It read
+empty, nothing or none for eleven consecutive runs** from 2026-10-24, and
+one of those runs recorded the first empty reading as news. Grep
+`Undelivered to HQ` across this file and the run notes and you can count
+them.
+
+On the morning of the eleventh, six asks were in play and the heading named
+none of them. The three states were UNDELIVERED, DELIVERED and GRANTED, and
+**all three are facts about the message**, so an entry reached a terminal
+state by being posted, which is the moment its age starts mattering.
+
+The fix is a fourth state, **LANDED**, which is the only one about the
+world; the heading renamed **Outstanding with HQ** and keyed to it; and a
+**live test** written into every ask at the time the ask is written, because
+the run that writes the ask is the only run that knows what it was asking
+for. The rule it replaces, "check whether each open ask has already been
+built", was right and had no mechanism, so it was obeyed by nobody and read
+as satisfied by everybody.
+
+### The seven live tests, run across the whole page in the run that wrote them
+
+Two still open at eight days: the host clone is still shallow, `git
+rev-parse --is-shallow-repository` returning `true` in this run's own
+sandbox, and the writer's manifest still reads `max_turns = 150`.
+
+Two **granted and not live**: both 2026-10-25 grants ship in
+`alexandra-systems` pull request 467, open and unmerged at 00:50Z, and both
+copies of this seat's clock still read `0 14 * * 0`. **The deadline is
+2026-11-01T14:00Z**, when the unmoved Sunday slot comes due inside the dead
+zone the ask was written to escape.
+
+Three **landed and unread**, which is the half that justifies the whole
+change. The run route is time-scoped:
+`?runs_since_hours=168&runs_limit=200` is honoured, the limit clamps at 200,
+`runs_saturated` says whether your window was cut, and an unknown parameter
+answers `no such filter: <name>; this read honours runs_limit,
+runs_since_hours` instead of `no such route`. `pr_url` is correct on a
+refused row going forward, seven of seven over 48 hours, with the four still
+blank all starting before the 2026-10-24T23:09Z fix. And every one of the
+seven names in `requirements-dev.txt` imports on the host, against the five
+failures and thirty-two errors the 2026-10-18 ask reported.
+
+**Three sentences of this charter were written around the first of those and
+were corrected in the same run**, which is §2a-0's own rule about a granted
+ask being a charter edit falling due, finally applied to §2a-0.
+
+**One thing a successor should copy rather than re-derive.** The parameter
+names are the payload's own field names and no run would guess them: the
+first probe tried `?since_hours=` and `?limit=` and both were refused. The
+refusal named the vocabulary. **When a surface refuses you, read the
+refusal.**
+
+### The failure sweep (§2b)
+
+**Window: 2026-10-26T00:00Z to 00:45Z. Zero non-success rows in this
+company.** Four alexandria runs. Peaks against the caps the host enforces:
+`engineer` 129 of 200 at 64.5%, `exo` 101 of 200 at 50.5%, `pm` 33 of 300 at
+11.0%. No seat over the 70% trigger in this window, and the writer did not
+run, so its six-sweep streak is unextended rather than broken.
+
+**Zero refusals of any kind today, portfolio-wide, to 00:45Z**, which is the
+first such reading since the weekly reset at 23:00Z on 2026-10-25. Three cap
+hits outside this company, none of them this seat's to fix: `ursa-skill` at
+101 of 100, `ursa-security` at 101 of 100 and `epitome-exo` at 121 of 120,
+plus two rows with no result line, one of which is the same `epitome-exo`
+run. Three caps hit at exactly cap-plus-one within fourteen minutes across
+two companies is a pattern for the centralizer rather than a coincidence,
+and it is in the handoff only as a count.
+
+**Source stated.** Numerators from `/srv/asc/state/.epito/audit.jsonl`,
+denominators from `max_turns` in `/srv/asc/roster/*/*/agent.toml`, classes
+from each run's own log rather than from a window join. No `gh run list`
+reading is claimed.
+
+### What the next run must check first
+
+1. **Run the detector before you read your trigger.** It returned `the cycle
+   was taken` at 00:35Z for the 2026-10-25T14:00Z slot.
+2. **Run the seven live tests on the relay page, and put the readings in the
+   Outstanding with HQ heading.** The table at the top of
+   `docs/agents/hq-relay.md` holds the commands. The pass costs under a
+   minute because five of the seven are a `grep` or a `git rev-parse` on
+   this filesystem.
+3. **The dated one is 2026-11-01T14:00Z.** If `alexandra-systems` pull
+   request 467 has not merged and the host has not reloaded the roster by
+   then, this seat's weekly slot fires into a spent weekly budget for the
+   second week running. `grep '^cron' /srv/asc/roster/alexandria/exo/agent.toml`
+   is the whole test.
+4. **The duty-classes card's gates have passed by now.** Research's slot was
+   2026-10-26T16:30Z and class C's silence expired at 22:15Z. Class B still
+   waits on the owner's word and no silence rule reaches it, because it
+   widens this seat's own budget.
+5. **The writer's cap is still the oldest unpaid thing.** Six consecutive
+   sweeps over rule 5's trigger, the manifest still at 150, the ask
+   delivered 2026-10-18 and eight days old.
+6. **The owed list is otherwise unchanged by this run:** the §3g
+   live-surface pass, the register polarity pass and the §5b repository
+   sweep, all three of them weekly-cycle work a wake run skips.
+
+---
+
+## 2026-10-26, capacity-return hook wake (third wake of the day)
+
+**Mode: wake run.** The owed-cycle detector ran before the trigger was read.
+Its third version said `the slot did not fire` for a 2026-10-26T01:00Z slot and
+sent this run off to perform §3b's deployed-clock test by hand; the test showed
+the slot had never existed, and rewriting the detector so it could reach that
+answer itself became this run's one improvement. No cycle is owed. The next due
+slot is **2026-11-02T01:00Z**, derived rather than carried.
+
+**The wake.** A host hook saying the provider limit that refused the previous
+run had reset. That is HQ's capacity re-fire, granted yesterday, firing for the
+first time: `alexandria-exo`'s message wake at 12:01:58Z was refused at turn
+one in 436ms with `You've hit your session limit · resets 2pm (UTC)`, the
+window's `reset_at` was 14:00:00Z, and the re-fire arrived at 14:03:06Z. The
+mechanism waited for the hour to come back instead of retrying into the same
+wall, which is exactly the ask.
+
+### What this run observed
+
+**Three grants landed this morning and one of them was unrecorded anywhere.**
+The three weekly slot moves deployed with the roster copy at
+2026-10-26T04:30:48Z (`alexandria/exo` `0 1 * * 1`, `ursa/security`
+`15 1 * * 1`, `ursa/exo` `30 1 * * 1`). The capacity re-fire landed and proved
+itself on this run. And a sixth subscription, `week.started`, is in the
+deployed manifest from this seat's own 2026-10-24 ask, with **no entry on the
+relay page at any point**, so it passed through all four of that page's states
+without the page ever holding it.
+
+**The clock moved three and a half hours too late to cover its own first
+slot.** 2026-10-26 is a Monday, so a 01:00Z slot existed on the declared clock.
+The host held `0 14 * * 0` at 01:00Z and through four more deploys until
+04:30:48Z. Nothing was lost, because the 2026-10-25T14:00Z cycle had already
+been taken and discharged, but every retrospective reading taken from the live
+manifest was wrong for those thirteen hours and one of them was this seat's own
+mode test.
+
+**The failure sweep (§2b). Window 2026-10-26T00:51Z to 14:06Z. 25 non-success
+rows in this company, 23 session refusals and 2 cap hits, nothing
+unclassified.** Classified from each run's own log rather than from a window
+join. Portfolio-wide on the day: 167 exit-zero runs, 98 session refusals, 30
+cap hits, 7 host-side deaths with no result line, 1 api error with no status,
+and **zero weekly-limit refusals** — a Monday, with the weekly budget fresh,
+which is the condition the slot move was asked for.
+
+**The two cap hits are both the writer, both at 151 turns against a cap of
+150**, at 05:36:58Z and 09:42:05Z. `turns == cap + 1` is a run cut mid-work.
+That ask was delivered 2026-10-18 and is eight days old, and today is the first
+day it carries a measured cost rather than only an age.
+
+**Caps against the host's own enforcement.** `engineer` 162 of 200 at 81.0% and
+**over rule 5's 70% trigger**; `writer` 151 of 150 at 100.7%; `pm` 125 of 300;
+`frontend` 150 of 600; `skill` 103 of 180; `exo` 77 of 200. Numerators from
+`/srv/asc/state/.epito/audit.jsonl`, denominators from `max_turns` in
+`/srv/asc/roster/alexandria/*/agent.toml`.
+
+**Presence gradient (§2c).** The brief read four decided in her name against
+four needing her. All four asks are things only she can clear, which is the
+healthy shape.
+
+### What this run changed
+
+**The improvement: the owed-cycle detector reads the deployed clock.**
+`INC-2026-10-26-the-detector-named-a-slot-that-never-came-due-and-called-it-a-slot-that-did-not-fire`.
+Fourth version. It resolves the cron in effect at a slot's own minute from the
+roster clone's reflog instead of reading the live manifest, so a slot the host
+dropped and a slot that never existed stop returning the same string, and
+`THE SLOT WAS MISSED` is sayable for the first time. Validated in ten
+directions, 0.59s live, and where the clone is unreadable it declines the
+verdict rather than falling back to the manifest.
+
+**Two obligations a landed grant created, not discretionary improvements.**
+§3f rule 4 and §2a-0 require the run that notices a grant to rewrite the
+sentences written around its absence in the same run. Three sentences of §0
+were wrong the moment the roster reloaded: the subscriptions list said five,
+the mode list said "the Sunday cron", and nothing named `week.started`, so the
+one subscription whose stated purpose is to carry the weekly cycle would have
+been read as "any subscription event". The doorbell was due to ring on
+**2026-11-01** into a charter that did not know the word. A `week.started` wake
+now takes the cycle and discharges the **next** due slot, because the doorbell
+rings before the clock.
+
+**One of our own live tests could not survive being read.** Ask 1's test on the
+relay page was `git rev-parse --is-shallow-repository` in a seat sandbox. Every
+run of this seat is ordered by its own charter to unshallow the clone in its
+first turns, so any run that obeys its charter and then reads the test gets
+`false` and marks the ask landed. This run read `false` and caught it only
+because it still had its own start-of-run output. Replaced with a read of the
+host's clone command out of the run logs: `git clone --depth 1` on **95 of 95**
+runs across four companies today.
+
+**Delivered to HQ in three messages**, handoff
+`07197243-be0e-40cf-b4b3-59c192e5b088` plus two notes. The ask was in the first
+block and arrived. Both long messages had their **last** block cut, and in both
+that block was the generalisable rule rather than the ask, so the disposition
+rule protects what the sender wants and not what the reader would most value.
+The third message carried one clause and nothing else, 762 of 762.
+
+### What the next run must check first
+
+1. **Run the detector before you read your trigger**, and expect `the cycle was
+   taken` for 2026-10-25T14:00Z until a Monday slot comes due. It no longer
+   needs the deployed-clock test run by hand.
+2. **2026-11-01 is a Sunday and the `week.started` doorbell should ring on it.**
+   §0 now says a doorbell run takes the cycle and writes
+   `cycle-taken: 2026-11-02T01:00Z`. **This is the first exercise of a branch
+   that has never fired**, which is the thing §0 precondition 6 exists to
+   distrust, so if the doorbell does not arrive, that is a finding about the
+   subscription and belongs on the relay page rather than being read as a quiet
+   week. Check `/srv/asc/state/.epito/audit.jsonl` for a `week.started` trigger
+   value, and note that no charter here knows what string the host writes for
+   it.
+3. **2026-11-02T01:00Z is the first slot of the moved clock.** If it fires and
+   produces nothing, the detector will say `THE CYCLE IS OWED AND A RE-FIRE IS
+   CLAIMED` rather than the old benign string. If it does not fire at all, the
+   detector will say `THE SLOT WAS MISSED`, which is a finding about the host
+   and goes up through the relay page.
+4. **The writer's cap is the oldest unpaid thing and it now has a cost.** Still
+   `150`, ask eight days old, two runs cut at 151 turns today. Seventh
+   consecutive sweep over rule 5's trigger. Re-raised to HQ this run with the
+   kills attached.
+5. **The engineer is at 81% of its cap** and rule 5 of `turn-caps.md` says any
+   seat finishing above 70% has its row re-derived in the same week. That
+   re-derivation is this seat's and it was not done on this wake run.
+6. **Ask 1's replacement live test needs reading from the logs, not the working
+   tree.** `grep -m1 'git clone' <newest log under
+   /srv/asc/state/.epito/logs/alexandria-exo/>`. If you read
+   `git rev-parse --is-shallow-repository` instead you will get `false` and be
+   wrong, for the reason recorded above.
+7. **The owed list is unchanged by this run:** the §3g live-surface pass, the
+   register polarity sweep, the unowned-duty hunt, the queue re-verification
+   and the §5b repository sweep, all five of them weekly-cycle work a wake run
+   skips, plus the duty-classes card whose class B still waits on the owner.

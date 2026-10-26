@@ -333,7 +333,10 @@ def fold_invariant(before: str, inbox: list[tuple[str, str]], after: str) -> lis
     return failures
 
 
-SKELETON = """## {inc_id} — {title} ({date}, {seat} seat)
+# The separator is " - " rather than an em dash, because tools/ban_list.py
+# entry 13 rejects U+2014 and INC_ID's lookahead accepts a plain space, so
+# the em dash made `new` emit a heading that the voice gate then failed.
+SKELETON = """## {inc_id} - {title} ({date}, {seat} seat)
 
 **What happened.** <one paragraph, concrete, with the evidence that makes it
 checkable by someone who was not here>

@@ -305,6 +305,24 @@ UNCOVERED = {
     # watchers now share and has no command of its own: a regression there is
     # silent in every one of them at once.
     "tests/test_checkout_watch.py",
+    # Added 2026-10-26 with the self-improvement loop's closing condition, and
+    # pinned for the same structural reason as every line above: the step that
+    # would run it goes in `.github/workflows/checks.yml`, which no seat's
+    # token may write, and `docs/sprints/sprint-2026-10-12.md` tells this seat
+    # in its own words not to attempt that file again.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern.
+    #
+    # What it guards is the rule that decides when a proposal the system made
+    # about itself is done. The failure it was written for has already
+    # happened once: a prompt merged on 2026-10-05 and the job reading it went
+    # on reading the old one for twelve days, 8,861 rows deep. The dangerous
+    # direction here is a wrong `live`, because that writes `promotions.live_at`
+    # and a closed loop is never asked about again, and the assertions that an
+    # unknown stops a close are the ones that would be silent on a pull
+    # request.
+    "tests/test_loop_close.py",
     "tests/delivery.test.mjs",
     "tests/issues.test.mjs",
     "tests/markdown.test.mjs",
@@ -529,6 +547,36 @@ UNCOVERED = {
     # declined. Those are the tests whose silence costs the most, because the
     # defect they would catch is a merge that already happened.
     "tests/test_panel_merge.py",
+    # Added 2026-10-26 with the scoped-delivery measurement, and pinned for
+    # the same structural reason as every line above: the step that would run
+    # it goes in `.github/workflows/checks.yml`, which no seat's token may
+    # write, and the engineer charter says in its own words that this seat
+    # cannot push a workflow file. The staged replacement runs it, because
+    # that file runs the suite rather than naming files.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern.
+    #
+    # What it guards is the only gate in `tools/skill_scope.py`, the verdict
+    # that answers whether loading three skills beats loading the library,
+    # and the test that matters most in it is the one that builds a checkout
+    # where scoping is the wrong move and asserts the verdict says so. A
+    # measurement whose verdict has only ever been observed agreeing with the
+    # run that wrote it is not a measurement, and that assertion going silent
+    # on a pull request is how it would become one.
+    "tests/test_skill_scope.py",
+    # Added 2026-10-26 with the press's named-week entrypoint, and pinned for
+    # the same structural reason as every line above: applying the staged
+    # replacement needs a `workflows` permission no seat holds, and the
+    # alternative the gate offers is editing `.github/workflows/checks.yml`,
+    # which no seat may do either. The reason this pin is in the diff rather
+    # than assumed: the file holds the only proof that a regenerated issue
+    # mails nobody. A backfill over a quarter of past issues would otherwise
+    # mail the subscriber list a dozen times, and that assertion going silent
+    # on a pull request is the one failure in this set a reader would notice
+    # before the owner did. The staged replacement runs the whole suite, so it
+    # runs this too.
+    "tests/test_press_backfill.py",
 }
 
 

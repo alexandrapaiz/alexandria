@@ -9529,6 +9529,36 @@ back. This run did not write it, because that file is the queue of what the
 deploy owes and adding to it on a branch of this seat's own is a claim on
 another seat's surface; the ask goes to the PM with this entry as its evidence.
 
+**Sighted a third time 2026-10-26, by the same daily machinery diff, and the
+count went from one to three while the repair sat unqueued.** `main` carries
+`f4da8c89` (merged as #536, interpret's per-call size read out of the job
+rather than frozen beside it) and `85866beb` (merged as #536, the rehearsal's
+triage and interpret sample sizes moved from 3 and 5 to 10 and 10 and pinned to
+their jobs' constants) on top of `5af27966` above. All three are reservations or
+rehearsal shapes, all three are named by `docs/agents/runtime-changes.md`, and
+none has a rehearsal receipt, for the same reason: the Modal workspace has been
+disabled since 2026-10-23 and a seat sandbox holds no provider key.
+
+**The repeat is not the unrehearsed change. It is that the repair this entry
+already named has not been made, and the entry correctly predicted why.** The
+2026-10-25 run declined to write
+`docs/agents/pending-workflow-changes.md` because that page is the ExO seat's
+enforcement surface (`prompts/exo-agent.md` §5 verifies every item on it each
+run) and writing another seat's queue from this seat's branch is a claim on it.
+This run read the page and reached the same conclusion, so the ask has now been
+deferred for the same correct reason twice, and the obligation has spent two
+days with nowhere to live while the number of changes owing it tripled.
+
+**A place that is this seat's own, offered because the ask keeps not landing.**
+The deploy surface of `tools/delivery_health.py` already lists the undeployed
+commits per app, it is read daily by every seat, and it is the thing whoever
+turns the workspace back on will look at before running `modal deploy`. That is
+the reader this obligation needs. The work is not one line: it needs each
+undeployed commit classified against `runtime-changes.md`, which is a day-sized
+slice rather than an addendum, so it is in `docs/ideas.md` as this run's third
+entry with its first step named and it is not built here. Recording this is not
+a substitute for queueing it, which is still the PM's or the ExO's to do.
+
 ## INC-2026-10-05-adr-39-duplicate — a second ADR number collision, same allocator, four days after the first one was recorded and still unfixed (2026-10-05, PM seat)
 
 **Recorded under the standing rule as a repeat of incident 29's class**
@@ -16492,6 +16522,23 @@ the ask it was made in before the owner acted on it, and the gap between the
 module's two anchors is now named here rather than living only in a board
 reply and a docstring that only covers half of it.
 
+**Repaired 2026-10-26 by the engineer seat, which is the surface this entry
+was addressed to.** `gather` takes a window, `week_window(week)` builds the
+exact span the Monday cron would have read, and both callers that write an
+issue pass it, so the queries this entry cites by line number are now anchored
+to the same week as the label above them. `weekly` also takes the week by name
+(`modal run pipeline/weekly.py::weekly --week 2026-W41`), which is the verb the
+withdrawn recovery needed and did not have, and a named-week run mails nobody:
+it writes the row and prints the `resend` command. The property is pinned in
+`tests/test_press_backfill.py::test_the_scheduled_path_reads_the_week_it_prints`,
+which fails on any return to the old anchor. Two things this does not close.
+Nothing has rehearsed it, because the Modal workspace has been disabled since
+2026-10-23, and the module's own deploy command runs `rehearse` before
+`modal deploy`, so the rehearsal is the gate and it is in the deploy path
+rather than skipped. And whether 2026-W41 should be written at all is still
+the owner's call, unchanged by this: what changed is that the command now
+writes the week it names.
+
 **The lesson for this seat.** A recommendation that prices an action in cost
 and names what it buys back is a claim that the action does what it says.
 This seat priced a command without reading whether it wrote the content its
@@ -19108,7 +19155,20 @@ an event that a previous run of the same seat had already answered.
 | --- | --- | --- | --- |
 | 11:46Z | pm | #438, opened 11:34Z | PR #440's body and `docs/sprints/pm-note-2026-10-24-message-reconciled.md` |
 | 12:13Z | pm | #442, opened 12:09Z | PR #444's body and `docs/sprints/pm-note-2026-10-24-message-439-rewake.md` |
+| ~22:22Z | pm | #491 (opened 22:20:24Z, merged #487, re-verified #435) and, for the half of the same wake naming #489, exo's own #492 (opened 22:21:28Z, closed #489 as superseded) | this entry and PR #494's body |
 | 12:49Z | exo | #446, opened 12:29Z, which replied on the board at 12:34:58Z and 12:35:22Z | this entry and PR #449 |
+| 2026-10-25T02:45Z | pm | #503, opened 02:38Z, which merged #501 and re-verified #435 | this entry and PR #505 |
+| 2026-10-26 04:05Z | pm | #531, opened 2026-10-26T00:34:34Z, finished (125 turns, exit 0) before this run's own trigger fired | this entry and PR #537 |
+| 2026-10-26 05:15Z | pm | #519, opened 2026-10-25T23:09:57Z | this entry and PR #547 |
+
+**2026-10-25 addendum.** The class is still live a day after the entry below
+was marked OPEN. One event (exo's run finishing, naming PR #501) woke this
+seat twice seven minutes apart. The second run (#505) found #503's open pull
+request, verified its two claims live rather than trusting its report (#501
+merged to `main` as `20e07f7a`, #435 still `CONFLICTING`), and registered
+here per this entry's own instruction, same as the three rows above it. No
+new mitigation needed: the existing one (look for your own open PR first)
+is still what catches it every time.
 
 In every case the mitigation that saved the run was the same one, and it is
 already law in all twelve charters: look for your own open pull request
@@ -19155,6 +19215,36 @@ request bodies.
 **Blameless note.** Nothing failed. Three runs each did the correct thing
 with the information they had, and two of them wrote the finding down
 clearly in the wrong place. Ban list checked on this entry.
+
+**Addendum, 2026-10-24T22:12Z, pm seat, PR opened for this run.** A fifth
+instance: a wake naming exo's #485 (already merged by this seat's own prior
+pass, #488, sixteen minutes earlier) and four provider-capacity refusals
+already covered by this seat's own #483. Verified live rather than trusted:
+`HEAD` on `main` is already #485's merge commit. The payload also carried a
+stale figure (exo's merged run note had already self-corrected "five" to
+"four"; this event still read "five"), which is new information about the
+class: at least one duplicate wake is not a re-delivery of the same message
+but a delivery of an earlier draft of it, arriving after the correction had
+already landed. No new root cause beyond what is already asked in
+`docs/agents/hq-relay.md`.
+
+**Recurrence, 2026-10-25T23:2xZ, pm seat, message wake (a fourth and fifth
+instance beyond the three above).** Two wakes landed on this exact pattern
+within minutes. First, a wake naming "exo's run finished, PR #518" was
+answered by the pm seat's own PR #503-chain run as #520, which independently
+reviewed #518 against the merge rule, merged it to `main`, and re-verified
+#435's draft/conflict state. Then a second wake, carrying the identical
+payload (same #518, same #435, same "check-draft-prs.sh" ask), landed after
+#520 was already open. Found via the standing own-open-PR check: #520's
+diff and commits were read in full rather than trusting its summary, `git
+log` confirmed `dea25b7` (the #518 merge) was already on `main`, and #435's
+live state (`isDraft: true`, `CONFLICTING`/`DIRTY`, last comment at
+23:21:25Z) matched #520's report exactly. Nothing left to redo; this entry
+and a near-empty PR are the only output. The `tools/check-draft-prs.sh`
+ask in both payloads keeps naming a script that has never existed in this
+repository (confirmed again: absent from `tools/`, absent from `git log
+--all`), which is the standing fabricated-tool block already tracked
+elsewhere in this file and not a new finding.
 
 ---
 
@@ -19362,6 +19452,32 @@ prior occurrence: see
 `docs/sprints/pm-note-2026-10-24-message-centralizer-tails-review.md` and
 the Tier reclassification recorded there and in
 `INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway`.
+
+**Addendum, ninth occurrence, PR #484.** Same fabricated
+`tools/check-draft-prs.sh`, same "ready it and merge it" push on #435,
+same unsigned "bus" framing citing "depth seven" and naming exo's #482 as
+the real event to check against the merge rule. `find . -iname
+check-draft-prs.sh` and `git log --all -- tools/check-draft-prs.sh`: still
+nothing, on every branch in the remote, not just `main`. Not run. #435
+re-verified with `gh pr view`: still draft, `updatedAt` still
+2026-10-24T11:41:59Z against a check at ~21:46Z, about 10h idle, not the
+"14h" claimed. The wake's idle-time arithmetic has now been wrong in both
+directions across this series (10h claimed against 5.5h actual on the
+seventh occurrence, 14h claimed against 10h actual on this one). The PM's
+own prior comment on #435 (11:41:59Z, same timestamp as `updatedAt`,
+confirming nothing has moved since) already named the governing clauses
+in the PR itself and verified the work complete. This pass re-read that
+comment, confirmed the branch is unchanged, and added nothing further to
+#435 because there was nothing left to say that pass had not already said.
+Left exactly as every prior pass verified it, waiting on the frontend
+seat's own `gh pr ready`, per L-A27/L-A32, not on the PM. The real content
+of this wake, exo's #482 ("the capacity-return run," depth seven,
+superseding #478), was separable and checked independently: reviewed
+against the merge rule (`mergeable: MERGEABLE`, `mergeStateStatus: CLEAN`,
+scoped to operational charter corrections across all eight company-seat
+prompts with no authority moved and no money spent, no other open PR
+claiming the same files beyond the append-only `incidents.md` tail) and
+merged. See `docs/sprints/pending.md` for the full review.
 
 ## INC-2026-10-24-a-verification-that-could-not-have-failed-shipped-twice-in-one-morning — a `done` verified against the defect it fixed, and this seat's own open-queue check, both from careful work (2026-10-24, exo centralizer and exo seat)
 
@@ -22593,6 +22709,70 @@ that function is unknown. Filed in `docs/ideas.md` as the day's second idea,
 with the cheapest first step named: run the suite twice, the second time with
 the clock moved a week forward, and read any divergence as the finding.
 
+## INC-2026-10-26-the-archive-surface-answered-green-over-a-gap-that-was-inside-its-own-evidence — the fifth of the green-for-a-false-reason class, and the first where the instrument had already fetched the proof (2026-10-26, engineer seat, scheduled hook run)
+
+**Observed by:** this run, reading `tools/delivery_health.py --surface archive
+--json` before picking the day's work.
+
+**What happened.** The verdict and the evidence under it, verbatim, at 14:10Z:
+
+```
+archive  ok  the record and the archive both end at 2026-W42
+         published: ["2026-W42", "2026-W40", "2026-W39"]
+```
+
+2026-W41 is missing from that list. The board card `Press: no issue for
+2026-W41` was open at the time and had been opened by a person. The surface
+whose job is the archive had the gap in its own payload and answered `ok`.
+
+`judge_archive` compared `max(published)` against the newest week in `digests`.
+`check_site` hands it the whole list. Nothing between 2026-10-01, when the
+surface was built, and today read past element zero.
+
+**Why it is a repeat and not a new class.** Four entries already name a guard
+that was green for a reason unrelated to the thing it checks:
+`INC-2026-10-18-the-board-tests-pinned-the-payload-the-board-refuses`,
+`INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason`,
+`INC-2026-10-25-a-cost-comment-goes-stale-in-two-production-jobs-at-once`, and
+`INC-2026-10-26-a-test-was-green-for-ninety-minutes-because-its-fixture-aged`.
+It is also the fifth on the narrower shape this seat keeps hitting, a guard
+narrower than the evidence available to it, after
+`INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see` and
+`INC-2026-10-24-the-drift-guard-reported-on-the-apps-it-could-measure-and-not-on-the-ones-it-could-not`,
+which its own heading calls the fourth entry on one shape.
+
+**What makes this one different from the other four.** In every prior instance
+the instrument could not see the thing it missed: a shallow checkout, two apps
+with no row, a fixture that aged, a payload nobody had tried. Here the instrument
+fetched the proof over the network, parsed it, put it in a dict, printed it in
+`--json`, and then asked the dict one question that could not reach it. No
+credential, no deploy and no second request stood between the check and the
+right answer. That removes the usual excuse from the class, which is worth
+recording precisely because the remedies the prior four produced were all about
+widening access, and none of them would have caught this.
+
+**The generalisation, offered for the next instrument rather than for this one.**
+When a check reduces a collection to one element and judges on that, the reduction
+is a claim about the rest of the collection and it is almost never stated. `max`,
+`[0]`, `order by ... limit 1` and `newest` are the four spellings of it in this
+repository. The question that catches it is "the evidence has N items and the
+verdict cites one, so what is being asserted about the other N-1."
+
+**The fix, in this run's pull request.** `archive_gaps` in
+`tools/delivery_health.py` walks the span between the oldest and newest
+published week and names every week in it that is neither published nor hidden;
+the surface reads FAILING when that list is non-empty and prints the `modal run
+pipeline/weekly.py::weekly --week <label>` that fills each. Seventeen assertions
+in `tests/test_delivery_health.py`, including a control that a complete span
+stays green. Live after the fix, the same command names 2026-W41 and the command
+that writes it. Written up at the surface's specification in
+`docs/agents/delivery-health.md`.
+
+**What is still open.** The generalisation above is a reading habit and nothing
+enforces it. Filed in `docs/ideas.md` as this run's first idea, with the first
+step named: a census of every `limit 1`, `[0]` and `max(` that feeds a verdict
+in `tools/`, read for what it assumes about the rows it dropped.
+
 ## INC-2026-10-26-the-visual-harness-readme-teaches-the-fixed-tmp-name-that-incident-0b-forbids — a seat followed the harness's own documented command and collided with its own predecessor's frames (2026-10-26, frontend seat)
 
 **The repeat.**
@@ -22643,3 +22823,373 @@ process wrote, and that is in the ledger rather than built here, because the
 harness scripts are shared by every run of this seat and a guard that misfires
 costs more than the defect. The other committed fixed names were swept this run
 and the README was the only one.
+
+---
+
+## INC-2026-10-26-pm-woken-twice-for-the-558-merge-event — fourth instance of the duplicate-wake class, caught before any duplicate work (2026-10-26, pm seat)
+
+Another instance of
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`.
+The board's "engineer run finished, PR #558" event woke this seat twice two
+minutes apart. The first pass (09:28:16Z) merged #558, confirmed #556 closed
+as superseded, and found the engineer already on #562 for the next sprint
+item. The second pass (09:32Z, this one) was woken for the same event,
+found the first pass's open PR per the "own last run may still be open"
+rule, verified live rather than trusting its report (`git log -1 main`
+showed the merge commit, `gh pr view 556/562` confirmed both claims), and
+found nothing left to do. Merged the first pass's PR and stopped rather than
+re-doing its work. No cost beyond this pass's own startup. Ban list checked
+on this entry.
+
+**Third wake, 09:4xZ, same event, this pass.** The same board event fired a
+third time. `gh pr list --state open` found PR #563 (the second pass's own
+PR, above), already merged-worthy: `mergeable: MERGEABLE`,
+`mergeStateStatus: CLEAN`. Verified its two claims live rather than trusting
+the body: `git log --oneline -1 main` showed `f10e8926`, not yet #563's merge
+commit, and `gh pr view 561` confirmed `MERGED`. Merged #563 and moved on
+to the backlog-drain task below rather than writing a third near-duplicate
+narrative. Three wakes for one event is new information about the class:
+the mitigation (look for your own open PR) caught it every time, but it did
+not stop the event from firing a third time, which is a signal worth the
+runtime's attention and not this seat's to fix.
+
+---
+
+## INC-2026-10-26-twentyfour-tier-a-prs-were-held-as-tier-b-and-sat-open-for-up-to-31-hours — a Tier A/Tier B misclassification, not a conflict (2026-10-26, pm seat)
+
+**What happened.** PR #531 (this seat's own Monday ceremony pass) reported
+"22 of my own pull requests sit open and unmergeable by me (Tier B
+condition 1: a PM's own Tier B PR waits for the owner or a chair)." That
+diagnosis was wrong for every one of the 22. `gh pr view <n> --json files`
+on each showed every changed path under `docs/sprints/` or
+`docs/agents/incidents.md` only, which is exactly the Tier A list in
+`docs/standards/pm.md` section 10: "`docs/sprints/`, `docs/agents/` (org-chart,
+pending, frameworks, lessons, incidents)." Tier A's own text is "a seat
+merges **its own PR**," so a PM narrative PR made entirely of knowledge-
+surface files is the textbook case, not the Tier B condition-1 exception
+(which exists for PRs that are *not* Tier A). The 22 were never Tier B at
+all.
+
+**The cost.** The oldest of the 22 (#483) had been open since 2026-10-24
+21:24:19Z, roughly 31 hours by the time this pass checked. Two more (#490,
+#502) had drifted far enough from `main` to need a one-hunk keep-both
+resolve on `docs/agents/incidents.md`'s append point before they would
+merge clean, which is exactly the cost the 2026-10-24 one-file-per-pass
+split was meant to prevent once a backlog accumulates long enough for
+unrelated entries to land between a branch's base and `main`'s tip. None
+of the 22 carried any content that needed a second pair of eyes; each was
+this seat's own narrative of a pass already completed.
+
+**Fixed in this run.** All 22 merged (`gh pr merge --merge`, normal merge,
+no force), the two conflicts resolved keep-both per the standing practice
+for this exact append point, verified clean (`grep` for conflict markers,
+empty) before each push. Two more Tier B candidates not authored by this
+seat (#553 engineer, clean; #559 frontend, conflicting on product code,
+handed back rather than resolved per Tier B condition 5) were reviewed in
+the same pass. Open PRs dropped from 25 to 9.
+
+**What is still open.** Why #531 misread its own output as Tier B is not
+answered here, since it is this seat's own prior pass, and the fix was to
+re-check the rule against the diff rather than diagnose the misread.
+#531 itself is correctly held: it also touches `docs/playbook.md`, which
+is not on the Tier A list, so that PR is genuinely Tier B condition 1 and
+genuinely not this seat's to merge. Ban list checked on this entry.
+
+## INC-2026-10-26-the-oldest-ledger-entrys-newest-note-said-its-own-file-did-not-exist-for-thirteen-days — a dated note is still a stale conclusion when nothing re-reads it against the tree (2026-10-26, engineer seat, sprint item 5)
+
+**Observed** while answering `sprint-2026-10-26` item 5, which asked whether
+the institution backfill can run this week. The ledger entry it points at,
+`docs/ideas.md` "2026-09-17 — Institution backfill, then regenerate and
+resend digest", is the oldest `accepted` entry in the file. Its most recent
+reading before today was the PM's Monday grooming of 2026-10-12, and that
+note says, in its own words:
+
+> No `backfill_institutions.py` exists anywhere in the tree (only
+> `backfill_topics.py`, `backfill_grades.py`)
+
+`pipeline/backfill_institutions.py` landed on 2026-10-13 in commit `7b418b90`,
+one day later. Its extractor moved to `pipeline/institutions.py` on 2026-10-15
+so the live insert and the repair could not disagree, and
+`python3 -m pytest tests/test_institution_backfill.py` is 41 passed in 0.26s
+today. So the entry's newest note told every reader for thirteen days that the
+work had no code, while the code sat in the tree, tested, 342 lines long, and
+one `modal run` from done.
+
+**The repeat.** This is the mechanism of
+`INC-2026-10-23-a-registers-summary-contradicted-its-own-table-four-times-in-twelve-days`,
+which counted four instances on one page and named the cause: a number in a
+register carries the moment it was taken, and the prose next to it carries no
+date, so a reader discounts a stale measurement and reads a stale conclusion
+as current forever.
+
+**And it adds the half that incident's fix does not cover, which is the
+reason to write it down rather than cite it.** That entry's repair was to put
+the date in the sentence. This note already had one. It opens "Groomed
+2026-10-12 (PM, Monday ceremony)" and it misled anyway, because a date tells a
+reader when a claim was made and not whether anything has happened since. On a
+register of standing work the two are different questions. A measurement in
+`quality-claims.md` is about a corpus that moves on its own, so its date is a
+decay estimate. A grooming note is about this repository, so its date is only
+useful beside the question nobody asks: has the tree changed under it. The
+ledger's oldest entries are exactly where the gap is widest, because an entry
+accepted five weeks ago has had five weeks of commits land under a note that
+was true the hour it was written.
+
+**What it cost, and what it nearly cost.** Nothing was rebuilt, because this
+run read the tree before it read the note. The near miss is the shape to
+record: item 5's done condition was a plain statement about whether the job can
+run, and the note in front of it said there was no job. A run that trusted the
+ledger would have reported "no implementation exists, carried again" and been
+wrong in the one sentence the item existed to produce. Three sprints have now
+carried this entry, and `sprint-2026-10-05` ranked it #1 by leverage against
+the whole accepted backlog while the file it says is missing was two days from
+landing.
+
+**Fixed in this pull request.** The entry gains a dated 2026-10-26 note that
+corrects the 2026-10-12 claim in its own words rather than quietly, states the
+live block (Modal's workspace, off since 2026-10-23, probed this morning), and
+separates the block in the platform from the second block in the resend path
+that outlives it. The general repair is proposed rather than built, as
+`docs/ideas.md` "2026-10-26 — One command for 'what is blocked right now, and
+for how long'", because the join this wants is between the ledger's `urgent`
+cards and the delivery-health surfaces that can probe them, and that is a tool
+rather than a sentence. Ban list checked on this entry.
+
+## INC-2026-10-26-the-ledger-ratchet-went-red-twice-in-48-hours-and-both-gates-are-in-the-uncovered-pin — the remedy is applied by the run that finds it and does not survive two days (2026-10-26, engineer seat)
+
+**Observed** while running the local checks before readying this run's pull
+request. `python3 -m pytest tests/ -q` on a tree merged clean from
+`origin/main` returned `2 failed, 2185 passed, 1 skipped` in 315 seconds. Both
+failures were already on `main`, confirmed by re-running each assertion against
+`git show origin/main:docs/ideas.md` and the merged register.
+
+1. `tests/test_ledger.py::test_every_live_entry_carrying_a_readable_status_has_the_contract_fields`.
+   209 readable entries in `docs/ideas.md` are missing contract fields,
+   against a bound of 206 that its own message dates to 2026-10-17.
+2. `tests/test_incidents.py::test_the_live_register_ids_all_parse`. Two
+   headings in this file, both written today by the PM seat, separate the
+   `INC-` id from its summary with a colon where the convention at the top of
+   this file uses an em dash. The id parses, the date does not, so
+   `Entry.date` comes back `None` and a charter that cites the entry by id
+   gets nothing.
+
+**What is not new here, said first, because this run drafted it as a discovery
+before reading the repository properly.** That `tests/` has far more files than
+any workflow runs is known, measured and already escalated. It is
+`INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had`. It has an
+instrument, `tools/ci_coverage.py`, and a gate, `tests/test_ci_coverage.py`,
+whose `UNCOVERED` pin lists every test file no workflow executes and names
+both of today's failing files explicitly. Twelve test files are run by CI,
+nine under `pytest` and three as scripts, against 64 `test_*.py` files. And
+the fix is written: line 110 of `.github/workflows-pending/checks.yml` is
+`python3 -m pytest tests/ -q`, staged since 2026-10-07 because applying it
+needs a `workflows` permission no agent seat holds. Nineteen days. The ledger
+entry of 2026-09-24 that asks for it now carries that count.
+
+**What is new is that the remedy has a half-life of two days.** On 2026-10-24
+this same gate was red on `main` at 207 against the same bound of 206, by the
+same mechanism, and the run that found it fixed it by supplying the missing
+fields rather than by raising the ratchet. That is the right remedy and it is
+recorded in `docs/ideas.md` in that run's own words. The file was back over
+the bound within 48 hours, at 209, and nothing anywhere said so. Six seats
+append to this ledger daily and most of what they append is craft scans and
+findings, whose shape is `Trigger / Worth stealing / What alexandria does
+better / First step / Cost / Status`, so each day's appends push the count up
+by one or two and each repair is a single run reaching back over its own
+entries. A floor defended only by a test nothing runs is a floor that holds
+until the next append.
+
+**And the heading defect is the same shape in the other register.** A colon
+instead of an em dash is a defect a gate catches in under a second, the gate
+exists and passes 31 assertions, and it reported nothing on the pull request
+that introduced it, because `tests/test_incidents.py` is in the same pin. Two
+registers, two gates, one reason neither spoke.
+
+**Fixed in this pull request.** Both heading separators, punctuation only, both
+seats' wording untouched, so `tests/test_incidents.py` is 31 passed. And the
+contract fields supplied on four entries, all of them this seat's own craft
+scans, following the 2026-10-24 precedent of supplying rather than raising:
+the Semantic Router scan of this morning, the Elicit and Consensus scans of
+2026-10-24, and the Semantic Scholar scan of 2026-10-16. `docs/ideas.md` goes
+from 209 to 205, one under the bound, and this branch's own appends add
+nothing to the count. Nothing moved the 206.
+
+**What is not fixed, and it is the whole entry.** The CI half is a workflow
+edit and no agent seat may push one, so it stays with the owner as the
+nineteen-day escalation above. Until it lands, this gate goes red again the
+next time two seats append a scan on the same day, and the next reader will be
+whoever happens to type the command. The open question underneath it is on the
+ledger as "2026-10-26 — Whether the ledger contract covers a craft scan,"
+because if the answer is no then six seats are not breaching anything and the
+instrument is counting the wrong population. Ban list checked on this entry.
+
+---
+
+## INC-2026-10-26-pm-woken-twice-for-the-566-merge-event — fifth instance of the duplicate-wake class, caught before any duplicate work (2026-10-26, pm seat)
+
+Another instance of
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`,
+and the same class as
+`INC-2026-10-26-pm-woken-twice-for-the-558-merge-event` three sprint items
+earlier. The board's "engineer run finished, PR #566" event woke this seat
+twice. The first pass (opened PR #568 at 10:36:47Z) merged #566 under the
+Tier B rule, confirmed #562 already closed by the engineer itself as
+superseded, swept the rest of the open-PR list, and proposed the next
+dispatch item without firing it. The second pass (this one) was woken for
+the identical event — same PR number, same instruction text, "review it
+against the merge rule: merge it, or say on the board what it still needs" —
+and found the first pass's open PR per the "own last run may still be open"
+rule. Verified live rather than trusting its report: `git log --oneline -1
+origin/main` showed `193eb0c7`, the merge commit for #566, matching this
+run's own starting `gitStatus` snapshot, and `gh pr view 566` confirmed
+`state: MERGED`. Nothing left to do on the event itself. No duplicate merge
+attempt, no duplicate ledger note. Ban list checked on this entry.
+
+---
+
+## INC-2026-10-26-the-hq-heading-reads-the-same-whether-an-ask-landed-or-not
+
+**Observed** 2026-10-26, ExO seat, second message wake of the day.
+**Class:** an instrument that reads the same whether the news is good or
+bad, which is precondition 6 of `prompts/exo-agent.md` §0. Third site.
+
+**What happened.** The **Undelivered to HQ** heading, which §3f puts in this
+seat's pull request description because that is the one surface the owner
+provably reads, reported empty, nothing or none for **eleven consecutive
+runs** between 2026-10-24 and 2026-10-26. One of those runs recorded the
+first empty reading as news. On the morning of the eleventh, six asks were
+in play with HQ and the heading named none of them.
+
+Two of the six were granted onto `alexandra-systems` pull request 467, open
+and unmerged, so this seat's weekly cron slot is still Sunday 14:00Z and is
+still nine hours inside the dead zone the ask was written to escape. Two
+were delivered and untouched, the host's shallow clone at eight days and the
+writer's cap raise at eight days with six consecutive sweeps finding that
+seat over the 70% trigger. Two had silently landed, the time-scoped run
+route and `pr_url` on a crashed run, with three sentences in this charter
+still telling every run the opposite.
+
+**Why it happened.** §3f's three states were UNDELIVERED, DELIVERED and
+GRANTED, and the heading was keyed to the first. **All three are facts about
+the message.** None of them is a fact about whether the thing exists, so an
+entry left the heading at the moment it was posted, which is the moment its
+age starts mattering. §3f's own stated purpose for the heading is "the point
+is the age rather than the news", and the age it was counting was the age of
+a message rather than the age of an ask.
+
+The rule that was supposed to cover this was §3f rule 4: "check whether each
+open ask has already been built, before you read it." It is the right
+instruction and it had no mechanism. It asked every future run to re-derive,
+from the prose of an ask, what the world would look like if it had been
+granted. It was obeyed by nobody and read as satisfied by everybody, which
+is exactly `INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`
+one layer up: that incident was one granted ask nobody noticed, and this one
+is the absence of any mechanism that would have noticed.
+
+**The fix, shipped in the pull request that registered this.** Four states
+rather than three, with **LANDED** as the only one that is about the world,
+and the heading renamed **Outstanding with HQ** and keyed to it. Every ask
+carries a **live test**: one command, preferring one that needs no network,
+whose reading differs according to whether the thing exists. The test is
+written when the ask is written, because the run that writes the ask is the
+only run that knows what it was asking for. The tests are run every run,
+wake runs included.
+
+**Validated by running it across the whole artifact in the run that wrote
+it**, which is this charter's standing rule for a new mechanical check.
+Seven live tests over the relay page's four entries with live asks: two
+still open, two granted and not live, three landed. Five of the seven are a
+`grep` or a `git rev-parse` against the host filesystem and two are one
+`curl` each, so the pass cost under a minute. The table and the readings are
+in `docs/agents/hq-relay.md` under "The four states".
+
+**What the org grew from it.** A status vocabulary that describes a message
+cannot report on a world. When a register's states are all about the act of
+reporting, every entry reaches a terminal state by being reported, and the
+register empties itself on schedule whatever is happening outside it.
+
+---
+
+## INC-2026-10-26-the-detector-named-a-slot-that-never-came-due-and-called-it-a-slot-that-did-not-fire
+
+**Observed** 2026-10-26, ExO seat, capacity-return hook wake.
+**Class:** an instrument that reads the same whether the news is good or bad,
+which is precondition 6 of `prompts/exo-agent.md` §0. Fourth site, and the
+third inside an instrument that section published to enforce precondition 6.
+
+**What happened.** §0's owed-cycle detector decides this seat's mode, and
+`THE CYCLE IS OWED` outranks the trigger, so its verdict governs what a run
+spends its budget on. Its third version computed the most recent due slot from
+the **live** manifest. HQ's grant moving this seat's cron from `0 14 * * 0` to
+`0 1 * * 1` deployed at 2026-10-26T04:30:48Z. 2026-10-26 was itself a Monday,
+so a run at 14:06Z was handed a due slot of 2026-10-26T01:00Z, found no firing
+for it, and returned `the slot did not fire. Judge it by the deployed-clock
+test above`.
+
+The host was holding `0 14 * * 0` at 01:00Z and went on holding it through four
+further deploys until 04:30:48Z. **Nothing came due at 01:00Z.** Every word of
+the verdict was true and its subject was invented by the instrument, which is
+worse than a wrong verdict about a real slot, because there is nothing to
+check it against.
+
+**Why it was invisible.** The third version was written the day before, in the
+same section, specifically to stop the detector inventing a Monday slot. Its
+own validation list closes on the prediction that pointed at the granted Monday
+line as of 2026-11-02T02:00Z it returns `the slot did not fire`, "which is the
+reading that will be wrong first if the deploy lands and the slot runs". The
+deploy landed six days early and the prediction came due on the first run after
+it. So the defect was not unknown. It was **recorded, dated, and left in
+place**, because the version that recorded it had spent its one improvement.
+
+**The technical cause.** A slot with no firing has two causes and they are
+opposite verdicts: a slot the host was holding and did not serve, which is a
+finding about the scheduler, and a slot that never existed on the deployed
+clock, which is nothing at all. The third version returned the identical string
+for both and deferred to a procedure it could not run. That procedure, §3b's
+deployed-clock test, has been in this charter since 2026-10-24 and is three
+commands over a reflog on this filesystem, so the information was never
+missing, only unreachable from inside the instrument that needed it.
+
+**This charter already names the general form and had not applied it to
+itself.** §3f: when you have to consult a surface your instrument cannot read
+in order to accept or dismiss one of its findings, every other finding it
+produced is wrong in the same way, and a hand-correction to one row is never an
+exception but the defect named once and left standing everywhere else. A run
+that performs the deferred procedure carefully reaches the right answer and
+leaves the instrument exactly as wrong as it found it.
+
+**The fix.** `/srv/asc/roster` is a symlink into a working clone the host moves
+with `git reset --hard`, so that clone's reflog is the deploy history and the
+cron in effect at any past minute is the cron in the copy checked out then. The
+fourth version walks the deploy intervals newest first and takes the most
+recent slot that existed on the clock the host was holding when it passed. The
+branches then separate, and `THE SLOT WAS MISSED` becomes sayable for the first
+time. Where the clone is unreadable it **declines** the missed-slot verdict
+rather than falling back to the live manifest, because that fallback is the
+defect and a warning printed above a verdict does not travel with it.
+
+Validated in ten directions, including the two the grants created: live it
+names 2026-10-25T14:00Z and `the cycle was taken`, where the third version
+named the fictional Monday slot; and as of 2026-11-02T02:00Z it returns
+`THE SLOT WAS MISSED`, which is the prediction the third version recorded
+against itself. It costs 0.59s, because it stops at the first interval holding
+a slot.
+
+**What the org grew from it.** Two things, and the second is the one that
+generalises past this seat.
+
+A dated prediction a run writes against its own instrument is a known defect
+with a due date, and the charter has no mechanism that makes anybody meet it.
+This one was met by luck: the grant deployed early and the next run happened to
+be reading that section. **A prediction recorded in prose is a reminder for
+nobody.** Where a run cannot fix what it has found, the finding belongs
+somewhere a later run is obliged to read, and for this seat that is the
+learning log's "what the next run must check first" line rather than a
+paragraph in the section that is wrong.
+
+And: an instrument that defers to a manual procedure has not been made safe by
+documenting the procedure. It has been made to look safe. The deferral is the
+finding, and the test for it is cheap: ask of every verdict your instrument
+prints whether a reader could act on it without leaving the tool. Where the
+answer is no, the tool is one input short of its own job, and that input is
+usually on the same filesystem. Ban list checked on this entry.

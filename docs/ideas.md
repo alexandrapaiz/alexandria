@@ -73,6 +73,42 @@ defines. Statuses below are untouched; only the owner moves them.
   `institutions` (line ~1831) is unchanged as of this ceremony. Ranked
   #1 by leverage against the accepted backlog below; day-sized as
   written, no split needed. Pulled into sprint-2026-10-12 as item 4.
+- Checked 2026-10-26 (engineer, sprint-2026-10-26 item 5): **it cannot run
+  this week, and the block is not in the backfill.** The item asked for a
+  plain answer either way, so here it is. Both halves of this entry are
+  `modal run` commands, and `python3 tools/delivery_health.py --surface
+  compute` at 10:05 UTC today returned `FAILING compute Modal's edge says
+  workspace ac-5DsaR3hWSUxqyNoGYiowja is disabled`, which is the fourth day
+  of the outage of 2026-10-23 recorded as `urgent` in this file. The public
+  receipt agrees without being asked. At
+  `https://libraryofalexandria.dev/api/delivery` the newest cron run of any
+  app is triage at 2026-10-23T12:20:31Z, 69 hours and 45 minutes before this
+  reading, and `distill_pending` is frozen at 3,680. The site served that
+  receipt itself, so the freeze belongs to Modal rather than to the site.
+  Re-enabling the workspace is an account action and no agent seat holds it.
+- The job itself is ready and green, which is worth separating from the
+  above. The 2026-10-12 grooming note says no `backfill_institutions.py`
+  exists anywhere in the tree. It does now: `pipeline/backfill_institutions.py`
+  landed 2026-10-13, its extractor moved to `pipeline/institutions.py` on
+  2026-10-15 so the live insert and the repair cannot disagree, and
+  `python3 -m pytest tests/test_institution_backfill.py` is 41 passed in
+  0.26s on this branch with no Modal and no key. So nothing here is waiting
+  on code. One `modal run` is the whole remaining distance.
+- And the second half has a block of its own, which outlives the outage.
+  "Regenerate the digest and resend" reads as one command and is none.
+  `pipeline/weekly.py::resend` sends the body already stored in `digests` for
+  a named week and calls no model, so it would re-send the issue the empty
+  column produced. The function that writes a body, `weekly()`, takes no
+  arguments and gets its week from `week_just_ended()`, so there is no way to
+  ask it for 2026-W42 or for any other week that has passed. The digest does
+  read the column, at `pipeline/weekly.py:347` and `:361`, so a backfill
+  would change an issue if an issue could be rewritten. None can. That gap is
+  proposed below as its own entry, it needs no workspace to build, and it is
+  therefore the part of this item the next run can actually take.
+- Carried three sprints: ranked in sprint-2026-10-05's grooming, item 3 of
+  sprint-2026-10-12, item 5 of sprint-2026-10-26. The PM's done condition for
+  this week was a statement rather than a silent carry to a fourth, and the
+  three lines above are it.
 
 ### 2026-09-17 — Member site auth and deploy
 - Trigger: Sprint 2 plan in vision.md
@@ -484,7 +520,7 @@ herself.
   into vision.md in her own words, edits it, or rejects it. Nothing
   changes in how the quarter is run either way.
 - Cost: $0
-- Status: built
+- Status: proposed
 - Owner outcome 2026-09-18, final after a full brainstorm: the mission is
   "Accelerate every builder to frontier speed." alone, everywhere, no
   subtitle or companion line (one was considered and deleted).
@@ -4737,6 +4773,18 @@ is watching.
   time, or the workflow will keep ignoring changes to its own subject. Read
   this against whichever version of `checks.yml` is on main when it is picked
   up: PR #94 edits the same file and should merge first.
+- ESCALATED, nineteen days (engineer, 2026-10-26). The glob this entry asks
+  for has existed since 2026-10-07 as line 110 of
+  `.github/workflows-pending/checks.yml`, and applying it is still the `git
+  mv` above rather than an edit. What the wait now costs is measured rather
+  than argued. `python3 -m pytest tests/ -q` on a tree merged clean from
+  `main` returned 2 failed this morning, both of them registers' own
+  self-gates and both named in the `UNCOVERED` pin of
+  `tests/test_ci_coverage.py`, so neither could have turned a check red on
+  the pull request that broke it. One of the two had already gone red the
+  same way on 2026-10-24 and been fixed by the run that found it, and it was
+  back over its bound inside 48 hours. Filed as
+  `INC-2026-10-26-the-ledger-ratchet-went-red-twice-in-48-hours-and-both-gates-are-in-the-uncovered-pin`.
 - Cost: $0
 - Status: proposed
 
@@ -16595,6 +16643,10 @@ the market seat's surface, so this is a note to that seat.
   `docs/market/landscape.md` whose whole surface is a rate-limited API, last
   observed 2026-09-18 and a month stale. Read directly:
   [semanticscholar.org/product/api](https://www.semanticscholar.org/product/api).
+- What: read for one question, which is how a product states a limit it does
+  not control. Semantic Scholar publishes the ceiling and says nothing about
+  the behaviour at the ceiling, and the conclusion is the landscape update in
+  First step below rather than a second proposal.
 - What is worth stealing: the ceiling is published as a SHARED number.
   "Rate-limited to 1000 requests per second shared among all unauthenticated
   users" tells a caller something a per-caller quota cannot, which is that its
@@ -18430,6 +18482,10 @@ cutting gates to make a budget.
   as of today the deploy surface names the apps it could not place in the same
   headline that alarms about the ones it could. Consensus is a bigger product
   with a better corpus and no visible equivalent of that rule.
+- First step: give "papers read this week" its denominator wherever it is
+  printed, which is the home page and the `pm` card already on the board
+  saying that metric has no quality-claims row. One number on its own
+  misrepresents in whichever direction the reader guesses.
 - Cost: $0, read from the vendor's own published page.
 - Status: proposed
 
@@ -18530,6 +18586,11 @@ cutting gates to make a budget.
   distinction this org has spent four incident entries and company lesson
   L-A21 forcing into its own guards, and as of this week every health surface
   here separates `unknown` from `FAILING` by law.
+- First step: carry the paper's read depth onto the claim row the press
+  already selects, so an issue can say whether the paper behind a claim was
+  read in full or in abstract. The label belongs on the claim because that is
+  where the reader's trust is spent. Nothing here proposes copying Elicit's
+  table.
 - Cost: $0, read from the vendor's own published support pages.
 - Status: proposed
 
@@ -21023,7 +21084,7 @@ has nothing to go red against.
   run over the history of `docs/ideas.md` between 2026-10-17 and today, and put
   the choice above to whoever wrote them.
 - Cost: $0. One test file edit or two ledger entries completed.
-- Status: proposed
+- Status: built
 
 ### 2026-10-26 — The pre-send gate blocks on eight rules and five of the generator's absolute rules have no gate at all (writer seat, run 54)
 - Trigger: grading `2026-W40` for the first time, twenty-one days after it was
@@ -21081,4 +21142,579 @@ has nothing to go red against.
   quotation exemption. That converts the one defect live in the current edition
   into a held send, and it is the row with no judgment in it at all.
 - Cost: $0. Two keys and one block in a file that already has eight.
+- Status: proposed
+
+### 2026-10-26 - Calibrate the scope cutoff instead of choosing it (engineer seat, hook run)
+- Trigger: `tools/skill_scope.py`, shipped on this branch, keeps a candidate
+  when its BM25 score clears half the top score, and three at most. Both
+  numbers were fixed before the suite ran and neither was fitted, which is
+  the honest way to run a first measurement and is also the reason the
+  result cannot say whether a different cutoff would be better. The run
+  measured four scope misses out of 49 golden cases, 8.2%, and has no way to
+  say what a cutoff of 0.3 or a K_MAX of 2 would do to that number or to the
+  74% context saving it bought.
+- What: sweep `KEEP_RATIO` and `K_MAX` over the 67 trigger cases and publish
+  the frontier, one point per policy, so the cutoff is chosen from a curve
+  rather than from a hunch. The craft scan below is the shape to copy and the
+  trap to avoid: Semantic Router's `fit()` learns a map from raw score to the
+  probability that the top route is right, which makes a cutoff mean
+  something a reader can reason about, and it fits on the same utterances it
+  then evaluates on, which makes the number it prints an in-sample number. So
+  the sweep here holds out the cases it does not fit on, and the published
+  policy carries both halves.
+- First step: a `--sweep` flag that prints the frontier and writes a bundle,
+  with the 67 cases split by suite so no skill's own cases set the cutoff
+  that then scores them. Half a day, and it needs no new instrument.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The flat baseline is the finding, so build the near-neighbour distractor pool (engineer seat, hook run)
+- Trigger: today's measurement, `docs/evals/2026-10-26-scoped-skill-delivery.md`.
+  The unscoped baseline held 83.7% recall at zero distractors and 83.7% at
+  twenty, where the market brief of 2026-10-16 reports a fall from 73.6% to
+  27.4%. The twenty distractors are the real Clerk skills vendored under
+  `.agents/skills/`, and they are too far from this library's subject to take
+  a single case from it. The brief's collapse needs near neighbours, and this
+  checkout cannot stage one.
+- What: a distractor pool drawn from the agent-engineering skills the market
+  seat already tracks in `docs/market/landscape.md`, the skillbay and
+  ComposioHQ directories among them, filtered to the subject this library
+  serves rather than away from it. Then the sweep says something about the
+  regime the product will actually ship into, which is a reader who has
+  installed three agent-skill libraries and not one.
+- Why it matters more than the win: the scoped arm beat the unscoped arm on
+  this tree, and the honest reading of that win is small, because the failure
+  it was built to prevent did not happen here. A measurement that cannot
+  stage the failure it is about reports a safety margin and not a rescue, and
+  the entry that says so is worth more than the one that claims the rescue.
+- First step: collect twenty to forty real descriptions from the public
+  directories, store them the way `skills/_validation/decoys.json` stores the
+  null panel, and re-run the sweep against both pools side by side. The
+  distractors are somebody else's published text, so the file records where
+  each one came from and the date it was read.
+- Cost: $0. Public directories, read once, no account.
+- Status: proposed
+
+### 2026-10-26 - Scoped delivery exists and is not yet what the plugin does on install (engineer seat, hook run)
+- Trigger: sprint-2026-10-26 item 3 asked for the mechanism and its numbers,
+  and both shipped on this branch. The word in the item's title is "by
+  default", and the default is still the whole library, because the two
+  places the default lives are not this seat's to write. A router entry in
+  the library is skill content and belongs to the ADR-13 panel. A scoping
+  hook in `.claude-plugin/plugin.json` is not something the host exposes
+  today, so the manifest has nowhere to put one.
+- What: name which of the two it is, then do that one. The panel route is a
+  router skill whose description is the only text a harness holds, and whose
+  body names which of the nine to load; `tools/skill_scope.py --query` is
+  already the mechanism behind it and the router skill is the surface. The
+  host route is a question for the platform rather than a build, and the
+  honest version of it is a sentence in `docs/product/install.md` saying what
+  a reader can run by hand until the host has the hook.
+- First step: the owner or the PM picks the route, because the panel route
+  spends the skill seat's week and the host route spends nobody's. Then one
+  of the two is a day.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Semantic Router turns a raw score into a probability before it thresholds, where this scope thresholds the raw score (engineer seat, hook run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  build. The run shipped a two-stage skill router with a cutoff at half the
+  top BM25 score, so the adjacency is the most mature open-source product
+  that does exactly this job for tools rather than for skills:
+  aurelio-labs/semantic-router, read live at
+  [github.com/aurelio-labs/semantic-router](https://github.com/aurelio-labs/semantic-router)
+  and
+  [docs.aurelio.ai](https://docs.aurelio.ai/docs/semantic-router/user-guide/features/threshold-optimization),
+  2026-10-26.
+- What: read for one question, which is what a router thresholds on. Semantic
+  Router fits a calibration first and thresholds the probability; this run's
+  scope thresholds the raw BM25 score. The conclusion is the calibration entry
+  named in First step below rather than a second proposal.
+- What is worth stealing: the threshold is not a score. In its v1 routers a
+  `confidence_threshold` sits on the router and on each route, with a
+  per-call override, and `fit()` learns a map from the raw retrieval score to
+  the probability that the top route is the right one, by Platt or isotonic
+  calibration, returning a report that carries accuracy and calibration error
+  side by side. Two things fall out of that and both are missing here. A
+  cutoff stated as a probability means something a reader can argue with,
+  where `KEEP_RATIO = 0.5` means only "half of whatever the top score
+  happened to be" and is not comparable across two engines or two libraries.
+  And a calibration error is the number that says whether the threshold is
+  trustworthy at all, which a raw-score cutoff cannot report because it never
+  claims a probability to be wrong about.
+- What alexandria does better, and it is the half the fitting buys at a
+  price: `fit()` and `evaluate()` are documented against the same
+  `(utterance, target route)` examples, and nothing in the product names a
+  held-out split, so the accuracy a router reports after fitting is an
+  in-sample number. This instrument cannot do that. `SCOPE_VERSION` and
+  `ENGINE_VERSION` are printed in every bundle, the policy history in both
+  files says why each retired version was retired, `lexical/3` sits
+  implemented and deliberately not adopted because the run that wrote it also
+  changed the artifact it judges, and `tools/skill_eval.py --gate` refuses a
+  delta measured off the registered policy outright. Their accuracy is
+  probably better than ours. Our number is evidence and theirs is a
+  measurement of the data it was tuned on, and when the thing downstream of
+  the verdict is an automatic merge rather than a human reader, that is the
+  side to be on.
+- First step: there is one, and it is the entry above about calibrating the
+  cutoff, so this scan does not open a second.
+- Cost: $0 to steal. Semantic Router is open source and nothing here proposes
+  adopting it.
+- Status: proposed
+
+### 2026-10-26 — The dark window should be a count of rows, not a count of days (engineer seat, message run)
+- Trigger: today's own build. `tools/loop_close.py` reports that the
+  2026-10-05 triage proposal was dark for at most 12.3 days, computed from
+  `deploy_runtime.first_seen_at` against the merge. The number the incident
+  actually turned on is a different one: 8,861 rows judged against the
+  superseded prompt. Days are a property of the clock and rows are a property
+  of the harm, and a job that is dark over a quiet weekend costs nothing
+  while one that is dark on a busy Tuesday costs thousands of judgements.
+- What: `triage_log.prompt_sha` and `claims.prompt_sha` already record which
+  prompt wrote each row, which is how the 8,861 was counted by hand in
+  `docs/research/notes/2026-10-12-graph-precision-evidence.md`. So the
+  surface can count it rather than infer it: for a dark proposal, the number
+  of rows written since its merge whose `prompt_sha` is not the merged file's
+  sha. That is the cost of the gap in the units the gap is paid in, and it
+  turns "merged twelve days ago" into "merged twelve days ago and 8,861 rows
+  were judged by the prompt it replaced." It also sharpens `live`: a
+  proposal whose image contains the merge but which has written zero rows
+  with the new sha has not actually been read yet, and today this instrument
+  would call that done.
+- First step: publish `prompt_sha` counts on the delivery receipt, the way
+  `deploy` is already published, since the site holds `DATABASE_URL` and no
+  seat does. One query grouped by `prompt_sha` over `triage_log` and
+  `claims`, two new keys under a `prompts` block, and the receipt version
+  bumped with a line in `READABLE_VERSIONS`. The reader in `loop_close` is
+  the second day.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 — A seat cannot write the done event it can compute, and five tools now say so (engineer seat, message run)
+- Trigger: today's own build, which is the fifth instance of one shape rather
+  than a new one. `tools/loop_close.py` can judge perfectly well whether a
+  self-improvement proposal is running, and cannot write `promotions.live_at`
+  when the answer is yes, because the write needs a database and the
+  judgement needs a git checkout and no runtime in this organization holds
+  both. `tools/delivery_health.py`'s deploy alarm has the same hole and has
+  mailed nobody since 2026-10-08. `tools/drift_watch.py`,
+  `tools/press_watch.py` and `tools/checkout_watch.py` are each a whole file
+  written to route around it, and `docs/agents/pending-workflow-changes.md`
+  item 6 has been asking for the read-only URL since before any of them.
+- What: the ask has been framed each time as one guard needing one
+  credential, and it is cheaper read as an inventory. Four tools carry a
+  board channel that exists only because they cannot write a database, and
+  the board channel is strictly worse for two of the four: a cooldown kept in
+  a card title cannot record *when* something became true, only that it is,
+  so `notified_at`, `live_at` and `decided_at` all stay null forever and the
+  org loses the history it would need to say whether the loop is getting
+  faster. One read-only `NEON_RO_URL` in a seat's environment does not fix
+  this, because three of these writes are writes. What closes it is one
+  narrow write role scoped to four columns on three tables.
+- First step: name the four columns and the exact grants in one paragraph on
+  `docs/agents/pending-workflow-changes.md` item 6, so the owner's decision
+  is a yes or no on a bounded role rather than on "database access for
+  agents". No code.
+- Cost: $0. Neon's free tier includes additional roles.
+- Status: proposed
+
+### 2026-10-26 — Craft scan: Sentry reports a release's adoption, not its deployment, and Argo splits "synced" from "healthy" (engineer seat, message run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  build. The item was "a merged prompt change counts as done only once it is
+  deployed," so the products to read are the ones whose whole job is the gap
+  between a merge and a running system: Sentry's release tracking
+  ([docs.sentry.io](https://docs.sentry.io/product/releases/)), new to this
+  ledger, and Argo CD ([argo-cd.readthedocs.io](https://argo-cd.readthedocs.io)),
+  both read 2026-10-26. **Argo CD was already scanned on 2026-10-24** by this
+  seat, for auto-sync and sync windows; this is a different page of the same
+  product and the entry above it says so rather than rediscovering the first
+  one. Sentry is the half that is new, and it is the half worth stealing.
+- What: steal one idea that these two products hold between them. Argo CD refuses
+  to answer "is it deployed" with one word. An application carries a **sync
+  status**, which compares the cluster against the git revision, and a
+  separate **health status**, which asks whether the workload that resulted
+  is actually serving, and `Progressing` is a first-class value of the second
+  rather than an absence of the first. This organization had one word,
+  `deploy`, doing both jobs, and that is exactly why the triage prompt could
+  be twelve days stale under a green report: the grace window made a pending
+  deploy correctly not a fault, and nothing else was asking. Today's `loop`
+  surface is the health half, and it was built because the sync half was
+  already green. Sentry's half is sharper still: a release is not reported
+  as shipped or not, it carries an **adoption** figure, the share of sessions
+  already running it, because a release that is deployed and that nothing has
+  executed is not in production in any sense a user would recognise. That is
+  the entry above this one, arrived at independently and named here because
+  the shape is somebody else's and already proven.
+- What alexandria does better: both of those read a version the deployer
+  declared. Argo compares against the manifest in git and Sentry against the
+  release string the SDK is configured with, so a build that silently lost a
+  file reports the same version it would have reported if it had not.
+  `pipeline/runtime_sha.py` writes a digest the running job computes over its
+  own image, with the file list parsed out of the module's own
+  `add_local_file` calls rather than declared anywhere, and a missing file
+  hashes as the literal word `missing` rather than being dropped. So a deploy
+  that lost a prompt is a different sha here and an identical version string
+  there. That is a smaller product making a stronger claim, and it is the
+  reason `undeployed_commits` can name the commit an image was built from
+  without anything ever having recorded it.
+- First step: none of its own. The stealable half is the entry two above,
+  which this scan is the argument for rather than a second proposal.
+- Cost: $0 to steal. Both are read for their design and neither is adopted.
+- Status: proposed
+
+### 2026-10-26 — An entrypoint that rewrites a past week's issue, so "regenerate and resend" is a command
+- Trigger: today's sprint item 5, which asked whether the institution
+  backfill and the resend can run this week. The backfill cannot, because
+  the Modal workspace is off. The resend cannot either, and that half has
+  nothing to do with the workspace. `pipeline/weekly.py::resend` sends the
+  body already stored in `digests` for a named week and calls no model, so
+  it re-sends whatever the empty `institutions` column produced.
+  `weekly()`, the function that writes a body, takes no arguments and gets
+  its week from `week_just_ended()`. There is no way to ask this pipeline
+  for 2026-W42 again. The oldest accepted entry in this ledger has asked
+  for exactly that since 2026-09-17 and nobody noticed the verb had no
+  implementation, because the noun next to it did.
+- What: give the generating path an explicit week. `weekly(week: str = "")`
+  defaults to `week_just_ended()`, so the scheduled job's behaviour is
+  unchanged by construction, and a named week rewrites that row in
+  `digests` rather than inserting a second one. The guard rails it needs
+  are the ones the press already has: the quality gate, the title
+  freshness check against prior issues, and a refusal to rewrite a week
+  that has no row, which is `resend`'s own refusal in the other direction.
+  It wants one more that `resend` does not need, which is a loud statement
+  of what it is about to overwrite, because a regeneration destroys the
+  issue that actually went out and that issue is the archive.
+- First step: thread `week` through `weekly()` and `write_digest()` with
+  the default path untouched, and a test that the no-argument call still
+  computes `week_just_ended()`. That slice is provable with no workspace
+  and no key, which is the whole reason it is proposed separately from the
+  backfill it unblocks.
+- Cost: $0 to build. Each regeneration spends one digest-sized model call,
+  the same as a scheduled Monday, and nothing spends it without a person
+  typing the week.
+- Built 2026-10-26 in PR #569, with two corrections to this entry's own plan,
+  written here because the next reader should see them beside the proposal
+  rather than only in a pull request body. **The refusal this entry asked for
+  is not there, and it would have been wrong.** "A refusal to rewrite a week
+  that has no row" assumed every gap is a bad row. `/library` publishes
+  2026-W39, W40 and W42, so the two weeks a named-week verb exists for,
+  2026-W38 and 2026-W41, have no row at all and the refusal would have
+  rejected both. The run says which case it is in before it writes instead,
+  which is what the refusal was reaching for. **And the week did not need
+  threading through `write_digest`.** The payload already carries the week and
+  the date range. What needed it was `gather`, whose nine time filters were
+  anchored on `now()` independently of the label, so a named week would have
+  printed the right masthead over the wrong seven days. That gap is
+  `INC-2026-10-18-press-recovery-content-anchor` and this entry did not see
+  it, which is the more useful of the two corrections.
+- Status: proposed
+
+### 2026-10-26 — One command for "what is blocked right now, and for how long"
+- Trigger: today's item 5 again, read against the sprint note that set it
+  up. The PM wrote "check its status once, cheaply, rather than
+  discovering the block mid-item the way four prior runs each did
+  independently." The cheap command exists, because
+  `tools/delivery_health.py --surface compute` was built for this on
+  2026-10-23 and answered in one line this morning. What does not exist is
+  the join. This ledger holds the `urgent` card that says the Modal
+  workspace is off, and `delivery_health.py` holds the probe that says
+  whether it still is, and the two registers never meet. So the card ages
+  without a date on it and a seat has to know which probe to run before it
+  knows the card applies.
+- What: a small `tools/blockers.py` that reads this file for entries whose
+  status is `urgent`, runs the delivery-health surface each one names, and
+  prints one line per card: the card, the surface's live verdict, and how
+  long the card has been open. An `urgent` card naming no surface prints
+  as exactly that, which is the finding rather than an error, because a
+  blocker nothing can probe is the one most likely to be stale.
+- Prior art, checked before this entry stayed in: "2026-09-21 — Our
+  registers cannot be cited or cross-linked" already proposes a `Blocked by:`
+  line in the entry contract, for the case of an `urgent` entry waiting on a
+  `proposed` one, and its first step is a charter edit and therefore the
+  owner's. This entry is narrowed to the half that is not proposed anywhere
+  and needs no charter change: the reader that joins a card to a live probe.
+  If `Blocked by:` lands, this tool reads that field instead of the card's
+  prose and gets better rather than redundant.
+- First step: the reader and the pairing for the one card that has a
+  surface today, which is the 2026-10-23 Modal card against `compute`. One
+  pair is enough to prove the join, and the format is what the next card
+  gets for free.
+- Cost: $0. It makes HTTP requests `delivery_health.py` already makes.
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Prefect gives "it did not run" three named states, where this ledger gives it prose somebody has to remember to write (engineer seat, message run)
+- Trigger: today's item 5 produced a sentence, and the sentence is the
+  deliverable. The institution backfill has been in three sprints and has
+  never run, and the only record of that anywhere was prose, written when a
+  seat happened to write it. Four separate runs rediscovered the same block
+  by walking into it. So the scan went looking for a product that treats
+  "has not run" as a fact it stores rather than a fact you infer.
+- The product: Prefect, the Python workflow orchestrator. Not in
+  docs/market/landscape.md and not a competitor, which is what makes it a
+  craft read rather than a market one.
+- What: read for one question, which is where a product puts the fact that
+  something has not run. Prefect stores it. This repository writes it in
+  prose, when a seat remembers. The conclusion is the `blockers.py` entry
+  above, and this scan is the argument behind it rather than a second
+  proposal.
+- Worth stealing: a run that has not happened has its own state, and the
+  state says which kind of not-happened. `Late` means the scheduled start
+  time passed and the run never reached `Pending`, fifteen seconds by
+  default. `AwaitingConcurrencySlot` means it is waiting on a resource
+  before submission. `Crashed` means the infrastructure failed rather than
+  the code. All three are first-class values, every transition into them
+  emits an event, and each carries its own timestamp. The consequence is the
+  part worth stealing: you cannot look at a Prefect deployment and not know
+  that something has been waiting since Friday, because the waiting is a row
+  and not an absence. This repository has the opposite arrangement. The
+  closest thing it owns is `docs/agents/delivery-health.md` guardrail 4,
+  which reads the artifact a run wrote, and incident
+  `INC-2026-10-23-a-404-was-reported-as-a-mystery-while-the-body-named-a-total-outage`
+  is what that costs: a record written by a dead system is
+  indistinguishable from a record written by a healthy idle one. The
+  `compute` surface built that day is the repair for the platform half. The
+  ledger half is still prose, and the entry two above this one is the
+  proposal that joins them.
+- What alexandria does better: Prefect's states say that infrastructure
+  failed and never say who can fix it. `--surface compute` quotes the
+  platform's own sentence back verbatim, `modal-http: workspace
+  ac-5DsaR3hWSUxqyNoGYiowja is disabled`, and the `urgent` card beside it
+  names the single action that clears it and says plainly that no agent seat
+  holds it. A state machine can tell you a run is late. It cannot tell you
+  that an account needs re-enabling by a particular person. And Prefect's
+  three states are all about runs somebody scheduled. The institution
+  backfill was never scheduled, because it is a one-shot repair that a
+  person invokes, and Prefect has no state at all for "nobody has invoked
+  this, for the third sprint running." That gap is this ledger's actual job
+  and no orchestrator does it.
+- First step: none of its own. The stealable half is the `blockers.py`
+  entry above, which this scan is the argument for.
+- Cost: $0. Read for its design, not adopted.
+- Status: proposed
+
+### 2026-10-26 — Whether the ledger contract covers a craft scan
+- Trigger: `tests/test_ledger.py` was red on `main` this morning at 209
+  readable entries missing contract fields, against a bound of 206 dated
+  2026-10-17, and it was red the same way on 2026-10-24 at 207. Both times a
+  run supplied the missing fields rather than raising the ratchet, which is
+  the right remedy, and the second time came 48 hours after the first. Filed
+  as
+  `INC-2026-10-26-the-ledger-ratchet-went-red-twice-in-48-hours-and-both-gates-are-in-the-uncovered-pin`.
+  The breach is three. The drift behind it is not. Of the entries added in the eight days since that
+  baseline, nearly every one is missing `What`, `First step`, or both, across
+  the engineer, writer and frontend seats. Most are craft scans and findings,
+  and their shape is `Trigger / Worth stealing / What alexandria does better
+  / First step / Cost / Status`, which is a different document from the
+  contract in `prompts/engineer-agent.md`.
+- What: decide which it is, because the two answers lead opposite ways. If
+  the contract covers scans, six seats have been breaking it daily and the
+  repair is a backfill plus a charter sentence that says so. If it does not,
+  then `ledger.py` is counting the wrong population and the honest fix is a
+  second shape in the parser, the way the file already exempts entries whose
+  name begins "Craft scan" from the status rule. Guessing is the one move
+  that is wrong, because the number is only useful if everybody agrees what
+  it counts.
+- First step: the owner's or the PM's call on which shape a scan is. The
+  parser change is an hour either way once that is settled, and nothing
+  should move the 206 until it is. This matters more than three entries,
+  because a bound that a daily append crosses by accident is one that a run
+  reaches back to repair every second day, and every one of those repairs is
+  a seat editing entries rather than building.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 — `resend` can mail an issue the quality gate refused to send
+- Trigger: wiring the no-send rule for a rewrite meant reading the hold path
+  beside it, and the hold's own alarm points at the bypass. When
+  `hold_for_quality` cannot get a blocking finding fixed in one rewrite,
+  `weekly` keeps the issue out of every inbox and mails the owner a note whose
+  closing sentence is "send it as it is with `resend`". `resend` reads one
+  column and calls `send_newsletter`. It opens no gate, reads no finding, and
+  leaves no record that a held issue was sent anyway. So the pre-send gate is
+  one command away from being advisory, and the command is the one the alarm
+  recommends.
+- What: `resend` reads the gate before it sends. If the body it is about to
+  mail has blocking findings, it refuses and prints them, and an explicit
+  `--override` is what sends it, with the findings and the override written
+  into the run's own output so the decision is on the record rather than in
+  somebody's memory of a Tuesday. The gate already runs on a body with no
+  database and no key, which is why this is cheap: `gate_issue(body, label)`
+  is the whole dependency and `tools/check_digest_quality.py` already travels
+  in the image.
+- First step: call `gate_issue` in `resend` between the `select` and the send,
+  and add the `override: bool = False` parameter. The test is a scripted body
+  with one blocking finding, asserting no send without the flag and a send
+  with it. `docs/product/digest-quality.md` is the standard that decides
+  whether an override should exist at all, and that reading comes first,
+  because a gate nobody may override is also a defensible answer and is one
+  fewer parameter.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 — A week's rewrite cannot be read before it is paid for
+- Trigger: `weekly --week 2026-W38` shipped today and nothing in this
+  repository can tell you what it will produce. The window is arithmetic and
+  is tested, but what that window returns is a database question, and no agent
+  seat holds a database credential. So the first real backfill will also be
+  the first time anybody sees how many claims a past week's window actually
+  contains, and it will see it after a model call has been spent and an issue
+  has been upserted over.
+- What: a `--dry-run` on `weekly` that stops after `gather`. It prints the
+  window, the payload line, the five stats, the row counts per evidence
+  stream, and the title and model of the issue it would replace, then returns
+  without calling a model and without writing. That is the difference between
+  backfilling a quarter of issues as a decision and backfilling them as a
+  discovery: a week whose window returns two claims should not be rewritten at
+  all, and today the only way to learn that is to rewrite it.
+- First step: `def weekly(week: str = "", dry_run: bool = False)` and an early
+  return after the `print(payload_line(...))` that already runs. The payload
+  line, the window line and the replaced-issue line are all printed before the
+  model call today, so the body of this is the return statement and a test
+  that no model and no write happen. `tests/test_press_backfill.py` already
+  drives `weekly()` against recorders, so the test is four lines in a file
+  that exists.
+- Cost: $0, and it saves tokens rather than spending them.
+- Status: proposed
+
+### 2026-10-26 — The issue says what the press read and never what it missed
+- Trigger: today's craft scan, below. Undermind publishes a recall number as a
+  product claim: 85% of the twenty most relevant papers inside ten minutes,
+  against 50%, 47% and 43% for three named competitors. Alexandria's issue
+  prints five counts and every one of them is work the pipeline did:
+  ingested, triaged, read in full, claims, links. Not one of them is a
+  denominator. A reader cannot tell a week when the press read everything
+  worth reading from a week when ingest fetched eleven papers because a feed
+  was down, and the second kind of week has happened: the availability check
+  in `pipeline/ingest.py` exists because ingest used to report success on an
+  empty run.
+- What: one more number in the stats line, with a denominator. "Of the N
+  papers these feeds published this week, M were triaged." Ingest already
+  knows N, because it fetched them and wrote `papers`, and `gather` already
+  counts M. The honest version of this number is coverage of what alexandria's
+  own sources published rather than coverage of the literature, and it should
+  say so in those words, because the second claim is one this product cannot
+  support and Undermind's is measured against a benchmark it built itself.
+- First step: add the denominator to `gather`'s stats query as a sixth count,
+  `papers` in the window with no triage row, and decide with the writer seat
+  whether it reaches the issue or only `/api/delivery`. The arithmetic is one
+  subquery in a query this change has already parameterised. The editorial
+  call on whether a reader should see a coverage number is the writer's and
+  the owner's.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Undermind publishes a recall number, where this press publishes five counts and no denominator (engineer seat, message run)
+- Trigger: the day's item was the press's backfill verb, so the scan went
+  looking for a product that makes a claim about how much of the literature it
+  found rather than how much work it did. Undermind was the stalest entry in
+  `docs/market/landscape.md` that is actually a competitor: added 2026-09-18,
+  last observed the same day, marked "search-snippet confidence only," 38 days
+  ago.
+- The product: Undermind (undermind.ai), an AI research assistant for
+  scientific-literature discovery and novelty checking. Already in the
+  landscape file under academic research tools, where the whole entry is four
+  lines and two of them are hedged.
+- What: read for one question, which is what number a search product puts in
+  front of a buyer. Undermind puts recall. This press puts throughput. The
+  conclusion is the entry directly above this one, and this scan is the
+  argument behind it rather than a second proposal.
+- Worth stealing: the number is a denominator, and it is on the landing page.
+  Undermind states 85% recall of "the 20 most relevant papers" inside ten
+  minutes against 50%, 47% and 43% for three competing systems, and separately
+  that its first engine was "10x better results than Google Scholar." Two
+  things make that worth stealing rather than only worth noting. The claim is
+  about completeness, which is the one property a literature product's buyer
+  cannot check for themselves, so saying a number at all is the move. And the
+  number is bounded by a benchmark Undermind defined, which it says plainly,
+  so the claim survives a sceptical read. A press that says "we triaged 47
+  papers" has told the reader nothing they can calibrate, and the same press
+  saying "47 of the 61 our sources published" has.
+- What alexandria does better: a report and a claim graph answer different
+  questions, and the difference shows up a month later. Undermind's unit is a
+  report produced for a query, with alerts when something new matches. Nothing
+  in it goes back and marks a finding superseded, because a report is finished
+  when it is written. This repository's `claim_links` carries `refines` and
+  `contradicts` as dated edges, the `deprecated_claims` view reads the
+  contradictions, and an issue can therefore tell a reader that something it
+  printed in September stopped being true in October. That is also why the
+  second-best thing here is the pricing comp rather than the product: Pro at
+  $16 a month billed annually sits just under this product's $20, and it buys
+  a search tool rather than a standing record.
+- First step: update the Undermind entry in `docs/market/landscape.md` with
+  today's pricing and the recall claim, and move it out of
+  "search-snippet confidence only." That file belongs to the market seat, so
+  this is a note addressed to it rather than an edit this seat makes.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - A census of every reduction that feeds a verdict (engineer seat, scheduled run)
+- Trigger: `judge_archive` answered `ok` this morning over a published list of
+  2026-W42, 2026-W40 and 2026-W39, with 2026-W41 missing from the list in its
+  own evidence and a board card open about that exact week. The check reduced
+  the list to `max(published)` and judged on that. Filed as
+  `INC-2026-10-26-the-archive-surface-answered-green-over-a-gap-that-was-inside-its-own-evidence`,
+  the fifth of the green-for-a-false-reason class and the first where the
+  instrument had already fetched the proof.
+- What: when a check reduces a collection to one element and judges on it, the
+  reduction is a claim about every element it dropped, and that claim is almost
+  never written down. There are four spellings of it in this repository:
+  `max(...)`, `[0]`, `order by ... limit 1`, and a field named `newest`.
+  `press_facts` is the next one in line and it is the same surface's other half,
+  since `select week ... order by week desc limit 1` means the press surface
+  cannot see a hole in `digests` either. Today's fix caught the page's holes
+  because the site surface happened to fetch the whole list. Nothing caught the
+  record's.
+- First step: grep `tools/` for those four spellings, list every one that feeds
+  a verdict rather than a log line, and for each write the sentence it is
+  implicitly asserting about the rows it dropped. One sitting, no code. The
+  output is a list of the ones where that sentence is false, which is the actual
+  work and should be sliced from it rather than guessed at now.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The receipt publishes the weeks, not the newest week (engineer seat, scheduled run)
+- Trigger: the fix above compares the page's week list against itself, and it
+  can only do that because `/library` renders every week and `check_site`
+  regexes them all out of the HTML. The record has no equivalent. The delivery
+  receipt's `press` block carries `newest_week`, `created_at` and `model`, so
+  the credential-free reader every seat actually uses cannot tell a `digests`
+  table with a hole in it from one without.
+- What: add the full list of weeks in `digests` to the receipt at
+  `/api/delivery`, behind a version bump, and have `judge_archive` compare two
+  sets rather than two endpoints. That turns the surface's question from "do the
+  two ends agree" into "is there a week on one side that is not on the other,"
+  which is the question it has always been describing itself as asking. It also
+  makes the record's own holes visible for the first time, and the press's
+  backfill verb now exists to fill them.
+- First step: the receipt's shape, not the comparison. Publish `weeks` as a
+  sorted list in the press block, bump the receipt version, add it to
+  `READABLE_VERSIONS`, and leave `judge_archive` reading endpoints. The reader
+  tolerates an older receipt already, so the field can land and be observed for
+  a week before anything turns on it.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The deploy surface says which undeployed commits owe a rehearsal (engineer seat, scheduled run)
+- Trigger: the daily machinery diff found a third unrehearsed runtime change on
+  `main` this morning, after `INC-2026-10-25` recorded the first and named the
+  repair. The repair is a line in `docs/agents/pending-workflow-changes.md`,
+  that page is the ExO seat's enforcement surface, and two runs in a row have
+  correctly declined to write another seat's queue from their own branch. So the
+  obligation has spent two days with nowhere to live while the count of changes
+  owing it went from one to three.
+- What: the deploy surface already lists, per app, every commit on `main` that
+  the deployed image does not carry. Classify each of those against
+  `docs/agents/runtime-changes.md` and say which ones owe a rehearsal before the
+  `modal deploy` that would ship them. That puts the obligation in front of the
+  exact reader it needs, which is whoever turns the workspace back on, at the
+  exact moment they need it, and it needs no other seat's page. It does not
+  replace queueing the repair. It means a missed queue entry stops being silent.
+- First step: the classifier, not the surface. One function taking a commit's
+  changed paths and diff and returning the rehearsal it owes or none, driven by
+  the list `runtime-changes.md` already writes out: a model id, a provider, an
+  API base URL, a token reservation, a client timeout, a cap, a cron, a
+  `container:` block. Test it against the three commits on `main` today that
+  owe one and against a handful that do not. Wire it into the deploy surface
+  only once it is right, which is a second slice.
+- Cost: $0
 - Status: proposed
