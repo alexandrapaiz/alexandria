@@ -76,6 +76,24 @@ reports 9 cited files that no longer carry their claim and 5 drifted line
 numbers, and those belong to `docs/agents/quality-claims.md` and its owner
 rather than to this table.
 
+**Re-confirmed 2026-10-26 by command, writer run 51, and one number moved
+because a gate was repaired rather than because a page changed.**
+`check_voice.py reading` reports the same 4 failures on the same 4 lines as on
+2026-10-25, so no row below was repaired and the oldest is thirty-one days.
+`check_voice.py claims` reports 24 against 23 yesterday, and the one that moved
+is this run's own repair: the row for "the library grows every day" has read
+`contradicted` since 2026-10-11 and the gate was resolving it to `held`, because
+its state cell records what it moved from and `held` was first in the list the
+gate searched. So `site/app/page.jsx:33` was printing a sentence the register
+calls false while this seat's instrument printed `ok` beside it. That line is
+not added to the table below, because the row for that same paragraph is
+already open as `claim-repairs-2026-10-18.md` and the charter's precondition
+for drafting is unmet: `docs/voice/value.md` still has no recorded approval.
+The delta run 50 could not account for is also answered and it was not the
+copy. The register went from 11 rows to 13 on 2026-10-24, and the current gate
+run against the tree of 2026-10-23 returns 17, so neither the gate nor the
+surfaces moved.
+
 | Surface | Candidate | Drafted | Is the defective line still live? |
 |---|---|---|---|
 | `site/app/desk/page.jsx`, the verdict queue | `desk-verdict-queue-2026-10-24.md` | 2026-10-24, run 45 | Yes. The queue renders 524 rows oldest first, so the newest entry on it is the compute outage of 2026-10-23 and a reader reaches it last. The count beside the heading is also wrong by one against `tools/ledger.py --census`, which `check_voice.py ledger` now fails on. Four lines and a one-character anchor, in one diff |

@@ -3829,3 +3829,46 @@ gap that the same collision had left empty (incident 25).
     itself, and that rule already supplies the reader-facing words to use
     instead ("three separate papers built on it this week"), so it carries its
     own answer and needs nothing. The count is two and one was already closed.
+
+141. The newest artifact named from the files on disk, when the product serves
+    more than the repository holds.
+    This is a tell in a grading procedure rather than in prose, and it is the
+    fourth instance of one class. The canon already records three: which COPY
+    of an issue to grade, which GENERATOR wrote it, and which EDITION the
+    newest artifact is. Each one was a check that read the thing in front of it
+    without asking whether that thing was the thing it was supposed to read.
+    This is which SURFACE.
+    The specimen. Runs 49 and 50 both opened on the sentence that
+    `site/content/issues/2026-W39.md` was "the newest issue this runtime can
+    reach", and run 50 spent its reasoning on why re-deriving a 27-day-old
+    grade would be waste. It was waste. The archive directory holds two files
+    and the live site was serving three issues, the newest of them `2026-W42`,
+    seven days old and never graded by anybody.
+    ```
+    curl -s https://libraryofalexandria.dev/library | grep -oE '2026-W[0-9]+'
+    2026-W39   2026-W40   2026-W42
+    ```
+    Why the wrong answer was the reachable one. The charter says to read "the
+    newest published issue in the repo **or site**", and the procedure's own
+    first question is which artifact by path. A path is a file, so the whole
+    check reads as a question about the repository, and `NEON_RO_URL` being
+    unset was taken to mean that everything outside the repository was shut.
+    The site needs no credential. Neither does
+    `tools/delivery_health.py --surface press`, which has answered this exact
+    question since 2026-10-12 and names the newest week in one line.
+    The tell, as a question to ask before a grade begins rather than of prose.
+    What is the newest artifact a READER can reach, and is that the one in
+    front of me? The repository is where this seat works and it is not where
+    the product lives, so the two drift apart by exactly the number of issues
+    nobody has committed.
+    Added 2026-10-26, writer run 51. Enforced by a command, because this is the
+    class where reading the file in front of you is the defect:
+    ```
+    python3 tools/delivery_health.py --surface press --no-notify
+    ```
+    It reports the newest week the press has written and whether the next is
+    due, from a public endpoint with no credential, and it is the first step of
+    a grade from here on. Swept: the canon's grading procedure names "the
+    newest issue" in four places and every one of them now has this command
+    above it in the order of work, which is the ordering the charter's step 1
+    already implies and no run executed.
