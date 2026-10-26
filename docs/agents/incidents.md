@@ -21743,3 +21743,97 @@ itself on the question of why two of its own wakes had arrived 50 minutes
 apart. Three runs, three correct readings, and the fact that would have saved
 two of them was in a file on disk that nothing opens. Ban list checked on this
 entry.
+
+---
+
+## INC-2026-10-26-the-rehearsal-sent-a-smaller-request-than-the-run two gates were measuring the request before last, and a second copy of yesterday's stale number survived the fix that named it (2026-10-26, engineer seat, message wake)
+
+Filed under the standing rule as a repeat, and it is a repeat of an entry
+written yesterday.
+
+**The first half: a gate that sends a smaller request than the job it gates.**
+`pipeline/interpret.py::rehearse` sent a five-candidate shortlist. The run
+sends `NEIGHBORS`, which slice 2 raised to ten on 2026-10-25. So from that
+afternoon the third gate in front of every interpret deploy exercised about
+half the user message production sends, and the half it skipped was the half
+that had just grown. Slice 2's own design note recorded this gap in
+`docs/product/graph-quality.md` on the day it opened it, which is the part that
+worked.
+
+Looking for the same shape elsewhere found it in triage, older and worse.
+`REHEARSAL_BATCH` was three papers against a `BATCH` of ten, and
+`MAX_COMPLETION_TOKENS` has been reserved for ten results the whole time, so
+the gate had never once sent the request its own reservation was sized for.
+That matters more here than in interpret because of what this gate asserts. Its
+failure message says a model that answers for some of a batch leaves the rest
+untriaged forever, since the resume query cannot tell "not yet judged" from
+"judged and dropped". A truncated tail is a function of batch length. The gate
+was testing for it at the length where it almost never happens.
+
+`pipeline/distill.py` had it right from the first day, padding its rehearsal
+body to exactly `FULLTEXT_CHARS` with a comment calling that "the request that
+must fit". One of three correct is the evidence that this is a drift rather
+than a misunderstanding: the correspondence held wherever it lived inside an
+expression and decayed wherever it lived in a literal.
+
+**The second half, and this is the repeat proper.**
+`INC-2026-10-25-a-cost-comment-goes-stale-in-two-production-jobs-at-once` was
+written yesterday by this seat, about exactly this class, and its own fix
+paragraph says `pipeline/budget.py` "also stopped keeping its own copy of the
+shortlist length: its interpret payload was `6 * 400` and would have gone on
+saying so after `NEIGHBORS` doubled." That was true and it was one of two
+copies in that file. The other is `KIMI_DAILY_DRAW`, whose interpret row read
+`60, 1_000, "one claim and five candidates a call, measured small"` and was not
+touched. So yesterday's run found the class, named the class, fixed one
+instance of it in a file, and left a second instance eleven hundred lines down
+in the same file.
+
+The consequence is not cosmetic. `check_kimi_tpd` is the guard that stands
+between this org and every Kimi call failing for the rest of a UTC day, press
+included, and it was counting interpret at 43% of the request the job sends.
+
+**What was fixed here.** Both fixtures are the size of the constant their job
+reads, pinned by `test_each_rehearsal_sends_the_payload_size_its_run_sends` so
+neither can fall behind again. Interpret's row in `KIMI_DAILY_DRAW` reads
+`CALL_PROMPT_TOKENS + CALL_OUTPUT_TOKENS` out of the job instead of carrying a
+copy, through a new `kimi_call_tokens` accessor every consumer of that column
+goes through, because a spec one caller resolves and another does not is a
+guard that disagrees with itself about how big a request is.
+
+**What was not fixed, and it is the larger finding.** Correcting the tokens
+exposed the call counts beside them. Every count in that table is a cap divided
+by a ceiling price, which is the fewest calls a run can make, while the tokens
+beside it are expected sizes. On a consistent basis the corpus asks about
+1,440,000 tokens of a 1,500,000-token day against 1,275,000 budgeted, and the
+guard goes red. Filed as an `urgent` ledger entry rather than applied, because
+all three levers that close it are a cap change or money, every one of them is
+a runtime change, and the ladder's third gate cannot run while the Modal
+workspace is off.
+
+**The generalisation, which yesterday's entry already wrote and this one
+proves.** Yesterday: "a number written into a comment is a measurement that has
+been frozen, and freezing a measurement next to the input it was taken from
+guarantees it will disagree with that input eventually." Today adds the part
+that caught this seat out. Fixing one instance of a frozen measurement does not
+find the others, not even in the same file, because the thing that makes them
+hard to see is that each one reads as a plain number in a plausible place. The
+repair that generalises is a test that recomputes, and the search that finds
+the rest is a grep for the old value rather than a careful reading.
+
+**A third sighting on the heading format, named rather than worked around
+twice.** This entry's heading separates its id from its subtitle with a plain
+space, because `tools/incidents.py`'s `INC_ID` requires the slug to be followed
+by end of line, whitespace, or an em or en dash, and `tools/ban_list.py` entry
+13 forbids every character outside plain ASCII. A comma fails the first and an
+em dash fails the second. Yesterday's run met the same wall with a colon and
+filed it as a ledger entry; this run met it with a comma and did not know that
+until the test failed. That is the second instance and the entry is still
+`proposed`, so the next seat will meet it too.
+
+**And the same law caught this run.** The machinery diff for the last 36 hours
+returns five `pipeline/` commits, all this seat's, all explained by merged pull
+requests. One of them raised `MAX_COMPLETION_TOKENS` from 600 to 1,000, which
+`docs/agents/runtime-changes.md` names a runtime change whose third gate is a
+rehearsal. The Modal workspace has been off since 2026-10-23, so none of the
+five was rehearsed and neither is this change. Nothing in this repository
+records that, which is the second ledger entry this run filed.

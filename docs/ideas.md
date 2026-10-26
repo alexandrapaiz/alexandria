@@ -20005,3 +20005,109 @@ has nothing to go red against.
   change is half an hour once that is settled.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-26 - The daily Kimi allowance is guarded by a floor wearing an expectation's label (engineer seat, message run)
+- Trigger: correcting one row of `budget.KIMI_DAILY_DRAW` today. Interpret's
+  row said 1,000 tokens a call for a request that measures 2,340, so the fix
+  was arithmetic. Checking the row's other column found the real defect. The
+  table's own header says these are EXPECTED draws, and every call count in it
+  is a cap divided by a CEILING price, which is the fewest calls a run can
+  make rather than the most. Interpret is credited with 50 calls and stops at
+  `MAX_CLAIMS_PER_RUN`, which is 90. Triage is credited with 70 and stops at
+  `MAX_CALLS_PER_RUN`, which is 90. So the guard's two cheap jobs are counted
+  at roughly half the day they can draw.
+- What: on the basis the table claims to use, the corpus asks 1,440,000 tokens
+  of a 1,500,000-token day against 1,275,000 budgeted after the 15% margin,
+  and `check_kimi_tpd` would go red. It is green today because the inputs are
+  low, which is the worst way for a guard to be green. The failure it exists
+  to prevent is not a 413 on one request. It is every Kimi call in the org
+  refused for the rest of the UTC day, press included, and the press is the
+  product. Closing it is a choice between three levers and all three are the
+  owner's or the chair's: lower interpret's `MAX_CLAIMS_PER_RUN` from 90 to
+  about 59, which is a third of the graph's only edge-writing job, lower a
+  spend cap, or raise the Moonshot tier, which is money. Each is also a
+  runtime change under `docs/agents/runtime-changes.md`, whose third gate is a
+  rehearsal that cannot run while the Modal workspace is off.
+- First step: decide the basis in one sentence written into the table's
+  header, then derive both call counts from the job's own ceilings the way
+  distill's paper count already is, and read whatever red comes out of that as
+  the finding rather than as a regression.
+- Cost: $0 to build. The decision behind it trades corpus throughput against
+  the Moonshot tier.
+- Status: urgent
+
+### 2026-10-26 - Nothing records that a corpus rehearsal ran, so a deploy cannot ask (engineer seat, message run)
+- Trigger: this run's machinery diff. Five commits landed in `pipeline/` in 36
+  hours, one of them a token reservation raised from 600 to 1,000 in
+  `pipeline/interpret.py`, which `docs/agents/runtime-changes.md` names a
+  runtime change whose third gate is a rehearsal. The Modal workspace has been
+  off since 2026-10-23, so none of the five was rehearsed, and nothing in this
+  repository says so. The only way to learn it is to notice the workspace is
+  off and reason backwards, which is what this run did and what every run will
+  have to do again.
+- What: the press already solved this. `docs/agents/press-rehearsal.md` names a
+  `press_rehearsals` table, so a press rehearsal leaves a row and a later
+  reader can ask what was proved and when. The three corpus rehearsals print to
+  stdout inside a Modal container and leave nothing, so the deploy ladder's
+  third gate is a step in a chain rather than a fact anybody can query. Give
+  each corpus rehearsal the same shape: the model that answered, the prompt
+  sha, the payload size, the verdict and the timestamp. Then "has this commit
+  been rehearsed" is a lookup, and a day like today reports itself.
+- First step: one table and four lines at the end of each `rehearse()`, reusing
+  whatever `press_rehearsals` already does so there is one shape rather than
+  two. It needs a database credential, which the rehearsal containers do not
+  hold today and the deploy command can pass, so the first slice may be a file
+  in the deploy's own output instead.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The rehearsals now send the right size and nothing says whether the answer was right (engineer seat, message run)
+- Trigger: widening both fixtures today. The gates assert a shape and not a
+  verdict: triage's asks for ten valid decisions and accepts ten `index`
+  answers, and interpret's asks for at least one edge and fewer than ten and
+  accepts any five. Both fixtures now carry a knowable right answer written out
+  in a comment beside them, and nothing compares the model's answer to it.
+- What: the comment is already the assertion, so make it one. Carry the
+  expected decision per rehearsal paper and the expected relation per
+  rehearsal candidate in the fixture itself, then have the gate report
+  agreement as a number and raise only below a floor. A floor rather than an
+  exact match, because the point is to catch a model that has stopped reading
+  rather than to demand one that agrees with a human on every line. This also
+  gives the deploy ladder its first quality signal: today a model that answers
+  confidently and wrongly passes every gate the corpus has.
+- First step: add the expected answer to `REHEARSAL_BATCH` and
+  `REHEARSAL_NEIGHBORS` as a fifth and third field, with the existing
+  length-and-shape tests extended to cover it, and print agreement without
+  raising on it for the first few runs so the floor is chosen from data.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Pact makes the contract an artifact a deploy can query, where these gates make it a step in a chain (engineer seat, message run)
+- Trigger: today's work is a mock that had drifted from the thing it stands
+  for, so the day's scan went to the product whose whole subject is that
+  drift. Pact is consumer-driven contract testing and it had never been
+  scanned here.
+- What: Pact separates the contract from the run of it, and that is the thing
+  worth stealing. The
+  consumer's expectations become a pact file, the provider verifies against
+  that file, the result is published to a broker, and the deploy asks
+  `pact-broker can-i-deploy` rather than re-running anything. The verification
+  is a fact with a timestamp and a version attached, so "is this safe to ship"
+  is a question with a stored answer. This repository's corpus gates are the
+  opposite shape. They are an `&&` chain, so the proof exists for the duration
+  of one terminal session and the next reader cannot tell a gate that passed
+  from a gate that was never run, which is exactly the state five commits are
+  in this morning. That became the ledger entry above it.
+- What alexandria does better: Pact's provider verification replays a recorded
+  mock, so a provider can satisfy every pact and still behave differently for
+  a real client, and the broker reports green either way. These gates call the
+  real provider with the real key, the real reservation and the real timeout,
+  and as of today the real payload size. The fixtures are also hand-written
+  rather than recorded, which costs a few minutes per candidate and buys
+  something a recording cannot: a human reading the rehearsal log can check
+  the verdict line by line, because somebody decided in advance what the right
+  answer was. A recorded expectation only ever asserts that nothing changed.
+- First step: the second entry above, which is the broker's half of this in
+  the smallest form it has here.
+- Cost: $0.
+- Status: proposed
