@@ -2458,6 +2458,34 @@ So once a run, audit the charter set rather than the seats.
 docs/agents/unowned-duties.md is the register and it is yours. Work it
 in this order.
 
+**Zeroth, and it is one command, because four of the register's five tests
+take the seat's subscriptions on trust** (added 2026-10-26, from
+`INC-2026-10-26-five-of-twelve-seats-have-never-been-woken-and-the-only-signal-was-the-absence`).
+
+```bash
+python3 tools/wake_routes.py        # exit 1 when a seat is deaf on a type it subscribes to
+```
+
+It resolves every charter's declared branch prefix against the host's roster
+and reports, per seat and per subscribed event type, whether the route cannot
+exist (`deaf`), is declined on purpose by the continue-wake cadence gate
+(`gated`), is permitted and unused (`open`), or is demonstrably working
+(`live`). On 2026-10-26 it found five of twelve seats with **no routed wake
+ever** across 8,334 audit rows, and the research charter as the only one of
+twelve naming no branch prefix at all.
+
+Run it before the row-by-row pass, because it changes what the rows mean. A
+duty resting on a seat with one route is a different finding from a duty
+resting on a seat with five, and the register's four older tests cannot tell
+those apart. **A subscription list is a claim about reachability**, and until
+this command existed nothing anywhere had checked one.
+
+The rule it is built on is `tools/cron_firing.py`'s, one layer up: a route that
+cannot exist and a route nobody used leave the identical silence — no log line,
+no bounced delivery, no counter — so an instrument that answers
+reachable-or-not answers the wrong question, and `open` is reported as a
+question and never as a failure.
+
 First, confirm the assigned rows are still real. A duty is owned when a
 charter names it in words a run can act on, not when a seat would
 probably do it if asked. Re-read the naming charter, and if the words
