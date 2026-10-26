@@ -3872,3 +3872,145 @@ gap that the same collision had left empty (incident 25).
     newest issue" in four places and every one of them now has this command
     above it in the order of work, which is the ordering the charter's step 1
     already implies and no run executed.
+142. The caption set written in one grammar, where every caption is right and
+    only the set is wrong.
+    Entry 3 is the parent and it says "vary or die" in nine words with no
+    count under it, so for 38 days it was a reading. This is the half of it
+    that no gate pointed at a single line can see, because the unit of the
+    tell is the SET.
+    The specimen, and it is the surface a stranger is sent to. The skill
+    library's shelf page carries a caption under every shelf heading. Four of
+    the six on named shelves are the identical frame, which is a short
+    verbless opener, a full stop, and a list of three:
+
+    > The scaffold around a model. Tools, prompts, loop structure, and the
+    > feedback the loop runs on.
+    > Several agents dividing work. How they are organised, how they hand off,
+    > and how they fail.
+    > Post-training that updates the weights. Distillation, reward design, and
+    > self-improvement.
+    > Getting an answer out fast and cheap. Decoding, caching, and test-time
+    > compute.
+
+    Every one of them is accurate about its own shelf and none of them would
+    be marked in isolation, which is what makes this prose rather than error.
+    The set reads as furniture generated to fill seven slots, and a reader who
+    has scrolled past three of them has learned to skip the fourth, which is
+    the opposite of what a caption is for.
+    How it survived. Three visual sweeps of this page read it, two copy rounds
+    read the page it sits on, and the captions were never the artifact in
+    front of any of them. They were committed on 2026-09-18 by the
+    fifty-skill rebuild, eleven days before her ruling of 2026-09-29 that the
+    subtitles were too choppy and that fragments were out, and no owner has
+    ever ruled on one of them. A string set in code and never regenerated is
+    never graded, which is entry 61, and this is entry 61 pointed at a set
+    rather than at a line.
+    The sharper finding in the same specimen is not countable and is recorded
+    rather than gated. Not one of the seven captions contains a finite main
+    verb, so not one of them is a sentence, and her ruling forbids exactly
+    that. Deciding whether a clause carries a finite verb is not string work,
+    and a fragile detector would report that verdict in the same format as the
+    two honest counts below, so it is left to the reading in
+    `docs/voice/shelf-names-2026-10-26.md` where a person can check it.
+    Added 2026-10-26, writer run 53. Enforced the same day by a count, because
+    entry 113 settled that a tell in this file holds only when it becomes one:
+    "Every gate in that list that holds was turned into a count after a print
+    walked past it." The gate reads every caption a sibling set declares and
+    fails on two string tests, more than one caption on the same frame and two
+    captions opening on the same two words, which is entry 113's own technique
+    over a set instead of over an issue's evidence grades.
+    ```
+    python3 docs/voice/check_voice.py captions
+    ```
+    It reads 7 of the 7 captions the surface declares, fails today naming the
+    four, and goes green on the nine drafted to replace them, which was
+    verified before this entry was written rather than asserted by it. Twelve
+    cases run before the file is opened, each one a caption string taken
+    verbatim from the surface or from the drafted repair, because a pattern
+    that miscounts prints its wrong count in the right format.
+    The two tests are quoted so this ending is checkable rather than read,
+    which is the convention of 2026-10-04 and the reason the prose-only count
+    at the top of this file is meant to fall:
+    ```
+    LANDED docs/voice/check_voice.py: "captions share one frame"
+    LANDED docs/voice/check_voice.py: "captions open on"
+    ```
+    Swept: `CAPTION_SETS` names every set in the repository that renders a
+    caption under each member of a list, and today the shelves are the only
+    one. A second set is one line, and the sweep is the reason the gate takes
+    a set table rather than a path.
+143. The rule that bans a phrase and then writes the phrase, in the position
+    where the phrase gets drafted.
+    This is the eighth member of the family entries 53, 56, 65, 76, 88, 93 and
+    100 belong to, where the model copies a specimen the register handed it.
+    Every earlier member was a specimen the file OFFERED, as a worked example
+    or a mapping. This one is a specimen the file BANS, four hundred and eleven
+    words from the ban, and that is what makes it the hardest of the eight to
+    see: a reader who finds the phrase thinks of the ban rather than of the
+    draft, because the ban is the thing the phrase is famous for.
+    The specimen, and it printed. `2026-W40` went to readers on 2026-10-05
+    under three headings:
+
+    > ## What is gaining ground: recursive self-improvement with fewer guardrails
+    > ## What is genuinely new: where memory lives and who can pull the plug
+    > ## What fell behind: the assumptions that let agents run unchecked
+
+    Canon law 12, incident 20, the one ruling the owner has given twice and the
+    second time in the word "AGAIN". The generator forbids this twice over
+    before the model reaches the heading slots. It bans "what is new" and "what
+    fell behind" by name as "that failure in its commonest dress", and the next
+    paragraph bans the colon that launders it, in the exact shape "What fell
+    behind: the thing yesterday's consensus got wrong".
+    And then the file wrote them. Line 44 listed the day's four slots as "what
+    gained ground, what is genuinely new, what fell behind, what to read
+    yourself", which is two of the three printed headings word for word and the
+    third one inflection away. Line 1525 wrote "what is new tests it, what fell
+    behind is the position it replaces", two of the five banned phrasings
+    verbatim, inside the rule that teaches the weekly to argue. Line 373 named
+    the slot the same way inside the rule that teaches heading craft.
+    Why the earlier repair could not reach it, and this is the half worth
+    keeping. The diagnosis was already in the file, in its own bold: "The ban
+    is on the slot's IDEA and not on four strings, and the words that beat it
+    came out of this file." A run wrote that sentence, enumerated five
+    phrasings under it, and swept nothing. Entry 90 requires the sweep and
+    entry 100's ending performs one. Neither is written as a duty the BAN owes
+    itself, so a run that adds a phrase to a ban list reads it as a rule it is
+    installing rather than as a string it has just introduced into the file.
+    The tell, as a question to ask of an edit rather than of prose. Did this
+    edit add a quoted specimen to the file, and if so, does the file use that
+    specimen anywhere outside the quotation? Ask it of a ban exactly as entry
+    100 asks it of a worked example, because the model reads a file and not a
+    register, and a phrase in a prompt is a draft at every position except the
+    one where the sentence around it says otherwise.
+    Added 2026-10-26, writer run 54. Enforced the same day in
+    `prompts/digest.md`, where all three specimens now use this file's internal
+    names, which the tripwire at the end of the file already reads, so a leak
+    from any of the three is a leak the existing gate catches rather than a new
+    rule nobody can see fail. Weight: 33,953 tokens before and 33,947 after,
+    six returned, because the internal names are shorter than the dress.
+    Gated the same day, and it reads a SERIES rather than a phrase:
+    ```
+    python3 docs/voice/check_voice.py slotwords
+    ```
+    The phrase alone is ordinary English in this file four times over, at "Then
+    what changed, with its number" and at "the reader who wants to check what
+    changed", and a gate crying on those is a gate somebody deletes. Two or
+    more slot-shaped phrases in one comma series is a list of the issue's slots
+    and has no second reading. The five phrasings come out of the ban's own
+    quoted list rather than from a copy of it, because a hand-kept copy is the
+    next thing to drift and that is this entry one level up.
+    ```
+    LANDED docs/voice/check_voice.py: "slot series outside the ban"
+    ```
+    Verified both ways before this entry was written rather than asserted by
+    it. Against `origin/main` the gate fails and names both standing
+    specimens. Against the branch carrying the patch it is green. Five cases
+    run before the file is opened, and three of them exist to stop the
+    detector: the sign-off's own "what you would watch next, what is still
+    unsettled, what this leaves a builder holding" is a series of the same
+    grammar naming nothing the ban names, and a pattern tuned only against the
+    two specimens fires on it.
+    Swept, per entry 90, and the sweep is the entry. Three specimens in one
+    file, and the one the ban paragraph itself quotes at lines 350 and 353
+    stays, because a ban that cannot quote what it bans is not a ban. Nothing
+    else in `prompts/digest.md` writes a slot in its reader-facing dress.
