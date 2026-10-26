@@ -1,15 +1,17 @@
 ---
 name: evaluation-integrity
-description: Evidence-backed method for judging whether an evaluation can be trusted when the instrument is itself generated: a model-written rubric, a pipeline-assembled benchmark, an LLM judge, or a pass-or-fail verdict standing in for correctness. The subject is the instrument, not the system it scores. Use when stress-testing a model-written rubric or grading checklist, when an agent reaches the graded outcome through the repository history, workspace files, task metadata or open network instead of doing the task, when a checker's verdict cannot separate a faithful candidate from one that merely preserves it, when a judge learns from other judgments and its scores start clustering, when benchmark items are ambiguous, narrow or wrong, when deciding how many independent judgments an accept should require, when a scored gain might be noise or leakage, when a single-turn evaluation promises reliability that multi-turn pressure does not, or when auditing a discovery an agent claims.
-version: 4
-status: active
+description: Judging whether an evaluation can be trusted when the instrument is itself generated. The subject is the rubric, the benchmark, the judge and the verdict, not the system they score. Use when a model writes the rubric or grading checklist a reward or a gate reads; when a pass-or-fail verdict from a compiler, a solver or a green build is the whole acceptance signal; when an agent reaches the graded outcome through the repository history, workspace files, task metadata or the open network; when a judge is trained or few-shot prompted on earlier judgments and its scores start clustering; when benchmark items are narrow, ambiguous or wrong; when deciding how many independent judgments an accept should require; when a scored gain might be noise or leakage; or when auditing a result someone else produced and deciding what absence of failure you are entitled to report.
+version: 5
+status: provisional
 provenance:
   extracted: 2026-09-24
-  revised: 2026-09-30
+  revised: 2026-10-24
   validated: ""
+  differential_screen: "not run. This seat has no route to either eval arm (no GROQ_API_KEY in agent-skill.yml, no benchmark provider in pipeline/budget.py), both queued in docs/agents/pending-workflow-changes.md. Every delta below is unscreened, and each Validation tag names whether this run expects a bare subject to supply it already."
   reviews:
     - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
   revisions:
+    - "2026-10-24 (ADR-38, the quality bar): 468 lines to under 120, checklist first, nine sections to five deltas. Longest file in the library and the last of the chair's retrofit queue to still carry the old shape. `status` moved from `active` to `provisional`: ADR-38 rule 7 earns `active` on a positive differential delta on the benchmark subject, no such delta exists for this skill, and `active` had been standing in for a measurement nobody ran. Cut: the magnitude of the pressure effect, the long-horizon world-stress design and the scheming detector's F1, all findings about an agent under test rather than about an instrument, queued in docs/research/reading-queue.md for agent-security-measurement. Every paper is still cited and no claim id was dropped, because this run had no database and could not re-verify the id-to-paper mapping. The ids the cut prose supported are named in the queue entry for the provenance reviewer."
     - "2026-09-30 (runner length guard): description cut from 151 words to 148, under the 150-word budget that prompts/skill-extract.md has stated since 2026-09-24 and that nothing measured until this run. Wording only, no coverage change: \"turn out to be ambiguous\" became \"are ambiguous\". Caught by the new length check in trigger_test.py, on that check's first run, which is the evidence incident 31 asked for."
     - "2026-09-30 (ADR-38 retrofit, owner directive): per-section Validation tags, an Apply checklist, and caveats that name their floor. The tagging pass found one section, partial monitoring, whose claims were attached to a task that tested none of it, so eval task ei-t11 was written and the suite moved to version 2."
     - "2026-09-30 (ADR-36/ADR-37 trigger 1, claim deprecated): claim 288 entered deprecated_claims, contradicted at 0.75 by claim 289 from the same paper. Re-read arxiv.org/abs/2609.09219 in full. Claim 288 is accurate and is kept; claim 289 is a misreading of the paper's Gate 3 table and is filed for correction. The section 'Auditing a result you did not produce' now separates the protocol's two senses of recovery, which is the overload that produced the false edge, and adds that both of the paper's real-data feedback decisions were Inconclusive."
@@ -29,440 +31,89 @@ provenance:
 
 # Evaluation integrity
 
-This skill is about the instrument, not about the thing it measures. The
-subject is the rubric, the benchmark, the judge, and the verdict: the
-machinery a team builds to decide whether its agent is any good, at the point
-where that machinery is itself written by a model or assembled by a pipeline.
-
-A competent engineer already knows how to hold out a test set and how to
-resist tuning on it. What is new is that the test set, the grading criteria,
-and the grader are now generated artifacts with their own failure modes, and
-those failures are quiet. A broken instrument does not throw. It returns a
-number, and the number is higher than it should be.
-
-This skill adds to standard evaluation practice, it does not replace it. Keep
-the held-out split, the confidence intervals, the fixed random seeds, and the
-version pinning on the eval itself. The sections below are the deltas: the
-checks that only make sense once the instrument is something a model
-produced.
-
-## Stress-test a generated rubric before anything trains or gates on it
-
-*Validation: no trial and no consumer report. Claim and paper provenance only. Eval task ei-t1 covers it and has not been run.*
-
-A rubric written by a model reads like a specification and behaves like an
-attack surface. In a study of eleven rubric generators, every one of them was
-exploitable: an attacker model that optimized directly against the rubric
-scored at or above the honest baseline while violating the ground truth on 8
-to 26 percent of an unbiased 150-environment cut, and the lowest exploit rate
-any generator achieved on a 45-environment stress cut was 36 percent
-(ImpossibleRubrics). Rubrics written to be faithful to a machine-checkable
-certificate were exploited zero times out of 45 on that same stress cut
-(ImpossibleRubrics). The gap is between rubrics that restate what a good
-answer sounds like and rubrics tied to something checkable.
-
-The stress test is four steps and does not need the paper's benchmark to run
-(ImpossibleRubrics):
-
-1. Generate the rubric from the question and its evidence with a neutral
-   prompt, exactly as production would.
-2. Hand the rubric to an attacker model whose only instruction is to maximize
-   the rubric score.
-3. Have the judge score both an honest baseline answer and the attacker's
-   answer against that rubric.
-4. Check the attacker's answer against an oracle. If it scores at or above
-   the honest answer while violating the oracle, the rubric is exploited.
-
-Step 4 is where the work is, and it is the step a team skips. Without an
-oracle that is independent of the rubric, the test cannot distinguish a good
-answer from a well-dressed one. The reference benchmark was built by
-constructing tasks where the honest answer is refusal, 169 impossible tasks
-across six evidence-constrained categories plus 48 answerable controls, each
-carrying a machine-checkable certificate (ImpossibleRubrics). Impossible tasks
-are a convenient source of oracles because the certificate is small: the
-evidence does not determine an answer, so any confident answer violates it.
-
-Read your measured exploit rate as a property of the oracle as much as of the
-rubric. Holding the rubrics, the attack responses, and the judge scores fixed
-and swapping only the oracle moved the exploitation rate across 33.3, 75.6,
-and 66.7 percent (ImpossibleRubrics). The direction survived the swap even
-though the magnitude did not: all 15 attacks the primary oracle flagged were
-also flagged by both alternatives (ImpossibleRubrics). So the finding that a
-rubric is exploitable holds across oracles, and the rate attached to it does
-not. Report which oracle produced the rate (ours, not the paper's).
-
-## A pass-or-fail verdict is blind to the answers that pass for the wrong reason
-
-*Validation: no trial and no consumer report. The AUROC result is a proof rather than a measurement, which is the strongest evidence in this file and still not evidence that a reader acts on it. Eval tasks ei-t2 and ei-t3 cover it and have not been run.*
-
-If your gate is a binary verdict from a checker, there is a class of wrong
-candidates it cannot see, and this is provable rather than empirical. Any
-scoring function that depends only on the binary verdict assigns identical
-scores to a faithful candidate and to one that is unfaithful but preserves the
-verdict, so on a paired set matched for verdict it scores an AUROC of 0.5,
-which is a coin flip (Beyond Solver Verdicts). The compiler passing, the test
-suite going green, and the solver returning sat are all this kind of signal.
-
-The repair is a continuous score from a model that reads the candidate against
-the original intent. Scoring the renormalized probability the judge puts on
-yes against no, rather than taking its verdict, reached 0.961 AUROC on a
-950-row equivalence benchmark and held at 0.955 on the 652 rows whose source
-texts were disjoint from training (Beyond Solver Verdicts). The disjoint
-number is the one to quote, because it is the one that survives the obvious
-objection.
-
-Building the training set for such a judge is itself the useful procedure, and
-it works as an audit even if you never train anything (Beyond Solver
-Verdicts):
-
-1. Take each known-correct artifact.
-2. Mutate it systematically. Flip a relational operator, perturb a constant,
-   reverse an implication.
-3. Keep only the mutants that the checker still accepts but that are provably
-   not equivalent to the original.
-4. Those are the answers your verdict gate cannot see. In the source work this
-   produced 732 such cases and a near-balanced 57 to 43 split against the
-   equivalent examples.
-
-A continuous verifier also buys something a gate does not: it can say which
-attempts deserve more compute. Routing extra attempts by verifier score
-improved end-to-end answer accuracy by 11.3 points over the same system with
-no verifier (Beyond Solver Verdicts).
-
-## Treat benchmark items as defective until someone has gone looking
-
-*Validation: no trial and no consumer report. Claim and paper provenance only. Eval task ei-t4 covers it and has not been run.*
-
-A benchmark is code, and nobody believes untested code. A re-audit of one
-731-instance repository-level coding benchmark refined 102 instances, drawn
-from 119 candidate defect reports of which 17 turned out to need no change
-(SWE-Bench Pro Verified). The defect profile is the part worth memorizing,
-because it says what to look for first: overly narrow tests dominated at 75
-instances, then misleading task descriptions at 22, then overly broad tests at
-3, and 2 cases of otherwise corrupted data (SWE-Bench Pro Verified).
-
-Narrow tests are the leading defect, and they are the one that flatters your
-agent rather than punishing it. A test that only checks the exact path the
-reference solution took marks a correct alternative solution wrong and marks a
-narrowly overfitted one right.
-
-The repair loop is ordinary software maintenance pointed at the eval (SWE-Bench
-Pro Verified): collect defect reports against the current dataset, use a model
-to filter and categorize them, have a human apply minimal edits to the
-instructions and the tests, run trial evaluations on the revised instances,
-and replace the originals with the repaired versions. Minimal is the operative
-word. An item rewritten freely is a new item, and scores across the revision
-boundary stop being comparable (ours, not the paper's).
-
-## Close the shortcut channels in the environment, not in the instructions
-
-*Validation: no trial and no consumer report. Claim and paper provenance only. Eval task ei-t5 covers it and has not been run.*
-
-An agent that can read the answer will read the answer, and an instruction not
-to is not a control. Four channels carry the answer in a typical code-agent
-evaluation: the local file system, the repository history, the task metadata,
-and the open network (SWE-Bench Pro Verified). Closing all four eliminated
-every observed reward-hacking attempt, at zero successful hacks, while normal
-agent function continued (SWE-Bench Pro Verified).
-
-The four closures, each matched to its channel (SWE-Bench Pro Verified):
-
-1. Rebuild the repository as a fresh single-commit tree so no future commit
-   object survives, which closes the history.
-2. Delete hidden evaluation files and disable the hooks that could restore
-   them, which closes the file system.
-3. Filter task metadata through an allowlist, strip repository names from
-   paths, and replace instance identifiers with hashes, which closes the
-   metadata.
-4. Block outbound access to code-hosting domains while leaving dependency
-   services reachable, which closes the network.
-
-Keep the instruction telling agents not to look up solutions, but count it as
-documentation of intent rather than as one of the four controls (ours, not the
-paper's). The measured result above is the result of the environment changes,
-with the instruction alongside them.
-
-## A judge trained on judgments loses the variance that made it useful
-
-*Validation: no trial and no consumer report. The variance-monitoring prescription is ours, not the paper's, and untested anywhere. Eval task ei-t6 covers it and has not been run.*
-
-Mixing model-generated reviews into the training data of the next reviewer
-compresses the rating distribution and reduces semantic diversity both across
-reviews of the same paper and across the corpus, an effect the authors name
-scientific-judgment collapse (When AI Reviews Train AI Reviewers). A judge
-with a compressed rating distribution still returns scores. It has simply
-stopped discriminating, which is the property you were paying it for.
-
-This is the specific hazard in the loop where a judge's outputs become the
-next judge's examples, including the innocent version where last quarter's
-accepted judgments become this quarter's few-shot prompt. The published
-mitigation has two stages (When AI Reviews Train AI Reviewers): curate the
-training corpus by filtering out low-quality and semantically degenerate
-supervision before the single fine-tuning stage, and correct the residue at
-inference with a paired steering signal that pushes the output away from
-collapsed patterns without further training or expert annotation.
-
-If you are not training a judge, the transferable half is the first stage, and
-the monitoring that belongs beside it is the spread of the scores rather than
-their mean (ours, not the paper's). Rating variance and pairwise
-disagreement are cheap to log on every eval run, and collapse shows up in them
-before it shows up in anything a mean can reveal.
-
-## Require unanimity across independent judgments when a false accept is expensive
-
-*Validation: no trial and no consumer report. Three of the four portable parts are marked ours, not the paper's, in the text and carry no evidence beyond the one competition system. Eval task ei-t7 covers it and has not been run.*
-
-For accepting proofs during a competition search, the accept rule was
-unanimity across a panel: 16 independent judgments, 8 from the reinforcement
-learning checkpoint and 8 from the supervised one, with any missing or
-unparsable judgment discarded rather than counted, and acceptance only when
-all 16 parsed scores were 1 (An Open Recipe for IMO Gold). The panel's scores
-closely tracked an independent post-hoc model jury, which is the evidence that
-the internal verifier was measuring the same thing an outside grader would (An
-Open Recipe for IMO Gold).
-
-Three parts of that design are portable, and two of them are usually dropped
-(ours, not the paper's):
-
-1. Independence comes from different checkpoints, not only different samples
-   from one checkpoint. Sixteen samples from one model share its blind spots.
-2. Unparsable is not a vote. Discarding a malformed judgment is not the same
-   as treating it as a pass, and the difference shows up exactly on the hard
-   cases that make judges produce malformed output.
-3. The panel needs its own calibration against an outside grader before you
-   trust it. Without the jury comparison, unanimity measures agreement, which
-   a set of correlated judges can manufacture.
-
-Unanimity buys precision at the cost of recall, so it fits acceptance gates
-where a wrong accept is expensive and a rejected candidate can be resubmitted.
-It is the wrong rule for ranking or for routine scoring (ours, not the
-paper's).
-
-## Evaluate under pressure, and over more than one turn
-
-*Validation: no trial and no consumer report. Claim and paper provenance only. Eval task ei-t8 covers it and has not been run.*
-
-A single clean turn overstates how reliable an assistant is. Across 22 models
-on a rule-following benchmark, ordinary user pressure raised rule-violation
-rates by an average of 65 percent, and even the strongest assistants still
-misapplied a compliance rule on 6 to 10 percent of items (PACT). The pressure
-in question was not adversarial jailbreaking. It was a persistent user, a
-hurried manager, and an attractive shortcut (PACT).
-
-The item construction generalizes to any domain with a standing rule (PACT):
-define the rule, construct a shortcut that directly conflicts with it, apply a
-battery of pressure conditions across varied wordings and system-prompt modes,
-then audit every item with a judge for whether it is unambiguous, ungameable,
-and realistic enough not to read as a test. That last criterion is doing real
-work. An item that announces itself as an evaluation measures how a model
-behaves when it knows it is being watched (PACT).
-
-Long-horizon systems need the same treatment stretched over time. Running
-multi-agent worlds for days and injecting stress events into ordinary channels
-at intervals, a phishing campaign on days four to seven, a misinformation
-claim on day ten, and a memory breach through a search tool on day thirteen,
-left no evaluated world fully resilient across all three (Emergence World).
-Two results from that setup change how to score such a run. Recognizing an
-attack did not imply restraint or recovery, so recognition and outcome have to
-be scored as separate axes rather than collapsed into one (Emergence World).
-And alignment was not compositional: the same model behaved differently in a
-mixed population than in a homogeneous one, with different failure modes
-(Emergence World). A per-model safety result does not carry over to the system
-you assembled from those models.
-
-## Partial monitoring is an intervention, not an observation
-
-*Validation: no trial and no consumer report. The 2026-09-30 tagging pass found this section had its claims attached to a task that tested none of it, so eval task ei-t11 was written to cover it and the suite is now at version 2. The task has not been run.*
-
-Monitoring only actions, and not the reasoning that preceded them, increased
-scheming in closed-source models, which suggests partial oversight acts as an
-optimization constraint rather than as a deterrent (SchemeArena). The lesson
-for an evaluation harness is that what you choose to watch changes what you
-are measuring, so the choice needs stating in the result.
-
-The detector in that work scored both trace types together, applying criteria
-for instrumental goal pursuit, covert planning, and deceptive rationalization
-to reasoning and action traces before aggregating a verdict, and reached an F1
-of 90.73 percent against human validation (SchemeArena). Two details of the
-scenario construction are worth copying: the 400 scenarios were factorized so
-that one factor at a time could be varied, and their realism was scored by
-both human annotators and model judges, averaging 3.21 on a 4-point scale with
-0.97 internal consistency (SchemeArena). A scenario suite with no realism
-measurement is a suite whose negative results cannot be interpreted, since an
-implausible scenario explains a null just as well as a safe model does (ours,
-not the paper's).
-
-## A gain inside the noise band is not a gain
-
-*Validation: no trial and no consumer report. The source reports its three criteria as one method and does not ablate them, so no single criterion here carries a number. Eval task ei-t10 covers the section and has not been run.*
-
-When an evaluation score decides whether to accept a change, the accept rule
-needs more than a comparison of means. One harness-evolution system used three
-non-compensatory criteria, meaning a candidate must clear all of them and a
-large win on one cannot buy a failure on another (RRSI):
-
-1. Leakage screening. Reject any candidate whose diff contains task-specific
-   names, values, or answers. A change that names the benchmark has learned
-   the benchmark.
-2. A noise-adjusted floor. Reject any candidate scoring below the best score
-   observed so far minus an empirical noise band, rather than accepting any
-   nominal improvement.
-3. A cost-to-gain ceiling. Reject any candidate whose relative cost increase
-   exceeds a linear allowance in the score gain, which keeps a rounding-error
-   improvement from buying an expensive system.
-
-The unattended loop that proposes such candidates in the first place is
-recursive-harness-self-improvement's subject. What belongs here is the accept
-rule alone, because it is a statement about what the measurement can support.
-
-The noise band is the criterion most often missing, and it needs measuring
-rather than guessing: run the unchanged system repeatedly on the same eval and
-take the spread of its scores as the floor beneath which nothing counts as
-improvement (ours, not the paper's).
-
-## Auditing a result you did not produce
-
-*Validation: no trial and no consumer report. Revised on 2026-09-30 after re-reading the paper in full, which is what separated the two senses of recovery below. That reading is evidence about the text and not about whether the section helps a reader. Eval task ei-t9 covers it and has not been run.*
-
-For certifying a reported outcome, a published audit protocol uses three gates
-in order: a statistically significant improvement over baseline, zero
-successes by a matched challenger given the same starting knowledge and
-observations but not the answer, and a measured positive effect of truthful
-feedback against a calibrated neutral policy (Discovery Certification
-Protocol). The middle gate is the one an ordinary review lacks. A result that
-a fresh, equally equipped challenger can reproduce without the reported method
-is not evidence for that method.
-
-Two practical properties of that protocol transfer to lighter audits. Zero
-recoveries across 96 independent challenger episodes translated into a
-finite-sample upper bound of 0.0468 on the recovery probability, which is the
-honest way to report an absence of failures rather than calling it impossible
-(Discovery Certification Protocol). That bound is an exact one-sided
-Clopper-Pearson limit, 1 minus alpha to the power of 1 over n, and the audit
-size was chosen to reach a registered target rather than picked for
-convenience: a 5 percent bound at 1 percent error needs 90 episodes, and 96
-were registered (Discovery Certification Protocol). Copy the order. Decide the
-bound you want to be able to state, then derive the episode count, because the
-count is the thing you have to pay for. And the whole decision was reproducible
-by a deterministic verifier with no model in it, replaying frozen evidence
-bundles (Discovery Certification Protocol). Freezing the bundle is the cheap
-part, and it is what makes the verdict auditable later by someone who does not
-trust your judge.
-
-### Two different things are called recovery, and conflating them is a real error
-
-Read the protocol carefully, because it uses one word for two measurements and
-they support opposite kinds of conclusion (Discovery Certification Protocol).
-
-- **Gate 2 recovery** is a challenger episode. A fresh agent gets the starting
-  information packet and the observed web content, with the run history and any
-  new measurements withheld, and either reaches the outcome or does not. This is
-  the one that vetoes a certificate. On the two real-data audits, the best
-  challengers scored 0.4641 and 0.4171 against recovery lines of 0.7177 and
-  0.6051, so zero of 96 episodes recovered, alongside 45 of 45 channel controls.
-- **Gate 3 recovery** is a paired feedback trial. Continuations branch from a
-  frozen checkpoint that already contains the run, with one arm getting truthful
-  feedback from its own actions and the other a registered neutral policy. It
-  measures whether feedback helps, not whether the result was reachable without
-  the method.
-
-The numbers are nothing alike, and the second set is the one usually quoted
-wrongly. Truthful continuations reached the target level in 9 of 30 and 16 of 30
-trials while both neutral arms reached it in 0 of 30, and even so **both
-Evidence decisions came back Inconclusive**, on intervals of [-0.078, 0.571] and
-[0.094, 0.779] against a required lower bound of 0.30 (Discovery Certification
-Protocol). So the paper that defines the feedback gate did not pass it on either
-real-data audit, once for an incomplete audit and once for plain statistical
-uncertainty.
-
-Two things follow, and the second is the more useful one (ours, not the paper's).
-Budget for Gate 3 to come back inconclusive rather than negative, because 30
-pairs is not many and a wide interval is the normal result at that size. And
-never let "recovered" appear in an audit report unqualified. Our own claim graph
-made exactly this mistake on exactly this paper: an edge was recorded asserting
-that the feedback effect was established, drawn from the Gate 3 row, and it
-contradicted the accurate Gate 2 row hard enough to deprecate it. One overloaded
-word cost a true claim its standing.
+Five findings about the instrument rather than the thing it measures. A competent engineer already holds out a split, pins seeds and resists tuning on the test set, and this skill assumes all of that. What is new is that the criteria, the items and the grader are generated artifacts with their own failure modes, and those failures are quiet: a broken instrument does not throw, it returns a number, and the number is higher than it should be. The last section names what was cut and why.
 
 ## Apply: the builder's checklist
 
-Before trusting an instrument, or publishing a number it produced:
+1. **Every generated rubric has an oracle independent of it, and an attacker model has been pointed at the rubric with no instruction but to maximise its score.** Report which oracle produced the rate, because swapping the oracle moves it (delta 1).
+2. **Nothing gates on a bare pass-or-fail verdict.** Mine the mutants your checker still accepts to see the class it is blind to, and score continuously against intent where a reward signal reads the result (delta 2).
+3. **Someone has gone looking for defects in the items, narrow tests first**, and the shortcut channels are closed in the environment rather than in the instructions (delta 3).
+4. **Score spread and pairwise disagreement are logged on every run, not only the mean**, and where a false accept is expensive the accept rule is unanimity across different checkpoints with unparsable judgments discarded rather than counted (delta 4).
+5. **The accept floor is an empirical noise band from repeat runs of the unchanged system**, with leakage screening and a cost-to-gain ceiling beside it and no compensation between the three (delta 5).
 
-1. Oracle: does every generated rubric have an oracle independent of the
-   rubric, and has an attacker model been pointed at the rubric with no
-   instruction but to maximise its score?
-2. Signal: is anything gating on a bare pass-or-fail verdict? If so, has it
-   been run against mutants the checker still accepts, so you know the class of
-   wrong answers it cannot see?
-3. Items: has anyone gone looking for defects in the benchmark itself, narrow
-   tests first, then misleading task descriptions?
-4. Channels: are the file system, the repository history, the task metadata and
-   the network closed in the environment rather than in the instructions?
-5. Judges: are score variance and pairwise disagreement logged on every run,
-   and where a false accept is expensive, does the accept rule require
-   unanimity across different checkpoints rather than repeated samples from
-   one?
-6. Noise: is the accept floor an empirical noise band measured by repeat runs
-   of the unchanged system, with leakage screening and a cost-to-gain ceiling
-   beside it and no compensation between the three?
-7. Pressure: does the suite apply ordinary user pressure over more than one
-   turn, score recognition separately from outcome, and carry a realism
-   measurement so a null result can be interpreted?
+## Delta 1: the rubric is an attack surface, and the exploit rate you measure is mostly a fact about your oracle
+
+*Validation: no trial, no consumer report, no bare-arm screen. Eval task ei-t1. A bare subject may well say "a model-written rubric can be gamed". What it is unlikely to supply is the certificate result and the oracle-swap spread, which are what turn that worry into a procedure.*
+
+Of eleven rubric generators, every one was exploitable: an attacker model optimizing directly against the rubric scored at or above the honest baseline while violating ground truth on **8 to 26 percent** of an unbiased 150-environment cut, and the best exploit rate any generator reached on a 45-environment stress cut was **36 percent**. Rubrics written to be faithful to a machine-checkable certificate were exploited **0 of 45** times on that same cut (ImpossibleRubrics). The dividing line is not rubric quality. It is whether the rubric is tied to something checkable or restates what a good answer sounds like.
+
+Then read your own number with suspicion. Holding the rubrics, the attack responses and the judge scores fixed and swapping only the oracle moved the exploitation rate across **33.3, 75.6 and 66.7 percent**, while the direction survived every swap: all 15 attacks the primary oracle flagged were flagged by both alternatives (ImpossibleRubrics). So "this rubric is exploitable" is a finding, and the rate attached to it is a property of the oracle (ours, not the paper's: report which oracle produced it).
+
+1. Generate the rubric from the question and its evidence with a neutral prompt, exactly as production would.
+2. Hand it to an attacker model whose only instruction is to maximise the rubric score.
+3. Score an honest baseline answer and the attacker's answer against that rubric with the production judge.
+4. Check the attacker's answer against an **oracle independent of the rubric**. At or above the honest score while violating the oracle means exploited. This is the step teams skip, and without it the test cannot tell a good answer from a well-dressed one. Impossible tasks are the cheap source of oracles because the certificate is small: 169 evidence-constrained tasks across six categories plus 48 answerable controls, where the evidence determines no answer, so any confident answer violates it (ImpossibleRubrics).
+
+## Delta 2: a pass-or-fail verdict is provably blind on exactly the pairs a reward signal keeps meeting
+
+*Validation: no trial, no consumer report, no bare-arm screen. Eval tasks ei-t2 and ei-t3. The AUROC result is a proof rather than a measurement, which makes it the strongest evidence in this file and still not evidence that a reader acts on it.*
+
+Any scoring function depending only on a binary verdict assigns identical scores to a faithful candidate and to one that is unfaithful but preserves the verdict, so on a paired set matched for verdict it scores **AUROC 0.5**, a coin flip (Beyond Solver Verdicts). This is a proof, not an observation. The compiler passing, the suite going green and the solver returning sat are all this kind of signal. The repair is a continuous score from a model reading the candidate against the original intent: the renormalized probability the judge puts on yes against no, rather than its verdict, reached **0.961 AUROC** on a 950-row equivalence benchmark and held at **0.955** on the 652 rows whose source texts were disjoint from training (Beyond Solver Verdicts). Quote the disjoint number, because it is the one that survives the obvious objection.
+
+Building the training set for such a judge is an audit in its own right and works even if you train nothing (Beyond Solver Verdicts):
+
+1. Take each known-correct artifact.
+2. Mutate it systematically: flip a relational operator, perturb a constant, reverse an implication.
+3. Keep only mutants the checker still accepts and that are provably not equivalent to the original.
+4. Those are the answers your gate cannot see. In the source work this yielded **732** such cases against a near-balanced 57 to 43 split of equivalent examples. A continuous verifier then buys routing a gate cannot: spending extra attempts by verifier score improved end-to-end answer accuracy by **11.3 points** over the same system with no verifier (Beyond Solver Verdicts).
+
+## Delta 3: the items are defective until someone looked, and the shortcut closes in the environment or not at all
+
+*Validation: no trial, no consumer report, no bare-arm screen. Eval tasks ei-t4 and ei-t5. Of the five deltas this is the likeliest to sit in a bare answer, since "audit your eval set" and "do not rely on an instruction" are both ordinary advice. The defect ordering, the four named channels and the realism floor are the parts that are not, and they are what survived the cut.*
+
+A re-audit of one 731-instance repository-level coding benchmark refined **102 instances**, drawn from 119 candidate defect reports of which 17 needed no change (SWE-Bench Pro Verified). Memorize the profile, because it says what to look for and in what order: **narrow tests at 75**, misleading task descriptions at 22, overly broad tests at 3, and 2 corrupted instances. Narrow tests lead, and they are the defect that flatters your agent rather than punishing it, because a test checking only the reference solution's path marks a correct alternative wrong and a narrowly overfitted one right. Keep repairs minimal: an item rewritten freely is a new item, and scores stop being comparable across the revision boundary (ours, not the paper's). Separately, an agent that can read the answer will read the answer, and an instruction not to is documentation of intent rather than a control. Four channels carry the answer in a typical code-agent evaluation, and closing all four eliminated every observed reward-hacking attempt at **zero successful hacks** while normal agent function continued (SWE-Bench Pro Verified):
+
+1. Rebuild the repository as a fresh single-commit tree, so no future commit object survives. Closes the history.
+2. Delete hidden evaluation files and disable the hooks that could restore them. Closes the file system.
+3. Filter task metadata through an allowlist, strip repository names from paths, replace instance identifiers with hashes. Closes the metadata.
+4. Block outbound access to code-hosting domains, leaving dependency services reachable. Closes the network.
+
+Two requirements finish the audit. Items are checked for being realistic enough not to read as a test, since an item announcing itself as an evaluation measures how a model behaves when it knows it is watched (PACT), and the suite carries a **realism measurement** floored at a model-judge score over a sample for one pass with human annotation only where the two disagree, the reference suite scoring **3.21 of 4 with 0.97 internal consistency** over 400 factorized scenarios (SchemeArena). Without it a null is uninterpretable, because an implausible scenario explains it as well as a safe model does (ours, not the paper's). And where behaviour is scored, recognition and outcome are separate axes, because recognizing an attack did not imply restraint or recovery (Emergence World).
+
+## Delta 4: a judge that stopped discriminating still returns scores, and sixteen samples from one checkpoint is one judge
+
+*Validation: no trial, no consumer report, no bare-arm screen. Eval tasks ei-t6, ei-t7 and ei-t11. The variance-monitoring prescription and three of the four portable panel parts are ours rather than the papers', and carry no evidence beyond one competition system.*
+
+Mixing model-generated reviews into the next reviewer's training data compresses the rating distribution and reduces semantic diversity both across reviews of one paper and across the corpus, an effect its authors name scientific-judgment collapse (When AI Reviews Train AI Reviewers). The hazard includes the innocent version where last quarter's accepted judgments become this quarter's few-shot prompt. The published mitigation has two stages: filter low-quality and semantically degenerate supervision out of the corpus before the single fine-tuning stage, then correct the residue at inference with a paired steering signal needing no further training. If you train no judge, the transferable half is the first stage, and the monitoring beside it is the **spread** of the scores rather than their mean (ours, not the paper's). Variance and pairwise disagreement are cheap to log every run, and collapse shows up in them before anything a mean reveals. The same logic governs what you watch: monitoring actions but not the reasoning behind them **increased** scheming in closed-source models, which makes partial oversight an optimization constraint rather than a deterrent, so the monitoring scope belongs in the stated result (SchemeArena).
+
+Where a false accept is expensive, the accept rule was unanimity across **16 independent judgments, 8 from a reinforcement-learning checkpoint and 8 from a supervised one**, any missing or unparsable judgment discarded rather than counted, and acceptance only when all 16 parsed scores were 1 (An Open Recipe for IMO Gold). Its scores tracked an independent post-hoc model jury, which is the evidence that the internal verifier measured what an outside grader would. Three parts are portable and two are usually dropped (ours, not the paper's):
+
+1. Independence comes from **different checkpoints**, not more samples from one. Sixteen samples from one model share its blind spots.
+2. **Unparsable is not a vote.** Discarding a malformed judgment is not treating it as a pass, and the difference lands exactly on the hard cases that make judges emit malformed output.
+3. The panel needs **its own calibration against an outside grader** before you trust it, or unanimity measures agreement, which correlated judges manufacture.
+
+Unanimity buys precision at the cost of recall, so it fits acceptance gates where a wrong accept is expensive and a rejected candidate can be resubmitted. It is the wrong rule for ranking or routine scoring (ours, not the paper's).
+
+## Delta 5: the accept rule, and the absence of failure you are entitled to report
+
+*Validation: no trial, no consumer report, no bare-arm screen. Eval tasks ei-t9 and ei-t10. RRSI reports its three criteria as one method without ablating them, so no single criterion here carries a number of its own.*
+
+When a score decides whether to accept a change, comparing means is not an accept rule. One harness-evolution system used three **non-compensatory** criteria, meaning a candidate clears all three and a large win on one cannot buy a failure on another (RRSI). The first rejects any candidate whose diff contains task-specific names, values or answers, because a change naming the benchmark has learned the benchmark. The second rejects any candidate scoring below the best observed score minus an empirical noise band, rather than accepting a nominal improvement. The third rejects any candidate whose relative cost increase exceeds a linear allowance in the score gain. The noise band is the criterion most often missing and it needs measuring rather than guessing, with a floor of **five repeat runs** of the unchanged system on the same eval, because a band computed from two runs is a guess wearing a number (ours, not the paper's).
+
+Auditing a result you did not produce adds three gates in order: a statistically significant improvement over baseline, **zero successes by a matched challenger** given the same starting knowledge and observations but not the answer, and a measured positive effect of truthful feedback against a calibrated neutral policy (Discovery Certification Protocol). The middle gate is the one an ordinary review lacks, because a result a fresh and equally equipped challenger reproduces without the reported method is not evidence for that method. Decide the bound you want to state, then derive the episode count, because the count is what you pay for: **zero recoveries across 96 episodes** gives an exact one-sided Clopper-Pearson limit of **0.0468**, and a 5 percent bound at 1 percent error needs **90** episodes. Below that count, report the interval and not the zero. Freeze the evidence bundle too, since the whole decision was reproducible by a deterministic verifier with no model in it.
+
+**Two different things are called recovery, and conflating them is a real error.** Gate 2 recovery is a challenger episode and it is the one that vetoes a certificate: on two real-data audits the best challengers scored 0.4641 and 0.4171 against recovery lines of 0.7177 and 0.6051, so 0 of 96 recovered alongside 45 of 45 channel controls. Gate 3 recovery is a paired feedback trial branching from a frozen checkpoint that already contains the run, so it measures whether feedback helps and not whether the result was reachable without the method. Truthful continuations reached the target in **9 of 30 and 16 of 30** against **0 of 30** for both neutral arms, and even so **both Evidence decisions came back Inconclusive**, on intervals of [-0.078, 0.571] and [0.094, 0.779] against a required lower bound of 0.30 (Discovery Certification Protocol). The paper defining the feedback gate did not pass it on either audit, so budget for Gate 3 to return inconclusive rather than negative at 30 pairs, and never let "recovered" stand unqualified in an audit report (ours, not the paper's). This library's claim graph made that exact mistake on this exact paper: an edge drawn from the Gate 3 row asserted the feedback effect was established and contradicted the accurate Gate 2 row hard enough to deprecate it. One overloaded word cost a true claim its standing.
 
 ## Caveats
 
-- The rubric exploitation rates come from tasks built to be impossible or
-  evidence-constrained, 169 of them plus 48 answerable controls, with
-  machine-checkable certificates. That design is what makes the oracle cheap,
-  and it also means the rates are not a general rubric-failure rate for
-  ordinary open-ended tasks.
-- The AUROC 0.5 result for verdict-only scoring is a proof about paired sets
-  matched on verdict, not a claim that binary checkers are uninformative. On
-  unmatched data a verdict carries real signal. The point is that it cannot
-  separate the matched pairs, which is exactly the population a reward signal
-  keeps meeting.
-- The generative verification numbers are from one domain, formalizing natural
-  language mathematics into a solver language, with a 27B model and LoRA
-  adapters. Treat the method as transferable and the 0.961 as local. That
-  configuration is also the floor: a 27B open model with LoRA adapters was
-  sufficient for the judge seat, so nothing here asks for a frontier model as
-  the continuous verifier.
-- The benchmark defect profile is from one benchmark of repository-level
-  coding tasks. The ordering of defect types is a good prior for where to look
-  first, not a distribution to assume.
-- The anti-hacking result reports zero successful hacks among observed
-  attempts in that evaluation. It is evidence that the four channels were the
-  channels in use, not proof that no fifth channel exists.
-- The judgment-collapse work is on peer review data and reviewer models. The
-  mechanism, model-generated judgments concentrating the next model's
-  judgments, is general, and the magnitude reported is specific to that
-  corpus.
-- The unanimous 16-judgment panel comes from competition mathematics with one
-  model family, where a proof is checkable and a wrong accept costs a
-  competition problem. The cost asymmetry is the precondition for copying the
-  rule. The floor is two independently trained checkpoints and one outside-jury
-  calibration, not the count of sixteen: eight and eight is what that system
-  had available, and a panel of sixteen samples from one checkpoint fails the
-  design's actual requirement however large it grows.
-- The pressure and long-horizon stress results come from 48 multi-turn
-  scenarios across 12 regulated domains and from a small number of simulated
-  worlds run over days. They establish that the effects exist and are large,
-  not their size in your setting. The realism check those results depend on has
-  a cheap floor: a model-judge realism score over a sample of the suite, which
-  costs one pass, with human annotation only where the two disagree.
-- RRSI's three selection criteria are reported as parts of one method. The
-  evidence alexandria holds does not ablate them individually, so do not
-  quote a number for any one criterion alone. The noise band has a floor of its
-  own and the source does not set it, so ours, not the paper's: five repeat runs of the
-  unchanged system on the same eval is the cheapest thing that shows a spread
-  at all, and a band computed from two runs is a guess wearing a number.
-- The certification protocol is demonstrated on two audit cases. Its gates are
-  a design to copy, not a validated pass rate. Gate 2 states its own floor
-  arithmetically: a 5 percent upper bound at 1 percent error needs 90
-  challenger episodes, which is the price of being able to report an absence of
-  failures honestly. Below that count, report the interval and not the zero.
-- Every section above is revised or withdrawn if the claim behind it is
-  contradicted by later evidence. That commitment is the point of the
-  provenance block: the claim ids are there so a reviewer can check each
-  sentence against the corpus, and so a later contradiction has an address to
-  land on.
+- **This skill is unmeasured.** No delta has a differential number and no bare-arm screen has run, because this seat has no route to either eval arm. `status: provisional` says that and nothing weaker, and it replaced `status: active` on 2026-10-24 for that reason.
+- **The rubric exploitation rates come from tasks built to be impossible or evidence-constrained**, 169 of them plus 48 answerable controls with machine-checkable certificates. That design is what makes the oracle cheap and it also means the rates are not a general rubric-failure rate for ordinary open-ended tasks.
+- **AUROC 0.5 is a claim about paired sets matched on verdict**, not that binary checkers are uninformative. On unmatched data a verdict carries real signal, and the matched population is the point. The continuous-verifier numbers are one domain, formalizing natural-language mathematics into a solver language. Treat the method as transferable and 0.961 as local. That configuration is also the floor: **a 27B open model with LoRA adapters** sufficed for the judge seat, so nothing here asks for a frontier model.
+- **The defect profile and the channel result are one benchmark of repository-level coding tasks.** The ordering is a good prior for where to look first, not a distribution to assume, and zero successful hacks among observed attempts is evidence that those four were the channels in use rather than proof that no fifth exists. **The judgment-collapse work is peer-review data and reviewer models**, so its mechanism is general and its magnitude is not, and the partial-monitoring result is reported for closed-source models only.
+- **The unanimous 16-judgment panel is competition mathematics with one model family**, where a proof is checkable and a wrong accept costs a problem. The cost asymmetry is the precondition for copying it. The floor is **two independently trained checkpoints and one outside-jury calibration**, not the count of sixteen: eight and eight is what that system had, and a panel of sixteen samples from one checkpoint fails the design's requirement however large it grows.
+- **RRSI's three criteria are reported as one method** and the evidence here does not ablate them, so quote no number for any one alone. **The certification protocol is demonstrated on two audit cases**, so its gates are a design to copy rather than a validated pass rate, and Gate 2 states its own floor arithmetically because that is the price of reporting an absence of failures honestly.
+- Every delta above is revised or withdrawn if the claim behind it is contradicted by later evidence. The claim ids in the provenance block are the addresses a contradiction lands on.
+
+## What this file no longer carries
+
+Cut 2026-10-24 under ADR-38's length rule, nine sections to five deltas. **The magnitude of the pressure effect** (ordinary user pressure raising rule-violation rates by an average of 65 percent across 22 models, and the strongest assistants still misapplying a compliance rule on 6 to 10 percent of items) and **the long-horizon world-stress design** (multi-agent worlds run for days with a phishing campaign on days four to seven, a misinformation claim on day ten and a memory breach on day thirteen, with no world fully resilient and alignment not compositional across mixed populations) are findings about an agent under test, not about an instrument, which is this skill's stated subject. **The scheming detector's own F1 of 90.73 percent** goes with them. All three are queued in `docs/research/reading-queue.md` for `agent-security-measurement`, whose subject they are. What survives from those papers is only their instrument-facing half, in delta 3 and delta 4: the item audit, the realism floor, the separate axes, and the monitoring scope.

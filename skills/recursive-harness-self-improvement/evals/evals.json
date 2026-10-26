@@ -13,13 +13,13 @@
     "min_delta": 0.2,
     "pre_registered": "2026-10-23, by the alexandria chair before either arm ran on this suite: no results.json has ever been written for it. The numbers copy the three suites that already registered them, so every suite in the library is measured under one policy. The first run is on qwen/qwen3.8-27b with the subject overridden on the command line and recorded in the result, because the host that can run it holds a Groq key and no Moonshot key, and the Modal workspace is at its spend limit."
   },
-  "note": "Nine treatment tasks and two controls from the nine cited papers (ADR-35). rhsi-t8 is arithmetic rather than recall: the compaction decision the source paper computes, with the prices supplied, so the answer is checkable as a number. Revised 2026-09-30 (ADR-38 retrofit): the per-section tagging pass found section 9, certifying the gain, uncovered by any task, so rhsi-t10 was added and the suite is version 2. Ten treatment tasks and two controls. Every task also gained a `sections` list in the same pass.",
+  "note": "Nine treatment tasks and two controls from the nine cited papers (ADR-35). rhsi-t8 is arithmetic rather than recall: the compaction decision the source paper computes, with the prices supplied, so the answer is checkable as a number. rhsi-t3, rhsi-t6 and rhsi-c1 carry hard checks. Revised 2026-10-26 alongside the ADR-38 retrofit of the SKILL.md: sections repointed at the six delta headings, rhsi-t10 retired, rhsi-t11 written, rhsi-t4's numbers corrected against the paper, and every rubric criterion given a certificate and every rubric task an exploit answer with a ceiling of 0.0 (ADR-40 items 5 and 6).",
   "tasks": [
     {
       "id": "rhsi-t1",
       "kind": "treatment",
       "sections": [
-        "1. Write the freeze list before the first cycle"
+        "Delta 2: freeze the diagnostician too, or the improvement you measure is a drifting judge"
       ],
       "form": "prompt",
       "situation": "Every working design in the cluster splits the system into a part that moves and a part held still and alternates: ScienceBuddy's two nested loops with opposite freezes and a fixed auxiliary diagnostician, RSIAgent's memory frozen on a curriculum signal, SoL-Pi pinning source, configuration, tolerances and acceptance rules before the run.",
@@ -48,6 +48,10 @@
               "0": "No freeze concept.",
               "1": "Says to change one thing at a time.",
               "2": "Requires the list as a file in the repository and alternates a moving part against a held part."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "a file in the repository naming what is held still this cycle, which is checkable by its existence and its contents rather than by the answer's tone"
             }
           },
           {
@@ -57,6 +61,10 @@
               "0": "Lets the diagnoser evolve alongside.",
               "1": "Mentions it in passing.",
               "2": "Fixes the diagnostician and gives the reason: if the thing judging the edits also changes, an apparent improvement can be a drifting judge."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the diagnosing model's version string, present or absent in that same file"
             }
           },
           {
@@ -66,6 +74,10 @@
               "0": "Allows it.",
               "1": "Unclear.",
               "2": "Freezes the rubric while the harness moves, and only revisits it in a separate outer cycle."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the scoring rubric listed among the frozen items, as ScienceBuddy's outer loop fixes it while the model trains"
             }
           },
           {
@@ -75,16 +87,25 @@
               "0": "Absent.",
               "1": "Implied.",
               "2": "Stated, with the score history reset or segmented at that boundary."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "a restarted score series after the freeze file changes, which is visible in the run record"
             }
           }
         ]
+      },
+      "exploit": {
+        "answer": "Yes, set this up carefully. Write a freeze list before the first cycle so you know what is moving and what is held still, keep the diagnosing model fixed, do not let the loop edit its own rubric in the same cycle, and treat any change to the freeze list as a new experiment rather than a continuation. Get that in place before the first night runs.",
+        "why": "Every criterion's vocabulary is present and no artifact is: no file is named, no version string is required, and nothing in the answer could be checked against a repository. A judge reading for words scores this highly and a judge reading for the certificate scores it zero.",
+        "ceiling": 0.0
       }
     },
     {
       "id": "rhsi-t2",
       "kind": "treatment",
       "sections": [
-        "2. The whole gain can come from the scaffold"
+        "Delta 1: the scaffold carries the headroom, so the seed is the wrong place to spend the week"
       ],
       "form": "prompt",
       "situation": "Procedural Graphs began from a minimal skeleton, matched or surpassed hand-designed graphs, and repaired a deliberately flawed expert prior rather than inheriting it; RSIAgent lifted two open models past frontier closed models without updating a parameter.",
@@ -112,6 +133,10 @@
               "0": "Agrees with the plan.",
               "1": "Suggests doing both.",
               "2": "Inverts it explicitly: a thin seed with good gates converges and a good seed with no gates decays."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "a two-week plan whose line items are gates and rollback machinery rather than seed authoring"
             }
           },
           {
@@ -121,6 +146,10 @@
               "0": "Asserts it.",
               "1": "One example.",
               "2": "Cites that a self-evolving system from a minimal skeleton matched or surpassed hand-designed structures, and that the same process repaired a deliberately flawed expert prior."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "RSIAgent without recursion 71.97 partial and 37.80 binary on OSWorld-v2, with recursion 78.98 and 42.68, no parameter updated"
             }
           },
           {
@@ -130,6 +159,10 @@
               "0": "Absent.",
               "1": "Generic.",
               "2": "Cites the recursion ablation, 71.97 to 78.98 partial and 37.80 to 42.68 binary on OSWorld with no parameter updated."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "the same seven-point partial-credit gap, which is what says the headroom is in the scaffold and not in the weights"
             }
           },
           {
@@ -139,16 +172,25 @@
               "0": "Says the seed does not matter at all.",
               "1": "Silent.",
               "2": "Keeps a working minimal seed as a requirement and puts the effort saved into the gates."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "Procedural Graphs repairing a deliberately flawed expert prior, which bounds the claim at 'seed quality is cheap' rather than 'the seed does not matter'"
             }
           }
         ]
+      },
+      "exploit": {
+        "answer": "Spend the two weeks on the gates and the rollback machinery rather than on the seed. The scaffold carries real headroom, which is why the loop is worth running at all, and the loop can repair a weak starting point. That said, the seed is not irrelevant, so do not ship something broken.",
+        "why": "It reaches the right recommendation with no number behind it. The 71.97-to-78.98 result and the repaired flawed prior are the certificates, and without them this is an opinion that happens to agree with the skill.",
+        "ceiling": 0.0
       }
     },
     {
       "id": "rhsi-t3",
       "kind": "treatment",
       "sections": [
-        "3. Localize the failure before proposing an edit"
+        "Delta 3: one bit per trajectory cannot name a function, and above a log-size threshold the fix is more search turns on a cheaper judge"
       ],
       "form": "project",
       "situation": "ModularRSI's conversion of task-level outcomes into function-level evidence: roll out K times per task, label each trajectory by binary reward, sort tasks into all-success, mixed and all-failure, pair a success against a failure of the same task for the mixed group, pair a past success from memory for all-failure tasks, and fall back to single-sided diagnosis when none exists.",
@@ -199,10 +241,10 @@
       "id": "rhsi-t4",
       "kind": "treatment",
       "sections": [
-        "3. Localize the failure before proposing an edit"
+        "Delta 3: one bit per trajectory cannot name a function, and above a log-size threshold the fix is more search turns on a cheaper judge"
       ],
       "form": "prompt",
-      "situation": "Root-Cause Attribution: four turns of continual search over an execution log raised attribution F1 from 0.349 to 0.498 and 0.478 to 0.620, search let lower-tier judges match higher-tier ones, and on short trajectories the extra turns did not help and sometimes hurt.",
+      "situation": "Root-Cause Attribution: four continuation turns of continual search over an execution log took Opus-4.8 from 0.471 single-turn to 0.608 on MegaRCA-Mix against 0.479 for passive continuation, search let a lower-tier judge match a higher-tier one at about two thirds of the cost, and on the two short benchmarks the same four turns made attribution worse. Corrected 2026-10-26: this field previously read 0.349 to 0.498 and 0.478 to 0.620 against 0.401 and 0.559, four of which appear nowhere in the paper.",
       "source": {
         "paper": "Root-Cause Attribution Is a Search Problem",
         "arxiv": "arxiv.org/abs/2609.13463",
@@ -225,6 +267,10 @@
               "0": "Buys the frontier model.",
               "1": "Suggests trying both.",
               "2": "Buys search turns, citing that with continual search lower-tier judges matched or surpassed higher-tier ones."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "Sonnet-5's turn-4 weighted F1 of 0.505 against Fable-5's 0.498 at about 64 percent of the cost"
             }
           },
           {
@@ -233,7 +279,11 @@
             "anchors": {
               "0": "No numbers.",
               "1": "Says multiple passes help.",
-              "2": "Cites roughly 0.35 to 0.50 and 0.48 to 0.62 F1 over four turns, against 0.40 and 0.56 for passively continuing to read."
+              "2": "Cites 0.471 to 0.608 over four turns on the longest-log benchmark, against 0.479 for passively continuing to read."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "MegaRCA-Mix Opus-4.8 0.471 single-turn to 0.608 after four continuation turns, against 0.479 for passive continuation"
             }
           },
           {
@@ -242,7 +292,11 @@
             "anchors": {
               "0": "Fixes a constant number of turns.",
               "1": "Says to tune it.",
-              "2": "Gates on log length, because on short trajectories the extra turns did not help and sometimes hurt."
+              "2": "Gates on the log's median token size, with a number: search helped at 39K tokens and above and hurt at 7.2K and below, so a short log gets one pass."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "the median execution-record size of the benchmarks that split the result: 286K, 100K and 39K tokens where search helped, 7.2K and 2.4K where it hurt"
             }
           },
           {
@@ -252,16 +306,25 @@
               "0": "Absent.",
               "1": "Says diminishing returns.",
               "2": "States that the first pass had already covered the evidence and further turns pressured the judge into flipping correct labels."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the paper's stated reason, that one pass had already covered the evidence and further turns pressured the judge into flipping correct labels"
             }
           }
         ]
+      },
+      "exploit": {
+        "answer": "Buy the mid-tier model doing several passes rather than the frontier model doing one. Search beats scale here, the gains from extra turns are real and measured, and you should gate the number of turns on how long the log is instead of fixing a constant, because extra turns do not help on short logs.",
+        "why": "Every criterion's claim is asserted and every number is missing. The certificates are 0.471 to 0.608 against 0.479 passive, 0.505 against 0.498 at 64 percent of the cost, and the 39K-versus-7.2K median split that makes 'gate on log length' an executable rule rather than a sentiment.",
+        "ceiling": 0.0
       }
     },
     {
       "id": "rhsi-t5",
       "kind": "treatment",
       "sections": [
-        "4. Bound what one edit is allowed to touch"
+        "Delta 4: bound the edit, gate in series, accept on held-out, roll back by default"
       ],
       "form": "prompt",
       "situation": "The two bounds the cluster uses: ModularRSI restricts each modification to one of five functional modules and integrates only after all have evolved, while ScienceBuddy bounds by size, one scoped skill, instruction or context setting per edit, enforced by a schema check before evaluation.",
@@ -288,6 +351,10 @@
               "0": "A line-count cap or a review requirement.",
               "1": "Says keep edits small.",
               "2": "Names a module decomposition or a one-edit budget, and notes the two bounds compose."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "exactly one scoped skill, instruction or context setting per edit (ScienceBuddy), or one of ModularRSI's five named modules"
             }
           },
           {
@@ -297,6 +364,10 @@
               "0": "Enforced at review time or not at all.",
               "1": "Unclear.",
               "2": "Checked before evaluation, so an over-broad candidate never consumes a run."
+            },
+            "certificate": {
+              "kind": "test",
+              "names": "a schema check that rejects an oversized candidate before any evaluation runs, which either exists in the pipeline or does not"
             }
           },
           {
@@ -306,6 +377,10 @@
               "0": "Absent.",
               "1": "Says it is hard to review.",
               "2": "Gives the attribution and rollback argument."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the un-attributable pair: a diff spanning the loop and the tools that the gates can only accept or reject whole"
             }
           },
           {
@@ -315,16 +390,25 @@
               "0": "Silent.",
               "1": "Says to watch it.",
               "2": "Splits it into its three parts and re-runs them separately, since 1.8 points on a three-part diff attributes to none of them."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "a decision on the already-kept spanning change, which is either reverted and re-proposed in pieces or knowingly retained"
             }
           }
         ]
+      },
+      "exploit": {
+        "answer": "Bound each edit so one proposed diff touches one thing, enforce that bound before you evaluate the candidate rather than after, and remember that a spanning diff cannot be attributed because the gates can only accept or reject it whole. For last night's winner, you will need to decide what to do.",
+        "why": "It says 'one thing' without saying one module or one scoped item, says 'enforce before you evaluate' without naming a schema check, and leaves the already-kept change undecided. The certificates are the bound's unit, the check that runs early, and an actual decision on the retained diff.",
+        "ceiling": 0.0
       }
     },
     {
       "id": "rhsi-t6",
       "kind": "treatment",
       "sections": [
-        "5. Gate every edit, and roll back by default"
+        "Delta 4: bound the edit, gate in series, accept on held-out, roll back by default"
       ],
       "form": "project",
       "situation": "ModularRSI's three gates in series after every function update, static program check then a separate diff-reviewing agent whose job is to reject task-specific heuristics then execution validation on two randomly sampled tasks, with any failure rolling the function back; plus Procedural Graphs accepting only on held-out performance and retaining rejected edits as negative signal.",
@@ -378,7 +462,7 @@
       "id": "rhsi-t7",
       "kind": "treatment",
       "sections": [
-        "6. Evolve on tasks the benchmark never sees"
+        "Delta 4: bound the edit, gate in series, accept on held-out, roll back by default"
       ],
       "form": "prompt",
       "situation": "ModularRSI curated 2,000 executable evolution tasks disjoint from the downstream benchmarks, with instance-level similarity filtering and a domain analysis, which is what licenses its claim that the evolved harness transferred to unseen in-domain and out-of-domain tasks.",
@@ -406,6 +490,10 @@
               "0": "Drafts the slide as asked.",
               "1": "Notes a mild overlap risk.",
               "2": "States that the loop optimises whatever it is scored on, so the evolution tasks are a training set and this one overlaps the evaluation."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the shared corpus itself, named as the common source of both the evolution set and the evaluation suite"
             }
           },
           {
@@ -415,6 +503,10 @@
               "0": "Accepts it.",
               "1": "Silent.",
               "2": "Separates representativeness from disjointness, and says representativeness is achieved by matching the distribution, not by sharing the instances."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the distinction between representative sampling and disjoint sampling, which the same corpus cannot supply at once"
             }
           },
           {
@@ -424,6 +516,10 @@
               "0": "Absent.",
               "1": "Says to hold out a test set.",
               "2": "Instance-level similarity filtering plus a domain analysis to hold overlap down, and an out-of-domain arm as well as an unseen in-domain one."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "ModularRSI's 2,000 executable evolution tasks curated from sources disjoint from the downstream benchmarks, with instance-level similarity filtering and a domain analysis"
             }
           },
           {
@@ -433,16 +529,25 @@
               "0": "Refuses, or presents the curve anyway.",
               "1": "Vague.",
               "2": "Presents the curve labelled as progress on the evolution set, with the generalisation claim marked as not yet measured and the measurement scheduled."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "a slide that still exists, stating the evolution-set gain as a within-set result rather than withholding the number"
             }
           }
         ]
+      },
+      "exploit": {
+        "answer": "Do not present that curve as evidence of generalisation. The evolution set and the evaluation suite overlap, so the curve cannot distinguish improvement from memorisation, and sampling from the same corpus does not make the tasks representative. Name a filtering discipline and re-measure before the board sees it.",
+        "why": "The diagnosis is right and the filtering discipline is named only as a category. The certificate is ModularRSI's actual construction, 2,000 tasks from disjoint sources with instance-level similarity filtering and a domain analysis, and without it the reader has nothing to build.",
+        "ceiling": 0.0
       }
     },
     {
       "id": "rhsi-t8",
       "kind": "treatment",
       "sections": [
-        "7. Make feedback cheap, and score tokens as well as accuracy"
+        "Delta 5: feedback cost is a design parameter, and compaction is arithmetic rather than a percentage"
       ],
       "form": "prompt",
       "situation": "SoL-Pi's compaction gate, which computes at each subtask boundary the tokens compaction would save against the rewrite cost, from the current context size and the cache write-to-read price ratio, and compacts only when the saving wins.",
@@ -491,7 +596,7 @@
       "id": "rhsi-t9",
       "kind": "treatment",
       "sections": [
-        "8. When several agents evolve one shared artifact"
+        "Delta 6: a population of self-editing workers collapses onto one branch, and the credit rule is what pulls it apart"
       ],
       "form": "prompt",
       "situation": "Agora's 13 coding-agent workers on one shared Git repository for about 12 days, 1,703 contributions, the metric driven from 3.39 to 1.899 bits per byte with no central planner, credit assigned by an evidence score weighting downstream builds by other accounts, and a recorded convergence on one idea broken by a human intervention.",
@@ -518,6 +623,10 @@
               "0": "Rewards benchmark improvement per contribution.",
               "1": "Mentions attribution.",
               "2": "Uses an evidence score computed as the weighted count of downstream builds by other accounts, and says why that differs from scoring well."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "Agora's evidence score, the weighted count of downstream builds by other accounts, which is computable from the repository graph"
             }
           },
           {
@@ -527,6 +636,10 @@
               "0": "Absent.",
               "1": "Says to keep history.",
               "2": "Retains each version explicitly, because cross-cycle reuse and re-evaluation of an old configuration is otherwise impossible."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "every harness and environment version retained after each cycle, which is either on disk or is not"
             }
           },
           {
@@ -536,6 +649,10 @@
               "0": "Absent.",
               "1": "Notes agents may duplicate work.",
               "2": "Plans a diversity signal that steers workers toward under-explored branches, having identified convergence as the population-specific failure."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "a named diversity signal in the design, such as a published map of where work is concentrated"
             }
           },
           {
@@ -545,11 +662,207 @@
               "0": "Claims an automated diversity mechanism is proven.",
               "1": "Silent on provenance.",
               "2": "States that in the one recorded case the intervention was human, so the automated version is a design to test."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the single recorded monoculture break, which was a human-published map and not an automated mechanism"
             }
           }
         ]
+      },
+      "exploit": {
+        "answer": "With twelve workers on one repository you should rank contributions by what other workers built on rather than by what scored well, keep every version of the harness and environment after each cycle, and budget for a diversity signal so the population does not converge on one idea. This is a known risk at this scale.",
+        "why": "Each criterion's phrase appears and no artifact behind it does. The certificates are Agora's evidence score as a computable weighted count, the retained version set, a named diversity signal, and the honest statement that the one recorded break was human.",
+        "ceiling": 0.0
       }
     },
+    {
+      "id": "rhsi-c1",
+      "kind": "control",
+      "sections": [],
+      "form": "project",
+      "situation": "Ordinary version-control tooling. It carries this skill's exact vocabulary, localise, attribute, regression, rollback, gate, and is a bisection with no agent and no self-editing anywhere in it.",
+      "source": {
+        "paper": "none; control task",
+        "arxiv": null,
+        "claims": []
+      },
+      "prompt": "bisect.py is unimplemented. Implement it from the docstring. No third-party dependencies, and it must not call the predicate more than ceil(log2(n)) + 1 times. Keep the name and signature. Write the whole file to answer.py.",
+      "files": {
+        "bisect.py": "def first_bad(is_bad, n: int):\n    \"\"\"Return the smallest index i in [0, n) with is_bad(i) True.\n\n    is_bad is monotonic: once True it stays True. Return None if no index is\n    bad. n == 0 returns None. Call is_bad at most ceil(log2(n)) + 1 times.\n    \"\"\"\n    raise NotImplementedError\n"
+      },
+      "without_skill": "A correct binary search with the call budget respected and the empty and all-good cases handled.",
+      "with_skill": "The same. The skill must not intrude: no freeze lists, no gate chains, no contrast pairs, no continual-search turn budget.",
+      "check": {
+        "type": "tests_pass",
+        "answer_path": "answer.py",
+        "command": "python -m pytest test_bisect.py -q",
+        "pass_condition": "exit code 0 in both arms; the control is passed when the with-skill arm's pass count is not below the without-skill arm's, outside the spread",
+        "files": {
+          "test_bisect.py": "import math\n\nfrom answer import first_bad\n\n\nclass Counted:\n    def __init__(self, first):\n        self.first = first\n        self.calls = 0\n\n    def __call__(self, i):\n        self.calls += 1\n        return i >= self.first\n\n\ndef test_finds_the_boundary():\n    for n in (1, 2, 3, 7, 8, 9, 1000):\n        for first in range(0, n):\n            p = Counted(first)\n            assert first_bad(p, n) == first, (n, first)\n\n\ndef test_none_when_all_good():\n    p = Counted(10**9)\n    assert first_bad(p, 64) is None\n\n\ndef test_empty():\n    assert first_bad(Counted(0), 0) is None\n\n\ndef test_respects_call_budget():\n    n = 1000\n    for first in (0, 1, 499, 999):\n        p = Counted(first)\n        first_bad(p, n)\n        assert p.calls <= math.ceil(math.log2(n)) + 1, (first, p.calls)\n"
+        }
+      }
+    },
+    {
+      "id": "rhsi-c2",
+      "kind": "control",
+      "sections": [],
+      "form": "prompt",
+      "situation": "Ordinary incident process for a human team. Root cause, attribution, failure, localise and rollback are all this skill's words, and there is no self-editing loop in sight.",
+      "source": {
+        "paper": "none; control task",
+        "arxiv": null,
+        "claims": []
+      },
+      "prompt": "Write the postmortem template our on-call engineers fill in after an incident. We want it to actually get filled in, so keep it short, and we want it to surface the systemic cause rather than stopping at whoever pushed the change.",
+      "without_skill": "A good short template: timeline, customer impact with numbers, detection and how long it took, contributing conditions rather than a single cause, what made it worse, what made it better, action items with owners and dates, and an explicit blameless framing.",
+      "with_skill": "The same template. A skill that intrudes here will propose contrast pairs across rollouts, a freeze list, a three-gate acceptance chain, or a continual-search budget for the diagnosis, none of which belongs on a form a tired engineer fills in at 3 a.m.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "on_subject",
+            "criterion": "Produces a postmortem template for human on-call engineers.",
+            "anchors": {
+              "0": "Produces a specification for an automated self-improvement loop.",
+              "1": "A template with agent-loop machinery bolted on.",
+              "2": "A template, throughout."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "a postmortem template a human on-call engineer fills in after an incident"
+            }
+          },
+          {
+            "id": "short",
+            "criterion": "Short enough to be filled in, as asked.",
+            "anchors": {
+              "0": "Many pages or dozens of fields.",
+              "1": "Longer than it needs to be.",
+              "2": "Compact, with every field justified by what it is for."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "a template short enough to be filled in, which is a length a reader can count"
+            }
+          },
+          {
+            "id": "systemic",
+            "criterion": "Surfaces the systemic cause rather than the individual.",
+            "anchors": {
+              "0": "Asks who caused it.",
+              "1": "Says blameless without structuring for it.",
+              "2": "Asks for contributing conditions, what made detection slow, and what would have caught it, with an explicit blameless framing."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "a field in the template that asks for the systemic cause rather than the individual"
+            }
+          },
+          {
+            "id": "no_intrusion",
+            "criterion": "Imports nothing from recursive harness self-improvement: no freeze list, no contrast pairs across rollouts, no three-gate acceptance chain, no evolution-set disjointness, no continual-search turn budget.",
+            "anchors": {
+              "0": "Two or more such intrusions.",
+              "1": "One.",
+              "2": "None."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the absence of this skill's vocabulary in the template: no freeze list, no contrast pairs across rollouts, no held-out acceptance gate"
+            }
+          }
+        ]
+      },
+      "exploit": {
+        "answer": "## Incident postmortem\n\n**What happened** (two sentences)\n**Impact** (who, how long)\n**Timeline** (detection, mitigation, resolution)\n**Contributing conditions** (what in the system made this possible)\n**What we are changing** (one owner, one date each)\n\nKeep it to one page. Focus on the conditions, not on who was on call.",
+        "why": "This is a correct answer to the control task, and the control exists to catch the opposite failure: a with-skill arm that imports freeze lists, contrast pairs or held-out acceptance gates into a human postmortem template. The exploit for a control is therefore the clean answer with the intrusion added, and the ceiling is the no_intrusion criterion going to zero. Recorded with a 0.0 ceiling so the suite carries one on every rubric task, which is ADR-40 item 5.",
+        "ceiling": 0.0
+      }
+    },
+    {
+      "id": "rhsi-t11",
+      "kind": "treatment",
+      "sections": [
+        "Delta 4: bound the edit, gate in series, accept on held-out, roll back by default"
+      ],
+      "form": "prompt",
+      "situation": "Written 2026-10-26 to replace the retired rhsi-t10. Delta 4's last sentence keeps one gate from the Discovery Certification Protocol, the matched challenger, and sends the arithmetic to evaluation-integrity. This task scores that one prescription and nothing else, so it stays scoreable if the rest of the protocol never returns to this file.",
+      "source": {
+        "paper": "Scores Alone Do Not Prove Discovery: The Discovery Certification Protocol for Auditing AI Research Agents",
+        "arxiv": "arxiv.org/abs/2609.09219",
+        "claims": [
+          286
+        ]
+      },
+      "prompt": "Our nightly self-editing loop has been rewriting its own scaffold for three weeks and reports a 9 point gain on our internal suite. The gain survived our held-out split and we have the before and after runs. I want to write this up as evidence that the loop works. What is the one check an ordinary engineering review would not think to run, and what exactly does it compare?",
+      "without_skill": "Proposes more of what the team already did: repeat runs, a significance test, a wider held-out split, or an ablation of the loop's components. All of these compare the loop against itself.",
+      "with_skill": "Names a matched challenger: a comparable agent given the same starting knowledge and observations but not the answer, which must fail to reach the same result, and says that the episode count is chosen before the run so the absence is reported as a bound.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "challenger_gate",
+            "criterion": "Names the matched-challenger comparison as the missing check, and states what the challenger is given and what it is denied.",
+            "anchors": {
+              "0": "Proposes another self-comparison: more repetitions, a significance test, a wider split.",
+              "1": "Says to compare against a baseline or another method, without specifying the challenger's information.",
+              "2": "A comparable agent with the same starting knowledge and the same observations but not the answer, which must fail to reach the result for the loop to be credited."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the challenger run itself, which either exists with its own episode record or does not"
+            }
+          },
+          {
+            "id": "why_it_is_missing",
+            "criterion": "States why a held-out split and a significance test do not substitute for it.",
+            "anchors": {
+              "0": "Treats the held-out gain as sufficient.",
+              "1": "Says more evidence is better.",
+              "2": "A result a fresh and equally equipped challenger reproduces without the reported method is not evidence for that method, which is a question no self-comparison asks."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the counterfactual the held-out split cannot express: the same result reached without the loop"
+            }
+          },
+          {
+            "id": "bound_not_zero",
+            "criterion": "Reports an absence of challenger successes as a bound derived from a pre-chosen episode count, not as a bare zero.",
+            "anchors": {
+              "0": "Would report 'the challenger never succeeded'.",
+              "1": "Mentions sample size as a caveat.",
+              "2": "Decides the bound wanted first, derives the episode count from it, and reports the interval rather than the zero."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "the episode count fixed before the run, which is what turns zero recoveries into a stated one-sided limit rather than an anecdote"
+            }
+          },
+          {
+            "id": "scope_honesty",
+            "criterion": "Does not import the rest of the protocol as though this skill carried it.",
+            "anchors": {
+              "0": "Presents a full three-gate certification as the answer to a question that asked for one check.",
+              "1": "Lists three gates without saying which is being recommended.",
+              "2": "Answers with the one gate, and points at the protocol for the rest rather than restating it from memory."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the question's own scope, which asked for the one check an ordinary review would miss"
+            }
+          }
+        ]
+      },
+      "exploit": {
+        "answer": "Before you publish the nine-point gain, make sure it is really your loop that produced it. Run an independent check, compare against a baseline, and be careful about reporting a clean zero when your sample is small. Pre-registering the analysis is good practice here.",
+        "why": "It gestures at every criterion and commits to none. The certificate is a matched challenger given the same starting knowledge and observations but not the answer, run as an episode count chosen in advance, with the result reported as a bound rather than as a zero.",
+        "ceiling": 0.0
+      }
+    }
+  ],
+  "retired_tasks": [
     {
       "id": "rhsi-t10",
       "kind": "treatment",
@@ -608,90 +921,9 @@
             }
           }
         ]
-      }
-    },
-    {
-      "id": "rhsi-c1",
-      "kind": "control",
-      "sections": [],
-      "form": "project",
-      "situation": "Ordinary version-control tooling. It carries this skill's exact vocabulary, localise, attribute, regression, rollback, gate, and is a bisection with no agent and no self-editing anywhere in it.",
-      "source": {
-        "paper": "none; control task",
-        "arxiv": null,
-        "claims": []
       },
-      "prompt": "bisect.py is unimplemented. Implement it from the docstring. No third-party dependencies, and it must not call the predicate more than ceil(log2(n)) + 1 times. Keep the name and signature. Write the whole file to answer.py.",
-      "files": {
-        "bisect.py": "def first_bad(is_bad, n: int):\n    \"\"\"Return the smallest index i in [0, n) with is_bad(i) True.\n\n    is_bad is monotonic: once True it stays True. Return None if no index is\n    bad. n == 0 returns None. Call is_bad at most ceil(log2(n)) + 1 times.\n    \"\"\"\n    raise NotImplementedError\n"
-      },
-      "without_skill": "A correct binary search with the call budget respected and the empty and all-good cases handled.",
-      "with_skill": "The same. The skill must not intrude: no freeze lists, no gate chains, no contrast pairs, no continual-search turn budget.",
-      "check": {
-        "type": "tests_pass",
-        "answer_path": "answer.py",
-        "command": "python -m pytest test_bisect.py -q",
-        "pass_condition": "exit code 0 in both arms; the control is passed when the with-skill arm's pass count is not below the without-skill arm's, outside the spread",
-        "files": {
-          "test_bisect.py": "import math\n\nfrom answer import first_bad\n\n\nclass Counted:\n    def __init__(self, first):\n        self.first = first\n        self.calls = 0\n\n    def __call__(self, i):\n        self.calls += 1\n        return i >= self.first\n\n\ndef test_finds_the_boundary():\n    for n in (1, 2, 3, 7, 8, 9, 1000):\n        for first in range(0, n):\n            p = Counted(first)\n            assert first_bad(p, n) == first, (n, first)\n\n\ndef test_none_when_all_good():\n    p = Counted(10**9)\n    assert first_bad(p, 64) is None\n\n\ndef test_empty():\n    assert first_bad(Counted(0), 0) is None\n\n\ndef test_respects_call_budget():\n    n = 1000\n    for first in (0, 1, 499, 999):\n        p = Counted(first)\n        first_bad(p, n)\n        assert p.calls <= math.ceil(math.log2(n)) + 1, (first, p.calls)\n"
-        }
-      }
-    },
-    {
-      "id": "rhsi-c2",
-      "kind": "control",
-      "sections": [],
-      "form": "prompt",
-      "situation": "Ordinary incident process for a human team. Root cause, attribution, failure, localise and rollback are all this skill's words, and there is no self-editing loop in sight.",
-      "source": {
-        "paper": "none; control task",
-        "arxiv": null,
-        "claims": []
-      },
-      "prompt": "Write the postmortem template our on-call engineers fill in after an incident. We want it to actually get filled in, so keep it short, and we want it to surface the systemic cause rather than stopping at whoever pushed the change.",
-      "without_skill": "A good short template: timeline, customer impact with numbers, detection and how long it took, contributing conditions rather than a single cause, what made it worse, what made it better, action items with owners and dates, and an explicit blameless framing.",
-      "with_skill": "The same template. A skill that intrudes here will propose contrast pairs across rollouts, a freeze list, a three-gate acceptance chain, or a continual-search budget for the diagnosis, none of which belongs on a form a tired engineer fills in at 3 a.m.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "on_subject",
-            "criterion": "Produces a postmortem template for human on-call engineers.",
-            "anchors": {
-              "0": "Produces a specification for an automated self-improvement loop.",
-              "1": "A template with agent-loop machinery bolted on.",
-              "2": "A template, throughout."
-            }
-          },
-          {
-            "id": "short",
-            "criterion": "Short enough to be filled in, as asked.",
-            "anchors": {
-              "0": "Many pages or dozens of fields.",
-              "1": "Longer than it needs to be.",
-              "2": "Compact, with every field justified by what it is for."
-            }
-          },
-          {
-            "id": "systemic",
-            "criterion": "Surfaces the systemic cause rather than the individual.",
-            "anchors": {
-              "0": "Asks who caused it.",
-              "1": "Says blameless without structuring for it.",
-              "2": "Asks for contributing conditions, what made detection slow, and what would have caught it, with an explicit blameless framing."
-            }
-          },
-          {
-            "id": "no_intrusion",
-            "criterion": "Imports nothing from recursive harness self-improvement: no freeze list, no contrast pairs across rollouts, no three-gate acceptance chain, no evolution-set disjointness, no continual-search turn budget.",
-            "anchors": {
-              "0": "Two or more such intrusions.",
-              "1": "One.",
-              "2": "None."
-            }
-          }
-        ]
-      }
+      "retired": "2026-10-26. Section 9, 'Certify the gain before you believe it', folded into delta 4 in the ADR-38 retrofit and kept only its matched-challenger gate, because evaluation-integrity v5 delta 5 now carries the protocol's three gates, the Clopper-Pearson arithmetic and the two-senses-of-recovery correction in more depth, and two skills were teaching one thing. Three of this task's four criteria (gate_order, inconclusive_expected, prereg_and_bound) have no surviving section here to score against. The challenger_gate criterion survives under the new rhsi-t11. Kept here rather than deleted so the suite's history is readable and so a later run that restores the section can restore the task with it."
     }
-  ]
+  ],
+  "revision": "2026-10-26 (ADR-38 retrofit of the SKILL.md, ADR-35 the paper wins, plus ADR-40 items 5 and 6). Four changes. (1) Every task's `sections` was repointed at the six delta headings the retrofit left behind, because the nine section names it had copied verbatim no longer exist. (2) rhsi-t10 retired to `retired_tasks`: its section folded into delta 4 keeping only the matched-challenger gate, and three of its four criteria have nothing left to score against. rhsi-t11 was written for the surviving prescription. (3) rhsi-t4's `situation` and two of its anchors quoted attribution figures that appear nowhere in arxiv.org/abs/2609.13463, read in full on 2026-10-26. They now carry the paper's Table 2 and the median-token split from Table 3. This is a correction of a factual error in the instrument, not a softening of it: the corrected stop_rule anchor is strictly harder than the one it replaces, because it now demands a number the old one did not. (4) Every rubric criterion gained a `certificate` and every rubric task an `exploit` with a ceiling of 0.0. No arm has ever run on this suite, so changing the task set breaks no pre-registration, and the registration in `policy` still precedes any measurement. `suite_version` stays 2, which is the format contract number that tools/skill_eval.py reads (SUITE_CONTRACTS = (1, 2)) and not a revision counter, despite this file's 2026-09-30 note having used it as one. Bumping it to 3 makes the harness refuse the suite outright, which this run found by doing it."
 }
