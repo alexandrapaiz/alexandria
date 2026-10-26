@@ -114,3 +114,9 @@ nine.
    verdict that went stale in six minutes.
 4. One improvement, §3f: measure a proposal in the population the rule
    governs before carrying it up, and re-take the count when reviewing one.
+
+## The suite
+
+`python3 -m pytest tests -q` on this branch after the merge: **2,239 passed, 1
+skipped, 220s**. `checks.yml` on `main`: success on the last four runs, so a red
+tick on this pull request would be its own.
