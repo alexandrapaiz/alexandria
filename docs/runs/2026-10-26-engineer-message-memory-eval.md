@@ -87,3 +87,50 @@ session; the second one is the one in the pull request.
   ASCII after the check caught them.
 - `python3 tools/incidents.py check`: 332 entries, 7 in the inbox, nothing
   malformed. `python3 tools/ledger.py --check`: 0 blocking, at baseline.
+
+## Two things that went wrong after the pull request went ready
+
+**The guard said yes and its test said no.** `tools/skill_eval.py` was added to
+`budget.PACED_CALLERS` and verified by calling the guard, which is what the
+guard's own docstring tells a seat to do:
+
+```
+python3 -c "import budget; print(budget.check_fallback_pacing())"   # []
+python3 pipeline/budget.py                                          # passed
+```
+
+`checks.yml` then failed on `tests/test_corpus_drain.py`, which asserts that
+guard plus the literal `cap.last_tokens` in each paced caller's source. The
+code read the same number through `getattr`. Filed as
+`INC-2026-10-26-the-pacing-rule-has-two-gates-and-they-do-not-agree`, fixed by
+spelling the attribute access, and the fold that would make the two enforcers
+one is a ledger proposal rather than a commit, because it changes what fails a
+deploy.
+
+**The README edit restated a list instead of pointing at it.** The first version
+of the corrected paragraph listed the four blockers from #542's pull request
+body. `docs/product/reviewer-panel.md`'s own numbered list is a different four:
+it carries the Commit statuses grant and not the `prompts/*.md` charter
+reading. Restating a list from memory is the exact defect that paragraph was
+being edited to fix, so it now names them in the doc's terms and points at the
+one place the list lives.
+
+## What the whole-suite claim is worth, which is nothing
+
+`python3 -m pytest tests/ -q` was attempted three times. The first returned
+exit 0 with an empty log, the second was killed at the sandbox's command
+ceiling with `EXIT=143`, and both were backgrounded. An empty log and exit 0 is
+indistinguishable from a pass and is not one, and the pull request's first
+description claimed the suite passed on that basis. The claim was replaced with
+the thing that is actually true: 795 tests across the 18 files that import
+`skill_eval` or `budget`, enumerated with grep rather than judgment, run to
+completion twice with the same number.
+
+## The late register entries
+
+- `INC-2026-10-26-the-corrected-sentence-was-corrected-in-one-register-of-two`
+- `INC-2026-10-26-the-pacing-rule-has-two-gates-and-they-do-not-agree`
+- `INC-2026-10-26-the-single-branch-refspec-survived-the-unshallow-again`,
+  a repeat of the 2026-10-18 entry, recorded because the standing rule has no
+  judgment call in it and the register has no way to append a recurrence to an
+  existing id.
