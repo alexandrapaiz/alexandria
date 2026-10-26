@@ -64,6 +64,35 @@ reports `unknown` rather than `dark` when the history is still truncated.
 Refusing to answer is the only safe failure here, because `dark` writes a
 card and `live` closes a row.
 
+## Where the done event can be written, and where it cannot
+
+The judgement needs three things at once: a database to write the row, a git
+checkout with real history to answer the ancestry question, and GitHub to say
+whether the pull request merged. **No runtime in this organization holds all
+three.** A Modal container holds `DATABASE_URL` and has no `.git` at all, and
+its image flattens `tools/` to `/root/`, so the deploy replay this file calls
+cannot run there. A seat's sandbox holds the checkout and `gh` and holds no
+database credential, which is the whole reason `tools/drift_watch.py` exists
+in the shape it does.
+
+So this file is split the way that constraint splits it, and a step wired
+into `pipeline/skill_revision.py` was written and taken back out rather than
+shipped inert, which would have been this item's own defect one level down.
+
+- **The judgement runs where a seat is**: `--post` puts a card on the board
+  for anything dark, and `tools/delivery_health.py`'s `loop` surface puts the
+  same finding in the report every seat already reads daily. That is the done
+  event the organization can see, and it fires on a deploy-confirmation read.
+- **`--write` sets `promotions.live_at`** and runs wherever both a checkout
+  and `DATABASE_URL` are present, which today is the owner's laptop and
+  nothing else. It is the done event in the data, and it is idempotent: the
+  row is closed once and never looked at again.
+
+That gap is a ledger entry rather than something to route around, and the
+honest shape of the answer is a read-only database URL in a seat's
+environment, which `docs/agents/pending-workflow-changes.md` item 6 has been
+asking for since before this file.
+
 ## The dark window, which is the number the OKR wanted
 
 `first_seen_at` on the `deploy_runtime` row is when the image now running
@@ -336,6 +365,11 @@ def connect():
         return None
 
 
+def deploy_from_db(conn):
+    """`deploy_runtime`, for a caller that has a connection rather than a receipt."""
+    return dh.deploy_facts(conn)
+
+
 PROPOSAL_SQL = """
 select id, path, created_at, live_at
   from promotions
@@ -362,19 +396,59 @@ def pr_number(url: str) -> int | None:
         return None
 
 
+def pr_facts_api(number: int, token: str, repo: str) -> dict:
+    """The same facts over the REST API, for a caller with a token and no `gh`.
+
+    The Modal container that runs `pipeline/skill_revision.py` is the only
+    place in this organization that holds `DATABASE_URL`, which makes it the
+    only place that can write the done event down, and it has no `gh` binary
+    in its image. It does hold `GITHUB_TOKEN`, so the same two questions are
+    asked of the same API through stdlib rather than through a subprocess.
+    """
+    import urllib.error
+    import urllib.request
+
+    def get(path: str):
+        request = urllib.request.Request(
+            f"https://api.github.com/repos/{repo}{path}",
+            headers={"Authorization": f"Bearer {token}",
+                     "Accept": "application/vnd.github+json",
+                     "User-Agent": "alexandria-loop-close"})
+        with urllib.request.urlopen(request, timeout=30) as answer:
+            return json.loads(answer.read().decode())
+
+    try:
+        pull = get(f"/pulls/{number}")
+        files = get(f"/pulls/{number}/files?per_page=100")
+    except (urllib.error.URLError, OSError, ValueError) as exc:
+        return {"merged": False,
+                "why": f"the GitHub API could not be read for PR {number}: {exc}"}
+    return {"merged": bool(pull.get("merged_at")),
+            "merge_commit": pull.get("merge_commit_sha"),
+            "merged_at": pull.get("merged_at"),
+            "files": [f.get("filename") for f in files]}
+
+
 def pr_facts(url: str, repo_root: pathlib.Path) -> dict:
     """What GitHub says about one proposal's pull request.
 
-    Through `gh`, because every seat that runs this holds a `gh` the host
-    already authenticated and none of them holds a bare GitHub token to put in
-    a header. A `gh` that cannot answer is a reason to say `unknown`, which is
-    what the empty dict below becomes in `judge_one`.
+    Two readers, in the order of who holds what. A token when the environment
+    has one, which is the Modal job; otherwise `gh`, which every seat's host
+    has already authenticated and no seat holds a bare token for. Either
+    failing is a reason to say `unknown` rather than to guess, which is what
+    the `merged: False` with a `why` below becomes in `judge_one`.
     """
+    import os
     import subprocess
 
     number = pr_number(url)
     if number is None:
         return {"merged": False, "why": f"{url} is not a pull request url"}
+
+    token = (os.environ.get("GITHUB_TOKEN") or "").strip()
+    repo = (os.environ.get("GITHUB_REPO") or "").strip()
+    if token and repo:
+        return pr_facts_api(number, token, repo)
     try:
         done = subprocess.run(
             ["gh", "pr", "view", str(number), "--json",

@@ -3017,11 +3017,66 @@ def _from_database(url: str, today: date | None, repo_root: Path | None,
         return None, f"DATABASE_URL is set but the connection failed: {exc}"
 
 
+def check_loop(repo_root: Path | None = None) -> Surface:
+    """Has the system's own last proposal about itself reached production.
+
+    `loop` sits immediately after `deploy` because it is the same question one
+    level up. `deploy` asks whether the running image is the trunk. This asks
+    whether a specific merged change the product made to its own prompts is in
+    that image, which is the question
+    `INC-2026-10-12-meta-review-proposal-merged-never-deployed` was about and
+    the one nothing in this report could answer: triage was green on `deploy`
+    for days at a time while it judged 8,861 papers against a prompt a merge
+    had already replaced, because a deploy inside the grace window is not a
+    drift and a proposal that is not running is still not running.
+
+    The judgement is `tools/loop_close.py`, called and not copied, for the
+    reason every other surface here gives about every other rule it reads.
+
+    It costs one `gh` call plus one per open proposal, and there are usually
+    none, because `propose_change` has fired once in this product's life. A
+    seat with no `gh` gets `unknown`, which is the honest answer and not a
+    pass.
+    """
+    try:
+        from tools import loop_close
+    except Exception as exc:
+        return Surface("loop", UNKNOWN,
+                       f"tools/loop_close.py could not be read here: {exc}")
+    root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
+    try:
+        proposals, deploy = loop_close.gather(root, None, None)
+        verdict = loop_close.judge(proposals, deploy, root)
+    except Exception as exc:
+        return Surface("loop", UNKNOWN,
+                       f"the self-improvement loop could not be judged here: {exc}")
+
+    state = {"ok": OK, "failing": FAILING}.get(verdict["verdict"], UNKNOWN)
+    dark = [p for p in verdict["proposals"] if p.get("state") == loop_close.DARK]
+    headline = verdict["why"]
+    if dark:
+        headline = (
+            "; ".join(f"{p.get('pr_url')} changed "
+                      f"{', '.join(p.get('files') or [])} and merged, and "
+                      f"{p.get('why')}" for p in dark)
+            + ". A merged prompt the job does not read has bought nothing, "
+              "which is the whole of incident "
+              "INC-2026-10-12-meta-review-proposal-merged-never-deployed")
+    return Surface("loop", state, headline,
+                   {"ref": verdict.get("ref"),
+                    "proposals": verdict.get("proposals")})
+
+
 # `checkout` sits next to `payments` on purpose. One asks whether a sale can
 # happen and the other whether a sale that happened became access, and a reader
 # scanning this report for the state of the till should meet both in one glance.
+#
+# `loop` sits after `deploy` for the same kind of reason: one says whether the
+# running image is the trunk and the other whether the system's own last
+# proposal about itself is inside it, and the second has been false while the
+# first was green.
 ORDER = ["press", "compute", "pipeline", "payments", "checkout", "deploy",
-         "site", "archive", "mcp"]
+         "loop", "site", "archive", "mcp"]
 
 
 def run(surfaces: list[str], today: date | None = None,
@@ -3064,6 +3119,8 @@ def run(surfaces: list[str], today: date | None = None,
         out.append(judge_archive(by_name.get("press"), by_name.get("site")))
     if "checkout" in asked:
         out.append(check_checkout(repo_root))
+    if "loop" in asked:
+        out.append(check_loop(repo_root))
     if "mcp" in asked:
         out.append(check_mcp())
 

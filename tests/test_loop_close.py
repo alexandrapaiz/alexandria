@@ -519,3 +519,143 @@ def test_a_deploy_surface_that_could_not_be_read_is_unknown():
                    "deploy_runtime could not be read: no such table")
     assert out["verdict"] == lc.UNKNOWN
     assert "no such table" in out["why"]
+
+
+# --------------------------------------------- the surface in the daily report
+
+
+def test_loop_is_a_surface_of_the_daily_report_and_sits_after_deploy():
+    """Every seat reads this report daily, which is why the finding goes in it."""
+    assert "loop" in dh.ORDER
+    assert dh.ORDER.index("loop") == dh.ORDER.index("deploy") + 1
+
+
+def test_the_surface_reports_a_dark_proposal_as_failing(monkeypatch):
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = drift.fixture_history(Path(tmp), [
+            ("prompts/triage.md", "the proposal")], base_days_ago=20)
+        proposals = [{**_proposal(_sha(repo, "HEAD"), ["prompts/triage.md"], NOW),
+                      "pr_url": "https://github.com/x/y/pull/451"}]
+        deploy = _deploy(repo, "triage", "HEAD~1", NOW)
+        monkeypatch.setattr(lc, "gather", lambda *a, **k: (proposals, deploy))
+
+        surface = dh.check_loop(repo)
+
+        assert surface.name == "loop" and surface.state == dh.FAILING
+        assert "pull/451" in surface.headline
+        assert "bought nothing" in surface.headline
+
+
+def test_the_surface_reports_a_live_proposal_as_ok(monkeypatch):
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = drift.fixture_history(Path(tmp), [
+            ("prompts/triage.md", "the proposal")], base_days_ago=20)
+        monkeypatch.setattr(lc, "gather", lambda *a, **k: (
+            [_proposal(_sha(repo, "HEAD"), ["prompts/triage.md"], NOW)],
+            _deploy(repo, "triage", "HEAD", NOW)))
+        assert dh.check_loop(repo).state == dh.OK
+
+
+def test_the_surface_answers_unknown_rather_than_raising(monkeypatch):
+    """A guard that can fail the report it lives in is worse than no guard."""
+    def boom(*a, **k):
+        raise RuntimeError("gh is not installed here")
+
+    monkeypatch.setattr(lc, "gather", boom)
+    surface = dh.check_loop(ROOT)
+    assert surface.state == dh.UNKNOWN
+    assert "gh is not installed here" in surface.headline
+
+
+# ----------------------------------------------- how the pull request is read
+
+
+def test_a_token_holder_reads_the_api_and_not_the_cli(monkeypatch):
+    """The Modal job has `GITHUB_TOKEN` and no `gh` binary, so both doors exist."""
+    monkeypatch.setenv("GITHUB_TOKEN", "t")
+    monkeypatch.setenv("GITHUB_REPO", "a/b")
+    asked = []
+
+    def fake(number, token, repo):
+        asked.append((number, token, repo))
+        return {"merged": True, "merge_commit": "abc", "merged_at": "x",
+                "files": ["prompts/triage.md"]}
+
+    monkeypatch.setattr(lc, "pr_facts_api", fake)
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k:
+                        pytest.fail("gh was run with a token in the environment"))
+
+    got = lc.pr_facts("https://github.com/a/b/pull/451", ROOT)
+
+    assert asked == [(451, "t", "a/b")]
+    assert got["files"] == ["prompts/triage.md"]
+
+
+def test_the_api_reader_asks_for_the_pull_request_and_its_files(monkeypatch):
+    seen = []
+
+    class Answer:
+        def __init__(self, body):
+            self.body = body
+
+        def read(self):
+            return self.body
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    def fake_urlopen(request, timeout=None):
+        seen.append(request.full_url)
+        if request.full_url.endswith("/files?per_page=100"):
+            return Answer(json.dumps([{"filename": "prompts/triage.md"}]).encode())
+        return Answer(json.dumps({"merged_at": "2026-10-05T04:33:28Z",
+                                  "merge_commit_sha": "fa029bf"}).encode())
+
+    import urllib.request
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+
+    got = lc.pr_facts_api(451, "t", "a/b")
+
+    assert got == {"merged": True, "merge_commit": "fa029bf",
+                   "merged_at": "2026-10-05T04:33:28Z",
+                   "files": ["prompts/triage.md"]}
+    assert seen == ["https://api.github.com/repos/a/b/pulls/451",
+                    "https://api.github.com/repos/a/b/pulls/451/files?per_page=100"]
+
+
+def test_an_unreachable_api_is_a_why_and_never_a_merge(monkeypatch):
+    import urllib.error
+    import urllib.request
+
+    def boom(request, timeout=None):
+        raise urllib.error.URLError("no route")
+
+    monkeypatch.setattr(urllib.request, "urlopen", boom)
+    got = lc.pr_facts_api(451, "t", "a/b")
+    assert got["merged"] is False and "no route" in got["why"]
+
+
+def test_a_seat_with_no_token_falls_back_to_gh(monkeypatch):
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.delenv("GITHUB_REPO", raising=False)
+
+    class Done:
+        returncode = 0
+        stdout = json.dumps({"state": "MERGED", "mergedAt": "2026-10-05T00:00:00Z",
+                             "mergeCommit": {"oid": "fa029bf"},
+                             "files": [{"path": "prompts/triage.md"}]})
+        stderr = ""
+
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: Done())
+    got = lc.pr_facts("https://github.com/a/b/pull/451", ROOT)
+    assert got["merged"] is True and got["merge_commit"] == "fa029bf"
+
+
+def test_the_write_cannot_happen_where_the_judgement_does_and_the_file_says_so():
+    """The constraint is load-bearing, so it is pinned rather than left in prose."""
+    doc = lc.__doc__
+    assert "No runtime in this organization holds all" in doc
+    assert "promotions.live_at" in doc
