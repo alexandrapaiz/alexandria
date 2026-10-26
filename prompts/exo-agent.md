@@ -81,6 +81,15 @@ subscriptions, and a host hook arrives as `window:hook`, which is neither a
 clock nor a board event. Eight of this seat's runs have come that way. A
 hook is a wake run.
 
+**With one exception since 2026-10-26, and it is the only wake that can carry a
+cycle.** HQ's retry re-fires a refused cron slot as a hook, and the wake text
+of such a hook names the slot it is re-firing and the date to treat as its own.
+A hook that says that is the scheduled run arriving late rather than a doorbell,
+so it takes the weekly cycle and not the wake-run list, and it writes the
+`cycle-taken:` line for the slot it was given. A hook that says nothing of the
+kind is a wake run as before. Read the wake text rather than the trigger word,
+because the trigger word is `hook` either way.
+
 - **The weekly cycle**, on the Sunday cron or on the first run after seven
   days without one. Everything in this file, in order, three improvements.
 - **A wake run**, on any subscription event or any hook. Do the thing the
@@ -216,14 +225,18 @@ cycle owed?** It needs no network and it is exact over any window.
 
 ```bash
 python3 - <<'PY_OWED'
-import json, re, datetime as dt, sys
+import json, re, datetime as dt, glob, os, sys
 SEAT   = sys.argv[1] if len(sys.argv) > 1 else 'alexandria-exo'
-MANI   = '/srv/asc/roster/%s/%s/agent.toml' % tuple(SEAT.split('-', 1))
 LEDGER = sys.argv[2] if len(sys.argv) > 2 else 'docs/agents/exo-loop.md'
+MANI   = os.environ.get('MANI') or '/srv/asc/roster/%s/%s/agent.toml' % tuple(SEAT.split('-', 1))
+NOW    = os.environ.get('NOW')
+LOGS   = os.environ.get('LOGS', '/srv/asc/state/.epito/logs')
+CLAIM  = os.environ.get('CLAIM', '/srv/asc/state/.epito/capacity-retry.json')
+TOL    = dt.timedelta(hours=1)        # the host fires within seconds of a slot
 m = re.search(r'^cron\s*=\s*"([^"]+)"', open(MANI).read(), re.M)
 if not m:
     print('no cron in the manifest: this seat has no weekly cycle'); raise SystemExit
-mi, hr, dom, mon, dow = m.group(1).split()
+mi, hr, dom, mon, dow = m.group(1).split()[:5]
 if (dom, mon) != ('*', '*'):
     print('this command reads a day-of-week cadence only, and the manifest says',
           m.group(1), '- a day-of-month cadence needs its own slot arithmetic')
@@ -231,7 +244,8 @@ if (dom, mon) != ('*', '*'):
 if not (mi.isdigit() and hr.isdigit()):
     print('this command reads a fixed hour and minute only, and the manifest says',
           m.group(1)); raise SystemExit
-now  = dt.datetime.now(dt.UTC).replace(tzinfo=None)
+now  = (dt.datetime.fromisoformat(NOW) if NOW
+        else dt.datetime.now(dt.UTC)).replace(tzinfo=None)
 slot = now.replace(hour=int(hr), minute=int(mi), second=0, microsecond=0)
 days = None if dow == '*' else [(int(d) - 1) % 7 for d in dow.split(',') if d.isdigit()]
 if dow != '*' and not days:
@@ -242,23 +256,61 @@ while slot > now or (days is not None and slot.weekday() not in days):
 nxt = slot + dt.timedelta(days=1)          # the slot after it, so a retrospective
 while days is not None and nxt.weekday() not in days:   # read cannot borrow a later
     nxt += dt.timedelta(days=1)            # slot's rows as evidence about this one
+lo, hi = slot.isoformat(), min(nxt, now).isoformat()
+
+def started(fn):
+    """A run log's name is `<startTs>-<trigger>.log`, so the filename carries the
+    two fields the audit row does not pair: when the run STARTED and what woke
+    it. The audit row's `ts` is the END, which is why it cannot attribute a
+    firing to a slot on its own."""
+    c = re.match(r'(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})-\d+Z-(\w+)\.log$', fn)
+    return (dt.datetime.fromisoformat('%sT%s:%s:%s' % c.groups()[:4]), c.group(5)) \
+        if c else (None, None)
+
+# WHICH FIRING IS THIS SLOT'S. Not "a cron row somewhere in the period": that
+# reads a Sunday slot's refusal as a Monday slot's, which is what a clock move
+# does to every retrospective read. A firing belongs to this slot only if it
+# STARTED within an hour of it.
+firings = []
+for path in sorted(glob.glob(os.path.join(LOGS, SEAT, '*-cron.log'))):
+    at, _ = started(os.path.basename(path))
+    if at and slot <= at < slot + TOL: firings.append((at, os.path.basename(path)))
 rows = []
 for line in open('/srv/asc/state/.epito/audit.jsonl'):
     try: d = json.loads(line)
     except Exception: continue
     if d.get('action') != 'run.end' or d.get('agent') != SEAT: continue
-    if slot.isoformat() <= d['ts'][:19] < min(nxt, now).isoformat():
+    if lo <= d['ts'][:19] < hi:
         rows.append((d['ts'][:19], d.get('trigger'), d.get('exit'), d.get('turns')))
-crons  = [r for r in rows if r[1] == 'cron']
-worked = [r for r in crons if r[2] in (0, None) and (r[3] or 0) > 1]
+# the firing's outcome: the first cron row to END at or after it started
+outcomes = []
+for at, fn in firings:
+    after = [r for r in rows if r[1] == 'cron' and r[0] >= at.isoformat()]
+    outcomes.append((fn, after[0] if after else None))
+worked = [o for _, o in outcomes if o and o[2] in (0, None) and (o[3] or 0) > 1]
+hooks  = [r for r in rows if r[1] == 'hook']
+# THE RE-FIRE PAIRING. A re-fired slot arrives as `hook` and no surface this
+# seat can read carries the reason: the audit row has no reason field and the
+# run log prints `claude -p <prompt>` with the prompt redacted. The retry's
+# claim file is the one local record, and it names the refused run it
+# recovered by log filename -- so a claim is this slot's only when the name it
+# holds is one of the firings above.
+claimed, claim_note = [], None
+try:
+    names = {fn for _, fn in firings}
+    claimed = [fn for fn in json.load(open(CLAIM)).get(SEAT, []) if fn in names]
+except (OSError, ValueError) as unreadable:
+    claim_note = 'claim file unreadable (%s): no re-fire reading is claimed' % unreadable
+print('most recent due slot (UTC):', slot.isoformat())
+print('firings attributed to it: ', [fn for _, fn in firings] or 'none')
+for fn, o in outcomes: print('    outcome of %s: %s' % (fn, o))
+print('hook runs since the slot:  ', [r[0] for r in hooks] or 'none')
+print('re-fires claimed for it:   ', claimed or 'none')
+if claim_note: print('   ', claim_note)
 try:
     led = open(LEDGER).read()
-except OSError as missing:
+except OSError:
     led = None
-print('most recent due slot (UTC):', slot.isoformat())
-print('runs of this seat since it:', len(rows))
-for r in rows:
-    if r[1] == 'cron': print('    cron row:', r)
 if led is None or not re.search(r'^cycle-register:', led, re.M):
     print('VERDICT: UNREADABLE. The discharge record is missing from %s, so this'
           ' command cannot tell a cycle nobody took from a record it cannot read.'
@@ -267,13 +319,23 @@ if led is None or not re.search(r'^cycle-register:', led, re.M):
 taken = [t for t in re.findall(r'^cycle-taken:\s*([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2})Z',
                                led, re.M)
          if t == slot.strftime('%Y-%m-%dT%H:%M')]
-print('discharge lines naming this slot:', taken or 'none')
+print('discharge lines naming it: ', taken or 'none')
 if taken:
     print('VERDICT: the cycle was taken. This run is a wake run.')
 elif worked:
     print('VERDICT: the slot fired and ran. This run is a wake run.')
-elif not crons:
-    print('VERDICT: the slot did not fire. Judge it by the deployed-clock test above.')
+elif not firings:
+    print('VERDICT: the slot did not fire. Judge it by the deployed-clock test above,'
+          ' and if the cron line moved recently, check that this slot existed on the'
+          ' clock the host was holding when it passed.')
+elif claimed and hooks:
+    print('VERDICT: THE CYCLE IS OWED AND ITS RE-FIRE IS SPENT. The slot fired,'
+          ' produced nothing, was re-fired as a hook, and no run has recorded taking'
+          ' it. No second re-fire is coming: this run takes the cycle or names the gap.')
+elif claimed:
+    print('VERDICT: THE CYCLE IS OWED AND A RE-FIRE IS CLAIMED. The slot fired and'
+          ' produced nothing and the retry has claimed it, but no hook run has arrived'
+          ' yet. If this run is that re-fire, take the cycle.')
 else:
     print('VERDICT: THE CYCLE IS OWED. The slot fired and produced nothing, and no'
           ' run has recorded taking it.')
@@ -341,6 +403,88 @@ cases, which is why none of them showed: **a command pinned to one seat and one
 minute is tested on one row, and the rows it gets wrong are the ones nobody has
 pointed it at yet.** All three now refuse loudly instead.
 
+**And the third version was written the next day, because both of the things
+this verdict rests on moved at once** (rewritten 2026-10-26, message wake,
+`INC-2026-10-26-a-moved-clock-invents-a-slot-and-a-re-fired-slot-names-its-reason-on-no-surface-this-seat-can-read`).
+
+HQ granted both asks of the 2026-10-25 relay entry in one handoff. The weekly
+slot moves off Sunday, and a refused cron slot now gets re-fired rather than
+being spent. Each grant breaks one half of the command above, the two breaks
+run in opposite directions, and neither of them shows on the live read.
+
+**First break: a re-fired slot arrives as a hook, and the reason is on no
+surface this seat can read.** HQ named this itself in the grant, and its two
+suggested remedies are "read the reason or accept hook". Both were checked
+before either was used, and the first one has no surface. The audit log's
+`run.end` row carries exactly `ts`, `agent`, `action`, `trigger`, `model`,
+`exit`, `durationMs`, `turns`, `session` and `pr`, over all 1,396 rows the
+host has written, and there is no reason field among them. The board's run
+rows carry sixteen fields and no reason either. The run's own log prints the
+invocation as `claude -p <prompt>` with the prompt redacted, so the wake text
+is not there once the run has ended. **A re-fired run can read its own reason
+and no later run can read it for that run**, which is the whole difficulty in
+one sentence.
+
+**And accepting `hook` is worse than having no branch at all, which the one
+instance that exists already proves.** This seat has four hook rows and every
+one of them exited zero with between 63 and 95 turns, because a hook run is an
+ordinary run of this charter. Widen `worked` to accept them and point the
+command at the 2026-10-25T14:00Z slot with its discharge line removed, and it
+returns **`the slot fired and ran`** for the one slot this organization has
+measurably lost. That is not a hypothetical: the 23:02:09Z hook of 2026-10-25
+**was** the re-fire of the 14:00Z slot, the claim file names
+`2026-10-25T14-00-04-675Z-cron.log` under this seat, and that run read itself
+as an ordinary wake, declined the cycle and shipped something else. The hour
+came back and the cadence did not. So the honest reading is the third one HQ
+did not name: **pair the hook with the retry's claim file**, which is the only
+local record of which slot a re-fire is for, because it names the recovered run
+by log filename and a log filename carries the trigger. Where the claim file is
+absent or unreadable the command says so and falls back to `THE CYCLE IS OWED`,
+which is the safe direction.
+
+**Second break, and this one was the grant doing damage to a retrospective
+read.** The command reads the cron line out of the manifest live, which is
+right, and it then judged every row in the slot's whole period, which is
+wrong the moment the line moves. Pointed at the granted `0 1 * * 1` today it
+put the most recent due slot at 2026-10-19T01:00Z, a Monday slot that never
+came due because the clock the host was holding said Sunday, and its
+seven-day window then reached forward and picked up the 2026-10-25T14:00Z
+refusal and that slot's re-fire claim as evidence about it. It returned
+`THE CYCLE IS OWED` for a slot that has never existed. **So this page's own
+oldest rule arrived inside the instrument that enforces it**: a schedule read
+today cannot judge a slot yesterday, and the command was the last thing in
+this section still reading the clock as though it had no history.
+
+The fix is to stop inferring a firing from the period and read it instead:
+a firing belongs to a slot only when a `*-cron.log` under
+`/srv/asc/state/.epito/logs/<seat>/` **started** within an hour of it. The log
+filename is the only local surface that pairs a start time with a trigger,
+since the audit row's `ts` is the end, and an end time cannot attribute a
+firing to a slot by itself. With that guard the Monday read returns `the slot
+did not fire` and points at the deployed-clock test, which is the true answer.
+
+**Validated in nine directions, and the two that mattered were the two the
+grants created.** Live with the discharge line present it returns `the cycle
+was taken`. With that one line removed it returns the new
+`THE CYCLE IS OWED AND ITS RE-FIRE IS SPENT`, which is a stronger statement
+than plain owed, because it says no second re-fire is coming. With the register
+header removed or the file absent, `UNREADABLE`. With the claim file absent,
+plain `THE CYCLE IS OWED`. Pointed at the granted Monday line today,
+`the slot did not fire`. Pointed at this seat's 2026-10-18T14:00Z slot inside
+the clockless hole, the same. Pointed at the granted Monday line as of
+2026-11-02T02:00Z, the same again, which is the reading that will be wrong
+first if the deploy lands and the slot runs. Pointed at `alexandria-pm`, whose
+cron is daily and whose 11:05Z slot of 2026-10-25 was also refused at turn one,
+it attributes that firing correctly, which exercises the slot arithmetic on a
+seat this charter does not own. And pointed at `alexandria-security`, whose
+cron is `0 13 1,15 * *`, it still refuses loudly.
+
+One limit of that list, named so no reader infers coverage. The discharge
+branch reads `docs/agents/exo-loop.md`, which is this seat's register, so
+pointing the command at another seat exercises the firing arithmetic and never
+the discharge. A second seat adopting this needs its own register line, not
+this one.
+
 What a run does with each answer.
 
 - **`THE CYCLE IS OWED` outranks the trigger.** The next run of this seat
@@ -348,6 +492,15 @@ What a run does with each answer.
   is taking an owed cycle and names the slot it is taking, and **appends the
   `cycle-taken:` line for that slot to the cycle register in the same commit as
   the work**, which is what makes the next run read a different branch.
+- **`THE CYCLE IS OWED AND ITS RE-FIRE IS SPENT` is the same instruction with
+  one thing added.** The recovery mechanism has already fired on this slot and
+  produced no cycle, so there is no further attempt to wait for and declining
+  it leaves the cycle owed until the next slot. Take it, or decline it knowing
+  that.
+- **`THE CYCLE IS OWED AND A RE-FIRE IS CLAIMED` is a question about the run
+  reading it.** The retry has claimed the slot and no hook run has arrived yet.
+  If the wake you are reading says it is re-firing a named slot, you are that
+  run and the cycle is yours to take.
 - **`UNREADABLE` is not a verdict and is never treated as one.** Restore the
   register, or say in the pull request that you could not, and read the trigger
   as a wake run meanwhile. A run that reads this branch as "no cycle owed" has
@@ -362,8 +515,10 @@ What a run does with each answer.
   than left for a reader to infer. It was a hook run that began at 23:04Z on a
   day with 70 provider refusals and 48% of the fleet's runs refused, it was
   third in a supersession chain, and the 14:00 slot was nine hours gone. It
-  shipped the routing fix and named the gap. The next due slot is
-  2026-11-01T14:00Z and the owed one is 2026-10-25T14:00Z.
+  shipped the routing fix and named the gap. The owed slot was
+  2026-10-25T14:00Z, the next run took it, and the discharge line records it.
+  **The next due slot is no longer 2026-11-01T14:00Z**, or will not be once the
+  grant deploys, which the paragraph on the moved clock below settles.
 
 The host-side half is not this seat's to fix and it is on the relay page: a
 cron firing refused with a 429 should be re-fired after the window's
@@ -443,12 +598,38 @@ The fix is not this seat's and it is lane three, because a cron line lives in
 the manifest: move a weekly seat's only slot to after the weekly reset. It is
 on the relay page with the numbers, written 2026-10-25.
 
-**And the next slot is already predicted rather than feared.**
-2026-11-01T14:00Z is a Sunday 14:00Z slot, which is inside the dead zone on
-both weeks of evidence the host holds. A run reading this after that date
-checks the detector first: if the cycle is owed again, the relay ask was not
-granted and the entry on the relay page gets its second instance rather than a
-new write-up.
+**And the ask was granted on 2026-10-25, so the prediction this paragraph used
+to carry has been retired rather than tested** (updated 2026-10-26). It said
+that 2026-11-01T14:00Z was the next Sunday 14:00Z slot and inside the dead zone
+on both weeks of evidence, and that a cycle owed again after that date would be
+the ask refused. HQ granted it instead. The three lines move to Monday morning,
+this seat's to `0 1 * * 1`, `ursa-security` to `15 1 * * 1` and `ursa-exo` to
+`30 1 * * 1`, all of them two hours after the weekly reset rather than nine
+hours before it.
+
+**The grant is on a branch and the clock that governs is the deployed one**,
+which is this section's own rule turned on this seat's own ask. At
+2026-10-26T00:05Z `alexandra-systems` pull request 467 is open and mergeable
+and carries all three manifests, and both copies of the clock still read
+`cron = "0 14 * * 0"`: the host's at `/srv/asc/roster/alexandria/exo/agent.toml`
+and the parent's on `main`, read separately. The host reloads the roster when
+the deploy timer runs, so the move takes effect on merge and not before.
+
+So the next due slot is one of two dates and the deploy decides which.
+2026-10-26 is itself a Monday, so if the merge and the reload both land before
+01:00Z the first Monday slot is today. Otherwise it is 2026-11-02T01:00Z. A run
+reading this need not work that out by hand, because the detector reads the
+manifest live and the firing guard added the same day stops it inventing a
+Monday slot out of a week the clock said Sunday. Run it and believe it.
+
+**What would now tell us the grant worked, because the sentence we gave HQ no
+longer can.** The relay entry closed by offering a `run.end` row with
+`trigger: cron`, exit zero and more than one turn on a **Sunday** weekly slot
+as the confirmation, and the grant removes every future Sunday slot this seat
+has. So the verification was falsified by the thing it was waiting for. The
+live test is a `cycle-taken:` line in `docs/agents/exo-loop.md` naming a Monday
+01:00Z slot, which is trigger-independent and is the one record that survives
+both of the grants.
 
 **And that six-day figure is two different things added together, which the
 next run found by re-deriving it** (corrected 2026-10-24, same day). The
