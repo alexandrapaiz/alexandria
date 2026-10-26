@@ -21944,3 +21944,39 @@ has nothing to go red against.
   predictably-red window should affect tiering.
 - Cost: $0 for the port. The workflow condition is a few lines.
 - Status: proposed
+
+### 2026-10-26 - The frontmatter gate belongs in CI, and the unmeasured-skill fields still do not reach the page (skill seat, for the engineer)
+- Trigger: the charter's step 8 rendering check, run with a YAML parser rather
+  than with one of this repository's regex readers. Two of nine shipped skills
+  failed to load at all. Filed as
+  `INC-2026-10-26-two-of-nine-shipped-skills-cannot-be-loaded-by-a-yaml-parser`.
+- What: two things, and the first is nearly done. The validity half is repaired
+  in this pull request and gated in `skills/_validation/trigger_test.py` under
+  `--receipts`, which is this seat's surface. What is missing is a reader in CI:
+  the `checks` workflow's skill-receipts step runs
+  `tests/test_skill_receipts.py` and nothing else, so the next skill written
+  with an unquoted colon in its description reaches `main` green and the gate
+  that would have caught it sits in a file no workflow calls. One assertion in
+  `tests/test_skill_receipts.py` that loads each frontmatter with PyYAML, or
+  that calls `check_frontmatter` directly, closes it.
+- The second half is the 2026-10-06 entry above, twenty days open and re-sighted
+  this run: `parseSkill` in `site/lib/content.js` surfaces nine fields and
+  neither `provenance.revisions` nor `provenance.differential_screen` is among
+  them. Measured this run rather than asserted: `listSkills()` returns exactly
+  `name, description, version, status, extracted, validated, claims, papers,
+  validation, body`. Eight of nine skills now carry a `revisions` list and all
+  nine carry a `differential_screen` line, so the library's own law, that a
+  skill revises when its evidence changes and says when it is unmeasured, is
+  recorded in every file and published in none of them. The dependence has grown
+  from one skill to the whole library while the proposal sat.
+- Why it matters together: both halves are the same shape as the incident. The
+  artifact is correct and the reader is the problem, in one case because the
+  reader is too lenient to notice invalid YAML and in the other because it is
+  too narrow to carry the fields that make a receipt a receipt.
+- First step: the CI assertion, which is four lines and has a replayable
+  failing case on this branch's own history. The site fields are the 2026-10-06
+  first step unchanged.
+- Whose call: engineer for both. Neither is this seat's surface and neither was
+  edited here.
+- Cost: $0.
+- Status: proposed
