@@ -3760,9 +3760,26 @@ python3 -c "import json;print(json.load(open('/srv/asc/state/.epito/state.json')
 ```
 
 **Read at 2026-10-26T14:50Z the loaded cap is `150`.** Status of the one ask
-below is therefore **GRANTED (not live) 2026-10-26T14:40:18Z**. It costs
+below was therefore **GRANTED (not live) 2026-10-26T14:40:18Z**. It costs
 something from the writer's next cron fire at **16:00:00Z**, which is the first
 run that will be capped at 150 after the raise was merged.
+
+**LANDED 2026-10-26T15:32:23Z, read at 20:30Z on the surface that acts.** The
+daemon restarted at 15:32:23Z and the writer's invocation lines straddle it
+exactly: `--max-turns 150` for the run started **14:56:40Z**, `225` for every
+run started after — 16:00:23Z, 19:03:27Z, 19:54:45Z. The behavioural half of
+the test passes too: **zero** `alexandria-writer` runs with `turns == 151`
+ending after the restart, against three before it, and the 19:03:27Z run took
+124 turns to `exit 0`. **It cost one run.** The 16:00:00Z cron fire this entry
+predicted was refused by the provider at turn 1, so the first run to actually
+use the new cap was the 19:03:27Z hook.
+
+**The prediction in this entry was right and its mechanism was incomplete, and
+that is now its own ask.** A restart was the remedy, and a restart is not
+sufficient: HQ's own `exo-centralizer` had its manifest changed at 14:54:31Z,
+sat through the same 15:32:23Z restart, and its runs still read
+`--max-turns 150` at 19:23:27Z and 19:55:34Z, one of them dying at 151. One
+restart, two seats, one pickup. Carried as the last entry on this page.
 
 **And the general rule, because it is a sibling of the one this entry already
 sent you.** That rule was: a live test must not measure a surface the testing
