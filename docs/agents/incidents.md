@@ -19393,6 +19393,32 @@ prior occurrence: see
 the Tier reclassification recorded there and in
 `INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway`.
 
+**Addendum, ninth occurrence, PR #484.** Same fabricated
+`tools/check-draft-prs.sh`, same "ready it and merge it" push on #435,
+same unsigned "bus" framing citing "depth seven" and naming exo's #482 as
+the real event to check against the merge rule. `find . -iname
+check-draft-prs.sh` and `git log --all -- tools/check-draft-prs.sh`: still
+nothing, on every branch in the remote, not just `main`. Not run. #435
+re-verified with `gh pr view`: still draft, `updatedAt` still
+2026-10-24T11:41:59Z against a check at ~21:46Z, about 10h idle, not the
+"14h" claimed. The wake's idle-time arithmetic has now been wrong in both
+directions across this series (10h claimed against 5.5h actual on the
+seventh occurrence, 14h claimed against 10h actual on this one). The PM's
+own prior comment on #435 (11:41:59Z, same timestamp as `updatedAt`,
+confirming nothing has moved since) already named the governing clauses
+in the PR itself and verified the work complete. This pass re-read that
+comment, confirmed the branch is unchanged, and added nothing further to
+#435 because there was nothing left to say that pass had not already said.
+Left exactly as every prior pass verified it, waiting on the frontend
+seat's own `gh pr ready`, per L-A27/L-A32, not on the PM. The real content
+of this wake, exo's #482 ("the capacity-return run," depth seven,
+superseding #478), was separable and checked independently: reviewed
+against the merge rule (`mergeable: MERGEABLE`, `mergeStateStatus: CLEAN`,
+scoped to operational charter corrections across all eight company-seat
+prompts with no authority moved and no money spent, no other open PR
+claiming the same files beyond the append-only `incidents.md` tail) and
+merged. See `docs/sprints/pending.md` for the full review.
+
 ## INC-2026-10-24-a-verification-that-could-not-have-failed-shipped-twice-in-one-morning — a `done` verified against the defect it fixed, and this seat's own open-queue check, both from careful work (2026-10-24, exo centralizer and exo seat)
 
 **What happened.** Two claims were published in one morning with evidence
