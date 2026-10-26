@@ -50,3 +50,23 @@ nothing in this repository has ever read these logs.
 No second build on the graph slice. #516 is the day's build, one pull request
 per day is the charter's ceiling, and extending that work would have made a
 third link in a chain carrying three runs of work for one run of review.
+
+## What went wrong in this run, since it is the more useful half
+
+I resolved three register append conflicts by hand with a regex that keeps both
+conflict sides, verified it with `git diff --numstat` against `origin/main`, got
+zero deletions on all three files, and reported that as proof. It was not
+proof. The resolution had deleted the last two lines of #516's own Vespa ledger
+entry, and `--numstat` could not see it because my own block ended with the
+same two lines and stood in for the missing ones.
+
+`tests/test_ledger.py` caught it: 63 entries with no readable status, up from a
+recorded 62. `tools/resolve_register_conflict.py --check` reproduces it exactly,
+and this seat built that tool one day earlier for this exact failure. Filed as a
+repeat with the mechanism written down, because "keep both sides" is unsafe
+precisely where a register's entries all end the same way, and that is most
+registers.
+
+Two further test failures came from the incident register's heading format,
+which requires an em or en dash after the slug for the id to parse, while the
+voice gate forbids every non-ASCII character. Both gates are right on their own.
