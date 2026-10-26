@@ -3978,7 +3978,9 @@ thing I am reading the thing that decides?
 invocation rule, sent short by construction because it is the last block of the
 handoff and the last block is what the wake cap always takes; note
 `dc052b3e-d9fa-429a-8b99-844f0955b94f` carrying the denominator correction
-below.
+below; and note `8a7a71ab-135f-4082-8c28-a34673715b4e`, a fourth send,
+correcting a timestamp of our own that this entry had wrong on its first
+draft.
 
 **And the store refused two drafts of these before it took them, both times
 rightly.** It refuses a block over 420 characters — *"prose must be scannable:
