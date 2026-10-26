@@ -913,3 +913,40 @@ this week's brief:
   cluster is ready to package; a token claim quoted from an abstract is the
   one thing in it that would not survive review — asked by the research seat
   — 2026-10-26
+
+## Queued 2026-10-26 by skills/agent-security-measurement
+
+This was a retrofit run, so under the charter's own rule it did steps 3 through
+6 and skipped the reading. Nothing below is a paper this skill cites, and the
+eight open items queued for this skill on 2026-09-30 are still the substantive
+list. What is added here is what the retrofit itself raised, and the first item
+is the one with a measured reason behind it.
+
+- [ ] question — Re-read all four of this skill's papers against the file, the
+  way the skill-library-engineering retrofit re-read its five. That re-read
+  found two of that skill's own numbers wrong, one of them the headline, and
+  both wrong in the skill's favour. This skill's numbers have never had the same
+  treatment: they were extracted on 2026-09-30 and carried through two
+  retrofits without a single figure being checked against its source. The four
+  are `arxiv:2609.06966` (Mole), `arxiv:2609.05903` (EvoSafeHarness),
+  `arxiv:2609.28274` (Shutdown Sabotage) and `arxiv:2609.26761` (A2M). The prior
+  from the one comparable case is two errors per five papers, so the expected
+  yield here is not zero — asked by skills/agent-security-measurement
+  — 2026-10-26
+- [ ] question — Does the hook-set finding generalise past one framework?
+  Delta 4's procedure tells a builder to enumerate hooks against harms, and its
+  evidence is EvoSafeHarness's own three-hook set, on which a final answer
+  involving no tool call is never observed. That is a property of one harness's
+  interface rather than of agent frameworks in general. If a common framework
+  exposes a pre-response or final-answer hook, the invisible class is not
+  invisible there and the procedure gains a step rather than losing one. This is
+  checkable against framework documentation rather than a paper, which makes it
+  cheap — asked by skills/agent-security-measurement — 2026-10-26
+- [ ] question — Is there any published measurement of whether an agent can
+  write the state predicate delta 1 requires? The delta tells a builder that
+  writing the predicate is the work, and every example it gives is one Mole's
+  authors wrote by hand for a simulated organisation. The skill's own review
+  lane already names this as the assumption it most wants reported, and a
+  consumer report would answer it for one system. A paper that measured
+  predicate authorship across systems would answer it for the delta — asked by
+  skills/agent-security-measurement — 2026-10-26

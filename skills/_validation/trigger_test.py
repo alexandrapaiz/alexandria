@@ -658,6 +658,62 @@ def check_receipts(skills_dir: str, results_dir: str) -> int:
     return len(stale)
 
 
+# Is every skill's frontmatter loadable by the consumer that loads skills?
+# (--frontmatter, folded into --receipts)
+#
+# This file's own parse_frontmatter and site/lib/skill-provenance.js both read
+# the block with regexes, so both accept frontmatter no YAML parser will load.
+# On 2026-10-26 two of nine shipped skills were in exactly that state:
+# `description:` carried an unquoted ": " in its prose, which makes the whole
+# document invalid YAML, and nothing in this repository noticed because nothing
+# in this repository parses it as YAML. An agent harness does. A skill that a
+# consumer cannot load fires zero percent of the time, which is the failure this
+# library's differentiator is defined against, so it is checked here rather than
+# left to the first consumer to discover.
+def check_frontmatter(skills_dir: str) -> int:
+    """Load every SKILL.md frontmatter with a real YAML parser. Returns the
+    number that fail, which is the number of skills a consumer cannot load."""
+    try:
+        import yaml
+    except ImportError:
+        print("frontmatter: PyYAML is not installed, so this check did not "
+              "run. That is a skipped gate, not a pass.")
+        return 0
+    paths = sorted(glob.glob(os.path.join(skills_dir, "*", "SKILL.md")))
+    bad = []
+    print(f"\nfrontmatter: {len(paths)} skills parsed with PyYAML")
+    for path in paths:
+        slug = os.path.basename(os.path.dirname(path))
+        raw = open(path, encoding="utf-8").read()
+        m = re.match(r"^---\n(.*?)\n---", raw, re.S)
+        if not m:
+            bad.append(slug)
+            print(f"  NO BLOCK {slug}: no frontmatter delimited by ---")
+            continue
+        try:
+            loaded = yaml.safe_load(m.group(1))
+        except yaml.YAMLError as exc:
+            bad.append(slug)
+            first = str(exc).split("\n")[0]
+            print(f"  INVALID  {slug}: {first}")
+            continue
+        if not isinstance(loaded, dict) or not loaded.get("description"):
+            bad.append(slug)
+            print(f"  EMPTY    {slug}: parses, but carries no description")
+            continue
+        print(f"  ok       {slug}")
+    if bad:
+        print(f"\n{len(bad)} of {len(paths)} skills have frontmatter a YAML "
+              f"consumer cannot load: {', '.join(bad)}.")
+        print("The usual cause is a colon followed by a space inside an "
+              "unquoted description. Wrap the value in double quotes; both "
+              "readers in this repository strip them, so the text a router "
+              "scores does not change.")
+    else:
+        print(f"\nall {len(paths)} skills load under a YAML parser.")
+    return len(bad)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description="Trigger test for the alexandria skill library.")
@@ -682,7 +738,9 @@ def main() -> int:
     args = ap.parse_args()
 
     if args.receipts:
-        return 1 if check_receipts(args.skills_dir, args.results) else 0
+        stale = check_receipts(args.skills_dir, args.results)
+        unloadable = check_frontmatter(args.skills_dir)
+        return 1 if (stale or unloadable) else 0
 
     res = run(args.skills_dir, args.decoys, args.engine)
     report(res, args.verbose)

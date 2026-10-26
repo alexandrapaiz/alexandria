@@ -29,7 +29,7 @@
     },
     "evaluation-integrity": {
       "path": "skills/evaluation-integrity/SKILL.md",
-      "sha256": "34d733d220617cc5"
+      "sha256": "9e0b400c41523310"
     },
     "harness-engineering": {
       "path": "skills/harness-engineering/SKILL.md",
@@ -45,7 +45,7 @@
     },
     "skill-library-engineering": {
       "path": "skills/skill-library-engineering/SKILL.md",
-      "sha256": "38ced844dbab7bc1"
+      "sha256": "296527954bfbb053"
     }
   },
   "length_audit": {
@@ -1123,7 +1123,7 @@
     {
       "skill": "evaluation-integrity",
       "source": "skills/evaluation-integrity/triggers.json",
-      "skill_sha256": "34d733d220617cc5",
+      "skill_sha256": "9e0b400c41523310",
       "suite_version": 1,
       "cases": [
         {
@@ -2185,7 +2185,7 @@
     {
       "skill": "skill-library-engineering",
       "source": "skills/skill-library-engineering/triggers.json",
-      "skill_sha256": "38ced844dbab7bc1",
+      "skill_sha256": "296527954bfbb053",
       "suite_version": 1,
       "cases": [
         {
