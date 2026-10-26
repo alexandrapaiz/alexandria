@@ -72,11 +72,16 @@ ARXIV_MAX_PER_CAT = 2000
 # No arXiv rows in `papers` yet, so there is no cursor to page back to. Two
 # days is the census's floor: one day of cs.AI already overflows 100.
 ARXIV_LOOKBACK_DAYS = 2
-# arXiv announces on weekdays and a paper's submission date can precede its
-# announcement, so the newest date we hold is not proof we hold that whole
-# day. The window reaches back past the cursor by this much, and the upsert
-# already discards what it has seen, so the overlap costs requests and not rows.
-ARXIV_CURSOR_OVERLAP_DAYS = 2
+# arXiv announces on weekdays and a paper is searchable by submission date
+# only once it is announced, so the newest date we hold is never proof that we
+# hold that whole day, and the lag is not one day. Measured live on 2026-10-26
+# at 19:00Z against this job's own query: the newest announced cs.CL
+# submission date was 2026-10-23, three days back, because nothing announces
+# over a weekend. So the window reaches back past the cursor far enough to
+# cover a weekend and a day, which is what stops the cursor from stepping over
+# papers that were not yet announced when it moved. The upsert discards what
+# it has already seen, so the overlap costs requests and not rows.
+ARXIV_CURSOR_OVERLAP_DAYS = 4
 # The furthest back any cursor may send a single run. Past this the backlog is
 # a backfill job and not a daily ingest, and it should be run deliberately.
 ARXIV_MAX_LOOKBACK_DAYS = 14

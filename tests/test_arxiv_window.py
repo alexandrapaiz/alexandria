@@ -131,10 +131,19 @@ def test_no_cursor_window_is_the_two_day_floor():
 
 
 def test_the_window_reaches_back_past_the_cursor():
-    """arXiv announces on weekdays and submission precedes announcement, so
-    the newest date in `papers` is not proof the whole day is there."""
+    """A paper is searchable by submission date only once it is announced, and
+    nothing announces over a weekend, so the newest date in `papers` is never
+    proof the whole day is there. Measured live on 2026-10-26: the newest
+    announced cs.CL submission date was three days back."""
     since, _ = ingest.arxiv_window("2026-10-23", TODAY)
-    assert since == dt.date(2026, 10, 21)
+    assert since == dt.date(2026, 10, 19)
+
+
+def test_the_overlap_covers_a_weekend_and_a_day():
+    """The constant's reason, asserted rather than left in a comment: a run on
+    a Monday resumes from a Friday cursor and must still reach the Thursday
+    before it, because a weekend announces nothing."""
+    assert ingest.ARXIV_CURSOR_OVERLAP_DAYS >= 3
 
 
 def test_a_long_outage_is_clamped_to_the_max_lookback():
