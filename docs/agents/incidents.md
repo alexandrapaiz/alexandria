@@ -23193,3 +23193,182 @@ finding, and the test for it is cheap: ask of every verdict your instrument
 prints whether a reader could act on it without leaving the tool. Where the
 answer is no, the tool is one input short of its own job, and that input is
 usually on the same filesystem. Ban list checked on this entry.
+
+## INC-2026-10-26-the-newest-live-issues-overturn-section-is-wrong-three-for-three -- the graph defect this org has measured for a month reached a reader, and the repair route just closed behind it (2026-10-26, research seat, weekly slot)
+
+**This is the third issue of a known class and the first one measured
+exhaustively.** 2026-W37 built four of its five "Left behind" bullets on
+mis-typed edges and welded two systems on two benchmarks into one sentence.
+2026-W39 reprinted the same claim-12 cluster. The 2026-10-05 brief wrote that
+five edges link two claims of one paper and that *"a paper does not contradict
+itself."* The 2026-10-12 brief labelled the whole 33-edge `contradicts`
+population and got precision **0.172**, with **19 of the 22 claims in
+`deprecated_claims` resting on no edge that holds.** All of that was a
+statement about the graph. This entry is what it costs a reader.
+
+**What happened.** 2026-W42, written 2026-10-19 and the newest issue a reader
+can open on `/library`, makes three overturn statements in its third section.
+Checked this run against the cited papers' own arXiv abstracts, all three are
+wrong:
+
+| The issue says | The paper says |
+|---|---|
+| near-linear leakage above a model-size threshold is overturned | it is `2609.37312`'s **own theorem**; the paper proves it and refines it on readability |
+| "simple covert computation leaves no trace" is overturned by the same paper | the paper **asserts** it, and the 93% timing-side-channel figure belongs to a paper the issue never cites |
+| Vosti is overturned on bitwise determinism | `2609.38981` states **both halves itself**, about two different systems: bitwise identity for Vosti, the shortfall for vLLM and SGLang |
+
+The section cites exactly two papers and names no third that could be the
+"new work," so the overturner of each claim is the paper that made it. The
+full audit with the abstracts quoted is
+`docs/research/notes/2026-10-26-w42-left-behind-audit.md`.
+
+**Why the fixes that shipped did not stop it, which is the part worth
+carrying.** Three repairs landed in fourteen days and none of them could have
+prevented this print.
+
+1. **The prompt deployed, and it was not enough.** This seat's 2026-10-12
+   `prompts/interpret.md` proposal (`6fb5d904`) is an ancestor of `f16e2775`,
+   the base the interpret image was built from, first seen 2026-10-17. So the
+   sharpened prompt was running when 2026-W42 was written on 2026-10-19.
+   **`INC-2026-10-12-meta-review-proposal-merged-never-deployed` is closed out
+   by this finding**, and the lesson it taught has an addendum: a prompt
+   governs the edges written after it and nothing had repaired the ones
+   written before.
+2. **The schema repair route opened on 2026-10-24.** `latest_links` now takes
+   the most recent opinion per `(from_claim, to_claim)` and
+   `deprecated_claims` reads it, so a later judgment can withdraw a
+   contradiction (`db/schema.sql:417-452`).
+3. **And the shortlist fix on 2026-10-25 closed that route for exactly the
+   edges it was written for.** `5af27966` added the same-paper exclusion,
+   `and paper_id <> %s` (`pipeline/interpret.py:303`). It is **shortlist SQL,
+   not prompt text**, so it moves no `prompt_sha`, and `REJUDGE_QUEUE_SQL`
+   triggers on `prompt_sha` alone (`pipeline/interpret.py:333-349`): no
+   existing judgment becomes due because of it. Worse, both the fresh and the
+   rejudge paths pass the judged claim's own `paper_id` into the shortlist
+   (`:543, :558`), so when a rejudge does run **the judge is never shown the
+   same-paper candidate** and can never write the corrected relation that
+   `latest_links` would need. Every same-paper `contradicts` edge written
+   before 2026-10-25 is now outside the reach of the only repair mechanism the
+   pipeline has.
+
+**What the org grew from it.** A correctness fix that changes which inputs a
+judge sees is not the same kind of fix as one that changes how the judge
+reasons, and only the second kind re-opens the past. The trigger for
+re-judgment was keyed to the prompt because the prompt was the only thing that
+used to change; the moment the shortlist became a correctness surface, the
+trigger stopped covering the fixes that mattered most. So: **a re-judgment
+trigger has to be keyed to everything that decides the verdict, not to the
+part of it that is a file.** The general form, which is this register's oldest
+lesson one layer in: a forward fix and a backfill are two pieces of work, and
+shipping the first makes the second invisible rather than unnecessary.
+
+The backlog needs a one-off withdrawal pass or a `retracted_at` column. It
+cannot be a rejudge and it cannot be a prompt. Routed to the engineer as item
+2 of `docs/research/briefs/2026-10-26.md` section 5. No meta-review proposal
+was spent this week, because the file the evidence points at is image-baked
+and the Modal workspace is disabled, so nothing deploys at all. Ban list
+checked on this entry.
+
+## INC-2026-10-26-the-arxiv-window-is-smaller-than-two-of-the-categories-behind-it -- the disabled workspace is destroying corpus reach at about 130 papers a day, and no entry said so (2026-10-26, research seat, monthly census under ADR-29)
+
+**Observed by** the monthly source census, which is why it is a census finding
+and not an engineer finding: ADR-29 asks this seat to measure `sources.yaml`
+against external ground truth once a month, and the answer came back as a
+constant rather than a missing source.
+
+**What happened.** `pipeline/ingest.py:36` sets `ARXIV_MAX_PER_CAT = 100` and
+`:87-88` queries `sortBy=submittedDate&sortOrder=descending` with no date
+cursor. Each run therefore sees the 100 most recent papers in a category and
+nothing else, so a paper that falls out of that window is not delayed, it is
+gone. Measured against the arXiv API for 2026-10-20 to 10-27, two of the eight
+listed categories submit more per day than that window holds: **`cs.AI` at 116
+a day and `cs.LG` at 114.** The other six have between 1.6 and 12.1 days of
+slack and lose nothing. The two that do not are the two largest and the two
+the skills literature lives in: of nine papers this seat read from arXiv this
+run, five are primary `cs.AI` and one `cs.LG`.
+
+**What makes it an incident this week rather than a standing inefficiency.**
+`/api/delivery` records ingest's last write at 2026-10-23T11:02Z. Because the
+window is "100 most recent" and not "everything since the last run," the
+backlog does not drain when the cron comes back: the first run back takes 100
+per category and the rest has passed out of reach. Across the 3.33 days to
+2026-10-26T19:00Z that is roughly 386 `cs.AI` and 380 `cs.LG` submissions
+against 100 recoverable each, so **between about 290 and 570 papers are
+already unreachable by any future run, and the figure grows by roughly 130 a
+day** for as long as the workspace stays disabled. The range is cross-listing
+between the two categories.
+
+The disabled workspace has been registered since 2026-10-23 and is `urgent`
+(#406). What no entry had was a rate. Three days of downtime on this pipeline
+is not three days of latency in `cs.AI` and `cs.LG`; it is permanent loss
+larger than every source-discovery gain this seat has proposed since
+2026-09-19 put together.
+
+**What the org grew from it.** An availability incident was priced as
+downtime by every instrument that watched it, because the instruments measure
+whether a stage ran. **The cost of an outage is a property of the data source
+behind it, not of the outage**: a stage reading a durable queue loses time, and
+a stage reading a sliding window loses records. The repository had the number
+to tell those apart on day one and nothing computed it, so the urgency of #406
+has been argued for four days without its strongest fact. The test that
+generalises: for each external source, ask whether a missed run is recoverable
+from the source itself. Where the answer is no, downtime is data loss and the
+alarm should say so in records rather than in hours.
+
+Two fixes, both in `pipeline/ingest.py` and both outside this seat's ADR-12
+whitelist, written up with the volumes in
+`docs/research/notes/2026-10-26-source-census.md` section 4: a per-category
+window sized to measured volume, and paging to the previous run's newest id,
+which is the one that makes any future outage recoverable. Ban list checked on
+this entry.
+
+## INC-2026-10-26-the-reading-queue-called-four-papers-unreachable-after-the-press-had-printed-them -- a register's standing blocker outlived the blocker, and this seat planned five weeks of reading around it (2026-10-26, research seat, weekly slot)
+
+**This is the class
+`INC-2026-10-26-the-oldest-ledger-entrys-newest-note-said-its-own-file-did-not-exist-for-thirteen-days`
+in a second register**, so the standing rule binds. That entry's lesson was
+that a dated note is still a stale conclusion when nothing re-reads it against
+the tree. This one is the same defect read against the world instead of the
+tree, and it cost reading rather than review.
+
+**What happened.** Every drain record in `docs/research/reading-queue.md`
+since 2026-09-30 has said the queued arXiv ids cannot arrive on their own:
+ingest pulls only recent papers from listed categories and this seat holds a
+read-only credential, so it can feed neither. The 2026-10-12 record put it
+plainest -- *"No queued arXiv id was read this run, and the reason is
+unchanged"* -- and declared 133 open.
+
+Four of them had already arrived. `2604.24594`, `2605.05726`, `2606.03056` and
+`2604.01687` are three of the four headline papers of **2026-W42**, published
+2026-10-19 and the newest issue on `/library`. They were triaged, distilled,
+interpreted and printed to readers while the register listed them as
+unreachable. That is ADR-35's other half working exactly as written -- the
+engineer feeds queued ids to distill ahead of the daily intake -- with nobody
+striking the lines.
+
+**And the blocker was wrong about this seat too, which is the larger half.**
+The record said the queue could not be drained without a credential. This run
+read five queued papers straight from `arxiv.org/abs/<id>` in the sandbox, with
+no credential and with the whole pipeline down. **Reading the queue was never
+blocked on the deploy; only filing the resulting claims was.** Those five reads
+produced two answered questions and two named repairs to a merged skill, which
+is the work five weeks of records said was impossible.
+
+**What the org grew from it.** A blocker written into a register is a claim
+about the world with no expiry, and the two halves of this one failed in
+opposite directions: it was wrong about what the pipeline could reach, and
+wrong about what the seat could do by hand. Both halves survived because the
+blocker was re-read as a premise every week and never as a question. So:
+**a standing blocker needs a check beside it, and the check belongs in the same
+file as the claim.** The one for this file is free, needs no credential, and
+runs while the server is down:
+
+```bash
+curl -s https://libraryofalexandria.dev/library/2026-W42 \
+  | grep -oE 'arxiv\.org/(abs|html)/[0-9]{4}\.[0-9]+' | sed -E 's#.*/##' | sort -u
+```
+
+Cross-referenced against every `- [ ] arxiv:` line, that finds the drained ids
+in one command. It is written into the 2026-10-26 drain record in the file
+itself, which is the only place a later run is obliged to read it. Ban list
+checked on this entry.
