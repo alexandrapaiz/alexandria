@@ -21752,9 +21752,9 @@ has nothing to go red against.
   on 2026-10-25 as `5af27966` at `pipeline/interpret.py:303`. It is not in the
   deployed base. So new edges stop being written the day the workspace comes
   back, and that is not what this entry is about.
-- What, and it is the research seat's finding stated as an ask: the fix for new
-  edges makes the existing ones permanently unrepairable, and the four steps
-  are each checkable. A claim becomes due for a second opinion only when the
+- What: the research seat's finding stated as an ask. The fix for new edges
+  makes the existing ones permanently unrepairable, and the four steps are each
+  checkable. A claim becomes due for a second opinion only when the
   current prompt has never read it, because `REJUDGE_QUEUE_SQL` keys on
   `prompt_sha` and nothing else. The same-paper exclusion is shortlist SQL, so
   it does not move `prompt_sha` and no existing judgment becomes due. Both the
@@ -21770,7 +21770,7 @@ has nothing to go red against.
   wrong, and **19 of the 22 claims in `deprecated_claims` rest on no edge that
   holds**. This is the product's stated differentiator and the issue's own
   subtitle promises it.
-- First step, and it is a query rather than a migration: list the same-paper
+- First step: a query rather than a migration. List the same-paper
   `contradicts` edges, `select l.from_claim, l.to_claim from claim_links l join
   claims a on a.id = l.from_claim join claims b on b.id = l.to_claim where
   l.relation = 'contradicts' and a.paper_id = b.paper_id`. The count decides
