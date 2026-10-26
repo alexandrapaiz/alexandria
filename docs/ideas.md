@@ -21845,7 +21845,7 @@ has nothing to go red against.
   provenance back to the owner's own correction and a reader can ask whether the
   rule is still what she asked for. Vale styles cite a style guide by
   convention and nothing checks the citation.
-- What, as the idea: collapse the four word lists and their four identical
+- What: collapse the four word lists and their four identical
   loops into one table of rule declarations, each row naming its terms, level,
   rule name, ban-list entry and whether it is scoped to headings, with the word
   edge as the default and a `nonword` flag as the only way to opt out. The four
@@ -21857,5 +21857,99 @@ has nothing to go red against.
   the proof: the rule names, levels and ban-list entries they assert are the
   table's columns, so a refactor that keeps them green has preserved every
   finding the gate makes today.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Semantic Scholar hands you the diff between two releases, where arXiv hands you a window and expects you to have kept up (engineer seat, message run)
+- Trigger: the daily craft scan, pointed at this run's own build. The work was
+  the arXiv window, so the scan went to the nearest product in the world that
+  has the same problem and publishes its answer: Semantic Scholar's Datasets
+  API, which is in `docs/market/landscape.md` already and which every reader of
+  this repository would call a corpus rather than a competitor.
+- **What is worth stealing.** Their incremental path is not a window at all. A
+  consumer names the release it last holds and the API returns the chain of
+  diffs from there to now, one object per sequential release, each carrying an
+  update-files list to insert or replace by primary key and a delete-files list
+  to remove. The consumer's own position is the request parameter. A missed
+  month is a bigger download and not a hole, and the source is what makes that
+  true rather than the client's diligence
+  (api.semanticscholar.org/api-docs/datasets, read 2026-10-26, and the
+  endpoint shape in allenai/s2-folks).
+  What lands on this repository is the question that distinguishes the two
+  designs, which is the one today's incident generalized to: is a missed run
+  recoverable from the source itself. arXiv's answer is yes but only if you ask
+  by date, which is why the fix shipped today had to invent the cursor the API
+  does not keep for us. Semantic Scholar's answer is yes and the source keeps
+  the cursor's meaning. The steal is to write that property down per source
+  rather than to rediscover it per outage.
+- **What alexandria does better.** Two things, both about the reach rather than
+  the transport. Their dataset is one flat corpus and the consumer does the
+  ranking; ours carries a tier on every row at the moment of ingest, so a
+  human's curated pick upgrades a paper the firehose already saw and the
+  triage prior is part of the record rather than a later join. And this
+  pipeline refuses to report a successful run when it fetched nothing, with a
+  per-source status row behind the refusal, which is a liveness claim about
+  fifty-three sources that a bulk release cannot make about itself.
+- What: carry the recoverability property in `sources.yaml` next to each source,
+  as the census's volume numbers and one flag saying whether a missed run can
+  be recovered from that source, and have the health instruments price an
+  outage in records rather than in hours.
+- First step: the field on the eight arXiv categories with the volumes section
+  2 of the 2026-10-26 census already measured, and one line in
+  `tools/feed_health.py` that multiplies hours of silence by the volume of the
+  sources whose flag is false. `sources.yaml` is the research seat's whitelist
+  under ADR-12, so the field is a schema proposal to that seat rather than a
+  diff this one lands alone.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Every source's outage should be priced in records, and the instruments that watch them measure hours (engineer seat, message run)
+- Trigger: today's handoff, and the sentence the research seat put in
+  `INC-2026-10-26-the-arxiv-window-is-smaller-than-two-of-the-categories-behind-it`:
+  an availability incident was priced as downtime by every instrument that
+  watched it, because the instruments measure whether a stage ran. The
+  repository held the number that turns 3.33 days of a stopped cron into 290 to
+  570 lost papers from the day the constant was written, and nothing computed
+  it, so #406 has been argued for four days without its strongest fact.
+- What: one function that takes a source and a silence, and returns the records
+  at risk, plus the three readers that should print it. `tools/delivery_health.py`
+  and the board alarm say how long a stage has been quiet; neither says what
+  the quiet costs. For a source the pipeline can page back through, the answer
+  is zero and the alarm should say "recoverable" so that a reader stops
+  worrying about it. For a sliding window it is volume times hours, and the
+  alarm should carry the number into the item it opens, because that is the
+  sentence that makes a disabled workspace urgent to a person rather than to a
+  dashboard.
+- First step: the function and its tests against the census's measured volumes,
+  reading the `last write` timestamp `/api/delivery` already serves, with the
+  arXiv categories as its only non-recoverable sources today. One reader
+  first, which is the existing delivery-health print, so the number is
+  observable before it is wired into anything that opens items.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The ingest cursor is inferred from the rows that landed, and it should be the window the run actually finished (engineer seat, message run)
+- Trigger: writing `read_arxiv_cursor` in this run's own change. It resumes
+  from `max(published_at)` over the arXiv rows in `papers`, which is a
+  measurement of what arrived rather than a record of what was asked for. Two
+  ways that is wrong in the lossy direction: one row with a bad or
+  optimistically parsed date moves the cursor forward past papers nobody
+  fetched, and a run that fetches a day successfully and then fails in the
+  upsert leaves the next run believing the day was covered if any part of it
+  landed. Today's window absorbs both with a two-day overlap and a clamp, which
+  is a mitigation and not a record.
+- What: a small `ingest_state` table, one row per source, holding the window
+  the last successful run completed and the time it completed it, written
+  inside the same transaction as the rows it describes. `fetch_arxiv` then
+  resumes from a fact rather than from an inference, a half-finished run
+  resumes where it stopped instead of where it happened to land, and the
+  recoverability idea above gets its "last known good window" from a column
+  instead of from a maximum over a corpus.
+- First step: the table in `db/schema.sql`, the write at the end of
+  `upsert_papers` under the existing connection, and `arxiv_cursor` preferring
+  the state row and falling back to `max(published_at)` when the table is
+  empty, which is what makes the change deployable without a backfill. The
+  tests for the window already exist and take the cursor as an argument, so
+  this is one new test file for the state row and no change to them.
 - Cost: $0
 - Status: proposed
