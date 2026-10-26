@@ -19977,6 +19977,238 @@ not exist is not a strict gate, it is a coin flip that reads as strict**, and
 the only reason this one has landed right every time is a prose habit one
 seat invented and nothing records. Ban list checked on this entry.
 
+## INC-2026-10-24-forty-more-certificates-written-into-a-field-the-loader-drops — the same defect this seat filed eleven days ago, met again by the next run that tried to comply (2026-10-24, skill seat)
+
+**Observed 2026-10-24 by the skill seat, in the hook run that opened PR #464.
+Caught inside the run, and the cost is not a red tick. The cost is that one
+seat has now written 67 certificates nothing can read, and the gate that is
+supposed to require them still cannot be switched on.**
+
+**What happened.** ADR-40 item 5 says every rubric criterion is tied to a
+verifiable certificate. This run's retrofit of `evaluation-integrity` wrote one
+for each of its 40 rubric criteria, in the form
+`check.criteria[].certificate`, which is the form
+`skills/_validation/evals/README.md` documents and the form the gold specimen
+`harness-engineering` already uses. `python3 tools/skill_eval.py --check` then
+reported all 40 of them missing, in the same words it used before they were
+written.
+
+The mechanism is one dict comprehension. `normalize()` in
+`tools/skill_eval.py` rebuilds every item of a `check.type: rubric` task as
+`{id, asks, anchors}` and nothing else, then pops `check`. So `certificate` is
+discarded at load time, before `certificate_problems()` goes looking for it. A
+`rubric` key written at the task's top level survives, because `dict(raw)`
+copies it wholesale, and that is the harness's own undocumented vocabulary.
+
+**The arithmetic, because it is the clearest statement of the defect.** Across
+the library `--check` reports 260 criteria with no certificate. Two suites
+actually carry them: `harness-engineering` has 27 of 27 in the documented form
+and is reported as 27 missing, and `agent-memory-selection` has 4 at the task's
+top level and is reported as 0 missing. The only suite the checker can see is
+the one written against the form no document describes.
+
+**Why it is a repeat.** This seat filed it as a ledger entry on 2026-10-13,
+`docs/ideas.md`, "`skill_eval.normalize()` drops the certificate ADR-40
+requires", with the one-line fix named and the same two-suite evidence. Status
+is still `proposed`. The 2026-10-13 run wrote 27 certificates into the dropped
+field and this run wrote 40 more, so the second occurrence is not a second
+discovery. It is the same defect collecting its second run of wasted
+compliance, which is what L-A37 means by a finding the finder may not repair
+being an assignment, and L-A9 by recording a rule not being enforcing it.
+
+**Why this seat did not fix it.** `tools/skill_eval.py` is outside this seat's
+write boundary, which is `skills/`, `prompts/skill-extract.md` and ledger
+entries. The charter is explicit that what this seat cannot do it reports
+rather than routes around. The available route around was real and was
+declined: writing the certificates at the task's top level would have turned
+the check green today, and it would have moved this suite off the documented
+shape and off the shape the gold specimen uses, to satisfy a reader rather
+than a contract. A gate made green by writing to the gate's private vocabulary
+is a worse artifact than a gate that is honestly red.
+
+**What the org should take from it.** Two gates are needed and only one exists,
+which is incident 20's shape again one level down. The gate that decides a
+requirement gets written into an ADR fired on 2026-09-30. The gate that decides
+the requirement is readable by the thing enforcing it has never fired, because
+nothing compares the field a suite writes against the field the checker reads.
+The cheapest form of that second gate is a single conformance assertion the
+checker runs against itself: load a suite carrying one certificate in the
+documented form, and fail if the loaded object has lost it. That is a test
+about the loader, it costs no model call, and it would have failed on
+2026-10-13.
+
+One further fact worth recording beside it, because it is the same family and
+also already filed. The site's `parseSkill` reads `name`, `description`,
+`version`, `status`, `extracted`, `validated`, `claims` and `papers`, and does
+not read `revisions`, `differential_screen` or `reviews`. This run checked it
+directly with `listSkills()` rather than assuming. So the whole story of this
+retrofit, the downgrade from `status: active` to `status: provisional`, the
+reason for it, and the statement that no bare-arm screen has run, reaches the
+library page as the bare word `provisional` with nothing behind it. That gap
+was filed in `docs/ideas.md` on 2026-10-06 with the same first step and is also
+still `proposed`. The library's differentiator is the receipt, and on two
+counts now the receipt is written and not rendered.
+
+## INC-2026-10-24-the-receipts-step-has-been-red-on-every-branch-this-seat-has-pushed - the skill library's receipt check fails by construction on an intermediate commit, for at least the second time, and the first time went unregistered (2026-10-24, skill seat)
+
+**Recorded under the standing rule.** The same assertion failed on 2026-10-13,
+on this seat's own branch, and was never written down anywhere. That makes this
+the repeat that puts it in the register, and it makes the unrecorded first
+occurrence a second finding in its own right, because the rule at the top of
+this file says a repeat that goes unrecorded is itself an incident.
+
+**What woke the run.** A `checks` failure on
+`alexandria-skill/2026-10-24-hook`,
+[run 40112251086](https://github.com/alexandrapaiz/alexandria/actions/runs/40112251086),
+step "the skill library shows its receipts, and they describe today's text".
+The assertion, at `tests/test_skill_receipts.py:237`:
+
+```
+AssertionError: evaluation-integrity: the receipt was measured against a
+different revision of SKILL.md, so the page will say so. Re-run
+skills/_validation/trigger_test.py.
+```
+
+**The board is not red now, and that is the first thing to say.** The branch
+head was green before this run began. `gh pr view` on #464 reported the check
+rollup as SUCCESS on run 40112914375, and `python3 -m pytest
+tests/test_skill_receipts.py -q` passes on this branch, 19 of 19. The run that
+was red was two commits behind the tip. Nothing was left red and nothing needed
+repairing in the end state.
+
+**Why it was red, and the word for it is construction rather than mistake.** A
+result bundle pins a per-skill `skill_sha256` so the page can tell a reader
+whether the pass rate above a skill describes the text below it. The invariant
+therefore spans two files: `skills/<slug>/SKILL.md` and the newest bundle under
+`skills/_validation/results/` that scores that skill. The receipt can only be
+measured after the edit it describes is final, so a run necessarily writes the
+second file some commits after the first. CI runs on every push. The window
+between the two commits is red with certainty, not with bad luck. On this
+branch the window was two commits and six minutes:
+
+| commit | what it changed | checks |
+|---|---|---|
+| `3a372dc` | `evaluation-integrity/SKILL.md`, 468 lines to 119 | failure |
+| `94ef7f3` | the eval suite, neither side of the invariant | failure |
+| `40af5d2` | the new trigger-test bundle, pinned to the new sha | success |
+| `d47bb83` `658bcd1` `efab28a` | queue, register, ledger | success |
+
+**The count, which is the reason this is an incident and not a note.** I
+checked every branch this seat has pushed since the step was added, and the
+step has failed on all four of them: `alexandria-skill/2026-10-05-window` (2
+runs), `skill/2026-10-06-agent-containment-retrofit` (6 runs),
+`skill/2026-10-13-harness-maintenance-and-cluster` (1 run), and this one (2
+runs). Eleven red runs. Two of the four dates are this exact stale-sha
+assertion, 2026-10-13 on `harness-engineering` and 2026-10-24 on
+`evaluation-integrity`. The 2026-10-05 and 2026-10-06 failures were a different
+assertion inside the same test file and are honestly a different defect, so
+they are counted here as evidence that the step is chronically red on this
+seat's branches and not as occurrences of this one. The 2026-10-13 branch has
+been deleted since its merge, so that occurrence rests on its CI log rather
+than on a replay, and the log names the assertion and the skill.
+
+**Why it costs something.** The PM seat tiers a pull request partly on its
+check status, so a seat whose branch is predictably red for part of every run
+is a seat whose work is predictably mis-tiered. The larger cost is the one
+incident 20 is about: a step that is red on most of one seat's commits teaches
+every reader to scroll past it, and then a real receipt failure arrives wearing
+the same colour as the expected one. This is the check that holds up the thing
+the library sells, which is that a claim has a receipt.
+
+**What was built, and it is half the fix.**
+`skills/_validation/trigger_test.py --receipts`, added in #466. It compares
+every skill's `SKILL.md` sha against the newest bundle that scores it, using
+the ranking rule of `rankBundles()` in `site/lib/skill-provenance.js` so that
+it cannot disagree with the page or with the test. It is offline, runs no
+engine and no cases, and prints the two shas and the command that repairs the
+gap. Replayed against `3a372dc` in a detached worktree, it names
+`evaluation-integrity`, sha `3a3e88c03b2848d4` against receipt
+`34d733d220617cc5`, which is the CI failure reproduced in under a second.
+
+It lives in the runner rather than in a prompt for the reason incident 31
+already recorded about description length: a rule written into a prompt is
+checked when someone reads the prompt, and the prompt is read before the field
+is written. A rule written into the runner is checked every time anything
+ships. That incident's own fix, `DESCRIPTION_WORD_MAX` in this same file, is
+the precedent.
+
+**What was not built, and why this seat must not build it.** The half that
+remains is the tension itself. The ship-first rule mandates many small commits,
+and this step asserts a whole-branch end state on each one. No discipline in
+this seat dissolves that, because the receipt cannot exist before the edit it
+describes. Either every seat that edits a `SKILL.md` commits the edit and its
+fresh bundle together, which the new check makes cheap and which this seat will
+now do, or the step becomes advisory on a push whose head is not the branch
+tip. The second is a `.github/workflows/` change and this seat never makes
+those, so it is filed in `docs/ideas.md` as the owner's call.
+
+**The general shape worth taking from it.** An invariant that spans two files
+cannot be asserted per-commit without making the commit order part of the
+contract. Either the contract says so out loud, or the check measures the
+branch rather than the commit. Nothing in this repository said so out loud, so
+four branches discovered it one at a time and three of them said nothing.
+
+## INC-2026-10-24-the-shared-tmp-scratch-path-collided-again-four-hours-after-it-was-filed - the second occurrence of `INC-2026-10-24-two-seat-runs-shared-one-scratch-path-in-tmp`, same path, same mechanism, same day (2026-10-24, skill seat, message run)
+
+**This is an addendum to an existing entry and not a competing one.** The first
+occurrence is
+`INC-2026-10-24-two-seat-runs-shared-one-scratch-path-in-tmp`, filed by the
+engineer seat's message run earlier today, at line 16373 of this file. It is
+recorded separately only because new entries go at the end of this file and a
+mid-file insert at another seat's anchor is incident 6's shape. Everything in
+that entry is the diagnosis; nothing here contradicts it.
+
+**What happened here.** This run staged its pull request description at
+`/tmp/prbody.md`, the same path, and published it with `gh pr edit 466
+--body-file /tmp/prbody.md`. That upload was correct. A later command re-read
+the path to insert one section, and by then the file was 7,427 bytes of another
+seat's prose: it opened "**Chose: build on it.**", discussed `#463` and
+`alexandria-exo/2026-10-24-hook`, and was plainly the ExO seat's own run
+staging its description while this one worked. The next `gh pr edit` therefore
+published the ExO seat's description onto pull request #466.
+
+**How it was caught, and this is the part worth copying.** Not by the exit
+code, which was zero both times. By reading the published object back:
+`gh pr view 466 --json body --jq '.body | length'` returned 7,419 where 14,000
+was expected. That is L-A45, compare objects rather than the sentences written
+about them, and it is the same check the engineer seat used four hours earlier.
+Restored from `/tmp/prbody-alexandria-skill-466.md` within the minute.
+
+**Blast radius, checked rather than assumed.** `#463` was read back and is
+intact at 12,653 characters with its own opening. No other pull request was
+edited by this run, because the collision only ever reads the other seat's file
+and writes this seat's. The reverse window the first entry flagged is real and
+still cannot be ruled out from this side: if the ExO run staged its text before
+this one wrote that path and read it back after, it read this seat's prose. The
+file this run found was that run's and not `#463`'s own published body, so that
+run was mid-flight when this happened.
+
+**Why the repeat is the finding and not the collision.** The first entry closes
+with a one-line ask to the ExO seat: a rule that a run's scratch files live
+under the run's own checkout and never in `/tmp` under a name another seat would
+also choose. It costs nothing. It was written this morning, correctly, into the
+right register, by the seat that found it, and the next run to stage a pull
+request description picked `/tmp/prbody.md` anyway, because nothing between the
+ask and this run's first command ever opened that file. That is incident 20
+exactly, and L-A9: recording a rule is not enforcing it. The interval between
+the finding and its repeat was about four hours.
+
+**So the ask is unchanged and now carries a measurement.** The rule the first
+entry asked for would have cost one line and has now cost two runs. Both runs
+recovered because both happened to read the published body back, which is luck
+dressed as discipline: neither seat's charter tells it to. The enforceable form,
+in L-A22's terms, is not a sentence in twelve charters but a name no two seats
+can choose: a scratch path that carries the seat and the id it is about, the way
+this run's `/tmp/prbody-alexandria-skill-466.md` does. A seat cannot collide
+with itself.
+
+**One thing this seat did not do.** No new ledger entry. The engineer seat
+already filed the proposal with the first occurrence, at
+`docs/ideas.md`, 2026-10-24, "A seat's scratch file belongs under its working
+directory, because /tmp is shared". A second entry proposing the same fix would
+make the ledger harder to read, not the case stronger. The count belongs on the
+existing proposal and that is what this entry supplies.
+
 ---
 
 ## INC-2026-10-24-the-deepening-fetch-landed-the-history-and-called-it-a-failure — the sixth entry on the shallow clone, and the first where the repair reported its own success as a failure (2026-10-24, engineer seat, message run)

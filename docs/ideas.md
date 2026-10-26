@@ -18903,6 +18903,148 @@ cutting gates to make a budget.
 - Cost: $0.
 - Status: proposed
 
+### 2026-10-24 — The retrofit shape ADR-38 mandates produces a heading no task can ever cover (skill seat)
+- Trigger: `evaluation-integrity`'s retrofit this run added the "What this file
+  no longer carries" section, which is the shape the approved retrofit
+  (`agent-containment`, PR #237) established and which the gold specimen also
+  carries. `python3 tools/skill_eval.py --check` now reports
+  `no task exercises the section 'What this file no longer carries'`.
+- What: `SECTION_EXEMPT_PREFIXES` in `tools/skill_eval.py` is
+  `("Apply", "Caveats")`, and its comment says deliberately that the list is
+  "the contract's two and not one more", on the reasoning that a harness
+  deciding what a skill must prove would be taking the skill seat's call. That
+  reasoning is right and this heading is still different in kind from the eight
+  it was written for: it documents what the file stopped carrying, so there is
+  nothing in it for a task to score, and a run that adds one is doing what
+  ADR-38 asked. Every future retrofit inherits this finding, so the library
+  accumulates one unfixable finding per retrofitted skill.
+- Why it is a ledger entry: `tools/` is outside this seat's write boundary. The
+  decision is also genuinely the owner's or the chair's rather than this seat's,
+  because it is the same question the comment already answers for the other two.
+- First step: either add the third prefix, or have the coverage check skip any
+  heading that carries no claim and no prescription, which is the general form
+  and the better one. One line either way.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 — Two filed-and-unfixed receipt defects reached their second occurrence in one run (skill seat)
+- Trigger: this run wrote 40 rubric certificates into `check.criteria[].certificate`
+  and `--check` reported all 40 missing, then checked the site's parser with
+  `listSkills()` and found the retrofit's whole explanation unrenderable. Both
+  defects were already filed, by this seat, with the fix named.
+- What: the only new information here is the count. The certificate entry is
+  2026-10-13 in this file, `skill_eval.normalize()` dropping the documented field
+  before `certificate_problems()` reads it: 27 certificates wasted then, 40 more
+  now, 67 total, and `policy.require_certificates` still cannot be switched on by
+  any suite written in the documented shape. The rendering entry is 2026-10-06 in
+  this file, `parseSkill` reading neither `revisions` nor `differential_screen`:
+  this retrofit's downgrade from `status: active` to `status: provisional`, its
+  reason, and its statement that no bare-arm screen has run all reach the library
+  page as one bare word.
+- Why both matter more than their size: ADR-38 made the honest reporting of an
+  unmeasured skill the point of this seat, and the differentiator this library
+  sells is that a claim has a receipt. On both counts the receipt is now written
+  and not readable, once by the checker that demands it and once by the page that
+  sells it. Each fix is one line and neither is this seat's to make.
+- Recorded as `INC-2026-10-24-forty-more-certificates-written-into-a-field-the-loader-drops`,
+  because the standing rule at the top of the incident register admits no
+  exceptions for a second occurrence, and a repeat that goes unrecorded is itself
+  an incident.
+- First step: the owner or the engineer takes the two one-line changes. Until the
+  first lands, every certificate this seat writes is decoration.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 - The receipts CI step has been red on four of this seat's last four branches, and nobody registered it (skill seat)
+- Trigger: a `checks` failure on this seat's own branch,
+  [run 40112251086](https://github.com/alexandrapaiz/alexandria/actions/runs/40112251086),
+  step "the skill library shows its receipts, and they describe today's text".
+  The assertion was `tests/test_skill_receipts.py:237`, `evaluation-integrity:
+  the receipt was measured against a different revision of SKILL.md`.
+- What: a result bundle pins a per-skill `skill_sha256`, so `latestValidation` in
+  `site/lib/skill-provenance.js` can tell a reader whether the pass rate on the
+  page describes the text below it, and `test_skill_receipts.py` makes a stale
+  receipt a build failure. That invariant spans two files, `SKILL.md` and the
+  newest bundle under `skills/_validation/results/`. A run edits the first and
+  records the second several commits later, because the receipt can only be
+  measured after the edit is final. CI runs on every push. So the branch is red
+  by construction for the window in between, and on this run that window was
+  two commits and six minutes: `3a372dc` rewrote the file, `94ef7f3` touched
+  neither side, `40af5d2` recorded the new bundle and the branch went green and
+  stayed green for three more commits. I checked every branch this seat has
+  pushed since the step was added, and the step failed on all four of them:
+  `alexandria-skill/2026-10-05-window` (2 runs), `skill/2026-10-06-agent-containment-retrofit`
+  (6 runs), `skill/2026-10-13-harness-maintenance-and-cluster` (1 run) and this
+  one (2 runs), eleven red runs in total. Two of the four, 2026-10-13 and
+  2026-10-24, are this exact stale-sha assertion; the 2026-10-05 and 2026-10-06
+  failures were a different assertion in the same file and are not this defect.
+- Why it matters more than a transient red: the PM seat tiers a pull request
+  partly on its check status, so a seat whose branch is predictably red for part
+  of every run is a seat whose work is predictably mis-tiered. Worse, a step
+  that is red on most of one seat's commits teaches every reader to scroll past
+  it, which is how a real receipt failure gets missed. The library's whole pitch
+  is that a claim has a receipt, and this is the check that holds that pitch up.
+- First step: the half inside this seat's boundary is already in this PR.
+  `skills/_validation/trigger_test.py --receipts` is new here: an offline check,
+  no engine and no cases, that compares every skill's SKILL.md sha against the
+  newest bundle that scores it, using the same ranking rule as `rankBundles()`
+  so it cannot disagree with the page. Replayed against `3a372dc`, the commit
+  that was red, it names the same skill and the same two shas the CI assertion
+  did, in under a second. Incident 31's lesson is why it lives in the runner and
+  not only in a prompt: a rule in a prompt is checked when someone reads the
+  prompt, and a rule in the runner is checked every time anything ships.
+- One gap that half leaves open, and it is a `tests/` change rather than this
+  seat's. The new mode reimplements `rankBundles()` in Python, and nothing
+  fails if the two copies drift, so the day somebody changes the tie-break on
+  one side the check goes quietly green on a page that says otherwise.
+  `tests/test_skill_receipts.py` already holds the precedent for exactly this,
+  `test_the_sha_matches_the_one_the_trigger_test_records`, which pins the hash
+  expression on both sides of the same wire. One more assertion in that shape,
+  over the ranking rule rather than the hash, closes it.
+- What is left, and it is the owner's call rather than this seat's: whether the
+  receipts step should stay a hard failure on an intermediate commit at all. The
+  org rule that produced this is the ship-first rule, which mandates many small
+  commits, and the step asserts a whole-branch end state on each one. Those two
+  rules are in direct tension and no amount of discipline in this seat removes
+  it, because the receipt genuinely cannot exist before the edit it describes.
+  The options are a one-commit discipline (the runner check above makes that
+  cheap, and it is what this seat will now follow), or making that one step
+  advisory on a push whose head is not the branch tip. The second is a
+  `.github/workflows/` change, which this seat must never make.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-24 - L-A31 arrived from HQ naming a command this repository does not have, and this run is the first red check since (skill seat)
+- Trigger: this run was woken by a red check, so `docs/standards/lessons.md`
+  L-A31 bound it directly. That law says the first question about a red check
+  is whether a runner ever took the job, and it names the instrument:
+  `tools/check-run-ran.py <run-id|url|--branch X>`. There is no such file here.
+- What: `tools/check-run-ran.py` is named four times in the vendored standards
+  (lines 687, 1337, 1846 and 2584) and once in `docs/sprints/pending.md`, and
+  `ls tools/` does not list it. The PM run that merged the 2026-10-17 HQ sync
+  read L-A31, quoted the command, and wrote that no local charter line
+  contradicted it, which was true; what nobody checked is whether the command
+  the law is enforced by came with the law. It did not. So L-A31 is enforced in
+  alexandria at the reliability of a model reading a file, which is the exact
+  condition L-A22 exists to forbid.
+- Why it matters: this run answered L-A31's first question anyway, with
+  `gh run view <id> --json jobs`, which showed 17 recorded steps and one real
+  failure, so the red was the branch and not the machinery. That is the right
+  answer reached by the wrong route, and the next seat woken by a zero-step red
+  has no cheap way to tell it apart from a genuine failure. It will read a diff
+  for a cause that is not in the diff, which is the cost L-A31 was written to
+  stop.
+- First step: either vendor `tools/check-run-ran.py` from the parent alongside
+  the law that names it, or relay to the chair that a standard shipped without
+  its instrument. The second is the general fix and it is a question about the
+  sync process rather than about this one file, which makes it the ExO seat's
+  relay (`docs/agents/hq-relay.md`) and not this seat's. `tools/` and the relay
+  are both outside this seat's write boundary, so this is filed rather than
+  built. The underlying shape is L-A22's: a law syncs as text and its gate does
+  not sync with it.
+- Cost: $0.
+- Status: proposed
+
 ### 2026-10-24 — The deepening fetch should report how long it took, so the ceiling on it is a distribution rather than one measurement (engineer seat, message run)
 - Trigger: today's incident. `DEEPEN_TIMEOUT_SECONDS` is 90 and its comment
   says the number was measured rather than guessed, at 4.5 seconds for this
@@ -21252,6 +21394,251 @@ has nothing to go red against.
   because a bound that a daily append crosses by accident is one that a run
   reaches back to repair every second day, and every one of those repairs is
   a seat editing entries rather than building.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The register resolver refuses on a precondition its own audit makes unnecessary, and it refuses the one register that needs it most (skill seat)
+- Trigger: this run's rebase of #466. Two registers conflicted and
+  `python3 tools/resolve_register_conflict.py --dry-run`, replayed in a
+  detached worktree afterward, answers them differently:
+  `docs/ideas.md: kept both appends, ours first (142 lines) then theirs (1096
+  lines)` and `docs/agents/incidents.md: refused, theirs changed something that
+  is not the end of the file, so this is not two appends`. The accepted file's
+  output is byte-identical to the hand resolution. The refused file is the one
+  the hand got wrong, by two duplicated lines that the tool's own `--check`
+  then named. This is the second merge running where the same file is refused
+  for the same reason, the first being #466's own 2026-10-24 merge.
+- What: `trailing_block()` requires theirs to be the base plus a single block
+  at the end of the file. Measured against this branch's merge base, main's
+  diff on `docs/agents/incidents.md` is four hunks, at lines 18611, 18969,
+  19386 and 19452, and every one is a pure insertion with no deletions. Three
+  are mid-file, because a seat filing an entry puts it next to the entry it
+  relates to. So the precondition rejects additions that cannot conflict. The
+  proposal is to accept a theirs whose changes are all insertions that do not
+  touch the conflicted region, and to let `audit()` be the thing that decides,
+  since the identity
+  `count(resolved) == count(ours) + count(theirs) - count(base)` is already
+  computed and already catches both the deletion direction
+  (`INC-2026-10-24-a-hand-resolved-register-append-deleted-another-seats-line-with-no-marker`)
+  and the duplication direction (this run). A precondition that is stricter
+  than the check it guards sends the hardest file to the hand every time, and
+  the hand is what both of those entries are about.
+- First step: one function in `tools/resolve_register_conflict.py`, plus a test
+  in `tools/tests/` or `tests/` that reproduces this exact three-insertions
+  shape and asserts the tool resolves it and the audit balances. `tools/` is
+  not this seat's write surface, so this is filed for the engineer seat rather
+  than built. The second-cheapest thing, which needs no code, is that
+  `docs/agents/incidents/inbox/` now exists on main and an entry written there
+  never reaches this conflict at all. The three entries this branch appended
+  directly to the register predate the inbox and are what conflicted.
+- Amended 2026-10-26, same seat, next merge, because the proposal above is
+  wrong in both of its terms and the evidence arrived eight hours later. This
+  run merged #535 and the tool refused `docs/ideas.md`, the very file it had
+  accepted that morning, with `refused, ours changed something that is not the
+  end of the file`. **Ours**, so the precondition is symmetric and a repair
+  that names only `theirs` fixes half of it. And over this merge's base
+  `702542fc` main's diff on that file is 9 hunks, 1258 insertions and **1
+  deletion**, a single-line voice fix replacing a section sign with the word
+  `section`, so the
+  **all insertions** term refuses it too. One modified line anywhere above the
+  tail is enough, and a register collects those as soon as any seat fixes a
+  typo in an old entry. Then main moved while this pull request was being
+  readied, the branch merged `origin/main`, the same file conflicted again and
+  the tool refused again on ours, **with both sides pure insertion this time**:
+  ours 2 hunks, 337 insertions, 0 deletions, theirs 2 hunks, 211 insertions, 0
+  deletions. Not one modified line on either side and still a refusal, because
+  one of ours sits mid-file. That is the second term disproved outright rather
+  than argued, so no narrowing on the *kind* of change can be the predicate.
+  The condition that matches the evidence names neither side nor the kind of
+  change: accept when neither side's changes outside the conflicted hunk
+  overlap the other side's, which is what makes two appends independent, and
+  let `audit()` decide the rest as the original proposal already argued. Both
+  hand resolutions were audited with `--check` on the merge commit afterward
+  and both returned `balanced, every line of both sides is present once`, which
+  is the proposal's own argument working. Filed as
+  `INC-2026-10-26-the-resolver-refused-the-other-register-and-this-time-on-ours`.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 — Three claim rows to re-verify: the attribution numbers no reading of the paper supports (skill seat)
+
+- Trigger: the ADR-38 retrofit of `recursive-harness-self-improvement` read
+  `arxiv.org/abs/2609.13463` in full, which the charter's retrofit clause does
+  not require and which is the only reason this was found. Section 3's six
+  attribution figures do not match the paper. Four of them, 0.478, 0.620, 0.401
+  and 0.559, appear nowhere in its text. The other two appear in two unrelated
+  tables and not in the comparison the sentence made.
+- What: the skill cites claims 593, 594 and 597 for that section, per eval task
+  `rhsi-t4`'s `source.claims`. One or more of those rows carries numbers the
+  paper does not. This run had no `NEON_RO_URL`, so it could not read the rows
+  and could not say which. The skill text and the eval task are corrected
+  against the paper in this run's pull request. The rows are not, and a
+  corrected skill sitting on an uncorrected row re-introduces the error the
+  next time anything is written from the graph.
+- The paper's actual figures, for whoever does the re-verification: Table 2 is
+  MegaRCA-Mix Opus-4.8 0.471 single-turn to 0.608 continual against 0.479
+  passive, TRAIL weighted F1 0.482 to 0.543 against 0.488, TELBench 0.091 to
+  0.152 against 0.091. Table 3 is the reversal on short logs, AgentRx GPT-5.5
+  0.310 to 0.241 and Who&When GPT-5.5 0.516 to 0.437. The model-tier ablation
+  is Sonnet-5 at 0.505 against Fable-5's 0.498 at about 64 percent of the cost.
+- First step: a run with a database reads rows 593, 594 and 597 against those
+  figures and deprecates or corrects whichever is wrong. Filed for the research
+  seat, since `claims` is not this seat's write surface.
+- Registered as
+  `INC-2026-10-26-a-shipped-skill-carried-four-numbers-that-are-not-in-its-paper`.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 — The retrofit shape that avoids the uncoverable heading, and the one that trips the suite reader (skill seat)
+
+- Trigger: this run retrofitted `recursive-harness-self-improvement` and hit two
+  mechanical findings the previous retrofit had recorded or had not.
+- What: first, the 2026-10-24 entry above records that ADR-38's retrofit shape
+  produces a "What this file no longer carries" heading no eval task can ever
+  cover, so the library accumulates one unfixable `--check` finding per
+  retrofitted skill. This run tested the obvious alternative by omitting the
+  heading and putting the same account in the frontmatter `revisions` list and
+  the pull request instead. It works: `tools/skill_eval.py --check` reports
+  every section of this skill exercised, and the three skills carrying the
+  heading (`agent-containment`, `evaluation-integrity`, `harness-engineering`)
+  each still carry their finding. The frontmatter is also the better home,
+  because `revisions` is already the field a reader consults for what changed
+  and the site renders it.
+- What, second: `suite_version` reads like a revision counter and is not one.
+  `tools/skill_eval.py` has `SUITE_CONTRACTS = (1, 2)` and refuses a suite
+  outright with "contract is 3, this harness speaks 1 and 2". The 2026-09-30
+  note in two eval files says "the suite moved to version 2" in the counter
+  sense, which is what led this run to write 3 and find out. No code change is
+  needed, only a line in `skills/_validation/evals/README.md` saying the field
+  is the format contract and that a revision is recorded in `revision`.
+- First step: for the first finding, nothing. It is a shape this seat can adopt
+  on the next retrofit and has. For the second, one sentence in
+  `skills/_validation/evals/README.md`, which is this seat's surface and is
+  queued rather than written here because this run's pull request is already
+  one skill's worth of change and the charter says one skill per run.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The guard that stops a mis-addressed message is on the door the seats stopped using (skill seat)
+
+- Trigger: this run's event. A `note` from `Ursa/exo` carrying `to_seat: skill`
+  and `to_company: null` woke this seat, and it belongs to Ursa's skill seat.
+  Four checks settle it and all four agree, written up in
+  `INC-2026-10-26-a-note-for-another-companys-skill-seat-woke-this-one-and-one-sender-is-every-instance`.
+- What: measured on the live bus, `/api/messages?limit=500` read at 14:22Z, spanning
+  2026-10-25T23:19Z to 2026-10-26T14:22Z. 352 rows carry both address halves,
+  121 carry neither and are honest broadcasts, 7 carry a company with no seat,
+  20 carry a seat with no company. Fifteen of the 20 name `owner` and one names
+  `everyone`, which `tools/board.py` calls `COMPANYLESS_SEATS` and which have
+  no company by construction. **So the defect is 4 rows, not 20: `pm` three
+  times and `skill` once, and all four were sent by `Ursa/exo`.** Two days ago
+  `INC-2026-10-24-a-message-addressed-to-engineer-is-addressed-to-five-engineers`
+  measured the same four-row count and read it as a property of the bus spread
+  across senders. On this window it is one sender.
+- What, diagnosed: the repair is already written and it is on the wrong door.
+  `tools/board.py send` refuses to create this message, probed both ways this
+  run: `--to-seat skill` with no `--to-company` exits 2 with "'skill' is a seat
+  in more than one company and a message naming only the seat is delivered to
+  all of them", and `--to-seat owner` with no company is accepted, which is
+  right. Its own docstring says why, that "this client should not be able to
+  post the message it just had to warn about." But `docs/board.md` records two
+  doors, and a seat on the host under Temporal reaches the board through the
+  `asc-board` MCP server rather than through that file. The seats left Actions
+  on 2026-10-17, so the enforced door is now the less used of the two and every
+  one of today's four bad rows came through the other one. The reader half is
+  not the gap: `inbox` sorted this note into `ambiguous`, printed "may belong to
+  another company's seat of this name" and exited 3, which is what made this
+  run's proof cheap.
+- What, located: the layer is the finding, and this run got it by being refused
+  twice in one minute. Posting the second reply came back `board said 400 to
+  POST /api/messages: prose must not carry codes or PR numbers`. So the board
+  validates message *content* server-side, where both doors inherit it, and the
+  address rule is the one rule that does not live there. Probed side by side:
+  `--to-seat skill` with no company exits 2 before any HTTP call, out of the
+  client's own code, while the prose probe exits 2 on a 400 from the server.
+- What, widened the same day by the sender's reply, and it changes the
+  condition the first step names. `Ursa/exo` answered this measurement,
+  reproduced it row for row, and returned one correction: the read path is not
+  the wake path. Verified here against the live bus rather than accepted,
+  because it is a claim about a service neither seat owns. The read filter folds
+  the company's case in both directions, so a read scoped to `Ursa` returns the
+  rows addressed to `ursa` and the reverse holds too, and an empty company is
+  present in the scoped read of every company and of a company that does not
+  exist. **So the over-delivered row is the loud half of this defect and not the
+  expensive half.** A row whose company is merely mis-spelled is delivered to
+  nobody, because the waker matches the name exactly while the reader folds
+  first. Twelve rows in one 500-row window carry a company that is not an exact
+  known spelling: ten name `ursa` from three sender seats, one names `asc` where
+  the company is `asc-router`, and one names `Alexandra` where the company is
+  `alexandra-systems`. The full entry is
+  `INC-2026-10-26-the-bus-read-folds-case-and-the-wake-does-not-so-a-misspelled-company-reaches-nobody`.
+- What, narrowed against the sender's own remedy, which is the part this seat
+  owns. The read path does not expand known spellings. It folds case and does
+  nothing else, probed in both directions on both odd strings: `asc-router` does
+  not return the `asc` row and `alexandra-systems` does not return the
+  `Alexandra` row, while the mis-spelled scope returns each. So the twelve rows
+  are two classes. The ten that differ only in case are readable by the right
+  seat, and a pointer is the whole fix, which is what the sender argued. The two
+  that name a different string are not readable by the right seat at all, so a
+  pointer sends the reader to a row it cannot open, and those two need the
+  resend the sender ruled out as expensive.
+- What, and this is the cheapest part of the whole repair: the typo check
+  already exists in `tools/board.py` and is pointed at the wrong half of the
+  address. `company_of` compares the *sender's* company against
+  `KNOWN_COMPANIES` and warns, and `message_payload` never compares the
+  *recipient's* company against anything. Four dry runs, no network call:
+  `--to-company Ursa`, `--to-company ursa` and `--to-company nonesuch` all exit
+  0 and say nothing, identically, while `--to-seat exo` with no company at all
+  exits 2 before any HTTP call with the full refusal. The half the waker is
+  strict about is the half no client inspects, and the half the waker is
+  loosest about is the half every client guards.
+- First step: move the address check next to the prose check, in the server's
+  `POST /api/messages`, rather than adding it to `asc-board`'s `send`. A
+  per-client fix leaves the next client free to do it again, and there are
+  already two clients and one rule in each place. The condition has two halves and
+  this entry originally carried one. The first is the one `tools/board.py` has
+  written and tested: `to_seat` set and `to_company` unset is a refusal unless
+  `to_seat` is `owner` or `everyone`. The second is the half the measurement
+  above added: `to_company` set to a string that is not a company is a refusal
+  too, and it is the more expensive half, because the first loses a message into
+  five inboxes and the second loses it into none. Both halves read the same list
+  the server already holds, so the second costs no new state. The board is the
+  owner's server, on the host, and no part of it is in this repository, so this
+  goes to the chair through `docs/agents/hq-relay.md` rather than being built
+  here. The second-cheapest thing needs no code and is already done: the sender
+  was told, with the measurement, because four of four is one seat's habit and
+  it can stop today.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The ledger's instrument and the ledger's test ratchet different things, and the instrument is the one seats are pointed at (skill seat)
+
+- Trigger: this run merged its predecessor and ran the suite across the merged
+  tree.
+  `tests/test_ledger.py::test_every_live_entry_carrying_a_readable_status_has_the_contract_fields`
+  failed at 208 against its baseline of 206, on a branch whose own pull request
+  body reports `tools/ledger.py --check: 0 blocking, at or under baseline`.
+  Both lines are true. Parsed per ref with the tool's own parser: main 205, the
+  predecessor branch 208.
+- What: `tools/ledger.py` ratchets three populations, `BASELINE = 62` for
+  entries with no readable status, `BASELINE_UNDATED = 4` and
+  `BASELINE_DECOYS = 5`. It never counts `missing_fields`. That ratchet lives
+  only in `tests/test_ledger.py`, holds its own number, and its docstring calls
+  itself "not a gate, a measurement" while being the only thing that fails on
+  it. So the instrument a charter points a seat at is silent on one of the four
+  `CONTRACT_FIELDS`, and its "at or under the recorded baseline" is an accurate
+  answer to a different question. The three offending entries are all this
+  seat's own and all missed the same way, because `^-\s+What:` does not match a
+  qualified label and `- What, measured:` reads like better prose. One seat
+  three times is a habit no instrument interrupted.
+- First step: give `--check` a fourth ratchet over `missing_fields`, carrying
+  the baseline `tests/test_ledger.py` already holds, so the one command a seat
+  runs covers the whole contract. The alternative, which is cheaper and worse,
+  is that `--check` prints that it does not cover contract fields. `tools/` is
+  not this seat's write surface, so this is filed for the engineer seat. The
+  three entries are already repaired here and the count is back to 205, equal
+  to main, with `tests/test_ledger.py` at 26 passed. Recorded as
+  `INC-2026-10-26-the-ledger-instrument-a-charter-names-does-not-ratchet-what-the-ledger-test-ratchets`.
 - Cost: $0.
 - Status: proposed
 
