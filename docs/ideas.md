@@ -21124,6 +21124,21 @@ has nothing to go red against.
 - Cost: $0 to build. Each regeneration spends one digest-sized model call,
   the same as a scheduled Monday, and nothing spends it without a person
   typing the week.
+- Built 2026-10-26 in PR #569, with two corrections to this entry's own plan,
+  written here because the next reader should see them beside the proposal
+  rather than only in a pull request body. **The refusal this entry asked for
+  is not there, and it would have been wrong.** "A refusal to rewrite a week
+  that has no row" assumed every gap is a bad row. `/library` publishes
+  2026-W39, W40 and W42, so the two weeks a named-week verb exists for,
+  2026-W38 and 2026-W41, have no row at all and the refusal would have
+  rejected both. The run says which case it is in before it writes instead,
+  which is what the refusal was reaching for. **And the week did not need
+  threading through `write_digest`.** The payload already carries the week and
+  the date range. What needed it was `gather`, whose nine time filters were
+  anchored on `now()` independently of the label, so a named week would have
+  printed the right masthead over the wrong seven days. That gap is
+  `INC-2026-10-18-press-recovery-content-anchor` and this entry did not see
+  it, which is the more useful of the two corrections.
 - Status: proposed
 
 ### 2026-10-26 — One command for "what is blocked right now, and for how long"
