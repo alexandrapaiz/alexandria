@@ -86,8 +86,8 @@ Queued as "the evaluation that reported random and recency baselines falling
 far behind scored selection on reasoning ... the paper the skill's central
 claim is arguing with."
 
-**First, the queue line is half wrong, and the half matters.** This paper runs
-no random-eviction baseline at all. Its methods are H2O, R-KV, StreamingLLM,
+**First, the queue line is half wrong, the half matters, and the error is not
+the queue's.** This paper runs no random-eviction baseline at all. Its methods are H2O, R-KV, StreamingLLM,
 KNorm, a decoding-enabled SnapKV (SnapKV-D) and ShadowKV. So Random Attention's
 explanation -- that the random baselines lost the prompt -- cannot be checked
 against this paper, because there is no random baseline in it to check. The
@@ -111,6 +111,47 @@ attention is the best importance heuristic. The same table, read against the
 other two papers, says that **the methods that win are the methods that still
 hold the question at the end of decode**, and scoring is how they get there
 rather than why it works.
+
+### And the misattribution is Random Attention's own, verified against both
+### papers it cites
+
+The queue line of 2026-09-29 transcribed its source faithfully. Random
+Attention's section 5.1 closes:
+
+> The same confound explains the large gaps others report between random
+> retention and signal-based selection in previous works (Yuan et al., 2026;
+> Liu et al., 2025): their random baselines perform poorly since the prompt is
+> lost.
+
+Both citations were read this run. **The sentence is wrong about both.**
+
+- **Liu et al., 2025 is `2512.12008`**, which has no random arm, as above.
+- **Yuan et al., 2026 is `2605.09490`**, which does have one -- "(4) Random
+  eviction: uniform random token removal" -- and whose measured gap is
+  "attention-based selection consistently outperforms random eviction (+4-10%
+  across budgets), but both approaches share a devastating failure mode:
+  accuracy collapses from 22% at 70% budget to zero at 50% budget. This is not
+  graceful degradation -- it is a cliff." Its conclusion is that "no amount of
+  smarter scoring can fix a fundamentally destructive operation," which is
+  **Random Attention's own thesis**. It is cited as opposition and it agrees.
+
+So a 4-to-10-point gap in one paper and no gap at all in the other were cited
+as "the large gaps others report," by a paper that measures its own protection
+effect at up to 22.5 points. **The skill's delta 1 currently reads as though an
+independent evaluation had been explained away, and nothing was.** What
+actually happened is better for delta 1 in one way and worse in another: no
+independent evaluation needed explaining away, and the real independent
+disagreement is `2512.12008`'s unprotected 0.07-to-0.80 spread, which the
+confound sentence never addressed because it misread which paper it was
+addressing.
+
+Filed as
+`INC-2026-10-26-a-papers-own-citation-was-wrong-and-the-corpus-carried-it-faithfully`,
+because the general defect is not about this paper. The evidence bar asks
+whether a finding is in a paper; a citation is a finding *about* another paper
+and enters on the citing paper's authority with no check. Three sources make a
+pattern under the charter, and three sources all citing one mischaracterisation
+make a pattern that looks identical from inside.
 
 ### The sharpened claim, and it now clears the three-source bar
 
@@ -731,3 +772,106 @@ the same model on text. **The question stays open in its original form and
 should probably be retired in it**: the two measured text answers move the cheap
 layer out of the network rather than up to its shallow layers, and both report
 real numbers, which the shallow-layer framing does not have outside video.
+
+---
+
+## What this costs the skill, ranked
+
+The skill agent owns the file (ADR-22) and this is a proposal, not an edit.
+Ranked by what a reader of the skill is currently told wrongly, worst first.
+
+0. **Stop saying an independent evaluation was explained away.** Delta 1's
+   framing inherits Random Attention's misattributed confound sentence, which
+   is wrong about both papers it cites (see above). This is first because it is
+   the only item where the skill passes on an error rather than a
+   simplification.
+1. **Add the absolute floor next to delta 1's relative result.** The skill's
+   delta 1 is true and reads as permission. `2605.09490` measures reasoning
+   accuracy at 0-2.5% when half the cache is permanently evicted. The policy
+   choice is cheap; the eviction ratio is the decision. One sentence fixes it.
+2. **Fix "random eviction is the best policy in all four settings once
+   protected."** That is Random Attention's result and the skill states it as
+   the general case. The independent check (`2605.18053`) finds protected-random
+   a **floor** at 79.5% of ceiling against 89-92% for five scorers (p=0.14, not
+   significant), closing to indistinguishable as the budget loosens (p=0.67 at
+   C=512). The decision rule survives; the superlative does not.
+3. **Retire "the trace is nearly free to cut."** Three measurements now say
+   otherwise: cutting the cache **lengthens** reasoning traces, worst at low
+   budgets, sometimes without terminating (`2512.12008`); LiveCodeBench needs a
+   4x window because the trace is indexed later (`2608.26070`); and the skill's
+   own caveat already flags claim 80's redundancy as inferred. The caveat should
+   become a boundary.
+4. **State delta 2's condition.** `2506.16411`'s three noise terms (task, model,
+   aggregator) say when chunking wins, and the skill currently says "chunk, and
+   keep chunks small" unconditionally.
+5. **Say that delta 2 needs no training.** XpandA (`2505.20625`) is untrained
+   and reports 20% over full-context, RAG and prior agent methods from 1k to 1M.
+6. **Add the protection budget: 10% each side, bilateral.** `2605.18053`'s
+   sweep (5% -> 78% of ceiling, 10% -> 89%, 15% and 20% not significantly
+   better) and its budget-matched bilateral ablation (both 10+10 at 89.8%
+   against prefix-only 20% at 55.6% and suffix-only 20% at 60.6%, p<1e-7). The
+   skill says what to protect and this says how much.
+7. **Add the regime boundary for prefix-plus-window**, as the three-way split
+   in the section above. It is the one thing in this batch a builder could act
+   on tomorrow without running anything.
+8. **Promote step 5 from "ours" to cited.** `2605.15184` found inline grep beat
+   inline vector for every harness-model pair, on a benchmark whose answers are
+   licensed by literal spans, and a grep hit is a located quoted span by
+   construction.
+9. **Note that claim 292's margin is against superseded baselines.** GRU-Mem
+   (`2602.10560`) fixes both defects PARSER's argument exploits and reports up
+   to 400% speed-up over vanilla MemAgent. Nobody has run PARSER against it.
+10. **Reconsider the tiering cut on evidence.** The section was cut because both
+    its papers were video. `2605.09490` is text, three model scales, four
+    benchmarks, with a real-hardware prototype.
+
+## Extraction targets, for the skill seat's next run
+
+Ranked by evidence, per the relevance law, not by date.
+
+1. **"The spread between KV eviction methods measures how much protection each
+   one accidentally provides."** Four independent sources, two regimes, two
+   protection conditions, and one of the four isolates the prefix by ablation.
+   This is the strongest cluster the batch produced and no paper states it.
+2. **"Once the prompt is protected, the remaining headroom is coverage, not
+   importance."** `2606.29563`'s bound and 10.35 points, Random Attention's
+   per-head result, and `2605.18053`'s null result on learned credit estimation,
+   which is the control for the alternative.
+3. **The prefix-plus-window regime boundary**, three measured branches.
+4. **"Full cache is not the ceiling."** `2605.09649` by design and `2512.12008`
+   empirically on two model classes.
+
+## What needs filing when the corpus comes back
+
+This run could not write a claim. The reading is done, so the following is a
+transcription job for whoever next holds `distill` and `propose_change`:
+
+- Fourteen papers read in full and one at the abstract, none of them in
+  `papers` as of the 2026-09-29 queue entry. Every number quoted in this note
+  is sourced to a named table or section, so the claims can be written from
+  here and verified against arXiv without a second reading.
+- `2602.10560` must be recorded as abstract-only, the way the 2026-09-26 batch
+  recorded HiSkill and EvoSkill. `tools/read_paper.py` exits 3 on it.
+- The claims this skill rests on that this reading contradicts or narrows:
+  **claim 79** (reads flatter than both its own paper and the independent
+  check), **claim 80 and claim 280** (the trace's redundancy, now measured the
+  other way), and **claim 292** (margin against superseded baselines). None of
+  those is a deprecation; all three are a confidence and a boundary.
+
+## Honest limits of this note
+
+- **No corpus.** Nothing here was checked against existing claims, supports or
+  contradicts edges, or deprecations, because `sql_query` and `semantic_search`
+  were unreachable. Where this note names a claim id it is reading the id out of
+  `skills/context-window-engineering/SKILL.md`, not out of the database.
+- **One reader, one pass.** Fourteen full texts in one run is a reading, not an
+  audit. Every number above is quoted from the paper's own text and should be
+  re-verified before it enters a claim.
+- **`2605.18053` is a single-author preprint from an independent researcher**,
+  v1, with low absolute F1 (a 0.315 full-cache ceiling on Qwen2.5-3B). It is
+  methodologically careful, including a code-level audit of five reference
+  implementations, and it is still one v1. The pattern it supports has three
+  other sources; the specific numbers should be quoted as its own.
+- The protect-the-prompt pattern is four sources and the coverage claim is
+  closer to two plus a theory. They are not the same strength and this note
+  ranks them separately above on purpose.

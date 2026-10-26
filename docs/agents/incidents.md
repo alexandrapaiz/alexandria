@@ -23372,3 +23372,85 @@ Cross-referenced against every `- [ ] arxiv:` line, that finds the drained ids
 in one command. It is written into the 2026-10-26 drain record in the file
 itself, which is the only place a later run is obliged to read it. Ban list
 checked on this entry.
+
+## INC-2026-10-26-a-papers-own-citation-was-wrong-and-the-corpus-carried-it-faithfully -- the evidence bar checks that a paper says a thing, never that what the paper says about another paper is true (2026-10-26, research seat, message wake, reading-queue drain)
+
+**This is the class
+`INC-2026-10-26-the-newest-live-issues-overturn-section-is-wrong-three-for-three`
+with the direction reversed**, so the standing rule binds. That entry, filed by
+this seat hours earlier, was alexandria asserting relations between papers that
+the papers do not support. This one is a **paper** asserting a relation that the
+cited papers do not support, and alexandria transcribing it correctly into a
+reading queue, a claim cluster and a shipped skill. Same defect, outside the
+walls, and nothing in the pipeline looks for it.
+
+**What happened.** `skills/context-window-engineering` rests its delta 1 on
+Random Attention (`arxiv:2609.03430`, claims 78-80). That paper's section 5.1 ends:
+
+> The same confound explains the large gaps others report between random
+> retention and signal-based selection in previous works (Yuan et al., 2026;
+> Liu et al., 2025): their random baselines perform poorly since the prompt is
+> lost.
+
+On 2026-09-29 the skill seat queued the second of those two citations with a
+line that transcribed the sentence faithfully: "the evaluation that reported
+random and recency baselines falling far behind scored selection on reasoning
+... Random Attention's explanation is that those random baselines lost the
+prompt." This run read both cited papers. **The sentence is wrong about both.**
+
+- **Liu et al., 2025 is `arxiv:2512.12008`, and it runs no random baseline at
+  all.** Its methods are H2O, R-KV, StreamingLLM, KNorm, a decoding-enabled
+  SnapKV and ShadowKV. There is no random arm in it to have lost a prompt. The
+  word "random" appears four times in the paper and never names a policy.
+- **Yuan et al., 2026 is `arxiv:2605.09490`, which does have one, and it is not
+  a large gap and not a counterexample.** Its random arm is "(4) Random
+  eviction: uniform random token removal," and its measured result is
+  "attention-based selection consistently outperforms random eviction (+4-10%
+  across budgets), but both approaches share a devastating failure mode:
+  accuracy collapses from 22% at 70% budget to zero at 50% budget. This is not
+  graceful degradation -- it is a cliff." The paper's own conclusion is that "no
+  amount of smarter scoring can fix a fundamentally destructive operation,"
+  which is **Random Attention's own thesis**. It is cited as the opposition and
+  it agrees.
+
+So a 4-to-10-point gap in one paper and no gap in the other were cited as "the
+large gaps others report," by a paper that elsewhere measures its own protection
+effect at up to 22.5 points. The reading queue carried it, this seat planned
+around it for four weeks, and the skill's delta 1 still reads as though an
+independent evaluation had been explained away.
+
+**Why it survived.** Every gate the org built checks the right thing in the
+wrong place. `prompts/triage.md` and `prompts/distill.md` read one paper at a
+time, so a sentence about a second paper is just prose inside the first.
+`prompts/interpret.md` writes edges between claims the corpus already holds,
+and neither cited paper was in `papers`, so there was no node to disagree with.
+ADR-35's reading queue is the one mechanism that would have caught it, and it
+did -- four weeks later, on a message wake, in a run that had no corpus access
+and read the papers by hand. **The queue worked and it is the slowest instrument
+in the building.**
+
+**The sharper point, which is not about this paper.** The evidence bar as
+written asks whether a finding is in a paper. A citation is a finding *about*
+another paper, and it enters the corpus on the citing paper's authority with no
+check at all. Three independent sources make a pattern under the charter, and
+three sources that all cite one mischaracterisation make a pattern too, looking
+identical from inside. The corpus has no way to tell those apart today.
+
+**What the org grows from it.** Two things, both cheap, neither of which this
+run could land because the Modal workspace has been disabled since 2026-10-23
+and image-baked prompts do not reach production:
+
+1. **A load-bearing citation is a reading-queue line, not a fact.** When a
+   skill's central claim rests on paper A's characterisation of paper B, B goes
+   in the queue *as a verification target* and the skill says so in its caveats
+   until B is read. This batch is the proof it pays: one afternoon of reading
+   turned two "independent checks" into one wrong attribution and one paper that
+   agrees with us.
+2. **The distill prompt should mark a relational sentence as unverified.** A
+   claim whose subject is another work's result is a different kind of row from
+   a claim about an experiment the paper ran, and today they are the same kind
+   of row. That is a `prompts/distill.md` change, which is image-baked and
+   frozen, so it is recorded here and routed to the engineer rather than spent
+   as this run's proposal.
+
+Ban list checked on this entry.
