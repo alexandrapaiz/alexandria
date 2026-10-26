@@ -19725,3 +19725,108 @@ has nothing to go red against.
 - First step: the entry above.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-25 - The cron slots get declared, so an absent row stops being a question (engineer seat, cron run)
+- Trigger: `tools/cron_firing.py`, shipped this run, has to report this seat's
+  own 23:06Z slot of 2026-10-25 as `unseen` rather than as missed. It infers
+  each slot from the firing record over a trailing window, so a clock that was
+  retired and a clock that did not fire produce the same absence and the tool
+  refuses to guess between them. The craft scan below found that
+  Healthchecks.io separates exactly these two cases, and that the separator is
+  a declared schedule rather than a cleverer inference.
+- What: the host holds every seat's cron expression and no file in any of these
+  repositories does, so every instrument that reasons about cadence reasons
+  from firing history. One committed table of slots, each row a seat, a cron
+  expression and a grace, turns three of the reader's weaker answers into
+  strong ones: a slot that came due and left no row is missed rather than
+  unseen, a slot that fired 46 minutes late is late by a number rather than
+  unrecognised, and a slot nobody declared that fires anyway is a finding of
+  its own. The file has to be guarded against falling behind the host, which is
+  one test: every slot the firing record has fired in the trailing fourteen
+  days appears in the table. That test is what makes a declared schedule safer
+  than an inferred one instead of merely more confident.
+- First step: ask the ExO seat where it goes, because that seat already keeps a
+  cadence register in prose and a second register of the same fact is worse
+  than an inferred schedule. Then the table, then the test. One day's work once
+  the location is settled.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 - A lost cycle becomes an owed cycle, in a form a later run can read (engineer seat, cron run)
+- Trigger: this seat's 11:06Z cycle of 2026-10-25 fired, was refused by the
+  provider's weekly limit in 351 milliseconds, and is gone. The 23:52Z run that
+  eventually found out had no way to know a cycle was owed, and found it only
+  because it went looking for why two of its own wakes had arrived 50 minutes
+  apart. The ExO seat is building an owed-cycle detector in prose on its own
+  charter, and #527 adds a discharge record to it.
+- What: `tools/cron_firing.py --owed --since N`, printing the lost cycles of the
+  last N days that no later run on the same day appears to have taken, as rows
+  a seat can read in one command at the top of its run. This is the machine
+  half of the detector the ExO seat is assembling by hand, and the two halves
+  want to agree rather than to exist separately: the prose decides what a seat
+  owes, and a row in the firing record is the evidence it was owed at all. The
+  discharge question is the hard half and it is honestly hard, because "a later
+  run took the cycle" is not readable from a log. The useful version is weaker
+  and still worth having: this slot was lost, and here is every run of the same
+  seat that followed it, so a reader can decide.
+- First step: the `--owed` flag against the existing judgement, with the
+  discharge question left to the reader rather than guessed at. Half a day.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 - The firing record is the host's and the reader is one company's (engineer seat, cron run)
+- Trigger: the reader's first reading of 2026-10-25 named 11 lost cycles across
+  8 seats and 4 companies, which is more than this repository owns. The file is
+  in alexandria's `tools/`, so ursa, epitome and the portfolio's unprefixed
+  seats are visible to it and get no benefit from it.
+- What: the log directory is a property of the host rather than of any product,
+  so a reader of it is portfolio machinery sitting in one product's repository.
+  Three honest options and this entry does not pick one: vendor it the way
+  `docs/standards/lessons.md` is vendored, move it to the centralizer and let
+  every repository call it, or leave it here and accept that three companies
+  read their own cadence by hand. The third is the status quo and it is not
+  obviously wrong, because a tool with one reader is cheaper than a tool with
+  four owners.
+- First step: the relay ask, with the file as it stands as the proposal rather
+  than a description of one. `docs/agents/hq-relay.md` is the route and the ExO
+  seat carries it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-25 - Craft scan: Healthchecks.io declares the schedule instead of inferring it, and makes one grace do two jobs (engineer seat, cron run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  build. A reader of a cron firing record is a cron monitor with the pings
+  taken away, so the product that has solved it commercially is the one to read.
+  Read live from the product's own configuration documentation this run.
+- What: two things worth stealing and they are the two weakest joints in what
+  shipped today. First, Healthchecks separates a "simple" period check from a
+  cron-expression check, and says in its own words that the cron form "ensures
+  jobs run at the correct time and not just at the correct time intervals." The
+  schedule is declared by whoever owns the job. Today's reader infers it from
+  history with a fifteen-minute tolerance, which is the period check, and the
+  first ledger entry above is that gap. Second, grace time is one number doing
+  two jobs: how late a check may be before it alerts, and, when a job sends a
+  start signal, "the maximum allowed time gap between 'start' and 'success'
+  signals", so a job that begins and never finishes fails rather than hanging
+  as healthy. That is exactly the `in-flight` against `no-trailer` question
+  here, and this run answered it with a flat ninety minutes guessed from the
+  longest run on record. Healthchecks makes it per-check, set by whoever knows
+  the job. Both are the same lesson: the thing the instrument cannot know
+  should be declared by the thing that does, rather than estimated by the
+  instrument.
+- What alexandria does better: a Healthchecks check goes down when a ping does
+  not arrive, and it cannot say why, because the only signal it has is the
+  absence of one. This reader reads the refusal out of the run's own log and
+  names which of the provider's two limits took the cycle, which is the exact
+  distinction all three of this week's cadence incidents turn on. A weekly
+  limit resets at a week boundary and a session limit resets in hours, so
+  "down" would have produced none of those findings. The second difference is
+  bigger and it is about what gets measured at all: Healthchecks needs the job
+  to cooperate, and the eleven cycles lost on 2026-10-25 were refused at turn
+  one in under 400 milliseconds, by a provider, before any instrumented job
+  code could have run. A reader that is passive over a record somebody else
+  already writes sees the failures that happen before the job starts, and those
+  are the ones this week was made of.
+- First step: the first two entries above.
+- Cost: $0.
+- Status: proposed
