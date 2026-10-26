@@ -87,13 +87,17 @@ Exit:   1 if any check reports a finding, 0 if clean.
 import collections
 import contextlib
 import html
+import html.parser
 import io
 import os
 import pathlib
 import re
 import subprocess
 import sys
+import tempfile
 import unicodedata
+import urllib.error
+import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 BAN = ROOT / "docs/voice/ban-list.md"
@@ -104,6 +108,7 @@ DIGEST = ROOT / "prompts/digest.md"
 #: gate in this repository named it, so the finding that closed writer run 47,
 #: that no gate had ever read the generator, was still true of the second one.
 SHORT = ROOT / "prompts/digest-short.md"
+GENERATOR = ROOT / "prompts/digest.md"
 #: Every file the press writes an issue from. The gates below default to this
 #: list rather than to `DIGEST`, because a default naming one of two generators
 #: reports a clean file and a silent one under the same verdict.
@@ -449,6 +454,41 @@ def shapes(blocks):
 ARXIV = re.compile(r"arxiv\.org/(abs|html|pdf)/(\d{4}\.\d{4,5})(v\d+)?")
 
 
+#: Whether `arxiv.org/html/<id>` exists, per identifier, for one process.
+_HTML_EXISTS = {}
+
+
+def html_full_text(ident):
+    """Does the HTML full text exist for this arXiv identifier?
+
+    The one question law 8's rule leaves to judgment, answered. The rule says
+    to rewrite `abs` to `html` and then says "fall back to the abs page only
+    when the paper has no HTML version", so an `abs` link is a violation or the
+    rule working, and nothing in the artifact says which. This asks arXiv.
+
+    Returns None when the question could not be reached, and a caller that
+    gets None says the artifact was not graded on this axis rather than
+    grading it clean. A bogus identifier answers 404 on both paths, which is
+    what makes a 200 on `abs` with a 404 on `html` the fallback case rather
+    than a broken link.
+    """
+    if ident in _HTML_EXISTS:
+        return _HTML_EXISTS[ident]
+    out = None
+    for path in ("html",):
+        req = urllib.request.Request(f"https://arxiv.org/{path}/{ident}",
+                                     method="HEAD")
+        try:
+            with urllib.request.urlopen(req, timeout=20) as r:
+                out = 200 <= r.status < 300
+        except urllib.error.HTTPError as e:
+            out = False if e.code == 404 else None
+        except (urllib.error.URLError, OSError, ValueError):
+            out = None
+    _HTML_EXISTS[ident] = out
+    return out
+
+
 def links(paths=None):
     """Canon law 8's FORM half, which a prefix check cannot see (ban list 100).
 
@@ -504,7 +544,44 @@ def links(paths=None):
         bad = [s for s in seg if s != "html"]
         if bad and not off:
             print(f"    law 8 wants the html full text, not {', '.join(sorted(bad))}")
-            rc = 1
+            # Which of those the rule excuses, which is the half this check
+            # used to leave to a reading. The rule's own fallback clause is
+            # "only when the paper has no HTML version", so an abs link is a
+            # violation exactly when the html url the rule asks for resolves.
+            # 2026-W42 printed nine abs links and seven of the papers have a
+            # live full text, so seven of its ten links stop at the abstract
+            # against her ruling of 2026-09-19 in her own words, "you didn't
+            # show me the paper". Entry 100's docstring called the stronger
+            # comparison undecidable while the payload is out of reach. The
+            # payload is, and arXiv is not.
+            if os.environ.get("ALEXANDRIA_OFFLINE"):
+                print( "      NOT CHECKED  whether the full text exists for each,")
+                print( "                   ALEXANDRIA_OFFLINE is set, so every abs")
+                print( "                   above is read as a violation")
+                rc = 1
+            else:
+                excused, broke, unknown = [], [], []
+                for seg_name, ident, v in found:
+                    if seg_name == "html":
+                        continue
+                    exists = html_full_text(f"{ident}{v or ''}")
+                    (broke if exists else
+                     excused if exists is False else unknown
+                     ).append(f"{ident}{v or ''}")
+                print(f"      of those, full text exists  {len(broke)}"
+                      f"   no full text {len(excused)}"
+                      f"   unreached {len(unknown)}")
+                for ident in broke:
+                    print(f"      FAIL    abs/{ident} and arxiv serves"
+                          f" html/{ident}")
+                for ident in excused:
+                    print(f"      OK      abs/{ident}, no html version, which"
+                          f" is the rule's own fallback")
+                for ident in unknown:
+                    print(f"      UNKNOWN abs/{ident}, arxiv unreached, so this"
+                          f" link was not graded")
+                if broke or unknown:
+                    rc = 1
         if len(ver) > 1 and not off:
             print("    one artifact disagrees with itself about the version "
                   "suffix, so at least one identifier was composed rather "
@@ -3060,6 +3137,232 @@ def blockrules():
     return rc
 
 
+#: The generator's ABSOLUTE rules, each with the phrase in `prompts/digest.md`
+#: that states it and the pre-send BLOCK rule that can hold an issue breaking
+#: it. `None` in the third position is the finding: a rule the file states with
+#: no budget and nothing between it and a reader.
+#:
+#: Absolute and not merely stated, because the whole file is rules and a list of
+#: all of them is a list of the file. A row belongs here when the generator
+#: gives it a target of zero, or says "never", or the canon numbers it a law and
+#: the owner has ruled on it twice. The phrase is quoted so a row cannot outlive
+#: the rule it describes, which is `blockrules`' technique and the reason that
+#: pass catches a dropped rule.
+ABSOLUTE_RULES = (
+    ("the semicolon",
+     "Count the semicolons. The target is zero and there is no budget",
+     None),
+    ("the em dash",
+     "the same as the em\n  dash",
+     None),
+    ("law 8, the link reaches the full text",
+     "Links reach the full text, never the landing page",
+     None),
+    ("law 8, every item carries its link",
+     "Every item in every section carries its own\n  link",
+     None),
+    ("law 14, a list and a written turn",
+     "Sections running past four paragraphs with no\n  written turn in them",
+     None),
+    ("law 12, the framework's names are never printed",
+     "no part announces itself with a label",
+     "skeleton-heading"),
+    ("the date is not in the title",
+     "The date does NOT belong in this line",
+     "date-in-title"),
+    ("ban list 1, the slop lexicon",
+     '"Delve", "landscape" and "realm"',
+     "slop-lexicon"),
+    ("plain ASCII",
+     "The one exception is a",
+     "typesetter-punctuation"),
+    ("the internal vocabulary stays inside",
+     "says a payload key out loud",
+     "internal-vocabulary"),
+    ("an item never ends on its citation",
+     "The last sentence of an item is not available",
+     "ends-on-citation"),
+)
+
+
+def ungated():
+    """Which of the generator's absolute rules the press can actually hold.
+
+    `blockrules` asks this question in one direction, whether every rule the
+    pre-send gate blocks on is answered in the prompt that writes the short
+    edition. Nothing has ever asked it in the other direction, and the other
+    direction is where the issues go out wrong: a rule the generator states
+    with a target of zero and no budget, with nothing in the pipeline able to
+    stop the send, is enforced at the reliability of a model reading a long
+    file, which is L-A22 in one sentence.
+
+    This run's grade is the argument for the pass. Every live defect in the
+    current edition is a rule `prompts/digest.md` already states in its most
+    explicit available form.
+
+    * Law 8's link rule is bolded, carries a worked `abs` to `html` example
+      with a version suffix on it, and warns about coverage in the same
+      bullet. 2026-W42 printed ten links, nine to the abstract, and arXiv
+      serves the full text for seven of those nine.
+    * Law 1's semicolon rule states the target twice, and the second statement
+      names the precise construction, "two finished sentences in a balanced
+      contrast", from the eight that printed in 2026-W40. 2026-W42 printed two
+      and both are that construction.
+
+    Neither rule is unclear and neither is missing. Both have now failed
+    through prompt wording more than twice, which is the line the writer
+    charter's structure watch draws, and on the far side of that line the fix
+    is a gate rather than a sentence. The pre-send gate blocks on eight rules.
+    Two of them are the exotic typesetting characters and the semicolon and the
+    em dash are not among them, so the mark the generator says has no budget
+    passes the only gate standing between the press and a reader.
+
+        python3 docs/voice/check_voice.py ungated
+    """
+    rc = 0
+    gen = GENERATOR.read_text(encoding="utf-8") if GENERATOR.exists() else ""
+    if not gen or not PRESEND.exists():
+        print(f"  {GENERATOR.name} or {PRESEND.name} is missing")
+        return 1
+    blocks = set(BLOCK_RULE.findall(PRESEND.read_text(encoding="utf-8")))
+    print(f"  absolute rules in {GENERATOR.name}            "
+          f"{len(ABSOLUTE_RULES)}")
+    print(f"  BLOCK rules in {PRESEND.name}      {len(blocks)}")
+    dropped = [(n, q) for n, q, _ in ABSOLUTE_RULES
+               if " ".join(q.split()) not in " ".join(gen.split())]
+    print(f"  rows whose rule has left the generator        {len(dropped)}")
+    for name, quote in dropped:
+        rc = 1
+        print(f"    STALE      {name}: {quote!r} is not in {GENERATOR.name}")
+    held = [(n, g) for n, _, g in ABSOLUTE_RULES if g and g in blocks]
+    phantom = [(n, g) for n, _, g in ABSOLUTE_RULES if g and g not in blocks]
+    open_rules = [n for n, _, g in ABSOLUTE_RULES if not g]
+    print(f"  of those the press can hold                   {len(held)}")
+    for name, gate in held:
+        print(f"    HELD       {name}  ->  {gate}")
+    print(f"  rows naming a gate the pre-send gate lacks    {len(phantom)}")
+    for name, gate in phantom:
+        rc = 1
+        print(f"    PHANTOM    {name}  ->  {gate} is not a BLOCK rule")
+    print(f"  of those nothing can hold                     {len(open_rules)}")
+    for name in open_rules:
+        rc = 1
+        print(f"    UNGATED    {name}")
+    print()
+    print("A rule with a target of zero and no gate is enforced by a model")
+    print("reading a long file, which is the condition L-A22 names. Each")
+    print("UNGATED row above is a rule the generator states absolutely and")
+    print("the press cannot refuse, and every one of them has printed.")
+    return rc
+
+
+#: The paragraph of `prompts/digest.md` that bans the slot name in its
+#: reader-facing dress, found by its own sentences rather than by a line
+#: number, because a line number in a gate is a gate that lies after the next
+#: edit. A banned phrasing inside this span is the ban quoting its specimen.
+SLOT_BAN_OPEN = "The ban is on the slot's IDEA and not on four strings"
+SLOT_BAN_CLOSE = "first job is to say which section the reader is in"
+
+#: The phrasings the ban names, read out of the ban itself. Not a second list:
+#: a hand-kept copy of a list the file already holds is the next thing to
+#: drift, which is this entry's own class one level up.
+SLOT_DRESS = re.compile(r'"(what [a-z ]+)"')
+
+#: A SERIES of slot-shaped phrases, which is the shape that printed and is
+#: what separates the specimen from ordinary English. The generator says
+#: "what changed, with its number" and "the reader who wants to check what
+#: changed" in the course of teaching an item's spine, and a gate that fires
+#: on those is a gate somebody deletes. Two or more of these phrases in one
+#: comma series is a list of the issue's slots and has no other reading.
+SLOT_SERIES = re.compile(
+    r"what (?:is |are |to |)[a-z]+(?:ed|ing|s|n)?\b(?:[^.]{0,40}?,\s*"
+    r"(?:and\s+)?what (?:is |are |to |)[a-z]+(?:ed|ing|s|n)?\b)+")
+
+#: What `slotwords` has to get right, as data rather than as a test file, for
+#: the reason `STANDS_ALONE_CASES` gives. The first two are the specimens that
+#: were standing in `prompts/digest.md` when this gate was written and they are
+#: quoted from it. The third is the sign-off's own three questions, a series of
+#: the same grammar naming nothing the ban names, and a gate tuned only against
+#: the specimens fires on it.
+SLOT_CASES = (
+    (True, "Four slots, her order, same as Monday: what gained ground, what is "
+           "genuinely new, what fell behind, what to read yourself."),
+    (True, "what is gaining ground supports it, what is new tests it, what "
+           "fell behind is the position it replaces."),
+    (False, "what you would watch next, what is still unsettled, what this "
+            "leaves a builder holding"),
+    (False, "Then what changed, with its number and the institution behind it."),
+    (False, "the reader who wants to check what changed has to"),
+)
+
+
+def slot_series(text, dress):
+    """Every series of slot-shaped phrases in `text` that names a banned one."""
+    flat = " ".join(text.split())
+    return [m for m in SLOT_SERIES.findall(flat)
+            if any(d in m.lower() for d in dress)]
+
+
+def slotwords():
+    """Does the generator write the heading it bans, anywhere outside the ban?
+
+    Ban list 143. The file's own bold sentence says "the words that beat it
+    came out of this file", and the run that wrote that sentence banned five
+    phrasings and never swept the file for them. Two specimens were standing
+    when this pass was written, 1,176 lines apart at the furthest, and two of
+    2026-W40's three printed headings are one of them word for word.
+
+    What it reads is a SERIES and not a phrase, because the phrase alone is
+    ordinary English in this file four times over and the series is a list of
+    the issue's slots with no second reading. The phrasings themselves come out
+    of the ban's own quoted list, so this cannot drift from the rule the way a
+    hand-kept copy would.
+
+        python3 docs/voice/check_voice.py slotwords
+        git show origin/main:prompts/digest.md | python3 -c ...   # the proof
+    """
+    if not GENERATOR.exists():
+        print(f"  {GENERATOR.name} is missing")
+        return 1
+    text = GENERATOR.read_text(encoding="utf-8")
+    start, end = text.find(SLOT_BAN_OPEN), text.find(SLOT_BAN_CLOSE)
+    if start < 0 or end < 0:
+        print("  the ban paragraph is not where its own sentences say it is")
+        print(f"    opening found {start >= 0}, closing found {end >= 0}")
+        print("  Nothing below was read, because the scope of this pass is")
+        print("  that paragraph and a guess at it is not a scope.")
+        return 1
+    dress = sorted(set(SLOT_DRESS.findall(text[start:end])))
+    wrong = [(want, case) for want, case in SLOT_CASES
+             if bool(slot_series(case, dress)) is not want]
+    for want, case in wrong:
+        print(f"  BROKEN  the detector is {'missing' if want else 'firing on'}"
+              f" a case it is asserted against")
+        print(f"            {case[:84]}")
+    if wrong:
+        print()
+        print("SLOT_CASES says what this pattern has to do. Nothing below was")
+        print("read, because a detector failing its own cases reports a clean")
+        print("generator for the wrong reason.")
+        return 1
+    print(f"  the detector's own cases       {len(SLOT_CASES)} pass")
+    print(f"  phrasings the ban names        {len(dress)}: "
+          f"{', '.join(repr(d) for d in dress)}")
+    outside = text[:start] + text[end:]
+    hits = slot_series(outside, dress)
+    print(f"  slot series outside the ban    {len(hits)}")
+    for h in hits:
+        print(f"    FAIL    {h[:92]}")
+    if not hits:
+        print("  the file writes the banned dress only where it bans it")
+    print()
+    print("A rule that bans a phrase and then writes it has handed the model")
+    print("the specimen at the position where a heading gets drafted, which")
+    print("is the family ban list 100 belongs to. The ban is not the fix.")
+    print("The sweep is.")
+    return 1 if hits else 0
+
+
 #: The seventeen cases `past_tense_you` has to satisfy, as data rather than as
 #: a test file. `tests/` is the engineer's surface and this seat's is
 #: `docs/voice/`, and a first draft of this gate put them in
@@ -3117,13 +3420,190 @@ IDENTIFIER = re.compile(r"^[A-Z][A-Z0-9_]{3,}$")
 #: check that guesses is one a run learns to skip.
 TOO_BROAD = 2
 
-#: The sentences that say a finding is being handed to another seat. Taken from
-#: this seat's own reviews, which have used all of these.
+#: Identifiers written in prose rather than in backticks that still name one
+#: thing. Measured over the 687 unsettled entries in `docs/ideas.md` on
+#: 2026-10-26, by the same test `IDENTIFIER` was measured by against paths,
+#: which is how many unsettled entries each distinct token sits in:
+#:
+#:     an INC id        96 distinct, 74 in exactly one entry,  7 over TOO_BROAD
+#:     `ban list N`     46 distinct, 34 in exactly one entry,  3 over TOO_BROAD
+#:     `law N`          15 distinct,  4 in exactly one entry,  8 over TOO_BROAD
+#:
+#: So the first two name a defect and the third names a building. Law 15 sits
+#: in THIRTEEN unsettled entries and law 12 in eight, which is worse than the
+#: nine of `check_digest_quality.py`, the path this gate already refuses for
+#: precisely that reason. Run 51 left this widening for the next run and named
+#: "a law, a rule or a file path" as the three invisible classes. Two of those
+#: three are rejected here on the measurement, and the class it did not name
+#: is the one admitted.
+TRACEABLE = re.compile(r"INC-\d{4}-\d{2}-\d{2}-[a-z0-9-]+"
+                       r"|ban list(?: entry)? \d+", re.I)
+
+#: The seats a finding can be handed to, which is every seat but this one plus
+#: the two authorities above them.
+SEATS = r"engineer|frontend|exo|pm|research|skill|owner|chair"
+
+#: The sentences that say a finding is being handed to another seat. The first
+#: version of this took five phrasings from the reviews that existed when the
+#: gate was written, and five is not how many this seat uses. Measured over all
+#: 55 reviews in `docs/voice/reviews` on 2026-10-26, 52 of them hand something
+#: on and the five phrasings found 14. Everything below `in the ledger for the`
+#: is the widening, and it takes the same measurement to 47 of 52.
+#:
+#: That recall number is why the widening is not cosmetic. `routed` reads only
+#: the sections this pattern matches, so a phrasing it misses is a section the
+#: gate never opens, and the `VACUOUS` report added in the same run as this
+#: widening cannot fire on a file whose routing the pattern cannot see. The
+#: specimen was this run's own review, which routed two findings and which the
+#: five phrasings called a review that "routes nothing".
+#:
+#: The recurring forms the five missed, all of them live in this register:
+#: "Filed in `docs/ideas.md`", "Filed, not patched", "filed rather than
+#: anchored", "is filed as urgent", "The cause is the engineer's", "retiring it
+#: is the frontend seat's call", and "not this seat's file to renumber".
 ROUTING = re.compile(
-    r"routed rather than patched|filed rather than patched"
-    r"|rout(?:ed|es?) (?:it |them |both )?to the ledger"
-    r"|(?:goes|go) to the ledger|filed in the ledger"
-    r"|in the ledger for the engineer", re.I)
+    r"(?:fil|rout)(?:ed|es|ing) (?:rather than|and not|not) "
+    r"(?:patched|anchored|fixed|acted)"
+    r"|fil(?:ed|es|ing)(?:,| it| them)? (?:not|rather than) patched"
+    r"|fil(?:ed|es|ing) (?:in|for) (?:the ledger|`?docs/ideas)"
+    r"|fil(?:ed|es|ing) elsewhere"
+    r"|fil(?:ed|es|ing) for the (?:" + SEATS + r")"
+    r"|rout(?:ed|es?) (?:it |them |both )?to the (?:ledger|" + SEATS + r")"
+    r"|(?:goes|go) to the (?:ledger|" + SEATS + r")"
+    r"|in the ledger for the (?:" + SEATS + r")"
+    r"|is the (?:" + SEATS + r")(?:\'s| seat\'s)"
+    r"|(?:is|are) not this seat\'s"
+    r"|escalat\w+ (?:rather than|in|to) ", re.I)
+
+
+#: What `routed_tokens` must and must not pull out of a routing section. The
+#: true cases are the two admitted classes on live specimens and the constant
+#: this gate already read, which is the case that proves the widening took
+#: nothing away. The false cases are the shapes the widening could have
+#: bought. A law number, which the measurement above rejects as a building. A
+#: path, which this gate has always refused for the same reason. And a ledger
+#: heading, which a routing section names as its ESCAPE rather than as its
+#: finding, and which therefore belongs to `acknowledged` and not here.
+ROUTED_CASES = (
+    (True, "filed in the ledger, and INC-2026-10-18-the-duplicate-candidate-"
+     "register-is-not-in-the-charters-read-list is the fourth count",
+     "INC-2026-10-18-the-duplicate-candidate-register-is-not-in-the-charters-"
+     "read-list"),
+    (True, "routed to the ledger. Ban list 140 carries the sweep.",
+     "Ban list 140"),
+    (True, "routed to the ledger, and ban list entry 93's unenforced half",
+     "ban list entry 93"),
+    (True, "routed rather than patched, about `INTENSIFIERS` matching \"very\"",
+     "INTENSIFIERS"),
+    (False, "routed to the ledger, because canon law 15 has no gate.",
+     "law 15"),
+    (False, "routed to the ledger, naming `pipeline/weekly.py` as the file.",
+     "pipeline/weekly.py"),
+    (False, "duplicates\n`2026-10-05 \u2014 Coverage of links and evidence "
+     "grades is a pipeline gate, not a\nprompt rule`, which is this seat's",
+     "2026-10-05 \u2014 Coverage of links and evidence grades is a pipeline "
+     "gate, not a prompt rule"),
+    # An identifier that wraps still comes out, because `TRACEABLE` is read
+    # over normalised text. The backticked half of this reader is not: a span
+    # is matched within one line. That costs nothing, because `IDENTIFIER`
+    # forbids whitespace, so a span it matches cannot wrap by construction.
+    (True, "filed in the ledger. INC-2026-09-30-branch-name-reuse-is-systemic\n"
+     "is the entry.", "INC-2026-09-30-branch-name-reuse-is-systemic"),
+)
+
+
+#: What `ROUTING` must and must not read as handing a finding on. Every true
+#: case is a sentence taken verbatim from a review in this register, and the
+#: first five are forms the original five phrasings missed. The false cases are
+#: the shapes that look like a route and are not: a finding this run FIXED, a
+#: count of rulings in a gate's own output, and a sentence about this seat's own
+#: file, which is the lane rather than a handoff.
+ROUTING_CASES = (
+    (True, "Filed in `docs/ideas.md` for the engineer, with the query fix."),
+    (True, "Filed, not patched. For the engineer."),
+    (True, "all 49 anchored entries, with 43 and 44 filed rather than anchored"),
+    (True, "The cause is the engineer's, is filed as urgent, and is not "
+     "restated here."),
+    (True, "retiring it is the frontend seat's call, not this run's"),
+    (True, "docs/agents/incidents.md, which is not this seat's file to "
+     "renumber"),
+    (True, "Law 8's form half goes to the engineer instead."),
+    (True, "routed rather than patched, about `INTENSIFIERS`"),
+    (False, "The procedure now renders as a list, which is the one prompt "
+     "patch in this diff."),
+    (False, "`check_voice.py taste` reports 31 rulings, 27 enforced and "
+     "quoted."),
+    (False, "The generator is this seat's own surface and the patch is here."),
+)
+
+#: What `entry_name` must strip and must keep. The first is run 51's entry,
+#: the specimen that proved the matcher wrong. The last two are the shapes
+#: that would break if the pattern were greedy or unanchored: a title whose
+#: own words end in a parenthesis it needs, and a heading with no attribution
+#: at all, which most of the older entries are.
+NAME_CASES = (
+    ("2026-10-05 — Coverage of links and evidence grades is a pipeline gate, "
+     "not a prompt rule (writer seat)",
+     "2026-10-05 — Coverage of links and evidence grades is a pipeline gate, "
+     "not a prompt rule"),
+    ("2026-10-26 — The rewrite is a substitution (writer seat, run 51)",
+     "2026-10-26 — The rewrite is a substitution"),
+    ("2026-10-24 — The outsider gate (law 12a) belongs in the pre-send pass",
+     "2026-10-24 — The outsider gate (law 12a) belongs in the pre-send pass"),
+    ("2026-09-24 — The quality gate passes the issue she rejected",
+     "2026-09-24 — The quality gate passes the issue she rejected"),
+)
+
+
+def routed_cases():
+    """Every case above, run before any review is read.
+
+    `headless_cases` and `state_cases` are the precedent and the reason is the
+    same: a detector that fails its own cases reports a clean diff for the
+    wrong reason. This gate spent its whole life so far doing exactly that,
+    and the proof is that run 51's review routed a finding and the gate found
+    nothing in it to check.
+    """
+    bad = []
+    for want, section, token in ROUTED_CASES:
+        got = token in routed_tokens(section)
+        if got != want:
+            bad.append((want, token))
+    for head, want in NAME_CASES:
+        if entry_name(head) != want:
+            bad.append((want, entry_name(head)))
+    for want, line in ROUTING_CASES:
+        if bool(ROUTING.search(line)) != want:
+            bad.append((want, line))
+    return bad
+
+
+def routed_tokens(section):
+    """What one routing section names that can be looked up in the ledger.
+
+    Two classes, kept apart because they are matched differently. A constant
+    is matched exactly, as this gate always has. A `TRACEABLE` identifier is
+    matched case-insensitively over normalised text, because "ban list 140"
+    wraps in a ledger body and this register capitalises it both ways.
+    """
+    out = {t.strip() for t in re.findall(r"`([^`\n]+)`", section)
+           if IDENTIFIER.match(t.strip())}
+    out |= {norm(m.group(0)) for m in TRACEABLE.finditer(norm(section))}
+    return out
+
+
+#: A ledger heading ends in its attribution, "(writer seat, run 51)" or
+#: "(frontend seat, for the writer seat)", and that parenthetical is metadata
+#: about who filed the entry rather than part of the entry's name. A run
+#: naming an entry writes the title and drops it, which is what run 51 did:
+#: it named "2026-10-05 — Coverage of links and evidence grades is a pipeline
+#: gate, not a prompt rule" and the heading carries "(writer seat)" after it,
+#: so an exact match on the heading said the entry had not been named. Matching
+#: the name and not the attribution is why `routed` does not report that
+#: review as a run that routed a finding blindly.
+ATTRIBUTION = re.compile(r"\s*\([^()]*\)\s*$")
+
+entry_name = lambda head: norm(ATTRIBUTION.sub("", norm(head)))
 
 
 def ledger_entries(text=None):
@@ -3178,6 +3658,16 @@ def routed(ref=None):
         python3 -I docs/voice/check_voice.py routed origin/main
     """
     ref = ref or "origin/main"
+    bad = routed_cases()
+    if bad:
+        for want, token in bad:
+            print(f"  CASE    wanted {want}: {token[:62]}")
+        print("The token reader is broken and ROUTED_CASES says how. Nothing")
+        print("below was read.")
+        return 1
+    print(f"  the token cases               {len(ROUTED_CASES)} pass")
+    print(f"  the entry-name cases          {len(NAME_CASES)} pass")
+    print(f"  the routing cases             {len(ROUTING_CASES)} pass")
     out = subprocess.run(["git", "diff", "--name-status", ref],
                          cwd=ROOT, capture_output=True, text=True)
     reviews = []
@@ -3205,7 +3695,12 @@ def routed(ref=None):
         [(ROOT / r).read_text() for r in reviews]
         + [text for path, _, text in added_lines(ref)
            if path == "docs/ideas.md"]))
-    clashes, broad = [], []
+    # The entries this diff names anywhere, counted once. A routing section
+    # that hands a finding on is doing the right thing when the run names the
+    # entry it is not duplicating, and that naming may sit in the review or in
+    # the ledger append beside it, which is why the scope is the whole diff.
+    named = [h for h, _, _ in entries if entry_name(h) in acknowledged]
+    clashes, broad, vacuous = [], [], []
     for path in reviews:
         body = (ROOT / path).read_text()
         if not ROUTING.search(body):
@@ -3218,18 +3713,37 @@ def routed(ref=None):
         # own two real rows under fifteen.
         sections = [s for s in re.split(r"(?m)^(?=#{2,}\s)", body)
                     if ROUTING.search(s)]
-        tokens = {t.strip() for s in sections
-                  for t in re.findall(r"`([^`\n]+)`", s)
-                  if IDENTIFIER.match(t.strip())}
+        tokens = {t for s in sections for t in routed_tokens(s)}
+        # Vacuity is asked per file and the escape above is asked across the
+        # diff, and the two scopes are not in tension. The escape answers "did
+        # this run escalate by name", where the name may sit in the ledger
+        # append. This answers "did the gate read anything at all in THIS
+        # review", and one named entry in a second file is no evidence about
+        # this one. Scoped diff-wide it never fires: the first review in the
+        # diff to name an entry excuses every other review's routes.
+        if not tokens and not [h for h, _, _ in entries
+                               if entry_name(h) in norm(body)]:
+            # The case this gate could not report, and the reason it is here:
+            # zero checkable identifiers and no entry named is a pass that
+            # verified nothing, printed in the same words as a pass that
+            # verified something. That is incident 20's shape and it is the
+            # bias run 51 found in `claims`, where the state a row LEAVES was
+            # the state the gate read. A gate whose silence reassures is worse
+            # than no gate, so this one says which silence it is.
+            vacuous.append((path, len(sections)))
         for token in sorted(tokens):
-            held = [(h, st) for h, e, st in entries if token in e]
+            if TRACEABLE.fullmatch(token):
+                held = [(h, st) for h, e, st in entries
+                        if token.lower() in norm(e).lower()]
+            else:
+                held = [(h, st) for h, e, st in entries if token in e]
             if not held:
                 continue
             if len(held) > TOO_BROAD:
                 broad.append((path, token, len(held)))
                 continue
             for head, status in held:
-                if norm(head) in acknowledged:
+                if entry_name(head) in acknowledged:
                     continue
                 clashes.append((path, token, status, head))
     print(f"  review files this diff adds   {len(reviews)}")
@@ -3238,6 +3752,11 @@ def routed(ref=None):
             (ROOT / path).read_text()) else "routes nothing"
         print(f"    {path}  ({routes})")
     print(f"  unsettled entries in docs/ideas.md   {len(entries)}")
+    print(f"  entries this diff names               {len(named)}")
+    for path, n in vacuous:
+        print(f"  VACUOUS {path}")
+        print(f"            {n} section(s) route a finding, no identifier the "
+              f"ledger can be searched for, no entry named")
     for path, token, status, head in clashes:
         print(f"  FAIL    {path}")
         print(f"            routes `{token}`, which is already filed and "
@@ -3247,12 +3766,16 @@ def routed(ref=None):
         print(f"  BROAD   {path}")
         print(f"            `{token}` sits in {n} unsettled entries, so it "
               f"names a machine rather than a finding")
-    if not clashes:
+    if not clashes and not vacuous:
         print("  no finding routed here is one the ledger already holds")
     print()
     print("A run may route a finding the ledger already holds. It may not do")
     print("so without naming the entry, because that is the difference")
     print("between escalating a stale finding and not knowing it exists.")
+    # VACUOUS is reported and not failed on, the way BROAD is. The gate cannot
+    # tell a run that routed nothing checkable from a run that routed a
+    # finding this register has never held, and a check that guesses is one a
+    # run learns to skip. What it can do is stop printing the all-clear.
     return 1 if clashes else 0
 
 
@@ -3344,8 +3867,15 @@ def standalone(paths=None):
             # refinements layer on top of it, never beside it. The exemption is
             # computed from her register for the reason the taste gate gives.
             (exempt if hers(span) else hits).append((path, n, span))
-    print(f"  read from   site/content/issues, {len(paths)} issue(s): "
-          f"{', '.join(p.stem for p in paths)}")
+    # Where the paths came from, and not the directory this pass used to
+    # assume they came from. L-A47 says an instrument's scope is part of its
+    # answer, and this line printed `site/content/issues` for a path given on
+    # the command line, so the one pass that reported its own scope reported
+    # somebody else's directory. Found by pointing it at a served edition.
+    inside = all(str(x).startswith(str(ROOT / "site/content/issues"))
+                 for x in paths)
+    print(f"  read from   {'site/content/issues' if inside else 'paths given'},"
+          f" {len(paths)} issue(s): {', '.join(p.stem for p in paths)}")
     print(f"  sentences whose subject is 'you' and whose verb is past  "
           f"{len(hits) + len(exempt)}")
     for path, n, span in hits:
@@ -3363,6 +3893,504 @@ def standalone(paths=None):
     return 1 if hits else 0
 
 
+# ---- the editions a reader can actually open ---------------------------
+
+#: The product's public address. Every pass below reads it with no credential,
+#: which is the whole finding behind this section: `NEON_RO_URL` guards the
+#: send record and nothing guards the pages that record renders into.
+LIVE_SITE = os.environ.get("ALEXANDRIA_SITE", "https://libraryofalexandria.dev")
+
+#: One cache directory per process, created on first use. Not a fixed name
+#: under /tmp: twelve seats of this company run as one user on one host, so
+#: `/tmp/editions` is a shared name and a concurrent seat's issue would be read
+#: under this one's week number
+#: (`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`).
+_CACHE = None
+
+#: `<a href="/library/2026-W42">` on the public index. The served list is the
+#: product's own answer to which editions exist, and it is three where the
+#: repository holds one.
+LIVE_WEEK = re.compile(r'href="/library/(\d{4}-W\d{2})"')
+
+#: The inverse of `site/lib/markdown.js` over the subset an issue uses. This is
+#: proved rather than asserted: `editions` below un-renders the served copy of
+#: an edition the repository also holds and diffs the two, so a change to the
+#: site's renderer that this misses shows up as a failing round trip rather
+#: than as a silently wrong grade.
+_INLINE_OPEN = {"strong": "**", "b": "**", "em": "*", "i": "*", "del": "~~"}
+
+
+class _Unrender(html.parser.HTMLParser):
+    """Rendered issue HTML back to the markdown the press stored.
+
+    The gates below are written against markdown, because the press writes
+    markdown and `site/content/issues/*.md` is markdown. Re-deriving it from
+    the page is what lets a gate read an edition nobody committed, which is
+    every edition since 2026-10-05.
+    """
+
+    HEAD = {f"h{n}": "#" * n + " " for n in range(1, 7)}
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.out, self.buf, self.lists, self.counts = [], [], [], []
+        self.href, self.pre = None, False
+
+    def _flush(self):
+        text = "".join(self.buf).strip()
+        self.buf = []
+        return text
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "pre":
+            self.pre, self.buf = True, []
+            return
+        if tag in _INLINE_OPEN:
+            self.buf.append(_INLINE_OPEN[tag])
+        elif tag == "code" and not self.pre:
+            self.buf.append("`")
+        elif tag == "a":
+            self.href = dict(attrs).get("href")
+            self.buf.append("[")
+        elif tag == "br":
+            self.buf.append("  \n")
+        elif tag == "hr":
+            self.out.append("---")
+        elif tag == "ul":
+            self.lists.append("ul")
+        elif tag == "ol":
+            self.lists.append("ol")
+            self.counts.append(0)
+
+    def handle_endtag(self, tag):
+        if tag in _INLINE_OPEN:
+            self.buf.append(_INLINE_OPEN[tag])
+        elif tag == "code" and not self.pre:
+            self.buf.append("`")
+        elif tag == "a":
+            self.buf.append(f"]({self.href})" if self.href else "]")
+            self.href = None
+        elif tag in self.HEAD:
+            self.out.append(self.HEAD[tag] + self._flush())
+        elif tag == "p":
+            text = self._flush()
+            if text:
+                self.out.append(text)
+        elif tag == "li":
+            text = self._flush()
+            if self.lists[-1:] == ["ol"]:
+                self.counts[-1] += 1
+                self.out.append(f"{self.counts[-1]}. {text}")
+            else:
+                self.out.append(f"- {text}")
+        elif tag == "ul" and self.lists:
+            self.lists.pop()
+        elif tag == "ol":
+            if self.lists:
+                self.lists.pop()
+            if self.counts:
+                self.counts.pop()
+        elif tag == "pre":
+            self.pre = False
+            self.out.append("```\n" + "".join(self.buf).strip("\n") + "\n```")
+            self.buf = []
+
+    def handle_data(self, data):
+        self.buf.append(data)
+
+
+def unrender(fragment):
+    """The markdown behind one rendered `<article class="digest issue-body">`."""
+    parser = _Unrender()
+    parser.feed(fragment)
+    parser.close()
+    return "\n\n".join(parser.out).strip() + "\n"
+
+
+def _fetch(url, timeout=25):
+    """The page, or None and the reason printed. Never raises.
+
+    A gate that throws on a slow network is a gate somebody deletes. A gate
+    that returns a clean verdict on a network it never reached is the defect
+    this whole section exists to repair, so the failure is loud and the caller
+    is obliged to say it answered nothing.
+    """
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as r:
+            return r.read().decode("utf-8", "replace")
+    except (urllib.error.URLError, OSError, ValueError) as e:
+        print(f"  UNREACHED {url}")
+        print(f"            {type(e).__name__}: {e}")
+        return None
+
+
+def served_weeks():
+    """The weeks the product serves, newest last, or None when unreached."""
+    page = _fetch(f"{LIVE_SITE}/library")
+    if page is None:
+        return None
+    return sorted(set(LIVE_WEEK.findall(page)))
+
+
+ARTICLE = re.compile(r'<article class="digest issue-body"[^>]*>(.*?)</article>',
+                     re.S)
+
+
+def served_issue(week):
+    """One served edition as a markdown file on disk, or None when unreached."""
+    global _CACHE
+    if _CACHE is None:
+        _CACHE = pathlib.Path(tempfile.mkdtemp(prefix="check_voice-editions-"))
+    cached = _CACHE / f"{week}.md"
+    if cached.exists():
+        return cached
+    page = _fetch(f"{LIVE_SITE}/library/{week}")
+    if page is None:
+        return None
+    body = ARTICLE.search(page)
+    if not body:
+        print(f"  UNREADABLE {LIVE_SITE}/library/{week}")
+        print( "             no <article class=\"digest issue-body\"> on the page,")
+        print( "             so the route's markup moved and this parser is stale")
+        return None
+    cached.write_text(unrender(body.group(1)), encoding="utf-8")
+    return cached
+
+
+def served_paths():
+    """Every served edition as a path, for the passes that take paths."""
+    weeks = served_weeks()
+    if weeks is None:
+        return None
+    paths = [served_issue(w) for w in weeks]
+    return [p for p in paths if p is not None]
+
+
+def round_trip():
+    """Is the un-renderer faithful? Asked of an edition we hold both copies of.
+
+    The proof and not the claim. For every served week the repository also
+    holds as a file, the served page is un-rendered and diffed against that
+    file, ignoring blank lines and trailing space, which are the only things
+    the render does not carry. A mismatch means a figure taken off the live
+    page belongs to a document the press did not write, which is ban list 91
+    with a longer fuse.
+    """
+    weeks = served_weeks()
+    if weeks is None:
+        return None, []
+    rows = []
+    for w in weeks:
+        on_disk = ROOT / f"site/content/issues/{w}.md"
+        if not on_disk.exists():
+            continue
+        live = served_issue(w)
+        if live is None:
+            continue
+        norm = lambda t: [x.rstrip() for x in t.split("\n") if x.strip()]
+        rows.append((w, norm(on_disk.read_text(encoding="utf-8"))
+                     == norm(live.read_text(encoding="utf-8"))))
+    return True, rows
+
+
+def editions(paths=None):
+    """Does this file's default scope reach every edition a reader can open?
+
+    The gate entry 141 needed and did not get. That entry closed the reading
+    half of its class on the day it was written: a run now starts a grade by
+    asking the press which week is newest. It left the commands alone, and
+    eight passes in this file glob `site/content/issues/*.md` and print
+    verdicts about "the issues". That directory holds two files, one of them
+    retired, and the product serves three. So on the day the class was named
+    and banned, every count in this file still described one edition out of
+    three, and the two it could not see had never been read by any command or
+    any review.
+
+    What the blindness cost, and it is not hypothetical.
+    `2026-W40` went to readers on 2026-10-05 and printed three headings:
+
+        ## What is gaining ground: recursive self-improvement with fewer guardrails
+        ## What is genuinely new: where memory lives and who can pull the plug
+        ## What fell behind: the assumptions that let agents run unchecked
+
+    Those are the framework's internal names, printed, which is canon law 12
+    and incident 20, the one ruling the owner has had to give twice. `measure`
+    has detected that exact shape since 2026-10-06. It never fired, because the
+    edition was never a file here. A ruling given twice, a gate written for it,
+    and a print that carried it anyway, all at once, because the gate's scope
+    was the repository and the ruling's scope is the product.
+
+    This pass fails on the gap itself rather than on any issue's prose, so the
+    blindness is a red line somebody has to answer instead of a sentence in a
+    docstring that the counts quietly contradict. `--live` on the passes that
+    take paths is the way to answer it inside one run:
+
+        python3 docs/voice/check_voice.py editions
+        python3 docs/voice/check_voice.py devices --live
+    """
+    if os.environ.get("ALEXANDRIA_OFFLINE"):
+        print("  SKIP    ALEXANDRIA_OFFLINE is set, so this run declared that")
+        print("          it cannot reach the product. A declared blind spot is")
+        print("          the one honest kind. Nothing below was read")
+        print()
+        return 0
+    ok, trips = round_trip()
+    if ok is None:
+        print()
+        print("This pass answered nothing, and that is why it is red. The")
+        print("question it asks is whether the gates can see the product, and")
+        print("an unreached product cannot be reported as a scope that")
+        print("matches. Set ALEXANDRIA_OFFLINE=1 to declare the blind spot")
+        print("instead of hiding behind it.")
+        return 1
+    rc = 0
+    weeks = served_weeks()
+    retired = hidden_weeks()
+    held = {p.stem for p in (ROOT / "site/content/issues").glob("*.md")}
+    unread = [w for w in weeks if w not in held]
+    print(f"  served by the product     {len(weeks)}: {', '.join(weeks)}")
+    print(f"  held in the repository    {len(held)}: "
+          f"{', '.join(sorted(held))}")
+    print(f"  retired at the serving layer  {len(retired & set(weeks))}")
+    print(f"  round trip verified on     {len(trips)} edition(s) held both ways")
+    for week, same in trips:
+        if same:
+            print(f"    OK      {week}  the served page un-renders to the file")
+        else:
+            rc = 1
+            print(f"    FAIL    {week}  the served page does not un-render to")
+            print( "              the file, so the parser is stale and every")
+            print( "              figure taken off the live site is suspect")
+    if not trips:
+        rc = 1
+        print( "    FAIL    no edition is held both ways, so nothing here")
+        print( "              proves the un-renderer and `--live` is unsafe")
+    print(f"  served and unreadable here {len(unread)}"
+          + (f": {', '.join(unread)}" if unread else ""))
+    for week in unread:
+        rc = 1
+        print(f"  FAIL    {week} reached readers and is not a file here, so")
+        print( "            every default-scope count in this file excludes it")
+    if not unread:
+        print("  every served edition is readable from the repository")
+    print()
+    print("A gate's scope is part of its answer (L-A47) and this file's")
+    print("default scope is a directory, while the product's scope is a")
+    print("table. They have disagreed since 2026-10-05 and the disagreement")
+    print("printed canon law 12 to readers. `--live` closes it per run and")
+    print("committing the print closes it for good.")
+    return rc
+
+
+# ---- canon law 1's two marks, over the artifact ------------------------
+
+def marks(paths=None):
+    """The em dash and the semicolon, with the generator's own zero target.
+
+    Split out of `measure` for the reason `devices` was: that command's exit
+    code means the character gate and a test reads it by name, so a second
+    meaning on it reports a cause that is not the cause (L-A44).
+
+    This is not a new rule. `prompts/digest.md` states it twice in its own
+    words, "the target is zero and there is no budget, the same as the em
+    dash", and canon law 1 bans the semicolon join outright. What was missing
+    is the half this file applies to its own author and not to the product:
+    `selfcheck` fails this seat's run when a diff adds one semicolon, and
+    nothing in `all` ruled on a semicolon in the issue. `measure` printed the
+    count and moved on, so the number was visible and never a verdict.
+
+    The current edition carries two, and both are the plainest form of the
+    join, two independent clauses with a mark between them:
+
+        Llama-3.1-8B loads skills 72% of the time overall; Llama-3.3-70B
+        loads them 11% of the time.
+
+    The exemptions are `selfcheck`'s, for its reasons: a mark inside a
+    quotation of a source is the source's, and editing it falsifies the quote.
+    """
+    paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    retired = hidden_weeks()
+    rc = 0
+    for p in paths:
+        p = pathlib.Path(p)
+        if not p.exists():
+            print(f"  {p}: missing")
+            rc = 1
+            continue
+        try:
+            shown = p.resolve().relative_to(ROOT)
+        except ValueError:
+            # A served edition, un-rendered into this process's cache. Named by
+            # its week and its source rather than by a temporary path, because
+            # ban list 91 says a figure is quoted with the artifact it was
+            # measured on and `/tmp/check_voice-editions-oqj97_z6` is not a
+            # name a review can carry.
+            shown = f"{p.stem} (served, un-rendered from {LIVE_SITE})"
+        if p.stem in retired:
+            print(f"  SKIP    {shown}  retired, not served")
+            continue
+        inside = fenced(p)
+        hits = []
+        for n, line in enumerate(p.read_text(encoding="utf-8").split("\n"), 1):
+            if n in inside or quoting(line):
+                continue
+            for mark, name in ((";", "semicolon"), (EM, "em dash")):
+                if mark in line:
+                    hits.append((n, name, line.strip()))
+        print(f"  {shown}   marks outside a quotation  {len(hits)}")
+        for n, name, line in hits:
+            rc = 1
+            print(f"    FAIL    {shown}:{n}  {name}")
+            print(f"              {line[:104]}")
+    print()
+    print("Zero is the generator's own target and it says there is no budget.")
+    print("A count without a verdict is what let two of these print: this")
+    print("seat's own prose has been failing on the same mark since")
+    print("2026-10-10 and the product's prose was only ever measured.")
+    return rc
+
+
+# ---- captions ---------------------------------------------------------
+
+#: The sibling caption sets on the site. One entry per set, because the tell
+#: this reads is a property of a SET and is invisible in any one member. Today
+#: the skill library's shelves are the only set in the repository that renders
+#: a caption under every member of a list. A second set is one line here.
+CAPTION_SETS = (("site/lib/skill-shelves.js", "the skill library's shelves"),)
+
+#: A caption built as a short verbless opener, a full stop, and a list. The
+#: length bound is what makes it a FRAME rather than an ordinary two-sentence
+#: caption: the opener is too short to be an argument, so its only job is to
+#: announce the subject before the list arrives.
+CAPTION_FRAME = re.compile(r"^[^.]{1,45}\.\s+[A-Z]")
+
+#: What `CAPTION_FRAME` must and must not read as the frame. Every case is a
+#: caption string taken verbatim from the surface, so a case here is evidence
+#: rather than an illustration. Run before any file is opened, because a
+#: pattern that reports the wrong count reports it in the same format as the
+#: right one.
+CAPTION_CASES = (
+    (True, "The scaffold around a model. Tools, prompts, loop structure, and "
+     "the feedback the loop runs on."),
+    (True, "Several agents dividing work. How they are organised, how they "
+     "hand off, and how they fail."),
+    (True, "Post-training that updates the weights. Distillation, reward "
+     "design, and self-improvement."),
+    (True, "Getting an answer out fast and cheap. Decoding, caching, and "
+     "test-time compute."),
+    (False, "What goes into the window, in what order, and what to do when it "
+     "will not fit."),
+    (False, "Models that read and act beyond text, across images, audio, and "
+     "the world."),
+    (False, "Distilled and shelved, on a shelf of its own for now."),
+    # The drafted repairs of 2026-10-26, which the frame must not read as the
+    # frame it was written to replace. The first is the long one and the last
+    # is the short one, which are the two a length-bounded pattern is most
+    # likely to get wrong.
+    (False, "Most of what makes an agent reliable sits outside the model, in "
+     "the tools it is given, the loop it runs in and the corrections it gets "
+     "back."),
+    (False, "Once the answer is right, the remaining job is getting it out "
+     "fast and cheap."),
+    (False, "A skill lands here when its subject is not one of the headings "
+     "above."),
+    # A caption whose FIRST sentence is long enough to carry an argument is
+    # two sentences rather than this frame, however the second one reads.
+    (False, "An agent that can act needs a boundary somewhere, and where you "
+     "put it decides whether the defence does anything. Both halves matter."),
+)
+
+#: A caption as the surface declares it, which is a `blurb:` key whose value
+#: may wrap across lines the way every string in that file does.
+CAPTION = re.compile(r"blurb:\s*\n?\s*((?:\"(?:[^\"\\]|\\.)*\"\s*\+?\s*)+)")
+
+
+def caption_cases():
+    """`CAPTION_FRAME` against the captions it is a verdict about."""
+    bad = [(want, s) for want, s in CAPTION_CASES
+           if bool(CAPTION_FRAME.match(s)) != want]
+    print(f"CAPTION_FRAME cases                        "
+          f"{len(CAPTION_CASES) - len(bad)} of {len(CAPTION_CASES)}")
+    for want, s in bad:
+        print(f"  FAIL    wanted {want}, got {not want}: {s[:60]}")
+    return 1 if bad else 0
+
+
+def captions_of(path):
+    """The caption strings one surface declares, in declaration order."""
+    text = (ROOT / path).read_text(encoding="utf-8")
+    out = []
+    for m in CAPTION.finditer(text):
+        parts = re.findall(r'"((?:[^"\\]|\\.)*)"', m.group(1))
+        out.append(re.sub(r"\s+", " ", "".join(parts)).strip())
+    return out
+
+
+def captions(paths=None):
+    """A set of sibling captions written in one grammar, ban list 3 and 142.
+
+    Entry 3 says vary or die and it has never carried a count, so it has only
+    ever been a reading. Entry 113 is the lesson this one is built from in its
+    own words: "Every gate in that list that holds was turned into a count
+    after a print walked past it."
+
+    What walked past was the skill library's shelf page. Six captions, four of
+    them the identical frame, and the set survived three visual sweeps of that
+    page and two copy rounds that read the page it sits on, because no single
+    caption looks wrong. That is the whole class. A tell that lives in a SET
+    is invisible to any gate pointed at a member, and every other check in
+    this file is pointed at a member.
+
+    Two counts, both exact string work, both the technique entry 113 already
+    settled for evidence grades.
+
+      more than one caption in a set on the same frame,
+      two captions in a set opening on the same two words.
+
+    What it deliberately does not count, because the proxy would be worse
+    than the reading. Her ruling of 2026-09-29 forbids fragments, and all
+    seven captions on that page are fragments, which is the sharper finding
+    and the one that needed a person. Deciding whether a clause carries a
+    finite verb is not string work, and a fragile detector reporting a verdict
+    in this format would be trusted exactly as far as the honest counts above.
+    So the fragment count stays in `docs/voice/shelf-names-2026-10-26.md`,
+    where a reader can check it, and this gate claims only what it can prove.
+    """
+    rc = caption_cases()
+    print()
+    sets = [(p, label) for p, label in CAPTION_SETS
+            if not paths or p in paths]
+    for path, label in sets:
+        if not (ROOT / path).exists():
+            print(f"  FAIL    {path}  missing")
+            rc = 1
+            continue
+        found = captions_of(path)
+        framed = [c for c in found if CAPTION_FRAME.match(c)]
+        stems = {}
+        for c in found:
+            stems.setdefault(" ".join(c.lower().split()[:2]), []).append(c)
+        shared = {k: v for k, v in stems.items() if len(v) > 1}
+        print(f"  {path}  ({label})")
+        print(f"    captions                               {len(found)}")
+        print(f"    on the opener-then-list frame          {len(framed)}")
+        print(f"    opening on a stem another one uses     {len(shared)}")
+        if len(framed) > 1:
+            rc = 1
+            print(f"    FAIL    {len(framed)} captions share one frame")
+            for c in framed:
+                print(f"              {c}")
+        for stem, members in sorted(shared.items()):
+            rc = 1
+            print(f'    FAIL    {len(members)} captions open on "{stem}"')
+    print()
+    print("A caption set is read as one thing by anybody who scrolls the page,")
+    print("so one grammar repeated down it is the unit of the tell. Each")
+    print("caption above is accurate about its own shelf, which is what makes")
+    print("this prose rather than error.")
+    return rc
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -3373,7 +4401,24 @@ def main():
     paths = sys.argv[2:]
     rc = 0
     takes_paths = {"measure", "links", "delivery", "compare", "firstuse",
-                   "generator", "specimens", "standalone", "devices"}
+                   "generator", "specimens", "standalone", "devices",
+                   "captions", "marks"}
+    # `--live` is the answer to `editions`, inside one run. It replaces the
+    # archive glob with the editions the product actually serves, fetched from
+    # the public pages and un-rendered, so a pass grades what a reader opens
+    # rather than what somebody committed. Entry 141 named this class on
+    # 2026-10-26 and enforced the reading half of it; this is the half that
+    # points the commands at the right artifact instead of the run.
+    if "--live" in paths:
+        paths = [x for x in paths if x != "--live"]
+        live = served_paths()
+        if live is None:
+            print("--live could not reach the product, so nothing was read.")
+            print("A grade on an unreached artifact is the defect entry 141")
+            print("names, so this exits rather than falling back to the")
+            print("archive under the name `live`.")
+            return 1
+        paths = [str(x) for x in live] + paths
     # `enforcements` takes a git ref rather than a path, because ban list 105
     # is about the file the press runs and that file is only reachable through
     # the commit the deploy was built from.
@@ -3395,6 +4440,11 @@ def main():
                      ("standalone", standalone),
                      ("devices", devices),
                      ("routed", routed),
+                     ("editions", editions),
+                     ("marks", marks),
+                     ("ungated", ungated),
+                     ("slotwords", slotwords),
+                     ("captions", captions),
                      ("blockrules", blockrules),
                      ("compare", compare), ("selfcheck", selfcheck)):
         if which == name or (which == "all"
