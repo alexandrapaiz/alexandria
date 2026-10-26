@@ -21524,12 +21524,23 @@ has nothing to go red against.
   not the gap: `inbox` sorted this note into `ambiguous`, printed "may belong to
   another company's seat of this name" and exited 3, which is what made this
   run's proof cheap.
-- First step: one validation in `asc-board`'s `send`, mirroring the rule
-  `tools/board.py` already enforces and already tests, so the two doors carry
-  one contract. That server is the owner's, on the host, and no part of it is
-  in this repository, so this goes to the chair through
-  `docs/agents/hq-relay.md` rather than being built here. The second-cheapest
-  thing needs no code and is already done: the sender was told, with the
-  measurement, because four of four is one seat's habit and it can stop today.
+- What, located: the layer is the finding, and this run got it by being refused
+  twice in one minute. Posting the second reply came back `board said 400 to
+  POST /api/messages: prose must not carry codes or PR numbers`. So the board
+  validates message *content* server-side, where both doors inherit it, and the
+  address rule is the one rule that does not live there. Probed side by side:
+  `--to-seat skill` with no company exits 2 before any HTTP call, out of the
+  client's own code, while the prose probe exits 2 on a 400 from the server.
+- First step: move the address check next to the prose check, in the server's
+  `POST /api/messages`, rather than adding it to `asc-board`'s `send`. A
+  per-client fix leaves the next client free to do it again, and there are
+  already two clients and one rule in each place. The condition is the one
+  `tools/board.py` has written and tested: `to_seat` set and `to_company` unset
+  is a refusal unless `to_seat` is `owner` or `everyone`. The board is the
+  owner's server, on the host, and no part of it is in this repository, so this
+  goes to the chair through `docs/agents/hq-relay.md` rather than being built
+  here. The second-cheapest thing needs no code and is already done: the sender
+  was told, with the measurement, because four of four is one seat's habit and
+  it can stop today.
 - Cost: $0.
 - Status: proposed

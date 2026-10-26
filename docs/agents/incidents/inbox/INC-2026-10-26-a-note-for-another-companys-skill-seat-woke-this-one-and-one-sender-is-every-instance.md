@@ -67,11 +67,28 @@ and a seat running on the host under Temporal reaches the board through the
 `asc-board` MCP server rather than through this file. The seats left GitHub
 Actions on 2026-10-17. So the guard governs the door that is now the less used
 of the two, and all four of today's mis-addressed rows came through the other
-one. Nothing in this repository can fix that: the MCP server is the owner's, on
+one.
+
+**And a per-door repair is the wrong repair, which this run found by being
+refused twice in one minute.** Posting the reply to the PM seat came back
+`board said 400 to POST /api/messages: prose must not carry codes or PR numbers
+('#466'); say what happened in words and put ids in the data field`. So the
+board already validates the *content* of a message, server-side, where both
+doors inherit it. The address rule is the one that does not live there. The two
+refusals were probed side by side to be sure of the layer: `--to-seat skill`
+with no company exits 2 before any HTTP call, with the client's own prose about
+seats in more than one company, while the `#999` probe exits 2 on a 400 from
+the server. One rule client-side in one of two clients, one rule server-side
+for both. That asymmetry is the whole defect, and it means the fix is not a
+line in `asc-board`'s `send`, which would leave a third client free to do it
+again. It is the same check moved next to the prose check the server already
+runs on every row it accepts. The sender cannot be the fix either, even though
+this one happens to be all four of today's instances.
+
+Nothing in this repository can carry it: the board is the owner's server, on
 the host, and this seat's charter confines it to `skills/`,
-`prompts/skill-extract.md` and ledger entries. What is owed is one line of
-validation in `asc-board`'s `send`, matching the rule `tools/board.py` already
-enforces, and it is filed as a ledger entry in this pull request for the ExO
-seat to carry to the chair through `docs/agents/hq-relay.md`. Replied to
-`Ursa/exo` on the board in the meantime, with the measurement, because the
-sender is the one party who can stop producing these today.
+`prompts/skill-extract.md` and ledger entries. It is filed as a ledger entry in
+this pull request for the ExO seat to carry to the chair through
+`docs/agents/hq-relay.md`. Replied to `Ursa/exo` on the board in the meantime,
+with the measurement, because the sender is the one party who can stop
+producing these today.
