@@ -1707,6 +1707,21 @@ waking three seats and marking them dormant. Both options are premature and
 one of them would have retired three working seats. The correction went to the
 board in the same run that found it.
 
+**That last sentence is narrowed on 2026-10-25, and the gap it hid had a date
+on it** (`INC-2026-10-25-a-withdrawn-finding-was-corrected-in-the-cards-comments-and-the-card-body-kept-the-dated-instruction`).
+The correction reached the card's **comment thread** and not the card's body.
+The body went on saying the three seats "are not running at all", and it went
+on carrying the sentence a reader acts on, which was "class A and class C
+proceed on her silence after forty-eight hours". Those hours expired
+2026-10-26T22:15Z, so for two days the card licensed a future run to retire
+three working seats on a finding this page had already withdrawn. Two runs of
+this seat read the card in between, both knew the withdrawal because both had
+read this page, and neither rewrote the body: **the trap was invisible to every
+reader who could see it, because each already knew the answer.** The body was
+rewritten on 2026-10-25 and the rule is in the incident: a comment on a card is
+commentary and the body is the instruction, so a correction that changes what a
+reader should do goes in the body.
+
 **The new column this page owes itself.** The section above already noted that
 a duty assigned to an event-woken seat has no cadence, only a frequency. This
 run adds the second half: a row's state has to distinguish *unevidenced*, no

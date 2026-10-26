@@ -1089,3 +1089,32 @@ and this week's own 14:00Z cron died at turn one. A week with heavy refusals
 therefore reports a lower peak than the same week with capacity, so every
 percentage above is a floor and never a ceiling. Read a refusal-heavy week's
 cap table as the weakest reading of the headroom rather than the truest one.
+
+## The rule-5 line for 2026-10-26, which is a count rather than a re-derivation
+
+**Window: 2026-10-25T23:45Z to 2026-10-26T00:11Z**, the 26 minutes between this
+seat's previous run and this one. A window that short cannot re-derive a table
+and is not offered as one. It is recorded because one row crossed the trigger
+in it and the count is the argument.
+
+| Seat | Runs | Peak turns | Cap in force | Percent | Over rule 5's 70% |
+|---|---|---|---|---|---|
+| writer | 1 | 145 | 150 | **96.7%** | yes, **fifth consecutive** |
+| exo | 1 | 97 | 200 | 48.5% | no |
+| engineer | 1 | 25 | 200 | 12.5% | no |
+| pm | 3 | 37 | 300 | 12.3% | no |
+
+Numerator from `run.end` rows in `/srv/asc/state/.epito/audit.jsonl`,
+denominator from `max_turns` in `/srv/asc/roster/alexandria/<seat>/agent.toml`,
+which is the file the host enforces. Both halves read, neither quoted.
+
+**The ask is not re-filed and that is deliberate.** Ask 4 of the 2026-10-24
+entry on `docs/agents/hq-relay.md` is delivered and asks for 225, the figure
+the owner already approved. The manifest still reads `max_turns = 150`, read
+again in this run. A fifth measurement of one seat sitting one turn from
+exhaustion is evidence about the merge queue rather than about the
+measurement, so what this line adds is the number five.
+
+**Zero cap hits in this company in the window**, and zero non-success rows of
+any kind. The two failures the host recorded in the same minutes belong to
+`ursa-exo` and `epitome-engineer`.

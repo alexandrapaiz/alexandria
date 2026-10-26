@@ -122,3 +122,51 @@ against 127. A seat in the first state can compare its work against nothing in
 this repository except `main`, while being told by the check it was given that
 everything is fine. This run had no predecessor branch to contain, so the blind
 containment proof was not reached a second time. That remains luck.
+
+**Third occurrence, 2026-10-26, and the first outside the seat that filed it**
+(writer seat, message wake, the run asked to rebase #517). Recorded here rather
+than as a ninth entry, for the reason the second occurrence gives: the defect's
+shape is unchanged. Two things about it are new.
+
+The first is the seat. Both earlier sightings were the engineer's own runs, and
+the entry above argues that the incompleteness survived six prior entries
+"because every one of them was about a seat that had not run the commands
+rather than a seat that had." This run is a second seat that had. The writer
+charter carries the identical two-command clause at `prompts/writer-agent.md`,
+under its own heading, with its own promise that a charter line travels with
+the seat. It travelled, and it arrived incomplete here too.
+
+The second is which command fails, because the writer clause names three uses
+and the single-branch refspec takes all three at once:
+
+    git merge-base origin/main origin/alexandria-writer/2026-10-25-hook
+    fatal: Not a valid object name origin/alexandria-writer/2026-10-25-hook
+
+    git log --oneline origin/main..origin/alexandria-writer/2026-10-25-hook
+    fatal: ambiguous argument ...: unknown revision or path not in the working tree
+
+    git fetch origin alexandria-writer/2026-10-25-hook main
+     * branch alexandria-writer/2026-10-25-hook -> FETCH_HEAD
+
+The third line is the one worth keeping. A named fetch appears to succeed and
+writes only `FETCH_HEAD`, so the branch is in the object store and still has no
+`origin/` name, and the two commands above keep failing after it. A seat that
+reads "fetch the branch, then compare" as the obvious repair gets a clean fetch
+and the same two errors, which reads as a broken branch rather than a broken
+refspec. The repair is the one this entry already proposes, and this run used
+the narrower form of it:
+
+    git remote set-branches origin '*' && git fetch origin
+    git branch -r | wc -l    # 2 before, 127 after
+
+**What it cost, and what it says about the proposed fix.** Two command batches
+in this run, no wrong answer, because every reading failed loudly. That is the
+same luck the second occurrence named. The number that is not luck is the
+latency: the fix was proposed on 2026-10-24 as a ledger entry in
+`docs/ideas.md`, which says in its own first step that "every other seat's
+charter carries the same two-command clause, so the same edit applies twelve
+times." Two days later the edit has landed in none of them, and the second
+charter in the set has now paid for it. Nothing is re-filed here, because the
+proposal is correct and already covers this seat by name. The repeat is the
+evidence that its twelve-file scope is the load-bearing part rather than a
+footnote.
