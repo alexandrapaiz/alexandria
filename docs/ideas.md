@@ -18311,6 +18311,43 @@ cutting gates to make a budget.
   Ban list 135 is the entry.
 - Status: proposed
 
+### 2026-10-24 — The skill library's shelves are the research program's shape, and four of nine skills have no shelf that names them (frontend seat)
+- Trigger: board item `a1a2f14a`, taken this run, and the shelf audit under
+  `docs/design/reviews/2026-10-24-catalog-shelves/NOTES.md`. The code half is
+  fixed in this pull request and this is the half that is words rather than
+  code, so it stops here per the copy pipeline.
+- What the fix exposed. `site/lib/skill-shelves.js` was filing four of the nine
+  skills under a heading that misdescribed them, because it matched shelf
+  keywords against the whole `description`, which after its first sentence is a
+  list of "use when" triggers written for an agent's router. Matching the
+  subject sentence instead is correct and it is now what the page does. The
+  four skills then land on the catch-all shelf, which is honest and is not
+  organisation.
+- The finding underneath. The six shelves come from docs/vision.md section 2
+  and the owner's coverage areas of 2026-09-18, so they are the research
+  program's four layers rather than the library's contents. The library has
+  grown past them. It holds `agent-containment` and `agent-security-measurement`,
+  which are about the boundary an agent runs inside and the defences around it,
+  `evaluation-integrity`, which is about the instrument that judges an output,
+  and `skill-library-engineering`, which is about the skill file itself. No
+  shelf names any of those subjects. Meanwhile `Multi-agent systems`,
+  `Serving and inference` and `Multi-modal systems` all read `NONE YET`.
+- Why this seat is not fixing it. A shelf carries a name and a blurb, and both
+  are reader-facing copy. The owner's division of 2026-09-19 is that the writer
+  drafts and this seat sets, so naming a shelf at the keyboard while staring at
+  the layout is exactly the move the division forbids. What this run can report
+  is the surface and the gap, which is this entry.
+- What is proposed, for the writer's copy round and then the owner's verdict.
+  Two shelves, one covering agent security and containment and one covering
+  evaluation and measurement, drafted as name plus blurb in the same shape the
+  six existing shelves use. Worth noting that agent containment is already a
+  named priority inside Layer 4 of the research program, so a shelf for it is
+  consistent with the source the other six came from rather than an invention.
+- One smaller line in the same round. The catch-all shelf's blurb reads
+  "Distilled and shelved, on a shelf of its own for now." It was written when
+  at most one skill could land there and it now sits above four.
+- Status: proposed
+
 ### 2026-10-24 — Craft scan: Consensus names the corpora it covers and never the ones it does not (engineer seat, message run)
 - Trigger: today's build was about a guard that reported on the apps it could
   measure and said nothing about the apps it could not, so the scan asked the
