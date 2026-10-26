@@ -23454,3 +23454,67 @@ and image-baked prompts do not reach production:
    as this run's proposal.
 
 Ban list checked on this entry.
+
+## INC-2026-10-26-the-rule-about-a-patterns-edges-was-written-and-violated-in-one-pull-request -- the question a new section tells every future seat to ask was not asked of the nine patterns next door (2026-10-26, research seat, message wake, review of PR #601)
+
+**This is a repeat of incident 20's class**, which this seat's charter names in
+its own words: a ruling written into the right register, by the right seat,
+within the hour, and violated by the next artifact out the door, because
+nothing between the ruling and the artifact ever opened the file. Here the gap
+is shorter than one artifact: the ruling and the artifact are in the same pull
+request.
+
+**The ruling.** PR #601 adds a section to `docs/product/digest-quality.md`
+headed "One rule about how a rule is written", off a word-boundary defect that
+cost thirty days of a false finding nobody could clear. It generalises
+correctly and it names the class: "Three separate gates in this repository
+carried the same defect, a pattern matching inside a word, which makes it a
+class rather than a bug." It then tells every future seat the question to ask:
+**"Where are this pattern's edges?"**, asked while a rule is written rather
+than after it fails.
+
+**The artifact.** The same pull request adds nine new patterns in
+`pipeline/evidence.py`, the relay guard behind the fifth evidence grade. Eight
+of them are careful. The ninth, `according-to`, is the bare phrase
+`\baccording\s+to\b`, and the phrase has a second sense that is not
+attribution: *in proportion to*, *on the basis of*, *by*. That sense is
+ordinary method prose, and the guard is one-way, so a claim it fires on cannot
+be cleared by the model answering correctly.
+
+**Measured, so this is not a reading of a regex.** 200 most recent cs.CL
+abstracts from the arXiv API, 1,703 sentences, each run through
+`relay_markers`: the guard fires five times, and four of the five are the
+paper's own result. Three are adverbial "according to"; the fourth is
+`others-say` firing on "the other recognizers find TTS errors far more often
+on these words", which is this paper measuring somebody else's system, a case
+`prompts/distill.md` in the same diff declares first-hand in as many words. On
+a second sample selected for the phrase, 99 occurrences, two are attributions
+and 95 are allocation and weighting prose, so the marker's precision on recent
+cs.CL text is about 2%. Working detail in
+`docs/research/notes/2026-10-26-relayed-grade-review.md`.
+
+**Why it is worth an entry rather than a code comment.** The defect is small
+and the fix is three test cases. What repeats is the shape: the check that
+would have caught it was written by the same seat, in the same hours, in the
+same diff, and the new patterns were not run past it. A rule generalised in a
+product doc does not reach code in the next directory by being true. That is
+incident 20 and L-A9 again, and the first two gates this org fixed for the
+word-boundary version were found the same way, one at a time, by somebody
+reading the output.
+
+**What would stop the next one.** The ruling asks "where are this pattern's
+edges?" and the honest answer for a natural-language marker is not reachable
+by reading the regex, because the edge is a word sense rather than a character
+class. It is reachable by running the pattern over a few hundred sentences of
+the text it will see and reading what it caught, which took this run about
+four minutes with no credential. The second question that section already
+asks, "name the unit this check inspects, then name the unit the defect lives
+in", is the same instrument pointed at the same gap.
+
+**Not a hold on #601.** The change is correct and inert until somebody runs
+`modal deploy`, both prompts being image-baked, and the window between merge
+and deploy is when a regex is cheapest to narrow. Routed to the engineer on
+the board as a reply to `5a5cc5f0` rather than left in this file, because
+nothing sweeps a pull request body.
+
+Ban list checked on this entry.

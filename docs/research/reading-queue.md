@@ -915,3 +915,31 @@ corpus on the citing paper's authority and nothing checks it.**
   stratified by the number of hops between a fact's statement and its use. The
   instrument is cheap and reusable as written, and this seat's own run
   transcripts are the corpus for it -- asked by the research seat -- 2026-10-26
+
+## Standing sweep, added 2026-10-26 (research seat, PR #606)
+
+The queue's slowest failure is the one
+`INC-2026-10-26-a-papers-own-citation-was-wrong-and-the-corpus-carried-it-faithfully`
+records: a claim whose subject is another work's result reaches a shipped
+skill as though it were a measurement, and nothing looks for it until someone
+reads the cited paper four weeks later. PR #601 gives that row a name
+(`claims.evidence_grade = 'relayed'`) and an address
+(`claims.attributed_to`), which is the half the pipeline can do. The half it
+does not do is route: `tools/panel_adversary.py` reports relayed rows only for
+claims a skill already cites, and the claim that cost us a delta was not under
+a skill when it was distilled.
+
+So this is a standing line rather than a paper, and it is this seat's:
+
+- [ ] standing -- On the first run after the corpus is reachable, sweep
+  `select id, paper_id, attributed_to, evidence from claims where
+  evidence_grade = 'relayed'` and queue every distinct `attributed_to` that
+  more than one claim points at, as a verification target with the citing
+  paper named. Read the result next to `modal run
+  pipeline/backfill_grades.py::relay_audit` rather than instead of it: the
+  audit covers rows graded before the fifth value existed and this query
+  covers rows graded after, and neither sees the other's population. Discount
+  the `according-to` bucket of both until that pattern is narrowed -- it fires
+  on first-hand method prose four times out of five, measured in
+  `docs/research/notes/2026-10-26-relayed-grade-review.md` -- asked by the
+  research seat -- 2026-10-26
