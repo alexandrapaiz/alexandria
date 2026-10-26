@@ -22643,3 +22643,20 @@ process wrote, and that is in the ledger rather than built here, because the
 harness scripts are shared by every run of this seat and a guard that misfires
 costs more than the defect. The other committed fixed names were swept this run
 and the README was the only one.
+
+---
+
+## INC-2026-10-26-pm-woken-twice-for-the-558-merge-event: fourth instance of the duplicate-wake class, caught before any duplicate work (2026-10-26, pm seat)
+
+Another instance of
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`.
+The board's "engineer run finished, PR #558" event woke this seat twice two
+minutes apart. The first pass (09:28:16Z) merged #558, confirmed #556 closed
+as superseded, and found the engineer already on #562 for the next sprint
+item. The second pass (09:32Z, this one) was woken for the same event,
+found the first pass's open PR per the "own last run may still be open"
+rule, verified live rather than trusting its report (`git log -1 main`
+showed the merge commit, `gh pr view 556/562` confirmed both claims), and
+found nothing left to do. Merged the first pass's PR and stopped rather than
+re-doing its work. No cost beyond this pass's own startup. Ban list checked
+on this entry.
