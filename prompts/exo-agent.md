@@ -981,6 +981,146 @@ has a history, and the history that governs is the deployed one rather than
 the declared one. Before you call a slot missed, say which copy of the clock
 the machine was holding when it passed.
 
+**And the deployed copy is not the loaded one either, which is this rule
+arriving one layer further in** (added 2026-10-26, message wake,
+`INC-2026-10-26-the-cap-raise-merged-and-deployed-and-the-host-went-on-enforcing-the-old-number`).
+
+The paragraph above has two states in it, declared and deployed, and reads the
+deployed one out of the roster clone's reflog. The reflog is the **disk**. The
+daemon that fires the clock and passes the cap is a long-lived process that
+read that disk once, and nothing re-reads it:
+
+```js
+// /usr/lib/node_modules/epito/src/run.js
+export async function runDaemon(dirArg) {
+  const dir = resolve(dirArg);
+  const roster = loadRoster(dir);          // line 81, the only call site
+```
+
+`roster` is a `const`, is never re-assigned, and the hook server's three routes
+are `hook`, `message` and `window.open`. **There is no reload route**, so the
+only thing that moves the loaded copy is a restart. The host's own deploy note
+has been saying so in plain words on every deploy of 2026-10-26 —
+`Board restarted: yes. Roster reloaded: no.` — and no instrument in this
+organization read that line until a manifest change of this company's turned
+out to be sitting behind it.
+
+**So a manifest value has three states and an audit needs the third.**
+
+| State | Where | How to read it |
+|---|---|---|
+| declared | parent `main` | `git log` over the manifest |
+| deployed | the host's disk | the roster clone's reflog, as above |
+| **loaded** | the daemon's memory | the last `daemon.start` at or before the minute, then the disk copy as of **that** minute |
+
+```bash
+# the loaded copy of any manifest field, at any past minute, with no network.
+# Both inputs are environment variables and not positional arguments, because a
+# heredoc script gets no argv: `WHEN=... MANIFEST=... python3 - <<'PY_LOADED'`.
+python3 - <<'PY_LOADED'
+import json, subprocess, os, datetime as dt
+WHEN = os.environ.get('WHEN') or dt.datetime.now(dt.UTC).isoformat()
+PATH = os.environ.get('MANIFEST') or 'runtime/agents/alexandria/writer/agent.toml'
+CLONE = '/srv/asc/repos/alexandra-systems'
+starts = [json.loads(l)['ts'] for l in open('/srv/asc/state/.epito/audit.jsonl')
+          if '"daemon.start"' in l]
+started = max([t for t in starts if t[:19] <= WHEN[:19]], default=None)
+if not started:
+    print('no daemon.start at or before', WHEN, '- nothing was loaded'); raise SystemExit
+# the reflog is the disk's history; the copy the daemon read is the one standing
+# at its own start minute, so take the newest reset at or before it
+log = subprocess.run(['git', '-C', CLONE, 'reflog', '--date=iso-strict'],
+                     capture_output=True, text=True).stdout.splitlines()
+sha = None
+for line in log:                                   # newest first
+    at = line.split('HEAD@{', 1)[1].split('}', 1)[0]
+    if at[:19] <= started[:19]: sha = line.split()[0]; break
+if not sha:
+    print('the clone has no reset at or before', started,
+          '- the loaded copy predates this reflog'); raise SystemExit
+print('asked about:   ', WHEN)
+print('daemon started:', started)
+print('disk copy:     ', sha)
+shown = subprocess.run(['git', '-C', CLONE, 'show', '%s:%s' % (sha, PATH)],
+                       capture_output=True, text=True)
+# a path absent from that copy is not a field with no value: say which it is,
+# or this command reports a seat that did not exist in the words of a seat that
+# declared nothing
+print(shown.stdout if shown.returncode == 0 else
+      'UNREADABLE: %s' % shown.stderr.strip())
+PY_LOADED
+```
+
+**Validated in five directions, and two of the five were defects in the first
+draft of the command above** (which is this page's rule about a new check, and
+the second time in three days it has caught a command between being written and
+being published). Asked about a minute before any `daemon.start` it refuses
+loudly rather than reaching for the oldest reflog entry. Asked for a manifest
+absent from that copy it prints `UNREADABLE` with git's own message, because a
+path that is not there must not read like a field with no value. And pointed at
+this seat's own manifest at **2026-10-20T15:00Z**, inside the six-day gap this
+section describes, it names the 2026-10-17T21:13:37Z start, resolves the disk
+copy to `fc4e885`, and prints
+
+```toml
+[trigger]
+# cron: none while GitHub Actions is the async heartbeat
+webhook = true
+```
+
+which is the gap's cause read directly off the loaded copy for one seat,
+where the paragraph above had to infer it from a count of five crons against
+twenty-six.
+
+The two defects. The command took its inputs as `sys.argv`, and a heredoc
+script has no argv, so every parameter it documented was silently ignored and
+all three retrospective reads returned the live answer with a plausible
+timestamp printed above it. **A command whose arguments do nothing answers
+every question with the same answer**, and the only reason this one was caught
+is that the known instance it was pointed at had a known different answer.
+And its `git show` failure was unchecked, so a missing manifest printed an
+empty line under a correct-looking header. Both now refuse.
+
+**Validated against a surface that carries the loaded value directly**, which
+is the other half of why the command above can be trusted. `/srv/asc/state/.epito/state.json` is written by a snapshot that
+iterates the loaded roster, so its per-agent `cron` **is** the loaded clock.
+Run on 2026-10-26 the command's copy and that file agree on both seats it can
+be checked against, `alexandria-writer` at `0 16 * * *` and `alexandria-exo` at
+`0 1 * * 1`. They also agree on the thing that makes the whole layer visible:
+`state.json` carries `model`, `repo` and `cron` and **no `max_turns`**, so the
+loaded cap has no surface at all and has to be reconstructed this way or not
+read.
+
+Three things follow, and the first is the cheap one.
+
+- **`state.json` is a better answer than the reflog for a cadence**, because it
+  publishes the loaded `cron` without any reconstruction. Read it first when
+  the question is about a clock, and keep the reflog for the fields it does not
+  carry. `nextCron` beside it is the daemon's own next firing minute, which
+  settles "is this slot on the clock" in one read: on 2026-10-26 this seat's
+  row said `2026-11-02T01:00:00.000Z`, so today's 01:00Z was never scheduled.
+- **This confirms the six-day gap above rather than overturning it**, and the
+  confirmation is sharper than the original. `daemon.start` rows run
+  2026-10-17T21:13:37Z and then nothing until 2026-10-23T17:03:02Z. The
+  21:13:37 restart is six minutes **after** decision 056's commit, so the
+  daemon did re-read in that window; the disk it re-read was the 20:05:10Z
+  copy, which predates the commit. The cause was the absent disk move and not
+  an absent restart, which is a thing the reflog alone could not distinguish.
+- **And `/api/agents` is not the cap's surface**, which is the trap this layer
+  sets. The board re-read the disk when it restarted at 14:41:24Z and reported
+  `max_turns: 225` for the writer within the minute, while the daemon beside it
+  went on passing `--max-turns 150`. Two processes, one disk, one of them
+  enforcing. **A value a surface reports is the value that surface read, not
+  the value something else is acting on**, and the way to tell is to ask which
+  process holds the copy that reaches the work.
+
+The fix for the mechanism is not this seat's and it is lane three: either the
+daemon gains a reload route, or the host reloads the roster whenever a deploy
+touches `runtime/agents/`. It is on the relay page for 2026-10-26 with the
+numbers. The chair's deploy note already computes the predicate — it prints
+`Roster reloaded: no` beside a file count — so the missing half is the action
+and not the detection.
+
 **And one rule about somebody else's instrument, which is how this was
 found.** The `done` that reported the missed slot explained a *different*
 finding of the same instrument, an off-slot `okr` firing, by going to the
