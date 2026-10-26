@@ -60,19 +60,26 @@ from __future__ import annotations
 import argparse
 import base64
 import hashlib
+import io
 import json
 import os
 import pathlib
+import subprocess
 import sys
+import tarfile
+import tempfile
 import urllib.error
 import urllib.request
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
 import panel                                                 # noqa: E402
+import panel_provenance                                       # noqa: E402
+import panel_validator                                        # noqa: E402
 import skill_registrar as registrar                           # noqa: E402
 from panel import Finding, verdict_of                         # noqa: E402
 
+ROOT = pathlib.Path(__file__).resolve().parent.parent
 REPO = "alexandrapaiz/alexandria"
 API = "https://api.github.com"
 
@@ -92,6 +99,16 @@ MERGE_TOKEN = "PANEL_MERGE_TOKEN"
 AMBIENT_TOKENS = ("GH_TOKEN", "GITHUB_TOKEN")
 
 STATUS_CONTEXT = "panel/consensus"
+
+# Which reviewer's credential-free half is its whole duty, which is not a
+# property of the panel but a fact about each reviewer, asserted in its own
+# suite. `tests/test_panel_validator.py` holds
+# `test_the_files_only_half_and_the_live_half_return_the_same_verdict`; the
+# provenance reviewer's file half runs a subset of its checks and says so; the
+# adversary has no file half at all, by the decision its build note argues.
+FILE_HALF_IS_WHOLE = ("validator",)
+FILE_HALF_IS_PARTIAL = ("provenance",)
+NO_FILE_HALF = ("adversary",)
 
 
 # ------------------------------------------------------------------ the gates
@@ -226,6 +243,50 @@ def pin_findings(heads: dict[str, str], rows: list[dict]) -> list[Finding]:
     return findings
 
 
+def proposal_findings(rows: list[dict]) -> list[Finding]:
+    """What the reviewers say about this pull request's own text, read from files.
+
+    This is the first thing in this repository to judge a proposal rather than
+    something already on `main`, and it is deliberately not counted toward
+    unanimity. `panel_verdicts` is the audit trail ADR-13 replaces an approval
+    with, and a row filed from a half of a reviewer would make the trail say
+    more than the reviewer measured.
+
+    So each file-half verdict arrives here at the strength its own reviewer
+    claims for it. A `fail` is a `fail` from any of them, because every check
+    that can fail from files alone is a fact about the file. A `pass` is a pass
+    only from the reviewer whose suite asserts that its two halves agree, and
+    an `unknown` everywhere else, which is the honest name for "this reviewer
+    agreed as far as it could see".
+    """
+    findings = []
+    for row in sorted(rows, key=lambda r: (r["target"], r["reviewer"])):
+        who = f"{row['reviewer']} on {row['target']}"
+        if row["verdict"] == "fail":
+            findings.append(Finding(
+                "proposal-review", "fail",
+                f"{who}: {row['detail']}"))
+        elif (row["verdict"] == "pass"
+              and row["reviewer"] in FILE_HALF_IS_WHOLE):
+            findings.append(Finding(
+                "proposal-review", "note",
+                f"{who}: pass, and this reviewer's file half is its whole "
+                "verdict."))
+        else:
+            findings.append(Finding(
+                "proposal-review", "unknown",
+                f"{who}: {row['verdict']} from files alone. "
+                f"{row['detail']}"))
+    for reviewer in NO_FILE_HALF:
+        findings.append(Finding(
+            "proposal-review", "unknown",
+            f"{reviewer} has no file half by design: nothing it decides is in "
+            "the SKILL.md, because a disagreement is a row somebody wrote "
+            "after the skill was merged. It needs the claim graph, so this "
+            "proposal cannot be unanimous from a checkout."))
+    return findings
+
+
 def state_findings(pr: dict) -> list[Finding]:
     """The pull request has to be open, unlocked and actually mergeable.
 
@@ -280,7 +341,8 @@ def token_findings(env: dict | None = None) -> list[Finding]:
 
 
 def judge(pr: dict, paths: list[str], heads: dict[str, str],
-          rows: list[dict], env: dict | None = None) -> dict:
+          rows: list[dict], env: dict | None = None,
+          proposal: list[dict] | None = None) -> dict:
     """One verdict over all four gates, in `tools/panel.py`'s vocabulary.
 
     `merge_allowed` is deliberately not `verdict != "fail"`. It is
@@ -290,7 +352,9 @@ def judge(pr: dict, paths: list[str], heads: dict[str, str],
     there.
     """
     findings = (state_findings(pr) + scope_findings(paths)
-                + pin_findings(heads, rows) + token_findings(env))
+                + pin_findings(heads, rows)
+                + (proposal_findings(proposal) if proposal else [])
+                + token_findings(env))
     verdict = verdict_of(findings)
     return {
         "pr": pr.get("number"),
@@ -397,6 +461,67 @@ def read_pr(number: int) -> tuple[dict, list[str], dict[str, str]]:
     return pr, paths, heads
 
 
+def materialize(number: int, head_sha: str, into: pathlib.Path) -> pathlib.Path:
+    """The proposal's whole `skills/` tree on disk, at the sha a verdict names.
+
+    `git archive` rather than the contents API, for two reasons. The reviewers
+    read more than the SKILL.md: the validator opens `evals/evals.json`, the
+    suite, and the newest `skills/_validation/results/` receipt, and a reviewer
+    pointed at a directory nobody wrote reports every skill unmeasured in a
+    voice indistinguishable from the truth. And one archive is one call where
+    walking the tree is dozens.
+
+    The fetch names `refs/pull/N/head` rather than the sha, because a server
+    need not serve an arbitrary object by name and every server serves that
+    ref.
+    """
+    subprocess.run(["git", "fetch", "--quiet", "origin",
+                    f"refs/pull/{number}/head"], cwd=ROOT, check=True)
+    archive = subprocess.run(["git", "archive", head_sha, "skills"],
+                             cwd=ROOT, check=True,
+                             capture_output=True).stdout
+    with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
+        try:
+            tar.extractall(into, filter="data")
+        except TypeError:                        # pragma: no cover
+            tar.extractall(into)
+    return into / "skills"
+
+
+def review_proposal(skills_dir: pathlib.Path,
+                    targets: list[str]) -> list[dict]:
+    """Every reviewer's credential-free verdict about the proposal's own text.
+
+    The reviewers are called with their own signature and `conn=None`, which is
+    the `--files-only` half each of them already supports. Nothing here
+    reimplements a check: a merge executor with its own opinion about a skill
+    would be a fourth reviewer nobody added to the panel.
+
+    `detail` on each row is the findings that decided it, flattened to one
+    line, because the only place this verdict can be read is a 140-character
+    commit status and a pull request description.
+    """
+    rows = []
+    for target in targets:
+        slug = target.split("/", 1)[1]
+        for reviewer, module in (("provenance", panel_provenance),
+                                 ("validator", panel_validator)):
+            for verdict in module.review(skills_dir=skills_dir, conn=None,
+                                         only=slug):
+                deciding = [f for f in verdict["findings"]
+                            if f["severity"] != "note"]
+                rows.append({
+                    "target": verdict["target"],
+                    "reviewer": reviewer,
+                    "verdict": verdict["verdict"],
+                    "target_sha": verdict["target_sha"],
+                    "detail": "; ".join(
+                        f"{f['check']}: {f['detail']}" for f in deciding[:2]
+                    ) or "no finding decided it.",
+                })
+    return rows
+
+
 def read_verdicts(targets: list[str]) -> list[dict]:
     """`panel_latest` for these targets, or an empty list and a printed reason.
 
@@ -433,10 +558,66 @@ def open_skill_prs() -> list[int]:
 
 
 def post_status(head_sha: str, result: dict) -> dict:
+    """The verdict as a commit status, or the one permission that refuses it.
+
+    Probed on 2026-10-26: the fine-grained token every seat on this host holds
+    reads `/commits/{sha}/statuses` with a 200 and writes `/statuses/{sha}`
+    with a 403, "Resource not accessible by personal access token". The
+    missing grant is **Commit statuses: Read and write** on this repository,
+    and it is one checkbox rather than a new token.
+
+    A check run would be the other way to put a verdict on a pull request and
+    it is not available either: the check-runs API is writable by a GitHub App
+    installation and never by a personal token, so the panel would need an App
+    before it needed a permission. The comment below is what reaches a pull
+    request today, and ADR-13 asks for it in its own words: any failure
+    "leaves the PR open with the verdicts attached".
+    """
     state, desc = status_of(result)
-    return api(f"/repos/{REPO}/statuses/{head_sha}", method="POST", body={
-        "state": state, "context": STATUS_CONTEXT, "description": desc,
-    })
+    try:
+        return api(f"/repos/{REPO}/statuses/{head_sha}", method="POST", body={
+            "state": state, "context": STATUS_CONTEXT, "description": desc,
+        })
+    except urllib.error.HTTPError as err:
+        if err.code != 403:
+            raise
+        return {"refused": 403, "context": STATUS_CONTEXT, "state": state,
+                "needs": "Commit statuses: Read and write on this repository"}
+
+
+def comment_body(result: dict) -> str:
+    """The verdict ADR-13 asks to be left attached to a pull request.
+
+    Markdown rather than the terminal rendering, because the reader here is
+    whoever is deciding what to do with the proposal, and a finding they cannot
+    scan is a finding they will not read.
+    """
+    lines = [f"**Panel verdict: `{result['verdict']}`** "
+             f"(`{STATUS_CONTEXT}`, advisory)", ""]
+    if result["merge_allowed"]:
+        lines.append("Every gate between a unanimous verdict and a merge is "
+                     "clear.")
+    else:
+        lines.append("What stands between this proposal and an ADR-13 merge:")
+        lines.append("")
+        for f in result["findings"]:
+            if f["severity"] == "note":
+                continue
+            lines.append(f"- **{f['severity']}** `{f['check']}` - "
+                         f"{f['detail']}")
+    notes = [f["detail"] for f in result["findings"]
+             if f["severity"] == "note"]
+    if notes:
+        lines += ["", "Measured:", ""] + [f"- {n}" for n in notes]
+    lines += ["", "Filed by `python3 tools/panel_merge.py --pr "
+              f"{result['pr']} --review`. This is advisory and is no "
+              "required check; the merge rule is unchanged."]
+    return "\n".join(lines)
+
+
+def post_comment(number: int, result: dict) -> dict:
+    return api(f"/repos/{REPO}/issues/{number}/comments", method="POST",
+               body={"body": comment_body(result)})
 
 
 def do_merge(number: int, head_sha: str) -> dict:
@@ -470,6 +651,13 @@ def main(argv=None) -> int:
     ap.add_argument("--status", action="store_true",
                     help=f"file the verdict as the {STATUS_CONTEXT} commit "
                          "status on the pull request's head")
+    ap.add_argument("--comment", action="store_true",
+                    help="leave the verdict on the pull request, which is "
+                         "ADR-13's \"verdicts attached\"")
+    ap.add_argument("--review", action="store_true",
+                    help="run each reviewer's credential-free half against "
+                         "the pull request's own text, which no scheduled job "
+                         "does today")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
 
@@ -482,11 +670,20 @@ def main(argv=None) -> int:
     results = []
     for number in numbers:
         pr, paths, heads = read_pr(number)
-        result = judge(pr, paths, heads, read_verdicts(sorted(heads)))
+        proposal = []
+        if args.review and heads:
+            with tempfile.TemporaryDirectory() as tmp:
+                proposal = review_proposal(
+                    materialize(number, pr["head_sha"], pathlib.Path(tmp)),
+                    sorted(heads))
+        result = judge(pr, paths, heads, read_verdicts(sorted(heads)),
+                       proposal=proposal)
         result["title"] = pr["title"]
+        result["proposal_review"] = proposal
         if args.status:
-            post_status(pr["head_sha"], result)
-            result["status_filed"] = STATUS_CONTEXT
+            result["status_filed"] = post_status(pr["head_sha"], result)
+        if args.comment:
+            result["comment_filed"] = post_comment(number, result)["html_url"]
         if args.merge and result["merge_allowed"]:
             do_merge(number, pr["head_sha"])
             result["merged"] = True
