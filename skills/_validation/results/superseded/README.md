@@ -37,6 +37,23 @@ invisible to both.
   nothing moved. The composition, not the calendar day, is what a receipt is
   about.
 
+- `2026-10-26-lexical-2.1-asm-retrofit.json` and its `.txt`. Written by the run
+  that retrofitted `agent-security-measurement` (#590 to #596, superseded by
+  #602). Moved here by the next run of the same day, which revised
+  `context-window-engineering` against the drained reading queue. This is the
+  third same-day pair and the sharpest of the three, because the revision it
+  was superseded by changed one description and nothing else that the engine
+  reads, and three cases in two other suites moved while it was being written:
+  `skill-library-engineering`'s hard negative `sle-neg-2` was taken by
+  `context-window-engineering` at a margin of +0.019 on the word `step`, and
+  `agent-containment`'s `ac-pos-2` fell 0.002 below a decoy on the word
+  `policy`, which the revised description had added once. Both were repaired by
+  removing those two words, and the repair is visible as the difference between
+  this bundle (57 of 67) and `../2026-10-26-lexical-2.1-cwe-revision.json` (58
+  of 67). One word in one description, in a file neither of those two skills
+  mentions, decided two cases in other suites. That is what the entry above
+  means by a receipt being about a composition.
+
 The real repair is in the ledger and in
 `INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`:
 tie-break on a timestamp, and record the library membership in the bundle so a
