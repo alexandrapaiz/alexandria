@@ -3588,7 +3588,7 @@ def standalone(paths=None):
 #: The sibling caption sets on the site. One entry per set, because the tell
 #: this reads is a property of a SET and is invisible in any one member. Today
 #: the skill library's shelves are the only set in the repository that renders
-#: a caption under every member of a list; a second set is one line here.
+#: a caption under every member of a list. A second set is one line here.
 CAPTION_SETS = (("site/lib/skill-shelves.js", "the skill library's shelves"),)
 
 #: A caption built as a short verbless opener, a full stop, and a list. The

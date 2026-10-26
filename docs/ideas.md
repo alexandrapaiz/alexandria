@@ -20673,7 +20673,7 @@ has nothing to go red against.
   shelf that names them", relayed to this seat by the PM on the board. The
   copy half is answered in `docs/voice/shelf-names-2026-10-26.md` and this is
   the half that is code rather than words, so it stops here.
-- The captions and names are drafted and the shelving is not, because
+- What: the captions and names are drafted and the shelving is not, because
   `site/lib/skill-shelves.js` is the frontend seat's surface. What this entry
   carries is the measurement that decides how the two new shelves get wired,
   run against the working tree rather than reasoned about.
@@ -20716,13 +20716,19 @@ has nothing to go red against.
   this round, because one skill is not a shelf and the catch-all says so
   honestly. The entry is here so the third shelf is a decision somebody makes
   rather than a thing nobody noticed.
+- First step: add the two shelves to `SHELVES` with `names:` set to the three
+  skills named above and `keywords: []` on both, which is one edit in one file
+  and is the frontend seat's to make once the words are ruled on.
+- Cost: $0. No dependency, no service, no new file. The measurement above was
+  run with `node` against the module the site already ships.
 - Status: proposed
 
 ### 2026-10-26 — The precondition on a copy round cannot be met by the seat it blocks, and it has now stopped three runs out of four (writer seat, run 53)
 - Trigger: this run is a copy round, and the charter's first step for one is
   that `docs/voice/value.md` exists and carries her recorded approval. It
   exists. It has read "Status: awaiting her approval" for 56 days.
-- The shape of the defect, which is not that the gate is wrong. The charter's
+- What: the shape of the defect, and it is not that the gate is wrong. The
+  charter's
   remedy for an unmet precondition is to draft the value statement and stop
   there. That remedy was performed on 2026-09-21 and the page has been
   complete ever since. The only thing missing is a verdict, and no run of this
@@ -20758,4 +20764,43 @@ has nothing to go red against.
   pages is this seat's work and it is one run. Deciding which of the two
   readings is right is a verdict on what the page IS, and a seat that answers
   that about its own precondition has widened its own authority.
+- First step: the PM seat posts one `ask` on the board naming the two readings
+  and carrying its own recommendation, which starts the forty-eight hours.
+- Cost: $0, and it is one message. The run it saves is the next copy round that
+  would otherwise spend itself deciding this question again.
+- Status: proposed
+
+### 2026-10-26 — The ledger's contract ratchet has been two over its ceiling on main, so the suite is red before any seat touches it (writer seat, run 53)
+- Trigger: this run's own pull request claimed a green suite and the suite was
+  not green. `tests/test_ledger.py::test_every_live_entry_carrying_a_readable_status_has_the_contract_fields`
+  fails, and the first assumption was that this run's two ledger entries had
+  caused it. They had, by two, and fixing them did not turn the test green.
+- What: the test is a ratchet rather than a gate, in its own docstring's words
+  "not a gate, a measurement". It asserts that no more than 206 readable
+  entries are missing contract fields, a number measured on 2026-10-17.
+  Measured today with the same parser the test uses:
+
+      origin/main:docs/ideas.md    208 readable entries missing fields
+      this branch, before repair   210
+      this branch, after repair    208
+
+  So the ceiling was already exceeded by two on `main` and this run's diff now
+  adds nothing to it. Whatever raised it from 206 to 208 landed between
+  2026-10-17 and today in somebody else's pull request, and the suite has been
+  failing on `main` since.
+- Why it matters more than the two entries do. Every seat's shipping step says
+  the suite is green, and a seat that runs it, sees one red line, and finds the
+  cause in its own diff will fix the wrong thing and still not get a green run.
+  This run spent that detour. A ratchet whose ceiling is passed stops measuring
+  drift and starts hiding it, because the next seat to add an incomplete entry
+  cannot tell its own contribution from the backlog's.
+- Not this seat's to fix either way, and both repairs are somebody's choice
+  rather than an obvious one. Raising the ceiling to 208 records the drift and
+  keeps the ratchet working. Filling the fields on the two entries that crossed
+  it keeps the number honest. Which is right depends on whether those two
+  entries are worth completing, and that is their authors' call.
+- First step: find the two entries that crossed the line, which is one parser
+  run over the history of `docs/ideas.md` between 2026-10-17 and today, and put
+  the choice above to whoever wrote them.
+- Cost: $0. One test file edit or two ledger entries completed.
 - Status: proposed
