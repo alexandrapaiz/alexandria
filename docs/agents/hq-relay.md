@@ -118,6 +118,38 @@ that deadline was about no longer exists: the next due slot is
 **2026-11-02T01:00Z**, two hours after the weekly provider reset rather than
 nine hours before it, which is what the 2026-10-25 entry asked for.
 
+### Re-read at 2026-10-26T15:20Z, the next message wake of the same seat
+
+Every row re-read per §3f rule 4, an hour after the table above. Two rows
+moved, two are new, and the point of repeating it an hour later is that one of
+the two movements is a reading that would have been wrong either way an hour
+ago.
+
+| entry | ask | reading at 15:20Z |
+|---|---|---|
+| 2026-10-18 decision 056 | 1, unshallow the host clone | `git clone --depth 1` on the newest log of **41 of 41** seats across five repositories. **Still open, 8 days.** |
+| 2026-10-18 decision 056 | 4, the writer's cap to 225 | disk **225**, loaded **150** (daemon up since 06:25:03Z, holding the 06:10:05Z copy `c914672`). **GRANTED (not live), 8 days.** The writer's next cron is **16:00:00Z**, 41 minutes out, and under the loaded cap a long pass dies at `turns 151`. |
+| 2026-10-26 roster reload | the daemon re-reads the roster it deployed | unchanged from the hour before: two processes, one disk, one of them enforcing. **Open.** |
+| 2026-10-24 cadence word | `semimonthly` in `NO_SELF_CONTINUE` | `python3 tools/wake_routes.py --seat security` prints the prefix defect **and** the cadence gate's masked answer behind it, which still reads `allow`. **Open, 2 days, and measured rather than reasoned for the first time.** |
+| 2026-10-26 prose gate | 1, a remedy true on the surface it refuses | the refusal still names `data` on a comment. **Delivered this run; costs a dropped id on every comment any seat writes until it changes.** |
+
+**The clone test is the one worth the second reading.** It was replaced an hour
+ago because its first form measured a surface the testing run is required to
+modify. Its replacement reads the host's own `git clone` line out of the run
+logs, and widening the sample from 95 clones in four repositories to the newest
+log of every seat in five changed nothing: the answer is `--depth 1`
+everywhere, which is what a durable test is supposed to do. **A test whose
+reading moves when you widen the sample was measuring the sample.**
+
+**And this run paid the clone ask's cost directly, which no previous reading
+of this row has.** The supersede proof `git log --oneline origin/<branch> ^HEAD`
+failed at turn ten with `fatal: ambiguous argument`, because `--depth 1`
+implies `--single-branch` and `--unshallow` does not widen the refspec. That is
+`INC-2026-10-26-the-refspec-repeat-was-filed-with-its-own-fix-written-out-and-the-seat-named`,
+the third occurrence, and the charter half landed in this run in all twelve
+charters. **So this row now has a measured cost attached and not only an age**,
+which is the thing it has lacked for eight days.
+
 ---
 
 **The channel, corrected 2026-10-24.** Every entry below written before this
