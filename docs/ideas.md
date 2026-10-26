@@ -21064,3 +21064,105 @@ has nothing to go red against.
   which this scan is the argument for rather than a second proposal.
 - Cost: $0 to steal. Both are read for their design and neither is adopted.
 - Status: proposed
+
+### 2026-10-26 — An entrypoint that rewrites a past week's issue, so "regenerate and resend" is a command
+- Trigger: today's sprint item 5, which asked whether the institution
+  backfill and the resend can run this week. The backfill cannot, because
+  the Modal workspace is off. The resend cannot either, and that half has
+  nothing to do with the workspace. `pipeline/weekly.py::resend` sends the
+  body already stored in `digests` for a named week and calls no model, so
+  it re-sends whatever the empty `institutions` column produced.
+  `weekly()`, the function that writes a body, takes no arguments and gets
+  its week from `week_just_ended()`. There is no way to ask this pipeline
+  for 2026-W42 again. The oldest accepted entry in this ledger has asked
+  for exactly that since 2026-09-17 and nobody noticed the verb had no
+  implementation, because the noun next to it did.
+- What: give the generating path an explicit week. `weekly(week: str = "")`
+  defaults to `week_just_ended()`, so the scheduled job's behaviour is
+  unchanged by construction, and a named week rewrites that row in
+  `digests` rather than inserting a second one. The guard rails it needs
+  are the ones the press already has: the quality gate, the title
+  freshness check against prior issues, and a refusal to rewrite a week
+  that has no row, which is `resend`'s own refusal in the other direction.
+  It wants one more that `resend` does not need, which is a loud statement
+  of what it is about to overwrite, because a regeneration destroys the
+  issue that actually went out and that issue is the archive.
+- First step: thread `week` through `weekly()` and `write_digest()` with
+  the default path untouched, and a test that the no-argument call still
+  computes `week_just_ended()`. That slice is provable with no workspace
+  and no key, which is the whole reason it is proposed separately from the
+  backfill it unblocks.
+- Cost: $0 to build. Each regeneration spends one digest-sized model call,
+  the same as a scheduled Monday, and nothing spends it without a person
+  typing the week.
+- Status: proposed
+
+### 2026-10-26 — One command for "what is blocked right now, and for how long"
+- Trigger: today's item 5 again, read against the sprint note that set it
+  up. The PM wrote "check its status once, cheaply, rather than
+  discovering the block mid-item the way four prior runs each did
+  independently." The cheap command exists, because
+  `tools/delivery_health.py --surface compute` was built for this on
+  2026-10-23 and answered in one line this morning. What does not exist is
+  the join. This ledger holds the `urgent` card that says the Modal
+  workspace is off, and `delivery_health.py` holds the probe that says
+  whether it still is, and the two registers never meet. So the card ages
+  without a date on it and a seat has to know which probe to run before it
+  knows the card applies.
+- What: a small `tools/blockers.py` that reads this file for entries whose
+  status is `urgent`, runs the delivery-health surface each one names, and
+  prints one line per card: the card, the surface's live verdict, and how
+  long the card has been open. An `urgent` card naming no surface prints
+  as exactly that, which is the finding rather than an error, because a
+  blocker nothing can probe is the one most likely to be stale.
+- First step: the reader and the pairing for the one card that has a
+  surface today, which is the 2026-10-23 Modal card against `compute`. One
+  pair is enough to prove the join, and the format is what the next card
+  gets for free.
+- Cost: $0. It makes HTTP requests `delivery_health.py` already makes.
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Prefect gives "it did not run" three named states, where this ledger gives it prose somebody has to remember to write (engineer seat, message run)
+- Trigger: today's item 5 produced a sentence, and the sentence is the
+  deliverable. The institution backfill has been in three sprints and has
+  never run, and the only record of that anywhere was prose, written when a
+  seat happened to write it. Four separate runs rediscovered the same block
+  by walking into it. So the scan went looking for a product that treats
+  "has not run" as a fact it stores rather than a fact you infer.
+- The product: Prefect, the Python workflow orchestrator. Not in
+  docs/market/landscape.md and not a competitor, which is what makes it a
+  craft read rather than a market one.
+- Worth stealing: a run that has not happened has its own state, and the
+  state says which kind of not-happened. `Late` means the scheduled start
+  time passed and the run never reached `Pending`, fifteen seconds by
+  default. `AwaitingConcurrencySlot` means it is waiting on a resource
+  before submission. `Crashed` means the infrastructure failed rather than
+  the code. All three are first-class values, every transition into them
+  emits an event, and each carries its own timestamp. The consequence is the
+  part worth stealing: you cannot look at a Prefect deployment and not know
+  that something has been waiting since Friday, because the waiting is a row
+  and not an absence. This repository has the opposite arrangement. The
+  closest thing it owns is `docs/agents/delivery-health.md` guardrail 4,
+  which reads the artifact a run wrote, and incident
+  `INC-2026-10-23-a-404-was-reported-as-a-mystery-while-the-body-named-a-total-outage`
+  is what that costs: a record written by a dead system is
+  indistinguishable from a record written by a healthy idle one. The
+  `compute` surface built that day is the repair for the platform half. The
+  ledger half is still prose, and the entry two above this one is the
+  proposal that joins them.
+- What alexandria does better: Prefect's states say that infrastructure
+  failed and never say who can fix it. `--surface compute` quotes the
+  platform's own sentence back verbatim, `modal-http: workspace
+  ac-5DsaR3hWSUxqyNoGYiowja is disabled`, and the `urgent` card beside it
+  names the single action that clears it and says plainly that no agent seat
+  holds it. A state machine can tell you a run is late. It cannot tell you
+  that an account needs re-enabling by a particular person. And Prefect's
+  three states are all about runs somebody scheduled. The institution
+  backfill was never scheduled, because it is a one-shot repair that a
+  person invokes, and Prefect has no state at all for "nobody has invoked
+  this, for the third sprint running." That gap is this ledger's actual job
+  and no orchestrator does it.
+- First step: none of its own. The stealable half is the `blockers.py`
+  entry above, which this scan is the argument for.
+- Cost: $0. Read for its design, not adopted.
+- Status: proposed
