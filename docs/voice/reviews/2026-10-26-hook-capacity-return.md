@@ -222,9 +222,14 @@ names are shorter than the dress.
 ## This run's own prose, measured
 
 `selfcheck` is the gate this seat points at itself, and the charter says an
-editor whose review contains a banned word resigns. The run's own figures are
-in the checks table below rather than claimed here, because a review that
-asserts its own cleanliness is the thing ban list 74 is about.
+editor whose review contains a banned word resigns. Zero em dashes, zero
+banned words, and **two semicolons, both of which stand and here is the one
+line saying why.** Each is inside a verbatim quotation of `2026-W40`, at the
+law 1 verdict and at the law 6 verdict, and the semicolon is the defect being
+reported in both. Striking it would falsify the evidence for the finding it is
+evidence of. The gate flags them because the quotation wraps across a line and
+its continued-quotation exemption needs the closing mark on the same line,
+which is the gate being conservative in the right direction.
 
 ## Checks
 
