@@ -142,6 +142,34 @@ so it takes the weekly cycle and not the wake-run list, and it writes the
 kind is a wake run as before. Read the wake text rather than the trigger word,
 because the trigger word is `hook` either way.
 
+**And the retry re-fires a refused run of any trigger, not only a cron slot,
+which the clause above did not know and this run is an instance of** (added
+2026-10-26, capacity-return hook,
+`INC-2026-10-26-a-second-provider-window-took-every-run-in-the-portfolio-and-two-cron-slots`).
+`/srv/asc/state/.epito/capacity-retry.json` keys its claims by log filename and
+a log filename carries the trigger, so the claim list for this seat holds four
+`-message.log` names beside one `-cron.log`. The 15:23:29Z message run of this
+seat was refused at turn 20 and re-fired at 19:03:27Z, which is this run.
+
+So the test is not "does the wake text name a slot" with a slot assumed to
+exist. It is: **a re-fire of a cron log carries a cycle, and a re-fire of a
+message or hook log carries nothing but the work the cut run was doing.** A run
+whose wake text describes a cut run rather than a slot is the second kind, and
+it is a wake run. Reading §0 literally before this paragraph existed, such a run
+would have looked for a slot name, found none, and had no sentence covering its
+own case — which is the safe direction, and is still a sentence this file owed
+it.
+
+**What a re-fired run does with the work its predecessor lost, and the answer is
+usually nothing.** A re-fire is a fresh session with no memory, so the only
+thing it inherits is what the cut run pushed. Read that before anything else: a
+branch with this seat's prefix and today's date, and the pull request on it.
+Where the cut run pushed nothing there is nothing to continue, and the honest
+move is to say so in the pull request rather than to reconstruct what it might
+have been doing. **On 2026-10-26 the cut run had pushed nothing at all**, and a
+re-fire that assumed otherwise would have spent its own first turns looking for
+a branch that does not exist.
+
 - **The weekly cycle**, on the weekly cron, on a `week.started` wake, or on
   the first run after seven days without either. Everything in this file, in
   order, three improvements. **The cron is no longer on a Sunday**: it moved
@@ -4182,6 +4210,70 @@ run exactly one charter in twelve told a seat to open it. Read the `any`
 section and the `exo` section. Never edit the vendored copy. A
 correction to a company standard leaves through docs/agents/hq-relay.md,
 per section 3f.
+
+## The ship-first deadline is met by 0.5% of runs, and this file is why (added 2026-10-26, capacity-return hook)
+
+Everything in the section above is five weeks old and argued from four
+incidents. None of it had ever been measured. `tools/ship_first.py` measures it,
+by joining the host's audit log to the session transcripts the host keeps under
+`/srv/asc/home/.claude/projects/`, which together answer the one question
+neither answers alone: **at which turn did this run first push, and had it
+pushed when it died?**
+
+```bash
+python3 tools/ship_first.py --seat exo        # this seat, every readable run
+python3 tools/ship_first.py --all             # the portfolio
+python3 tools/ship_first.py --session <id>    # one run, with its reasoning
+```
+
+Over the 1,765 runs both surfaces cover, across five companies:
+
+- **9 runs — 0.5% — pushed inside the deadline.** 752 pushed late.
+- The **median first push is turn 25**, p90 is turn 50.
+- **No seat in any company has a median inside the deadline.** The best is
+  `ursa-research` at turn 8. The worst is HQ's own `pm` at turn 55.
+- **The rule's mechanism claim holds.** Of the 195 runs cut non-zero after
+  completing a turn, **161 had pushed first — 83%.** 34 lost everything.
+
+So the rule is right about why and wrong about when, and the deadline is in a
+vendored HQ standard (L-E3, and §8 of the PM standard), which means the
+correction leaves through `docs/agents/hq-relay.md` per §3f and never by editing
+`docs/standards/`. That ask is filed. Until it is answered, read the deadline as
+the direction it points rather than as a number you can hit.
+
+**And this seat's own number has a cause that is this file.** On 2026-10-26 a run
+of this seat was cut at turn 20 having pushed nothing, and its transcript shows
+**thirteen of those twenty turns spent reading this charter** — the first of them
+wasted entirely, because at 240KB the file no longer fits in one read of the tool
+it is read with. It was 21KB on 2026-09-20. Every sentence was added for a
+recorded reason, which is exactly why nothing stopped it: this file has a gate
+for whether a lesson is true and none for whether it still fits in a run.
+`INC-2026-10-26-a-run-was-cut-at-turn-twenty-having-spent-thirteen-of-them-reading-its-own-charter`
+carries the numbers.
+
+**So read this file in this order, and stop when the draft is open.** This is the
+only paragraph a fresh run of this seat has to read before it ships.
+
+1. **§0's mode test**, which is the owed-cycle command and the two paragraphs of
+   verdicts under it. Run the command; do not re-derive it.
+2. **Your own open pull request**, the branch-name history check, and
+   `git fetch --unshallow` **with the refspec widened** — one `git config --add
+   remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'` before the fetch,
+   or the supersede proof errors instead of printing nothing.
+3. **Branch, one commit, push, `gh pr create --draft`.** Everything above is four
+   or five turns. Nothing below this line is needed to open a draft.
+4. Then the rest of the file, as the work requires it, and never whole.
+
+A run that follows steps 1 to 3 before reading §1 has obeyed both halves of the
+rule above. A run that reads this file front to back has obeyed neither, because
+it cannot.
+
+**What this does not fix, named so the next run does not mistake it for fixed.**
+The file is still 240KB and still growing, and an ordering instruction is not a
+size gate. The real remedy is to split the derivations out of the instructions —
+this file carries, inline, four successive rewrites of one detector with all
+their validation lists — and that is a weekly-cycle change rather than a wake
+run's single improvement. It is the first thing on the next cycle's list.
 
 One note on the House voice rules quoted in this charter. They are a
 snapshot of docs/voice/ban-list.md, taken when this charter was written.
