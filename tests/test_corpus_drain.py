@@ -1163,11 +1163,31 @@ def test_the_daily_draw_reads_the_paper_count_out_of_the_job():
     drawing more of the account's day than anything checks. That is the same
     argument `cron_caps` makes for spend caps, applied to the other ceiling.
     """
-    spec, per_call, _ = budget.KIMI_DAILY_DRAW["distill (pipeline/distill.py)"]
+    label = "distill (pipeline/distill.py)"
+    spec = budget.KIMI_DAILY_DRAW[label][0]
     assert budget._calls(spec) == distill.MAX_PAPERS_PER_RUN
     # And the arithmetic downstream of it actually uses that number.
     total, _ = budget.kimi_daily_draw()
-    assert distill.MAX_PAPERS_PER_RUN * per_call <= total
+    assert distill.MAX_PAPERS_PER_RUN * budget.kimi_call_tokens(label) <= total
+
+
+def test_the_daily_draw_reads_interprets_call_size_out_of_the_job():
+    """The other half of a row can go stale too, and this one did.
+
+    The paper count was read out of the job because it is the number that
+    moves. Tokens a call move just as readily and were copied anyway: this
+    table said 1,000 for interpret from the day it was written, and slice 2
+    doubled the shortlist on 2026-10-25, which took the job's own measured
+    constants to 2,041 prompt and 299 reply and left this guard counting the
+    request before last. A guard holding its own copy of a number stops
+    guarding the moment somebody edits the job, and that argument does not
+    care which column the copy is in.
+    """
+    tokens = budget.kimi_call_tokens("interpret (pipeline/interpret.py)")
+    assert tokens == interpret.CALL_PROMPT_TOKENS + interpret.CALL_OUTPUT_TOKENS
+    # The job sends NEIGHBORS candidates, so a widening that moves the measured
+    # constants has to move this row, which is the drift that happened once.
+    assert tokens > 1_000
 
 
 # ---------------- pacing, the limit that actually binds (2026-10-11) ----------
@@ -1183,8 +1203,8 @@ def test_pace_reads_the_limit_that_binds_on_each_provider():
     of requests, and a drain paced from RPM asks for fifteen times what the
     provider publishes.
     """
-    paper = budget.KIMI_DAILY_DRAW["distill (pipeline/distill.py)"][1]
-    batch = budget.KIMI_DAILY_DRAW["triage (pipeline/triage.py)"][1]
+    paper = budget.kimi_call_tokens("distill (pipeline/distill.py)")
+    batch = budget.kimi_call_tokens("triage (pipeline/triage.py)")
 
     # The primary is unchanged, and that is half of what makes this safe: the
     # fix must not slow the drain on the provider that works.
@@ -1250,17 +1270,16 @@ def test_the_fallback_day_is_sized_at_the_request_the_job_can_actually_send():
     and point the fix at the wrong job.
     """
     label = "distill (pipeline/distill.py)"
-    measured = budget.KIMI_DAILY_DRAW[label][1]
+    measured = budget.kimi_call_tokens(label)
     size, basis = budget.fallback_call_tokens(label, "openai/gpt-oss-120b",
                                               measured)
     assert "counted" in basis and size < measured / 5
 
     # Triage's request fits the free tier untouched, so its measured number is
     # the right one and the basis says so.
-    size, basis = budget.fallback_call_tokens("triage (pipeline/triage.py)",
-                                              "openai/gpt-oss-120b",
-                                              budget.KIMI_DAILY_DRAW[
-                                                  "triage (pipeline/triage.py)"][1])
+    size, basis = budget.fallback_call_tokens(
+        "triage (pipeline/triage.py)", "openai/gpt-oss-120b",
+        budget.kimi_call_tokens("triage (pipeline/triage.py)"))
     assert basis == "measured"
 
     per_model, lines = budget.fallback_daily_draw()
@@ -1283,7 +1302,7 @@ def test_a_paced_fallback_drain_still_finishes_inside_its_own_timeout():
     timeout = int(re.findall(r"^\s+timeout=(\d+),", decorator, re.M)[-1])
     label = "distill (pipeline/distill.py)"
     size, _ = budget.fallback_call_tokens(
-        label, "openai/gpt-oss-120b", budget.KIMI_DAILY_DRAW[label][1])
+        label, "openai/gpt-oss-120b", budget.kimi_call_tokens(label))
     # Two calls a paper on the fallback: the full text is refused before it is
     # paced, and the abstract is the one that answers and is paced.
     spent = distill.MAX_PAPERS_PER_RUN * llm.pace("openai/gpt-oss-120b", size)
