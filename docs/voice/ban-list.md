@@ -3686,6 +3686,24 @@ gap that the same collision had left empty (incident 25).
     ```
     LANDED docs/voice/check_voice.py: "rules whose own opening line was cut"
     ```
+    **Widened 2026-10-26, writer run 51, after the third specimen turned up
+    where the gate could not look.** Both narrowings came from the one
+    specimen this entry was written from. `headless` required the body line to
+    be INDENTED, because a bullet's continuation is, and it skipped every line
+    inside a ``` fence, because `fenced()` reasons that a fence quotes output.
+    `prompts/digest.md:621` is the same cut in a plain paragraph inside the
+    issue template: `d022e79a` on 2026-10-18, a trim under the weight rule,
+    removed "**A stranger has to enjoy that sentence.** This is the test it has
+    to pass" and the blank line above it, so the opening slot's outsider rule
+    began "and it is the reason the line exists" welded to the rule about
+    greetings. Neither narrowing could reach it, and the fence one is the
+    worse of the two: this file's fence runs 520 to 1353, which is 39% of the
+    generator and is the template rather than quoted output.
+    The unit is a sentence, which is what the defect is about. The indent and
+    the fence were never part of it, and the guard that does the work is the
+    full stop on the line before, because a wrapped line never carries one.
+    Fourteen cases now, three of them pinning the false positives the widening
+    could have bought.
 
 138. The verdict read out of a field that also records what the verdict used
     to be.
@@ -3770,3 +3788,44 @@ gap that the same collision had left empty (incident 25).
     ```
     The count now carries its own scope on its own line, so a grade that
     quotes the figure quotes the two numbers that produce it.
+
+140. The payload's field name used as the label over the thing it names.
+    Entry 14 and the vocabulary rule in the generator both ban the payload's
+    field names from reaching a reader, and the generator lists the shape by
+    name: "carries a procedure", "flagged for deep reading", "scored highly in
+    triage". Those are all the field name used as a FACT about the paper. This
+    entry is the other grammar, and it is the one that got through: the field
+    name used as the LABEL announcing the thing the rule is about to render.
+    The specimen is 2026-W42, three times in one issue, every one of them the
+    same construction. "The procedure is extractable:", then the steps as a
+    comma-run. "The procedure is clean:", then the steps as a comma-run. "The
+    procedure runs:", then the steps as a comma-run.
+    Why it defeats the rule that was pointed at it. The vocabulary rule tests
+    whether a clause makes a claim the subscriber cannot check, and asks
+    "flagged by whom?" There is no such question to ask here. "The procedure
+    is clean" claims nothing about the paper and nothing about alexandria; it
+    is a stage direction, read as a transition, and the ban reads it as
+    neither. The word is also an ordinary English noun, so no count of it
+    separates the label from a legitimate use.
+    **And the label costs more than a word, which is why this is not a tone
+    entry.** The rule it sits under says a procedure is always list-shaped and
+    must render as a numbered list. All three of these rendered as prose. A
+    procedure is the only reliable supply of a list in this generator, and the
+    issue that converted three of them printed `shapes 1`, which the shape rule
+    calls a failing issue in its own words. The one tell carried the one law
+    the issue most needed.
+    The tell, as a question to put to a rule rather than to prose. Does this
+    rule name a payload field and then ask for a render, and if so, does
+    anything stop the field's name becoming the render's caption? A rule that
+    says "render the `x`" has handed the model a word and a colon.
+    Added 2026-10-26, writer run 51. Enforced by a sentence in the rule that
+    produces the defect, which is where the canon's own generalisation step
+    says the gate belongs:
+    ```
+    LANDED prompts/digest.md: "The list is the shape and not a suggestion, and this field's name is never"
+    ```
+    Swept: the generator names a payload field and asks for a render in one
+    other place, the `citation_movers` translation at the vocabulary rule
+    itself, and that rule already supplies the reader-facing words to use
+    instead ("three separate papers built on it this week"), so it carries its
+    own answer and needs nothing. The count is two and one was already closed.
