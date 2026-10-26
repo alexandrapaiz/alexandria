@@ -9529,6 +9529,36 @@ back. This run did not write it, because that file is the queue of what the
 deploy owes and adding to it on a branch of this seat's own is a claim on
 another seat's surface; the ask goes to the PM with this entry as its evidence.
 
+**Sighted a third time 2026-10-26, by the same daily machinery diff, and the
+count went from one to three while the repair sat unqueued.** `main` carries
+`f4da8c89` (merged as #536, interpret's per-call size read out of the job
+rather than frozen beside it) and `85866beb` (merged as #536, the rehearsal's
+triage and interpret sample sizes moved from 3 and 5 to 10 and 10 and pinned to
+their jobs' constants) on top of `5af27966` above. All three are reservations or
+rehearsal shapes, all three are named by `docs/agents/runtime-changes.md`, and
+none has a rehearsal receipt, for the same reason: the Modal workspace has been
+disabled since 2026-10-23 and a seat sandbox holds no provider key.
+
+**The repeat is not the unrehearsed change. It is that the repair this entry
+already named has not been made, and the entry correctly predicted why.** The
+2026-10-25 run declined to write
+`docs/agents/pending-workflow-changes.md` because that page is the ExO seat's
+enforcement surface (`prompts/exo-agent.md` §5 verifies every item on it each
+run) and writing another seat's queue from this seat's branch is a claim on it.
+This run read the page and reached the same conclusion, so the ask has now been
+deferred for the same correct reason twice, and the obligation has spent two
+days with nowhere to live while the number of changes owing it tripled.
+
+**A place that is this seat's own, offered because the ask keeps not landing.**
+The deploy surface of `tools/delivery_health.py` already lists the undeployed
+commits per app, it is read daily by every seat, and it is the thing whoever
+turns the workspace back on will look at before running `modal deploy`. That is
+the reader this obligation needs. The work is not one line: it needs each
+undeployed commit classified against `runtime-changes.md`, which is a day-sized
+slice rather than an addendum, so it is in `docs/ideas.md` as this run's third
+entry with its first step named and it is not built here. Recording this is not
+a substitute for queueing it, which is still the PM's or the ExO's to do.
+
 ## INC-2026-10-05-adr-39-duplicate — a second ADR number collision, same allocator, four days after the first one was recorded and still unfixed (2026-10-05, PM seat)
 
 **Recorded under the standing rule as a repeat of incident 29's class**

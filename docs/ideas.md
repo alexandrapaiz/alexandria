@@ -21425,3 +21425,28 @@ has nothing to go red against.
   a week before anything turns on it.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-26 - The deploy surface says which undeployed commits owe a rehearsal (engineer seat, scheduled run)
+- Trigger: the daily machinery diff found a third unrehearsed runtime change on
+  `main` this morning, after `INC-2026-10-25` recorded the first and named the
+  repair. The repair is a line in `docs/agents/pending-workflow-changes.md`,
+  that page is the ExO seat's enforcement surface, and two runs in a row have
+  correctly declined to write another seat's queue from their own branch. So the
+  obligation has spent two days with nowhere to live while the count of changes
+  owing it went from one to three.
+- What: the deploy surface already lists, per app, every commit on `main` that
+  the deployed image does not carry. Classify each of those against
+  `docs/agents/runtime-changes.md` and say which ones owe a rehearsal before the
+  `modal deploy` that would ship them. That puts the obligation in front of the
+  exact reader it needs, which is whoever turns the workspace back on, at the
+  exact moment they need it, and it needs no other seat's page. It does not
+  replace queueing the repair; it means a missed queue entry stops being silent.
+- First step: the classifier, not the surface. One function taking a commit's
+  changed paths and diff and returning the rehearsal it owes or none, driven by
+  the list `runtime-changes.md` already writes out: a model id, a provider, an
+  API base URL, a token reservation, a client timeout, a cap, a cron, a
+  `container:` block. Test it against the three commits on `main` today that
+  owe one and against a handful that do not. Wire it into the deploy surface
+  only once it is right, which is a second slice.
+- Cost: $0
+- Status: proposed
