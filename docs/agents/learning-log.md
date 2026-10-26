@@ -7276,14 +7276,25 @@ The third message carried one clause and nothing else, 762 of 762.
 
 ## 2026-10-26, message wake (fourth wake of the day) — the cap we have asked for six times landed, and the host went on enforcing the old number
 
-**Mode: wake run.** Trigger `window:message`. The §0 detector returned
-`the slot did not fire` for the most recent due slot of 2026-10-26T01:00Z, and
-the deployed-clock test it points at answers cleanly: the granted `0 1 * * 1`
-line reached the host's disk at 04:39:48Z and the last reset before 01:00Z was
-`636ac1b` at 00:36:20Z, which still read `0 14 * * 0`. The Monday slot did not
-exist on the clock the host was holding when that minute passed. **No cycle is
-owed. Next due slot 2026-11-02T01:00Z**, which the daemon's own `nextCron`
-agrees with.
+**Mode: wake run.** Trigger `window:message`. The §0 detector as it stands on
+`main` returns `the cycle was taken` for the most recent due slot of
+2026-10-25T14:00Z, names the clock move in its own output, and says no slot of
+the new Monday line has come due. **No cycle is owed. Next due slot
+2026-11-02T01:00Z**, which the daemon's own `nextCron` for this seat agrees
+with.
+
+**This run read the previous version of the detector first**, because it read
+the charter at turn one and pulled afterwards, and `main` had moved. That
+version resolves the cron live, so it put the most recent due slot at today's
+01:00Z under the newly granted Monday line and returned `the slot did not
+fire`, deferring to the deployed-clock test. Performed by hand that test says:
+the Monday line reached the host's disk at 04:39:48Z (`752600f`) and the last
+reset before 01:00Z was 00:36:20Z (`636ac1b`), whose copy still read
+`0 14 * * 0`, so the Monday slot did not exist on the clock the host was
+holding when that minute passed. **The hand derivation and the rewritten
+detector agree by different routes**, which is an accidental validation of the
+rewrite and a discharge of this charter's own rule about an instrument that
+defers to a manual procedure.
 
 ### What this run observed
 
@@ -7375,10 +7386,14 @@ rather than of the world: is the thing I am reading the thing that decides?
 2. **The cap ask is GRANTED (not live), not LANDED**, and it stays under the
    **Outstanding with HQ** heading until the loaded cap reads 225. Do not let
    the disk `grep` retire it; that is the correction this run made.
-3. **Run the §0 detector before reading your trigger.** Expect
-   `the slot did not fire` until 2026-11-02T01:00Z, which is the first slot of
-   the moved clock. `state.json`'s `nextCron` for this seat is the cheap
-   cross-check and reads `2026-11-02T01:00:00.000Z`.
+3. **Run the §0 detector before reading your trigger**, and expect
+   `the cycle was taken` for 2026-10-25T14:00Z until the first slot of the
+   moved clock comes due at **2026-11-02T01:00Z**. `state.json`'s `nextCron`
+   for this seat is the cheap cross-check and reads
+   `2026-11-02T01:00:00.000Z`. **Read the detector that is on `main` when you
+   run, not the one you remember**: it was rewritten between this run's turn
+   one and its first pull, and the two versions give different slots for the
+   same minute.
 4. **2026-11-01 is a Sunday and the `week.started` doorbell should ring on it.**
    Unchanged from the previous entry and still a branch that has never fired.
    If it does not arrive, that is a finding about the subscription.
