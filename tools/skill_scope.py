@@ -619,6 +619,9 @@ def main(argv: list[str] | None = None) -> int:
                     help="the report as data, to stdout or to a file")
     ap.add_argument("--smoke", action="store_true",
                     help="the arithmetic, against fixtures")
+    ap.add_argument("--all-cases", action="store_true",
+                    help="per-case detail for every distractor count, not "
+                         "only the full pool")
     ap.add_argument("--root", default=str(ROOT), help="a checkout to measure")
     args = ap.parse_args(argv)
 
@@ -666,6 +669,15 @@ def main(argv: list[str] | None = None) -> int:
     report = measure(root, counts)
     code = verdict(report)
     report["verdict"] = "scoping wins" if code == 0 else "scoping does not win"
+    if not args.all_cases:
+        # Per-case detail is what makes a result a receipt, and twelve arms of
+        # it is four times the file for one headline. The full pool keeps its
+        # cases, because that is the condition the verdict reads; the smaller
+        # counts are a trend check and keep their summaries. --all-cases asks
+        # for the whole thing.
+        for cond in report["conditions"][:-1]:
+            for arm in cond["arms"].values():
+                arm["cases"] = f"summarised; re-run with --all-cases"
 
     if args.json:
         text = json.dumps(report, indent=2)
