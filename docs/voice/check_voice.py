@@ -3583,6 +3583,147 @@ def standalone(paths=None):
     return 1 if hits else 0
 
 
+# ---- captions ---------------------------------------------------------
+
+#: The sibling caption sets on the site. One entry per set, because the tell
+#: this reads is a property of a SET and is invisible in any one member. Today
+#: the skill library's shelves are the only set in the repository that renders
+#: a caption under every member of a list; a second set is one line here.
+CAPTION_SETS = (("site/lib/skill-shelves.js", "the skill library's shelves"),)
+
+#: A caption built as a short verbless opener, a full stop, and a list. The
+#: length bound is what makes it a FRAME rather than an ordinary two-sentence
+#: caption: the opener is too short to be an argument, so its only job is to
+#: announce the subject before the list arrives.
+CAPTION_FRAME = re.compile(r"^[^.]{1,45}\.\s+[A-Z]")
+
+#: What `CAPTION_FRAME` must and must not read as the frame. Every case is a
+#: caption string taken verbatim from the surface, so a case here is evidence
+#: rather than an illustration. Run before any file is opened, because a
+#: pattern that reports the wrong count reports it in the same format as the
+#: right one.
+CAPTION_CASES = (
+    (True, "The scaffold around a model. Tools, prompts, loop structure, and "
+     "the feedback the loop runs on."),
+    (True, "Several agents dividing work. How they are organised, how they "
+     "hand off, and how they fail."),
+    (True, "Post-training that updates the weights. Distillation, reward "
+     "design, and self-improvement."),
+    (True, "Getting an answer out fast and cheap. Decoding, caching, and "
+     "test-time compute."),
+    (False, "What goes into the window, in what order, and what to do when it "
+     "will not fit."),
+    (False, "Models that read and act beyond text, across images, audio, and "
+     "the world."),
+    (False, "Distilled and shelved, on a shelf of its own for now."),
+    # The drafted repairs of 2026-10-26, which the frame must not read as the
+    # frame it was written to replace. The first is the long one and the last
+    # is the short one, which are the two a length-bounded pattern is most
+    # likely to get wrong.
+    (False, "Most of what makes an agent reliable sits outside the model, in "
+     "the tools it is given, the loop it runs in and the corrections it gets "
+     "back."),
+    (False, "Once the answer is right, the remaining job is getting it out "
+     "fast and cheap."),
+    (False, "A skill lands here when its subject is not one of the headings "
+     "above."),
+    # A caption whose FIRST sentence is long enough to carry an argument is
+    # two sentences rather than this frame, however the second one reads.
+    (False, "An agent that can act needs a boundary somewhere, and where you "
+     "put it decides whether the defence does anything. Both halves matter."),
+)
+
+#: A caption as the surface declares it, which is a `blurb:` key whose value
+#: may wrap across lines the way every string in that file does.
+CAPTION = re.compile(r"blurb:\s*\n?\s*((?:\"(?:[^\"\\]|\\.)*\"\s*\+?\s*)+)")
+
+
+def caption_cases():
+    """`CAPTION_FRAME` against the captions it is a verdict about."""
+    bad = [(want, s) for want, s in CAPTION_CASES
+           if bool(CAPTION_FRAME.match(s)) != want]
+    print(f"CAPTION_FRAME cases                        "
+          f"{len(CAPTION_CASES) - len(bad)} of {len(CAPTION_CASES)}")
+    for want, s in bad:
+        print(f"  FAIL    wanted {want}, got {not want}: {s[:60]}")
+    return 1 if bad else 0
+
+
+def captions_of(path):
+    """The caption strings one surface declares, in declaration order."""
+    text = (ROOT / path).read_text(encoding="utf-8")
+    out = []
+    for m in CAPTION.finditer(text):
+        parts = re.findall(r'"((?:[^"\\]|\\.)*)"', m.group(1))
+        out.append(re.sub(r"\s+", " ", "".join(parts)).strip())
+    return out
+
+
+def captions(paths=None):
+    """A set of sibling captions written in one grammar, ban list 3 and 142.
+
+    Entry 3 says vary or die and it has never carried a count, so it has only
+    ever been a reading. Entry 113 is the lesson this one is built from in its
+    own words: "Every gate in that list that holds was turned into a count
+    after a print walked past it."
+
+    What walked past was the skill library's shelf page. Six captions, four of
+    them the identical frame, and the set survived three visual sweeps of that
+    page and two copy rounds that read the page it sits on, because no single
+    caption looks wrong. That is the whole class. A tell that lives in a SET
+    is invisible to any gate pointed at a member, and every other check in
+    this file is pointed at a member.
+
+    Two counts, both exact string work, both the technique entry 113 already
+    settled for evidence grades.
+
+      more than one caption in a set on the same frame,
+      two captions in a set opening on the same two words.
+
+    What it deliberately does not count, because the proxy would be worse
+    than the reading. Her ruling of 2026-09-29 forbids fragments, and all
+    seven captions on that page are fragments, which is the sharper finding
+    and the one that needed a person. Deciding whether a clause carries a
+    finite verb is not string work, and a fragile detector reporting a verdict
+    in this format would be trusted exactly as far as the honest counts above.
+    So the fragment count stays in `docs/voice/shelf-names-2026-10-26.md`,
+    where a reader can check it, and this gate claims only what it can prove.
+    """
+    rc = caption_cases()
+    print()
+    sets = [(p, label) for p, label in CAPTION_SETS
+            if not paths or p in paths]
+    for path, label in sets:
+        if not (ROOT / path).exists():
+            print(f"  FAIL    {path}  missing")
+            rc = 1
+            continue
+        found = captions_of(path)
+        framed = [c for c in found if CAPTION_FRAME.match(c)]
+        stems = {}
+        for c in found:
+            stems.setdefault(" ".join(c.lower().split()[:2]), []).append(c)
+        shared = {k: v for k, v in stems.items() if len(v) > 1}
+        print(f"  {path}  ({label})")
+        print(f"    captions                               {len(found)}")
+        print(f"    on the opener-then-list frame          {len(framed)}")
+        print(f"    opening on a stem another one uses     {len(shared)}")
+        if len(framed) > 1:
+            rc = 1
+            print(f"    FAIL    {len(framed)} captions share one frame")
+            for c in framed:
+                print(f"              {c}")
+        for stem, members in sorted(shared.items()):
+            rc = 1
+            print(f'    FAIL    {len(members)} captions open on "{stem}"')
+    print()
+    print("A caption set is read as one thing by anybody who scrolls the page,")
+    print("so one grammar repeated down it is the unit of the tell. Each")
+    print("caption above is accurate about its own shelf, which is what makes")
+    print("this prose rather than error.")
+    return rc
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -3593,7 +3734,8 @@ def main():
     paths = sys.argv[2:]
     rc = 0
     takes_paths = {"measure", "links", "delivery", "compare", "firstuse",
-                   "generator", "specimens", "standalone", "devices"}
+                   "generator", "specimens", "standalone", "devices",
+                   "captions"}
     # `enforcements` takes a git ref rather than a path, because ban list 105
     # is about the file the press runs and that file is only reachable through
     # the commit the deploy was built from.
@@ -3615,6 +3757,7 @@ def main():
                      ("standalone", standalone),
                      ("devices", devices),
                      ("routed", routed),
+                     ("captions", captions),
                      ("blockrules", blockrules),
                      ("compare", compare), ("selfcheck", selfcheck)):
         if which == name or (which == "all"

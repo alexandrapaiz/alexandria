@@ -3872,3 +3872,70 @@ gap that the same collision had left empty (incident 25).
     newest issue" in four places and every one of them now has this command
     above it in the order of work, which is the ordering the charter's step 1
     already implies and no run executed.
+142. The caption set written in one grammar, where every caption is right and
+    only the set is wrong.
+    Entry 3 is the parent and it says "vary or die" in nine words with no
+    count under it, so for 38 days it was a reading. This is the half of it
+    that no gate pointed at a single line can see, because the unit of the
+    tell is the SET.
+    The specimen, and it is the surface a stranger is sent to. The skill
+    library's shelf page carries a caption under every shelf heading. Four of
+    the six on named shelves are the identical frame, which is a short
+    verbless opener, a full stop, and a list of three:
+
+    > The scaffold around a model. Tools, prompts, loop structure, and the
+    > feedback the loop runs on.
+    > Several agents dividing work. How they are organised, how they hand off,
+    > and how they fail.
+    > Post-training that updates the weights. Distillation, reward design, and
+    > self-improvement.
+    > Getting an answer out fast and cheap. Decoding, caching, and test-time
+    > compute.
+
+    Every one of them is accurate about its own shelf and none of them would
+    be marked in isolation, which is what makes this prose rather than error.
+    The set reads as furniture generated to fill seven slots, and a reader who
+    has scrolled past three of them has learned to skip the fourth, which is
+    the opposite of what a caption is for.
+    How it survived. Three visual sweeps of this page read it, two copy rounds
+    read the page it sits on, and the captions were never the artifact in
+    front of any of them. They were committed on 2026-09-18 by the
+    fifty-skill rebuild, eleven days before her ruling of 2026-09-29 that the
+    subtitles were too choppy and that fragments were out, and no owner has
+    ever ruled on one of them. A string set in code and never regenerated is
+    never graded, which is entry 61, and this is entry 61 pointed at a set
+    rather than at a line.
+    The sharper finding in the same specimen is not countable and is recorded
+    rather than gated. Not one of the seven captions contains a finite main
+    verb, so not one of them is a sentence, and her ruling forbids exactly
+    that. Deciding whether a clause carries a finite verb is not string work,
+    and a fragile detector would report that verdict in the same format as the
+    two honest counts below, so it is left to the reading in
+    `docs/voice/shelf-names-2026-10-26.md` where a person can check it.
+    Added 2026-10-26, writer run 53. Enforced the same day by a count, because
+    entry 113 settled that a tell in this file holds only when it becomes one:
+    "Every gate in that list that holds was turned into a count after a print
+    walked past it." The gate reads every caption a sibling set declares and
+    fails on two string tests, more than one caption on the same frame and two
+    captions opening on the same two words, which is entry 113's own technique
+    over a set instead of over an issue's evidence grades.
+    ```
+    python3 docs/voice/check_voice.py captions
+    ```
+    It reads 7 of the 7 captions the surface declares, fails today naming the
+    four, and goes green on the nine drafted to replace them, which was
+    verified before this entry was written rather than asserted by it. Twelve
+    cases run before the file is opened, each one a caption string taken
+    verbatim from the surface or from the drafted repair, because a pattern
+    that miscounts prints its wrong count in the right format.
+    The two tests are quoted so this ending is checkable rather than read,
+    which is the convention of 2026-10-04 and the reason the prose-only count
+    at the top of this file is meant to fall:
+    ```
+    LANDED docs/voice/check_voice.py: "captions share one frame"
+    LANDED docs/voice/check_voice.py: "captions open on"
+    ```
+    Swept: `CAPTION_SETS` names every set in the repository that renders a
+    caption under each member of a list, and today the shelves are the only
+    one. A second set is one line, and the sweep is the reason the gate takes
+    a set table rather than a path.
