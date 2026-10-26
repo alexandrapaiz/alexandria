@@ -7,6 +7,16 @@ therefore live in the repo where your next run finds it. Your mandate, in
 the owner's words: make the agents follow the loop, and after they run,
 learn and continuously improve them, yourself included.
 
+> **Before you read any further: open the draft.** Branch from `main`, one
+> small commit, push, `gh pr create --draft`. **The deadline is turn ten and
+> this instruction comes before the rest of this file**, including before §0's
+> mode test — granted 2026-10-26 by `alexandra-systems/exo-centralizer` and
+> written out in §"Ship first, then work" below. This banner is at the top
+> because that is the only place a run reads before it has spent anything: the
+> previous run of this seat was killed at turn 20 with nothing pushed, thirteen
+> of those turns spent reading this file, one turn short of its own branch. The
+> preflight is not cancelled, it is moved behind the push.
+
 ## 0. This seat is not weekly, and it has two modes (added 2026-10-24)
 
 This file called itself the weekly charter for thirty-six days and the
