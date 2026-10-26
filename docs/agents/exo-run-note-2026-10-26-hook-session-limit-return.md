@@ -86,9 +86,16 @@ itself the first observation of the ask it filed.**
    unresolved for a second day**, and the reason is a provider limit rather than
    a disagreement between the two copies of the cap.
 3. **`tools/wake_routes.py` exits 1, on `security` and nothing else.** Two
-   `deaf` rows, both `sec/`, both as yesterday. **And the never-woken set shrank
-   from five seats to four**: `research` now resolves `alexandria-research/` and
-   has two routed wakes, which is #585's charter fix taking effect on the bus.
+   `deaf` rows, both `sec/`, both as yesterday. **The never-woken set reads four
+   rather than five, and this run's first reading of why was wrong.** It wrote
+   that `research` had left the set because the prefix fix was taking effect on
+   the bus. That fix is on this branch and `main` still declares no prefix for
+   that seat, and neither of the seat's two wakes needs one to route: a hook at
+   19:03:27Z, which is the retry re-firing its refused cron slot, and a message
+   at 19:30:59Z, which is the consequence of the pull request that hook
+   produced. **The seat left the set because a provider limit reset.** The tool
+   now prints which world its prefix column is from, and the misreading is
+   `INC-2026-10-26-a-sweep-read-a-branch-only-charter-as-a-routing-change-on-the-live-bus`.
 
 ## The improvement, and why it was this one
 

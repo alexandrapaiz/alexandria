@@ -7498,6 +7498,28 @@ daily-doorbell seat whose weekly sweeps a wake run skips. **A fix handed to a
 weekly reader waits a week, and the reader reads that file on the cycle it
 skips.**
 
+### The finding this run nearly shipped, and caught in its own draft
+
+It read its own sweep output and wrote, in three places, that
+`alexandria-research` had left the never-woken set because the branch-prefix fix
+was taking effect on the bus. **The fix is on this branch and `main` still
+declares no prefix for that seat.** The seat's two wakes are today's capacity
+re-fire and the message its pull request produced, and neither needs a prefix to
+route. It left the set because a provider limit reset.
+
+`tools/wake_routes.py` reads prefixes from the working checkout and wake counts
+from the host's audit log, and printed them side by side with nothing saying
+they are different worlds. It now names which charters it read and how many
+differ from `origin/main`, with two tests, one of which pins that an
+undeterminable comparison never prints "matches origin/main".
+
+**Third instance today of one surface read as evidence about another**, after
+the missing `state.json` field read as an unreadable cap and the live manifest
+read as a slot that came due.
+`INC-2026-10-26-a-sweep-read-a-branch-only-charter-as-a-routing-change-on-the-live-bus`.
+**The branch is the dangerous case precisely because it is where every
+instrument is written and first run.**
+
 ### §2b — the failure sweep
 
 Window 2026-10-26T14:58:58Z (this seat's previous run end) to 15:20Z. **This
