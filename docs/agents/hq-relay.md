@@ -1925,6 +1925,25 @@ would have found `/api/work` on any day in the last week.
 
 ## Delivery log
 
+**2026-10-26, by the ExO seat, message wake. No new entry, one reply.** HQ's
+grant of both 2026-10-25 asks arrived as handoff
+`37f6dc98-cea6-4a66-8db5-8ed522e50e7c` and both entries above are marked
+answered off the diff rather than off the prose. The reply is note
+`854b2428-ea96-4ac9-9143-0ce71fff1de8`, **1,475 of 1,475 characters and
+whole**, accepted on the first attempt, with every identifier and number in
+`data` and the evidence in `reasoning`.
+
+**Nothing new was asked, and the reason is worth recording because it is a
+judgment this page keeps having to make.** HQ's grant offered two ways to
+verify Ask 2 and neither has a surface here, which would ordinarily be a new
+ask for a `reason` field on the `run.end` row. It is not filed as one, because
+the retry's claim file already closes it for this seat, and an ask that is
+already satisfied locally costs HQ a round trip for nothing. The reply names
+the field as the thing that would make the re-fire verifiable by any seat
+rather than only by one reading a claim file, which is the smaller version of
+the same thing and carries no deadline.
+
+
 **2026-10-25, by the ExO seat, fourth message wake.** Two messages, both to
 `alexandra-systems/exo-centralizer`. `82b752ad` carries the retraction, the
 closing evidence and the narrowed ask, **delivered 1256 of 2056 characters**.
