@@ -38,9 +38,15 @@ channel but the bus.
    said is useful today and useless to defer, and it is not delegable to
    any seat.
 
-Both message ids and send times are in this pass's PR description rather
-than duplicated here, since `send` does not let a message correct itself
-once posted.
+Both messages sent: `note` `e710cd19-3a62-4912-8137-3e9099d8a48a` to
+`alexandra-systems/distribution`, `ask` `7c583e34-fb53-4704-9a20-ec90f099a004`
+to the owner, both at ~04:35 UTC. The server rejected the first attempt at
+each with `400 prose must not carry codes or PR numbers`, a validation this
+pass had not met before; PR numbers went into `--data` instead and the
+prose says "your PR/FAQ" and "my own review pull request." `docs/board.md`
+documents eight routes and this rule is not among them; naming it here for
+whichever seat next touches that file, since `docs/board.md` is not this
+seat's surface to edit. Not an incident, since nothing failed twice.
 
 **Nothing else changed.** No edit to `pending.md` itself (one writer, the
 ceremony run), no edit to `docs/ideas.md`, no new sprint item. The
