@@ -7013,3 +7013,128 @@ the manifest rather than taken from the handoff.
    and 2026-10-26T22:15Z for class C, have still not passed as of this run.
 7. **One ask upward is still open and was not re-filed**, Ask 4 of 2026-10-24,
    the writer's cap. Everything else on the relay page is answered.
+
+## 2026-10-26, message wake (the second of the day) — the outbox heading read clear eleven runs running
+
+Woken by the merge of the previous run's pull request and told to continue
+with the next item in this seat's lane. **The detector was run before the
+trigger was read** and returned `the cycle was taken` for the
+2026-10-25T14:00Z slot, so this is a wake run: the event's work, the failure
+sweep, the HQ heading, this entry, one improvement, and none of the register
+sweeps.
+
+### What was taken, and why it was not the card at the top of the lane
+
+The lane holds five cards: two in Done, two in Review and handed upward, and
+one in Backlog. The Backlog card is the duty-classes card and **all three of
+its gates were still in the future at 00:34Z**: research's slot at 16:30Z,
+class C's forty-eight-hour silence at 22:15Z, and class B waiting on the
+owner's word with no silence rule because it widens this seat's own budget.
+So there was nothing on the card to take yet, and the honest alternative was
+to take the thing the gates are waiting on, which is the surface that is
+supposed to notice when an ask of ours moves.
+
+### The improvement: four states for an HQ ask, and only the fourth is about the world
+
+`INC-2026-10-26-the-hq-heading-reads-the-same-whether-an-ask-landed-or-not`.
+
+§3f puts an **Undelivered to HQ** heading in this seat's pull request
+because that is the one surface the owner provably reads, and its stated
+purpose is that "the point is the age rather than the news". **It read
+empty, nothing or none for eleven consecutive runs** from 2026-10-24, and
+one of those runs recorded the first empty reading as news. Grep
+`Undelivered to HQ` across this file and the run notes and you can count
+them.
+
+On the morning of the eleventh, six asks were in play and the heading named
+none of them. The three states were UNDELIVERED, DELIVERED and GRANTED, and
+**all three are facts about the message**, so an entry reached a terminal
+state by being posted, which is the moment its age starts mattering.
+
+The fix is a fourth state, **LANDED**, which is the only one about the
+world; the heading renamed **Outstanding with HQ** and keyed to it; and a
+**live test** written into every ask at the time the ask is written, because
+the run that writes the ask is the only run that knows what it was asking
+for. The rule it replaces, "check whether each open ask has already been
+built", was right and had no mechanism, so it was obeyed by nobody and read
+as satisfied by everybody.
+
+### The seven live tests, run across the whole page in the run that wrote them
+
+Two still open at eight days: the host clone is still shallow, `git
+rev-parse --is-shallow-repository` returning `true` in this run's own
+sandbox, and the writer's manifest still reads `max_turns = 150`.
+
+Two **granted and not live**: both 2026-10-25 grants ship in
+`alexandra-systems` pull request 467, open and unmerged at 00:50Z, and both
+copies of this seat's clock still read `0 14 * * 0`. **The deadline is
+2026-11-01T14:00Z**, when the unmoved Sunday slot comes due inside the dead
+zone the ask was written to escape.
+
+Three **landed and unread**, which is the half that justifies the whole
+change. The run route is time-scoped:
+`?runs_since_hours=168&runs_limit=200` is honoured, the limit clamps at 200,
+`runs_saturated` says whether your window was cut, and an unknown parameter
+answers `no such filter: <name>; this read honours runs_limit,
+runs_since_hours` instead of `no such route`. `pr_url` is correct on a
+refused row going forward, seven of seven over 48 hours, with the four still
+blank all starting before the 2026-10-24T23:09Z fix. And every one of the
+seven names in `requirements-dev.txt` imports on the host, against the five
+failures and thirty-two errors the 2026-10-18 ask reported.
+
+**Three sentences of this charter were written around the first of those and
+were corrected in the same run**, which is §2a-0's own rule about a granted
+ask being a charter edit falling due, finally applied to §2a-0.
+
+**One thing a successor should copy rather than re-derive.** The parameter
+names are the payload's own field names and no run would guess them: the
+first probe tried `?since_hours=` and `?limit=` and both were refused. The
+refusal named the vocabulary. **When a surface refuses you, read the
+refusal.**
+
+### The failure sweep (§2b)
+
+**Window: 2026-10-26T00:00Z to 00:45Z. Zero non-success rows in this
+company.** Four alexandria runs. Peaks against the caps the host enforces:
+`engineer` 129 of 200 at 64.5%, `exo` 101 of 200 at 50.5%, `pm` 33 of 300 at
+11.0%. No seat over the 70% trigger in this window, and the writer did not
+run, so its six-sweep streak is unextended rather than broken.
+
+**Zero refusals of any kind today, portfolio-wide, to 00:45Z**, which is the
+first such reading since the weekly reset at 23:00Z on 2026-10-25. Three cap
+hits outside this company, none of them this seat's to fix: `ursa-skill` at
+101 of 100, `ursa-security` at 101 of 100 and `epitome-exo` at 121 of 120,
+plus two rows with no result line, one of which is the same `epitome-exo`
+run. Three caps hit at exactly cap-plus-one within fourteen minutes across
+two companies is a pattern for the centralizer rather than a coincidence,
+and it is in the handoff only as a count.
+
+**Source stated.** Numerators from `/srv/asc/state/.epito/audit.jsonl`,
+denominators from `max_turns` in `/srv/asc/roster/*/*/agent.toml`, classes
+from each run's own log rather than from a window join. No `gh run list`
+reading is claimed.
+
+### What the next run must check first
+
+1. **Run the detector before you read your trigger.** It returned `the cycle
+   was taken` at 00:35Z for the 2026-10-25T14:00Z slot.
+2. **Run the seven live tests on the relay page, and put the readings in the
+   Outstanding with HQ heading.** The table at the top of
+   `docs/agents/hq-relay.md` holds the commands. The pass costs under a
+   minute because five of the seven are a `grep` or a `git rev-parse` on
+   this filesystem.
+3. **The dated one is 2026-11-01T14:00Z.** If `alexandra-systems` pull
+   request 467 has not merged and the host has not reloaded the roster by
+   then, this seat's weekly slot fires into a spent weekly budget for the
+   second week running. `grep '^cron' /srv/asc/roster/alexandria/exo/agent.toml`
+   is the whole test.
+4. **The duty-classes card's gates have passed by now.** Research's slot was
+   2026-10-26T16:30Z and class C's silence expired at 22:15Z. Class B still
+   waits on the owner's word and no silence rule reaches it, because it
+   widens this seat's own budget.
+5. **The writer's cap is still the oldest unpaid thing.** Six consecutive
+   sweeps over rule 5's trigger, the manifest still at 150, the ask
+   delivered 2026-10-18 and eight days old.
+6. **The owed list is otherwise unchanged by this run:** the §3g
+   live-surface pass, the register polarity pass and the §5b repository
+   sweep, all three of them weekly-cycle work a wake run skips.

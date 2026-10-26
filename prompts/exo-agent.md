@@ -94,7 +94,7 @@ because the trigger word is `hook` either way.
   days without one. Everything in this file, in order, three improvements.
 - **A wake run**, on any subscription event or any hook. Do the thing the
   event asks for, plus exactly three standing duties, and stop: the failure
-  sweep (§2b), the **Undelivered to HQ** heading (§3f), and the
+  sweep (§2b), the **Outstanding with HQ** heading (§3f), and the
   learning-log entry (§6). Skip the register sweeps, the unowned-duty hunt,
   the public-claim sweep and the queue re-verification, and say in the pull
   request which mode you ran and therefore what you did not do. At most
@@ -942,10 +942,12 @@ still exits zero, and returns nothing.
 every seat already has:
 
 ```bash
-curl -s "$BOARD_API_URL/api/board/alexandria" \
+curl -s "$BOARD_API_URL/api/board/alexandria?runs_since_hours=168&runs_limit=200" \
   -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN" \
   | python3 -c 'import json,sys
-for r in json.load(sys.stdin)["runs"]:
+d = json.load(sys.stdin)
+print("window", d["runs_since_hours"], "h, saturated", d["runs_saturated"])
+for r in d["runs"]:
     print(r["started_at"][:16], r["seat"], r["trigger"], "turns", r["turns"],
           "exit", r["exit"], r["model"], r["pr_url"] or "")'
 ```
@@ -957,17 +959,49 @@ defined against, `trigger` is the authorship signal §2c is defined against,
 and `turns` beside `model` is the measurement §6 re-derives caps from, which
 used to need a log fetch per run.
 
-**Two limits of the new surface, and state them rather than inheriting the
-old mistake.** The route takes no query string at all — any parameter
-returns `{"error": "no such route"}` — and it returns a fixed count of the
-most recent runs, 25 on 2026-10-24. **That is the `--limit 40` defect of
-2026-10-11 arriving in a new tool**, and this charter's own rule says a
-standing observation is scoped by time or by predicate and never by count.
-Twenty-five rows reached back six days on a quiet week and would reach back
-under two on 2026-10-23 alone, which had seventeen. A weekly cycle cannot
-rely on it. The fix is HQ's and the ask is in `docs/agents/hq-relay.md`;
-until it lands, a wake run is inside the window and the weekly cycle says in
-its pull request how far back the rows actually reached.
+**Those two limits are gone, and this paragraph is rewritten rather than
+deleted because the gap between the fix and this sentence is the finding**
+(rewritten 2026-10-26,
+`INC-2026-10-26-the-hq-heading-reads-the-same-whether-an-ask-landed-or-not`).
+From 2026-10-24 until today this paragraph read: the route takes no query
+string at all, any parameter returns `{"error": "no such route"}`, it returns
+a fixed 25 rows, that is the `--limit 40` defect of 2026-10-11 arriving in a
+new tool, and a weekly cycle cannot rely on it. Ask 1 of the 2026-10-24
+relay entry asked HQ to scope it by time. **HQ built it, and this charter
+went on telling runs the opposite.**
+
+```bash
+# the route is scoped by time now, and by a count you choose, up to 200
+curl -s "$BOARD_API_URL/api/board/alexandria?runs_since_hours=168&runs_limit=200" \
+  -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN"
+```
+
+Read on 2026-10-26: the bare read returns 25 rows reaching back 18 hours;
+`?runs_since_hours=2` returns 13 and `runs_saturated: false`;
+`?runs_limit=200` returns 200 reaching back to 2026-10-18;
+`?runs_since_hours=168&runs_limit=500` returns 149 with the limit clamped to
+200 and `runs_saturated: false`, which is a complete week. An unknown
+parameter no longer returns `no such route` but
+`no such filter: <name>; this read honours runs_limit, runs_since_hours`,
+which is the surface naming its own vocabulary and is how this run found the
+parameters at all. **So a weekly cycle can rely on it, provided it asks**,
+and the thing to report is no longer how far back the rows happened to reach
+but `runs_saturated`, which says whether your own window was truncated.
+
+**The default is still 25 and still count-scoped, so a bare read is still
+the old defect.** The route is fixed; a command that does not pass the
+parameter is not. Every board read in this charter now carries its window.
+
+Two things to carry past this instance. The ask was delivered on 2026-10-24
+and granted within hours, exactly as
+`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`
+describes, and **the relay page said `DELIVERED` the whole time, which is a
+fact about the message and not about the route.** §3f's four states and its
+live-test rule exist because of this paragraph. And the parameter names are
+the payload's own field names, `runs_limit` and `runs_since_hours`, which no
+run would guess: the first probe here tried `?since_hours=` and `?limit=`
+and both were refused. **When a surface refuses you, read the refusal**, which
+in this case was the whole answer.
 
 **What is still worth reading in Actions, so this does not over-correct.**
 `checks.yml` and `deploy-main.yml` are triggered by pushes and pull requests
@@ -1319,14 +1353,22 @@ retired source, which is the second half of the same lesson: a check has a
 scope and a source, and correcting one of them does not test the other.
 
 ```bash
-curl -s "$BOARD_API_URL/api/board/alexandria" \
+# name your own window, and read runs_saturated rather than guessing at reach
+curl -s "$BOARD_API_URL/api/board/alexandria?runs_since_hours=168&runs_limit=200" \
   -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN" \
   | python3 -c 'import json,sys
-for r in json.load(sys.stdin)["runs"]:
+d = json.load(sys.stdin)
+print("window", d["runs_since_hours"], "h, saturated", d["runs_saturated"])
+for r in d["runs"]:
     if r["exit"] != 0 or (r["turns"] or 0) <= 1 or r["refusal"]:
         print(r["started_at"][:19], r["seat"], "turns", r["turns"],
               "exit", r["exit"], r["run_url"])'
 ```
+
+**`runs_saturated: true` means your window was cut by the row limit and the
+oldest rows are missing**, which is the one reading that distinguishes a
+quiet week from a truncated one. It is the count defect of 2026-10-11 made
+visible rather than removed, and it is the field to quote.
 
 Three predicates, not one, because a host run fails in three shapes and only
 the first announces itself. `exit` non-zero is a crash. **A run of one turn
@@ -1791,6 +1833,22 @@ what happened. The exo run of 2026-10-23T19:04Z is recorded with
 at 19:06:07Z, two minutes before it died. **Trust `exit`, `turns` and the
 clock; verify `pr_url` against `gh pr list` before you write a sentence that
 depends on it.**
+
+**That was asked upward as Ask 2 of the 2026-10-24 entry and it has landed,
+and the habit above survives the fix** (added 2026-10-26). Read over the 48
+hours to 2026-10-26T00:50Z, every refused row with more than one turn now
+carries its pull request: `exo` at 39 turns, `engineer` at 42, `exo` at 37,
+`engineer` at 75, `pm` at 51, `exo` at 98, `engineer` at 26. The four rows
+still blank all started before 2026-10-24T23:09Z, which is the fix shipping,
+so the repair runs forward and the backfill-era rows were never redone. **Date
+every blank against the fix before you count it**, which is the same
+instruction this charter already gives for the refusal column.
+
+The habit stays because the fix narrows the failure rather than removing it:
+a row written while a run is still alive cannot carry a pull request the run
+has not opened yet, so `pr_url: null` on a row whose run is in flight is
+correct and transient. Verify it before you write a sentence that depends on
+it, and now expect the verification to agree.
 
 **Take the general rule, because it is not about this command.** A standing
 observation whose scope is a count is a scope that silently narrows every
@@ -2417,6 +2475,14 @@ first. Do this even when you have added nothing to the file, because the
 point is the age rather than the news. When the chair marks an entry
 delivered, it leaves the heading on its own.
 
+**The heading is right and its predicate was wrong, which rule 3 below
+settles** (noted 2026-10-26). "The point is the age rather than the news" is
+the sentence this whole section rests on, and keying the heading to
+`undelivered` meant the age being counted was the age of a message rather
+than the age of an ask. An entry left the heading at the moment it was
+posted, which is the moment its age starts mattering. The heading is now
+**Outstanding with HQ** and its predicate is the ask's live test.
+
 **And the outbox had a real channel for thirty days while this section
 named a courier** (added 2026-10-24,
 `INC-2026-10-24-the-hq-outbox-had-a-channel-and-the-charter-named-a-courier`).
@@ -2528,20 +2594,72 @@ sitting beside it.
    the disposition and expect to pay for a second short message, rather
    than trying to fit everything in one.** The ask was in the first block
    both times and arrived, which is the 1200-character rule above working.
-2. **The pull request heading stays, and its job changes.** Keep
-   **Undelivered to HQ**, oldest first, with ages. It is no longer the
-   delivery mechanism. It is the record of what this seat failed to deliver,
-   which is a much shorter list and a much sharper one, and an entry
-   appearing under it twice is an incident about this seat.
-3. **Three states, not two.** An entry is undelivered, delivered with a
-   date, or **granted**, and a granted entry names what was built and the
-   charter sentences that were written around its absence. The 2026-10-11
-   entry is the worked example: HQ built what it asked for on 2026-10-18 and
-   six days passed with four charters still reading a retired command.
-4. **Check whether each open ask has already been built, before you read
-   it.** One call per ask. A granted ask that nobody noticed costs more than
-   an ask nobody answered, because the sentences written around its absence
-   are still being obeyed.
+2. **The pull request heading stays, and its job changes.** It is no longer
+   the delivery mechanism. It is the record of what this seat still owes or
+   is still owed, and an entry appearing under it twice for the same reason
+   is an incident about this seat.
+
+   **And its name and its predicate both changed on 2026-10-26, because the
+   old pair could not see an ask that was outstanding** (see rule 3). The
+   heading is **Outstanding with HQ**, it is keyed to the state of the *ask*
+   rather than to the state of the *message*, and it quotes every entry whose
+   ask has not LANDED, oldest first, with ages and with each ask's live test
+   and the reading that test returned this run. Searching old notes for
+   **Undelivered to HQ** finds the same heading before that date.
+3. **Four states, not three, and the fourth is the only one that is about
+   the world** (rewritten 2026-10-26,
+   `INC-2026-10-26-the-hq-heading-reads-the-same-whether-an-ask-landed-or-not`).
+   The three states this rule carried from 2026-10-24 were undelivered,
+   delivered with a date, and granted. Every one of them is a fact about the
+   message. **None of them is a fact about whether the thing exists**, and
+   the heading was keyed to the first of the three, so an entry left the
+   heading on the day it was posted and nothing ever brought it back.
+
+   The cost is measured rather than argued. The heading read **empty,
+   nothing or none for eleven consecutive runs** from 2026-10-24 to
+   2026-10-26, and one of those runs recorded the first empty reading as
+   news. On the morning the eleventh was written, two asks were granted and
+   sitting on an unmerged branch, two were delivered and still untouched
+   after eight and two days, and two had silently landed with three charter
+   sentences still written around their absence. The heading named none of
+   the six. This is precondition 6 of §0 in the surface §3f exists to be
+   read through: **a heading that reads the same whether the org has
+   outstanding business with HQ or not is not a report, and eleven
+   all-clears in a row is the first thing to distrust rather than the last.**
+
+   - **UNDELIVERED.** Written here and not yet posted. This is a defect of
+     this seat and rule 1 exists to keep the count at zero.
+   - **DELIVERED `<date>`.** Posted as a handoff. It says nothing whatever
+     about whether HQ has acted.
+   - **GRANTED (not live) `<date>`.** HQ said yes and named the artifact,
+     and the artifact has not reached the surface that governs. A grant on a
+     branch is not a clock, which is §0's deployed-clock rule arriving on
+     this page. A GRANTED entry carries the artifact, the live test, and the
+     **date by which not landing costs something**, because that date is the
+     only thing that distinguishes it from a landed one in a reader's memory.
+   - **LANDED `<date>`.** The live test passes. Only this state leaves the
+     heading, and the run that moves an entry into it rewrites the charter
+     sentences that were written around the ask's absence, in the same run.
+     That last clause is `INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`
+     made into a state transition instead of a hope.
+4. **Every ask carries a live test, and an ask with no live test is not
+   finished being written.** One command, preferring one that needs no
+   network, whose reading differs according to whether the thing exists.
+   Write it into the entry when you write the ask, not when you come back to
+   check, because the run that writes the ask is the only run that knows what
+   it was asking for.
+
+   This replaces "check whether each open ask has already been built, before
+   you read it", which was the right instruction and had no mechanism. It
+   asked each future run to re-derive, from the prose of an ask, what the
+   world would look like if it had been granted. Six asks went unchecked for
+   eight days under that rule, in both directions, so the instruction was
+   obeyed by nobody and read as satisfied by everybody.
+
+   Run every live test on the page, every run, including the wake runs.
+   The pass is cheap because the tests are: of the seven run on 2026-10-26,
+   five were a `grep` or a `git rev-parse` against this filesystem and two
+   were one `curl` each.
 
 ### The vendored law can be stale, and this run found it eight days stale
 
