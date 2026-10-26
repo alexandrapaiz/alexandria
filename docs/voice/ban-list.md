@@ -4080,3 +4080,69 @@ gap that the same collision had left empty (incident 25).
     The repaired gate's first run found a semicolon join in the incident entry
     reporting the gate, and that is the cheapest possible proof that the scope
     was the defect.
+145. The overturn whose two ends are one paper.
+    Numbered 145 because 144 is on the branch this one builds on. The
+    allocator is still sequential and still the defect entry 144 recorded.
+    The tell is not a word and not a phrase, which is why no entry on this
+    register caught it through three editions. It is a sentence that is true
+    about a paper and false about where the paper's finding came from. "This
+    directly contradicts the earlier claim that task complexity above a
+    model-size threshold forces near-linear information leakage" is live on
+    the site today, and the near-linear leakage result is the theorem of the
+    paper that sentence cites. The issue's own prose carries the refutation
+    three sentences earlier, as something this paper showed.
+    Three dresses, and the generator now carries all three in its SOURCE
+    test. A phrase pointing back at the work being overturned, which has told
+    you the two ends are one end before the verb arrives. A named work as the
+    subject of a verb of prior belief, where that name is also a paper the
+    section links. And the overturned belief already standing in the draft as
+    the citing paper's own result, with two paragraphs of distance doing the
+    work a second source should have done.
+    Why it belongs here rather than only in the generator. Every other entry
+    on this register is a shape in the prose, so a reader of the entry can
+    find the next instance by reading. This one is a relation between the
+    prose and a paper, and the only reason it is catchable at all is that two
+    of the three dresses leave their evidence inside the sentence. The third
+    does not, and no entry on this register will ever catch it. That half is
+    the claims pass's seventh question in docs/voice/canon.md and it is a
+    reading, by design, because the input is an abstract.
+    The figure belonging to a paper the section never names is the same class
+    and the worst member of it. 2026-W42 printed "omitting tenant-salt
+    provenance enables 93% prompt identification from timing side-channels"
+    and attributed it to "the same paper", which is a theory paper on
+    chain-of-thought encryption that contains neither the mechanism nor the
+    number. A mislabelled edge misleads the reader who follows the link. A
+    figure under the wrong paper gives them nowhere to follow.
+    Added 2026-10-26, writer run 57, from the research seat's audit of the
+    live 2026-W42 against the two abstracts that section cites
+    (`docs/research/notes/2026-10-26-w42-left-behind-audit.md`, three wrong
+    out of three). Enforced in a gate rather than by a reading, because the
+    failure here was a complete grade: this seat graded that same section the
+    same morning against all sixteen laws and the six passes and reported its
+    prose, which is the procedure working as written.
+    ```
+    python3 -I docs/voice/check_voice.py provenance --live
+      the detector's own cases   5 pass
+      2026-W39  0 finding(s)
+      2026-W40  0 finding(s)
+      2026-W42  2 finding(s)
+        FAIL  line 47: points back at the work it overturns
+        FAIL  line 49: the work that held it is a work this section links (vosti)
+    ```
+    Three claims a later run can check rather than read for.
+    ```
+    LANDED prompts/digest.md: "The third is SOURCE, and it is the one both others pass"
+    LANDED prompts/digest.md: "A phrase reporting the absence is a phrase, so it fails the third form"
+    LANDED docs/voice/check_voice.py: "One paper cannot overturn itself."
+    ```
+    The first is the test the section never had: two tests that compare the
+    claims to each other both pass when one paper stands against itself.
+    The second is the attribution third form's one dress that looks like
+    compliance, which is the fourth defect in the same section and printed as
+    "a team at an unnamed institution". The third is the gate, and it claims
+    two of the three dresses and says in its own output that a clean exit is
+    not a verdict on the section.
+    Swept. The generator writes the backreference phrase nowhere outside the
+    bullet that bans it, and `provenance` is clean on both committed editions
+    and on 2026-W40 served, so the two live hits are the section the audit
+    named and not a detector that fires on ordinary prose.

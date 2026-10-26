@@ -4065,6 +4065,209 @@ def standalone(paths=None):
     return 1 if hits else 0
 
 
+# ---- where an overturn says it came from -------------------------------
+
+#: A phrase that points an overturn back at the work being overturned. The
+#: generator's SOURCE test calls these the first of three dresses, and every
+#: one of them has already told the reader that the two ends of the pairing
+#: are one end. Matched as a span rather than a sentence subject, because the
+#: shape that printed was a mid-sentence "The same paper also overturns".
+BACKREFERENCE = re.compile(
+    r"\b(?:the same (?:paper|work|study|team|authors|group)"
+    r"|this (?:same )?(?:paper|work|study)"
+    r"|the (?:same )?authors)\b[^.]{0,80}?"
+    r"\b(?:also|further|likewise|additionally)\b|"
+    r"\b(?:also|further|likewise)\b[^.]{0,40}?"
+    r"\b(?:overturn|overturns|contradict|contradicts|refute|refutes|"
+    r"upend|upends|overturned|contradicted)\b",
+    re.I,
+)
+
+#: A verb of PRIOR belief. The thing this sentence attributes to its subject is
+#: something that used to be true, so the subject is the overturned end of the
+#: pairing. Where the subject also names a paper the section links, the two
+#: ends are one end and no backreference phrase had to appear.
+PRIOR_BELIEF = re.compile(
+    r"^(?P<who>[A-Z][\w.-]*(?:\s+[A-Z][\w.-]*){0,3})\s+"
+    r"(?:had (?:claimed|shown|held|reported|found|established|demonstrated)"
+    r"|claimed|held)\b",
+)
+
+#: Words a title shares with every other title, so a subject matching one of
+#: them is not evidence that the subject is that paper.
+TITLE_NOISE = frozenset("""
+a an and the for of in on at to with without via from by is are be
+agent agents ai llm llms model models language large towards toward
+benchmark benchmarks system systems learning self new scale scaling
+""".split())
+
+#: Each case is (how many findings, the markdown). They run before any artifact
+#: is read, for the reason `SELFCHECK_CASES` was added on 2026-10-26: a
+#: detector that has drifted reports a clean archive for the wrong reason, and
+#: a provenance gate reporting clean is the exact sentence this seat has
+#: already published three times.
+PROVENANCE_CASES = (
+    # The backreference, as it printed.
+    (1, "## What fell behind\n\nThe same paper also overturns a companion"
+        " claim that simple covert computation leaves no trace.\n"),
+    # The linked work as the subject of a verb of prior belief.
+    (1, "## What fell behind\n\nVosti had claimed bitwise-identical logits"
+        " across all tested execution variations. New work shows otherwise.\n\n"
+        "*Vosti: Specifying and Verifying Deterministic Inference* -"
+        " [full text](https://arxiv.org/abs/2609.38981v1)\n"),
+    # The same shape where the subject is NOT a work this section links. A
+    # field-wide belief with no paper behind it is the legitimate form of a
+    # fell-behind opening and the gate may not fire on it.
+    (0, "## What fell behind\n\nThe field had claimed that scaffolding must run"
+        " at inference. New work from Tsinghua shows otherwise.\n\n"
+        "*Harness-Zero* - [full text](https://arxiv.org/html/2610.10310v1)\n"),
+    # A named work as a prior belief, where the overturning paper is the one
+    # linked and the overturned one is somebody else's. Two papers, no finding.
+    (0, "## What fell behind\n\nAgora had claimed a hard ceiling on coding"
+        " agents. New work shows otherwise.\n\n"
+        "*Harness-Zero* - [full text](https://arxiv.org/html/2610.10310v1)\n"),
+    # "also" near an overturn verb, in a sentence that names a second paper.
+    # The gate reads the phrase and not the paper count, so this fires and the
+    # case records that, rather than a later run discovering it as drift.
+    (1, "## What fell behind\n\nA team at Fudan also overturned the claim"
+        " that typed graphs do not scale.\n"),
+)
+
+
+def section_titles(lines):
+    """The significant words of every paper title cited under each heading.
+
+    Keyed by the heading line's index, so a subject is only ever compared to
+    the works the reader meets in the same section. Comparing against the
+    whole issue would fire on any section that cites a paper another section
+    overturned, which is the ordinary case and the product.
+    """
+    out, head = {}, 0
+    for i, raw in enumerate(lines):
+        if raw.startswith("#"):
+            head = i
+            out.setdefault(head, set())
+        if CITATION.match(raw):
+            title = re.sub(r"\s*[-–]\s*\[.*$", "", raw.strip()).strip("* ")
+            title = title.split(":")[0]
+            words = {w.lower() for w in WORD.findall(title)}
+            out.setdefault(head, set()).update(words - TITLE_NOISE)
+    return out
+
+
+def provenance_findings(body):
+    """Every overturn in `body` whose own text says its two ends are one end.
+
+    Two of the three dresses the generator's SOURCE test names. The third, the
+    belief already standing in the draft as the citing paper's own result,
+    needs the abstract and stays a reading in the claims pass's seventh
+    question. This gate claims only the part it can prove, the way the
+    stands-alone gate claims one shape of four.
+    """
+    lines = body.split("\n")
+    titles = section_titles(lines)
+    heads = sorted(titles)
+    found = []
+    for n, raw in enumerate(lines):
+        if raw.startswith("#") or CITATION.match(raw):
+            continue
+        line = norm(re.sub(r"\]\([^)]*\)", "]", raw).replace("**", "")
+                    .replace("*", "").replace("`", ""))
+        if not line:
+            continue
+        here = max((h for h in heads if h <= n), default=None)
+        mine = titles.get(here, set())
+        for span in SENT.split(line):
+            span = span.strip()
+            if not span:
+                continue
+            if BACKREFERENCE.search(span):
+                found.append((n + 1, "points back at the work it overturns",
+                              span))
+                continue
+            m = PRIOR_BELIEF.match(span)
+            if not m:
+                continue
+            who = {w.lower() for w in WORD.findall(m.group("who"))}
+            shared = (who - TITLE_NOISE) & mine
+            if shared:
+                found.append((n + 1, "the work that held it is a work this "
+                              f"section links ({', '.join(sorted(shared))})",
+                              span))
+    return found
+
+
+def provenance(paths=None):
+    """Two of the three shapes in which one paper overturns itself.
+
+    The claims pass asks six questions about whether an issue is true and
+    every one of them is answered by reading the issue. On 2026-10-26 the
+    research seat read the live 2026-W42's overturn section against the two
+    abstracts it cites and scored it three wrong out of three, seven days
+    after it went live, and this seat's own grade of that same section the
+    same morning had run all sixteen laws and the six passes over it and
+    reported its prose.
+
+    So the gap was never a wording. It was that no instrument in this
+    repository had ever compared a statement in an issue to the source the
+    issue says it came from. Most of that comparison needs the abstract and
+    cannot be a command. Two of the three shapes do not, because the issue's
+    own text has already said the two ends are one end, and those two are
+    this.
+
+    What it cannot see, said here rather than left for a later grade to
+    discover. A pairing whose two papers are genuinely two papers and whose
+    relation is still wrong is invisible here, and so is a figure belonging to
+    a paper the section never names, which is the worst of the three. Both
+    need the abstracts, both are the claims pass's seventh question, and a run
+    that reads this gate's clean exit as a verdict on a section has made the
+    mistake the section's own grade made.
+
+        python3 -I docs/voice/check_voice.py provenance
+        python3 -I docs/voice/check_voice.py provenance --live
+    """
+    wrong = [(want, md) for want, md in PROVENANCE_CASES
+             if len(provenance_findings(md)) != want]
+    for want, md in wrong:
+        got = len(provenance_findings(md))
+        print(f"  BROKEN  a case asserts {want} finding(s) and the detector"
+              f" reports {got}")
+        print(f"            {norm(md.splitlines()[2])[:88]}")
+    if wrong:
+        print()
+        print("The pattern changed and PROVENANCE_CASES says how. Nothing")
+        print("below was read, because a provenance gate reporting clean is")
+        print("the sentence this seat has already published three times.")
+        return 1
+    print(f"  the detector's own cases   {len(PROVENANCE_CASES)} pass")
+    paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    paths = [pathlib.Path(p) for p in paths]
+    retired = hidden_weeks()
+    hits = 0
+    for path in paths:
+        if not path.exists():
+            print(f"  {path}: missing")
+            continue
+        off = path.stem in retired
+        found = provenance_findings(path.read_text(encoding="utf-8"))
+        tag = "   [retired, not served]" if off else ""
+        print(f"  {path.stem}{tag}  {len(found)} finding(s)")
+        for n, why, span in found:
+            print(f"    FAIL  line {n}: {why}")
+            print(f"          {span[:86]}")
+        if not off:
+            hits += len(found)
+    print()
+    print("One paper cannot overturn itself. Each hit is a sentence whose own")
+    print("words name the overturned end as work this section cites, so the")
+    print("repair is to drop the pairing rather than to reword it: the")
+    print("relation is usually `refines` and the item belongs in the new work.")
+    print("A clean exit is not a verdict on the section. The figure under the")
+    print("wrong paper and the mislabelled two-paper edge both need the")
+    print("abstracts, and they are the claims pass's seventh question.")
+    return 1 if hits else 0
+
+
 # ---- the editions a reader can actually open ---------------------------
 
 #: The product's public address. Every pass below reads it with no credential,
@@ -4574,7 +4777,7 @@ def main():
     rc = 0
     takes_paths = {"measure", "links", "delivery", "compare", "firstuse",
                    "generator", "specimens", "standalone", "devices",
-                   "captions", "marks"}
+                   "captions", "marks", "provenance"}
     # `--live` is the answer to `editions`, inside one run. It replaces the
     # archive glob with the editions the product actually serves, fetched from
     # the public pages and un-rendered, so a pass grades what a reader opens
@@ -4610,6 +4813,7 @@ def main():
                      ("generator", generator),
                      ("specimens", specimens),
                      ("standalone", standalone),
+                     ("provenance", provenance),
                      ("devices", devices),
                      ("routed", routed),
                      ("editions", editions),
