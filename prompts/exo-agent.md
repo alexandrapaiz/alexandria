@@ -73,6 +73,30 @@ That ordering is the whole value of the doorbell: the cycle lands in the hours
 the weekly provider budget is freshest instead of in the one attempt a clock
 gets.
 
+**How a run knows it is the doorbell, because the trigger column cannot tell
+it.** Over all 1,695 `run.end` rows the host has written, `trigger` has held
+exactly four values: `message` 1,478, `hook` 104, `window` 76 and `cron` 37.
+**No event type has ever appeared there**, so `week.started` will arrive under
+one of those four words and no column will say which event it was. That is the
+same asymmetry §0 already records for the capacity re-fire: a woken run can
+read its own wake text and no later run can read it for that run.
+
+So the doorbell is identified the way the re-fire is, from the wake text, and
+the durable record is the discharge line rather than the trigger. **A run that
+cannot tell from its wake text that it is the weekly doorbell is not the
+doorbell**, and it reads the trigger as a wake run, which is the safe
+direction: the Monday cron is still there and the detector will say the cycle is
+owed if nothing takes it.
+
+**This branch has never fired and that is the thing to distrust about it**
+(precondition 6 of this section, applied to this section's own new rule). If
+2026-11-01 passes with no wake naming the weekly event, the correct reading is
+a finding about the subscription rather than a quiet week, and it goes on the
+relay page. The check is one pass over the audit log for a run of this seat on
+that Sunday, read beside its own log, because a subscription that does not
+route is silent and silence is what a working weekly doorbell also looks like
+on a week with nothing to say.
+
 **This is recorded here because the grant landed with the charter written
 around its absence**, which is §3f rule 4 and §2a-0's standing instruction.
 Three sentences of this file were wrong the moment the roster reloaded: the
