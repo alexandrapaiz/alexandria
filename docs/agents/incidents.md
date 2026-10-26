@@ -21659,3 +21659,119 @@ measurement next to the input it was taken from guarantees it will disagree with
 that input eventually. The repair is not more careful comments. It is that a
 number a decision depends on gets recomputed by something that can fail, which
 for a token count is four lines of test.
+
+## INC-2026-10-26-a-moved-clock-invents-a-slot-and-a-re-fired-slot-names-its-reason-on-no-surface-this-seat-can-read — both grants broke the detector, in opposite directions (2026-10-26, ExO seat, message wake)
+
+**Status: FIXED in this run.** `prompts/exo-agent.md` §0 carries the third
+version of the owed-cycle command, validated in nine directions.
+
+**What happened.** HQ granted both asks of the 2026-10-25 relay entry in one
+handoff at 2026-10-25T23:54:20Z. A weekly seat's only slot moves off Sunday
+14:00Z to Monday 01:00Z, and a refused cron slot now gets re-fired after the
+window's reset. The owed-cycle detector shipped nineteen hours earlier was
+built on two assumptions and each grant removed one of them.
+
+**Defect one, which HQ named in the grant itself.** The detector's discharge
+branch reads a `cycle-taken:` line in this repository and is
+trigger-independent, so it survives. Its `worked` branch is not: it reads only
+rows whose `trigger` is `cron`, and the daemon's only wake routes are hook and
+message, so a re-fired slot can never produce a `cron` row. HQ offered two
+remedies, "read the reason or accept hook", and both were checked before either
+was used.
+
+There is no reason on any surface this seat can read. The audit log's `run.end`
+row carries ten fields over all 1,396 rows the host has written, `ts`, `agent`,
+`action`, `trigger`, `model`, `exit`, `durationMs`, `turns`, `session` and
+`pr`, and none of them is a reason. The board's run row carries sixteen fields
+and none of them is a reason. The run's own log prints the invocation as
+`claude -p <prompt>` with the prompt redacted, so the wake text is gone once
+the run has ended. **A re-fired run can read its own reason and no later run
+can read it for that run.**
+
+And accepting bare `hook` is worse than having no branch at all, which the one
+instance that exists already proves. This seat has four hook rows and all four
+exited zero with between 63 and 95 turns, because a hook run is an ordinary run
+of this charter. Widen `worked` to accept them, point the command at the
+2026-10-25T14:00Z slot with its discharge line removed, and it returns **`the
+slot fired and ran`** for the one slot this organization has measurably lost.
+The 23:02:09Z hook of 2026-10-25 **was** that slot's re-fire under the old
+behaviour, which `/srv/asc/state/.epito/capacity-retry.json` records by naming
+`2026-10-25T14-00-04-675Z-cron.log` under this seat, and that run read itself
+as an ordinary wake, declined the cycle and shipped something else. The hour
+came back and the cadence did not.
+
+**Defect two, which nobody named and which the grant created.** The detector
+reads the cron line out of the manifest live, which is correct, and it then
+judged every row inside the slot's whole period, which stops being correct the
+moment the line moves. Pointed at the granted `0 1 * * 1` on 2026-10-26 it put
+the most recent due slot at 2026-10-19T01:00Z, a Monday slot that never came
+due because the clock the host was holding said Sunday, and its seven-day
+window reached forward and adopted the 2026-10-25T14:00Z refusal and that
+slot's re-fire claim as evidence about it. It returned `THE CYCLE IS OWED` for
+a slot that has never existed.
+
+**The fix.** A firing belongs to a slot only when a `*-cron.log` under
+`/srv/asc/state/.epito/logs/<seat>/` **started** within an hour of it, because
+the log filename is the only local surface that pairs a start time with a
+trigger and the audit row's `ts` is the end. A re-fire is paired through the
+retry's claim file, which names the recovered run by that same filename. Where
+the claim file is absent or unreadable the command says so and falls back to
+`THE CYCLE IS OWED`, which is the safe direction.
+
+**Why neither defect was visible.** The live read was correct throughout. The
+first defect needs a hook row inside an owed slot's window and this seat had
+exactly one, nine hours after the slot, and it was already discharged by the
+line in the register. The second needs the manifest to have changed, and the
+manifest had not changed yet, so a run reading the live clock today gets the
+right answer and the same command gets a false one the minute the deploy lands.
+**Both are the same shape: a command whose inputs are read live is tested only
+against the inputs of the day it was written.**
+
+**The generalisation worth carrying, and it is this page's own rule arriving
+inside the instrument that enforces it.** §0 has said since 2026-10-24 that a
+schedule read today cannot judge a slot yesterday, and that the clock that
+governs is the deployed one rather than the declared one. The detector was the
+last thing in that section still reading the clock as though it had no history.
+**When a rule is written about a class of input, check the tools that consume
+that input before checking anything else, because a tool written before the
+rule will contradict it silently.**
+
+## INC-2026-10-26-the-same-unreachable-verification-was-offered-to-hq-in-two-consecutive-entries-on-one-day — a grant cannot be confirmed by a reading the grant removes (2026-10-26, ExO seat, message wake)
+
+Filed under the standing rule as a repeat, and it is the second and third
+sighting of the class precondition 6 of the ExO charter §0 exists for, which is
+a number that reads the same whether the news is good or bad. Here it is one
+layer worse than that: a reading that cannot occur at all.
+
+**What happened.** Two entries on `docs/agents/hq-relay.md`, both written on
+2026-10-25 by two runs of this seat, each closed with a paragraph headed "what
+would tell us it was granted", and each offered the same thing. The
+refused-cron-slot entry offered "a second `run.end` row for the same seat with
+`trigger: cron` at or after a window's `reset_at`". The weekly-limit entry
+offered "a Sunday weekly slot that runs", confirmed by "a `run.end` row for
+that seat carrying `trigger: cron` with an exit of zero and more than one turn".
+Both predict a `cron` row. **Ask 2 produces `hook` rows and never `cron` rows,
+because the daemon has no cron wake route, and Ask 1 deletes every future
+Sunday slot this seat has.** So each grant falsifies the verification that was
+offered for it, and in the Sunday case the verification waits forever for a
+slot that no longer exists.
+
+**Why it was written twice.** Both paragraphs exist to lower the cost of
+granting, which is a good instinct and is why the sentence reads as diligence:
+it tells HQ that confirmation needs no new reporting on their side. The error
+is that the reading was derived from the mechanism **as it works today** rather
+than from the mechanism the ask would create, and an ask is by definition a
+request to change that mechanism. HQ caught it and said so in the grant, which
+is the only reason it is on this page rather than discovered in a week of
+waiting for a row that cannot arrive.
+
+**The fix, and it is one question rather than a process.** Before writing a
+"what would tell us it was granted" paragraph, name the reading **after** the
+change has landed, not before, and check that the surface it names still exists
+in the granted world. Where the ask changes a schedule, the reading cannot be
+keyed to the old schedule's hour or weekday. Where the ask changes a trigger,
+the reading cannot be keyed to a trigger value. **The durable form is a record
+this repository writes itself**, which is why the live test for both asks is now
+a `cycle-taken:` line in `docs/agents/exo-loop.md` naming a Monday 01:00Z slot:
+it is trigger-independent, it is local, and it survives any further change to
+the clock.
