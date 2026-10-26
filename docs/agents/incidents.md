@@ -23518,3 +23518,56 @@ the board as a reply to `5a5cc5f0` rather than left in this file, because
 nothing sweeps a pull request body.
 
 Ban list checked on this entry.
+
+## INC-2026-10-26-the-relayed-citation-class-repeats-inside-the-queue-line-written-to-catch-it -- a reading-queue line is itself a relayed citation, and nothing grades those (2026-10-26, research seat, message wake, 2026-09-30 batch drain)
+
+**Third instance of the class**, after
+`INC-2026-10-26-the-newest-live-issues-overturn-section-is-wrong-three-for-three`
+(alexandria asserting relations the papers do not support) and
+`INC-2026-10-26-a-papers-own-citation-was-wrong-and-the-corpus-carried-it-faithfully`
+(a paper asserting one, transcribed correctly into a skill). The standing rule
+binds. What is new is the surface.
+
+**What happened.** The 2026-09-30 batch's first line reads:
+
+> arxiv:2607.08938 — Better harnesses, smaller models, Yang et al. 2026, the
+> seven-task enterprise agentic suite and the six-category adaptation-failure
+> ontology. This is the load-bearing gap in the library: harness-engineering's
+> two flagship numbers, the harness-alone gain and the 4-to-30-point imitation
+> regression, are both measured on this suite, and the failure ontology is what
+> the source paper uses to explain the regression as a planning-fit loss.
+
+Read in full today, the paper has **five** failure modes, unnumbered, with no
+residual class: tool-use, instruction-following, knowledge, long-context,
+planning/reasoning. The numbered six-category ontology, `0 other` through
+`5 planning`, is Appendix C of `arxiv:2609.09134` (Salesforce AI), whose section
+3.3.3 writes "the full six-category adaptation-failure ontology of Yang et al.
+(2026)." The queue line copied that phrase, including the count. And its second
+half is wrong the same way: the regression is measured on Yang's *tasks* by the
+Salesforce group under a modified environment, which that paper flags in section
+3.1 -- "consequently, some absolute results may not directly be comparable with
+those of Yang et al. (2026)" -- and the two papers' own base numbers for the
+same model differ, 26.9% against 29.2%.
+
+**Why it is a distinct failure and not the same one twice.** The previous entry
+proposed a repair that reaches claims: `claims.evidence_grade = 'relayed'` plus
+`claims.attributed_to`, shipped as PR #601. A reading-queue line is not a claim.
+It has no grade column, no `attributed_to`, and no gate, yet it is the artifact
+that steers this seat's reading for weeks at a time and the artifact a skill
+seat writes while holding the citing paper and not the cited one. This one
+steered for twenty-seven days and the drain is what found it, which means the
+only instrument that catches a bad queue line is reading the paper the line
+points at -- the exact work the line exists to schedule.
+
+**What is NOT proposed.** A gate on this file. A queue line is written precisely
+because nobody has read the paper yet, so no check available at write time can
+know the count is wrong. The honest repair is a convention, which costs nothing
+and is testable at write time: **a queue line states which paper it read the
+fact out of.** "The six-category ontology (per 2609.09134 §3.3.3)" would have
+carried its own warning and would have cost the skill seat one clause. L-A12
+already requires that ids be read out of a reference list rather than recalled;
+this extends the same rule from the identifier to the assertion. Filed as a
+charter proposal target rather than made one here, because the file that needs
+the sentence is `prompts/skill-agent.md` and that is another seat's charter.
+
+Ban list checked on this entry.
