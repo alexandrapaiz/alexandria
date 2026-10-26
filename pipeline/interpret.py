@@ -700,12 +700,16 @@ def rehearse(allow_fallback: bool = False) -> str:
         modal run pipeline/interpret.py::rehearse
         modal run pipeline/interpret.py::rehearse --allow-fallback
 
-    The real prompt, provider, key, reservation and timeout. The claim and its
-    five candidates are a fixed sample carried in this file, chosen so that the
-    right answer is knowable: candidate 101 is the same finding (duplicates or
-    supports), 102 narrows it (refines), 103 reports the opposite
-    (contradicts), and 104 and 105 are unrelated and should draw nothing. A
-    model that labels all five, or none, fails the gate.
+    The real prompt, provider, key, reservation and timeout, and since
+    2026-10-26 the real payload: the shortlist is NEIGHBORS candidates, the
+    same number the run sends, rather than the five it sent while slice 2's
+    widening went unrehearsed. The claim and its candidates are a fixed sample
+    carried in this file, chosen so that the right answer is knowable: 101 is
+    the same finding (duplicates or supports), 102 narrows it (refines), 103
+    reports the opposite (contradicts), 106 agrees from a second experiment
+    (supports) and 107 bounds it (refines). The other five are unrelated and
+    should draw nothing, and three of those five are deliberately close in
+    vocabulary. A model that labels all ten, or none, fails the gate.
 
     `--allow-fallback` is the hatch for the day the head of the list is itself
     what is broken and the change in the image is the degraded path the outage
@@ -842,6 +846,27 @@ def drain() -> str:
 # The rehearsal's fixed shortlist. Ids are small on purpose: they are never
 # written anywhere, and a reader who sees 101 in a log knows immediately that it
 # is not a real claim id.
+#
+# Ten of them, because NEIGHBORS is ten and a rehearsal that sends five proves
+# the request before last. It was five until 2026-10-26, which is to say that
+# from the moment slice 2 widened the shortlist the gate in front of every
+# interpret deploy exercised about half the user message production sends, and
+# the half it skipped was the half that grew. The five added here are not
+# filler: three of them are surface-similar to the new claim and unrelated to
+# it, because the thing a wider shortlist actually risks is a judge that starts
+# matching on vocabulary once the list is long enough to make reading it work.
+#
+# The right answer is knowable, which is the whole value of a fixed sample:
+#
+#   relate     101 duplicates, 102 refines, 103 contradicts,
+#              106 supports, 107 refines
+#   unrelated  104 (a different field entirely), 105 (AI, different finding),
+#              108 (shares "scratchpad"), 109 (shares the context length),
+#              110 (shares nothing but the register)
+#
+# Five and five, so a model that labels everything draws ten and fails, a model
+# that labels nothing draws none and fails, and the count in between is a number
+# a human reading the rehearsal log can check line by line.
 REHEARSAL_CLAIM = (
     "Explicit scratchpad eviction keeps tool-call accuracy within 4 percent of "
     "baseline past 200K tokens of agent context, where recursive summarization "
@@ -859,6 +884,20 @@ REHEARSAL_NEIGHBORS = [
           "for radio interferometry correlators."),
     (105, "Instruction tuning on 1,000 curated examples matches the "
           "performance of tuning on 50,000 noisy ones."),
+    (106, "Agents whose scratchpad is pruned by an explicit eviction policy "
+          "hold task success steady out to 250K tokens of context, where "
+          "summarization-based compaction falls away over the same range."),
+    (107, "The gap between explicit eviction and recursive summarization opens "
+          "only once context passes roughly 150K tokens; below that the two "
+          "compaction strategies are indistinguishable on tool-call accuracy."),
+    (108, "Scratchpad prompting raises grade-school arithmetic accuracy by 18 "
+          "points for a 7B model when the intermediate steps are written out "
+          "before the answer."),
+    (109, "A 200K-token context window can be served at 1.4x the throughput of "
+          "a 128K one by paging the KV cache to host memory between decode "
+          "steps."),
+    (110, "Federated averaging converges in fewer rounds when client updates "
+          "are clipped before aggregation rather than after."),
 ]
 
 

@@ -337,10 +337,14 @@ def test_the_drain_forecast_is_a_remainder_and_a_run_count():
 def test_the_rehearsal_batch_is_not_all_one_answer():
     # A model answering 'index' to everything has to fail the gate, so the
     # sample has to contain papers whose right answers differ.
-    assert len(triage.REHEARSAL_BATCH) >= 3
     assert all(len(row) == 4 for row in triage.REHEARSAL_BATCH)
+    assert len({row[0] for row in triage.REHEARSAL_BATCH}) == len(triage.REHEARSAL_BATCH)
     rendered = triage.render_batch(list(triage.REHEARSAL_BATCH))
     assert "Fourier" in rendered and "Context Rot" in rendered
+    # Four decisions exist and the sample has to be able to draw all four, which
+    # it cannot do from one tier: the tier is in the user message and a batch
+    # that is all tier `a` tells the model the answer before it reads anything.
+    assert len({row[3] for row in triage.REHEARSAL_BATCH}) >= 3
 
 
 def test_the_triage_cap_buys_more_than_one_call_at_the_worst_case_price():
@@ -379,11 +383,10 @@ def test_every_relation_interpret_will_write_is_in_the_schema():
 
 
 def test_the_rehearsal_shortlist_has_a_knowable_right_answer():
-    # Three of the five should relate and two should not, which is what lets the
-    # rehearsal fail a model that labels everything and one that labels nothing.
-    assert len(interpret.REHEARSAL_NEIGHBORS) == 5
+    # Half should relate and half should not, which is what lets the rehearsal
+    # fail a model that labels everything and one that labels nothing.
     ids = [nid for nid, _ in interpret.REHEARSAL_NEIGHBORS]
-    assert len(set(ids)) == 5
+    assert len(set(ids)) == len(ids)
     rendered = interpret.render_candidates(interpret.REHEARSAL_CLAIM,
                                            interpret.REHEARSAL_NEIGHBORS)
     assert rendered.startswith("NEW claim:")
@@ -1520,6 +1523,73 @@ def test_the_corpus_rehearsals_forgive_only_the_head():
             f"{path} mentions its hatch {body.count('allow_fallback')} times "
             "inside rehearse(), so it reaches something other than "
             "head_receipt")
+
+
+# ---------------- the rehearsal sends the request the run sends ----------------
+#
+# A gate that exercises a smaller request than production exercises a request
+# production never makes. It still catches a dead key, a missing model and a
+# timeout, so it never looks broken; what it stops catching is everything that
+# only appears at full size, which is the class of failure the gate is most
+# needed for.
+#
+# This went unnoticed in two of the three corpus jobs at once. Interpret's
+# shortlist was widened from five candidates to ten on 2026-10-25 and its
+# fixture stayed at five, so from that day the gate in front of every interpret
+# deploy sent half the user message the run sends, and the half it skipped was
+# the half that had just grown. Triage's was worse and older: three papers
+# against a BATCH of ten, with MAX_COMPLETION_TOKENS reserved for ten results,
+# in front of a gate whose own failure message is about a model that answers for
+# some of a batch and not the rest. Distill had it right from the start and is
+# the reason this is a test rather than a rule: its rehearsal pads its body to
+# exactly FULLTEXT_CHARS with a comment calling that "the request that must
+# fit", so the correspondence is in the expression and cannot drift.
+#
+# The fix for the other two is the same shape, which is why one test holds all
+# three: the fixture's length is checked against the constant the run reads, so
+# the next person who widens a payload gets a red test instead of a quiet gate.
+
+
+def test_each_rehearsal_sends_the_payload_size_its_run_sends():
+    assert len(triage.REHEARSAL_BATCH) == triage.BATCH, (
+        f"triage rehearses {len(triage.REHEARSAL_BATCH)} papers where the run "
+        f"sends {triage.BATCH}, so the gate cannot meet the truncated-tail "
+        "failure its own error message describes")
+    assert len(interpret.REHEARSAL_NEIGHBORS) == interpret.NEIGHBORS, (
+        f"interpret rehearses {len(interpret.REHEARSAL_NEIGHBORS)} candidates "
+        f"where the run sends {interpret.NEIGHBORS}, so a model that handles "
+        "the short list and degrades on the long one passes the gate")
+
+
+def test_the_distill_rehearsal_sizes_its_body_from_the_constant_not_a_number():
+    # Distill's payload is generated rather than written out, so the guard is
+    # that the generator reads FULLTEXT_CHARS. Checked two ways: the expression
+    # is in the source, and running it here produces exactly that many chars.
+    source = (ROOT / "pipeline" / "distill.py").read_text()
+    body_of_rehearse = source[source.index("def rehearse("):]
+    assert "[:FULLTEXT_CHARS]" in body_of_rehearse, (
+        "distill's rehearsal stopped sizing its payload from FULLTEXT_CHARS, "
+        "so the request the gate sends is no longer the request that must fit")
+    sample = distill.REHEARSAL_SAMPLE
+    n = distill.FULLTEXT_CHARS
+    assert len((sample * (n // len(sample) + 1))[:n]) == n
+
+
+def test_the_widened_fixtures_still_fit_the_reservations_they_are_sent_under():
+    """The payload grew; the reservation did not, and that is on purpose.
+
+    Both reservations were already sized for the full batch. Triage's comment
+    says "ten results of {i, decision, score, reasoning}" and interpret's says
+    "up to ten relations with confidences", so widening the fixtures changed
+    nothing about the request's shape, only about whether the gate ever sends
+    it. If either constant is ever cut below what its fixture can produce, the
+    rehearsal starts failing on truncation rather than on the provider, and the
+    reader will blame the model. This is the test that says which it was.
+    """
+    # ~55 tokens a result, the figure triage's own comment is derived from.
+    assert triage.MAX_COMPLETION_TOKENS >= 55 * len(triage.REHEARSAL_BATCH)
+    # 299 tokens measured for ten relations, in interpret's comment.
+    assert interpret.MAX_COMPLETION_TOKENS >= 30 * len(interpret.REHEARSAL_NEIGHBORS)
 
 
 # ---------------- who answers "who did this work" ----------------
