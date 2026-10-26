@@ -511,6 +511,24 @@ UNCOVERED = {
     # as text, read every log on the host correctly, and silently stopped
     # classifying refusals against a fixture that differed by one space.
     "tests/test_cron_firing.py",
+    # Added 2026-10-26 with ADR-13's merge executor, and pinned for the same
+    # structural reason as every line above: the step that would run it goes
+    # in `.github/workflows/checks.yml`, which no seat's token may write, and
+    # the staged replacement runs the suite rather than naming files, so this
+    # pin leaves the set the moment item 17 is applied.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern.
+    #
+    # What it guards is the only code in this repository that can merge a pull
+    # request without a person, and the direction of almost every assertion in
+    # it is a refusal: that machinery is never merged by a verdict, that a
+    # charter is never merged by the panel, that three passes on other text
+    # are not three passes on this one, that a panel of two is not unanimity,
+    # and that the ambient `GH_TOKEN` every seat on this host holds is
+    # declined. Those are the tests whose silence costs the most, because the
+    # defect they would catch is a merge that already happened.
+    "tests/test_panel_merge.py",
 }
 
 

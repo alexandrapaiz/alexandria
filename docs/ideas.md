@@ -20481,3 +20481,116 @@ has nothing to go red against.
 - Cost: $0 to steal. Temporal itself would be a service and a bill, and nothing
   here proposes adopting it.
 - Status: proposed
+
+### 2026-10-26 - A gate says what it applies to, so a rule nobody can satisfy is a number rather than a discovery
+- Trigger: of the 546 pull requests this repository has ever held, 16 change a
+  `skills/<slug>/SKILL.md` and ADR-12's whitelist refuses all 16, measured in
+  today's run. None is whitelist-clean, and the cause is the org's own
+  contract: `prompts/skill-agent.md` requires the
+  seat to append its ideas to `docs/ideas.md` and its repeats to
+  `docs/agents/incidents.md` on the same branch, so every proposal is
+  guaranteed out of scope for the gate meant to merge it. The gate has been
+  live since 2026-09-17 and nothing ever reported that its pass rate could not
+  exceed zero.
+- What: today's craft scan below is the mechanism. Gerrit's submit requirements
+  separate `applicableIf` from `submittableIf` and give the result five
+  statuses, of which `NOT_APPLICABLE` and `UNSATISFIED` are different words: a
+  rule that does not apply is hidden and blocks nothing, and a rule that
+  applies and is unmet is visible and blocks. ADR-12's whitelist has only the
+  second word. It is applied to the whole diff, so one out-of-scope path
+  refuses the whole proposal, and the refusal reads the same whether the
+  proposal was wrong or the rule was unreachable. Two halves to steal, and the
+  cheap one is not the amendment. First, a gate reports its own reach: for each
+  gate in this repository, how many of its last fifty real inputs it could ever
+  have passed, so a ceiling of zero is a line in a report rather than something
+  a build run discovers three weeks later. Second, and this one is the owner's,
+  scope ADR-12 per path rather than per diff, so a pull request mixing judgment
+  and machinery has its `skills/` half judged by the panel and its machinery
+  half routed to ADR-14's human merge, instead of the whole thing refused.
+- First step: `tools/gate_reach.py`, one gate at a time, starting with the two
+  whose inputs are already enumerable from the GitHub API: ADR-12's whitelist
+  over the skill seat's pull requests, and `tools/check_authority.py` over the
+  seats' charters. The number for the first is in today's pull request
+  description and the instrument is what makes it repeatable.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The skill seat's ledger append moves to its own pull request, so a proposal can be in scope for the gate that judges it
+- Trigger: the same 16-of-16 measurement. The out-of-scope paths are not
+  incidental: `docs/ideas.md` and `docs/agents/incidents.md` appear on nearly
+  every skill pull request because that seat's charter requires both appends on
+  the branch that carries the work, exactly as the engineer charter requires
+  them here.
+- What: the append is a different act from the proposal and it is addressed to
+  a different reader. A skill promotion is text the panel judges against
+  claims; a ledger append is a note to the PM and the owner. Splitting them
+  costs the skill seat one extra `gh pr create` and makes the difference
+  between a proposal ADR-13 can merge and one it structurally cannot. The
+  alternative is the amendment in the entry above, which is larger: it changes
+  a decision rather than a charter, and it has to answer what else `docs/`
+  admits once two files in it are admitted. Either repair works and they are
+  mutually exclusive, so this entry exists to put both in front of the owner
+  rather than to argue for one.
+- First step: a charter diff to `prompts/skill-agent.md`, which is the owner's
+  under HQ standard section 21 because it changes what a seat is required to do, so
+  this stays a proposal and no part of it is in today's pull request.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The daily reviewer pass reads open pull requests as well as main, so a verdict can describe something that still needs merging
+- Trigger: building ADR-13's merge executor today found that every row in
+  `panel_verdicts` describes text already on `main`. All three reviewers run in
+  step 2 of `pipeline/skill_revision.py`, which reads skills from `main` over
+  the GitHub API, so `panel_consensus` can be unanimous only about a proposal
+  that no longer needs merging. The ADR's sentence is "unanimous pass merges the
+  PR" and the panel could not name a pull request.
+- What: the same job gains a second pass over open pull requests that change a
+  `skills/<slug>/SKILL.md`. `tools/panel_merge.py`'s `review_proposal` already
+  does the hard half with no credential, by fetching `refs/pull/N/head` and
+  calling each reviewer's own `review(skills_dir=...)` against the branch's
+  tree, and this run proved it against #535. What it cannot do is file the
+  rows, because a file-half verdict is weaker than a reviewer's whole duty and
+  `panel_verdicts` is the audit trail that replaces an approval. The job is the
+  one place that holds the `neon` secret and can therefore run all three
+  reviewers in full and file honest rows against a branch's sha.
+- First step: `review_pass` in `pipeline/skill_revision.py` takes a
+  `skills_dir`, which it almost does already, and the job loops over the open
+  proposals before it loops over `main`. One Modal function, no new secret, no
+  new schedule. It needs the Modal workspace back to run, so the slice is
+  writable today and unverifiable until then, and that is worth saying out loud
+  rather than discovering at deploy.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Gerrit separates a rule that does not apply from a rule that is not met, where ADR-12's whitelist has one word for both (engineer seat, message run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  build rather than against the product's feature set. The run built the thing
+  that merges a pull request without a person, so the scan went to the most
+  mature system that does it: Gerrit's submit requirements.
+- What: read live at
+  gerrit-review.googlesource.com/Documentation/config-submit-requirements.html.
+  A submit requirement carries three expressions and not one. `applicableIf`
+  decides whether the rule is in play at all, `submittableIf` decides whether
+  it is met, and `overrideIf` decides when it is bypassed on purpose, by a
+  trusted user or in an emergency. The result is one of five statuses, and the
+  two that matter here are `NOT_APPLICABLE`, which is hidden and blocks
+  nothing, and `UNSATISFIED`, which is visible and blocks. The stealable thing
+  is that split. A gate with only `submittableIf` cannot tell a reader whether
+  a refusal is about the input or about the rule, which is exactly how ADR-12's
+  whitelist refused 16 of 16 inputs for three weeks without anybody noticing
+  that its ceiling was zero. The third expression is worth naming too, because
+  this repository has no `overrideIf` anywhere and instead has prose: section 22's
+  forty-eight-hour silence rule is an override with a timer, written in a
+  standard rather than in the gate, so no instrument can read it.
+- What alexandria does better: the verdict carries its own evidence. Gerrit's
+  submit record says which requirement was unsatisfied and which label was
+  missing, and the reasoning behind a human's vote is not in the record.
+  `panel_verdicts` holds the findings that produced the verdict as jsonb, the
+  sha256 of the exact text judged, and the git blob sha of the reviewer's own
+  code, append-only, so a re-review preserves the disagreement instead of
+  replacing it. That is a verdict a stranger can re-derive. A vote is not.
+- First step: the first entry above, and its cheap half is one instrument
+  rather than a decision.
+- Cost: $0 to steal. Gerrit itself is a self-hosted review server and nothing
+  here proposes adopting one.
+- Status: proposed
