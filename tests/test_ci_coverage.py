@@ -565,6 +565,18 @@ UNCOVERED = {
     # run that wrote it is not a measurement, and that assertion going silent
     # on a pull request is how it would become one.
     "tests/test_skill_scope.py",
+    # Added 2026-10-26 with the press's named-week entrypoint, and pinned for
+    # the same structural reason as every line above: applying the staged
+    # replacement needs a `workflows` permission no seat holds, and the
+    # alternative the gate offers is editing `.github/workflows/checks.yml`,
+    # which no seat may do either. The reason this pin is in the diff rather
+    # than assumed: the file holds the only proof that a regenerated issue
+    # mails nobody. A backfill over a quarter of past issues would otherwise
+    # mail the subscriber list a dozen times, and that assertion going silent
+    # on a pull request is the one failure in this set a reader would notice
+    # before the owner did. The staged replacement runs the whole suite, so it
+    # runs this too.
+    "tests/test_press_backfill.py",
 }
 
 

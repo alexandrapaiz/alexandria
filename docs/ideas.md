@@ -21239,3 +21239,127 @@ has nothing to go red against.
   a seat editing entries rather than building.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-26 — The scheduled press still reads the week it is standing in
+- Trigger: today's work gave `pipeline/weekly.py` a way to write a week by
+  name, and building it surfaced the half of the 2026-W38 incident that was
+  never fixed. The label was repaired on 2026-09-24: `week_just_ended` now
+  anchors on the last Sunday, so a recovery run on a Wednesday writes under
+  the week it is reporting on. The payload was not. Every time filter in
+  `gather` said `now() - interval '7 days'`, so the same Wednesday run filled
+  a 2026-W38 issue with the seven days before itself. An issue labelled
+  correctly and filled wrongly is the worse of the two, because the label is
+  the only thing downstream can check.
+- What: `gather` now takes a window and `week_window(week)` builds the exact
+  span the Monday cron would have read. The scheduled path does not use it. It
+  passes `None`, which evaluates the predicate it has always evaluated, and
+  that is deliberate: for an on-time cron the two are the same seven days to
+  within the seconds the cron takes to start, and for a late one they differ,
+  which means switching is a change to what the press prints rather than a
+  refactor. `docs/agents/press-rehearsal.md` is the gate that change belongs
+  behind, and no rehearsal can run while the Modal workspace is disabled.
+- First step: one line in `weekly()`, `window = week_window(week)` in the
+  scheduled branch, run behind `modal run pipeline/weekly.py::rehearse` on the
+  first Monday after the workspace is back, with the rehearsal's payload line
+  compared against the live cron's for the same week. The test that pins the
+  current behaviour is `test_the_scheduled_path_still_sends` in
+  `tests/test_press_backfill.py`, and it is the test that has to change with
+  it rather than a test to delete.
+- Cost: $0. One rehearsal's tokens, which the press already budgets.
+- Status: proposed
+
+### 2026-10-26 — A week's rewrite cannot be read before it is paid for
+- Trigger: `weekly --week 2026-W38` shipped today and nothing in this
+  repository can tell you what it will produce. The window is arithmetic and
+  is tested, but what that window returns is a database question, and no agent
+  seat holds a database credential. So the first real backfill will also be
+  the first time anybody sees how many claims a past week's window actually
+  contains, and it will see it after a model call has been spent and an issue
+  has been upserted over.
+- What: a `--dry-run` on `weekly` that stops after `gather`. It prints the
+  window, the payload line, the five stats, the row counts per evidence
+  stream, and the title and model of the issue it would replace, then returns
+  without calling a model and without writing. That is the difference between
+  backfilling a quarter of issues as a decision and backfilling them as a
+  discovery: a week whose window returns two claims should not be rewritten at
+  all, and today the only way to learn that is to rewrite it.
+- First step: `def weekly(week: str = "", dry_run: bool = False)` and an early
+  return after the `print(payload_line(...))` that already runs. The payload
+  line, the window line and the replaced-issue line are all printed before the
+  model call today, so the body of this is the return statement and a test
+  that no model and no write happen. `tests/test_press_backfill.py` already
+  drives `weekly()` against recorders, so the test is four lines in a file
+  that exists.
+- Cost: $0, and it saves tokens rather than spending them.
+- Status: proposed
+
+### 2026-10-26 — The issue says what the press read and never what it missed
+- Trigger: today's craft scan, below. Undermind publishes a recall number as a
+  product claim: 85% of the twenty most relevant papers inside ten minutes,
+  against 50%, 47% and 43% for three named competitors. Alexandria's issue
+  prints five counts and every one of them is work the pipeline did:
+  ingested, triaged, read in full, claims, links. Not one of them is a
+  denominator. A reader cannot tell a week when the press read everything
+  worth reading from a week when ingest fetched eleven papers because a feed
+  was down, and the second kind of week has happened: the availability check
+  in `pipeline/ingest.py` exists because ingest used to report success on an
+  empty run.
+- What: one more number in the stats line, with a denominator. "Of the N
+  papers these feeds published this week, M were triaged." Ingest already
+  knows N, because it fetched them and wrote `papers`, and `gather` already
+  counts M. The honest version of this number is coverage of what alexandria's
+  own sources published rather than coverage of the literature, and it should
+  say so in those words, because the second claim is one this product cannot
+  support and Undermind's is measured against a benchmark it built itself.
+- First step: add the denominator to `gather`'s stats query as a sixth count,
+  `papers` in the window with no triage row, and decide with the writer seat
+  whether it reaches the issue or only `/api/delivery`. The arithmetic is one
+  subquery in a query this change has already parameterised; the editorial
+  call on whether a reader should see a coverage number is the writer's and
+  the owner's.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Undermind publishes a recall number, where this press publishes five counts and no denominator (engineer seat, message run)
+- Trigger: the day's item was the press's backfill verb, so the scan went
+  looking for a product that makes a claim about how much of the literature it
+  found rather than how much work it did. Undermind was the stalest entry in
+  `docs/market/landscape.md` that is actually a competitor: added 2026-09-18,
+  last observed the same day, marked "search-snippet confidence only," 38 days
+  ago.
+- The product: Undermind (undermind.ai), an AI research assistant for
+  scientific-literature discovery and novelty checking. Already in the
+  landscape file under academic research tools, where the whole entry is four
+  lines and two of them are hedged.
+- What: read for one question, which is what number a search product puts in
+  front of a buyer. Undermind puts recall. This press puts throughput. The
+  conclusion is the entry directly above this one, and this scan is the
+  argument behind it rather than a second proposal.
+- Worth stealing: the number is a denominator, and it is on the landing page.
+  Undermind states 85% recall of "the 20 most relevant papers" inside ten
+  minutes against 50%, 47% and 43% for three competing systems, and separately
+  that its first engine was "10x better results than Google Scholar." Two
+  things make that worth stealing rather than only worth noting. The claim is
+  about completeness, which is the one property a literature product's buyer
+  cannot check for themselves, so saying a number at all is the move. And the
+  number is bounded by a benchmark Undermind defined, which it says plainly,
+  so the claim survives a sceptical read. A press that says "we triaged 47
+  papers" has told the reader nothing they can calibrate; the same press
+  saying "47 of the 61 our sources published" has.
+- What alexandria does better: a report and a claim graph answer different
+  questions, and the difference shows up a month later. Undermind's unit is a
+  report produced for a query, with alerts when something new matches. Nothing
+  in it goes back and marks a finding superseded, because a report is finished
+  when it is written. This repository's `claim_links` carries `refines` and
+  `contradicts` as dated edges, the `deprecated_claims` view reads the
+  contradictions, and an issue can therefore tell a reader that something it
+  printed in September stopped being true in October. That is also why the
+  second-best thing here is the pricing comp rather than the product: Pro at
+  $16 a month billed annually sits just under this product's $20, and it buys
+  a search tool rather than a standing record.
+- First step: update the Undermind entry in `docs/market/landscape.md` with
+  today's pricing and the recall claim, and move it out of
+  "search-snippet confidence only." That file belongs to the market seat, so
+  this is a note addressed to it rather than an edit this seat makes.
+- Cost: $0.
+- Status: proposed
