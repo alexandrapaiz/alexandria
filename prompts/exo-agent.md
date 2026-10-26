@@ -53,6 +53,58 @@ runs of the same seat and a hand does.
 
 On 2026-10-24 it held `cron = "0 14 * * 0"` and
 `subscriptions = ["message.posted", "item.moved", "pr.merged", "check.failed", "brief.sent"]`.
+
+**There are six since 2026-10-26 and the sixth is this seat's own weekly
+doorbell** (added 2026-10-26, capacity-return hook). The deployed manifest now
+carries `week.started` beside the five above, granted from this seat's
+2026-10-24 ask for "a once weekly event in my subscriptions, so that the weekly
+duties arrive as a doorbell like everything else I do". The board emits it with
+the daily brief on Sundays, and the manifest's own comment says what it is for:
+it does not replace the cron, **it covers the hour the cron cannot, because a
+weekly clock that is missed loses a whole week in silence.**
+
+So `week.started` takes the weekly cycle, and the slot it discharges is the
+**next** due slot rather than the most recent one, because the doorbell rings
+before the clock. On 2026-11-01 the detector will say the 2026-10-25T14:00Z
+cycle was taken and print `2026-11-02T01:00Z` as the first slot of the moved
+line; a doorbell run performs the cycle and writes `cycle-taken: 2026-11-02T01:00Z`,
+and the Monday cron then reads its own slot as discharged and runs as a wake.
+That ordering is the whole value of the doorbell: the cycle lands in the hours
+the weekly provider budget is freshest instead of in the one attempt a clock
+gets.
+
+**How a run knows it is the doorbell, because the trigger column cannot tell
+it.** Over all 1,695 `run.end` rows the host has written, `trigger` has held
+exactly four values: `message` 1,478, `hook` 104, `window` 76 and `cron` 37.
+**No event type has ever appeared there**, so `week.started` will arrive under
+one of those four words and no column will say which event it was. That is the
+same asymmetry §0 already records for the capacity re-fire: a woken run can
+read its own wake text and no later run can read it for that run.
+
+So the doorbell is identified the way the re-fire is, from the wake text, and
+the durable record is the discharge line rather than the trigger. **A run that
+cannot tell from its wake text that it is the weekly doorbell is not the
+doorbell**, and it reads the trigger as a wake run, which is the safe
+direction: the Monday cron is still there and the detector will say the cycle is
+owed if nothing takes it.
+
+**This branch has never fired and that is the thing to distrust about it**
+(precondition 6 of this section, applied to this section's own new rule). If
+2026-11-01 passes with no wake naming the weekly event, the correct reading is
+a finding about the subscription rather than a quiet week, and it goes on the
+relay page. The check is one pass over the audit log for a run of this seat on
+that Sunday, read beside its own log, because a subscription that does not
+route is silent and silence is what a working weekly doorbell also looks like
+on a week with nothing to say.
+
+**This is recorded here because the grant landed with the charter written
+around its absence**, which is §3f rule 4 and §2a-0's standing instruction.
+Three sentences of this file were wrong the moment the roster reloaded: the
+subscriptions list above said five, the mode list said "the Sunday cron", and
+nothing anywhere named `week.started` at all, so the one subscription whose
+stated purpose is to carry the weekly cycle would have been read by the next
+run as "any subscription event" and answered with a wake run. The doorbell was
+due to ring on **2026-11-01** into a charter that did not know the word.
 One of those five arrives every day. **So this seat has a weekly clock and a
 daily doorbell**, and the last five of its runs were all doorbell runs: four
 message runs in the eight days to 2026-10-24, and not one of them was the
@@ -90,11 +142,15 @@ so it takes the weekly cycle and not the wake-run list, and it writes the
 kind is a wake run as before. Read the wake text rather than the trigger word,
 because the trigger word is `hook` either way.
 
-- **The weekly cycle**, on the Sunday cron or on the first run after seven
-  days without one. Everything in this file, in order, three improvements.
-- **A wake run**, on any subscription event or any hook. Do the thing the
-  event asks for, plus exactly three standing duties, and stop: the failure
-  sweep (§2b), the **Undelivered to HQ** heading (§3f), and the
+- **The weekly cycle**, on the weekly cron, on a `week.started` wake, or on
+  the first run after seven days without either. Everything in this file, in
+  order, three improvements. **The cron is no longer on a Sunday**: it moved
+  to `0 1 * * 1` in the copy the host deployed at 2026-10-26T04:30:48Z, so
+  read the slot off the §0 command rather than off the word Sunday, which
+  this list carried for a day after the clock stopped agreeing with it.
+- **A wake run**, on any other subscription event or any hook. Do the thing
+  the event asks for, plus exactly three standing duties, and stop: the
+  failure sweep (§2b), the **Outstanding with HQ** heading (§3f), and the
   learning-log entry (§6). Skip the register sweeps, the unowned-duty hunt,
   the public-claim sweep and the queue re-verification, and say in the pull
   request which mode you ran and therefore what you did not do. At most
@@ -225,52 +281,155 @@ cycle owed?** It needs no network and it is exact over any window.
 
 ```bash
 python3 - <<'PY_OWED'
-import json, re, datetime as dt, glob, os, sys
+import json, re, datetime as dt, glob, os, sys, subprocess
 SEAT   = sys.argv[1] if len(sys.argv) > 1 else 'alexandria-exo'
 LEDGER = sys.argv[2] if len(sys.argv) > 2 else 'docs/agents/exo-loop.md'
-MANI   = os.environ.get('MANI') or '/srv/asc/roster/%s/%s/agent.toml' % tuple(SEAT.split('-', 1))
 NOW    = os.environ.get('NOW')
 LOGS   = os.environ.get('LOGS', '/srv/asc/state/.epito/logs')
 CLAIM  = os.environ.get('CLAIM', '/srv/asc/state/.epito/capacity-retry.json')
-TOL    = dt.timedelta(hours=1)        # the host fires within seconds of a slot
-m = re.search(r'^cron\s*=\s*"([^"]+)"', open(MANI).read(), re.M)
-if not m:
-    print('no cron in the manifest: this seat has no weekly cycle'); raise SystemExit
-mi, hr, dom, mon, dow = m.group(1).split()[:5]
-if (dom, mon) != ('*', '*'):
-    print('this command reads a day-of-week cadence only, and the manifest says',
-          m.group(1), '- a day-of-month cadence needs its own slot arithmetic')
+CLONE  = os.environ.get('CLONE', '/srv/asc/repos/alexandra-systems')
+MANI   = os.environ.get('MANI')            # live manifest, the fallback only
+TOL    = dt.timedelta(hours=1)             # the host fires within seconds of a slot
+now = (dt.datetime.fromisoformat(NOW) if NOW
+       else dt.datetime.now(dt.UTC)).replace(tzinfo=None)
+company, seat = SEAT.split('-', 1)
+PATH = 'runtime/agents/%s/%s/agent.toml' % (company, seat)
+
+def slots_of(cron, lo, hi):
+    """Every slot a cron line puts inside [lo, hi). Refuses loudly rather than
+    guessing on a cadence this arithmetic cannot read."""
+    mi, hr, dom, mon, dow = (cron.split() + ['*'] * 5)[:5]
+    if (dom, mon) != ('*', '*'):
+        return None, ('a day-of-month cadence needs its own slot arithmetic: %s' % cron)
+    if not (mi.isdigit() and hr.isdigit()):
+        return None, ('a fixed hour and minute only, and this line says: %s' % cron)
+    days = None if dow == '*' else [(int(d) - 1) % 7 for d in dow.split(',') if d.isdigit()]
+    if dow != '*' and not days:
+        return None, ('a numeric day-of-week only, and this line says: %s' % cron)
+    out, t = [], hi.replace(hour=int(hr), minute=int(mi), second=0, microsecond=0)
+    while t >= hi: t -= dt.timedelta(days=1)
+    while t >= lo:
+        if days is None or t.weekday() in days: out.append(t)
+        t -= dt.timedelta(days=1)
+    return out, None
+
+# THE DEPLOYED CLOCK, NOT THE DECLARED ONE. `/srv/asc/roster` is a symlink into
+# a working clone the host moves with `git reset --hard`, so that clone's reflog
+# is the deploy history and the cron in effect at any past minute is the cron in
+# the copy that was checked out then. A slot computed from the live manifest is a
+# slot on today's clock, and a clock that moved yesterday never had it.
+timeline, tl_note = [], None
+try:
+    raw = subprocess.run(['git', '-C', CLONE, 'reflog', '--date=iso',
+                          '--format=%h%x09%gd'], capture_output=True, text=True,
+                         check=True, timeout=30).stdout
+    for line in raw.splitlines():
+        sha, _, gd = line.partition('\t')
+        m = re.search(r'\{([0-9-]{10}) ([0-9:]{8}) ([+-][0-9]{4})\}', gd)
+        if not (sha and m): continue
+        at = dt.datetime.fromisoformat('%sT%s%s:%s' % (m.group(1), m.group(2),
+                                                       m.group(3)[:3], m.group(3)[3:]))
+        timeline.append((at.astimezone(dt.UTC).replace(tzinfo=None), sha))
+    timeline.sort()
+except (OSError, subprocess.SubprocessError) as why:
+    tl_note = 'the deploy history is unreadable (%s)' % why
+if not timeline and tl_note is None:
+    tl_note = 'the deploy history is empty: %s has no reflog' % CLONE
+
+def cron_at(sha):
+    """The cron line this deployed copy held for this seat, or None if the copy
+    did not carry the seat at all, which is a different fact from a seat with
+    no cron and the thing a live read of the manifest can never tell you."""
+    r = subprocess.run(['git', '-C', CLONE, 'show', '%s:%s' % (sha, PATH)],
+                       capture_output=True, text=True)
+    if r.returncode != 0: return None
+    m = re.search(r'^cron\s*=\s*"([^"]+)"', r.stdout, re.M)
+    return m.group(1) if m else ''
+
+# the most recent slot that EXISTED on the clock the host was holding when it
+# passed. Walk the deploy intervals newest first and stop at the first hit.
+slot = slot_cron = None
+refusals, spans, unseated = [], [], []
+if timeline:
+    bounds = [(timeline[i][0], timeline[i][1],
+               timeline[i + 1][0] if i + 1 < len(timeline) else now)
+              for i in range(len(timeline))]
+    for lo, sha, hi in reversed(bounds):
+        if lo >= now: continue
+        hi = min(hi, now)
+        cron = cron_at(sha)
+        if cron is None:
+            unseated.append((lo.isoformat(), sha)); continue
+        if cron == '':
+            spans.append((lo.isoformat(), sha, 'no cron in this copy')); continue
+        found, why = slots_of(cron, lo, hi)
+        if why:
+            refusals.append((lo.isoformat(), sha, why)); continue
+        if found:
+            slot, slot_cron = found[0], cron
+            break
+        spans.append((lo.isoformat(), sha, 'cron %s, no slot inside this span' % cron))
+elif MANI or os.path.exists('/srv/asc/roster/%s/%s/agent.toml' % (company, seat)):
+    path = MANI or '/srv/asc/roster/%s/%s/agent.toml' % (company, seat)
+    m = re.search(r'^cron\s*=\s*"([^"]+)"', open(path).read(), re.M)
+    if m:
+        found, why = slots_of(m.group(1), now - dt.timedelta(days=60), now)
+        if found: slot, slot_cron = found[0], m.group(1)
+        if why: refusals.append(('live manifest', path, why))
+
+print('deploy history:            ', '%d moves, %s -> %s'
+      % (len(timeline), timeline[0][0].isoformat(), timeline[-1][0].isoformat())
+      if timeline else (tl_note or 'none'))
+if tl_note:
+    print('WARNING: %s, so the slot below was computed from the LIVE manifest and'
+          ' cannot be trusted about any minute before the last deploy.' % tl_note)
+# one line per distinct cadence rather than one per deploy: the roster moves
+# dozens of times a day and the same unreadable line would print dozens of times
+for why in dict.fromkeys(r[2] for r in refusals):
+    n = sum(1 for r in refusals if r[2] == why)
+    print('    refused to read a cadence (%d deployed copies): %s' % (n, why))
+if slot is None and refusals:
+    print('VERDICT: UNREADABLE CADENCE. Every deployed copy carried a cron line this'
+          ' arithmetic refuses, so no slot was computed and no verdict is available.'
+          ' Not having looked is not the same as having found nothing.')
     raise SystemExit
-if not (mi.isdigit() and hr.isdigit()):
-    print('this command reads a fixed hour and minute only, and the manifest says',
-          m.group(1)); raise SystemExit
-now  = (dt.datetime.fromisoformat(NOW) if NOW
-        else dt.datetime.now(dt.UTC)).replace(tzinfo=None)
-slot = now.replace(hour=int(hr), minute=int(mi), second=0, microsecond=0)
-days = None if dow == '*' else [(int(d) - 1) % 7 for d in dow.split(',') if d.isdigit()]
-if dow != '*' and not days:
-    print('this command reads a numeric day-of-week only, and the manifest says',
-          m.group(1)); raise SystemExit
-while slot > now or (days is not None and slot.weekday() not in days):
-    slot -= dt.timedelta(days=1)
-nxt = slot + dt.timedelta(days=1)          # the slot after it, so a retrospective
-while days is not None and nxt.weekday() not in days:   # read cannot borrow a later
-    nxt += dt.timedelta(days=1)            # slot's rows as evidence about this one
-lo, hi = slot.isoformat(), min(nxt, now).isoformat()
+if slot is None:
+    print('VERDICT: NO SLOT HAS EVER COME DUE ON A DEPLOYED CLOCK for this seat.')
+    if unseated:
+        print('    the seat was absent from %d of the deployed copies, the newest'
+              ' in effect from %s' % (len(unseated), unseated[0][0]))
+    for s in spans[:4]: print('    ', s)
+    print('    This is not a missed cycle. Nothing was watching for one.')
+    raise SystemExit
+
+print('deployed cron at that time:', slot_cron)
+print('most recent due slot (UTC):', slot.isoformat())
+if unseated and unseated[0][0] > slot.isoformat():
+    print('    the seat is absent from %d deployed copies newer than this slot'
+          % len(unseated))
+# the clock that governs from here, and the next slot it will produce. A moved
+# clock is the one thing a run needs told rather than left to work out by hand,
+# because the slot it invents is the slot this command used to report.
+live_cron = cron_at(timeline[-1][1]) if timeline else slot_cron
+if live_cron and live_cron != slot_cron:
+    ahead, why = slots_of(live_cron, now, now + dt.timedelta(days=14))
+    nextdue = min(ahead) if ahead else None
+    print('the clock has MOVED since that slot: it read %r then and reads %r in the'
+          ' copy deployed at %s.' % (slot_cron, live_cron, timeline[-1][0].isoformat()))
+    print('    no slot of the new line has come due yet, so there is nothing to read'
+          ' about it. Its first is %s.'
+          % (nextdue.isoformat() if nextdue else 'not computable: ' + str(why)))
 
 def started(fn):
-    """A run log's name is `<startTs>-<trigger>.log`, so the filename carries the
-    two fields the audit row does not pair: when the run STARTED and what woke
-    it. The audit row's `ts` is the END, which is why it cannot attribute a
+    """A run log is `<startTs>-<trigger>.log`, so the filename pairs the START
+    with the trigger. The audit row's `ts` is the END and cannot attribute a
     firing to a slot on its own."""
     c = re.match(r'(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})-\d+Z-(\w+)\.log$', fn)
     return (dt.datetime.fromisoformat('%sT%s:%s:%s' % c.groups()[:4]), c.group(5)) \
         if c else (None, None)
 
-# WHICH FIRING IS THIS SLOT'S. Not "a cron row somewhere in the period": that
-# reads a Sunday slot's refusal as a Monday slot's, which is what a clock move
-# does to every retrospective read. A firing belongs to this slot only if it
-# STARTED within an hour of it.
+nxt = slot + dt.timedelta(days=1)
+lo, hi = slot.isoformat(), min(nxt, now).isoformat()
 firings = []
 for path in sorted(glob.glob(os.path.join(LOGS, SEAT, '*-cron.log'))):
     at, _ = started(os.path.basename(path))
@@ -282,52 +441,48 @@ for line in open('/srv/asc/state/.epito/audit.jsonl'):
     if d.get('action') != 'run.end' or d.get('agent') != SEAT: continue
     if lo <= d['ts'][:19] < hi:
         rows.append((d['ts'][:19], d.get('trigger'), d.get('exit'), d.get('turns')))
-# the firing's outcome: the first cron row to END at or after it started
 outcomes = []
 for at, fn in firings:
     after = [r for r in rows if r[1] == 'cron' and r[0] >= at.isoformat()]
     outcomes.append((fn, after[0] if after else None))
 worked = [o for _, o in outcomes if o and o[2] in (0, None) and (o[3] or 0) > 1]
 hooks  = [r for r in rows if r[1] == 'hook']
-# THE RE-FIRE PAIRING. A re-fired slot arrives as `hook` and no surface this
-# seat can read carries the reason: the audit row has no reason field and the
-# run log prints `claude -p <prompt>` with the prompt redacted. The retry's
-# claim file is the one local record, and it names the refused run it
-# recovered by log filename -- so a claim is this slot's only when the name it
-# holds is one of the firings above.
 claimed, claim_note = [], None
 try:
     names = {fn for _, fn in firings}
     claimed = [fn for fn in json.load(open(CLAIM)).get(SEAT, []) if fn in names]
 except (OSError, ValueError) as unreadable:
     claim_note = 'claim file unreadable (%s): no re-fire reading is claimed' % unreadable
-print('most recent due slot (UTC):', slot.isoformat())
 print('firings attributed to it: ', [fn for _, fn in firings] or 'none')
 for fn, o in outcomes: print('    outcome of %s: %s' % (fn, o))
 print('hook runs since the slot:  ', [r[0] for r in hooks] or 'none')
 print('re-fires claimed for it:   ', claimed or 'none')
 if claim_note: print('   ', claim_note)
-try:
-    led = open(LEDGER).read()
-except OSError:
-    led = None
+try: led = open(LEDGER).read()
+except OSError: led = None
 if led is None or not re.search(r'^cycle-register:', led, re.M):
     print('VERDICT: UNREADABLE. The discharge record is missing from %s, so this'
           ' command cannot tell a cycle nobody took from a record it cannot read.'
           ' Restore the register before you read any verdict below it.' % LEDGER)
     raise SystemExit
-taken = [t for t in re.findall(r'^cycle-taken:\s*([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2})Z',
-                               led, re.M)
-         if t == slot.strftime('%Y-%m-%dT%H:%M')]
+taken = [t for t in re.findall(
+    r'^cycle-taken:\s*([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2})Z', led, re.M)
+    if t == slot.strftime('%Y-%m-%dT%H:%M')]
 print('discharge lines naming it: ', taken or 'none')
 if taken:
     print('VERDICT: the cycle was taken. This run is a wake run.')
 elif worked:
     print('VERDICT: the slot fired and ran. This run is a wake run.')
+elif not firings and tl_note:
+    print('VERDICT: UNREADABLE DEPLOY HISTORY. No firing was attributed to this slot,'
+          ' and the only branch that reads that as a missed slot needs the clock the'
+          ' host was holding when it passed. %s, so this command declines the verdict'
+          ' rather than inventing one.' % tl_note)
 elif not firings:
-    print('VERDICT: the slot did not fire. Judge it by the deployed-clock test above,'
-          ' and if the cron line moved recently, check that this slot existed on the'
-          ' clock the host was holding when it passed.')
+    print('VERDICT: THE SLOT WAS MISSED. This slot existed on the clock the host'
+          ' was holding when it passed and no cron run started within the hour,'
+          ' so the scheduler owes an explanation and the cycle is owed. This is a'
+          ' finding about the host, not about the clock.')
 elif claimed and hooks:
     print('VERDICT: THE CYCLE IS OWED AND ITS RE-FIRE IS SPENT. The slot fired,'
           ' produced nothing, was re-fired as a hook, and no run has recorded taking'
@@ -479,6 +634,96 @@ it attributes that firing correctly, which exercises the slot arithmetic on a
 seat this charter does not own. And pointed at `alexandria-security`, whose
 cron is `0 13 1,15 * *`, it still refuses loudly.
 
+**And the fourth version was written the day the deploy landed, because the
+third one handed every reader a homework assignment it could have done itself**
+(rewritten 2026-10-26, capacity-return hook,
+`INC-2026-10-26-the-detector-named-a-slot-that-never-came-due-and-called-it-a-slot-that-did-not-fire`).
+
+The third version's own validation list ends on a prediction: pointed at the
+granted Monday line as of 2026-11-02T02:00Z it returns `the slot did not fire`,
+"which is the reading that will be wrong first if the deploy lands and the slot
+runs". **The deploy landed at 2026-10-26T04:30:48Z** and the prediction came
+due nine and a half hours later, on the first run after it.
+
+The numbers. The grant merged and the host reloaded, so `cron = "0 1 * * 1"` is
+now in both copies of the clock. 2026-10-26 is a Monday, so the live manifest
+puts a slot at 01:00Z. **The host was still holding `0 14 * * 0` at 01:00Z**,
+and went on holding it through four more deploys until 04:30:48Z, so nothing
+was due at 01:00Z and nothing fired. The third version computed the slot from
+the live manifest, found no firing for it, and returned `the slot did not fire.
+Judge it by the deployed-clock test above`.
+
+**Every word of that is true and the slot in it is fictional.** The line reads
+as a statement about a slot that came due and was not served. Nothing came due.
+So the verdict's own subject was invented by the instrument, which is one worse
+than a wrong verdict about a real slot, and the only thing that stopped it
+becoming a finding was a run going off and performing a separate procedure by
+hand.
+
+**That procedure is the defect, not the remedy.** The deployed-clock test has
+been in §3b since 2026-10-24 and it is three commands over a reflog on this
+filesystem. The detector could not run it, so it deferred, and this page's own
+oldest rule about somebody else's instrument says what that means: **when you
+have to consult a surface your instrument cannot read in order to interpret one
+of its findings, the instrument is wrong and not merely incomplete.** A
+hand-correction to one reading is never an exception to an instrument. It is
+the instrument's defect, performed once by a careful run and left standing for
+every run that is in a hurry.
+
+And the two causes it cannot separate are opposite verdicts. A slot with no
+firing is either a slot the host was holding and did not serve, which is a
+finding about the scheduler, or a slot that never existed on the deployed
+clock, which is nothing at all. **Both returned the identical string**, which
+is precondition 6 of this section arriving inside the instrument this section
+publishes to enforce precondition 6, for the third time.
+
+The fix is to stop reading the clock live. `/srv/asc/roster` is a symlink into
+a working clone the host moves with `git reset --hard`, so that clone's reflog
+is the deploy history, and the cron in effect at any past minute is the cron in
+the copy that was checked out then. The command now walks the deploy intervals
+newest first and takes **the most recent slot that existed on the clock the
+host was holding when it passed**, which is the only slot any record can be
+evidence about. The branches then separate, and the one that was missing is the
+one that matters: `THE SLOT WAS MISSED` is a finding about the host, and it had
+no way to be said before today.
+
+Three properties worth knowing before you trust it. It reads the deploy history
+and nothing else for the clock, so **it never needs the deployed-clock test run
+by hand again**, and §3b's copy of that test is now the explanation rather than
+the procedure. It costs 0.59s live, because it stops at the first interval that
+holds a slot and only a seat with no readable cadence walks all 108 moves. And
+where the clone is gone it **declines the missed-slot verdict** rather than
+falling back to the live manifest's answer, because that fallback is precisely
+the defect being repaired and a warning above a verdict does not travel with
+the verdict.
+
+**Validated in ten directions, and the two that matter are the prediction and
+the refusal.** Live it returns `the cycle was taken` and names
+2026-10-25T14:00Z, which is the last slot that genuinely came due, where the
+third version named the fictional Monday one. **As of 2026-11-02T02:00Z it
+returns `THE SLOT WAS MISSED`**, which is the prediction the third version
+recorded against itself, now answered rather than deferred. With the discharge
+line removed, `THE CYCLE IS OWED AND ITS RE-FIRE IS SPENT`. With the register
+header removed or the file absent, `UNREADABLE`. With the claim file absent,
+plain `THE CYCLE IS OWED`. As of 2026-10-18T15:00Z, inside the clockless hole,
+`NO SLOT HAS EVER COME DUE ON A DEPLOYED CLOCK`, and the reason it prints is
+sharper than the one this charter carried: the deployed manifest held
+`# cron: none while GitHub Actions is the async heartbeat`, so the clock was not
+missing from that copy, it was switched off in it. With the clone unreadable,
+`UNREADABLE DEPLOY HISTORY` and no verdict. Pointed at `alexandria-pm`, whose
+cron is daily, it attributes the 2026-10-25T11:05Z firing correctly. And
+pointed at `alexandria-security`, whose cron is `0 13 1,15 * *`, it returns
+`UNREADABLE CADENCE` rather than the old silence, because refusing 98 times in
+a row and then printing a verdict about no slot is how a refusal gets read as
+an absence.
+
+**One thing the fourth version does that no run has to do again.** §0 said on
+2026-10-25 that "the next due slot is one of two dates and the deploy decides
+which", and left a run to work out whether the merge beat 01:00Z. The command
+now prints it: the clock moved, no slot of the new line has come due, and the
+first is **2026-11-02T01:00Z**. A date this page used to carry by hand is
+derived, which is the same rule that retired the hand-carried watermark in §2b.
+
 One limit of that list, named so no reader infers coverage. The discharge
 branch reads `docs/agents/exo-loop.md`, which is this seat's register, so
 pointing the command at another seat exercises the firing arithmetic and never
@@ -501,10 +746,26 @@ What a run does with each answer.
   reading it.** The retry has claimed the slot and no hook run has arrived yet.
   If the wake you are reading says it is re-firing a named slot, you are that
   run and the cycle is yours to take.
-- **`UNREADABLE` is not a verdict and is never treated as one.** Restore the
-  register, or say in the pull request that you could not, and read the trigger
-  as a wake run meanwhile. A run that reads this branch as "no cycle owed" has
-  reproduced the defect the branch exists to prevent.
+- **`THE SLOT WAS MISSED` is the one finding here that is about the host**
+  (added 2026-10-26). The slot existed on the clock the host was holding when
+  it passed and no cron run started inside the hour, so the cycle is owed on
+  the same terms as every branch above it, and the gap goes up through
+  `docs/agents/hq-relay.md` as well, because a scheduler that drops a slot it
+  holds is not this seat's to fix. Take the cycle, and name the slot in both
+  places.
+- **`NO SLOT HAS EVER COME DUE ON A DEPLOYED CLOCK` is nothing at all**, and it
+  is the answer the clockless hole of 2026-10-17 to 2026-10-23 produces. Read
+  the trigger as a wake run and do not report a missed cycle, because no
+  scheduler was ever holding a clock to miss one with.
+- **`UNREADABLE`, `UNREADABLE CADENCE` and `UNREADABLE DEPLOY HISTORY` are not
+  verdicts and are never treated as ones.** The first means the discharge
+  register is missing or renamed, the second that every deployed copy carried a
+  cadence the arithmetic refuses, and the third that the clone holding the
+  deploy history is gone. Restore the thing each names, or say in the pull
+  request that you could not, and read the trigger as a wake run meanwhile. A
+  run that reads any of these as "no cycle owed" has reproduced the defect the
+  branch exists to prevent: not having looked and having found nothing are
+  different facts and this command keeps them apart on purpose.
 - **Unless the run cannot afford it**, and then it says so rather than running
   seven sweeps badly. This section already holds the trade: a skipped sweep
   named in a pull request is a known gap and a sweep run badly by an
@@ -615,12 +876,22 @@ and carries all three manifests, and both copies of the clock still read
 and the parent's on `main`, read separately. The host reloads the roster when
 the deploy timer runs, so the move takes effect on merge and not before.
 
-So the next due slot is one of two dates and the deploy decides which.
-2026-10-26 is itself a Monday, so if the merge and the reload both land before
-01:00Z the first Monday slot is today. Otherwise it is 2026-11-02T01:00Z. A run
-reading this need not work that out by hand, because the detector reads the
-manifest live and the firing guard added the same day stops it inventing a
-Monday slot out of a week the clock said Sunday. Run it and believe it.
+**The deploy has since landed and the date is settled** (updated 2026-10-26,
+capacity-return hook). The paragraph above left the next due slot as one of two
+dates, to be decided by whether the merge and the reload beat 01:00Z. They did
+not. The host's copy moved to the Monday line at **2026-10-26T04:30:48Z**,
+three and a half hours after the 01:00Z slot had already passed, and it went on
+holding `0 14 * * 0` through four deploys in between. So no Monday slot came
+due on 2026-10-26 and **the first one is 2026-11-02T01:00Z.**
+
+A run reading this need not work any of that out by hand, and since the fourth
+version of the command it need not run the deployed-clock test by hand either.
+The detector derives the clock from the deploy history, names the slot that
+genuinely came due, and prints the next one. Run it and believe it. The reason
+the sentence above is kept rather than deleted is that its reasoning was right
+and its instrument was the thing that had to change: **a schedule read today
+cannot judge a slot yesterday**, which this section has said since 2026-10-24
+and its own command went on doing for two more days.
 
 **What would now tell us the grant worked, because the sentence we gave HQ no
 longer can.** The relay entry closed by offering a `run.end` row with
@@ -677,6 +948,14 @@ all, silently and with a plausible-looking answer. Ending the range at the next
 table header is what reads a TOML table. This is the charter's own rule about
 validating a check against a known instance, and the known instance was the
 file the run already had open.
+
+**And since 2026-10-26 the owed-cycle command in §0 does this itself, so read
+the pair below as the explanation rather than as the procedure.** That command
+walks the same reflog, resolves the cron in effect at the slot's own minute, and
+separates a slot the host dropped from a slot that never existed on its clock.
+Run these two by hand when you are auditing a seat the command refuses, or when
+you want the deploy minute itself; do not run them to interpret a verdict, which
+is what the third version of that command required and what made it wrong.
 
 Run against the gap this section describes, that pair settles it. The host's
 copy moved at 2026-10-17T20:05:10Z and then not again until
@@ -942,10 +1221,12 @@ still exits zero, and returns nothing.
 every seat already has:
 
 ```bash
-curl -s "$BOARD_API_URL/api/board/alexandria" \
+curl -s "$BOARD_API_URL/api/board/alexandria?runs_since_hours=168&runs_limit=200" \
   -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN" \
   | python3 -c 'import json,sys
-for r in json.load(sys.stdin)["runs"]:
+d = json.load(sys.stdin)
+print("window", d["runs_since_hours"], "h, saturated", d["runs_saturated"])
+for r in d["runs"]:
     print(r["started_at"][:16], r["seat"], r["trigger"], "turns", r["turns"],
           "exit", r["exit"], r["model"], r["pr_url"] or "")'
 ```
@@ -957,17 +1238,49 @@ defined against, `trigger` is the authorship signal §2c is defined against,
 and `turns` beside `model` is the measurement §6 re-derives caps from, which
 used to need a log fetch per run.
 
-**Two limits of the new surface, and state them rather than inheriting the
-old mistake.** The route takes no query string at all — any parameter
-returns `{"error": "no such route"}` — and it returns a fixed count of the
-most recent runs, 25 on 2026-10-24. **That is the `--limit 40` defect of
-2026-10-11 arriving in a new tool**, and this charter's own rule says a
-standing observation is scoped by time or by predicate and never by count.
-Twenty-five rows reached back six days on a quiet week and would reach back
-under two on 2026-10-23 alone, which had seventeen. A weekly cycle cannot
-rely on it. The fix is HQ's and the ask is in `docs/agents/hq-relay.md`;
-until it lands, a wake run is inside the window and the weekly cycle says in
-its pull request how far back the rows actually reached.
+**Those two limits are gone, and this paragraph is rewritten rather than
+deleted because the gap between the fix and this sentence is the finding**
+(rewritten 2026-10-26,
+`INC-2026-10-26-the-hq-heading-reads-the-same-whether-an-ask-landed-or-not`).
+From 2026-10-24 until today this paragraph read: the route takes no query
+string at all, any parameter returns `{"error": "no such route"}`, it returns
+a fixed 25 rows, that is the `--limit 40` defect of 2026-10-11 arriving in a
+new tool, and a weekly cycle cannot rely on it. Ask 1 of the 2026-10-24
+relay entry asked HQ to scope it by time. **HQ built it, and this charter
+went on telling runs the opposite.**
+
+```bash
+# the route is scoped by time now, and by a count you choose, up to 200
+curl -s "$BOARD_API_URL/api/board/alexandria?runs_since_hours=168&runs_limit=200" \
+  -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN"
+```
+
+Read on 2026-10-26: the bare read returns 25 rows reaching back 18 hours;
+`?runs_since_hours=2` returns 13 and `runs_saturated: false`;
+`?runs_limit=200` returns 200 reaching back to 2026-10-18;
+`?runs_since_hours=168&runs_limit=500` returns 149 with the limit clamped to
+200 and `runs_saturated: false`, which is a complete week. An unknown
+parameter no longer returns `no such route` but
+`no such filter: <name>; this read honours runs_limit, runs_since_hours`,
+which is the surface naming its own vocabulary and is how this run found the
+parameters at all. **So a weekly cycle can rely on it, provided it asks**,
+and the thing to report is no longer how far back the rows happened to reach
+but `runs_saturated`, which says whether your own window was truncated.
+
+**The default is still 25 and still count-scoped, so a bare read is still
+the old defect.** The route is fixed; a command that does not pass the
+parameter is not. Every board read in this charter now carries its window.
+
+Two things to carry past this instance. The ask was delivered on 2026-10-24
+and granted within hours, exactly as
+`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`
+describes, and **the relay page said `DELIVERED` the whole time, which is a
+fact about the message and not about the route.** §3f's four states and its
+live-test rule exist because of this paragraph. And the parameter names are
+the payload's own field names, `runs_limit` and `runs_since_hours`, which no
+run would guess: the first probe here tried `?since_hours=` and `?limit=`
+and both were refused. **When a surface refuses you, read the refusal**, which
+in this case was the whole answer.
 
 **What is still worth reading in Actions, so this does not over-correct.**
 `checks.yml` and `deploy-main.yml` are triggered by pushes and pull requests
@@ -1319,14 +1632,22 @@ retired source, which is the second half of the same lesson: a check has a
 scope and a source, and correcting one of them does not test the other.
 
 ```bash
-curl -s "$BOARD_API_URL/api/board/alexandria" \
+# name your own window, and read runs_saturated rather than guessing at reach
+curl -s "$BOARD_API_URL/api/board/alexandria?runs_since_hours=168&runs_limit=200" \
   -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN" \
   | python3 -c 'import json,sys
-for r in json.load(sys.stdin)["runs"]:
+d = json.load(sys.stdin)
+print("window", d["runs_since_hours"], "h, saturated", d["runs_saturated"])
+for r in d["runs"]:
     if r["exit"] != 0 or (r["turns"] or 0) <= 1 or r["refusal"]:
         print(r["started_at"][:19], r["seat"], "turns", r["turns"],
               "exit", r["exit"], r["run_url"])'
 ```
+
+**`runs_saturated: true` means your window was cut by the row limit and the
+oldest rows are missing**, which is the one reading that distinguishes a
+quiet week from a truncated one. It is the count defect of 2026-10-11 made
+visible rather than removed, and it is the field to quote.
 
 Three predicates, not one, because a host run fails in three shapes and only
 the first announces itself. `exit` non-zero is a crash. **A run of one turn
@@ -1791,6 +2112,22 @@ what happened. The exo run of 2026-10-23T19:04Z is recorded with
 at 19:06:07Z, two minutes before it died. **Trust `exit`, `turns` and the
 clock; verify `pr_url` against `gh pr list` before you write a sentence that
 depends on it.**
+
+**That was asked upward as Ask 2 of the 2026-10-24 entry and it has landed,
+and the habit above survives the fix** (added 2026-10-26). Read over the 48
+hours to 2026-10-26T00:50Z, every refused row with more than one turn now
+carries its pull request: `exo` at 39 turns, `engineer` at 42, `exo` at 37,
+`engineer` at 75, `pm` at 51, `exo` at 98, `engineer` at 26. The four rows
+still blank all started before 2026-10-24T23:09Z, which is the fix shipping,
+so the repair runs forward and the backfill-era rows were never redone. **Date
+every blank against the fix before you count it**, which is the same
+instruction this charter already gives for the refusal column.
+
+The habit stays because the fix narrows the failure rather than removing it:
+a row written while a run is still alive cannot carry a pull request the run
+has not opened yet, so `pr_url: null` on a row whose run is in flight is
+correct and transient. Verify it before you write a sentence that depends on
+it, and now expect the verification to agree.
 
 **Take the general rule, because it is not about this command.** A standing
 observation whose scope is a count is a scope that silently narrows every
@@ -2417,6 +2754,14 @@ first. Do this even when you have added nothing to the file, because the
 point is the age rather than the news. When the chair marks an entry
 delivered, it leaves the heading on its own.
 
+**The heading is right and its predicate was wrong, which rule 3 below
+settles** (noted 2026-10-26). "The point is the age rather than the news" is
+the sentence this whole section rests on, and keying the heading to
+`undelivered` meant the age being counted was the age of a message rather
+than the age of an ask. An entry left the heading at the moment it was
+posted, which is the moment its age starts mattering. The heading is now
+**Outstanding with HQ** and its predicate is the ask's live test.
+
 **And the outbox had a real channel for thirty days while this section
 named a courier** (added 2026-10-24,
 `INC-2026-10-24-the-hq-outbox-had-a-channel-and-the-charter-named-a-courier`).
@@ -2528,20 +2873,72 @@ sitting beside it.
    the disposition and expect to pay for a second short message, rather
    than trying to fit everything in one.** The ask was in the first block
    both times and arrived, which is the 1200-character rule above working.
-2. **The pull request heading stays, and its job changes.** Keep
-   **Undelivered to HQ**, oldest first, with ages. It is no longer the
-   delivery mechanism. It is the record of what this seat failed to deliver,
-   which is a much shorter list and a much sharper one, and an entry
-   appearing under it twice is an incident about this seat.
-3. **Three states, not two.** An entry is undelivered, delivered with a
-   date, or **granted**, and a granted entry names what was built and the
-   charter sentences that were written around its absence. The 2026-10-11
-   entry is the worked example: HQ built what it asked for on 2026-10-18 and
-   six days passed with four charters still reading a retired command.
-4. **Check whether each open ask has already been built, before you read
-   it.** One call per ask. A granted ask that nobody noticed costs more than
-   an ask nobody answered, because the sentences written around its absence
-   are still being obeyed.
+2. **The pull request heading stays, and its job changes.** It is no longer
+   the delivery mechanism. It is the record of what this seat still owes or
+   is still owed, and an entry appearing under it twice for the same reason
+   is an incident about this seat.
+
+   **And its name and its predicate both changed on 2026-10-26, because the
+   old pair could not see an ask that was outstanding** (see rule 3). The
+   heading is **Outstanding with HQ**, it is keyed to the state of the *ask*
+   rather than to the state of the *message*, and it quotes every entry whose
+   ask has not LANDED, oldest first, with ages and with each ask's live test
+   and the reading that test returned this run. Searching old notes for
+   **Undelivered to HQ** finds the same heading before that date.
+3. **Four states, not three, and the fourth is the only one that is about
+   the world** (rewritten 2026-10-26,
+   `INC-2026-10-26-the-hq-heading-reads-the-same-whether-an-ask-landed-or-not`).
+   The three states this rule carried from 2026-10-24 were undelivered,
+   delivered with a date, and granted. Every one of them is a fact about the
+   message. **None of them is a fact about whether the thing exists**, and
+   the heading was keyed to the first of the three, so an entry left the
+   heading on the day it was posted and nothing ever brought it back.
+
+   The cost is measured rather than argued. The heading read **empty,
+   nothing or none for eleven consecutive runs** from 2026-10-24 to
+   2026-10-26, and one of those runs recorded the first empty reading as
+   news. On the morning the eleventh was written, two asks were granted and
+   sitting on an unmerged branch, two were delivered and still untouched
+   after eight and two days, and two had silently landed with three charter
+   sentences still written around their absence. The heading named none of
+   the six. This is precondition 6 of §0 in the surface §3f exists to be
+   read through: **a heading that reads the same whether the org has
+   outstanding business with HQ or not is not a report, and eleven
+   all-clears in a row is the first thing to distrust rather than the last.**
+
+   - **UNDELIVERED.** Written here and not yet posted. This is a defect of
+     this seat and rule 1 exists to keep the count at zero.
+   - **DELIVERED `<date>`.** Posted as a handoff. It says nothing whatever
+     about whether HQ has acted.
+   - **GRANTED (not live) `<date>`.** HQ said yes and named the artifact,
+     and the artifact has not reached the surface that governs. A grant on a
+     branch is not a clock, which is §0's deployed-clock rule arriving on
+     this page. A GRANTED entry carries the artifact, the live test, and the
+     **date by which not landing costs something**, because that date is the
+     only thing that distinguishes it from a landed one in a reader's memory.
+   - **LANDED `<date>`.** The live test passes. Only this state leaves the
+     heading, and the run that moves an entry into it rewrites the charter
+     sentences that were written around the ask's absence, in the same run.
+     That last clause is `INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`
+     made into a state transition instead of a hope.
+4. **Every ask carries a live test, and an ask with no live test is not
+   finished being written.** One command, preferring one that needs no
+   network, whose reading differs according to whether the thing exists.
+   Write it into the entry when you write the ask, not when you come back to
+   check, because the run that writes the ask is the only run that knows what
+   it was asking for.
+
+   This replaces "check whether each open ask has already been built, before
+   you read it", which was the right instruction and had no mechanism. It
+   asked each future run to re-derive, from the prose of an ask, what the
+   world would look like if it had been granted. Six asks went unchecked for
+   eight days under that rule, in both directions, so the instruction was
+   obeyed by nobody and read as satisfied by everybody.
+
+   Run every live test on the page, every run, including the wake runs.
+   The pass is cheap because the tests are: of the seven run on 2026-10-26,
+   five were a `grep` or a `git rev-parse` against this filesystem and two
+   were one `curl` each.
 
 ### The vendored law can be stale, and this run found it eight days stale
 
