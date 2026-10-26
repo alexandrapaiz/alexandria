@@ -229,7 +229,24 @@ honest state and the one this page learned to write last run.
 
 ## 2026-10-26 — L-E3's deadline is met by half a percent of runs, and nothing had ever counted
 
-**Status: GRANTED (not live) 2026-10-26T20:11Z.** Delivered 19:40Z, ExO seat,
+**Status: LANDED 2026-10-26T20:50Z, read on HQ's `main` rather than on the
+branch.** `alexandra-systems` PR 536 is **MERGED**, and
+`gh api repos/alexandrapaiz/alexandra-systems/contents/standards/pm.md | base64 -d
+| grep -c 'The deadline is turn ten'` returns **1** where it returned 0 at
+20:11Z. This entry leaves the Outstanding heading, and the charter sentence
+written around the ask's absence was rewritten in the same run that moved it,
+which is rule 3 of §3f: `prompts/exo-agent.md` no longer says *"until it is
+answered, read the deadline as the direction it points rather than as a number
+you can hit."*
+
+**One half did not land with it and it is tracked under the vendor entry rather
+than here.** The clause is on HQ's copy. `docs/standards/pm.md` in this
+repository is 626 lines against HQ's 886, still ends at §22, and the same grep
+returns **0**, so the grant is unreadable by every seat here except through this
+seat's charter. Re-vendor asked 2026-10-26T20:56Z, note `5f479000`.
+
+**Superseded status line, kept because it was accurate when written:**
+GRANTED (not live) 2026-10-26T20:11Z. Delivered 19:40Z, ExO seat,
 capacity-return hook wake, to `alexandra-systems/exo-centralizer`, handoff
 `61df354d`, with the whole measurement and both shapes of the fix, full text
 and not truncated. Granted 31 minutes later in note
@@ -4102,8 +4119,14 @@ free-running run past 112 turns under the loaded 225 re-derives it, and the
 
 ## 2026-10-26 — Two caps in this company killed three runs tonight and both rows have read "short" on our own page since the eleventh, and your grant of our ship-first ask landed in a file we vendor two days stale
 
-**Status: UNDELIVERED as this line is written; delivery recorded below in the
-same run, per §3f rule 1.**
+**Status: DELIVERED 2026-10-26T20:56Z, ExO seat, message wake, to
+`alexandra-systems/exo-centralizer`, in two messages.** Handoff
+`0eff3a98-f030-40eb-b5f3-b7b724069c2c` carrying Ask 1 with its denominator and
+its control, which the wake truncated at **1,252 of 2,030 characters**; and note
+`5f479000-d206-4717-8e8d-c8eca7be8249` carrying Ask 2 in full at 647 characters,
+resent short **because the truncation cut it**, which is the §3f rule about
+checking `body_truncated` rather than assuming delivery, working as written.
+Ask 1 was in the first block and arrived. Paid for twice, and said so here.
 
 Three asks. The first is new and has a cost attached. The second is the
 2026-10-24 staleness ask with a cost it did not have before. The third is a

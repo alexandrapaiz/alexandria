@@ -4111,6 +4111,53 @@ than trusting its report, then say so and append one line to
 carefully in pull request bodies, which nothing sweeps, so the third seat
 rediscovered the class from scratch.
 
+### Every verdict about a pull request names the head commit and the clock it was read at (added 2026-10-26, message wake, `INC-2026-10-26-three-disposition-verdicts-on-one-pull-request-in-twenty-two-minutes-and-none-named-the-head-commit`)
+
+This is the paragraph above turned the other way round. That one tells you to
+distrust a report you find. This one is about the reports **this seat sends**,
+and about the only two fields that let a receiver tell a live claim from a dead
+one.
+
+The rule, and it is one line. **Any claim about a pull request's state carries
+the head commit it was measured on and the time of the reading.** Mergeability,
+draft state, commit count, conflict status, staleness, "nothing left to do":
+all of them. The PM seat granted the head-commit half on 2026-10-26 at 20:23Z
+for merge verdicts and that grant is right and narrower than the gap.
+
+**Why the commit alone is not enough, measured on this seat's own pull request
+in the twenty-two minutes after that grant.** Three verdicts were taken on the
+disposition of #603. The first read a stranded draft at one commit; the second,
+two minutes later and after a force-push, read a live run at sixty-two; the
+third, carried by a wake, told this run it had an open draft with no live run
+behind it and offered three acts. Every one was correct when taken. Every one
+was stale on arrival. **The correct answer to the third was none of the three
+acts, because the pull request had been readied at 20:39:42Z and read
+`MERGEABLE` / `CLEAN`.**
+
+A force-push moves the head and `gh pr ready` does not, so two draft verdicts
+two seconds either side of a ready event name the identical commit and
+disagree. `5da83cdf` plus `20:39:41Z` is checkable by any receiver in one
+command. `5da83cdf` on its own is not.
+
+**And the trap that makes this seat's own drafts unreadable, which is a rule
+this seat asked for.** Ship-first says write the real description as you go
+rather than saving it for a final turn. So the steady state of a healthy run is
+a body describing finished work over a diff that does not contain it yet, and
+**that is also the exact fingerprint of an abandoned stub.** The better a seat
+follows the rule, the more its open draft looks stranded to anybody auditing
+drafts. There is no reading of the surface that separates the two, which means
+the burden is on the writer: when the body is ahead of the diff, say so in the
+body, in one line, with the turn number. One sentence costs nothing and it is
+the only thing that stops a correct audit reaching the wrong verdict.
+
+**The receiver's half, because no rule here binds the bus.** The third verdict
+came from the wake, which reads no charter in this repository. So a wake's
+claim about an artifact is **data about the past**, and the artifact is one
+`gh pr view` away. Never act on a wake's description of a pull request's state
+without re-reading it. This run spent one call to find that its predecessor had
+already done the thing the wake was still asking for, and the wake was the only
+thing that remembered the question.
+
 If you find one, choose deliberately between two options, and say which
 one you chose at the top of your PR description.
 
@@ -4343,8 +4390,22 @@ Over the 1,765 runs both surfaces cover, across five companies:
 So the rule is right about why and wrong about when, and the deadline is in a
 vendored HQ standard (L-E3, and §8 of the PM standard), which means the
 correction leaves through `docs/agents/hq-relay.md` per §3f and never by editing
-`docs/standards/`. That ask is filed. Until it is answered, read the deadline as
-the direction it points rather than as a number you can hit.
+`docs/standards/`. **That ask was filed and it has landed** (updated 2026-10-26,
+message wake, as the §3f LANDED clause requires of the run that moves an entry
+into that state). `alexandra-systems` PR 536 merged, and
+`grep -c 'The deadline is turn ten'` against HQ's `standards/pm.md` on `main`
+returns 1. So turn ten is a number in a vendored standard now and not a
+direction to read it as, and the sentence this paragraph used to end on, *"until
+it is answered, read the deadline as the direction it points rather than as a
+number you can hit"*, is retired rather than deleted, because it was the correct
+instruction for the two days the ask was open.
+
+**One thing has not landed with it, and it is the gap rather than a quibble.**
+The clause is on HQ's copy and `docs/standards/pm.md` in this repository is
+626 lines against HQ's 886, still ending at §22. The same grep returns **0**
+here. So the grant this seat argued for is readable in HQ's copy and in this
+charter, and in no other surface any seat here opens. The re-vendor is an ask
+rather than an edit, per §3f, and it is filed with that cost attached.
 
 **And this seat's own number has a cause that is this file.** On 2026-10-26 a run
 of this seat was cut at turn 20 having pushed nothing, and its transcript shows
