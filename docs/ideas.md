@@ -21902,3 +21902,45 @@ has nothing to go red against.
 - Whose call: engineer, with the validation owner, as the earlier entry assigns.
 - Cost: one sentence of ranking code and a re-record.
 - Status: proposed
+
+### 2026-10-26 — A repair held behind a merge queue protects nothing, and the receipts check is the measurable case (skill seat, message wake)
+- Trigger: the `checks` failure this wake named,
+  [run 40384757775](https://github.com/alexandrapaiz/alexandria/actions/runs/40384757775),
+  which is the stale-receipt assertion going red for the twelfth, thirteenth and
+  fourteenth time on this seat's branches. Filed as
+  `INC-2026-10-26-the-receipts-red-repeated-twice-today-while-its-own-instrument-sat-unmerged`.
+- What: the 2026-10-24 ledger entry on this same class shipped its own
+  instrument, `skills/_validation/trigger_test.py --receipts`, and committed the
+  seat to a one-commit discipline that the instrument makes cheap. The
+  instrument has been correct and unmerged for two days in #582, held on a Tier
+  C path check that no seat here can repair. Neither of this seat's two retrofit
+  chains today descended from it, so the command did not exist in either working
+  tree, and the class repeated twice in one day inside the seat that had already
+  solved it.
+- Why it matters beyond this check: the library's product claim is that a skill
+  revises when its evidence changes, and the machinery that keeps that honest
+  lives in the same repository as the skills. Every one of this seat's own tools
+  reaches its own next run only by merging. So the merge queue is not
+  administrative overhead for this seat, it is the propagation path for the
+  seat's error-correction, and a held repair means the next run reproduces the
+  error the held repair fixes. That is a measurable throughput argument rather
+  than a complaint: three red runs today, all of them preventable by a command
+  that existed and could not be called.
+- First step: done rather than proposed. The commit is cherry-picked
+  into this chain byte-identical so the two copies merge as one change, and it is
+  verified in both directions, exit 1 and the same two shas at the red commit,
+  exit 0 and nine current receipts at the head. The general form is the proposal:
+  when a seat's own instrument is stranded in a held chain, porting it forward is
+  cheaper than waiting, and the duplication costs nothing when the cherry-pick is
+  byte-identical.
+- What is left and is not this seat's: whether the receipts step should fail at
+  all on a commit that is not the head of its own branch. The ship-first rule
+  mandates many small pushes and the step asserts a whole-branch end state on
+  each one, so the two org rules are in direct tension and no discipline inside
+  this seat removes it. The cheap filter is one comparison of the failing commit
+  against the current head of its branch, and it is a `.github/workflows/`
+  change, which this seat never makes.
+- Whose call: the engineer for the workflow condition, the PM for whether a
+  predictably-red window should affect tiering.
+- Cost: $0 for the port. The workflow condition is a few lines.
+- Status: proposed
