@@ -28,6 +28,13 @@ def check(name: str, cond: bool, detail: str = "") -> None:
         FAILURES.append(name)
 
 
+def check_quiet(name: str, cond: bool, detail: str = "") -> None:
+    """`check` without the ok line, for assertions made in a loop."""
+    if not cond:
+        print(f"  FAIL {name}{': ' + detail if detail else ''}")
+        FAILURES.append(name)
+
+
 class FakeConn:
     """Answers each query with the first canned row whose key it contains."""
 
@@ -285,6 +292,95 @@ def test_an_unreadable_surface_is_unknown_and_never_a_verdict():
     s = dh.judge_archive(_press("2026-W40"), _site([]), hidden=set())
     check("a record with an empty archive is failing, not unknown",
           s.state == dh.FAILING, s.headline)
+
+
+def test_the_archive_surface_sees_a_hole_in_the_middle_of_its_own_evidence():
+    """The state this surface answered `ok` to for a month.
+
+    2026-10-26, live: the record ended at 2026-W42, the page published
+    2026-W42, 2026-W40 and 2026-W39, and this function said both ends agree.
+    2026-W41 was absent from the list it was holding and had an open board
+    card. The two ends agreeing says nothing about the middle.
+    """
+    s = dh.judge_archive(_press("2026-W42"),
+                         _site(["2026-W42", "2026-W40", "2026-W39"]),
+                         hidden=set())
+    check("a hole in the middle is failing", s.state == dh.FAILING, s.headline)
+    check("and it names the week", "2026-W41" in s.headline, s.headline)
+    check("and the command that fills it",
+          "modal run pipeline/weekly.py::weekly --week 2026-W41" in s.headline,
+          s.headline)
+    check("and the escape hatch for a week that is never coming",
+          "HIDDEN_WEEKS" in s.headline, s.headline)
+    check("and the gaps are in the evidence, not only the prose",
+          s.evidence["gaps"] == ["2026-W41"], str(s.evidence))
+
+    # The same list with the hole filled is the control. Without it this test
+    # would pass against a function that called every archive broken.
+    s = dh.judge_archive(_press("2026-W42"),
+                         _site(["2026-W42", "2026-W41", "2026-W40", "2026-W39"]),
+                         hidden=set())
+    check("a complete span is green", s.state == dh.OK, s.headline)
+    check("and reports no gaps", s.evidence["gaps"] == [], str(s.evidence))
+
+
+def test_a_hidden_week_inside_the_span_is_not_a_hole():
+    """The owner's veto is the answer to a week that is never coming."""
+    s = dh.judge_archive(_press("2026-W42"),
+                         _site(["2026-W42", "2026-W40", "2026-W39"]),
+                         hidden={"2026-W41"})
+    check("a hidden gap is deliberate, not broken", s.state == dh.OK, s.headline)
+    check("and it is not reported as a gap", s.evidence["gaps"] == [],
+          str(s.evidence))
+
+
+def test_the_gap_scan_reports_the_middle_and_leaves_the_ends_alone():
+    gaps = dh.archive_gaps(["2026-W42", "2026-W40", "2026-W39"], hidden=set())
+    check("one interior week, named", gaps == ["2026-W41"], str(gaps))
+
+    # The trailing gap belongs to the press and site surfaces. Reporting it
+    # here too would make one fault read as three.
+    gaps = dh.archive_gaps(["2026-W40", "2026-W39"], hidden=set())
+    check("the week after the newest published is not this surface's gap",
+          gaps == [], str(gaps))
+
+    # 2026-W38 was lost for good (INC-2026-09-28-press-week-label-off-schedule)
+    # and sits below the oldest week a reader can open, so it is out of scope
+    # by construction rather than by a special case naming it.
+    gaps = dh.archive_gaps(["2026-W42", "2026-W40", "2026-W39"], hidden=set())
+    check("nothing below the floor is reported", "2026-W38" not in gaps, str(gaps))
+
+    gaps = dh.archive_gaps(["2026-W42", "2026-W39"], hidden=set())
+    check("two consecutive holes are both named",
+          gaps == ["2026-W40", "2026-W41"], str(gaps))
+
+    check("one week cannot have an interior gap",
+          dh.archive_gaps(["2026-W42"], hidden=set()) == [])
+    check("neither can none", dh.archive_gaps([], hidden=set()) == [])
+
+    # The published list is a regex over rendered HTML this tool does not own.
+    # An instrument that raises on a bad page reports nothing about the good
+    # part of it.
+    gaps = dh.archive_gaps(["2026-W42", "2026-W99", "2026-W39"], hidden=set())
+    check("an impossible label is dropped rather than raised on",
+          gaps == ["2026-W40", "2026-W41"], str(gaps))
+
+
+def test_the_label_and_the_monday_are_each_others_inverse():
+    """Both halves are in this file, so nothing else pins them together."""
+    d = dh.date(2026, 1, 1)
+    while d < dh.date(2027, 1, 1):
+        monday = dh._monday_of(dh._label_of(d))
+        check_quiet(f"{d} round-trips to its own Monday",
+                    monday == d - timedelta(days=d.weekday()))
+        d += timedelta(days=1)
+
+    # And the label half agrees with the press on the one week both can name,
+    # which is the rule the file delegates rather than copies.
+    from pipeline.weekly import week_just_ended
+    check("the formatter agrees with the press clock",
+          dh._label_of(dh.date(2026, 10, 19)) == week_just_ended(dh.date(2026, 10, 26))[0],
+          dh._label_of(dh.date(2026, 10, 19)))
 
 
 def test_hidden_weeks_is_read_from_the_site_and_not_copied():
@@ -770,6 +866,10 @@ def main() -> int:
         test_the_owners_veto_is_not_a_failure,
         test_a_hand_published_week_ahead_of_the_record_is_not_a_failure,
         test_an_unreadable_surface_is_unknown_and_never_a_verdict,
+        test_the_archive_surface_sees_a_hole_in_the_middle_of_its_own_evidence,
+        test_a_hidden_week_inside_the_span_is_not_a_hole,
+        test_the_gap_scan_reports_the_middle_and_leaves_the_ends_alone,
+        test_the_label_and_the_monday_are_each_others_inverse,
         test_hidden_weeks_is_read_from_the_site_and_not_copied,
         test_asking_for_the_archive_alone_fetches_what_it_needs,
         test_the_monday_morning_window_is_the_schedule_and_not_a_fault,

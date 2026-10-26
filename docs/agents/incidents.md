@@ -9529,6 +9529,36 @@ back. This run did not write it, because that file is the queue of what the
 deploy owes and adding to it on a branch of this seat's own is a claim on
 another seat's surface; the ask goes to the PM with this entry as its evidence.
 
+**Sighted a third time 2026-10-26, by the same daily machinery diff, and the
+count went from one to three while the repair sat unqueued.** `main` carries
+`f4da8c89` (merged as #536, interpret's per-call size read out of the job
+rather than frozen beside it) and `85866beb` (merged as #536, the rehearsal's
+triage and interpret sample sizes moved from 3 and 5 to 10 and 10 and pinned to
+their jobs' constants) on top of `5af27966` above. All three are reservations or
+rehearsal shapes, all three are named by `docs/agents/runtime-changes.md`, and
+none has a rehearsal receipt, for the same reason: the Modal workspace has been
+disabled since 2026-10-23 and a seat sandbox holds no provider key.
+
+**The repeat is not the unrehearsed change. It is that the repair this entry
+already named has not been made, and the entry correctly predicted why.** The
+2026-10-25 run declined to write
+`docs/agents/pending-workflow-changes.md` because that page is the ExO seat's
+enforcement surface (`prompts/exo-agent.md` §5 verifies every item on it each
+run) and writing another seat's queue from this seat's branch is a claim on it.
+This run read the page and reached the same conclusion, so the ask has now been
+deferred for the same correct reason twice, and the obligation has spent two
+days with nowhere to live while the number of changes owing it tripled.
+
+**A place that is this seat's own, offered because the ask keeps not landing.**
+The deploy surface of `tools/delivery_health.py` already lists the undeployed
+commits per app, it is read daily by every seat, and it is the thing whoever
+turns the workspace back on will look at before running `modal deploy`. That is
+the reader this obligation needs. The work is not one line: it needs each
+undeployed commit classified against `runtime-changes.md`, which is a day-sized
+slice rather than an addendum, so it is in `docs/ideas.md` as this run's third
+entry with its first step named and it is not built here. Recording this is not
+a substitute for queueing it, which is still the PM's or the ExO's to do.
+
 ## INC-2026-10-05-adr-39-duplicate — a second ADR number collision, same allocator, four days after the first one was recorded and still unfixed (2026-10-05, PM seat)
 
 **Recorded under the standing rule as a repeat of incident 29's class**
@@ -16492,6 +16522,23 @@ the ask it was made in before the owner acted on it, and the gap between the
 module's two anchors is now named here rather than living only in a board
 reply and a docstring that only covers half of it.
 
+**Repaired 2026-10-26 by the engineer seat, which is the surface this entry
+was addressed to.** `gather` takes a window, `week_window(week)` builds the
+exact span the Monday cron would have read, and both callers that write an
+issue pass it, so the queries this entry cites by line number are now anchored
+to the same week as the label above them. `weekly` also takes the week by name
+(`modal run pipeline/weekly.py::weekly --week 2026-W41`), which is the verb the
+withdrawn recovery needed and did not have, and a named-week run mails nobody:
+it writes the row and prints the `resend` command. The property is pinned in
+`tests/test_press_backfill.py::test_the_scheduled_path_reads_the_week_it_prints`,
+which fails on any return to the old anchor. Two things this does not close.
+Nothing has rehearsed it, because the Modal workspace has been disabled since
+2026-10-23, and the module's own deploy command runs `rehearse` before
+`modal deploy`, so the rehearsal is the gate and it is in the deploy path
+rather than skipped. And whether 2026-W41 should be written at all is still
+the owner's call, unchanged by this: what changed is that the command now
+writes the week it names.
+
 **The lesson for this seat.** A recommendation that prices an action in cost
 and names what it buys back is a claim that the action does what it says.
 This seat priced a command without reading whether it wrote the content its
@@ -22894,6 +22941,70 @@ that function is unknown. Filed in `docs/ideas.md` as the day's second idea,
 with the cheapest first step named: run the suite twice, the second time with
 the clock moved a week forward, and read any divergence as the finding.
 
+## INC-2026-10-26-the-archive-surface-answered-green-over-a-gap-that-was-inside-its-own-evidence — the fifth of the green-for-a-false-reason class, and the first where the instrument had already fetched the proof (2026-10-26, engineer seat, scheduled hook run)
+
+**Observed by:** this run, reading `tools/delivery_health.py --surface archive
+--json` before picking the day's work.
+
+**What happened.** The verdict and the evidence under it, verbatim, at 14:10Z:
+
+```
+archive  ok  the record and the archive both end at 2026-W42
+         published: ["2026-W42", "2026-W40", "2026-W39"]
+```
+
+2026-W41 is missing from that list. The board card `Press: no issue for
+2026-W41` was open at the time and had been opened by a person. The surface
+whose job is the archive had the gap in its own payload and answered `ok`.
+
+`judge_archive` compared `max(published)` against the newest week in `digests`.
+`check_site` hands it the whole list. Nothing between 2026-10-01, when the
+surface was built, and today read past element zero.
+
+**Why it is a repeat and not a new class.** Four entries already name a guard
+that was green for a reason unrelated to the thing it checks:
+`INC-2026-10-18-the-board-tests-pinned-the-payload-the-board-refuses`,
+`INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason`,
+`INC-2026-10-25-a-cost-comment-goes-stale-in-two-production-jobs-at-once`, and
+`INC-2026-10-26-a-test-was-green-for-ninety-minutes-because-its-fixture-aged`.
+It is also the fifth on the narrower shape this seat keeps hitting, a guard
+narrower than the evidence available to it, after
+`INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see` and
+`INC-2026-10-24-the-drift-guard-reported-on-the-apps-it-could-measure-and-not-on-the-ones-it-could-not`,
+which its own heading calls the fourth entry on one shape.
+
+**What makes this one different from the other four.** In every prior instance
+the instrument could not see the thing it missed: a shallow checkout, two apps
+with no row, a fixture that aged, a payload nobody had tried. Here the instrument
+fetched the proof over the network, parsed it, put it in a dict, printed it in
+`--json`, and then asked the dict one question that could not reach it. No
+credential, no deploy and no second request stood between the check and the
+right answer. That removes the usual excuse from the class, which is worth
+recording precisely because the remedies the prior four produced were all about
+widening access, and none of them would have caught this.
+
+**The generalisation, offered for the next instrument rather than for this one.**
+When a check reduces a collection to one element and judges on that, the reduction
+is a claim about the rest of the collection and it is almost never stated. `max`,
+`[0]`, `order by ... limit 1` and `newest` are the four spellings of it in this
+repository. The question that catches it is "the evidence has N items and the
+verdict cites one, so what is being asserted about the other N-1."
+
+**The fix, in this run's pull request.** `archive_gaps` in
+`tools/delivery_health.py` walks the span between the oldest and newest
+published week and names every week in it that is neither published nor hidden;
+the surface reads FAILING when that list is non-empty and prints the `modal run
+pipeline/weekly.py::weekly --week <label>` that fills each. Seventeen assertions
+in `tests/test_delivery_health.py`, including a control that a complete span
+stays green. Live after the fix, the same command names 2026-W41 and the command
+that writes it. Written up at the surface's specification in
+`docs/agents/delivery-health.md`.
+
+**What is still open.** The generalisation above is a reading habit and nothing
+enforces it. Filed in `docs/ideas.md` as this run's first idea, with the first
+step named: a census of every `limit 1`, `[0]` and `max(` that feeds a verdict
+in `tools/`, read for what it assumes about the rows it dropped.
+
 ## INC-2026-10-26-the-visual-harness-readme-teaches-the-fixed-tmp-name-that-incident-0b-forbids — a seat followed the harness's own documented command and collided with its own predecessor's frames (2026-10-26, frontend seat)
 
 **The repeat.**
@@ -23143,3 +23254,151 @@ whoever happens to type the command. The open question underneath it is on the
 ledger as "2026-10-26 — Whether the ledger contract covers a craft scan,"
 because if the answer is no then six seats are not breaching anything and the
 instrument is counting the wrong population. Ban list checked on this entry.
+---
+
+## INC-2026-10-26-the-hq-heading-reads-the-same-whether-an-ask-landed-or-not
+
+**Observed** 2026-10-26, ExO seat, second message wake of the day.
+**Class:** an instrument that reads the same whether the news is good or
+bad, which is precondition 6 of `prompts/exo-agent.md` §0. Third site.
+
+**What happened.** The **Undelivered to HQ** heading, which §3f puts in this
+seat's pull request description because that is the one surface the owner
+provably reads, reported empty, nothing or none for **eleven consecutive
+runs** between 2026-10-24 and 2026-10-26. One of those runs recorded the
+first empty reading as news. On the morning of the eleventh, six asks were
+in play with HQ and the heading named none of them.
+
+Two of the six were granted onto `alexandra-systems` pull request 467, open
+and unmerged, so this seat's weekly cron slot is still Sunday 14:00Z and is
+still nine hours inside the dead zone the ask was written to escape. Two
+were delivered and untouched, the host's shallow clone at eight days and the
+writer's cap raise at eight days with six consecutive sweeps finding that
+seat over the 70% trigger. Two had silently landed, the time-scoped run
+route and `pr_url` on a crashed run, with three sentences in this charter
+still telling every run the opposite.
+
+**Why it happened.** §3f's three states were UNDELIVERED, DELIVERED and
+GRANTED, and the heading was keyed to the first. **All three are facts about
+the message.** None of them is a fact about whether the thing exists, so an
+entry left the heading at the moment it was posted, which is the moment its
+age starts mattering. §3f's own stated purpose for the heading is "the point
+is the age rather than the news", and the age it was counting was the age of
+a message rather than the age of an ask.
+
+The rule that was supposed to cover this was §3f rule 4: "check whether each
+open ask has already been built, before you read it." It is the right
+instruction and it had no mechanism. It asked every future run to re-derive,
+from the prose of an ask, what the world would look like if it had been
+granted. It was obeyed by nobody and read as satisfied by everybody, which
+is exactly `INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`
+one layer up: that incident was one granted ask nobody noticed, and this one
+is the absence of any mechanism that would have noticed.
+
+**The fix, shipped in the pull request that registered this.** Four states
+rather than three, with **LANDED** as the only one that is about the world,
+and the heading renamed **Outstanding with HQ** and keyed to it. Every ask
+carries a **live test**: one command, preferring one that needs no network,
+whose reading differs according to whether the thing exists. The test is
+written when the ask is written, because the run that writes the ask is the
+only run that knows what it was asking for. The tests are run every run,
+wake runs included.
+
+**Validated by running it across the whole artifact in the run that wrote
+it**, which is this charter's standing rule for a new mechanical check.
+Seven live tests over the relay page's four entries with live asks: two
+still open, two granted and not live, three landed. Five of the seven are a
+`grep` or a `git rev-parse` against the host filesystem and two are one
+`curl` each, so the pass cost under a minute. The table and the readings are
+in `docs/agents/hq-relay.md` under "The four states".
+
+**What the org grew from it.** A status vocabulary that describes a message
+cannot report on a world. When a register's states are all about the act of
+reporting, every entry reaches a terminal state by being reported, and the
+register empties itself on schedule whatever is happening outside it.
+
+---
+
+## INC-2026-10-26-the-detector-named-a-slot-that-never-came-due-and-called-it-a-slot-that-did-not-fire
+
+**Observed** 2026-10-26, ExO seat, capacity-return hook wake.
+**Class:** an instrument that reads the same whether the news is good or bad,
+which is precondition 6 of `prompts/exo-agent.md` §0. Fourth site, and the
+third inside an instrument that section published to enforce precondition 6.
+
+**What happened.** §0's owed-cycle detector decides this seat's mode, and
+`THE CYCLE IS OWED` outranks the trigger, so its verdict governs what a run
+spends its budget on. Its third version computed the most recent due slot from
+the **live** manifest. HQ's grant moving this seat's cron from `0 14 * * 0` to
+`0 1 * * 1` deployed at 2026-10-26T04:30:48Z. 2026-10-26 was itself a Monday,
+so a run at 14:06Z was handed a due slot of 2026-10-26T01:00Z, found no firing
+for it, and returned `the slot did not fire. Judge it by the deployed-clock
+test above`.
+
+The host was holding `0 14 * * 0` at 01:00Z and went on holding it through four
+further deploys until 04:30:48Z. **Nothing came due at 01:00Z.** Every word of
+the verdict was true and its subject was invented by the instrument, which is
+worse than a wrong verdict about a real slot, because there is nothing to
+check it against.
+
+**Why it was invisible.** The third version was written the day before, in the
+same section, specifically to stop the detector inventing a Monday slot. Its
+own validation list closes on the prediction that pointed at the granted Monday
+line as of 2026-11-02T02:00Z it returns `the slot did not fire`, "which is the
+reading that will be wrong first if the deploy lands and the slot runs". The
+deploy landed six days early and the prediction came due on the first run after
+it. So the defect was not unknown. It was **recorded, dated, and left in
+place**, because the version that recorded it had spent its one improvement.
+
+**The technical cause.** A slot with no firing has two causes and they are
+opposite verdicts: a slot the host was holding and did not serve, which is a
+finding about the scheduler, and a slot that never existed on the deployed
+clock, which is nothing at all. The third version returned the identical string
+for both and deferred to a procedure it could not run. That procedure, §3b's
+deployed-clock test, has been in this charter since 2026-10-24 and is three
+commands over a reflog on this filesystem, so the information was never
+missing, only unreachable from inside the instrument that needed it.
+
+**This charter already names the general form and had not applied it to
+itself.** §3f: when you have to consult a surface your instrument cannot read
+in order to accept or dismiss one of its findings, every other finding it
+produced is wrong in the same way, and a hand-correction to one row is never an
+exception but the defect named once and left standing everywhere else. A run
+that performs the deferred procedure carefully reaches the right answer and
+leaves the instrument exactly as wrong as it found it.
+
+**The fix.** `/srv/asc/roster` is a symlink into a working clone the host moves
+with `git reset --hard`, so that clone's reflog is the deploy history and the
+cron in effect at any past minute is the cron in the copy checked out then. The
+fourth version walks the deploy intervals newest first and takes the most
+recent slot that existed on the clock the host was holding when it passed. The
+branches then separate, and `THE SLOT WAS MISSED` becomes sayable for the first
+time. Where the clone is unreadable it **declines** the missed-slot verdict
+rather than falling back to the live manifest, because that fallback is the
+defect and a warning printed above a verdict does not travel with it.
+
+Validated in ten directions, including the two the grants created: live it
+names 2026-10-25T14:00Z and `the cycle was taken`, where the third version
+named the fictional Monday slot; and as of 2026-11-02T02:00Z it returns
+`THE SLOT WAS MISSED`, which is the prediction the third version recorded
+against itself. It costs 0.59s, because it stops at the first interval holding
+a slot.
+
+**What the org grew from it.** Two things, and the second is the one that
+generalises past this seat.
+
+A dated prediction a run writes against its own instrument is a known defect
+with a due date, and the charter has no mechanism that makes anybody meet it.
+This one was met by luck: the grant deployed early and the next run happened to
+be reading that section. **A prediction recorded in prose is a reminder for
+nobody.** Where a run cannot fix what it has found, the finding belongs
+somewhere a later run is obliged to read, and for this seat that is the
+learning log's "what the next run must check first" line rather than a
+paragraph in the section that is wrong.
+
+And: an instrument that defers to a manual procedure has not been made safe by
+documenting the procedure. It has been made to look safe. The deferral is the
+finding, and the test for it is cheap: ask of every verdict your instrument
+prints whether a reader could act on it without leaving the tool. Where the
+answer is no, the tool is one input short of its own job, and that input is
+usually on the same filesystem. Ban list checked on this entry.
