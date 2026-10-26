@@ -3256,6 +3256,113 @@ def ungated():
     return rc
 
 
+#: The paragraph of `prompts/digest.md` that bans the slot name in its
+#: reader-facing dress, found by its own sentences rather than by a line
+#: number, because a line number in a gate is a gate that lies after the next
+#: edit. A banned phrasing inside this span is the ban quoting its specimen.
+SLOT_BAN_OPEN = "The ban is on the slot's IDEA and not on four strings"
+SLOT_BAN_CLOSE = "first job is to say which section the reader is in"
+
+#: The phrasings the ban names, read out of the ban itself. Not a second list:
+#: a hand-kept copy of a list the file already holds is the next thing to
+#: drift, which is this entry's own class one level up.
+SLOT_DRESS = re.compile(r'"(what [a-z ]+)"')
+
+#: A SERIES of slot-shaped phrases, which is the shape that printed and is
+#: what separates the specimen from ordinary English. The generator says
+#: "what changed, with its number" and "the reader who wants to check what
+#: changed" in the course of teaching an item's spine, and a gate that fires
+#: on those is a gate somebody deletes. Two or more of these phrases in one
+#: comma series is a list of the issue's slots and has no other reading.
+SLOT_SERIES = re.compile(
+    r"what (?:is |are |to |)[a-z]+(?:ed|ing|s|n)?\b(?:[^.]{0,40}?,\s*"
+    r"(?:and\s+)?what (?:is |are |to |)[a-z]+(?:ed|ing|s|n)?\b)+")
+
+#: What `slotwords` has to get right, as data rather than as a test file, for
+#: the reason `STANDS_ALONE_CASES` gives. The first two are the specimens that
+#: were standing in `prompts/digest.md` when this gate was written and they are
+#: quoted from it. The third is the sign-off's own three questions, a series of
+#: the same grammar naming nothing the ban names, and a gate tuned only against
+#: the specimens fires on it.
+SLOT_CASES = (
+    (True, "Four slots, her order, same as Monday: what gained ground, what is "
+           "genuinely new, what fell behind, what to read yourself."),
+    (True, "what is gaining ground supports it, what is new tests it, what "
+           "fell behind is the position it replaces."),
+    (False, "what you would watch next, what is still unsettled, what this "
+            "leaves a builder holding"),
+    (False, "Then what changed, with its number and the institution behind it."),
+    (False, "the reader who wants to check what changed has to"),
+)
+
+
+def slot_series(text, dress):
+    """Every series of slot-shaped phrases in `text` that names a banned one."""
+    flat = " ".join(text.split())
+    return [m for m in SLOT_SERIES.findall(flat)
+            if any(d in m.lower() for d in dress)]
+
+
+def slotwords():
+    """Does the generator write the heading it bans, anywhere outside the ban?
+
+    Ban list 143. The file's own bold sentence says "the words that beat it
+    came out of this file", and the run that wrote that sentence banned five
+    phrasings and never swept the file for them. Two specimens were standing
+    when this pass was written, 1,176 lines apart at the furthest, and two of
+    2026-W40's three printed headings are one of them word for word.
+
+    What it reads is a SERIES and not a phrase, because the phrase alone is
+    ordinary English in this file four times over and the series is a list of
+    the issue's slots with no second reading. The phrasings themselves come out
+    of the ban's own quoted list, so this cannot drift from the rule the way a
+    hand-kept copy would.
+
+        python3 docs/voice/check_voice.py slotwords
+        git show origin/main:prompts/digest.md | python3 -c ...   # the proof
+    """
+    if not GENERATOR.exists():
+        print(f"  {GENERATOR.name} is missing")
+        return 1
+    text = GENERATOR.read_text(encoding="utf-8")
+    start, end = text.find(SLOT_BAN_OPEN), text.find(SLOT_BAN_CLOSE)
+    if start < 0 or end < 0:
+        print("  the ban paragraph is not where its own sentences say it is")
+        print(f"    opening found {start >= 0}, closing found {end >= 0}")
+        print("  Nothing below was read, because the scope of this pass is")
+        print("  that paragraph and a guess at it is not a scope.")
+        return 1
+    dress = sorted(set(SLOT_DRESS.findall(text[start:end])))
+    wrong = [(want, case) for want, case in SLOT_CASES
+             if bool(slot_series(case, dress)) is not want]
+    for want, case in wrong:
+        print(f"  BROKEN  the detector is {'missing' if want else 'firing on'}"
+              f" a case it is asserted against")
+        print(f"            {case[:84]}")
+    if wrong:
+        print()
+        print("SLOT_CASES says what this pattern has to do. Nothing below was")
+        print("read, because a detector failing its own cases reports a clean")
+        print("generator for the wrong reason.")
+        return 1
+    print(f"  the detector's own cases       {len(SLOT_CASES)} pass")
+    print(f"  phrasings the ban names        {len(dress)}: "
+          f"{', '.join(repr(d) for d in dress)}")
+    outside = text[:start] + text[end:]
+    hits = slot_series(outside, dress)
+    print(f"  slot series outside the ban    {len(hits)}")
+    for h in hits:
+        print(f"    FAIL    {h[:92]}")
+    if not hits:
+        print("  the file writes the banned dress only where it bans it")
+    print()
+    print("A rule that bans a phrase and then writes it has handed the model")
+    print("the specimen at the position where a heading gets drafted, which")
+    print("is the family ban list 100 belongs to. The ban is not the fix.")
+    print("The sweep is.")
+    return 1 if hits else 0
+
+
 #: The seventeen cases `past_tense_you` has to satisfy, as data rather than as
 #: a test file. `tests/` is the engineer's surface and this seat's is
 #: `docs/voice/`, and a first draft of this gate put them in
@@ -4336,6 +4443,7 @@ def main():
                      ("editions", editions),
                      ("marks", marks),
                      ("ungated", ungated),
+                     ("slotwords", slotwords),
                      ("captions", captions),
                      ("blockrules", blockrules),
                      ("compare", compare), ("selfcheck", selfcheck)):
