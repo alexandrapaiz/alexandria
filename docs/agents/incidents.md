@@ -23372,3 +23372,149 @@ Cross-referenced against every `- [ ] arxiv:` line, that finds the drained ids
 in one command. It is written into the 2026-10-26 drain record in the file
 itself, which is the only place a later run is obliged to read it. Ban list
 checked on this entry.
+
+## INC-2026-10-26-a-papers-own-citation-was-wrong-and-the-corpus-carried-it-faithfully -- the evidence bar checks that a paper says a thing, never that what the paper says about another paper is true (2026-10-26, research seat, message wake, reading-queue drain)
+
+**This is the class
+`INC-2026-10-26-the-newest-live-issues-overturn-section-is-wrong-three-for-three`
+with the direction reversed**, so the standing rule binds. That entry, filed by
+this seat hours earlier, was alexandria asserting relations between papers that
+the papers do not support. This one is a **paper** asserting a relation that the
+cited papers do not support, and alexandria transcribing it correctly into a
+reading queue, a claim cluster and a shipped skill. Same defect, outside the
+walls, and nothing in the pipeline looks for it.
+
+**What happened.** `skills/context-window-engineering` rests its delta 1 on
+Random Attention (`arxiv:2609.03430`, claims 78-80). That paper's section 5.1 ends:
+
+> The same confound explains the large gaps others report between random
+> retention and signal-based selection in previous works (Yuan et al., 2026;
+> Liu et al., 2025): their random baselines perform poorly since the prompt is
+> lost.
+
+On 2026-09-29 the skill seat queued the second of those two citations with a
+line that transcribed the sentence faithfully: "the evaluation that reported
+random and recency baselines falling far behind scored selection on reasoning
+... Random Attention's explanation is that those random baselines lost the
+prompt." This run read both cited papers. **The sentence is wrong about both.**
+
+- **Liu et al., 2025 is `arxiv:2512.12008`, and it runs no random baseline at
+  all.** Its methods are H2O, R-KV, StreamingLLM, KNorm, a decoding-enabled
+  SnapKV and ShadowKV. There is no random arm in it to have lost a prompt. The
+  word "random" appears four times in the paper and never names a policy.
+- **Yuan et al., 2026 is `arxiv:2605.09490`, which does have one, and it is not
+  a large gap and not a counterexample.** Its random arm is "(4) Random
+  eviction: uniform random token removal," and its measured result is
+  "attention-based selection consistently outperforms random eviction (+4-10%
+  across budgets), but both approaches share a devastating failure mode:
+  accuracy collapses from 22% at 70% budget to zero at 50% budget. This is not
+  graceful degradation -- it is a cliff." The paper's own conclusion is that "no
+  amount of smarter scoring can fix a fundamentally destructive operation,"
+  which is **Random Attention's own thesis**. It is cited as the opposition and
+  it agrees.
+
+So a 4-to-10-point gap in one paper and no gap in the other were cited as "the
+large gaps others report," by a paper that elsewhere measures its own protection
+effect at up to 22.5 points. The reading queue carried it, this seat planned
+around it for four weeks, and the skill's delta 1 still reads as though an
+independent evaluation had been explained away.
+
+**Why it survived.** Every gate the org built checks the right thing in the
+wrong place. `prompts/triage.md` and `prompts/distill.md` read one paper at a
+time, so a sentence about a second paper is just prose inside the first.
+`prompts/interpret.md` writes edges between claims the corpus already holds,
+and neither cited paper was in `papers`, so there was no node to disagree with.
+ADR-35's reading queue is the one mechanism that would have caught it, and it
+did -- four weeks later, on a message wake, in a run that had no corpus access
+and read the papers by hand. **The queue worked and it is the slowest instrument
+in the building.**
+
+**The sharper point, which is not about this paper.** The evidence bar as
+written asks whether a finding is in a paper. A citation is a finding *about*
+another paper, and it enters the corpus on the citing paper's authority with no
+check at all. Three independent sources make a pattern under the charter, and
+three sources that all cite one mischaracterisation make a pattern too, looking
+identical from inside. The corpus has no way to tell those apart today.
+
+**What the org grows from it.** Two things, both cheap, neither of which this
+run could land because the Modal workspace has been disabled since 2026-10-23
+and image-baked prompts do not reach production:
+
+1. **A load-bearing citation is a reading-queue line, not a fact.** When a
+   skill's central claim rests on paper A's characterisation of paper B, B goes
+   in the queue *as a verification target* and the skill says so in its caveats
+   until B is read. This batch is the proof it pays: one afternoon of reading
+   turned two "independent checks" into one wrong attribution and one paper that
+   agrees with us.
+2. **The distill prompt should mark a relational sentence as unverified.** A
+   claim whose subject is another work's result is a different kind of row from
+   a claim about an experiment the paper ran, and today they are the same kind
+   of row. That is a `prompts/distill.md` change, which is image-baked and
+   frozen, so it is recorded here and routed to the engineer rather than spent
+   as this run's proposal.
+
+Ban list checked on this entry.
+
+## INC-2026-10-26-the-rule-about-a-patterns-edges-was-written-and-violated-in-one-pull-request -- the question a new section tells every future seat to ask was not asked of the nine patterns next door (2026-10-26, research seat, message wake, review of PR #601)
+
+**This is a repeat of incident 20's class**, which this seat's charter names in
+its own words: a ruling written into the right register, by the right seat,
+within the hour, and violated by the next artifact out the door, because
+nothing between the ruling and the artifact ever opened the file. Here the gap
+is shorter than one artifact: the ruling and the artifact are in the same pull
+request.
+
+**The ruling.** PR #601 adds a section to `docs/product/digest-quality.md`
+headed "One rule about how a rule is written", off a word-boundary defect that
+cost thirty days of a false finding nobody could clear. It generalises
+correctly and it names the class: "Three separate gates in this repository
+carried the same defect, a pattern matching inside a word, which makes it a
+class rather than a bug." It then tells every future seat the question to ask:
+**"Where are this pattern's edges?"**, asked while a rule is written rather
+than after it fails.
+
+**The artifact.** The same pull request adds nine new patterns in
+`pipeline/evidence.py`, the relay guard behind the fifth evidence grade. Eight
+of them are careful. The ninth, `according-to`, is the bare phrase
+`\baccording\s+to\b`, and the phrase has a second sense that is not
+attribution: *in proportion to*, *on the basis of*, *by*. That sense is
+ordinary method prose, and the guard is one-way, so a claim it fires on cannot
+be cleared by the model answering correctly.
+
+**Measured, so this is not a reading of a regex.** 200 most recent cs.CL
+abstracts from the arXiv API, 1,703 sentences, each run through
+`relay_markers`: the guard fires five times, and four of the five are the
+paper's own result. Three are adverbial "according to"; the fourth is
+`others-say` firing on "the other recognizers find TTS errors far more often
+on these words", which is this paper measuring somebody else's system, a case
+`prompts/distill.md` in the same diff declares first-hand in as many words. On
+a second sample selected for the phrase, 99 occurrences, two are attributions
+and 95 are allocation and weighting prose, so the marker's precision on recent
+cs.CL text is about 2%. Working detail in
+`docs/research/notes/2026-10-26-relayed-grade-review.md`.
+
+**Why it is worth an entry rather than a code comment.** The defect is small
+and the fix is three test cases. What repeats is the shape: the check that
+would have caught it was written by the same seat, in the same hours, in the
+same diff, and the new patterns were not run past it. A rule generalised in a
+product doc does not reach code in the next directory by being true. That is
+incident 20 and L-A9 again, and the first two gates this org fixed for the
+word-boundary version were found the same way, one at a time, by somebody
+reading the output.
+
+**What would stop the next one.** The ruling asks "where are this pattern's
+edges?" and the honest answer for a natural-language marker is not reachable
+by reading the regex, because the edge is a word sense rather than a character
+class. It is reachable by running the pattern over a few hundred sentences of
+the text it will see and reading what it caught, which took this run about
+four minutes with no credential. The second question that section already
+asks, "name the unit this check inspects, then name the unit the defect lives
+in", is the same instrument pointed at the same gap.
+
+**Not a hold on #601.** The change is correct and inert until somebody runs
+`modal deploy`, both prompts being image-baked, and the window between merge
+and deploy is when a regex is cheapest to narrow. Routed to the engineer on
+the board as a reply to `5a5cc5f0` rather than left in this file, because
+nothing sweeps a pull request body.
+
+Ban list checked on this entry.
