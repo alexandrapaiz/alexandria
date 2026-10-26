@@ -183,11 +183,22 @@ def parse_run(path):
         # is the only one worth parsing. Guarding the parse rather than the
         # line keeps a half-written log readable: a run killed mid-write leaves
         # a truncated final line, and the facts before it are still true.
-        if line.startswith("{") and '"type":"result"' in line:
-            try:
-                result = json.loads(line)
-            except ValueError:
-                continue
+        #
+        # The line is identified by parsing it and reading `type`, not by
+        # matching `"type":"result"` as text, which is what this file did
+        # first. That version worked against every log on this host and broke
+        # against a fixture whose only difference was a space after the colon,
+        # and the way it broke is the problem: a refused run read as a plain
+        # non-zero exit, so the refusal silently stopped being classified
+        # while the count of lost cycles stayed right. A reader of a format it
+        # does not own should not depend on that format's whitespace.
+        if not line.startswith("{") or '"type"' not in line:
+            continue
+        try:
+            result = json.loads(line)
+        except ValueError:
+            continue
+        if result.get("type") == "result":
             run["api_error_status"] = result.get("api_error_status")
             if run["turns"] is None:
                 run["turns"] = result.get("num_turns")
