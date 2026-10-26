@@ -994,8 +994,19 @@ button.pill {
    left it byte-identical, because Chromium does not balance past its line
    cap. So the rule is inert on everything it is not for. Ban list 26: this
    was the browser's wrapping standing where the house had written
-   `text-wrap` for the one block it designed on purpose. */
-.digest h1 + p {
+   `text-wrap` for the one block it designed on purpose.
+
+   Scoped to `.issue-body` and not to `.digest`, which is the second half of
+   the same point. `.digest` is the house's reading type and two surfaces
+   wear it: the issue, and the skill file an entitled member opens in the
+   catalogue. Every skill file is also an H1 followed by a paragraph, so the
+   unscoped selector reached a surface this rule was never measured against.
+   `.issue-body` names what the rule is for, the way `.skill-body` already
+   names the other one, so a third surface taking the reading type inherits
+   nothing it did not ask for. Ban list 31: the defect there is a set that
+   is almost complete, and an unscoped selector is the same error pointing
+   outward. */
+.issue-body h1 + p {
   text-wrap: balance;
 }
 
