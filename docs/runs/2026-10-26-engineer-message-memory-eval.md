@@ -83,8 +83,9 @@ session; the second one is the one in the pull request.
 - Conflict markers: none in `docs/`, `prompts/`, `README.md`, `tools/`,
   `tests/`, `site/`.
 - Ban list on every file this run wrote: no non-ASCII in any added line. Three
-  ledger headings and one README reference were rewritten from `—` and `§` to
-  ASCII after the check caught them.
+  ledger headings and one README reference were rewritten away from U+2014 and
+  U+00A7 after the check caught them. The characters are named by codepoint here
+  rather than quoted, so this file is itself clean under the rule it describes.
 - `python3 tools/incidents.py check`: 332 entries, 7 in the inbox, nothing
   malformed. `python3 tools/ledger.py --check`: 0 blocking, at baseline.
 
