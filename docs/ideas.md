@@ -4388,6 +4388,16 @@ needs an owner decision or an owner push, not an engineer build.
      artifact, after the heading rule and the ASCII rule.
   3. `INTENSIFIERS` matches the substring `"very "`, so it fires on "every
      screen" and "every team". Both W39 warnings are false. Word boundaries.
+- **Item 3 shipped 2026-10-26 (engineer seat, message run).** The four word
+  lists are anchored on their left edge, which is the whole of what this item
+  asked for, and the trailing space `INTENSIFIERS` carried is gone because it
+  was a boundary in the wrong place. 2026-W39 goes from 7 warnings to 5 and
+  both false ones are the two named above. `tests/test_digest_quality.py`
+  asserts the class rather than the two lines: every literal in every list,
+  buried behind one letter, raises nothing. Items 1 and 2 of this entry are
+  untouched and still open, which is why the status is left where it is: an
+  empty `parse_items` is still not a blocking finding, and `TYPESETTER` is
+  still four characters rather than the ASCII class question.
 - Why it is filed rather than patched: `tools/` and `pipeline/` are outside
   the writer seat's writable surface, and the editorial half of the fix is
   already in this pull request. The generator now counts items against links
@@ -19972,6 +19982,15 @@ has nothing to go red against.
   gate runs before it reads an issue.
   Three gates, three patterns matching inside a word instead of at its edge,
   two of them still live. The class is worth one pass rather than three fixes.
+- **Closed 2026-10-26 (engineer seat, message run), thirty-two days after the
+  filing.** The pass was taken on the gate rather than on the two lines, and
+  the measurement is the same command this entry used: 7 warnings to 5 on
+  2026-W39, with the owner's mandated close now raising nothing. The fourth
+  list, `SLOP_USUALLY`, needed no change and that is the part worth carrying:
+  it was the one list already anchored, on both edges, and it is the only one
+  of the four that has never produced a false finding. The rule is written
+  into `docs/product/digest-quality.md` beside the gate's own table, so the
+  next rule added to that file inherits it instead of rediscovering it.
 - `TYPESETTER` is the other half of the 2026-09-24 filing and is unchanged:
   four characters where ban list 13 is the class of every non-ASCII character,
   and `pipeline/weekly.py` builds the payload's `dates` with an en dash the
@@ -21448,5 +21467,110 @@ has nothing to go red against.
   `container:` block. Test it against the three commits on `main` today that
   owe one and against a handful that do not. Wire it into the deploy surface
   only once it is right, which is a second slice.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - `is_priority` matches inside words, and it mirrors a SQL `%term%` so the fix has to move two languages at once (engineer seat, message run)
+- Trigger: after anchoring the pre-send gate's word lists on their left edge,
+  this run grepped `tools/` and `pipeline/` for the rest of the class. The gate
+  is clean now and one live instance is left:
+  `pipeline/priority.py:99`, `any(term in low for term in PRIORITY_TERMS)`,
+  which decides whether a paper is one of the standing threads and therefore
+  whether it is read at all.
+- What: three of the thread terms are short enough to land inside an unrelated
+  word, and `mcp` and `a2a` are the two that matter, because a title carrying
+  either inside a longer token is triaged as the protocols thread on a
+  coincidence. A fourth, `isolation`, is a whole word and still wrong in a
+  different way: it is the containment thread's term and it is also the word a
+  psychology paper uses. The first two are the word-edge class and the third is
+  not, so they want different answers.
+  The part that makes this more than a one-line fix is the comment directly
+  above the predicate. `PRIORITY_PATTERNS` derives `%term%` from the same tuple
+  for Postgres `ilike any`, deliberately, so the two languages cannot drift. A
+  `\b` in Python alone breaks that guarantee in the direction nobody would
+  notice: the SQL would keep selecting papers the Python then declines to call
+  priority. Postgres has `~*` with `\y`, so both halves can move together, and
+  moving them together is the whole of the work.
+- First step: the measurement, not the patch, because this one can be wrong in
+  the expensive direction. Run both predicates over the `papers` titles already
+  in the database and count the rows they disagree on, per term. If the answer
+  is zero the entry closes as a comment; if it is not, the number says which
+  terms need the edge and which need a better term. It needs a read-only
+  database handle, so it waits on `NEON_RO_URL` having a usable value or on the
+  Modal workspace being back, whichever comes first.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - `bare-number`'s promotion condition cannot be evaluated, because nothing counts the issues or records which warnings were real (engineer seat, message run)
+- Trigger: writing the word-edge rule into `docs/product/digest-quality.md`
+  meant reading the paragraph it sits next to, which says `bare-number`
+  "becomes blocking when it has run for four issues without a false positive",
+  and `citation-per-item` becomes blocking on a named `gather()` change. The
+  second has a trigger a command can check. The first does not: no file counts
+  how many issues the gate has read, and no file records a verdict on any
+  warning it raised.
+- What: the gate has read exactly two issues in its life, 2026-W37 and
+  2026-W39, and this run's own measurement is the evidence that nobody has
+  adjudicated either. 2026-W39's five remaining warnings are all `bare-number`
+  and no register says whether any of the five is real. So the promotion
+  condition is a sentence that will never be met, not because the gate is bad
+  but because the counter it names does not exist, and the next seat to read
+  that paragraph will either guess or leave it for a sixth time. A rule whose
+  trigger nobody can evaluate is the register-gate defect of incident 20 in its
+  cheapest form: it was written down and nothing opens it.
+- First step: one append-only file, `docs/product/digest-quality-log.md`, one
+  row per issue the gate reads, holding the issue label, the counts by rule and
+  a verdict column that starts empty. The press writes the row itself, since
+  `hold_for_quality` already has the findings in hand at the moment it decides,
+  so no run has to remember. The verdict column is a person's, which is the
+  point: the promotion is then a reading of a file rather than a reading of
+  somebody's memory of a Tuesday.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Vale wraps a rule's tokens in word boundaries by default and makes the substring the opt-in, where this gate had it the other way round (engineer seat, message run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  build. The run's work was a substring match in a text gate that had been
+  filed for thirty-two days, so the scan went to the prose linter that is the
+  nearest product in the world to `tools/check_digest_quality.py`: Vale
+  (docs.vale.sh), the open-source style checker that runs a repository's house
+  style over its prose in CI.
+- **What is worth stealing.** Vale's rules are declared as data rather than
+  written as code. A rule is a YAML file naming its `extends` (`existence` for
+  a pattern that must not appear, `substitution` for one that carries its
+  replacement), its `tokens`, its `level` of suggestion, warning or error, and
+  its `scope` of heading or text. The detail that lands on this run: Vale wraps
+  every token in word boundaries **by default**, and a rule that genuinely
+  wants to match inside a word has to say `nonword: true` and name itself as
+  the exception. That is the exact inversion of the defect this run fixed. The
+  gate's four word lists were four hand-written loops, three of them matching
+  substrings, and the one that was right was right by somebody having
+  remembered. In Vale the boundary is the default and the exception is
+  declared, so the defect this repository carried for a month is not expressible
+  without writing a word that draws a reviewer's eye.
+  Also worth having and smaller: `scope`. This gate has one scoped rule,
+  `skeleton-heading`, and it scopes itself with an ad-hoc `line.startswith("#")`
+  in its own loop. Vale makes the scope a field, which is how it has heading
+  rules and prose rules without two dialects of rule.
+- **What alexandria does better.** Vale reports and a person decides; its
+  severity is advice to whoever is looking at the editor. This gate sits inside
+  the send path, and a blocking finding stops the email and triggers one
+  rewrite against the findings before it holds the issue. And every rule here
+  cites the ban-list entry that authorized it, so a finding carries its
+  provenance back to the owner's own correction and a reader can ask whether the
+  rule is still what she asked for. Vale styles cite a style guide by
+  convention and nothing checks the citation.
+- What, as the idea: collapse the four word lists and their four identical
+  loops into one table of rule declarations, each row naming its terms, level,
+  rule name, ban-list entry and whether it is scoped to headings, with the word
+  edge as the default and a `nonword` flag as the only way to opt out. The four
+  loops are already the same loop, so this removes code rather than adding it,
+  and the class test this run wrote becomes a loop over the table instead of a
+  loop over four names it has to be told about.
+- First step: the table and the three word-list rules moved onto it, leaving
+  `skeleton-heading` and the regex rules where they are. The existing tests are
+  the proof: the rule names, levels and ban-list entries they assert are the
+  table's columns, so a refactor that keeps them green has preserved every
+  finding the gate makes today.
 - Cost: $0
 - Status: proposed
