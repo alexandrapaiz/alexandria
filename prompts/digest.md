@@ -398,11 +398,13 @@ same fixed template, that is the failure mode this section exists to prevent.
   good that evidence is, graded in the same breath rather than in a footnote.
   Then what a builder does differently now. Then the source line, on its own
   line, written *title* - [full text](url) with a plain ASCII hyphen between
-  them. The hyphen is not decoration and not a stylistic dash: it is the one
-  separator the email template's source slot recognises, and a comma there
-  drops the whole citation into the body as ordinary grey text. A short
-  item compresses the whole spine into two sentences and the week's biggest
-  gives each part its own paragraph, but the order never inverts, because an
+  them. That url is the HTML full text, `arxiv.org/html/`, and the abstract
+  page the payload hands you is not it. The hyphen is not decoration and not
+  a stylistic dash: it is the one separator the email template's source slot
+  recognises, and a comma there drops the whole citation into the body as
+  ordinary grey text. A short item compresses the whole spine into two
+  sentences and the week's biggest gives each part its own paragraph, but the
+  order never inverts, because an
   item that opens on its number has made the reader climb to find the point.
   This is a spine and not a template, so no part announces itself with a label,
   and no two items in an issue move through it in the same sentence shapes.
@@ -927,7 +929,8 @@ list this file can count on, on the issue that then printed a single kind of
 block, and it says a payload key out loud, which the vocabulary rule above
 forbids in those words. Open the list by naming what the steps DO, or open it
 with nothing. Then the source
-line, on its own line: *paper title* - [full text](url).
+line, on its own line: *paper title* - [full text](url), where the url reaches
+the HTML full text rather than the abstract the payload gives you.
 
 Two hard tests per item, regardless of length: (1) no acronym or coined term
 appears before the prose has unpacked it, including in the headline. (2) A
@@ -1172,7 +1175,9 @@ newsletter on this file's own bookkeeping, and the reader did not come for the
 overlap rule. A list of two is a list of two, and it never says so.
 
 Every entry carries a link to the full text. An entry without one fails the
-section's only job, so if you cannot produce the URL, drop the paper.
+section's only job, so if you cannot produce the URL, drop the paper. A link
+to the abstract is not a link to the full text, and this section is where the
+reader is most likely to click.
 
 Format: *title* - [full text](url), then one line naming the decision this
 paper would inform. "Advancing agent design and evaluation pipelines" names
