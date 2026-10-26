@@ -86,6 +86,7 @@ Exit:   1 if any check reports a finding, 0 if clean.
 """
 import collections
 import contextlib
+import datetime
 import html
 import html.parser
 import io
@@ -2263,6 +2264,167 @@ def candidates(ref=None):
     print("And a candidate for a surface with no row at all opens one, because")
     print("an unregistered draft is a line nobody will ever come back to.")
     return 1 if (clashes or unregistered) else 0
+
+
+# ---- deadlines --------------------------------------------------------
+
+#: The heading of the register's second table, the questions no wording can
+#: answer. A deadline only ever lands in that table: the surface rows above it
+#: wait on a seat's diff and nothing about them expires, while a question waits
+#: on her and the company standard puts a clock on that wait.
+QUESTIONS = "## Questions awaiting her word"
+
+#: A clock a command can read. One fixed form, minute precision, UTC, because
+#: the alternative is the prose run 58 wrote, "at about 20:44 UTC on
+#: 2026-10-28", which a reader understands and no check does.
+DEADLINE = re.compile(r"deadline (\d{4}-\d{2}-\d{2}T\d{2}:\d{2})Z")
+
+#: A row that says its own wait expires. The company standard's silence rule is
+#: the only mechanism that does this here, and a row arguing it without naming
+#: the hour is the defect this check was written for.
+SILENCE = re.compile(r"silence rule|proceeds as (?:recommended|asked)", re.I)
+
+#: What `deadline_findings` must say, pinned against a fixed clock so a case
+#: here means the same thing on every day this file is run. The rows are the
+#: register's own, trimmed to the cells that carry the reading. The false cases
+#: are load-bearing in the usual direction: a question with no clock at all is
+#: the ordinary shape of this table and must stay silent, because nine of its
+#: ten rows wait on her with no standard attached and failing them would make
+#: the check unusable by the register it reads.
+#: Fields: (the codes expected, the row)
+DEADLINE_CASES = (
+    ((), "| Does a paid tier keep a bullet for a machine that does not "
+     "exist, hedged, or lose the bullet? | `claim-repairs-2026-10-18.md`, "
+     "finding 8 | 2026-10-18 |"),
+    (("expired",), "| Does the corrected page carry a notice? | "
+     "`w42-correction-2026-10-26.md` | 2026-10-26. deadline "
+     "2026-10-28T20:44Z, after which the recommendation is in force under "
+     "the company standard's silence rule |"),
+    ((), "| Does the corrected page carry a notice? | "
+     "`w42-correction-2026-10-26.md` | 2026-10-26. deadline "
+     "2026-11-30T20:44Z, after which the recommendation is in force under "
+     "the company standard's silence rule |"),
+    (("unreadable",), "| Does the corrected page carry a notice? | "
+     "`w42-correction-2026-10-26.md` | 2026-10-26. Posted as a formal ask, "
+     "and under the silence rule it proceeds as recommended at about 20:44 "
+     "UTC on 2026-10-28 |"),
+)
+
+#: The clock `DEADLINE_CASES` is read against. 2026-10-29, the day after the
+#: one live deadline, so the expired case is expired and the far one is not.
+CASE_NOW = datetime.datetime(2026, 10, 29, tzinfo=datetime.timezone.utc)
+
+
+def question_rows():
+    """Every row of the register's questions table, as whole lines."""
+    if not AWAITING.exists():
+        return []
+    text = AWAITING.read_text()
+    start = text.find(QUESTIONS)
+    if start < 0:
+        return []
+    end = text.find("\n## ", start + 1)
+    rows = []
+    for line in text[start:end if end > 0 else len(text)].split("\n"):
+        cells = [c.strip() for c in line.split("|")]
+        if len(cells) < 4 or set(cells[1]) <= set("- ") or cells[1] == "Question":
+            continue
+        rows.append(line)
+    return rows
+
+
+def deadline_findings(row, now):
+    """One row's clock problems, as codes, read against a given moment."""
+    found = DEADLINE.findall(row)
+    out = []
+    if SILENCE.search(row) and not found:
+        out.append("unreadable")
+    for stamp in found:
+        when = datetime.datetime.fromisoformat(stamp).replace(
+            tzinfo=datetime.timezone.utc)
+        if when <= now:
+            out.append("expired")
+    return tuple(out)
+
+
+def deadline_cases():
+    """Every case above, run before the register is opened."""
+    bad = [(want, row) for want, row in DEADLINE_CASES
+           if deadline_findings(row, CASE_NOW) != want]
+    print(f"DEADLINE_CASES                             "
+          f"{len(DEADLINE_CASES) - len(bad)} of {len(DEADLINE_CASES)}")
+    for want, row in bad:
+        print(f"  FAIL    wanted {want or 'nothing'}, got "
+              f"{deadline_findings(row, CASE_NOW) or 'nothing'}")
+        print(f"            {row[:96]}")
+    return 1 if bad else 0
+
+
+def deadlines():
+    """A reservation for the owner with a clock on it that nothing reads.
+
+    `awaiting-her-word.md` holds two tables. The upper one waits on a seat's
+    diff and nothing in it expires, which is why the oldest row there has been
+    open for thirty-one days and the register says so in plain words. The lower
+    one waits on her, and until 2026-10-26 that wait had no end either.
+
+    Then §22 of `docs/standards/pm.md` gave it one. A reservation a charter
+    makes for the owner is posted by the PM as an ask carrying the PM's own
+    recommendation, and it proceeds as recommended after forty-eight hours of
+    her silence. So the correction-notice question asked on 2026-10-26 is the
+    first row in this register whose answer arrives by itself, at a stated
+    hour, whether or not anybody is looking.
+
+    Run 58 wrote that hour into the row as "at about 20:44 UTC on 2026-10-28",
+    and wrote beside it that a clock nobody can read is the thing to avoid.
+    Both halves of that sentence were true of the sentence itself. This check
+    is the other half, and it asks the two questions the prose cannot:
+
+      a row that argues the silence rule and names no deadline,
+      a deadline that has passed with the row still in the table.
+
+    The second one is a time bomb on purpose, and the cost is worth naming
+    because the inbox README argues the opposite case well: a gate that can
+    turn `main` red over a bookkeeping step is worse than the collision it set
+    out to fix. This one cannot. No workflow runs this file; it runs in a
+    writer seat's own run, which is the only place where the thing to do about
+    an expired reservation is decidable. What goes red is a run, in front of
+    the seat that can record the resolution, move the row to the closed table,
+    and say what the words are now.
+
+    What it deliberately does not do is decide the answer. Resolving a
+    reservation by silence is the standard's mechanism and the PM's to apply.
+    This reports that the hour has passed and leaves the ruling where it lives.
+    """
+    rc = deadline_cases()
+    print()
+    rows = question_rows()
+    now = datetime.datetime.now(datetime.timezone.utc)
+    print(f"questions awaiting her word                {len(rows)}")
+    print(f"carrying a readable deadline               "
+          f"{sum(1 for r in rows if DEADLINE.search(r))}")
+    print(f"read at                                    "
+          f"{now.strftime('%Y-%m-%dT%H:%MZ')}")
+    for row in rows:
+        for code in deadline_findings(row, now):
+            rc = 1
+            question = [c.strip() for c in row.split("|")][1]
+            print(f"  FAIL    {question[:88]}")
+            if code == "unreadable":
+                print("            argues a silence rule and names no "
+                      "`deadline YYYY-MM-DDTHH:MMZ`")
+            else:
+                print("            the deadline passed and the row is still "
+                      "open, so the recommendation in the candidate is in "
+                      "force and this register says it is still a question")
+    if rc == 0:
+        print("  every clock here is readable and none of them has run out")
+    print()
+    print("A reservation for the owner that proceeds on her silence is the one")
+    print("row in this register whose answer arrives without anybody acting,")
+    print("so it is the one row that has to be read by a command rather than")
+    print("by whoever happens to open the file.")
+    return rc
 
 
 # ---- ledger -----------------------------------------------------------
@@ -4925,6 +5087,7 @@ def main():
                      ("delivery", delivery), ("claims", claims),
                      ("reading", reading),
                      ("candidates", candidates),
+                     ("deadlines", deadlines),
                      ("ledger", ledger),
                      ("firstuse", firstuse),
                      ("generator", generator),
