@@ -404,10 +404,18 @@ The pipeline, built bottom-up.
       sentence, that a skill with no eval is `status: draft` and never
       `active`, which **fails all six skills on main today**. So the panel is
       complete and `panel_consensus`'s three passes on one text are reachable
-      for the first time. **The merge is the only slice left** (a
-      PR-merge-scoped token only the owner can mint), in
-      docs/product/reviewer-panel.md. Until the panel passes a skill, the
-      owner's merge is still the gate
+      for the first time. The merge is built as well
+      (`tools/panel_merge.py`, PR #542), and **what is left is four things
+      rather than one**: nothing had ever filed a verdict about a pull request,
+      ADR-12's whitelist refuses all 16 real proposals in this repository's
+      history, that whitelist admits `prompts/*.md` and so would authorise the
+      panel to merge a charter HQ standard section 21 reserves to the owner, and
+      `PANEL_MERGE_TOKEN` does not exist. The four are numbered with their
+      owners at the end of docs/product/reviewer-panel.md. This paragraph said
+      "the merge is the only slice left" for one day after that was measured to
+      be wrong, which is the stale-duplicate defect filed as
+      `INC-2026-10-26-the-corrected-sentence-was-corrected-in-one-register-of-two`.
+      Until the panel passes a skill, the owner's merge is still the gate
 - [ ] Meta-review recursive loop running on its own cadence. The `propose_change`
       tool is live and the research seat owns the loop (ADR-25), with its first
       scheduled run on 2026-09-21

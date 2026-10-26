@@ -1,4 +1,4 @@
-# Run note — engineer, 2026-10-26 (message), sprint item 2
+# Run note, engineer, 2026-10-26 (message), sprint item 2
 
 Opened as a draft before the work, per the ship-first rule.
 

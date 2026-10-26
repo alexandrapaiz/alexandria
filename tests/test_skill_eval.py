@@ -1826,3 +1826,22 @@ def test_an_overridden_repetition_count_reaches_the_gate_too():
          "subject_model": "kimi-k2.6", "contract": 1, "repetitions": 7,
          "repetitions_overridden": True}, None)
     assert len(problems) == 1 and "overridden to 7" in problems[0]
+
+
+def test_a_deviation_travels_into_the_history_with_its_run():
+    """`history` is the only place a reader compares runs, and the top level
+    holds only the newest. A list of six deltas with no deviation field gives
+    no way to tell which of them were measured under the registered policy."""
+    overrides = {"subject": {"registered": "kimi-k2.6",
+                             "ran": "openai/gpt-oss-20b", "flag": "--subject"}}
+    result = {"skill": "x", "date": "2026-10-26", "version": "v2",
+              "subject_model": "openai/gpt-oss-20b",
+              "judge_model": "openai/gpt-oss-120b", "tasks": 5,
+              "repetitions": 3, "verdict": "gain", "trigger": "by hand",
+              "delta": {"mean": 0.3, "ci95": [0.1, 0.5]},
+              "policy_overrides": overrides, "repetitions_overridden": True}
+    entry = ev.summary_entry(result)
+    assert entry["policy_overrides"] == overrides
+    assert entry["repetitions_overridden"] is True
+    history = ev.appended_history(None, result)
+    assert history[-1]["policy_overrides"] == overrides

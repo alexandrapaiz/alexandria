@@ -547,7 +547,16 @@ def history_entries(doc: dict) -> list[dict]:
 
 ENTRY_FIELDS = ("version", "date", "subject_model", "judge_model", "tasks",
                 "repetitions", "verdict", "skill_md_sha256", "trigger",
-                "spend_usd")
+                "spend_usd",
+                # The two deviation fields travel with the entry, because
+                # `history` is the only place a reader compares runs and the
+                # top level holds just the newest. Without them a history of
+                # six deltas gives no way to tell which were measured under
+                # the policy the suite registered, which is the whole question
+                # rule 1 asks. Added 2026-10-26 with `policy_overrides`
+                # itself; `repetitions_overridden` had been written at the top
+                # level since it existed and dropped here every time.
+                "policy_overrides", "repetitions_overridden")
 
 
 def summary_entry(result: dict, version: str = "", trigger: str = "") -> dict:
