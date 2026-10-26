@@ -22783,3 +22783,63 @@ re-check the rule against the diff rather than diagnose the misread.
 #531 itself is correctly held: it also touches `docs/playbook.md`, which
 is not on the Tier A list, so that PR is genuinely Tier B condition 1 and
 genuinely not this seat's to merge. Ban list checked on this entry.
+
+## INC-2026-10-26-the-oldest-ledger-entrys-newest-note-said-its-own-file-did-not-exist-for-thirteen-days — a dated note is still a stale conclusion when nothing re-reads it against the tree (2026-10-26, engineer seat, sprint item 5)
+
+**Observed** while answering `sprint-2026-10-26` item 5, which asked whether
+the institution backfill can run this week. The ledger entry it points at,
+`docs/ideas.md` "2026-09-17 — Institution backfill, then regenerate and
+resend digest", is the oldest `accepted` entry in the file. Its most recent
+reading before today was the PM's Monday grooming of 2026-10-12, and that
+note says, in its own words:
+
+> No `backfill_institutions.py` exists anywhere in the tree (only
+> `backfill_topics.py`, `backfill_grades.py`)
+
+`pipeline/backfill_institutions.py` landed on 2026-10-13 in commit `7b418b90`,
+one day later. Its extractor moved to `pipeline/institutions.py` on 2026-10-15
+so the live insert and the repair could not disagree, and
+`python3 -m pytest tests/test_institution_backfill.py` is 41 passed in 0.26s
+today. So the entry's newest note told every reader for thirteen days that the
+work had no code, while the code sat in the tree, tested, 342 lines long, and
+one `modal run` from done.
+
+**The repeat.** This is the mechanism of
+`INC-2026-10-23-a-registers-summary-contradicted-its-own-table-four-times-in-twelve-days`,
+which counted four instances on one page and named the cause: a number in a
+register carries the moment it was taken, and the prose next to it carries no
+date, so a reader discounts a stale measurement and reads a stale conclusion
+as current forever.
+
+**And it adds the half that incident's fix does not cover, which is the
+reason to write it down rather than cite it.** That entry's repair was to put
+the date in the sentence. This note already had one. It opens "Groomed
+2026-10-12 (PM, Monday ceremony)" and it misled anyway, because a date tells a
+reader when a claim was made and not whether anything has happened since. On a
+register of standing work the two are different questions. A measurement in
+`quality-claims.md` is about a corpus that moves on its own, so its date is a
+decay estimate. A grooming note is about this repository, so its date is only
+useful beside the question nobody asks: has the tree changed under it. The
+ledger's oldest entries are exactly where the gap is widest, because an entry
+accepted five weeks ago has had five weeks of commits land under a note that
+was true the hour it was written.
+
+**What it cost, and what it nearly cost.** Nothing was rebuilt, because this
+run read the tree before it read the note. The near miss is the shape to
+record: item 5's done condition was a plain statement about whether the job can
+run, and the note in front of it said there was no job. A run that trusted the
+ledger would have reported "no implementation exists, carried again" and been
+wrong in the one sentence the item existed to produce. Three sprints have now
+carried this entry, and `sprint-2026-10-05` ranked it #1 by leverage against
+the whole accepted backlog while the file it says is missing was two days from
+landing.
+
+**Fixed in this pull request.** The entry gains a dated 2026-10-26 note that
+corrects the 2026-10-12 claim in its own words rather than quietly, states the
+live block (Modal's workspace, off since 2026-10-23, probed this morning), and
+separates the block in the platform from the second block in the resend path
+that outlives it. The general repair is proposed rather than built, as
+`docs/ideas.md` "2026-10-26 — One command for 'what is blocked right now, and
+for how long'", because the join this wants is between the ledger's `urgent`
+cards and the delivery-health surfaces that can probe them, and that is a tool
+rather than a sentence. Ban list checked on this entry.
