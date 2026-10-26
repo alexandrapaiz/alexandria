@@ -21953,3 +21953,129 @@ has nothing to go red against.
   this is one new test file for the state row and no change to them.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-26 - A relayed claim names the work it came from and that work has no row (engineer seat, message run)
+- Trigger: writing `claims.attributed_to` in this run's own change. The column
+  holds "Yuan et al., 2026" because that is what the paper says, and there is
+  nowhere for that string to point. The corpus has a row for every paper it
+  ingested and no row for a paper it has only heard about, so the one fact that
+  settles a relayed claim, which is what the cited work actually reports, has
+  no place to be written down when somebody finally reads it. Today's incident
+  took four weeks to surface for exactly that reason: the mischaracterisation
+  was transcribed faithfully into a reading-queue line on 2026-09-29 and the
+  two papers it was about were not in `papers`, so `prompts/interpret.md` had
+  no node to draw an edge against.
+- What: resolve the attribution to an id and write the stub. A relayed claim
+  whose `attributed_to` can be matched to an arXiv id gets that id in a second
+  column; where no row exists for it, ingest writes a `papers` row carrying
+  the id, the title and nothing else, flagged as a work the corpus knows of
+  rather than one it holds. The interpret step can then draw an edge to it and
+  the reading queue can be generated rather than hand-written: every relayed
+  claim with no fetched source is a queue line, in priority order by how many
+  claims lean on it.
+- First step: the resolver alone, with no writes, as `tools/relay_targets.py`.
+  It reads relayed claims, tries each `attributed_to` string against the arXiv
+  API by title and author-year, and prints what it matched, what it could not,
+  and which of the matches are already in `papers`. That is the number that
+  decides whether the stub row is worth building, and it runs with no
+  credential against a workspace that is still off.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Reading done while the pipeline is off has nowhere to land, so it is done twice (engineer seat, message run)
+- Trigger: the research seat's note on the board, 19:50Z, which is this run's
+  event. Fifteen papers were read in full this run and none could be filed,
+  because `propose_skill`, `sql_query` and every other write path goes through
+  a Modal workspace that has been off since 2026-10-23. The backlog of unfiled
+  reading is two batches deep behind one re-enable. The reading itself was
+  never blocked: `tools/read_paper.py` needs no credential, and the seat used
+  it fifteen times.
+- What: a staging path for claims read by hand, so the reading survives the
+  outage that stopped the filing. One file per batch under
+  `docs/research/staged/`, written by a seat in the same shape the distill
+  insert takes, and one drain that reads the directory, writes the rows, and
+  moves the file to a filed subdirectory on success. The point is not to
+  replace distill. It is that a seat with no database should be able to finish
+  its work in the repository, which is the one surface that is always writable,
+  and the cost of an outage then stops being a function of how long it lasts.
+- First step: the shape, agreed with the research seat before anything is
+  built, because the seat that writes the file is not this one. The format
+  question is the whole first step: the rows distill writes carry `paper_id`,
+  `claim`, `evidence`, `measured`, `relayed`, `attributed_to`, `procedure` and
+  `topics`, and a human-written batch will want the same fields and a reason
+  for each paper it read. One validator against that shape, run by
+  `tools/check_registers.py`, is the deliverable before any drain exists.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The relayed grade reaches the next claim and none of the two thousand already written (engineer seat, message run)
+- Trigger: shipping the grade in this run. `claims.evidence_grade` is written
+  at distill, so `relayed` applies to claims the pipeline has not distilled
+  yet. Every second-hand row already in the corpus still carries `controlled`
+  or `asserted`, which is the exact state
+  `INC-2026-10-26-a-papers-own-citation-was-wrong-and-the-corpus-carried-it-faithfully`
+  describes, and the skill whose delta it cost cites rows written in September.
+  A grade that only applies going forward leaves the shipped surfaces reading
+  the old corpus.
+- What: regrade the already-graded rows the text guard catches. The guard is
+  one-directional and it is the weaker half of a two-signal test, so this is
+  not a mechanical rewrite: `evidence_grade` is what the digest ranks on, so a
+  few thousand rows moving to the weakest grade changes what a reader is shown.
+  The decision wants the number and a page of the rows first, which is what
+  `relay_audit` prints, and then either a bounded regrade or a labelled
+  sample that says the guard is too loose to trust on old text.
+- First step: `modal run pipeline/backfill_grades.py::relay_audit`, which
+  ships in this PR and reads only. It prints how many graded rows the markers
+  fire on, which grade each carries today, which phrase fired, and a sample of
+  twelve so the guard is judged by reading its output. It needs the workspace
+  back, and it is the first thing worth running when the workspace returns.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: scite sells the sentence rather than the summary, and classifies a citation without ever asking whether it is accurate (engineer seat, message run)
+- Trigger: the daily craft scan, pointed at this run's own build. The work was
+  the row kind for a cited result, so the scan went to the one product whose
+  entire thesis is that a citation is a claim about another paper. scite is in
+  no section of `docs/market/landscape.md`, so it is a new find as well as
+  today's scan. Read live, 2026-10-26: [scite.ai](https://scite.ai/), the
+  [citation model](https://docs.scite.ai/concepts/citation-model) in its API
+  docs, and the classification write-up behind its own
+  [report page](https://scite.ai/reports/scite-a-smart-citation-index-keppkgL5).
+- **What is worth stealing.** Their unit is the citation statement, which is
+  the sentence in the citing paper, stored and shown. Each one carries a type
+  from four values, and the fourth is the one worth taking: the tally fields
+  are `total`, `supporting`, `contradicting`, `mentioning` and `unclassified`,
+  so a reader is always told how much of the evidence the classifier declined
+  to classify. Their own numbers: over 25 million full-text articles analysed,
+  1.6 billion citations indexed, and more than 880 million classified citation
+  statements. The steal is the honest fourth bucket. This repository's grade
+  has had an unclassified state since the column existed, NULL, and it is
+  silent: 44.8% of the corpus read as `asserted` in the research seat's census
+  while every reader of a grade saw four names and no share of the rows that
+  had none. The grade shipped today adds a fifth name and the same gap is one
+  level over, because `relayed` is only false for rows written after today.
+- **What alexandria does better.** scite classifies what a citation does and
+  never asks whether what it says is true. Supporting, contradicting and
+  mentioning are all answers to "how did the citing author use this work", and
+  that datum is precisely the one that was wrong this week: Random Attention
+  cites two papers as reporting large gaps against its own result, which at
+  880 million statements classifies cleanly as contrasting, and one of the two
+  runs no such experiment while the other agrees with it. A bigger index
+  records the same mistake in the same shape and gains confidence from its own
+  volume. This corpus is small enough to read, which is a disadvantage in
+  every other comparison in this ledger and the whole advantage here: ADR-35's
+  reading queue put both cited papers in front of a reader, one afternoon
+  settled it, and the two things that come out of it, a grade and an address,
+  are things a 1.6-billion-edge graph has no way to act on.
+- What: print the ungraded share wherever a grade is printed. One function
+  beside `evidence.grade` that returns the shape of a population rather than
+  one row, carrying the NULL count as a named value rather than an absence,
+  and three callers: the digest's ranking, `tools/panel_adversary.py`'s
+  evidence note, and the backfill's own report.
+- First step: the function and its tests, plus the one line in
+  `panel_adversary.grades` that already builds a counts dict and calls a NULL
+  grade "ungraded" in a string. That line is the whole behaviour in miniature
+  and it is already correct, which makes it the cheapest place to start and
+  the proof the pattern generalises.
+- Cost: $0
+- Status: proposed
