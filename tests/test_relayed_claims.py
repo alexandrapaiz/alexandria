@@ -357,3 +357,19 @@ def test_the_audits_statement_resolves_against_the_schema():
 
     sql_schema.assert_resolves("GRADED_SQL", bg.GRADED_SQL)
     sql_schema.assert_resolves("UNGRADED_SQL", bg.UNGRADED_SQL)
+
+
+def test_the_public_graph_page_has_a_label_for_the_fifth_grade():
+    """A grade with no label renders its raw value beside four prose ones.
+
+    `GraphExplorer.jsx` falls back to the stored string, so the page would
+    have shown "relayed" next to "Controlled" and "Field measured". That is
+    the same defect one level over from the one this grade exists to fix: a
+    value added in one file and read in another, with nothing comparing them.
+    This test is the comparison.
+    """
+    page = (ROOT / "site" / "app" / "graph" / "GraphExplorer.jsx").read_text()
+    labels = re.search(r"const GRADE_LABEL = \{(.*?)\};", page, re.S)
+    assert labels, "GRADE_LABEL is gone from the graph page"
+    labelled = set(re.findall(r"^\s*(\w+):", labels.group(1), re.M))
+    assert labelled == set(evidence.GRADES), (labelled, evidence.GRADES)
