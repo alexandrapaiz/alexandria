@@ -1295,15 +1295,41 @@ def check_cron_spend() -> list[str]:
 #: consumed by what is actually sent, and a worst case that assumes every paper
 #: is the longest paper would condemn a schedule that works every day.
 #:
-#: Each entry is (calls a run, tokens a call, how we know).
+#: Each entry is (calls a run, tokens a call, how we know). Either of the first
+#: two may be a `(path, constant)` spec read out of the job instead of a
+#: literal, and the reason to prefer the spec is written on this table in its
+#: own history. Interpret's row said `60, 1_000, "one claim and five candidates
+#: a call"` from the day it was written until 2026-10-26. The shortlist doubled
+#: to ten candidates on 2026-10-25 and the job's own measured constants moved
+#: with it, to 2,041 prompt tokens and 299 of reply. This table did not, so the
+#: one guard standing between this org and a day of 429s was counting interpret
+#: at 43% of the request the job actually sends.
+#:
+#: The 60 had no derivation beside it either, which is the other half of the
+#: same problem: a number nobody can re-derive is a number nobody can check. It
+#: is 50 now on triage's stated basis, the cap divided by the worst-case call
+#: price, and the row roughly doubles rather than shrinking.
+#:
+#: **That basis is itself mixed, and the gap it hides is filed as urgent in
+#: docs/ideas.md (2026-10-26).** A cap divided by the CEILING price is the
+#: fewest calls a run can make, while the tokens beside it are EXPECTED sizes,
+#: so every row here is a floor wearing an expectation's label. On a consistent
+#: expected-cost basis interpret reaches MAX_CLAIMS_PER_RUN before it reaches
+#: its cap and draws 210,600 tokens rather than 117,000, triage reaches
+#: MAX_CALLS_PER_RUN and draws 424,170 rather than 329,910, and the corpus day
+#: lands over the budgeted allowance. Closing that is a cap decision and a
+#: runtime change, so it is escalated rather than quietly applied here.
 KIMI_DAILY_DRAW = {
     "triage (pipeline/triage.py)": (
         70, 4_713,
         "70 calls is the $0.60 cap at the measured ceiling price; 3,513 prompt "
         "+ 1,200 reply measured in docs/finance/opex.md"),
     "interpret (pipeline/interpret.py)": (
-        60, 1_000,
-        "one claim and five candidates a call, measured small"),
+        50, ("pipeline/interpret.py",
+             ("CALL_PROMPT_TOKENS", "CALL_OUTPUT_TOKENS")),
+        "50 calls is the $0.30 cap at the measured ceiling price, the same "
+        "basis as triage's; the tokens are CALL_PROMPT_TOKENS + "
+        "CALL_OUTPUT_TOKENS read out of the job"),
     "distill (pipeline/distill.py)": (
         ("pipeline/distill.py", "MAX_PAPERS_PER_RUN"), 40_259,
         "the paper count read out of the job, at the mean payload of the "
@@ -1311,6 +1337,37 @@ KIMI_DAILY_DRAW = {
         "docs/evals/2026-09-30-fulltext-token-density.json, plus the prompt "
         "and a measured reply"),
 }
+
+
+def _constant(path: str, name: str) -> int:
+    """One integer constant, read out of a job's source.
+
+    Shared by `_calls` and `_tokens` so that both halves of a row can be read
+    out of the job rather than copied into this file.
+    """
+    source = (ROOT / path).read_text()
+    match = re.search(rf"^{name} = ([\d_]+)", source, re.M)
+    if not match:
+        raise LookupError(
+            f"{path} no longer defines {name} where this guard looks for it, "
+            "so the daily token draw this guard checks is not the draw the job "
+            "will make.")
+    return int(match.group(1).replace("_", ""))
+
+
+def _tokens(spec) -> int:
+    """Tokens a call, either a literal or constants summed out of the job.
+
+    Interpret's is read rather than copied for exactly the reason `_calls`
+    gives about distill's paper count, and it is read because copying it went
+    wrong: this table carried 1,000 tokens a call for a request that measures
+    2,340, from the afternoon slice 2 widened the shortlist until somebody
+    happened to read the line.
+    """
+    if isinstance(spec, int):
+        return spec
+    path, names = spec
+    return sum(_constant(path, name) for name in names)
 
 
 def _calls(spec) -> int:
@@ -1328,21 +1385,25 @@ def _calls(spec) -> int:
     if isinstance(spec, int):
         return spec
     path, name = spec
-    source = (ROOT / path).read_text()
-    match = re.search(rf"^{name} = ([\d_]+)", source, re.M)
-    if not match:
-        raise LookupError(
-            f"{path} no longer defines {name} where this guard looks for it, "
-            "so the daily token draw this guard checks is not the draw the job "
-            "will make.")
-    return int(match.group(1).replace("_", ""))
+    return _constant(path, name)
+
+
+def kimi_call_tokens(label: str) -> int:
+    """Tokens one call of `label` draws, with any `(path, constant)` resolved.
+
+    Every reader of `KIMI_DAILY_DRAW`'s second column goes through here, which
+    is the point: a spec that one consumer resolves and another does not is a
+    guard that disagrees with itself about how big a request is.
+    """
+    return _tokens(KIMI_DAILY_DRAW[label][1])
 
 
 def kimi_daily_draw() -> tuple[int, list[str]]:
     """Expected tokens per day across every Kimi job, and the lines behind it."""
     total, lines = 0, []
-    for label, (spec, per_call, how) in sorted(KIMI_DAILY_DRAW.items()):
+    for label, (spec, _token_spec, how) in sorted(KIMI_DAILY_DRAW.items()):
         calls = _calls(spec)
+        per_call = kimi_call_tokens(label)
         draw = calls * per_call
         total += draw
         lines.append(f"  {label}: {calls} x {per_call:,} = {draw:,} tokens "
@@ -1398,6 +1459,16 @@ PACED_CALLERS = [
     "pipeline/interpret.py",
     "pipeline/distill.py",
     "pipeline/retag_threads.py",
+    # Not a corpus job and not on a cron, and on this list anyway (2026-10-26).
+    # The list's own name is the test: a caller that makes dozens of calls in a
+    # row against a published rate limit. An eval run is 42 subject calls plus
+    # the judge's, and until 2026-10-26 it took no pause at all, so it met the
+    # defect this guard was written for while sitting outside the only list
+    # that looks. The second half of `check_fallback_pacing` needs a
+    # `KIMI_DAILY_DRAW` row and this file has none, which is right: an eval is
+    # asked for by hand and is not part of the corpus day the daily allowance
+    # is sized for. The source check is what matters here.
+    "tools/skill_eval.py",
 ]
 
 
@@ -1452,7 +1523,8 @@ def check_fallback_pacing() -> list[str]:
     except Exception as exc:                     # noqa: BLE001
         return problems + [f"pipeline/llm.py could not be read, so the pause "
                            f"each corpus job takes is unchecked: {exc}"]
-    for label, (spec, per_call, how) in sorted(KIMI_DAILY_DRAW.items()):
+    for label, (spec, _token_spec, how) in sorted(KIMI_DAILY_DRAW.items()):
+        per_call = kimi_call_tokens(label)
         for model in cron_model_lists().get(label, []):
             limits = MODELS.get(model)
             if not limits or not limits.get("tpm"):
@@ -1499,7 +1571,8 @@ def fallback_daily_draw() -> tuple[dict[str, int], list[str]]:
     """
     per_model: dict[str, int] = {}
     lines = []
-    for label, (spec, per_call, how) in sorted(KIMI_DAILY_DRAW.items()):
+    for label, (spec, _token_spec, how) in sorted(KIMI_DAILY_DRAW.items()):
+        per_call = kimi_call_tokens(label)
         landing = fallback_landing(label)
         if not landing:
             lines.append(f"  {label}: no model outside "
@@ -1727,7 +1800,7 @@ def check_fallback_tpd() -> list[str]:
         budgeted = int(allowance * (1 - MARGIN))
         if draw <= budgeted:
             continue
-        fits = [f"{label}" for label, (spec, per_call, _) in KIMI_DAILY_DRAW.items()]
+        fits = [f"{label}" for label in KIMI_DAILY_DRAW]
         notes.append(
             f"a day on {model} asks {draw:,} tokens against the "
             f"{allowance:,} it allows, {budgeted:,} after the {MARGIN:.0%} "

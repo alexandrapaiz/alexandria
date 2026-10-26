@@ -503,8 +503,6 @@ Write the digest as **markdown** with exactly this structure. Everything in
 writing, never printed. That binds the title, all four headings, and every
 block of guidance inside the sections alike, and no sentence quoted from this
 file as an example survives into the issue.
-That invariant has been stated here since the file was written and has been
-broken three times in one issue, so it is now backed rather than repeated.
 An example drawn from a subject the payload cannot contain cannot be lifted
 for its content, which is why the ones that work here are about night shifts
 and delivery routes. It can still be lifted for its SHAPE, because a shape
@@ -513,9 +511,7 @@ shape carries no example at all and is described instead: every heading, every
 line opener, every grade and every attributive phrase, and the four slot names
 are held only in the heading gate at the end. An example
 written from the same research the generator is about to be handed is not an
-illustration of the answer. It is the answer. That is how a worked rewrite of an
-issue became that issue's prose the next time it ran. Whoever edits this file
-next keeps examples out of the week they are grading.
+illustration of the answer. It is the answer.
 
 ```
 # {Editorial title}
@@ -618,6 +614,8 @@ because they carry no information and they are exactly what a form being
 filled in says. Vary the construction every issue and never open two issues
 running the same way. The warmth comes from knowing what the reader's job is
 like, never from pleasantries and never from claiming to know their history.
+
+**A stranger has to enjoy that sentence.** This is the test it has to pass
 and it is the reason the line exists (owner's dispatch, 2026-09-25). Read it
 as somebody who has never heard of alexandria, does not know the subfield,
 and is deciding in about four seconds whether to keep reading. It has to be
@@ -920,7 +918,15 @@ size, and vary sentence length inside them per the voice rules above.
 
 A `procedure` is always list-shaped, so when the claim carries one, render its
 steps as a compact numbered list inside the item, indented under that item.
-Those steps are the material readers extract systems from. Then the source
+Those steps are the material readers extract systems from.
+**The list is the shape and not a suggestion, and this field's name is never
+the label over it.** Three procedures were written out as comma-runs inside
+paragraphs in one issue, each opened by "The procedure is extractable:", "The
+procedure is clean:" and "The procedure runs:". That spends the one supply of a
+list this file can count on, on the issue that then printed a single kind of
+block, and it says a payload key out loud, which the vocabulary rule above
+forbids in those words. Open the list by naming what the steps DO, or open it
+with nothing. Then the source
 line, on its own line: *paper title* - [full text](url).
 
 Two hard tests per item, regardless of length: (1) no acronym or coined term
@@ -1200,8 +1206,7 @@ plausible limitation is an invented one, and it is worse here than anywhere
 else in the issue, because the reader is being asked for an hour on the
 strength of it.
 **Where an entry has a grade, its position is a count rather than a sentence
-you are trusted with, because that failed on every entry of both prints of
-2026-10-05, six of six.** Read each finished entry and find the full stop
+you are trusted with.** Read each finished entry and find the full stop
 before the grade. Where there is one,
 the grade is stapled and the entry is not finished: fold the limit into the
 clause that makes the recommendation, so the reader meets what the work cannot
@@ -1232,10 +1237,7 @@ write a find-and-replace of it either, so "Read this if you are", "Give it an
 hour when you are" and "Spend the hour if you are" are the same line wearing
 a hat.
 **A frame banned in this slot is banned everywhere in this slot, the heading
-included.** A print kept the banned line off all three entries, correctly, and
-put it in the section heading instead, where the banned words did the one job
-the heading is forbidden to do, which is announce that the issue is now
-recommending things. A phrase this slot refuses does not become available by
+included.** A phrase this slot refuses does not become available by
 moving up a line.
 Write each line as its own sentence instead, and let the shape follow what
 the decision actually is. One line can put the choice as a question the
@@ -1626,9 +1628,7 @@ the rule's question to the thing in front of you.
   define one and print the other.
   **This pass is a count, and it failed on its first print as an
   instruction.** A rule asking you to prefer one name does not survive a
-  payload whose every field uses the other one: two prints glossed one word
-  and then carried a second one more than thirty times, the second of them
-  putting that word in the title.
+  payload whose every field uses the other one.
   So count, once, before you output. Take the two or three words the issue
   leans on hardest, and for each one count its appearances. Where two words
   share one idea, the smaller count is the one to delete, all of it, including

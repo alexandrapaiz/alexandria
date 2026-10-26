@@ -493,6 +493,60 @@ UNCOVERED = {
     # which includes recomputing the token pair the spend cap is set against,
     # runs anywhere.
     "tests/test_shortlist.py",
+    # Added 2026-10-25 with the firing-record reader, and pinned by the same
+    # two closed routes as every line above: a step goes in
+    # `.github/workflows/checks.yml` and applying the staged replacement is a
+    # `git mv` out of `.github/workflows-pending/`, and no seat's token writes
+    # either. Twentieth line, counted at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # rather than opening another entry on one pattern.
+    #
+    # This one is cheap to pin and worth saying why. `tools/cron_firing.py`
+    # reads logs the repository does not contain, so the tests build the
+    # host's log format in a temporary directory and assert against that
+    # fixture. A fixture is the one thing CI could run here with no
+    # credential and no server, which makes the pin a straight loss rather
+    # than a limitation of the environment. What it guards is a reader whose
+    # whole failure mode is quiet: the first version matched the result line
+    # as text, read every log on the host correctly, and silently stopped
+    # classifying refusals against a fixture that differed by one space.
+    "tests/test_cron_firing.py",
+    # Added 2026-10-26 with ADR-13's merge executor, and pinned for the same
+    # structural reason as every line above: the step that would run it goes
+    # in `.github/workflows/checks.yml`, which no seat's token may write, and
+    # the staged replacement runs the suite rather than naming files, so this
+    # pin leaves the set the moment item 17 is applied.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern.
+    #
+    # What it guards is the only code in this repository that can merge a pull
+    # request without a person, and the direction of almost every assertion in
+    # it is a refusal: that machinery is never merged by a verdict, that a
+    # charter is never merged by the panel, that three passes on other text
+    # are not three passes on this one, that a panel of two is not unanimity,
+    # and that the ambient `GH_TOKEN` every seat on this host holds is
+    # declined. Those are the tests whose silence costs the most, because the
+    # defect they would catch is a merge that already happened.
+    "tests/test_panel_merge.py",
+    # Added 2026-10-26 with the scoped-delivery measurement, and pinned for
+    # the same structural reason as every line above: the step that would run
+    # it goes in `.github/workflows/checks.yml`, which no seat's token may
+    # write, and the engineer charter says in its own words that this seat
+    # cannot push a workflow file. The staged replacement runs it, because
+    # that file runs the suite rather than naming files.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern.
+    #
+    # What it guards is the only gate in `tools/skill_scope.py`, the verdict
+    # that answers whether loading three skills beats loading the library,
+    # and the test that matters most in it is the one that builds a checkout
+    # where scoping is the wrong move and asserts the verdict says so. A
+    # measurement whose verdict has only ever been observed agreeing with the
+    # run that wrote it is not a measurement, and that assertion going silent
+    # on a pull request is how it would become one.
+    "tests/test_skill_scope.py",
 }
 
 

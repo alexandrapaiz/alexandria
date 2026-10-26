@@ -1110,6 +1110,70 @@ HEDGE = re.compile(r"\b(not built|not yet|yet to|never been|has never|"
 
 STATES = ("held", "unproven", "contradicted", "not built", "queued")
 
+# The register writes its verdict as the FIRST bolded span of the state cell
+# and then keeps writing: the transition that produced it, the date, and the
+# reading behind it. Every one of those is prose about the row's history, and
+# one of the words it uses is `held`, because a row that moved says what it
+# moved from. So a resolver that searches the whole cell finds two verdicts on
+# such a row, and the one it picks decides whether a sentence may ship.
+STATE_CASES = (
+    ("contradicted", "**contradicted**"),
+    ("queued", "**queued**"),
+    ("not built", "**not built**"),
+    ("held", "**held**"),
+    ("contradicted", '**contradicted on "every"**'),
+    ("contradicted", "**contradicted on the universal reading**"),
+    ("contradicted", "**contradicted on the verb, and dark on the live site**"),
+    # The live row, 2026-10-24 onward, and the case this resolver was written
+    # for. A whole-cell search reads `held` here and the home page's "The
+    # library grows every day" reports ok while the corpus has not grown.
+    ("contradicted",
+     "**contradicted**, moved from `held` 2026-10-11, and the mechanism is a "
+     "**stopped job rather than a widening gap**"),
+    # The mirror, which is the one that would be dangerous the other way: a row
+    # genuinely held whose cell recounts the contradiction it came out of.
+    ("held", "**held** since 2026-10-20, after the `contradicted` reading of "
+             "2026-10-11 was repaired"),
+    # No state word at all. The verdict is the register's own phrase, it is not
+    # `held`, and the row ships hedged or not at all.
+    ("**reports, does not replace**", "**reports, does not replace**"),
+    # Substrings, because `held` hides inside two ordinary English words and a
+    # row that withholds a verdict is not a row that holds one.
+    ("contradicted", "**contradicted**, the earlier verdict upheld"),
+    ("not built", "**not built**, the receipt withheld"),
+    # Unbolded, which no row uses today. The whole cell is the verdict then,
+    # and the ambiguity rule below still governs it.
+    ("queued", "queued"),
+)
+
+
+def claim_state(cell):
+    """One row's verdict, and `held` never wins a tie.
+
+    Returns `(state, ambiguous)`. The scope is the first bolded span, because
+    that is where the register writes the verdict and everything after it is
+    the row's history. Where two verdicts still survive inside that span, the
+    strictest reading is taken and the caller reports it, because the
+    permissive reading is the one that lets a false sentence ship and a gate
+    that guesses in the shipping direction is worse than no gate.
+    """
+    bold = re.search(r"\*\*(.+?)\*\*", cell)
+    scope = (bold.group(1) if bold else cell).lower()
+    hits = [s for s in STATES
+            if re.search(r"\b" + re.escape(s) + r"\b", scope)]
+    if not hits:
+        return cell, False
+    if len(hits) == 1:
+        return hits[0], False
+    strict = [s for s in hits if s != "held"]
+    return strict[0], True
+
+
+def state_cases():
+    """Every case above, run before the register is read."""
+    return [(want, cell) for want, cell in STATE_CASES
+            if claim_state(cell)[0] != want]
+
 
 def claim_words(phrase):
     """The content words of a claim, lightly stemmed, as a set."""
@@ -1136,8 +1200,9 @@ def claim_rows():
             continue
         where = [(p.split(":")[0], int(p.split(":")[1]) if ":" in p else 0)
                  for p in re.findall(r"`([^`]+)`", cells[1])]
-        state = next((s for s in STATES if s in cells[3].lower()), cells[3])
+        state, ambiguous = claim_state(cells[3])
         rows.append({"phrases": phrases, "where": where, "state": state,
+                     "ambiguous": ambiguous, "cell": cells[3],
                      "label": phrases[0], "measured": cells[4] if len(cells) > 4 else ""})
     return rows
 
@@ -1240,6 +1305,14 @@ def claims():
     whether a sentence is a claim about our artifact is the judgment this check
     does not have.
     """
+    bad = state_cases()
+    if bad:
+        for want, cell in bad:
+            print(f"  CASE    wanted {want}: {cell[:62]}")
+        print("The register's verdict convention changed and STATE_CASES says")
+        print("how. Nothing below was read.")
+        return 1
+    print(f"  the verdict cases                         {len(STATE_CASES)} pass")
     rows, fails = claim_rows(), []
     hedged, moved, spread, gone = [], [], [], []
     surfaces = []
@@ -1269,6 +1342,10 @@ def claims():
                 if score >= 0.6 and max(len(w & have) for w in words) >= 3:
                     hits.append((rel, line, body, score))
         print(f"{row['state']:>13}  \"{row['label'][:58]}\"")
+        if row["ambiguous"]:
+            print(f"  AMBIGUOUS the state cell names more than one verdict; "
+                  f"the strictest is read")
+            print(f"            {row['cell'][:96]}")
         for rel, line, body, score in hits:
             tag = "ok      "
             if row["state"] != "held" and not HEDGE.search(body):
@@ -1300,7 +1377,13 @@ def claims():
             print("  not printed on any surface this check can see")
         print()
 
-    print(f"FAIL, unhedged or unnamed, live right now   {len(fails)}")
+    # The count has two inputs and a review quotes one number, so the number
+    # carries both. On 2026-10-25 this figure read 23 against 17 two days
+    # earlier and the grade that quoted it could not say which input had
+    # moved. It was the register: 11 rows to 13, with the surfaces unchanged.
+    # A delta on a figure whose scope is not beside it is not a reading.
+    print(f"FAIL, unhedged or unnamed, live right now   {len(fails)}"
+          f"   (over {len(rows)} register rows and {len(scanned)} surfaces)")
     print(f"claims not held and properly hedged         {len(hedged)}")
     print(f"held claims on an uncited surface           {len(spread)}")
     print(f"for the register's owner, not a failure here")
@@ -2496,6 +2579,22 @@ HEADLESS_CASES = (
      "  Ask it of every line and every fragment you collected."),
     (False, "the issue is NOT finished, and the fix is to write that line",
      "  again from the items actually underneath it."),
+    # The 2026-10-26 widenings. An unindented paragraph, which is the live
+    # specimen at prompts/digest.md:621, and the same shape where a fence used
+    # to stop the gate reading at all.
+    (True, "never from pleasantries and never from claiming to know their history.",
+     "and it is the reason the line exists (owner's dispatch, 2026-09-25). Read it"),
+    (True, "Then the source line, on its own line.",
+     "steps as a compact numbered list inside the item, indented under it."),
+    # And the false positives the widenings could have bought. A paragraph
+    # that legitimately opens on a named thing in lower case, a wrapped line
+    # whose predecessor carries no full stop, and a fence marker itself.
+    (False, "A reader never sees a comment, so a comment is not a surface.",
+     "`procedure` is the payload's own name for the field, never the reader's."),
+    (False, "The warmth comes from knowing what the reader's job is",
+     "like, never from pleasantries and never from claiming to know history."),
+    (False, "Count the semicolons. The target is zero.",
+     "```"),
 )
 
 
@@ -2503,25 +2602,40 @@ def headless(lines):
     """A rule whose own opening line was cut, leaving its body standing.
 
     The shape is one pair of lines: the one before ends a sentence, the one
-    after is indented, is not a block of its own, and opens mid-sentence in
-    lower case. Nothing else in these files does that, because a wrapped
-    sentence never has a full stop in front of it.
+    after is not a block of its own and opens mid-sentence in lower case.
+    Nothing else in these files does that, because a wrapped sentence never
+    has a full stop in front of it.
+
+    **Two narrowings came off this on 2026-10-26, because the defect was found
+    again in a place both of them hid.** The first version required the body
+    line to be INDENTED and skipped every line inside a ``` fence, and both
+    choices came from the one specimen it was built from, which was a bullet's
+    indented continuation outside the template.
+
+    `prompts/digest.md:621` is the same cut in a plain paragraph inside the
+    template. `d022e79a` on 2026-10-18, a trim under the weight rule, removed
+    "**A stranger has to enjoy that sentence.** This is the test it has to
+    pass" and the blank line above it, so the opening slot's outsider rule now
+    begins "and it is the reason the line exists" welded to the end of the rule
+    about greetings. The indent test missed it because a paragraph is not
+    indented. The fence test missed it because this file's fence runs 520 to
+    1353, which is 39% of the generator and is the issue TEMPLATE rather than
+    quoted output, so the reasoning `fenced()` uses for review prose is false
+    about the one file this gate exists to read.
+
+    So the unit is a sentence, which is what the defect is about, and the
+    indent and the fence are not part of it. The guard that does the work is
+    the full stop on the line before: a wrapped line never carries one.
     """
     out = []
-    fence = False
     for i in range(1, len(lines)):
         prev, cur = lines[i - 1].rstrip(), lines[i]
-        if FENCE.match(cur):
-            fence = not fence
-            continue
-        if fence or not prev.strip() or not cur.strip():
+        if FENCE.match(cur) or not prev.strip() or not cur.strip():
             continue
         # The cut landed on the line before: that is `truncations`, not this.
         if not prev.endswith((".", "!", "?")):
             continue
-        if not re.match(r"^\s+\S", cur):
-            continue
-        if re.match(r"^\s*([-*+]\s|\d+\.\s|#|>|\|)", cur):
+        if re.match(r"^\s*([-*+]\s|\d+\.\s|#|>|\||```|~~~)", cur):
             continue
         if SHOUTED.match(cur):
             continue
