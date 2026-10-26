@@ -1522,12 +1522,21 @@ button.pill {
   margin-bottom: 4px;
 }
 
+/* 600px was inherited from .skill-row-summary directly above it, and a width
+   is not a measure: the summary is 17px and runs 59 characters to the line at
+   600, which is the canon's target, while this block is 14px and ran 84 at the
+   same width. The canon's rule is "at or near 65 characters, never past 75",
+   so the smaller type needs the narrower column, not the same one. 480 puts
+   this at 67. Measured with Range rects down the rendered block rather than
+   estimated from the width, because the estimate was wrong by 35 on the
+   sibling note and nearly cost this run a fix it did not need.
+   (Found 2026-10-26, at 54 skills.) */
 .skill-routing {
   margin-top: 12px;
   font-size: 14px;
   line-height: 1.6;
   color: var(--gray);
-  max-width: 600px;
+  max-width: 480px;
 }
 
 /* The receipts, inside the open row. A definition list because that is what
