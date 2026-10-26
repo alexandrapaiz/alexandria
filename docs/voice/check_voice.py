@@ -923,6 +923,15 @@ EM = chr(8212)
 FENCE = re.compile(r"^\s*(```|~~~)")
 
 
+class BadRef(Exception):
+    """A base ref git could not resolve.
+
+    Raised rather than returned because a failed diff and a clean diff are the
+    same empty string at every call site, and a gate that cannot tell them
+    apart reports the better of the two.
+    """
+
+
 def added_lines(ref):
     """Every line this diff adds, as (path, line number in the new file, text).
 
@@ -937,6 +946,16 @@ def added_lines(ref):
     # measured. A range is passed through, for a grade re-taken after a fix.
     out = subprocess.run(["git", "diff", "-U0", ref], cwd=ROOT,
                          capture_output=True, text=True)
+    # A ref git cannot resolve fails with an empty stdout, and an empty stdout
+    # is the same byte string as a clean diff. Every caller below then reports
+    # no findings and returns 0, so the gate passes without reading anything.
+    # That is ban list 144, and it cost two runs of this seat on 2026-10-26:
+    # one reported "zero em dashes" over a branch the gate exits 1 on, and one
+    # concluded the gate "reports zero on a file already committed", which is a
+    # false belief about the instrument rather than about the prose. Loud here.
+    if out.returncode != 0:
+        detail = (out.stderr.strip().splitlines() or ["git could not resolve it"])[0]
+        raise BadRef(f"{ref}: {detail}")
     path, n = None, 0
     for line in out.stdout.splitlines():
         if line.startswith("+++ b/"):
@@ -971,6 +990,45 @@ def fenced(path):
     return out
 
 
+def inline_quoted(line, open_at_start):
+    """The characters of one line that sit inside an inline-code span.
+
+    Returns the quoted characters and whether a span is still open at the end
+    of the line, so a caller can walk a file and know the state each line
+    begins in. `quoting` below reads one line with no memory, which is why it
+    cannot see a span that opens on line 217 and closes on line 218.
+    """
+    out, inside = [], open_at_start
+    for part in re.split(r"(`)", line):
+        if part == "`":
+            inside = not inside
+            continue
+        if inside:
+            out.append(part)
+    return "".join(out), inside
+
+
+def code_state(path):
+    """For every line of a file, whether an inline-code span was already open
+    when the line began.
+
+    A span does not cross a blank line, which is what stops one stray backtick
+    from excusing the rest of a file, and a fenced line resets it because
+    `fenced` already excuses those wholesale.
+    """
+    f = ROOT / path
+    if not f.exists():
+        return {}
+    fences, state, inside = fenced(path), {}, False
+    for n, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
+        state[n] = inside
+        if n in fences or not line.strip():
+            inside = False
+            continue
+        _, inside = inline_quoted(line, inside)
+    return state
+
+
 def quoting(text):
     """Is the mark inside something quoted, or inside a command?
 
@@ -997,6 +1055,47 @@ def quoting(text):
     return False
 
 
+#: What the wrapped-span reading has to get right, as data rather than as a
+#: paragraph, in the shape HEADLESS_CASES and STANDS_ALONE_CASES already use.
+#: The true cases are real lines off this seat's own branches on 2026-10-26,
+#: where seven register keys quoted the way `routed` demands were reported as
+#: canon law 1 violations. The false cases are the shapes that look like them
+#: and are not: an em dash in plain prose, and an em dash sitting outside a
+#: span that opened or closed on the same line. A reading that excused those
+#: would make this gate quiet rather than correct.
+#: Fields: (want, the line, whether a span was open when the line began, mark)
+SELFCHECK_CASES = (
+    (True, "named rather than re-described: `2026-10-24 " + EM
+           + " The deepening needs a third", False, EM),
+    (True, "above the fold every day since` and `2026-10-03 " + EM
+           + " Canon law 12's own wording,", True, EM),
+    (True, "the date separator " + EM + " and the key` is what `routed` reads",
+     True, EM),
+    (False, "The seat was named " + EM
+            + " and then forbidden by its own charter.", False, EM),
+    (False, "`docs/ideas.md` holds the list " + EM + " and nothing reads it.",
+     False, EM),
+    (False, "the key` was quoted " + EM + " and then struck.", True, EM),
+    (False, "The rule is stated; nothing enforces it.", False, ";"),
+    (True, "the gate prints `abs/2604.24594; no html` and moves on", False, ";"),
+)
+
+
+def selfcheck_cases():
+    """Every case above, run before a diff is read.
+
+    A reading that fails its own cases either excuses a violation or reports a
+    register key, and the second of those is what sent seven true lines to a
+    review as findings.
+    """
+    bad = []
+    for want, line, start, mark in SELFCHECK_CASES:
+        got = mark in inline_quoted(line, start)[0]
+        if got != want:
+            bad.append((want, line, start))
+    return bad
+
+
 def selfcheck(ref=None):
     """Canon law 1 over the run's own added lines, which was the last
     measurement this seat took by reading.
@@ -1012,17 +1111,41 @@ def selfcheck(ref=None):
     separator. Nowhere else.
     """
     ref = ref or "origin/main"
-    hits, counts, fences = [], collections.Counter(), {}
-    for path, n, text in added_lines(ref):
+    bad = selfcheck_cases()
+    if bad:
+        for want, line, start in bad:
+            print(f"  CASE    wanted {want}: {line.strip()[:62]}")
+        print("The wrapped-span reading changed and SELFCHECK_CASES says how.")
+        print("Nothing below was read.")
+        return 1
+    hits, counts, fences, states = [], collections.Counter(), {}, {}
+    try:
+        lines = list(added_lines(ref))
+    except BadRef as dead:
+        print(f"added lines read from   {ref}")
+        print(f"  FAIL    {dead}")
+        print()
+        print("Nothing was measured, so nothing is clean. This used to print a")
+        print("clean pass and return 0, which is ban list 144.")
+        return 1
+    for path, n, text in lines:
         for mark, name in ((";", "semicolon"), (EM, "em dash")):
             if mark not in text:
                 continue
             counts[(path, name)] += text.count(mark)
             if path not in fences:
                 fences[path] = fenced(path)
+                states[path] = code_state(path)
             if n in fences[path] or quoting(text):
                 continue
             if mark == EM and text.lstrip().startswith("#"):
+                continue
+            # The span that opens on one line and closes on the next. Every
+            # entry in docs/ideas.md and docs/agents/incidents.md carries an
+            # em dash as its own date separator, and `routed` requires a
+            # finding to NAME an entry rather than re-describe it, so obeying
+            # one gate tripped this one on seven lines of one branch.
+            if mark in inline_quoted(text, states[path].get(n, False))[0]:
                 continue
             hits.append((path, n, name, text.strip()))
     print(f"added lines read from   {ref}")
