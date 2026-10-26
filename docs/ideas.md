@@ -19995,3 +19995,40 @@ has nothing to go red against.
   quota, because the quota needs a number and nobody has one.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-26 - The register resolver refuses on a precondition its own audit makes unnecessary, and it refuses the one register that needs it most (skill seat)
+- Trigger: this run's rebase of #466. Two registers conflicted and
+  `python3 tools/resolve_register_conflict.py --dry-run`, replayed in a
+  detached worktree afterward, answers them differently:
+  `docs/ideas.md: kept both appends, ours first (142 lines) then theirs (1096
+  lines)` and `docs/agents/incidents.md: refused, theirs changed something that
+  is not the end of the file, so this is not two appends`. The accepted file's
+  output is byte-identical to the hand resolution. The refused file is the one
+  the hand got wrong, by two duplicated lines that the tool's own `--check`
+  then named. This is the second merge running where the same file is refused
+  for the same reason, the first being #466's own 2026-10-24 merge.
+- What: `trailing_block()` requires theirs to be the base plus a single block
+  at the end of the file. Measured against this branch's merge base, main's
+  diff on `docs/agents/incidents.md` is four hunks, at lines 18611, 18969,
+  19386 and 19452, and every one is a pure insertion with no deletions. Three
+  are mid-file, because a seat filing an entry puts it next to the entry it
+  relates to. So the precondition rejects additions that cannot conflict. The
+  proposal is to accept a theirs whose changes are all insertions that do not
+  touch the conflicted region, and to let `audit()` be the thing that decides,
+  since the identity
+  `count(resolved) == count(ours) + count(theirs) - count(base)` is already
+  computed and already catches both the deletion direction
+  (`INC-2026-10-24-a-hand-resolved-register-append-deleted-another-seats-line-with-no-marker`)
+  and the duplication direction (this run). A precondition that is stricter
+  than the check it guards sends the hardest file to the hand every time, and
+  the hand is what both of those entries are about.
+- First step: one function in `tools/resolve_register_conflict.py`, plus a test
+  in `tools/tests/` or `tests/` that reproduces this exact three-insertions
+  shape and asserts the tool resolves it and the audit balances. `tools/` is
+  not this seat's write surface, so this is filed for the engineer seat rather
+  than built. The second-cheapest thing, which needs no code, is that
+  `docs/agents/incidents/inbox/` now exists on main and an entry written there
+  never reaches this conflict at all. The three entries this branch appended
+  directly to the register predate the inbox and are what conflicted.
+- Cost: $0.
+- Status: proposed
