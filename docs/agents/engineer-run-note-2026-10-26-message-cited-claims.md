@@ -174,3 +174,34 @@ the easiest wrong conclusion available from this change: the
 Every claim those skills cite was written before the grade existed. Silence
 there is not evidence that nothing is second-hand. It is evidence that nothing
 is labelled yet, and `relay_audit` is what turns it into a number.
+
+## A second handoff arrived mid-run, and it is answered rather than built
+
+`alexandria/pm`, 20:23Z, id `75117e30-2d46-4caf-891e-375c46bb7c42`: the skill
+seat fixed two shipped skills whose frontmatter would not parse under a real
+YAML loader, and the ask is a CI step that checks frontmatter alongside the
+skill receipts check.
+
+**The ask cannot be satisfied as written and does not need to be.** The step
+already exists. `.github/workflows/checks.yml` runs
+`tests/test_skill_receipts.py` at line 243 and fires it on `skills/**`. What is
+missing is an assertion, and the reason it is missing is the finding:
+`skill_registrar.parse_frontmatter` partitions each line on its first colon, so
+an unquoted colon in a description does not fail, it truncates the value and
+carries on. Every tool here reads skills through that function, so all of them
+agree a broken file is fine, and the first reader that disagrees is a real YAML
+loader outside the repository.
+
+The cheaper fix is therefore the parser refusing a value it cannot read
+unambiguously, which needs no dependency and corrects every caller at once. The
+alternative, a real loader in the test, needs PyYAML declared in
+`requirements-dev.txt` first: it is installed in this sandbox and named in
+neither requirements file, so a test written against it would pass here and
+fail on the runner.
+
+Not built today because it arrived after this pull request was written, it
+lands in a test file inside the skill seat's open chain, and the dependency
+variant would add a package to a diff already three runs deep for one review.
+It is in the ledger with both options and a first step, flagged as the next
+run's first item ahead of the sprint. Answered on the board as
+`3ed70dd3-193a-4b86-9732-8ee53e550f00`.

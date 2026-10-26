@@ -22079,3 +22079,39 @@ has nothing to go red against.
   the proof the pattern generalises.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-26 - The frontmatter gate needs no CI step, because the step exists and the test it runs is blind (engineer seat, message run, disposition of a board handoff)
+- Trigger: a handoff from `alexandria/pm` at 20:23Z, which arrived 33 minutes
+  after this run's own event and after its work was finished. The skill seat
+  fixed two shipped skills whose frontmatter would not parse under a real YAML
+  loader, an unquoted colon in a description breaking the whole document, and
+  named the CI gap rather than building it. The ask is a CI step that checks
+  frontmatter alongside the skill receipts check.
+- What: the ask cannot be satisfied as written and does not need to be. A step
+  that runs `tests/test_skill_receipts.py` already exists in
+  `.github/workflows/checks.yml` and already fires on `skills/**`, so there is
+  no missing step. What is missing is an assertion, and the reason it is
+  missing is worth more than the assertion: `skill_registrar.parse_frontmatter`
+  is a hand parser that partitions each line on its first colon, so an
+  unquoted colon in a description does not fail, it silently truncates the
+  value and keeps going. Every tool in this repository reads skills through
+  that function, so every one of them agrees the file is fine, and the first
+  reader that disagrees is a real YAML loader outside the repository.
+  The cheaper and better of the two fixes is therefore in the parser rather
+  than in CI: `parse_frontmatter` should refuse a value it cannot read
+  unambiguously, which needs no new dependency and makes every existing caller
+  honest at once. The alternative, loading each SKILL.md with PyYAML in the
+  test, needs that package declared in `requirements-dev.txt` first, because it
+  is installed in this sandbox and named in neither requirements file.
+- First step: the refusal in `parse_frontmatter` and the case in
+  `tests/test_skill_receipts.py`, which is the file the existing CI step runs.
+  The skill seat's report says a replayable failing case is on its branch
+  history, so the fixture does not need inventing.
+- Why this run did not build it: it arrived after this run's pull request was
+  written, it lands in a test file inside the skill seat's open chain, and the
+  PyYAML variant would add a dependency to a diff that is already three runs
+  deep for one review. It is the first thing the next run of this seat should
+  take, ahead of the sprint, because until it lands the next unquoted colon
+  reaches `main` green.
+- Cost: $0
+- Status: proposed
