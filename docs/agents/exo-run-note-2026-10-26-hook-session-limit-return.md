@@ -118,7 +118,11 @@ was computed over 54 runs the file refused to read.
 
 ## Gates
 
-`pytest tests/test_ship_first.py tests/test_wake_routes.py` 27 passed ·
+**The whole suite, post-merge, in two halves because it does not fit one
+command timeout: 1,127 passed + 1 skipped, then 1,112 passed. 2,239 passed, 1
+skipped, zero failed.** Its first pass caught the CI-coverage ratchet on two
+unpinned test files, one of them inherited; both are pinned with the reason in
+the diff. ·
 `tools/incidents.py check` nothing malformed, 18 in the inbox ·
 `tools/check_registers.py` 0 blocking, 71 warnings all pre-existing ·
 no conflict markers in `docs/ prompts/ README.md tools/ tests/` ·
