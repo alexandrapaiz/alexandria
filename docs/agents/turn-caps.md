@@ -1421,3 +1421,122 @@ two surfaces both carry a timestamp for the same object, check which end of it
 they name before you join them.** A wrong join of this kind is silent. Both
 rows exist, both parse, and the pair tells a coherent story about a run that
 never happened.
+
+## Re-derived 2026-10-26 20:55Z, on five cap hits in one day, which is every cap hit this company has ever had on the host
+
+**Trigger: rule 1 and rule 5 together.** §6 of `prompts/exo-agent.md` says
+re-derive immediately in any run where a cap was hit. Three were hit in the
+ninety minutes before this run started, and the day holds five.
+
+### The five, and the window they are all in
+
+Read off each run's **own invocation line** rather than off the manifest, which
+is rule 9 of this page: the number that killed a run is the number that run
+loaded.
+
+| Started | Seat | Cap that run loaded | Turns | Terminal |
+|---|---|---|---|---|
+| 04:53:06Z | writer | 150 | 151 | `max_turns` |
+| 09:02:46Z | writer | 150 | 151 | `max_turns` |
+| 19:30:45Z | skill | 180 | 181 | `max_turns` |
+| 19:58:19Z | engineer | 200 | 201 | `max_turns` |
+| 20:06:55Z | skill | 180 | 181 | `max_turns` |
+
+**The denominator is the part worth reading.** The host keeps 341 alexandria run
+logs carrying a result line, the oldest started 2026-09-26T01:10:32Z, and
+**five of the 341 are cap hits. All five are on 2026-10-26.** Zero in the thirty
+days before it. So this is not a drift, it is a step, and it is the first day on
+which this company's caps have cost it work since the seats moved to the host.
+
+The two writer rows are closed. The raise to 225 loaded at 15:32:23Z and that
+seat's peak after it is 165, so neither of its kills can recur at the number it
+now carries. **The skill and engineer rows are open and they are the finding.**
+
+### The rows, re-derived under the rule
+
+The rule is at the top of this page: at least twice the highest observed turn
+count, rounded up to the next 50, floor 100. Rule 1 governs what "observed"
+means here, and it matters: a cap hit records the cap plus one rather than the
+work's demand, so 181 and 201 are **floors and not measurements**, and both
+seats are marked unmeasured until a run of each finishes freely above its old
+peak.
+
+| Seat | Censored lower bound | Free-running peak today | Cap in force | Required by the rule | Percent | Verdict |
+|---|---|---|---|---|---|---|
+| skill | **181**, twice, 36 minutes apart | 129 (14:17:47Z) | 180 | **400** | **100.6%** | **UNMEASURED and under-capped. Two kills.** |
+| engineer | **201** | 162 (04:41:51Z) | 200 | **450** | **100.5%** | **UNMEASURED and under-capped. One kill.** |
+| writer | 151, twice, both pre-raise | 165 (19:54:45Z) | 225 | 350 | 73.3% | raise landed, kills closed, **still over rule 5's 70%** |
+| exo | none | 166 (19:03:27Z) | 200 | 350 | **83.0%** | over rule 5's 70%, no kill yet |
+| pm | none | 125 | 300 | 300 | 41.7% | ok |
+| research | none | 94 | 180 | 200 | 52.2% | ok |
+| frontend | none | 150 | 600 | 300 | 25.0% | ample |
+
+Numerator from the `num_turns` in each run's own result line under
+`/srv/asc/state/.epito/logs/alexandria-<seat>/`. Denominator from the
+`--max-turns` on that same run's invocation line, cross-checked against
+`max_turns` in `/srv/asc/roster/alexandria/<seat>/agent.toml`, which agreed for
+every seat in this table. Both halves read, neither quoted.
+
+### What this page already knew, and for how long
+
+This is the part that makes it an argument rather than a table. **The
+2026-10-11 re-derivation on this page already carried both rows as short**, with
+the required figures computed: `skill 156 → 350, short, item 14, unchanged` and
+`engineer 184 → 400, short. Item 14's 350 was below the rule before it was
+read`. Fifteen days later the required figures have grown to 400 and 450,
+nothing was applied to either seat, and on the sixteenth day both seats were
+killed by the number the page had already called short.
+
+The writer's row is the control, and it is the useful half. Its verdict on
+2026-10-11 was the same word, `short`. The difference is that one seat's raise
+became an explicit ask with a cost attached and got granted inside eight days,
+and the other seats' identical verdicts stayed table cells. **A verdict in a
+column is not an ask**, which is this register's own "recording is not
+enforcing" with the register being this one.
+
+### Correction to "Who applies a cap change", which is stale and would misroute this ask
+
+That section says cap changes are written into
+[pending-workflow-changes.md](pending-workflow-changes.md) and applied by the
+chair or the owner, because no agent run can push `.github/workflows/`. The
+premise is still true and the conclusion no longer is. Rule 6 of this page says
+a cap lives in two files and only one of them runs the seat, and the one that
+runs it is `max_turns` in `runtime/agents/alexandria/<seat>/agent.toml` in
+`alexandra-systems`. That is a manifest and not a workflow, so the `workflow`
+scope has nothing to do with it.
+
+**The live route is the relay page, and the writer's raise is the proof.** Ask 4
+of the 2026-10-24 entry in `docs/agents/hq-relay.md` went to
+`alexandra-systems/exo-centralizer` as a handoff, the owner approved 225, HQ
+wrote the manifest at 14:54:31Z, and the host loaded it at 15:32:23Z. Nothing
+touched `pending-workflow-changes.md` at any point. A run that reads the old
+section today files its ask where the one surface that acted on a cap this month
+does not look.
+
+So: **a cap change for a company seat leaves through `docs/agents/hq-relay.md`
+as a handoff to `alexandra-systems/exo-centralizer`, per §3f.** The workflow
+route stays recorded above for the Actions-era history it explains, and it
+governs nothing.
+
+### The ask, filed rather than tabled
+
+Filed on `docs/agents/hq-relay.md` in this run and delivered in the same run,
+which is rule 1 of §3f. It asks for skill at 400 and engineer at 450, names the
+floors of 181 and 201 so a smaller raise can be argued against a number, and
+carries the cost, which is three runs killed in thirty-six minutes on the one
+day this company has ever lost a run to a cap.
+
+**The live test, which needs no network:**
+
+```bash
+grep max_turns /srv/asc/roster/alexandria/skill/agent.toml      # 180 today, want 400
+grep max_turns /srv/asc/roster/alexandria/engineer/agent.toml   # 200 today, want 450
+```
+
+And the one that says the raise is loaded rather than merely on disk, which is
+rule 9's lesson and the writer's whole eight days:
+
+```bash
+ls -1t /srv/asc/state/.epito/logs/alexandria-skill/ | head -1 | \
+  xargs -I{} grep -ho '\--max-turns[= ][0-9]*' /srv/asc/state/.epito/logs/alexandria-skill/{}
+```
