@@ -108,6 +108,7 @@ DIGEST = ROOT / "prompts/digest.md"
 #: gate in this repository named it, so the finding that closed writer run 47,
 #: that no gate had ever read the generator, was still true of the second one.
 SHORT = ROOT / "prompts/digest-short.md"
+GENERATOR = ROOT / "prompts/digest.md"
 #: Every file the press writes an issue from. The gates below default to this
 #: list rather than to `DIGEST`, because a default naming one of two generators
 #: reports a clean file and a silent one under the same verdict.
@@ -3136,6 +3137,125 @@ def blockrules():
     return rc
 
 
+#: The generator's ABSOLUTE rules, each with the phrase in `prompts/digest.md`
+#: that states it and the pre-send BLOCK rule that can hold an issue breaking
+#: it. `None` in the third position is the finding: a rule the file states with
+#: no budget and nothing between it and a reader.
+#:
+#: Absolute and not merely stated, because the whole file is rules and a list of
+#: all of them is a list of the file. A row belongs here when the generator
+#: gives it a target of zero, or says "never", or the canon numbers it a law and
+#: the owner has ruled on it twice. The phrase is quoted so a row cannot outlive
+#: the rule it describes, which is `blockrules`' technique and the reason that
+#: pass catches a dropped rule.
+ABSOLUTE_RULES = (
+    ("the semicolon",
+     "Count the semicolons. The target is zero and there is no budget",
+     None),
+    ("the em dash",
+     "the same as the em\n  dash",
+     None),
+    ("law 8, the link reaches the full text",
+     "Links reach the full text, never the landing page",
+     None),
+    ("law 8, every item carries its link",
+     "Every item in every section carries its own\n  link",
+     None),
+    ("law 14, a list and a written turn",
+     "Sections running past four paragraphs with no\n  written turn in them",
+     None),
+    ("law 12, the framework's names are never printed",
+     "no part announces itself with a label",
+     "skeleton-heading"),
+    ("the date is not in the title",
+     "The date does NOT belong in this line",
+     "date-in-title"),
+    ("ban list 1, the slop lexicon",
+     '"Delve", "landscape" and "realm"',
+     "slop-lexicon"),
+    ("plain ASCII",
+     "The one exception is a",
+     "typesetter-punctuation"),
+    ("the internal vocabulary stays inside",
+     "says a payload key out loud",
+     "internal-vocabulary"),
+    ("an item never ends on its citation",
+     "The last sentence of an item is not available",
+     "ends-on-citation"),
+)
+
+
+def ungated():
+    """Which of the generator's absolute rules the press can actually hold.
+
+    `blockrules` asks this question in one direction, whether every rule the
+    pre-send gate blocks on is answered in the prompt that writes the short
+    edition. Nothing has ever asked it in the other direction, and the other
+    direction is where the issues go out wrong: a rule the generator states
+    with a target of zero and no budget, with nothing in the pipeline able to
+    stop the send, is enforced at the reliability of a model reading a long
+    file, which is L-A22 in one sentence.
+
+    This run's grade is the argument for the pass. Every live defect in the
+    current edition is a rule `prompts/digest.md` already states in its most
+    explicit available form.
+
+    * Law 8's link rule is bolded, carries a worked `abs` to `html` example
+      with a version suffix on it, and warns about coverage in the same
+      bullet. 2026-W42 printed ten links, nine to the abstract, and arXiv
+      serves the full text for seven of those nine.
+    * Law 1's semicolon rule states the target twice, and the second statement
+      names the precise construction, "two finished sentences in a balanced
+      contrast", from the eight that printed in 2026-W40. 2026-W42 printed two
+      and both are that construction.
+
+    Neither rule is unclear and neither is missing. Both have now failed
+    through prompt wording more than twice, which is the line the writer
+    charter's structure watch draws, and on the far side of that line the fix
+    is a gate rather than a sentence. The pre-send gate blocks on eight rules.
+    Two of them are the exotic typesetting characters and the semicolon and the
+    em dash are not among them, so the mark the generator says has no budget
+    passes the only gate standing between the press and a reader.
+
+        python3 docs/voice/check_voice.py ungated
+    """
+    rc = 0
+    gen = GENERATOR.read_text(encoding="utf-8") if GENERATOR.exists() else ""
+    if not gen or not PRESEND.exists():
+        print(f"  {GENERATOR.name} or {PRESEND.name} is missing")
+        return 1
+    blocks = set(BLOCK_RULE.findall(PRESEND.read_text(encoding="utf-8")))
+    print(f"  absolute rules in {GENERATOR.name}            "
+          f"{len(ABSOLUTE_RULES)}")
+    print(f"  BLOCK rules in {PRESEND.name}      {len(blocks)}")
+    dropped = [(n, q) for n, q, _ in ABSOLUTE_RULES
+               if " ".join(q.split()) not in " ".join(gen.split())]
+    print(f"  rows whose rule has left the generator        {len(dropped)}")
+    for name, quote in dropped:
+        rc = 1
+        print(f"    STALE      {name}: {quote!r} is not in {GENERATOR.name}")
+    held = [(n, g) for n, _, g in ABSOLUTE_RULES if g and g in blocks]
+    phantom = [(n, g) for n, _, g in ABSOLUTE_RULES if g and g not in blocks]
+    open_rules = [n for n, _, g in ABSOLUTE_RULES if not g]
+    print(f"  of those the press can hold                   {len(held)}")
+    for name, gate in held:
+        print(f"    HELD       {name}  ->  {gate}")
+    print(f"  rows naming a gate the pre-send gate lacks    {len(phantom)}")
+    for name, gate in phantom:
+        rc = 1
+        print(f"    PHANTOM    {name}  ->  {gate} is not a BLOCK rule")
+    print(f"  of those nothing can hold                     {len(open_rules)}")
+    for name in open_rules:
+        rc = 1
+        print(f"    UNGATED    {name}")
+    print()
+    print("A rule with a target of zero and no gate is enforced by a model")
+    print("reading a long file, which is the condition L-A22 names. Each")
+    print("UNGATED row above is a rule the generator states absolutely and")
+    print("the press cannot refuse, and every one of them has printed.")
+    return rc
+
+
 #: The seventeen cases `past_tense_you` has to satisfy, as data rather than as
 #: a test file. `tests/` is the engineer's surface and this seat's is
 #: `docs/voice/`, and a first draft of this gate put them in
@@ -4215,6 +4335,7 @@ def main():
                      ("routed", routed),
                      ("editions", editions),
                      ("marks", marks),
+                     ("ungated", ungated),
                      ("captions", captions),
                      ("blockrules", blockrules),
                      ("compare", compare), ("selfcheck", selfcheck)):
