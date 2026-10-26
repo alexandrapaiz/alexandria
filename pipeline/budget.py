@@ -1459,6 +1459,16 @@ PACED_CALLERS = [
     "pipeline/interpret.py",
     "pipeline/distill.py",
     "pipeline/retag_threads.py",
+    # Not a corpus job and not on a cron, and on this list anyway (2026-10-26).
+    # The list's own name is the test: a caller that makes dozens of calls in a
+    # row against a published rate limit. An eval run is 42 subject calls plus
+    # the judge's, and until 2026-10-26 it took no pause at all, so it met the
+    # defect this guard was written for while sitting outside the only list
+    # that looks. The second half of `check_fallback_pacing` needs a
+    # `KIMI_DAILY_DRAW` row and this file has none, which is right: an eval is
+    # asked for by hand and is not part of the corpus day the daily allowance
+    # is sized for. The source check is what matters here.
+    "tools/skill_eval.py",
 ]
 
 

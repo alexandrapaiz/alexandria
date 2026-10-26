@@ -43,7 +43,7 @@ export default async function Issue({ params }) {
   return (
     <main className="page">
       <article
-        className="digest"
+        className="digest issue-body"
         dangerouslySetInnerHTML={{ __html: renderMarkdown(issue.body) }}
       />
       <div className="issue-foot">

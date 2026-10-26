@@ -8479,7 +8479,7 @@ graphs.
   `tools/skill_eval.py --check` rejects and `--skill` refuses to run. Three open
   pull requests carry eight of these files each: #151, #152 and #159. The same
   files also carry `subject_model` and `judge` at the top level and no `policy`
-  block at all, so rule 1 of `docs/product/skill-validation.md` §V5 is unmet on
+  block at all, so rule 1 of `docs/product/skill-validation.md` section V5 is unmet on
   every one of them: the repetitions and the threshold are not registered
   anywhere, and `normalize` quietly supplies a default of three repetitions,
   which is the run choosing its own n.
@@ -14366,6 +14366,18 @@ that triggered it, per the charter.
   `policy.require_certificates: true` becomes settable, and `ams-t5` moves back
   to the documented form.
 - Cost: $0.
+- Update, 2026-10-26 (engineer seat): the first step is built, inside sprint
+  2026-10-26 item 2, as `skill_eval.criterion()`. `--check` moved from "4 of
+  265 rubric criteria are tied to a certificate" to "31 of 265" and from 416
+  findings to 389, the 27 cleared being `harness-engineering`'s, which had
+  carried a certificate on every criterion all along. `section` was being
+  dropped by the same literal and is carried now too; no suite writes it yet,
+  so that half was latent. The two edits this entry asks of the suite files,
+  turning `require_certificates` on and moving `ams-t5` back to the documented
+  form, are the skill seat's: the engineer charter does not write into
+  `skills/`. **The status line is left as the owner set it**, because this
+  entry was never moved to `accepted` and `proposed` to `built` is not a
+  transition this seat may make.
 - Status: proposed
 
 ### 2026-10-13 — Nothing in CI runs the two checks that grade the skill library (skill seat)
@@ -20480,4 +20492,439 @@ has nothing to go red against.
   description.
 - Cost: $0 to steal. Temporal itself would be a service and a bill, and nothing
   here proposes adopting it.
+- Status: proposed
+
+### 2026-10-26 - A gate says what it applies to, so a rule nobody can satisfy is a number rather than a discovery
+- Trigger: of the 546 pull requests this repository has ever held, 16 change a
+  `skills/<slug>/SKILL.md` and ADR-12's whitelist refuses all 16, measured in
+  today's run. None is whitelist-clean, and the cause is the org's own
+  contract: `prompts/skill-agent.md` requires the
+  seat to append its ideas to `docs/ideas.md` and its repeats to
+  `docs/agents/incidents.md` on the same branch, so every proposal is
+  guaranteed out of scope for the gate meant to merge it. The gate has been
+  live since 2026-09-17 and nothing ever reported that its pass rate could not
+  exceed zero.
+- What: today's craft scan below is the mechanism. Gerrit's submit requirements
+  separate `applicableIf` from `submittableIf` and give the result five
+  statuses, of which `NOT_APPLICABLE` and `UNSATISFIED` are different words: a
+  rule that does not apply is hidden and blocks nothing, and a rule that
+  applies and is unmet is visible and blocks. ADR-12's whitelist has only the
+  second word. It is applied to the whole diff, so one out-of-scope path
+  refuses the whole proposal, and the refusal reads the same whether the
+  proposal was wrong or the rule was unreachable. Two halves to steal, and the
+  cheap one is not the amendment. First, a gate reports its own reach: for each
+  gate in this repository, how many of its last fifty real inputs it could ever
+  have passed, so a ceiling of zero is a line in a report rather than something
+  a build run discovers three weeks later. Second, and this one is the owner's,
+  scope ADR-12 per path rather than per diff, so a pull request mixing judgment
+  and machinery has its `skills/` half judged by the panel and its machinery
+  half routed to ADR-14's human merge, instead of the whole thing refused.
+- First step: `tools/gate_reach.py`, one gate at a time, starting with the two
+  whose inputs are already enumerable from the GitHub API: ADR-12's whitelist
+  over the skill seat's pull requests, and `tools/check_authority.py` over the
+  seats' charters. The number for the first is in today's pull request
+  description and the instrument is what makes it repeatable.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The skill seat's ledger append moves to its own pull request, so a proposal can be in scope for the gate that judges it
+- Trigger: the same 16-of-16 measurement. The out-of-scope paths are not
+  incidental: `docs/ideas.md` and `docs/agents/incidents.md` appear on nearly
+  every skill pull request because that seat's charter requires both appends on
+  the branch that carries the work, exactly as the engineer charter requires
+  them here.
+- What: the append is a different act from the proposal and it is addressed to
+  a different reader. A skill promotion is text the panel judges against
+  claims; a ledger append is a note to the PM and the owner. Splitting them
+  costs the skill seat one extra `gh pr create` and makes the difference
+  between a proposal ADR-13 can merge and one it structurally cannot. The
+  alternative is the amendment in the entry above, which is larger: it changes
+  a decision rather than a charter, and it has to answer what else `docs/`
+  admits once two files in it are admitted. Either repair works and they are
+  mutually exclusive, so this entry exists to put both in front of the owner
+  rather than to argue for one.
+- First step: a charter diff to `prompts/skill-agent.md`, which is the owner's
+  under HQ standard section 21 because it changes what a seat is required to do, so
+  this stays a proposal and no part of it is in today's pull request.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The daily reviewer pass reads open pull requests as well as main, so a verdict can describe something that still needs merging
+- Trigger: building ADR-13's merge executor today found that every row in
+  `panel_verdicts` describes text already on `main`. All three reviewers run in
+  step 2 of `pipeline/skill_revision.py`, which reads skills from `main` over
+  the GitHub API, so `panel_consensus` can be unanimous only about a proposal
+  that no longer needs merging. The ADR's sentence is "unanimous pass merges the
+  PR" and the panel could not name a pull request.
+- What: the same job gains a second pass over open pull requests that change a
+  `skills/<slug>/SKILL.md`. `tools/panel_merge.py`'s `review_proposal` already
+  does the hard half with no credential, by fetching `refs/pull/N/head` and
+  calling each reviewer's own `review(skills_dir=...)` against the branch's
+  tree, and this run proved it against #535. What it cannot do is file the
+  rows, because a file-half verdict is weaker than a reviewer's whole duty and
+  `panel_verdicts` is the audit trail that replaces an approval. The job is the
+  one place that holds the `neon` secret and can therefore run all three
+  reviewers in full and file honest rows against a branch's sha.
+- First step: `review_pass` in `pipeline/skill_revision.py` takes a
+  `skills_dir`, which it almost does already, and the job loops over the open
+  proposals before it loops over `main`. One Modal function, no new secret, no
+  new schedule. It needs the Modal workspace back to run, so the slice is
+  writable today and unverifiable until then, and that is worth saying out loud
+  rather than discovering at deploy.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Gerrit separates a rule that does not apply from a rule that is not met, where ADR-12's whitelist has one word for both (engineer seat, message run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  build rather than against the product's feature set. The run built the thing
+  that merges a pull request without a person, so the scan went to the most
+  mature system that does it: Gerrit's submit requirements.
+- What: read live at
+  gerrit-review.googlesource.com/Documentation/config-submit-requirements.html.
+  A submit requirement carries three expressions and not one. `applicableIf`
+  decides whether the rule is in play at all, `submittableIf` decides whether
+  it is met, and `overrideIf` decides when it is bypassed on purpose, by a
+  trusted user or in an emergency. The result is one of five statuses, and the
+  two that matter here are `NOT_APPLICABLE`, which is hidden and blocks
+  nothing, and `UNSATISFIED`, which is visible and blocks. The stealable thing
+  is that split. A gate with only `submittableIf` cannot tell a reader whether
+  a refusal is about the input or about the rule, which is exactly how ADR-12's
+  whitelist refused 16 of 16 inputs for three weeks without anybody noticing
+  that its ceiling was zero. The third expression is worth naming too, because
+  this repository has no `overrideIf` anywhere and instead has prose: section 22's
+  forty-eight-hour silence rule is an override with a timer, written in a
+  standard rather than in the gate, so no instrument can read it.
+- What alexandria does better: the verdict carries its own evidence. Gerrit's
+  submit record says which requirement was unsatisfied and which label was
+  missing, and the reasoning behind a human's vote is not in the record.
+  `panel_verdicts` holds the findings that produced the verdict as jsonb, the
+  sha256 of the exact text judged, and the git blob sha of the reviewer's own
+  code, append-only, so a re-review preserves the disagreement instead of
+  replacing it. That is a verdict a stranger can re-derive. A vote is not.
+- First step: the first entry above, and its cheap half is one instrument
+  rather than a decision.
+- Cost: $0 to steal. Gerrit itself is a self-hosted review server and nothing
+  here proposes adopting one.
+- Status: proposed
+
+### 2026-10-26 - The issue headline wants the same balance the dek just got, and the phone says no (frontend seat, message run)
+- Trigger: measuring the dek widow on card
+  `b37a342a The issue dek's second line is a two-word widow`. The card describes
+  the dek as sitting "under a headline that is itself two balanced lines." It is
+  not. On the one published issue at 820 and 1440 the H1 runs 610px then 156px
+  in a 632px measure, so the second line is 25% of the column and two words
+  long. The dek's old second line was 118px and two words. The defect the card
+  names was the lower half of a pair, and a reader met both stubs in the first
+  60px of the page.
+- What: the dek is fixed and shipped in this run. The H1 is not, and the reason
+  is a measurement rather than caution. `text-wrap: balance` on `.issue-body h1`
+  was measured across the generator's whole title range, a 28-character title,
+  the live 51, and 113 against the 120-character ceiling `ensure_fresh_title`
+  enforces, at all three viewports. It is right in five of six cases and it is
+  inert in two of those: a one-line title does not move, a three-line title at
+  820 and 1440 is already 628/617/493 and does not move, and the live title at
+  820 and 1440 goes from 610/156 to 420/346, which is the repair.
+  The sixth is the phone and it is a regression. The live title at 390 goes from
+  297/305/156, a descending rag with the stub last, to 297/172/289, which puts
+  the short line in the middle and reads as a dent rather than as a rag. Both
+  frames are committed at
+  `docs/design/reviews/2026-10-26-message/h1-live-phone-plain.png` and
+  `h1-live-phone-balanced.png`, and the call wants an eye rather than the
+  numbers, because both versions measure defensibly and only one of them looks
+  like a mistake.
+- Why it is a proposal and not a diff: the honest fix is `balance` above 820
+  only, and that is a breakpoint on a type rule rather than a type rule, which
+  is a house decision. The card itself says the right thing about this: one
+  deliberate use of `text-wrap` on `.statement` "is not a system the dek was
+  left out of," and inventing the system at the keyboard is what it warns
+  against. Ban list 31 is the other half: the stylesheet now has balance in two
+  places and not in the third that measures like them, which is the almost
+  complete set that entry describes. Either the house balances display type as
+  a rule, in which case the H1 and `.statement` and the dek are one decision, or
+  it does not, in which case the dek's rule wants its own justification written
+  down. This asks for that ruling, not for the diff.
+- First step: her eye on the two committed phone frames, and a one-line answer
+  to whether display type balances as a house rule. The diff is two lines either
+  way.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - `shoot.mjs` should refuse to write frames into a directory another run is using (frontend seat, message run)
+- Trigger: `INC-2026-10-26-the-visual-harness-readme-teaches-the-fixed-tmp-name-that-incident-0b-forbids`.
+  This run's 33 sweep frames landed in `/tmp/sweep` beside 33 frames the same
+  seat's run had written ninety minutes earlier, and nothing anywhere said so.
+  The run found it by listing the directory for an unrelated reason.
+- What: `shoot.mjs` names its output `<page>-<viewport>-<tag>.png`, and a
+  sweep's purpose is a before and an after, so the collision the tool is shaped
+  to produce is two runs that both pass `before`, which is the first tag any run
+  passes. The survivor is then read as a baseline. The documentation half is
+  fixed in this run's pull request, every worked example in the harness README
+  now deriving its output from `mktemp -d`, and that is the half that was free.
+  This is the other half: a tool that refuses rather than a README that advises.
+- Why it is a proposal rather than a diff in the same pull request: these
+  scripts are shared by every run of this seat, and a guard that misfires costs
+  a whole run's evidence, which is more than the defect costs. The shape wants
+  deciding before it is written. The cheap version refuses when the target
+  directory already holds a `.png` whose mtime predates the process start, which
+  catches the real case and lets `--force` through for a deliberate re-shoot.
+  The expensive version writes a sentinel naming the pid and the tag.
+- A thing the cheap version gets wrong, named here so it is not rediscovered:
+  re-shooting one page into a directory already holding a full sweep is a normal
+  and useful move, and this run did exactly that twice while verifying the fix.
+  So the refusal has to be scoped to the frames the run is about to overwrite,
+  not to the directory being non-empty.
+- First step: one of the two shapes above, chosen, then about ten lines.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The $0 route to the first differential eval result is one secret, not a paid account and two (engineer seat, message run)
+- Trigger: sprint 2026-10-26 item 2 asked for `agent-memory-selection`'s first
+  real with-versus-without result. Every document in this repository states the
+  blocker the same way, and `skills/agent-memory-selection/SKILL.md` states it
+  in the skill's own provenance block: "no route to either eval arm (no
+  `GROQ_API_KEY` in `.github/workflows/agent-skill.yml`, no benchmark provider
+  in `pipeline/budget.py`)". The second half of that sentence is wrong.
+  `pipeline/budget.py`'s table holds three Groq models priced at $0.00 per
+  million, `openai/gpt-oss-120b`, `openai/gpt-oss-20b` and `qwen/qwen3.8-27b`,
+  so a subject and a judge that differ, which is the one thing ADR-36 refuses
+  to run without, both exist on the free tier.
+- What: the run that produces the first result needs one credential and no
+  budget. Measured on this branch rather than estimated:
+  `python3 tools/skill_eval.py --skill agent-memory-selection --plan --subject
+  openai/gpt-oss-20b` prints "$0.00 a call, so the $0.75 cap cannot bind". The
+  numbers behind it are 42 subject calls at about 92,600 tokens, 45 judge calls
+  at about 135,900, a worst-case with-skill request of 3,023 tokens against the
+  free tier's 6,800-token margined minute, and roughly 34 minutes of wall clock
+  that is all pacing. The subject's day lands on `openai/gpt-oss-20b` and the
+  judge's on `openai/gpt-oss-120b`, which matters because the corpus fallback's
+  whole day is sized against the latter in `budget.fallback_daily_draw`, so
+  splitting the two arms across two models keeps an eval run out of the
+  fallback's allowance.
+- And the cheapest first result is cheaper still. The 7 findings `--check`
+  reports against this skill are all ADR-40 item 6 audits, which are judge-only:
+  7 calls, about 25,000 tokens, 13 percent of one free-tier day, three minutes.
+  That closes every open finding on the skill the sprint picked and needs no
+  subject arm at all.
+- The one thing it is not: free in the pre-registered sense. The suite registers
+  `kimi-k2.6`, rule 1 of `docs/product/skill-validation.md` section V5 says the run
+  copies the policy rather than choosing it, and as of this branch a
+  `--subject` override is recorded in `result.policy_overrides` and fails
+  ADR-37's gate. So the free route is the skill seat's to pre-register, in the
+  suite, before the run. The engineer's half is done and the authoring half is
+  not the engineer's to do.
+- First step: the owner puts `GROQ_API_KEY` in the engineer and skill seats'
+  runtime (one value, already held as the Modal secret named `groq`), and
+  `docs/agents/pending-workflow-changes.md` item 12 is amended to say what it
+  actually unblocks: not a CI step on a workflow decision 056 retired, but 7
+  judge calls that close the last findings on one skill.
+- Cost: $0, and this entry exists partly to say so, because the ask has read as
+  "a funded Moonshot account plus two secrets" since 2026-09-30.
+- Status: proposed
+
+### 2026-10-26 - A correction should not be able to leave a verbatim copy of what it corrected (engineer seat, message run)
+- Trigger: `INC-2026-10-26-the-corrected-sentence-was-corrected-in-one-register-of-two`,
+  filed on this branch. PR #542 measured that the reviewer panel's gap is four
+  things, corrected `docs/product/reviewer-panel.md`, and named the second copy
+  of the disproved sentence in its own pull request body: "`README.md`'s status
+  checklist says the same sentence." `README.md` is not among #542's seven
+  changed files, so the front page carried "the merge is the only slice left"
+  for a day after that was measured to be false, by the same seat, in writing.
+- What: a check in `tools/check_registers.py` that reads the diff rather than
+  the tree. For every line a commit removed from a document under `docs/`, ask
+  whether a near-identical line still exists anywhere in `docs/` or
+  `README.md`, and report the survivors. Near-identical rather than exact,
+  because the two copies in this instance were not byte-equal: one said "the
+  only thing between ADR-13 and a working loop" and the other "the merge is the
+  only slice left". A normalized shingle comparison over sentences is enough
+  and needs no model. The output is a finding and not a failure, for the reason
+  the certificate checks give: a gate that fails on every rewording would be
+  turned off within a week.
+- Why it is this check and not a rule: the charter already tells every seat to
+  check the registers before shipping, and this failure happened inside a run
+  that did exactly that. The thing missing was not attention. It was that
+  nothing between the correction and the duplicate ever opened the second file,
+  which is incident 20's sentence word for word.
+- First step: the removed-line extraction and the shingle comparison, against
+  #542's own diff as the fixture, since it is a known positive with a known
+  answer.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: OSF Registries makes a deviation from the plan its own timestamped document, where this harness writes it into the result it deviated on (engineer seat, message run)
+- Trigger: the daily craft scan, taken against this run's own build. The run
+  spent the day in a pre-registered A/B harness, so the scan went to the
+  product category that sells pre-registration itself rather than to a research
+  tool: OSF Registries, the Center for Open Science's registry, read live at
+  help.osf.io and osf.io/registries.
+- What: a registration on OSF is frozen at submission and cannot be edited. A
+  change to the plan afterwards is not an edit to the registration; it is a
+  separate object, an update with its own timestamp, its own justification
+  field and its own DOI, attached to the original and rendered beside it. The
+  registry shows the chain. The stealable thing is where the deviation lives.
+  This harness now records a moved dial in `result.policy_overrides` and
+  carries it into `history`, which is better than the nothing it recorded this
+  morning, but the record still lives with the run that deviated. OSF's record
+  lives with the plan, so the question "has anybody ever run this suite off its
+  registered policy" is answered by opening the registration rather than by
+  opening every result. Here the equivalent is the suite file, and the suite
+  file is the skill seat's.
+- What alexandria does better, and it is the half OSF deliberately does not
+  do: disclosure is not the gate. A registered report may deviate from its plan
+  and still publish, as long as it says so; the reader is left to decide what
+  the deviation did to the claim. `tools/skill_eval.py --gate` refuses. As of
+  this branch a delta measured on a subject the suite did not register does not
+  clear ADR-37's gate at all, which is a stronger instrument than a disclosure
+  field and the right one when the thing downstream of the verdict is an
+  automatic merge rather than a human reader.
+- First step: a `deviations` array in the suite's own file, appended to rather
+  than replaced, one entry per run that moved a dial, written by the runner at
+  the moment it moves one. It is three lines in `tools/skill_eval.py` and it
+  writes into `skills/<slug>/evals/`, which the engineer charter does not write
+  to, so it is a proposal for the skill seat and the owner rather than an
+  engineer task.
+- Cost: $0 to steal. OSF Registries is free and nothing here proposes adopting
+  it.
+- Status: proposed
+
+### 2026-10-26 - The pacing rule is enforced twice, by two gates that disagree (engineer seat, message run)
+- Trigger: `INC-2026-10-26-the-pacing-rule-has-two-gates-and-they-do-not-agree`,
+  filed on this branch. Adding `tools/skill_eval.py` to
+  `budget.PACED_CALLERS` passed `budget.check_fallback_pacing()` and
+  `python3 pipeline/budget.py`, both clean, and then failed
+  `tests/test_corpus_drain.py::test_every_paced_caller_tells_pace_how_big_its_call_was`,
+  which asserts the same guard plus one thing more: the literal
+  `cap.last_tokens` in each paced caller's source.
+- What: move that source assertion into `budget.check_fallback_pacing`, beside
+  the regex that already reads each caller's source for a bare `pace(x)` call,
+  so the function whose docstring tells a seat the source is the only place to
+  ask the question is the function that actually asks all of it. The test then
+  keeps its one line, `check_fallback_pacing() == []`, and stops holding a rule
+  of its own. Three paragraphs of that docstring exist to explain why the check
+  lives in the source, and a reader who follows them lands in a function that
+  enforces most of the rule.
+- Why it is worth a day rather than a commit: this changes what fails a deploy.
+  `python3 pipeline/budget.py` is the pre-deploy check, so folding an assertion
+  in means a caller that passes the test today but not the stricter reading
+  would start blocking deploys. The right order is to confirm the four existing
+  callers all satisfy the folded version first, which they do by inspection and
+  should by test, and only then move it.
+- First step: a test that asserts the two enforcers agree on every entry in
+  `PACED_CALLERS`, which fails today on nothing and would have failed on this
+  run's first attempt. That is the cheap half and it is worth landing on its
+  own, because it converts an invisible disagreement into a red tick.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Calibrate the scope cutoff instead of choosing it (engineer seat, hook run)
+- Trigger: `tools/skill_scope.py`, shipped on this branch, keeps a candidate
+  when its BM25 score clears half the top score, and three at most. Both
+  numbers were fixed before the suite ran and neither was fitted, which is
+  the honest way to run a first measurement and is also the reason the
+  result cannot say whether a different cutoff would be better. The run
+  measured four scope misses out of 49 golden cases, 8.2%, and has no way to
+  say what a cutoff of 0.3 or a K_MAX of 2 would do to that number or to the
+  74% context saving it bought.
+- What: sweep `KEEP_RATIO` and `K_MAX` over the 67 trigger cases and publish
+  the frontier, one point per policy, so the cutoff is chosen from a curve
+  rather than from a hunch. The craft scan below is the shape to copy and the
+  trap to avoid: Semantic Router's `fit()` learns a map from raw score to the
+  probability that the top route is right, which makes a cutoff mean
+  something a reader can reason about, and it fits on the same utterances it
+  then evaluates on, which makes the number it prints an in-sample number. So
+  the sweep here holds out the cases it does not fit on, and the published
+  policy carries both halves.
+- First step: a `--sweep` flag that prints the frontier and writes a bundle,
+  with the 67 cases split by suite so no skill's own cases set the cutoff
+  that then scores them. Half a day, and it needs no new instrument.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The flat baseline is the finding, so build the near-neighbour distractor pool (engineer seat, hook run)
+- Trigger: today's measurement, `docs/evals/2026-10-26-scoped-skill-delivery.md`.
+  The unscoped baseline held 83.7% recall at zero distractors and 83.7% at
+  twenty, where the market brief of 2026-10-16 reports a fall from 73.6% to
+  27.4%. The twenty distractors are the real Clerk skills vendored under
+  `.agents/skills/`, and they are too far from this library's subject to take
+  a single case from it. The brief's collapse needs near neighbours, and this
+  checkout cannot stage one.
+- What: a distractor pool drawn from the agent-engineering skills the market
+  seat already tracks in `docs/market/landscape.md`, the skillbay and
+  ComposioHQ directories among them, filtered to the subject this library
+  serves rather than away from it. Then the sweep says something about the
+  regime the product will actually ship into, which is a reader who has
+  installed three agent-skill libraries and not one.
+- Why it matters more than the win: the scoped arm beat the unscoped arm on
+  this tree, and the honest reading of that win is small, because the failure
+  it was built to prevent did not happen here. A measurement that cannot
+  stage the failure it is about reports a safety margin and not a rescue, and
+  the entry that says so is worth more than the one that claims the rescue.
+- First step: collect twenty to forty real descriptions from the public
+  directories, store them the way `skills/_validation/decoys.json` stores the
+  null panel, and re-run the sweep against both pools side by side. The
+  distractors are somebody else's published text, so the file records where
+  each one came from and the date it was read.
+- Cost: $0. Public directories, read once, no account.
+- Status: proposed
+
+### 2026-10-26 - Scoped delivery exists and is not yet what the plugin does on install (engineer seat, hook run)
+- Trigger: sprint-2026-10-26 item 3 asked for the mechanism and its numbers,
+  and both shipped on this branch. The word in the item's title is "by
+  default", and the default is still the whole library, because the two
+  places the default lives are not this seat's to write. A router entry in
+  the library is skill content and belongs to the ADR-13 panel. A scoping
+  hook in `.claude-plugin/plugin.json` is not something the host exposes
+  today, so the manifest has nowhere to put one.
+- What: name which of the two it is, then do that one. The panel route is a
+  router skill whose description is the only text a harness holds, and whose
+  body names which of the nine to load; `tools/skill_scope.py --query` is
+  already the mechanism behind it and the router skill is the surface. The
+  host route is a question for the platform rather than a build, and the
+  honest version of it is a sentence in `docs/product/install.md` saying what
+  a reader can run by hand until the host has the hook.
+- First step: the owner or the PM picks the route, because the panel route
+  spends the skill seat's week and the host route spends nobody's. Then one
+  of the two is a day.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Semantic Router turns a raw score into a probability before it thresholds, where this scope thresholds the raw score (engineer seat, hook run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  build. The run shipped a two-stage skill router with a cutoff at half the
+  top BM25 score, so the adjacency is the most mature open-source product
+  that does exactly this job for tools rather than for skills:
+  aurelio-labs/semantic-router, read live at
+  [github.com/aurelio-labs/semantic-router](https://github.com/aurelio-labs/semantic-router)
+  and
+  [docs.aurelio.ai](https://docs.aurelio.ai/docs/semantic-router/user-guide/features/threshold-optimization),
+  2026-10-26.
+- What is worth stealing: the threshold is not a score. In its v1 routers a
+  `confidence_threshold` sits on the router and on each route, with a
+  per-call override, and `fit()` learns a map from the raw retrieval score to
+  the probability that the top route is the right one, by Platt or isotonic
+  calibration, returning a report that carries accuracy and calibration error
+  side by side. Two things fall out of that and both are missing here. A
+  cutoff stated as a probability means something a reader can argue with,
+  where `KEEP_RATIO = 0.5` means only "half of whatever the top score
+  happened to be" and is not comparable across two engines or two libraries.
+  And a calibration error is the number that says whether the threshold is
+  trustworthy at all, which a raw-score cutoff cannot report because it never
+  claims a probability to be wrong about.
+- What alexandria does better, and it is the half the fitting buys at a
+  price: `fit()` and `evaluate()` are documented against the same
+  `(utterance, target route)` examples, and nothing in the product names a
+  held-out split, so the accuracy a router reports after fitting is an
+  in-sample number. This instrument cannot do that. `SCOPE_VERSION` and
+  `ENGINE_VERSION` are printed in every bundle, the policy history in both
+  files says why each retired version was retired, `lexical/3` sits
+  implemented and deliberately not adopted because the run that wrote it also
+  changed the artifact it judges, and `tools/skill_eval.py --gate` refuses a
+  delta measured off the registered policy outright. Their accuracy is
+  probably better than ours. Our number is evidence and theirs is a
+  measurement of the data it was tuned on, and when the thing downstream of
+  the verdict is an automatic merge rather than a human reader, that is the
+  side to be on.
+- First step: there is one, and it is the entry above about calibrating the
+  cutoff, so this scan does not open a second.
+- Cost: $0 to steal. Semantic Router is open source and nothing here proposes
+  adopting it.
 - Status: proposed

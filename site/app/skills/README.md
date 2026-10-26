@@ -46,6 +46,7 @@ page has to say so, the way it already does for a stale trigger-test receipt.
 | `unmeasured_tasks` | array | ids of tasks that could not be run at all, so they are not scored either |
 | `incomplete` | string | present only when the run stopped early, saying where and why. A page showing an incomplete result says so |
 | `repetitions_overridden` | boolean | present when the run used more or fewer repetitions than the task file registered |
+| `policy_overrides` | object | present when `--subject` or `--judge` moved a dial the task file pre-registered: `{ subject \| judge: { registered, ran, flag } }`. A page showing a result that carries this must not describe the delta as the pre-registered policy's, because it is not. Added 2026-10-26: the subject is the dial most likely to move, since the registered one is the paid model and the only $0 route is an override, and until that date it moved without leaving a trace |
 | `scored_by_hard_check` | number | of `tasks`, how many were scored deterministically rather than by a judge |
 | `spend_usd` | number | what the run cost, from the provider's own usage block |
 | `with_skill` | object | the arm summary, below |
