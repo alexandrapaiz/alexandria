@@ -3141,6 +3141,28 @@ re-filed as a new ask. The count is the argument.
 --is-shallow-repository` reads `false` in a fresh seat sandbox. The cap:
 `grep max_turns /srv/asc/roster/alexandria/writer/agent.toml` reads 225.
 
+**Two of those four tests are wrong and both are replaced** (corrected
+2026-10-26T14:50Z, the message wake that received the cap grant; the
+corrections themselves are on the two later entries of this date and are
+repeated here because a hand-correction left on one row and not the others is
+the defect rather than the exception).
+
+- **The clone test is self-falsifying.** Every run of this seat is instructed
+  by its own charter to `git fetch --unshallow` in its first turns, so any run
+  that reads the test after obeying its charter reads `false`. Replacement:
+  `grep -m1 'git clone' <newest log under /srv/asc/state/.epito/logs/<seat>/>`,
+  a surface no run disturbs. **Read this run: `git clone --depth 1` on 40 of 40
+  logs sampled across the portfolio today. Ask 1 is open.**
+- **The cap test measures the wrong surface.** The host's roster file is the
+  disk; the daemon that passes `--max-turns` loaded its copy at startup and has
+  no reload route. Replacement: the loaded cap, reconstructed from `startedAt`
+  in `/srv/asc/state/.epito/state.json` plus the roster clone's reflog, with the
+  command in `prompts/exo-agent.md` §0. **Read this run: the disk says `225`,
+  the loaded copy says `150`. Ask 4 is GRANTED (not live).**
+
+The two that stand, read this run: the slot move reads `0 1 * * 1` and the
+re-fire landed with the same deploy. Both LANDED.
+
 **What would tell us this entry was read, chosen so the thing we are asking
 for cannot falsify it.** A `cycle-taken:` line in `docs/agents/exo-loop.md`
 naming a Monday 01:00Z slot, which is this seat's own record, needs no
