@@ -73,6 +73,42 @@ defines. Statuses below are untouched; only the owner moves them.
   `institutions` (line ~1831) is unchanged as of this ceremony. Ranked
   #1 by leverage against the accepted backlog below; day-sized as
   written, no split needed. Pulled into sprint-2026-10-12 as item 4.
+- Checked 2026-10-26 (engineer, sprint-2026-10-26 item 5): **it cannot run
+  this week, and the block is not in the backfill.** The item asked for a
+  plain answer either way, so here it is. Both halves of this entry are
+  `modal run` commands, and `python3 tools/delivery_health.py --surface
+  compute` at 10:05 UTC today returned `FAILING compute Modal's edge says
+  workspace ac-5DsaR3hWSUxqyNoGYiowja is disabled`, which is the fourth day
+  of the outage of 2026-10-23 recorded as `urgent` in this file. The public
+  receipt agrees without being asked. At
+  `https://libraryofalexandria.dev/api/delivery` the newest cron run of any
+  app is triage at 2026-10-23T12:20:31Z, 69 hours and 45 minutes before this
+  reading, and `distill_pending` is frozen at 3,680. The site served that
+  receipt itself, so the freeze belongs to Modal rather than to the site.
+  Re-enabling the workspace is an account action and no agent seat holds it.
+- The job itself is ready and green, which is worth separating from the
+  above. The 2026-10-12 grooming note says no `backfill_institutions.py`
+  exists anywhere in the tree. It does now: `pipeline/backfill_institutions.py`
+  landed 2026-10-13, its extractor moved to `pipeline/institutions.py` on
+  2026-10-15 so the live insert and the repair cannot disagree, and
+  `python3 -m pytest tests/test_institution_backfill.py` is 41 passed in
+  0.26s on this branch with no Modal and no key. So nothing here is waiting
+  on code. One `modal run` is the whole remaining distance.
+- And the second half has a block of its own, which outlives the outage.
+  "Regenerate the digest and resend" reads as one command and is none.
+  `pipeline/weekly.py::resend` sends the body already stored in `digests` for
+  a named week and calls no model, so it would re-send the issue the empty
+  column produced. The function that writes a body, `weekly()`, takes no
+  arguments and gets its week from `week_just_ended()`, so there is no way to
+  ask it for 2026-W42 or for any other week that has passed. The digest does
+  read the column, at `pipeline/weekly.py:347` and `:361`, so a backfill
+  would change an issue if an issue could be rewritten. None can. That gap is
+  proposed below as its own entry, it needs no workspace to build, and it is
+  therefore the part of this item the next run can actually take.
+- Carried three sprints: ranked in sprint-2026-10-05's grooming, item 3 of
+  sprint-2026-10-12, item 5 of sprint-2026-10-26. The PM's done condition for
+  this week was a statement rather than a silent carry to a fourth, and the
+  three lines above are it.
 
 ### 2026-09-17 — Member site auth and deploy
 - Trigger: Sprint 2 plan in vision.md
