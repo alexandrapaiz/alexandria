@@ -1,81 +1,88 @@
-# Dispatch queue — 2026-10-24, ~18:10 UTC (message pass)
+# Dispatch queue — 2026-10-26, ~00:50 UTC (message, Monday ceremony)
 
-## Queue gauge, four numbers
+`PM_DISPATCH_ENABLED` is empty in this run's environment, so section 5 of
+`prompts/pm-agent.md` stays dormant regardless of what follows: nothing
+below is fired, only proposed.
 
-1. **`main`'s age and check state.** Tip is this pass's own merge of #452,
-   `5768a7c`, about 6 minutes old at this writing. `checks.yml` fires only
-   on pipeline/digest/tests/skills paths; nothing in this pass's merges
-   touched one, so its last matching run (13:00:24Z, success) is still the
-   newest relevant signal. No 48-hour stall.
-2. **Open pull requests, total, and since the last merge.** 9 open
-   (`#476`, `#475`, `#473`, `#471`, `#466`, `#461`, `#455`, `#442`, `#435`),
-   0 opened since the last merge to `main`.
-3. **Conversion, 7 days.** 91 merged / 150 opened (0.607).
-4. **Deepest open chain.** `#455` (exo), eighth in its chain, depth 8,
-   unchanged, and as of this pass also `CONFLICTING` against `main`.
+## The queue gauge
 
-No stall. `main` moved under this seat's own hand this pass (ten merges:
-#470, #474, and eight of this seat's own sibling PRs reconciled — see
-`docs/sprints/pending.md` and `docs/agents/incidents.md`).
+1. **`main`'s age and check state.** Last merge to `main`: this pass's own
+   merge of #529, 2026-10-26T00:32:44Z (minutes old at this writing). The
+   newest *relevant* `checks` run on `main` is still success at
+   2026-10-25T23:58:15Z (PR #516's merge); #529 touched only
+   `docs/agents/` and `prompts/exo-agent.md`, none of which are in
+   `checks.yml`'s path filter, so it correctly did not re-trigger. Green,
+   on the evidence that exists.
+2. **Open pull requests.** 29 total, 3 opened since the last merge before
+   this pass's own (#530, #531, and one more in that window).
+3. **Conversion.** 53 merged in the last 7 days over 136 opened in the
+   last 7 days: 53/136.
+4. **Deepest open chain.** #483 (PM's own), supersedes #480, **depth 13**
+   — the deepest this register has recorded; the prior high was depth 5
+   (2026-09-30). **This seat is blocked on merges at this depth.** #483 is
+   mine, so I cannot merge it myself (Tier B condition 1); it is one of
+   the 22 PM pull requests named below and in `docs/sprints/pending.md`.
 
-## Cap ratio
+Queue is not deadlocked: `main` moved under an hour ago and conversion is
+0.39, not the 48-hour-no-merge state that would make the queue gauge the
+headline. It is reported first anyway because of finding 4.
 
-`writer` at 149 turns: 66% of the workflow file's `--max-turns 225`, 99%
-of the live manifest cap of 150 that `#414`/`#455` both report (still
-unconfirmable directly — this seat's token 404s on the manifest repo).
-Third consecutive over-threshold reading on the second number. `exo`
-(126/200, 63%) and `skill` (117/180, 65%) are both under the line either
-way.
+## Cap ratio (24h window)
 
-## Failures (`docs/standards/pm.md` §11.7)
+`writer` ran at 145 turns against its live manifest cap of 150 (**96.7%**)
+on its 23:02 hook wake (PR #517). Third-plus consecutive over-70% reading
+for this seat (`docs/agents/turn-caps.md`'s 2026-10-25 sweep already had
+it at 99.3%); an ask to raise the cap to 225 is already with HQ via the
+relay and unresolved. `exo` (101/200, 50.5%) and `engineer` (129/200,
+64.5%) are both under the 70% line. Not re-escalating past what the relay
+already carries; naming it again so it is not re-discovered from scratch.
 
-Board run record, 25 rows back to 13:49:15Z today (short of the 24-hour
-floor). Three non-zero exits in that window: 13:49:15 (skill, 1 turn) and
-the 16:00:13/16:00:22 pair (writer, pm). All three are already registered
-as the two dated instances of the provider-capacity fingerprint in
-`docs/agents/turn-caps.md` ("2026-10-24T13:49 (one), 2026-10-24T16:00
-(two)"). Already triaged. Nothing new, no rerun needed.
+## Run health
 
-## Delivery health (`docs/agents/delivery-health.md`)
+Board run records, last six hours (2026-10-25T18:33Z to now): one
+non-zero exit, `pm` at 18:20:00, **refused** ("You've hit your weekly
+limit"), not a run that executed and failed — already a known, registered
+pattern this week (`docs/agents/incidents.md`, the weekly-budget-window
+incidents of 2026-10-25). Zero runs in this window ran to completion and
+failed. `gh run list --limit 30` for `checks`/`deploy-main`: all green,
+oldest in the visible window 2026-10-24T21:29:52Z.
 
-Not re-run fresh this pass (a message trigger answers what it was woken
-for; last full read was the 16:40 pass). Carried forward: press / site /
-archive **ok**. compute / pipeline / mcp (Modal workspace disabled),
-checkout (Polar env vars unset), deploy (lag 8-9 days) **FAILING**, all
-three owner-only. payments **unknown**.
+**Delivery health, the half fleet-green cannot see.** The press has not
+sent a new issue since `2026-W42` (2026-10-19, 7 days ago); `2026-W43` is
+due today at 09:00 UTC, into a Modal workspace that has been disabled
+since 2026-10-23 and is confirmed still off as of the last two engineer
+runs (2026-10-25). The same outage takes the MCP server down with it
+(distribution's handoff this pass; an ask is now with the owner). The site
+deploy and the till/checkout watcher were not independently re-checked
+this pass beyond what the above already covers; not claiming green on
+either without fresher evidence than a day old.
 
-## This pass's own act, in place of a dispatch
+## Merge-queue triage this pass (Tier B)
 
-No dispatch criterion fired, and `PM_DISPATCH_ENABLED` (read from this
-run's own environment, the corrected method per the still-unmerged #455
-fix, not `gh variable list`) is unset, so §5 stays inactive regardless.
-What this pass did instead of queuing anything:
+- **Merged**, #529 (exo): `tools/check_authority.py` returned `clear`.
+- **Held**, #473 (distribution's HQ re-vendor of `docs/standards/pm.md`):
+  `check_authority.py` returns `reserved` — one hunk sits inside §21
+  itself. Asked of the owner on the board this pass, with a recommendation
+  to merge.
+- **Handed to the owning seat to rebase** (Tier B condition 5, conflict):
+  #517 (writer), #466 (skill), #435 (frontend, also still draft at 42+
+  hours). All three have since pushed new commits post-handoff; writer and
+  skill within the hour.
+- **22 of the PM's own pull requests** sit open and unmergeable by the PM
+  itself (Tier B condition 1). Filed this pass as
+  `INC-2026-10-26-pm-own-tier-b-prs-piled-up-to-twenty-two-and-one-chain-reached-depth-thirteen`,
+  the second occurrence of this class. No fix is this seat's to ship;
+  named in `docs/sprints/pending.md` as waiting on the owner or a chair.
 
-- **Merged #474 (exo)** under Tier B after finding its own "Tier C by its
-  file list" self-label was the exact misread
-  `INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway`
-  already names as its seventh instance. Content review (and, after the
-  fact, the engineer's new `tools/check_authority.py`) both say `CLEAR`.
-- **Reconciled nine of this seat's own sibling PRs** (#440, #442, #444,
-  #445, #447, #448, #450, #452, #454) that piled up unmerged across three
-  earlier passes today, each a clean fresh fork of `main` that none of the
-  others could see. Eight merged (four clean, four keep-both conflict
-  resolutions on the `pending.md` anchor). #442 stays open: Tier B, this
-  seat's own, needs the owner or a chair. Filed as
-  `INC-2026-10-24-nine-of-the-pm-seats-own-prs-forked-the-same-anchor-and-none-contained-any-other`.
-- **Left #455 alone, correctly, for a better reason than the last six
-  passes gave.** The detector says `RESERVED`: one line sits inside
-  `prompts/pm-agent.md` §5 itself, which §21 names as always the owner's.
-  It's also now conflicting against the `main` this pass moved. #476
-  (exo, draft, `CLEAR`) is already the clean split for the same fix and is
-  this seat's to merge the moment it leaves draft.
-- **Left #435 (frontend) alone,** eighth fabricated-tool push caught and
-  not run, verified unchanged at ~6h15m idle (not the claimed 10h), still
-  waiting only on frontend's own `gh pr ready`.
+## Proposed dispatches
 
-Nothing here needed a seat woken that wasn't already awake on its own
-open work. The queue holds no proposed entries this pass.
+None. Every seat with a live blocker (writer, skill, frontend) was already
+reached directly on the board this pass and has started moving on its own
+without needing a workflow dispatch; firing one on top of a seat already
+acting would race it. Nothing else cleared the bar for a dispatch entry:
+an observed trigger, evidence in one line, and a diff the owner has
+already ruled on.
 
 ## Dispatched by the PM
 
-None this run.
+None this pass.

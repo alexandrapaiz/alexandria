@@ -21775,3 +21775,430 @@ this repository writes itself**, which is why the live test for both asks is now
 a `cycle-taken:` line in `docs/agents/exo-loop.md` naming a Monday 01:00Z slot:
 it is trigger-independent, it is local, and it survives any further change to
 the clock.
+
+## INC-2026-10-24-four-of-the-days-six-capacity-events-are-unregistered-and-the-largest-killed-this-seats-own-run - the corrected fingerprint was written this morning and this is the first run to apply it (2026-10-24, engineer seat, hook run)
+
+**What happened.** `INC-2026-10-24-twenty-runs-across-five-companies-ended-inside-one-minute-and-the-fingerprint-counted-one`
+was filed earlier today, and it ends by stating the corrected test as one
+line: two or more `exit: 1` rows from different seats inside sixty seconds is
+one event, whatever their turn counts. Count the window, not the row.
+
+Nothing had run that test. This run ran it over the whole of 2026-10-24 in
+`/srv/asc/state/.epito/audit.jsonl`, chaining a row into the open event when
+it lands within sixty seconds of the previous row rather than of the first.
+Ninety-nine non-zero exits on the day resolve into six multi-seat events and
+twenty-six single-seat exits.
+
+| Window | Rows | Live runs killed | Turns | One-turn refusals | Registered? |
+| --- | --- | --- | --- | --- | --- |
+| 02:07:59Z to 02:09:56Z | 18 | 14 | 863 | 4 | no |
+| 13:49:23Z to 13:50:01Z | 18 | 12 | 611 | 6 | yes |
+| 16:00:20Z to 16:00:28Z | 2 | 0 | 0 | 2 | yes, in `turn-caps.md` |
+| 17:39:05Z to 17:39:17Z | 2 | 2 | 222 | 0 | no |
+| 18:27:07Z to 18:28:36Z | 28 | 16 | 897 | 12 | no |
+| 18:32:53Z to 18:33:07Z | 4 | 1 | 147 | 3 | no |
+
+Six events, 45 live runs ended mid-work, **2,740 turns**. Four of the six are
+unregistered and they carry 2,129 of those turns. Four of the six touch five
+companies and HQ at once: alexandria, Ursa, atelier, epitome and the HQ seats
+that run without a company prefix.
+
+**Why it is in this register.** The standing rule records an issue the moment
+it repeats, and this is the second instance of one mechanism inside nine
+hours. It is not a repeat of the capacity outage, which is the host's and
+upstream of us. It is a repeat of the diagnostic failure the 13:49 entry
+named about itself: **every seat whose charter owns failure diagnosis was
+inside the failure**, so the event went unrecorded. At 18:27 the dead
+included `alexandria-exo` at 98 turns, `ursa-exo` at 92, `exo-centralizer` at
+92, HQ's `engineer` at 78 and HQ's `pm` at 64. The ExO seat that wrote the
+corrected test at 13:49 was killed by the 18:27 event before it could apply
+it.
+
+The 02:07Z event is the sharper evidence, because it is nineteen hours old,
+it is the second largest of the day at 863 turns and 14 live runs, and no
+register mentions it at all.
+
+**What it cost this company, specifically.** The 18:27 event ended
+`alexandria-engineer` at 26 turns. That run is PR #479, which stayed a draft
+reading "Status: draft, work in progress" and whose work this run is
+superseding. It also ended `alexandria-exo` at 98 turns and
+`alexandria-pm` at 51. This run exists only because the hook that woke it
+says "capacity returned", so the wake layer knew the shape of the event well
+enough to name it, and nothing wrote it down.
+
+**The second mechanism, measured here for the first time.** A one-turn
+refusal is not only an aftershock, it is a wake spent. Across the six events
+there are 27 one-turn rows, and the timestamps show the host re-waking a seat
+within a second of its own death and being refused immediately:
+`alexandria-pm` ended at 18:27:11.476Z and its replacement started at
+18:27:11.483Z and died at 18:27:24.274Z after one turn, then a third at
+18:28:19.846Z, also one turn. `atelier-pm` and HQ's `pm` each burned two
+re-wakes the same way inside twenty seconds. So an outage does not cost a
+seat one run, it costs the run plus every wake the host spends re-entering
+the outage, and a seat with a message queue behind it pays the most.
+
+**One number is deliberately not challenged.** The 13:49 entry reports 675
+turns and twenty rows for that window and this count says 611 and eighteen.
+The difference is the chaining rule and the row filter, not a disagreement
+about the event. Both are the same outage and the older number stands as
+written.
+
+**Also visible and not capacity.** Of the twenty-six single-seat exits,
+nineteen sit at 101, 121, 151 or 201 turns, which is a cap boundary and not a
+refusal. Five are `epitome-engineer` at **zero** turns, at 00:46Z, 01:46Z,
+12:46Z and 13:46Z, a clean hourly-looking pattern that no fingerprint in
+`turn-caps.md` describes. That one is epitome's and is noted here only
+because the sweep saw it.
+
+**The fix, and who owns which half.** The measurement half is this entry and
+the command behind it, which any seat can now re-run. The enforcement half is
+not ours: the register that holds the fingerprint is
+`docs/agents/turn-caps.md`, owned by the ExO seat, and the gap is that the
+corrected test has no scheduled reader. Writing the test down was the
+2026-10-24 morning's work and recording is not enforcing, which is incident
+20's whole argument and `docs/agents/registers.md`'s reason for existing. The
+daily engineer run is the one seat that runs every day and survives, so the
+cheapest place to put the reader is this seat's own observation step, and
+that is a charter line this seat cannot write for itself. It is in
+`docs/ideas.md` as a proposal, with this measurement attached.
+
+```bash
+# The corrected fingerprint, as a command. Prints one row per multi-seat event.
+python3 - <<'PY'
+import json, pathlib, datetime
+rows = []
+for line in pathlib.Path("/srv/asc/state/.epito/audit.jsonl").read_text(errors="replace").splitlines():
+    try: r = json.loads(line)
+    except Exception: continue
+    if r.get("exit") in (None, 0): continue
+    if str(r.get("ts", "")).startswith("2026-10-24"):
+        rows.append((r["ts"], r.get("agent"), r.get("turns") or 0))
+rows.sort()
+when = lambda s: datetime.datetime.fromisoformat(s.replace("Z", "+00:00"))
+groups = [[rows[0]]]
+for row in rows[1:]:
+    if (when(row[0]) - when(groups[-1][-1][0])).total_seconds() <= 60: groups[-1].append(row)
+    else: groups.append([row])
+for g in groups:
+    if len({x[1] for x in g}) < 2: continue
+    live = [x for x in g if x[2] > 1]
+    print(g[0][0], "->", g[-1][0], len(g), "rows", len(live), "live", sum(x[2] for x in live), "turns")
+PY
+```
+
+## INC-2026-10-24-the-authority-gate-declines-to-answer-on-any-diff-that-touches-the-authority-gate - the second wrong verdict from one instrument in one day, and this one fires on every future change to it (2026-10-24, engineer seat, hook run)
+
+**What happened.** `tools/check_authority.py` shipped today on PR #475 and is
+carried forward on this run's branch. Run against this branch it returns:
+
+    UNDECIDED  this command declines to answer, and that is not a clear
+      19 file(s), 32 hunk(s) read
+
+Ten findings, and every one of them is a line of the tool's own source:
+
+    [undecided/secret]  tools/check_authority.py:109
+      line: SECRET_KEY = (r"[A-Za-z0-9_\-]*(?:TOKEN|SECRET|PASSWORD|PASSWD|API_KEY|APIKEY"
+    [undecided/spend]   tools/check_authority.py:134
+      line: r"stripe|polar_product)\b"
+    [undecided/account] tools/check_authority.py:142
+      line: r"\b(sign[_ -]?up|create[_ -]?account|new account|open an account|"
+
+Those are the patterns the tool searches for, written as regex literals in the
+file that searches for them. The gate matched its own definitions. Nothing in
+this run's actual work produced a single finding.
+
+**Why it is in this register.** This is the second wrong verdict from this one
+instrument inside a day. The first was filed this morning as
+`INC-2026-10-24-the-authority-gate-shipped-with-a-false-clear-in-the-one-direction-it-forbade-itself`,
+and that one was a false `clear`. This one runs the other way, a false
+`undecided`, which the tool's own contract says to treat as the owner's until
+a reader rules. So the class is "the gate returns the wrong verdict on a case
+its own design creates", and it has now occurred twice.
+
+**Why this direction is the more expensive one.** A false `clear` needs the
+one diff it was wrong about. This fires on **every** diff that touches
+`tools/check_authority.py`, forever, because the file cannot stop containing
+the strings it hunts for. The tool is one day old, it is a gate, and gates get
+edited. So the standing effect is that every future improvement to the
+authority detector is routed to the owner by the authority detector, which is
+the one person section 21 says merges nothing in the ordinary course. An instrument
+built to stop seats guessing at her attention would have spent it instead.
+
+**The verdict a reader records, because the tool asks for one.** Its own last
+line is "Route: a reader reads the lines above and says which way they go."
+This run is that reader. All ten lines are pattern definitions. No secret
+value, no price, no account, no authority grant. This branch is `clear`, and
+on section 21 it is merged by the PM seat of this company or by any chair.
+
+**The fix, which is small and is not taken in this pull request.** Two
+candidates, and the second is better. Excluding the tool's own path is one
+line and it blinds the gate to a real secret pasted into that file. Ignoring
+an added line whose match falls inside a regex literal or a string constant is
+the honest version, and it generalises to every pattern-matching gate in
+`tools/`, several of which have the same self-reference available to them.
+
+It is not taken here because this branch already carries a register-layout
+change and 31 new tests, and a second instrument's behaviour change in the
+same pull request makes both harder to review. It is the next day-sized unit
+of work on this tool, named here so the next run does not rediscover it.
+
+## INC-2026-10-24-the-machinery-diff-gate-gave-both-of-its-wrong-answers-in-one-invocation - the seventh entry on the shallow clone, and the first where the false positive and the false negative arrived together (2026-10-24, engineer seat, hook run)
+
+**What happened.** The engineer charter's first pre-ship gate is one command,
+run here at turn six on the checkout the host handed this run, which was one
+commit deep:
+
+    git log --since="36 hours ago" --format='%h %ci %an %s' -- .github/ pipeline/
+
+It returned exactly one row, the merge of `#471`, and this run recorded that
+row in its own opening commit as the thing to assess.
+
+Later in the run, for an unrelated reason, the checkout was deepened with
+`git fetch --unshallow`. The identical command on the same tree then returns a
+different single row:
+
+    5c086ca5 2026-10-24 12:13:50 +0000 alexandria-engineer  Each app's cron schedule is read out of its own module, not kept beside it
+
+So the shallow answer was wrong twice over in one invocation. `eea1360` is a
+false positive, and its diff against its first parent is one file,
+`docs/standards/lessons.md`, with nothing under either watched path:
+
+    $ git diff --name-only eea1360^1 eea1360 -- .github/ pipeline/
+    $ git diff --name-only eea1360^1 eea1360
+    docs/standards/lessons.md
+
+And `5c086ca5` is a false negative. It touches `pipeline/runtime_sha.py`, it
+is inside the window, and the shallow gate did not mention it.
+
+**Why it is in this register.** The standing rule, and the register already
+holds six entries on this shape:
+`INC-2026-09-24-shallow-clone-merge-base-repeat`,
+`INC-2026-10-18-the-machinery-diff-reads-clean-on-a-shallow-clone`,
+`INC-2026-10-23-the-drift-guard-answered-green-from-a-checkout-that-could-not-see`,
+`INC-2026-10-24-the-drift-guard-reported-on-the-apps-it-could-measure-and-not-on-the-ones-it-could-not`,
+`INC-2026-10-24-the-machinery-diff-gate-named-this-runs-own-commit-as-a-runtime-change`
+and
+`INC-2026-10-24-the-deepening-fetch-landed-the-history-and-called-it-a-failure`.
+
+**What is new, and it is a correction to the fifth entry rather than a
+restatement.** That entry, filed earlier today by this seat on a message run,
+established the false positive and then said this:
+
+> After `git fetch --unshallow`, on the same tree in the same minute, the
+> identical command returns **nothing at all**. The true answer is that no
+> commit touched `.github/` or `pipeline/` in the last thirty-six hours.
+
+The first sentence is a correct observation of that run. The second is a claim
+about the repository and it does not survive the day. `5c086ca5` landed at
+12:13:50Z and merged to `main` inside `#443` before 13:00Z, which is before
+that run started, so the deep answer in that window was `5c086ca5` and not
+nothing. The most likely explanation is that the deepened checkout was that
+run's own branch rather than one containing the merge, which is the same class
+of error one level up: a confident statement about history from a checkout
+that could not see all of it.
+
+The reason this matters more than a tidy-up is that the fifth entry's wrong
+half is the reassuring half. A seat that reads "the true answer is nothing"
+has been handed a reason to believe the watched paths are quiet, which is
+precisely the belief the gate exists to withhold.
+
+**What the gate was supposed to catch here, answered properly.** `5c086ca5`
+is this seat's own commit. It adds 56 lines to `pipeline/runtime_sha.py` that
+read each app's cron schedule out of its own module instead of keeping a
+hand-copied list beside it. It changes no schedule, no model, no provider, no
+cap, no timeout and no image, so it is a `pipeline/` change and not a runtime
+change under `docs/agents/runtime-changes.md`. Both questions the law asks
+come back clean. A merged pull request explains it, `#443`, and there is a
+green run behind it: `checks.yml` on `main` at 2026-10-24T13:00:24Z,
+conclusion `success`, on the merge commit `1765bb3`. No finding, and this
+paragraph exists because the gate's purpose is to produce this paragraph
+rather than to produce a row.
+
+**The fix, and why it is not a code change here.** The command lives in a
+charter, and a charter is not this seat's to edit. What is in this seat's
+gift is to put the deepening in front of the gate in its own run every day,
+and to record that the reflex has now failed on this topic seven times, which
+makes it the single most repeated defect in this register. The durable repair
+is that the gate should refuse to answer rather than answer wrongly: one line
+before the command, `git rev-parse --is-shallow-repository`, and a seat that
+reads `true` has learned something more useful than any row the gate could
+print. That is a charter line rather than a code change, so it is written out
+here in full, as the one edit that closes seven entries:
+
+    Before the machinery diff, run `git rev-parse --is-shallow-repository`.
+    If it prints `true`, run `git fetch --unshallow` and only then the diff.
+    A shallow checkout has two wrong answers available to it and no right one.
+
+This run is not filing it as a ledger proposal as well. Three proposals and a
+craft scan is what the charter asks a run to draft, this run has drafted them,
+and a fourth entry competing with its own siblings for the owner's attention
+is how a ledger stops being read. The seven entries above are the argument and
+they are already in the register that the ExO seat reads every week.
+
+## INC-2026-10-24-the-unshallow-remedy-leaves-the-single-branch-refspec-so-the-containment-proof-cannot-see-the-branch-it-proves — the eighth entry on the shallow clone, and the first where the charter's own remedy is the defect (2026-10-24, engineer seat, message run)
+
+**What happened.** The engineer charter's shallow-clone clause names two
+commands and calls the second one sufficient:
+
+    git rev-parse --is-shallow-repository    # true means every comparison below lies
+    git fetch --unshallow                    # harmless when it is already full
+
+This run ran both at turn six, before anything else, exactly as written.
+`--unshallow` succeeded and `--is-shallow-repository` then printed `false`, so
+by the charter's own test every comparison was safe from that point on. It was
+not. `git push -u origin HEAD` failed on the next turn with
+
+    fatal: upstream branch 'refs/heads/alexandria-engineer/2026-10-24-message-authority-selfmatch'
+    not stored as a remote-tracking branch
+
+because `--depth 1` implies `--single-branch`, which writes a refspec, and
+`--unshallow` deepens history without touching it. Reproduced on a fresh clone
+rather than inferred from this one:
+
+    $ git clone --depth 1 <repo> probe && cd probe
+    $ git config --get-all remote.origin.fetch
+    +refs/heads/main:refs/remotes/origin/main
+    $ git fetch --unshallow
+    $ git config --get-all remote.origin.fetch
+    +refs/heads/main:refs/remotes/origin/main
+    $ git rev-parse --is-shallow-repository
+    false
+    $ git branch -r | wc -l
+    2
+
+So a seat holding a deep, complete history of `main` still cannot name any
+other branch in the repository, and the one check it was told to trust reports
+clear.
+
+**Why this is worse than a failed push.** The charter's containment proof,
+the line a seat runs before it closes another run's pull request, is:
+
+    git log --oneline origin/<the-older-branch> ^HEAD   # must print nothing
+
+Run in this state it does not print nothing. It prints nothing **to stdout**
+and exits 128:
+
+    fatal: ambiguous argument 'origin/alexandria-engineer/2026-10-24-hook-capacity-return':
+    unknown revision or path not in the working tree.
+    $ echo $?
+    128
+    $ git log --oneline origin/<branch> ^HEAD 2>/dev/null | wc -l
+    0
+
+The charter reads "must print nothing" and "if it prints anything, your branch
+does not contain their work and you must not close it." An error that writes to
+stderr and exits non-zero satisfies that instruction's literal text. The proof
+that exists to stop a seat closing a pull request whose work it does not hold
+passes hardest at the exact moment it cannot see that work at all.
+
+**Why it is in this register.** The standing rule, and the shallow clone is
+already the most repeated defect here. Seven entries:
+`INC-2026-09-24-shallow-clone-merge-base-repeat`,
+`INC-2026-10-18-the-machinery-diff-reads-clean-on-a-shallow-clone`,
+`INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register`,
+`INC-2026-10-23-the-drift-guard-answered-green-from-a-checkout-that-could-not-see`,
+`INC-2026-10-24-the-drift-guard-reported-on-the-apps-it-could-measure-and-not-on-the-ones-it-could-not`,
+`INC-2026-10-24-the-machinery-diff-gate-named-this-runs-own-commit-as-a-runtime-change`
+and
+`INC-2026-10-24-the-machinery-diff-gate-gave-both-of-its-wrong-answers-in-one-invocation`.
+This is the eighth and it is not a restatement of any of them. Every one of
+the seven is a seat reading a shallow checkout. This one is a seat that
+followed the written remedy, got a true `false` from the written check, and was
+still blind.
+
+**What it cost.** Three turns in this run, and nothing beyond that, because the
+failure happened to surface as a push error rather than as a wrong answer. That
+is luck and not design. The same state reached through the containment proof is
+silent, and the loss there is another seat's branch closed on a proof that could
+not run.
+
+**The fix, and it is a charter line rather than a code change.** The deepening
+needs a third command, and it belongs beside the two that are already there:
+
+    git rev-parse --is-shallow-repository    # true means every comparison below lies
+    git fetch --unshallow                    # deepens history, and nothing else
+    git config --replace-all remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*' \
+      && git fetch origin                   # a clone that can see one branch can compare nothing
+
+And the containment proof needs its exit status read, because the whole weight
+of closing another run's pull request rests on it:
+
+    git log --oneline origin/<the-older-branch> ^HEAD || exit 1
+
+`prompts/engineer-agent.md` is a charter, so this seat does not edit it
+(`docs/standards/pm.md` §21 keeps a change to a seat's own authority for the
+owner, and the charter's own boundary section is stricter still). It is filed
+as a ledger proposal on the same branch, which is the route the charter names
+for a charter change. The clause this corrects was itself written as the
+durable half of `INC-2026-09-24-shallow-clone-merge-base-repeat`, chosen over a
+workflow step because "a charter line travels with the seat". It travels. It
+was also incomplete, and the incompleteness survived six further entries
+because every one of them was about a seat that had not run the commands rather
+than a seat that had.
+
+**Second occurrence, same day, and the proposed fix is no longer only
+proposed** (engineer seat, 2026-10-24, the message run after the one that filed
+this). The next run of this seat met the identical state on its own fresh
+clone: `--unshallow` succeeded, `git rev-parse --is-shallow-repository` printed
+`false`, and `git branch -r | wc -l` printed 2. That is the repeat the standing
+rule asks for, and it is recorded here rather than as a ninth entry because it
+is the same defect with nothing new to say about its shape.
+
+What is new is that this run ran the repair above before any comparison, and it
+works:
+
+    $ git config --unset-all remote.origin.fetch
+    $ git config --add remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
+    $ git fetch origin
+    $ git branch -r | wc -l
+    127
+
+So the charter line this entry proposes is now exercised rather than argued,
+and the number that matters is the gap between the two readings: 2 branches
+against 127. A seat in the first state can compare its work against nothing in
+this repository except `main`, while being told by the check it was given that
+everything is fine. This run had no predecessor branch to contain, so the blind
+containment proof was not reached a second time. That remains luck.
+
+## INC-2026-10-26-pm-own-tier-b-prs-piled-up-to-twenty-two-and-one-chain-reached-depth-thirteen — The PM's own Tier B pull requests piled up to twenty-two and one chain reached depth thirteen (2026-10-26, pm seat)
+
+**What happened.** As of this run's reading of `gh pr list --state open`
+(2026-10-26T00:35Z), 22 of the 29 open pull requests in this repository were
+the PM seat's own, opened across 2026-10-24 and 2026-10-25 by successive
+`message` and `hook` wakes, each one a small, non-colliding file under
+`docs/sprints/pending/` recording that pass's merge-rule review. None
+merged, because Tier B condition 1 (`docs/standards/pm.md` §10) bars a PM
+from merging its own Tier B pull request: it waits for the owner or a
+chair. One of the twenty-two, #483 ("a fourth capacity window, named and
+closed out"), carries its own title's admission that it supersedes #480 at
+depth 13, the deepest supersession chain this register has seen; the prior
+high was depth 5 (`docs/agents/incidents.md`, 2026-09-30, skill seat).
+
+**Why it is in this register.** This is the second occurrence of the exact
+class filed as `INC-2026-10-24-nine-of-the-pm-seats-own-prs-forked-the-same-anchor-and-none-contained-any-other`,
+which found nine own-seat forks and was closed out by a hand-merge of eight
+of them. The one-file-per-pass split that landed the same day
+(`prompts/pm-agent.md` §1d) removed the destructive half of that incident —
+these twenty-two forks do not conflict with each other, because each
+touches its own dated file — but it did nothing about the structural half:
+every PM Tier B pull request still waits on a merger who is not the PM, and
+the PM wakes far faster than any chair session clears the queue. The count
+roughly doubled between occurrences (9 to 22) in about 36 hours.
+
+**What it cost.** 22 open pull requests, the oldest ("#483") 27.2 hours old
+at this reading, none mergeable by the seat that wrote them. The
+chair-driven hand-merge that closed the first occurrence is not a fix, it
+is the cost repeating: at double the count, the same remedy costs roughly
+double the chair time next time it is applied.
+
+**The fix, or why there is not one yet.** None shipped by this seat,
+because allowing a PM to merge its own Tier B pull requests would widen
+this seat's own authority, which `docs/standards/pm.md` §22 names as one of
+the four things that never proceed on the owner's silence. This run's
+recommendation, carried to her separately in today's dispatch-queue PR
+rather than invented here: either a chair session clears the backlog on a
+cadence shorter than the PM's own wake rate, or the owner amends Tier B
+condition 1 to let a PM merge its own pull request when the diff is
+confined to `docs/sprints/pending/` (one new file, no shared anchor, exactly
+the class this incident is about) and nothing else. Either way is hers to
+choose; this seat does not have the authority to take either action itself.

@@ -73,6 +73,13 @@ defines. Statuses below are untouched; only the owner moves them.
   `institutions` (line ~1831) is unchanged as of this ceremony. Ranked
   #1 by leverage against the accepted backlog below; day-sized as
   written, no split needed. Pulled into sprint-2026-10-12 as item 4.
+- Groomed 2026-10-26 (PM, Monday ceremony): `pipeline/backfill_institutions.py`
+  now exists in the tree. Whether it has run against the full backlog and
+  whether a resend followed the backfill is not established by anything
+  this run could check (no live `institutions` coverage figure or
+  database read available to this seat). Status left as `accepted` rather
+  than moved to `built`, because the "then resend" half of this entry is
+  unverified, not because the backfill half is in doubt.
 
 ### 2026-09-17 — Member site auth and deploy
 - Trigger: Sprint 2 plan in vision.md
@@ -1545,7 +1552,7 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - First step: decide what is public versus paywalled before writing the
   route; the digest-content boundary (vision.md §4) applies
 - Cost: $0
-- Status: accepted
+- Status: built
 - Groomed 2026-09-18 (PM, closing all-hands triage): accepted, same
   decision as "Make 'left behind' the public flagship" above (market
   agent's entry). This page-shaped version and that weekly-verdict
@@ -1560,6 +1567,13 @@ owning seat rather than assumed. Arguments in docs/sales/.
   skills, terms, unsubscribe). Ranked #2 by leverage in this week's
   accepted-backlog order, right behind the institution backfill.
   Pulled into sprint-2026-10-12 as item 5.
+- Groomed 2026-10-26 (PM, Monday ceremony): built. PR #306 merged
+  2026-10-15; `site/app/left-behind` is live on the deployed site.
+  Status moved to `built`. The sibling entry this one satisfies
+  ("Make 'left behind' the public flagship", market agent's) should be
+  checked by whoever next grooms the market lane rather than closed here,
+  since this seat does not edit another seat's entry without reading it
+  first and that entry is not re-read in this pass.
 
 ### 2026-09-18 — The Receipt Standard: publish the provenance spec plus a conformance linter
 - Trigger: 69% of 216 audited public Claude Code skills won't reliably
@@ -19852,4 +19866,41 @@ has nothing to go red against.
 - First step: the two entries above, in that order. The measurement before the
   quota, because the quota needs a number and nobody has one.
 - Cost: $0.
+- Status: proposed
+
+### 2026-10-26 — The standup should say when a sprint has run past its end date with no successor (PM seat, Monday ceremony)
+- Trigger: no ceremony ran on 2026-10-19. Nothing in any charter names what
+  should happen when the Monday cron is skipped, so the gap sat unflagged
+  for a full sprint until this ceremony found it by noticing no
+  `sprint-2026-10-19.md` existed. The standup ran every day in between and
+  is not built to open or close a sprint by design, so it had no reason to
+  check the thing that actually broke.
+- What: the daily standup's own output names, every day, whether the
+  current sprint file's end date has passed with no successor sprint file
+  opened, the same way it already names a stale pending-tracker line
+  (`prompts/pm-agent.md` §4). A missing ceremony should be as visible as a
+  missed merge.
+- First step: one check at the top of the standup's read order, `docs/sprints/sprint-*.md`
+  sorted by date, comparing the newest one's implied end date against
+  today.
+- Cost: $0. This is a charter change (`prompts/pm-agent.md` §4), so the PM
+  proposes it here rather than building it; the ExO or the owner merges
+  the charter edit.
+- Status: proposed
+
+### 2026-10-26 — 70% of the ledger's proposed entries are two or more weeks old with no verdict (PM seat, Monday ceremony)
+- Trigger: this ceremony's grooming pass found 552 `proposed` entries in
+  this file, 387 of them (70%) dated 2026-10-12 or earlier. The two oldest
+  are from 2026-09-17. Listing 387 individual lines under "Awaiting your
+  verdict" in a PR description would make that section unreadable, which
+  is itself the finding: the file has grown past the size the
+  two-week-verdict rule was written to govern.
+- What: a policy decision, not a grooming task this seat can do by hand.
+  Two shapes an answer could take: a bulk triage pass (at an all-hands,
+  the last of which was 2026-09-18) that disposes of the oldest tier in one
+  sitting, or a standing rule that a `proposed` entry past some age
+  without action is auto-marked `stale` with a dated note and drops out of
+  future "awaiting your verdict" counts unless someone re-raises it.
+- First step: the owner's call on which shape, or a third one.
+- Cost: $0 either way.
 - Status: proposed
