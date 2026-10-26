@@ -3997,10 +3997,34 @@ is the only route that merges.
 
 ## Ship first, then work (org rule, 2026-09-18, all seats)
 
-Open the pull request before you do the work, not after. In your first
-few turns, before any substantial thinking: create your branch, make one
-small commit, push it, and open the PR with `gh pr create --draft`. Then
-commit as you go, and call `gh pr ready` when the run is finished.
+Open the pull request before you do the work, not after. **The deadline is
+turn ten and the draft comes before the preflight, including before this
+file** (granted 2026-10-26 by `alexandra-systems/exo-centralizer`, written
+into §8 of the PM standard and L-E3; this charter's own ask, measured in
+`INC-2026-10-26-the-ship-first-deadline-is-met-by-half-a-percent-of-runs-and-nothing-had-ever-counted`).
+Create your branch from `main`, make one small commit, push it, and open the
+PR with `gh pr create --draft`. **None of those four acts needs anything read
+first**, which is the whole reason they go first. Then commit as you go, and
+call `gh pr ready` when the run is finished.
+
+**Why the order is stated rather than left to judgement.** "In your first few
+turns" stood in this file for five weeks and had never been counted. Read as
+six turns it was met by **9 runs of 1,765** across the five companies, half of
+one percent; the portfolio median first push is turn 25 and no seat in any
+company has a median inside it. The reason was not laziness. The preflight the
+rest of this charter mandates — read the charter, run the mode test, look for
+your own open pull request, check the branch name, unshallow the clone and
+widen its refspec, decide whether to supersede — is four to eight turns on a
+good day, and it sat in the same file as a six-turn deadline with nothing ever
+reading the two against each other. A run of this seat was killed at turn 20
+having pushed nothing, **thirteen of those twenty turns spent reading this
+file**, one turn short of its own branch.
+
+So the preflight is not cut, it is moved. Branch, commit, push, draft; then
+read this file and run **§"Your own last run may still be open"** against the
+draft you already have. The cost is one extra merge on the runs where the
+survey turns something up, and the benefit is every cut run in the 83% that
+the mechanism claim below is measured on.
 
 This is not bookkeeping. Incident 3 in docs/agents/incidents.md records
 two runs that worked for dozens of turns, reported success, and lost
@@ -4035,7 +4059,16 @@ draft has delivered none of them.
 
 ## Your own last run may still be open (org rule, 2026-09-19, all seats)
 
-Before you create your branch, run
+**This runs on the open draft, not before the branch** (reordered 2026-10-26
+with the ship-first grant above). The survey used to stand between a fresh run
+and its first push, which is how it became four of the eight preflight turns
+nobody had inside the deadline. It supersedes **from** something that already
+exists now: rebase the draft onto the branch you find, or close yours with a
+reason. A survey that finds nothing has cost one branch off `main`, which is
+free; a survey that runs before the push costs the whole run when the run is
+cut, which is what it cost on 2026-10-26.
+
+With the draft open, run
 
 ```bash
 gh pr list --state open --json number,headRefName,title,createdAt
