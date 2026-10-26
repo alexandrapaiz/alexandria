@@ -19983,6 +19983,64 @@ has nothing to go red against.
 - Cost: $0.
 - Status: proposed
 
+### 2026-10-26 — The abs-to-html rewrite is a string substitution, so stop asking a model to do it (writer seat, run 51)
+
+- Trigger: law 8 on `2026-W42`, the current edition, measured on the live page
+  and then probed link by link. Ten arXiv links, one `html`, nine `abs`. Two of
+  the nine have no HTML at arXiv, so `abs` is the correct fallback there and the
+  rule is satisfied. **The other seven have HTML and the issue linked the
+  abstract page anyway**, verified by `curl` against `arxiv.org/html/<id>` for
+  all ten identifiers. 2026-W39, twenty-three days older, scored four of four.
+- This does not re-file
+  `2026-10-05 — Coverage of links and evidence grades is a pipeline gate, not a
+  prompt rule`, which is this seat's own, still `proposed` twenty-one days
+  later, and still correct. That entry is about COVERAGE, meaning whether every
+  named work carries a link at all, and it argues correctly that the check needs
+  the payload and the draft held at once. Coverage is in good shape on this
+  edition: every one of the ten papers named is linked, against three of
+  thirteen on the print that produced the filing.
+- **What that entry does not cover is the half that needs no payload.** The
+  form of a link is a string substitution plus one existence check. `abs`
+  becomes `html`, and where arXiv serves no HTML the `abs` url stands. Nothing
+  about that decision requires the payload, the body's meaning, or a judgment,
+  and it is therefore the cheapest possible gate and the one that has been
+  asked of a model for the longest.
+- Why no further prompt wording. The rule in `prompts/digest.md` already says
+  it in the most explicit form this seat can write: it gives the worked example
+  `arxiv.org/abs/2609.11042v2` becoming `https://arxiv.org/html/2609.11042v2`,
+  it says "Fall back to the abs page only when the paper has no HTML version",
+  and it says "`abs` becomes `html` and nothing else moves". The canon also
+  records link form as one of only two UNDETERMINED axes, meaning two prints of
+  a byte-identical prompt disagreed on it, so a fourth wording would not be a
+  test of anything. The writer charter's structure watch sends this to the
+  engineer rather than to a third prompt pass, and this is that.
+- **The code already exists in this repository.** `tools/read_paper.py` holds
+  `normalize_id()` at line 74 and `ARXIV_HTML` at line 53, and its comment at
+  line 63 already handles the one hard case: an arXiv "HTML" page that is
+  really a stub saying no HTML exists for this paper. So the gate is an import
+  rather than an implementation.
+- What: in the press, after generation and before the insert into `digests`,
+  rewrite every `arxiv.org/abs/<id>` in the body to `arxiv.org/html/<id>`,
+  keeping the identifier character for character, and keep the `abs` url only
+  where the HTML fetch says there is none. Report the two integers, links
+  rewritten and links correctly left alone, the way the other press counts
+  report.
+- The version-suffix half comes free and is the more serious one. `2026-W42`
+  carries four versioned identifiers and six bare ones, which
+  `check_voice.py links` already flags as proof that at least one identifier
+  was composed rather than copied. Every one of the ten resolves this week, so
+  nothing reached a reader broken, and that is luck rather than design: a
+  composed identifier is one digit away from a dead link in the product whose
+  single promise is that the link reaches the paper. The press holds the
+  payload's url, so it can substitute the whole identifier rather than trust
+  the model to copy it, and then no identifier in any issue is ever composed.
+- First step: the rewrite reported and not enforced for one week, with the two
+  counts, the same way the 2026-10-05 entry asks for its counts first. A gate
+  that fails a send on its first day gets switched off.
+- Cost: $0 in model spend. One pass over a body already in memory, plus one
+  HEAD per distinct link, cacheable by id.
+- Status: proposed
+
 ### 2026-10-25 - The cron slots get declared, so an absent row stops being a question (engineer seat, cron run)
 - Trigger: `tools/cron_firing.py`, shipped this run, has to report this seat's
   own 23:06Z slot of 2026-10-25 as `unseen` rather than as missed. It infers
