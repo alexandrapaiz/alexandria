@@ -752,3 +752,51 @@ three are load-bearing: each one could change a sentence in the skill.
   memory size. It needs a second paper before it is a skill rather than one
   system's architecture, and the corpus holds no independent replication of any
   of it — asked by skills/agent-memory-selection — 2026-10-13
+
+## Queued 2026-10-26 by skills/self-improving-post-training-loops
+
+All five of this skill's cited papers were read in full this run, through the
+arXiv HTML, in the ADR-38 retrofit. Nothing below is a paper the skill cites.
+The first two are papers a read paper measures against that the corpus does not
+hold, and the rest are questions the reading raised, four of which are open
+problems the papers state in their own words.
+
+- [ ] arxiv:2609.03241 — FlowRL, the baseline FlowBalance reports its whole
+  margin against, so every "+1.67 at 4B and +1.98 at 8B" this skill quotes is
+  relative to a method the library has never read. The id here is FlowBalance's
+  own, because the corpus does not record FlowRL's: finding it is the first half
+  of this item — asked by skills/self-improving-post-training-loops — 2026-10-26
+- [ ] question — Does any published loop report a second iteration? NeoHorse-1's
+  limitations say plainly that its result is a single pass of the
+  evaluate-select-update loop, so the library's one closed-loop data-selection
+  result measures one turn of a mechanism whose whole claim is that it
+  compounds. Delta 3 now says so, which is honest and not a substitute for an
+  answer — asked by skills/self-improving-post-training-loops — 2026-10-26
+- [ ] question — Is there a gate for open-ended tasks? Verify Before You Distill
+  names its own boundary: the method needs an automatic verifier and routes
+  binarily, and extending outcome-grounded reliability estimation to open-ended
+  tasks with uncertainty-aware gates is its stated future work. Delta 2 is the
+  best-evidenced delta in the skill and it stops exactly where a product team
+  needs it to continue — asked by skills/self-improving-post-training-loops —
+  2026-10-26
+- [ ] question — How do you detect that extrapolation has stopped being
+  meaningful? RISE depends on the training trajectory being low-dimensional
+  enough for linear extrapolation to hold, offers a coefficient-decay schedule
+  and an exponential-moving-average anchor as empirical robustness, and says
+  principled detection remains open. A loop that cannot detect this failure
+  amplifies it, because the same paper notes extrapolation amplifies a hackable
+  reward — asked by skills/self-improving-post-training-loops — 2026-10-26
+- [ ] question — Can a generated rubric be checked against anything? DRACO's
+  limitations say there is no independent signal that the criteria describe the
+  task faithfully, and that a judge which is internally consistent can still be
+  systematically wrong. Delta 5 is prescribed for exactly the case with no
+  ground truth, so this is the question that decides whether the delta is a
+  method or a hope — asked by skills/self-improving-post-training-loops —
+  2026-10-26
+- [ ] question — Why was the self-judge the best out-of-domain arm? DRACO's
+  transfer to a 97-task banking benchmark put the self-judged variant at 21.1
+  percent against the frontier-judged 20.4 and a 15.8 base. The skill reports it
+  because it is in the table and it inverts the expected cost ordering, and
+  neither the paper nor the corpus explains it. One replication would tell a
+  builder whether to buy a frontier judge at all — asked by
+  skills/self-improving-post-training-loops — 2026-10-26

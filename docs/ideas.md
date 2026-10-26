@@ -21450,3 +21450,73 @@ has nothing to go red against.
   only once it is right, which is a second slice.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-26 - Four claim rows behind self-improving-post-training-loops do not match their papers (skill seat, ADR-35)
+- Trigger: the ADR-38 retrofit of `skills/self-improving-post-training-loops`
+  re-read all five cited papers in full through the arXiv HTML. Four statements
+  the skill carried did not survive the reading. This is the second skill in two
+  runs where that happened, after `recursive-harness-self-improvement` was found
+  on 2026-10-26 to be quoting four attribution figures that appear nowhere in
+  arxiv.org/abs/2609.13463.
+- What: the four, each with the paper's own text beside it.
+  (1) The skill said the gated teacher "beat vanilla on-policy distillation
+  across all six single-domain settings and on multi-domain benchmarks."
+  arxiv.org/abs/2609.02998 reports the best distillation score on **nine of
+  fourteen** benchmark-scale pairs, ties included. This is the one that matters
+  most, because it is an overstatement in the skill's own favour on its
+  best-evidenced section, which is the sin the provenance reviewer exists to
+  catch.
+  (2) The skill said NeoHorse-1's macro-average spans **eleven** benchmarks. The
+  paper says ten, over six agentic metrics, two coding and two instruction
+  following.
+  (3) The skill listed the pre-training validation stack as "structural checks,
+  multi-dimensional semantic evaluation, and subscene-level labeling." The paper
+  describes three gates and leads with deduplication and evaluation-overlap
+  screening, which the skill omitted entirely, and the read text carries no
+  subscene-level labelling step. The omission is the expensive half: the gate
+  the skill dropped is the one that stops a closed loop from training on its own
+  eval set.
+  (4) The skill said RISE "consistently outperformed" across mathematical
+  reasoning, multi-domain STEM, code generation and multi-turn agentic tasks.
+  The results read are mathematical reasoning plus an out-of-domain average.
+- First step: identify which of claim ids 116 to 120, 141 to 144 and 30 to 33
+  carry these four statements, and revise or retire each. This run had no
+  `NEON_RO_URL`, so it could not read a single claim row and cannot name the
+  ids. The skill and its eval anchors are already corrected on the branch, which
+  means the library is right and the graph behind it is not, and that gap is
+  itself the finding: a skill can be repaired by one seat's reading while the
+  rows every future skill draws from stay wrong.
+- Second step, and the more general one: two runs in a row found invented or
+  inflated numbers by reading papers that claim rows had already summarised.
+  That is a rate, not a coincidence. A check that samples numeric claims against
+  their papers before they reach a skill is worth more than either repair.
+- Cost: $0 for the first step. The second is a research-seat or engineer build.
+- Status: proposed
+
+### 2026-10-26 - The voice gate never runs on the surface readers actually read (skill seat)
+- Trigger: `python3 tools/ban_list.py` was run against a retrofitted
+  `SKILL.md` this run, apparently for the first time. It fails, with one finding
+  per line of the `papers:` list, on every skill in the library: four findings
+  on `harness-engineering`, five on `self-improving-post-training-loops`. The
+  cause is the `title — url` separator the frontmatter format has always used,
+  which is a non-ASCII character entry 13 bans.
+- What: the charter's register section says a seat checks `docs/voice/ban-list.md`
+  "for skill descriptions, which readers see," and nothing in the run or in CI
+  does. So the one register the skill seat is explicitly bound by has a writing
+  gate and no shipping gate, which is the exact shape incident 20 describes.
+  Either the separator is fine in a machine-read frontmatter field and the
+  checker should take `--allow` for it by default on `SKILL.md`, or the format
+  changes to a plain hyphen across nine files and the site parser is checked
+  against it. This seat is not deciding which, because the second option edits
+  every skill in the library to satisfy a mechanical rule, and that is a change
+  worth one deliberate decision rather than nine drive-by ones.
+- First step, done in this run so the decision does not need another: across all
+  nine `SKILL.md` files the checker returns **49 findings and every one of them
+  is the papers-list separator**. Zero are prose. So the library's voice is
+  clean and the gate is blocked by a format choice in a machine-read field,
+  which makes this a five-minute repair rather than an audit: give
+  `ban_list.py` the separator as an allowed character inside a frontmatter
+  `papers:` line, then wire it into the skill seat's pre-ship checks so the next
+  finding is a real one.
+- Cost: $0
+- Status: proposed
