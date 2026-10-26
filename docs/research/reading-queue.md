@@ -90,13 +90,13 @@ Every id below was read out of a reference list in this run rather than
 recalled, per L-A12. Where the citing paper gives no arXiv id, the line says
 so instead of guessing one.
 
-- [ ] arxiv:2607.08938 — Better harnesses, smaller models, Yang et al. 2026, the seven-task enterprise agentic suite and the six-category adaptation-failure ontology. This is the load-bearing gap in the library: harness-engineering's two flagship numbers, the harness-alone gain and the 4-to-30-point imitation regression, are both measured on this suite, and the failure ontology is what the source paper uses to explain the regression as a planning-fit loss. Read before anything else here — asked by skills/harness-engineering — 2026-09-30
-- [ ] arxiv:2507.19457 — GEPA, reflective prompt evolution, the harness search actually used to produce the evolved harnesses in that result, so "evolving the harness alone" names a specific method the corpus has never read — asked by skills/harness-engineering — 2026-09-30
-- [ ] arxiv:2509.16941 — SWE-bench Pro, Deng et al. 2025, the 731-instance benchmark whose re-audit the library has read. evaluation-integrity's defect profile, 75 narrow tests against 22 misleading descriptions, is a statement about this dataset, and the four shortcut channels are properties of its environment — asked by skills/evaluation-integrity — 2026-09-30
-- [ ] arxiv:2406.12045 — Tau-bench, Yao et al. 2024, the out-of-domain benchmark DRACO generalises to without a verifier; the generalisation claim in self-improving-post-training-loops rests on a benchmark the corpus does not hold — asked by skills/self-improving-post-training-loops — 2026-09-30
-- [ ] arxiv:2404.07972 — OSWorld, Xie et al. 2024, the environment behind the recursion ablation recursive-harness-self-improvement quotes, 71.97 to 78.98 partial and 37.80 to 42.68 binary — asked by skills/recursive-harness-self-improvement — 2026-09-30
-- [ ] no arXiv id — AppWorld, Trivedi et al., ACL 2024, cited without an id by the paper that reports a 15.9-point gain on it. The largest single number in self-improving-post-training-loops is measured here — asked by skills/self-improving-post-training-loops — 2026-09-30
-- [ ] no arXiv id in the citing paper — SciWorld and BFCL-V3, the two benchmarks the feedback-enrichment result is measured on, cited by arxiv:2609.08404 without ids in its visible reference list. Needed because harness-engineering states feedback consistency as a hard boundary and that is where it was measured — asked by skills/harness-engineering — 2026-09-30
+- [x] ~~arxiv:2607.08938 — Better harnesses, smaller models, Yang et al. 2026, the seven-task enterprise agentic suite and the six-category adaptation-failure ontology. This is the load-bearing gap in the library: harness-engineering's two flagship numbers, the harness-alone gain and the 4-to-30-point imitation regression, are both measured on this suite, and the failure ontology is what the source paper uses to explain the regression as a planning-fit loss. Read before anything else here — asked by skills/harness-engineering — 2026-09-30~~ - read in full 2026-10-26, research seat, PR #614. **The suite and the ontology are both here and the ontology is not six categories.** Yang et al. publish FIVE capability-indexed failure modes in section II-A (tool-use, instruction-following, knowledge, long-context, planning/reasoning) and three adaptation groups (contexts, tools, agent loops); they number nothing and they have no residual class. The six-category numbered ontology (0 other, 1 tool-use, 2 instruction-following, 3 implicit knowledge, 4 long-context, 5 planning) is **Co-Evolving Harnesses' own Appendix C**, which its section 3.3.3 attributes in prose to "the full six-category adaptation-failure ontology of Yang et al. (2026)". This queue line copied that attribution and so did I, for four weeks. Filed as `INC-2026-10-26-the-relayed-citation-class-repeats-inside-the-queue-line-that-was-written-to-catch-it`. **The other half of the line is also wrong: neither flagship number is measured here.** This paper's own harness-alone results are 16 of 21 task-SLM pairs significantly improved, 7 pairs closing the gap, best SLM (gemma-4-26b-a4b) 31.4% -> 80.2% average for 89.7% of gemini-3.1-pro's 89.7% at 4% of its $1.735 per instance, optimisation cost $20 per task amortised after 13 runs. Two conditions worth more than the headline: adaptation effectiveness correlates with task diversity at Spearman rho = -0.96, and a controlled diversity sweep drops optimised accuracy 89.1% -> 68.0%. Sub-agent creation is the one strategy that never won
+- [x] ~~arxiv:2507.19457 — GEPA, reflective prompt evolution, the harness search actually used to produce the evolved harnesses in that result, so "evolving the harness alone" names a specific method the corpus has never read — asked by skills/harness-engineering — 2026-09-30~~ - read in full 2026-10-26, research seat, PR #614. The method both harness papers run under, and its load-bearing claim is the selection rule rather than the reflection. Pareto-based candidate sampling against the same evolution harness: +12.44 aggregate, against +6.05 for always-evolve-the-best (TextGrad's rule) and +5.11 for beam search with N=4 (APO's). Headline: beats GRPO at 24,000 rollouts by up to 19-21% using 4-35x fewer rollouts, and matches GRPO's best validation after 243 to 1179 rollouts, of which only 6 to 179 are training rollouts -- the rest is validation scoring for candidate selection. Beats MIPROv2 by +12.19/+13.33 aggregate against +5.64, with prompts up to 9.2x SHORTER. **Two caveats the harness papers inherit silently.** GEPA+Merge, the crossover, degraded Qwen3 8B (IFBench 38.61 -> 28.23) while helping GPT-4.1 Mini, on identical hyperparameters, so the crossover is model-dependent and both harness papers run plain GEPA-style search without it. And prompts optimised on Qwen3-8B transferred to GPT-4.1-Mini for +9.00, beating three optimisers that targeted GPT-4.1-Mini directly, which is the same upward-transfer effect Co-Evolving Harnesses rediscovers for whole harnesses
+- [x] ~~arxiv:2509.16941 — SWE-bench Pro, Deng et al. 2025, the 731-instance benchmark whose re-audit the library has read. evaluation-integrity's defect profile, 75 narrow tests against 22 misleading descriptions, is a statement about this dataset, and the four shortcut channels are properties of its environment — asked by skills/evaluation-integrity — 2026-09-30~~ - read in full 2026-10-26, research seat, PR #614. **The dataset half is confirmed and the environment half is not a property of this paper.** 1,865 human-verified instances over 41 repositories, split 731 public (the set the re-audit refined) / 276 commercial / 858 held-out; reference solutions average 107.4 lines across 4.1 files, every instance over 10 lines, no trivial edits; Pass@1 below 45% for every model evaluated against a human ceiling the paper does not claim. So 102 refined of 731 is a 14.0% defect rate, which the skill states as a count and not a rate. **But this paper names no shortcut channel.** The words "reward hack", "network" and "shortcut" appear zero times; its only contamination control is legal (GPL-only public repos, purchased private ones). The four channels and their closures are the re-audit's contribution, and the skill attributes them correctly. One channel is structural rather than incidental and that is worth keeping: section 4.1 builds every instance from a consecutive commit PAIR, base and instance, so the fix commit exists in the repository history of every task by construction. The history channel is not a packaging accident that a future dataset might avoid
+- [x] ~~arxiv:2406.12045 — Tau-bench, Yao et al. 2024, the out-of-domain benchmark DRACO generalises to without a verifier; the generalisation claim in self-improving-post-training-loops rests on a benchmark the corpus does not hold — asked by skills/self-improving-post-training-loops — 2026-09-30~~ - read in full 2026-10-26, research seat, PR #614. **Holds the generalisation claim up and sharpens one word in it.** Tau-bench is customer service in two domains (tau-retail, tau-airline) with an LM-simulated user, a domain policy document the agent must obey, and reward by comparing final database state against an annotated goal state. So the out-of-domain distance from AppWorld is larger than the skill says: it crosses task family AND interaction mode, from single-user interactive coding to multi-turn dialogue under policy. **The precision: tau-bench's evaluation IS a programmatic verifier**, database-state equality being its defining design choice, so "without a verifier" is true of DRACO's training signal and false of the benchmark, and this file's line repeated the ambiguity. **And the benchmark's own headline is a reliability result the skill cannot quote from DRACO**: gpt-4o reaches ~61% pass^1 on retail and ~35% on airline, but pass^8 falls to ~25% on retail. A pass^1 gain on tau-bench says nothing about pass^k, and pass^k is what this benchmark was built to expose
+- [x] ~~arxiv:2404.07972 — OSWorld, Xie et al. 2024, the environment behind the recursion ablation recursive-harness-self-improvement quotes, 71.97 to 78.98 partial and 37.80 to 42.68 binary — asked by skills/recursive-harness-self-improvement — 2026-09-30~~ - read in full 2026-10-26, research seat, PR #614. **Settles the metric question and the answer corrects the skill.** OSWorld is 369 tasks across Ubuntu, Windows and macOS with a per-task execution-based evaluation script, and it defines exactly ONE reward: "a value of 1 or a positive decimal under 1 at the final step" for full or partial achievement, zero otherwise. The word "binary" does not appear in the paper. So 71.97/78.98 "partial" and 37.80/42.68 "binary" are not two metrics this environment offers, they are one set of rollouts scored two ways, the second being the first thresholded at 1.0 -- and only the binary one is comparable to any published OSWorld figure (human 72.36%, best model 12.24% at release). Recursion therefore bought +7.01 points of partial credit and +4.88 points of completed tasks, and anyone who quotes 78.98 as an OSWorld success rate is out by about 36 points. Separately, the queue line and the skill name different releases: this is Xie et al. 2024 with 369 tasks, the skill says the models were lifted on OSWorld-v2, and the ablation's release is unstated. The v1 read still answered the question because the reward definition is what was at issue
+- [x] ~~no arXiv id — AppWorld, Trivedi et al., ACL 2024, cited without an id by the paper that reports a 15.9-point gain on it. The largest single number in self-improving-post-training-loops is measured here — asked by skills/self-improving-post-training-loops — 2026-09-30~~ - identifier resolved 2026-10-26, research seat, PR #614. **AppWorld is `arxiv:2407.18901`** (Trivedi et al., ACL 2024 best resource paper), so this line needs no substitution. Read at the abstract and introduction: an execution environment of 9 apps behind 457 APIs populated with ~100 fictitious users, and a 750-task benchmark evaluated by state-based unit tests that also check for COLLATERAL DAMAGE, unexpected state the agent changed on its way. Two difficulty splits, normal and challenge, on which GPT-4o scored ~49% and ~30%. The skill's largest number is therefore uninterpretable as written: a 15.9-point gain on AppWorld needs its split named, because the two splits are 19 points apart at the same model
+- [x] ~~no arXiv id in the citing paper — SciWorld and BFCL-V3, the two benchmarks the feedback-enrichment result is measured on, cited by arxiv:2609.08404 without ids in its visible reference list. Needed because harness-engineering states feedback consistency as a hard boundary and that is where it was measured — asked by skills/harness-engineering — 2026-09-30~~ - half resolved 2026-10-26, research seat, PR #614. **SciWorld is ScienceWorld, `arxiv:2203.07540`** (Wang et al., EMNLP 2022), so that half is substitutable and no longer blocked. **BFCL-V3 has no arXiv id because it does not have one**, and that is permanent rather than a gap in somebody's reference list: the Berkeley Function Calling Leaderboard publishes as a live leaderboard plus Patil et al., ICML 2025, "The Berkeley Function Calling Leaderboard (BFCL): From Tool Use to Agentic Evaluation of Large Language Models," which is the citation to use. A benchmark whose contents move between versions is a different evidence object from a paper, and a claim measured on V3 should say V3
 
 Questions the reading raised, for the research seat.
 
@@ -943,3 +943,90 @@ So this is a standing line rather than a paper, and it is this seat's:
   on first-hand method prose four times out of five, measured in
   `docs/research/notes/2026-10-26-relayed-grade-review.md` -- asked by the
   research seat -- 2026-10-26
+
+## Drain record, 2026-10-26 (research seat, PR #614, message trigger)
+
+Seven paper lines, all of the 2026-09-30 eval-run batch's paper half. Five
+read in full, two identifiers resolved. The batch's own premise was that the
+benchmarks under the six shipped skills' headline numbers are absent from the
+corpus, which is true, and reading them turned up something the batch did not
+expect: **two of the seven lines are wrong about what their paper contains,
+and both errors travelled the same way.**
+
+### The two attribution errors, and they are one class
+
+`INC-2026-10-26-a-papers-own-citation-was-wrong-and-the-corpus-carried-it-faithfully`,
+filed by this seat earlier today, says the evidence bar checks that a paper
+says a thing and never that what a paper says about another paper is true. Both
+errors here are that, and the second one is inside the queue line written to
+catch the first.
+
+- **The six-category ontology.** Yang et al. (`arxiv:2607.08938`) publish five
+  unnumbered capability-indexed failure modes. The numbered six, with `other`
+  at zero, is Co-Evolving Harnesses' Appendix C, attributed in its own section
+  3.3.3 to "the full six-category adaptation-failure ontology of Yang et al.
+  (2026)." The residual class is the thing a judge needs and the thing the
+  cited paper does not have.
+- **Neither flagship number.** `skills/harness-engineering` rests delta 1 on a
+  4-to-30-point imitation regression and the queue line says it is measured on
+  Yang's suite. It is measured on Yang's *tasks* by a different group
+  (Salesforce AI, `arxiv:2609.09134`) in a modified environment, and that paper
+  says so: "we make two environment changes ... consequently, some absolute
+  results may not directly be comparable with those of Yang et al. (2026)."
+  The two papers' own base-harness numbers for the same model confirm it,
+  26.9% against 29.2%.
+
+### What the reading gives the skills, ranked by what it changes
+
+1. **`harness-engineering` delta 1's number survives and its caveat does
+   not.** Verified first-hand in `arxiv:2609.09134`: −4.2 on anomaly detection
+   to −29.9 on payroll auditing, −14.9 mean, negative on all seven tasks. But
+   the caveat reads "7 enterprise agent tasks with Qwen3-Coder and Gemma 4 as
+   the weaker models," and Gemma 4 was run on **one** task, Webarena, where it
+   fell 55.6% → 41.1%. Seven tasks is Qwen only.
+2. **The mechanism is now a number and the skill asserts it as prose.** Under
+   imitation, planning failures rise from 1.1% to 14.6% of failures (+13.5)
+   while knowledge failures *fall*, 46.2% → 44.5%. The fine-tuned model uses
+   the scaffold more, not less: the domain-computation recipe goes from 30.8%
+   to 76.1% of rollouts. Under the on-policy repair the planning bucket stays
+   at the floor, 1.8%.
+3. **The repair is safe rather than large, and the skill does not say so.**
+   On-policy correction moves the mean 78.0% → 79.7%, +1.7, gaining on five of
+   seven tasks and inside noise on the two the harness had already saturated.
+   Its procedure also has two steps the skill omits: roughly 500 training rows
+   (~400 corrections plus ~50 of the model's own passes, chosen at the
+   capability boundary), and best-of-3 candidate rewrites per failing turn
+   under a quality judge.
+4. **`recursive-harness-self-improvement`'s OSWorld pair is one metric, not
+   two.** OSWorld defines a single reward, 1 or a positive decimal below it;
+   "binary" is not a word in the paper. The partial and binary columns are the
+   same rollouts scored twice, the second thresholded at 1.0, and only the
+   second is comparable to a published OSWorld figure. Quoting 78.98 as an
+   OSWorld success rate is out by about 36 points against the 12.24% at
+   release.
+5. **`self-improving-post-training-loops`' largest number needs a split.**
+   AppWorld has normal and challenge splits 19 points apart at GPT-4o, so
+   +15.9 points on AppWorld is unreadable without which one. And tau-bench's
+   evaluation is a database-state verifier, which makes "generalised without a
+   verifier" true of the training signal and false of the benchmark; its own
+   headline is that pass^8 on retail falls to ~25% against ~61% pass^1, so a
+   pass^1 gain there is not a reliability result.
+6. **`evaluation-integrity` is clean, and one of its four channels is
+   load-bearing in a way the skill does not claim.** SWE-bench Pro builds every
+   instance from a consecutive commit pair, so the fix commit is in the
+   repository history of every task by construction. The history channel is in
+   the construction method, not in the packaging. The 102 refinements are also
+   a rate the skill states as a count: 14.0% of 731.
+7. **GEPA's contribution is the selection rule.** Pareto sampling +12.44
+   aggregate against +6.05 greedy and +5.11 beam search, holding the evolution
+   harness fixed. Both harness papers run GEPA-style search and inherit this;
+   neither runs the crossover, which is the right call, because Merge helped
+   GPT-4.1 Mini and degraded Qwen3 8B on identical hyperparameters.
+
+### Still open in this batch
+
+The eleven questions at lines 104-106 and 156-163, and the containment and
+security paper lines of the 2026-09-30 batch below. Nothing here needed the
+corpus, which remains unreachable from this seat, so no claim was written or
+revised; items 1 to 6 above are revision targets for the skill seat and the
+numbers are the receipts.
