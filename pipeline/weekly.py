@@ -289,12 +289,21 @@ def gather(conn, window: dict | None = None) -> dict:
     moment the query runs.
 
     That default is correct for a cron that fires on time and wrong for every
-    other run, which is the half of the 2026-W38 incident that was never
-    fixed. The label was repaired on 2026-09-24 so an off-schedule run writes
-    under the week it is reporting on. The payload was not, so the same run
-    still gathered the seven days before *itself*. An issue labelled 2026-W38
-    and filled with the week of 2026-09-23 is a worse artifact than one
-    labelled wrongly, because nothing downstream can tell.
+    other run, which is why neither caller in this module uses it any more.
+    `weekly` and `rehearse` both pass `week_window(week)`, so the window is
+    always the window of the week on the masthead. The default stays because
+    it is what this SQL has always evaluated and it keeps the predicate
+    readable in the query rather than only in Python, and because a future
+    caller that genuinely wants "the last seven days" should not have to
+    construct a week label to ask for it.
+
+    The reason both callers moved is
+    `INC-2026-10-18-press-recovery-content-anchor`. The label was put on one
+    anchor on 2026-09-28 and the payload was left on this default, so a run on
+    any day but Monday printed one week on the masthead and the seven days
+    before itself underneath it. An issue labelled 2026-W41 and filled with
+    the week of 2026-10-18 is a worse artifact than one labelled wrongly,
+    because nothing downstream can tell.
     """
     window = window or {"since": None, "until": None}
     # The five numbers the pipeline can honestly account for, one per step.
@@ -1552,7 +1561,7 @@ def dates_of(sunday: date) -> str:
 # The hour of the Monday cron, as a number, because `week_window` has to
 # reconstruct the span a scheduled run would have read and the schedule is the
 # only place that span is written down. The Cron on `weekly` below is the
-# authority, never this line; tests/test_press_backfill.py pins this constant
+# authority and never this line. tests/test_press_backfill.py pins the constant
 # to that decorator and to `PRESS_CRON` in tools/delivery_health.py, so the
 # three cannot drift apart silently. Changing it is a runtime change under
 # docs/agents/runtime-changes.md.
@@ -1839,14 +1848,21 @@ def weekly(week: str = "") -> str:
         window = week_window(week)
     else:
         week, dates = week_just_ended()
-        # None, which is the rolling seven days this query has always read.
-        # `week_window(week)` would be the same seven days whenever the cron
-        # is on time and the honest answer when it is not, and it is not used
-        # here on purpose: it changes what the scheduled press prints, so it
-        # belongs behind `rehearse`, and no rehearsal can run while the Modal
-        # workspace is disabled. Carried as a ledger entry of 2026-10-26, "The
-        # scheduled press still reads the week it is standing in".
-        window = None
+        # The same window, and this line is the repair for
+        # `INC-2026-10-18-press-recovery-content-anchor`. The label and the
+        # date range were put on one anchor on 2026-09-28 and the queries that
+        # fill the body were left on `now() - interval '7 days'`, so a run on
+        # any day but Monday printed the right week on the masthead and the
+        # seven days before itself underneath it. That is why the 2026-W41
+        # recovery was withdrawn on 2026-10-18 rather than run: the one-off
+        # manual run in this module's own docstring is exactly a recovery, and
+        # it would have written the wrong content under the missing week's
+        # label, permanently, because `digests` upserts on week.
+        #
+        # For an on-time cron this changes the window by the seconds the run
+        # takes to start. For a late one it changes it to the week the issue
+        # says it is about. Both are what the masthead already claims.
+        window = week_window(week)
     prompt = open("/root/prompts/digest.md").read()
     short_prompt = open("/root/prompts/digest-short.md").read()
     # Which prompt wrote the issue is not known until the walk is over, so the
@@ -1875,7 +1891,7 @@ def weekly(week: str = "") -> str:
                 # and this run reports on a week that is over. Refreshing
                 # trajectories would move numbers the regenerated issue is not
                 # allowed to read anyway, because gather's window ends with
-                # the week. A backfill reads the record; it does not add to it.
+                # the week. A backfill reads the record rather than adding to it.
                 print(f"citation check skipped: {week} is a rewrite, so the "
                       "trajectories stay as the week left them")
             else:
@@ -2004,7 +2020,7 @@ def weekly(week: str = "") -> str:
                 # issue this replaces, and mailing a second copy of a past
                 # week unasked is the kind of thing a backfill does once and
                 # apologises for. The ledger entry asks for "regenerate and
-                # resend"; `resend` is the second verb and it is deliberate.
+                # resend", and `resend` is the second verb, deliberately.
                 print(f"{week} rewritten and sent to nobody. The row is in "
                       "digests and on the site. To mail it: "
                       f"modal run pipeline/weekly.py::resend --week {week}")
@@ -2119,7 +2135,7 @@ def rehearse(allow_fallback: bool = False) -> str:
                 "    modal run pipeline/db_setup.py::apply_schema\n"
                 "Nothing was spent."
             )
-        payload = gather(conn)
+        payload = gather(conn, week_window(week))
         payload["week"] = week
         payload["dates"] = dates
         stats_line = payload_line(week, payload)

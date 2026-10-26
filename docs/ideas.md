@@ -21240,32 +21240,32 @@ has nothing to go red against.
 - Cost: $0.
 - Status: proposed
 
-### 2026-10-26 — The scheduled press still reads the week it is standing in
-- Trigger: today's work gave `pipeline/weekly.py` a way to write a week by
-  name, and building it surfaced the half of the 2026-W38 incident that was
-  never fixed. The label was repaired on 2026-09-24: `week_just_ended` now
-  anchors on the last Sunday, so a recovery run on a Wednesday writes under
-  the week it is reporting on. The payload was not. Every time filter in
-  `gather` said `now() - interval '7 days'`, so the same Wednesday run filled
-  a 2026-W38 issue with the seven days before itself. An issue labelled
-  correctly and filled wrongly is the worse of the two, because the label is
-  the only thing downstream can check.
-- What: `gather` now takes a window and `week_window(week)` builds the exact
-  span the Monday cron would have read. The scheduled path does not use it. It
-  passes `None`, which evaluates the predicate it has always evaluated, and
-  that is deliberate: for an on-time cron the two are the same seven days to
-  within the seconds the cron takes to start, and for a late one they differ,
-  which means switching is a change to what the press prints rather than a
-  refactor. `docs/agents/press-rehearsal.md` is the gate that change belongs
-  behind, and no rehearsal can run while the Modal workspace is disabled.
-- First step: one line in `weekly()`, `window = week_window(week)` in the
-  scheduled branch, run behind `modal run pipeline/weekly.py::rehearse` on the
-  first Monday after the workspace is back, with the rehearsal's payload line
-  compared against the live cron's for the same week. The test that pins the
-  current behaviour is `test_the_scheduled_path_still_sends` in
-  `tests/test_press_backfill.py`, and it is the test that has to change with
-  it rather than a test to delete.
-- Cost: $0. One rehearsal's tokens, which the press already budgets.
+### 2026-10-26 — `resend` can mail an issue the quality gate refused to send
+- Trigger: wiring the no-send rule for a rewrite meant reading the hold path
+  beside it, and the hold's own alarm points at the bypass. When
+  `hold_for_quality` cannot get a blocking finding fixed in one rewrite,
+  `weekly` keeps the issue out of every inbox and mails the owner a note whose
+  closing sentence is "send it as it is with `resend`". `resend` reads one
+  column and calls `send_newsletter`. It opens no gate, reads no finding, and
+  leaves no record that a held issue was sent anyway. So the pre-send gate is
+  one command away from being advisory, and the command is the one the alarm
+  recommends.
+- What: `resend` reads the gate before it sends. If the body it is about to
+  mail has blocking findings, it refuses and prints them, and an explicit
+  `--override` is what sends it, with the findings and the override written
+  into the run's own output so the decision is on the record rather than in
+  somebody's memory of a Tuesday. The gate already runs on a body with no
+  database and no key, which is why this is cheap: `gate_issue(body, label)`
+  is the whole dependency and `tools/check_digest_quality.py` already travels
+  in the image.
+- First step: call `gate_issue` in `resend` between the `select` and the send,
+  and add the `override: bool = False` parameter. The test is a scripted body
+  with one blocking finding, asserting no send without the flag and a send
+  with it. `docs/product/digest-quality.md` is the standard that decides
+  whether an override should exist at all, and that reading comes first,
+  because a gate nobody may override is also a defensible answer and is one
+  fewer parameter.
+- Cost: $0.
 - Status: proposed
 
 ### 2026-10-26 — A week's rewrite cannot be read before it is paid for
@@ -21314,7 +21314,7 @@ has nothing to go red against.
 - First step: add the denominator to `gather`'s stats query as a sixth count,
   `papers` in the window with no triage row, and decide with the writer seat
   whether it reaches the issue or only `/api/delivery`. The arithmetic is one
-  subquery in a query this change has already parameterised; the editorial
+  subquery in a query this change has already parameterised. The editorial
   call on whether a reader should see a coverage number is the writer's and
   the owner's.
 - Cost: $0.
@@ -21344,7 +21344,7 @@ has nothing to go red against.
   cannot check for themselves, so saying a number at all is the move. And the
   number is bounded by a benchmark Undermind defined, which it says plainly,
   so the claim survives a sceptical read. A press that says "we triaged 47
-  papers" has told the reader nothing they can calibrate; the same press
+  papers" has told the reader nothing they can calibrate, and the same press
   saying "47 of the 61 our sources published" has.
 - What alexandria does better: a report and a claim graph answer different
   questions, and the difference shows up a month later. Undermind's unit is a

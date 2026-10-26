@@ -129,7 +129,10 @@ def run_rehearse(*, model=None, rows=None, prompt="the editorial instruction"):
     os.environ["DATABASE_URL"] = "postgres://scripted"
 
     weekly.check_availability = lambda: set(weekly.FALLBACK_MODELS)
-    weekly.gather = lambda conn: {
+    # two arguments since 2026-10-26: the rehearsal passes the labelled week's
+    # own window, because a rehearsal that read a different window from the run
+    # it rehearses would be rehearsing a different issue.
+    weekly.gather = lambda conn, window=None: {
         "stats": {"papers_ingested": 40, "claims_distilled": 12, "edges_drawn": 9},
         "new_claims": [{"claim": "x"}], "superseded": [], "deprecated": [],
         "deep_reads": [], "traction": {"supported_claims": [], "citation_movers": []},

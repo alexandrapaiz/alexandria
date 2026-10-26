@@ -278,12 +278,15 @@ def test_every_windowed_query_is_handed_the_window():
 
 
 def test_the_default_window_is_the_rolling_seven_days():
-    """`gather(conn)` with no window is the cron's own path, unchanged.
+    """`gather(conn)` with no window still reads the rolling seven days.
 
-    The SQL carries its old predicate inline as the `coalesce` default, so the
-    scheduled run evaluates the same bound it evaluated before this change.
-    Both keys present and both None is what makes that true: a missing key
-    would be a psycopg KeyError at the cron rather than a fallback.
+    No caller in `pipeline/weekly.py` uses this any more, and it is pinned
+    anyway, for two reasons. It is the predicate this SQL evaluated before
+    today, so a reader comparing the query against a 2026-10-25 checkout finds
+    the old behaviour written in the query rather than argued in a commit
+    message. And both keys have to be present and None: a missing key is a
+    psycopg error at the caller rather than a fallback, which is the one way
+    this default could fail and look like a bug in the window.
     """
     print("the default")
     conn = FakeConn()
@@ -444,8 +447,30 @@ def test_the_scheduled_path_still_sends():
     seen = run_weekly()
     week, _ = w.week_just_ended()
     check("the cron's own run sends", seen["sent"] == [week], str(seen["sent"]))
-    check("and it reads the rolling window, not a named one",
-          seen["gathered"] == [None], str(seen["gathered"]))
+
+
+def test_the_scheduled_path_reads_the_week_it_prints():
+    """INC-2026-10-18-press-recovery-content-anchor, as a test.
+
+    The label and the date range were put on one anchor on 2026-09-28. The
+    queries that fill the body were left on `now() - interval '7 days'`, so a
+    run on any day but Monday printed one week on the masthead and a different
+    week underneath it. `digests` upserts on week, so the 2026-W41 recovery
+    was withdrawn rather than run, on exactly this reasoning, after
+    `alexandra-systems/mba` read the module.
+
+    The property is one sentence: the window a run reads is the window of the
+    week it labels, on every day of the week, not only on Monday.
+    """
+    print("the week the cron reads")
+    seen = run_weekly()
+    week, _ = w.week_just_ended()
+    check("the window is the labelled week's own window",
+          seen["gathered"] == [w.week_window(week)], str(seen["gathered"]))
+    check("and it is not the rolling default",
+          seen["gathered"] != [None], str(seen["gathered"]))
+    check("a rehearsal reads the same window as the run it rehearses",
+          "gather(conn, week_window(week))" in SOURCE)
 
 
 def test_a_bad_label_raises_before_anything_is_spent():
@@ -477,6 +502,7 @@ def main() -> int:
         test_a_named_week_reads_that_weeks_window_and_not_todays,
         test_a_named_week_does_not_write_todays_citation_counts,
         test_the_scheduled_path_still_sends,
+        test_the_scheduled_path_reads_the_week_it_prints,
         test_a_bad_label_raises_before_anything_is_spent,
     ]:
         print(f"\n{fn.__name__}")
