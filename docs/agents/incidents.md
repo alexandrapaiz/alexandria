@@ -22679,6 +22679,70 @@ that function is unknown. Filed in `docs/ideas.md` as the day's second idea,
 with the cheapest first step named: run the suite twice, the second time with
 the clock moved a week forward, and read any divergence as the finding.
 
+## INC-2026-10-26-the-archive-surface-answered-green-over-a-gap-that-was-inside-its-own-evidence — the fifth of the green-for-a-false-reason class, and the first where the instrument had already fetched the proof (2026-10-26, engineer seat, scheduled hook run)
+
+**Observed by:** this run, reading `tools/delivery_health.py --surface archive
+--json` before picking the day's work.
+
+**What happened.** The verdict and the evidence under it, verbatim, at 14:10Z:
+
+```
+archive  ok  the record and the archive both end at 2026-W42
+         published: ["2026-W42", "2026-W40", "2026-W39"]
+```
+
+2026-W41 is missing from that list. The board card `Press: no issue for
+2026-W41` was open at the time and had been opened by a person. The surface
+whose job is the archive had the gap in its own payload and answered `ok`.
+
+`judge_archive` compared `max(published)` against the newest week in `digests`.
+`check_site` hands it the whole list. Nothing between 2026-10-01, when the
+surface was built, and today read past element zero.
+
+**Why it is a repeat and not a new class.** Four entries already name a guard
+that was green for a reason unrelated to the thing it checks:
+`INC-2026-10-18-the-board-tests-pinned-the-payload-the-board-refuses`,
+`INC-2026-10-23-a-voice-gates-first-firing-is-green-for-a-false-reason`,
+`INC-2026-10-25-a-cost-comment-goes-stale-in-two-production-jobs-at-once`, and
+`INC-2026-10-26-a-test-was-green-for-ninety-minutes-because-its-fixture-aged`.
+It is also the fifth on the narrower shape this seat keeps hitting, a guard
+narrower than the evidence available to it, after
+`INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see` and
+`INC-2026-10-24-the-drift-guard-reported-on-the-apps-it-could-measure-and-not-on-the-ones-it-could-not`,
+which its own heading calls the fourth entry on one shape.
+
+**What makes this one different from the other four.** In every prior instance
+the instrument could not see the thing it missed: a shallow checkout, two apps
+with no row, a fixture that aged, a payload nobody had tried. Here the instrument
+fetched the proof over the network, parsed it, put it in a dict, printed it in
+`--json`, and then asked the dict one question that could not reach it. No
+credential, no deploy and no second request stood between the check and the
+right answer. That removes the usual excuse from the class, which is worth
+recording precisely because the remedies the prior four produced were all about
+widening access, and none of them would have caught this.
+
+**The generalisation, offered for the next instrument rather than for this one.**
+When a check reduces a collection to one element and judges on that, the reduction
+is a claim about the rest of the collection and it is almost never stated. `max`,
+`[0]`, `order by ... limit 1` and `newest` are the four spellings of it in this
+repository. The question that catches it is "the evidence has N items and the
+verdict cites one, so what is being asserted about the other N-1."
+
+**The fix, in this run's pull request.** `archive_gaps` in
+`tools/delivery_health.py` walks the span between the oldest and newest
+published week and names every week in it that is neither published nor hidden;
+the surface reads FAILING when that list is non-empty and prints the `modal run
+pipeline/weekly.py::weekly --week <label>` that fills each. Seventeen assertions
+in `tests/test_delivery_health.py`, including a control that a complete span
+stays green. Live after the fix, the same command names 2026-W41 and the command
+that writes it. Written up at the surface's specification in
+`docs/agents/delivery-health.md`.
+
+**What is still open.** The generalisation above is a reading habit and nothing
+enforces it. Filed in `docs/ideas.md` as this run's first idea, with the first
+step named: a census of every `limit 1`, `[0]` and `max(` that feeds a verdict
+in `tools/`, read for what it assumes about the rows it dropped.
+
 ## INC-2026-10-26-the-visual-harness-readme-teaches-the-fixed-tmp-name-that-incident-0b-forbids — a seat followed the harness's own documented command and collided with its own predecessor's frames (2026-10-26, frontend seat)
 
 **The repeat.**

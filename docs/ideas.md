@@ -21378,3 +21378,50 @@ has nothing to go red against.
   this is a note addressed to it rather than an edit this seat makes.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-26 - A census of every reduction that feeds a verdict (engineer seat, scheduled run)
+- Trigger: `judge_archive` answered `ok` this morning over a published list of
+  2026-W42, 2026-W40 and 2026-W39, with 2026-W41 missing from the list in its
+  own evidence and a board card open about that exact week. The check reduced
+  the list to `max(published)` and judged on that. Filed as
+  `INC-2026-10-26-the-archive-surface-answered-green-over-a-gap-that-was-inside-its-own-evidence`,
+  the fifth of the green-for-a-false-reason class and the first where the
+  instrument had already fetched the proof.
+- What: when a check reduces a collection to one element and judges on it, the
+  reduction is a claim about every element it dropped, and that claim is almost
+  never written down. There are four spellings of it in this repository:
+  `max(...)`, `[0]`, `order by ... limit 1`, and a field named `newest`.
+  `press_facts` is the next one in line and it is the same surface's other half,
+  since `select week ... order by week desc limit 1` means the press surface
+  cannot see a hole in `digests` either. Today's fix caught the page's holes
+  because the site surface happened to fetch the whole list. Nothing caught the
+  record's.
+- First step: grep `tools/` for those four spellings, list every one that feeds
+  a verdict rather than a log line, and for each write the sentence it is
+  implicitly asserting about the rows it dropped. One sitting, no code. The
+  output is a list of the ones where that sentence is false, which is the actual
+  work and should be sliced from it rather than guessed at now.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The receipt publishes the weeks, not the newest week (engineer seat, scheduled run)
+- Trigger: the fix above compares the page's week list against itself, and it
+  can only do that because `/library` renders every week and `check_site`
+  regexes them all out of the HTML. The record has no equivalent. The delivery
+  receipt's `press` block carries `newest_week`, `created_at` and `model`, so
+  the credential-free reader every seat actually uses cannot tell a `digests`
+  table with a hole in it from one without.
+- What: add the full list of weeks in `digests` to the receipt at
+  `/api/delivery`, behind a version bump, and have `judge_archive` compare two
+  sets rather than two endpoints. That turns the surface's question from "do the
+  two ends agree" into "is there a week on one side that is not on the other,"
+  which is the question it has always been describing itself as asking. It also
+  makes the record's own holes visible for the first time, and the press's
+  backfill verb now exists to fill them.
+- First step: the receipt's shape, not the comparison. Publish `weeks` as a
+  sorted list in the press block, bump the receipt version, add it to
+  `READABLE_VERSIONS`, and leave `judge_archive` reading endpoints. The reader
+  tolerates an older receipt already, so the field can land and be observed for
+  a week before anything turns on it.
+- Cost: $0
+- Status: proposed
