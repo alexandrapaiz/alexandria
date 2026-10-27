@@ -683,12 +683,60 @@ def company_of(args, env=None):
     return name
 
 
-def seat_of(args, env=None):
+def seat_of(args, env=None, company=None):
+    """The seat this call acts as, in the bare form the bus stores.
+
+    The qualified form is accepted because this file prints it. Every message
+    `render_inbox` renders reads `alexandria/research -> alexandria/engineer`,
+    the manifests and the twelve charters name seats that way, and `send`
+    reports its target that way too. So a reader who types back the form it
+    was shown is following the file, and until this run it was answered with
+    an inbox of zero messages in every bucket and an exit of 0
+    (`INC-2026-10-27-two-readers-answer-a-wrong-seat-name-with-a-confident-zero`).
+    The true count at the minute the ExO seat measured it was 22.
+
+    The failure was silent twice over. `to_seat=alexandria/engineer` matches no
+    row on the bus, so `yours` is empty; and the narrowing happens on the
+    server, so `theirs` -- the bucket whose whole job is to say what was
+    filtered -- never receives a row either and reports zero with the same
+    confidence. The only tell was the header, which read
+    `inbox for alexandria/alexandria/engineer`.
+
+    So a seat value this function cannot resolve raises instead of being passed
+    through to a query that will answer empty. A disagreeing company half is
+    the case worth refusing loudest: `--company alexandria --seat Ursa/engineer`
+    is a reader asking two different questions, and answering either one of
+    them silently is how a seat acts on another company's letter.
+    """
     env = os.environ if env is None else env
     seat = args.seat or env.get("ASC_SEAT") or seat_from_workflow(env.get("GITHUB_WORKFLOW"))
     if not seat:
         raise BoardError("this call needs a seat: pass --seat, or set ASC_SEAT")
-    return seat
+    seat = seat.strip()
+    if not seat:
+        raise BoardError("this call needs a seat: pass --seat, or set ASC_SEAT")
+    if "/" not in seat:
+        return seat
+    qualifier, _, bare = seat.rpartition("/")
+    # Both halves are checked before either is used. Trimming a stray slash
+    # instead would turn `alexandria/` into a seat named `alexandria`, which is
+    # a company name, and that query answers empty with a clean zero -- the
+    # very shape of the defect this function was rewritten to stop.
+    if not bare:
+        raise BoardError(f"{seat!r} names a company and no seat after the slash")
+    if not qualifier:
+        raise BoardError(f"{seat!r} names a seat and no company before the slash")
+    if "/" in qualifier:
+        raise BoardError(
+            f"{seat!r} is not a seat: the qualified form is one company and one "
+            "seat joined by a single slash"
+        )
+    if company and qualifier.casefold() != company.casefold():
+        raise BoardError(
+            f"{seat!r} names company {qualifier!r} and this call is reading "
+            f"{company!r}: name one company, not two"
+        )
+    return bare
 
 
 def read_board(company, env=None, opener=None):
@@ -761,9 +809,10 @@ def cmd_get(args):
 
 
 def cmd_item(args):
+    company = company_of(args)
     payload = {
-        "company": company_of(args),
-        "seat": seat_of(args),
+        "company": company,
+        "seat": seat_of(args, company=company),
         "title": args.title,
         "horizon": args.horizon,
     }
@@ -784,7 +833,7 @@ def cmd_move(args):
     company = company_of(args)
     payload = {
         "company": company,
-        "seat": seat_of(args),
+        "seat": seat_of(args, company=company),
         "column_id": column_id_for(company, args.column, args.dry_run),
     }
     if args.dry_run:
@@ -797,7 +846,8 @@ def cmd_move(args):
 
 
 def cmd_comment(args):
-    payload = {"company": company_of(args), "seat": seat_of(args), "body": args.body}
+    company = company_of(args)
+    payload = {"company": company, "seat": seat_of(args, company=company), "body": args.body}
     if args.dry_run:
         print(json.dumps(payload, indent=2, sort_keys=True))
         print(f"would POST /api/items/{args.id}/comments")
@@ -831,7 +881,7 @@ def read_messages(company, seat, since_hours, env=None, opener=None, limit=200):
 
 def cmd_inbox(args):
     company = company_of(args)
-    seat = seat_of(args)
+    seat = seat_of(args, company=company)
     # Clamped to the server's own ceiling, because a caller who asks for 1000
     # gets 500 and `len(messages) >= limit` would then read as "not cut" on a
     # window that was. The signal is only honest if the number asked for is a
@@ -853,7 +903,8 @@ def cmd_inbox(args):
 
 
 def cmd_send(args):
-    payload = message_payload(args, seat_of(args), company_of(args))
+    company = company_of(args)
+    payload = message_payload(args, seat_of(args, company=company), company)
     if args.dry_run:
         print(json.dumps(payload, indent=2, sort_keys=True))
         print("would POST /api/messages")
