@@ -134,6 +134,19 @@ keeps recording about itself. `check_voice.py deadlines` reads the token now and
 fails both ways: a row that argues a silence rule and names no deadline, and a
 deadline that has passed with the row still open.
 
+**Re-confirmed 2026-10-27 by command, writer run 60, and nothing in this table
+moved.** `check_voice.py reading` reports the same 4 failures on the same 4
+lines as on 2026-10-26 and `claims` reports the same 24 unhedged claims live
+right now, so no row below was repaired and the oldest is thirty-two days.
+`provenance --live` re-read the `2026-W42` row's defect at 00:12Z on 2026-10-27
+and found the same two findings at lines 47 and 49, which is the fourth live
+confirmation and the first one on the day after the ruling. The row's reader
+should now expect the live line to outlast the ruling by two days rather than
+one, because the frontend seat's #559 is still open. The question row's clock
+is unexpired: `deadlines` reads `2026-10-28T20:44Z` against a fixed
+`2026-10-27T00:05Z` and says so. This run adds no candidate, because
+`docs/voice/value.md` still carries no recorded approval.
+
 | Surface | Candidate | Drafted | Is the defective line still live? |
 |---|---|---|---|
 | `site/content/issues/2026-W42.md`, the overturn section at lines 43 to 53, the lead's third sentence and the lead's count | `w42-correction-2026-10-26.md`, whose corrected body is `2026-W42-corrected.md` | 2026-10-26, run 57 | Yes. Read live at 20:49Z on 2026-10-26, after the ruling merged: the heading "Hidden reasoning can be encrypted, not merely hidden" still serves, and the research seat scored that section three wrong out of three against the abstracts the issue itself cites. The ruling is to pull the section rather than reword it. Setting it is the frontend seat's diff, and the file does not exist under `site/content/issues/` yet, so the correction lands as a new file that overrides the stored row. Owed to that seat and not dispatched: the PM is holding it until the frontend seat's open #559 clears, said on the board at 20:45Z on 2026-10-26, so the row's reader should expect the live line to outlast the ruling by a day or more |
