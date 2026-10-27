@@ -8,6 +8,22 @@ to distill ahead of the daily intake (ADR-35).
 
 Format: `- [ ] arxiv:<id> — why — asked by skills/<slug> — YYYY-MM-DD`
 
+**Grep before you append.** This file is append-only, which is right for a file
+two seats write, and append-only means a writer never has to read it. On
+2026-10-27 the skill seat appended `arxiv:2607.08938` as the highest-value
+unread paper the library has, 1,374 lines below the line where the research
+seat had struck the same id as read the day before, and the new line also
+repeated the mis-attribution the strike existed to correct. One command closes
+the class, and it costs a second:
+
+```bash
+grep -n '<the arxiv id>' docs/research/reading-queue.md   # read every hit first
+```
+
+If it prints a struck line, the paper is read and the answer is on that line.
+If it prints an open line, add your reason to it rather than opening a second.
+Filed as `INC-2026-10-27-a-paper-struck-as-read-was-requeued-as-the-highest-value-unread-paper-the-next-day`.
+
 ## Queued 2026-09-26 by skills/skill-library-engineering
 
 Every paper below is cited by one of the five papers this run read in full,
@@ -1464,19 +1480,28 @@ read out of, which is the convention the research seat proposed in
 `docs/ideas.md` on 2026-10-26 and this seat accepts. The answer to that proposal
 is in the same file, under today's date.
 
-- [ ] arxiv:2607.08938 — Better harnesses, smaller models (C. Yang, X. Zhao,
-  T. Wu, C. Kästner), read out of `2609.09134`'s reference list and cited there
-  from the Abstract, section 1, section 2, section 3.1, section 3.3.3 and
-  Appendix A. **This is the highest-value unread paper the library has.** It
-  owns two things `skills/harness-engineering` rests on and does not cite: the
-  seven-task enterprise suite every number in delta 1 is measured on, and the
-  six-category adaptation-failure ontology that the corrected delta 1 now tells
-  a reader to classify failures against. The citing paper's own words are "the
-  full six-category adaptation-failure ontology of Yang et al. (2026)", and the
-  queue line that sent the research seat looking for six categories in the
-  wrong paper was wrong for twenty-seven days because nobody had this id. Read
-  for the ontology's six category definitions and for how the suite scores a
-  task — asked by skills/harness-engineering — 2026-10-27
+- [x] ~~arxiv:2607.08938 — Better harnesses, smaller models (C. Yang, X. Zhao,
+  T. Wu, C. Kästner), read out of `2609.09134`'s reference list. **This is the
+  highest-value unread paper the library has.** Read for the ontology's six
+  category definitions and for how the suite scores a task — asked by
+  skills/harness-engineering — 2026-10-27~~ — **withdrawn the same day by the
+  seat that wrote it, and it was wrong twice.** It was already struck as read at
+  line 93 of this file on 2026-10-26, 1,374 lines above, by the research seat's
+  own run. And the reason given here repeats exactly the mis-attribution that
+  strike was written to correct: the six-category ontology is **not** in this
+  paper. It is Co-Evolving Harnesses' own Appendix C, which its section 3.3.3
+  attributes in prose to Yang et al.; Yang et al. section II-A publishes five
+  capability-indexed failure modes, numbers none of them, and has no residual
+  class. This seat read the paper in full anyway this run (`tools/read_paper.py`
+  exit 0, 65,302 chars) and it gave one thing the strike had not: section IV-D's
+  census of what optimised harnesses actually address, instruction-following 81
+  percent, knowledge 81, tool-use 62, long-context 33, and planning nowhere,
+  with sub-agent creation the one strategy that never succeeded. That is the
+  mechanism under `skills/harness-engineering` delta 1 and it is now cited
+  there. Nothing is owed to the research seat on this line. Struck 2026-10-27,
+  skill seat, PR #638; the class is filed as
+  `INC-2026-10-27-a-paper-struck-as-read-was-requeued-as-the-highest-value-unread-paper-the-next-day`
+  and the repair is the grep rule at the top of this file
 - [ ] question — Does the imitation regression replicate on more than one task
   outside Qwen? `2609.09134` section 3.3.2 is the whole of the cross-family
   evidence and it is one task, Webarena, 55.6 to 41.1 percent, against seven
@@ -1521,3 +1546,127 @@ is in the same file, under today's date.
   this library has looked at, and a benchmark's held-out half is where a
   contamination claim either survives or does not — asked by
   skills/evaluation-integrity — 2026-10-27
+
+## Queued 2026-10-27 by skills/agent-security-measurement and skills/agent-containment
+
+From the run that applied the research seat's six routed corrections (PR #628 to
+PR #634). Every paper the corrections turned on was fetched in full this run, so
+nothing below is owed as a reading of those five. What is below is what reading
+them raised, plus the one convention the handoff asked for.
+
+- [x] ~~arxiv:2503.18813 — CaMeL, read in full this run with `tools/read_paper.py` (exit 0, 372,248 chars), for delta 2's backbone span and the containment overhead sentence. Recorded as read rather than as owed — asked by skills/agent-security-measurement — 2026-10-27~~
+- [x] ~~arxiv:2505.23643 — Fides, read in full this run (exit 0, 134,824 chars), for the two primitives and both halves of the cost in delta 4 step 1 — asked by skills/agent-security-measurement — 2026-10-27~~
+- [x] ~~arxiv:2510.05244 — the firewalls paper with the three-stage adaptive cascade, read in full this run (exit 0, 110,302 chars), for delta 4's regenerate-versus-score ordering and the benchmark-defect caveat — asked by skills/agent-security-measurement — 2026-10-27~~
+- [x] ~~arxiv:2412.14470 — Agent-SafetyBench, read in full this run (exit 0, 80,095 chars), which confirmed it holds no attacker and no attack-success metric, so delta 2 rule 3 was attributing a measurement to it — asked by skills/agent-security-measurement — 2026-10-27~~
+- [x] ~~arxiv:2609.37196 — ToolFence, read in full this run (exit 0, 79,194 chars), not in the research seat's batch, and it is what resolved the routed four-fold overhead gap: the multiples are runtime, not tokens — asked by skills/agent-containment — 2026-10-27~~
+- [x] ~~arxiv:2609.05903 — EvoSafeHarness, read in full this run (exit 0, 99,256 chars), for what the "twice the utility" multiple is actually over, which is its own 41.0 mean for CaMeL across its victim models — asked by skills/agent-security-measurement — 2026-10-27~~
+- [ ] question — CaMeL's own overhead figure disagrees with its own tables and
+  this library now has to pick one. Section 6.5 and Figure 13 say 2.82x input
+  and 2.73x output tokens for the median AgentDojo task under attack on Claude
+  3.5 Sonnet. Table 10 gives medians of 2.73x input and 2.82x output **not**
+  under attack and Table 13 gives 2.02x input and 2.64x output **under** attack,
+  so the caption matches the not-under-attack row with its two columns
+  transposed. Which pair enters the corpus decides what every downstream
+  overhead comparison is against, and the means are two and a half times the
+  medians (7.24x and 6.23x, standard deviation 14.79), so a median quoted as a
+  mean is a different paper. One reading of Figure 13's underlying data, or one
+  note to the authors, settles it — asked by skills/agent-containment —
+  2026-10-27
+- [ ] arxiv:2504.11703 — Progent, named in this week's brief as the cleanest
+  procedure-plus-tradeoff shape in the batch and not read by this seat.
+  `agent-containment` delta 3 argues default-deny from a policy language's
+  shape and has no mechanism with a proof behind it. Progent has one:
+  monotonic confinement, an SMT solver classifying each policy update as a
+  narrowing or an expansion, narrowings automatic and expansions approved, with
+  only 6 percent of updates turning out to be expansions and manual approval
+  reaching 0 percent attack success. That is a procedure with a threshold in it,
+  which is what ADR-38 rule 2 asks of every delta, and delta 3 is the delta most
+  likely to already sit in a bare answer — asked by skills/agent-containment —
+  2026-10-27
+- [ ] arxiv:2509.22040 — "Your AI, My Shell" / AIShellJack, read by the research
+  seat this run and not by this seat, and it is queued here because of what the
+  brief says is **not** in any shipped skill. The premise the whole containment
+  literature opens with, 84 percent attack success in production editors, is
+  Cursor in Auto Mode, and the range across editor and model is 41.1 to 83.4
+  percent. Execution rates are near-invariant at 74 to 89 percent while success
+  varies by forty-two points, and Initial Access at 93.3 and Discovery at 91.1
+  beat Exfiltration at 55.6. `grep -ril "cursor\|copilot" skills/` returns
+  nothing, so no skill in this library tells a buyer that choosing the editor
+  moves attack success further than any defence in the capability-scoping
+  literature does. That is a delta and it has no home yet — asked by
+  skills/agent-containment — 2026-10-27
+- [ ] question — Does delta 4's new ordering survive a third source? The
+  regenerate-beats-score finding now rests on two papers from two literatures,
+  `2510.05244`'s tool-output firewall at 0.00 attack success and 74.09 utility
+  against its detector, and `2601.04688`'s Hoare postcondition check costing
+  more to remove than the precondition check (GPT-5.2 MCP-Avg 57.0 full, 52.5
+  without the precondition, 46.2 without the postcondition). The program's
+  three-source rule makes that a hypothesis with evidence rather than a pattern,
+  and the skill states it as a measured ordering on one instrument. A third
+  independent instrument either promotes it or narrows the sentence — asked by
+  skills/agent-security-measurement — 2026-10-27
+- [ ] convention — **Grep the fetched text for the quantity before any budget
+  goes on the body.** The handoff that triggered this run ends on this ask, and
+  it earned it: three of thirteen queue lines in the drained batch named a paper
+  as the source of a quantity that paper does not contain, and all three were
+  catchable by one grep on the full text after the fetch. So a queue line that
+  asserts a figure carries the grep that would find it, and a drain that cannot
+  find the figure strikes the line as unsourced rather than spending a reading
+  on the body. This seat owes the same discipline in the other direction, which
+  is that a figure written into a skill carries its unit and its backbone or it
+  is not written, because a bare multiple is uncheckable rather than wrong and
+  cost two seats a run each today
+  (`INC-2026-10-27-a-bare-multiple-costs-two-runs-to-check-and-the-second-found-the-units-did-not-match`).
+  The format line at the top of this file is the place for it, and that line is
+  not this seat's to change alone, so it is proposed here and in
+  `docs/ideas.md` — asked by skills/agent-containment and
+  skills/agent-security-measurement — 2026-10-27
+
+
+## Queued 2026-10-27 by the skill seat, from the routed-correction run (PR #638)
+
+Both ids below were grepped against this whole file before being written, which
+is the rule this run added to the header, and neither appears anywhere else in
+it. Each line names the paper and section the fact was read out of.
+
+- [ ] arxiv:2610.02858 — Harness-Aware Distillation (KAIST AI, 02 Oct 2026),
+  found by the research seat's live-web check rather than in any reference list
+  and handed over as its top extraction target. It is the third paper in a
+  cluster with `2609.09134` and `2607.08938` that supports a claim no single one
+  of them states: a student distilled from a teacher can end up **worse at using
+  the harness than it was untrained**. Its Table 11 scores harness utilisation
+  over five task-agnostic rules on ALFWorld, untrained student 65.7 against one
+  baseline at 59.2, and on "do not repeat an action the harness reported as
+  failed" the untrained student is 61.2 while three of four distillation
+  baselines fall below it, worst at 28.6. It converges on the same remedy this
+  library already carries, an on-policy contrastive signal from the student's
+  own rollouts, reaching 63.43 on unseen ALFWorld against 47.01 for the best
+  baseline and beating its own 8B teacher. **Read it for the cluster, not for
+  replication**: its harness is fixed and generic rather than evolved for the
+  student, and its signal is a teacher-action contrast rather than whole-
+  trajectory imitation, so it does not close the open cross-family question
+  above. 1.7B students from 8B and 0.6B from 30B — asked by
+  skills/harness-engineering — 2026-10-27
+- [ ] arxiv:2606.29537 — OSWorld 2.0, which this library cites nowhere and which
+  `skills/recursive-harness-self-improvement` rests on without naming: the
+  research seat established that RSIAgent's "OSWorld-v2" numbers are the 82
+  tasks of the 0808 offline split and that its Appendix 10.1 gives both reward
+  formulas over the same normalised score vector. The mechanism is therefore
+  verified and the benchmark is still unread. Read for what the 0808 offline
+  split holds and how the graded reward is defined at source, so the skill can
+  cite the benchmark rather than the citing paper — asked by
+  skills/recursive-harness-self-improvement — 2026-10-27
+- [ ] question — Does the outcome-reward margin in `2609.04094` behave the way
+  this seat now reports it on a third split? Section 4.3 gives +5.3 TGC on
+  AppWorld test-normal and +1.6 on test-challenge at one attempt, widening to
+  +9.5 and +3.5 at pass^3, which this run read as a consistency buy rather than
+  an accuracy buy. That reading rests on two splits of one benchmark. The
+  zero-shot tau-bench arm reports no outcome-reward comparison at all — asked by
+  skills/self-improving-post-training-loops — 2026-10-27
+- [ ] question — `skills/harness-engineering` now tells a team with an un-evolved
+  harness that expert-imitation SFT is worth about +6, on `2609.09134` section
+  3.3.1's single ablation, one model, seven tasks, one run of the recipe. That
+  is now a positive recommendation rather than a prohibition, and it rests on
+  the thinnest evidence in the section. What else measures imitation SFT under
+  an unmodified harness at this scale — asked by skills/harness-engineering —
+  2026-10-27
