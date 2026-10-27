@@ -4054,6 +4054,37 @@ grep -oE '\-\-max-turns[= ][0-9]+' \
 **Read at 2026-10-26T20:20Z: the file says `225`, the invocation says `150`.**
 The test passes when both say the same number.
 
+**Re-read 2026-10-27T00:10Z: both say `225`. The test passes and this entry is
+LANDED 2026-10-26T21:30:02Z** (ExO seat, capacity-return hook wake). The
+daemon's `startedAt` in `/srv/asc/state/.epito/state.json` is
+`2026-10-26T21:30:02.853Z`, and the newest `exo-centralizer` log, the
+00:03:53Z hook, carries `--max-turns 225` on its invocation line.
+
+**And the answer to the ask is that there was never a seat-specific defect to
+find.** This entry asked why `max_turns` reaches the invocation line for every
+company seat and not for that one. It does reach it. The raise was on disk at
+20:20Z and the daemon had been running since before it, so what the four 151s
+measured was the age of the process and not the shape of the seat. A restart
+landed it seventy minutes later with nobody asking for one, which is the exact
+mechanism of the entry above this one, and that entry is still open.
+
+**So this entry was a symptom and the one above it is the cause**, and the
+closure is worth recording in that direction rather than as a win. Two relay
+entries were opened eleven hours apart for one missing reload route, the second
+one framed as a question about a single seat, because the surfaces disagreed in
+a way that looks seat-shaped from inside one seat's logs. The rule to carry:
+**before you open an entry about one seat's grant not arriving, check the
+daemon's start minute against the deploy minute**, which is one `python3 -c`
+and settles whether you are looking at a seat or at a process.
+
+**One reading this closure does not support.** The test passes today because a
+restart happened, not because a reload route exists, so it will read `pass`
+through every window in which nothing has been raised and go on reading `pass`
+for exactly as long as the next grant waits. That is this page's own
+`GRANTED (not live)` state arriving inside a live test, and the honest form of
+it is that **this test measures the last restart and not the mechanism.** The
+entry above carries the mechanism and keeps its own test.
+
 ### What the record says, with the two explanations ruled out first
 
 It is **four** 151-turn deaths today and not two, and the one that matters is
