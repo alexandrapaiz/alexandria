@@ -1975,3 +1975,103 @@ still never sets copy and the frontend seat still decides how it is set.
 **Class B is untouched.** Its four rows name this seat, no silence rule reaches
 them because they widen this seat's own budget, and they still wait for the
 owner's word.
+
+### The firing tool has a second defect class, and this one makes a rescued slot read as a lost one
+
+#635 recorded above that "the instrument this page prescribes gave the wrong
+answer first", on a seat-name false zero, and routed it to the engineer seat.
+**There is a second, independent way the same tool gets this slot wrong, and
+it survives passing the right seat name.** Run exactly as the tool's own
+docstring instructs:
+
+```
+$ gh pr list --state all --limit 300 --json number,url,headRefName,createdAt > /tmp/prs.json
+$ python3 tools/cron_firing.py --day 2026-10-26 --seat alexandria-research --prs /tmp/prs.json
+  LOST?    alexandria-research 16:30Z session-limit, 1 turn. ... Pass --prs to settle it
+1 cycle(s) lost.
+```
+
+The slot shipped and merged. **The tool calls it a lost cycle**, in the
+direction this page's 2026-10-25 correction was written to prevent.
+
+Three defects, none of them visible without a real retried slot:
+
+1. **The window excludes the retry by construction.** `resolve_shipped`
+   credits a cut-off run with a pull request created between its start and
+   whichever comes first, the seat's *next run* or four hours. For a refused
+   slot the seat's next run **is the retry**, because that is what a retry is.
+   The window therefore closes at 19:03:27Z and the retry's own pull request
+   was created at 19:04:33Z — sixty-six seconds outside. The sixty-six seconds
+   are not luck: the bound is the retry's start and the output is created after
+   the retry starts, so **the one run whose work belongs to the refused slot is
+   the one run the window can never contain.** No value of `--prs`,
+   `--history-days` or the run-hours bound reaches it.
+2. **A retry successor's `pr=-` was read as `silent`.** `pr_absence_is_evidence`
+   reasons that a run exiting 0 would have named its pull request, so `pr=-`
+   means it shipped nothing. The writer's re-fire of its own 2026-10-26 16:00Z
+   slot exited 0 after **124 turns** with `pr=-`, having opened #591 on a branch
+   named `2026-10-26-hook-refired-slot`. The host scrapes the url out of a run's
+   final answer, and a long run can simply not be scraped — a third reason for
+   `pr=-` that the function's two did not cover.
+3. **The `LOST?` hint asked for what the reader had already given.** It printed
+   "Pass `--prs` to settle it" unconditionally, so a reader who passed it was
+   sent back to the step they had just taken.
+
+**The repair is a join and the key already existed.** `capacity-retry.json` is
+keyed by log filename and a log filename carries its trigger, which is how both
+this run and #635 identified the re-fire at all. A refused run whose log is
+claimed there did not lose its cycle; it handed it to a named successor. So the
+slot is credited with the successor's output as a new `retried` state that does
+not set the exit code. Defect 2's exemption is narrowed to retry successors
+only, so `silent` — the state incident 3 exists to keep visible — survives for
+every other run. Re-reading 2026-10-24 to 2026-10-26 moves **seven** slots out
+of `lost`.
+
+```
+retried  alexandria-research 16:30Z session-limit, re-fired by
+         2026-10-26T19-03-27-547Z-hook -> .../pull/589, 2h33m late
+```
+
+**So read market's and security's gates with a tool that has both fixes in it.**
+This page now prescribes the firing tool in two places and the tool has had two
+independent defect classes on the one slot it has ever judged. The instruction
+"read it with the tool" is worth exactly what the tool is worth that day.
+
+**The transferable rule, which this page has now recorded three times.** A
+mechanical check inherits the vocabulary of the artifact its author happened to
+be reading. The sweep that missed `sec/` was written by an author reading
+host-era branches. This one was written by an author reading refused runs that
+had **not** been retried — which was every refused run they had, because the
+claim list and the log tree are two files and nothing joined them. An
+instrument built from one week's failures encodes that week's recovery paths as
+the only ones. The retry had rescued nineteen cron slots across the portfolio
+before this tool was written, and the tool scored every one as a lost cycle.
+
+### A note on correcting this register's own cards, because an incident asked for a write that does not exist
+
+A board card's **body is immutable**. The board's HTTP server answers `PATCH`,
+`PUT` and `DELETE` with `501`, **before routing** — a non-existent item id
+answers `501` and not `404` — and `tools/board.py` exposes no update route:
+`show`, `get`, `item`, `move`, `comment`, `inbox`, `send`, `report`. `item`
+creates; nothing updates. The comment thread is the only writable surface on a
+card.
+
+That matters here because this page's cards carry dated instructions, and
+`INC-2026-10-25-a-withdrawn-finding-was-corrected-in-the-cards-comments-and-the-card-body-kept-the-dated-instruction`
+recorded two runs as having "neither rewrote the body". **Neither could.** The
+entry is corrected in
+`INC-2026-10-27-the-incident-about-an-uncorrected-card-body-asked-two-runs-for-a-write-the-board-answers-501`.
+
+So when a card of this register goes false, the performable act is to
+**supersede it**: a new card with the corrected body, the old one moved to Done
+with a comment naming the replacement. Both are POSTs and both exist.
+Correcting in the thread is legitimate — it was the only act available — but a
+reader acts on the body, so a body wrong about anything other than a date that
+has passed wants replacing rather than annotating.
+
+**And the general lesson, because it is the one this register runs on.** An
+incident that assigns a cause should name the call it expected and check that
+the call exists. The 2026-10-25 entry inferred negligence from an absence,
+which is the inference its own subject warns about: this page's standing rule
+is that **a 404 is not evidence about a permission**, and a missing edit is not
+evidence about an intention.
