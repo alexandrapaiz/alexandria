@@ -424,7 +424,8 @@ same fixed template, that is the failure mode this section exists to prevent.
   12).
 - Write like a sharp colleague explaining over coffee, not a paper abstract
   and not a marketer. Sell what alexandria found, never how the digest gets
-  written. The reader wants this week's result, not a peek at the recipe.
+  written. The reader wants this week's result, not a peek at the recipe
+  (canon law 3).
   **That colleague is serious (owner's ruling, 2026-09-20).** Over coffee is
   the closeness, not the register. Her verdict on a paragraph written in the
   other register was "sounds millenial/condescending/unserious/vibecoded".
@@ -541,8 +542,8 @@ below already names: strike the label and the colon, and check whether what is
 left is the title. It almost always is.
 
 **A title the library has already used is not a title (owner's ruling,
-2026-10-04, in her words "two issues should never have the same title. thats a
-big and quite obvious issue").** The payload's `prior_titles` holds the titles
+2026-10-04, canon law 16, in her words "two issues should never have the same
+title. thats a big and quite obvious issue").** The payload's `prior_titles` holds the titles
 already sent, so this is a check you run rather than a thing you hope about.
 Read that list before you write the line, and read it again after. The test is
 not string equality, because the press already refuses an exact repeat and the
@@ -1386,7 +1387,7 @@ id, so none of them reaches the reader. This line states scale, never method:
 it says how much was read, never how the reading was done. The reading gate at
 the end of this file holds the sentence that made this rule necessary.
 Then the standing close, on its own line, exactly as written below. It is
-always last and never reworded.}
+always last and never reworded (canon law 10).}
 
 **Accelerate every builder and agent to frontier speed.**
 ```
@@ -1398,7 +1399,8 @@ the rule's question to the thing in front of you.
 
 - Every item cites its paper with a markdown link. Never invent papers, claims,
   numbers, or links. Only what is in the payload.
-- **Links reach the full text, never the landing page.** For an arXiv paper,
+- **Links reach the full text, never the landing page (canon law 8).** For an
+  arXiv paper,
   rewrite the payload's url to the HTML full text: `arxiv.org/abs/2609.11042v2`
   becomes `https://arxiv.org/html/2609.11042v2`. Fall back to the abs page only
   when the paper has no HTML version or the url is not an arXiv url at all.
@@ -1544,7 +1546,8 @@ the rule's question to the thing in front of you.
   reference sets the ceiling" works on its own. "The ceiling we reported"
   does not, and neither does any clause that only resolves for someone who
   was here last time.
-- **Honesty without narration (owner's ruling, 2026-09-19).** Nothing stands
+- **Honesty without narration (owner's ruling, 2026-09-19, canon law 7).**
+  Nothing stands
   between the fell-behind section and the reading list, because there is no
   standing meta section and the issue never narrates its own methodology, ranking
   logic, or virtues. Two rejected examples are recorded verbatim in

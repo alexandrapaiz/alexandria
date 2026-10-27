@@ -5280,26 +5280,50 @@ def changed_lines(diff):
     return out
 
 
-def laws_touched(anchors, changed, message=""):
-    """The law labels a commit's changes land under, and the orphan count.
+def law_spans(anchors, lines):
+    """How many lines each law's citations own, by the rule below.
 
-    `anchors` is `law_anchors` over the file as that commit left it, `changed`
-    the new-side lines it wrote, `message` its subject.
-
-    A change is attributed to the nearest citation at or above it, because the
-    generator is organised that way: the line naming a law is followed by the
-    prose that serves it. A citation the commit added itself sits on its own
-    line and attributes directly. A law named in the message counts too, since
-    this charter already requires a prompt diff to cite the law it serves, and
-    taking the author at their word costs nothing where the lines agree.
-
-    Changes above the first citation belong to no law, and the caller is told
-    how many rather than having them folded into law 1, which is what the
-    obvious boundary bug here would do and what would make this instrument
-    quietly flattering.
+    Printed next to a positional count so a reader can discount it. Law 12a's
+    citations own 325 lines of a 2,191-line generator and law 1's own 305, so
+    between them they own 29% of the file, and a commit that lands anywhere in
+    that 29% attributes to one of them whether or not it meant to. A count
+    without its span reads like evidence. With its span it reads like what it
+    is.
     """
     marks = sorted(anchors)
-    hit = {m.group(1) for m in LAW_CITED.finditer(message)}
+    out = {}
+    for i, (n, label) in enumerate(marks):
+        end = marks[i + 1][0] if i + 1 < len(marks) else lines
+        out[label] = out.get(label, 0) + max(0, end - n)
+    return out
+
+
+def laws_touched(anchors, changed, message=""):
+    """The laws a commit reaches, in two strengths of evidence and never one.
+
+    `named` is what the commit's own message cites. This charter already
+    requires a prompt diff to cite the law it serves, so a message that does
+    is the author's own claim about their change and it is the reading a run
+    can act on.
+
+    `nearby` is position alone: the nearest citation at or above a changed
+    line, because the generator is organised that way, the line naming a law
+    followed by the prose serving it. It is a lead and not an answer, and the
+    first version of this function returned the union of the two under one
+    name. On the live queue that version answered that law 12a was worked by
+    21 of 28 commits, which contradicted the grade written two hours earlier
+    and was wrong: 12a's citations own a 325-line span, so the number measured
+    citation sparsity rather than anybody's intent. A flattering instrument is
+    worse than none, and an instrument that is confidently flattering about
+    the one law with no patch is the worst available case.
+
+    `orphan` counts changed lines above the first citation. They belong to no
+    law and are reported rather than folded into law 1, which is what the
+    obvious boundary bug here would do.
+    """
+    marks = sorted(anchors)
+    named = {m.group(1) for m in LAW_CITED.finditer(message)}
+    nearby = set()
     orphan = 0
     for line in changed:
         best = None
@@ -5310,28 +5334,56 @@ def laws_touched(anchors, changed, message=""):
         if best is None:
             orphan += 1
         else:
-            hit.add(best)
-    return hit, orphan
+            nearby.add(best)
+    return named, nearby, orphan
 
 
-def queued_verdict(label, commits):
+def queued_verdict(label, named, nearby, span):
     """One law's structure-watch answer, from the queue alone.
 
-    QUEUED means a merged commit the press has not received already works this
-    law, so a fresh wording of the same rule is the third tinker the charter's
-    structure-watch step refuses. UNPATCHED means nothing in the queue reaches
-    it, so a prompt patch is this run's work rather than the deploy's.
+    Four answers, because the queue supports four and not two.
 
-    Neither verdict says the patch is correct. It says a patch exists and has
-    not been seen by the press, which is the only part a grade can establish
-    before the deploy.
+    QUEUED: a merged commit the press has not received says in its own message
+    that it works this law. A fresh wording is the third tinker the charter's
+    structure-watch step refuses, and the grade says the patch is waiting on a
+    deploy.
+
+    UNNAMED: commits landed inside this law's span and none said so. The grade
+    cannot conclude either way from here and reads those commits. On
+    2026-10-27 this covered 26 of the 28 queued commits, so it is the ordinary
+    case rather than the edge one.
+
+    UNCITED: the generator never names this law, so it owns no span and the
+    queue cannot be asked about it at all. This is not a reading about the
+    queue and it must never be printed as one, because the verdict that looks
+    like it from the outside is UNPATCHED and acting on that would mean
+    writing a rule the generator already carries. Five laws were in this state
+    when the command was written, 3, 7, 8, 10 and 16, two of them failures in
+    the live grade.
+
+    UNPATCHED: the law is cited, it owns a span, and nothing in the queue
+    touches it by either reading. A prompt patch is this run's work.
+
+    None of the four says the patch is correct. They say whether one exists
+    and has not reached the press, which is all a grade can establish before
+    the deploy.
     """
-    if commits:
-        return "QUEUED", (f"law {label} is worked by {len(commits)} queued "
+    if named:
+        return "QUEUED", (f"law {label} is named by {len(named)} queued "
                           f"commit(s), so a fresh wording is the tinker the "
                           f"structure-watch step refuses")
-    return "UNPATCHED", (f"no queued commit reaches law {label}, so a prompt "
-                         f"patch is this run's work and not the deploy's")
+    if nearby:
+        return "UNNAMED", (f"{len(nearby)} queued commit(s) landed in law "
+                           f"{label}'s span and none names it, so read them "
+                           f"before writing or refusing a patch")
+    if not span:
+        return "UNCITED", (f"the generator never names law {label}, so it "
+                           f"owns no span and the queue cannot be asked about "
+                           f"it: this is a gap in the generator's citations "
+                           f"and not a reading about the patch")
+    return "UNPATCHED", (f"no queued commit reaches law {label} by either "
+                         f"reading, so a prompt patch is this run's work and "
+                         f"not the deploy's")
 
 
 CHANGED_CASES = [
@@ -5345,43 +5397,86 @@ CHANGED_CASES = [
 ]
 
 LAWS_CASES = [
-    # A change inside law 14's section, attributed by position.
-    ([(10, "14"), (40, "1")], [20], "", {"14"}, 0),
+    # A change inside law 14's span, by position and not by name.
+    ([(10, "14"), (40, "1")], [20], "", set(), {"14"}, 0),
     # A change below the last citation belongs to that one and not the first.
-    ([(10, "14"), (40, "1")], [99], "", {"1"}, 0),
+    ([(10, "14"), (40, "1")], [99], "", set(), {"1"}, 0),
     # Above every citation is nobody's law, counted rather than folded in.
-    ([(10, "14")], [3], "", set(), 1),
-    # The message's own citation counts, which is what the charter asks a
-    # prompt diff to carry, and it needs no changed line to be read.
+    ([(10, "14")], [3], "", set(), set(), 1),
+    # The message's own citation is the strong reading and needs no changed
+    # line, which is what the charter asks a prompt diff to carry.
     ([(10, "14")], [], "Generator: law 8's url at the three write points",
-     {"8"}, 0),
-    # A sub-lettered law is its own label. Folding 12a into 12 would answer
-    # the density failure with the heading patch, which is the wrong answer
-    # to the one law in the 2026-10-27 grade that had no patch.
-    ([(10, "12"), (50, "12a")], [60], "", {"12a"}, 0),
+     {"8"}, set(), 0),
+    # Named and nearby disagree, which is the case that must not be merged:
+    # the message says 8 and the lines sit under 14. Both are reported.
+    ([(10, "14")], [20], "Generator: law 8's url at three write points",
+     {"8"}, {"14"}, 0),
+    # A sub-lettered law is its own label. Folding 12a into 12 would answer a
+    # density failure with the heading patch.
+    ([(10, "12"), (50, "12a")], [60], "", set(), {"12a"}, 0),
+]
+
+SPAN_CASES = [
+    # A law cited twice owns both of its stretches, which is why the live
+    # reading has to sum them rather than take the widest.
+    ([(10, "1"), (20, "14"), (30, "1")], 50, {"1": 30, "14": 10}),
+    # The last citation owns everything to the end of the file.
+    ([(10, "6")], 100, {"6": 90}),
+]
+
+VERDICT_CASES = [
+    (["c5a32e4c"], [], 40, "QUEUED"),
+    ([], ["2c6ce635", "31d3fb23"], 103, "UNNAMED"),
+    # Cited, with a span, and nothing in the queue: this run's work.
+    ([], [], 103, "UNPATCHED"),
+    # No span means no citation, and the answer is about the generator rather
+    # than about the queue. Returning UNPATCHED here is the failure that would
+    # send a run to reword a rule the generator already carries.
+    ([], [], 0, "UNCITED"),
 ]
 
 
 def queued_cases():
-    """The two pure halves against their pinned cases, with no git and no net."""
+    """The three pure halves against their cases, with no git and no network."""
     rc = 0
+    bad = 0
     for diff, want in CHANGED_CASES:
         got = changed_lines(diff)
         if got != want:
-            rc = 1
+            bad += 1
             print(f"  FAIL    changed_lines wanted {want} and got {got}")
     print(f"CHANGED_CASES                              "
-          f"{len(CHANGED_CASES) - (1 if rc else 0)} of {len(CHANGED_CASES)}")
-    rc2 = 0
-    for anchors, changed, msg, want, orphans in LAWS_CASES:
-        hit, orphan = laws_touched(anchors, changed, msg)
-        if hit != want or orphan != orphans:
-            rc2 = 1
-            print(f"  FAIL    laws_touched wanted {sorted(want)}/{orphans} "
-                  f"and got {sorted(hit)}/{orphan}")
+          f"{len(CHANGED_CASES) - bad} of {len(CHANGED_CASES)}")
+    rc |= bool(bad)
+    bad = 0
+    for anchors, changed, msg, wname, wnear, worph in LAWS_CASES:
+        named, nearby, orphan = laws_touched(anchors, changed, msg)
+        if named != wname or nearby != wnear or orphan != worph:
+            bad += 1
+            print(f"  FAIL    laws_touched wanted "
+                  f"{sorted(wname)}/{sorted(wnear)}/{worph} and got "
+                  f"{sorted(named)}/{sorted(nearby)}/{orphan}")
     print(f"LAWS_CASES                                 "
-          f"{len(LAWS_CASES) - (1 if rc2 else 0)} of {len(LAWS_CASES)}")
-    return rc | rc2
+          f"{len(LAWS_CASES) - bad} of {len(LAWS_CASES)}")
+    rc |= bool(bad)
+    bad = 0
+    for anchors, lines, want in SPAN_CASES:
+        got = law_spans(anchors, lines)
+        if got != want:
+            bad += 1
+            print(f"  FAIL    law_spans wanted {want} and got {got}")
+    print(f"SPAN_CASES                                 "
+          f"{len(SPAN_CASES) - bad} of {len(SPAN_CASES)}")
+    rc |= bool(bad)
+    bad = 0
+    for named, nearby, span, want in VERDICT_CASES:
+        got, _ = queued_verdict("14", named, nearby, span)
+        if got != want:
+            bad += 1
+            print(f"  FAIL    queued_verdict wanted {want} and got {got}")
+    print(f"VERDICT_CASES                              "
+          f"{len(VERDICT_CASES) - bad} of {len(VERDICT_CASES)}")
+    return rc | bool(bad)
 
 
 def _law_sort(label):
@@ -5427,46 +5522,67 @@ def queued(labels=()):
         print("    unpatched and the structure-watch step has no input")
         return 1
     deployed = found.get("deployed_commit")
-    rows = _git_lines("log", "--format=%h%x09%cI%x09%s",
+    rows = _git_lines("log", "--format=%h%x09%s",
                       f"{deployed}..origin/main", "--", PRESS_FILE)
-    by_law = {}
+    named_by = {}
+    nearby_by = {}
     orphans = 0
+    unnamed = 0
     for row in rows:
-        sha, _, subject = (row.split("\t") + ["", "", ""])[:3]
+        parts = row.split("\t")
+        sha = parts[0]
+        subject = parts[1] if len(parts) > 1 else ""
         text = "\n".join(_git_lines("show", f"{sha}:{PRESS_FILE}"))
         diff = "\n".join(_git_lines("show", sha, "-U0", "--format=",
                                     "--", PRESS_FILE))
-        hit, orphan = laws_touched(law_anchors(text), changed_lines(diff),
-                                   subject)
+        named, nearby, orphan = laws_touched(
+            law_anchors(text), changed_lines(diff), subject)
         orphans += orphan
-        for label in hit:
-            by_law.setdefault(label, []).append(f"{sha} {subject}")
+        if not named:
+            unnamed += 1
+        line = f"{sha} {subject}"
+        for label in named:
+            named_by.setdefault(label, []).append(line)
+        for label in nearby:
+            nearby_by.setdefault(label, []).append(line)
+    # The spans come off origin/main and not off the branch, because the queue
+    # is measured `deployed..origin/main` and a span read anywhere else would
+    # discount a count taken against a file that never produced it.
+    spans = law_spans(law_anchors(
+        "\n".join(_git_lines("show", f"origin/main:{PRESS_FILE}"))),
+        len(_git_lines("show", f"origin/main:{PRESS_FILE}")))
     print(f"deployed commit                            "
           f"{deployed or 'unknown'}")
     print(f"queued commits to the generator            {len(rows)}")
-    print(f"laws they reach                             "
-          f"{len(by_law)}")
+    print(f"of those, naming the law they serve        {len(rows) - unnamed}")
     print(f"changed lines under no citation            {orphans}")
     print()
-    for label in sorted(by_law, key=_law_sort):
-        commits = by_law[label]
-        print(f"  law {label:<4}  {len(commits):>2} queued")
-        for c in commits[:3]:
-            print(f"              {c[:72]}")
-        if len(commits) > 3:
-            print(f"              and {len(commits) - 3} more")
+    for label in sorted(set(named_by) | set(nearby_by), key=_law_sort):
+        nm = named_by.get(label, [])
+        nb = nearby_by.get(label, [])
+        print(f"  law {label:<4}  {len(nm):>2} named  {len(nb):>2} in a span "
+              f"of {spans.get(label, 0)} lines")
+        for c in nm[:2]:
+            print(f"              named   {c[:66]}")
+        for c in nb[:2] if not nm else []:
+            print(f"              nearby  {c[:66]}")
     if labels:
         print()
         for label in labels:
-            verdict, why = queued_verdict(label, by_law.get(label, []))
+            verdict, why = queued_verdict(label, named_by.get(label, []),
+                                          nearby_by.get(label, []),
+                                          spans.get(label, 0))
             mark = "OK  " if verdict == "QUEUED" else "FAIL"
             print(f"  {mark}    {verdict}: {why}")
-            rc |= verdict == "UNPATCHED"
+            rc |= verdict != "QUEUED"
     print()
-    print("A law with a commit here is fixed and undelivered, so the grade")
-    print("that fails it says so and writes nothing. A law with none is this")
-    print("run's work. The queue is the difference between an editor who")
-    print("patches and one who rewords what is already patched.")
+    print("A law a queued commit names is fixed and undelivered, so the grade")
+    print("that fails it says so and writes nothing. A law nothing reaches is")
+    print("this run's work. In between is UNNAMED, which was 26 of 28 commits")
+    print("the day this was written, and that number is the finding: the")
+    print("charter asks a prompt diff to cite the law it serves and the")
+    print("citation has been going into the review rather than the commit,")
+    print("which is why four runs rebuilt this fact from memory.")
     return rc
 
 
