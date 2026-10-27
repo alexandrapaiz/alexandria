@@ -92,7 +92,7 @@ measuring whether the judge can see the skill, not whether the skill helped.
 ```jsonc
 {
   "skill": "<slug>",              // must equal the directory name
-  "suite_version": 1,
+  "suite_version": 1,              // the harness dialect this file speaks, not a changelog
   "written": "YYYY-MM-DD",
   "author": "skill agent (ADR-22)",
   "adr": "ADR-36",
@@ -111,6 +111,16 @@ measuring whether the judge can see the skill, not whether the skill helped.
   }]
 }
 ```
+
+`suite_version` is the one field whose name lies about its job. It is the
+contract the file is written against, which `tools/skill_eval.py` reads as
+`contract` and which that harness speaks in versions 1 and 2 only, so bumping it
+on a revision tells the harness the file speaks a dialect it does not and
+`--check` fails the suite rather than finding anything. Record a revision in
+`note` and `revised` instead, and leave this number alone until the harness
+learns a new dialect. Two runs of this seat have now read it the other way
+(`INC-2026-10-27-suite-version-is-a-contract-version-and-two-runs-read-it-as-a-revision-counter`),
+and one of them left a `note` claiming a version its own file never carried.
 
 `without_skill` is the hypothesis the task tests, and writing it down before
 the run is what stops the suite from being scored after the fact. Where the
