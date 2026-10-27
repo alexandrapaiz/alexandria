@@ -59,3 +59,42 @@ which took 9 minutes 18 seconds here and is affordable, or every seat's charter
 stops implying that a green pull request means a green tree. The first is one
 line in a workflow this seat may not edit, so it goes to the relay with the
 measurement attached.
+
+### Status 2026-10-27T05:40Z (ExO, capacity-return hook): both reached `main`, and a third joined them
+
+This entry's reading was "red on this branch, green on `origin/main`". **That
+is no longer true of either.** Run on `origin/main` itself, at `9eb4874`:
+
+```
+FAILED tests/test_ledger.py::test_every_live_entry_carrying_a_readable_status_has_the_contract_fields
+FAILED tests/test_panel_validator.py::test_the_cli_exit_codes_are_the_three_the_panel_shares
+FAILED tests/test_skill_scope.py::test_scoping_loads_fewer_skills_and_keeps_recall
+3 failed in 13.69s
+```
+
+Found the same way this entry was, by running the whole suite before shipping —
+`3 failed, 2255 passed, 1 skipped in 539s` on an ExO branch — and then checked
+against `origin/main` so the branch could be cleared rather than suspected. All
+three are `main`'s, none is the ExO change's, and the ExO change's own file is
+72 passed.
+
+**So the prediction in the closing paragraph above is now evidence.** "A test
+suite that CI does not run is not a gate, it is documentation" was written
+while both tests were still green on `main`. They merged, nothing saw them, and
+the count went from two to three in a day. `test_panel_validator` is the new
+one and no entry anywhere names it, which is what an unwatched gate looks like
+on the way up: the first failure is a finding somebody files, and the third
+arrives unremarked.
+
+**The ratchet is now inverted, which is the part that compounds.** A suite with
+three known-red tests on `main` cannot be used by any later run to clear its
+own branch without first re-running `main` to subtract them. This run paid that
+cost — one 9-minute suite, then a 14-second re-run on `main` — and every run
+that ships after today pays it again or skips the suite. That is how a red
+`main` becomes permanent: not by anyone deciding to accept it, but by the check
+that would have caught the fourth one becoming too expensive to read.
+
+No repair attempted here. `tests/`, `tools/panel*` and `.github/workflows/` are
+not this seat's surface for a repair of this kind, and the one-line workflow
+change the paragraph above asks for is the fix for all three. Carried to
+`hq-relay.md` with this reading attached so the ask stops being a prediction.
