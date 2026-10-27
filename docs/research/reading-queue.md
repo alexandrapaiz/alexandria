@@ -161,7 +161,7 @@ and not one of them is in the `papers` table.
 - [ ] arxiv:2412.14470 — Agent-SafetyBench, where the "mean attack success below 20 percent under adaptive attacks" result is measured — asked by skills/agent-security-measurement — 2026-09-30
 - [ ] arxiv:2508.01780 — LiveMCPBench, the benchmark every tool-hijacking number in agent-security-measurement sits on, including the perplexity table this skill leans on hardest — asked by skills/agent-security-measurement — 2026-09-30
 - [ ] arxiv:2604.13630 — SafeHarness, lifecycle-integrated security architecture for agent deployment, the closest published relative of the harness-level enforcement both new skills recommend — asked by skills/agent-containment — 2026-09-30
-- [ ] arxiv:2601.04688 — ToolGate, contract-grounded and verified tool execution, the contract-based alternative to capability scoping that neither new skill can currently compare against — asked by skills/agent-containment — 2026-09-30
+- [x] ~~arxiv:2601.04688 — ToolGate, contract-grounded and verified tool execution, the contract-based alternative to capability scoping that neither new skill can currently compare against — asked by skills/agent-containment — 2026-09-30~~ - read in full by the skill seat 2026-10-27 (exit 0, 88,018 chars) and the line's premise is false: ToolGate is **not** a security comparison. `attack`, `injection`, `attack success` and `ASR` occur zero times in it, and `malicious` zero times, which is the finding the research seat's `INC-2026-10-27-a-queue-line-named-a-capability-benchmark-as-the-source-of-a-security-table` predicted for this exact line. What it does carry is a Hoare-logic ablation on capability: GPT-5.2 MCP-average 57.0 full, 52.5 without the precondition check and 46.2 without the postcondition check, with the same ordering on DeepSeek V3.2 at 38.0, 34.5 and 30.9. That is evidence about which side of a call a check sits on, measured with no attacker anywhere, and it is now cited in `skills/agent-security-measurement` delta 4 with exactly that limit written beside it. `agent-containment` gets nothing from it
 - [ ] arxiv:2412.04984 — Frontier Models are Capable of In-context Scheming, the prior that the shutdown-sabotage study extends by removing the incentive. Needed to say whether the no-incentive result is new or a replication — asked by skills/agent-security-measurement — 2026-09-30
 - [x] ~~arxiv:2609.16204 — Decoy Direction Optimization, a post-hoc weight-editing defence against abliteration, already in the corpus with five claims. Deliberately left out of agent-security-measurement because it defends a model release rather than an agent deployment. It is the seed of a different skill and should not sit unused — asked by skills/agent-security-measurement — 2026-09-30~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
 - [x] ~~no arXiv id — Anatomy of a Frontier Lab Agent Intrusion, Hugging Face Security Team, 2026, and the METR independent investigation of the same incident. These are the external ground truth for the July 2026 escape that agent-containment's section 6 narrates, and the library has read only a single-author monograph's retelling of them — asked by skills/agent-containment — 2026-09-30~~ - **both read 2026-10-27, research seat, PR #626**, twenty-seven days after this line was written, and they are the two works the 2026-10-26 relayed-citation line also asks for, so one reading drains both. The vendor timeline is `huggingface.co/blog/agent-intrusion-technical-timeline`; the METR report is `metr.org/hugging-face-incident-report-aug-2026.pdf` (Wijk, Cotra, Greenblatt, 2026-08-26, 91 pages). **The incident magnitudes survive, the unit of one of them does not, and the mechanism of another does not.** Full record in the drain record at the foot of this file.
@@ -1582,7 +1582,11 @@ them raised, plus the one convention the handoff asked for.
   reaching 0 percent attack success. That is a procedure with a threshold in it,
   which is what ADR-38 rule 2 asks of every delta, and delta 3 is the delta most
   likely to already sit in a bare answer — asked by skills/agent-containment —
-  2026-10-27
+  2026-10-27. **Second reason added 2026-10-27 by skills/agent-security-measurement
+  rather than opened as a second line, per this file's own header.** Delta 4's
+  *gate the proposal* arm now has two instruments, A2M's FIDES-style configuration
+  and Fides itself, and Progent is the third. One reading closes both lines, which
+  makes it the highest-value unread paper on this shelf
 - [ ] arxiv:2509.22040 — "Your AI, My Shell" / AIShellJack, read by the research
   seat this run and not by this seat, and it is queued here because of what the
   brief says is **not** in any shipped skill. The premise the whole containment
@@ -1595,7 +1599,7 @@ them raised, plus the one convention the handoff asked for.
   moves attack success further than any defence in the capability-scoping
   literature does. That is a delta and it has no home yet — asked by
   skills/agent-containment — 2026-10-27
-- [ ] question — Does delta 4's new ordering survive a third source? The
+- [x] ~~question — Does delta 4's new ordering survive a third source? The
   regenerate-beats-score finding now rests on two papers from two literatures,
   `2510.05244`'s tool-output firewall at 0.00 attack success and 74.09 utility
   against its detector, and `2601.04688`'s Hoare postcondition check costing
@@ -1604,7 +1608,16 @@ them raised, plus the one convention the handoff asked for.
   three-source rule makes that a hypothesis with evidence rather than a pattern,
   and the skill states it as a measured ordering on one instrument. A third
   independent instrument either promotes it or narrows the sentence — asked by
-  skills/agent-security-measurement — 2026-10-27
+  skills/agent-security-measurement — 2026-10-27~~ - answered 2026-10-27, and the
+  question was carrying two orderings in one sentence. The pair was never a pair:
+  `2601.04688` has no scorer and no attacker, so the score-versus-removal ordering
+  rested on one instrument. It now rests on three, all read in full, and all three
+  are detectors that bought security with utility: `2510.05244`'s cascade 8.0 to
+  75.5 cumulative, A2M's perplexity gate inverted on its own distribution, and
+  `2510.08829`'s blocking detector taking AgentDojo benign utility 69.07 to 7.22
+  for its 0.00. The **rewrite** half is narrowed rather than promoted, because
+  A2M's paraphrase arm fails (80.7 to 72.5 mean, 75.6 to 85.3 on Qwen), so the
+  mechanism is span removal. Applied to delta 4's heading and body this run
 - [ ] convention — **Grep the fetched text for the quantity before any budget
   goes on the body.** The handoff that triggered this run ends on this ask, and
   it earned it: three of thirteen queue lines in the drained batch named a paper
@@ -1670,3 +1683,39 @@ it. Each line names the paper and section the fact was read out of.
   the thinnest evidence in the section. What else measures imitation SFT under
   an unmodified harness at this scale — asked by skills/harness-engineering —
   2026-10-27
+- [ ] question — Does CaMeL's cost ordering survive counting the tokens it does
+  not count? Section 6.5 says plainly that the tokenisation of the tool
+  documentation given to the model is unknown, so "we do not count such tokens",
+  and that the Claude tokenizer is closed so everything is tokenised with
+  OpenAI's GPT-4o tokenizer in tiktoken. `skills/agent-containment` now prints a
+  blended ordering derived from Tables 11 and 12 in which CaMeL costs 4.30x an
+  undefended task under attack against the full tool filter's 3.43x. The excluded
+  tokens are **exactly the ones the tool filter manipulates**, since filtering the
+  tool list is an operation on tool documentation, so the one defence the ordering
+  turns on is the one whose input the measurement omits. Either the omission is
+  small and the ordering is safe, or it is not and this seat printed a reversal
+  that reverses again. Nothing in the paper bounds it — asked by
+  skills/agent-containment — 2026-10-27
+- [ ] question — `2510.08829` Table 6 reports a dimension its own text does not
+  discuss, and it moves the wrong way. In the human red-teaming study the
+  sanitizer trained with the extra synthetic and tokenizer-attack data cuts attack
+  success from 2.82 to 1.69 percent against the base sanitizer, and over the same
+  pair **stealth rises from 20.00 to 50.00 percent**, against 31.15 undefended.
+  Stealth is the share of attacks the user could not detect, so the better-scoring
+  variant makes the attacks that do land substantially more invisible. On one
+  study of one interface with attackers given the architecture and live feedback,
+  that is a residual-shape finding rather than a rate, and it is the kind of
+  trade `skills/agent-security-measurement` delta 2 exists to force into the open.
+  Is it reproduced anywhere, and does any sanitizer paper report detectability
+  beside attack success — asked by skills/agent-security-measurement — 2026-10-27
+- [ ] question — Why does A2M's cost-inflation class behave differently from the
+  other three under information-flow control? Table 11 gives invocation above 80
+  percent for information exfiltration (82.4), environment-integrity compromise
+  (85.7) and reasoning derailment (80.6), and the paper's own sentence scopes its
+  "remain above 80 percent" claim to those three. C-DoS invocation falls to 74.4
+  from 81.6, which is the only class the defence moves on invocation at all, and
+  the paper does not say why. If the mechanism is that cost inflation needs a long
+  tool chain and the gate truncates it, then invocation and harm are not
+  independent for that class and delta 1's "report invocation and success as two
+  numbers" has a case where they move together — asked by
+  skills/agent-security-measurement — 2026-10-27
