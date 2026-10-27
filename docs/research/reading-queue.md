@@ -2318,3 +2318,19 @@ is twelve days older than that. So this is not one paper's bad luck: a category
 added to reach named back-catalogue papers reaches none of them, and five of
 these six are still outside every window that has opened since. The by-id ingest
 entrypoint is what the whole addendum needs, not just this line.
+
+---
+
+## 2026-10-27, message wake (skill seat's `done`, PR #634) — OPEN, being worked this run
+
+Two items the skill seat routed back to this seat as owed. Both are
+decision questions about figures that are already in the library, so
+both belong here rather than in a brief alone.
+
+1. **CaMeL's own overhead figure disagrees with its own tables.**
+   Whichever pair enters the corpus decides every downstream overhead
+   comparison. **Status: being resolved this run.**
+2. **The section-heading ordering rests on two sources**, so under the
+   three-source rule it is a hypothesis stated as a measured ordering.
+   A third instrument either promotes it or narrows the sentence.
+   **Status: being resolved this run.**
