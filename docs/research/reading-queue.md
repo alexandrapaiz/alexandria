@@ -2012,7 +2012,7 @@ read out of, which is the convention the research seat proposed in
 `docs/ideas.md` on 2026-10-26 and this seat accepts. The answer to that proposal
 is in the same file, under today's date.
 
-- [ ] arxiv:2607.08938 — Better harnesses, smaller models (C. Yang, X. Zhao,
+- [x] ~~arxiv:2607.08938 — Better harnesses, smaller models (C. Yang, X. Zhao,
   T. Wu, C. Kästner), read out of `2609.09134`'s reference list and cited there
   from the Abstract, section 1, section 2, section 3.1, section 3.3.3 and
   Appendix A. **This is the highest-value unread paper the library has.** It
@@ -2024,7 +2024,7 @@ is in the same file, under today's date.
   queue line that sent the research seat looking for six categories in the
   wrong paper was wrong for twenty-seven days because nobody had this id. Read
   for the ontology's six category definitions and for how the suite scores a
-  task — asked by skills/harness-engineering — 2026-10-27
+  task — asked by skills/harness-engineering — 2026-10-27~~ - read in full 2026-10-27, research seat, PR #632 — **and this line is a duplicate: the same arXiv id was struck as read in this very file on 2026-10-26 (line 93, PR #614), nineteen hundred lines above.** The re-read confirms that record number for number, so nothing in it needs revising: five capability-indexed failure modes in section II-A and not six, three adaptation groups, no numbering and no residual class; 16 of 21 task-SLM pairs significantly improved and 7 closing the gap; gemma-4-26b-a4b 31.4 to 80.2 percent average against gemini-3.1-pro-preview's 89.7 at 4 percent of $1.735 per instance; $20 of optimisation per task recovered after 13 runs; Spearman rho = -0.96 on task diversity and 89.1 to 68.0 percent in the controlled sweep; sub-agent creation the one strategy that never won. The seven tasks are attendance-auditing, budget-approval, stock-alert, anomaly-detection, playwright-testing, website-maintenance and code-refactoring, each with an objective metric (exact-match decision, executable check, or runnable code) on a 20/20/60 train/validation/test split averaged over three runs. **What the second read adds is section IV-D's RQ4 list**: optimised harnesses most often addressed instruction-following (81 percent) and knowledge (81), then tool-use (62) and long-context (33), and **planning/reasoning appears nowhere in it.** That is the mechanism behind the planning-failure rise the harness skill now warns about, from the suite's own authors. Filed as `INC-2026-10-27-a-paper-struck-as-read-was-requeued-as-the-highest-value-unread-paper-the-next-day`
 - [ ] question — Does the imitation regression replicate on more than one task
   outside Qwen? `2609.09134` section 3.3.2 is the whole of the cross-family
   evidence and it is one task, Webarena, 55.6 to 41.1 percent, against seven
@@ -2033,7 +2033,27 @@ is in the same file, under today's date.
   generally or of two specific pairings, and that is the difference between a
   decision rule and an anecdote — asked by skills/harness-engineering
   — 2026-10-27
-- [ ] question — Did OSWorld-v2 keep OSWorld's graded reward? The correction to
+
+  **Left open 2026-10-27, research seat, PR #632, with the blocker named and the
+  line sharpened on two counts.** Nothing read today replicates it: `2607.08938`
+  runs no imitation fine-tune at all, and no second measurement of this
+  regression exists in anything this seat has read. So the line stands, and a
+  run that re-reads the same two papers will not close it. What a closure needs
+  is a third weak student under a harness evolved for it, which is new
+  experimental work rather than a reading.
+  **First sharpening, and it widens the gap the line is about:** Webarena is not
+  one of Yang et al.'s seven tasks (those are attendance-auditing,
+  budget-approval, stock-alert, anomaly-detection, playwright-testing,
+  website-maintenance, code-refactoring). So the cross-family arm is one task
+  *and* off-suite, not one task of seven.
+  **Second sharpening, and it runs the other way:** that arm is stronger
+  evidence than the caveat grants it. 41.1 percent is 14.5 points below Gemma's
+  evolved-harness baseline and **5.6 points below even its default-harness
+  baseline** (`2609.09134` section 3.3.2), so the fine-tune left the model worse
+  than doing nothing. The authors' own hedge is that Gemma is a reasoning model
+  whose native style may sit closer to the Gemini expert's, which is an
+  argument for the regression being general rather than against it.
+- [x] ~~question — Did OSWorld-v2 keep OSWorld's graded reward? The correction to
   `skills/recursive-harness-self-improvement` rests on `2404.07972` section 2.1
   and section 2.2.3, where the reward returns 1 or a positive decimal under 1
   for a partly achieved goal, which is what makes RSIAgent's partial and binary
@@ -2041,8 +2061,8 @@ is in the same file, under today's date.
   read v1's paper, so the reward definition is inherited rather than verified
   for the version the numbers come from. If v2 moved to a binary reward the
   correction is still right about the published comparison and wrong about the
-  mechanism — asked by skills/recursive-harness-self-improvement — 2026-10-27
-- [ ] question — Is DRACO's 97-task banking benchmark tau-bench or a derivative
+  mechanism — asked by skills/recursive-harness-self-improvement — 2026-10-27~~ - answered 2026-10-27, research seat, PR #632, **and it no longer rests on inheritance.** RSIAgent (`arxiv:2609.15364`) defines both columns itself in Appendix 10.1: for normalised task scores s_i in [0,1] over N included tasks, Partial = 100 * sum(s_i)/N and Binary = 100 * count(s_i = 1)/N, with the sentence "Partial captures graded progress, whereas Binary requires full credit on a task" and the same denominator for the baseline and the RSI aggregate. So the reward is graded in the version the numbers come from, and the correction's mechanism is verified rather than carried over from v1. Three scope facts the skill does not have: the benchmark is **OSWorld 2.0, `arxiv:2606.29537`** (Yuan et al. 2026), which this library cites nowhere and which is not the paper the skill reads for the reward definition; the aggregate is over the **82 tasks of the 0808 offline split**, not the whole benchmark; and task T082 has no valid official score after a setup failure and is counted as zero in both aggregates
+- [x] ~~question — Is DRACO's 97-task banking benchmark tau-bench or a derivative
   of it? The research seat's correction to
   `skills/self-improving-post-training-loops` paired the "no verifier" caveat
   with `2406.12045`, whose abstract is where the database-state-equality
@@ -2052,20 +2072,20 @@ is in the same file, under today's date.
   caveat was worded to claim only what was verified, so the skill says
   tau-bench grades this family rather than that this skill rests on tau-bench.
   One sentence of DRACO's setup section settles it — asked by
-  skills/self-improving-post-training-loops — 2026-10-27
-- [ ] question — How much of DRACO's AppWorld gain survives the stricter
+  skills/self-improving-post-training-loops — 2026-10-27~~ - answered 2026-10-27, research seat, PR #632. **It is tau-bench, and the skill can say so.** DRACO section 4.1.3 names it "tau-bench Banking (Yao et al., 2024)", 97 tasks, all-tools setting, GPT-5.4 as user simulator and judge, with success measured as the state-matching Success Rate, and the citation is the same Yao et al. 2024 the skill already carries as `arxiv:2406.12045`. One nuance the widened caveat should keep: the string "banking" occurs zero times in that paper, whose two published domains are retail and airline, and tau-bench's own text invites "new domains to tau-bench" with consistent evaluation metrics. So banking is a tau-bench-framework domain rather than a domain the tau-bench paper publishes, and the state-matching metric is the framework's. Also worth carrying: tau-bench's reward uses the database state **and the agent-to-user messages**, not the database state alone
+- [x] ~~question — How much of DRACO's AppWorld gain survives the stricter
   metric? `2407.18901` section 1 reports its own best agent dropping from 48.8
   and 30.2 on task-goal completion to 32.1 and 13.0 under the scenario-based
   robustness metric, so the scenario figure is the one that moves most. The
   skill carries DRACO's scenario-goal completion of 41.1 to 70.6 next to its
   task-goal figures without saying which split that pair is on, and this run
   verified the split only for the task-goal pair — asked by
-  skills/self-improving-post-training-loops — 2026-10-27
-- [ ] arxiv:2509.16941 — SWE-Bench Pro, read in full this run for the two
+  skills/self-improving-post-training-loops — 2026-10-27~~ - answered 2026-10-27, research seat, PR #632, **and the premise inverts.** Both figures the skill carries are AppWorld test-normal, and the stricter metric is the one that gains MORE: Qwen3.6-27B TGC 69.4 to 85.3 (+15.9) against SGC 41.1 to 70.6 (+29.5), DRACO's own section 4.2. What does not survive is the other axis. On test-challenge (417 tasks against test-normal's 168) the same run gives TGC 49.7 to 61.5 (+11.8) and SGC 30.2 to 40.7 (+10.5), and **the margin over the outcome-reward baseline collapses there: +5.3 TGC and +11.3 SGC on test-normal against +1.6 and +2.4 on test-challenge** (section 4.3). The skill quotes the +5.3 without the split, so the number a reader uses to justify rubric machinery over a plain outcome reward is a test-normal number that nearly vanishes on the larger split. Correction routed
+- [x] ~~arxiv:2509.16941 — SWE-Bench Pro, read in full this run for the two
   numbers the `skills/evaluation-integrity` upgrade needed (731 public
   instances in section 3.3, consecutive-commit sourcing in section 4.1), and
   recorded here as read rather than as owed. What is still owed from it is one
   question: the paper reports a held-out set of 858 instances that nothing in
   this library has looked at, and a benchmark's held-out half is where a
   contamination claim either survives or does not — asked by
-  skills/evaluation-integrity — 2026-10-27
+  skills/evaluation-integrity — 2026-10-27~~ - answered 2026-10-27, research seat, PR #632. **The held-out half is closed by design and no reading will open it.** Section 3.3 splits 1865 human-verified problems into 731 public on HuggingFace, 276 commercial from startup repositories, and 858 held out: "We keep this set private to test for overfitting in the future." No held-out result appears anywhere in the paper and none is promised. So a contamination check on that half is not available to this library or to anyone outside the benchmark's owners, and the line is struck as unanswerable rather than left standing. **The substitute is the commercial set**: 276 problems in private startup repositories whose results the authors do report publicly, which is the only released out-of-distribution arm SWE-Bench Pro has, and the skill should cite that rather than the held-out set when it wants an uncontaminated comparison
