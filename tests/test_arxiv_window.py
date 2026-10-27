@@ -43,6 +43,30 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "pipeline"))
 
+# `pipeline/ingest.py` builds a Modal image at import time, and `modal` is
+# declared in `requirements.txt`, which neither this host nor `checks.yml`
+# installs. Under pytest `tests/conftest.py` has already installed the stub and
+# this block is a no-op through its own guard. The guard is what makes the
+# direct run in the docstring above work, which is the run the stranded-test
+# gate in `test_ci_coverage.py` exists to protect.
+if "modal" not in sys.modules:
+    modal = types.ModuleType("modal")
+    modal.Cron = lambda *a, **k: None
+    modal.Secret = types.SimpleNamespace(from_name=lambda *a, **k: None)
+
+    class _Image:
+        """Every builder call returns the image, however long the chain gets."""
+
+        def __getattr__(self, name):
+            return lambda *a, **k: self
+
+    modal.Image = types.SimpleNamespace(debian_slim=lambda *a, **k: _Image())
+    modal.App = lambda *a, **k: types.SimpleNamespace(
+        function=lambda *a, **k: (lambda f: f),
+        local_entrypoint=lambda *a, **k: (lambda f: f),
+    )
+    sys.modules["modal"] = modal
+
 import ingest  # noqa: E402
 
 TODAY = dt.date(2026, 10, 26)

@@ -16,13 +16,16 @@ if "modal" not in sys.modules:
     modal = types.ModuleType("modal")
     modal.Cron = lambda *a, **k: None
     modal.Secret = types.SimpleNamespace(from_name=lambda *a, **k: None)
-    modal.Image = types.SimpleNamespace(
-        debian_slim=lambda *a, **k: types.SimpleNamespace(
-            pip_install=lambda *a, **k: types.SimpleNamespace(
-                add_local_file=lambda *a, **k: None
-            )
-        )
-    )
+    # Spelled as a self-returning image rather than as nested namespaces, which
+    # is the form `tests/conftest.py` and `test_email_template.py` already use.
+    # The nested form was exactly as deep as `pipeline/triage.py` chained on the
+    # day it was written, so the second `add_local_file` added there later broke
+    # the direct run this file's own guard exists to support.
+    class _Image:
+        def __getattr__(self, name):
+            return lambda *a, **k: self
+
+    modal.Image = types.SimpleNamespace(debian_slim=lambda *a, **k: _Image())
     modal.App = lambda *a, **k: types.SimpleNamespace(
         function=lambda *a, **k: (lambda f: f),
         local_entrypoint=lambda *a, **k: (lambda f: f),

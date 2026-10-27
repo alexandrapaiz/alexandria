@@ -731,6 +731,63 @@ def test_no_test_file_strands_a_test_below_its_runner():
     )
 
 
+def test_every_file_with_a_runner_block_can_run_without_the_conftest():
+    """The gate above protects a path. This one asks whether the path executes.
+
+    `tests/conftest.py` installs the Modal stub for the whole suite, and only
+    pytest loads a conftest. So a file whose module-level code imports anything
+    under `pipeline/` or `mcp/` reaches `import modal` with nothing standing in
+    for it, and `modal` is declared in `requirements.txt`, which neither
+    `checks.yml` nor a developer host installs. The repository's answer is the
+    in-file guarded stub that `conftest.py`'s own docstring says is "left in
+    place on purpose", because a file documenting a direct run "still has to
+    work with no conftest involved".
+
+    Nothing checked that it did. On 2026-10-27 two of the thirteen files
+    carrying a runner block could not execute it:
+    `test_arxiv_window.py` had no stub at all, and `test_triage_planner.py` had
+    one spelled as nested namespaces exactly as deep as `pipeline/triage.py`
+    chained on the day it was written, so a later `add_local_file` in that
+    pipeline broke a test file that never changed
+    (`INC-2026-10-27-a-cut-off-run-left-seven-tests-below-the-runner-block-and-the-gate-that-catches-it-runs-in-no-workflow`).
+    Both failed at import, so a direct run printed a traceback instead of any
+    assertion, and the suite stayed green the whole time.
+
+    The module is imported under its own name rather than run as a script, so
+    module-level code executes and the runner block does not fire. That keeps
+    this a check on the import path and not a second copy of the suite.
+    """
+    import ast
+    import subprocess
+
+    broken = {}
+    for path in sorted((ROOT / "tests").glob("test_*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        if not any(isinstance(n, ast.If) and "__main__" in ast.dump(n.test)
+                   for n in tree.body):
+            continue
+        # `sys.path[0]` under `-c` is the working directory. A direct run of the
+        # script puts the script's own directory there instead, so it is
+        # replaced rather than appended to.
+        code = (
+            "import sys, runpy;"
+            f"sys.path[0] = {str(path.parent)!r};"
+            f"runpy.run_path({str(path)!r}, run_name='imported_not_main')"
+        )
+        done = subprocess.run([sys.executable, "-c", code], cwd=ROOT,
+                              capture_output=True, text=True, timeout=180)
+        if done.returncode != 0:
+            tail = done.stderr.strip().splitlines()
+            broken[path.relative_to(ROOT).as_posix()] = tail[-1] if tail else "?"
+    assert not broken, (
+        "these files carry an `if __name__ == \"__main__\"` runner block and "
+        f"cannot be imported without pytest's conftest: {broken}. Add the "
+        "guarded Modal stub the other files in this directory use, spelled as a "
+        "self-returning image so a longer builder chain in `pipeline/` cannot "
+        "break it."
+    )
+
+
 def test_every_test_file_the_live_workflow_names_exists():
     """A step naming a file that was renamed is a step that cannot be green."""
     report = cc.coverage()
