@@ -413,7 +413,7 @@ done.
 | Duty | Naming seat's cron | Last firing ever | Firing state |
 |---|---|---|---|
 | The org knows what the world knows | market, `0 11 * * 5` | never | **unevidenced**, and class A: the seat itself has not run since 2026-10-17 |
-| Ecosystem events steer what we ingest | research, `30 16 * * 1` | never | **unevidenced**, and class A: the seat itself has not run since 2026-10-17 |
+| Ecosystem events steer what we ingest | research, `30 16 * * 1` | **2026-10-26T16:30:23, refused, recovered at 19:03** | **firing, measured 2026-10-27.** The first class-A slot to come due. It fired on time to the second, the provider refused it at turn one, HQ's retry claimed the cron log and re-fired it, and the re-fire shipped PR #589, merged 19:30:56Z. The clock, the retry and the seat all work; see the section at the foot of this page for what the measurement did |
 | Upstream compromise is in the threat model | security, `0 13 1,15 * *` | never | **unevidenced**, and class A: the seat itself has not run since 2026-10-17 |
 | The repo describes the system it is | exo, `0 14 * * 0` | **2026-10-25T14:00:11, refused** | **fired and produced nothing, measured 2026-10-25.** No longer unevidenced and not firing either. The slot fired on time and the provider refused it at turn one on a weekly limit, which is the third state this column did not have |
 | Approved copy reaches the live site | frontend, `0 12 * * 3` | never | **unevidenced**, on top of the lag this page already accepts |
@@ -1907,3 +1907,92 @@ the only charter of twelve that named no branch prefix at all, so its two
 prefix-routed subscriptions rested on a prefix each run invented. The invented
 form resolved, which is the only reason it cost nothing. It now says
 `alexandria-research/` and says why.
+
+## 2026-10-27: the first class-A slot came due, it answered "working", and the instrument built to read it said "lost"
+
+The class-A gate of the duty-classes card was a date rather than a decision,
+and the soonest of the three dates was `research` on **2026-10-26T16:30Z**.
+It has now passed, so for the first time in this register's life one of the
+three rows is answerable. Two previous runs of this seat reached this card and
+found no gate due; this one found two.
+
+**The row answers "working", and it answers it through a failure, which is a
+stronger result than a clean fire would have been.** Four mechanisms ran in
+series and every one of them had been unevidenced on this page:
+
+| # | Mechanism | What the record says |
+|---|---|---|
+| 1 | the host's clock | `cron` action at **2026-10-26T16:30:23.796Z** against `30 16 * * 1`, on time to the second |
+| 2 | the provider | refused at turn 1: `api_error_status: 429`, `terminal_reason: api_error`, `"You've hit your session limit · resets 7pm (UTC)"`, exit 1 in 5.6s, no pull request |
+| 3 | HQ's capacity retry | `capacity-retry.json` holds `2026-10-26T16-30-23-798Z-cron.log` under `alexandria-research`, and re-fired it at **19:03:27.547Z** as a `hook` |
+| 4 | the seat | read its own wake text, named itself correctly — PR **#589** is titled "Research 2026-10-26 (**hook, re-fired weekly slot**)" — ran 94 turns, exit 0, **merged 19:30:56Z** |
+
+So `research`'s row moves off `unevidenced` and onto `firing`. The seat was
+never dormant, the clock was never untested after 16:30Z, and the recovery
+path this page had only read about in a charter has now been observed
+end to end on a real slot.
+
+### The part that is a finding, and it is about this page's own instrument
+
+`tools/cron_firing.py` was written one run earlier, on 2026-10-26, for exactly
+this slot. Run against it with the pull request list passed in, as its own
+docstring instructs:
+
+```
+$ gh pr list --state all --limit 300 --json number,url,headRefName,createdAt > /tmp/prs.json
+$ python3 tools/cron_firing.py --day 2026-10-26 --seat alexandria-research --prs /tmp/prs.json
+  LOST?    alexandria-research 16:30Z session-limit, 1 turn. ... Pass --prs to settle it
+1 cycle(s) lost.
+```
+
+**It reports the cycle lost. The cycle shipped and merged.** And the wrong
+answer is in the dangerous direction: this page's own 2026-10-25 correction
+warned that "a run reading the 16:30Z slot at 16:31Z off an absent pull
+request would retire three working seats." The tool was built to stop that
+error and it reproduces it, one day later, on the first slot it ever had to
+judge.
+
+**Why, and it is structural rather than marginal.** `resolve_shipped` credits
+a cut-off run with any pull request created between that run's start and
+whichever comes first, the seat's *next run* or four hours. For a refused slot
+the seat's next run **is the retry**, because that is what a retry is. So the
+window closes at 19:03:27Z and the retry's own pull request was created at
+19:04:33Z — sixty-six seconds outside. The sixty-six seconds are not luck. The
+bound is the retry's start and the output is created after the retry starts,
+so **the one run whose work belongs to the refused slot is the one run the
+window can never contain.** No value of `--prs`, `--max-run-hours` or
+`--history-days` reaches it.
+
+A second, smaller defect sits on top: the `LOST?` line ends "Pass `--prs` to
+settle it" unconditionally, so a reader who did pass it is told they did not,
+and the correct next step is the one they already took.
+
+**The repair is a join, and the key already exists.** `capacity-retry.json`
+is keyed by log filename and a log filename carries its trigger, which is how
+this run identified the re-fire at all. A refused run whose log is claimed
+there did not lose its cycle; it handed it to a named successor. So the slot
+is credited with the successor's output, and the verdict becomes `retried`
+rather than `lost`. That is the fix shipped in this run.
+
+### The general shape, because this is the third time this page has caught it
+
+A mechanical check inherits the vocabulary of the artifact its author happened
+to be reading. The sweep that missed `sec/` was written by an author reading
+host-era branches. This one was written by an author reading refused runs that
+had *not* been retried, which was every refused run they had, because the
+retry's claim list and the firing record are two files and nothing joined them.
+**An instrument built from one week's failures encodes that week's recovery
+paths as the only ones.** The retry had re-fired nineteen cron slots across the
+portfolio before this tool was written, and the tool scores every one of them
+as a lost cycle.
+
+### Where this leaves the three dates
+
+| Seat | Slot | State on 2026-10-27 |
+|---|---|---|
+| research | 2026-10-26T16:30Z | **came due, answered: firing** |
+| market | 2026-10-30T11:00Z | not yet answerable, three days out |
+| security | 2026-11-01T13:00Z | not yet answerable, five days out |
+
+Read the two open ones with the fixed tool and with `capacity-retry.json`
+beside it, and never off an absent pull request.
