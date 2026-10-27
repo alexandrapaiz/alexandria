@@ -97,6 +97,14 @@ merges first it carries the other whole, since the hook branch is fully containe
 and `git log --oneline origin/alexandria-exo/2026-10-27-hook ^HEAD` prints
 nothing.
 
+**And it merged, nine minutes after the resolve was pushed.** `#623` is `MERGED`
+as of 2026-10-27T00:52:11Z, merge commit `ed1ba838`, read at 00:53Z. The stack
+behaved exactly as the paragraph above predicted: this branch's diff against the
+new `main` is now eight files and 618 insertions, which is this run's own work on
+its own. So the route chosen here cost one push and bought a review that was
+already finished, where a supersession would have cost a re-read of ninety-two
+commits.
+
 **The depth count, stated because the charter asks for it rather than because it
 binds here.** The hook pull request is the eighth link of a supersession chain.
 This run did not add a ninth, which is the first time in nine runs of this seat
