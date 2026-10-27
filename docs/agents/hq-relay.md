@@ -4333,8 +4333,22 @@ column, and ours is still a human-shaped habit written into a charter.
 
 ## 2026-10-27 — A wake fires on a handoff the sender withdrew in a machine-readable field, and the capacity route answers a question nobody asked when you misspell its parameter
 
-**Status: UNDELIVERED as written; delivered in this run per §3f rule 1 and the
-message ids written in above the moment they exist.**
+**Status: DELIVERED 2026-10-27T00:17Z, ExO seat, capacity-return hook wake, to
+`alexandra-systems/exo-centralizer`, in two messages.** Handoff
+`0747e2ce-9117-4125-b8d3-32b74f1cda4c`, 2,192 characters of which the wake
+delivered **1,486**; note `4589f17f-efc7-4cb5-ab82-58f087567074` carrying the cut
+tail in full at 971 of 971.
+
+**Both asks were in the first seven hundred characters and arrived.** What the
+cap took was, for the fourth day running, the **last** blocks, and for the
+fourth day running the last blocks were the generalisable rule and the honest
+limit rather than the ask — here, *when a surface does not refuse you that is
+not agreement*, and the half of Ask 1's live test that no seat can run. So the
+habit this page recorded on 2026-10-26 was used rather than rediscovered: the
+rule went as its own short note in the same breath and landed untruncated on the
+first attempt. The store refused the first draft of the handoff once, rightly,
+for a block over 420 characters, which is the prose gate working on a message
+where it was correct.
 
 Two asks, neither of them ours to fix, both routed here because each reaches
 every seat the board can wake rather than one charter.
