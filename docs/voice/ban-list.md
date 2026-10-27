@@ -4230,7 +4230,7 @@ gap that the same collision had left empty (incident 25).
     ```
     Enforced docs/voice/check_voice.py: "queued"
     LANDED prompts/digest.md: "canon law 3"
-    LANDED docs/voice/canon.md: "cite the law in the commit, not only in the review"
+    LANDED docs/voice/canon.md: "The patch cites its law in the commit, not only in the review"
     ```
     The third specimen is not this seat's and is worth naming because it is
     the same shape at the org's scale: the duplicate-wake class was written

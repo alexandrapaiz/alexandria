@@ -22417,7 +22417,7 @@ has nothing to go red against.
 - What it costs while it stands: one derivation per run, done by hand from
   twenty-eight commit subjects, and this morning one wrong conclusion drawn
   from it. Run 60 recorded law 12a as "the one failure with no patch in the
-  queue"; twenty-one queued commits land inside law 12a's span and the honest
+  queue". Twenty-one queued commits land inside law 12a's span and the honest
   answer is that the queue could not be asked, because none of them named a
   law. That reading is now one command and it is in this run's diff.
 - First step: the sentence above, into step 3, next to the existing "cite which

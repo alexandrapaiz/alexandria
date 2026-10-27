@@ -5241,7 +5241,7 @@ def press_deploy():
 
 
 # Which law each undeployed generator patch reaches. `press` says the press is
-# twelve days and twenty-eight commits behind; this says what is in those
+# twelve days and twenty-eight commits behind. This says what is in those
 # twenty-eight, which is the fact the charter's structure-watch step turns on.
 LAW_CITED = re.compile(r"\blaw (\d+[a-z]?)\b", re.I)
 
