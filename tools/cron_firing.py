@@ -9,10 +9,32 @@
     gh pr list --state all --limit 200 \
       --json number,url,headRefName,createdAt > /tmp/prs.json
     python3 tools/cron_firing.py --prs /tmp/prs.json      # settles a cut-off run's shipping
+    python3 tools/cron_firing.py --claims /path/to/capacity-retry.json  # default: the host's
 
-Exit 0 when every cron slot that came due on the day either shipped something
-or was never on the clock. Exit 1 when one fired and produced nothing, which
-is the thing this file exists to make visible.
+Exit 0 when every cron slot that came due on the day either shipped something,
+was rescued by HQ's retry, or was never on the clock. Exit 1 when one fired
+and produced nothing, which is the thing this file exists to make visible.
+
+A seat being revived is not the same as a cycle being carried, and `orphaned`
+is the gap between them. HQ's retry re-fires a refused seat once per window and
+the claim file names the window's *last* refused log for that seat, so a window
+that refuses a seat several times leaves every earlier refusal unclaimed. The
+seat comes back, the re-fire's wake text names the claimed log, and the cycle
+refused earlier in the same window is handed to nobody. Measured on
+2026-10-27's 01:03-01:46Z window: 20 seats, 20 claims, 46 refused runs, and in
+16 of the 20 the claim named a turn-1 refusal while the run that had been cut
+mid-work carried between 15 and 201 turns.
+
+A refused slot is not the same as a lost one. HQ's retry re-dispatches a
+refused log as a `hook`, so the firing record shows a failed `cron` row and a
+successful `hook` row with nothing joining them, and the join key is the log
+filename in `capacity-retry.json`. Reading the record without that file scores
+every re-fired slot as a lost cycle; it did exactly that to research's
+2026-10-26T16:30Z slot on the first day a class-A slot came due, and that slot
+had shipped and merged.
+
+`--prs` only settles runs in the repository the list came from. A cross-repo
+row is resolved from its own trailer or not at all.
 
 ## Why this exists
 
@@ -136,6 +158,13 @@ _TRAILER = re.compile(
 
 LOG_ROOT = pathlib.Path("/srv/asc/state/.epito/logs")
 
+# HQ's capacity retry keys its claims by log filename, so a refused run whose
+# log appears here did not lose its cycle: it handed it to a named successor.
+# Reading the firing record without this file scores every re-fired slot as a
+# lost cycle, which is what it did to research's 2026-10-26T16:30Z slot on the
+# first day one of them came due.
+CLAIM_FILE = pathlib.Path("/srv/asc/state/.epito/capacity-retry.json")
+
 # How long after a run starts its missing trailer still means "working"
 # rather than "killed". See `verdict_of`.
 GRACE_MINUTES = 90
@@ -197,6 +226,10 @@ def parse_run(path):
         "api_error_status": None,
         "refusal": None,
         "truncated": True,
+        "retry_claimed": False,
+        "retried_by": None,
+        "retry_of": None,
+        "orphaned_behind": None,
     }
 
     try:
@@ -314,6 +347,19 @@ def pr_absence_is_evidence(run):
         return True
     if run["truncated"]:
         return False
+    if run.get("retry_of"):
+        # The third reason for `pr=-`, found on 2026-10-27 and not in the two
+        # above: the run shipped and the host's scraper did not find the url in
+        # its final answer. `alexandria-writer`'s re-fire of the 2026-10-26
+        # 16:00Z slot exited 0 after 124 turns with `pr=-`, and had opened
+        # #591 on a branch named `2026-10-26-hook-refired-slot`.
+        #
+        # This stays narrow on purpose. A run known to be re-firing a refused
+        # slot is performing a cycle under the ship-first rule, so a pull
+        # request of that seat inside its window belongs to it. Widening the
+        # same reasoning to every exit-0 run would dissolve `silent`, which is
+        # the state incident 3 exists to keep visible.
+        return False
     return (not run["refusal"]
             and not run["api_error_status"]
             and run["exit_code"] == 0)
@@ -383,6 +429,86 @@ def resolve_shipped(runs, pr_index, max_run_hours=MAX_RUN_HOURS):
     return runs
 
 
+def read_retry_claims(path=CLAIM_FILE):
+    """`{seat: {log filename, ...}}` from the retry's claim file, or `{}`.
+
+    The file is the host's and is absent on a pull request checkout, so a
+    missing file is the ordinary case and not an error. Everything downstream
+    degrades to the pre-retry reading when this is empty, which is the old
+    behaviour and is wrong only for slots the retry actually claimed.
+    """
+    try:
+        raw = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(raw, dict):
+        return {}
+    claims = {}
+    for seat, names in raw.items():
+        if isinstance(names, str):
+            names = [names]
+        if not isinstance(names, list):
+            continue
+        claims[seat] = {str(name) for name in names}
+    return claims
+
+
+def resolve_retried(runs, claims):
+    """Point each claimed run at the run that re-fired it.
+
+    A claimed run gets `retry_of` on its successor and `retried_by` on itself,
+    and the successor is the seat's **next `hook` run**. That is what the retry
+    is: it re-dispatches a refused log and the host records the re-dispatch as
+    `hook`, never as the original trigger, so the firing record shows a failed
+    `cron` row and a successful `hook` row with nothing joining them.
+
+    The successor is required to be a `hook` rather than merely the next run,
+    because a seat this busy takes message wakes in between and crediting a
+    slot with an unrelated wake's pull request would be the same error in the
+    generous direction. When no hook follows, the claim is recorded and no
+    successor is named, so the slot stays lost with the claim stated.
+    """
+    if not claims:
+        return runs
+    by_seat = {}
+    for run in runs:
+        by_seat.setdefault(run["seat"], []).append(run)
+
+    for seat, seat_runs in by_seat.items():
+        claimed = claims.get(seat)
+        if not claimed:
+            continue
+        seat_runs.sort(key=lambda r: r["started"])
+        for index, run in enumerate(seat_runs):
+            if f"{run['run_id']}.log" not in claimed:
+                continue
+            run["retry_claimed"] = True
+            successor = None
+            for candidate in seat_runs[index + 1:]:
+                if candidate["trigger"] != "hook":
+                    continue
+                successor = candidate
+                run["retried_by"] = candidate
+                candidate["retry_of"] = run["run_id"]
+                break
+            # The claim file holds at most one entry per seat per window and it
+            # is the seat's *last* refused log, so a window that refuses a seat
+            # several times leaves every earlier refusal unclaimed. Walk back
+            # over them while the seat never recovered in between: those runs
+            # were refused by the same window and the same single re-fire
+            # revived the seat, but the re-fire was dispatched for this log and
+            # its wake text names this log, so nobody was told to carry theirs.
+            for earlier in reversed(seat_runs[:index]):
+                if not earlier["refusal"]:
+                    break
+                if earlier["retry_claimed"]:
+                    break
+                earlier["orphaned_behind"] = run["run_id"]
+                if successor is not None:
+                    earlier["retried_by"] = successor
+    return runs
+
+
 def _parse_iso(stamp):
     """`2026-10-26T00:33:05Z` as an aware datetime, or None.
 
@@ -445,7 +571,8 @@ def verdict_of(run, now=None, grace_minutes=GRACE_MINUTES):
     return reason or "silent"
 
 
-def judge(runs, day, tolerance=15, history_days=14, now=None, pr_index=None):
+def judge(runs, day, tolerance=15, history_days=14, now=None, pr_index=None,
+          claims=None):
     """What every cron slot that came due on `day` did, in the four states.
 
     `tolerance` is how many minutes apart two firings can be and still be the
@@ -458,6 +585,9 @@ def judge(runs, day, tolerance=15, history_days=14, now=None, pr_index=None):
     as lost with that doubt stated, and with it the same run is reported as
     `cut` naming the pull request it opened.
     """
+    # `resolve_retried` first, because it is what tells `resolve_shipped`
+    # which runs are re-fires, and a re-fire's `pr=-` is not evidence.
+    runs = resolve_retried(runs, claims or {})
     runs = resolve_shipped(runs, pr_index)
     day_runs = [r for r in runs if r["day"] == day]
     asked = datetime.strptime(day, "%Y-%m-%d").replace(tzinfo=UTC)
@@ -479,7 +609,7 @@ def judge(runs, day, tolerance=15, history_days=14, now=None, pr_index=None):
                  "in-flight": "in-flight"}.get(verdict)
         if state is None:
             state = "cut" if run["pr"] else "lost"
-        findings.append({
+        finding = {
             "seat": run["seat"],
             "slot": _slot_label(slot(run)),
             "state": state,
@@ -489,7 +619,29 @@ def judge(runs, day, tolerance=15, history_days=14, now=None, pr_index=None):
             "pr": run["pr"],
             "pr_source": run.get("pr_source", "trailer" if run["pr"] else None),
             "pr_unknown": not pr_absence_is_evidence(run),
-        })
+            "retry_claimed": bool(run.get("retry_claimed")),
+            "retried_by": None,
+            "retry_pr": None,
+            "orphaned_behind": run.get("orphaned_behind"),
+        }
+        # A slot the retry claimed and re-fired successfully is not a lost
+        # cycle. It is a late one, and the lateness is the finding rather than
+        # the loss, so it gets its own state and does not set the exit code.
+        successor = run.get("retried_by")
+        if state == "lost" and successor is not None:
+            finding["retried_by"] = successor["run_id"]
+            finding["retry_pr"] = successor["pr"]
+            if run.get("retry_claimed") and successor["pr"]:
+                finding["state"] = "retried"
+                finding["late_minutes"] = int(
+                    (successor["started"] - run["started"]).total_seconds() // 60)
+            elif run.get("orphaned_behind"):
+                # The seat came back and this cycle did not. `orphaned` stays
+                # in the exit code because the cadence did lose the cycle; what
+                # changes is where the remedy goes, which is the claim's key
+                # rather than the clock or the seat.
+                finding["state"] = "orphaned"
+        findings.append(finding)
 
     fired = {(r["seat"], slot(r)) for r in day_runs if r["trigger"] == "cron"}
     seen = {}
@@ -516,7 +668,9 @@ def judge(runs, day, tolerance=15, history_days=14, now=None, pr_index=None):
         "day": day,
         "findings": findings,
         "lost": [f for f in findings if f["state"] == "lost"],
+        "orphaned": [f for f in findings if f["state"] == "orphaned"],
         "cut": [f for f in findings if f["state"] == "cut"],
+        "retried": [f for f in findings if f["state"] == "retried"],
         "history_days": history_days,
     }
 
@@ -525,7 +679,7 @@ def _minute_of(label):
     return int(label[0:2]) * 60 + int(label[3:5])
 
 
-def render(result, root):
+def render(result, root, prs_given=False):
     lines = [f"cron slots on {result['day']}, from the host's firing record"]
     if not result["findings"]:
         lines.append(f"  no cron slot fired and none has in the trailing "
@@ -546,14 +700,48 @@ def render(result, root):
                          f"{finding['why']}{turns}, after opening "
                          f"{finding['pr']} ({finding['pr_source']}). The work "
                          f"shipped and the report did not")
+        elif finding["state"] == "retried":
+            late = finding.get("late_minutes")
+            late = f", {late // 60}h{late % 60:02d}m late" if late else ""
+            lines.append(f"  retried  {finding['seat']} {finding['slot']} "
+                         f"{finding['why']}, re-fired by "
+                         f"{finding['retried_by']} -> {finding['retry_pr']}"
+                         f"{late}. The slot fired, the provider refused it and "
+                         f"the retry carried the cycle")
+        elif finding["state"] == "orphaned":
+            turns = finding["turns"]
+            turns = f", {turns} turn{'' if turns == 1 else 's'}" if turns else ""
+            lines.append(f"  orphaned {finding['seat']} {finding['slot']} "
+                         f"{finding['why']}{turns}. The same window refused "
+                         f"this seat again afterwards, the retry's claim named "
+                         f"that later log ({finding['orphaned_behind']}) and "
+                         f"not this one, so the re-fire arrived carrying the "
+                         f"other run's instruction and nobody was told to "
+                         f"carry this cycle")
         elif finding["state"] == "lost":
             turns = finding["turns"]
             turns = f", {turns} turn{'' if turns == 1 else 's'}" if turns else ""
             if finding["pr_unknown"]:
+                # Two different absences, and telling a reader to pass a flag
+                # they already passed sends them back to the step they just
+                # took. Say which evidence is actually missing.
+                if finding["retried_by"]:
+                    hint = (f"The retry re-fired it as {finding['retried_by']}, "
+                            f"and that run opened no pull request either, so "
+                            f"the cycle is lost after a recovery attempt")
+                elif finding["retry_claimed"]:
+                    hint = ("The retry claimed this log and no hook followed "
+                            "it, so the re-fire is owed and has not happened")
+                elif prs_given:
+                    hint = ("The run was stopped rather than finished, and no "
+                            "pull request in the list matches its window, so "
+                            "`pr=-` stands")
+                else:
+                    hint = ("The run was stopped rather than finished, so "
+                            "`pr=-` is not evidence it shipped nothing. Pass "
+                            "--prs to settle it")
                 lines.append(f"  LOST?    {finding['seat']} {finding['slot']} "
-                             f"{finding['why']}{turns}. The run was stopped "
-                             f"rather than finished, so `pr=-` is not evidence "
-                             f"it shipped nothing. Pass --prs to settle it")
+                             f"{finding['why']}{turns}. {hint}")
             else:
                 lines.append(f"  LOST     {finding['seat']} {finding['slot']} "
                              f"{finding['why']}{turns}, no pull request")
@@ -567,6 +755,22 @@ def render(result, root):
         lines.append(f"{len(result['lost'])} cycle(s) lost. A cron slot that "
                      f"fires and produces nothing is the cadence failing while "
                      f"the firing record says it worked.")
+    if result.get("orphaned"):
+        lines.append("")
+        lines.append(f"{len(result['orphaned'])} cycle(s) orphaned behind a "
+                     f"later refusal of the same seat. The seat was re-fired "
+                     f"once and came back; the cycle did not, because the "
+                     f"claim file keys by log filename and holds the window's "
+                     f"last refused log per seat. These count as lost, and the "
+                     f"remedy is the claim's key rather than the clock or the "
+                     f"seat.")
+    if result.get("retried"):
+        lines.append("")
+        lines.append(f"{len(result['retried'])} cycle(s) refused and re-fired "
+                     f"by HQ's retry. The clock worked, the provider did not, "
+                     f"and the cycle arrived late rather than not at all. The "
+                     f"firing record alone shows these as a failed cron row "
+                     f"and an unrelated hook row.")
     if result.get("cut"):
         lines.append("")
         lines.append(f"{len(result['cut'])} cycle(s) cut off after shipping. "
@@ -595,6 +799,10 @@ def main(argv=None):
                         help="a file of `gh pr list --json "
                              "number,url,headRefName,createdAt` output, which "
                              "settles whether a cut-off run shipped")
+    parser.add_argument("--claims", default=str(CLAIM_FILE),
+                        help="HQ's capacity-retry claim file, which says which "
+                             "refused logs were re-fired. Without it a slot "
+                             "the retry rescued reads as a lost cycle")
     parser.add_argument("--json", action="store_true",
                         help="the verdict as a script reads it")
     args = parser.parse_args(argv)
@@ -626,11 +834,15 @@ def main(argv=None):
         print(f"note: --now {args.now!r} is not an ISO stamp, so the wall "
               f"clock stands", file=sys.stderr)
 
+    claims = read_retry_claims(args.claims)
     result = judge(runs, day, history_days=args.history_days,
-                   pr_index=pr_index, now=now)
+                   pr_index=pr_index, now=now, claims=claims)
     print(json.dumps(result, indent=2, default=str) if args.json
-          else render(result, root))
-    return 1 if result["lost"] else 0
+          else render(result, root, prs_given=pr_index is not None))
+    # An orphaned cycle is a lost one, so it sets the exit code too. Before
+    # `orphaned` existed these rows read as `lost` and already did, which is
+    # why naming them changes the sentence and not the contract.
+    return 1 if (result["lost"] or result["orphaned"]) else 0
 
 
 if __name__ == "__main__":
