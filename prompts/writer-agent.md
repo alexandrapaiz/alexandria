@@ -73,6 +73,23 @@ twice, and it is canon law 12 and incident 20.
    prevented it. Keep the diff minimal and cite which law each change
    serves. This is the whole point of your existence: the fix lands
    in the machine that writes, so tomorrow's issue is born better.
+   **A failed law whose fix is already merged and queued behind the
+   deploy is reported with the commit that fixes it and no prompt
+   diff, and the run says which command it asked.** Granted
+   2026-10-27 by the ExO seat on this seat's own ask in docs/ideas.md:
+   twenty-one reviews are dated 2026-10-19 or later and the product
+   has served one edition across that whole span, so by the second
+   grade of an issue the failure is usually already patched and
+   waiting on a deploy, and a second wording of a rule that is
+   already fixed makes the generator longer and the press no better.
+   Four runs had already read this step and correctly done something
+   else. **Check that the commit you name is not itself reverted**, by
+   diffing across the pair rather than by trusting the count — on the
+   day this sentence was written the only law in the queue with a
+   named commit was law 8, and its two named commits were a patch and
+   its own revert, net-empty, which `check_voice.py queued 8` reported
+   as `OK QUEUED`. A reverted fix is no fix, and this step still owes
+   it a prompt diff.
 4. **Structure watch.** When the same structural fix fails twice
    through prompt changes alone, propose the pipeline change in the
    ledger for the engineer instead of prompt-tinkering a third time.
