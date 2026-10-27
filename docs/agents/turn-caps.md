@@ -1540,3 +1540,61 @@ rule 9's lesson and the writer's whole eight days:
 ls -1t /srv/asc/state/.epito/logs/alexandria-skill/ | head -1 | \
   xargs -I{} grep -ho '\--max-turns[= ][0-9]*' /srv/asc/state/.epito/logs/alexandria-skill/{}
 ```
+
+## Re-derived 2026-10-27 00:50Z, on the sixth cap hit, which is the third of one seat and the first of a second day
+
+**Trigger: rule 1, unconditionally.** §6 of `prompts/exo-agent.md` says
+re-derive immediately in any run where a cap was hit, with no exception for a
+wake run, and one was hit inside this run's own sweep window. This is an append
+rather than a rewrite, because only one row moves and the section above is
+correct about every number it took.
+
+### The sixth hit, and what the section above now says wrongly
+
+| Started | Seat | Cap that run loaded | Turns | Terminal |
+|---|---|---|---|---|
+| 00:03:53Z | skill | 180 | 181 | `max_turns` |
+
+Read off that run's own invocation line, `--max-turns 180`, which is rule 9.
+
+The denominator sentence above reads "**five of the 341 are cap hits. All five
+are on 2026-10-26.**" Re-counted this run over the same surface: the host keeps
+**367** alexandria run logs carrying a result line and **six** of them are
+`error_max_turns`. Five are on 2026-10-26 and the sixth is on 2026-10-27, so the
+claim that the step was confined to one day is now false, and it was true when it
+was written. **Three of the six are one seat.**
+
+### The row that moves, and it moves on the free-running half
+
+| Seat | Censored lower bound | Free-running peak | Cap in force | Required by the rule | Percent on the free peak | Verdict |
+|---|---|---|---|---|---|---|
+| skill | **181**, three times in five hours | **167**, up from the 129 recorded at 20:55Z | 180 | **400** | **92.8%** | **UNMEASURED and under-capped. Three kills.** |
+
+**The free-running peak is the number worth having, and it is the one this page
+nearly missed twice.** The 20:55Z pass recorded 129 from the 14:17:47Z run and
+marked the seat unmeasured, correctly, because 181 is the cap plus one and
+therefore a floor rather than a demand. A run of that seat starting
+**20:40:58Z** then finished freely at **167 turns**, which is a measurement and
+not a floor, and it sits at 92.8% of the cap in force. So the seat is over rule
+5's 70% threshold on completed work alone, before any kill is counted, and the
+grant of 270 would put that same run at 61.9%.
+
+**And the start-versus-end trap of rule 10 is why that run is easy to lose.**
+The audit log's `run.end` row for a *different* skill run also reads 20:40:58,
+because that row carries the END and the log filename carries the START. A pass
+that matches the two by string reads one run where there are two, and the one it
+drops is the free-running one, which is the only run in the set that measures
+anything. Both surfaces were read here and neither was quoted.
+
+### What is not re-derived, and why
+
+Every other row of the 20:55Z table. No other seat hit a cap in this window and
+no charter edit grew another seat's duties, so rule 1 and rule 5 name only this
+row. The engineer row is unchanged at a censored 201 against a cap of 200 and a
+free-running peak of 162, re-read this run and identical.
+
+**Nothing here is an ask.** The raise is already granted at 270 for skill and 300
+for engineer, HQ PR 545, open and unmerged, and `docs/agents/hq-relay.md` carries
+the three-gate reading. Rule 1 asks for the measurement and the measurement is
+above. A second message about a cap the centralizer's own tool will step again
+without being asked is the defect that seat named back at this one on 2026-10-26.

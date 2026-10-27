@@ -44,9 +44,33 @@ gate is slower, the register can be perfectly gated and still lie, and
 model-routing.md is the proof: the gate fired exactly on schedule and the
 file spent a day describing a policy the org had abandoned.
 
+**And a register can need two gates on two different axes, which this table had
+no column for until 2026-10-27** (added by the ExO seat's message wake, from
+`INC-2026-10-27-the-register-anchor-conflicted-seven-times-in-two-days-and-its-inbox-has-no-gate`).
+
+The polarity test of `prompts/exo-agent.md` §3d asks whether a register's gate
+fires on the thing going wrong or on the thing going right. This is the question
+one layer out: **which axis does the gate measure at all?** The incidents row
+read `was GAP, closed` for a month and the gap it closed is real, which is that a
+repeat now gets written down by every seat's ship check. A second axis went
+ungated and unnamed the whole time, which is **where** it gets written, and that
+one costs a merge conflict every time two seats file between merges. The inbox
+built on 2026-10-24 is the remedy and `tools/incidents.py check` is its gate, and
+reading that gate's predicates shows every one of them inspects an entry already
+in the inbox or already in the register. None asks whether a new entry went to
+the inbox rather than to the shared anchor, so a seat that ignores the inbox
+passes cleanly. The anchor conflicted **seven times in the thirty-nine hours**
+after the inbox landed, three of them on this seat's own branches.
+
+So when you fill a row of this table, say which axis each gate is on, because a
+single `closed` covers whichever axis the auditor happened to be thinking about.
+A gap that nobody has a column for is indistinguishable from a gap that was
+closed, and that is this table's own version of the heading that reads the same
+whether the news is good or bad.
+
 | Register | Owner | Archive-side gate | Artifact-side gate | Change rate vs gate rate | State |
 | --- | --- | --- | --- | --- | --- |
-| `docs/agents/incidents.md` | ExO | standing rule, any seat appends the moment an issue repeats | every charter's ship check, plus PM §1f and ExO §2 | changes daily, gated per PR by every seat |  was GAP, closed |
+| `docs/agents/incidents.md` | ExO | standing rule, any seat appends the moment an issue repeats | **two axes, and only the first is gated.** Whether a repeat gets written down: every charter's ship check, plus PM §1f and ExO §2. Where it gets written: `docs/agents/incidents/inbox/`, whose gate is `tools/incidents.py check`, and that gate has no predicate for a direct append at the register's anchor | changes daily, gated per PR by every seat |  content GAP closed. **Filing-mechanism GAP open, measured 2026-10-27**, `INC-2026-10-27-the-register-anchor-conflicted-seven-times-in-two-days-and-its-inbox-has-no-gate` |
 | `docs/voice/taste.md` | chair and PM record | chair or PM records the ruling | writer's first grading gate, line by line | she rules in hours, writer gates daily |  was GAP, closed, this is incident 20 |
 | `docs/voice/ban-list.md` | writer | writer appends new tells | writer §2, plus sales for launch copy | writer appends, writer gates, same seat daily |  closed for copy outside the digest |
 | `docs/voice/canon.md` | writer | writer proposes, owner rules | writer §2, plus market and sales | rarely, gated daily |  enforced |

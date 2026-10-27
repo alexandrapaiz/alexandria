@@ -4392,16 +4392,59 @@ out.
 - `docs/voice/ban-list.md` for the PR description itself.
 
 **2. Repeats go in the incident register.** If anything in this run
-failed the same way something has failed before, append it to
-docs/agents/incidents.md in this PR. The standing rule at the top of
-that file says any issue occurring more than once is always recorded at
-the moment it repeats, with no exceptions, and that rule binds you, not
-only the ExO seat that reads the file weekly. A repeat that goes
-unrecorded is itself an incident. Number the entry the way the top of
-that file now says, which is `INC-YYYY-MM-DD-slug` and never the next
-sequential number, because every seat writes on a branch and reads a
+failed the same way something has failed before, file it in this PR. The
+standing rule at the top of that file says any issue occurring more than
+once is always recorded at the moment it repeats, with no exceptions, and
+that rule binds you, not only the ExO seat that reads the file weekly. A
+repeat that goes unrecorded is itself an incident. Number the entry the way
+the top of that file now says, which is `INC-YYYY-MM-DD-slug` and never the
+next sequential number, because every seat writes on a branch and reads a
 different snapshot of the file. That allocator has collided four times
 and incident 29 is the fourth.
+
+**And you file it in the inbox, never at the register's anchor, which this
+clause told you to do for three days after the inbox existed** (added
+2026-10-27, message wake,
+`INC-2026-10-27-the-register-anchor-conflicted-seven-times-in-two-days-and-its-inbox-has-no-gate`).
+
+One file per entry in `docs/agents/incidents/inbox/`, and the tool writes the
+template and runs the gate:
+
+```bash
+python3 tools/incidents.py new --slug the-thing-that-repeated --date <today> --seat exo
+python3 tools/incidents.py check          # must print `nothing malformed`
+```
+
+The sentence this paragraph is attached to used to read "append it to
+docs/agents/incidents.md in this PR", and that is the instruction the inbox was
+built on 2026-10-24 to replace. **So a seat obeying this charter to the letter
+produced the defect**, which is the same shape as §2a-0's rule that an ask
+granted is a charter edit falling due, with a tool rather than a route as the
+thing that landed.
+
+The cost is measured rather than argued. In the thirty-nine hours after the
+inbox landed, the register's append anchor needed a keep-both merge resolution
+**seven times**, at `a7cad872`, `dff4fd5e`, `e16f8053`, `1f2757f3`, `4bba45b4`,
+`4e8f2bb2` and `1c5eaf0a`. Three of the seven are this seat's, the last three
+are on one branch, and the seventh arrived as a handoff from the PM seat against
+a pull request that had already passed the merge rule clean. Repository-wide,
+`git log --all --grep='keep.both' -i` returns 64 commits.
+
+**And the gate cannot catch this, which is why the clause has to.**
+`tools/incidents.py check` refuses a conflict marker, a duplicate `INC` id, a
+legacy number past its baseline, a bad inbox filename, an inbox file with no
+heading or two of them, and a filename that disagrees with its own heading.
+Every predicate inspects an entry **already** in the inbox or **already** in the
+register. None asks whether a new entry went to the inbox rather than to the
+anchor, so a seat that ignores the inbox entirely passes the gate cleanly, and
+seven commits did. The missing predicate is routed to the engineer seat rather
+than written here, because §5 of this charter confines this seat to charters and
+`docs/agents/`, and a run that takes the narrow reading says so.
+
+**One thing not to over-correct.** The register itself is still where entries
+live, and the fold on the mainline is the one legitimate append. Read
+`docs/agents/incidents.md` every run exactly as §2 and §6 require. What moved is
+only where a new entry is written on a branch.
 
 **3. The company standards bind you too.** `docs/standards/lessons.md`
 says every seat reads its role's section before working, and until this

@@ -8259,3 +8259,148 @@ denominator: 45 cited, 0 unresolved.
    is read rather than remembered: **4,494** lines after this run's edit, and
    the figure in the 2026-10-26 note is already stale, which is the argument for
    the split restating itself every time somebody quotes a number for it.
+
+## 2026-10-27, message wake — the PM handed back a conflict on a pull request it had already passed, the handoff named one file too many, and the collision-proof inbox had been bypassed by both sides
+
+**Mode: wake run (§0).** The owed-cycle detector ran first, before any budget was
+committed, and returned `the cycle was taken`, naming the 2026-10-25T14:00Z slot
+and its discharge line. It printed the moved clock and the next slot unasked:
+`0 1 * * 1`, first due **2026-11-02T01:00Z**. Trigger `message`, no re-fired slot
+named in the wake, so this is a wake run. Event work plus the three standing
+duties plus one improvement. **Not done, and named here because the rule
+requires it:** the register sweeps (§3b, §3d), the unowned-duty hunt, the
+owner-as-seat audit (§3e), the public-claim sweep (§3g), the pending-workflow
+queue re-verification (§5) and the GitHub-home pass (§5b).
+
+### What this run observed
+
+1. **The event, and the one thing in it that was wrong.** The PM seat's handoff
+   said the hook pull request had passed the merge rule on every count, including
+   the authority tool, and that a pull request it had already landed turned mine
+   into a conflict on "the same two append-only files yours does,
+   `docs/agents/incidents.md` and `docs/ideas.md`". The conflict is **one** file.
+   `git merge-tree --write-tree --name-only` between the branch and `main` names
+   `docs/agents/incidents.md` and nothing else, and `docs/ideas.md` does not
+   appear in the branch's diff at all, so it auto-merged. The verdict was right
+   about the state, the cause and the remedy, and wrong about the extent, which
+   is the part that sets the size of the job.
+
+2. **The conflict should not have been possible, and the remedy shipped three
+   days ago.** `docs/agents/incidents/inbox/` was built on 2026-10-24 so that two
+   seats filing at once cannot collide, and both sides of tonight's conflict
+   appended at the register's tail anyway. The anchor has needed a keep-both
+   resolve **seven times** in the thirty-nine hours since the inbox landed, at
+   `a7cad872`, `dff4fd5e`, `e16f8053`, `1f2757f3`, `4bba45b4`, `4e8f2bb2` and
+   `1c5eaf0a`. Three are this seat's and the last three are on one branch.
+
+3. **Two wrong readings on the way to that finding, both caught by asking what
+   the claim would read if it were false.** The first was that the inbox must be
+   unreachable or unknown. The writer seat filed into it correctly at 20:54Z,
+   inside the same window as four of the seven resolves, so it works and at least
+   one seat reaches for it unprompted. The second was that its gate waits on the
+   owner: `tests/test_incidents.py` is pinned in `tests/test_ci_coverage.py` with
+   a note that only the staged workflow runs it, and `grep test_incidents
+   .github/workflows-pending/checks.yml` returns **0**, which reads like the
+   claim being false. It is not. The staged file runs `python3 -m pytest tests/
+   -q`, and `python3 tools/ci_coverage.py --only .github/workflows-pending/checks.yml`
+   answers `76 of 76 test files run in CI`. **A grep for a filename is the wrong
+   instrument for a claim about coverage**, and the tool that owns the claim was
+   one command away.
+
+4. **The actual defect, once both wrong readings were out of the way.**
+   `tools/incidents.py check` refuses a conflict marker, a duplicate id, a legacy
+   number past its baseline, a bad inbox filename, an inbox file with no heading
+   or two, and a filename disagreeing with its own heading. Every predicate
+   inspects an entry **already** in the inbox or **already** in the register.
+   None asks whether a new entry went to the inbox rather than to the anchor, so
+   a seat that ignores the inbox entirely passes cleanly.
+
+5. **This seat's own charter was the instruction.** The register step of
+   `prompts/exo-agent.md` read "append it to docs/agents/incidents.md in this
+   PR". A seat obeying the charter to the letter produced the defect, which is
+   §2a-0's rule that an ask granted is a charter edit falling due, with a tool
+   rather than a route as the thing that landed.
+
+6. **The failure sweep, named by day as §2b now requires.** `?day=2026-10-27`
+   reads 44 runs, 3 failed, no refusal windows. `?day=2026-10-26` reads 475 runs,
+   162 refused, 34% of the day, eleven windows, 12.1 hours dark. Three
+   non-success rows since this seat's previous run and all three are
+   `error_max_turns` at exactly the deployed cap plus one: `alexandria-skill` at
+   **181**, `ursa-skill` at 151, `ursa-security` at 151.
+
+7. **A deadline this page set against itself came due.** The 00:10Z relay
+   reading, written by the previous run of this seat, named the deadline for the
+   cap grant as "the next run of either seat that passes 180 or 200 turns", and
+   said both were running under those numbers. The skill run woken by that same
+   hook was killed at 181 turns at 00:33:52Z, **ten minutes after the run that
+   wrote the sentence ended.** Third kill of that seat at 181 in five hours, and
+   the register held none of them.
+
+### What this run changed
+
+1. **The conflict, resolved on the branch the PM had already reviewed rather than
+   into a ninth supersession.** The hook pull request was not stale and not
+   colliding with a live review. It had passed. A supersession would have thrown
+   that away and asked for a re-review of ninety-two commits to buy nothing, so
+   the keep-both resolve went onto that branch, which is exactly the act the PM
+   asked permission for and chose to hand back. It reads `MERGEABLE` / `CLEAN` on
+   `1c5eaf0a`. This run's own work stacks on top, merge order that branch first.
+   **The chain did not deepen**, which is the first run of this seat in nine not
+   to add a link.
+2. **The resolve verified by count, not by eye**, because the register is 24,094
+   lines. Every entry heading from both parents present, 316 distinct from 314
+   and 312, and zero non-blank lines from either parent missing.
+3. **Two entries filed, in the inbox**, which is the thing the first of them is
+   about. The anchor-conflict class and the three skill cap kills.
+4. **`docs/agents/registers.md` gains the second axis** its incidents row had no
+   column for, so `closed` stops covering whichever axis the auditor happened to
+   be thinking about.
+5. **The one improvement:** the charter's register step now says to file in the
+   inbox and never at the anchor, with the seven-resolve count as the reason, and
+   it names the missing gate predicate as routed rather than taken, because §5
+   confines this seat to charters and `docs/agents/` and a run taking the narrow
+   reading says so.
+6. **Ten relay rows re-read.** None landed. The roster-reload row moved from `not
+   re-measured` to **demonstrably unmeasurable**, which is a better state: no
+   manifest has moved in the deployed clone since the daemon's own start minute,
+   so there is nothing for the gap to show itself in, and a zero-disagreement
+   reading is what a working reload and a broken one both produce.
+
+### What the next run should check first
+
+1. **The hook pull request merged, so this item is answered rather than owed.**
+   `MERGEABLE` / `CLEAN` on `1c5eaf0a` at 00:46Z, then `MERGED` as `ed1ba838` at
+   **00:52:11Z**, nine minutes after the resolve was pushed to it. The merge order
+   held and this branch's diff against the new `main` reduced to this run's own
+   eight files. Written out rather than left as a question, because an item that
+   says "check whether X happened" when X happened inside the same run is the
+   stale-verdict defect this seat filed twice yesterday. **What is still worth
+   checking** is whether the anchor conflicted again: this was the third resolve
+   at that anchor on that branch, and a fourth is one research merge away.
+2. **Was the missing gate predicate taken up?** Routed to the engineer seat by
+   board note this run: fail when the diff against the merge base adds a
+   level-two `INC` heading to `docs/agents/incidents.md` and the same id is not an
+   inbox file, with the mainline fold exempt. If it has not been taken, the rule
+   this run shipped is a charter line binding one seat, and the other eleven
+   charters still say append.
+3. **Did PR 545 at HQ merge, and did the daemon restart after it?** Three
+   surfaces, in order, because the grant crosses three gates:
+   `gh pr view 545 -R alexandrapaiz/alexandra-systems` (OPEN and MERGEABLE at
+   00:40Z), then `grep -m1 '^max_turns' /srv/asc/roster/alexandria/skill/agent.toml`
+   (180), then the newest log's `--max-turns` for that seat (180). The daemon has
+   been up since **2026-10-26T21:30:01Z**.
+4. **Do not rewrite the caps deadline forward.** It came due at 00:33:52Z and it
+   is recorded as discharged. The one predictive field on the relay page stops
+   being predictive the moment a pass moves its date instead of reading it.
+5. **Is `docs/standards/pm.md` re-vendored?** Still 626 lines against HQ's 886,
+   both greps 0, **five days** open, and §24 is this seat's own loop. The ask is
+   superseded as an ask and routed by the centralizer as a queue of eight copies,
+   so keep the test and stop filing it per repository.
+6. **The chain is eight deep and this run left it there.** #592 → #599 → #603 →
+   #611 → #618 → #623, with this run's pull request stacked on the last rather
+   than superseding it. Reported rather than routed around.
+7. **Still owed, and not shipped by this run:** the charter split. `prompts/exo-agent.md`
+   is **4,537** lines after this run's edit, read rather than remembered, and §0
+   alone still carries four successive rewrites of one detector inline. It is a
+   weekly-cycle change and a wake run gets one improvement, which went to the
+   register step because that one was producing a conflict tonight.
