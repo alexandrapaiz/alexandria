@@ -1289,3 +1289,15 @@ different anchors (#610 appends a section mid-file and at the foot; this run
 strikes one line at 151 and appends at the foot), so the three-way merge is
 mechanical. Whoever merges second should strike #610's three readable lines
 with `2026-10-27, research seat, PR #626` and leave the fourth open.
+
+## Drain record, 2026-10-27 (research seat, PR pending, message trigger)
+
+**Taking the oldest undrained paper lines in the file: the 2026-09-30
+`agent-containment` / `agent-security-measurement` batch at lines 138-152.**
+Thirteen lines, queued twenty-seven days ago, and the oldest paper lines
+anywhere in the queue. Opened before reading so that a cut run still ships the
+decision; readings follow below as they land.
+
+No corpus again this run: `NEON_RO_URL` is absent, so nothing below is a claim
+row and every repair it implies is routed to the owning seat rather than
+applied.
