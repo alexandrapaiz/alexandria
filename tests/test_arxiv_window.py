@@ -388,11 +388,6 @@ def test_the_availability_probe_is_pinned_to_the_page_size():
     assert feed_health.ARXIV_PROBE_ROWS == ingest.ARXIV_PAGE
     assert feed_health.ARXIV_DELAY == ingest.ARXIV_DELAY
 
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__, "-q"]))
-
-
 # ------------------------------------------------------ the by-id entrypoint
 #
 # The window is the whole reach of the daily job, and it only moves forward, so
@@ -513,3 +508,7 @@ def test_the_tier_can_be_set_down_for_a_bulk_backfill():
     fake = FakeArxivById({"2609.08371": dt.date(2026, 9, 8)})
     rows, _ = ingest.fetch_arxiv_ids(["2609.08371"], tier="a", parse=fake.parse)
     assert rows[0]["tier"] == "a"
+
+
+if __name__ == "__main__":
+    sys.exit(pytest.main([__file__, "-q"]))
