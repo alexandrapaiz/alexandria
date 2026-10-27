@@ -5154,33 +5154,11 @@ def press():
     """
     rc = press_cases()
     print()
-    try:
-        sys.path.insert(0, str(ROOT))
-        import importlib.util
-        spec = importlib.util.spec_from_file_location(
-            "_dh", ROOT / "tools" / "delivery_health.py")
-        dh = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(dh)
-    except Exception as e:
-        print(f"  UNREACHED tools/delivery_health.py: {type(e).__name__}: {e}")
+    found = press_deploy()
+    if found is None:
         print("    nothing was read, so nothing is concluded about the press")
         return 1
-    body = _fetch(dh.RECEIPT_URL)
-    if body is None:
-        print("    nothing was read, so nothing is concluded about the press")
-        return 1
-    try:
-        rows = {r["app"]: r for r in json.loads(body).get("deploy", [])}
-    except (ValueError, KeyError, TypeError) as e:
-        print(f"  UNREACHED {dh.RECEIPT_URL}: {type(e).__name__}: {e}")
-        return 1
-    row = rows.get(PRESS_APP)
-    if row is None:
-        print(f"  FAIL    the receipt carries no row for {PRESS_APP}, so the "
-              f"press has never reported what it runs")
-        return 1
-    found = dh.undeployed_commits(ROOT, PRESS_APP, row.get("runtime_sha"),
-                                  limit=PRESS_WINDOW, ref="origin/main")
+    row = found["row"]
     deployed = found.get("deployed_commit")
     at = found.get("deployed_at")
     at = datetime.datetime.fromisoformat(at) if at else None
@@ -5223,6 +5201,275 @@ def press():
     return rc | (verdict != "CURRENT")
 
 
+def press_deploy():
+    """`undeployed_commits` for the press, or None with the reason printed.
+
+    Factored out of `press` when a second command needed the deployed commit.
+    A second copy of the receipt read in this file would be a parallel
+    structure, and this charter forbids those before it forbids anything else.
+
+    The row the receipt carried is returned under `row`, because the caller
+    that prints a verdict has to be able to say what it read it off.
+    """
+    try:
+        sys.path.insert(0, str(ROOT))
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "_dh", ROOT / "tools" / "delivery_health.py")
+        dh = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(dh)
+    except Exception as e:
+        print(f"  UNREACHED tools/delivery_health.py: {type(e).__name__}: {e}")
+        return None
+    body = _fetch(dh.RECEIPT_URL)
+    if body is None:
+        return None
+    try:
+        rows = {r["app"]: r for r in json.loads(body).get("deploy", [])}
+    except (ValueError, KeyError, TypeError) as e:
+        print(f"  UNREACHED {dh.RECEIPT_URL}: {type(e).__name__}: {e}")
+        return None
+    row = rows.get(PRESS_APP)
+    if row is None:
+        print(f"  FAIL    the receipt carries no row for {PRESS_APP}, so the "
+              f"press has never reported what it runs")
+        return None
+    found = dh.undeployed_commits(ROOT, PRESS_APP, row.get("runtime_sha"),
+                                  limit=PRESS_WINDOW, ref="origin/main")
+    found["row"] = row
+    return found
+
+
+# Which law each undeployed generator patch reaches. `press` says the press is
+# twelve days and twenty-eight commits behind; this says what is in those
+# twenty-eight, which is the fact the charter's structure-watch step turns on.
+LAW_CITED = re.compile(r"\blaw (\d+[a-z]?)\b", re.I)
+
+
+def law_anchors(text):
+    """Every `law N` citation in a generator, as (line number, label)."""
+    out = []
+    for n, line in enumerate(text.splitlines(), 1):
+        for m in LAW_CITED.finditer(line):
+            out.append((n, m.group(1)))
+    return out
+
+
+HUNK = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
+
+
+def changed_lines(diff):
+    """The new-side line numbers a `-U0` unified diff writes.
+
+    A pure deletion writes none, and git prints it as `+c,0`. Attributing
+    that to nothing loses every revert in the queue, and there is one:
+    `0251df0b` reverts law 8's url patch. So a deletion attributes to the
+    position the text left rather than to no law at all.
+    """
+    out = []
+    for line in diff.splitlines():
+        m = HUNK.match(line)
+        if not m:
+            continue
+        start = int(m.group(1))
+        count = 1 if m.group(2) is None else int(m.group(2))
+        if count == 0:
+            out.append(max(1, start))
+        else:
+            out.extend(range(start, start + count))
+    return out
+
+
+def laws_touched(anchors, changed, message=""):
+    """The law labels a commit's changes land under, and the orphan count.
+
+    `anchors` is `law_anchors` over the file as that commit left it, `changed`
+    the new-side lines it wrote, `message` its subject.
+
+    A change is attributed to the nearest citation at or above it, because the
+    generator is organised that way: the line naming a law is followed by the
+    prose that serves it. A citation the commit added itself sits on its own
+    line and attributes directly. A law named in the message counts too, since
+    this charter already requires a prompt diff to cite the law it serves, and
+    taking the author at their word costs nothing where the lines agree.
+
+    Changes above the first citation belong to no law, and the caller is told
+    how many rather than having them folded into law 1, which is what the
+    obvious boundary bug here would do and what would make this instrument
+    quietly flattering.
+    """
+    marks = sorted(anchors)
+    hit = {m.group(1) for m in LAW_CITED.finditer(message)}
+    orphan = 0
+    for line in changed:
+        best = None
+        for n, label in marks:
+            if n > line:
+                break
+            best = label
+        if best is None:
+            orphan += 1
+        else:
+            hit.add(best)
+    return hit, orphan
+
+
+def queued_verdict(label, commits):
+    """One law's structure-watch answer, from the queue alone.
+
+    QUEUED means a merged commit the press has not received already works this
+    law, so a fresh wording of the same rule is the third tinker the charter's
+    structure-watch step refuses. UNPATCHED means nothing in the queue reaches
+    it, so a prompt patch is this run's work rather than the deploy's.
+
+    Neither verdict says the patch is correct. It says a patch exists and has
+    not been seen by the press, which is the only part a grade can establish
+    before the deploy.
+    """
+    if commits:
+        return "QUEUED", (f"law {label} is worked by {len(commits)} queued "
+                          f"commit(s), so a fresh wording is the tinker the "
+                          f"structure-watch step refuses")
+    return "UNPATCHED", (f"no queued commit reaches law {label}, so a prompt "
+                         f"patch is this run's work and not the deploy's")
+
+
+CHANGED_CASES = [
+    ("@@ -1,2 +1,3 @@", [1, 2, 3]),
+    # A pure deletion. The revert in the live queue has this shape.
+    ("@@ -40,6 +39,0 @@", [39]),
+    # One line for one line, which git prints without the counts.
+    ("@@ -5 +5 @@", [5]),
+    # Two hunks in one commit, which is the ordinary generator patch.
+    ("@@ -5 +5 @@\n@@ -20,0 +21,2 @@", [5, 21, 22]),
+]
+
+LAWS_CASES = [
+    # A change inside law 14's section, attributed by position.
+    ([(10, "14"), (40, "1")], [20], "", {"14"}, 0),
+    # A change below the last citation belongs to that one and not the first.
+    ([(10, "14"), (40, "1")], [99], "", {"1"}, 0),
+    # Above every citation is nobody's law, counted rather than folded in.
+    ([(10, "14")], [3], "", set(), 1),
+    # The message's own citation counts, which is what the charter asks a
+    # prompt diff to carry, and it needs no changed line to be read.
+    ([(10, "14")], [], "Generator: law 8's url at the three write points",
+     {"8"}, 0),
+    # A sub-lettered law is its own label. Folding 12a into 12 would answer
+    # the density failure with the heading patch, which is the wrong answer
+    # to the one law in the 2026-10-27 grade that had no patch.
+    ([(10, "12"), (50, "12a")], [60], "", {"12a"}, 0),
+]
+
+
+def queued_cases():
+    """The two pure halves against their pinned cases, with no git and no net."""
+    rc = 0
+    for diff, want in CHANGED_CASES:
+        got = changed_lines(diff)
+        if got != want:
+            rc = 1
+            print(f"  FAIL    changed_lines wanted {want} and got {got}")
+    print(f"CHANGED_CASES                              "
+          f"{len(CHANGED_CASES) - (1 if rc else 0)} of {len(CHANGED_CASES)}")
+    rc2 = 0
+    for anchors, changed, msg, want, orphans in LAWS_CASES:
+        hit, orphan = laws_touched(anchors, changed, msg)
+        if hit != want or orphan != orphans:
+            rc2 = 1
+            print(f"  FAIL    laws_touched wanted {sorted(want)}/{orphans} "
+                  f"and got {sorted(hit)}/{orphan}")
+    print(f"LAWS_CASES                                 "
+          f"{len(LAWS_CASES) - (1 if rc2 else 0)} of {len(LAWS_CASES)}")
+    return rc | rc2
+
+
+def _law_sort(label):
+    """Law order as a reader of the canon expects it: 12 before 12a."""
+    m = re.match(r"(\d+)([a-z]*)", label)
+    return (int(m.group(1)), m.group(2)) if m else (999, label)
+
+
+def queued(labels=()):
+    """Which law each undeployed generator patch reaches.
+
+    The charter's structure-watch step says a structural fix that has failed
+    twice through prompt changes goes to the ledger rather than into a third
+    wording. Running that step needs one fact for each failed law: whether a
+    patch for it is already merged and waiting on a deploy. Four consecutive
+    runs established that fact by hand, out of commit subjects and memory, and
+    wrote it into the review as prose. The 2026-10-27 grade's section on why it
+    shipped no prompt diff is three paragraphs of this derivation and nothing
+    else, and the run before it refused a fourth wording of law 1 the same way.
+
+    It is mechanical, because the generator names the law each rule serves
+    inline, twenty-six times. Take the queued commits, take the lines each one
+    wrote, and read the citation standing above them.
+
+    The answer is per law and never one verdict, because the queue is almost
+    never empty and almost never complete. A run reads its failed laws off the
+    grade and looks them up here. Pass them as arguments to get the verdicts
+    alone: `check_voice.py queued 1 8 12a 14`.
+
+    An unreached receipt is a failure. A run that cannot read the queue and
+    concludes a law is unpatched would write the fifth wording of a rule that
+    is already fixed, which is the exact waste this command exists to prevent.
+    """
+    rc = queued_cases()
+    print()
+    found = press_deploy()
+    if found is None:
+        print("    nothing was read, so no law is called unpatched")
+        return 1
+    if "why" in found:
+        print(f"  FAIL    REFUSED: {found['why']}")
+        print("    the queue could not be bounded, so no law is called")
+        print("    unpatched and the structure-watch step has no input")
+        return 1
+    deployed = found.get("deployed_commit")
+    rows = _git_lines("log", "--format=%h%x09%cI%x09%s",
+                      f"{deployed}..origin/main", "--", PRESS_FILE)
+    by_law = {}
+    orphans = 0
+    for row in rows:
+        sha, _, subject = (row.split("\t") + ["", "", ""])[:3]
+        text = "\n".join(_git_lines("show", f"{sha}:{PRESS_FILE}"))
+        diff = "\n".join(_git_lines("show", sha, "-U0", "--format=",
+                                    "--", PRESS_FILE))
+        hit, orphan = laws_touched(law_anchors(text), changed_lines(diff),
+                                   subject)
+        orphans += orphan
+        for label in hit:
+            by_law.setdefault(label, []).append(f"{sha} {subject}")
+    print(f"deployed commit                            "
+          f"{deployed or 'unknown'}")
+    print(f"queued commits to the generator            {len(rows)}")
+    print(f"laws they reach                             "
+          f"{len(by_law)}")
+    print(f"changed lines under no citation            {orphans}")
+    print()
+    for label in sorted(by_law, key=_law_sort):
+        commits = by_law[label]
+        print(f"  law {label:<4}  {len(commits):>2} queued")
+        for c in commits[:3]:
+            print(f"              {c[:72]}")
+        if len(commits) > 3:
+            print(f"              and {len(commits) - 3} more")
+    if labels:
+        print()
+        for label in labels:
+            verdict, why = queued_verdict(label, by_law.get(label, []))
+            mark = "OK  " if verdict == "QUEUED" else "FAIL"
+            print(f"  {mark}    {verdict}: {why}")
+            rc |= verdict == "UNPATCHED"
+    print()
+    print("A law with a commit here is fixed and undelivered, so the grade")
+    print("that fails it says so and writes nothing. A law with none is this")
+    print("run's work. The queue is the difference between an editor who")
+    print("patches and one who rewords what is already patched.")
+    return rc
+
+
 def _git_line(*args):
     out = _git_lines(*args)
     return out[0] if out else None
@@ -5247,6 +5494,7 @@ def main():
     paths = sys.argv[2:]
     rc = 0
     takes_paths = {"measure", "links", "delivery", "compare", "firstuse",
+                   "queued",
                    "generator", "specimens", "standalone", "devices",
                    "captions", "marks", "provenance"}
     # `--live` is the answer to `editions`, inside one run. It replaces the
@@ -5281,6 +5529,7 @@ def main():
                      ("candidates", candidates),
                      ("deadlines", deadlines),
                      ("press", press),
+                     ("queued", queued),
                      ("ledger", ledger),
                      ("firstuse", firstuse),
                      ("generator", generator),
@@ -5298,7 +5547,7 @@ def main():
                      ("compare", compare), ("selfcheck", selfcheck)):
         if which == name or (which == "all"
                              and name not in ("selfcheck", "compare",
-                                              "press")):
+                                              "press", "queued")):
             print(f"==== {name} ====")
             if name in ("enforcements", "selfcheck", "candidates", "ledger",
                         "routed"):
