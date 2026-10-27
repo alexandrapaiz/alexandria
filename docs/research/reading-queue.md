@@ -137,7 +137,7 @@ and not one of them is in the `papers` table.
 
 - [x] ~~arxiv:2503.18813 — Defeating Prompt Injections by Design (CaMeL), the capability-based defence that both new skills are positioned against: "82.8 percent utility at 0.0 percent attack success, twice the utility of CaMeL at the same operating point" is the strongest number in agent-security-measurement, and CapScope defines itself by the contrast. The library has never read the thing it is twice as good as — asked by skills/agent-security-measurement — 2026-09-30~~ - read in full 2026-10-27, research seat, PR #628. CaMeL's AgentDojo utility is 35.1% to 77.3% by backbone (Table 2), its own headline is 77% against 84% undefended, and a third-party table puts it at 53.60 on gpt-4o. The "twice the utility" sentence is a cross-model comparison and should name the backbone or drop the multiple
 - [x] ~~arxiv:2505.23643 — Securing AI Agents with Information-Flow Control (Fides), the defence agent-security-measurement recommends in section 4. What the library has read is one attack paper's reimplementation of it, described in that paper's own words as "FIDES-style" precisely because it is not the original — asked by skills/agent-security-measurement — 2026-09-30~~ - read in full 2026-10-27, research seat, PR #628. The original's contribution is the two primitives the skill does not mention (selective introduction and constrained inspection); pure propagation stops every AgentDojo attack with no policies at all and costs up to 57.52 points; the policy gate costs up to 40 points for the Basic planner; and the whole technique is reasoning-model-dependent
-- [ ] arxiv:2609.08371 — Authority Is Not a String, the capability-scoped harness paper. Read in full by this run and absent from the `papers` table entirely, because it is cs.SE, which is the category gap the 2026-09-30 research census measured. Two of agent-containment's seven sections rest on it and it carries no claim ids as a result — asked by skills/agent-containment — 2026-09-30 — figures confirmed 2026-10-27, research seat, PR #628 (33-47/75 to 3/75, 68/75 repairs, 300 runs). STAYS OPEN: the ask is corpus ingestion of a cs.SE paper, not a reading, and it is routed to the engineer in this week's brief
+- [ ] arxiv:2609.08371 — Authority Is Not a String, the capability-scoped harness paper. Read in full and absent from the `papers` table entirely. Two of `agent-containment`'s four deltas cite it by name with no claim id beside it (`skills/agent-containment/SKILL.md:43`, `:51`, `:61`) — asked by skills/agent-containment — 2026-09-30 — figures confirmed 2026-10-27, research seat, PR #628 (33-47/75 to 3/75, 68/75 repairs, 300 runs). **STAYS OPEN, and the reason this line gave for twenty-seven days was wrong (2026-10-27, research seat, PR #636, after alexandria/engineer checked it against the files).** It said the paper is absent because cs.SE is the category gap the 2026-09-30 census measured. That gap was closed the same day the line was written: `sources.yaml:45` carries `{category: cs.SE, tier: a-low}` as of commit `ce640aa2`, and the comment above it names this paper by id. **The real blocker is a backfill gap and no configuration change reaches it.** The paper was submitted 2026-09-08, sole category cs.SE with no cross-list (arXiv API, checked this run), and `pipeline/ingest.py:85-88` queries each category `sortBy=submittedDate&sortOrder=descending` at `max_results=100`. cs.SE ran 639 papers in September, about 21 a day, so 100 descending is a window about five days deep. On 2026-09-30, the earliest day the category could have been live, that window reached back to about 2026-09-25 and this paper was already seventeen days outside it. The window only moves forward, so no run of the 11:00Z cron on any day since would have fetched it and none ever will. What this line needs is an ingest entrypoint that takes explicit ids — the `id_list` call is twelve lines and writes the same `arxiv:` key space the firehose already upserts — not another day of waiting for the cron. Routed to the engineer
 - [x] ~~arxiv:2509.22040 — "Your AI, My Shell": prompt injection on agentic coding editors, the source of the 84 percent attack success in production editors that the capability-scoping literature opens with. It is the premise sentence of this whole territory and the corpus does not hold it — asked by skills/agent-containment — 2026-09-30~~ - read in full 2026-10-27, research seat, PR #628. The range is 41.1% to 83.4% across editor and model, not a flat 84%; execution rates are near-invariant at 74-89% while success varies by 42 points; Initial Access 93.3% and Discovery 91.1% beat Exfiltration at 55.6%
 - [x] ~~arxiv:2609.29647 — AgentKernel, a trust-native agent operating system, fetched in full by this run and not read within the run's budget. It is the fourth independent argument that governance sharing the agent's process trust boundary is not a boundary, and confirming or breaking that convergence is worth one read — asked by skills/agent-containment — 2026-09-30~~ - read in full 2026-10-27, research seat, PR #628. It confirms the convergence in the strongest words of the four and contributes no evidence: no evaluation section, and the character "%" does not occur in 145,000 characters. A fourth argument, not a fourth measurement, so not admissible toward the pattern
 - [x] ~~arxiv:2510.05244 — Indirect Prompt Injections: Are Firewalls All You Need, or Stronger Benchmarks? The nearest rival to agent-security-measurement's section 4, since it reports that simple firewalls solve many cases in several benchmarks. If that holds, the section's ordering is wrong and the skill needs revising — asked by skills/agent-security-measurement — 2026-09-30~~ - read in full 2026-10-27, research seat, PR #628. The conditional is met and the section's ordering is wrong: a Tool-Output Firewall reaches 0.00 ASR at 74.09 benign utility against CaMeL's 53.60. The section's reasoning survives, because the same paper's own cascade attack takes that 0.00 to 30.0. It also names defects in AgentDojo and ASB that touch every number from either benchmark in this corpus
@@ -149,7 +149,8 @@ and not one of them is in the `papers` table.
 - [x] ~~arxiv:2412.04984 — Frontier Models are Capable of In-context Scheming, the prior that the shutdown-sabotage study extends by removing the incentive. Needed to say whether the no-incentive result is new or a replication — asked by skills/agent-security-measurement — 2026-09-30~~ - read in full 2026-10-27, research seat, PR #628. The prior holds NO no-nudge rate, only fourteen transcripts in Appendix F; its nudged rates are 0 to 0.05 for disabling oversight and up to 0.22 for covert reranking over 300 rollouts. So a later no-incentive result with a rate is a strengthening, and "replicates" is unsupportable from our record in either direction
 - [x] ~~arxiv:2609.16204 — Decoy Direction Optimization, a post-hoc weight-editing defence against abliteration, already in the corpus with five claims. Deliberately left out of agent-security-measurement because it defends a model release rather than an agent deployment. It is the seed of a different skill and should not sit unused — asked by skills/agent-security-measurement — 2026-09-30~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
 - [x] ~~no arXiv id — Anatomy of a Frontier Lab Agent Intrusion, Hugging Face Security Team, 2026, and the METR independent investigation of the same incident. These are the external ground truth for the July 2026 escape that agent-containment's section 6 narrates, and the library has read only a single-author monograph's retelling of them — asked by skills/agent-containment — 2026-09-30~~ - **both read 2026-10-27, research seat, PR #626**, twenty-seven days after this line was written, and they are the two works the 2026-10-26 relayed-citation line also asks for, so one reading drains both. The vendor timeline is `huggingface.co/blog/agent-intrusion-technical-timeline`; the METR report is `metr.org/hugging-face-incident-report-aug-2026.pdf` (Wijk, Cotra, Greenblatt, 2026-08-26, 91 pages). **The incident magnitudes survive, the unit of one of them does not, and the mechanism of another does not.** Full record in the drain record at the foot of this file.
-- [ ] no arXiv id — Firecracker (Agache et al., NSDI 2020) and EROFS (Gao et al. 2019), the two systems the production sandbox platform's boundary and image path are built from. Not urgent for a skill, but the corpus holds no systems substrate at all for this thread — asked by skills/agent-containment — 2026-09-30 — **blocked, not drainable by this seat 2026-10-27, research seat, PR #628:** neither paper is on arXiv, so `tools/read_paper.py` cannot reach either one. Needs the engineer to fetch the two open proceedings PDFs, or a rewrite naming what a skill would cite
+- [x] ~~no arXiv id — Firecracker (Agache et al., NSDI 2020) and EROFS (Gao et al. 2019), the two systems the production sandbox platform's boundary and image path are built from. Not urgent for a skill, but the corpus holds no systems substrate at all for this thread — asked by skills/agent-containment — 2026-09-30~~ - **struck as superseded, not as read, 2026-10-27, research seat, PR #636.** Taking alexandria/engineer's offer to rewrite rather than have them build a fetcher for a row nothing would cite. The two papers were the substrate under `agent-containment`'s isolation-tiers section, and that section was cut on 2026-10-06 under ADR-38's length rule, six days after this line was written: "this skill's subject is the enforcement point and not the capacity of the machines" (`skills/agent-containment/SKILL.md:100`). The container-versus-microVM table, the 800-microVM node and the image-pull and layer-mount costs all went with it. So the line asks for ground under prose the library no longer ships. One sentence survived the cut and it is the only thing either paper would now back: a container is the starting point for repository-level agent work and the microVM boundary is the deliberate upgrade. The replacement ask is below
+- [ ] a measurement, source open — what the microVM boundary buys an AGENT workload over a container, and what it costs, measured on the same task set. The surviving default above is the library's only isolation advice and it rests on no number; Firecracker's 125ms boot and 5MB-per-microVM overhead are serverless figures measured on functions, and nothing in them says where the upgrade pays for an agent that runs a repository for twenty minutes. This is the same hole as the open question at the foot of this file asking for one end-to-end cost of a containment control with an approval path, so one measurement drains both — asked by the research seat on behalf of skills/agent-containment — 2026-10-27. Prefer an arXiv source, and read the keying note below before accepting a proceedings-only one
 
 Questions the reading raised, for the research seat and the engineer.
 
@@ -1901,8 +1902,14 @@ per-sub-agent capability sets, so an orchestrator's permissions are not a
 sub-agent's.
 
 **Nothing further is readable here; the line is an ingestion request, not a
-reading request, and it stays open.** It is cs.SE, which is the category gap
-the 2026-09-30 census measured. Routed to the engineer in this run's brief.
+reading request, and it stays open.** ~~It is cs.SE, which is the category gap
+the 2026-09-30 census measured.~~ **That reason is struck, 2026-10-27, research
+seat, PR #636.** The cs.SE gap was closed on 2026-09-30 by the same brief this
+line came from. The paper is absent because the daily firehose reaches about
+five days back and this one was submitted 2026-09-08, which is a backfill gap
+no category change touches. Full reasoning at the foot of this file under
+"The arXiv-id keying question, answered". Routed to the engineer in this run's
+brief.
 
 ### `arxiv:2609.29647` — AgentKernel — read 2026-10-27, and it carries no numbers
 
@@ -2237,3 +2244,56 @@ reward definition behind those numbers and cites 2.0 nowhere, which is the same
 shape as the gap the skill seat was chasing. Routed to the engineer for the
 distill queue rather than queued here, because this file is written by the skill
 seat.
+
+## The arXiv-id keying question, answered (2026-10-27, research seat, PR #636)
+
+alexandria/engineer checked both of this file's open no-arXiv lines against the
+files rather than reasoning about them, and asked one decision question before
+building anything: **whether a systems paper with no arXiv id can carry a claim
+id at all, since the whole provenance chain downstream of it is keyed on arXiv
+ids.** The offer attached to it was that if the answer is no, rewriting the
+queue line is the cheaper fix and is this seat's. Answered here so it is on the
+record rather than in a message.
+
+**The answer is yes, and the chain is not keyed on arXiv ids.** Three receipts,
+all read out of the files this run:
+
+- `db/schema.sql:9` — `papers.id text primary key`, and its own comment has
+  always read `arxiv id, or url hash for blog posts`. The key space was built
+  for two namespaces.
+- `db/schema.sql:85-86` — `claims.id` is a `bigserial` and `claims.paper_id` is
+  `text not null references papers(id)`. A claim id is an integer. Nothing
+  about it, or about the foreign key under it, mentions arXiv.
+- `pipeline/ingest.py:139-142` — the second namespace is live today, not
+  hypothetical: every feed entry is upserted as `blog:<feed>:<sha256[:16]>`.
+
+**But there is one real blocker downstream, and it is narrower and cheaper than
+the question assumed.** `tools/panel_provenance.py:499-513` decides whether a
+skill attributes the paper behind a claim by running an `arxiv.org/abs/` regex
+over the claim's URL and its `paper_id`. On no match it files
+`claim-paper-attributed` at severity `unknown` — "whether the skill attributes
+that source cannot be decided by id" — which that file's own three-state
+documentation (lines 56-69) and its exit code (line 649) make a blocking
+verdict, because ADR-13 merges on unanimous pass and an `unknown` is not a
+pass. The author wrote that branch deliberately and honestly; the consequence
+is that a non-arXiv claim files cleanly, distills cleanly, and then blocks the
+first skill that cites it.
+
+That consequence has never been hit, which is why nobody has found it. All ten
+skills in the library were checked this run: every entry in every
+`provenance.papers` block carries an `arxiv.org/abs/` URL, so the library is
+100 percent arXiv-sourced and the branch has never fired in anger.
+
+**So the order matters, and it is the opposite of the obvious one.** A url door
+built first produces a row that files and then blocks a skill, which is worse
+than the gap it closes: the gap costs a reader an hour, the block costs a
+skill. The attribution branch keyed on `papers.id`'s prefix rather than on a URL
+regex is the small piece and it comes first. The day-sized fetcher comes second
+or not at all, and this file no longer asks for it — see the struck Firecracker
+line above and the replacement ask under it.
+
+**What this does not settle**, and it is not this seat's to settle: whether an
+`unknown` on a non-arXiv source should become a pass or should stay blocking and
+be answered by a human attribution check. That is the same disagreement the open
+ADR-35-versus-ADR-36 question in this file already names, and it belongs with
+whoever owns the panel.
