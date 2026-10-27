@@ -164,11 +164,20 @@ def _unterminated(value: str) -> bool:
 
 
 def frontmatter_problems(fm: str) -> list[str]:
-    """One line per value a YAML loader would refuse and this parser would guess.
+    """One line per value this parser cannot read unambiguously.
 
     The detector is separate from the parse because the two questions have
     different answers. `parse_frontmatter` is asked by tools that want a field;
     this is asked by the gate that wants to know whether the file is honest.
+
+    Not quite the same question as "would PyYAML refuse this", and the
+    difference is one-directional on purpose. Everything a loader refuses is
+    reported here, which is the defect this exists for, and the two are
+    measured to agree on all nine shipped skills. One construct is reported
+    that a loader accepts, the block scalar, because this parser does not
+    implement it and would read its continuation lines as keys. A parser that
+    says "I cannot read this" about valid YAML is honest; one that returns `|`
+    as the description is not.
     """
     problems: list[str] = []
     for raw in fm.split("\n"):
@@ -198,7 +207,19 @@ def frontmatter_problems(fm: str) -> list[str]:
         value = rest.strip()
         if not value or (value.startswith("[") and value.endswith("]")):
             continue
-        if _unterminated(value):
+        if value[0] in "|>":
+            # A block scalar. YAML reads the indented lines under it as the
+            # value; this parser reads them as keys. Nothing in the library
+            # uses one, and the honest answer to a construct a parser does not
+            # implement is to say so rather than to return the indicator.
+            problems.append(
+                f"`{key.strip()}:` opens a YAML block scalar, which this parser "
+                "does not implement. Write the value on one line, quoted.")
+        elif value.startswith("[") and not value.endswith("]"):
+            problems.append(
+                f"`{key.strip()}:` opens an inline array and never closes it, "
+                "so where the list ends is a guess")
+        elif _unterminated(value):
             problems.append(
                 f"`{key.strip()}:` opens with a quote and never closes it, so "
                 "where the value ends is a guess")

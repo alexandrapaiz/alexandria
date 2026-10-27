@@ -435,9 +435,18 @@ def test_the_refusal_fires_on_what_yaml_refuses_and_nothing_else():
         "description: the subject:",
         'description: "a method: the subject',
         "papers:\n  - Title: Subtitle, arxiv.org/abs/1",
+        "claims: [476, 477",
     ]
     for line in refused:
         assert registrar.frontmatter_problems(line), line
+
+    # One construct a loader accepts and this parser still refuses, which is
+    # the detector's only deliberate divergence from PyYAML. A block scalar is
+    # valid YAML and this parser would read its continuation lines as keys, so
+    # the honest answer is that it cannot read it rather than a guess.
+    assert registrar.frontmatter_problems("description: |\n  a line") , (
+        "a construct the parser does not implement has to be refused, not read"
+    )
 
 
 def test_no_shipped_skill_hides_a_value_a_loader_would_refuse():
