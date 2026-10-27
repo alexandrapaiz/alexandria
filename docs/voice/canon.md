@@ -1247,6 +1247,60 @@ diff adds, and a run may still draft for a listed surface as long as it names
 the candidate already open on it. That is the register's own rule, and it is
 the difference between superseding a draft and not knowing it exists.
 
+## The patch cites its law in the commit, not only in the review (added 2026-10-27)
+
+Step 3 of this charter says a prompt change cites the law it serves, and for
+five weeks that citation has gone into the review. A review is read once, by
+its author, on the day it is written. The commit is read by every run after.
+
+The cost is measurable and it was measured on 2026-10-27. Twenty-eight merged
+commits to `prompts/digest.md` were queued behind the deploy and two of them
+named a law in the message. So the question step 3 depends on, which is
+whether the rule a grade is about to reword is already fixed and waiting, was
+not recoverable from the queue, and four consecutive runs rebuilt it from
+commit subjects and memory. The 2026-10-27 grade's section on why it shipped
+no prompt diff is three paragraphs of that derivation and nothing else, and
+the run before it refused a fourth wording of law 1 the same way.
+
+So two lines, and neither is a new rule:
+
+- **The commit subject or body names the law.** `Generator: law 14's shape
+  rule renders the procedure as a list` rather than `Generator: the procedure
+  renders as a list`. Same sentence, one citation, and the fact survives into
+  a register that is read again.
+- **The generator cites the law at the rule that serves it.** Every law did
+  after 2026-10-27 and five did not before it: 3, 7, 8, 10 and 16 carried
+  their rule with no citation naming it, two of them failures in the live
+  grade that day. The rules were all present. The name was not, so nothing
+  could be asked whether the generator covers a law a grade had just failed.
+
+```
+python3 docs/voice/check_voice.py queued 1 3 8 12a 14
+```
+
+That is the structure-watch step with a machine under it. It reads the queue,
+attributes each commit to a law twice, by the message and by position, and
+answers one of four states per law. `QUEUED` means the fix is merged and
+waiting on the deploy, so the grade fails the law and writes nothing.
+`UNPATCHED` means the patch is this run's work. `UNNAMED` means commits landed
+in the law's span and none said so, which is the ordinary case until the first
+line above becomes habit, and it is an instruction to read those commits
+rather than an answer.
+
+`UNCITED` is the state worth carrying, because it is the one that looks like
+another from outside. It means the generator never names the law, so the law
+owns no span, so the queue cannot be asked about it at all. The verdict that
+resembles it is `UNPATCHED`, and acting on that would mean writing a rule the
+generator already carries. An instrument that answers a question it cannot
+answer is worse than one that refuses, which is ban list 146, and an
+instrument flattering about the one law with no patch is the worst available
+case. The first version of this command on 2026-10-27 reported law 12a worked
+by 21 of 28 commits, contradicting a grade written two hours earlier, and it
+was wrong: law 12a's citations own a 325-line span of a 2,191-line file, so
+the number measured citation sparsity and not anybody's intent. It is reported
+with its span now for that reason. A count without its span reads like
+evidence.
+
 ## Maintenance
 
 The writer seat proposes canon changes in the ledger. The laws
