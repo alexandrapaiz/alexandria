@@ -1,117 +1,89 @@
 ---
 name: context-window-engineering
-description: Two measured findings about spending a finite token budget that a strong model does not give unprompted. Use when a fixed KV cache budget forces a choice of eviction rule and you are weighing a scoring heuristic against a cheaper one; when you are about to adopt a ranking or scoring function for compaction and need to know what baseline it has to beat; when long-document accuracy falls as the input grows even though the window is not full; when evidence buried mid-input is overlooked while the same evidence near the start or the end is picked up; or when a multi-hop question over material larger than the window is answered by folding chunks into a running summary.
-version: 4
-status: active
+description: Two measured findings about spending a finite token budget that a strong model does not give unprompted. Use when a fixed KV cache budget forces a choice of eviction rule and you are weighing a scoring heuristic against a cheaper one, or need the baseline that heuristic has to beat; when you are choosing what fraction of a KV cache to discard and need the accuracy floor at that ratio first; when a context-compaction or summarise-and-restart pass keeps dropping facts from a long transcript that the agent needs again much later in the same session; when long-document accuracy falls as the input grows even though the window is not full; when evidence buried mid-input is overlooked while the same evidence near the start or the end is picked up; or when a multi-hop question over material larger than the window is answered by folding chunks into a running summary.
+version: 6
+status: provisional
 provenance:
   extracted: 2026-09-29
-  revised: 2026-09-30
+  revised: 2026-10-26
   validated: ""
-  differential_screen: "2026-09-30, bare-arm pre-screen on the benchmark-class subject (skills/_validation/results/2026-09-30-bare-arm-differential-screen.md). 2 of 4 candidates qualified, both as partials. cwe-c2 and cwe-c4 passed bare and their sections were cut."
+  differential_screen: "2026-09-30, bare-arm pre-screen on the benchmark-class subject (skills/_validation/results/2026-09-30-bare-arm-differential-screen.md). 2 of 4 candidates qualified, both as partials. cwe-c2 and cwe-c4 passed bare and their sections were cut. The material added on 2026-10-26 is unscreened: this seat has no route to either eval arm today, no GROQ_API_KEY reaches the run, and pipeline/budget.py knows no provider that serves the benchmark subject. Both are queued in docs/agents/pending-workflow-changes.md."
   reviews:
     - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
   revisions:
+    - "2026-10-26 (ADR-37 maintenance, the relayed-citation repair): the engineer seat landed a fifth value on a claim's evidence grade, `relayed`, for a claim whose subject is another work's result, plus an `attributed_to` column naming that work and an `evidence-relayed` finding in the panel's adversary. The caveat that goes with it is this seat's and it is the Caveats bullet on second-hand sentences. Two limits a reviewer of this file needs. The grade is written when a claim is distilled, so none of the eight claim ids above carries it and none of the roughly two thousand rows already in the corpus does either, which means the adversary's new finding will report nothing on this skill and that silence is evidence of nothing being labelled rather than of nothing being second-hand. And the one load-bearing second-hand sentence this file ever rested on was found by a seat reading two papers, not by the guard, and it was already repaired in the 2026-10-26 revision below. No new claim id is filed and no number in this file changed."
+    - "2026-10-26 (ADR-37 maintenance, ADR-35 the paper wins): the 2026-09-29 reading queue this skill filed was drained by the research seat (docs/research/notes/2026-10-26-queue-drain-context-window.md, 14 of 15 ids in full), and this seat re-read the nine papers the corrections rest on. Four changes to what a reader is told. (1) The old delta 1 framing inherited a misattributed sentence from its own source paper, which explains away two cited evaluations as having lost the prompt and is wrong about both: Hold Onto That Thought runs no random-eviction arm at all, and Not All Thoughts Need HBM does run one, measures the gap at 4 to 10 points, and concludes that no amount of smarter scoring fixes a destructive operation, which is Random Attention's own thesis. Nothing independent was explained away and this file no longer says it was. (2) The absolute floor now sits next to the relative result: permanent eviction of half the cache puts reasoning accuracy at 0 to 2.5 percent, so the eviction ratio decides whether the task survives and the policy choice is the cheap one. (3) 'Random eviction is the best policy in all four settings once protected' was Random Attention's result stated as the general case; the independent check finds protected-random a floor at 79.5 percent of ceiling against 89 to 95 percent for five scorers. (4) 'The trace is nearly free to cut' is withdrawn: cutting the cache lengthens traces, worst at low budgets and sometimes without terminating, and a trace can be indexed thousands of tokens later at four times the window. Claims 79, 80, 280 and 292 are filed for confidence and boundary revision in docs/ideas.md; none is a deprecation and this run had no database to identify further ids. `status` moved from `active` to `provisional`, because ADR-38 rule 7 earns `active` on a positive differential delta on the benchmark subject and no such delta exists for this skill."
     - "2026-09-30 (ADR-38, the quality bar): 403 lines to under 120. Cut the read-once-state section and the planner-executor section because the bare subject gave both unprompted and in more useful form (cwe-c2, cwe-c4); cut the streaming-ingestion section because both its papers are multimodal video and nothing in it has ever been measured on a text agent. Claims 85, 265-268, 111, 112, 115 and 68-71 leave the provenance with those sections. Claim 85 is in deprecated_claims and this skill no longer cites it, which resolves the ADR-37 trigger by removing the citation and not by accepting the deprecation: the resolution stands in docs/ideas.md and the two rows still do not contradict each other."
   claims: [78, 79, 80, 280, 291, 292, 293, 295]
   papers:
     - "Random Attention: Rethinking KV Cache Eviction for Efficient Reasoning — arxiv.org/abs/2609.03430"
-    - "Revisiting Complete Reasoning Traces for Post-Training — arxiv.org/abs/2609.07103"
+    - "Protection Is (Nearly) All You Need: Structural Protection Dominates Scoring in Globally Capped KV Eviction — arxiv.org/abs/2605.18053"
+    - "Hold Onto That Thought: Assessing KV Cache Compression on Reasoning — arxiv.org/abs/2512.12008"
+    - "Not All Thoughts Need HBM: Semantics-Aware Memory Hierarchy for LLM Reasoning — arxiv.org/abs/2605.09490"
+    - "Prefix Sliding for Efficient Test-Time Scaling — arxiv.org/abs/2608.26070"
+    - "Coverage-Driven KV Cache Eviction for Efficient and Improved Inference of LLM — arxiv.org/abs/2606.29563"
+    - "How Much Cache Does Reasoning Need? Depth-Cache Tradeoffs in KV-Compressed Transformers — arxiv.org/abs/2604.17935"
     - "PARSER: Read in Parallel, Reason in Depth for Long-Context LLM Agents — arxiv.org/abs/2609.06702"
+    - "When Does Divide and Conquer Work for Long Context LLM? A Noise Decomposition Framework — arxiv.org/abs/2506.16411"
+    - "Long Context Scaling: Divide and Conquer via Multi-Agent Question-driven Collaboration (XpandA) — arxiv.org/abs/2505.20625"
+    - "Is Grep All You Need? How Agent Harnesses Reshape Agentic Search — arxiv.org/abs/2605.15184"
+    - "Revisiting Complete Reasoning Traces for Post-Training (abstract only, no HTML) — arxiv.org/abs/2609.07103"
+    - "When to Memorize and When to Stop: gated recurrent memory with early exit (abstract only, no HTML) — arxiv.org/abs/2602.10560"
 ---
 
 # Context window engineering
 
-Two findings, both about a baseline you are probably not running.
+Two findings about spending a finite token budget. Generic practice already says keep the system prompt, summarise when the window fills, and split a long document into chunks, and none of that is repeated below. What is specific here is that the published spread between cache-eviction policies is largely a measure of how much of the prompt each one accidentally keeps, that the variable deciding whether the task survives is how much you discard rather than how you choose it, and that a long input is read better by many small readers re-queried in rounds than by one reader or one running summary. Each delta ends in a procedure with its thresholds named.
 
 ## Apply: the builder's checklist
 
-1. **Your ranking heuristic has beaten protected-random at the same budget.** Until it
-   has, you do not know the scorer does anything (delta 1).
-2. **Compaction protects the whole prompt outside the score's reach**, where the
-   measured effect lives (delta 1).
-3. **A multi-hop reader re-queries its chunks each round from a lead that never sees the
-   document**, rather than folding chunks into a summary once (delta 2).
-4. **You have shuffled the input and reversed the evidence order.** If accuracy moves,
-   document order has become dependency depth (delta 2).
+1. **Both ends of the context are protected outside the score**, at ten percent of capacity each, rather than one end or a scoring bonus (delta 1).
+2. **The eviction ratio was chosen before the policy.** Permanent eviction of half the cache puts reasoning accuracy at 0 to 2.5 percent, whatever the scorer (delta 1).
+3. **Your ranking heuristic has beaten protected-random at the same budget** by more than the throughput the null arm hands you free (delta 1).
+4. **Decode is priced as well as memory**, because a tighter cache makes traces longer and sometimes non-terminating (delta 1).
+5. **A fixed prefix-plus-window is used only where the middle is generated trace**, never where the middle is input the agent has to read (delta 1).
+6. **A multi-hop reader re-queries its chunks each round from a lead that never sees the document**, untrained first, rather than folding chunks into a summary once (delta 2).
+7. **Chunk size was searched on five samples per candidate**, not assumed small (delta 2).
 
-## Delta 1: the null policy is the baseline, and almost nothing beats it
+## Delta 1: protect both boundaries, then choose the ratio, and the policy last
 
-*Validation: no trial and no consumer report. Bare-arm screen cwe-c1, 2026-09-30: partial. Asked to choose an eviction policy, the bare subject recommended keeping the prompt plus sinks plus a recency window, so the prescription itself is not a delta; it never proposed a random-eviction control and never priced the protected set against the scorer. What qualified is the null arm and the magnitudes. Eval tasks cwe-t1, cwe-t2.*
+*Validation: no trial and no consumer report. Bare-arm screen cwe-c1, 2026-09-30: partial. Asked to choose an eviction policy, the bare subject recommended keeping the prompt plus sinks plus a recency window, so the prescription itself is not a delta; it never proposed a random-eviction control and never priced the protected set against the scorer. What qualified is the null arm and the magnitudes. The 2026-10-26 additions, which are the protection budget, the absolute floor and the decode cost, are unscreened. Eval tasks cwe-t1, cwe-t2, cwe-t9, cwe-t10.*
 
-Pinning the entire prompt and then evicting **uniformly at random, per attention head,
-computing no score at all** is comparable to the strongest training-free cache evictor
-across four models and six reasoning tasks, and significantly ahead in 31 of 60 baseline
-comparisons (Random Attention, claim 78), while serving **32 to 43 percent more tokens
-per second** for skipping the scoring pass.
+Four independent setups now isolate the same effect, and the pattern no one of their papers states is that **the published spread between eviction policies is largely a measure of how much prompt protection each one accidentally provides** (the synthesis is ours, not the papers', and every piece of it is measured). Give every training-free evictor the same rule of keeping the prompt and most of the difference between them disappears: the method whose score retained the least of the question gains up to **22.5 points**, the one retaining the most never gains more than **1.9**, and the three baselines then land within **2.2 points** of one another in every setting (Random Attention). Take protection away and seven policies across ten models collapse together to **F1 at or below 0.064**, while reserving **ten percent of capacity at each end** recovers 69 to 90 percent of the uncapped ceiling at 13 percent retention (Protection Is (Nearly) All You Need). Where nobody protects anything the spread is three quarters of the metric: GSM8K at a 128-token budget runs **0.80 for the best method against 0.00 for the worst and 0.81 at full cache** (Hold Onto That Thought). And in test-time scaling, the ablation that removes nothing but the prefix performs poorly on longer tasks because the model forgets which problem it is solving or which tools it can use (Prefix Sliding).
 
-The ablation is the part to keep. Give every method the same rule, keep the prompt, and
-most of the difference between methods disappears: the method retaining the least of the
-question **gains up to 22.5 points**, the one already retaining the most **never gains
-more than 2** (claim 79). Random eviction scores as low as 0.231 unprotected and is the
-best policy in all four settings once protected.
+Two things this file said until 2026-10-26 and no longer says. Protected-random is a **floor rather than a winner** outside its own paper's regime: at a 256-entry cap it scores **0.250, which is 79.5 percent of ceiling, against 0.282 to 0.300 for five scoring policies**, a gap not significant at p=0.14 that closes to nothing by 512 (p=0.67) (Protection Is (Nearly) All You Need). And the relative result was never permission to compress. Permanently evicting low-importance tokens collapses reasoning accuracy to **0 to 2.5 percent when half the cache goes**, heavy-hitter eviction holds **2 percent at budgets at or below 256 tokens**, and the same cumulative-attention score used to place tokens in slower memory instead of destroying them holds **65 against a 71 percent full-cache baseline at 3 percent eviction**, for **5 to 7 percent** transfer overhead (Not All Thoughts Need HBM).
 
-The decision rule: a compaction scorer is an optimisation with a control, and the
-control is protected-random at the same budget. Run it first.
+1. Pin the system prompt, task statement and question unconditionally, outside the score, and pin the recent window the same way. **Ten percent of capacity at each end** is the knee: 5 percent recovers 78.3 percent of ceiling, 10 percent recovers 89.4, and 15 and 20 percent are not significantly better. At a matched 52 slots, both ends at 10 percent reach **89.8 percent** of ceiling while either end alone at 20 percent reaches **55.6 and 60.6** (Protection Is (Nearly) All You Need).
+2. Decide the eviction ratio before the policy, and treat a ratio near half as a different question from which scorer to run. Where the budget is that tight, move tokens to slower memory and prefetch them rather than discarding them, which is what buys 65 percent against 2 (Not All Thoughts Need HBM).
+3. Build the null arm: same budget, same protection, uniform random eviction per head for the rest. Adopt a scorer only when it beats the null by more than the **32 to 43 percent** serving throughput the null hands you for skipping the scoring pass (Random Attention), and expect single digits of ceiling that shrink as the budget loosens.
+4. Spend the next increment on coverage rather than on importance. Scores correlate across heads, so every head keeps the same tokens; buying cross-head and cross-layer coverage deliberately is worth **1.61 points on average across 16 LongBench subsets and up to 10.35 on one of them** (Coverage-Driven KV Cache Eviction), while a learned credit estimator is statistically indistinguishable from protected LRU at every capacity tested, all p above 0.12 (Protection Is (Nearly) All You Need).
+5. Price decode as well as memory. Low budgets trigger **longer** reasoning traces, worst for the weakest policy, with one exhibited run that circles and never answers, so the published guidance leads with avoiding a micro-budget regardless of method (Hold Onto That Thought).
+6. Pick the policy family off where the middle of the context comes from, which is the one split here that no single paper states, so the split is ours, not the papers', with all three branches measured. Use a fixed prefix-plus-window only where the middle is generated trace and the evidence is in the prompt, which is reasoning and test-time scaling, where it is **3x faster untrained at maintained performance** (Prefix Sliding). Where the middle is input the agent must read, a rigid window is the wrong family: a sink-plus-window policy with protection scores **0.184 against 0.282** for protected LRU because it cannot retain adaptively in the middle (Protection Is (Nearly) All You Need). Where the trace itself is indexed later, size the window above the span of the reference: LiveCodeBench needs **16384 against 4096** everywhere else, because the model writes code, thinks in comments for thousands of tokens, and returns to code that has left the window (Prefix Sliding).
 
-1. Pin the system prompt, task statement and user question unconditionally, not as a
-   scoring bonus. Outside the score.
-2. Build the null arm: same budget, same protection, uniform random eviction per head
-   for the rest.
-3. Adopt the scorer only if it beats the null by more than the **32 to 43 percent
-   throughput** the null hands you free.
-4. Expect the question to be unrecoverable and the trace nearly free to cut; the trace
-   restates itself (claims 80, 280).
+## Delta 2: for multi-hop, re-query in parallel rounds, and chunk on a searched size
 
-## Delta 2: for multi-hop, re-query in parallel rounds; map-reduce once is not it
+*Validation: no trial and no consumer report. Bare-arm screen cwe-c3, 2026-09-30: partial. The bare subject diagnosed the serial recurrence and volunteered the shuffle-and-reverse test, so the diagnostic is not a delta; it then prescribed one-shot parallel extraction into a retrieval index, losing the iterative conditioning that carries multi-hop. The chunk-size procedure and the untrained result are 2026-10-26 additions and are unscreened. Eval tasks cwe-t4, cwe-t5, cwe-t11.*
 
-*Validation: no trial and no consumer report. Bare-arm screen cwe-c3, 2026-09-30: partial. The bare subject diagnosed the serial recurrence and volunteered the shuffle-and-reverse test, so the diagnostic is not a delta; it then prescribed one-shot parallel extraction into a retrieval index, losing the iterative conditioning that carries multi-hop. Eval tasks cwe-t4, cwe-t5.*
+Bind one frozen lightweight subagent to each chunk, give a lead agent the question but **never the document**, and run scatter-gather rounds: the lead broadcasts a focused query, each subagent reads its own chunk in parallel and returns a finding or abstains, and the lead conditions its next query on what came back (PARSER). On multi-hop QA from 7K to 896K tokens this beat the strongest sequential-memory baseline by **5.7 points on average with a 4B backbone and 12.0 at 896K**, and a 9B version beat a frontier model with a native million-token window by **6.3 points** (PARSER). Varying evidence position, dependency order and distance independently over 512 questions each, sequential memory swings on all three and parallel reading stays flat, because every chunk is re-read under a fresh query each round (PARSER). Two results narrow the prescription usefully. The architecture needs no training: an untrained question-driven partition loop with selective replay reports **20 percent over full-context, retrieval and prior agent baselines with a 1.5x speedup** from 1K to 1M tokens (XpandA). And chunking is a trade rather than a free win, between the cross-chunk dependence and aggregation error it adds and the length-driven confusion it removes, which is also why **a weaker model with chunked processing can beat a stronger model in one shot** independently of this architecture (When Does Divide and Conquer Work).
 
-Bind one frozen lightweight subagent to each chunk, give a lead agent the question but
-**never the document**, and run scatter-gather rounds: the lead broadcasts a focused
-query, each subagent reads its own chunk in parallel and returns a finding or abstains,
-and the lead conditions its next query on what came back (PARSER, claim 291). On multi-
-hop QA from 7K to 896K tokens this beat the strongest sequential-memory baseline by
-**5.7 points on average with a 4B backbone, 12.0 at 896K**, and a 9B version beat a
-frontier model with a native million-token window by **6.3 points** (claim 292).
-
-Varying evidence position, dependency order and distance independently over 512
-questions each, sequential memory swings on all three and parallel reading stays flat,
-because every chunk is re-read under a fresh query each round (claim 293).
-
-The decision rule: one-shot map-reduce into an index gives up the property that matters.
-The lead's second query must be able to depend on the first round.
-
-1. Chunk, and keep chunks small. One reader over the whole document loses accuracy,
-   worst on the long subsets.
-2. Put a frozen reader on each chunk. **Floor is 4B**: 2B costs six points of average
-   accuracy, 9B saturates, a frontier model here is wasted spend.
-3. Run rounds, not one pass; the lead never sees the document.
-4. Train only the lead if you train anything (claim 295).
-5. Require a quoted span with every finding (ours, not the paper's): a subagent sees
-   only its chunk, so an underspecified query yields an unverifiable finding the lead
-   may over-trust.
+1. Chunk only when the input is long enough that length-driven confusion dominates, and size the chunks so that dependencies sit inside them. On a 128K task the measured optima were **8K to 32K**, not the smallest option (When Does Divide and Conquer Work).
+2. Search the size rather than assuming it. **Five samples per candidate size** matched an exhaustive sweep's score on **four of six** model-task pairs against **one of six** for three samples: on one pair three samples picked 2K and scored 0.55 where five picked 16K and scored 0.63, equal to the sweep (When Does Divide and Conquer Work, counted off its tables by this seat rather than stated there).
+3. Put a frozen reader on each chunk. **Floor is 4B**: 2B costs six points of average accuracy, 9B saturates, and a frontier model here is wasted spend (PARSER).
+4. Run rounds, not one pass, and keep the lead blind to the document. Start untrained and train only the lead if you train anything (PARSER, XpandA).
+5. Require a quoted span with every finding. A subagent sees only its chunk, so an underspecified query yields an unverifiable finding the lead may over-trust, and a lexical hit is such a span by construction: inline grep beat inline vector retrieval for every harness and model pair tested on long-memory QA, whose answers are licensed by a small set of literal spans (Is Grep All You Need).
+6. Treat the aggregator as a noise source and measure it, rather than as a wire (When Does Divide and Conquer Work).
 
 ## Caveats
 
-- Cache-eviction evidence is decode-phase eviction, short prompts, traces of several
-  thousand to 32K tokens at 10 to 50 percent compression, four models, three of one
-  family, all grouped-query attention with 8 or 10 KV heads per layer. **That is the
-  floor for the per-head half**: under multi-query or latent attention only the prompt
-  protection carries over, and workloads where the input itself fills the cache are
-  outside the regime.
-- Claim 79 reads flatter than its paper, which establishes that random eviction is
-  *competitive*, not that scores carry no information. Four comparisons in its tables
-  favour a baseline significantly, code reasoning is the systematic exception on the two
-  larger models, the throughput figure inverts at short generations, and claim 80's
-  text-level redundancy is inferred, not measured.
-- Parallel-reading evidence is multi-hop QA on two datasets, 4B and 9B backbones from
-  one family, and says nothing about tasks where no chunk can be judged in isolation.
-  Claim 280's paper was read in abstract only, arXiv serving no HTML.
+- **This skill is unmeasured.** No delta carries a differential number, and `status: provisional` says exactly that. It replaced `status: active` on 2026-10-26 for this reason and not because of any finding below.
+- Cache-eviction evidence is decode-phase eviction on reasoning traces of several thousand to 32K tokens, plus a globally capped long-document harness. **The per-head half is the narrower one**: protection itself replicates from 32 KV heads down to 8 and into a hybrid stack where only a quarter of layers evict a cache at all, while per-head scoring is worth a further 0.03 to 0.04 F1 against protection's 0.11 to 0.14, and mixture-of-experts and latent-attention architectures are untested in both papers (Protection Is (Nearly) All You Need).
+- **The cost of a signal-free policy compounds with dependency depth**, which none of this file's measured sources bounds. Under oblivious random cache selection the joint success probability over pointer-doubling stages decays exponentially in the number of stages, against exactly s/n and flat for adaptive selection, and the usable rule of thumb is that cache size buys hop depth about linearly (How Much Cache Does Reasoning Need). The product lower bound there is conjectured rather than proved, the bound binds quantitatively only in a narrow or low-precision regime, and pointer chasing is a proxy for reasoning rather than a benchmark of it.
+- **Full cache is not the ceiling.** A decoding-enabled heavy-hitter scorer beat full-cache reasoning on GSM8K at a 256-entry budget, **0.82 against 0.81**, and the paper says in its own words that attention-based eviction sometimes surpasses full-cache performance (Hold Onto That Thought). So a compression step that matches full cache is not the best case available.
+- **Delta 2's margin is against the state of the art as of its paper's submission.** Its sequential-memory baselines are superseded by a gated design with an update gate and an early exit, reported at up to 400 percent faster inference than the baseline PARSER measures against, and nobody has run the comparison (When to Memorize and When to Stop, read at the abstract only).
+- Parallel-reading evidence is multi-hop QA on two datasets with 4B and 9B backbones from one family, and says nothing about tasks where no chunk can be judged in isolation.
+- **One of this file's sources characterised two other papers, and that sentence was never evidence here.** Random Attention's section 5.1 explains away "the large gaps others report between random retention and signal-based selection" in two cited works. Both were read in full on 2026-10-26: arxiv.org/abs/2512.12008 runs no random-eviction arm for a lost prompt to confound, and arxiv.org/abs/2605.09490 runs one, measures the gap at **4 to 10 points**, and concludes that no amount of smarter scoring fixes a destructive operation, which is the citing paper's own thesis. So nothing independent was explained away. The rule this leaves behind, and it holds for every skill in this library: a source's account of a third paper is a line in the reading queue until somebody here reads the work it points at, and never a finding a delta rests on.
+- Every delta is revised or withdrawn when the evidence behind it moves, and the four corrections dated 2026-10-26 in the frontmatter are what that looks like. The claim ids in the provenance block are the addresses a contradiction lands on.
 
 ## What this file no longer carries
 
-Read-once protected regions and the planner-executor boundary were cut 2026-09-30
-because the bare subject gave both unprompted and better; streaming ingestion was cut
-because its papers are video and nobody measured the transfer. Still do the first two.
-Receipts, with the bare answers, in `skills/_validation/results/2026-09-30-bare-arm-
-differential-screen.md`.
+Read-once protected regions and the planner-executor boundary were cut 2026-09-30 because the bare subject gave both unprompted and better; streaming ingestion was cut because its papers are video and nobody measured the transfer. Still do the first two. Receipts, with the bare answers, in `skills/_validation/results/2026-09-30-bare-arm-differential-screen.md`. Withdrawn 2026-10-26 rather than cut: **the trace is nearly free to cut, because it restates itself** (Random Attention's redundancy argument and Revisiting Complete Reasoning Traces). Three measurements go the other way, and the sentence is withdrawn on the page rather than deleted from it, because a reader who acted on it is owed the reason.
