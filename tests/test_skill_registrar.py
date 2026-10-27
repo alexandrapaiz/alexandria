@@ -151,7 +151,8 @@ def test_every_real_skill_yields_a_row():
     `reg.FRONTMATTER_QUARANTINE_EXPIRES`.
     """
     rows, problems = reg.read_skills()
-    excused = reg.waiting_problems(rows, problems) | reg.quarantined_problems(problems)
+    excused = (reg.waiting_problems(rows, problems)
+               | reg.quarantined_problems(problems))
     assert [p for p in problems if p not in excused] == [], problems
     waiting = reg.waiting_problems(rows, problems)
     assert len(rows) >= 6

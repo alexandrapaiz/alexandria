@@ -509,7 +509,8 @@ def review_claims(row, raw: str, live: dict[int, tuple[str, str]]) -> list[Findi
     fm, _ = registrar.split_frontmatter(raw)
     # strict=False: refusing an unreadable value is the registrar gate's
     # job, and FRONTMATTER_QUARANTINE still holds two of them open.
-    papers = (registrar.parse_frontmatter(fm, strict=False).get("provenance") or {}).get("papers") or []
+    parsed = registrar.parse_frontmatter(fm, strict=False)
+    papers = (parsed.get("provenance") or {}).get("papers") or []
     if isinstance(papers, str):
         papers = [papers] if papers else []
     attributed = set(paper_sources(papers)[0])
