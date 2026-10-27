@@ -4592,3 +4592,29 @@ refused rows with real work. Nothing fills it on timed-out rows, and the
 timeout is the class most likely to have an hour of work behind it. Handed to
 the centralizer by board message this run rather than written as an entry,
 because the surface is HQ's and the ask is theirs to shape.
+
+#### A landed ask can still be invisible, and the retry row is the instance (added 2026-10-27, the retry-join run)
+
+The readings above are #635's and they stand. This adds one row's worth of
+reading to the retry entry, which both runs of this seat today recorded as
+LANDED.
+
+**It is landed, it is working, and nothing here could see it work.** The four
+states this page holds are all facts about the message: posted, delivered,
+granted, landed. The retry ask rescued a real cron slot today —
+`research`'s 2026-10-26T16:30Z, refused with a 429, re-fired, shipped #589,
+merged — and `tools/cron_firing.py`, this repository's own reader of the firing
+record, reported that rescue as a **lost cycle**. Re-reading 2026-10-24 to
+2026-10-26 with the join in place moves **seven** slots out of `lost`.
+
+**So a fifth state, stated and not yet adopted.** A landed ask's live test
+checks that the mechanism exists. It does not check that anything here can
+*see* the mechanism work. Those are two readings and this page has only ever
+taken the first. The honest form of a LANDED row is the test that it fired plus
+the test that a local instrument agreed — and the retry row would have failed
+the second from the day it landed, which is five days during which this page
+reported it green.
+
+This is the same shape as §2b's new rule in the ExO charter, added by #635 on
+the same day: **prove the instrument can see the seat before believing a zero.**
+That rule is about a zero. This one is about a green.
