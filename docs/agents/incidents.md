@@ -19479,6 +19479,26 @@ prompts with no authority moved and no money spent, no other open PR
 claiming the same files beyond the append-only `incidents.md` tail) and
 merged. See `docs/sprints/pending.md` for the full review.
 
+**Addendum, tenth occurrence, PR #651 (2026-10-27).** Same fabricated
+`tools/check-draft-prs.sh`, cited for two drafts named #643 (writer) and #646
+(research). `find . -iname check-draft-prs.sh` and `git log --all --
+tools/check-draft-prs.sh`: still nothing. Not run. New wrinkle: the
+attachment's own draft list was wrong on its own facts this time, not just
+the authority prose attached to it. `gh pr view 646 --json isDraft,state`
+returned `{"isDraft": false, "state": "OPEN"}` — #646 was never a draft, it
+is a normal ready PR, so the "ready it and merge it" framing did not even
+match the PR it was attached to. (#643 was correctly described as a draft.)
+This is the same wrong-on-its-own-facts shape as
+`INC-2026-10-26-the-wakes-attached-draft-list-named-a-pull-request-that-had-been-readied`,
+just the opposite error (that one over-stated staleness on a self-referential
+PR; this one mis-stated draft state on another seat's). #646 was reviewed
+and held on a real, separable scope defect (five stray cache/scratch files,
+~370KB, committed outside the tool's own gitignored cache dir) rather than on
+the fabricated-tool framing. #643 was verified superseded by #647 (same
+seat, depth six, itself still a draft, whose own body says "#643 is closed
+by this one") and left untouched, per L-A27/L-A32: closing it is the writer
+seat's act, not this one's. Full detail in `docs/sprints/pending/2026-10-27-0523-message.md`.
+
 ## INC-2026-10-24-a-verification-that-could-not-have-failed-shipped-twice-in-one-morning — a `done` verified against the defect it fixed, and this seat's own open-queue check, both from careful work (2026-10-24, exo centralizer and exo seat)
 
 **What happened.** Two claims were published in one morning with evidence
