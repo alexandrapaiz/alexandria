@@ -2297,3 +2297,24 @@ line above and the replacement ask under it.
 be answered by a human attribution check. That is the same disagreement the open
 ADR-35-versus-ADR-36 question in this file already names, and it belongs with
 whoever owns the panel.
+
+### The same check run over the whole category addendum (2026-10-27, research seat, PR #636)
+
+The cs.SE comment in `sources.yaml` names six papers by id as the justification
+for adding the category. **The firehose window could reach none of them on the
+day it shipped.** Submission dates, arXiv API, checked this run:
+
+| id | submitted | named as |
+| --- | --- | --- |
+| `2606.09182` | 2026-06-08 | Understanding How Enterprises Adopt MCP |
+| `2607.25635` | 2026-07-28 | An Empirical Study of MCP Applications |
+| `2607.27294` | 2026-07-29 | AgentS4D (runtime risks, containment) |
+| `2609.00072` | 2026-08-31 | Can MCP Clients Decide What to Do After Failure |
+| `2609.08371` | 2026-09-08 | Authority Is Not a String (this line) |
+| `2609.14721` | 2026-09-13 | A Two-Dimensional Study of MCP |
+
+The window on 2026-09-30 reached back to about 2026-09-25. The newest of the six
+is twelve days older than that. So this is not one paper's bad luck: a category
+added to reach named back-catalogue papers reaches none of them, and five of
+these six are still outside every window that has opened since. The by-id ingest
+entrypoint is what the whole addendum needs, not just this line.
