@@ -267,7 +267,9 @@ def waiting_on_the_queue(row, raw: str) -> str:
     if row.claim_ids:
         return ""
     fm, _ = registrar.split_frontmatter(raw)
-    provenance = registrar.parse_frontmatter(fm).get("provenance") or {}
+    # strict=False: refusing an unreadable value is the registrar gate's
+    # job, and FRONTMATTER_QUARANTINE still holds two of them open.
+    provenance = registrar.parse_frontmatter(fm, strict=False).get("provenance") or {}
     papers, _unreadable = paper_sources(provenance.get("papers") or [])
     if not papers:
         return ""
@@ -300,6 +302,20 @@ def review_file(row, raw: str, problems: list[str]) -> list[Finding]:
 
     for problem in problems:
         if f"skills/{slug}/" not in problem:
+            continue
+        if registrar.quarantined_problems([problem]):
+            # A frontmatter value no parser can read, on a skill that shipped
+            # before the refusal existed. The registrar's quarantine holds it
+            # open with a date and an owner, and the fix is a write into
+            # `skills/` that the skill seat already has in flight, so this
+            # reviewer says `unknown` for exactly as long as that is true. The
+            # ADR-36 gate still blocks, the same way it does for a draft
+            # waiting on the queue.
+            findings.append(Finding(
+                "registrable", "unknown",
+                f"{problem} Quarantined until "
+                f"{registrar.FRONTMATTER_QUARANTINE_EXPIRES}: "
+                f"{registrar.FRONTMATTER_QUARANTINE[slug]}."))
             continue
         waiting = waiting_on_the_queue(row, raw) if "cites no claim ids" in problem else ""
         if waiting:
@@ -337,7 +353,9 @@ def review_file(row, raw: str, problems: list[str]) -> list[Finding]:
             "starts at 1."))
 
     fm, body = registrar.split_frontmatter(raw)
-    parsed = registrar.parse_frontmatter(fm)
+    # strict=False: refusing an unreadable value is the registrar gate's
+    # job, and FRONTMATTER_QUARANTINE still holds two of them open.
+    parsed = registrar.parse_frontmatter(fm, strict=False)
     provenance = parsed.get("provenance") or {}
 
     papers = provenance.get("papers") or []
@@ -489,7 +507,9 @@ def review_claims(row, raw: str, live: dict[int, tuple[str, str]]) -> list[Findi
             "row in claims"))
 
     fm, _ = registrar.split_frontmatter(raw)
-    papers = (registrar.parse_frontmatter(fm).get("provenance") or {}).get("papers") or []
+    # strict=False: refusing an unreadable value is the registrar gate's
+    # job, and FRONTMATTER_QUARANTINE still holds two of them open.
+    papers = (registrar.parse_frontmatter(fm, strict=False).get("provenance") or {}).get("papers") or []
     if isinstance(papers, str):
         papers = [papers] if papers else []
     attributed = set(paper_sources(papers)[0])
@@ -529,7 +549,9 @@ def review_validated(row, raw: str, panel: dict | None) -> list[Finding]:
     it is the library making its own strongest claim about itself.
     """
     fm, _ = registrar.split_frontmatter(raw)
-    provenance = registrar.parse_frontmatter(fm).get("provenance") or {}
+    # strict=False: refusing an unreadable value is the registrar gate's
+    # job, and FRONTMATTER_QUARANTINE still holds two of them open.
+    provenance = registrar.parse_frontmatter(fm, strict=False).get("provenance") or {}
     validated = str(provenance.get("validated") or "").strip()
     if not validated:
         return [Finding("validated-field", "note",
