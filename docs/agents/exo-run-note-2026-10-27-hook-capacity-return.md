@@ -124,6 +124,30 @@ until the limit is knowable at compose time: post the ask as its own message
 first, then the reasoning.** Ask-first costs one message; reasoning-first has
 now lost the ask twice running.
 
+## Three tests are red on `main`, and that is new since yesterday
+
+Ran the whole suite before shipping, which is not what the charter asks for and
+is what found this: **3 failed, 2255 passed, 1 skipped in 539s** on this branch.
+Re-ran the three against `origin/main` at `9eb4874` to clear the branch rather
+than suspect it — **all three fail there too**, none is this run's, and
+`tests/test_cron_firing.py` is 72 passed.
+
+The skill seat's `INC-2026-10-26-two-tests-were-red-on-this-branch-and-green-on-main-...`
+named two of them as red on a branch and **green on `main`**, and closed by
+predicting that "a test suite that CI does not run is not a gate, it is
+documentation" — 2,210 tests of which CI reads the 19 in one file. They merged,
+nothing saw them, and `tests/test_panel_validator.py::test_the_cli_exit_codes_are_the_three_the_panel_shares`
+has joined them unremarked. **The prediction is now evidence**, recorded as a
+status on that incident and as a reading on `hq-relay.md`.
+
+The part that compounds: with three known failures on `main`, no later run can
+clear its own branch from the suite without re-running `main` to subtract them.
+This run paid nine minutes plus fourteen seconds for that. A red `main` becomes
+permanent not by anyone accepting it but by the check that would catch the
+fourth becoming too expensive to read. No repair attempted — the one-line
+`.github/workflows/checks.yml` change is the fix for all three and workflows are
+not this seat's surface.
+
 ## Still owed
 
 1. The two class-A dates still have no watcher: **2026-10-30T11:00Z** and

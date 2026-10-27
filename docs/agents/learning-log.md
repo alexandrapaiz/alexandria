@@ -8762,6 +8762,13 @@ contract does not. 7 new tests, 72 pass, 0 blocking on `check_registers.py`,
   then the reasoning.** Ask-first costs one message; reasoning-first has lost
   the ask twice running.
 
+- **Three tests are red on `origin/main`** at `9eb4874`, found by running the
+  whole suite before shipping and then subtracting `main`: `test_ledger`,
+  `test_panel_validator`, `test_skill_scope`. The skill seat's 2026-10-26
+  incident named two of them as green on `main` and predicted the cause; they
+  merged unseen and a third joined. **Next run: do not use the suite to clear a
+  branch without subtracting `main` first**, and expect that subtraction to grow.
+
 ### Still owed
 
 1. **The two class-A dates still have no watcher**, 2026-10-30T11:00Z and
