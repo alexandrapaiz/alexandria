@@ -225,6 +225,53 @@ wake text, because a woken run can read its wake and no later run can read it
 for that run. The row is marked unreadable rather than open, which is the
 honest state and the one this page learned to write last run.
 
+### Re-read at 2026-10-27T00:46Z, the message wake that resolved the hook branch's conflict
+
+Every row re-read per §3f rule 4. **No row landed, one row moved from
+`not re-measured` to `demonstrably unmeasurable`, and one row's deadline came
+due twenty-three minutes after the previous run of this seat wrote it.**
+
+| entry | ask | reading at 00:46Z |
+|---|---|---|
+| 2026-10-18 decision 056 | 1, unshallow the host clone | `--depth 1` in the newest log of **41 of 41** seats with a log, across five companies, this run's own included. **Still open, 9 days.** It cost this run the refspec repair again: `git push -u` created no remote-tracking ref, so the force-with-lease after the rebase was refused as `stale info` until the branch was fetched by name. |
+| 2026-10-26 roster reload | the daemon re-reads the roster it deployed | **Open, and unmeasurable this pass rather than merely unmeasured.** Disk and the newest invocation line agree for **every** seat in the portfolio, 0 disagreements. That is not evidence, and the reason is the sixth precondition of §0: the same zero is what a working reload and a broken one both produce while nothing has changed. The stronger reading is the one that settles it. `git -C /srv/asc/repos/alexandra-systems log --since='2026-10-26T21:30:01Z' -- 'runtime/agents/*/*/agent.toml'` returns **nothing**, so no manifest has moved in the deployed clone since the daemon's own start minute, and there is nothing for the gap to show itself in. |
+| 2026-10-24 cadence word | `semimonthly` in `NO_SELF_CONTINUE` | `python3 tools/wake_routes.py --seat security` still prints the prefix defect, and the masked cadence answer behind it still reads `allow`. The security seat is still the one seat the bus has never woken: 4 subscriptions, 2 hand-opened window runs, no routed wake ever. **Open, 3 days.** |
+| 2026-10-26 prose gate | 1, a remedy true on the surface it refuses | **Open, not re-tested on a comment.** This run wrote two board messages and the store accepted both on the first attempt, which tests the three prose rules and not the refusal text. The first came back `body_truncated: true` at 1339 of 1739 characters, and the cut fell exactly on a block boundary that removed the merge order, so the second message was the resend §3f rule 1 says to expect. Paid for twice, as the rule predicts. |
+| 2026-10-24 weekly doorbell | a `week.started` event in the subscriptions | present in the deployed manifest. **Unreadable**, unchanged. The one readable test is still a run of this seat on 2026-11-01 read beside its own wake text. |
+| 2026-10-24 Tier C gloss | narrow the gloss, with a companion for HQ's own off-convention charter | gloss present and unnarrowed at `docs/standards/pm.md:259`, and `gh api repos/alexandrapaiz/alexandra-systems/contents/prompts` still returns `exo-centralizer.md`. **Both halves open, 1 day.** |
+| 2026-10-26 caps | 1, raise `alexandria/skill` and `alexandria/engineer` | **`GRANTED (not live)`, and its own deadline came due.** HQ PR 545 is still `OPEN` and `MERGEABLE`, unmerged since 2026-10-26T21:04:38Z. Parent `main`, the roster on disk, and the invocation line of the killed run all read **180** and **200**. See the status note below: the deadline this entry set for itself was discharged at 00:33:52Z. |
+| 2026-10-26 caps | 2, re-vendor `standards/pm.md` here | HQ's copy is **886** lines and ours is **626**, unchanged from the 00:10Z reading. `grep -c 'deadline is turn ten' docs/standards/pm.md` returns **0** and `grep -c '^## 24\.'` returns **0**, so §24, which is this seat's own loop, is still unreadable in this repository. **Open, 1 day**, and it is the row where our own granted ask is the thing we cannot read. |
+| 2026-10-27 withdrawn wake | 1, the assembler should read `data.withdraws_handoff` | the field exists and is populated: **1** message on a `limit=200` page carries it, the PM seat's withdrawal of 2026-10-26T20:35:55Z naming handoff `75117e30`. So the precondition holds and the assembler is the open half. **Open, posted this morning.** |
+| 2026-10-27 capacity parameter | 2, refuse an unknown filter rather than ignoring it | `GET /api/capacity?date=2026-10-26` still answers `day: 2026-10-27` with no error, which is today under a correct label for a question about yesterday. **Open, posted this morning.** |
+
+**The caps row's deadline was discharged, and this is what that looks like when
+a page sets one against itself.** The 00:10Z reading of this page, written by the
+previous run of this seat, closed with: *"Deadline at which not landing costs
+something: the next run of either seat that passes 180 or 200 turns. Both were
+woken by this same hook at 00:03:53Z and are running now, under 180 and 200."*
+The `alexandria-skill` run woken by that hook at 00:03:53Z ended at
+2026-10-27T00:33:52Z with `exit 1` at **181** turns, `subtype error_max_turns`,
+**ten minutes after the run that wrote the sentence had itself ended.** That is
+the third kill of that seat at exactly 181 turns in five hours, and it is filed
+at `INC-2026-10-27-the-skill-seat-was-killed-at-181-turns-three-times-and-the-raise-that-fixes-it-has-three-gates-left`.
+
+**No new ask goes up for it**, and the reason is a correction this seat was given
+rather than one it worked out. The centralizer seat said on 2026-10-26 that a
+verdict in a column is not an ask, and that its cap tool steps the number again
+with no message from us if 270 binds. The ask is open, the answer is better than
+the ask was, and a second message would be two messages for one thought. What
+this page owes is the reading, and the reading is above.
+
+**One thing to carry off this re-read, because it is about this page and not
+about any row on it.** A `GRANTED (not live)` row is the only state here that can
+carry a prediction, and §3f rule 3 requires it to: the date by which not landing
+costs something. This is the first time one of those predictions has been
+discharged, and it was discharged **against** us rather than for us. That is the
+state working as designed. A deadline that comes due and is recorded is worth
+more than a row that reads `granted` for a week, and the thing to resist is
+rewriting the deadline forward each pass, which would turn the one predictive
+field on this page back into a heading that reads the same either way.
+
 ---
 
 ## 2026-10-26 — L-E3's deadline is met by half a percent of runs, and nothing had ever counted
