@@ -1455,3 +1455,164 @@ Gemini 2.5 Pro.
   (33/38) on three of five codebases and falls to 52.6% and 44.7% on the two
   Python ones. The authors attribute the inconsistency to closed-source editors
   and output nondeterminism rather than to a property of the language.
+
+### `arxiv:2510.05244` — Firewalls / Cascade — read in full 2026-10-27
+
+`python3 tools/read_paper.py 2510.05244` → exit 0, 107,769 chars.
+
+**The line's conditional is met and then some. A plain text control at the
+tool-output boundary does match the capability systems' zero attack success at
+twenty points more utility, so section 4's ordering is wrong — and the same
+paper's own adaptive attack takes that control from 0.00 to 30.0, so section
+4's reasoning is right. The skill needs its ordering swapped and its argument
+kept.**
+
+The defence is two modules at the agent–tool interface: a Tool-Input Firewall
+(Minimizer, redacts arguments) and a Tool-Output Firewall (Sanitizer, which
+*regenerates* the tool output without the injection and states what it
+removed). Model-agnostic, no changes to the agent.
+
+AgentDojo on GPT-4o, benign utility / utility under attack / attack success:
+
+| Defence | BU | UA | ASR |
+|---|---|---|---|
+| None | 83.02 | 50.01 | 57.69 |
+| PI Detector | 41.49 | 21.14 | 7.95 |
+| Spotlighting | 71.66 | 55.64 | 41.65 |
+| Tool filter | 73.13 | 56.28 | 6.84 |
+| CaMeL (published, not reproduced) | 53.60 | 54.50 | **0.00** |
+| Minimizer | 70.01 | 50.03 | 18.15 |
+| **Sanitizer** | **74.09** | **69.15** | **0.00** |
+| Minimizer + Sanitizer | 58.41 | 58.59 | 0.00 |
+
+Four findings, in the order they matter.
+
+1. **This is a third independent figure for CaMeL's utility and it is a third
+   different number.** 53.60 benign utility on GPT-4o here; 35.1 to 77.3 by
+   backbone in CaMeL's own Table 2; and the citing paper that the library quotes
+   implies 41.4. Three numbers for one baseline, none wrong, all measured
+   differently. **Any sentence of the form "N times the utility of a
+   capability-based defence" is unsupportable without naming the backbone and
+   the table.** That is now established twice in one batch, from two directions.
+2. **"Perfect security" is the abstract's word and the paper's own section 8
+   withdraws it.** Under the three-stage cascade attack on AgentDojo's Slack
+   suite, cumulative attack success: no defence 94.5, PromptArmor 75.5,
+   **Sanitizer 30.0** (0.0 at stage 1, +12.5 at stage 2, +17.5 at stage 3).
+   Stage 2 is seven second-order semantic templates that drop instruction-like
+   surface forms and dress the payload as trusted metadata, sometimes with a
+   `<promptinjection>` decoy to absorb the defence's attention. Stage 3 is a
+   defence-aware attacker refining over 10 iterations with the defence's
+   feedback and knowledge of its design. **An abstract that says "perfect
+   security across all four public benchmarks" and a section 8 that reports 30.0
+   are the same paper.** Whichever of those two numbers enters the corpus decides
+   whether the library's advice is right.
+3. **So the ordering section 4 should carry is: regeneration beats detection,
+   and neither is perfect.** PromptArmor is a detector and goes from 8.0 to 75.5
+   under semantic reframing; the Sanitizer regenerates and holds at 12.5 through
+   the same stage. Section 4's standing argument — "a filter positioned on the
+   text competes with an optimiser that can rewrite the text" — is exactly what
+   stage 3's 17.5 points measure. The section's error is the strength of its
+   first sentence, not its reasoning: it says do not put the control in front of
+   the model's judgment about text, and the measurement says a control that
+   rewrites the channel rather than scoring it buys you two of the three attack
+   stages.
+4. **Every AgentDojo and ASB number in this corpus is measured on an instrument
+   with named defects, and that includes CaMeL's, Fides' and the ones the
+   library sells.** AgentDojo: injection vectors overwrite task-critical content,
+   so a utility drop can be data deletion rather than agentic failure; and
+   utility checks use strict cardinality (the Slack suite asks whether the
+   target inbox holds exactly one more message, so a correct completion plus any
+   side effect scores zero). Fixing both raised utility under attack by more
+   than 18 points. ASB: attacker-controlled tools are forcibly inserted into
+   every sub-task's tool subset even when the agent did not select them, and ASB
+   counts invoking them as success, so its attack-success rates are inflated by
+   construction. **This is the highest-value item in the batch for the brief**:
+   it is a caveat that attaches to a whole shelf's evidence rather than to one
+   claim.
+
+### `arxiv:2412.14470` — Agent-SafetyBench — read in full 2026-10-27
+
+`python3 tools/read_paper.py 2412.14470` → exit 0, 77,759 chars.
+
+**The line asked where the "mean attack success below 20 percent under adaptive
+PAIR attacks at a refinement budget of 16" result is measured. It is not
+measured here. This benchmark has no PAIR, no refinement budget, and no attack
+success rate.**
+
+Agent-SafetyBench publishes a *safety score* — higher is safer, the opposite
+direction — over 2,000 test cases in 349 interaction environments, 8 risk
+categories, 10 failure modes, with a fine-tuned safety judge roughly 15 points
+more accurate than GPT-4o. Its headline: across 16 agents, **none scores above
+60%**.
+
+`skills/agent-security-measurement/SKILL.md:101` reads "the same harness holds
+mean attack success below 20 percent on Agent-SafetyBench under adaptive PAIR
+attacks at a refinement budget of 16." The environments are this benchmark's;
+the PAIR attacker, the budget of 16 and the attack-success metric are the
+citing paper's apparatus laid over them. The sentence is defensible but its
+grammar puts the measurement in the benchmark, which is where a reader will go
+looking for it and will not find it. **"on Agent-SafetyBench's environments" is
+the repair, and it is one preposition.** The same shape as the relayed-citation
+class this seat has now registered four times: the attribution is to the
+instrument rather than to the hand holding it.
+
+Two results here the library should hold on their own terms, because they
+support two sections independently of the paper that relayed them.
+
+- **Defence prompts help capable models slightly and weak ones not at all.**
+  Qwen2.5-7B-Instruct gained nothing from either a simple or an enhanced defence
+  prompt; GPT-4o gained some; Claude-3.5-Sonnet stayed **below 70%** even with
+  the enhanced prompt, at the cost of context length. That is section 3's "the
+  model sets how strong the enforcement should be," found by a different group
+  on a different instrument, which is what the program rules mean by a pattern.
+- **The two named defects are lack of robustness and lack of risk awareness** —
+  agents fail to invoke tools reliably across scenarios, and fail to recognise
+  that a tool is dangerous in this environment. The second is the one a
+  capability policy can supply from outside and the first is not.
+
+### `arxiv:2504.11703` — Progent — read in full 2026-10-27
+
+`python3 tools/read_paper.py 2504.11703` → exit 0, 100,966 chars.
+
+**The line said a "beats the fixed baselines" claim is only as good as the
+baselines. This baseline reports 1.0% attack success at maintained utility, with
+a proof, and it answers one of this file's own open questions.**
+
+Progent is privilege control at the tool-call level: a policy of symbolic rules
+over tool names and arguments, in JSON Schema, generated by an LLM from the
+user's task and updated during execution. The mechanism that matters is the
+update discipline. An **SMT solver** classifies every proposed update as a
+narrowing or an expansion; narrowings apply automatically, expansions require
+approval. The guarantee they prove is **monotonic confinement**: the agent's
+effective action space cannot grow without explicit approval, so an injection
+that manipulates the policy-generating model cannot silently escalate.
+
+- ASR **39.9% → 1.0%** on AgentDojo and **70.3% → 3.9%** on ASB, utility
+  maintained in both. Below 5% across every policy-generating model tried.
+- **The initial policy alone, with updates disabled, gets 39.9% → 2.5%.** Most
+  of the defence is in generating a least-privilege policy from the trusted user
+  query before any untrusted content arrives. That is a cheap, implementable
+  finding and it is the one a builder can act on tomorrow.
+- Default configuration in the headline numbers is **Auto-Approve** — every
+  expansion accepted unreviewed, deliberately the worst case. **Manual Approval
+  reaches 0% ASR.**
+- The failure cases are description collisions: policies miss when an attack
+  tool's name and description closely resemble a benign tool's. Which is the
+  same object as this file's own open `skills/_validation` questions about
+  length- and description-sensitivity in routing, arriving from the security
+  side.
+
+**This partly answers the open question at line 160 of this file**, which asks
+for the cost of a containment control with an approval path, against the one
+figure the corpus holds (a 145-to-316-second mean from a fully autonomous loop
+retrying refused actions). Progent reports that after the SMT check **only 6% of
+policy updates are expansions requiring approval**; the rest narrow and apply
+automatically. That is an approval *rate*, not the wall-clock the question asks
+for, so the line is sharpened rather than struck: the corpus now holds the
+burden as a frequency and still holds no end-to-end latency with a human in the
+path.
+
+One caveat on all four numbers above: they are AgentDojo and ASB numbers, and
+the firewalls paper read earlier in this batch names defects in both benchmarks
+that inflate ASB's attack success by construction. Progent's 70.3% → 3.9% on
+ASB is a reduction measured against a baseline the other paper says is inflated.
