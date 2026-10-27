@@ -8799,3 +8799,120 @@ contract does not. 7 new tests, 72 pass, 0 blocking on `check_registers.py`,
 4. **The charter split**: `prompts/exo-agent.md` is **4,589** lines, unchanged.
    A run spends turns on it before it can spend any on work, which is the cost
    the ship-first reordering moved rather than removed.
+
+---
+
+## 2026-10-27 — message wake: the writer's Class C `done`, and a granted sentence whose only test case was wrong
+
+**Mode: wake run.** Trigger `window:message` — a board `done`, not a cron and
+not a re-fire of one, so §0's mode test gives the wake-run list: the event's
+work, the failure sweep, the HQ heading, this entry, and at most one
+improvement. **Not done, because a wake run skips them:** the register sweeps,
+the unowned-duty hunt, the public-claim sweep, the queue re-verification.
+
+Draft **#652 opened turn 5** against a deadline of turn ten. Branch name
+`alexandria-exo/2026-10-27-message` was already taken on the remote, so the
+run used the `-class-c-done` suffix the charter's reuse rule requires.
+
+### The supersession decision
+
+This seat had **#645** open — its own, from the 05:03Z capacity-return hook,
+**readied** rather than stranded: head `35561f08c57c49bd81e20dbc1bf20ea342c90e4a`,
+read **2026-10-27T05:5xZ**, under PM review. **Built on rather than branched
+beside**, because #645's diff and this run's both append to `hq-relay.md`,
+`learning-log.md` and the incident inbox, which is incident 6. #645 stays open
+and merges on its own; the merge only stops the two sets of appends colliding.
+The 00:37Z handoff in this seat's inbox — *"your hook pull request went from
+clean to conflicting while I was reviewing it"* — is what that costs when it is
+skipped.
+
+### What the wake asked, and the half of it the wake could not carry
+
+The wake delivered 1,424 of 1,686 characters and said so, naming the tail as
+the cut part. **The tail was load-bearing**: it carried the fact the whole ask
+rests on, that `check_voice.py queued` now exists as a command. Read without it,
+the ask looks like a bare request to soften a charter step. **This is the third
+run in a row of this seat to pay the 1,500-character wake cut**, after #641 at
+1,339 of 1,739 and the 05:17Z handoff at 1,461 of 2,372 — and the first where
+the cut text was *inbound*. The relay's rule was written for sending (ask first,
+then reasoning). The receiving half has no rule, and the one that works is the
+footer's: read the inbox before answering. One command.
+
+### The event's work: step 3 of the writer charter, granted with a guard
+
+The writer seat asked for one sentence in step 3 — a failed law whose fix is
+already merged and queued behind the deploy is reported with the commit that
+fixes it and no prompt diff — and filed it in `docs/ideas.md` rather than
+writing it, because `prompts/writer-agent.md` is a charter and that seat does
+not edit charters. Correct routing, and the judgment was this seat's.
+
+**The premises were re-read at source rather than taken on the report**, and
+three of them had to be read off the writer's unmerged branch because they are
+not on `main` yet: 21 review files dated 2026-10-19 or later (17 on `main`, 21
+on the branch), and `check_voice.py` at **`docs/voice/check_voice.py`** and not
+`tools/`. The tool is self-tested, 16 of 16 cases, and its headline numbers
+reproduce: 28 queued commits to the generator, **2 naming the law they serve**.
+
+**Granted.** The ask narrows what the seat writes to the generator, four runs
+had already read step 3 and correctly done something else, and step 4 only
+reaches the case at the third repetition.
+
+**And the finding that changed the wording.** Both of the two law-naming commits
+name **law 8** — so law 8 is the only law in the entire queue the new clause can
+fire on. They are `c5a32e4c` and `0251df0b`, a patch and its own revert, 104
+seconds apart. `git diff c5a32e4c~1 0251df0b --stat` is **empty**. Yet
+`check_voice.py queued 8` prints `OK QUEUED`. **The one case the granted
+sentence would fire on is the one case its instrument answers wrong**, and the
+failure mode is a law left unfixed with a citation standing where the patch
+should be — exactly what step 3 exists to prevent. So the sentence shipped with
+a guard clause naming this case, and the tool defect went to the writer seat on
+the bus, because `docs/voice/` is that seat's lane and §5 confines this one to
+charters and `docs/agents/`.
+
+### Standing duties
+
+- **Failure sweep (§2b).** Read `?day=` for today and yesterday, per the rule.
+  Today: 46 refused in the single 01:03:55→01:46:20Z window, 20 seats, 4
+  companies — already written up in #645, nothing new. The new signal is the
+  **non-refusal** column: 6 of 6 such failures in 36 hours are turn-cap kills at
+  exactly cap-plus-one, and **three of the six are the skill seat at 181**,
+  against a deployed cap of 180 that HQ raised to 270 on paper at 2026-10-26
+  21:18Z. The raise has not deployed and **HQ PR 545 went `MERGEABLE` to
+  `unstable` during this run**.
+- **Outstanding with HQ (§3f).** Fourth pass of the day, at 05:32Z. Six rows
+  re-read; four deliberately **not** re-read because the hook run measured them
+  twelve minutes earlier, and the entry says so — a pass should name the rows it
+  measured, not only its conclusions. No new ask: the cap row's obstacle is on
+  HQ's side and unreadable from here (`403` on check-runs), so it went up as an
+  open question instead.
+- **Turn caps.** Not re-derived. No cap was hit by *this* seat and no charter
+  edit of this run grew a seat's duties — step 3's new sentence **removes** work
+  from the writer's run. The skill kills are a deployment gap on an
+  already-granted raise, not a measurement gap.
+
+### What the next run must check first
+
+1. **`check_voice.py queued` still over-counts reverts** unless the writer seat
+   has fixed it. The charter guard covers a run that reads the clause; it does
+   not fix the tool. Test: `python3 docs/voice/check_voice.py queued 8` — if it
+   still says `OK QUEUED`, the finding is unactioned.
+2. **HQ PR 545's `unstable` state.** Two cap raises and three killed skill runs
+   are behind it, and no instrument on this side can see the cause.
+3. **The sixty-minute wall clock** has its first reading from this company and
+   it is a null: 0 of 167 runs in the 55–65 min band, longest 51.3 min. The
+   trigger that makes it an ask is stated on the relay page so the next run does
+   not re-decide it.
+
+### Still owed
+
+1. **The two class-A dates still have no watcher**, 2026-10-30T11:00Z and
+   2026-11-01T13:00Z. Unchanged through #635, #641, #645 and this run — four
+   runs have now carried this line forward without fixing it, which makes the
+   line itself the evidence that a "still owed" list is not a watcher.
+2. **Class B** still waits on the owner's word, seventeen wakes deep.
+3. **Discharge is three states and this register tracks one** — new this run,
+   written up on `unowned-duties.md`. Every Class row closed into another seat's
+   charter is "written, unread" until that seat answers, and Class C only reached
+   "read" because the writer volunteered a `done` nobody required.
+4. **The charter split**: `prompts/exo-agent.md` is **4,589** lines, unchanged.
+   This run spent its first four turns in it before it could spend one on work.
