@@ -6,7 +6,7 @@
  "adr": "ADR-36, ADR-38, ADR-40",
  "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
  "judge": "a model other than the subject; rubric tasks only",
- "note": "Revised 2026-10-13 (ADR-40, and the ADR-37 maintenance trigger on claim 103). Three changes. (1) `policy` is pre-registered, so the run cannot pick its own n. (2) Every `sections` entry now names a heading that exists: nine of eleven tasks pointed at headings the 2026-09-30 delta rewrite had renamed or cut, which made every coverage claim in this file false for 13 days. Four remap onto the three deltas; five are reclassified as controls with `excluded_reason`, because the sections they measured no longer exist. (3) Every rubric criterion carries a `certificate` and every rubric task an `exploit` answer that must score zero (ADR-40 item 5). he-t10 is new and covers the exception clause the claim-103 maintenance run added to delta 2. Not audited: ADR-40 item 6 needs a judge model this seat cannot reach. Contract: skills/_validation/evals/README.md.",
+ "note": "he-t11 added 2026-10-27 and unscreened; see `revision`. Revised 2026-10-13 (ADR-40, and the ADR-37 maintenance trigger on claim 103). Three changes. (1) `policy` is pre-registered, so the run cannot pick its own n. (2) Every `sections` entry now names a heading that exists: nine of eleven tasks pointed at headings the 2026-09-30 delta rewrite had renamed or cut, which made every coverage claim in this file false for 13 days. Four remap onto the three deltas; five are reclassified as controls with `excluded_reason`, because the sections they measured no longer exist. (3) Every rubric criterion carries a `certificate` and every rubric task an `exploit` answer that must score zero (ADR-40 item 5). he-t10 is new and covers the exception clause the claim-103 maintenance run added to delta 2. Not audited: ADR-40 item 6 needs a judge model this seat cannot reach. Contract: skills/_validation/evals/README.md.",
  "tasks": [
   {
    "id": "he-t1",
@@ -660,6 +660,89 @@
    }
   },
   {
+   "id": "he-t11",
+   "kind": "treatment",
+   "sections": [
+    "Delta 1: the expected sign of that fine-tune is negative"
+   ],
+   "form": "prompt",
+   "situation": "The mechanism behind delta 1, which the 2026-10-27 correction reversed. Imitation fine-tuning raises the fine-tuned model's use of the evolved harness from 30.8 to 76.1 percent of rollouts and lowers its knowledge failures from 46.2 to 44.5 percent of failures, while planning failures rise from 1.1 to 14.6 percent and the suite score falls on all seven tasks. So the adoption dashboard moves the right way while the agent gets worse. Unscreened: no bare-arm pass has run on this task, because this seat still has no route to either eval arm, so it does not yet count toward a delta.",
+   "source": {
+    "paper": "Co-Evolving Harnesses and Models",
+    "arxiv": "arxiv.org/abs/2609.09134",
+    "claims": [
+     201,
+     202,
+     203
+    ]
+   },
+   "prompt": "We fine-tuned our 8B agent model on trajectories from a frontier model, collected inside the scaffold we had already tuned around the 8B. Our instrumentation says it worked: the share of rollouts that invoke our custom domain-calculation tool went from 31 percent to 76 percent, and our error taxonomy shows fewer wrong-domain-value errors than before. Our end-to-end suite score went down on every task. What is going on, what exactly do I measure to confirm it, and what is the cheapest fix and what should I expect it to be worth?",
+   "without_skill": "Reads the adoption rise as evidence the fine-tune partly worked and the regression as overfitting, catastrophic forgetting or a bad learning rate, and prescribes more or cleaner imitation data, a lower rank, or an evaluation audit. Does not predict that adoption rises in this failure, does not name the planning-failure share as the diagnostic, and either omits a price for the fix or prices it optimistically.",
+   "with_skill": "Says the adoption rise is what this failure looks like rather than evidence against it, names the planning-failure share of failed rollouts as the measurement that confirms it, prescribes on-policy single-turn correction with its data mix, and prices that fix as small and safe rather than large.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "telemetry",
+      "criterion": "Treats the rising scaffold-adoption number as consistent with the regression rather than as partial success.",
+      "anchors": {
+       "0": "Reads the adoption rise as evidence the fine-tune partly worked.",
+       "1": "Notes the two signals disagree without saying which one to believe.",
+       "2": "States that imitation fine-tuning raises use of the evolved scaffold while the score falls, so adoption telemetry cannot detect this failure."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the 30.8 to 76.1 percent adoption rise reported alongside a regression on all seven tasks"
+      }
+     },
+     {
+      "id": "diagnosis",
+      "criterion": "Names the measurement that confirms the cause, which is the planning share of failed rollouts.",
+      "anchors": {
+       "0": "No measurement, or only an end-to-end re-run.",
+       "1": "Asks for failure analysis without naming a category or a share.",
+       "2": "Classifies every failed rollout into failure categories and compares the planning share before and after the fine-tune, expecting it to rise from near zero."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "a failure-category classification of failed rollouts, with a planning-failure share per arm, in the returned plan"
+      }
+     },
+     {
+      "id": "repair",
+      "criterion": "Prescribes on-policy single-turn correction with its data mix rather than more imitation data.",
+      "anchors": {
+       "0": "More or cleaner expert trajectories, or a training hyperparameter change.",
+       "1": "On-policy correction named with no data recipe.",
+       "2": "Start from the model's own rollouts under its own harness, locate the single failing turn, have the expert rewrite only that turn with 3 candidate rewrites kept under a quality judge, and train on roughly 500 rows, about 400 corrections plus 50 of the model's own passing rollouts."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "about 500 training rows, roughly 400 corrections plus 50 self-pass, and 3 candidate rewrites per turn"
+      }
+     },
+     {
+      "id": "magnitude",
+      "criterion": "Prices the repair honestly as a safe composition rather than a large gain.",
+      "anchors": {
+       "0": "Promises a large gain, or gives no expectation at all.",
+       "1": "Says the gain is modest with no figure.",
+       "2": "Expects about +1.7 mean, up on five of seven tasks and inside noise on the two already near ceiling, and says the value is that the two levers compose rather than that the gain is big."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "+1.7 mean, 78.0 to 79.7 percent, five of seven tasks up and two inside noise"
+      }
+     }
+    ]
+   },
+   "exploit": {
+    "answer": "Your adoption telemetry is consistent with the regression, so do not read it as partial success. Measure the planning-failure share of your failed rollouts, which is the diagnostic here. The cheapest fix is on-policy single-turn correction with the right data mix, and you should expect it to be safe rather than large. The two levers then compose.",
+    "why": "Every criterion's vocabulary is present and not one certificate is: no adoption figures, no before-and-after planning share, no row count, no candidate count, no expected delta. A judge reading for words scores this highly; a judge reading for the certificate scores it zero, which is the ceiling ADR-40 item 5 sets.",
+    "ceiling": 0.0
+   }
+  },
+  {
    "id": "he-c1",
    "kind": "control",
    "sections": [],
@@ -772,5 +855,5 @@
   "pre_registered": "2026-10-13, before any arm was run. Neither arm has run: this seat still has no GROQ_API_KEY and no benchmark provider (docs/agents/pending-workflow-changes.md), so the numbers are chosen ahead of a measurement rather than after one, which is the point of rule 1.",
   "certificates_note": "Every rubric criterion in this file carries a `certificate` (ADR-40 item 5), and `require_certificates` is deliberately NOT set, because setting it would fail a gate on a field the harness cannot read: tools/skill_eval.py `normalize()` rebuilds each rubric item as id, asks and anchors only, so `check.criteria[].certificate` is dropped before `certificate_problems()` looks for it. Filed for the engineer in docs/ideas.md. Turn this on in the same change that makes normalize carry the field."
  },
- "revision": "3 of this suite, written 2026-10-13. `suite_version` stays at 2 because that is the harness vocabulary this file speaks, not a count of its revisions; tools/skill_eval.py reads the same key as `contract` and speaks only 1 and 2."
+ "revision": "4 of this suite, written 2026-10-27. Adds he-t11 against the corrected delta 1 mechanism, which the 2026-10-27 revision of SKILL.md reversed: the skill had said imitation cuts scaffold usage and the paper measures it rising from 30.8 to 76.1 percent of rollouts while the score falls on all seven tasks. he-t11 is **unscreened**: ADR-38 rule 5 counts a task only once a bare-first pass shows the bare subject failing or partial on it, and this seat has no route to either arm (no GROQ_API_KEY reaches the run, and pipeline/budget.py knows no provider that serves the benchmark subject, both queued in docs/agents/pending-workflow-changes.md). So the suite now holds 13 tasks, 7 treatment and 6 control, of which 1 treatment task is written and unqualified. 3 of this suite, written 2026-10-13. `suite_version` stays at 2 because that is the harness vocabulary this file speaks, not a count of its revisions; tools/skill_eval.py reads the same key as `contract` and speaks only 1 and 2."
 }

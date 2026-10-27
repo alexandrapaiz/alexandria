@@ -1,15 +1,16 @@
 ---
 name: recursive-harness-self-improvement
 description: Evidence-backed method for loops where an agent reads its own failed runs, rewrites its own scaffold unattended, then keeps or reverts each edit on measured evidence. The editor is the agent, not a person, and no weights are trained. Use when an automated loop edits its own prompts, tool code or memory and keeps what measures better, when unattended self-edits raise the score on the tasks the loop evolves against while real work does not, when choosing the gate that accepts or reverts a proposed edit, when bounding how much one edit may touch, when attributing a failure to one function inside a long execution log, when the loop's own diagnosis costs more than its edits gain, when several automated workers rewrite one shared repository and converge on a single idea, or when an unattended run reports a win you have to judge.
-version: 3
-status: active
+version: 4
+status: provisional
 provenance:
   extracted: 2026-09-22
-  revised: 2026-09-30
+  revised: 2026-10-27
   validated: ""
   reviews:
     - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
   revisions:
+    - "2026-10-27 (ADR-37 maintenance, ADR-35 the paper wins): the research seat drained the 2026-09-30 reading-queue batch and routed one correction to this file (docs/research/briefs/2026-10-26.md section 9), re-verified here against the full text of arxiv.org/abs/2404.07972 before it was applied. Section 2 read RSIAgent's OSWorld pair as two metrics, 71.97 percent partial and 37.80 percent binary. They are one metric scored twice: OSWorld's reward function returns 1 or a positive decimal under 1 for a partially achieved goal (OSWorld section 2.1, section 2.2.3), so the partial column is the graded mean of the same rollouts and only the binary column compares to a published OSWorld success rate. The section now quotes the binary figures and says why. No number was wrong and the inference drawn from them was, which is why this is a correction rather than a deprecation. `status` moved from `active` to `provisional`, because ADR-38 rule 7 earns `active` on a positive differential delta on the benchmark subject and this skill has no measured delta on any subject: its eval tasks are written and none has been run. This file is 362 lines and ADR-38 rule 4 caps a skill at 120; it is in the retrofit queue and this run corrected text rather than retrofitting it, so the cap is still failed and is reported rather than quietly carried."
     - "2026-09-30 (ADR-38 retrofit, owner directive): per-section Validation tags, an Apply checklist, and caveats that name their floor. The tagging pass found section 9 uncovered by the ADR-36 suite, so eval task rhsi-t10 was written and the suite moved to version 2."
     - "2026-09-30 (ADR-35, the paper wins): re-read arxiv.org/abs/2609.09219 in full while revising evaluation-integrity, and narrowed section 9. The third gate is optional in the protocol and returned Inconclusive on both of its real-data audits, which the section had presented as a gate to adopt alongside the other two. No claim this skill cites is deprecated."
   claims: [411, 412, 413, 414, 415, 335, 336, 337, 338, 392, 393, 395, 535, 537, 538, 539, 354, 355, 147, 148, 150, 593, 594, 597, 462, 465, 466, 286]
@@ -22,6 +23,7 @@ provenance:
     - "Procedural Graphs: Self-Evolving Execution Structures for LLM Agents — arxiv.org/abs/2609.09153"
     - "Root-Cause Attribution Is a Search Problem: Continual Search for Long-Horizon Agent Failures — arxiv.org/abs/2609.13463"
     - "Agora: Git as Shared Memory for Collective AutoResearch — arxiv.org/abs/2609.18094"
+    - "OSWorld: Benchmarking Multimodal Agents for Open-Ended Tasks in Real Computer Environments (read 2026-10-27 for the reward definition behind RSIAgent's OSWorld columns) — arxiv.org/abs/2404.07972"
     - "Scores Alone Do Not Prove Discovery: The Discovery Certification Protocol for Auditing AI Research Agents — arxiv.org/abs/2609.09219"
 ---
 
@@ -82,10 +84,15 @@ than it looks like it does.
 RSIAgent lifted two open-source models past frontier closed-source models on
 OSWorld-v2 and Agents' Last Exam without updating a single parameter
 (RSIAgent). Its recursive phase is what bought the difference: the same
-system without recursion scored 71.97 percent partial and 37.80 percent
-binary on OSWorld, and with recursion 78.98 and 42.68 (RSIAgent). The
-downstream gain then comes from frozen memory handed to the same base model
-as context, with no training step anywhere (RSIAgent).
+system without recursion scored 37.80 percent on OSWorld and 42.68 with it
+(RSIAgent). **Quote the binary figure and not the partial one.** OSWorld's
+reward function returns 1 or a positive decimal under 1 when a goal is
+partially achieved, so the 71.97 and 78.98 the paper also reports are the
+same rollouts scored with partial credit rather than a second metric, and
+only the binary figure compares to a published OSWorld success rate (OSWorld,
+arxiv.org/abs/2404.07972 section 2.1). The downstream gain then comes from
+frozen memory handed to the same base model as context, with no training step
+anywhere (RSIAgent).
 
 Two findings say the starting scaffold matters less than the loop. Beginning
 from a minimal skeleton, self-evolving Procedural Graphs matched or surpassed

@@ -1,16 +1,17 @@
 ---
 name: harness-engineering
 description: Three measured findings about agent harnesses that a strong model does not give unprompted. Use when deciding between fine-tuning a model and rebuilding the harness around it; when planning to fine-tune a weaker model on a stronger model's trajectories inside a scaffold already tuned around the weaker one; when deciding how to spend extra inference compute on one hard step, for instance sampling several candidates in parallel and selecting one versus having the agent reflect on and revise its previous attempt; when a reinforcement-learning run's parallel rollouts all score zero so there is no learning signal and the instinct is to buy a larger group size; or when a backlog of accumulated prompt corrections is about to be appended to an agent's system prompt.
-version: 5
-status: active
+version: 6
+status: provisional
 provenance:
   extracted: 2026-09-12
-  revised: 2026-10-13
+  revised: 2026-10-27
   validated: "2026-09-12 A/B trial: bare Claude endorsed imitation fine-tuning on a stronger model's trajectories; with this skill loaded it refused, cited the 4-30 point regression, and prescribed harness adaptation plus on-policy single-turn correction"
   differential_screen: "2026-09-30, bare-arm pre-screen on the benchmark-class subject (skills/_validation/results/2026-09-30-bare-arm-differential-screen.md). 3 of 4 candidates qualified. he-c1 passed bare and its section was cut."
   reviews:
     - "reviews/2026-09-29-ursa-chair.md, Ursa chair session, three-stage build plan for a deployed surface. 1 design decision changed (test-time compute), 1 procedure adopted (multi-agent debugging), 2 sections confirmatory. Verdict: keep active."
   revisions:
+    - "2026-10-27 (ADR-37 maintenance, ADR-35 the paper wins): the research seat drained the 2026-09-30 reading-queue batch and routed three corrections to this file (docs/research/briefs/2026-10-26.md section 9). All three were re-verified here against the full text of arxiv.org/abs/2609.09134 before being applied, because the relayed-citation class had fired three times in the previous day. (1) Delta 1 said imitation cut scaffold usage. The paper measures the opposite: the fine-tuned model fires the evolved harness's domain recipe in 76.1 percent of rollouts against 30.8 before, and its knowledge failures fall from 46.2 to 44.5 percent of failures, while planning failures rise from 1.1 to 14.6 percent (Tables 2 and 3). The sentence was wrong about the mechanism and the delta is stronger with it corrected, because adoption telemetry rises while the agent gets worse. (2) The on-policy repair now carries its size: +1.7 mean, 78.0 to 79.7 percent, up on five of seven tasks and inside noise on the two near ceiling, bought with about 500 training rows, and the procedure gains the two steps it was missing, 3 candidate rewrites per turn under a quality judge and the 400-plus-50 data mix. It is a safe composition, not a large gain, and a reader deciding whether to fund it needs the number. (3) The Gemma 4 caveat claimed a second seven-task arm; Gemma ran Webarena alone, 55.6 to 41.1 percent. Also cut: checklist item 4, a generic smallest-local-change line the bare subject gives unprompted, and the cut-record section, folded into one Caveats bullet pointing at the screen receipt, both to hold the file under ADR-38 rule 4's 120 lines while the corrections went in. `status` moved from `active` to `provisional`: ADR-38 rule 7 earns `active` on a positive differential delta on the benchmark subject, there is still no route to that subject from this seat, and the only measurement this skill has is the gold-specimen run that read 5.4 bare against 5.3 loaded on the cheap subject. No claim id is deprecated; 201 is filed for correction in docs/ideas.md."
     - "2026-10-13 (ADR-37 trigger 1, claim contradicted): claim 1119 contradicted claim 103 at 0.75 on 2026-10-12. Read arxiv.org/abs/2609.37633 and arxiv.org/abs/2609.03254 in full. The edge is false and is filed for correction: 103 is test-time sampling on a revision task, 1119 is training-time rollout collection on tasks where the policy scores Pass@128=0, and the word sampling carries both. Delta 2 is kept and its exception clause now carries 1119's numbers, because RLTL;DR is an instance of that clause rather than a counterexample to the rule. Its own boundary is recorded with it: on unfiltered task mixes, where 3 to 5 percent of tasks are frontier-difficult, the paper reports the method neither helps nor hurts."
     - "2026-09-30 (ADR-38, the quality bar): rewritten to deltas only, 164 lines to under 120. Cut the order-of-operations section entire (action interface, feedback enrichment, feedback consistency) because the bare subject gave all of it unprompted on he-c1, including the step-count arithmetic; cut the localisation half of the debugging section for the same reason. Claims 199, 136, 140, 190 and 243 leave the provenance with the sections they supported. No surviving sentence changed its meaning."
   claims: [200, 201, 202, 203, 244, 102, 103, 1119]
@@ -23,21 +24,18 @@ provenance:
 
 # Harness engineering
 
-Three findings, each a place the evidence points away from what a competent engineer
-does unaided. The last section names what was cut and why.
+Three findings, each a place the evidence points away from what a good engineer does
+unaided. The last caveat names what was cut and why.
 
 ## Apply: the builder's checklist
 
 1. **Not distilling a stronger model's trajectories into a weaker one whose harness is
-   tuned around it.** Expect a loss, not a small gain; switch to single-turn on-policy
-   correction (delta 1).
+   tuned around it.** Expect a loss; switch to single-turn on-policy correction (delta 1).
 2. **Every hard step that can afford extra inference samples at least 3 candidates in
    parallel and selects**, not reflect-and-revise, unless a real verifier gives signal
    between attempts, or the parallel arm is scoring zero (delta 2).
 3. **Accumulated prompt corrections are clustered and generalised before any is
    applied**, never appended as a pile (delta 3).
-4. **Every improvement is the smallest local change that repairs the failure**, never a
-   wholesale rewrite in someone else's style.
 
 ## Delta 1: the expected sign of that fine-tune is negative
 
@@ -47,17 +45,24 @@ Fine-tuning a weaker model by imitating a stronger expert's trajectories, under 
 harness evolved for the weaker model, **dropped scores by 4 to 30 points across all
 seven tasks** (Co-Evolving Harnesses and Models, claim 200). Not a smaller gain than
 harness work, a loss on every task measured, because imitation transplants planning the
-model cannot execute, breaking model-harness fit and cutting scaffold usage (claim 201).
+model cannot execute (claim 201). **Scaffold usage rises while the agent gets worse**: the
+evolved harness's domain recipe fires in 76.1 percent of rollouts after the fine-tune
+against 30.8 before, and knowledge failures fall from 46.2 to 44.5 percent of failures,
+while planning failures go from 1.1 to 14.6 percent (Tables 2 and 3). So watch the
+planning-failure share, because adoption telemetry will say the fine-tune worked.
 
 The decision rule: "fine-tune or improve the harness" is not a comparison of two
 positive returns, so a team that cannot afford harness work this quarter does nothing
-rather than the fine-tune. When training is chosen anyway, the repair is on-policy and
-minimal (claims 202, 203):
+rather than the fine-tune. When training is chosen anyway, the repair is on-policy,
+minimal, and **safe rather than large**: +1.7 mean, 78.0 to 79.7 percent, up on five of
+seven tasks and inside noise on the two near ceiling (claims 202, 203):
 
 1. Run the weaker model in **its own** harness and collect its own rollout.
 2. Identify the single failing turn in that rollout.
-3. Have the expert rewrite **only that turn**, leaving the rest untouched.
-4. Train on the corrected rollout.
+3. Have the expert rewrite **only that turn**, leaving the rest untouched. **Sample 3
+   candidate rewrites and keep the best under a quality judge.**
+4. Train on about **500 rows**: roughly 400 corrections plus 50 of the model's own
+   passing rollouts, chosen at its capability boundary.
 
 ## Delta 2: parallel sampling beats reflection, and the instinct is to reflect
 
@@ -68,12 +73,11 @@ Best-of-three parallel samples, selected by an LLM judge or by picking the medoi
 loops** (What Else Needs Fixing, claims 102, 103).
 
 The decision rule: default to parallel sample-and-select. Reserve sequential attempts
-for the one case where a verifier gives real signal between attempts, which is the only
-way a second attempt knows more than the first. That exception is measured: on tasks a
-policy failed 128 attempts straight, sequential rollouts each conditioned on a
-one-sentence insight from the last failure's unit-test output solved 14 to 59 percent,
-where parallel i.i.d. rollouts solved none (RLTL;DR, claim 1119). A zero licenses the
-switch, not the ordering; on unfiltered mixes it neither helped nor hurt.
+for the one case where a verifier gives real signal between attempts. That exception is
+measured: on tasks a policy failed 128 attempts straight, sequential rollouts each
+conditioned on a one-sentence insight from the last failure's unit-test output solved 14
+to 59 percent where parallel i.i.d. rollouts solved none (RLTL;DR, claim 1119). A zero
+licenses the switch, not the ordering; on unfiltered mixes it neither helped nor hurt.
 
 1. Budget N parallel samples at the hard step. **N is at least 3.**
 2. At N of 3 or more, select the medoid, the sample most similar to the others. **A
@@ -81,8 +85,7 @@ switch, not the ordering; on unfiltered mixes it neither helped nor hurt.
 3. At N of 2 there is no medoid, so select with an LLM judge.
 4. Never spend the budget on a second attempt conditioned on the first unless something
    between them can tell the model it was wrong. **A parallel arm scoring zero is that
-   exception**: feed the verifier's output into a one-sentence insight, condition the
-   next attempt on it.
+   exception**: feed the verifier's output into a one-sentence insight and condition on it.
 
 ## Delta 3: cluster the corrections before you apply them
 
@@ -95,25 +98,22 @@ optimisation wall-clock by 2.5x versus the next-fastest method** (AgentGrad, cla
 The decision rule: a backlog of corrections is input to an abstraction step, not text to
 append. The prompt grows by fewer lines than the backlog holds.
 
-1. Collect the textual corrections gathered from failures.
-2. Embed and group them by semantic similarity so unrelated modes never mix.
-3. Abstract each cluster into **one** generalised correction for the shared pattern.
-4. Apply the generalised corrections. Never the raw pile.
+1. Embed the collected corrections and group them by semantic similarity, so unrelated
+   failure modes never mix.
+2. Abstract each cluster into **one** generalised correction for the shared pattern.
+3. Apply the generalised corrections. Never the raw pile.
 
 ## Caveats
 
-- The co-evolution results are 7 enterprise agent tasks with Qwen3-Coder and Gemma 4 as
-  the weaker models, so the regression is about weaker models under harnesses evolved for
-  them, not about distillation generally.
+- The co-evolution numbers are 7 enterprise agent tasks with Qwen3-Coder as the weaker
+  model. Gemma 4 is a one-task replication (Webarena, 55.6 to 41.1 percent) and not a
+  second seven-task arm, so this is about weaker models under harnesses evolved for them
+  rather than about distillation generally.
 - Delta 2's direction has a recorded positive eval delta on our own subject. The 2.2 to
   9.7 percent is one paper's benchmark set and does not transfer; its floor is in the
-  procedure, 3 samples and a MiniLM-class embedder. The exception's numbers are one
-  model (Qwen 3.5 9B) on Pass@128=0 splits of three task sets, one of which (Leetcode)
-  overfit, so take its shape and not its figure.
-
-## What this file no longer carries
-
-Cut 2026-09-30 because the bare subject gave it unprompted: semantic over low-level
-actions, rich errors, reproduce before intervening, one agent at a time upstream first.
-**Feedback consistency** (claim 140) went for carrying no magnitude and is filed for
-research to price. Receipts: `_validation/results/2026-09-30-bare-arm-differential-screen.md`.
+  procedure, 3 samples and a MiniLM-class embedder. The exception is one model (Qwen 3.5
+  9B) on Pass@128=0 splits of three task sets, one of which overfit: shape, not figure.
+- What this file no longer carries, and why: the 2026-09-30 differential screen cut four
+  sections the bare subject gave unprompted, **feedback consistency** (claim 140) went
+  for carrying no magnitude, and 2026-10-27 cut one generic checklist line. Receipt:
+  `_validation/results/2026-09-30-bare-arm-differential-screen.md`.
