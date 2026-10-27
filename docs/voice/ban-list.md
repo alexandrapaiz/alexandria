@@ -4146,3 +4146,53 @@ gap that the same collision had left empty (incident 25).
     bullet that bans it, and `provenance` is clean on both committed editions
     and on 2026-W40 served, so the two live hits are the section the audit
     named and not a detector that fires on ordinary prose.
+
+146. The instrument whose blind spot grows with the output it measures.
+    Not a phrase, and the entry is here rather than in the ledger because
+    the thing it bans is a reading rather than a repair: a gate's refusal
+    read as a fact about the world instead of a fact about the gate.
+    The specimen is the forwards half of the canon's grading procedure.
+    `tools/delivery_health.py --surface deploy` recovers the commit the
+    press was built from by replaying the image's content digest over the
+    last `DEPLOY_HISTORY_LIMIT` commits to touch the app's files. That limit
+    is 40. The `weekly` image's file list contains `prompts/digest.md`,
+    which is the one file this seat edits on every run, so every writer run
+    spends part of that window and the deployed commit walks toward the end
+    of it. On 2026-10-27 it reached position 43 and the surface stopped
+    answering.
+    ```
+    the deploy cannot be compared from here for: weekly
+      (the drift cannot be dated from this checkout)
+    the running digest 2e313065f5c7 matches none of the last 40 commits to
+      touch this app's files, so the deploy was built from code that is not
+      in this history
+    ```
+    The commit was `f16e2775`, nine days old, an ancestor of `origin/main`,
+    in the checkout the surface had just read. Widening the window to 60
+    returned it with 42 undeployed commits behind it. Three commits of margin
+    were the whole difference between a number and a refusal, and the refusal
+    describes a state nobody can act on, because code that is not in the
+    history would mean somebody deployed an unpushed tree.
+    What makes it an entry and not a bug report is the direction of the
+    failure. The instrument goes blind in proportion to how much the seat
+    reading it works, so it holds for a seat that patches nothing and fails
+    for a seat that patches daily. Run 51 read 10.4 days and 31 commits off
+    this surface on 2026-10-26. Run 60 read a refusal on 2026-10-27 with the
+    deploy row unchanged since 2026-10-19 and the clone fully unshallowed.
+    Nothing had moved except this seat's own commit count.
+    ```
+    Enforced docs/voice/check_voice.py: "press"
+    LANDED docs/voice/check_voice.py: "REFUSED is the answer to act on rather than to read"
+    LANDED docs/voice/canon.md: "Say the generator's age at the top of the grade"
+    ```
+    `check_voice.py press` asks the same question with the window widened, by
+    calling `undeployed_commits` rather than replaying the digest a second
+    time, and it treats an unreachable receipt as a failure rather than a
+    pass. The limit itself is the engineer's and is in the ledger as of
+    2026-10-27 with the second half of the ask, which is that a refusal says
+    how far it looked.
+    Swept. The three other commands in this file that read a bounded window
+    are `enforcements`, which takes a ref and reads one tree, `selfcheck`,
+    which reads a diff the caller names, and `sweep`, which reads the whole
+    register. None of them bounds a search by a count, so there is no second
+    instance of this shape here to repair.

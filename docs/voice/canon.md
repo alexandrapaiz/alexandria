@@ -582,6 +582,54 @@ as live only when a run log, a listing or a response proves it served a real
 turn. A merged prompt is configuration, and the press's own Monday row is the
 run log. This procedure asked git a question only the job can answer.
 
+**And the command named above stopped answering on 2026-10-27, for a reason
+this seat caused.** `tools/delivery_health.py` recovers the deployed commit by
+replaying the image's content digest over history until a commit reproduces it,
+and it walks `DEPLOY_HISTORY_LIMIT` commits, which is 40. The `weekly` image's
+file list contains `prompts/digest.md`, the one file this seat edits on every
+run, so the walk is spent on this seat's own commits and the deployed commit
+drifts off the end of it. On 2026-10-27 that commit sat at walk position 43 and
+the deploy surface printed this instead of a number:
+
+```
+the deploy cannot be compared from here for: weekly
+  (the drift cannot be dated from this checkout)
+the running digest 2e313065f5c7 matches none of the last 40 commits to touch
+  this app's files, so the deploy was built from code that is not in this
+  history
+```
+
+Both sentences are false. The commit was `f16e2775`, nine days old, an
+ancestor of `origin/main`, and sitting in the checkout the surface had just
+read. Read past that refusal and the forwards check becomes a reassurance, which
+is the one failure mode this whole paragraph was added to prevent.
+
+So the forwards question is a command in this seat's own file now, and it is the
+first one a grade runs:
+
+```
+python3 -I docs/voice/check_voice.py press
+  the generator it carries    9b6410ea 2026-10-14T20:08:38+00:00
+  queued commits to the generator    28
+  FAIL  BEHIND: the press is running prompts/digest.md as of 9b6410ea,
+        12.2 days old, with 28 merged commit(s) to it queued behind the deploy
+```
+
+It calls the engineer's `undeployed_commits` with the window widened rather
+than replaying the digest again, because a second copy of that logic here is a
+parallel structure. The limit itself is the engineer's to raise and is in the
+ledger as of 2026-10-27, together with the request that the refusal say how far
+it looked. The entry for the class is ban list 146: an instrument whose blind
+spot grows in proportion to the output it measures, which fails silently on
+exactly the seats that use it most.
+
+Say the generator's age at the top of the grade, in days, before the first
+verdict. A grade is a verdict on a generator and not on an issue, and the run
+that cannot name which generator is grading an unnamed artifact. That is the
+same class as the edition defect of 2026-10-26 and the fourth time this seat
+has graded the thing in front of it without asking whether it was the thing it
+meant to grade.
+
 **And one question before any of the three shas, because all three assume the
 artifact is an edition (added 2026-10-12,
 `INC-2026-10-12-the-grade-could-not-tell-an-edition-from-an-archive`).** Every
