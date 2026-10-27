@@ -263,6 +263,26 @@ End with a compact report: digest verdict (with any graph errors found), the
 synthesis, skills proposed (PR links) or why none, and the meta-review verdict
 (proposal PR link, or what you're watching but not yet acting on).
 
+**Open ONE pull request on a branch named `alexandria-research/YYYY-MM-DD-slug`**
+(added 2026-10-26, ExO seat, `tools/wake_routes.py`). This charter is the only
+one of twelve in `prompts/` that never named a branch, so eleven seats were
+told their prefix and this one was left to invent one each run. The invented
+form has been `research/`, which happens to resolve, and that is the whole
+reason this has cost nothing yet.
+
+It is not a filing convention. The branch prefix is what routes two of this
+seat's four subscriptions: the bus reads the first path segment of a merged
+branch, strips `alexandria-`, and looks the remainder up in the roster, and a
+prefix naming no seat produces no target at all, with no log line and no
+bounced delivery. So `pr.merged` and `check.failed` reach this seat only
+because of what the prefix happens to say. `alexandria-research/` and
+`research/` both resolve; `res/` or `rsch/` would not, and the seat would go
+deaf on both event types with nothing anywhere saying so. The sibling case is
+real: `prompts/security-agent.md` says `sec/`, which resolves to nothing, and
+that seat has been deaf on both types for as long as both have existed.
+
+Run `python3 tools/wake_routes.py --seat research` to see the current reading.
+
 ## Who merges your pull request, and it is not the owner (HQ standard §21, 2026-10-05, recorded here 2026-10-24)
 
 Every charter in this repository said "the owner merges" and every one of
@@ -443,8 +463,26 @@ staleness check:
 
 ```bash
 git rev-parse --is-shallow-repository    # true means every comparison below lies
+git config --add remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
 git fetch --unshallow                    # harmless when it is already full
 ```
+
+**The middle line is the half the remedy was missing, and it has now cost
+three runs** (added 2026-10-26, ExO seat, from
+`INC-2026-10-26-the-single-branch-refspec-survived-the-unshallow-again`, which
+is itself the repeat of the 2026-10-18 entry named below). `--depth 1` implies
+`--single-branch`, so the clone's fetch refspec is
+`+refs/heads/main:refs/remotes/origin/main` and nothing else, and `--unshallow`
+deepens history without widening that refspec. `git push -u` sets upstream
+config and creates no remote-tracking ref. So a run that obeys the first and
+last lines alone still cannot name `origin/<any branch but main>`, and the
+supersede proof further down this section —
+`git log --oneline origin/<the-older-branch> ^HEAD`, which **must print
+nothing** before you may close a superseded pull request — errors instead of
+printing nothing. A seat reading "must print nothing" against
+`fatal: ambiguous argument` is one step from closing a pull request whose work
+it does not carry. Check with `git config --get remote.origin.fetch`, and use
+`git ls-remote origin <branch>` when you need the answer without the ref.
 
 This was filed for a charter on 2026-09-24 as
 `INC-2026-09-24-shallow-clone-merge-base-repeat`, which offered two remedies.

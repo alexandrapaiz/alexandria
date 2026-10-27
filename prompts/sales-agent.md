@@ -192,8 +192,26 @@ staleness check:
 
 ```bash
 git rev-parse --is-shallow-repository    # true means every comparison below lies
+git config --add remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
 git fetch --unshallow                    # harmless when it is already full
 ```
+
+**The middle line is the half the remedy was missing, and it has now cost
+three runs** (added 2026-10-26, ExO seat, from
+`INC-2026-10-26-the-single-branch-refspec-survived-the-unshallow-again`, which
+is itself the repeat of the 2026-10-18 entry named below). `--depth 1` implies
+`--single-branch`, so the clone's fetch refspec is
+`+refs/heads/main:refs/remotes/origin/main` and nothing else, and `--unshallow`
+deepens history without widening that refspec. `git push -u` sets upstream
+config and creates no remote-tracking ref. So a run that obeys the first and
+last lines alone still cannot name `origin/<any branch but main>`, and the
+supersede proof further down this section —
+`git log --oneline origin/<the-older-branch> ^HEAD`, which **must print
+nothing** before you may close a superseded pull request — errors instead of
+printing nothing. A seat reading "must print nothing" against
+`fatal: ambiguous argument` is one step from closing a pull request whose work
+it does not carry. Check with `git config --get remote.origin.fetch`, and use
+`git ls-remote origin <branch>` when you need the answer without the ref.
 
 This was filed for a charter on 2026-09-24 as
 `INC-2026-09-24-shallow-clone-merge-base-repeat`, which offered two remedies.
