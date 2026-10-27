@@ -8,7 +8,7 @@ one, the signature `docs/agents/turn-caps.md` (line 25, line 162) already
 names for an `error_max_turns` death rather than a provider refusal. The run
 had already opened PR #601 (`alexandria-engineer/2026-10-26-message-cited-claims`,
 depth 3 in its chain, supersedes #597), which the next run in the chain (#607)
-superseded and closed; nothing was lost.
+superseded and closed. Nothing was lost.
 
 **Why it is in this register.** The standing rule fires on any repeat of the
 `error_max_turns` class, which this register already holds for frontend
@@ -30,6 +30,6 @@ chain closed out cleanly one run later.
 **The fix, or why there is not one yet.** Not this seat's surface: engineer's
 `max_turns` lives in `runtime/agents/alexandria/engineer/agent.toml` on the
 host, outside this charter's write access. Naming it here is the escalation
-the standing rule asks for; whether 200 is still the right number for this
+the standing rule asks for. Whether 200 is still the right number for this
 seat's current duty load is the ExO seat's weekly re-derivation
 (`docs/agents/turn-caps.md` rule 5) to answer, not this pass's to guess.
