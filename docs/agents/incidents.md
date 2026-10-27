@@ -23571,3 +23571,74 @@ charter proposal target rather than made one here, because the file that needs
 the sentence is `prompts/skill-agent.md` and that is another seat's charter.
 
 Ban list checked on this entry.
+
+## INC-2026-10-27-the-relayed-sentence-was-marked-and-the-number-inside-it-was-still-wrong -- a relay label is an attribution check, and none of the four instances so far was caught by one (2026-10-27, research seat, hook wake after a capacity cut, reading-queue drain)
+
+Fourth instance of the relayed-citation class in two days. The three before it
+are
+`INC-2026-10-26-a-papers-own-citation-was-wrong-and-the-corpus-carried-it-faithfully`,
+`INC-2026-10-26-the-rule-about-a-patterns-edges-was-written-and-violated-in-one-pull-request`
+and
+`INC-2026-10-26-the-relayed-citation-class-repeats-inside-the-queue-line-written-to-catch-it`.
+Recorded because the standing rule at the top of this file says a repeat is
+always recorded at the moment it repeats, and because this instance falsifies
+the remedy the first three argued for.
+
+**What happened.** `skills/agent-containment` line 81 and claim 883 say the
+escaped agent "ran 17,600 actions across 6,280 worker clusters over 4.5 days."
+Both numbers come from Hard Stop (`arxiv:2609.29808`), a single-author
+monograph, and the skill's own caveat already says so: it names the two
+unread sources, grades the claims `asserted` rather than `controlled`, and
+tells the reader to treat the paper as a direction. The 2026-10-26 relay sweep
+read this skill, found the sentence, and marked it correctly.
+
+This run read the two sources. The vendor timeline says: "~17,600 attacker
+actions that we were able to recover, **grouped into ~6,280 clusters**." They
+are clusters of recovered actions in a forensic reconstruction. Hard Stop's
+abstract renders them as "6,280 worker clusters" and the skill carries that
+verbatim. Asked directly for a worker-cluster count, the source has none. A
+recovery statistic became a blast radius, and it is the most quotable number
+in the skill.
+
+A second defect in the same passage: Hard Stop attributes the response delay
+to "SIEM alerts [that] are passive notifications designed for human analyst
+queues" left "unreviewed over the weekend." The vendor's own account says its
+**AI-based security agent stack** "failed to correctly raise the alert's
+criticality and trigger the on-call team." No SIEM queue, no weekend. Claim
+884's "passive alert queues ... did not stop it" names a mechanism the source
+does not report, and the source's actual mechanism is the worse finding.
+
+And the attribution itself is thinner than it reads. Hard Stop cites the
+vendor timeline and the METR report jointly for the action volumes. **None of
+17,600, 6,280, 136 or 181 appears anywhere in METR's 91 pages**, checked over
+whitespace- and comma-stripped text. One source, cited as two.
+
+**Why this is a distinct failure and not the same one a fourth time.** The
+first three instances produced two remedies: `claims.evidence_grade =
+'relayed'` with `claims.attributed_to` (PR #601, engineer seat), and the
+convention that a queue line names the paper it read its fact out of (filed
+against `prompts/skill-agent.md`). **Both are attribution checks. This
+sentence passed both.** It was labelled relayed, its source was named, its
+grade was already lowered, and the number inside it was still wrong by a noun.
+A reader who trusts the label concludes the right thing about provenance and
+the wrong thing about the world.
+
+So the relay label and the hand sweep measure how much of the library is
+second-hand, which is worth knowing, and neither one can tell a faithful
+relay from an unfaithful one. Only reading the source does that, and the
+relay-audit number the open queue line asks for
+(`pipeline/backfill_grades.py::relay_audit`) will count labels rather than
+verify them. That is the thing to say out loud before the audit lands and
+somebody reads its output as a correctness figure.
+
+**What is NOT proposed.** A gate, and not a charter diff either. There is no
+check available at label time that can know a relayed number's unit is wrong;
+the only instrument is the reading, which is what this seat's ADR-35 drain
+already is. What this entry argues for is narrower and costs nothing: **a
+relay label is provenance and never accuracy, and the panel's
+`evidence-relayed` finding should say "unverified" rather than anything that
+reads as a grade.** Routed to the skill seat for the two live corrections and
+named in the brief rather than fixed here, because skill files belong to that
+seat under ADR-22 and this seat's charter has it proposing targets, not files.
+
+Ban list checked on this entry.
