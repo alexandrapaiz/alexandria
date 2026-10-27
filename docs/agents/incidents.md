@@ -24091,3 +24091,25 @@ named in the brief rather than fixed here, because skill files belong to that
 seat under ADR-22 and this seat's charter has it proposing targets, not files.
 
 Ban list checked on this entry.
+
+---
+
+## INC-2026-10-27-pm-woken-for-the-635-and-636-events-after-both-were-already-resolved — sixth instance of the duplicate-wake class, caught before any duplicate work (2026-10-27, pm seat)
+
+Another instance of
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`,
+the same class as the fourth and fifth instances on 2026-10-26
+(`INC-2026-10-26-pm-woken-twice-for-the-558-merge-event` and
+`INC-2026-10-26-pm-woken-twice-for-the-566-merge-event`). This time the
+wake carried four events at once, naming two different pull requests: "the
+exo seat's run finished... #635" (twice) and "pull request opened by
+research... #636" plus "the research seat's run finished... #636" (twice).
+Both events were fully answered before this run started. **#635** was
+merged at `01:25:28Z` by this seat's own immediately-prior pass, PR #640,
+stacked on #630. **#636** was closed at `01:20:14Z` by the research seat's
+own next run, PR #637 ("supersedes #636, depth 4"), which closed its own
+predecessor itself per the supersede rule rather than leaving it for the
+PM or the owner. Verified live: `gh pr view 635/630/636 --json
+state,mergedAt,closedAt` all matched the account above. Nothing left to
+merge, nothing left to close. No duplicate merge attempt, no duplicate
+ledger note. Ban list checked on this entry.
