@@ -22328,3 +22328,312 @@ has nothing to go red against.
 - Whose call: done, this seat, on the rule. The engineer for the two routes.
 - Cost: $0.
 - Status: built
+
+### 2026-10-27 - The research seat's drain routed six corrections to two shipped skills, and the quantity-without-a-unit class is now the second instance (skill seat, mine)
+- Trigger: a handoff from `alexandria/research` on the bus (id `5ad199a7`, ref
+  #628) carrying six repairs to live text, five in
+  `agent-security-measurement` and one in `agent-containment`, from the oldest
+  undrained batch in the reading queue, the 2026-09-30 containment and security
+  lines queued twenty-seven days ago.
+- What: re-reads every primary source with
+  `tools/read_paper.py` before applying anything, because a routed correction
+  is itself a second-hand claim and the relayed-citation class has now fired
+  five times in this repository. Then applies what survives, in the skill
+  files, which is this seat's surface under ADR-22.
+- The one worth the owner's eye: `agent-containment` carries
+  "10.67x to 12.95x for the CaMeL baseline" beside ToolFence's own 1.63x and
+  3.79x. CaMeL's own section 6.5 publishes 2.82x input tokens and 2.73x output
+  tokens for the median AgentDojo task under attack on Claude 3.5 Sonnet. That
+  is a factor of four between a relayed multiple and the primary source's
+  multiple for what the sentence presents as one quantity, and none of the
+  three multiples carries a unit or a backbone.
+- Why it is a class and not one bad sentence: the previous run of this seat
+  found the same shape in a unit one shelf over, and the research seat's own
+  drain found three of thirteen queue lines naming a paper as the source of a
+  quantity that paper does not contain. A bare multiple is unfalsifiable until
+  somebody fetches the primary source, which is one run's budget per sentence.
+- First step: all six repairs, each one re-verified
+  against its primary source first, with the backbone and the unit written into
+  every multiple that survives. Three of the six changed on reading, and the
+  containment one changed most: ToolFence's 10.67x and 12.95x are mean
+  end-to-end runtime per sample, 48.0 and 81.7 seconds, and its own 1.63x and
+  3.79x are the same quantity, so the three multiples were comparable all along
+  and the four-fold gap was a unit mismatch with CaMeL's token figure rather
+  than a disagreement. The ask was still exactly right.
+- Whose call: done, this seat, on ADR-22 and ADR-35.
+- Cost: $0.
+- Status: built
+
+### 2026-10-27 - A lint for a bare multiple in a skill, because a number with no unit is uncheckable rather than wrong (skill seat, mine, for the engineer)
+- Trigger: today's containment repair. One sentence carried four multiples with
+  no unit on any of them and no backbone on two, and resolving whether it was
+  wrong took one run from the research seat and one from this seat. The answer
+  was that it was right and unreadable.
+- What: a lint that fails a skill carrying a multiple with no unit. No
+  instrument catches this today, because every one this library runs checks
+  whether a skill is findable, whether its frontmatter parses, whether its eval
+  tasks name real headings, and whether its receipts are fresh. None of them
+  reads a number. A figure with a wrong unit passes all of them forever, and
+  re-reading the citing paper never flags it either, because the citing paper
+  agrees with itself.
+- First step: one lint over `skills/*/SKILL.md` for a bare `N.NNx`, `Nx`
+  or "N times" with no unit noun inside the same sentence, run beside
+  `tools/skill_eval.py --check`. It would have fired on both sentences this run
+  repaired. It is a warning rather than a failure at first, because the false
+  positive rate on nine skills is unknown and a noisy gate gets ignored, which
+  is the shape of incident 20.
+- What it is not: a check that the number is correct, which needs the paper.
+  This only checks that the number is **answerable**, which is the property that
+  was missing and the property that decides whether the next reader can verify
+  it in a grep or in a run.
+- Whose call: the engineer, under `tools/`. This seat cannot write it, since
+  `tools/` is outside the boundary in the skill charter.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-27 - Grep the reading queue for the arXiv id before appending to it, and the line belongs in the skill charter (skill seat, mine, for the owner through the chair)
+- Trigger: the research seat found that the paper this seat queued yesterday as
+  the highest-value unread paper the library has had been struck as read at line
+  93 of the same file the day before, 1,374 lines above it. The new line also
+  repeated the exact mis-attribution the strike existed to correct. Nobody was
+  careless. The file is append-only, which is right for a file two seats write,
+  and append-only means a writer never has to read it.
+- What: one command in the charter step that writes the queue,
+  `prompts/skill-agent.md` step 6: grep `docs/research/reading-queue.md` for the
+  arXiv id before appending it, and read every hit. A struck hit means the paper
+  is read and the answer is on that line. An open hit means add your reason to
+  the existing line rather than opening a second one.
+- What this run did instead, because the charter is outside this seat's write
+  surface: the rule is now in the queue file's own header, above the format
+  line, with the incident and the repair command. That is the point of use and
+  it reaches both writers, the skill seat and the engineer, rather than only the
+  seat whose charter carries it. It is the stronger half of the fix and it is
+  shipped in PR #638.
+- Why the charter line is still worth having: a header is advice and a charter
+  step is a step. The seat that wrote the duplicate had read the header's format
+  line that same run, which is the line directly above where the new rule now
+  sits, and still appended without reading.
+- Whose call: the owner's, through the chair, because `prompts/skill-agent.md`
+  is a charter and HQ standard 21 reserves a seat's own authority to her. This
+  one does not widen this seat's authority, it narrows it by one command, so it
+  is the §22 shape rather than the reserved shape: posted as an ask with a
+  recommendation and proceeding on silence.
+- Cost: $0, and one second of run time per append.
+- Status: proposed
+
+### 2026-10-27 - The board item for a stranger's first-session before-and-after rests on data that does not exist, and the one delta that does exist is negative (skill seat, mine, taken and answered)
+- Trigger: board item `7e6cfb5d`, "Package the before-and-after a stranger sees
+  in their first session," handed to this seat by the PM on 2026-10-18 as the
+  one item with a clear runway. Two merge events this morning told this seat to
+  take the next item in its lane. This is it, and this entry is what taking it
+  produced.
+- The item's premise, quoted: "The with-and-without delta already exists as
+  measured data for every gold skill, because the eval harness has been
+  computing it for weeks now. What is missing is packaging one delta as
+  something a stranger sees right after install, so that proof is not a new
+  finding, just a new presentation of one that already exists."
+- That premise is false for all nine skills, and here is the inventory rather
+  than the assertion. Nine of nine read `status: provisional`. Zero read
+  `active`. Seven carry `differential_screen: "not run. This seat has no route
+  to either eval arm"`. Two carry a 2026-09-30 bare-arm pre-screen, which
+  measures whether the bare subject already knows a section and is not a
+  with-and-without delta. One carries `validated`, and it is the 2026-09-12 A/B
+  trial on `harness-engineering`, which is a qualitative refusal-versus-
+  endorsement record and carries no score.
+- What the harness actually does today: `python3 tools/skill_eval.py --check`
+  returns 9 of 9 skills carrying a conformant eval file, 49 of 50 sections
+  exercised, 182 of 280 rubric criteria tied to a certificate. ADR-40 items 1
+  through 7 are built. **Built is not run.** It has computed no delta for any
+  skill, because the cheap arm needs `GROQ_API_KEY`, which no workflow carries
+  to this seat, and the benchmark arm needs a provider `pipeline/budget.py` does
+  not know. Both are queued in `docs/agents/pending-workflow-changes.md`. The
+  charter's own ADR-38 section says this in the words "this seat cannot run
+  either arm of its own gate today."
+- The one with-and-without measurement the library owns, in full: on the gold
+  specimen `harness-engineering`, four target tasks, two repetitions, subject
+  qwen 27B, judged by gpt-oss-120b. Mean **5.4 without the skill and 5.3 with
+  it**. One section moved its task from 4 to 6 and it is the same section the
+  first consumer report said changed a design decision. The longest procedural
+  section moved its task from 6 to 4.
+- So the item as written asks for a marketing surface built from numbers that do
+  not exist, and the number that does exist is **negative**. Building it would
+  be the precise thing ADR-38 was written to stop: "measure the effect before
+  you claim one," and "never write a delta you did not measure." A
+  before-and-after panel on nine provisional skills is a delta nobody measured,
+  shown to a stranger, outward-facing. This seat is not shipping it and is
+  saying so rather than quietly narrowing the item.
+- What can honestly be packaged for a first session today, which is a real
+  deliverable and a smaller one: the **provenance** receipt rather than the
+  effect receipt. For any skill a stranger opens, every number in it traces to a
+  claim id and an arXiv link; the papers behind it were read in full and the
+  frontmatter says which; the revision history says what changed, on what
+  evidence, and what the paper overturned; `status: provisional` says in the
+  product's own words that the effect is unmeasured. No marketplace offers that
+  and all of it is true today. The differentiator the owner's focus decision
+  names is "traces to claim ids and revises when evidence changes," and that is
+  the sentence this packaging would prove.
+- What it must not say: anything derived from the trigger suite. 58 of 67 at
+  reliability 0.8657 says the skill is findable and says nothing about whether
+  it helps, and the charter forbids reporting it as though it were the
+  measurement.
+- Whose call: the item needs re-scoping by the PM before any seat builds it, and
+  the build itself is the frontend's and the engineer's, since `site/` is
+  outside this seat's boundary. This seat's deliverable on it is this entry, the
+  inventory above, and the board comment carrying both.
+- The order this unblocks in: the honest before-and-after is worth building and
+  it is one workflow change away. `GROQ_API_KEY` reaching this seat turns the
+  cheap arm on, and the cheap arm is the one the charter says can be run often.
+  Until then the item is blocked on a secret, which is the owner's to write and
+  nobody else's.
+- Cost: $0 for the provenance packaging. The effect packaging costs whatever the
+  cheap arm costs per run, which is unknown to this seat because it has never
+  been able to run it.
+- Status: proposed
+
+### 2026-10-27 - The scoped-delivery recall pair is withdrawn as a result, and the arm that moved is the one that reads skill bodies (skill seat, mine, for the engineer)
+- Trigger: the engineer re-measured scoping on main and found the test that
+  asserts scoping keeps recall red, on main rather than on their branch, and
+  handed this seat the decision about what the published claim should say
+  because the movement came from this seat's text.
+- Verified here rather than taken: `tools/skill_scope.py --measure` run twice,
+  once against a clean `origin/main` worktree and once against PR #638. At 20
+  distractors, unscoped 0.8980 on both; scope/body 0.8776 on main and **0.8163**
+  on this branch; scope/desc 0.8776 on both. Recorded 2026-10-26 was unscoped
+  0.8367 and scope/body 0.8776.
+- The engineer's number holds and one sentence of their reading does not. They
+  wrote that the scoped arm "has not moved at all, within rounding," which is
+  true of the row they measured and false one branch later. Two prose
+  corrections to two skill bodies moved scope/body three more cases down. Both
+  arms moved today, in opposite directions.
+- The decision, which is this seat's because the claim is: **the recall pair is
+  withdrawn in both directions.** The suite has 49 golden cases, so one case is
+  2.04 points, and the published "0.837 against 0.878" was a two-case difference
+  printed to three decimals. Today's inversion is no more evidence against
+  scoping than the original was for it.
+- What survives, and it was identical in all three measurements: 2.81 skills and
+  375 context words against 29 skills and 1,455 words. A **3.9x context
+  reduction** at 20 distractors. That is what scoping was built for and it is
+  the claim worth printing.
+- Why scope/body is the arm that moves: it ranks the catalogue by BM25 over each
+  skill's body, so editing bodies is editing its input. scope/desc and the
+  trigger router read descriptions, which this run did not touch, and both held
+  exactly, the trigger suite case for case at 58/67. The instrument is not
+  noisy. It measures a surface routine maintenance rewrites weekly.
+- The assertion this seat would write, offered and not imposed, since `tests/`
+  and `docs/evals/` are the engineer's lane and the red assertion is left alone
+  here: assert the context reduction, stable to 0.01 skills across three
+  measurements, and assert scope/body recall stays **within one case** of
+  unscoped rather than above it.
+- Whose call: the engineer's, for the test and the recorded result. This entry
+  is the blessing they asked for and the correction they did not.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-27 - The board note belongs at the draft, not at the end: one line for the ship-first section of every charter (skill seat, mine, for the PM to post as an ask)
+- Trigger: this seat's wake said the previous run "was cut off at turn 110 and
+  nothing has completed for this seat since, so that work is still exactly where
+  it was left." Checked rather than taken: that run's pull request was readied at
+  2026-10-27T01:44:40Z, so the forge had everything. What the cut ate was the
+  step after, and this seat's last board `done` is 2026-10-26T21:10:20Z with two
+  readied pull requests since.
+- The cost was not bookkeeping. `alexandria/research` replied at
+  2026-10-27T01:30:45Z with three routed corrections to live skill text and a
+  corpus ruling, inside the window of the run that was cut. That run never read
+  it and never said so, so a correction waited four hours in a company whose
+  seats wake on events, and the run that finally answered it had to establish
+  from the forge that a pull request described as unfinished was finished.
+- The proposal, and it is one sentence: the ship-first section already says to
+  open the draft pull request in the first few turns, because "a run that dies at
+  turn 90 with a draft PR open has delivered most of its value." The same
+  argument applies one surface over and no charter makes it. **Post the board
+  note when the draft opens, not when the run ends.** The end-of-run `done` still
+  carries the result; the opening `note` carries the existence of the run, which
+  is the half a cut can eat.
+- Practised rather than only proposed: this run sent its note at the start,
+  naming the supersession, the chain depth and what it had found about the last
+  two runs. One command, and it is what a reader of the bus would have needed
+  four hours ago.
+- Whose call: `prompts/*-agent.md` is a charter path, so this is held by the
+  merge rule that governs charter diffs rather than written by this seat. It
+  narrows nothing and grants no seat a right it does not hold, so it is the
+  HQ standard section 22 shape: posted by the PM as an `ask` with the PM's own
+  recommendation, proceeding on silence. It is an all-seats line rather than a
+  skill-seat line, which is the only reason it is not simply this seat's to ask.
+- Filed as
+  `INC-2026-10-27-a-run-cut-after-gh-pr-ready-ships-the-work-and-tells-nobody`.
+- Cost: $0, one command per run.
+- Status: proposed
+
+### 2026-10-27 - The receipt-ranking tie cannot be fixed by naming files, because the two readers break it in opposite directions (skill seat, mine, for the engineer)
+- This is the third raise of one defect and the fifth collision. The 2026-09-30
+  validation-defect entry carries it as "sorts on `generated`, which is a date
+  and not a timestamp."
+  `INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`
+  raised it with a symptom. Today four bundles carried `generated: 2026-10-27`
+  and three of them lost one tie.
+- What is new and what kills the cheap workaround: the earlier raise says the two
+  consumers "disagree about which receipt is newest," and they disagree in
+  **opposite directions on a lexical tie**.
+  `skills/_validation/trigger_test.py` keeps the alphabetically first filename,
+  because `rank_bundles` is a stable sort over `sorted(glob.glob(...))`.
+  `tools/panel_validator.py` takes `sorted(..., reverse=True)` and keeps the
+  last. `site/lib/content.js` globs and takes whatever the filesystem listed. So
+  a name chosen to pass the receipts gate is a name chosen to make the panel
+  quote the other bundle, and no name satisfies all three.
+- Therefore the only mitigation available from inside this seat's boundary is to
+  move the losers out of the glob, which is what `superseded/` is and which is
+  why that directory grows every time this recurs rather than the names getting
+  cleverer. It is a holding pattern and the README there says so.
+- The fix is unchanged and is one sort key in two files: give `generated` a time,
+  or tie-break `rank_bundles` and `rankBundles` on a recorded timestamp, and
+  record the library composition in `policy` while that file is open.
+  `skills/_validation/trigger_test.py` is inside this seat's boundary, but its
+  own docstring says the rule "has to stay the same rule or this check and the
+  page disagree about which bundle is the library's result", so changing one side
+  alone makes the disagreement worse. Both sides move together or neither does.
+- One datum the fix should keep: today's four bundles are a clean control. No
+  skill `description` changed across four runs, so the composition the engine
+  scores never moved, and all nine suites are identical case for case in all
+  four, 58 of 67 at reliability 0.8657 four times over. Six prose revisions to
+  four skills moved no case at all.
+- Whose call: the engineer, as the 2026-09-30 entry already assigns it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-27 - The library page shows a skill's claim ids and not its revisions, which is half the differentiator (skill seat, mine, for the engineer)
+- Charter step 8 asks this seat to check that the site parses whatever a skill
+  cites and to flag a rendering gap rather than edit `site/` itself. Checked this
+  run against `site/lib/skill-provenance.js` directly, with both revised skills
+  as input.
+- What parses correctly: `name`, `description`, `version`, `status`, `extracted`,
+  `validated`, `claims` and `papers`. Both files came back version 4, status
+  provisional, 15 claim ids each, 8 and 10 paper lines, `validated` empty. No
+  frontmatter defect on this seat's side.
+- What `readProvenance` does not read at all: **`revisions`**, **`revised`**,
+  **`differential_screen`** and **`reviews`**. Confirmed two ways: the returned
+  object has no such keys, and `grep -rn "revisions\|differential_screen\|reviews"
+  site/lib/*.js site/app` prints nothing.
+- Why that is not cosmetic. The focus decision's differentiator is that an
+  alexandria skill traces to claim ids **and revises when evidence changes**, and
+  the page carries the first half and not the second. `agent-security-measurement`
+  now holds three revision entries, one of them a sentence this library shipped
+  in the morning and overturned in the afternoon against the paper's own tables.
+  That is the product's whole argument and a reader of the page cannot see it.
+  `extracted` renders and `revised` does not, so a skill revised four times still
+  shows only the date it was first written.
+- `differential_screen` is the other loss and it is the honest half. Every skill
+  in the library carries a sentence there saying the screen has not run and why,
+  which ADR-38 requires and which the page drops, so a visitor sees
+  `status: provisional` with no explanation of what is missing. The page can say
+  "unmeasured, and here is the reason" in the product's own words, from text that
+  already exists in every file.
+- The ask, in rough order of value per line of code: read `revisions` and render
+  the newest two with their dates; read `revised` beside `extracted`; render
+  `differential_screen` as the sentence under the status badge; read `reviews`
+  so the ADR-38 consumer-report lane is visible when it starts filling. Four
+  fields in one function and one component.
+- Whose call: the engineer, for `site/lib/skill-provenance.js` and
+  `site/app/components/SkillLibrary.jsx`. Nothing in `skills/` needs to change,
+  which is the point of flagging rather than editing.
+- Cost: $0.
+- Status: proposed

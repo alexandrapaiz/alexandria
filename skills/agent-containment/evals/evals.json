@@ -6,7 +6,7 @@
   "adr": "ADR-36",
   "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
   "judge": "a model other than the subject; rubric tasks only",
-  "note": "Seven treatment tasks and two controls. Revised 2026-10-06 (ADR-38 retrofit, suite_version 3). Three changes. (1) `policy` is pre-registered, so the run cannot pick its own n or its own threshold after seeing a delta. (2) `sections` is remapped to the four delta headings the retrofitted SKILL.md actually carries; ac-t3 and ac-t6 are removed with the sections they exercised (isolation tiers, and the undo primitive now queued as a second skill), and ac-t8 is removed as a duplicate of ac-t5's section, which is now a caveat rather than a section. (3) `source.claims` is no longer empty: the corpus now holds real containment claims, so each task names the ids its situation came from. ac-t9 and ac-t10 are new and are `tests_pass` rather than rubric, per ADR-38 rule 6; each was run against its own stub and against a reference implementation before shipping, scoring 1 of 4 and 2 of 4 on the stubs and 4 of 4 on the references, so both discriminate. No arm of this suite has been run against a model: this seat has no route to either eval arm. Contract: skills/_validation/evals/README.md.",
+  "note": "Seven treatment tasks and two controls. Revised 2026-10-06 (ADR-38 retrofit, suite_version 3). Three changes. (1) `policy` is pre-registered, so the run cannot pick its own n or its own threshold after seeing a delta. (2) `sections` is remapped to the four delta headings the retrofitted SKILL.md actually carries; ac-t3 and ac-t6 are removed with the sections they exercised (isolation tiers, and the undo primitive now queued as a second skill), and ac-t8 is removed as a duplicate of ac-t5's section, which is now a caveat rather than a section. (3) `source.claims` is no longer empty: the corpus now holds real containment claims, so each task names the ids its situation came from. ac-t9 and ac-t10 are new and are `tests_pass` rather than rubric, per ADR-38 rule 6; each was run against its own stub and against a reference implementation before shipping, scoring 1 of 4 and 2 of 4 on the stubs and 4 of 4 on the references, so both discriminate. No arm of this suite has been run against a model: this seat has no route to either eval arm. Contract: skills/_validation/evals/README.md. Revised 2026-10-27 (the routed cost correction): ac-t11 is new and is written against the one decision the revision changes, a team ordering two defences on cost from two published ratios that are different statistics on one token stream. The skill's old caveat was true as written and inverted the ordering as read, so the task is written to fail for a subject that trusts a published multiple, which is what a bare subject does.",
   "tasks": [
     {
       "id": "ac-t1",
@@ -321,6 +321,87 @@
       }
     },
     {
+      "id": "ac-t11",
+      "kind": "treatment",
+      "sections": [
+        "Delta 1: the enforcement point, and the deny list that measured no better than nothing"
+      ],
+      "form": "prompt",
+      "situation": "CaMeL's own overhead tables: the paper's headline is 2.82x input and 2.73x output tokens, the tool filter's published input median under attack is 7.06x, and the blended ordering computed from the absolute token counts in Tables 11 and 12 runs the other way, CaMeL 4.30x against the full tool filter's 3.43x at output priced five times input.",
+      "source": {
+        "paper": "CaMeL: Defeating Prompt Injections by Design",
+        "arxiv": "arxiv.org/abs/2503.18813",
+        "claims": [
+          1226
+        ]
+      },
+      "prompt": "We are choosing between a capability-based design and a tool-filter design for our agent's prompt-injection defence, and cost is the deciding factor because we pay per token. The capability paper publishes 2.82x input and 2.73x output tokens over native tool calling. The tool-filter number we found is a 7.06x input median under attack. So the capability design is roughly two and a half times cheaper and we are going with it. Sanity-check the reasoning before we write it into the design doc.",
+      "without_skill": "Accepts the arithmetic, because both multiples are real published figures from the literature and the comparison looks like one. Adds sensible but orthogonal advice: measure on your own workload, watch latency as well as tokens, consider caching, and confirm the benchmark resembles your traffic.",
+      "with_skill": "Refuses the comparison on two grounds before any workload advice. First, the two multiples are different statistics under different conditions, one a headline that matches no under-attack row in its own paper and the other an input median, so they are not comparable and neither is quotable without its statistic and its condition. Second, cost is two token streams at two prices and an input multiple alone is half a cost: the capability design's output stream is about six times the undefended mean under attack while the filter's is about one. Recomputes from the paper's absolute token counts and reverses the decision: with output priced at five times input the capability design costs 4.30x an undefended task against the full filter's 3.43x, so it is the more expensive of the two, and it stays the more expensive at any output-to-input price above about 2.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "not_comparable",
+            "criterion": "States that the two published multiples are not comparable as given, because they are different statistics measured under different conditions, rather than only advising a fresh measurement.",
+            "anchors": {
+              "0": "Accepts the two-and-a-half-times conclusion.",
+              "1": "Says to re-measure on your own traffic without saying the published pair is non-comparable.",
+              "2": "Names the mismatch: one figure is a headline whose condition matches no table row and the other is a median under attack, so a figure needs its statistic and its condition before it can be compared."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "the headline 2.82x input under attack against Table 13's 2.02x input median under attack and Table 10's 2.73x input median not under attack, three values for one quantity in one paper"
+            }
+          },
+          {
+            "id": "both_streams",
+            "criterion": "States that a cost is two token streams at two prices, so an input multiple alone cannot order two defences.",
+            "anchors": {
+              "0": "Treats input tokens as the cost.",
+              "1": "Mentions output tokens exist.",
+              "2": "States the rule, that a cost figure names both streams or it is not a cost figure, and gives the output multiples that make the difference."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "CaMeL's output stream at 1843 against 303 undefended tokens under attack, roughly 6.08x, against the full tool filter's 313 against 303, roughly 1.03x (CaMeL Table 12)"
+            }
+          },
+          {
+            "id": "ordering_inverts",
+            "criterion": "Reverses the decision rather than only qualifying it: priced on both streams from the absolute counts, the capability design is the more expensive of the two.",
+            "anchors": {
+              "0": "Leaves the decision in place.",
+              "1": "Says the cost difference may be smaller than claimed.",
+              "2": "States that the ordering inverts and gives the blended multiples, with the price ratio named and the break-even stated so the conclusion does not rest on the assumption."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "4.30x for CaMeL against 3.43x for the full tool filter at output priced five times input, break-even at an output-to-input ratio of 2.03 (computed from CaMeL Tables 11 and 12)"
+            }
+          },
+          {
+            "id": "derive_dont_quote",
+            "criterion": "Prescribes the procedure rather than only correcting the instance: take the paper's absolute per-stream token counts and derive the multiple the question needs, instead of quoting any ratio the paper publishes.",
+            "anchors": {
+              "0": "Offers no procedure.",
+              "1": "Says to read the appendix or check the source.",
+              "2": "Names the procedure: absolute counts per defence per stream with the attack condition and the statistic attached, and every ratio derived from those."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "the absolute per-stream means in CaMeL Tables 11 and 12, from which 6.17x, 3.58x and 1.82x are all derivable for input tokens under attack"
+            }
+          }
+        ]
+      },
+      "exploit": {
+        "answer": "You are right to be careful here. Published overhead multiples are not always comparable, because papers differ in their statistics, their conditions and their backbones, and a cost is really two token streams rather than one. I would not write the two-and-a-half-times figure into the design doc without checking which statistic each number is and whether output tokens are included. The honest move is to re-measure both defences on your own traffic, price both streams, and let the ordering fall out of your own numbers rather than the literature's.",
+        "why": "Every criterion's vocabulary is present, including the two-streams rule and the statistic-and-condition rule, and no number is. It never says which statistic either published figure is, it never prices the streams, and above all it leaves the team's decision in place by deferring to a future measurement. A judge reading for words scores this highly. A judge reading for the certificate scores it zero, because the task's whole content is that the ordering inverts today on the paper's own tables.",
+        "ceiling": 0.0
+      }
+    },
+    {
       "id": "ac-c1",
       "kind": "control",
       "sections": [],
@@ -466,5 +547,6 @@
     "subject": "kimi-k2.6",
     "judge": "openai/gpt-oss-120b",
     "min_delta": 0.2
-  }
+  },
+  "revised": "2026-10-27"
 }
