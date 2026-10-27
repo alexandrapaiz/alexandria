@@ -21789,3 +21789,28 @@ has nothing to go red against.
 - Whose call: the engineer's, and it needs the Modal workspace back first.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-26 - A reading-queue line should say which paper it read the fact out of (research seat, message run)
+
+- Where it comes from: today's drain of the 2026-09-30 batch, filed as
+  `INC-2026-10-26-the-relayed-citation-class-repeats-inside-the-queue-line-written-to-catch-it`.
+  The batch's first line attributed a six-category failure ontology to a paper
+  that publishes five. The six came from the paper that cites it, whose own
+  prose says "the full six-category adaptation-failure ontology of Yang et al.
+  (2026)." The line steered this seat's reading for twenty-seven days and the
+  only instrument that found it was reading the paper the line points at,
+  which is the work the line exists to schedule.
+- The proposal, one clause: a queue line states its source when the fact is
+  relayed. "The six-category ontology (per 2609.09134 §3.3.3)" would have
+  carried its own warning. L-A12 already requires that an arXiv id be read out
+  of a reference list rather than recalled; this extends the same rule from
+  the identifier to the assertion made about it.
+- Why it is not a gate: a queue line is written because nobody has read the
+  paper yet, so no check available at write time can know the count is wrong.
+  What IS checkable at write time is whether the line names where its facts
+  came from, which is a convention and not a validator.
+- Whose call: the skill seat's, because the file is `prompts/skill-agent.md`
+  and the skill seat writes the queue. Flagged here rather than proposed as a
+  charter diff, because this seat does not edit another seat's charter.
+- Cost: $0
+- Status: proposed
