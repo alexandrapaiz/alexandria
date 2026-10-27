@@ -323,6 +323,47 @@ UNCOVERED = {
     # unknown stops a close are the ones that would be silent on a pull
     # request.
     "tests/test_loop_close.py",
+    # Added 2026-10-26 with the arXiv window's repair, and pinned for the same
+    # structural reason as every line above: the step that would run it goes
+    # in `.github/workflows/checks.yml`, which no seat's token may write, and
+    # `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words not
+    # to attempt that file again. The staged replacement runs it, because that
+    # file runs the suite rather than naming files.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern.
+    #
+    # What it guards is the top of the pipeline, and in the direction this
+    # repository has just learned is the expensive one. `pipeline/ingest.py`
+    # read a sliding window for its whole life, so a run it missed did not
+    # lose time, it lost records: 290 to 570 papers of cs.AI and cs.LG are
+    # already beyond the reach of any future run
+    # (`INC-2026-10-26-the-arxiv-window-is-smaller-than-two-of-the-categories-behind-it`).
+    # The assertions whose silence would cost most are the two bounds rather
+    # than the window itself, because a regression that re-caps the window at
+    # one page reads as a green run with a smaller corpus, which is exactly
+    # how the defect went unmeasured for the job's whole life.
+    "tests/test_arxiv_window.py",
+    # Added 2026-10-26 with the fifth evidence grade, and pinned for the same
+    # structural reason as every line above: the step that would run it goes
+    # in `.github/workflows/checks.yml`, which no seat's token may write, and
+    # `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words not
+    # to attempt that file again. The staged replacement runs it, because that
+    # file runs the suite rather than naming files.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern.
+    #
+    # What it guards is a guard that has to be wrong in one direction only.
+    # `evidence.relay_markers` decides that a claim is another work's result
+    # rather than the source's own, and it decides it off the evidence text
+    # when the model said otherwise. The assertions whose silence would cost
+    # most are not the ones about the sentence that cost a shipped skill; they
+    # are the five first-hand sentences that read relational and must not
+    # fire. A loosened marker regresses those silently, and the only visible
+    # symptom is a corpus that grades its own measurements second-hand, which
+    # is the failure this grade exists to stop, running backwards.
+    "tests/test_relayed_claims.py",
     "tests/delivery.test.mjs",
     "tests/issues.test.mjs",
     "tests/markdown.test.mjs",

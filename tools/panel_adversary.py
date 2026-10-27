@@ -89,6 +89,14 @@ measured. Both are recorded as evidence and neither changes a verdict, because
 no decision in any register sets a bar for either, and inventing one here would
 be this reviewer legislating.
 
+`evidence-relayed` is a third of the same kind, added 2026-10-26, and it is
+the one that had already cost something. A `relayed` row is another work's
+result as the source reports it, and on 2026-10-26 a shipped skill's central
+delta turned out to rest on one paper's sentence about two others, wrong about
+both. This reviewer cannot tell whether such a sentence is true. What it can
+do is say which cited claims are second-hand and name the work each one points
+at, so the reading that settles it has an address rather than a worry.
+
 ## The three states
 
     exit 0    the graph agrees, everywhere it was asked
@@ -134,6 +142,13 @@ SEVERITY = {
 # The grades claims.evidence_grade admits, weakest last. Recorded, never graded.
 WEAK_GRADES = ("asserted", "anecdote")
 
+# The fifth grade, which is not weak in the same way and so is not in the list
+# above. `asserted` and `anecdote` are a source speaking without a measurement.
+# `relayed` is a source reporting a measurement that belongs to a work this
+# corpus has never read, so the sentence counting rows with no number behind
+# them would describe it wrongly in both directions. It gets its own finding.
+RELAYED = "relayed"
+
 
 # -------------------------------------------------------------------- the SQL
 # Every statement this file sends, in one place, so tests can parse them with
@@ -142,7 +157,7 @@ WEAK_GRADES = ("asserted", "anecdote")
 
 QUERIES = {
     "cited": """
-        select c.id, c.interpreted_at, c.evidence_grade
+        select c.id, c.interpreted_at, c.evidence_grade, c.attributed_to
         from claims c
         where c.id = any(%s)
     """,
@@ -176,12 +191,13 @@ def connect(writable: bool):
 
 
 def cited_claims(conn, claim_ids: list[int]) -> dict[int, dict]:
-    """{claim id: {interpreted_at, evidence_grade}} for the ids that exist."""
+    """{claim id: {interpreted_at, evidence_grade, attributed_to}} per id."""
     if not claim_ids:
         return {}
     rows = conn.execute(QUERIES["cited"], (list(claim_ids),)).fetchall()
-    return {int(cid): {"interpreted_at": seen, "evidence_grade": grade}
-            for cid, seen, grade in rows}
+    return {int(cid): {"interpreted_at": seen, "evidence_grade": grade,
+                       "attributed_to": whose}
+            for cid, seen, grade, whose in rows}
 
 
 def disagreements(conn, claim_ids: list[int]) -> list[dict]:
@@ -363,7 +379,40 @@ def grades(row, cited: dict[int, dict]) -> list[Finding]:
     tail = (f"; {weak} of them carry no measurement behind them"
             if weak else "")
     return [Finding("evidence-grade", "note",
-                    f"evidence behind the cited claims: {shape}{tail}")]
+                    f"evidence behind the cited claims: {shape}{tail}")] \
+        + relayed(row, cited)
+
+
+def relayed(row, cited: dict[int, dict]) -> list[Finding]:
+    """Cited claims whose result belongs to a work nobody here has read.
+
+    Also not an ADR-13 duty, and deliberately not a verdict: no decision in
+    any register says a skill may not rest on a relayed row, and inventing
+    one here would be this reviewer legislating. What it does instead is give
+    the finding an address, because the repair the register asks for is that a
+    load-bearing citation becomes a reading-queue line
+    (`INC-2026-10-26-a-papers-own-citation-was-wrong-and-the-corpus-carried-it-faithfully`)
+    and a queue line needs to name the work to go and read.
+
+    Silent when there are none, unlike the grade finding above. Every skill
+    would otherwise carry one more note saying nothing happened, and this one
+    is addressed to a reader who has something to do about it.
+    """
+    second_hand = [cid for cid in row.claim_ids
+                   if (cited.get(cid) or {}).get("evidence_grade") == RELAYED]
+    if not second_hand:
+        return []
+    addressed = []
+    for cid in second_hand:
+        whose = (cited.get(cid) or {}).get("attributed_to")
+        addressed.append(f"{cid} ({whose})" if whose
+                         else f"{cid} (the source named no work)")
+    return [Finding(
+        "evidence-relayed", "note",
+        f"{len(second_hand)} of this skill's cited claims are another work's "
+        f"result as the source reports it, not a result the source measured: "
+        f"{', '.join(addressed)}. Each one is a reading-queue line until the "
+        f"cited work is read, and a caveat in the skill until then.")]
 
 
 # ------------------------------------------------------------------- the pass

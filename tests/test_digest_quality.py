@@ -352,3 +352,75 @@ def _blocked():
 
 def _never_called(*args, **kwargs):
     raise AssertionError("the generator was called when it should not have been")
+
+
+# ---------------- the word-edge class ----------------
+
+# Filed 2026-09-24 as item 3 of "The quality gate passes the issue the owner
+# rejected", escalated at thirty days on 2026-10-24 after a later run
+# rediscovered it and described it as new. Three gates in this repository had
+# the same defect, a pattern matching inside a word instead of at its edge, so
+# the tests below are written against the class rather than against the two
+# lines of 2026-W39 that happened to expose it.
+
+# Her close, mandated 2026-09-30 and required in every issue by canon law 10.
+# The gate warned on it forever, because "every" contains "very", so the one
+# finding an issue could never clear was the one the issue was required to
+# carry.
+MANDATED_CLOSE = "Accelerate every builder and agent to frontier speed."
+
+
+def details(body, rule):
+    return [f.detail for f in findings(body) if f.rule == rule]
+
+
+def test_the_close_the_owner_mandated_raises_nothing():
+    assert findings(f"# T\n\n{MANDATED_CLOSE}\n") == []
+
+
+def test_the_issue_the_gate_has_actually_read_loses_both_false_warnings():
+    """2026-W39 is the only issue this gate has ever been run against. It
+    returned seven warnings and two of the seven were the substring bug."""
+    body = (REPO / "site" / "content" / "issues" / "2026-W39.md").read_text(encoding="utf-8")
+    found = findings(body)
+    assert details(body, "empty-intensifier") == []
+    assert {f.rule for f in found} == {"bare-number"}, "the rest of the gate is unchanged"
+
+
+def test_no_listed_term_fires_from_inside_a_longer_word():
+    """The class guard. Every literal in the four lists, buried behind one
+    letter so its left edge is gone, must raise nothing.
+
+    The right edge is deliberately left open, so this does not assert the
+    mirror case: a listed word's inflections are the same defect as the word
+    and have to keep matching.
+    """
+    lists = (gate.SLOP_ALWAYS, gate.SLOP_USUALLY, gate.HEDGES, gate.INTENSIFIERS)
+    for terms in lists:
+        for term in terms:
+            buried = f"# T\n\nThe x{term} of it, measured against the baseline.\n"
+            hits = [f for f in findings(buried) if term in f.detail]
+            assert hits == [], f"x{term} matched {term!r} inside a word: {hits}"
+
+
+def test_every_listed_term_still_fires_standing_on_its_own():
+    """The other half, so the guard above cannot be satisfied by a gate that
+    has stopped looking."""
+    for terms in (gate.SLOP_ALWAYS, gate.SLOP_USUALLY, gate.HEDGES, gate.INTENSIFIERS):
+        for term in terms:
+            body = f"# T\n\nThe {term} of it, measured against the baseline.\n"
+            hits = [f for f in findings(body) if term in f.detail]
+            assert hits, f"{term!r} on its own raised nothing"
+
+
+def test_the_always_slop_still_blocks_on_an_inflection():
+    for inflected in ("delves", "delved", "revolutionized", "supercharged", "realms"):
+        body = GOOD.replace("against the same benchmark", f"and it {inflected} the loss")
+        assert "slop-lexicon" in rules(blocking(body)), inflected
+
+
+def test_an_intensifier_at_the_end_of_a_line_is_caught_now():
+    """The recall half of the same defect: the trailing space the terms used
+    to carry was standing in for a word boundary, and a line that ends on the
+    word has no space after it."""
+    assert details("# T\n\nThe gain is very\nlarge.\n", "empty-intensifier") == ["'very'"]

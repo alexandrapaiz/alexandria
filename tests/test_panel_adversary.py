@@ -263,8 +263,9 @@ def edge(to_claim, from_claim, relation, confidence=0.9, claim="newer evidence",
             "paper_id": paper_id, "created_at": None}
 
 
-def interpreted(*ids, grade="controlled"):
-    return {i: {"interpreted_at": "2026-10-01", "evidence_grade": grade}
+def interpreted(*ids, grade="controlled", attributed_to=None):
+    return {i: {"interpreted_at": "2026-10-01", "evidence_grade": grade,
+                "attributed_to": attributed_to}
             for i in ids}
 
 
@@ -452,7 +453,12 @@ class FakeConn:
             return _Result(rows)
         if "from claims" in sql:
             ids = set(params[0])
-            rows = [(i, v["interpreted_at"], v["evidence_grade"])
+            # Four columns, in QUERIES["cited"]'s own order. A fake with the
+            # old arity reads as a ValueError deep inside the reviewer rather
+            # than as a stale fake, which is the failure this comment exists
+            # to shorten.
+            rows = [(i, v["interpreted_at"], v["evidence_grade"],
+                     v.get("attributed_to"))
                     for i, v in self.cited.items() if i in ids]
             return _Result(rows)
         self.inserted.append(params)

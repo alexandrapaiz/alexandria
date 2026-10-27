@@ -4388,6 +4388,16 @@ needs an owner decision or an owner push, not an engineer build.
      artifact, after the heading rule and the ASCII rule.
   3. `INTENSIFIERS` matches the substring `"very "`, so it fires on "every
      screen" and "every team". Both W39 warnings are false. Word boundaries.
+- **Item 3 shipped 2026-10-26 (engineer seat, message run).** The four word
+  lists are anchored on their left edge, which is the whole of what this item
+  asked for, and the trailing space `INTENSIFIERS` carried is gone because it
+  was a boundary in the wrong place. 2026-W39 goes from 7 warnings to 5 and
+  both false ones are the two named above. `tests/test_digest_quality.py`
+  asserts the class rather than the two lines: every literal in every list,
+  buried behind one letter, raises nothing. Items 1 and 2 of this entry are
+  untouched and still open, which is why the status is left where it is: an
+  empty `parse_items` is still not a blocking finding, and `TYPESETTER` is
+  still four characters rather than the ASCII class question.
 - Why it is filed rather than patched: `tools/` and `pipeline/` are outside
   the writer seat's writable surface, and the editorial half of the fix is
   already in this pull request. The generator now counts items against links
@@ -19972,6 +19982,15 @@ has nothing to go red against.
   gate runs before it reads an issue.
   Three gates, three patterns matching inside a word instead of at its edge,
   two of them still live. The class is worth one pass rather than three fixes.
+- **Closed 2026-10-26 (engineer seat, message run), thirty-two days after the
+  filing.** The pass was taken on the gate rather than on the two lines, and
+  the measurement is the same command this entry used: 7 warnings to 5 on
+  2026-W39, with the owner's mandated close now raising nothing. The fourth
+  list, `SLOP_USUALLY`, needed no change and that is the part worth carrying:
+  it was the one list already anchored, on both edges, and it is the only one
+  of the four that has never produced a false finding. The rule is written
+  into `docs/product/digest-quality.md` beside the gate's own table, so the
+  next rule added to that file inherits it instead of rediscovering it.
 - `TYPESETTER` is the other half of the 2026-09-24 filing and is unchanged:
   four characters where ban list 13 is the class of every non-ASCII character,
   and `pipeline/weekly.py` builds the payload's `dates` with an en dash the
@@ -21812,5 +21831,491 @@ has nothing to go red against.
 - Whose call: the skill seat's, because the file is `prompts/skill-agent.md`
   and the skill seat writes the queue. Flagged here rather than proposed as a
   charter diff, because this seat does not edit another seat's charter.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - `is_priority` matches inside words, and it mirrors a SQL `%term%` so the fix has to move two languages at once (engineer seat, message run)
+- Trigger: after anchoring the pre-send gate's word lists on their left edge,
+  this run grepped `tools/` and `pipeline/` for the rest of the class. The gate
+  is clean now and one live instance is left:
+  `pipeline/priority.py:99`, `any(term in low for term in PRIORITY_TERMS)`,
+  which decides whether a paper is one of the standing threads and therefore
+  whether it is read at all.
+- What: three of the thread terms are short enough to land inside an unrelated
+  word, and `mcp` and `a2a` are the two that matter, because a title carrying
+  either inside a longer token is triaged as the protocols thread on a
+  coincidence. A fourth, `isolation`, is a whole word and still wrong in a
+  different way: it is the containment thread's term and it is also the word a
+  psychology paper uses. The first two are the word-edge class and the third is
+  not, so they want different answers.
+  The part that makes this more than a one-line fix is the comment directly
+  above the predicate. `PRIORITY_PATTERNS` derives `%term%` from the same tuple
+  for Postgres `ilike any`, deliberately, so the two languages cannot drift. A
+  `\b` in Python alone breaks that guarantee in the direction nobody would
+  notice: the SQL would keep selecting papers the Python then declines to call
+  priority. Postgres has `~*` with `\y`, so both halves can move together, and
+  moving them together is the whole of the work.
+- First step: the measurement, not the patch, because this one can be wrong in
+  the expensive direction. Run both predicates over the `papers` titles already
+  in the database and count the rows they disagree on, per term. If the answer
+  is zero the entry closes as a comment. If it is not, the number says which
+  terms need the edge and which need a better term. It needs a read-only
+  database handle, so it waits on `NEON_RO_URL` having a usable value or on the
+  Modal workspace being back, whichever comes first.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - `bare-number`'s promotion condition cannot be evaluated, because nothing counts the issues or records which warnings were real (engineer seat, message run)
+- Trigger: writing the word-edge rule into `docs/product/digest-quality.md`
+  meant reading the paragraph it sits next to, which says `bare-number`
+  "becomes blocking when it has run for four issues without a false positive",
+  and `citation-per-item` becomes blocking on a named `gather()` change. The
+  second has a trigger a command can check. The first does not: no file counts
+  how many issues the gate has read, and no file records a verdict on any
+  warning it raised.
+- What: the gate has read exactly two issues in its life, 2026-W37 and
+  2026-W39, and this run's own measurement is the evidence that nobody has
+  adjudicated either. 2026-W39's five remaining warnings are all `bare-number`
+  and no register says whether any of the five is real. So the promotion
+  condition is a sentence that will never be met, not because the gate is bad
+  but because the counter it names does not exist, and the next seat to read
+  that paragraph will either guess or leave it for a sixth time. A rule whose
+  trigger nobody can evaluate is the register-gate defect of incident 20 in its
+  cheapest form: it was written down and nothing opens it.
+- First step: one append-only file, `docs/product/digest-quality-log.md`, one
+  row per issue the gate reads, holding the issue label, the counts by rule and
+  a verdict column that starts empty. The press writes the row itself, since
+  `hold_for_quality` already has the findings in hand at the moment it decides,
+  so no run has to remember. The verdict column is a person's, which is the
+  point: the promotion is then a reading of a file rather than a reading of
+  somebody's memory of a Tuesday.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Vale wraps a rule's tokens in word boundaries by default and makes the substring the opt-in, where this gate had it the other way round (engineer seat, message run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  build. The run's work was a substring match in a text gate that had been
+  filed for thirty-two days, so the scan went to the prose linter that is the
+  nearest product in the world to `tools/check_digest_quality.py`: Vale
+  (docs.vale.sh), the open-source style checker that runs a repository's house
+  style over its prose in CI.
+- **What is worth stealing.** Vale's rules are declared as data rather than
+  written as code. A rule is a YAML file naming its `extends` (`existence` for
+  a pattern that must not appear, `substitution` for one that carries its
+  replacement), its `tokens`, its `level` of suggestion, warning or error, and
+  its `scope` of heading or text. The detail that lands on this run: Vale wraps
+  every token in word boundaries **by default**, and a rule that genuinely
+  wants to match inside a word has to say `nonword: true` and name itself as
+  the exception. That is the exact inversion of the defect this run fixed. The
+  gate's four word lists were four hand-written loops, three of them matching
+  substrings, and the one that was right was right by somebody having
+  remembered. In Vale the boundary is the default and the exception is
+  declared, so the defect this repository carried for a month is not expressible
+  without writing a word that draws a reviewer's eye.
+  Also worth having and smaller: `scope`. This gate has one scoped rule,
+  `skeleton-heading`, and it scopes itself with an ad-hoc `line.startswith("#")`
+  in its own loop. Vale makes the scope a field, which is how it has heading
+  rules and prose rules without two dialects of rule.
+- **What alexandria does better.** Vale reports and a person decides, and its
+  severity is advice to whoever is looking at the editor. This gate sits inside
+  the send path, and a blocking finding stops the email and triggers one
+  rewrite against the findings before it holds the issue. And every rule here
+  cites the ban-list entry that authorized it, so a finding carries its
+  provenance back to the owner's own correction and a reader can ask whether the
+  rule is still what she asked for. Vale styles cite a style guide by
+  convention and nothing checks the citation.
+- What: collapse the four word lists and their four identical
+  loops into one table of rule declarations, each row naming its terms, level,
+  rule name, ban-list entry and whether it is scoped to headings, with the word
+  edge as the default and a `nonword` flag as the only way to opt out. The four
+  loops are already the same loop, so this removes code rather than adding it,
+  and the class test this run wrote becomes a loop over the table instead of a
+  loop over four names it has to be told about.
+- First step: the table and the three word-list rules moved onto it, leaving
+  `skeleton-heading` and the regex rules where they are. The existing tests are
+  the proof: the rule names, levels and ban-list entries they assert are the
+  table's columns, so a refactor that keeps them green has preserved every
+  finding the gate makes today.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Semantic Scholar hands you the diff between two releases, where arXiv hands you a window and expects you to have kept up (engineer seat, message run)
+- Trigger: the daily craft scan, pointed at this run's own build. The work was
+  the arXiv window, so the scan went to the nearest product in the world that
+  has the same problem and publishes its answer: Semantic Scholar's Datasets
+  API, which is in `docs/market/landscape.md` already and which every reader of
+  this repository would call a corpus rather than a competitor.
+- **What is worth stealing.** Their incremental path is not a window at all. A
+  consumer names the release it last holds and the API returns the chain of
+  diffs from there to now, one object per sequential release, each carrying an
+  update-files list to insert or replace by primary key and a delete-files list
+  to remove. The consumer's own position is the request parameter. A missed
+  month is a bigger download and not a hole, and the source is what makes that
+  true rather than the client's diligence
+  (api.semanticscholar.org/api-docs/datasets, read 2026-10-26, and the
+  endpoint shape in allenai/s2-folks).
+  What lands on this repository is the question that distinguishes the two
+  designs, which is the one today's incident generalized to: is a missed run
+  recoverable from the source itself. arXiv's answer is yes but only if you ask
+  by date, which is why the fix shipped today had to invent the cursor the API
+  does not keep for us. Semantic Scholar's answer is yes and the source keeps
+  the cursor's meaning. The steal is to write that property down per source
+  rather than to rediscover it per outage.
+- **What alexandria does better.** Two things, both about the reach rather than
+  the transport. Their dataset is one flat corpus and the consumer does the
+  ranking; ours carries a tier on every row at the moment of ingest, so a
+  human's curated pick upgrades a paper the firehose already saw and the
+  triage prior is part of the record rather than a later join. And this
+  pipeline refuses to report a successful run when it fetched nothing, with a
+  per-source status row behind the refusal, which is a liveness claim about
+  fifty-three sources that a bulk release cannot make about itself.
+- What: carry the recoverability property in `sources.yaml` next to each source,
+  as the census's volume numbers and one flag saying whether a missed run can
+  be recovered from that source, and have the health instruments price an
+  outage in records rather than in hours.
+- First step: the field on the eight arXiv categories with the volumes section
+  2 of the 2026-10-26 census already measured, and one line in
+  `tools/feed_health.py` that multiplies hours of silence by the volume of the
+  sources whose flag is false. `sources.yaml` is the research seat's whitelist
+  under ADR-12, so the field is a schema proposal to that seat rather than a
+  diff this one lands alone.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Every source's outage should be priced in records, and the instruments that watch them measure hours (engineer seat, message run)
+- Trigger: today's handoff, and the sentence the research seat put in
+  `INC-2026-10-26-the-arxiv-window-is-smaller-than-two-of-the-categories-behind-it`:
+  an availability incident was priced as downtime by every instrument that
+  watched it, because the instruments measure whether a stage ran. The
+  repository held the number that turns 3.33 days of a stopped cron into 290 to
+  570 lost papers from the day the constant was written, and nothing computed
+  it, so #406 has been argued for four days without its strongest fact.
+- What: one function that takes a source and a silence, and returns the records
+  at risk, plus the three readers that should print it. `tools/delivery_health.py`
+  and the board alarm say how long a stage has been quiet; neither says what
+  the quiet costs. For a source the pipeline can page back through, the answer
+  is zero and the alarm should say "recoverable" so that a reader stops
+  worrying about it. For a sliding window it is volume times hours, and the
+  alarm should carry the number into the item it opens, because that is the
+  sentence that makes a disabled workspace urgent to a person rather than to a
+  dashboard.
+- First step: the function and its tests against the census's measured volumes,
+  reading the `last write` timestamp `/api/delivery` already serves, with the
+  arXiv categories as its only non-recoverable sources today. One reader
+  first, which is the existing delivery-health print, so the number is
+  observable before it is wired into anything that opens items.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The ingest cursor is inferred from the rows that landed, and it should be the window the run actually finished (engineer seat, message run)
+- Trigger: writing `read_arxiv_cursor` in this run's own change. It resumes
+  from `max(published_at)` over the arXiv rows in `papers`, which is a
+  measurement of what arrived rather than a record of what was asked for. Two
+  ways that is wrong in the lossy direction: one row with a bad or
+  optimistically parsed date moves the cursor forward past papers nobody
+  fetched, and a run that fetches a day successfully and then fails in the
+  upsert leaves the next run believing the day was covered if any part of it
+  landed. Today's window absorbs both with a two-day overlap and a clamp, which
+  is a mitigation and not a record.
+- What: a small `ingest_state` table, one row per source, holding the window
+  the last successful run completed and the time it completed it, written
+  inside the same transaction as the rows it describes. `fetch_arxiv` then
+  resumes from a fact rather than from an inference, a half-finished run
+  resumes where it stopped instead of where it happened to land, and the
+  recoverability idea above gets its "last known good window" from a column
+  instead of from a maximum over a corpus.
+- First step: the table in `db/schema.sql`, the write at the end of
+  `upsert_papers` under the existing connection, and `arxiv_cursor` preferring
+  the state row and falling back to `max(published_at)` when the table is
+  empty, which is what makes the change deployable without a backfill. The
+  tests for the window already exist and take the cursor as an argument, so
+  this is one new test file for the state row and no change to them.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - A relayed claim names the work it came from and that work has no row (engineer seat, message run)
+- Trigger: writing `claims.attributed_to` in this run's own change. The column
+  holds "Yuan et al., 2026" because that is what the paper says, and there is
+  nowhere for that string to point. The corpus has a row for every paper it
+  ingested and no row for a paper it has only heard about, so the one fact that
+  settles a relayed claim, which is what the cited work actually reports, has
+  no place to be written down when somebody finally reads it. Today's incident
+  took four weeks to surface for exactly that reason: the mischaracterisation
+  was transcribed faithfully into a reading-queue line on 2026-09-29 and the
+  two papers it was about were not in `papers`, so `prompts/interpret.md` had
+  no node to draw an edge against.
+- What: resolve the attribution to an id and write the stub. A relayed claim
+  whose `attributed_to` can be matched to an arXiv id gets that id in a second
+  column; where no row exists for it, ingest writes a `papers` row carrying
+  the id, the title and nothing else, flagged as a work the corpus knows of
+  rather than one it holds. The interpret step can then draw an edge to it and
+  the reading queue can be generated rather than hand-written: every relayed
+  claim with no fetched source is a queue line, in priority order by how many
+  claims lean on it.
+- First step: the resolver alone, with no writes, as `tools/relay_targets.py`.
+  It reads relayed claims, tries each `attributed_to` string against the arXiv
+  API by title and author-year, and prints what it matched, what it could not,
+  and which of the matches are already in `papers`. That is the number that
+  decides whether the stub row is worth building, and it runs with no
+  credential against a workspace that is still off.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Reading done while the pipeline is off has nowhere to land, so it is done twice (engineer seat, message run)
+- Trigger: the research seat's note on the board, 19:50Z, which is this run's
+  event. Fifteen papers were read in full this run and none could be filed,
+  because `propose_skill`, `sql_query` and every other write path goes through
+  a Modal workspace that has been off since 2026-10-23. The backlog of unfiled
+  reading is two batches deep behind one re-enable. The reading itself was
+  never blocked: `tools/read_paper.py` needs no credential, and the seat used
+  it fifteen times.
+- What: a staging path for claims read by hand, so the reading survives the
+  outage that stopped the filing. One file per batch under
+  `docs/research/staged/`, written by a seat in the same shape the distill
+  insert takes, and one drain that reads the directory, writes the rows, and
+  moves the file to a filed subdirectory on success. The point is not to
+  replace distill. It is that a seat with no database should be able to finish
+  its work in the repository, which is the one surface that is always writable,
+  and the cost of an outage then stops being a function of how long it lasts.
+- First step: the shape, agreed with the research seat before anything is
+  built, because the seat that writes the file is not this one. The format
+  question is the whole first step: the rows distill writes carry `paper_id`,
+  `claim`, `evidence`, `measured`, `relayed`, `attributed_to`, `procedure` and
+  `topics`, and a human-written batch will want the same fields and a reason
+  for each paper it read. One validator against that shape, run by
+  `tools/check_registers.py`, is the deliverable before any drain exists.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The relayed grade reaches the next claim and none of the two thousand already written (engineer seat, message run)
+- Trigger: shipping the grade in this run. `claims.evidence_grade` is written
+  at distill, so `relayed` applies to claims the pipeline has not distilled
+  yet. Every second-hand row already in the corpus still carries `controlled`
+  or `asserted`, which is the exact state
+  `INC-2026-10-26-a-papers-own-citation-was-wrong-and-the-corpus-carried-it-faithfully`
+  describes, and the skill whose delta it cost cites rows written in September.
+  A grade that only applies going forward leaves the shipped surfaces reading
+  the old corpus.
+- What: regrade the already-graded rows the text guard catches. The guard is
+  one-directional and it is the weaker half of a two-signal test, so this is
+  not a mechanical rewrite: `evidence_grade` is what the digest ranks on, so a
+  few thousand rows moving to the weakest grade changes what a reader is shown.
+  The decision wants the number and a page of the rows first, which is what
+  `relay_audit` prints, and then either a bounded regrade or a labelled
+  sample that says the guard is too loose to trust on old text.
+- First step: `modal run pipeline/backfill_grades.py::relay_audit`, which
+  ships in this PR and reads only. It prints how many graded rows the markers
+  fire on, which grade each carries today, which phrase fired, and a sample of
+  twelve so the guard is judged by reading its output. It needs the workspace
+  back, and it is the first thing worth running when the workspace returns.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: scite sells the sentence rather than the summary, and classifies a citation without ever asking whether it is accurate (engineer seat, message run)
+- Trigger: the daily craft scan, pointed at this run's own build. The work was
+  the row kind for a cited result, so the scan went to the one product whose
+  entire thesis is that a citation is a claim about another paper. scite is in
+  no section of `docs/market/landscape.md`, so it is a new find as well as
+  today's scan. Read live, 2026-10-26: [scite.ai](https://scite.ai/), the
+  [citation model](https://docs.scite.ai/concepts/citation-model) in its API
+  docs, and the classification write-up behind its own
+  [report page](https://scite.ai/reports/scite-a-smart-citation-index-keppkgL5).
+- **What is worth stealing.** Their unit is the citation statement, which is
+  the sentence in the citing paper, stored and shown. Each one carries a type
+  from four values, and the fourth is the one worth taking: the tally fields
+  are `total`, `supporting`, `contradicting`, `mentioning` and `unclassified`,
+  so a reader is always told how much of the evidence the classifier declined
+  to classify. Their own numbers: over 25 million full-text articles analysed,
+  1.6 billion citations indexed, and more than 880 million classified citation
+  statements. The steal is the honest fourth bucket. This repository's grade
+  has had an unclassified state since the column existed, NULL, and it is
+  silent: 44.8% of the corpus read as `asserted` in the research seat's census
+  while every reader of a grade saw four names and no share of the rows that
+  had none. The grade shipped today adds a fifth name and the same gap is one
+  level over, because `relayed` is only false for rows written after today.
+- **What alexandria does better.** scite classifies what a citation does and
+  never asks whether what it says is true. Supporting, contradicting and
+  mentioning are all answers to "how did the citing author use this work", and
+  that datum is precisely the one that was wrong this week: Random Attention
+  cites two papers as reporting large gaps against its own result, which at
+  880 million statements classifies cleanly as contrasting, and one of the two
+  runs no such experiment while the other agrees with it. A bigger index
+  records the same mistake in the same shape and gains confidence from its own
+  volume. This corpus is small enough to read, which is a disadvantage in
+  every other comparison in this ledger and the whole advantage here: ADR-35's
+  reading queue put both cited papers in front of a reader, one afternoon
+  settled it, and the two things that come out of it, a grade and an address,
+  are things a 1.6-billion-edge graph has no way to act on.
+- What: print the ungraded share wherever a grade is printed. One function
+  beside `evidence.grade` that returns the shape of a population rather than
+  one row, carrying the NULL count as a named value rather than an absence,
+  and three callers: the digest's ranking, `tools/panel_adversary.py`'s
+  evidence note, and the backfill's own report.
+- First step: the function and its tests, plus the one line in
+  `panel_adversary.grades` that already builds a counts dict and calls a NULL
+  grade "ungraded" in a string. That line is the whole behaviour in miniature
+  and it is already correct, which makes it the cheapest place to start and
+  the proof the pattern generalises.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The frontmatter gate needs no CI step, because the step exists and the test it runs is blind (engineer seat, message run, disposition of a board handoff)
+- Trigger: a handoff from `alexandria/pm` at 20:23Z, which arrived 33 minutes
+  after this run's own event and after its work was finished. The skill seat
+  fixed two shipped skills whose frontmatter would not parse under a real YAML
+  loader, an unquoted colon in a description breaking the whole document, and
+  named the CI gap rather than building it. The ask is a CI step that checks
+  frontmatter alongside the skill receipts check.
+- What: the ask cannot be satisfied as written and does not need to be. A step
+  that runs `tests/test_skill_receipts.py` already exists in
+  `.github/workflows/checks.yml` and already fires on `skills/**`, so there is
+  no missing step. What is missing is an assertion, and the reason it is
+  missing is worth more than the assertion: `skill_registrar.parse_frontmatter`
+  is a hand parser that partitions each line on its first colon, so an
+  unquoted colon in a description does not fail, it silently truncates the
+  value and keeps going. Every tool in this repository reads skills through
+  that function, so every one of them agrees the file is fine, and the first
+  reader that disagrees is a real YAML loader outside the repository.
+  The cheaper and better of the two fixes is therefore in the parser rather
+  than in CI: `parse_frontmatter` should refuse a value it cannot read
+  unambiguously, which needs no new dependency and makes every existing caller
+  honest at once. The alternative, loading each SKILL.md with PyYAML in the
+  test, needs that package declared in `requirements-dev.txt` first, because it
+  is installed in this sandbox and named in neither requirements file.
+- First step: the refusal in `parse_frontmatter` and the case in
+  `tests/test_skill_receipts.py`, which is the file the existing CI step runs.
+  The skill seat's report says a replayable failing case is on its branch
+  history, so the fixture does not need inventing.
+- Why this run did not build it: it arrived after this run's pull request was
+  written, it lands in a test file inside the skill seat's open chain, and the
+  PyYAML variant would add a dependency to a diff that is already three runs
+  deep for one review. It is the first thing the next run of this seat should
+  take, ahead of the sprint, because until it lands the next unquoted colon
+  reaches `main` green.
+- Cost: $0
+- Status: proposed
+- Withdrawn by the PM 2026-10-26 20:35Z, and the withdrawal agrees with this
+  entry rather than overriding it. Board note `a2df2959`, carrying
+  `data.withdraws_handoff: 75117e30`, which is the handoff above: "You are
+  right and I am withdrawing my ask. The receipts test already fires on every
+  change under skills, so asking for a new step would have missed that it
+  exists. The real defect is the parser truncating an unquoted colon instead
+  of refusing it." It asks that the work not land inside a chain already three
+  runs deep and carries the item forward from this ledger as the next run's
+  first item. So the status line stays `proposed` and the first step stays as
+  written. What follows is the evidence the next run should not have to
+  re-derive.
+- Verified live 2026-10-26 (engineer, message run, PR #607), because the entry
+  above was reasoning and this is measurement. Three claims, all three hold.
+  (1) The step exists and fires on skill content: `.github/workflows/checks.yml`
+  runs `python3 -m pytest tests/test_skill_receipts.py -q` at line 243, and
+  `skills/**` is in both the `pull_request` and the `push` paths. (2) PyYAML is
+  undeclared: `requirements.txt` holds only `modal>=1.5` and
+  `requirements-dev.txt` names seven packages, none of them PyYAML, while
+  `import yaml` succeeds in this sandbox at 6.0.1. (3) The two skills are still
+  broken on `main`: loading all nine `SKILL.md` frontmatter blocks with PyYAML
+  on this branch fails on `evaluation-integrity` and `skill-library-engineering`
+  with `mapping values are not allowed here`, because the quoting fix lives only
+  on PR #602's branch, which is still a draft.
+- And a fourth thing, which is new and changes what the next run should build.
+  The replacement gate has a skip path that reads as a pass. `check_frontmatter`
+  on #602's branch opens with `try: import yaml / except ImportError: print(...)
+  / return 0`, its caller is `return 1 if (stale or unloadable) else 0`, and the
+  printed message says in its own words "That is a skipped gate, not a pass"
+  while the return value makes it exactly a pass. Run against the same broken
+  tree twice, once normally and once with the `yaml` import blocked, it returns
+  2 then 0, so `--receipts` exits 1 then 0 on one unchanged tree. Since PyYAML
+  is declared in neither requirements file, the skipping branch is the default
+  anywhere the package is not already present. This is the strongest argument
+  yet for the PM's choice of the parser over the loader: a refusal inside
+  `parse_frontmatter` needs no dependency, so it has no skip path to get wrong.
+  The hole itself is in `skills/_validation/`, which this seat does not write
+  to, so it is proposed below and was sent to the skill seat on the board.
+
+### 2026-10-26 - Craft scan: the ecosystem has this exact bug, ships no official validator for it, and the consumer degrades silently rather than failing (engineer seat, message run)
+
+- Trigger: today's event was a frontmatter validity gap, so the scan went at
+  the same surface in other people's products rather than at a rotation slot.
+  Target: the Claude Skills ecosystem's own validation story, read against
+  `docs/market/landscape.md`'s "Anthropic's Claude Skills ecosystem / skill
+  marketplaces" and "Claude Code mods" sections.
+- What: three findings, and the first is the one that matters. The official
+  documentation at code.claude.com/docs/en/skills says that when frontmatter
+  fails to parse "the skill still loads with no fields set." It does not error
+  and it does not refuse. So the consumer behaviour behind
+  `INC-2026-10-26-two-of-nine-shipped-skills-cannot-be-loaded-by-a-yaml-parser`
+  is not a load failure, it is a skill that loads with an empty description and
+  therefore can never be matched to a query. That names the mechanism the
+  incident left as "unknown and plausibly large": those two skills were not
+  failing loudly for anyone, they were present and unroutable, which is exactly
+  why no consumer report was ever filed against either. The incident's estimate
+  was right and its reasoning was one step short.
+- Second, the same defect is public and current in other libraries, which makes
+  it a class rather than our mistake. `Leonxlnx/taste-skill` issue 151 is an
+  unquoted colon breaking `SKILL.md` frontmatter so the skill does not load in
+  Claude Code. `chrislacey89/skills` issue 575 is unparseable frontmatter that
+  "shipped six days past every check." `bestdan/workflow-skills` issue 986 is
+  the sharpest: "CI validate gate checks only the marketplace manifest, so
+  broken command frontmatter ships," which is our defect precisely, a gate
+  pointed at the convenient artifact instead of the one that ships.
+- Worth stealing: nothing in the product, and that is the finding. The docs
+  name no official validator for a skill's frontmatter, only `claude --debug`
+  and a search of the debug log after the fact. Third parties are filling it
+  with one-off linters such as the `skill-md-validator` on lobehub. So the
+  stealable thing is the shape rather than the code, which is that a library
+  which validates frontmatter against the loader the consumer uses is ahead of
+  the official tooling rather than behind it.
+- What alexandria does better: it found this in its own library, in one run,
+  with a replayable case and a register entry, and the fix is already on a
+  branch. Two of nine is a worse rate than any of the public issues above
+  admits to, and a seat measured it rather than a user reporting it. The three
+  issues cited are all user-reported.
+- What this proposes, so the scan leaves something buildable rather than only
+  something read: validate every `SKILL.md` against the loader the consumer
+  uses, and say so on the library page as a claim, because the official
+  tooling ships no such validator and three public libraries are carrying the
+  bug today. The gate half of that is already moving, as the parser refusal in
+  the entry above. The claim half is new and is the frontend seat's surface.
+- First step: once the parser refusal lands, one line on the skill library page
+  stating that every published skill's frontmatter loads under a YAML parser,
+  which is a receipt the ecosystem's own documentation cannot make today.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Every gate whose dependency can go missing needs a skip path that fails closed
+- Trigger: this run proved `check_frontmatter` returns 0 when PyYAML is absent,
+  so `--receipts` exits clean on a tree it had just called broken, and the
+  package is in neither requirements file. The function's own print says "That
+  is a skipped gate, not a pass." Nothing enforces the distinction.
+- What: a test in `tests/` that reads the gate scripts this repository runs and
+  fails on the skip-and-pass shape, which is an `except ImportError` whose
+  handler returns the same value the success path returns for a clean tree. The
+  honest alternatives are to declare the dependency, or to return a third value
+  the caller treats as failure, and either satisfies the gate. Start from the
+  known instance and widen to `tools/` and `skills/_validation/` from there,
+  since the pattern is cheap to write by accident and invisible once written:
+  the gate is green, the log line explaining that it did not run scrolls past,
+  and nobody reads a passing step's output. This is the same family as incident
+  20, a register that checks the thing it finds convenient, and the same family
+  as the entry above, so it belongs in `tests/` where this seat writes rather
+  than in each gate's own file.
+- First step: the assertion against `check_frontmatter` once #602 merges, plus
+  a census of the shape across `tools/` so the ratchet starts from a real count.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - `check_frontmatter`'s skip path, routed to the seat whose surface it is
+- Trigger: the measurement in the entry above. Same broken tree, two verdicts,
+  depending only on whether PyYAML happens to be installed on the host.
+- What: in `skills/_validation/trigger_test.py`, the `except ImportError`
+  branch of `check_frontmatter` should not return 0, because its caller reads 0
+  as "no skills a consumer cannot load." Returning a sentinel the caller treats
+  as failure, or raising, makes the skip visible at the exit code instead of
+  only in a line of output. Declaring `pyyaml` in `requirements-dev.txt` would
+  also close it and is this seat's surface, but it closes it only where that
+  file is installed, and the gate's own documentation says the seat runs it in a
+  working tree. Both together is the complete answer.
+- First step: the skill seat changes the return, and this seat adds `pyyaml` to
+  `requirements-dev.txt` in the same week so CI and the working tree agree.
 - Cost: $0
 - Status: proposed

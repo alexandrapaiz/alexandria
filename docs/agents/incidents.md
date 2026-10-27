@@ -23642,3 +23642,73 @@ named in the brief rather than fixed here, because skill files belong to that
 seat under ADR-22 and this seat's charter has it proposing targets, not files.
 
 Ban list checked on this entry.
+
+## INC-2026-10-26-the-engineer-lane-was-owner-blocked-for-the-fourth-run-and-the-register-is-what-made-it-cheap — the repeat, and the one line of evidence that the remedy is still owed (2026-10-26, engineer seat, message wake)
+
+**One line, because the finding is already written.** This seat was woken with
+"continue with the next item in your lane on the board" for the fourth time.
+All four `This sprint` engineer cards are still owner-blocked, with the same
+four hands named in
+`INC-2026-10-25-the-engineer-lane-was-rediscovered-as-owner-blocked-for-the-second-run-running`,
+and none of the four cards carries any sign that three runs have each stood in
+front of it. The standing rule at the top of this file is why this is recorded
+at all: the instance count is now four and that entry says two.
+
+**What is different, and it is the reason this is worth four lines rather than
+forty.** The rediscovery was cheap this time. This run read the incident
+register before it read the card bodies, so establishing the block cost one
+board fetch and one read of a filed entry rather than the several turns the
+runs of 2026-10-24 and 2026-10-25 each spent. That is the register working as
+designed, and it is also the measurement that says the remedy is still owed:
+the register made the *rediscovery* cheap, where the remedy that entry asks for
+would have made the rediscovery unnecessary. The remedy is a note on the card
+itself, because the card is the thing a run told to go to the board actually
+reads. It has now been owed for two days and across two more instances.
+
+**Met again in the same run, already filed, so this is the repeat line and
+nothing more.**
+`INC-2026-10-24-the-unshallow-remedy-leaves-the-single-branch-refspec-so-the-containment-proof-cannot-see-the-branch-it-proves`.
+`git fetch --unshallow` succeeded and `git fetch origin <branch>` succeeded,
+and `git show origin/<branch>:<path>` then answered
+`fatal: invalid object name`, because this clone's refspec is still
+single-branch so no remote-tracking ref is written for any branch but `main`.
+The working form is `FETCH_HEAD`, which is what this run used to read the
+unmerged sprint plan off the PM's branch. Ban list checked on this entry.
+
+## INC-2026-10-26-a-parity-comment-between-two-files-is-the-third-instance-in-two-days -- the constant this run changed had a copy whose comment asserted it had not (2026-10-26, engineer seat, message wake, FIXED in this run)
+
+**The repeat, recorded because the standing rule gives no discretion.** This
+run changed `ARXIV_MAX_PER_CAT` in `pipeline/ingest.py` from the whole window
+to a safety ceiling, and `tools/feed_health.py:109` held a second copy of the
+old value under the comment "the same number pipeline/ingest.py queries with".
+The comment was true when it was written and false the moment the diff above
+it landed, and nothing anywhere would have said so: the availability probe
+would have kept answering correctly about a window the pipeline no longer had.
+
+**The two instances it repeats, both inside 48 hours and both this seat's.**
+`INC-2026-10-25-a-cost-comment-goes-stale-in-two-production-jobs-at-once`, where
+the arithmetic two spend caps were set against had decayed and no instrument
+recomputed the comment. And
+`INC-2026-10-26-the-rehearsal-sent-a-smaller-request-than-the-run`, where two
+gates measured the request before last and a second copy of a stale number
+survived the fix that named the first. This is the third, and the class is
+stable enough to state: **a comment that asserts parity with another file is a
+test with no runner.** The failure is silent in the direction that matters,
+because the copy keeps working and only its description of why is wrong.
+
+**Caught before it went stale rather than after, which is the only new thing
+here.** The fix is cheap and it is the one the class has been asking for in all
+three instances. `tools/feed_health.py` now declares `ARXIV_PROBE_ROWS`, named
+for what it is, and `tests/test_arxiv_window.py` holds
+`test_the_availability_probe_is_pinned_to_the_page_size`, which asserts the
+equality the comment used to assert and also pins `ARXIV_DELAY`, the other
+number those two files share. The prose that remains says the probe is pinned
+by that test, so a reader who distrusts it has a command to run.
+
+**What the org should take from three instances in two days.** Every one was
+found by a seat editing one side of the pair for an unrelated reason, which
+means the rate of discovery is a property of where the work happens rather
+than of the defect. The general remedy is not more careful comments. It is that
+a number living in two files is pinned by a test at the moment the second copy
+is written, and the cheap search for the remaining ones is a grep for comments
+naming another file's path next to a literal. Ban list checked on this entry.
