@@ -1907,3 +1907,71 @@ the only charter of twelve that named no branch prefix at all, so its two
 prefix-routed subscriptions rested on a prefix each run invented. The invented
 form resolved, which is the only reason it cost nothing. It now says
 `alexandria-research/` and says why.
+
+## 2026-10-27: class A's first gate opens and research passes it, and class C ships on the owner's silence
+
+Two of the three classes split on 2026-10-24 moved today, because two of their
+gates came due and no run had read either.
+
+### Class A, research: the row closes, and the clock is not what closed it
+
+The gate was `2026-10-26T16:30Z`, the first slot any class A seat has had since
+this page learned the roster carried no company clock until 2026-10-23. Read
+from the host's own logs rather than from the absence of a pull request, as the
+card requires:
+
+| surface | reading |
+| --- | --- |
+| `logs/alexandria-research/2026-10-26T16-30-23-798Z-cron.log` | the slot **fired**, on time, `trigger=cron`, `--max-turns 180` |
+| its result line | `429`, `You've hit your session limit · resets 7pm (UTC)`, **1 turn**, 438ms, `exit=1 pr=-` |
+| `/srv/asc/state/.epito/capacity-retry.json` | HQ's retry **claimed that exact log name** |
+| `logs/.../2026-10-26T19-03-27-547Z-hook.log` | the re-fire: **94 turns**, `exit=0`, pull request 589 |
+| pull request 589 | **merged** |
+
+So the row closes and the seat is live. What closed it is worth keeping,
+because it is not the clock. The slot fired and was **refused**, which is the
+third of the four outcomes the 2026-10-26 comment on the card named, and the
+thing that converted a refusal into a shipped cycle was HQ's capacity re-fire.
+A gate worded "did the slot fire" scores this a pass. A gate worded "did a pull
+request appear within the hour" scores it a fail. Both are wrong about the seat,
+and only the four-outcome reading gets it right.
+
+Market's gate is `2026-10-30T11:00Z` and security's is `2026-11-01T13:00Z`.
+Read both the same way, and read them with the warning below.
+
+**The instrument this page prescribes gave the wrong answer first.** The card
+tells its next reader, in this seat's own words, to "read each slot with the
+firing tool, never from the absence of a pull request".
+`tools/cron_firing.py --seat research`, which is the seat name this page, the
+board and all twelve charters use, printed `no cron slot fired and none has in
+the trailing 14 days`, byte-identical to what it prints for an invented seat
+name. Only `--seat alexandria-research`, the host's log directory name, reaches
+the record. A reader obeying the card literally is told that a seat which had
+just fired and shipped has been silent for a fortnight, which is the exact
+error this page was rewritten on 2026-10-24 to stop. Filed as
+`INC-2026-10-27-two-readers-answer-a-wrong-seat-name-with-a-confident-zero`
+with a second instance in the inbox reader, and routed to the engineer seat
+because both are in `tools/`.
+
+### Class C: the frontend row is now a sentence in the writer's charter
+
+The ask went to the owner on 2026-10-24T22:15Z and the body of the card
+provides that class C proceeds on her silence after forty-eight hours. Those
+expired at **2026-10-26T22:15Z**. There is no reply on the card, whose four
+comments are all this seat's, and no message from her anywhere on the bus in
+the trailing seventy-two hours. So it proceeds.
+
+The skill half needed nothing: that duty falls due when a skill ships, the
+skill seat's own branch merges, and `pr.merged` routes on the branch prefix, so
+that seat is already woken by the event that creates its obligation.
+
+The frontend half is now step 5b of `prompts/writer-agent.md`. When a pull
+request carrying approved copy merges, the writer sends the frontend seat a
+`handoff` on the board naming the file, the surface and the approval. That is
+the remedy this page recommended, unchanged, and it needs no new event type.
+It adds a step to the writer's run and moves no authority, because the writer
+still never sets copy and the frontend seat still decides how it is set.
+
+**Class B is untouched.** Its four rows name this seat, no silence rule reaches
+them because they widen this seat's own budget, and they still wait for the
+owner's word.
