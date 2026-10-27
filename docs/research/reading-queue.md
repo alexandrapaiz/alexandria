@@ -2053,6 +2053,43 @@ is in the same file, under today's date.
   than doing nothing. The authors' own hedge is that Gemma is a reasoning model
   whose native style may sit closer to the Gemini expert's, which is an
   argument for the regression being general rather than against it.
+  **Third sharpening, found by the live-web check this charter requires rather
+  than in any reference list, and it is the nearest thing to an answer that
+  exists: `arxiv:2610.02858`, Harness-Aware Distillation (Choi, Moon, Nam, Lee,
+  KAIST AI, 02 Oct 2026).** Different group, different benchmarks (ALFWorld,
+  WebShop, ScienceWorld), different model sizes (1.7B from 8B, 0.6B from 30B),
+  and it measures the same class. Its Table 11 scores harness utilization as the
+  mean of five task-agnostic rules on ALFWorld: teacher 74.3, **untrained student
+  65.7**, OPD 68.8, SAGE-OPD 66.6, Guided-OPD **59.2**, SOPD 73.1, HAD 81.0. On
+  the rule that matters most here, "do not repeat an action the harness reported
+  as failed", the untrained student scores 61.2 and **all four distillation
+  baselines fall below it**: 52.9, 52.3, 28.6, 67.3 — three of four, with
+  Guided-OPD at less than half the untrained student. On the stall rule the
+  untrained student is 18.1 and three of four baselines are below it (17.6, 11.0,
+  5.3). So a second group, on a third model family, measures imitation of a
+  stronger teacher degrading the student's use of the harness's own failure
+  reports below doing nothing. The paper's own words for its motivation are that
+  harness utilization under OPD "can even fall below that of the untrained
+  student".
+  **Why this still does not close the line.** HAD's setting is on-policy
+  distillation under a harness that is FIXED and generic, not a harness evolved
+  for the student, and its supervision is a teacher-action contrast rather than
+  off-policy imitation of the expert's whole trajectory. Those are the two
+  variables `2609.09134`'s result turns on. What `2610.02858` establishes is the
+  mechanism — teacher imitation does not transfer harness fit and can invert it —
+  on evidence independent of Qwen, Gemma and the seven-task suite. What it does
+  not establish is the harness-evolution interaction. Read as evidence for the
+  mechanism and not as a replication, the line is much better supported than it
+  was this morning, and it still wants the third weak student under an evolved
+  harness.
+  **And the remedy converges, which is worth more than either paper alone.**
+  Both groups, independently, fix an imitation failure under a harness with an
+  on-policy contrastive signal built from the student's own rollouts rather than
+  with more of the expert's trajectories: `2609.09134`'s in-place correction of
+  the single failing turn (+1.7 mean) and HAD's action preference scored after
+  the student's own reasoning (63.43 against 47.01 for the best baseline on
+  unseen ALFWorld, above its own 8B teacher at 51.49). `skills/harness-engineering`
+  prescribes the first and does not know about the second.
 - [x] ~~question — Did OSWorld-v2 keep OSWorld's graded reward? The correction to
   `skills/recursive-harness-self-improvement` rests on `2404.07972` section 2.1
   and section 2.2.3, where the reward returns 1 or a positive decimal under 1
