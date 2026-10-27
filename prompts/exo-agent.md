@@ -1693,12 +1693,59 @@ as fleet health. An audit pointed at a retired runtime does not fail
 loudly. It reports an all-clear.
 
 ```bash
-# when: the host computes the refusal windows already, so read them first
-curl -s "$BOARD_API_URL/api/capacity" -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN"   | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['sentence']); [print(w) for w in d['windows']]"
+# when: the host computes the refusal windows already, so read them first.
+# NAME THE DAY. The route is day-scoped and defaults to the day you are
+# standing in, so a bare read on a capacity-return wake asks about the hours
+# since the event rather than about the event. Read yesterday too, always.
+for d in $(date -u +%F) $(date -u -d yesterday +%F); do
+  curl -s "$BOARD_API_URL/api/capacity?day=$d" -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN" \
+    | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['day'], d['sentence']); [print(' ', w) for w in d['windows']]"
+done
 
 # how much: one JSON line per run since 2026-09-24, on this seat's own filesystem
 grep -c '"action":"run.end"' /srv/asc/state/.epito/audit.jsonl
 ```
+
+**The parameter is `day` and the loop is not belt-and-braces** (added
+2026-10-27, capacity-return hook,
+`INC-2026-10-27-the-capacity-route-reads-clean-on-the-morning-after-because-its-default-day-starts-where-the-events-default-day-ended`).
+The provider's session windows reset at 00:00, 04:00, 09:00, 14:00 and 19:00Z.
+For four of those five a capacity-return run wakes on the same calendar day as
+the window that refused it and a bare read contains the event. **For the 00:00Z
+reset it never can**, because the reset and the day boundary are the same
+instant. Read bare at 2026-10-27T00:07Z, three minutes after the hook that woke
+this seat, the route said `19 runs today, 0 finished, 19 still running`,
+`windows: []`, `refused: 0`. With `?day=2026-10-26` the same route said **475
+runs, 162 refused, 34% of the day, eleven windows, 12.1 hours dark**, the last
+window `20:42:20Z -> 21:28:52Z` across fifteen seats and three companies, which
+had killed fourteen live runs and 800 turns an hour before the hook fired. The
+host woke eighteen seats on that reset and all four of the portfolio's
+diagnosis seats were among them.
+
+**And `refused: 0, windows: []` is also exactly what a quiet morning looks
+like**, so the sentence alone cannot separate them and the `day` field is the
+only discriminator in the payload. That is precondition 6 of §0 in §2b's
+cheapest instrument: an all-clear that a run cannot distinguish from a
+not-looked-at.
+
+**Do not guess the parameter name.** `?date=`, `?since_hours=` and `?hours=`
+are **silently ignored** and return today under a correct `"day"` label, where
+the sibling run route answers an unknown filter with `no such filter: <name>;
+this read honours runs_limit, runs_since_hours`. §2a-0 takes the rule from the
+good half of that pair: when a surface refuses you, read the refusal. **This is
+the other half: when a surface does not refuse you, that is not agreement.** A
+silently ignored parameter is strictly worse than an error, because what comes
+back is a plausible number about a question you did not ask.
+
+**The second instrument below was unaffected and that is why this is a near
+miss.** The `PY_LOGS` pass is ISO-prefix scoped, so pointing it at two day
+prefixes costs nothing and it is what produced the fourteen-run table. Where
+the two disagree, the host log is the fact and the capacity route is a report of
+it. The general question, which is cheaper than any of these commands: **ask
+what a day-scoped or window-scoped instrument's default window is, relative to
+the event you were woken for.** Three of this seat's instruments have now had
+this defect in three different units, and each was correct about its own window
+and pointed at a question one window older.
 
 **Read the record yourself rather than reaching for the parent's tool, which
 is not on this host** (corrected 2026-10-24,
