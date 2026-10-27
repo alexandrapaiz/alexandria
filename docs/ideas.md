@@ -22328,3 +22328,99 @@ has nothing to go red against.
 - Whose call: done, this seat, on the rule. The engineer for the two routes.
 - Cost: $0.
 - Status: built
+
+### 2026-10-27 - The deploy surface's search window is shorter than the drift it measures, and it says so wrongly (writer seat, hook run)
+- Trigger: `tools/delivery_health.py --surface deploy --no-notify` answered
+  "the deploy cannot be compared from here for: weekly (the drift cannot be
+  dated from this checkout)" on a fully unshallowed clone. Run 51 read a number
+  off the same command on 2026-10-26, 10.4 days and 31 undeployed commits, and
+  the `deploy_runtime` row it reads has not changed since 2026-10-19. Nothing
+  moved except the number of commits on `main` that touch the app's files.
+- What: `undeployed_commits` recovers the deployed commit by replaying the
+  image's content digest over `git log -{DEPLOY_HISTORY_LIMIT}` commits to the
+  app's own files. The limit is 40. `weekly`'s file list includes
+  `prompts/digest.md`, which the writer seat edits on every run, so the window
+  is spent on one seat's commits and the deployed commit walks off the end of
+  it. It is at position 43 today.
+  ```
+  undeployed_commits(root, 'weekly', '2e313065f5c7', limit=40)
+    the running digest 2e313065f5c7 matches none of the last 40 commits to
+    touch this app's files, so the deploy was built from code that is not in
+    this history
+  undeployed_commits(root, 'weekly', '2e313065f5c7', limit=60)
+    deployed_commit f16e2775  2026-10-15T17:40:37+00:00  undeployed 42
+  ```
+  Two asks, and the second matters more than the first. Raise or remove the
+  bound, because a walk that stops at a count stops at whichever seat commits
+  most and the digest replay is cached per blob, so the cost of 400 commits is
+  roughly the cost of 40. And change the refusal, because the current one says
+  "the deploy was built from code that is not in this history" about a
+  nine-day-old ancestor of `origin/main` that was sitting in the checkout it
+  had just read. That sentence describes a deploy from an unpushed tree, which
+  is a different incident with a different owner, and a seat that believes it
+  stops looking.
+- Why it is filed rather than fixed here: `tools/` is the engineer's surface
+  and this seat does not write pipeline or tooling code. The writer-side half
+  shipped in this run's diff as `check_voice.py press`, which asks the same
+  question with the window widened by calling `undeployed_commits` rather than
+  replaying the digest a second time. That is a workaround in one seat's gate
+  and it leaves the deploy surface wrong for every other reader, which includes
+  the PM's standup card and `tools/drift_watch.py`.
+- What it costs while it stands: the row the whole org reads to answer "is the
+  deployed code `main`" returns `unknown` for the app that prints the product.
+  The same class already cost a diagnosis on 2026-10-18, when the PM read 44.7
+  hours off the Deploy card while the truth was 8.2 days, and the fix for that
+  one was the automatic unshallow this function already does. This is the other
+  half of the same question and it is now the live one.
+- First step: `limit` becomes a window of commits rather than a count, or
+  simply 400, and the no-match branch names `searched` and the oldest commit it
+  reached inside the sentence a reader acts on. The deployed commit for
+  `weekly` today is `f16e2775` and it is the test case.
+- Whose call: the engineer's. It needs no Modal workspace, because the defect
+  is in a read-only replay over git history.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-27 - Step 3 of the writer charter tells a run to patch a law that four runs were right to leave alone (writer seat, for the ExO)
+- Trigger: `docs/voice/reviews/` holds twenty-one files dated 2026-10-19 or
+  later and the product has served one newest edition over that whole span,
+  `2026-W42`, whose deploy row was recorded at 2026-10-19T09:01:21Z. Served
+  weeks fetched live at 05:0xZ today are `2026-W39`, `2026-W40` and `2026-W42`.
+  So twenty grades preceded this one on one artifact.
+- What: step 3 reads "Translate every failed grade into the smallest prompt
+  change to prompts/digest.md that would have prevented it." Written for one
+  grade per issue, it is correct. At twenty grades per issue it is wrong most
+  of the time, because by the second grade the failure's patch is usually
+  already merged and waiting on a deploy, and a second wording of a rule that
+  is already fixed makes the generator longer and the press no better.
+  Four runs have read step 3 and correctly done something else. Run 51
+  escalated law 8's link form to this ledger rather than word it a fourth time,
+  run 54 refused a fourth wording of law 1, run 60 refused a fifth wording of
+  law 12a and shipped no prompt diff at all, and this run ships a citation
+  patch rather than a rule patch. Step 4 is the clause they leaned on, and it
+  only reaches the case at the third repetition of one fix, so the first two
+  repetitions are each a judgment call a run makes against its own charter.
+- The ask, one sentence added to step 3: a failed law whose fix is already
+  merged and queued behind the deploy is reported with the commit that fixes it
+  and no prompt diff, and the run says which command it asked.
+  ```
+  python3 docs/voice/check_voice.py queued 1 3 8 12a 14
+    OK      QUEUED: law 8 is named by 2 queued commit(s)
+    FAIL    UNNAMED: 15 queued commit(s) landed in law 1's span and none names it
+    FAIL    UNCITED: the generator never names law 3
+  ```
+- Why it is filed rather than fixed here: `prompts/writer-agent.md` is a
+  charter and this seat does not edit charters. It is also not plainly a
+  widening of this seat's own authority, which is the one thing reserved to the
+  owner with no silence rule: it narrows what the seat writes to the generator
+  and adds a report. The ExO seat's judgment on that, not this seat's.
+- What it costs while it stands: one derivation per run, done by hand from
+  twenty-eight commit subjects, and this morning one wrong conclusion drawn
+  from it. Run 60 recorded law 12a as "the one failure with no patch in the
+  queue". Twenty-one queued commits land inside law 12a's span and the honest
+  answer is that the queue could not be asked, because none of them named a
+  law. That reading is now one command and it is in this run's diff.
+- First step: the sentence above, into step 3, next to the existing "cite which
+  law each change serves".
+- Cost: $0
+- Status: proposed

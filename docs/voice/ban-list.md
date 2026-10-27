@@ -4146,3 +4146,97 @@ gap that the same collision had left empty (incident 25).
     bullet that bans it, and `provenance` is clean on both committed editions
     and on 2026-W40 served, so the two live hits are the section the audit
     named and not a detector that fires on ordinary prose.
+
+146. The instrument whose blind spot grows with the output it measures.
+    Not a phrase, and the entry is here rather than in the ledger because
+    the thing it bans is a reading rather than a repair: a gate's refusal
+    read as a fact about the world instead of a fact about the gate.
+    The specimen is the forwards half of the canon's grading procedure.
+    `tools/delivery_health.py --surface deploy` recovers the commit the
+    press was built from by replaying the image's content digest over the
+    last `DEPLOY_HISTORY_LIMIT` commits to touch the app's files. That limit
+    is 40. The `weekly` image's file list contains `prompts/digest.md`,
+    which is the one file this seat edits on every run, so every writer run
+    spends part of that window and the deployed commit walks toward the end
+    of it. On 2026-10-27 it reached position 43 and the surface stopped
+    answering.
+    ```
+    the deploy cannot be compared from here for: weekly
+      (the drift cannot be dated from this checkout)
+    the running digest 2e313065f5c7 matches none of the last 40 commits to
+      touch this app's files, so the deploy was built from code that is not
+      in this history
+    ```
+    The commit was `f16e2775`, nine days old, an ancestor of `origin/main`,
+    in the checkout the surface had just read. Widening the window to 60
+    returned it with 42 undeployed commits behind it. Three commits of margin
+    were the whole difference between a number and a refusal, and the refusal
+    describes a state nobody can act on, because code that is not in the
+    history would mean somebody deployed an unpushed tree.
+    What makes it an entry and not a bug report is the direction of the
+    failure. The instrument goes blind in proportion to how much the seat
+    reading it works, so it holds for a seat that patches nothing and fails
+    for a seat that patches daily. Run 51 read 10.4 days and 31 commits off
+    this surface on 2026-10-26. Run 60 read a refusal on 2026-10-27 with the
+    deploy row unchanged since 2026-10-19 and the clone fully unshallowed.
+    Nothing had moved except this seat's own commit count.
+    ```
+    Enforced docs/voice/check_voice.py: "press"
+    LANDED docs/voice/check_voice.py: "REFUSED is the answer to act on rather than to read"
+    LANDED docs/voice/canon.md: "Say the generator's age at the top of the grade"
+    ```
+    `check_voice.py press` asks the same question with the window widened, by
+    calling `undeployed_commits` rather than replaying the digest a second
+    time, and it treats an unreachable receipt as a failure rather than a
+    pass. The limit itself is the engineer's and is in the ledger as of
+    2026-10-27 with the second half of the ask, which is that a refusal says
+    how far it looked.
+    Swept. The three other commands in this file that read a bounded window
+    are `enforcements`, which takes a ref and reads one tree, `selfcheck`,
+    which reads a diff the caller names, and `sweep`, which reads the whole
+    register. None of them bounds a search by a count, so there is no second
+    instance of this shape here to repair.
+
+147. The fact written where it is read once, rather than where it is read
+    again.
+    Not a phrase. The entry is here rather than in the ledger because the
+    repair is a habit of this seat's own writing, and because every
+    instance of it costs the next run the work of rebuilding something a
+    previous run already knew.
+    Step 3 of this charter says a prompt change cites the law it serves.
+    Twenty-eight merged commits to `prompts/digest.md` are queued behind the
+    deploy and two of them name a law in the message. The other twenty-six
+    cite their law in the review, which is a file nothing reads a second
+    time, so the question a grade has to answer before it patches, which is
+    whether the rule it is about to reword is already fixed and waiting, is
+    not recoverable from the queue. Four consecutive runs answered it from
+    memory and commit subjects, and the 2026-10-27 grade's section on why it
+    shipped no prompt diff is three paragraphs of that derivation and
+    nothing else.
+    ```
+    of those, naming the law they serve        2
+    queued commits to the generator            28
+    ```
+    The second specimen is in the generator itself. Five of the sixteen
+    laws, 3, 7, 8, 10 and 16, had their rule written into
+    `prompts/digest.md` with no citation naming the law it serves, two of
+    them, 3 and 8, failures in the live grade. The rules were all there. The
+    name was not, so no instrument could be asked whether the generator
+    covers a law a grade had just failed, and a positional reading returns
+    nothing for a law that owns no span. `UNCITED` is that state printed as
+    itself rather than as `UNPATCHED`, because the two look alike from
+    outside and acting on the second one means rewording a rule the
+    generator already carries.
+    ```
+    Enforced docs/voice/check_voice.py: "queued"
+    LANDED prompts/digest.md: "canon law 3"
+    LANDED docs/voice/canon.md: "The patch cites its law in the commit, not only in the review"
+    ```
+    The third specimen is not this seat's and is worth naming because it is
+    the same shape at the org's scale: the duplicate-wake class was written
+    up twice in pull request bodies, nothing sweeps those, and the third
+    seat rediscovered it from scratch
+    (`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`).
+    The test is one question. Will the next run that needs this fact be
+    reading the file I am putting it in? A review is read once, by its
+    author, on the day it is written.
