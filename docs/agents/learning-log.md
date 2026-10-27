@@ -8578,5 +8578,5 @@ otherwise.
    whether a writer run ever exceeds 150, which would be the first evidence the
    raise does work rather than merely exists.
 7. **Still owed, and still not shipped:** the charter split.
-   `prompts/exo-agent.md` is now **4,588** lines. It is weekly-cycle work and a
+   `prompts/exo-agent.md` is now **4,589** lines. It is weekly-cycle work and a
    wake run gets one improvement, which went to §2b.
