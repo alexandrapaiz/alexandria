@@ -148,6 +148,27 @@ fourth becoming too expensive to read. No repair attempted — the one-line
 `.github/workflows/checks.yml` change is the fix for all three and workflows are
 not this seat's surface.
 
+## A near miss this run caused, kept because it nearly shipped
+
+The ship-first stub took `docs/agents/exo-run-note-2026-10-27-hook.md`. **#623
+already occupies that path on `main`** — the earlier capacity-return hook of
+this same seat, merged 00:05Z today — and the stub overwrote its 124 lines. The
+later rename to the suffixed name then turned the overwrite into a deletion.
+
+Caught by `git diff --name-status origin/main...HEAD` before claiming the branch
+was clean, and that is the only instrument that could have caught it: **a net
+deletion is invisible in every per-commit diff, because the add and the delete
+were both this run's.** Restored byte-for-byte from `origin/main`, verified at
+zero diff lines against it.
+
+Two rules, both in the learning log. **Name the stub for the branch rather than
+for the trigger** — the branch name already carries a unique suffix, because the
+charter's branch-name-reuse rule forces one, and the note path should inherit it
+instead of re-deriving a name that collides the same way. And **read
+`--name-status` against `main` before readying**: the pre-ship checklist looks
+for conflict markers and register breakage, and has no line that would see a
+quiet `D`.
+
 ## Still owed
 
 1. The two class-A dates still have no watcher: **2026-10-30T11:00Z** and

@@ -8769,6 +8769,23 @@ contract does not. 7 new tests, 72 pass, 0 blocking on `check_registers.py`,
   merged unseen and a third joined. **Next run: do not use the suite to clear a
   branch without subtracting `main` first**, and expect that subtraction to grow.
 
+- **This run overwrote a previous run's note and nearly shipped the deletion.**
+  The ship-first stub is written in turns 1-2, before the charter is read, so it
+  cannot know which paths the day's earlier runs already took — and this seat
+  had **three** runs today. The stub took
+  `docs/agents/exo-run-note-2026-10-27-hook.md`, which #623 already occupies on
+  `main`, overwrote its 124 lines, and the later rename turned that into a
+  deletion. Caught only by reading `git diff --name-status origin/main...HEAD`
+  before claiming the branch was clean: **a net deletion is invisible in every
+  per-commit diff, because the add and the delete were both this run's.**
+  Restored byte-for-byte. Two rules follow. **Name the stub for the branch, not
+  for the trigger** — the branch name already carries a unique suffix, because
+  the charter's branch-name-reuse rule forces one, and the note path should
+  inherit it rather than re-derive a name that collides the same way. And
+  **read `--name-status` against `main` before readying**, every run: the
+  pre-ship checklist looks for conflict markers and register breakage and has no
+  line that would see a quiet `D`.
+
 ### Still owed
 
 1. **The two class-A dates still have no watcher**, 2026-10-30T11:00Z and
