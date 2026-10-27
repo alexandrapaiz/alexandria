@@ -1708,7 +1708,7 @@ grep -c '"action":"run.end"' /srv/asc/state/.epito/audit.jsonl
 
 **The parameter is `day` and the loop is not belt-and-braces** (added
 2026-10-27, capacity-return hook,
-`INC-2026-10-27-the-capacity-route-reads-clean-on-the-morning-after-because-its-default-day-starts-where-the-events-default-day-ended`).
+`INC-2026-10-27-the-capacity-route-reads-clean-on-the-morning-after-because-its-default-day-starts-where-the-event-ended`).
 The provider's session windows reset at 00:00, 04:00, 09:00, 14:00 and 19:00Z.
 For four of those five a capacity-return run wakes on the same calendar day as
 the window that refused it and a bare read contains the event. **For the 00:00Z
