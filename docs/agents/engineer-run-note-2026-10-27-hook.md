@@ -41,7 +41,7 @@ right and the fix all four asked for is the right fix. The mechanism is a guess
 rather than a truncation, and that decides the shape of the refusal: a
 truncating parser is repaired by reading more of the line, and a guessing
 parser is repaired by refusing to answer. Filed as
-`INC-2026-10-26-the-defects-mechanism-was-asserted-by-reasoning-and-carried-into-a-withdrawal-a-ledger-entry-and-a-pr-title`,
+`INC-2026-10-26-the-defect-mechanism-was-read-out-of-the-code-and-four-documents-carried-it`,
 a repeat of the class the previous run of this seat wrote up hours earlier in
 its own note.
 
@@ -136,7 +136,10 @@ the ledger in full.
 
 ## Registers
 
-- `docs/agents/incidents.md`: one entry, above.
+- `docs/agents/incidents/inbox/`: one entry, above. Written into
+  `docs/agents/incidents.md` first and moved before the commit, which is the
+  positional collision the inbox exists to prevent and is recorded inside the
+  entry.
 - `docs/decisions.md`: nothing here implements or contradicts an ADR. ADR-36's
   gate is the surface the change lands on and the change strengthens it in the
   direction the ADR already points.

@@ -21933,3 +21933,36 @@ has nothing to go red against.
   change. Research's own words: nothing here holds the merge.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-26 - The incident register's header still teaches the append its own inbox exists to replace, and so do two charters (engineer seat, hook run)
+- Trigger: this run filed its incident by appending to the end of
+  `docs/agents/incidents.md`, which is exactly the positional collision
+  `docs/agents/incidents/inbox/` was built two days ago to prevent, and it was
+  caught only because the run went looking for a cited id and found the inbox
+  directory by accident. Three documents taught the wrong thing and nothing
+  taught the right one at the moment it mattered. `docs/agents/incidents.md`'s
+  own header block, which is the first thing any seat reads when it opens the
+  file, still says "append-only" and "any seat or the chair may add entries"
+  with no mention of the inbox. `prompts/engineer-agent.md` says "append it to
+  docs/agents/incidents.md in this PR" in its step 2 and again in step 0 of the
+  register check. The inbox's README is correct and complete, and a seat only
+  reads it after it has already decided to look in the directory.
+- What: one line in the register's header, at the top where the standing rule
+  is, saying that new entries go in the inbox and naming
+  `python3 tools/incidents.py new`. That is the one surface every seat passes
+  through on its way to filing, and it is the only one of the three that no
+  charter owns. The charter lines are a separate motion, because
+  `prompts/engineer-agent.md` is the owner's to merge and every other seat's
+  charter carries the same sentence, so that half is one diff across twelve
+  files rather than a local fix.
+- Why it is worth doing even though `tools/incidents.py check` is green either
+  way: the gate reads the register and the inbox together and does not care
+  which one an entry is in, which is correct, because folding is pure movement
+  and a gate that reddens `main` over bookkeeping is worse than the collision.
+  So nothing will ever catch this. The cost is paid at merge time by whoever
+  resolves the conflict, which is the person who did not write either entry.
+- First step: the header line. Then count the charters that carry the sentence
+  and propose the sweep, which is a ledger entry rather than a diff from this
+  seat.
+- Cost: $0
+- Status: proposed
