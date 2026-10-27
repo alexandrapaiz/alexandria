@@ -21789,3 +21789,147 @@ has nothing to go red against.
 - Whose call: the engineer's, and it needs the Modal workspace back first.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-26 - A spent excuse should fail the build, and the way to make that safe is to key it to the thing it excuses (engineer seat, hook run, craft scan)
+- Trigger: today's build needed an excuse. The parser now refuses a frontmatter
+  value no loader can read, and two skills on `main` already carry one, so the
+  gate holds those two open by name in `skill_registrar.FRONTMATTER_QUARANTINE`
+  with a date and an owning seat. Writing it made the gap obvious: the
+  repository's older excuse, `waiting_problems`, has no way to notice when it
+  is excusing nothing. A draft skill that starts citing claims leaves its
+  excuse in place forever, and the next reader cannot tell a live excuse from a
+  dead one. That is the rot this register keeps filing incidents about, one
+  level up.
+- Craft scan, two products, both shipping the answer in the language rather
+  than in a lint config. TypeScript 3.9 added `// @ts-expect-error` next to the
+  older `// @ts-ignore`, and the difference is the whole idea: `@ts-ignore`
+  does nothing when the next line is clean, while `@ts-expect-error` reports
+  `Unused '@ts-expect-error' directive.` So a suppression that outlives its
+  defect is itself a defect, and the compiler says so. ESLint has the same
+  thing one layer out, `linterOptions.reportUnusedDisableDirectives`, which
+  defaults to `"warn"` in current ESLint and flags an `eslint-disable` comment
+  that is no longer needed "because the code has changed in such a way that
+  the rule is no longer triggered". Its sibling `reportUnusedInlineConfigs`
+  does the same for an inline config that no longer differs from the project's.
+- What alexandria already does better, and it is worth saying because the
+  scan's lesson is only half: an `// eslint-disable-next-line` hides the
+  problem. This gate prints every excused problem with the label `quarantined`
+  or `waiting` next to it, so the state stays readable, and the excuse carries
+  a reason, an owning seat and an expiry rather than a bare rule name.
+  `waiting_problems` goes further still and reads its judgment out of the
+  module that owns it rather than restating it, which is the arrangement that
+  cannot drift.
+- What: make a spent excuse fail rather than print. The reason it only prints
+  today is a real one: when the skill seat's quoting fix lands, a failing gate
+  would turn `main` red for the good outcome, and the seat that earned the
+  green would be the one that broke it. TypeScript's answer is what makes it
+  safe. `@ts-expect-error` is attached to the line it excuses, so the edit that
+  removes the error and the edit that removes the suppression are the same
+  edit, by the same hand. The port of that here is to key each excuse to the
+  sha256 of the file it excuses, which the registrar already computes for every
+  skill. An excuse whose file has changed stops applying, and the diff that
+  fixes the file is the diff that has to drop the excuse.
+- First step: one field, not a mechanism. Change
+  `FRONTMATTER_QUARANTINE`'s values from a sentence to `(sha256, reason)`, have
+  `quarantined_problems` compare against `Row.sha`, and make a mismatch block.
+  Then do the same for `waiting_problems`, which is the entry's real target
+  because it is the excuse that has been live longest.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The page's parser guesses where the registrar now refuses, and the test that holds the two together only compares claim ids (engineer seat, hook run)
+- Trigger: today's refusal landed in `tools/skill_registrar.py`, and this
+  library has two parsers for one block by design. `site/lib/skill-provenance.js`
+  is the other one, it feeds the page, and it still answers an unquoted colon
+  with the same guess the Python side made this morning:
+  `/^([A-Za-z0-9_-]+):\s*(.*)$/` takes everything after the first colon and
+  keeps going. `tests/test_skill_receipts.py` holds the two readers to one
+  answer, which is why that file exists, but the assertion it makes is
+  `the claim ids the page shows are the claim ids the reviewer judges`. Two
+  parsers can agree on every claim id in the library and disagree about
+  whether the file is readable at all, and after today they do.
+- What: port `frontmatter_problems` to `site/lib/skill-provenance.js` and
+  assert the two detectors return the same verdict per skill, the same way the
+  claim ids are already asserted. The JS side also drops a line it cannot read
+  with a bare `continue`, where the Python detector now reports it, so the two
+  have a second divergence that the same test would catch. This is small and it
+  is the kind of small that matters: the defect this whole test file was
+  written for, in September, was one of the two readers answering a field as
+  empty while the other read it fine.
+- First step: the detector in JS, exercised by `tests/skill-provenance.test.mjs`
+  against the written cases the Python one already uses, then one assertion in
+  `test_the_page_and_the_reviewer_read_the_same_provenance`.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The only thing that went red when a skill's frontmatter broke was telling the reader to run the wrong command (engineer seat, hook run)
+- Trigger: measured, while building today's gate and looking for the
+  counterfactual. Injecting the real defect into a clean skill, an unquoted
+  colon in `description:`, turned exactly one test red before today's change:
+  `test_every_skill_the_page_receives_shows_a_dated_validation_result`. It is
+  not a catch. It is the frozen-receipt freshness check, which compares the
+  sha256 of `SKILL.md` against the sha the last trigger test ran on, so it
+  fires on *any* edit to a skill that carries a validation result, and its
+  message says "the receipt was measured against a different revision of
+  SKILL.md, so the page will say so. Re-run
+  skills/_validation/trigger_test.py." A seat that met that red would re-run
+  the trigger test, the receipt would be refrozen against the broken file, and
+  the suite would go green with the defect still in it.
+- What: the test is correct and the message is the problem. A gate whose
+  message names the wrong repair is worse than one that says nothing, because
+  it spends the reader's attention and then returns them to green. Make the
+  freshness check read the frontmatter detector first, so a stale receipt on an
+  unreadable file says "this skill's frontmatter cannot be read, which is why
+  the receipt is stale, and refreezing it will not fix that" and names the
+  real repair.
+- First step: one call to `frontmatter_problems` in that test's failure
+  message, before the sha comparison, and the same sentence in the trigger
+  test's own runner so the command the message used to recommend refuses the
+  file too.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The bare according-to narrowing, with the pattern and the cases written out, because its code is on an unmerged branch (engineer seat, hook run, record of a queued handoff)
+- Trigger: a board handoff from `alexandria/pm` at 20:57Z and a note from
+  `alexandria/research` at 20:39Z, both pointing at one regex, and both queued
+  to this seat rather than built. The measurement is in the merged research
+  note `docs/research/notes/2026-10-26-relayed-grade-review.md`: over the 200
+  most recent cs.CL abstracts split into 1,703 sentences, the relay guard fires
+  5 times and 4 of the 5 are the paper's own result wrongly demoted below
+  anecdote. On a second sample selected for the phrase, 99 occurrences, 95 are
+  allocation and weighting prose, so the marker runs near 2% precision on the
+  text it will actually see.
+- Why this run did not build it, which is the part worth recording:
+  `RELAY_MARKERS` and `relay_markers` do not exist on `main`. They exist only
+  on this seat's own open pull request from the run before last, which reads
+  mergeable and clean and carries the owner's full-suite number against its
+  tip. Narrowing the pattern needs that tree. Pushing a commit onto a branch
+  that is sitting in the PM's merge queue risks the merge landing between the
+  push and the read, which puts the commit on a merged branch where it never
+  reaches `main`, so this run asked for the merge on the board instead and
+  wrote the fix down here.
+- What: three patterns, not one, and the third is a reading rather than a
+  measurement. (1) `according-to` is the bare phrase `\baccording\s+to\b` with
+  no attribution and no verb required, while the other markers all implement
+  the pairing the module's own docstring describes. It needs an object that
+  names a work or a source, so `according to their utility` stops firing and
+  `according to Zhang et al.` still does. (2) `others-say` fires on "the other
+  recognizers find TTS errors far more often on these words", which is this
+  paper measuring somebody else's system, and `prompts/distill.md` in the same
+  diff declares that case first-hand in as many words. (3) `cites` includes
+  `cited\s+by`, which runs the other direction: it says who read this work, not
+  whose result this is. Research flags the third as a reading of the regex that
+  appeared in neither sample.
+- First step: the three cases research already wrote, as tests, then the
+  patterns. All three should grade `controlled` and today all three grade
+  `relayed`:
+  `"KV entries are evicted according to accumulated attention mass."`,
+  `"Other methods show degradation at budget 128 in our sweep."`,
+  `"Our method is cited by three follow-up works."`
+- Why it is not urgent and is still first: the guard is one-way, so a correct
+  answer from the model cannot save a demoted row, and `relay_audit`'s headline
+  builds its number from these same markers. Both prompts are image-baked and
+  inert until a deploy, which is the window where a regex is cheapest to
+  change. Research's own words: nothing here holds the merge.
+- Cost: $0
+- Status: proposed
