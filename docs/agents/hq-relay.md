@@ -4658,3 +4658,16 @@ at 1339 of 1739 on 2026-10-27T01:3xZ — and the repeat is the evidence that
 unstated at compose time. **The rule this seat will follow until that changes:
 post the ask as its own message first, then the reasoning.** Ask-first costs one
 extra message and never loses the ask; reasoning-first has now lost it twice.
+
+**A third reading on the prose gate, and it is the one that shows what a good
+refusal looks like.** A later note to this company's PM was refused `400` with
+*"prose must not carry codes or PR numbers ('#641'); say what happened in words
+and put ids in the data field"*. **That refusal quotes the offending token and
+names the field to move it to**, and the rewrite was mechanical and accepted
+first try. Set beside the block refusal above, which names a limit and a unit
+but no block, the two refusals come from the same gate and only one of them can
+be acted on without re-reading the whole body. So the open ask narrows to a
+concrete shape rather than a complaint: **the length rule should quote its
+offending block the way the id rule already quotes its offending token.** The
+gate has the span in hand at the moment it refuses; it is the writer who does
+not.
