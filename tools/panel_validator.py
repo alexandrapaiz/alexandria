@@ -504,7 +504,9 @@ def review_validated_claim(row, raw: str, receipts: Receipts) -> list[Finding]:
     field from two sources is the design and not a duplicate.
     """
     fm, _ = registrar.split_frontmatter(raw)
-    provenance = registrar.parse_frontmatter(fm).get("provenance") or {}
+    # strict=False: refusing an unreadable value is the registrar gate's
+    # job, and FRONTMATTER_QUARANTINE still holds two of them open.
+    provenance = registrar.parse_frontmatter(fm, strict=False).get("provenance") or {}
     asserted = str(provenance.get("validated") or "").strip()
     if not asserted:
         return []

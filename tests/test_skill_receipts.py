@@ -365,3 +365,142 @@ def test_the_page_and_the_reviewer_read_the_same_provenance():
     for skill in _list_skills():
         ids = [int(c) for c in skill["claims"]]
         assert ids == rows[skill["name"]], skill["name"]
+
+
+# ------------------------------------------- the frontmatter a loader refuses
+
+def _registrar():
+    sys.path.insert(0, str(REPO / "tools"))
+    import skill_registrar as registrar   # noqa: E402
+
+    return registrar
+
+
+def test_the_parser_refuses_a_value_it_cannot_read():
+    """An unquoted colon is a guess, and the parser says so instead of guessing.
+
+    YAML's rule for an unquoted scalar is that a colon followed by whitespace
+    opens a mapping, so `description: a method: the subject` is not a long
+    string, it is an error. This parser used to answer it with
+    `a method: the subject` and keep going, which is why two shipped skills were
+    unloadable by any real YAML loader for weeks while every tool here agreed
+    they were fine. The loader is outside this repository and the consumer's own
+    behaviour on a frontmatter it cannot parse is to load the skill with no
+    fields set, so nothing ever went red: the skills were present and
+    unroutable.
+
+    The refusal is the fix rather than a loader in CI, because it needs no
+    dependency. A gate that imports PyYAML has a skip path, and PyYAML is
+    declared in neither requirements file.
+    """
+    registrar = _registrar()
+    bad = "name: x\ndescription: a method: the subject\nversion: 1\n"
+
+    with pytest.raises(registrar.FrontmatterError) as refusal:
+        registrar.parse_frontmatter(bad)
+    assert "description" in str(refusal.value)
+
+    assert registrar.frontmatter_problems(bad), "the detector missed it"
+    guessed = registrar.parse_frontmatter(bad, strict=False)
+    assert guessed["description"] == "a method: the subject", (
+        "the lenient read is the old behaviour and the tools still depend on it"
+    )
+
+
+def test_the_refusal_fires_on_what_yaml_refuses_and_nothing_else():
+    """The cases, written out, so the rule is readable without a YAML loader.
+
+    Every line here states what a real loader does with it. That is the whole
+    specification of `frontmatter_problems`, and it is spelled out rather than
+    cross-checked against PyYAML on purpose: a test that imports a package
+    nothing declares is a test that skips, and a gate that skips reads as a
+    pass.
+    """
+    registrar = _registrar()
+    clean = [
+        "name: evaluation-integrity",
+        'description: "a method: the subject"',
+        "description: 'a method: the subject'",
+        "ref: https://arxiv.org/abs/2609.16816",
+        "at: 12:30",
+        "claims: [476, 477]",
+        "provenance:",
+        '  reviews:\n    - "none filed yet: the lane is open"',
+    ]
+    for line in clean:
+        assert registrar.frontmatter_problems(line) == [], line
+
+    refused = [
+        "description: a method: the subject",
+        "description: the subject:",
+        'description: "a method: the subject',
+        "papers:\n  - Title: Subtitle, arxiv.org/abs/1",
+        "claims: [476, 477",
+    ]
+    for line in refused:
+        assert registrar.frontmatter_problems(line), line
+
+    # One construct a loader accepts and this parser still refuses, which is
+    # the detector's only deliberate divergence from PyYAML. A block scalar is
+    # valid YAML and this parser would read its continuation lines as keys, so
+    # the honest answer is that it cannot read it rather than a guess.
+    assert registrar.frontmatter_problems("description: |\n  a line") , (
+        "a construct the parser does not implement has to be refused, not read"
+    )
+
+
+def test_no_shipped_skill_hides_a_value_a_loader_would_refuse():
+    """The gate this file is the CI step for, over the real library.
+
+    `checks.yml` runs this file on every change under `skills/**`, so this is
+    the assertion that was missing rather than the step. A skill whose
+    frontmatter no parser can read turns its own pull request red here, which is
+    what did not happen for `evaluation-integrity` and
+    `skill-library-engineering`.
+    """
+    registrar = _registrar()
+    _rows, problems = registrar.read_skills()
+    unreadable = [p for p in problems if "unquoted colon" in p
+                  or "never closes it" in p]
+    excused = registrar.quarantined_problems(problems)
+    assert [p for p in unreadable if p not in excused] == [], unreadable
+
+
+def test_the_frontmatter_quarantine_names_real_skills_and_expires():
+    """The excuse has a date and an address, and both are checked.
+
+    An excuse with no expiry is the state this repository keeps filing
+    incidents about. After the date, a quarantined skill blocks like any other,
+    so forgetting the constant costs a red gate with the slug in it rather than
+    silence.
+    """
+    registrar = _registrar()
+    for slug in registrar.FRONTMATTER_QUARANTINE:
+        assert (SKILLS / slug / "SKILL.md").exists(), (
+            f"{slug} is quarantined and is not a skill in this library"
+        )
+
+    _rows, problems = registrar.read_skills()
+    assert registrar.quarantined_problems(problems, today="2026-10-27")
+    assert registrar.quarantined_problems(
+        problems, today=registrar.FRONTMATTER_QUARANTINE_EXPIRES) == set(), (
+        "the quarantine does not expire, so it is an excuse with no end"
+    )
+
+
+def test_a_spent_quarantine_entry_asks_to_be_deleted():
+    """And the other direction cannot rot either.
+
+    When the skill seat's quoting fix lands, the entry excuses nothing. That
+    must not turn anything red, because the fix is the good outcome, so the
+    gate names the entry as spent instead.
+    """
+    registrar = _registrar()
+    assert registrar.spent_quarantine([]) == sorted(
+        registrar.FRONTMATTER_QUARANTINE), (
+        "a library with no refusals left should report every entry as spent"
+    )
+    _rows, problems = registrar.read_skills()
+    assert registrar.spent_quarantine(problems) == [], (
+        "a quarantine entry is excusing nothing and is still in the constant"
+    )

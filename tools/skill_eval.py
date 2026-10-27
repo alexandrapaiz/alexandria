@@ -679,7 +679,9 @@ def skill_version(slug: str) -> str:
     if not path.exists():
         return ""
     fm, _ = registrar.split_frontmatter(path.read_text())
-    return str(registrar.parse_frontmatter(fm).get("version") or "")
+    # strict=False: refusing an unreadable value is the registrar gate's
+    # job, and FRONTMATTER_QUARANTINE still holds two of them open.
+    return str(registrar.parse_frontmatter(fm, strict=False).get("version") or "")
 
 
 # The skill seat writes `evals/evals.json`, which is also the name the
