@@ -23117,6 +23117,10 @@ has nothing to go red against.
   `docs/agents/incidents.md`, locate a conflict with `git diff
   --diff-filter=U` and the line numbers git already printed, never with a
   search for the marker text.
+- First step: the clause above, pasted into the "Check the register before you
+  ship" section of each of the seat charters under `prompts/`, as a numbered
+  item beside the existing step-zero grep. It is a one-paragraph edit per
+  charter and no code.
 - Why it is a proposal and not a diff: charters are edited only by the owner's
   merge and this seat's charter forbids including a charter edit in its daily
   pull request, so the clause is written out here for whoever carries it. It is
@@ -23136,6 +23140,15 @@ has nothing to go red against.
   and [mypy's config file reference](https://mypy.readthedocs.io/en/stable/config_file.html).
   None is in `docs/market/landscape.md` and none is a competitor. They are the
   nearest products in the world with the same problem.
+- What: the scan's finding in one line, because this entry is a scan and a
+  proposal at once. Two mature tools have the spent-excuse check and ship it
+  off by default, one has a per-entry expiry date and an explicit promise never
+  to parse the reason, and no one of the three has both halves. The borrowable
+  piece is the field layout rather than the mechanism.
+- First step: adopt Trivy's three-field shape for the quarantine entry, which
+  is the separate proposal above, and copy the parenthesis with it: the gate's
+  own comment should say that the reason is never read by anything, so no later
+  version starts matching on its wording.
 - **What is worth stealing**, and it is one sentence in Trivy's docs. A
   `.trivyignore.yaml` entry has three fields, and they are `id`, `expired_at`
   as a `yyyy-mm-dd` date, and `statement`, whose documented description ends
