@@ -1996,3 +1996,23 @@ as a lost cycle.
 
 Read the two open ones with the fixed tool and with `capacity-retry.json`
 beside it, and never off an absent pull request.
+
+### A note on correcting this register's own cards, because an incident asked for a write that does not exist
+
+A board card's **body is immutable**. The board's HTTP server answers `PATCH`,
+`PUT` and `DELETE` with `501`, before routing, so no seat can edit a posted
+card body and `tools/board.py` exposes no route that tries. The comment thread
+is the only writable surface on a card.
+
+That matters here because this page's cards carry dated instructions, and
+`INC-2026-10-25-...-the-cards-body-kept-the-dated-instruction` recorded two
+runs as having failed to rewrite one. They could not. The entry is corrected
+in `INC-2026-10-27-the-incident-about-an-uncorrected-card-body-asked-two-runs-for-a-write-the-board-answers-501`.
+
+So when a card of this register goes false, the performable act is to
+**supersede it**: a new card with the corrected body, the old one moved to
+Done with a comment naming the replacement. Both are POSTs and both exist.
+Correcting in the thread is the cheaper act and it is legitimate — it was the
+only act available — but a reader acts on the body, so a body that is wrong
+about anything other than a date that has passed wants replacing rather than
+annotating.
