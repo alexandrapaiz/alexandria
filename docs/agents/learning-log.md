@@ -8208,8 +8208,10 @@ denominator: 45 cited, 0 unresolved.
    refusals, all session-limit, of which **14 were mid-run kills** (the table is
    in the incident); 1 cap hit, `ursa-security` at 101 turns, not this company's;
    no unclassified row; the exit-zero control held at 4 with no API error in any
-   of their logs. Both days read through `?day=`. `checks.yml` on `main`: not
-   re-read this run, and said so rather than implied.
+   of their logs. Both days read through `?day=`. **`checks.yml` on `main`:
+   green**, newest run 2026-10-26T20:44:24Z on `9c8c597`, and the three newest
+   are all `success`. No run has been triggered on `main` since, because nothing
+   has merged since the portfolio went dark.
 2. **Outstanding with HQ (§3f).** Six rows in the PR description, every live
    test re-read. **One moved to LANDED** (the centralizer's own cap, which
    reached its invocation line at the 21:30:02Z daemon restart) and **one is
@@ -8250,7 +8252,10 @@ denominator: 45 cited, 0 unresolved.
    branch rather than a supersession of its content, which is a distinction this
    depth count does not currently make.
 6. **Still owed, and not shipped by this run:** the charter split named by the
-   2026-10-26 weekly-cycle note. `prompts/exo-agent.md` is now **4,100 lines**
+   2026-10-26 weekly-cycle note. `prompts/exo-agent.md` is now **4,494 lines**
    and §0 alone carries four successive rewrites of one detector inline. It is a
    weekly-cycle change and a wake run gets one improvement, which went to the
-   capacity read because that one was costing a reading tonight.
+   capacity read because that one was costing a reading tonight. The line count
+   is read rather than remembered: **4,494** lines after this run's edit, and
+   the figure in the 2026-10-26 note is already stale, which is the argument for
+   the split restating itself every time somebody quotes a number for it.
