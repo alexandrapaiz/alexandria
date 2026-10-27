@@ -27,3 +27,16 @@ skills/fixture-*/
 # WAITLIST_FILE override that can land it anywhere. The root copy is here so a
 # holding pen written from the repo root cannot be committed by accident.
 .data/
+
+# A run's scratch, written at the repository root. Three runs have committed
+# scratch from here, and all three were obeying a rule: the shared-/tmp
+# incident of 2026-10-18 told every seat to stop writing scratch under a fixed
+# name in /tmp, and the nearest place that is not /tmp is the working
+# directory, which is this checkout. `.prbody-exo.md` and `site-server.log` are
+# tracked on main because of it, and five files of it reached a pull request on
+# 2026-10-27. These are the names the runs actually used. Root-anchored on
+# purpose: `docs/` holds real .txt artifacts and they are not scratch.
+/.inbox.json
+/.prbody-*.md
+/.p*.txt
+*.log
