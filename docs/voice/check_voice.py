@@ -90,6 +90,7 @@ import datetime
 import html
 import html.parser
 import io
+import json
 import os
 import pathlib
 import re
@@ -5045,6 +5046,197 @@ def captions(paths=None):
     return rc
 
 
+# The generator the press is running, and the distance from the one this seat
+# edits. Ban list 142 is the entry; this is its enforcement.
+PRESS_APP = "weekly"
+PRESS_FILE = "prompts/digest.md"
+# The engineer's walk is bounded at 40 commits and the deployed commit passed
+# that mark on 2026-10-26. 400 is not a tuned number, it is a window wide
+# enough that the bound is the deploy's age rather than this seat's output
+# rate, which is the whole defect being worked around here.
+PRESS_WINDOW = 400
+
+
+def press_verdict(found, generator_commit, queued, now, generator_at):
+    """One verdict about the press, from facts a caller has already gathered.
+
+    Separated from the reading so it can be pinned by cases that need no
+    network and no git. `found` is `undeployed_commits`'s dict, verbatim.
+
+    The three outcomes are not three grades of the same thing. A refusal means
+    the question was not answered and the run must not conclude anything from
+    it, which is the reading that cost run 60 forty minutes. A press on the
+    trunk's generator means a grade below is a grade on this seat's current
+    work. Anything else means the grade is about an older file, and the run has
+    to say which one before it scores a single law.
+    """
+    if "why" in found:
+        return "REFUSED", found["why"]
+    if not queued and generator_commit:
+        return "CURRENT", (f"the press is running {PRESS_FILE} as of "
+                           f"{generator_commit}, which is the trunk's")
+    # The age is the GENERATOR commit's, not the deploy's. They differ by
+    # however long this file sat unedited before the deploy, and the number a
+    # grade needs is the age of the prose the press is writing from.
+    age = ""
+    if generator_at is not None and now is not None:
+        age = (f", {round((now - generator_at).total_seconds() / 86400, 1)} "
+               f"days old")
+    return "BEHIND", (f"the press is running {PRESS_FILE} as of "
+                      f"{generator_commit or 'an unnamed commit'}{age}, with "
+                      f"{len(queued)} merged commit(s) to it queued behind the "
+                      f"deploy")
+
+
+PRESS_CASES = [
+    ({"why": "the running digest matches none of the last 40 commits to touch "
+             "this app's files"}, None, [], "REFUSED"),
+    ({"deployed_commit": "abc1234", "deployed_at": "2026-10-26T00:00:00+00:00"},
+     "abc1234", [], "CURRENT"),
+    ({"deployed_commit": "f16e277", "deployed_at": "2026-10-15T17:40:37+00:00"},
+     "9b6410e", [{"sha": "x"}, {"sha": "y"}], "BEHIND"),
+    # The deploy is newer than the generator commit it carries, which is the
+    # ordinary case and the reason the age is read off the second one.
+    # A deploy this seat's file predates: the image is current for the app and
+    # still behind for the generator, because the app's other seven files moved
+    # and this one did not. The verdict is BEHIND and the reason names the
+    # generator rather than the app, which is the distinction a writer run
+    # needs and the deploy surface does not make.
+    ({"deployed_commit": "f16e277", "deployed_at": "2026-10-15T17:40:37+00:00"},
+     None, [{"sha": "x"}], "BEHIND"),
+]
+
+
+def press_cases():
+    """The verdict function against its four pinned cases."""
+    rc = 0
+    now = datetime.datetime(2026, 10, 27, tzinfo=datetime.timezone.utc)
+    for found, gen, queued, want in PRESS_CASES:
+        at = found.get("deployed_at")
+        at = datetime.datetime.fromisoformat(at) if at else None
+        got, _ = press_verdict(found, gen, queued, now, at)
+        if got != want:
+            rc = 1
+            print(f"  FAIL    case wanted {want} and got {got}")
+    print(f"PRESS_CASES                                "
+          f"{len(PRESS_CASES) - rc} of {len(PRESS_CASES)}")
+    return rc
+
+
+def press():
+    """Which generator the press is running, and how far it is from the trunk.
+
+    Every grade this seat writes is a verdict on `prompts/digest.md`, and the
+    copy of that file the press runs is not the copy a run edits. The forwards
+    half of the canon's procedure asked each run to check that distance, in
+    prose, and on 2026-10-27 the one command that answers it stopped answering:
+    `tools/delivery_health.py` recovers the deployed commit by replaying the
+    image's content digest over the last `DEPLOY_HISTORY_LIMIT` commits to
+    touch the app's files, that limit is 40, and `weekly`'s file list contains
+    the one file this seat edits on every run. The deployed commit reached walk
+    position 43 and the surface printed "the deploy was built from code that is
+    not in this history" about a nine-day-old ancestor of `origin/main`.
+
+    So the instrument goes blind in proportion to this seat's own output, which
+    is the defect ban list 142 names. The ledger entry of 2026-10-27 asks the
+    engineer for the window and for a refusal that says how far it looked. This
+    is the half that belongs here: the same question, asked with the window
+    widened, by the seat that needs the answer before it grades anything.
+
+    It calls `undeployed_commits` rather than replaying the digest again. A
+    second copy of that logic in this file would be a parallel structure, and
+    the one thing this charter forbids beyond all others is a seat inventing a
+    structure beside one that already works.
+
+    Unreachable is a failure and never a pass. A run that cannot read the row
+    and concludes the press is current has made the mistake this whole file was
+    built to stop.
+    """
+    rc = press_cases()
+    print()
+    try:
+        sys.path.insert(0, str(ROOT))
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "_dh", ROOT / "tools" / "delivery_health.py")
+        dh = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(dh)
+    except Exception as e:
+        print(f"  UNREACHED tools/delivery_health.py: {type(e).__name__}: {e}")
+        print("    nothing was read, so nothing is concluded about the press")
+        return 1
+    body = _fetch(dh.RECEIPT_URL)
+    if body is None:
+        print("    nothing was read, so nothing is concluded about the press")
+        return 1
+    try:
+        rows = {r["app"]: r for r in json.loads(body).get("deploy", [])}
+    except (ValueError, KeyError, TypeError) as e:
+        print(f"  UNREACHED {dh.RECEIPT_URL}: {type(e).__name__}: {e}")
+        return 1
+    row = rows.get(PRESS_APP)
+    if row is None:
+        print(f"  FAIL    the receipt carries no row for {PRESS_APP}, so the "
+              f"press has never reported what it runs")
+        return 1
+    found = dh.undeployed_commits(ROOT, PRESS_APP, row.get("runtime_sha"),
+                                  limit=PRESS_WINDOW, ref="origin/main")
+    deployed = found.get("deployed_commit")
+    at = found.get("deployed_at")
+    at = datetime.datetime.fromisoformat(at) if at else None
+    gen = None
+    gen_at = None
+    queued = []
+    if deployed:
+        gen = _git_line("log", "-1", "--format=%h %cI %s", deployed,
+                        "--", PRESS_FILE)
+        if gen:
+            with contextlib.suppress(ValueError, IndexError):
+                gen_at = datetime.datetime.fromisoformat(gen.split()[1])
+        queued = _git_lines("log", "--format=%h %cI %s",
+                            f"{deployed}..origin/main", "--", PRESS_FILE)
+    verdict, why = press_verdict(found, gen.split()[0] if gen else None,
+                                 queued, datetime.datetime.now(
+                                     datetime.timezone.utc), gen_at)
+    print(f"recorded digest                            "
+          f"{row.get('runtime_sha')}")
+    print(f"recorded at                                "
+          f"{row.get('recorded_at')}")
+    print(f"deployed commit                            {deployed or 'unknown'}")
+    print(f"commits searched                           "
+          f"{found.get('searched', 0)} of a {PRESS_WINDOW} window")
+    print(f"the generator it carries                   {gen or 'unknown'}")
+    print(f"deployed at                                {at or 'unknown'}")
+    print(f"queued commits to the generator            {len(queued)}")
+    for line in queued[:5]:
+        print(f"    {line}")
+    if len(queued) > 5:
+        print(f"    and {len(queued) - 5} more")
+    print()
+    print(f"  {'FAIL' if verdict != 'CURRENT' else 'OK  '}    {verdict}: {why}")
+    print()
+    print("A verdict on an issue is a verdict on the generator that wrote it,")
+    print("so the run that cannot name that generator is grading an unnamed")
+    print("artifact. REFUSED is the answer to act on rather than to read")
+    print("past: it means the window ran out and the number is recoverable,")
+    print("not that the press was built from code nobody pushed.")
+    return rc | (verdict != "CURRENT")
+
+
+def _git_line(*args):
+    out = _git_lines(*args)
+    return out[0] if out else None
+
+
+def _git_lines(*args):
+    try:
+        r = subprocess.run(["git", "-C", str(ROOT), *args],
+                           capture_output=True, text=True, timeout=120)
+    except (OSError, subprocess.SubprocessError):
+        return []
+    return [x for x in r.stdout.splitlines() if x.strip()]
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -5088,6 +5280,7 @@ def main():
                      ("reading", reading),
                      ("candidates", candidates),
                      ("deadlines", deadlines),
+                     ("press", press),
                      ("ledger", ledger),
                      ("firstuse", firstuse),
                      ("generator", generator),
@@ -5104,7 +5297,8 @@ def main():
                      ("blockrules", blockrules),
                      ("compare", compare), ("selfcheck", selfcheck)):
         if which == name or (which == "all"
-                             and name not in ("selfcheck", "compare")):
+                             and name not in ("selfcheck", "compare",
+                                              "press")):
             print(f"==== {name} ====")
             if name in ("enforcements", "selfcheck", "candidates", "ledger",
                         "routed"):
