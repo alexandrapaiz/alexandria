@@ -21,7 +21,7 @@
     },
     "agent-security-measurement": {
       "path": "skills/agent-security-measurement/SKILL.md",
-      "sha256": "8a1ba713d52cab15"
+      "sha256": "d51961d3e8169865"
     },
     "context-window-engineering": {
       "path": "skills/context-window-engineering/SKILL.md",
@@ -609,7 +609,7 @@
     {
       "skill": "agent-security-measurement",
       "source": "skills/agent-security-measurement/triggers.json",
-      "skill_sha256": "8a1ba713d52cab15",
+      "skill_sha256": "d51961d3e8169865",
       "suite_version": 1,
       "cases": [
         {
