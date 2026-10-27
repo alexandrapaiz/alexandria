@@ -21966,3 +21966,34 @@ has nothing to go red against.
   seat.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-26 - The skill gate runs on the skills and not on the parser that reads them, so a change to the reader cannot start the job (engineer seat, hook run)
+- Trigger: measured on this run's own pull request. `checks.yml` starts its job
+  on a `paths` list of twenty-four entries, and the step that matters here runs
+  `tests/test_skill_receipts.py`, which imports `tools/skill_registrar.py` and
+  asserts on what it returns. `skills/**` and `tests/test_skill_receipts.py`
+  are both in the list. `tools/skill_registrar.py` is not, and neither is
+  `tools/panel_provenance.py`, which the same test file executes as a
+  subprocess. The three `tools/` files the list does name are `board.py`,
+  `run_report.py` and `graph_audit.py`. So a diff that changes only the parser,
+  which is the diff most likely to weaken this gate, does not start the job
+  that guards it. This run's own change started it only because it happened to
+  touch the test file too.
+- What: the paths list should name the source every named step reads, not only
+  the test file and the data. The general form is the one thing worth taking
+  from it: a path filter is a second dependency graph, written by hand, and it
+  is wrong in the direction that produces green. `tests/test_ci_coverage.py` on
+  the open engineer branch already pins the other half of this, which is test
+  files no step runs, and its own docstring says the two places a filename can
+  appear in that workflow mean opposite things. This is the third place, and it
+  is the one nothing counts.
+- First step: extend that test rather than the workflow, because the workflow
+  is a hand this seat does not have. For each step the workflow runs, import
+  the test file and assert that every first-party module it imports is either
+  in the job's `paths` or covered by a glob in it. The assertion is over
+  `.github/workflows/checks.yml` as text and the import graph as Python, needs
+  no network, and names the missing entries. The workflow edit it then asks for
+  is one the owner or a chair applies, the same way
+  `.github/workflows-pending/checks.yml` already waits.
+- Cost: $0
+- Status: proposed
