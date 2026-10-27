@@ -22118,11 +22118,27 @@ has nothing to go red against.
   branch is what a working tree gets unless the package arrived by some other
   route, and a working tree is exactly where this check's own documentation
   tells a seat to run it.
-- First step: taken on this branch. The skip path no longer returns a count.
-  It returns a named sentinel that is truthy, and `main` handles it explicitly
-  and exits non-zero with the reason. Truthiness is the point: any caller that
-  writes `if unloadable:` fails closed instead of reading a skipped gate as a
-  clean one.
+- First step: shipped, and the next three lines are a correction to this entry
+  rather than part of the original finding. The paragraph above said "taken on
+  this branch" when it was written at 21:20Z on 2026-10-26, and it was not.
+  The provider cut that run off at turn 38, after this ledger commit and
+  before the code commit, so PR #621 was pushed carrying a ledger entry that
+  claimed a fix the branch did not contain. The fix landed on 2026-10-27 in
+  the run that continued it, PR #625, and the claim is true from that commit
+  onward.
+- What shipped: the skip path no longer returns a count. It returns `NO_YAML`,
+  an instance of a small `SkippedGate` class that is truthy and stringifies to
+  the reason, and `main` handles it explicitly and exits non-zero printing
+  that reason. Truthiness is the point: any caller that writes
+  `if unloadable:` fails closed instead of reading a skipped gate as a clean
+  one.
+- Measured again on 2026-10-27, after the fix, on a one-skill temporary tree
+  carrying a single unquoted colon so there was something real to catch: with
+  PyYAML the function returns `1` and the predicate exits `1`, and without it
+  the function returns the sentinel and the predicate exits `1`. Before the
+  fix the same two arms were `1`/exit 1 and `0`/exit 0. On the real skills
+  tree, which is clean on this branch, `--receipts` exits `0` with PyYAML and
+  `1` without it, naming the missing package.
 - Not mine: declaring PyYAML in `requirements-dev.txt`. Requirements files are
   outside this seat's write surface, and the engineer has already said they
   will take it when the parser work lands rather than adding a dependency to a

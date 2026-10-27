@@ -670,15 +670,47 @@ def check_receipts(skills_dir: str, results_dir: str) -> int:
 # consumer cannot load fires zero percent of the time, which is the failure this
 # library's differentiator is defined against, so it is checked here rather than
 # left to the first consumer to discover.
-def check_frontmatter(skills_dir: str) -> int:
+#
+# The check needs PyYAML, which neither requirements file declares, so the
+# import failing is the ordinary case rather than the strange one. Until
+# 2026-10-27 the import failure returned 0, which is the same value a clean
+# tree returns, so `--receipts` exited green on a tree carrying two skills no
+# consumer could load. Measured on one unchanged broken skill: 1 and exit 1
+# with PyYAML, 0 and exit 0 without it. A count is the wrong return type for a
+# check that did not run, so the skip path returns the sentinel below instead.
+# It is truthy on purpose: any caller that writes `if unloadable:` now fails
+# closed, and a caller that wants the reason gets a sentence rather than a
+# number it would have to guess the meaning of.
+class SkippedGate:
+    """Stand-in for a count the gate never computed. Truthy, so it fails
+    closed, and it prints the reason it did not run."""
+
+    def __init__(self, reason: str) -> None:
+        self.reason = reason
+
+    def __bool__(self) -> bool:
+        return True
+
+    def __str__(self) -> str:
+        return self.reason
+
+
+NO_YAML = SkippedGate(
+    "the frontmatter check did not run, because PyYAML is not installed. "
+    "A skipped gate is not a pass. Install it with `pip install pyyaml` and "
+    "run this command again.")
+
+
+def check_frontmatter(skills_dir: str) -> int | SkippedGate:
     """Load every SKILL.md frontmatter with a real YAML parser. Returns the
-    number that fail, which is the number of skills a consumer cannot load."""
+    number that fail, which is the number of skills a consumer cannot load,
+    or NO_YAML when the parser is missing and no number was computed."""
     try:
         import yaml
     except ImportError:
         print("frontmatter: PyYAML is not installed, so this check did not "
               "run. That is a skipped gate, not a pass.")
-        return 0
+        return NO_YAML
     paths = sorted(glob.glob(os.path.join(skills_dir, "*", "SKILL.md")))
     bad = []
     print(f"\nfrontmatter: {len(paths)} skills parsed with PyYAML")
@@ -740,6 +772,9 @@ def main() -> int:
     if args.receipts:
         stale = check_receipts(args.skills_dir, args.results)
         unloadable = check_frontmatter(args.skills_dir)
+        if isinstance(unloadable, SkippedGate):
+            print(f"\nreceipts: FAIL, {unloadable}")
+            return 1
         return 1 if (stale or unloadable) else 0
 
     res = run(args.skills_dir, args.decoys, args.engine)
