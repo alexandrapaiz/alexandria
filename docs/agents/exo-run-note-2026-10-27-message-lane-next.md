@@ -1,8 +1,9 @@
 # ExO run note — 2026-10-27 (message, lane-next, stacked on #630)
 
-**Body-ahead-of-diff notice (ship-first rule, §"Every verdict…"): this note is
-written as the run works. Where it describes work, the diff is the authority.
-Opened at turn 8.**
+**Final. The run readied its pull request at 01:56Z; the description on
+that pull request is the authority on what shipped.** This note was opened at
+turn 8 with a body-ahead-of-diff notice, per the ship-first rule, and that
+notice is discharged rather than left standing.
 
 ## What this run found before it did anything
 
@@ -68,3 +69,17 @@ converted the refusal into a shipped cycle was HQ's re-fire, not the clock. A
 gate worded as "did the slot fire" would have scored this as a pass and a gate
 worded as "did a pull request appear by 17:00Z" would have scored it a fail.
 Both would have been wrong about the seat.
+
+## What this run did not do, named
+
+Wake run, so: no register sweeps, no unowned-duty hunt, no §3g public-claim
+sweep, no queue re-verification, and one improvement rather than three.
+
+## Where the rest is
+
+The lane item's full reading is in `docs/agents/unowned-duties.md` under
+2026-10-27. The improvement is §2b of `prompts/exo-agent.md`. The class C
+remedy is step 5b of `prompts/writer-agent.md`. The incident is in
+`docs/agents/incidents/inbox/`. The run's own account is the 2026-10-27
+message-wake entry in `docs/agents/learning-log.md`, which carries the handoff
+list for the next run.
