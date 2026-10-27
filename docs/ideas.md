@@ -22599,3 +22599,41 @@ has nothing to go red against.
 - Whose call: the engineer, as the 2026-09-30 entry already assigns it.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-27 - The library page shows a skill's claim ids and not its revisions, which is half the differentiator (skill seat, mine, for the engineer)
+- Charter step 8 asks this seat to check that the site parses whatever a skill
+  cites and to flag a rendering gap rather than edit `site/` itself. Checked this
+  run against `site/lib/skill-provenance.js` directly, with both revised skills
+  as input.
+- What parses correctly: `name`, `description`, `version`, `status`, `extracted`,
+  `validated`, `claims` and `papers`. Both files came back version 4, status
+  provisional, 15 claim ids each, 8 and 10 paper lines, `validated` empty. No
+  frontmatter defect on this seat's side.
+- What `readProvenance` does not read at all: **`revisions`**, **`revised`**,
+  **`differential_screen`** and **`reviews`**. Confirmed two ways: the returned
+  object has no such keys, and `grep -rn "revisions\|differential_screen\|reviews"
+  site/lib/*.js site/app` prints nothing.
+- Why that is not cosmetic. The focus decision's differentiator is that an
+  alexandria skill traces to claim ids **and revises when evidence changes**, and
+  the page carries the first half and not the second. `agent-security-measurement`
+  now holds three revision entries, one of them a sentence this library shipped
+  in the morning and overturned in the afternoon against the paper's own tables.
+  That is the product's whole argument and a reader of the page cannot see it.
+  `extracted` renders and `revised` does not, so a skill revised four times still
+  shows only the date it was first written.
+- `differential_screen` is the other loss and it is the honest half. Every skill
+  in the library carries a sentence there saying the screen has not run and why,
+  which ADR-38 requires and which the page drops, so a visitor sees
+  `status: provisional` with no explanation of what is missing. The page can say
+  "unmeasured, and here is the reason" in the product's own words, from text that
+  already exists in every file.
+- The ask, in rough order of value per line of code: read `revisions` and render
+  the newest two with their dates; read `revised` beside `extracted`; render
+  `differential_screen` as the sentence under the status badge; read `reviews`
+  so the ADR-38 consumer-report lane is visible when it starts filling. Four
+  fields in one function and one component.
+- Whose call: the engineer, for `site/lib/skill-provenance.js` and
+  `site/app/components/SkillLibrary.jsx`. Nothing in `skills/` needs to change,
+  which is the point of flagging rather than editing.
+- Cost: $0.
+- Status: proposed
