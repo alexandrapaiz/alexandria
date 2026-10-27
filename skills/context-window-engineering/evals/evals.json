@@ -1,573 +1,982 @@
 {
-  "skill": "context-window-engineering",
-  "suite_version": 2,
-  "written": "2026-09-30",
-  "author": "skill agent (ADR-22)",
-  "adr": "ADR-36",
-  "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
-  "judge": "a model other than the subject; rubric tasks only",
-  "policy": {
-    "repetitions": 3,
-    "subject": "kimi-k2.6",
-    "judge": "openai/gpt-oss-120b",
-    "min_delta": 0.2,
-    "pre_registered": "2026-10-23, by the alexandria chair before either arm ran on this suite: no results.json has ever been written for it. The numbers copy the three suites that already registered them, so every suite in the library is measured under one policy. The first run is on qwen/qwen3.8-27b with the subject overridden on the command line and recorded in the result, because the host that can run it holds a Groq key and no Moonshot key, and the Modal workspace is at its spend limit."
+ "skill": "context-window-engineering",
+ "suite_version": 2,
+ "written": "2026-09-30",
+ "author": "skill agent (ADR-22)",
+ "adr": "ADR-36",
+ "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
+ "judge": "a model other than the subject; rubric tasks only",
+ "policy": {
+  "repetitions": 3,
+  "subject": "kimi-k2.6",
+  "judge": "openai/gpt-oss-120b",
+  "min_delta": 0.2,
+  "pre_registered": "2026-10-23, by the alexandria chair before either arm ran on this suite: no results.json has ever been written for it. The numbers copy the three suites that already registered them, so every suite in the library is measured under one policy. The first run is on qwen/qwen3.8-27b with the subject overridden on the command line and recorded in the result, because the host that can run it holds a Groq key and no Moonshot key, and the Modal workspace is at its spend limit."
+ },
+ "note": "Nine treatment tasks and two controls, from the papers this skill cites (ADR-35). Two of the cited papers publish no full HTML and were read at the abstract only, and no task rests on either. Task cwe-t8 tests the skill's own narrowing section, which is where a skill most often launders a paper, and since 2026-10-26 it also tests the two sentences this skill itself got wrong. Every task carries a `sections` list naming the SKILL.md headings it exercises, so the per-section Validation tags are checkable by string comparison rather than by trusting `source.claims`. Contract in skills/_validation/evals/README.md.",
+ "tasks": [
+  {
+   "id": "cwe-t1",
+   "kind": "treatment",
+   "sections": [
+    "Delta 1: protect both boundaries, then choose the ratio, and the policy last"
+   ],
+   "form": "prompt",
+   "situation": "Random Attention's controlled ablation, plus the independent check that re-measures it. Give every training-free evictor the same rule of keeping the prompt and most of the difference between methods disappears, ordered by how much of the question each score had been losing. The independent globally capped harness then finds protected-random a floor rather than a winner, and a third paper prices permanent eviction at the ratio this team is about to choose.",
+   "source": {
+    "paper": "Random Attention; Protection Is (Nearly) All You Need; Not All Thoughts Need HBM",
+    "arxiv": "arxiv.org/abs/2609.03430",
+    "claims": [
+     78,
+     79
+    ]
+   },
+   "prompt": "Our reasoning agent produces long traces and we have a hard KV cache budget per request. I have two candidate eviction policies from the literature and a third we wrote, all of them scoring tokens by accumulated attention with different decay terms. The plan is to benchmark all three at a 50 percent cache budget and pick a winner, roughly a week of work. Before I start, is there anything about this comparison I should set up differently?",
+   "without_skill": "Helps design the bake-off: held-out tasks, matched budgets, latency alongside accuracy. It is a competent comparison of three things the evidence says differ little, at a ratio the evidence says may put accuracy on the floor, and it omits the null arm entirely.",
+   "with_skill": "Reorders the week: both boundaries protected outside the score at ten percent of capacity each, the eviction ratio treated as the decision rather than the policy, a protected-random null arm, and the expectation that the three scorers land within single digits of that null.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "bilateral",
+      "criterion": "Makes unconditional retention of the prompt, task statement and question a hard rule outside the score, and protects the recent window as well rather than one end only.",
+      "anchors": {
+       "0": "Not raised.",
+       "1": "Mentions keeping the prompt, or keeping the prompt plus sinks, with nothing about the other end or the size of the reservation.",
+       "2": "Both ends protected outside the score at about ten percent of capacity each, with the budget-matched ablation: both ends at ten percent reached 89.8 percent of ceiling against 55.6 and 60.6 for either end alone at twice the reservation."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the 10-percent-per-side protection budget and the 89.8 against 55.6 and 60.6 budget-matched bilateral ablation"
+      }
+     },
+     {
+      "id": "ratio_first",
+      "criterion": "Puts the eviction ratio ahead of the policy choice, and prices the 50 percent budget in the plan.",
+      "anchors": {
+       "0": "Treats 50 percent as a given and the policy as the variable.",
+       "1": "Suggests sweeping several budgets without saying what is at stake in the sweep.",
+       "2": "Names the floor: permanent eviction of half the cache has been measured at 0 to 2.5 percent reasoning accuracy, so the ratio decides whether the task survives, and moving tokens to slower memory instead of destroying them held 65 against a 71 percent full-cache baseline at 3 percent eviction."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the 0 to 2.5 percent accuracy at half the cache, and the 65 against 71 percent at 3 percent eviction with 5 to 7 percent transfer overhead"
+      }
+     },
+     {
+      "id": "null_arm",
+      "criterion": "Adds a null arm to the comparison: same budget, same protection, random selection for everything else.",
+      "anchors": {
+       "0": "Absent.",
+       "1": "Suggests a recency baseline only.",
+       "2": "Requires the protected-random null and states the decision rule: a ranking that does not beat it by more than the throughput it costs is buying latency and nothing else."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "a fourth arm in the bake-off, protected-random at the same budget and the same protected set, reported beside the three scorers"
+      }
+     },
+     {
+      "id": "expected_size",
+      "criterion": "Sets the expectation for how large the policy effect is, without the superlative.",
+      "anchors": {
+       "0": "Treats the three policies as the main variable.",
+       "1": "Says the difference may be small, or repeats the superlative this suite's own skill carried until 2026-10-26, that protected random is the best policy in every setting.",
+       "2": "Gives both sides: protected random was competitive with the strongest training-free evictor across four models and six reasoning tasks and ahead in 31 of 60 comparisons, while on an independent globally capped harness it is a floor at 79.5 percent of ceiling against 89 to 95 percent for five scorers, a gap not significant at p=0.14 that closes by a 512-entry cap."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the 31-of-60 count and the 0.250 against 0.282-to-0.300 floor at a 256-entry cap, p=0.14"
+      }
+     },
+     {
+      "id": "cost",
+      "criterion": "Counts the scoring pass as a cost, not only as a capability.",
+      "anchors": {
+       "0": "Absent.",
+       "1": "Mentions overhead.",
+       "2": "Notes the signal-free policy served roughly 32 to 43 percent more tokens per second under paged serving because it skips scoring, and makes that the bar the scorer has to clear."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the 32 to 43 percent serving throughput the null arm hands back"
+      }
+     }
+    ]
+   },
+   "exploit": {
+    "answer": "Before you start, protect both boundaries of the context outside the score rather than one, treat the eviction ratio as the real decision instead of the policy, add a protected-random null arm at the same budget, expect the three scorers to land close to that null, and remember the scoring pass costs serving throughput.",
+    "why": "Every criterion's vocabulary is present and not one number or artifact is. No protection budget, no floor, no null-arm row in the bake-off, no throughput bar. A judge reading for words scores this highly and a judge reading for the certificate scores it zero.",
+    "ceiling": 0.0
+   }
   },
-  "note": "Eight treatment tasks and two controls from the seven cited papers (ADR-35). One paper, arxiv.org/abs/2609.07103, publishes no full HTML and was read at the abstract only; no task rests on it alone. Task cwe-t8 tests the skill's own narrowing section, which is where a skill most often launders a paper. Revised 2026-09-30 (ADR-38 retrofit): every task gained a `sections` list naming the SKILL.md headings it exercises, so the per-section Validation tags are checkable by string comparison rather than by trusting `source.claims`. Contract in skills/_validation/evals/README.md.",
-  "tasks": [
-    {
-      "id": "cwe-t1",
-      "kind": "treatment",
-      "sections": [
-        "Delta 1: the null policy is the baseline, and almost nothing beats it"
-      ],
-      "form": "prompt",
-      "situation": "Random Attention's controlled ablation: give every training-free cache evictor the same rule of keeping the prompt, and most of the difference between methods disappears, with the gain to each method ordered by how much of the question its score had been losing.",
-      "source": {
-        "paper": "Random Attention",
-        "arxiv": "arxiv.org/abs/2609.03430",
-        "claims": [
-          78,
-          79,
-          80
-        ]
-      },
-      "prompt": "Our reasoning agent produces long traces and we have a hard KV cache budget per request. I have two candidate eviction policies from the literature and a third we wrote, all of them scoring tokens by accumulated attention with different decay terms. I want to benchmark all three and pick a winner, roughly a week of work. Before I start, is there anything about this comparison I should set up differently?",
-      "without_skill": "Helps design the bake-off: held-out tasks, matched budgets, latency alongside accuracy. It is a competent comparison of three things that the evidence says differ little, and it omits the null arm entirely.",
-      "with_skill": "Reorders the week: make prompt protection a hard rule first, add a random-eviction null arm, and expect the ranking choice to matter far less than the protected set.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "protection_first",
-            "criterion": "Makes unconditional retention of the prompt, task statement and question a hard rule in the compaction step rather than something the scorer should discover.",
-            "anchors": {
-              "0": "Not raised.",
-              "1": "Mentions keeping the prompt as a good idea.",
-              "2": "States it as a hard rule and gives the reason: the prompt is stated once and cannot be reconstructed, whereas the trace is restated in text and duplicated across heads."
-            }
-          },
-          {
-            "id": "null_arm",
-            "criterion": "Adds a null arm to the comparison: same budget, same protection, random selection for everything else.",
-            "anchors": {
-              "0": "Absent.",
-              "1": "Suggests a recency baseline only.",
-              "2": "Requires the protected-random null and states the decision rule: a ranking that does not beat it is buying latency and nothing else."
-            }
-          },
-          {
-            "id": "expected_size",
-            "criterion": "Sets the expectation that the effect of the ranking choice is small next to the protection rule, with evidence.",
-            "anchors": {
-              "0": "Treats the three policies as the main variable.",
-              "1": "Says the difference may be small.",
-              "2": "Cites that protected random eviction was competitive with the strongest training-free evictor across four models and six reasoning tasks, and that the per-method gain from protection ran up to 22.5 points for the policy that had been losing most of the prompt."
-            }
-          },
-          {
-            "id": "cost",
-            "criterion": "Counts the scoring pass as a cost, not only as a capability.",
-            "anchors": {
-              "0": "Absent.",
-              "1": "Mentions overhead.",
-              "2": "Notes the signal-free policy served roughly 32 to 43 percent more tokens per second under paged serving because it skips scoring."
-            }
-          }
-        ]
-      }
-    },
-    {
-      "id": "cwe-t2",
-      "kind": "treatment",
-      "sections": [
-        "Delta 1: the null policy is the baseline, and almost nothing beats it"
-      ],
-      "form": "project",
-      "situation": "The same ablation, at the surface where it is implemented: a compaction step that ranks everything by a score and takes until full, which is the design whose failure the paper isolates.",
-      "source": {
-        "paper": "Random Attention",
-        "arxiv": "arxiv.org/abs/2609.03430",
-        "claims": [
-          78,
-          79,
-          80,
-          85
-        ]
-      },
-      "prompt": "compact.py is our compaction step. Under tight budgets our agent starts answering the wrong question and forgetting configuration values the user gave it early in the session. Rewrite compact.py so this stops happening. Keep the function name and signature and keep returning a list of the items to retain. Write the whole file to answer.py.",
-      "files": {
-        "compact.py": "\"\"\"The compaction step. Called whenever the window is over budget.\"\"\"\n\nSYSTEM = \"system\"\nTASK = \"task\"\nQUESTION = \"question\"\nDURABLE = \"durable\"\nTRACE = \"trace\"\n\n\nclass Item:\n    def __init__(self, kind, text, score=0.0):\n        self.kind = kind\n        self.text = text\n        self.score = score\n\n    def __repr__(self):\n        return f\"Item({self.kind!r}, {self.text!r})\"\n\n    @property\n    def tokens(self):\n        return max(1, len(self.text.split()))\n\n\ndef compact(items, budget):\n    \"\"\"Return the items to keep, within budget, highest score first.\n\n    Current behaviour: rank everything by score and take until full.\n    \"\"\"\n    kept, used = [], 0\n    for item in sorted(items, key=lambda i: -i.score):\n        if used + item.tokens <= budget:\n            kept.append(item)\n            used += item.tokens\n    return kept\n"
-      },
-      "without_skill": "Tunes the scoring: adds a recency term, boosts the question's score, maybe weights by kind. Raising a score makes retention likely rather than certain, so the failure returns at tight budgets, which is what the tests probe.",
-      "with_skill": "Partitions instead of ranking: an unconditionally protected set that is never subject to the score, a protected region for durable facts, the score applied only to the trace, and a loud failure when the budget cannot hold the protected set.",
-      "check": {
-        "type": "tests_pass",
-        "answer_path": "answer.py",
-        "command": "python -m pytest test_compact.py -q",
-        "pass_condition": "exit code 0; the harness reports the passing count in both arms so a partial improvement is visible",
-        "files": {
-          "test_compact.py": "import pytest\n\nimport answer\nfrom compact import Item, SYSTEM, TASK, QUESTION, DURABLE, TRACE\n\n\ndef _items(n_trace=40):\n    items = [\n        Item(SYSTEM, \"you are an agent \" * 5, score=0.0),\n        Item(TASK, \"reconcile the invoices \" * 4, score=0.0),\n        Item(QUESTION, \"which invoice is duplicated \" * 3, score=0.0),\n        Item(DURABLE, \"account id 88213\", score=0.0),\n        Item(DURABLE, \"threshold is 0.62\", score=0.0),\n    ]\n    items += [Item(TRACE, f\"step {i} reasoning text here\", score=i) for i in range(n_trace)]\n    return items\n\n\ndef _protected(kept):\n    return {i.kind for i in kept if i.kind in (SYSTEM, TASK, QUESTION, DURABLE)}\n\n\ndef _floor(items):\n    return sum(i.tokens for i in items if i.kind in (SYSTEM, TASK, QUESTION, DURABLE))\n\n\ndef test_protected_kinds_survive_every_feasible_budget():\n    items = _items()\n    floor = _floor(items)\n    for budget in range(floor, floor + 200, 7):\n        kept = answer.compact(items, budget)\n        assert _protected(kept) == {SYSTEM, TASK, QUESTION, DURABLE}, budget\n\n\ndef test_every_durable_item_survives_not_just_one():\n    items = _items()\n    kept = answer.compact(items, _floor(items) + 5)\n    durable = [i.text for i in kept if i.kind == DURABLE]\n    assert \"account id 88213\" in durable and \"threshold is 0.62\" in durable\n\n\ndef test_zero_score_protected_items_beat_high_score_trace():\n    items = _items()\n    kept = answer.compact(items, _floor(items))\n    assert all(i.kind != TRACE for i in kept)\n    assert _protected(kept) == {SYSTEM, TASK, QUESTION, DURABLE}\n\n\ndef test_budget_is_respected():\n    items = _items()\n    for budget in (_floor(items), _floor(items) + 30, 10_000):\n        kept = answer.compact(items, budget)\n        if budget >= _floor(items):\n            assert sum(i.tokens for i in kept) <= budget\n\n\ndef test_infeasible_budget_fails_loudly():\n    items = _items()\n    with pytest.raises(Exception):\n        answer.compact(items, _floor(items) - 1)\n\n\ndef test_trace_is_still_admitted_when_there_is_room():\n    items = _items()\n    kept = answer.compact(items, 10_000)\n    assert sum(1 for i in kept if i.kind == TRACE) >= 30\n"
-        }
-      }
-    },
-    {
-      "id": "cwe-t3",
-      "kind": "treatment",
-      "sections": [
-        "Caveats"
-      ],
-      "form": "prompt",
-      "situation": "The named boundary of the signal-free result: Random Attention never reproduces a passcode announced many compression rounds before the question, while redundancy-aware scored evictors recover it in a minority of trials.",
-      "source": {
-        "paper": "Random Attention",
-        "arxiv": "arxiv.org/abs/2609.03430",
-        "claims": [
-          78,
-          79,
-          80
-        ]
-      },
-      "prompt": "We switched our long-session agent to random trace eviction with the prompt pinned, on the strength of the evidence that clever scoring buys almost nothing, and average quality held up exactly as promised. But we now have a specific recurring bug: early in a session the user says something like 'use the staging cluster, not production', the agent acknowledges it once, and forty tool calls later it uses production. What is going on and what do we change?",
-      "without_skill": "Treats it as a prompt-adherence or memory-quality problem: restate the constraint every turn, add a system-prompt reminder, or revert to a scored evictor across the board.",
-      "with_skill": "Names the regime, says the null policy is expected to lose exactly here, and gives read-once state its own protected region rather than asking the policy to keep it by luck.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "names_regime",
-            "criterion": "Identifies this as read-once state rather than a general memory failure, and distinguishes it from self-restating work.",
-            "anchors": {
-              "0": "Generic memory or prompt-adherence diagnosis.",
-              "1": "Notes the fact was said only once.",
-              "2": "Names the two regimes and places this session in the read-once one, where a signal-free default is the wrong choice."
-            }
-          },
-          {
-            "id": "expected",
-            "criterion": "States that this is the documented failure of the policy they adopted, not a surprise.",
-            "anchors": {
-              "0": "Presents it as unexplained.",
-              "1": "Says compaction probably dropped it.",
-              "2": "Cites that a signal-free policy never reproduced a value stated once many rounds earlier, while scored evictors recovered it in a minority of trials."
-            }
-          },
-          {
-            "id": "protected_region",
-            "criterion": "Prescribes an explicit protected region for durable facts, written to when the agent learns one, rather than tuning the eviction policy.",
-            "anchors": {
-              "0": "Reverts to a scored evictor or restates the constraint every turn.",
-              "1": "Suggests a memory store without connecting it to the protected set.",
-              "2": "Adds a protected region next to the prompt and writes to it explicitly on learning a durable fact, keeping cheap compaction for the rest of the trace."
-            }
-          },
-          {
-            "id": "honest_hybrid",
-            "criterion": "Does not present the paper's suggested hybrid as a measured result.",
-            "anchors": {
-              "0": "Recommends the hybrid as proven.",
-              "1": "Silent.",
-              "2": "Notes the paper proposes reserving a few slots per head for a cheap content signal and says plainly it did not evaluate one, so it is a direction."
-            }
-          }
-        ]
-      }
-    },
-    {
-      "id": "cwe-t4",
-      "kind": "treatment",
-      "sections": [
-        "Delta 2: for multi-hop, re-query in parallel rounds; map-reduce once is not it"
-      ],
-      "form": "prompt",
-      "situation": "PARSER's controlled perturbations over 512 questions each: varying where the evidence sits, whether it appears in logical dependency order or reversed, and how far apart two pieces sit. Sequential memory swings on all three; parallel reading stays nearly flat.",
-      "source": {
-        "paper": "PARSER",
-        "arxiv": "arxiv.org/abs/2609.06702",
-        "claims": [
-          291,
-          292,
-          293,
-          295
-        ]
-      },
-      "prompt": "Our system answers questions over 200-page contracts. It reads the document in 8K chunks, folding each chunk into a running summary, then answers from the final summary. Accuracy is 74 percent on questions whose answer is in the first twenty pages and 41 percent when it is in the last third, and multi-hop questions are worse than that. We are considering a model with a million-token window so the whole contract fits. Talk me through it.",
-      "without_skill": "Endorses the bigger window, or proposes a better summarisation prompt, or adds retrieval over chunks. None of these addresses that document order has become dependency depth.",
-      "with_skill": "Names the architectural cause, offers the diagnostic that confirms it, and proposes parallel reading with a lead that never sees the document.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "cause",
-            "criterion": "Identifies that folding chunks into a running summary makes document order into dependency depth, which is why position predicts accuracy.",
-            "anchors": {
-              "0": "Attributes it to window size or summary quality.",
-              "1": "Notes position sensitivity without the mechanism.",
-              "2": "Names the mechanism and that accuracy is asymmetric with respect to position because of it."
-            }
-          },
-          {
-            "id": "diagnostic",
-            "criterion": "Offers the shuffle test as the confirming diagnosis.",
-            "anchors": {
-              "0": "Absent.",
-              "1": "Suggests more evaluation.",
-              "2": "Says to vary evidence position, dependency order and evidence separation independently, and that a system whose accuracy moves when you shuffle the input has this failure."
-            }
-          },
-          {
-            "id": "architecture",
-            "criterion": "Proposes decoupling the two orders: a subagent bound to each chunk, a lead with the question and never the document, scatter-gather rounds with abstention.",
-            "anchors": {
-              "0": "Bigger window or better prompt.",
-              "1": "Suggests parallel chunk processing without the lead-and-query structure.",
-              "2": "Gives the structure, including that the lead conditions each next query on what came back and that subagents may abstain."
-            }
-          },
-          {
-            "id": "window_answer",
-            "criterion": "Answers the million-token question honestly rather than dodging it.",
-            "anchors": {
-              "0": "Recommends buying the window as the fix.",
-              "1": "Non-committal.",
-              "2": "Notes a 9B parallel-reading system beat a frontier model with a native million-token window by 6.3 points, so the window is not the binding constraint, while not claiming a bigger window never helps."
-            }
-          }
-        ]
-      }
-    },
-    {
-      "id": "cwe-t5",
-      "kind": "treatment",
-      "sections": [
-        "Delta 2: for multi-hop, re-query in parallel rounds; map-reduce once is not it"
-      ],
-      "form": "project",
-      "situation": "PARSER's four load-bearing design details from the full text: smaller chunks beat larger within the tested range, subagents can be small and frozen with 4B already near saturation, only the lead is trained, and the known failure is an unverifiable subagent finding.",
-      "source": {
-        "paper": "PARSER",
-        "arxiv": "arxiv.org/abs/2609.06702",
-        "claims": [
-          291,
-          292,
-          293,
-          295
-        ]
-      },
-      "prompt": "We are building the parallel-reading design you described for question answering over long contracts. Give me the configuration as config.json, with keys \"chunk_tokens\", \"subagent\": {\"size\", \"trained\"}, \"lead\": {\"size\", \"trained\", \"sees_document\"}, \"rounds\", \"subagent_return\" (a list of the fields each subagent returns), and \"known_failure\".",
-      "without_skill": "Configures it by the usual instincts: large chunks to reduce the number of calls, a strong model everywhere including the subagents, training the whole system end to end, and subagents returning a bare answer string.",
-      "with_skill": "Gets the four details right, and returns a span with every finding so the aggregation step has something to check.",
-      "check": {
-        "type": "parses",
-        "format": "json",
-        "assertions": [
-          {
-            "id": "schema",
-            "statement": "config.json has all seven keys with the stated nesting, and subagent_return is a list of strings."
-          },
-          {
-            "id": "chunk",
-            "statement": "chunk_tokens is an integer no greater than 4096, and the rationale does not claim larger chunks are better."
-          },
-          {
-            "id": "subagent_small_frozen",
-            "statement": "subagent.trained is false and subagent.size denotes a small model, at or below roughly 9B, rather than a frontier model."
-          },
-          {
-            "id": "lead_only_trained",
-            "statement": "lead.trained is true and lead.sees_document is false; the lead receives the question and the subagents' returns only."
-          },
-          {
-            "id": "span_returned",
-            "statement": "subagent_return includes a verbatim span or quotation field alongside the finding, and includes an abstention option."
-          },
-          {
-            "id": "known_failure",
-            "statement": "known_failure names the unverifiable subagent finding: a subagent sees only its chunk and the query, so an underspecified query can yield a confident local conclusion the lead cannot check."
-          }
-        ],
-        "pass_condition": "every assertion holds; the harness reports the count"
-      }
-    },
-    {
-      "id": "cwe-t6",
-      "kind": "treatment",
-      "sections": [
-        "What this file no longer carries"
-      ],
-      "form": "prompt",
-      "situation": "Memory as Plans' structural result, generalised: store each completed segment as a record, use it at planning time to produce a compact next-segment plan, and hand the executor only that plan, so the executor's context length stays fixed and its latency stays approximately constant as history grows.",
-      "source": {
-        "paper": "Memory as Plans",
-        "arxiv": "arxiv.org/abs/2609.11561",
-        "claims": [
-          265,
-          266,
-          267,
-          268
-        ]
-      },
-      "prompt": "Our coding agent works through multi-hour migrations. Every tool call gets the full conversation so far, which by hour three is 180K tokens, the prompt cache misses constantly because the prefix keeps changing, and per-call latency has roughly quadrupled since the start of the run. The team wants to summarise aggressively every ten turns. What should we actually do?",
-      "without_skill": "Designs a better summariser: hierarchical summaries, compression ratios, a schedule. This reduces the size of what the acting step reads and keeps the structure that caused the problem.",
-      "with_skill": "Splits planning from acting, gives the long record only to the planner, and hands the executor a short explicit instruction against a bounded cacheable context.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "split",
-            "criterion": "Separates a planning step that reads the long record from an acting step that does not.",
-            "anchors": {
-              "0": "Improves summarisation only.",
-              "1": "Mentions a planner without changing what the executor sees.",
-              "2": "States the principle: long-horizon history is evidence for deciding what to do next, not input for doing it."
-            }
-          },
-          {
-            "id": "bounded_executor",
-            "criterion": "Gives the executor a fixed, bounded context it can cache.",
-            "anchors": {
-              "0": "Absent.",
-              "1": "Says to shorten the executor's context.",
-              "2": "Makes the executor's context fixed-length and stable enough to cache, which is what addresses both the latency growth and the cache misses."
-            }
-          },
-          {
-            "id": "record",
-            "criterion": "Stores completed segments as records used at planning time rather than replayed into the window.",
-            "anchors": {
-              "0": "Keeps one growing transcript.",
-              "1": "Suggests an external store without saying when it is read.",
-              "2": "Records each completed segment and reads it only at planning time to emit the next compact plan."
-            }
-          },
-          {
-            "id": "transfer_honesty",
-            "criterion": "Does not import the robotics magnitudes as if they were a coding-agent result.",
-            "anchors": {
-              "0": "Quotes 83.3 percent or 78.0 percent as expected gains here.",
-              "1": "Quotes numbers with a vague caveat.",
-              "2": "Carries the architecture and says the measured numbers are robot manipulation, so the margin does not transfer."
-            }
-          }
-        ]
-      }
-    },
-    {
-      "id": "cwe-t7",
-      "kind": "treatment",
-      "sections": [
-        "What this file no longer carries"
-      ],
-      "form": "prompt",
-      "situation": "ShallowStream's asymmetry argument: material arrives continuously and questions arrive occasionally, so per-item ingestion cost is the first-order system cost, and most designs get it backwards by running the full model over everything on arrival.",
-      "source": {
-        "paper": "ShallowStream; Beyond Retrieval",
-        "arxiv": "arxiv.org/abs/2609.02780",
-        "claims": [
-          111,
-          112,
-          115
-        ]
-      },
-      "prompt": "We are building an agent that watches our production log stream and answers questions from engineers, maybe thirty questions a day against about four million lines. The design so far runs every line through our main model on arrival to extract structured events into a store, and answers questions by retrieving from that store. Ingestion is now 80 percent of our inference bill. Where is the design wrong?",
-      "without_skill": "Optimises the existing shape: batch the calls, sample the lines, cache aggressively, negotiate pricing. All of it keeps the full model on the ingestion path.",
-      "with_skill": "Names the asymmetry as the design error, makes the ingestion path deliberately cheap, and adds a tiered fixed budget with consolidation on arrival.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "asymmetry",
-            "criterion": "Identifies the asymmetry explicitly: continuous ingestion against sparse queries means the ingestion path must be the cheap one.",
-            "anchors": {
-              "0": "Optimises cost without naming the asymmetry.",
-              "1": "Notes ingestion dominates.",
-              "2": "States the principle and that most designs get it backwards by running the full model over everything on arrival."
-            }
-          },
-          {
-            "id": "weak_ingest",
-            "criterion": "Proposes a deliberately weaker model or shallower computation on the ingestion path, with the expensive work moved to query time.",
-            "anchors": {
-              "0": "Keeps the main model on ingestion.",
-              "1": "Suggests a smaller model without committing.",
-              "2": "Makes the ingestion path deliberately weak and builds the index as it goes, paying full depth only on the thirty questions."
-            }
-          },
-          {
-            "id": "tiering",
-            "criterion": "Proposes a fixed total memory budget with explicit tiers and a consolidation rule that runs on arrival.",
-            "anchors": {
-              "0": "Unbounded store.",
-              "1": "Mentions retention windows.",
-              "2": "Fixed budget, short mid and long levels, adaptive consolidation between them on arrival rather than a compaction that panics when the window fills."
-            }
-          },
-          {
-            "id": "transfer_honesty",
-            "criterion": "States that the measured systems are multimodal video and only the asymmetry argument is architecture-independent.",
-            "anchors": {
-              "0": "Presents shallow-layer indexing as proven for text.",
-              "1": "No caveat.",
-              "2": "Carries the asymmetry, and says explicitly that a shallow-layer index specifically is untested for text agents."
-            }
-          }
-        ]
-      }
-    },
-    {
-      "id": "cwe-t8",
-      "kind": "treatment",
-      "sections": [
-        "Caveats"
-      ],
-      "form": "prompt",
-      "situation": "The source paper's own limitations section, which says the wins establish that the signal-free policy is competitive and not that scores carry no information, restricts the claim to decode-phase eviction with short prompts and long traces against training-free evictors, and reports code reasoning as the systematic exception on the two larger models.",
-      "source": {
-        "paper": "Random Attention",
-        "arxiv": "arxiv.org/abs/2609.03430",
-        "claims": [
-          78,
-          79,
-          80
-        ]
-      },
-      "prompt": "Circulating this to the team: 'The selection signal used by cache compression methods contributes almost nothing to performance. Random eviction matches the best scored evictors. Action: rip the scoring out of our KV compression, and out of our RAG reranker and our long-context retrieval step while we are in there, and save the compute.' Sign off or push back, and be specific.",
-      "without_skill": "Signs off, because the summary is a fair reading of the headline and the extension to reranking and retrieval sounds like the same idea applied consistently. Or pushes back on instinct with no scope to offer.",
-      "with_skill": "Pushes back on three separate grounds: the strength of the claim, its measured scope, and the named exception, while agreeing with the part that holds.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "competitive_not_equal",
-            "criterion": "Corrects 'contributes almost nothing' to 'competitive', and notes a non-significant cell is not evidence of equality.",
-            "anchors": {
-              "0": "Accepts the framing.",
-              "1": "Softens it vaguely.",
-              "2": "States the paper's own wording, that the result establishes competitiveness and not that scores carry no information, and that several comparisons favour a baseline significantly."
-            }
-          },
-          {
-            "id": "scope",
-            "criterion": "Restricts the result to the regime it was measured in.",
-            "anchors": {
-              "0": "No scope.",
-              "1": "Mentions one restriction.",
-              "2": "Names decode-phase cache eviction, short prompts with long generated traces, and training-free evictors, and says the aggregate is what was shown."
-            }
-          },
-          {
-            "id": "rejects_extension",
-            "criterion": "Rejects the extension to the RAG reranker and the retrieval step as unsupported by this evidence.",
-            "anchors": {
-              "0": "Endorses it.",
-              "1": "Silent.",
-              "2": "Refuses it explicitly: a result about which cached tokens to drop during decoding says nothing about ranking retrieved documents, and the read-once regime argues the other way."
-            }
-          },
-          {
-            "id": "exception",
-            "criterion": "Names the systematic exception.",
-            "anchors": {
-              "0": "Absent.",
-              "1": "Says there are exceptions.",
-              "2": "Names code reasoning on the larger models as the systematic case where the match does not hold."
-            }
-          },
-          {
-            "id": "agrees_where_true",
-            "criterion": "Keeps the part that does hold rather than rejecting the memo wholesale.",
-            "anchors": {
-              "0": "Rejects everything.",
-              "1": "Unclear.",
-              "2": "Agrees that prompt protection plus cheap trace eviction is the right default for their decode-phase cache, and that the scoring pass there has a real throughput cost."
-            }
-          }
-        ]
-      }
-    },
-    {
-      "id": "cwe-c1",
-      "kind": "control",
-      "sections": [],
-      "form": "project",
-      "situation": "Ordinary data-structure engineering. It is the densest control in the library for this skill's vocabulary, cache, eviction, budget, capacity, protected, and none of the skill's evidence bears on it.",
-      "source": {
-        "paper": "none; control task",
-        "arxiv": null,
-        "claims": []
-      },
-      "prompt": "cache.py is an unimplemented LRU cache with a pinning feature. Implement it from the docstrings. No third-party dependencies. Keep the class and method names. Write the whole file to answer.py.",
-      "files": {
-        "cache.py": "class LRUCache:\n    \"\"\"A fixed-capacity LRU cache where entries can be pinned.\n\n    capacity counts entries, not bytes. A pinned entry is never evicted.\n    get() and put() both count as a use. If every entry is pinned and a new\n    key is put, raise ValueError.\n    \"\"\"\n\n    def __init__(self, capacity: int):\n        raise NotImplementedError\n\n    def get(self, key):\n        \"\"\"Return the value, or None if absent.\"\"\"\n        raise NotImplementedError\n\n    def put(self, key, value) -> None:\n        raise NotImplementedError\n\n    def pin(self, key) -> None:\n        \"\"\"Pin an existing key. KeyError if absent.\"\"\"\n        raise NotImplementedError\n\n    def __len__(self) -> int:\n        raise NotImplementedError\n"
-      },
-      "without_skill": "A correct LRU with pinning: recency tracking on both get and put, eviction of the least recently used unpinned entry, KeyError on pinning an absent key, ValueError when everything is pinned.",
-      "with_skill": "The same. The skill must not intrude: no protected prompt regions, no planner and executor split, no advice about what an agent should retain.",
-      "check": {
-        "type": "tests_pass",
-        "answer_path": "answer.py",
-        "command": "python -m pytest test_cache.py -q",
-        "pass_condition": "exit code 0 in both arms; the control is passed when the with-skill arm's pass count is not below the without-skill arm's, outside the spread",
-        "files": {
-          "test_cache.py": "import pytest\n\nfrom answer import LRUCache\n\n\ndef test_evicts_least_recently_used():\n    c = LRUCache(2)\n    c.put(\"a\", 1)\n    c.put(\"b\", 2)\n    c.put(\"c\", 3)\n    assert c.get(\"a\") is None\n    assert c.get(\"b\") == 2 and c.get(\"c\") == 3\n\n\ndef test_get_counts_as_a_use():\n    c = LRUCache(2)\n    c.put(\"a\", 1)\n    c.put(\"b\", 2)\n    c.get(\"a\")\n    c.put(\"c\", 3)\n    assert c.get(\"a\") == 1 and c.get(\"b\") is None\n\n\ndef test_pinned_entry_is_never_evicted():\n    c = LRUCache(2)\n    c.put(\"a\", 1)\n    c.pin(\"a\")\n    c.put(\"b\", 2)\n    c.put(\"c\", 3)\n    assert c.get(\"a\") == 1 and c.get(\"b\") is None and c.get(\"c\") == 3\n\n\ndef test_pin_missing_key_raises():\n    c = LRUCache(2)\n    with pytest.raises(KeyError):\n        c.pin(\"nope\")\n\n\ndef test_all_pinned_then_put_raises():\n    c = LRUCache(2)\n    c.put(\"a\", 1)\n    c.put(\"b\", 2)\n    c.pin(\"a\")\n    c.pin(\"b\")\n    with pytest.raises(ValueError):\n        c.put(\"c\", 3)\n\n\ndef test_update_existing_key_does_not_grow():\n    c = LRUCache(2)\n    c.put(\"a\", 1)\n    c.put(\"a\", 9)\n    assert len(c) == 1 and c.get(\"a\") == 9\n"
-        }
-      }
-    },
-    {
-      "id": "cwe-c2",
-      "kind": "control",
-      "sections": [],
-      "form": "prompt",
-      "situation": "Ordinary infrastructure cost work. It carries embeddings, index, retrieval, budget and memory, and the answer is storage and index engineering with no agent context window in it.",
-      "source": {
-        "paper": "none; control task",
-        "arxiv": null,
-        "claims": []
-      },
-      "prompt": "Our vector database bill is 31,000 dollars a month for 42 million 1024-dimension float32 embeddings, served for a search feature doing about 90 queries a second at p95 under 200 milliseconds. Recall at 10 is currently 0.94 and we can live with 0.90. Cut the bill substantially and tell me what it costs us.",
-      "without_skill": "Ordinary and correct: quantise to int8 or binary with a rescoring pass, drop dimensions with Matryoshka-style truncation or PCA, tune the index parameters, move cold vectors to disk-backed storage, and state the expected recall and latency cost of each.",
-      "with_skill": "The same answer. A skill that intrudes here will talk about protecting a prompt, splitting planning from acting, or sampling a reasoning trace, none of which is about a search index.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "on_subject",
-            "criterion": "Answers as vector-index and storage engineering.",
-            "anchors": {
-              "0": "Reframes it as an agent context-window problem.",
-              "1": "Mixes in agent context advice.",
-              "2": "Stays on the index throughout."
-            }
-          },
-          {
-            "id": "levers",
-            "criterion": "Names concrete cost levers with their mechanism.",
-            "anchors": {
-              "0": "Generic advice.",
-              "1": "One or two levers.",
-              "2": "Quantisation with rescoring, dimension reduction, index parameter tuning, and tiered or disk-backed storage, with the arithmetic on what each saves."
-            }
-          },
-          {
-            "id": "tradeoff",
-            "criterion": "States the recall and latency cost against the stated 0.90 floor and 200 millisecond budget.",
-            "anchors": {
-              "0": "No trade-off stated.",
-              "1": "Mentions recall may drop.",
-              "2": "Ties each lever to its expected recall and p95 effect and checks it against both stated limits."
-            }
-          },
-          {
-            "id": "no_intrusion",
-            "criterion": "Imports nothing from context-window engineering: no protected prompt region, no planner and executor split, no trace sampling, no compaction policy.",
-            "anchors": {
-              "0": "Two or more such intrusions.",
-              "1": "One.",
-              "2": "None."
-            }
-          }
-        ]
-      }
+  {
+   "id": "cwe-t2",
+   "kind": "treatment",
+   "sections": [
+    "Delta 1: protect both boundaries, then choose the ratio, and the policy last"
+   ],
+   "form": "project",
+   "situation": "The same ablation at the surface where it is implemented, a compaction step that ranks everything by a score and takes until full, now with the bilateral half of the finding in the tests: the independent check measures each boundary alone at 55 to 61 percent of ceiling and the pair at 89.8, so a partition that protects the prompt and lets the newest trace age out fails the same way at a different end.",
+   "source": {
+    "paper": "Random Attention; Protection Is (Nearly) All You Need",
+    "arxiv": "arxiv.org/abs/2609.03430",
+    "claims": [
+     78,
+     79
+    ]
+   },
+   "prompt": "compact.py is our compaction step. Under tight budgets our agent starts answering the wrong question and forgetting configuration values the user gave it early in the session. Rewrite compact.py so this stops happening. Keep the function name and signature and keep returning a list of the items to retain. Write the whole file to answer.py.",
+   "files": {
+    "compact.py": "\"\"\"The compaction step. Called whenever the window is over budget.\"\"\"\n\nSYSTEM = \"system\"\nTASK = \"task\"\nQUESTION = \"question\"\nDURABLE = \"durable\"\nTRACE = \"trace\"\n\n\nclass Item:\n    def __init__(self, kind, text, score=0.0):\n        self.kind = kind\n        self.text = text\n        self.score = score\n\n    def __repr__(self):\n        return f\"Item({self.kind!r}, {self.text!r})\"\n\n    @property\n    def tokens(self):\n        return max(1, len(self.text.split()))\n\n\ndef compact(items, budget):\n    \"\"\"Return the items to keep, within budget, highest score first.\n\n    Current behaviour: rank everything by score and take until full.\n    \"\"\"\n    kept, used = [], 0\n    for item in sorted(items, key=lambda i: -i.score):\n        if used + item.tokens <= budget:\n            kept.append(item)\n            used += item.tokens\n    return kept\n"
+   },
+   "without_skill": "Tunes the scoring: adds a recency term, boosts the question's score, maybe weights by kind. Raising a score makes retention likely rather than certain, so the failure returns at tight budgets, and a recency term expressed as a score still loses the newest items to a high-scoring old one, which is what the two tests added on 2026-10-26 probe.",
+   "with_skill": "Partitions instead of ranking: an unconditionally protected set that is never subject to the score, a protected region for durable facts, the score applied only to the trace, and a loud failure when the budget cannot hold the protected set.",
+   "check": {
+    "type": "tests_pass",
+    "answer_path": "answer.py",
+    "command": "python -m pytest test_compact.py -q",
+    "pass_condition": "exit code 0; the harness reports the passing count in both arms so a partial improvement is visible",
+    "files": {
+     "test_compact.py": "import pytest\n\nimport answer\nfrom compact import Item, SYSTEM, TASK, QUESTION, DURABLE, TRACE\n\n\ndef _items(n_trace=40):\n    items = [\n        Item(SYSTEM, \"you are an agent \" * 5, score=0.0),\n        Item(TASK, \"reconcile the invoices \" * 4, score=0.0),\n        Item(QUESTION, \"which invoice is duplicated \" * 3, score=0.0),\n        Item(DURABLE, \"account id 88213\", score=0.0),\n        Item(DURABLE, \"threshold is 0.62\", score=0.0),\n    ]\n    items += [Item(TRACE, f\"step {i} reasoning text here\", score=i) for i in range(n_trace)]\n    return items\n\n\ndef _protected(kept):\n    return {i.kind for i in kept if i.kind in (SYSTEM, TASK, QUESTION, DURABLE)}\n\n\ndef _floor(items):\n    return sum(i.tokens for i in items if i.kind in (SYSTEM, TASK, QUESTION, DURABLE))\n\n\ndef test_protected_kinds_survive_every_feasible_budget():\n    items = _items()\n    floor = _floor(items)\n    for budget in range(floor, floor + 200, 7):\n        kept = answer.compact(items, budget)\n        assert _protected(kept) == {SYSTEM, TASK, QUESTION, DURABLE}, budget\n\n\ndef test_every_durable_item_survives_not_just_one():\n    items = _items()\n    kept = answer.compact(items, _floor(items) + 5)\n    durable = [i.text for i in kept if i.kind == DURABLE]\n    assert \"account id 88213\" in durable and \"threshold is 0.62\" in durable\n\n\ndef test_zero_score_protected_items_beat_high_score_trace():\n    items = _items()\n    kept = answer.compact(items, _floor(items))\n    assert all(i.kind != TRACE for i in kept)\n    assert _protected(kept) == {SYSTEM, TASK, QUESTION, DURABLE}\n\n\ndef test_budget_is_respected():\n    items = _items()\n    for budget in (_floor(items), _floor(items) + 30, 10_000):\n        kept = answer.compact(items, budget)\n        if budget >= _floor(items):\n            assert sum(i.tokens for i in kept) <= budget\n\n\ndef test_infeasible_budget_fails_loudly():\n    items = _items()\n    with pytest.raises(Exception):\n        answer.compact(items, _floor(items) - 1)\n\n\ndef test_trace_is_still_admitted_when_there_is_room():\n    items = _items()\n    kept = answer.compact(items, 10_000)\n    assert sum(1 for i in kept if i.kind == TRACE) >= 30\n\n\ndef _inverted(n_trace=40):\n    \"\"\"Newest trace items carry the lowest scores, which is where a score-only\n    fix fails: the recent window is the other protected boundary and the score\n    is not what keeps it.\"\"\"\n    items = [\n        Item(SYSTEM, \"you are an agent \" * 5, score=0.0),\n        Item(TASK, \"reconcile the invoices \" * 4, score=0.0),\n        Item(QUESTION, \"which invoice is duplicated \" * 3, score=0.0),\n        Item(DURABLE, \"account id 88213\", score=0.0),\n    ]\n    items += [Item(TRACE, f\"step {i} reasoning text here\", score=n_trace - i) for i in range(n_trace)]\n    return items\n\n\ndef test_newest_trace_survives_even_when_it_scores_lowest():\n    items = _inverted()\n    kept = answer.compact(items, _floor(items) + 40)\n    newest = [i.text for i in items if i.kind == TRACE][-3:]\n    kept_text = [i.text for i in kept]\n    assert any(t in kept_text for t in newest)\n\n\ndef test_protected_set_is_not_subject_to_the_score_at_either_end():\n    items = _inverted()\n    kept = answer.compact(items, _floor(items) + 40)\n    assert _protected(kept) == {SYSTEM, TASK, QUESTION, DURABLE}\n    kept_text = [i.text for i in kept]\n    newest = [i.text for i in items if i.kind == TRACE][-1]\n    assert newest in kept_text\n"
     }
-  ],
-  "revision": "2026-10-23: section names re-pointed at the headings of the 2026-09-30 rewrite of SKILL.md; the old names were headings of the pre-rewrite file. cwe-t6 and cwe-t7 test material the rewrite cut because the bare subject already gave it, so they now point at the section that records the cut and are expected to show no delta."
+   }
+  },
+  {
+   "id": "cwe-t3",
+   "kind": "treatment",
+   "sections": [
+    "Delta 1: protect both boundaries, then choose the ratio, and the policy last"
+   ],
+   "form": "prompt",
+   "situation": "The named boundary of the signal-free result: Random Attention never reproduces a passcode announced many compression rounds before the question, while redundancy-aware scored evictors recover it in a minority of trials.",
+   "source": {
+    "paper": "Random Attention",
+    "arxiv": "arxiv.org/abs/2609.03430",
+    "claims": [
+     78,
+     79,
+     80
+    ]
+   },
+   "prompt": "We switched our long-session agent to random trace eviction with the prompt pinned, on the strength of the evidence that clever scoring buys almost nothing, and average quality held up exactly as promised. But we now have a specific recurring bug: early in a session the user says something like 'use the staging cluster, not production', the agent acknowledges it once, and forty tool calls later it uses production. What is going on and what do we change?",
+   "without_skill": "Treats it as a prompt-adherence or memory-quality problem: restate the constraint every turn, add a system-prompt reminder, or revert to a scored evictor across the board.",
+   "with_skill": "Names the regime, says the null policy is expected to lose exactly here, and gives read-once state its own protected region rather than asking the policy to keep it by luck.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "names_regime",
+      "criterion": "Identifies this as read-once state rather than a general memory failure, and distinguishes it from self-restating work.",
+      "anchors": {
+       "0": "Generic memory or prompt-adherence diagnosis.",
+       "1": "Notes the fact was said only once.",
+       "2": "Names the two regimes and places this session in the read-once one, where a signal-free default is the wrong choice."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "the session's durable facts named as a protected region in the compaction code, written to on acknowledgement rather than scored"
+      }
+     },
+     {
+      "id": "expected",
+      "criterion": "States that this is the documented failure of the policy they adopted, not a surprise.",
+      "anchors": {
+       "0": "Presents it as unexplained.",
+       "1": "Says compaction probably dropped it.",
+       "2": "Cites that a signal-free policy never reproduced a value stated once many rounds earlier, while scored evictors recovered it in a minority of trials."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the planted-fact probe, where a signal-free policy never reproduced a value stated once many rounds earlier"
+      }
+     },
+     {
+      "id": "protected_region",
+      "criterion": "Prescribes an explicit protected region for durable facts, written to when the agent learns one, rather than tuning the eviction policy.",
+      "anchors": {
+       "0": "Reverts to a scored evictor or restates the constraint every turn.",
+       "1": "Suggests a memory store without connecting it to the protected set.",
+       "2": "Adds a protected region next to the prompt and writes to it explicitly on learning a durable fact, keeping cheap compaction for the rest of the trace."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "a compaction step whose protected region is populated by an explicit write when a durable fact is learned, with the trace still cheaply evicted"
+      }
+     },
+     {
+      "id": "honest_hybrid",
+      "criterion": "Does not present the paper's suggested hybrid as a measured result.",
+      "anchors": {
+       "0": "Recommends the hybrid as proven.",
+       "1": "Silent.",
+       "2": "Notes the paper proposes reserving a few slots per head for a cheap content signal and says plainly it did not evaluate one, so it is a direction."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the absence of any evaluation of the proposed per-head content-signal reservation in the paper that proposes it"
+      }
+     }
+    ]
+   },
+   "exploit": {
+    "answer": "This is read-once state rather than a general memory failure, and it is the documented failure mode of the policy you adopted rather than a surprise. Give durable facts their own protected region outside the score, write to it when the agent acknowledges one, and keep cheap eviction for the trace. The hybrid the paper suggests was never evaluated.",
+    "why": "The four criteria's vocabulary is complete and nothing is attached to it: no probe result, no protected region in any code, no write path. The last sentence even performs the honesty criterion without the citation that makes it checkable.",
+    "ceiling": 0.0
+   }
+  },
+  {
+   "id": "cwe-t4",
+   "kind": "treatment",
+   "sections": [
+    "Delta 2: for multi-hop, re-query in parallel rounds, and chunk on a searched size"
+   ],
+   "form": "prompt",
+   "situation": "PARSER's controlled perturbations over 512 questions each: varying where the evidence sits, whether it appears in logical dependency order or reversed, and how far apart two pieces sit. Sequential memory swings on all three; parallel reading stays nearly flat.",
+   "source": {
+    "paper": "PARSER",
+    "arxiv": "arxiv.org/abs/2609.06702",
+    "claims": [
+     291,
+     292,
+     293,
+     295
+    ]
+   },
+   "prompt": "Our system answers questions over 200-page contracts. It reads the document in 8K chunks, folding each chunk into a running summary, then answers from the final summary. Accuracy is 74 percent on questions whose answer is in the first twenty pages and 41 percent when it is in the last third, and multi-hop questions are worse than that. We are considering a model with a million-token window so the whole contract fits. Talk me through it.",
+   "without_skill": "Endorses the bigger window, or proposes a better summarisation prompt, or adds retrieval over chunks. None of these addresses that document order has become dependency depth.",
+   "with_skill": "Names the architectural cause, offers the diagnostic that confirms it, and proposes parallel reading with a lead that never sees the document.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "cause",
+      "criterion": "Identifies that folding chunks into a running summary makes document order into dependency depth, which is why position predicts accuracy.",
+      "anchors": {
+       "0": "Attributes it to window size or summary quality.",
+       "1": "Notes position sensitivity without the mechanism.",
+       "2": "Names the mechanism and that accuracy is asymmetric with respect to position because of it."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the position, dependency-order and distance perturbations over 512 questions each, where sequential memory swings on all three and parallel reading stays flat"
+      }
+     },
+     {
+      "id": "diagnostic",
+      "criterion": "Offers the shuffle test as the confirming diagnosis.",
+      "anchors": {
+       "0": "Absent.",
+       "1": "Suggests more evaluation.",
+       "2": "Says to vary evidence position, dependency order and evidence separation independently, and that a system whose accuracy moves when you shuffle the input has this failure."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "a rerun of the same question set with evidence position shuffled and dependency order reversed, scored against the unshuffled run"
+      }
+     },
+     {
+      "id": "architecture",
+      "criterion": "Proposes decoupling the two orders: a subagent bound to each chunk, a lead with the question and never the document, scatter-gather rounds with abstention.",
+      "anchors": {
+       "0": "Bigger window or better prompt.",
+       "1": "Suggests parallel chunk processing without the lead-and-query structure.",
+       "2": "Gives the structure, including that the lead conditions each next query on what came back and that subagents may abstain."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "a lead agent with no document in its context and one frozen reader bound to each chunk, re-queried each round"
+      }
+     },
+     {
+      "id": "window_answer",
+      "criterion": "Answers the million-token question honestly rather than dodging it.",
+      "anchors": {
+       "0": "Recommends buying the window as the fix.",
+       "1": "Non-committal.",
+       "2": "Notes a 9B parallel-reading system beat a frontier model with a native million-token window by 6.3 points, so the window is not the binding constraint, while not claiming a bigger window never helps."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the 5.7-point average and 12.0-point 896K margins over the strongest sequential-memory baseline"
+      }
+     }
+    ]
+   },
+   "exploit": {
+    "answer": "The cause is architectural rather than a retrieval-quality problem: folding chunks into a running summary makes the final evidence state depend on the order the chunks were processed in, which is why the last third scores worse. Confirm it by shuffling evidence position and reversing dependency order. Then replace the fold with parallel reading: a lead that never sees the document, one frozen reader per chunk, re-queried in rounds.",
+    "why": "Names every criterion and carries no number and no artifact. No perturbation run exists, no margin is quoted, and nothing says what the lead's context actually contains.",
+    "ceiling": 0.0
+   }
+  },
+  {
+   "id": "cwe-t5",
+   "kind": "treatment",
+   "sections": [
+    "Delta 2: for multi-hop, re-query in parallel rounds, and chunk on a searched size"
+   ],
+   "form": "project",
+   "situation": "PARSER's four load-bearing design details from the full text: smaller chunks beat larger within the tested range, subagents can be small and frozen with 4B already near saturation, only the lead is trained, and the known failure is an unverifiable subagent finding.",
+   "source": {
+    "paper": "PARSER",
+    "arxiv": "arxiv.org/abs/2609.06702",
+    "claims": [
+     291,
+     292,
+     293,
+     295
+    ]
+   },
+   "prompt": "We are building the parallel-reading design you described for question answering over long contracts. Give me the configuration as config.json, with keys \"chunk_tokens\", \"subagent\": {\"size\", \"trained\"}, \"lead\": {\"size\", \"trained\", \"sees_document\"}, \"rounds\", \"subagent_return\" (a list of the fields each subagent returns), and \"known_failure\".",
+   "without_skill": "Configures it by the usual instincts: large chunks to reduce the number of calls, a strong model everywhere including the subagents, training the whole system end to end, and subagents returning a bare answer string.",
+   "with_skill": "Gets the four details right, and returns a span with every finding so the aggregation step has something to check.",
+   "check": {
+    "type": "parses",
+    "format": "json",
+    "assertions": [
+     {
+      "id": "schema",
+      "statement": "config.json has all seven keys with the stated nesting, and subagent_return is a list of strings."
+     },
+     {
+      "id": "chunk",
+      "statement": "chunk_tokens is an integer no greater than 4096, which is PARSER's own tested range for multi-hop QA, and the config does not present that number as a general default: on other long-context task shapes the measured optima were 8K to 32K and the size is searched rather than assumed (cwe-t11)."
+     },
+     {
+      "id": "subagent_small_frozen",
+      "statement": "subagent.trained is false and subagent.size denotes a small model, at or below roughly 9B, rather than a frontier model."
+     },
+     {
+      "id": "lead_only_trained",
+      "statement": "lead.trained is true and lead.sees_document is false; the lead receives the question and the subagents' returns only."
+     },
+     {
+      "id": "span_returned",
+      "statement": "subagent_return includes a verbatim span or quotation field alongside the finding, and includes an abstention option."
+     },
+     {
+      "id": "known_failure",
+      "statement": "known_failure names the unverifiable subagent finding: a subagent sees only its chunk and the query, so an underspecified query can yield a confident local conclusion the lead cannot check."
+     }
+    ],
+    "pass_condition": "every assertion holds; the harness reports the count"
+   }
+  },
+  {
+   "id": "cwe-t8",
+   "kind": "treatment",
+   "sections": [
+    "Caveats",
+    "What this file no longer carries"
+   ],
+   "form": "prompt",
+   "situation": "The source paper's own limitations section, which says the wins establish that the signal-free policy is competitive and not that scores carry no information, restricts the claim to decode-phase eviction with short prompts and long traces against training-free evictors, and reports code reasoning as the systematic exception on the two larger models. Since 2026-10-26 the memo also has to survive two measured corrections: the independent check that makes protected-random a floor, and the absolute floor under the ratio the memo's action implies.",
+   "source": {
+    "paper": "Random Attention; Protection Is (Nearly) All You Need; Not All Thoughts Need HBM; Hold Onto That Thought",
+    "arxiv": "arxiv.org/abs/2609.03430",
+    "claims": [
+     78,
+     79,
+     80,
+     280
+    ]
+   },
+   "prompt": "Circulating this to the team: 'The selection signal used by cache compression methods contributes almost nothing to performance. Random eviction matches the best scored evictors. Action: rip the scoring out of our KV compression and halve the cache while we are in there, since the trace restates itself and is nearly free to cut, and take the scoring out of our RAG reranker and our long-context retrieval step too and save the compute.' Sign off or push back, and be specific.",
+   "without_skill": "Signs off, because the summary is a fair reading of the headline and the extension to reranking and retrieval sounds like the same idea applied consistently. Or pushes back on instinct with no scope and no floor to offer, and in particular accepts 'nearly free to cut', which this skill itself asserted until 2026-10-26.",
+   "with_skill": "Pushes back on five separate grounds: the strength of the claim, its measured scope, the named exception, the independent check that makes protected-random a floor, and the ratio, which is the one line in the memo that can take the task to zero. Agrees with the part that holds.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "competitive_not_equal",
+      "criterion": "Corrects 'contributes almost nothing' to 'competitive', and notes a non-significant cell is not evidence of equality.",
+      "anchors": {
+       "0": "Accepts the framing.",
+       "1": "Softens it vaguely.",
+       "2": "States the paper's own wording, that the result establishes competitiveness and not that scores carry no information, and that several comparisons favour a baseline significantly."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the paper's own limitations wording, and the four table cells where a baseline is favoured significantly"
+      }
+     },
+     {
+      "id": "scope",
+      "criterion": "Restricts the result to the regime it was measured in.",
+      "anchors": {
+       "0": "No scope.",
+       "1": "Mentions one restriction.",
+       "2": "Names decode-phase cache eviction, short prompts with long generated traces, and training-free evictors, and says the aggregate is what was shown."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the measured regime: decode-phase eviction, prompts of several thousand to 32K tokens, 10 to 50 percent compression, four grouped-query models"
+      }
+     },
+     {
+      "id": "rejects_extension",
+      "criterion": "Rejects the extension to the RAG reranker and the retrieval step as unsupported by this evidence.",
+      "anchors": {
+       "0": "Endorses it.",
+       "1": "Silent.",
+       "2": "Refuses it explicitly: a result about which cached tokens to drop during decoding says nothing about ranking retrieved documents, and the read-once regime argues the other way."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "the reranker and retrieval decisions left untouched, with the reason that no measurement in this evidence covers them"
+      }
+     },
+     {
+      "id": "exception",
+      "criterion": "Names the systematic exception.",
+      "anchors": {
+       "0": "Absent.",
+       "1": "Says there are exceptions.",
+       "2": "Names code reasoning on the larger models as the systematic case where the match does not hold."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "code reasoning on the two larger models as the systematic exception"
+      }
+     },
+     {
+      "id": "agrees_where_true",
+      "criterion": "Keeps the part that does hold rather than rejecting the memo wholesale.",
+      "anchors": {
+       "0": "Rejects everything.",
+       "1": "Unclear.",
+       "2": "Agrees that prompt protection plus cheap trace eviction is the right default for their decode-phase cache, and that the scoring pass there has a real throughput cost."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "the surviving default stated as prompt protection plus cheap trace eviction at a ratio that was itself chosen on evidence"
+      }
+     },
+     {
+      "id": "floor_not_permission",
+      "criterion": "Refuses the 'halve the cache' action on the absolute floor rather than on the policy argument.",
+      "anchors": {
+       "0": "Accepts the ratio, or argues about the policy only.",
+       "1": "Says halving the cache sounds aggressive without a number.",
+       "2": "Names the floor: permanent eviction of half the cache has been measured at 0 to 2.5 percent reasoning accuracy, heavy-hitter eviction holds 2 percent at budgets at or below 256, and the relative result the memo quotes was never a statement about the ratio."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the 0 to 2.5 percent at half the cache, and the 2 percent at budgets at or below 256"
+      }
+     },
+     {
+      "id": "trace_not_free",
+      "criterion": "Rejects 'the trace restates itself and is nearly free to cut', which this skill asserted until 2026-10-26.",
+      "anchors": {
+       "0": "Accepts it, or repeats it approvingly.",
+       "1": "Doubts it without evidence.",
+       "2": "Gives the measurement that goes the other way: cutting the cache lengthens reasoning traces, worst for the weakest policy and sometimes without terminating, and a trace can be indexed thousands of tokens later, which cost a 4x window on one coding benchmark."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the trace-elongation result at low budgets, and the 16384-against-4096 window LiveCodeBench needed"
+      }
+     }
+    ]
+   },
+   "exploit": {
+    "answer": "Push back. The result establishes that a signal-free policy is competitive, not that scores carry no information, and it was measured on decode-phase eviction with short prompts and long traces against training-free evictors, with code reasoning as a systematic exception. An independent check makes protected-random a floor rather than a winner. Halving the cache is the dangerous line, the trace is not free to cut, and the reranker and retrieval steps are out of scope. What holds is prompt protection plus cheap trace eviction, and the scoring pass does cost throughput.",
+    "why": "Hits all seven criteria by vocabulary with no number and no artifact behind any of them, which is exactly the shape of a confident sign-off dressed as a push-back. Nothing says what the measured regime is, what the floor is, or what the reranker decision becomes.",
+    "ceiling": 0.0
+   }
+  },
+  {
+   "id": "cwe-c1",
+   "kind": "control",
+   "sections": [],
+   "form": "project",
+   "situation": "Ordinary data-structure engineering. It is the densest control in the library for this skill's vocabulary, cache, eviction, budget, capacity, protected, and none of the skill's evidence bears on it.",
+   "source": {
+    "paper": "none; control task",
+    "arxiv": null,
+    "claims": []
+   },
+   "prompt": "cache.py is an unimplemented LRU cache with a pinning feature. Implement it from the docstrings. No third-party dependencies. Keep the class and method names. Write the whole file to answer.py.",
+   "files": {
+    "cache.py": "class LRUCache:\n    \"\"\"A fixed-capacity LRU cache where entries can be pinned.\n\n    capacity counts entries, not bytes. A pinned entry is never evicted.\n    get() and put() both count as a use. If every entry is pinned and a new\n    key is put, raise ValueError.\n    \"\"\"\n\n    def __init__(self, capacity: int):\n        raise NotImplementedError\n\n    def get(self, key):\n        \"\"\"Return the value, or None if absent.\"\"\"\n        raise NotImplementedError\n\n    def put(self, key, value) -> None:\n        raise NotImplementedError\n\n    def pin(self, key) -> None:\n        \"\"\"Pin an existing key. KeyError if absent.\"\"\"\n        raise NotImplementedError\n\n    def __len__(self) -> int:\n        raise NotImplementedError\n"
+   },
+   "without_skill": "A correct LRU with pinning: recency tracking on both get and put, eviction of the least recently used unpinned entry, KeyError on pinning an absent key, ValueError when everything is pinned.",
+   "with_skill": "The same. The skill must not intrude: no protected prompt regions, no planner and executor split, no advice about what an agent should retain.",
+   "check": {
+    "type": "tests_pass",
+    "answer_path": "answer.py",
+    "command": "python -m pytest test_cache.py -q",
+    "pass_condition": "exit code 0 in both arms; the control is passed when the with-skill arm's pass count is not below the without-skill arm's, outside the spread",
+    "files": {
+     "test_cache.py": "import pytest\n\nfrom answer import LRUCache\n\n\ndef test_evicts_least_recently_used():\n    c = LRUCache(2)\n    c.put(\"a\", 1)\n    c.put(\"b\", 2)\n    c.put(\"c\", 3)\n    assert c.get(\"a\") is None\n    assert c.get(\"b\") == 2 and c.get(\"c\") == 3\n\n\ndef test_get_counts_as_a_use():\n    c = LRUCache(2)\n    c.put(\"a\", 1)\n    c.put(\"b\", 2)\n    c.get(\"a\")\n    c.put(\"c\", 3)\n    assert c.get(\"a\") == 1 and c.get(\"b\") is None\n\n\ndef test_pinned_entry_is_never_evicted():\n    c = LRUCache(2)\n    c.put(\"a\", 1)\n    c.pin(\"a\")\n    c.put(\"b\", 2)\n    c.put(\"c\", 3)\n    assert c.get(\"a\") == 1 and c.get(\"b\") is None and c.get(\"c\") == 3\n\n\ndef test_pin_missing_key_raises():\n    c = LRUCache(2)\n    with pytest.raises(KeyError):\n        c.pin(\"nope\")\n\n\ndef test_all_pinned_then_put_raises():\n    c = LRUCache(2)\n    c.put(\"a\", 1)\n    c.put(\"b\", 2)\n    c.pin(\"a\")\n    c.pin(\"b\")\n    with pytest.raises(ValueError):\n        c.put(\"c\", 3)\n\n\ndef test_update_existing_key_does_not_grow():\n    c = LRUCache(2)\n    c.put(\"a\", 1)\n    c.put(\"a\", 9)\n    assert len(c) == 1 and c.get(\"a\") == 9\n"
+    }
+   }
+  },
+  {
+   "id": "cwe-c2",
+   "kind": "control",
+   "sections": [],
+   "form": "prompt",
+   "situation": "Ordinary infrastructure cost work. It carries embeddings, index, retrieval, budget and memory, and the answer is storage and index engineering with no agent context window in it.",
+   "source": {
+    "paper": "none; control task",
+    "arxiv": null,
+    "claims": []
+   },
+   "prompt": "Our vector database bill is 31,000 dollars a month for 42 million 1024-dimension float32 embeddings, served for a search feature doing about 90 queries a second at p95 under 200 milliseconds. Recall at 10 is currently 0.94 and we can live with 0.90. Cut the bill substantially and tell me what it costs us.",
+   "without_skill": "Ordinary and correct: quantise to int8 or binary with a rescoring pass, drop dimensions with Matryoshka-style truncation or PCA, tune the index parameters, move cold vectors to disk-backed storage, and state the expected recall and latency cost of each.",
+   "with_skill": "The same answer. A skill that intrudes here will talk about protecting a prompt, splitting planning from acting, or sampling a reasoning trace, none of which is about a search index.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "on_subject",
+      "criterion": "Answers as vector-index and storage engineering.",
+      "anchors": {
+       "0": "Reframes it as an agent context-window problem.",
+       "1": "Mixes in agent context advice.",
+       "2": "Stays on the index throughout."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "an answer about index and storage engineering, with no context-window prescription in it"
+      }
+     },
+     {
+      "id": "levers",
+      "criterion": "Names concrete cost levers with their mechanism.",
+      "anchors": {
+       "0": "Generic advice.",
+       "1": "One or two levers.",
+       "2": "Quantisation with rescoring, dimension reduction, index parameter tuning, and tiered or disk-backed storage, with the arithmetic on what each saves."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the quantisation, dimension-reduction and index-parameter levers priced against the 31,000 dollar bill"
+      }
+     },
+     {
+      "id": "tradeoff",
+      "criterion": "States the recall and latency cost against the stated 0.90 floor and 200 millisecond budget.",
+      "anchors": {
+       "0": "No trade-off stated.",
+       "1": "Mentions recall may drop.",
+       "2": "Ties each lever to its expected recall and p95 effect and checks it against both stated limits."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the recall cost of each lever against the 0.90 floor the asker gave"
+      }
+     },
+     {
+      "id": "no_intrusion",
+      "criterion": "Imports nothing from context-window engineering: no protected prompt region, no planner and executor split, no trace sampling, no compaction policy.",
+      "anchors": {
+       "0": "Two or more such intrusions.",
+       "1": "One.",
+       "2": "None."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "the absence of any protected-prompt, planner-executor or trace-eviction advice in the answer"
+      }
+     }
+    ]
+   },
+   "exploit": {
+    "answer": "Cut the bill by quantising the vectors, reducing the dimension, and tuning the index parameters, and accept the recall cost down to your 0.90 floor. None of this is a context-window question, so nothing about protected prompts or trace eviction applies here.",
+    "why": "A control's exploit is the opposite shape: the vocabulary is right and the numbers are missing, so a judge reading for the certificate scores it zero even though it correctly stays off this skill's subject. Staying on subject is necessary and not sufficient.",
+    "ceiling": 0.0
+   }
+  },
+  {
+   "id": "cwe-t9",
+   "kind": "treatment",
+   "sections": [
+    "Delta 1: protect both boundaries, then choose the ratio, and the policy last"
+   ],
+   "form": "prompt",
+   "situation": "The decode-side cost of a tight cache, which the skill priced only on the memory side until 2026-10-26: lower budgets trigger longer reasoning traces, worst for the weakest policy, with one exhibited run that circles and never terminates, and the published guidance leads with avoiding a micro-budget regardless of method.",
+   "source": {
+    "paper": "Hold Onto That Thought; Not All Thoughts Need HBM",
+    "arxiv": "arxiv.org/abs/2512.12008",
+    "claims": [
+     80
+    ]
+   },
+   "prompt": "We are halving the KV cache budget on our reasoning agent to fit twice the concurrency on the same GPUs. Finance has the saving at 50 percent of serving cost. I want to validate the accuracy side before we ship: which benchmarks should we run, and what is an acceptable accuracy drop to accept for the saving?",
+   "without_skill": "Designs a competent accuracy check: pick representative benchmarks, run at both budgets, set a tolerance, watch the tail. It accepts the premise that the saving is 50 percent of serving cost and measures only accuracy against it.",
+   "with_skill": "Attacks the premise: at that ratio accuracy may not be a tolerance question at all, and the saving is not 50 percent because a tighter cache lengthens the traces being served. Adds output length and non-termination to the instrument and offers the offloading alternative.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "premise",
+      "criterion": "Challenges the 50 percent saving rather than only the accuracy tolerance.",
+      "anchors": {
+       "0": "Accepts the saving and plans the accuracy check.",
+       "1": "Notes that the saving may be smaller in practice without saying why.",
+       "2": "States the mechanism: lower cache budgets have been measured to trigger longer reasoning traces, worst for the weakest policy, with one run that repeats and never answers, so tokens generated per request rises and the per-request saving is not the memory saving."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the measured trace elongation at low budgets and the exhibited non-terminating run"
+      }
+     },
+     {
+      "id": "floor",
+      "criterion": "Prices the ratio itself before any tolerance is discussed.",
+      "anchors": {
+       "0": "Treats 50 percent as a tuning parameter.",
+       "1": "Suggests sweeping budgets.",
+       "2": "Names the floor: permanent eviction of half the cache has been measured at 0 to 2.5 percent reasoning accuracy, which is a different conversation from an acceptable drop, and the published guidance is to avoid a micro-budget regardless of method."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the 0 to 2.5 percent accuracy at half the cache removed"
+      }
+     },
+     {
+      "id": "instrument",
+      "criterion": "Puts output length and termination in the measurement, not accuracy alone.",
+      "anchors": {
+       "0": "Accuracy only.",
+       "1": "Mentions latency.",
+       "2": "Instruments tokens generated per request and the non-termination rate at both budgets, and reports serving cost per solved task rather than per token."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "a measurement at both budgets reporting accuracy, tokens generated per request, non-termination rate and cost per solved task"
+      }
+     },
+     {
+      "id": "alternative",
+      "criterion": "Offers the alternative that keeps the memory saving without the destruction.",
+      "anchors": {
+       "0": "Absent.",
+       "1": "Suggests quantisation or a bigger GPU.",
+       "2": "Names tiered placement: moving low-importance tokens to slower memory and prefetching them held 65 against a 71 percent full-cache baseline at 3 percent eviction for 5 to 7 percent transfer overhead, which is the shape of the trade their concurrency goal actually wants."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the 65 against 71 percent at 3 percent eviction, and the 5 to 7 percent transfer overhead"
+      }
+     },
+     {
+      "id": "protection",
+      "criterion": "Keeps the protected set in the plan at the new budget.",
+      "anchors": {
+       "0": "Absent.",
+       "1": "Mentions keeping the prompt.",
+       "2": "Reserves about ten percent of the reduced capacity at each boundary outside the score, and notes that at a tighter cap the reservation is a larger share of what is left, which is itself part of the accuracy cost."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the 10-percent-per-side reservation held against the halved capacity"
+      }
+     }
+    ]
+   },
+   "exploit": {
+    "answer": "Do not accept the 50 percent saving as given: a tighter cache lengthens the traces you serve, so the per-request saving is smaller than the memory saving, and at that ratio accuracy is a floor question rather than a tolerance question. Instrument output length and non-termination as well as accuracy, consider tiered placement instead of destruction, and keep both boundaries protected at the new budget.",
+    "why": "All five criteria by vocabulary, no number and no measurement plan. The floor is asserted without its value, the elongation without its evidence, and the tiering without its overhead.",
+    "ceiling": 0.0
+   }
+  },
+  {
+   "id": "cwe-t10",
+   "kind": "treatment",
+   "sections": [
+    "Delta 1: protect both boundaries, then choose the ratio, and the policy last"
+   ],
+   "form": "prompt",
+   "situation": "The regime boundary for prefix-plus-window, which has three measured branches and is stated in no single paper. Where the middle is generated trace, discarding everything outside the prefix and a recent window is 3x faster untrained at maintained performance. Where the middle is input the agent has to read, a rigid window is the wrong family: with protection it scores 0.184 against 0.282 for protected LRU, and the authors of the trace-side result name the agentic file-reading case as the one their method does not cover.",
+   "source": {
+    "paper": "Prefix Sliding; Protection Is (Nearly) All You Need",
+    "arxiv": "arxiv.org/abs/2608.26070",
+    "claims": [
+     78
+    ]
+   },
+   "prompt": "We are adopting the compaction scheme the big coding assistants use: keep the system prompt and tool definitions, keep the last few thousand tokens, drop everything in between, no scoring. Our agent is a code agent that reads files and greps a large repository, and the published results on reasoning benchmarks look excellent. Any reason this will not transfer?",
+   "without_skill": "Endorses it with generic caution about losing context, suggests tuning the window size and keeping a summary, because the scheme is well known and the reasoning results are real.",
+   "with_skill": "Transfers the result only to the regime it was measured in, names the file-reading case as the measured failure rather than a worry, and gives the window-sizing rule for back-references.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "regime",
+      "criterion": "Splits the question by where the middle of the context comes from.",
+      "anchors": {
+       "0": "Answers yes or no without the split.",
+       "1": "Says it depends on the workload.",
+       "2": "States the split: where the middle is generated trace and the evidence is in the prefix the scheme is right and nearly free, and where the middle is input the agent must read it is the wrong family."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the 3x untrained speed-up on the trace side against the 0.184-versus-0.282 result for a protected window policy on the input side"
+      }
+     },
+     {
+      "id": "flooding",
+      "criterion": "Names the specific failure for an agent that reads files.",
+      "anchors": {
+       "0": "Absent.",
+       "1": "Says long files may not fit.",
+       "2": "Names it as the authors do: if the content being read is larger than the window the agent strictly cannot read all of it, and worse, the window is flooded by that output so earlier content is lost."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "a tool-output cap or a read-in-pieces protocol, so no single read can exceed the window"
+      }
+     },
+     {
+      "id": "backreference",
+      "criterion": "Gives a rule for sizing the window where the trace is indexed later.",
+      "anchors": {
+       "0": "No sizing rule.",
+       "1": "Says make the window bigger.",
+       "2": "Sizes the window above the span of a back-reference, citing the coding benchmark that needed 16384 against 4096 everywhere else because the model writes code, thinks in comments for thousands of tokens, then returns to code that has left the window."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the 16384-against-4096 window on LiveCodeBench, which is 4x"
+      }
+     },
+     {
+      "id": "middle_retention",
+      "criterion": "Keeps adaptive retention in the middle rather than accepting a rigid window.",
+      "anchors": {
+       "0": "Accepts the rigid window.",
+       "1": "Suggests a summary of the middle.",
+       "2": "Requires a policy whose eviction order depends on cache state for the middle, because the two-factor result is that quality needs boundary protection and adaptive middle retention, and a fixed window supplies only the first."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the protected sink-plus-window policy at 0.184 against protected LRU's 0.282 at a 256-entry cap"
+      }
+     },
+     {
+      "id": "no_free_lunch",
+      "criterion": "Does not oversell the alternative either.",
+      "anchors": {
+       "0": "Prescribes a scorer as the fix.",
+       "1": "Silent.",
+       "2": "Notes that the scorers beat protected-random by single digits of ceiling on the input-side benchmark, so the repair is the protection and the adaptivity rather than a better score, and names the ratio as the larger decision."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the 0.250 against 0.282-to-0.300 spread at a 256-entry cap"
+      }
+     }
+    ]
+   },
+   "exploit": {
+    "answer": "It transfers where the middle of the context is generated trace and not where the middle is input your agent has to read, which is your case. For a file-reading agent the window gets flooded by tool output and earlier content is lost, so cap tool output or read in pieces. Size the window above the span of any back-reference, keep adaptive retention in the middle rather than a rigid window, and do not expect a scorer to be the fix either.",
+    "why": "Every criterion by vocabulary with no number anywhere: no speed-up, no 0.184, no 16384, no cap in any code. The answer is the skill's conclusions without the evidence that makes them checkable, and a reader could not tell it from a guess.",
+    "ceiling": 0.0
+   }
+  },
+  {
+   "id": "cwe-t11",
+   "kind": "treatment",
+   "sections": [
+    "Delta 2: for multi-hop, re-query in parallel rounds, and chunk on a searched size"
+   ],
+   "form": "project",
+   "situation": "The chunk-size half of delta 2, which said 'keep chunks small' unconditionally until 2026-10-26. The noise decomposition says chunking trades the cross-chunk dependence and aggregation error it adds against the length-driven confusion it removes, and its own tables put the optimum at 8K to 32K on a 128K task. Five samples per candidate size matched an exhaustive sweep's score on four of six model-task pairs and three samples on one of six.",
+   "source": {
+    "paper": "When Does Divide and Conquer Work; PARSER",
+    "arxiv": "arxiv.org/abs/2506.16411",
+    "claims": [
+     291,
+     293
+    ]
+   },
+   "prompt": "We are standing up chunked parallel reading over 120K-token technical manuals and need to pick the chunk size. Write plan.json: an object with \"candidates\" (a list of chunk sizes in tokens, smallest first), \"samples_per_candidate\" (an integer), \"selection\" (a string naming the rule that picks the winner), \"measure\" (a list of what is recorded per run) and \"assumption\" (a string, the one thing the plan refuses to assume). Output JSON only.",
+   "without_skill": "Writes a plausible plan with small candidates, 1K to 4K, a large per-candidate sample for statistical comfort or a full grid over the whole development set, and accuracy as the only measure. Small chunks are the default belief and this suite's own skill asserted it until 2026-10-26.",
+   "with_skill": "Candidates that span the measured optimum rather than clustering at the small end, five samples per candidate because that is where the estimate matched an exhaustive sweep, a stated selection rule, the aggregator recorded as its own noise source, and the refusal to assume small chunks.",
+   "check": {
+    "type": "parses",
+    "format": "json",
+    "assertions": [
+     {
+      "id": "schema",
+      "statement": "plan.json has all five keys: candidates (a list of integers, smallest first), samples_per_candidate (an integer), selection (a string), measure (a list) and assumption (a string)."
+     },
+     {
+      "id": "spans_the_optimum",
+      "statement": "candidates include at least one size of 8192 tokens or larger and are not all below 8192, because the measured optima on a 128K task were 8K to 32K and a candidate list clustered at the small end cannot find them."
+     },
+     {
+      "id": "five_samples",
+      "statement": "samples_per_candidate is 5, or is between 3 and 10 with the reason given that five matched an exhaustive sweep on four of six published model-task pairs against one of six for three."
+     },
+     {
+      "id": "selection_rule",
+      "statement": "selection names picking the candidate with the best mean task metric over its sampled documents, rather than a rule that cannot be run from the recorded numbers."
+     },
+     {
+      "id": "aggregator_measured",
+      "statement": "measure records an aggregation or integration error term separately from chunk-level correctness, because the aggregator is one of the three noise sources chunking adds rather than a wire."
+     },
+     {
+      "id": "refuses_small_default",
+      "statement": "assumption refuses the small-chunk default explicitly, which is the sentence this skill itself carried until 2026-10-26."
+     }
+    ],
+    "answer_path": "plan.json",
+    "expected": {
+     "candidates": [
+      2048,
+      4096,
+      8192,
+      16384,
+      32768
+     ],
+     "samples_per_candidate": 5,
+     "selection": "run the pipeline at each candidate on its five sampled documents and keep the candidate with the best mean task metric, which matched an exhaustive sweep on four of six published model-task pairs",
+     "measure": [
+      "task accuracy",
+      "aggregation error, scored separately from chunk-level correctness",
+      "cross-chunk dependency misses",
+      "tokens and calls per document"
+     ],
+     "assumption": "that smaller chunks are better; the measured optima were 8K to 32K on a 128K task, so the size is searched rather than assumed"
+    },
+    "pass_condition": "every assertion holds; the harness reports the count"
+   }
+  }
+ ],
+ "revision": "2026-10-26 (ADR-37 maintenance of the SKILL.md, plus ADR-40 items 5 and 6). Five changes. (1) Every task's `sections` was repointed at the two revised delta headings, because both of the old ones were rewritten by this revision. (2) cwe-t6 and cwe-t7 retired to `retired_tasks`: their sections were cut on 2026-09-30 and both tasks had been left scoring against content the skill no longer carries, so neither could produce a delta in either direction. (3) cwe-t1 and cwe-t8 rewritten against the four corrections this revision makes, including the superlative and the 'nearly free to cut' sentence that this skill itself asserted until today, which are now the anchor-1 wrong answers in their own rubrics. (4) Three tasks written for the material the drain added: cwe-t9 for the eviction ratio and the decode cost, cwe-t10 for the prefix-plus-window regime boundary, cwe-t11 for the chunk-size search. (5) Every rubric criterion gained a `certificate` and every rubric task an `exploit` with a ceiling of 0.0, and cwe-t2's hard check gained two tests for the bilateral half of the protection finding, which a score-tuning answer fails. No arm has ever run on this suite, so changing the task set breaks no pre-registration, and the registration in `policy` precedes any measurement as before. 2026-10-23: section names re-pointed at the headings of the 2026-09-30 rewrite of SKILL.md; the old names were headings of the pre-rewrite file. cwe-t6 and cwe-t7 test material the rewrite cut because the bare subject already gave it, so they now point at the section that records the cut and are expected to show no delta.",
+ "retired_tasks": [
+  {
+   "id": "cwe-t6",
+   "kind": "treatment",
+   "sections": [
+    "What this file no longer carries"
+   ],
+   "form": "prompt",
+   "situation": "Memory as Plans' structural result, generalised: store each completed segment as a record, use it at planning time to produce a compact next-segment plan, and hand the executor only that plan, so the executor's context length stays fixed and its latency stays approximately constant as history grows.",
+   "source": {
+    "paper": "Memory as Plans",
+    "arxiv": "arxiv.org/abs/2609.11561",
+    "claims": [
+     265,
+     266,
+     267,
+     268
+    ]
+   },
+   "prompt": "Our coding agent works through multi-hour migrations. Every tool call gets the full conversation so far, which by hour three is 180K tokens, the prompt cache misses constantly because the prefix keeps changing, and per-call latency has roughly quadrupled since the start of the run. The team wants to summarise aggressively every ten turns. What should we actually do?",
+   "without_skill": "Designs a better summariser: hierarchical summaries, compression ratios, a schedule. This reduces the size of what the acting step reads and keeps the structure that caused the problem.",
+   "with_skill": "Splits planning from acting, gives the long record only to the planner, and hands the executor a short explicit instruction against a bounded cacheable context.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "split",
+      "criterion": "Separates a planning step that reads the long record from an acting step that does not.",
+      "anchors": {
+       "0": "Improves summarisation only.",
+       "1": "Mentions a planner without changing what the executor sees.",
+       "2": "States the principle: long-horizon history is evidence for deciding what to do next, not input for doing it."
+      }
+     },
+     {
+      "id": "bounded_executor",
+      "criterion": "Gives the executor a fixed, bounded context it can cache.",
+      "anchors": {
+       "0": "Absent.",
+       "1": "Says to shorten the executor's context.",
+       "2": "Makes the executor's context fixed-length and stable enough to cache, which is what addresses both the latency growth and the cache misses."
+      }
+     },
+     {
+      "id": "record",
+      "criterion": "Stores completed segments as records used at planning time rather than replayed into the window.",
+      "anchors": {
+       "0": "Keeps one growing transcript.",
+       "1": "Suggests an external store without saying when it is read.",
+       "2": "Records each completed segment and reads it only at planning time to emit the next compact plan."
+      }
+     },
+     {
+      "id": "transfer_honesty",
+      "criterion": "Does not import the robotics magnitudes as if they were a coding-agent result.",
+      "anchors": {
+       "0": "Quotes 83.3 percent or 78.0 percent as expected gains here.",
+       "1": "Quotes numbers with a vague caveat.",
+       "2": "Carries the architecture and says the measured numbers are robot manipulation, so the margin does not transfer."
+      }
+     }
+    ]
+   },
+   "retired": "2026-10-26. The section this task scored against, the planner-executor boundary, was cut on 2026-09-30 because the bare subject supplied it unprompted and in more useful form (bare-arm screen cwe-c4). The task was left pointing at 'What this file no longer carries', so all four of its criteria scored against content the skill does not carry, and a treatment task whose section is gone cannot produce a delta in either direction. Retired rather than rewritten: the finding itself is not withdrawn and the screen that cut it is the receipt."
+  },
+  {
+   "id": "cwe-t7",
+   "kind": "treatment",
+   "sections": [
+    "What this file no longer carries"
+   ],
+   "form": "prompt",
+   "situation": "ShallowStream's asymmetry argument: material arrives continuously and questions arrive occasionally, so per-item ingestion cost is the first-order system cost, and most designs get it backwards by running the full model over everything on arrival.",
+   "source": {
+    "paper": "ShallowStream; Beyond Retrieval",
+    "arxiv": "arxiv.org/abs/2609.02780",
+    "claims": [
+     111,
+     112,
+     115
+    ]
+   },
+   "prompt": "We are building an agent that watches our production log stream and answers questions from engineers, maybe thirty questions a day against about four million lines. The design so far runs every line through our main model on arrival to extract structured events into a store, and answers questions by retrieving from that store. Ingestion is now 80 percent of our inference bill. Where is the design wrong?",
+   "without_skill": "Optimises the existing shape: batch the calls, sample the lines, cache aggressively, negotiate pricing. All of it keeps the full model on the ingestion path.",
+   "with_skill": "Names the asymmetry as the design error, makes the ingestion path deliberately cheap, and adds a tiered fixed budget with consolidation on arrival.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "asymmetry",
+      "criterion": "Identifies the asymmetry explicitly: continuous ingestion against sparse queries means the ingestion path must be the cheap one.",
+      "anchors": {
+       "0": "Optimises cost without naming the asymmetry.",
+       "1": "Notes ingestion dominates.",
+       "2": "States the principle and that most designs get it backwards by running the full model over everything on arrival."
+      }
+     },
+     {
+      "id": "weak_ingest",
+      "criterion": "Proposes a deliberately weaker model or shallower computation on the ingestion path, with the expensive work moved to query time.",
+      "anchors": {
+       "0": "Keeps the main model on ingestion.",
+       "1": "Suggests a smaller model without committing.",
+       "2": "Makes the ingestion path deliberately weak and builds the index as it goes, paying full depth only on the thirty questions."
+      }
+     },
+     {
+      "id": "tiering",
+      "criterion": "Proposes a fixed total memory budget with explicit tiers and a consolidation rule that runs on arrival.",
+      "anchors": {
+       "0": "Unbounded store.",
+       "1": "Mentions retention windows.",
+       "2": "Fixed budget, short mid and long levels, adaptive consolidation between them on arrival rather than a compaction that panics when the window fills."
+      }
+     },
+     {
+      "id": "transfer_honesty",
+      "criterion": "States that the measured systems are multimodal video and only the asymmetry argument is architecture-independent.",
+      "anchors": {
+       "0": "Presents shallow-layer indexing as proven for text.",
+       "1": "No caveat.",
+       "2": "Carries the asymmetry, and says explicitly that a shallow-layer index specifically is untested for text agents."
+      }
+     }
+    ]
+   },
+   "retired": "2026-10-26. Same defect, with the streaming-ingestion section, which was cut on 2026-09-30 because both its papers are multimodal video and nothing in it has ever been measured on a text agent. The 2026-09-29 reading queue asked for a text-agent tiering result and the drain found one (Not All Thoughts Need HBM), so the cut can be revisited on evidence by a future run. It is not revisited here: that paper is cited in this revision for the eviction-ratio floor, which is a different finding from the ingestion asymmetry this task tested."
+  }
+ ]
 }

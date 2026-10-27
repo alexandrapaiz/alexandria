@@ -72,7 +72,7 @@
    "id": "ams-t2",
    "kind": "treatment",
    "sections": [
-    "Delta 2: whether ranking matters is a property of the budget, not of your pipeline"
+    "Delta 2: the keep ratio decides whether ranking is worth its call"
    ],
    "form": "prompt",
    "situation": "The budget-dependence result, at the tight end: 3 of 30 candidates kept, where the rerank was worth +17.4 points on LoCoMo and +9.1 on LongMemEval.",
@@ -114,7 +114,7 @@
    "id": "ams-t3",
    "kind": "treatment",
    "sections": [
-    "Delta 2: whether ranking matters is a property of the budget, not of your pipeline"
+    "Delta 2: the keep ratio decides whether ranking is worth its call"
    ],
    "form": "prompt",
    "situation": "The same result at the generous end, the half that inverts: 20 of 30 candidates kept, where the rerank was worth +1.5 and +1.1 points and the extraction system was the most accurate measured.",

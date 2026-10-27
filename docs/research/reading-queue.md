@@ -753,6 +753,90 @@ three are load-bearing: each one could change a sentence in the skill.
   system's architecture, and the corpus holds no independent replication of any
   of it — asked by skills/agent-memory-selection — 2026-10-13
 
+## Queued 2026-10-26 by skills/self-improving-post-training-loops
+
+All five of this skill's cited papers were read in full this run, through the
+arXiv HTML, in the ADR-38 retrofit. Nothing below is a paper the skill cites.
+The first two are papers a read paper measures against that the corpus does not
+hold, and the rest are questions the reading raised, four of which are open
+problems the papers state in their own words.
+
+- [ ] arxiv:2609.03241 — FlowRL, the baseline FlowBalance reports its whole
+  margin against, so every "+1.67 at 4B and +1.98 at 8B" this skill quotes is
+  relative to a method the library has never read. The id here is FlowBalance's
+  own, because the corpus does not record FlowRL's: finding it is the first half
+  of this item — asked by skills/self-improving-post-training-loops — 2026-10-26
+- [ ] question — Does any published loop report a second iteration? NeoHorse-1's
+  limitations say plainly that its result is a single pass of the
+  evaluate-select-update loop, so the library's one closed-loop data-selection
+  result measures one turn of a mechanism whose whole claim is that it
+  compounds. Delta 3 now says so, which is honest and not a substitute for an
+  answer — asked by skills/self-improving-post-training-loops — 2026-10-26
+- [ ] question — Is there a gate for open-ended tasks? Verify Before You Distill
+  names its own boundary: the method needs an automatic verifier and routes
+  binarily, and extending outcome-grounded reliability estimation to open-ended
+  tasks with uncertainty-aware gates is its stated future work. Delta 2 is the
+  best-evidenced delta in the skill and it stops exactly where a product team
+  needs it to continue — asked by skills/self-improving-post-training-loops —
+  2026-10-26
+- [ ] question — How do you detect that extrapolation has stopped being
+  meaningful? RISE depends on the training trajectory being low-dimensional
+  enough for linear extrapolation to hold, offers a coefficient-decay schedule
+  and an exponential-moving-average anchor as empirical robustness, and says
+  principled detection remains open. A loop that cannot detect this failure
+  amplifies it, because the same paper notes extrapolation amplifies a hackable
+  reward — asked by skills/self-improving-post-training-loops — 2026-10-26
+- [ ] question — Can a generated rubric be checked against anything? DRACO's
+  limitations say there is no independent signal that the criteria describe the
+  task faithfully, and that a judge which is internally consistent can still be
+  systematically wrong. Delta 5 is prescribed for exactly the case with no
+  ground truth, so this is the question that decides whether the delta is a
+  method or a hope — asked by skills/self-improving-post-training-loops —
+  2026-10-26
+- [ ] question — Why was the self-judge the best out-of-domain arm? DRACO's
+  transfer to a 97-task banking benchmark put the self-judged variant at 21.1
+  percent against the frontier-judged 20.4 and a 15.8 base. The skill reports it
+  because it is in the table and it inverts the expected cost ordering, and
+  neither the paper nor the corpus explains it. One replication would tell a
+  builder whether to buy a frontier judge at all — asked by
+  skills/self-improving-post-training-loops — 2026-10-26
+
+- [ ] question — Why did the same two skill sources flip sign between harnesses?
+  GraphSkillEvo's table has hand-written and description-written skills net
+  negative under the Codex harness on GPT-5.4 (67.23 and 67.21 against 67.97)
+  and net positive with no harness (+2.14 and +2.13, and +7.39 and +8.42 on
+  GPT-5.4-nano). The paper does not explain the flip, and it decides whether
+  this skill's headline advice applies to a team at all, because most of our
+  readers ship inside a harness — asked by skills/skill-library-engineering —
+  2026-10-26
+- [ ] question — Is SpreadsheetBench the task shape that skills harm, or is it
+  one benchmark? A hand-written skill was net negative on it in all three of
+  GraphSkillEvo's configurations, -1.31, -0.48 and -7.50, and a
+  description-written one too, while both were strongly positive on DocVQA in
+  the same rows. If the harm is task-shaped, the per-family rule in delta 1 can
+  be sharpened into a prediction rather than a reporting discipline — asked by
+  skills/skill-library-engineering — 2026-10-26
+- [ ] arxiv:2609.15982 — The Router Within, appendix F.1, read this run but
+  worth a second pass by the research seat for one number the library should
+  probably build on: with the correct skill's full body in the prompt for 92
+  percent of SkillRet queries, the picker still chose another skill on 29
+  percent of them. That is a bound on prompt-visible selection rather than on
+  retrieval, and nothing else in the corpus measures it — asked by
+  skills/skill-library-engineering — 2026-10-26
+- [ ] question — Does the Skill-Use 1.1 percent trigger floor reproduce on a
+  model of this decade? The Router Within notes that Qwen3-32B predates the
+  skill ecosystem the benchmark measures, which is the single most likely
+  explanation for a number this library quotes as the mechanism behind public
+  skills never firing. If it is a model-vintage artifact rather than a routing
+  fact, delta 3 keeps its advice and loses its headline — asked by
+  skills/skill-library-engineering — 2026-10-26
+- [ ] arxiv — find the paper behind SkillRouter (Zheng et al., 2026), the
+  benchmark and baseline that Beyond Top-k measures against and whose released
+  output truncates at 20, which is why that paper's cutoff-50 gains are not a
+  like-for-like comparison. The corpus does not record it and two of this
+  skill's deltas rest on its numbers — asked by
+  skills/skill-library-engineering — 2026-10-26
+
 ## Drain record, 2026-10-26 (research seat, PR #589)
 
 **Nine lines struck, and five of them are the first arXiv ids this file has
@@ -829,6 +913,86 @@ this week's brief:
   cluster is ready to package; a token claim quoted from an abstract is the
   one thing in it that would not survive review — asked by the research seat
   — 2026-10-26
+
+## Queued 2026-10-26 by skills/agent-security-measurement
+
+This was a retrofit run, so under the charter's own rule it did steps 3 through
+6 and skipped the reading. Nothing below is a paper this skill cites, and the
+eight open items queued for this skill on 2026-09-30 are still the substantive
+list. What is added here is what the retrofit itself raised, and the first item
+is the one with a measured reason behind it.
+
+- [ ] question — Re-read all four of this skill's papers against the file, the
+  way the skill-library-engineering retrofit re-read its five. That re-read
+  found two of that skill's own numbers wrong, one of them the headline, and
+  both wrong in the skill's favour. This skill's numbers have never had the same
+  treatment: they were extracted on 2026-09-30 and carried through two
+  retrofits without a single figure being checked against its source. The four
+  are `arxiv:2609.06966` (Mole), `arxiv:2609.05903` (EvoSafeHarness),
+  `arxiv:2609.28274` (Shutdown Sabotage) and `arxiv:2609.26761` (A2M). The prior
+  from the one comparable case is two errors per five papers, so the expected
+  yield here is not zero — asked by skills/agent-security-measurement
+  — 2026-10-26
+- [ ] question — Does the hook-set finding generalise past one framework?
+  Delta 4's procedure tells a builder to enumerate hooks against harms, and its
+  evidence is EvoSafeHarness's own three-hook set, on which a final answer
+  involving no tool call is never observed. That is a property of one harness's
+  interface rather than of agent frameworks in general. If a common framework
+  exposes a pre-response or final-answer hook, the invisible class is not
+  invisible there and the procedure gains a step rather than losing one. This is
+  checkable against framework documentation rather than a paper, which makes it
+  cheap — asked by skills/agent-security-measurement — 2026-10-26
+- [ ] question — Is there any published measurement of whether an agent can
+  write the state predicate delta 1 requires? The delta tells a builder that
+  writing the predicate is the work, and every example it gives is one Mole's
+  authors wrote by hand for a simulated organisation. The skill's own review
+  lane already names this as the assumption it most wants reported, and a
+  consumer report would answer it for one system. A paper that measured
+  predicate authorship across systems would answer it for the delta — asked by
+  skills/agent-security-measurement — 2026-10-26
+
+
+## Queued 2026-10-26 by skills/agent-memory-selection and skills/agent-containment
+
+The relayed-citation repair, from the research seat's rule that a load-bearing
+citation is a reading-queue line rather than a fact. The hand sweep behind these
+lines is `skills/_validation/results/2026-10-26-relay-sweep.md`: 79 relational
+sentences across nine skills, three of them second-hand, and these are the works
+the two open ones point at.
+
+- [x] ~~arxiv:2603.15599 — SmartSearch (Derehag, Calva, Ghiurau), one of the two
+  works `When Does Selection Replace Extraction?` reconciles when it reads
+  ranking's value as a property of the keep ratio. Its own abstract carries the
+  "ranking is the bottleneck" half: 98.6 percent retrieval recall against 22.5
+  percent of gold evidence surviving truncation to budget, and 93.5 percent on
+  LoCoMo with 8.5x fewer tokens than full context. The keep ratio the citing
+  paper attributes to it is not in the abstract, so the reconciliation cannot be
+  checked without the full text — asked by skills/agent-memory-selection
+  — 2026-10-26~~ - **DRAINED, 2026-10-27, research seat, PR #626.** Read in full, exit 0, 63,920 chars. The keep ratio is in the body and the reconciliation's number is +7.9 rather than the +15.1 the citing paper attributes, which is a correction owed by `skills/agent-memory-selection`. The drain record below carries it.
+- [x] ~~arxiv:2601.00821 — Fidelity Before Structure (An), the other half. The
+  citing paper reports it as finding that reranking adds little, and its
+  abstract makes no reranking claim at all: the reranker is one of four
+  components held constant while only the stored representation is swapped. So
+  the characterisation is either a body result nobody here has read or the same
+  defect as Random Attention's section 5.1, and nothing short of the full text
+  tells the two apart. Read it with `2603.15599`, because the value of the pair
+  is the comparison — asked by skills/agent-memory-selection — 2026-10-26~~ - **DRAINED, 2026-10-27, research seat, PR #626.** Read in full, exit 0, 152,972 chars. The either/or resolves to its first branch, the characterisation is a body result, and the run turned up an abstention inversion the line did not ask for. The drain record below carries both.
+- [x] ~~question — Name the two works behind Hard Stop's incident facts in
+  `skills/agent-containment`, which the skill says trace to a vendor timeline
+  and a METR investigation this library has not read. Claims 884 and 885 carry
+  them as `asserted`, and under the grade that landed on 2026-10-26 they are
+  `relayed`, which means `attributed_to` wants the names the skill does not
+  have. Say also whether the incident facts survive the sources, because the
+  caveat currently discounts the paper without being able to say by how much
+  — asked by skills/agent-containment — 2026-10-26~~ - **DRAINED, 2026-10-27, research seat, PR #626.** Both sources read. Two of the three incident facts survive them and one does not, and the surviving half indicts a control this library recommends. The drain record below names each one.
+- [ ] question — How many of the claims already in the corpus are second-hand?
+  The grade is written at distill, so it reaches the next claim and none of the
+  existing rows, which means the panel's new `evidence-relayed` finding reports
+  nothing on every skill in this library and a reader cannot tell an unlabelled
+  library from a clean one. `pipeline/backfill_grades.py::relay_audit` sizes it
+  read-only and needs the workspace that has been down since 2026-10-23. Until
+  that number exists, the hand sweep of nine skills is the only figure the
+  library has — asked by skills/agent-memory-selection — 2026-10-26
 
 ## Drain record, 2026-10-26 (research seat, PR #595, message trigger)
 
@@ -1838,3 +2002,70 @@ either the engineer fetches the two PDFs from the USENIX and conference open
 proceedings into the corpus, or the line is rewritten to name what a skill
 would actually cite.** Left open, with the blocker now stated so the next drain
 does not re-fetch nothing.
+## Queued 2026-10-27 by the skill seat, from the six-correction maintenance run
+
+This run applied the six corrections the research seat routed from the drained
+2026-09-30 batch, and it read all five receipt papers in full first with
+`tools/read_paper.py` (exit 0 on `2609.09134`, `2404.07972`, `2407.18901`,
+`2406.12045` and `2509.16941`). Every line below says which paper the fact was
+read out of, which is the convention the research seat proposed in
+`docs/ideas.md` on 2026-10-26 and this seat accepts. The answer to that proposal
+is in the same file, under today's date.
+
+- [ ] arxiv:2607.08938 — Better harnesses, smaller models (C. Yang, X. Zhao,
+  T. Wu, C. Kästner), read out of `2609.09134`'s reference list and cited there
+  from the Abstract, section 1, section 2, section 3.1, section 3.3.3 and
+  Appendix A. **This is the highest-value unread paper the library has.** It
+  owns two things `skills/harness-engineering` rests on and does not cite: the
+  seven-task enterprise suite every number in delta 1 is measured on, and the
+  six-category adaptation-failure ontology that the corrected delta 1 now tells
+  a reader to classify failures against. The citing paper's own words are "the
+  full six-category adaptation-failure ontology of Yang et al. (2026)", and the
+  queue line that sent the research seat looking for six categories in the
+  wrong paper was wrong for twenty-seven days because nobody had this id. Read
+  for the ontology's six category definitions and for how the suite scores a
+  task — asked by skills/harness-engineering — 2026-10-27
+- [ ] question — Does the imitation regression replicate on more than one task
+  outside Qwen? `2609.09134` section 3.3.2 is the whole of the cross-family
+  evidence and it is one task, Webarena, 55.6 to 41.1 percent, against seven
+  tasks for Qwen. The caveat in `skills/harness-engineering` now says so. What
+  the skill cannot say is whether the regression is a property of weaker models
+  generally or of two specific pairings, and that is the difference between a
+  decision rule and an anecdote — asked by skills/harness-engineering
+  — 2026-10-27
+- [ ] question — Did OSWorld-v2 keep OSWorld's graded reward? The correction to
+  `skills/recursive-harness-self-improvement` rests on `2404.07972` section 2.1
+  and section 2.2.3, where the reward returns 1 or a positive decimal under 1
+  for a partly achieved goal, which is what makes RSIAgent's partial and binary
+  columns one metric scored twice. RSIAgent reports OSWorld-v2 and this seat
+  read v1's paper, so the reward definition is inherited rather than verified
+  for the version the numbers come from. If v2 moved to a binary reward the
+  correction is still right about the published comparison and wrong about the
+  mechanism — asked by skills/recursive-harness-self-improvement — 2026-10-27
+- [ ] question — Is DRACO's 97-task banking benchmark tau-bench or a derivative
+  of it? The research seat's correction to
+  `skills/self-improving-post-training-loops` paired the "no verifier" caveat
+  with `2406.12045`, whose abstract is where the database-state-equality
+  evaluation is read from. DRACO's own benchmark is named in the skill only as
+  "a 97-task banking benchmark", tau-bench's public domains are retail and
+  airline, and this run could not close the gap from the papers it had. The
+  caveat was worded to claim only what was verified, so the skill says
+  tau-bench grades this family rather than that this skill rests on tau-bench.
+  One sentence of DRACO's setup section settles it — asked by
+  skills/self-improving-post-training-loops — 2026-10-27
+- [ ] question — How much of DRACO's AppWorld gain survives the stricter
+  metric? `2407.18901` section 1 reports its own best agent dropping from 48.8
+  and 30.2 on task-goal completion to 32.1 and 13.0 under the scenario-based
+  robustness metric, so the scenario figure is the one that moves most. The
+  skill carries DRACO's scenario-goal completion of 41.1 to 70.6 next to its
+  task-goal figures without saying which split that pair is on, and this run
+  verified the split only for the task-goal pair — asked by
+  skills/self-improving-post-training-loops — 2026-10-27
+- [ ] arxiv:2509.16941 — SWE-Bench Pro, read in full this run for the two
+  numbers the `skills/evaluation-integrity` upgrade needed (731 public
+  instances in section 3.3, consecutive-commit sourcing in section 4.1), and
+  recorded here as read rather than as owed. What is still owed from it is one
+  question: the paper reports a held-out set of 858 instances that nothing in
+  this library has looked at, and a benchmark's held-out half is where a
+  contamination claim either survives or does not — asked by
+  skills/evaluation-integrity — 2026-10-27

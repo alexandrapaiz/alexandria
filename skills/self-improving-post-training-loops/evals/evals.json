@@ -1,672 +1,915 @@
 {
-  "skill": "self-improving-post-training-loops",
-  "suite_version": 2,
-  "written": "2026-09-30",
-  "author": "skill agent (ADR-22)",
-  "adr": "ADR-36",
-  "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
-  "judge": "a model other than the subject; rubric tasks only",
-  "policy": {
-    "repetitions": 3,
-    "subject": "kimi-k2.6",
-    "judge": "openai/gpt-oss-120b",
-    "min_delta": 0.2,
-    "pre_registered": "2026-10-23, by the alexandria chair before either arm ran on this suite: no results.json has ever been written for it. The numbers copy the three suites that already registered them, so every suite in the library is measured under one policy. The first run is on qwen/qwen3.8-27b with the subject overridden on the command line and recorded in the result, because the host that can run it holds a Groq key and no Moonshot key, and the Modal workspace is at its spend limit."
+ "skill": "self-improving-post-training-loops",
+ "suite_version": 2,
+ "written": "2026-09-30",
+ "author": "skill agent (ADR-22)",
+ "adr": "ADR-36",
+ "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
+ "judge": "a model other than the subject; rubric tasks only",
+ "policy": {
+  "repetitions": 3,
+  "subject": "kimi-k2.6",
+  "judge": "openai/gpt-oss-120b",
+  "min_delta": 0.2,
+  "pre_registered": "2026-10-23, by the alexandria chair before either arm ran on this suite: no results.json has ever been written for it. The numbers copy the three suites that already registered them, so every suite in the library is measured under one policy. The first run is on qwen/qwen3.8-27b with the subject overridden on the command line and recorded in the result, because the host that can run it holds a Groq key and no Moonshot key, and the Modal workspace is at its spend limit."
+ },
+ "note": "Ten treatment tasks and two controls from the five cited papers (ADR-35). sipt-t8 tests a boundary rather than a procedure: the correct answer is that this skill's mechanisms are not yet the right tool, which is the case a skill is most likely to get wrong in its own favour. sipt-t3 and sipt-t10 carry hard checks and sipt-c1 is a test-passing control, so three of the twelve are scored without a judge (ADR-38 rule 6). Every task carries a `sections` list naming the SKILL.md headings it exercises, so the per-section Validation tags are checkable by string comparison rather than by trusting `source.claims`. Contract in skills/_validation/evals/README.md.",
+ "tasks": [
+  {
+   "id": "sipt-t1",
+   "kind": "treatment",
+   "sections": [
+    "Delta 1: the extrapolated teacher is not the gain, the distillation against it is"
+   ],
+   "form": "prompt",
+   "situation": "RISE constructs a synthetic teacher from the model's own RLVR training trajectory, combines outcome-based reward with on-policy distillation from it in one loop, and refreshes the synthetic teacher every iteration as the student improves.",
+   "source": {
+    "paper": "RISE",
+    "arxiv": "arxiv.org/abs/2609.05295",
+    "claims": [
+     30,
+     31,
+     32,
+     33
+    ]
+   },
+   "prompt": "We finished an RLVR run on our 7B math model and the reward curve has flattened. The plan for the next phase: take the final checkpoint, sample a large set of high-reward trajectories from it, build a distillation corpus, and fine-tune the 7B on that corpus to compress the RL gains into dense token-level supervision. One pass, then evaluate. Sound?",
+   "without_skill": "Approves. Distilling a finished RL checkpoint into dense supervision is a standard and reasonable compression step, and the plan is internally coherent.",
+   "with_skill": "Points out that a single pass is a one-time compression rather than a self-improving loop, and prescribes refreshing the synthetic teacher each iteration inside a loop that keeps the outcome reward.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "refresh",
+      "criterion": "Identifies the single pass as the defect and requires the teacher to be rebuilt each iteration as the student improves.",
+      "anchors": {
+       "0": "Approves the one-pass plan.",
+       "1": "Suggests repeating it a few times.",
+       "2": "States that a teacher built once and reused is not the same mechanism, and refreshes it every iteration."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "a teacher-rebuild step inside the iteration loop in the training script, rather than a checkpoint path fixed once before the loop starts"
+      }
+     },
+     {
+      "id": "combined",
+      "criterion": "Keeps the outcome reward in the loop alongside the distillation rather than replacing it.",
+      "anchors": {
+       "0": "Replaces RL with supervised distillation.",
+       "1": "Unclear.",
+       "2": "Runs both in one loop, with the reward grounding the extrapolation and the teacher refining token-level decisions."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "two loss terms present in the same optimiser step, the outcome reward and the distillation objective"
+      }
+     },
+     {
+      "id": "synthetic_teacher",
+      "criterion": "Builds the teacher from the model's own training trajectory rather than requiring a stronger external model.",
+      "anchors": {
+       "0": "Reaches for a larger external teacher.",
+       "1": "Silent on provenance.",
+       "2": "Constructs it from the model's own RLVR trajectory, converting sparse outcome-induced updates into dense per-token supervision with no privileged model."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "the teacher constructor's inputs, which are two checkpoints of this run's own trajectory and an extrapolation coefficient, with no external model handle among them"
+      }
+     },
+     {
+      "id": "evidence",
+      "criterion": "States what this beat.",
+      "anchors": {
+       "0": "No comparison.",
+       "1": "Asserts it is better.",
+       "2": "Cites the paper's own no-distillation ablation: adopting the extrapolated checkpoint directly moves Math Avg 60.0 to 60.3 at 8B and 45.4 to 45.6 at 1.7B, against +2.7 and +4.8 for the full loop, so the refresh-and-distil phase is nearly the whole gain."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the no-distillation ablation, 60.0 to 60.3 and 45.4 to 45.6 against +2.7 and +4.8"
+      }
+     }
+    ]
+   },
+   "exploit": {
+    "answer": "Yes, with one change: make it a loop rather than a single pass. Rebuild the teacher from the model's own training trajectory each iteration as the student improves, keep the outcome reward in the loop alongside the distillation rather than replacing it, and do not rely on an external stronger model. Done this way it consistently beats both reinforcement learning alone and one-shot self-distillation.",
+    "why": "Every criterion's vocabulary is present and no artifact or number is. No loop step is located in code, no ablation figure is given, and the last sentence is the claim this run corrected rather than a measurement. A judge reading for words scores this highly and a judge reading for the certificate scores it zero.",
+    "ceiling": 0.0
+   }
   },
-  "note": "Nine treatment tasks and two controls from the five cited papers (ADR-35). sipt-t8 tests a boundary rather than a procedure: the correct answer is that this skill's mechanisms are not yet the right tool, which is the case a skill is most likely to get wrong in its own favour. Revised 2026-09-30 (ADR-38 retrofit): every task gained a `sections` list naming the SKILL.md headings it exercises, so the per-section Validation tags are checkable by string comparison rather than by trusting `source.claims`. Contract in skills/_validation/evals/README.md.",
-  "tasks": [
-    {
-      "id": "sipt-t1",
-      "kind": "treatment",
-      "sections": [
-        "Refresh the teacher every iteration, do not distill once and stop"
-      ],
-      "form": "prompt",
-      "situation": "RISE constructs a synthetic teacher from the model's own RLVR training trajectory, combines outcome-based reward with on-policy distillation from it in one loop, and refreshes the synthetic teacher every iteration as the student improves.",
-      "source": {
-        "paper": "RISE",
-        "arxiv": "arxiv.org/abs/2609.05295",
-        "claims": [
-          30,
-          31,
-          32,
-          33
-        ]
+  {
+   "id": "sipt-t2",
+   "kind": "treatment",
+   "sections": [
+    "Delta 2: gate the teacher per prompt at two probes of three, and bank the utilisation before the accuracy"
+   ],
+   "form": "prompt",
+   "situation": "Verify Before You Distill's per-prompt teacher gating: estimate reliability from a small set of verifier-scored teacher probes, route to dense distillation when the check passes and verifier-grounded GRPO when it does not, which also raised teacher-node GPU utilisation from 9.8 to 78.9 percent in a 4B single-domain run.",
+   "source": {
+    "paper": "Verify Before You Distill",
+    "arxiv": "arxiv.org/abs/2609.02998",
+    "claims": [
+     116,
+     117,
+     118,
+     119,
+     120
+    ]
+   },
+   "prompt": "We are running asynchronous on-policy distillation from a 70B teacher into a 7B student on a mixed math and code set. Two problems. Accuracy on code has got worse than the student's pre-distillation baseline, and the teacher nodes sit idle most of the time so the run costs more per useful step than it should. The teacher is much stronger than the student on aggregate so I do not understand the accuracy result.",
+   "without_skill": "Treats the two problems separately: tunes the distillation loss or temperature for the accuracy, and adds batching or a bigger queue for the utilisation, missing that one gate fixes both.",
+   "with_skill": "Names the confidently-wrong teacher as the accuracy cause, adds per-prompt gating with a fallback, and shows that the same gate is what fills the idle teacher capacity.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "per_prompt",
+      "criterion": "Locates the problem at the level of the individual prompt rather than the teacher's aggregate strength.",
+      "anchors": {
+       "0": "Reasons only about aggregate teacher quality.",
+       "1": "Notes the teacher may be wrong sometimes.",
+       "2": "States that a teacher stronger on aggregate is still confidently wrong on particular prompts, and that dense distillation on those gives misleading updates."
       },
-      "prompt": "We finished an RLVR run on our 7B math model and the reward curve has flattened. The plan for the next phase: take the final checkpoint, sample a large set of high-reward trajectories from it, build a distillation corpus, and fine-tune the 7B on that corpus to compress the RL gains into dense token-level supervision. One pass, then evaluate. Sound?",
-      "without_skill": "Approves. Distilling a finished RL checkpoint into dense supervision is a standard and reasonable compression step, and the plan is internally coherent.",
-      "with_skill": "Points out that a single pass is a one-time compression rather than a self-improving loop, and prescribes refreshing the synthetic teacher each iteration inside a loop that keeps the outcome reward.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "refresh",
-            "criterion": "Identifies the single pass as the defect and requires the teacher to be rebuilt each iteration as the student improves.",
-            "anchors": {
-              "0": "Approves the one-pass plan.",
-              "1": "Suggests repeating it a few times.",
-              "2": "States that a teacher built once and reused is not the same mechanism, and refreshes it every iteration."
-            }
-          },
-          {
-            "id": "combined",
-            "criterion": "Keeps the outcome reward in the loop alongside the distillation rather than replacing it.",
-            "anchors": {
-              "0": "Replaces RL with supervised distillation.",
-              "1": "Unclear.",
-              "2": "Runs both in one loop, with the reward grounding the extrapolation and the teacher refining token-level decisions."
-            }
-          },
-          {
-            "id": "synthetic_teacher",
-            "criterion": "Builds the teacher from the model's own training trajectory rather than requiring a stronger external model.",
-            "anchors": {
-              "0": "Reaches for a larger external teacher.",
-              "1": "Silent on provenance.",
-              "2": "Constructs it from the model's own RLVR trajectory, converting sparse outcome-induced updates into dense per-token supervision with no privileged model."
-            }
-          },
-          {
-            "id": "evidence",
-            "criterion": "States what this beat.",
-            "anchors": {
-              "0": "No comparison.",
-              "1": "Asserts it is better.",
-              "2": "Notes it outperformed both RLVR-only training and one-shot on-policy self-distillation across math, STEM, code and multi-turn agentic tasks."
-            }
-          }
-        ]
+      "certificate": {
+       "kind": "artifact",
+       "names": "a reliability field stored per prompt in the batch, rather than one teacher-quality score held for the corpus"
       }
-    },
-    {
-      "id": "sipt-t2",
-      "kind": "treatment",
-      "sections": [
-        "Gate teacher trust before dense distillation, fall back when it fails"
-      ],
-      "form": "prompt",
-      "situation": "Verify Before You Distill's per-prompt teacher gating: estimate reliability from a small set of verifier-scored teacher probes, route to dense distillation when the check passes and verifier-grounded GRPO when it does not, which also raised teacher-node GPU utilisation from 9.8 to 78.9 percent in a 4B single-domain run.",
-      "source": {
-        "paper": "Verify Before You Distill",
-        "arxiv": "arxiv.org/abs/2609.02998",
-        "claims": [
-          116,
-          117,
-          118,
-          119,
-          120
-        ]
+     },
+     {
+      "id": "gate",
+      "criterion": "Prescribes estimating per-prompt teacher reliability from a small set of verifier-scored probes.",
+      "anchors": {
+       "0": "Absent.",
+       "1": "Suggests filtering by teacher confidence, which is the wrong signal.",
+       "2": "Uses verifier-scored teacher probes per prompt to estimate reliability before distilling, and names the count and the threshold: three probes with the gate opening at two."
       },
-      "prompt": "We are running asynchronous on-policy distillation from a 70B teacher into a 7B student on a mixed math and code set. Two problems. Accuracy on code has got worse than the student's pre-distillation baseline, and the teacher nodes sit idle most of the time so the run costs more per useful step than it should. The teacher is much stronger than the student on aggregate so I do not understand the accuracy result.",
-      "without_skill": "Treats the two problems separately: tunes the distillation loss or temperature for the accuracy, and adds batching or a bigger queue for the utilisation, missing that one gate fixes both.",
-      "with_skill": "Names the confidently-wrong teacher as the accuracy cause, adds per-prompt gating with a fallback, and shows that the same gate is what fills the idle teacher capacity.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "per_prompt",
-            "criterion": "Locates the problem at the level of the individual prompt rather than the teacher's aggregate strength.",
-            "anchors": {
-              "0": "Reasons only about aggregate teacher quality.",
-              "1": "Notes the teacher may be wrong sometimes.",
-              "2": "States that a teacher stronger on aggregate is still confidently wrong on particular prompts, and that dense distillation on those gives misleading updates."
-            }
-          },
-          {
-            "id": "gate",
-            "criterion": "Prescribes estimating per-prompt teacher reliability from a small set of verifier-scored probes.",
-            "anchors": {
-              "0": "Absent.",
-              "1": "Suggests filtering by teacher confidence, which is the wrong signal.",
-              "2": "Uses verifier-scored teacher probes per prompt to estimate reliability before distilling."
-            }
-          },
-          {
-            "id": "fallback",
-            "criterion": "Names the fallback for prompts that fail the check.",
-            "anchors": {
-              "0": "Drops them, or distils anyway.",
-              "1": "Says to handle them differently.",
-              "2": "Routes them to verifier-grounded GRPO, so the update does not depend on trusting the teacher."
-            }
-          },
-          {
-            "id": "utilisation",
-            "criterion": "Connects the gate to the idle-teacher problem rather than answering it separately.",
-            "anchors": {
-              "0": "Answers the two problems independently.",
-              "1": "Mentions cost.",
-              "2": "States that gating decides which prompts are worth the teacher, which is what puts the idle capacity to use, citing 9.8 to 78.9 percent utilisation."
-            }
-          },
-          {
-            "id": "scale_caveat",
-            "criterion": "Flags the scale boundary honestly.",
-            "anchors": {
-              "0": "Presents it as general.",
-              "1": "No caveat.",
-              "2": "Notes the tested students top out at 35B, so the mechanism is unverified at frontier scale."
-            }
-          }
-        ]
+      "certificate": {
+       "kind": "number",
+       "names": "the probe count and the opening threshold, three and two"
       }
-    },
-    {
-      "id": "sipt-t3",
-      "kind": "treatment",
-      "sections": [
-        "Gate teacher trust before dense distillation, fall back when it fails"
-      ],
-      "form": "project",
-      "situation": "The same gating mechanism, as the configuration a run would actually be launched with.",
-      "source": {
-        "paper": "Verify Before You Distill",
-        "arxiv": "arxiv.org/abs/2609.02998",
-        "claims": [
-          116,
-          117,
-          118,
-          119,
-          120
-        ]
+     },
+     {
+      "id": "fallback",
+      "criterion": "Names the fallback for prompts that fail the check.",
+      "anchors": {
+       "0": "Drops them, or distils anyway.",
+       "1": "Says to handle them differently.",
+       "2": "Routes them to verifier-grounded GRPO, so the update does not depend on trusting the teacher."
       },
-      "prompt": "Write the gating configuration for that distillation run as gate.json, with keys \"probe\": {\"n_per_prompt\", \"scored_by\"}, \"decision\": {\"unit\", \"statistic\"}, \"routes\": an object mapping \"pass\" and \"fail\" to the training signal each takes, and \"teacher_refresh\".",
-      "without_skill": "Configures a global quality filter: a single teacher-quality threshold for the whole dataset, scored by the teacher's own confidence, with failing prompts dropped and no refresh.",
-      "with_skill": "Gets the unit, the scorer, both routes and the refresh right.",
-      "check": {
-        "type": "parses",
-        "format": "json",
-        "assertions": [
-          {
-            "id": "schema",
-            "statement": "gate.json has all four keys with the stated nesting, and routes has exactly the keys 'pass' and 'fail'."
-          },
-          {
-            "id": "unit",
-            "statement": "decision.unit is the individual prompt, not the dataset, the domain or the batch."
-          },
-          {
-            "id": "scored_by_verifier",
-            "statement": "probe.scored_by is a verifier or ground-truth check, not the teacher's own confidence or log-probability."
-          },
-          {
-            "id": "probe_small",
-            "statement": "probe.n_per_prompt is a small integer, at most about 8, consistent with a cheap probe rather than a full evaluation."
-          },
-          {
-            "id": "routes",
-            "statement": "routes.pass is dense on-policy distillation from the teacher and routes.fail is a verifier-grounded policy-gradient signal such as GRPO, not dropping the prompt and not distilling anyway."
-          },
-          {
-            "id": "refresh",
-            "statement": "teacher_refresh specifies re-estimating reliability as the student improves rather than gating once at the start."
-          }
-        ],
-        "pass_condition": "every assertion holds; the harness reports the count"
+      "certificate": {
+       "kind": "artifact",
+       "names": "a second training branch in the step function that executes on gate-closed prompts, reachable in a trace"
       }
-    },
-    {
-      "id": "sipt-t4",
-      "kind": "treatment",
-      "sections": [
-        "Close the loop between evaluation, data selection, and the next mixture"
-      ],
-      "form": "prompt",
-      "situation": "NeoHorse-1's capability-guided allocation: evaluation feedback converted directly into the next training mixture, with routing signals used to structure supervised fine-tuning into a staged curriculum and to decide which student outputs a teacher supervises.",
-      "source": {
-        "paper": "NeoHorse-1",
-        "arxiv": "arxiv.org/abs/2609.08183",
-        "claims": [
-          141,
-          142,
-          143,
-          144
-        ]
+     },
+     {
+      "id": "utilisation",
+      "criterion": "Connects the gate to the idle-teacher problem rather than answering it separately.",
+      "anchors": {
+       "0": "Answers the two problems independently.",
+       "1": "Mentions cost.",
+       "2": "States that gating decides which prompts are worth the teacher, which is what puts the idle capacity to use, citing 9.8 to 78.9 percent utilisation."
       },
-      "prompt": "Our post-training mixture is 45 percent math, 30 percent code, 15 percent tool use and 10 percent general chat. We set those weights in July from a judgement about what the product needs, and we have run four training rounds on them since. Each round we evaluate on eleven benchmarks and the results go in a spreadsheet. Scores are moving slowly. What would you change?",
-      "without_skill": "Suggests tuning the weights by hand from the spreadsheet, adding data to the weakest benchmark, or running a hyperparameter sweep over the mixture, all of which keep the human in the loop as the allocator.",
-      "with_skill": "Closes the loop: evaluation feedback becomes the next mixture mechanically, routing signals structure the curriculum, and recorded harness interactions become a validated data source.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "closes_loop",
-            "criterion": "Makes evaluation feedback determine the next mixture rather than informing a human decision.",
-            "anchors": {
-              "0": "Hand-tunes from the spreadsheet.",
-              "1": "Suggests automating the review.",
-              "2": "Allocates by capability from the evaluation output, so what the system currently learns to do shapes what it learns from next."
-            }
-          },
-          {
-            "id": "routing_signals",
-            "criterion": "Uses routing signals, which capability tier actually handled a case, to structure the curriculum and to decide what a teacher supervises.",
-            "anchors": {
-              "0": "Absent.",
-              "1": "Mentions curriculum.",
-              "2": "Stages supervised fine-tuning on the routing signal and uses it to select which student outputs get teacher supervision."
-            }
-          },
-          {
-            "id": "harness_logs",
-            "criterion": "Names recorded harness interactions as a data source, with the validation that has to precede mixing them in.",
-            "anchors": {
-              "0": "Absent.",
-              "1": "Suggests using production logs with no validation.",
-              "2": "Uses interleaved reasoning, tool calls and harness context, validated by structural checks, multi-dimensional semantic evaluation and subscene-level labelling before being mixed."
-            }
-          },
-          {
-            "id": "magnitude_and_scope",
-            "criterion": "Gives the measured gain and the honest scope.",
-            "anchors": {
-              "0": "Neither.",
-              "1": "One.",
-              "2": "Cites 58.94 to 64.87 macro-average at 4B and 65.60 to 69.04 at 9B, and notes the log pipeline is evaluated on one production routing harness so its checks may not generalise."
-            }
-          }
-        ]
+      "certificate": {
+       "kind": "number",
+       "names": "teacher-node GPU utilisation, 9.8 percent to 78.9 percent in the 4B single-domain run"
       }
-    },
-    {
-      "id": "sipt-t5",
-      "kind": "treatment",
-      "sections": [
-        "Calibrate self-guidance by advantage sign, do not apply it uniformly"
-      ],
-      "form": "prompt",
-      "situation": "FlowBalance's calibration of a self-guidance score against the verifier-derived group advantage: retain the guidance on positive-advantage trajectories, reverse it on negative-advantage trajectories, and disable it entirely when the rollout group shows no outcome preference.",
-      "source": {
-        "paper": "FlowBalance",
-        "arxiv": "arxiv.org/abs/2609.03241",
-        "claims": [
-          96,
-          97,
-          98,
-          99
-        ]
+     },
+     {
+      "id": "scale_caveat",
+      "criterion": "Flags the scale boundary honestly.",
+      "anchors": {
+       "0": "Presents it as general.",
+       "1": "No caveat.",
+       "2": "Notes the tested students top out at 35B, so the mechanism is unverified at frontier scale."
       },
-      "prompt": "We added a self-guidance term to our RL objective: an aggregated token-level log-probability gain that tells us which tokens the model became more confident about, and we upweight those everywhere. Early results looked good and now training has got unstable, responses are drifting longer, and the diversity of solution strategies has dropped. Diagnose it.",
-      "without_skill": "Reaches for the usual stabilisers: lower the learning rate, clip the term, add a KL penalty to a reference, add a length penalty. These suppress the symptom and keep applying the guidance uniformly.",
-      "with_skill": "Identifies uniform application as the fault and gives the three-way calibration against the group advantage.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "uniform_is_fault",
-            "criterion": "Names applying the guidance everywhere as the cause, rather than the term's magnitude.",
-            "anchors": {
-              "0": "Treats it as a tuning problem.",
-              "1": "Says the term may be harmful sometimes.",
-              "2": "States that a self-guidance score has to be calibrated against an outcome signal and cannot be trusted uniformly."
-            }
-          },
-          {
-            "id": "three_way",
-            "criterion": "Gives the calibration by advantage sign, all three cases.",
-            "anchors": {
-              "0": "Absent.",
-              "1": "Suggests masking negative cases only.",
-              "2": "Retain on positive advantage, reverse on negative advantage, and disable entirely when the rollout group shows no outcome preference."
-            }
-          },
-          {
-            "id": "symptoms_match",
-            "criterion": "Connects the reported symptoms to the mechanism.",
-            "anchors": {
-              "0": "No connection.",
-              "1": "Partial.",
-              "2": "Ties the length drift and lost strategy diversity to reinforcing confidence on trajectories the verifier did not prefer, and notes the calibrated form avoided response-length collapse and kept more correct-strategy diversity."
-            }
-          },
-          {
-            "id": "replaces_loss",
-            "criterion": "Notes the calibrated signal can replace a separate token-level imitation loss rather than being added on top of one.",
-            "anchors": {
-              "0": "Absent.",
-              "1": "Mentioned vaguely.",
-              "2": "States it can stand in for the imitation loss, fitting the normalised target with one log-partition estimate per rollout group."
-            }
-          }
-        ]
+      "certificate": {
+       "kind": "number",
+       "names": "the largest student tested, 35B, with nothing above it verified"
       }
-    },
-    {
-      "id": "sipt-t6",
-      "kind": "treatment",
-      "sections": [
-        "Assign credit without a verifier through dynamic rubrics"
-      ],
-      "form": "prompt",
-      "situation": "DRACO's credit assignment without a verifier: rubrics generated dynamically during training so criteria track the policy's evolving capability, with each rubric's score redistributed over the steps responsible for it through a closed-form formula and no learned attribution module.",
-      "source": {
-        "paper": "DRACO",
-        "arxiv": "arxiv.org/abs/2609.04094",
-        "claims": [
-          39,
-          40,
-          41,
-          42
-        ]
+     }
+    ]
+   },
+   "exploit": {
+    "answer": "The two problems have one cause. A teacher stronger on aggregate is still confidently wrong on particular prompts, so judge reliability per prompt rather than per corpus, estimate it from verifier-scored probes, and route the prompts that fail to a verifier-grounded alternative instead of distilling them anyway. That same gate is what fills your idle teacher capacity. Note the published work tops out well below frontier scale.",
+    "why": "The whole rubric's vocabulary with none of its certificates: no probe count, no threshold, no utilisation figure, no scale number, and no second branch anyone could find in a step function.",
+    "ceiling": 0.0
+   }
+  },
+  {
+   "id": "sipt-t3",
+   "kind": "treatment",
+   "sections": [
+    "Delta 2: gate the teacher per prompt at two probes of three, and bank the utilisation before the accuracy"
+   ],
+   "form": "project",
+   "situation": "The same gating mechanism, as the configuration a run would actually be launched with.",
+   "source": {
+    "paper": "Verify Before You Distill",
+    "arxiv": "arxiv.org/abs/2609.02998",
+    "claims": [
+     116,
+     117,
+     118,
+     119,
+     120
+    ]
+   },
+   "prompt": "Write the gating configuration for that distillation run as gate.json, with keys \"probe\": {\"n_per_prompt\", \"scored_by\"}, \"decision\": {\"unit\", \"statistic\"}, \"routes\": an object mapping \"pass\" and \"fail\" to the training signal each takes, and \"teacher_refresh\".",
+   "without_skill": "Configures a global quality filter: a single teacher-quality threshold for the whole dataset, scored by the teacher's own confidence, with failing prompts dropped and no refresh.",
+   "with_skill": "Gets the unit, the scorer, both routes and the refresh right.",
+   "check": {
+    "type": "parses",
+    "format": "json",
+    "assertions": [
+     {
+      "id": "schema",
+      "statement": "gate.json has all four keys with the stated nesting, and routes has exactly the keys 'pass' and 'fail'."
+     },
+     {
+      "id": "unit",
+      "statement": "decision.unit is the individual prompt, not the dataset, the domain or the batch."
+     },
+     {
+      "id": "scored_by_verifier",
+      "statement": "probe.scored_by is a verifier or ground-truth check, not the teacher's own confidence or log-probability."
+     },
+     {
+      "id": "probe_small",
+      "statement": "probe.n_per_prompt is a small integer, at most about 8, consistent with a cheap probe rather than a full evaluation."
+     },
+     {
+      "id": "routes",
+      "statement": "routes.pass is dense on-policy distillation from the teacher and routes.fail is a verifier-grounded policy-gradient signal such as GRPO, not dropping the prompt and not distilling anyway."
+     },
+     {
+      "id": "refresh",
+      "statement": "teacher_refresh specifies re-estimating reliability as the student improves rather than gating once at the start."
+     }
+    ],
+    "pass_condition": "every assertion holds; the harness reports the count"
+   }
+  },
+  {
+   "id": "sipt-t4",
+   "kind": "treatment",
+   "sections": [
+    "Delta 3: screen the eval set out of the mixture before anything else, and treat one loop pass as one loop pass"
+   ],
+   "form": "prompt",
+   "situation": "NeoHorse-1's capability-guided allocation: evaluation feedback converted directly into the next training mixture, with routing signals used to structure supervised fine-tuning into a staged curriculum and to decide which student outputs a teacher supervises.",
+   "source": {
+    "paper": "NeoHorse-1",
+    "arxiv": "arxiv.org/abs/2609.08183",
+    "claims": [
+     141,
+     142,
+     143,
+     144
+    ]
+   },
+   "prompt": "Our post-training mixture is 45 percent math, 30 percent code, 15 percent tool use and 10 percent general chat. We set those weights in July from a judgement about what the product needs, and we have run four training rounds on them since. Each round we evaluate on eleven benchmarks and the results go in a spreadsheet. Scores are moving slowly. What would you change?",
+   "without_skill": "Suggests tuning the weights by hand from the spreadsheet, adding data to the weakest benchmark, or running a hyperparameter sweep over the mixture, all of which keep the human in the loop as the allocator.",
+   "with_skill": "Closes the loop: evaluation feedback becomes the next mixture mechanically, routing signals structure the curriculum, and recorded harness interactions become a validated data source.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "closes_loop",
+      "criterion": "Makes evaluation feedback determine the next mixture rather than informing a human decision.",
+      "anchors": {
+       "0": "Hand-tunes from the spreadsheet.",
+       "1": "Suggests automating the review.",
+       "2": "Allocates by capability from the evaluation output, so what the system currently learns to do shapes what it learns from next."
       },
-      "prompt": "We are training a long-horizon agent on internal workflows, 20 to 40 tool calls per episode, and there is no verifier and no ground-truth final state we can check. We wrote 30 rubric criteria with a domain expert and we score the whole episode against them with a judge, then give that scalar to GRPO as the terminal reward. The policy is learning something but slowly and it does not seem to know which of its actions mattered.",
-      "without_skill": "Suggests more rubric criteria, a stronger judge, reward shaping by hand, or training a separate attribution model, and keeps the fixed expert rubric.",
-      "with_skill": "Replaces the fixed rubric with dynamically generated ones and redistributes each rubric's score over the responsible steps in closed form.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "dynamic",
-            "criterion": "Generates rubrics during training rather than fixing them in advance, so the criteria track the policy's evolving capability.",
-            "anchors": {
-              "0": "Keeps the fixed expert rubric.",
-              "1": "Suggests revising it periodically by hand.",
-              "2": "Generates rubrics dynamically during training and gives the reason: a fixed rubric is a fixed standard against a moving target."
-            }
-          },
-          {
-            "id": "redistribute",
-            "criterion": "Redistributes each rubric's score over the specific steps responsible for it to produce differentiated per-step advantages.",
-            "anchors": {
-              "0": "Keeps one terminal scalar.",
-              "1": "Suggests discounting backwards.",
-              "2": "Attributes each rubric's score to the steps responsible for it, yielding per-step advantages."
-            }
-          },
-          {
-            "id": "closed_form",
-            "criterion": "Uses a closed-form redistribution rather than a learned attribution module.",
-            "anchors": {
-              "0": "Proposes training an attribution model.",
-              "1": "Silent.",
-              "2": "States that the redistribution is closed-form and no learned attribution module is needed."
-            }
-          },
-          {
-            "id": "evidence",
-            "criterion": "Gives the measured comparison, including against the sparse-reward alternative they are currently running.",
-            "anchors": {
-              "0": "No numbers.",
-              "1": "Asserts improvement.",
-              "2": "Cites 15.9 points over the base model and 5.3 over GRPO with a sparse ground-truth reward on AppWorld, plus out-of-domain generalisation without a frontier judge or verifier."
-            }
-          }
-        ]
+      "certificate": {
+       "kind": "artifact",
+       "names": "a mixture file for iteration n+1 generated from iteration n's evaluation output, with no hand edit between them"
       }
-    },
-    {
-      "id": "sipt-t7",
-      "kind": "treatment",
-      "sections": [
-        "Gate teacher trust before dense distillation, fall back when it fails",
-        "Assign credit without a verifier through dynamic rubrics"
-      ],
-      "form": "prompt",
-      "situation": "The general principle the cluster's gating and rubric findings share, stated in the skill as its own reading: before letting anything grade or teach itself, check whether that signal can be trusted, and build the fallback so it does not depend on trusting it.",
-      "source": {
-        "paper": "Verify Before You Distill; DRACO",
-        "arxiv": "arxiv.org/abs/2609.02998",
-        "claims": [
-          116,
-          117,
-          39,
-          40
-        ]
+     },
+     {
+      "id": "routing_signals",
+      "criterion": "Uses routing signals, which capability tier actually handled a case, to structure the curriculum and to decide what a teacher supervises.",
+      "anchors": {
+       "0": "Absent.",
+       "1": "Mentions curriculum.",
+       "2": "Stages supervised fine-tuning on the routing signal and uses it to select which student outputs get teacher supervision."
       },
-      "prompt": "Design review. Our loop works like this: the model generates 16 candidate answers per prompt, a judge which is the same model picks the best one, and we fine-tune on the winner. No verifier anywhere, because our domain has no checkable answer. It has been running two weeks and the eval is up 3 points. Tell me what will go wrong and when.",
-      "without_skill": "Notes generic risks, self-preference and distribution collapse, and suggests a stronger judge or more candidates. Both keep the single untrusted signal as the only signal.",
-      "with_skill": "Names the missing trust check, insists on a fallback that does not depend on the judge, and reads the 3 points with appropriate suspicion.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "trust_check",
-            "criterion": "Requires a check on whether the self-grading signal can be trusted, before it is trusted.",
-            "anchors": {
-              "0": "Absent.",
-              "1": "Suggests spot-checking outputs.",
-              "2": "Requires an independent reliability estimate on a sample, scored by something other than the judge itself."
-            }
-          },
-          {
-            "id": "independent_fallback",
-            "criterion": "Requires a fallback signal that does not depend on the judge being right.",
-            "anchors": {
-              "0": "Absent, or the fallback is another judge.",
-              "1": "Suggests human review with no routing rule.",
-              "2": "Routes the cases that fail the trust check to a signal grounded outside the model, and says the fallback must not inherit the judge's dependency."
-            }
-          },
-          {
-            "id": "same_model",
-            "criterion": "Identifies that judge and subject being the same model is the specific defect, not a detail.",
-            "anchors": {
-              "0": "Not raised.",
-              "1": "Mentions self-preference.",
-              "2": "States the judge must differ from the subject, and that the current design closes the loop with no external reference at any point."
-            }
-          },
-          {
-            "id": "reads_the_gain",
-            "criterion": "Treats the 3-point gain as uninterpretable rather than as evidence the design works.",
-            "anchors": {
-              "0": "Accepts it as validation.",
-              "1": "Hedges.",
-              "2": "Points out the eval and the training signal may share the judge's biases, so the gain cannot separate real improvement from agreement with the judge."
-            }
-          }
-        ]
+      "certificate": {
+       "kind": "artifact",
+       "names": "the routing tier recorded per case in the evaluation output and read by the mixture builder"
       }
-    },
-    {
-      "id": "sipt-t8",
-      "kind": "treatment",
-      "sections": [],
-      "form": "prompt",
-      "situation": "The skill's own boundary against harness-engineering: these mechanisms are a training-time complement to inference-time scaffold work, and the correct move when an agent underperforms is to exhaust harness improvements first.",
-      "source": {
-        "paper": "cluster boundary; see harness-engineering and arxiv.org/abs/2609.09134",
-        "arxiv": "arxiv.org/abs/2609.09134",
-        "claims": [
-          199,
-          200,
-          201
-        ]
+     },
+     {
+      "id": "harness_logs",
+      "criterion": "Names recorded harness interactions as a data source, with the validation that has to precede mixing them in.",
+      "anchors": {
+       "0": "Absent.",
+       "1": "Suggests using production logs with no validation.",
+       "2": "Uses interleaved reasoning, tool calls and harness context, through three gates in order: deduplication and evaluation-overlap screening first, then structural validation of event order and tool-call closure, then semantic evaluation on six dimensions, with nothing mixed in that has not cleared all three."
       },
-      "prompt": "Our customer-support agent resolves 38 percent of tickets without escalation and we need 55. It runs on a 14B model we host. I have a post-training team free for six weeks and I want to use them: pick the loop. Self-distillation from our best transcripts, rubric-based RL on resolution quality, or capability-guided mixture work on a fresh fine-tune. Which loop, and what is the first week?",
-      "without_skill": "Picks a loop and plans it, because the question presupposes that one of the three is the answer and a free team is a strong pull. This is the failure this task exists to detect.",
-      "with_skill": "Declines to pick yet, says the harness comes first, and names what would have to be true before any of the three is the right spend.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "declines",
-            "criterion": "Declines to choose a training loop as the first move, and says harness work comes first.",
-            "anchors": {
-              "0": "Picks one of the three and plans it.",
-              "1": "Picks one while suggesting harness work alongside.",
-              "2": "States that training is the wrong first lever here and that harness improvements should be exhausted first."
-            }
-          },
-          {
-            "id": "harness_first_week",
-            "criterion": "Gives a concrete first week that is not training.",
-            "anchors": {
-              "0": "A training plan.",
-              "1": "Says to investigate.",
-              "2": "Baseline and trajectory logging, then the action interface, the richness and consistency of the environment's feedback, one lever at a time."
-            }
-          },
-          {
-            "id": "conditions",
-            "criterion": "Names what would make one of the three loops the right spend.",
-            "anchors": {
-              "0": "Absent.",
-              "1": "Says train later.",
-              "2": "Gives the condition: harness levers measurably exhausted and the remaining failures traceable to model capability rather than scaffold, at which point the mechanisms here apply."
-            }
-          },
-          {
-            "id": "uses_the_team",
-            "criterion": "Gives the free team useful work rather than sending them away.",
-            "anchors": {
-              "0": "Either trains anyway or leaves them idle.",
-              "1": "Vague.",
-              "2": "Puts them on the measurement, the harness search and the data collection that a later loop will need, including keeping the unaided trajectories."
-            }
-          }
-        ]
+      "certificate": {
+       "kind": "artifact",
+       "names": "three named stages in the ingestion pipeline with decontamination first, and a quarantine bucket that is non-empty"
       }
-    },
-    {
-      "id": "sipt-t9",
-      "kind": "treatment",
-      "sections": [
-        "Refresh the teacher every iteration, do not distill once and stop",
-        "Gate teacher trust before dense distillation, fall back when it fails",
-        "Calibrate self-guidance by advantage sign, do not apply it uniformly"
-      ],
-      "form": "prompt",
-      "situation": "The debugging entry point the skill's description names: a self-improvement run that destabilises or collapses, read against the standard monitoring the skill preserves and the cluster's mechanisms for a self-referential signal.",
-      "source": {
-        "paper": "RISE; Verify Before You Distill; FlowBalance",
-        "arxiv": "arxiv.org/abs/2609.05295",
-        "claims": [
-          30,
-          31,
-          116,
-          117,
-          96,
-          97
-        ]
+     },
+     {
+      "id": "magnitude_and_scope",
+      "criterion": "Gives the measured gain and the honest scope.",
+      "anchors": {
+       "0": "Neither.",
+       "1": "One.",
+       "2": "Cites 58.94 to 64.87 macro-average at 4B and 65.60 to 69.04 at 9B over ten benchmarks, and notes both scope limits: one production routing harness, and a single pass of the loop, so sustained multi-iteration gain is unvalidated."
       },
-      "prompt": "Week three of a self-distillation run on a 13B model. Average response length has gone from 600 tokens to 2,400, token entropy is falling steadily, the training loss looks fine, and our eval score peaked in week two and has drifted down since. The teacher is a snapshot of our own week-one checkpoint. Triage this.",
-      "without_skill": "Lowers the learning rate, adds a KL penalty and a length penalty, and restarts. These are correct stabilisers applied to a cause that is still in place, namely a teacher three weeks stale and no trust check anywhere.",
-      "with_skill": "Reads the three symptoms as collapse, identifies the stale teacher as the mechanism, and fixes the loop rather than damping it.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "reads_symptoms",
-            "criterion": "Reads falling entropy, growing length and a peaked-then-drifting eval together as collapse, and notes the healthy training loss is not reassuring.",
-            "anchors": {
-              "0": "Treats them as separate tuning problems.",
-              "1": "Identifies one.",
-              "2": "Names the pattern and says the loss is uninformative because the target is self-generated."
-            }
-          },
-          {
-            "id": "stale_teacher",
-            "criterion": "Identifies a teacher frozen at week one as the mechanism, and refreshes it.",
-            "anchors": {
-              "0": "Not raised.",
-              "1": "Suggests updating the teacher eventually.",
-              "2": "Names the stale teacher as the cause and refreshes it every iteration as the student improves."
-            }
-          },
-          {
-            "id": "trust_check",
-            "criterion": "Adds a per-prompt trust check with a fallback rather than distilling everything.",
-            "anchors": {
-              "0": "Absent.",
-              "1": "Suggests filtering the corpus once.",
-              "2": "Gates on per-prompt reliability with an independent fallback signal for prompts that fail."
-            }
-          },
-          {
-            "id": "keeps_standard",
-            "criterion": "Keeps the ordinary practice the skill preserves rather than replacing it.",
-            "anchors": {
-              "0": "Discards the standard monitoring, or offers only it.",
-              "1": "One or the other.",
-              "2": "Keeps the held-out suite disjoint from the training mixture, the rollout logging, and entropy and length as collapse monitors, and adds the loop fixes on top."
-            }
-          }
-        ]
+      "certificate": {
+       "kind": "number",
+       "names": "58.94 to 64.87 at 4B and 65.60 to 69.04 at 9B over ten benchmarks, from one pass of the loop"
       }
-    },
-    {
-      "id": "sipt-c1",
-      "kind": "control",
-      "sections": [],
-      "form": "project",
-      "situation": "Ordinary numerical utility code from inside this skill's own domain. Advantage, group, rollout and normalisation are all its vocabulary, and the task is arithmetic with no training decision in it.",
-      "source": {
-        "paper": "none; control task",
-        "arxiv": null,
-        "claims": []
+     }
+    ]
+   },
+   "exploit": {
+    "answer": "Stop allocating by hand. Let the evaluation output determine the next mixture directly, so what the system currently learns to do shapes what it learns from next, use the routing signal for which tier handled each case to stage the curriculum and to pick what the teacher supervises, and bring your recorded harness interactions in as a data source once they are properly validated. The published gains are substantial at both model sizes.",
+    "why": "Names every mechanism and certifies none. 'Properly validated' replaces the three ordered gates, and 'substantial at both model sizes' replaces the four numbers and the single-pass scope.",
+    "ceiling": 0.0
+   }
+  },
+  {
+   "id": "sipt-t5",
+   "kind": "treatment",
+   "sections": [
+    "Delta 4: multiply self-guidance by the advantage sign, and switch it off at zero"
+   ],
+   "form": "prompt",
+   "situation": "FlowBalance's calibration of a self-guidance score against the verifier-derived group advantage: retain the guidance on positive-advantage trajectories, reverse it on negative-advantage trajectories, and disable it entirely when the rollout group shows no outcome preference.",
+   "source": {
+    "paper": "FlowBalance",
+    "arxiv": "arxiv.org/abs/2609.03241",
+    "claims": [
+     96,
+     97,
+     98,
+     99
+    ]
+   },
+   "prompt": "We added a self-guidance term to our RL objective: an aggregated token-level log-probability gain that tells us which tokens the model became more confident about, and we upweight those everywhere. Early results looked good and now training has got unstable, responses are drifting longer, and the diversity of solution strategies has dropped. Diagnose it.",
+   "without_skill": "Reaches for the usual stabilisers: lower the learning rate, clip the term, add a KL penalty to a reference, add a length penalty. These suppress the symptom and keep applying the guidance uniformly.",
+   "with_skill": "Identifies uniform application as the fault and gives the three-way calibration against the group advantage.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "uniform_is_fault",
+      "criterion": "Names applying the guidance everywhere as the cause, rather than the term's magnitude.",
+      "anchors": {
+       "0": "Treats it as a tuning problem.",
+       "1": "Says the term may be harmful sometimes.",
+       "2": "States that a self-guidance score has to be calibrated against an outcome signal and cannot be trusted uniformly."
       },
-      "prompt": "advantages.py has two unimplemented functions. Implement them from the docstrings, standard library only. Keep the names and signatures. Write the whole file to answer.py.",
-      "files": {
-        "advantages.py": "def group_advantages(groups):\n    \"\"\"Normalise rewards within each rollout group.\n\n    groups is a list of lists of floats. Return the same shape, with each\n    value replaced by (r - mean) / std, using the population standard\n    deviation of its own group. A group whose std is 0 returns all zeros.\n    An empty group returns an empty list.\n    \"\"\"\n    raise NotImplementedError\n\n\ndef ema(values, alpha: float):\n    \"\"\"Return the exponential moving average series.\n\n    out[0] == values[0]; out[i] == alpha * values[i] + (1 - alpha) * out[i-1].\n    An empty input returns an empty list. Raise ValueError unless 0 < alpha <= 1.\n    \"\"\"\n    raise NotImplementedError\n"
-      },
-      "without_skill": "Both implemented correctly, including the zero-variance group, the empty cases and the alpha validation.",
-      "with_skill": "The same. The skill must not intrude: nothing here needs a teacher gate, a dynamic rubric, or advice about refreshing anything.",
-      "check": {
-        "type": "tests_pass",
-        "answer_path": "answer.py",
-        "command": "python -m pytest test_advantages.py -q",
-        "pass_condition": "exit code 0 in both arms; the control is passed when the with-skill arm's pass count is not below the without-skill arm's, outside the spread",
-        "files": {
-          "test_advantages.py": "import pytest\n\nimport answer\n\n\ndef test_normalises_within_group():\n    out = answer.group_advantages([[0.0, 1.0], [10.0, 20.0, 30.0]])\n    assert out[0] == pytest.approx([-1.0, 1.0])\n    assert out[1] == pytest.approx([-1.2247449, 0.0, 1.2247449])\n\n\ndef test_zero_variance_group_is_all_zeros():\n    assert answer.group_advantages([[5.0, 5.0, 5.0]]) == [[0.0, 0.0, 0.0]]\n\n\ndef test_single_element_group_is_zero():\n    assert answer.group_advantages([[3.0]]) == [[0.0]]\n\n\ndef test_empty_cases():\n    assert answer.group_advantages([]) == []\n    assert answer.group_advantages([[]]) == [[]]\n\n\ndef test_groups_do_not_leak_into_each_other():\n    a = answer.group_advantages([[0.0, 1.0]])[0]\n    b = answer.group_advantages([[0.0, 1.0], [100.0, 900.0]])[0]\n    assert a == pytest.approx(b)\n\n\ndef test_ema_series():\n    assert answer.ema([1.0, 2.0, 3.0], 0.5) == pytest.approx([1.0, 1.5, 2.25])\n    assert answer.ema([4.0], 1.0) == pytest.approx([4.0])\n    assert answer.ema([], 0.3) == []\n\n\ndef test_ema_validates_alpha():\n    for bad in (0.0, -0.1, 1.5):\n        with pytest.raises(ValueError):\n            answer.ema([1.0, 2.0], bad)\n"
-        }
+      "certificate": {
+       "kind": "artifact",
+       "names": "the sign multiplier on the guidance term in the loss, present or absent in the code"
       }
-    },
-    {
-      "id": "sipt-c2",
-      "kind": "control",
-      "sections": [],
-      "form": "prompt",
-      "situation": "Ordinary data engineering. Training corpus, mixture, data selection, validation and pipeline are all this skill's words, and the answer is idempotency and incremental processing with no training decision anywhere.",
-      "source": {
-        "paper": "none; control task",
-        "arxiv": null,
-        "claims": []
+     },
+     {
+      "id": "three_way",
+      "criterion": "Gives the calibration by advantage sign, all three cases.",
+      "anchors": {
+       "0": "Absent.",
+       "1": "Suggests masking negative cases only.",
+       "2": "Retain on positive advantage, reverse on negative advantage, and disable entirely when the rollout group shows no outcome preference."
       },
-      "prompt": "The nightly job that assembles our training corpus from twelve upstream sources takes nine hours, occasionally emits duplicate rows when an upstream source is late, and when it fails halfway we rerun the whole thing. Fix the pipeline. It writes Parquet to object storage, orchestrated by Airflow.",
-      "without_skill": "Ordinary and correct: partition by source and date, make each task idempotent with deterministic output paths and atomic writes, deduplicate on a stable business key rather than on row equality, handle late arrivals with a watermark and backfill rather than by reprocessing everything, checkpoint so a failure resumes, and parallelise across the twelve sources.",
-      "with_skill": "The same answer. A skill that intrudes here will propose capability-guided allocation over the twelve sources, a teacher gate, or rubric-based scoring of the rows, none of which is a pipeline fix.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "on_subject",
-            "criterion": "Answers as data-pipeline engineering.",
-            "anchors": {
-              "0": "Reframes it as a training-mixture or data-selection decision.",
-              "1": "Mixes in post-training advice.",
-              "2": "Stays on the pipeline throughout."
-            }
-          },
-          {
-            "id": "idempotency",
-            "criterion": "Makes reruns safe and partial failures resumable.",
-            "anchors": {
-              "0": "Not addressed.",
-              "1": "Mentions retries.",
-              "2": "Deterministic partitioned output paths, atomic writes, per-partition idempotency, and checkpointing so a failure resumes rather than restarts."
-            }
-          },
-          {
-            "id": "duplicates_and_lateness",
-            "criterion": "Handles the duplicates at their actual cause, the late upstream source.",
-            "anchors": {
-              "0": "Adds a global dedup pass at the end.",
-              "1": "Dedups without addressing lateness.",
-              "2": "Dedups on a stable key and handles late arrivals with a watermark and a targeted backfill rather than reprocessing everything."
-            }
-          },
-          {
-            "id": "no_intrusion",
-            "criterion": "Imports nothing from self-improving post-training loops: no capability-guided allocation, no teacher gating or probes, no dynamic rubrics, no advantage calibration, no distillation.",
-            "anchors": {
-              "0": "Two or more such intrusions.",
-              "1": "One.",
-              "2": "None."
-            }
-          }
-        ]
+      "certificate": {
+       "kind": "test",
+       "names": "a unit test over the three advantage cases, asserting the dense branch is on at positive, reversed at negative and off at zero"
       }
+     },
+     {
+      "id": "symptoms_match",
+      "criterion": "Connects the reported symptoms to the mechanism.",
+      "anchors": {
+       "0": "No connection.",
+       "1": "Partial.",
+       "2": "Ties the length drift and lost strategy diversity to reinforcing confidence on trajectories the verifier did not prefer, and notes the calibrated form avoided response-length collapse and kept more correct-strategy diversity."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "the per-step entropy and response-length series in the run log, read as symptoms rather than as targets"
+      }
+     },
+     {
+      "id": "replaces_loss",
+      "criterion": "Notes the calibrated signal can replace a separate token-level imitation loss rather than being added on top of one.",
+      "anchors": {
+       "0": "Absent.",
+       "1": "Mentioned vaguely.",
+       "2": "States it can stand in for the imitation loss, fitting the normalised target with one log-partition estimate per rollout group."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "the absence of a separate token-level imitation loss term in the objective"
+      }
+     }
+    ]
+   },
+   "exploit": {
+    "answer": "The fault is applying the guidance everywhere rather than its magnitude. Calibrate it against the verifier-derived group advantage: keep it where the advantage is positive, reverse it where it is negative, and disable it where the group shows no preference. Your symptoms are what that failure looks like. The calibrated signal can then replace a separate token-level imitation loss rather than sitting on top of one.",
+    "why": "States all three branches in prose while supplying no test over the three cases, no sign multiplier anybody could find in a loss function, and none of the logged series the symptom claim rests on.",
+    "ceiling": 0.0
+   }
+  },
+  {
+   "id": "sipt-t6",
+   "kind": "treatment",
+   "sections": [
+    "Delta 5: regenerate the rubric per group, drop what nobody failed, and normalise credit by step length"
+   ],
+   "form": "prompt",
+   "situation": "DRACO's credit assignment without a verifier: rubrics generated dynamically during training so criteria track the policy's evolving capability, with each rubric's score redistributed over the steps responsible for it through a closed-form formula and no learned attribution module.",
+   "source": {
+    "paper": "DRACO",
+    "arxiv": "arxiv.org/abs/2609.04094",
+    "claims": [
+     39,
+     40,
+     41,
+     42
+    ]
+   },
+   "prompt": "We are training a long-horizon agent on internal workflows, 20 to 40 tool calls per episode, and there is no verifier and no ground-truth final state we can check. We wrote 30 rubric criteria with a domain expert and we score the whole episode against them with a judge, then give that scalar to GRPO as the terminal reward. The policy is learning something but slowly and it does not seem to know which of its actions mattered.",
+   "without_skill": "Suggests more rubric criteria, a stronger judge, reward shaping by hand, or training a separate attribution model, and keeps the fixed expert rubric.",
+   "with_skill": "Replaces the fixed rubric with dynamically generated ones and redistributes each rubric's score over the responsible steps in closed form.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "dynamic",
+      "criterion": "Generates rubrics during training rather than fixing them in advance, so the criteria track the policy's evolving capability.",
+      "anchors": {
+       "0": "Keeps the fixed expert rubric.",
+       "1": "Suggests revising it periodically by hand.",
+       "2": "Generates rubrics inside the training step, once per group of six rollouts per task, drops any criterion no group member failed, and gives the reason: a fixed rubric is a fixed standard against a moving target."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "a rubric generated inside the training step and discarded after its group, rather than a rubric file loaded at startup"
+      }
+     },
+     {
+      "id": "redistribute",
+      "criterion": "Redistributes each rubric's score over the specific steps responsible for it to produce differentiated per-step advantages.",
+      "anchors": {
+       "0": "Keeps one terminal scalar.",
+       "1": "Suggests discounting backwards.",
+       "2": "Attributes each rubric's score to the steps responsible for it, yielding per-step advantages."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the per-step advantages of one group summing back to that trajectory's advantage, checkable by hand"
+      }
+     },
+     {
+      "id": "closed_form",
+      "criterion": "Uses a closed-form redistribution rather than a learned attribution module.",
+      "anchors": {
+       "0": "Proposes training an attribution model.",
+       "1": "Silent.",
+       "2": "States that the redistribution is closed-form and no learned attribution module is needed."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "the parameter list, which contains no trained attribution module"
+      }
+     },
+     {
+      "id": "evidence",
+      "criterion": "Gives the measured comparison, including against the sparse-reward alternative they are currently running.",
+      "anchors": {
+       "0": "No numbers.",
+       "1": "Asserts improvement.",
+       "2": "Cites 69.4 to 85.3 task-goal completion on AppWorld test-normal, which is 15.9 points over the base model and 5.3 over the outcome-reward baseline, and the out-of-domain transfer where the self-judged variant at 21.1 percent beat the frontier-judged variant at 20.4 against a 15.8 base."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "69.4 to 85.3 task-goal completion, +15.9 and +5.3, and 21.1 against 20.4 against 15.8 out of domain"
+      }
+     }
+    ]
+   },
+   "exploit": {
+    "answer": "Replace the fixed rubric with one generated during training, so the criteria track the policy's evolving capability instead of standing still against a moving target. Redistribute each rubric's score onto the steps actually responsible for it to get differentiated per-step advantages, using the closed-form formula rather than training an attribution module. It beats a sparse-reward baseline on long-horizon agent benchmarks and transfers out of domain.",
+    "why": "The four criteria's words with no group size, no dropout rule, no length normalisation, no sum-back check and no numbers. 'Beats a sparse-reward baseline' is the sentence a judge rewards and a reader cannot act on.",
+    "ceiling": 0.0
+   }
+  },
+  {
+   "id": "sipt-t7",
+   "kind": "treatment",
+   "sections": [
+    "Delta 2: gate the teacher per prompt at two probes of three, and bank the utilisation before the accuracy",
+    "Delta 5: regenerate the rubric per group, drop what nobody failed, and normalise credit by step length"
+   ],
+   "form": "prompt",
+   "situation": "The general principle the cluster's gating and rubric findings share, stated in the skill as its own reading: before letting anything grade or teach itself, check whether that signal can be trusted, and build the fallback so it does not depend on trusting it.",
+   "source": {
+    "paper": "Verify Before You Distill; DRACO",
+    "arxiv": "arxiv.org/abs/2609.02998",
+    "claims": [
+     116,
+     117,
+     39,
+     40
+    ]
+   },
+   "prompt": "Design review. Our loop works like this: the model generates 16 candidate answers per prompt, a judge which is the same model picks the best one, and we fine-tune on the winner. No verifier anywhere, because our domain has no checkable answer. It has been running two weeks and the eval is up 3 points. Tell me what will go wrong and when.",
+   "without_skill": "Notes generic risks, self-preference and distribution collapse, and suggests a stronger judge or more candidates. Both keep the single untrusted signal as the only signal.",
+   "with_skill": "Names the missing trust check, insists on a fallback that does not depend on the judge, and reads the 3 points with appropriate suspicion.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "trust_check",
+      "criterion": "Requires a check on whether the self-grading signal can be trusted, before it is trusted.",
+      "anchors": {
+       "0": "Absent.",
+       "1": "Suggests spot-checking outputs.",
+       "2": "Requires an independent reliability estimate on a sample, scored by something other than the judge itself."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "the trust estimate computed and stored before the grade is consumed, visible as an ordering in the pipeline"
+      }
+     },
+     {
+      "id": "independent_fallback",
+      "criterion": "Requires a fallback signal that does not depend on the judge being right.",
+      "anchors": {
+       "0": "Absent, or the fallback is another judge.",
+       "1": "Suggests human review with no routing rule.",
+       "2": "Routes the cases that fail the trust check to a signal grounded outside the model, and says the fallback must not inherit the judge's dependency."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "a second scoring path that makes no call to the judge"
+      }
+     },
+     {
+      "id": "same_model",
+      "criterion": "Identifies that judge and subject being the same model is the specific defect, not a detail.",
+      "anchors": {
+       "0": "Not raised.",
+       "1": "Mentions self-preference.",
+       "2": "States the judge must differ from the subject, and that the current design closes the loop with no external reference at any point."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "the two model identifiers in the config, which are the same string"
+      }
+     },
+     {
+      "id": "reads_the_gain",
+      "criterion": "Treats the 3-point gain as uninterpretable rather than as evidence the design works.",
+      "anchors": {
+       "0": "Accepts it as validation.",
+       "1": "Hedges.",
+       "2": "Points out the eval and the training signal may share the judge's biases, so the gain cannot separate real improvement from agreement with the judge."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the reported 3-point gain, treated as uninterpretable until judge and subject differ rather than as an effect size"
+      }
+     }
+    ]
+   },
+   "exploit": {
+    "answer": "The defect is that judge and subject are the same model, which is not a detail. Check whether the self-grading signal can be trusted before you trust it, and build a fallback signal that does not depend on the judge being right. Until those are in place, treat the 3-point gain as uninterpretable rather than as evidence the design works.",
+    "why": "Says the right four things and certifies none of them: no ordering in a pipeline, no second scoring path, no config line, and no account of why the gain is uninterpretable rather than merely uncertain.",
+    "ceiling": 0.0
+   }
+  },
+  {
+   "id": "sipt-t8",
+   "kind": "treatment",
+   "sections": [],
+   "form": "prompt",
+   "situation": "The skill's own boundary against harness-engineering: these mechanisms are a training-time complement to inference-time scaffold work, and the correct move when an agent underperforms is to exhaust harness improvements first.",
+   "source": {
+    "paper": "cluster boundary; see harness-engineering and arxiv.org/abs/2609.09134",
+    "arxiv": "arxiv.org/abs/2609.09134",
+    "claims": [
+     199,
+     200,
+     201
+    ]
+   },
+   "prompt": "Our customer-support agent resolves 38 percent of tickets without escalation and we need 55. It runs on a 14B model we host. I have a post-training team free for six weeks and I want to use them: pick the loop. Self-distillation from our best transcripts, rubric-based RL on resolution quality, or capability-guided mixture work on a fresh fine-tune. Which loop, and what is the first week?",
+   "without_skill": "Picks a loop and plans it, because the question presupposes that one of the three is the answer and a free team is a strong pull. This is the failure this task exists to detect.",
+   "with_skill": "Declines to pick yet, says the harness comes first, and names what would have to be true before any of the three is the right spend.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "declines",
+      "criterion": "Declines to choose a training loop as the first move, and says harness work comes first.",
+      "anchors": {
+       "0": "Picks one of the three and plans it.",
+       "1": "Picks one while suggesting harness work alongside.",
+       "2": "States that training is the wrong first lever here and that harness improvements should be exhausted first."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "a first-week plan whose line items are harness changes, containing no training job"
+      }
+     },
+     {
+      "id": "harness_first_week",
+      "criterion": "Gives a concrete first week that is not training.",
+      "anchors": {
+       "0": "A training plan.",
+       "1": "Says to investigate.",
+       "2": "Baseline and trajectory logging, then the action interface, the richness and consistency of the environment's feedback, one lever at a time."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "the named harness artefacts that week produces, each one a file or a config a reviewer could open"
+      }
+     },
+     {
+      "id": "conditions",
+      "criterion": "Names what would make one of the three loops the right spend.",
+      "anchors": {
+       "0": "Absent.",
+       "1": "Says train later.",
+       "2": "Gives the condition: harness levers measurably exhausted and the remaining failures traceable to model capability rather than scaffold, at which point the mechanisms here apply."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "a stated threshold that would flip the decision, such as a harness-exhausted eval curve that has stopped moving across a named number of iterations"
+      }
+     },
+     {
+      "id": "uses_the_team",
+      "criterion": "Gives the free team useful work rather than sending them away.",
+      "anchors": {
+       "0": "Either trains anyway or leaves them idle.",
+       "1": "Vague.",
+       "2": "Puts them on the measurement, the harness search and the data collection that a later loop will need, including keeping the unaided trajectories."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "the work assigned to the idle team, named per workstream rather than described in general"
+      }
+     }
+    ]
+   },
+   "exploit": {
+    "answer": "A training loop is not the first move here. Spend the first week on the harness instead, and give the team concrete work on it rather than sending them away. Come back to the three loop designs once harness work is genuinely exhausted, and here is roughly what would make each of them the right spend.",
+    "why": "Declines correctly and produces nothing checkable: no named harness artefacts, no threshold that would flip the decision, and no assignment a reviewer could read off the answer.",
+    "ceiling": 0.0
+   }
+  },
+  {
+   "id": "sipt-t9",
+   "kind": "treatment",
+   "sections": [
+    "Delta 1: the extrapolated teacher is not the gain, the distillation against it is",
+    "Delta 2: gate the teacher per prompt at two probes of three, and bank the utilisation before the accuracy",
+    "Delta 4: multiply self-guidance by the advantage sign, and switch it off at zero"
+   ],
+   "form": "prompt",
+   "situation": "The debugging entry point the skill's description names: a self-improvement run that destabilises or collapses, read against the standard monitoring the skill preserves and the cluster's mechanisms for a self-referential signal.",
+   "source": {
+    "paper": "RISE; Verify Before You Distill; FlowBalance",
+    "arxiv": "arxiv.org/abs/2609.05295",
+    "claims": [
+     30,
+     31,
+     116,
+     117,
+     96,
+     97
+    ]
+   },
+   "prompt": "Week three of a self-distillation run on a 13B model. Average response length has gone from 600 tokens to 2,400, token entropy is falling steadily, the training loss looks fine, and our eval score peaked in week two and has drifted down since. The teacher is a snapshot of our own week-one checkpoint. Triage this.",
+   "without_skill": "Lowers the learning rate, adds a KL penalty and a length penalty, and restarts. These are correct stabilisers applied to a cause that is still in place, namely a teacher three weeks stale and no trust check anywhere.",
+   "with_skill": "Reads the three symptoms as collapse, identifies the stale teacher as the mechanism, and fixes the loop rather than damping it.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "reads_symptoms",
+      "criterion": "Reads falling entropy, growing length and a peaked-then-drifting eval together as collapse, and notes the healthy training loss is not reassuring.",
+      "anchors": {
+       "0": "Treats them as separate tuning problems.",
+       "1": "Identifies one.",
+       "2": "Names the pattern and says the loss is uninformative because the target is self-generated."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "the three logged series read together, entropy falling, length growing and the eval peaked then drifting, against a training loss that still looks healthy"
+      }
+     },
+     {
+      "id": "stale_teacher",
+      "criterion": "Identifies a teacher frozen at week one as the mechanism, and refreshes it.",
+      "anchors": {
+       "0": "Not raised.",
+       "1": "Suggests updating the teacher eventually.",
+       "2": "Names the stale teacher as the cause and refreshes it every iteration as the student improves."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "the teacher checkpoint's date in the config, which is week one"
+      }
+     },
+     {
+      "id": "trust_check",
+      "criterion": "Adds a per-prompt trust check with a fallback rather than distilling everything.",
+      "anchors": {
+       "0": "Absent.",
+       "1": "Suggests filtering the corpus once.",
+       "2": "Gates on per-prompt reliability with an independent fallback signal for prompts that fail."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "a per-prompt gate and its closed branch added to the step function"
+      }
+     },
+     {
+      "id": "keeps_standard",
+      "criterion": "Keeps the ordinary practice the skill preserves rather than replacing it.",
+      "anchors": {
+       "0": "Discards the standard monitoring, or offers only it.",
+       "1": "One or the other.",
+       "2": "Keeps the held-out suite disjoint from the training mixture, the rollout logging, and entropy and length as collapse monitors, and adds the loop fixes on top."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "the held-out suite and the rollout log, still present and unchanged by the fix"
+      }
+     }
+    ]
+   },
+   "exploit": {
+    "answer": "Read the three series together rather than one at a time: falling entropy, growing length and an eval that peaked then drifted are collapse, and a healthy training loss is not reassuring against them. The mechanism is your stale teacher, so refresh it, and add a per-prompt trust check with a fallback instead of distilling everything. Keep the held-out suite and the rollout logging you already have.",
+    "why": "Reaches every criterion's language with no config date, no gate in a step function, and no numbers from the logs. The diagnosis is asserted rather than derived from the series the certificate names.",
+    "ceiling": 0.0
+   }
+  },
+  {
+   "id": "sipt-c1",
+   "kind": "control",
+   "sections": [],
+   "form": "project",
+   "situation": "Ordinary numerical utility code from inside this skill's own domain. Advantage, group, rollout and normalisation are all its vocabulary, and the task is arithmetic with no training decision in it.",
+   "source": {
+    "paper": "none; control task",
+    "arxiv": null,
+    "claims": []
+   },
+   "prompt": "advantages.py has two unimplemented functions. Implement them from the docstrings, standard library only. Keep the names and signatures. Write the whole file to answer.py.",
+   "files": {
+    "advantages.py": "def group_advantages(groups):\n    \"\"\"Normalise rewards within each rollout group.\n\n    groups is a list of lists of floats. Return the same shape, with each\n    value replaced by (r - mean) / std, using the population standard\n    deviation of its own group. A group whose std is 0 returns all zeros.\n    An empty group returns an empty list.\n    \"\"\"\n    raise NotImplementedError\n\n\ndef ema(values, alpha: float):\n    \"\"\"Return the exponential moving average series.\n\n    out[0] == values[0]; out[i] == alpha * values[i] + (1 - alpha) * out[i-1].\n    An empty input returns an empty list. Raise ValueError unless 0 < alpha <= 1.\n    \"\"\"\n    raise NotImplementedError\n"
+   },
+   "without_skill": "Both implemented correctly, including the zero-variance group, the empty cases and the alpha validation.",
+   "with_skill": "The same. The skill must not intrude: nothing here needs a teacher gate, a dynamic rubric, or advice about refreshing anything.",
+   "check": {
+    "type": "tests_pass",
+    "answer_path": "answer.py",
+    "command": "python -m pytest test_advantages.py -q",
+    "pass_condition": "exit code 0 in both arms; the control is passed when the with-skill arm's pass count is not below the without-skill arm's, outside the spread",
+    "files": {
+     "test_advantages.py": "import pytest\n\nimport answer\n\n\ndef test_normalises_within_group():\n    out = answer.group_advantages([[0.0, 1.0], [10.0, 20.0, 30.0]])\n    assert out[0] == pytest.approx([-1.0, 1.0])\n    assert out[1] == pytest.approx([-1.2247449, 0.0, 1.2247449])\n\n\ndef test_zero_variance_group_is_all_zeros():\n    assert answer.group_advantages([[5.0, 5.0, 5.0]]) == [[0.0, 0.0, 0.0]]\n\n\ndef test_single_element_group_is_zero():\n    assert answer.group_advantages([[3.0]]) == [[0.0]]\n\n\ndef test_empty_cases():\n    assert answer.group_advantages([]) == []\n    assert answer.group_advantages([[]]) == [[]]\n\n\ndef test_groups_do_not_leak_into_each_other():\n    a = answer.group_advantages([[0.0, 1.0]])[0]\n    b = answer.group_advantages([[0.0, 1.0], [100.0, 900.0]])[0]\n    assert a == pytest.approx(b)\n\n\ndef test_ema_series():\n    assert answer.ema([1.0, 2.0, 3.0], 0.5) == pytest.approx([1.0, 1.5, 2.25])\n    assert answer.ema([4.0], 1.0) == pytest.approx([4.0])\n    assert answer.ema([], 0.3) == []\n\n\ndef test_ema_validates_alpha():\n    for bad in (0.0, -0.1, 1.5):\n        with pytest.raises(ValueError):\n            answer.ema([1.0, 2.0], bad)\n"
     }
-  ]
+   }
+  },
+  {
+   "id": "sipt-c2",
+   "kind": "control",
+   "sections": [],
+   "form": "prompt",
+   "situation": "Ordinary data engineering. Training corpus, mixture, data selection, validation and pipeline are all this skill's words, and the answer is idempotency and incremental processing with no training decision anywhere.",
+   "source": {
+    "paper": "none; control task",
+    "arxiv": null,
+    "claims": []
+   },
+   "prompt": "The nightly job that assembles our training corpus from twelve upstream sources takes nine hours, occasionally emits duplicate rows when an upstream source is late, and when it fails halfway we rerun the whole thing. Fix the pipeline. It writes Parquet to object storage, orchestrated by Airflow.",
+   "without_skill": "Ordinary and correct: partition by source and date, make each task idempotent with deterministic output paths and atomic writes, deduplicate on a stable business key rather than on row equality, handle late arrivals with a watermark and backfill rather than by reprocessing everything, checkpoint so a failure resumes, and parallelise across the twelve sources.",
+   "with_skill": "The same answer. A skill that intrudes here will propose capability-guided allocation over the twelve sources, a teacher gate, or rubric-based scoring of the rows, none of which is a pipeline fix.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "on_subject",
+      "criterion": "Answers as data-pipeline engineering.",
+      "anchors": {
+       "0": "Reframes it as a training-mixture or data-selection decision.",
+       "1": "Mixes in post-training advice.",
+       "2": "Stays on the pipeline throughout."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "the answer's deliverables, which are a pipeline and a schedule"
+      }
+     },
+     {
+      "id": "idempotency",
+      "criterion": "Makes reruns safe and partial failures resumable.",
+      "anchors": {
+       "0": "Not addressed.",
+       "1": "Mentions retries.",
+       "2": "Deterministic partitioned output paths, atomic writes, per-partition idempotency, and checkpointing so a failure resumes rather than restarts."
+      },
+      "certificate": {
+       "kind": "test",
+       "names": "a rerun of the same window leaving the same table state"
+      }
+     },
+     {
+      "id": "duplicates_and_lateness",
+      "criterion": "Handles the duplicates at their actual cause, the late upstream source.",
+      "anchors": {
+       "0": "Adds a global dedup pass at the end.",
+       "1": "Dedups without addressing lateness.",
+       "2": "Dedups on a stable key and handles late arrivals with a watermark and a targeted backfill rather than reprocessing everything."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "a watermark or late-arrival window in the pipeline config"
+      }
+     },
+     {
+      "id": "no_intrusion",
+      "criterion": "Imports nothing from self-improving post-training loops: no capability-guided allocation, no teacher gating or probes, no dynamic rubrics, no advantage calibration, no distillation.",
+      "anchors": {
+       "0": "Two or more such intrusions.",
+       "1": "One.",
+       "2": "None."
+      },
+      "certificate": {
+       "kind": "test",
+       "names": "a string search of the answer for teacher, probe, rubric, advantage and distillation, which must find none of them used as a prescription"
+      }
+     }
+    ]
+   },
+   "exploit": {
+    "answer": "Treat this as data-pipeline engineering. Make reruns safe and partial failures resumable, handle the duplicates at their real cause, which is the late upstream source, and keep the scope to the pipeline and its schedule.",
+    "why": "A control's exploit: it is on subject and names the right concerns, but it certifies nothing, so it cannot be distinguished from an answer that did the work. The control exists to catch a skill bleeding into an unrelated task, and this answer shows the rubric alone cannot tell a correct control answer from an empty one.",
+    "ceiling": 0.0
+   }
+  },
+  {
+   "id": "sipt-t10",
+   "kind": "treatment",
+   "sections": [
+    "Delta 5: regenerate the rubric per group, drop what nobody failed, and normalise credit by step length"
+   ],
+   "form": "prompt",
+   "situation": "DRACO's closed-form step advantage, a_j = A_i * (N * w_j) / (n_j * sum_k w_k), where Q_j is the step's quality as the pass fraction of the criteria citing it, w_j is Q_j for a winning trajectory and 1 - Q_j for a losing one, n_j is the step's token count and N is the trajectory's total. The division by n_j is what makes a step's credit depend on its quality weight rather than on its length.",
+   "source": {
+    "paper": "DRACO",
+    "arxiv": "arxiv.org/abs/2609.04094",
+    "claims": [
+     39,
+     40,
+     41,
+     42
+    ]
+   },
+   "prompt": "We grade long agent trajectories with a rubric and currently hand the whole trajectory advantage to every step in it. I want per-step advantages instead. Here is one losing trajectory with advantage -0.8 and four steps, given as token count and quality, where quality is the fraction of the criteria citing that step which it passed. Step 1: 100 tokens, quality 0.8. Step 2: 400 tokens, quality 0.2. Step 3: 200 tokens, quality 0.5. Step 4: 300 tokens, quality 1.0. Total 1000 tokens. Using the closed-form redistribution for a losing trajectory, what advantage does step 2 receive, and what does step 4 receive? Show the weights you used.",
+   "without_skill": "Splits the advantage in proportion to token count, or assigns it by quality directly, or asks for a learned attribution model. A length-proportional split gives step 2 about -0.32 and step 4 about -0.24, and a quality-weighted split without the loser inversion gives step 4 the largest share of the blame.",
+   "with_skill": "Inverts quality to 1 - Q for the losing trajectory, giving weights 0.2, 0.8, 0.5 and 0.0 summing to 1.5, divides by each step's token count, and returns about -1.07 for step 2 and exactly 0 for step 4.",
+   "check": {
+    "type": "number_in_range",
+    "extract": "the advantage assigned to step 2",
+    "range": [
+     -1.08,
+     -1.05
+    ],
+    "secondary_assertions": [
+     {
+      "id": "loser_inversion",
+      "statement": "The weights are 1 - Q rather than Q, because the trajectory is a losing one: 0.2, 0.8, 0.5 and 0.0, summing to 1.5. Using Q directly is the specific error this task is built to catch."
+     },
+     {
+      "id": "step_four_zero",
+      "statement": "Step 4 receives exactly 0, because a step that passed every criterion citing it carries no weight in a losing trajectory, and its 300 tokens do not earn it any blame."
+     },
+     {
+      "id": "length_normalisation",
+      "statement": "The answer divides by the step's token count and says why: without it the longest step absorbs the credit, which is the failure a per-step scheme exists to avoid."
+     },
+     {
+      "id": "arithmetic",
+      "statement": "The working shows -0.8 * (1000 * 0.8) / (400 * 1.5), which is -0.8 * 800 / 600 and so about -1.067."
+     }
+    ],
+    "pass_condition": "the extracted number is within the range and loser_inversion, step_four_zero and arithmetic all hold; length_normalisation is scored separately"
+   }
+  }
+ ],
+ "revision": "2026-10-26 (ADR-38 retrofit of the SKILL.md, ADR-35 the paper wins, plus ADR-40 items 5 and 6). Four changes. (1) Every task's `sections` was repointed at the five delta headings the retrofit left behind, because the five section names it had copied verbatim no longer exist. (2) Six anchors carried statements the papers do not support, all re-read in full on 2026-10-26: sipt-t1's evidence anchor claimed a consistent win across four task families and now carries the paper's own no-distillation ablation instead; sipt-t4's harness_logs anchor named a subscene-level labelling step the paper does not describe and omitted deduplication and evaluation-overlap screening, which is its first gate; sipt-t4's magnitude_and_scope anchor said the macro-average spans eleven benchmarks, which is ten, and did not carry the single-pass scope limit; sipt-t2's gate anchor and sipt-t6's dynamic and evidence anchors gained the thresholds the papers publish. Every one of these is strictly harder to satisfy than the anchor it replaces, because each now demands a number the old one did not. (3) sipt-t10 added: the closed-form step-advantage computation as a number_in_range check, which takes this suite from one hard check among eleven tasks to three among twelve. (4) Every rubric criterion gained a `certificate` and every rubric task an `exploit` with a ceiling of 0.0. No arm has ever run on this suite, so changing the task set breaks no pre-registration, and the registration in `policy` still precedes any measurement. `suite_version` stays 2, which is the format contract number tools/skill_eval.py reads and not a revision counter."
 }
