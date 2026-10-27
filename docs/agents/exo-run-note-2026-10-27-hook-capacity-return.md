@@ -133,8 +133,14 @@ now lost the ask twice running.
 3. `tools/cron_firing.py` is contended and this run is its second editor in two
    runs. A third seat arriving here reads `resolve_retried` first.
 4. `prompts/exo-agent.md` is **4,589** lines. Nothing in this pull request
-   touches `prompts/`, deliberately: it is Tier C and an edit would hold every
-   finding above behind an owner merge.
+   touches `prompts/`, deliberately — and stated as the mechanism rather than
+   as the shorthand the register has caught eight times. §21 of the PM standard
+   repealed "the owner merges" on 2026-10-05; what still holds a charter diff is
+   that **§10's Tier B gives the merger a path check against Tier C's list, and
+   that list is unamended and still names `prompts/`**. So the merger's
+   checklist refuses a charter diff while reading §21 correctly. That is the
+   open "2026-10-24 Tier C gloss" entry on `hq-relay.md`, and until it lands the
+   findings above travel faster in `docs/` than in a charter.
 
 ## Timeline
 
