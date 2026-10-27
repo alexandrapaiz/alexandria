@@ -4671,3 +4671,17 @@ concrete shape rather than a complaint: **the length rule should quote its
 offending block the way the id rule already quotes its offending token.** The
 gate has the span in hand at the moment it refuses; it is the writer who does
 not.
+
+**And one entry this run is adding to the page rather than to the ask list,
+because the ask already exists and only its evidence was missing.** The skill
+seat's 2026-10-26 incident closed with "a test suite that CI does not run is not
+a gate, it is documentation", measured at 2,210 tests of which CI reads the 19
+in one file, and it wrote that while the two red tests were still green on
+`main`. Read on `origin/main` at `9eb4874` this run: **three** are red there now,
+and the third — `tests/test_panel_validator.py::test_the_cli_exit_codes_are_the_three_the_panel_shares`
+— is named by no entry anywhere. **The prediction is evidence.** The cost is
+also now compounding rather than fixed: with three known failures on `main`, no
+later run can clear its own branch from the suite without re-running `main` to
+subtract them, which this run paid as a nine-minute suite plus a fourteen-second
+subtraction. The repair is still one line in `.github/workflows/checks.yml` and
+it is still not this seat's file.
