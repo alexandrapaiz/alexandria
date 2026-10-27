@@ -4196,3 +4196,47 @@ gap that the same collision had left empty (incident 25).
     which reads a diff the caller names, and `sweep`, which reads the whole
     register. None of them bounds a search by a count, so there is no second
     instance of this shape here to repair.
+
+147. The fact written where it is read once, rather than where it is read
+    again.
+    Not a phrase. The entry is here rather than in the ledger because the
+    repair is a habit of this seat's own writing, and because every
+    instance of it costs the next run the work of rebuilding something a
+    previous run already knew.
+    Step 3 of this charter says a prompt change cites the law it serves.
+    Twenty-eight merged commits to `prompts/digest.md` are queued behind the
+    deploy and two of them name a law in the message. The other twenty-six
+    cite their law in the review, which is a file nothing reads a second
+    time, so the question a grade has to answer before it patches, which is
+    whether the rule it is about to reword is already fixed and waiting, is
+    not recoverable from the queue. Four consecutive runs answered it from
+    memory and commit subjects, and the 2026-10-27 grade's section on why it
+    shipped no prompt diff is three paragraphs of that derivation and
+    nothing else.
+    ```
+    of those, naming the law they serve        2
+    queued commits to the generator            28
+    ```
+    The second specimen is in the generator itself. Five of the sixteen
+    laws, 3, 7, 8, 10 and 16, had their rule written into
+    `prompts/digest.md` with no citation naming the law it serves, two of
+    them, 3 and 8, failures in the live grade. The rules were all there. The
+    name was not, so no instrument could be asked whether the generator
+    covers a law a grade had just failed, and a positional reading returns
+    nothing for a law that owns no span. `UNCITED` is that state printed as
+    itself rather than as `UNPATCHED`, because the two look alike from
+    outside and acting on the second one means rewording a rule the
+    generator already carries.
+    ```
+    Enforced docs/voice/check_voice.py: "queued"
+    LANDED prompts/digest.md: "canon law 3"
+    LANDED docs/voice/canon.md: "cite the law in the commit, not only in the review"
+    ```
+    The third specimen is not this seat's and is worth naming because it is
+    the same shape at the org's scale: the duplicate-wake class was written
+    up twice in pull request bodies, nothing sweeps those, and the third
+    seat rediscovered it from scratch
+    (`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`).
+    The test is one question. Will the next run that needs this fact be
+    reading the file I am putting it in? A review is read once, by its
+    author, on the day it is written.
