@@ -98,10 +98,16 @@ STATUS = "approved"
 # has been fixed raises nothing at all, so the fix landing never turns anything
 # red; the constant is then simply spent, and deleting it is a one-line change
 # the gate's own `--json` output asks for.
-FRONTMATTER_QUARANTINE = {
-    "evaluation-integrity": "the skill seat's quoting fix, PR #621",
-    "skill-library-engineering": "the skill seat's quoting fix, PR #621",
-}
+# SPENT AND EMPTIED 2026-10-27. It held `evaluation-integrity` and
+# `skill-library-engineering`, both waiting on the skill seat's quoting fix. That
+# fix merged, both descriptions are quoted on main, and all nine skills now load
+# under PyYAML, so the two entries excused nothing. They were deleted the same
+# day rather than left to rot, which is the outcome the paragraph above was
+# written to produce and the first time it has been exercised:
+# `test_a_spent_quarantine_entry_asks_to_be_deleted` turned red on the merge that
+# brought the fix in, and this is what it asked for. An empty dict is the healthy
+# resting state, not a missing value.
+FRONTMATTER_QUARANTINE: dict[str, str] = {}
 FRONTMATTER_QUARANTINE_EXPIRES = "2026-11-03"
 
 
@@ -599,31 +605,41 @@ def waiting_problems(rows, problems) -> set[str]:
     return waiting
 
 
-def quarantined_problems(problems, today: str = "") -> set[str]:
+def quarantined_problems(problems, today: str = "", quarantine=None,
+                         expires: str = "") -> set[str]:
     """The frontmatter refusals `FRONTMATTER_QUARANTINE` holds open, if it still can.
 
     Same shape as `waiting_problems` above and for the same reason: a problem an
     excuse covers is printed and not blocked on. The difference is that this
     excuse has a date on it, so it expires rather than being argued with.
+
+    `quarantine` and `expires` default to the module constants and exist so the
+    mechanism stays testable once the live quarantine is empty, which it became
+    on 2026-10-27. A gate whose only test subject is the live data stops being
+    tested the day the live data is clean, and then the next seat to need the
+    excuse inherits an untested one.
     """
     import datetime
 
+    quarantine = FRONTMATTER_QUARANTINE if quarantine is None else quarantine
+    expires = expires or FRONTMATTER_QUARANTINE_EXPIRES
     today = today or datetime.date.today().isoformat()
-    if today >= FRONTMATTER_QUARANTINE_EXPIRES:
+    if today >= expires:
         return set()
     excused = set()
-    for slug in FRONTMATTER_QUARANTINE:
+    for slug in quarantine:
         marker = f"skills/{slug}/SKILL.md: "
         excused |= {p for p in problems
                     if p.startswith(marker) and "unquoted colon" in p}
     return excused
 
 
-def spent_quarantine(problems) -> list[str]:
+def spent_quarantine(problems, quarantine=None) -> list[str]:
     """The quarantine entries nothing needs any more, named so they get deleted."""
-    still_broken = {slug for slug in FRONTMATTER_QUARANTINE
+    quarantine = FRONTMATTER_QUARANTINE if quarantine is None else quarantine
+    still_broken = {slug for slug in quarantine
                     if any(p.startswith(f"skills/{slug}/SKILL.md: ") for p in problems)}
-    return sorted(set(FRONTMATTER_QUARANTINE) - still_broken)
+    return sorted(set(quarantine) - still_broken)
 
 
 def main(argv=None) -> int:

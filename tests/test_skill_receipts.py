@@ -542,13 +542,15 @@ def test_the_parser_and_pyyaml_agree_on_every_shipped_skill():
     every shipped SKILL.md, in both directions: no skill the loader refuses is
     passed by the parser, and no skill the loader accepts is refused by it.
 
-    Measured 2026-10-27: 9 of 9 agree, including the two the parser refuses.
-    `evaluation-integrity` and `skill-library-engineering` both carry an
-    unquoted colon in `description:` and PyYAML raises "mapping values are not
-    allowed here" on both, which is the defect FRONTMATTER_QUARANTINE holds
-    open. The agreement on the failures is the part worth having: it is what
-    makes the parser's verdict on a tree without PyYAML worth the same as the
-    loader's.
+    Measured twice on 2026-10-27, which is the part worth writing down. Before
+    merging `main`, 9 of 9 agreed and two of the nine were refusals:
+    `evaluation-integrity` and `skill-library-engineering` both carried an
+    unquoted colon in `description:` and PyYAML raised "mapping values are not
+    allowed here" on both. After merging, the skill seat's quoting fix is in and
+    9 of 9 agree with no refusals left. The agreement on the failures is the
+    reading that mattered, because agreeing about clean files is easy: it is
+    what makes the parser's verdict on a tree without PyYAML worth the same as
+    the loader's.
     """
     yaml = _yaml()
     registrar = _registrar()
@@ -588,13 +590,16 @@ def test_no_shipped_skill_hides_a_value_a_loader_would_refuse():
     assert [p for p in unreadable if p not in excused] == [], unreadable
 
 
-def test_the_frontmatter_quarantine_names_real_skills_and_expires():
-    """The excuse has a date and an address, and both are checked.
+def test_the_live_quarantine_holds_nothing_spent_and_nothing_fictional():
+    """The two things that can be wrong with the live constant, whatever is in it.
 
-    An excuse with no expiry is the state this repository keeps filing
-    incidents about. After the date, a quarantined skill blocks like any other,
-    so forgetting the constant costs a red gate with the slug in it rather than
-    silence.
+    This is the assertion over real data, and it is deliberately the smaller of
+    the two tests here. On 2026-10-27 it emptied the constant: it held
+    `evaluation-integrity` and `skill-library-engineering` waiting on the skill
+    seat's quoting fix, that fix merged, and both entries then excused nothing.
+    The gate asked for their deletion by going red, which is the whole design,
+    and an empty dict passes this test for the right reason rather than
+    vacuously, because the companion test below exercises the mechanism.
     """
     registrar = _registrar()
     for slug in registrar.FRONTMATTER_QUARANTINE:
@@ -603,26 +608,53 @@ def test_the_frontmatter_quarantine_names_real_skills_and_expires():
         )
 
     _rows, problems = registrar.read_skills()
-    assert registrar.quarantined_problems(problems, today="2026-10-27")
-    assert registrar.quarantined_problems(
-        problems, today=registrar.FRONTMATTER_QUARANTINE_EXPIRES) == set(), (
-        "the quarantine does not expire, so it is an excuse with no end"
+    assert registrar.spent_quarantine(problems) == [], (
+        "a quarantine entry is excusing nothing and is still in the constant. "
+        "Delete it: the defect it was holding open is fixed."
     )
 
 
-def test_a_spent_quarantine_entry_asks_to_be_deleted():
-    """And the other direction cannot rot either.
+def test_the_quarantine_mechanism_excuses_expires_and_reports_itself_spent():
+    """The mechanism, on a quarantine this test owns, so it survives an empty one.
 
-    When the skill seat's quoting fix lands, the entry excuses nothing. That
-    must not turn anything red, because the fix is the good outcome, so the
-    gate names the entry as spent instead.
+    The reason this is not run against the live constant is the defect it would
+    otherwise reintroduce. Until today the only subject these assertions had was
+    the live quarantine, so the day the quoting fix landed and the constant
+    emptied, the test asserting that an excuse actually excuses something had
+    nothing left to assert and failed. A gate tested only against live data
+    stops being tested the moment the live data is clean, and the next seat to
+    need the excuse inherits an untested one.
+
+    Three properties, which are the whole contract:
+    an excuse covers the refusal it names, it stops covering it on the expiry
+    date, and it reports itself spent once the refusal is gone.
     """
     registrar = _registrar()
-    assert registrar.spent_quarantine([]) == sorted(
-        registrar.FRONTMATTER_QUARANTINE), (
-        "a library with no refusals left should report every entry as spent"
+    fake = {"a-skill-that-needs-quoting": "a fix that has not landed, PR #0"}
+    expires = "2026-11-03"
+    refusal = ("skills/a-skill-that-needs-quoting/SKILL.md: `description:` holds "
+               "an unquoted colon, which YAML reads as a nested key")
+    unrelated = "skills/some-other-skill/SKILL.md: cites no claim ids"
+
+    excused = registrar.quarantined_problems(
+        [refusal, unrelated], today="2026-10-27", quarantine=fake, expires=expires)
+    assert excused == {refusal}, (
+        "the excuse has to cover the refusal it names and nothing else"
     )
-    _rows, problems = registrar.read_skills()
-    assert registrar.spent_quarantine(problems) == [], (
-        "a quarantine entry is excusing nothing and is still in the constant"
+
+    assert registrar.quarantined_problems(
+        [refusal], today=expires, quarantine=fake, expires=expires) == set(), (
+        "the quarantine does not expire, so it is an excuse with no end"
+    )
+    assert registrar.quarantined_problems(
+        [refusal], today="2026-12-25", quarantine=fake, expires=expires) == set(), (
+        "the quarantine came back to life after its expiry date"
+    )
+
+    assert registrar.spent_quarantine([refusal], quarantine=fake) == [], (
+        "an entry whose skill is still refused is not spent"
+    )
+    assert registrar.spent_quarantine([], quarantine=fake) == [
+        "a-skill-that-needs-quoting"], (
+        "a library with no refusals left should report every entry as spent"
     )
