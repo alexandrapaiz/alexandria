@@ -8404,3 +8404,122 @@ queue re-verification (§5) and the GitHub-home pass (§5b).
    alone still carries four successive rewrites of one detector inline. It is a
    weekly-cycle change and a wake run gets one improvement, which went to the
    register step because that one was producing a conflict tonight.
+
+## 2026-10-27, message wake (lane-next): the gate came due, and the instrument built for it was wrong
+
+**Mode: wake run.** Trigger `window:message`, a `pr.merged` event for this
+seat's own #630 with the instruction to continue with the next item in this
+seat's lane and say what was taken. Draft #641 opened on **turn 6**, inside the
+turn-ten deadline, before the charter was read past its banner. Nothing to
+supersede: no other `alexandria-exo/` pull request was open.
+
+**What was taken:** the duty-classes card, which is the only item in this
+seat's lane outside Review and Done, and which two previous runs reached and
+set down because no gate had come due. Two of its three gates have come due
+since.
+
+### The lesson, and it is about the shape of the week rather than the finding
+
+**Two runs did the right thing by setting this card down, and the cost of
+being right twice was that nobody ever came back on the day it mattered.**
+The 00:34Z run and the 15:10Z run both read the card, both checked the gates,
+both correctly found nothing due, and both spent their budget elsewhere. The
+charter has no mechanism that says "this card's gate opens at 16:30Z today",
+so the third run found it by reading the card again from scratch. That worked
+here because the lane is short. It is luck, not design: a gate with a date on
+it sits in a card body, which **cannot be edited** (below), and nothing in
+this org watches a date.
+
+The generalisation worth keeping: **a deferral is a promise with no owner.**
+"Not yet answerable, becomes answerable on 2026-10-26T16:30Z" was written
+carefully, twice, into a register and a card. Neither surface fires. The two
+remaining class-A dates, market on 2026-10-30T11:00Z and security on
+2026-11-01T13:00Z, are in the same position right now.
+
+### What the gate answered
+
+Research's slot fired **on time to the second**, the provider refused it at
+turn one with a 429, HQ's retry claimed the cron log and re-fired it as a hook
+two and a half hours later, that run recognised itself as the re-fired weekly
+slot, and it shipped PR #589, merged. Four mechanisms in series, every one of
+them previously unevidenced on that page. **The row answers "firing", and it
+answers it through a failure, which is stronger evidence than a clean fire.**
+
+### The finding, which is that the instrument disagreed
+
+`tools/cron_firing.py` was written one run earlier *for this slot* and
+reported it `LOST?`. Three defects, all of them only visible against a real
+retried slot:
+
+1. `resolve_shipped` bounds a cut run's window by the seat's **next run**, and
+   for a refused slot the next run **is the retry**. The one run whose output
+   belongs to the slot is the one run the window can never contain. #589 was
+   created sixty-six seconds past the bound, and the sixty-six seconds are
+   structural rather than lucky.
+2. A retry successor's `pr=-` was read as `silent`. The writer's re-fire of
+   its own 16:00Z slot exited 0 after **124 turns** with `pr=-`, having opened
+   #591 on a branch named `2026-10-26-hook-refired-slot`. The host scrapes the
+   url out of a run's final answer and a long run can simply not be scraped.
+3. The `LOST?` line said "Pass `--prs` to settle it" **unconditionally**, so a
+   reader who had passed it was sent back to the step they had just taken.
+
+Fixed by joining through `capacity-retry.json` on the log filename, as a new
+`retried` state that does not set the exit code. Re-reading 2026-10-24 to
+2026-10-26 moves **seven** slots out of `lost`. 12 new tests, 65 pass.
+
+**The transferable rule, and this page has now recorded it three times.** A
+mechanical check inherits the vocabulary of the artifact its author happened
+to be reading. The sweep that missed `sec/` was written by an author reading
+host-era branches. This one was written by an author reading refused runs that
+had not been retried — which was every refused run they had, because the claim
+list and the log tree are two files and nothing joined them. **An instrument
+built from one week's failures encodes that week's recovery paths as the only
+ones.** The retry had rescued nineteen cron slots across the portfolio before
+this tool existed, and the tool scored every one of them as a lost cycle.
+
+### And a correction to an incident, because its remedy was a call that does not exist
+
+A board card's **body is immutable**: the board answers `PATCH`, `PUT` and
+`DELETE` with `501` before routing, probed this run against a non-existent id
+so the probe could not mutate anything, and `tools/board.py` exposes no update
+route. `INC-2026-10-25-...` recorded two runs as having "neither rewrote the
+body". Neither could. The comment thread is not a workaround; it is the only
+writable surface, so the 2026-10-25 correction went to the only place
+available.
+
+**An incident that assigns a cause should name the call it expected and check
+that the call exists.** That entry inferred negligence from an absence, which
+is the inference its own subject warns about: a 404 is not evidence about a
+permission, and a missing edit is not evidence about an intention.
+
+### The standing duties, done
+
+- **Failure sweep (§2b).** Four cap kills in thirty-seven minutes overnight,
+  every one at exactly `cap + 1`, the cut-mid-work signature: `ursa-skill` 151
+  of 150, `alexandria-skill` 181 of 180, `ursa-security` 151 of 150,
+  `ursa-exo` 151 of 150. Three of the four are `ursa` seats still capped at
+  150. Four more runs ended `timeout` between 01:03:55Z and 01:04:25Z across
+  four seats in three companies, which is a window rather than four faults.
+  Today's cron reading is all `unseen` and that is correct: at the time of
+  reading no slot of the day had come due yet.
+- **Outstanding with HQ (§3f).** Re-read, not quoted forward. **The writer's
+  cap landed at 225** after eight days open — the row that carried a measured
+  cost is the row that landed. One entry of eight is open: unshallowing the
+  host clone, now **nine days**, `--depth 1` on **81 of 81** clones today. And
+  a fifth state proposed for that page: a landed ask has never been tested for
+  whether any instrument here can *see* the mechanism work, and the retry row
+  would have failed that from the day it landed.
+- **Class C proceeded** on the owner's silence, which expired 2026-10-26T22:15Z.
+  The ask went to the writer seat as a message rather than as an edit to the
+  writer's charter, because `prompts/` is Tier C and an edit there would have
+  held this whole pull request behind an owner merge.
+
+### Still owed, and not shipped by this run
+
+1. **The charter split.** `prompts/exo-agent.md` is **4,537** lines. A weekly
+   change; a wake run gets one improvement and it went to the tool.
+2. **Class B** still waits on the owner's word. Fifteen wakes deep now.
+3. **Nothing watches the two remaining class-A dates.** 2026-10-30T11:00Z and
+   2026-11-01T13:00Z are promises with no owner, exactly as 2026-10-26T16:30Z
+   was until this run happened to look.
+4. **`docs/standards/pm.md`** still unvendored, routed by the centralizer.
