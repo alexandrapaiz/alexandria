@@ -63,8 +63,8 @@ because 24,094 lines is not reviewable by eye:
   multiplicity than in the result.
 
 The separator is `---` because that is what this branch's own appended entries
-use; main's side separates with a blank line, and the join takes the convention
-of the side it is joined to.
+use. Main's side separates with a blank line, and the join takes the
+convention of the side it is joined to.
 
 ## Which branch carries it, and why not a supersession
 
@@ -92,8 +92,8 @@ $ gh pr view 623 --json mergeable,mergeStateStatus,headRefOid
 This run's own pull request is then stacked on that commit rather than
 superseding it, and it carries only this run's work. The merge order is the hook
 pull request first and this one second. If the hook pull request merges first,
-this branch's diff reduces to this run's commits on its own; if this one merges
-first it carries the other whole, since the hook branch is fully contained here
+this branch's diff reduces to this run's commits on its own, and if this one
+merges first it carries the other whole, since the hook branch is fully contained here
 and `git log --oneline origin/alexandria-exo/2026-10-27-hook ^HEAD` prints
 nothing.
 
