@@ -23041,3 +23041,128 @@ has nothing to go red against.
 - Whose call: done, this seat, on the rule. The engineer for the two routes.
 - Cost: $0.
 - Status: built
+
+### 2026-10-27 - Six third-party packages are imported by this repository's Python and declared in neither requirements file (engineer seat, message run)
+- Trigger: today's build added `pyyaml` to `requirements-dev.txt` because a gate
+  that imported it had been answering about a tree it never parsed. Before
+  writing the line this run asked how big the class was, by walking every
+  `import` in `tools/`, `tests/`, `pipeline/`, `mcp/` and
+  `skills/_validation/` with `ast` and subtracting the standard library, this
+  repository's own module names, and everything the two requirements files
+  declare. Twelve third-party packages are imported. Six are declared:
+  `fastapi`, `httpx`, `jwt` (as `pyjwt`), `markdown`, `pytest`, and `modal` in
+  `requirements.txt`. Six are not: `fastmcp`, `feedparser`, `psycopg`,
+  `sentence_transformers`, `tiktoken`, and `yaml`, which this run closed.
+- What: the five that remain are not a bug, and that is exactly why they are
+  worth a gate. Most of them are deliberate, because `requirements-dev.txt`
+  says in its own first line that it is "not shipped to Modal" and the runtime
+  image pins its own versions in `mcp/server.py`, so `psycopg` and
+  `sentence_transformers` belong to the image and not to a local checkout. The
+  problem is that the split lives in a comment, so the file cannot tell a
+  package that is deliberately absent from one that was forgotten. `pyyaml` was
+  forgotten and looked exactly like the other five for weeks. The ask is a test
+  that writes the split down: every third-party import is in exactly one of two
+  named sets, image-only or local-check, and an import in neither fails with
+  the module and the file that imports it. Then the next forgotten package
+  fails on the pull request that imports it rather than on the day somebody
+  runs a gate on a clean host.
+- First step: `tests/test_dependency_declaration.py`, with the two sets as
+  literals and the `ast` walk this run already wrote as the body. It needs no
+  network and no database, which is most of why it is worth having now: it is
+  one of the few checks that still runs with the Modal workspace off.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-27 - The quarantine has one expiry date for every entry it will ever hold, and Trivy shows the per-entry version (engineer seat, message run, craft scan)
+- Trigger: today's craft scan, below, read against the constant this run
+  emptied. `FRONTMATTER_QUARANTINE` is a dict of entries and
+  `FRONTMATTER_QUARANTINE_EXPIRES` is a single string beside it, so the date is
+  a property of the mechanism rather than of the excuse. The two entries it
+  held were added the same day and expired together, which hid the defect
+  completely.
+- What: the second entry somebody adds inherits the first one's deadline. Add an
+  entry on 2026-11-01 to a quarantine whose date is 2026-11-03 and it gets two
+  days, silently, and nothing in the gate's output says so. Worse in the other
+  direction: extend the shared date to give a new entry its week and every older
+  entry is quietly resurrected for the same week. The fix is to move the date
+  into the entry, so the value becomes a reason and a date rather than a bare
+  string, and the gate's message names the entry that expired rather than the
+  constant.
+- First step: change the dict's value to a two-field record, keep
+  `FRONTMATTER_QUARANTINE_EXPIRES` as the default for an entry that omits one,
+  and extend `test_the_quarantine_mechanism_excuses_expires_and_reports_itself_spent`
+  with a second fake entry on a different date. The test already takes its
+  quarantine as an argument, which this run did for a different reason, so the
+  two-date case costs one more literal.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-27 - A conflict in the ledger or the incident register must never be located by searching for its marker, and that belongs in the charters (engineer seat, message run)
+- Trigger: this run's own near-miss, filed as
+  `INC-2026-10-27-a-conflict-resolver-matched-a-marker-the-register-quotes-in-its-own-prose`.
+  Resolving an append-anchor conflict in `docs/ideas.md` with a script that
+  found the conflict by `s.index('<<<<<<< HEAD')` deleted ten thousand lines of
+  good prose, because the first occurrence of that string in the file is line
+  11651, inside a ledger entry that quotes the marker while describing the
+  2026-10-18 incident about committed markers. It was caught one command later
+  by the charter's own step-zero grep and nothing shipped wrong.
+- What: every seat's charter already carries the step-zero grep, which catches a
+  marker that got committed. None of them says anything about how to find a
+  conflict in the first place, and these two files are the ones every seat
+  appends to, so they are where the conflict always is. They are also the two
+  files that accumulate quotations of markers over time, by design, because
+  recording marker incidents is what the register is for. So the hazard grows
+  with every entry. The proposal is one clause in the "Check the register before
+  you ship" section of each charter: in `docs/ideas.md` and
+  `docs/agents/incidents.md`, locate a conflict with `git diff
+  --diff-filter=U` and the line numbers git already printed, never with a
+  search for the marker text.
+- Why it is a proposal and not a diff: charters are edited only by the owner's
+  merge and this seat's charter forbids including a charter edit in its daily
+  pull request, so the clause is written out here for whoever carries it. It is
+  also not code, deliberately: the resolver is something a seat writes fresh
+  every time it merges rather than a committed tool, which is why the rule has
+  to live somewhere a seat reads before merging.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-27 - Craft scan: Trivy gives a suppression an expiry date and says out loud that it never parses the reason, where ESLint and mypy report a spent one and ship both checks off by default (engineer seat, message run)
+- Trigger: the daily craft scan, pointed at this run's own build. The work was
+  an excuse with a date on it that reports itself spent, so the scan went to the
+  products that already have that mechanism as a first-class feature. Three read
+  live on 2026-10-27:
+  [Trivy's filtering docs](https://trivy.dev/latest/docs/configuration/filtering/),
+  [ESLint's CLI reference](https://eslint.org/docs/latest/use/command-line-interface),
+  and [mypy's config file reference](https://mypy.readthedocs.io/en/stable/config_file.html).
+  None is in `docs/market/landscape.md` and none is a competitor. They are the
+  nearest products in the world with the same problem.
+- **What is worth stealing**, and it is one sentence in Trivy's docs. A
+  `.trivyignore.yaml` entry has three fields, and they are `id`, `expired_at`
+  as a `yyyy-mm-dd` date, and `statement`, whose documented description ends
+  "(This field is not used for filtering.)" That parenthesis is the steal. It
+  tells a reader that the machine reads the id and the date and nothing else,
+  so the prose is for humans and no later version will start depending on its
+  wording. The expiry is also per entry rather than per file, with "If
+  `expired_at` is not set, the ignore finding is always valid" as the documented
+  default, which is the defect filed as a separate entry above: this
+  repository's quarantine has one date for the whole dict.
+- **What alexandria does better**, measured against the other two rather than
+  asserted. ESLint's `--report-unused-disable-directives` reports a
+  `// eslint-disable-line` "when no errors would have been reported on that line
+  anyway", and mypy's `warn_unused_ignores` "Warns about unneeded
+  `# type: ignore` comments." Both are the spent-excuse check, both are older
+  and better engineered than anything here, and both are **off unless you turn
+  them on**: the ESLint flag is opt-in on the command line and mypy's option
+  defaults to `False`. So in the configuration most projects actually run, a
+  suppression that has stopped suppressing anything is invisible, which is the
+  rot rather than the remedy. Trivy, for its part, expires an entry and never
+  tells you the entry had become pointless before it expired. This repository's
+  gate has both halves, has them on with no way to turn them off, and makes the
+  spent half a red gate that names the entry and asks for its deletion rather
+  than a warning that accumulates. That is not a better idea than theirs. It is
+  the same idea with the default the other way round, and the default is the
+  whole difference between a mechanism and a habit.
+- The evidence it works: the spent half fired for real today, within a day of
+  being written, on the merge that brought the skill seat's quoting fix in.
+- Cost: $0
+- Status: proposed
