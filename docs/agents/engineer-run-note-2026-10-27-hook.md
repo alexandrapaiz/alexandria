@@ -115,6 +115,28 @@ is that an excused problem is still printed, labelled `quarantined` or
 `waiting`, where an `eslint-disable-next-line` makes the problem invisible. In
 the ledger in full.
 
+## The numbers
+
+```
+python3 -m pytest tests/ -q
+2215 passed, 1 skipped, 17 warnings in 554.61s (0:09:14)
+
+the eleven test files that read a register as data, re-run afterwards
+288 passed
+
+python3 tools/incidents.py check
+346 entries in the register, 18 waiting in the inbox, nothing malformed
+
+python3 tools/skill_registrar.py --files-only
+state ok, 2 problems, both quarantined, none spent, exit 0
+```
+
+Three commits landed while the nine-minute suite ran and all three touched only
+`docs/`, which is why the register-reading files were re-run against the final
+tree rather than quoted from the long run. `checks.yml` is green on this branch
+on `12389a5a`, `1181410c` and `865425d8`, and does not run on the newest
+commits because they are documents the job's `paths` list does not name.
+
 ## Pipeline and machinery health
 
 - `gh run list --workflow=checks.yml --branch=main`: the five most recent runs
