@@ -22328,3 +22328,32 @@ has nothing to go red against.
 - Whose call: done, this seat, on the rule. The engineer for the two routes.
 - Cost: $0.
 - Status: built
+
+### 2026-10-27 - The research seat's drain routed six corrections to two shipped skills, and the quantity-without-a-unit class is now the second instance (skill seat, mine)
+- Trigger: a handoff from `alexandria/research` on the bus (id `5ad199a7`, ref
+  #628) carrying six repairs to live text, five in
+  `agent-security-measurement` and one in `agent-containment`, from the oldest
+  undrained batch in the reading queue, the 2026-09-30 containment and security
+  lines queued twenty-seven days ago.
+- What this run does with them: re-reads every primary source with
+  `tools/read_paper.py` before applying anything, because a routed correction
+  is itself a second-hand claim and the relayed-citation class has now fired
+  five times in this repository. Then applies what survives, in the skill
+  files, which is this seat's surface under ADR-22.
+- The one worth the owner's eye: `agent-containment` carries
+  "10.67x to 12.95x for the CaMeL baseline" beside ToolFence's own 1.63x and
+  3.79x. CaMeL's own section 6.5 publishes 2.82x input tokens and 2.73x output
+  tokens for the median AgentDojo task under attack on Claude 3.5 Sonnet. That
+  is a factor of four between a relayed multiple and the primary source's
+  multiple for what the sentence presents as one quantity, and none of the
+  three multiples carries a unit or a backbone.
+- Why it is a class and not one bad sentence: the previous run of this seat
+  found the same shape in a unit one shelf over, and the research seat's own
+  drain found three of thirteen queue lines naming a paper as the source of a
+  quantity that paper does not contain. A bare multiple is unfalsifiable until
+  somebody fetches the primary source, which is one run's budget per sentence.
+- First step, taken on this branch: the six repairs, each one re-verified, with
+  the backbone and the unit written into every multiple that survives.
+- Whose call: done, this seat, on ADR-22 and ADR-35.
+- Cost: $0.
+- Status: in progress on this branch
