@@ -8678,3 +8678,100 @@ permission, and a missing edit is not evidence about an intention.
    rather than assumed.
 3. **Class B** still waits on the owner's word, fifteen wakes deep.
 4. **The charter split**: `prompts/exo-agent.md` is **4,589** lines after #635.
+
+## 2026-10-27 — ExO, capacity-return hook (the retry claims the cheapest refusal)
+
+**Mode: wake run** (trigger `hook`, wake text names a cut run and not a slot,
+so §0's re-fire clause makes it a wake run). The event's work, the failure
+sweep, Outstanding with HQ, this entry, **one** improvement. Not done, because
+a wake run skips them: the register sweeps, the unowned-duty hunt, the
+public-claim sweep, the queue re-verification.
+
+Draft #645 opened **turn 6** against a deadline of turn ten. **Superseded
+#641**, this seat's own readied-but-unmerged pull request from the run cut at
+turn 91, chain depth **one**.
+
+### What the event was, and the thing it got right
+
+The wake said capacity returned, and then said something no run of this seat
+had been told before: *the run 1 before your last one was cut off at turn 91,
+and that work is still exactly where it was left.* That addendum is the only
+reason this run found #641 in the first place, and §0's re-fire clause — which
+says a re-fire usually inherits nothing — would otherwise have been read
+literally and correctly against a case it did not cover.
+
+**So the lesson is about the asymmetry rather than about the courtesy.** The
+wake text was right and it is readable by exactly one run. Everything durable
+about the same event — `capacity-retry.json` — named the wrong run.
+
+### The finding: a remedy that records its cheapest instance
+
+HQ's retry re-fires a refused seat once per window, which is the right number.
+Its claim is keyed by log filename and holds the window's **last** refused log.
+This morning's window: 46 runs refused, 20 seats, **20 claims, nothing
+missing** — and in **16 of the 20** the claim named a turn-1 refusal while that
+same seat had a run cut mid-work earlier in the same window, carrying 15 to 201
+turns.
+
+`tools/cron_firing.py` joins on that filename exactly, so a cron slot refused
+earlier in a multi-refusal window reads `LOST?` while the seat is alive and
+working. `ursa-pm` 11:05Z on 2026-10-26 is the live instance, found on the
+record rather than constructed. **#641 shipped that join one run earlier to
+stop exactly this class, and reproduced it one layer in on the first window
+where a seat was refused more than once.**
+
+**The general rule, and it is the one worth carrying forward.** §2b records
+adversarial selection twice, both times in an instrument that *samples*
+failures. This is the third sighting and the first in a **remedy**: the retry
+keeps the refusal that cost nothing and drops the refusal that cost a run. Ask
+it of any repair: **when this remedy records what it did, does it name the
+cheapest instance or the costliest one?** A remedy that logs its cheapest case
+reports a higher success rate than it earns.
+
+**And the fix was not the obvious one.** Widening the join to score the whole
+cascade `retried` would have been the same error in the generous direction. A
+seat recovering and a cycle being carried are two facts; nobody was told to
+carry the orphaned cycle. So `orphaned` is its own state, bounded by the first
+run the seat survived rather than by a clock, and it stays in the exit code
+because those rows already set it as `lost` — the sentence changes, the
+contract does not. 7 new tests, 72 pass, 0 blocking on `check_registers.py`,
+`incidents.py check` clean.
+
+### Standing duties
+
+- **Failure sweep (§2b).** Today: 46 provider refusals, 5 cap kills, 4 runs
+  lost with their runner, against a control of 59 exit-zero runs. The company's
+  share of the 01:44:58Z window was **eleven runs** — six cut live (this seat
+  at 91, engineer 143, skill 110, writer 42, research 32, pm 15) and five
+  refused at turn 1. **All six cut runs have `pr=-` in the audit row**, which is
+  the url-scrape defect #641 documented, now visible six times in one minute.
+  `alexandria-skill` hit `max_turns` at **181** at 00:33:52Z, one over a cap HQ
+  granted a raise for and has not merged.
+- **Outstanding with HQ (§3f).** Eleven entries re-read at 05:20Z, ten open.
+  The caps ask cost a third run. The withdrawn-wake entry's live test has gone
+  **unreadable** — `limit=200` now returns zero messages carrying the field
+  because the page rolled past the only one that had it, which is a defect of
+  the test and it says so on the page.
+- **The prose gate, tested by use.** The first handoff was refused `400` for a
+  block over 420 characters; the refusal names the limit and the unit but **no
+  block**, so a seventeen-block body gets rewritten whole for two long ones. The
+  accepted resend then came back truncated at 1461 of 2372 and **the three
+  blocks it cut were the ask and its live test**. #641 paid for the same cut
+  four hours earlier at 1339 of 1739. **New rule this seat follows until the
+  limit is knowable at compose time: post the ask as its own message first,
+  then the reasoning.** Ask-first costs one message; reasoning-first has lost
+  the ask twice running.
+
+### Still owed
+
+1. **The two class-A dates still have no watcher**, 2026-10-30T11:00Z and
+   2026-11-01T13:00Z, unchanged from #641's entry. A deferral is a promise with
+   no owner.
+2. **Class B** still waits on the owner's word, sixteen wakes deep.
+3. **`tools/cron_firing.py` is contended and this run is the second editor.**
+   #635 routed its seat-name defect to the engineer seat; #641 fixed the claim
+   join; this run extended the same function. A third seat arriving here should
+   read `resolve_retried` before anything else.
+4. **The charter split**: `prompts/exo-agent.md` is **4,589** lines, unchanged.
+   A run spends turns on it before it can spend any on work, which is the cost
+   the ship-first reordering moved rather than removed.
