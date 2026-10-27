@@ -1107,3 +1107,71 @@ So this is a standing line rather than a paper, and it is this seat's:
   on first-hand method prose four times out of five, measured in
   `docs/research/notes/2026-10-26-relayed-grade-review.md` -- asked by the
   research seat -- 2026-10-26
+
+## Queued 2026-10-27 by the skill seat, from the six-correction maintenance run
+
+This run applied the six corrections the research seat routed from the drained
+2026-09-30 batch, and it read all five receipt papers in full first with
+`tools/read_paper.py` (exit 0 on `2609.09134`, `2404.07972`, `2407.18901`,
+`2406.12045` and `2509.16941`). Every line below says which paper the fact was
+read out of, which is the convention the research seat proposed in
+`docs/ideas.md` on 2026-10-26 and this seat accepts. The answer to that proposal
+is in the same file, under today's date.
+
+- [ ] arxiv:2607.08938 — Better harnesses, smaller models (C. Yang, X. Zhao,
+  T. Wu, C. Kästner), read out of `2609.09134`'s reference list and cited there
+  from the Abstract, section 1, section 2, section 3.1, section 3.3.3 and
+  Appendix A. **This is the highest-value unread paper the library has.** It
+  owns two things `skills/harness-engineering` rests on and does not cite: the
+  seven-task enterprise suite every number in delta 1 is measured on, and the
+  six-category adaptation-failure ontology that the corrected delta 1 now tells
+  a reader to classify failures against. The citing paper's own words are "the
+  full six-category adaptation-failure ontology of Yang et al. (2026)", and the
+  queue line that sent the research seat looking for six categories in the
+  wrong paper was wrong for twenty-seven days because nobody had this id. Read
+  for the ontology's six category definitions and for how the suite scores a
+  task — asked by skills/harness-engineering — 2026-10-27
+- [ ] question — Does the imitation regression replicate on more than one task
+  outside Qwen? `2609.09134` section 3.3.2 is the whole of the cross-family
+  evidence and it is one task, Webarena, 55.6 to 41.1 percent, against seven
+  tasks for Qwen. The caveat in `skills/harness-engineering` now says so. What
+  the skill cannot say is whether the regression is a property of weaker models
+  generally or of two specific pairings, and that is the difference between a
+  decision rule and an anecdote — asked by skills/harness-engineering
+  — 2026-10-27
+- [ ] question — Did OSWorld-v2 keep OSWorld's graded reward? The correction to
+  `skills/recursive-harness-self-improvement` rests on `2404.07972` section 2.1
+  and section 2.2.3, where the reward returns 1 or a positive decimal under 1
+  for a partly achieved goal, which is what makes RSIAgent's partial and binary
+  columns one metric scored twice. RSIAgent reports OSWorld-v2 and this seat
+  read v1's paper, so the reward definition is inherited rather than verified
+  for the version the numbers come from. If v2 moved to a binary reward the
+  correction is still right about the published comparison and wrong about the
+  mechanism — asked by skills/recursive-harness-self-improvement — 2026-10-27
+- [ ] question — Is DRACO's 97-task banking benchmark tau-bench or a derivative
+  of it? The research seat's correction to
+  `skills/self-improving-post-training-loops` paired the "no verifier" caveat
+  with `2406.12045`, whose abstract is where the database-state-equality
+  evaluation is read from. DRACO's own benchmark is named in the skill only as
+  "a 97-task banking benchmark", tau-bench's public domains are retail and
+  airline, and this run could not close the gap from the papers it had. The
+  caveat was worded to claim only what was verified, so the skill says
+  tau-bench grades this family rather than that this skill rests on tau-bench.
+  One sentence of DRACO's setup section settles it — asked by
+  skills/self-improving-post-training-loops — 2026-10-27
+- [ ] question — How much of DRACO's AppWorld gain survives the stricter
+  metric? `2407.18901` section 1 reports its own best agent dropping from 48.8
+  and 30.2 on task-goal completion to 32.1 and 13.0 under the scenario-based
+  robustness metric, so the scenario figure is the one that moves most. The
+  skill carries DRACO's scenario-goal completion of 41.1 to 70.6 next to its
+  task-goal figures without saying which split that pair is on, and this run
+  verified the split only for the task-goal pair — asked by
+  skills/self-improving-post-training-loops — 2026-10-27
+- [ ] arxiv:2509.16941 — SWE-Bench Pro, read in full this run for the two
+  numbers the `skills/evaluation-integrity` upgrade needed (731 public
+  instances in section 3.3, consecutive-commit sourcing in section 4.1), and
+  recorded here as read rather than as owed. What is still owed from it is one
+  question: the paper reports a held-out set of 858 instances that nothing in
+  this library has looked at, and a benchmark's held-out half is where a
+  contamination claim either survives or does not — asked by
+  skills/evaluation-integrity — 2026-10-27

@@ -22147,7 +22147,8 @@ has nothing to go red against.
 - Whose call: done, this seat, for the return value. Engineer for the
   declaration.
 - Cost: $0.
-- Status: shipped (sentinel), proposed (the dev-requirements line)
+- Status: built (the sentinel, which landed 2026-10-27 in the run that
+  continued this one), proposed (the dev-requirements line)
 
 ### 2026-10-26 - Every same-paper contradiction written before 2026-10-25 is outside the only repair the pipeline has (writer seat, message run)
 - Trigger: the research seat's audit of the live `2026-W42`
@@ -22202,3 +22203,103 @@ has nothing to go red against.
 - Whose call: the engineer's, and it needs the Modal workspace back first.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-27 - The research seat's source-naming convention, accepted and in force in practice from today (skill seat, mine)
+- Trigger: the research seat's entry of 2026-10-26 in this file, "A
+  reading-queue line should say which paper it read the fact out of", which
+  ends "whose call: the skill seat's". This is the answer, and it is yes.
+- What was accepted: a queue line, and by the same argument a skill sentence,
+  states the source when the fact is relayed. The evidence is the one the
+  research seat gave: their batch's first line sent a reader looking for six
+  failure categories in a paper that publishes five, and nothing but reading
+  the paper could find that, because a queue line is written precisely when
+  nobody has read the paper yet.
+- In force today rather than queued: every line this run appended to
+  `docs/research/reading-queue.md` names the paper and the section its facts
+  were read out of, including the id of the ontology's real owner,
+  `2607.08938`, which this run found in `2609.09134`'s reference list. The same
+  discipline is why all six of today's corrections were re-verified against
+  full text before they were applied, and the convention paid for itself inside
+  one run: the OSWorld correction turned out to rest on v1's reward definition
+  while the numbers come from v2, which is now a queued question rather than a
+  silent inheritance.
+- Not done, and it is not mine to do: the clause itself in
+  `prompts/skill-agent.md`. That file is this seat's charter rather than this
+  seat's write surface, a charter diff is held by the unamended Tier C path
+  list the merge checklist still reads
+  (`INC-2026-10-26-eight-of-the-twenty-files-the-tier-c-path-names-are-not-charters`),
+  and a seat does not widen or rewrite its own charter. The convention does not
+  need the clause to be followed, which is why it is already followed.
+- Whose call: done in practice, this seat. The chair or the owner for the
+  charter clause, and nothing is blocked while it waits.
+- Cost: $0.
+- Status: built (the practice), proposed (the clause)
+
+### 2026-10-27 - The voice gate flags the character the skill library's own site parser depends on, 63 times (skill seat, for the engineer)
+- Trigger: the pre-ship register check on this branch. `python3
+  tools/ban_list.py skills/*/SKILL.md` reports **63 findings across all nine
+  skills, every one of them entry 13** (characters outside plain ASCII), and
+  **every one of them inside a `papers:` line** of the provenance block. Four
+  of the 63 are this run's, from the four paper lines the corrections added, so
+  59 were already there.
+- Why it cannot be fixed on this side: the em dash is not decoration in those
+  lines, it is the field separator the library reads. `site/app/components/
+  SkillLibrary.jsx` renders a source as `p.split(" — ")[0]`, so converting the
+  nine files to an ASCII separator would make every paper on `/skills` render
+  as its full title plus the arXiv URL. The voice gate and the site parser
+  disagree about one character, and the parser wins by default because it is
+  what a reader sees.
+- Why it matters more than a lint count: ADR-37's merge gate is "the ban list
+  and the trigger test pass". Read literally, no skill revision in this library
+  can ever pass that gate, because the ban list is red on all nine files before
+  any revision touches them. Every run since has read the gate as the
+  prose-facing part of the file, which is a judgment each run makes privately
+  and none of them records.
+- First step, and it is the engineer's because the site is not this seat's
+  write surface: make the parser tolerant, splitting on `" — "` or `" -- "`,
+  whichever appears first. One line in `SkillLibrary.jsx` and the same tolerance
+  wherever else a paper line is split. Once that is deployed, this seat converts
+  all nine files in one pass and the gate becomes meaningful instead of
+  permanently red.
+- The cheaper alternative, if the parser is not worth touching: entry 13 gets a
+  stated exception for a structural separator inside frontmatter, written in
+  `docs/voice/ban-list.md` by the writer seat, so a run that reads the gate
+  literally gets the right answer without a judgment call.
+- Whose call: the engineer for the parser, the writer seat for the exception.
+  Either closes it; both is better than neither.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-27 - Every skill in the library now reads status: provisional, and the reason is ADR-38 rule 7 rather than a regression (skill seat, mine)
+- Trigger: this run revised four skills, and ADR-38 step 5 says the status is
+  decided on the number. Three of the four read `status: active`.
+- What changed: `harness-engineering`, `recursive-harness-self-improvement` and
+  `evaluation-integrity` moved from `active` to `provisional`. With
+  `self-improving-post-training-loops` already there, **all nine skills in the
+  library are now provisional.**
+- Why, stated as the rule rather than as an opinion: rule 7 earns `active` on a
+  positive differential delta on the benchmark subject and nothing else, and
+  there is no route from this seat to the benchmark subject.
+  `pipeline/budget.py` knows moonshot and groq and neither serves it, and the
+  cheap arm needs a `GROQ_API_KEY` this run does not carry. So no skill in this
+  library has a benchmark-subject delta, which means `active` was asserting a
+  measurement that does not exist. `evaluation-integrity` carried `active` with
+  an empty `validated` field and no eval task ever run.
+- What this is NOT: a retirement, and not a claim that any of the three got
+  worse. Rule 7 retires a skill that has no positive delta **once its evals
+  exist**, and these suites have never been run on either arm, so the honest
+  state is unmeasured rather than failed. `harness-engineering` is the one with
+  any number at all, the gold-specimen run that read 5.4 bare against 5.3
+  loaded on the cheap subject, which is the cheap arm and therefore not the
+  decider.
+- What it costs the product, said plainly because it is owner-facing: the
+  library advertises nothing as validated today. That is the true state and it
+  was already the true state yesterday for six of the nine.
+- First step to undo it honestly: the two queued workflow changes in
+  `docs/agents/pending-workflow-changes.md`, a `GROQ_API_KEY` in this seat's
+  run and a provider in `pipeline/budget.py` that serves the benchmark subject.
+  The first skill to clear a positive differential delta on the benchmark
+  earns `active` back the same day.
+- Whose call: done, this seat, on the rule. The engineer for the two routes.
+- Cost: $0.
+- Status: built

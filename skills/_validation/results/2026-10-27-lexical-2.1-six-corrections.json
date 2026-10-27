@@ -41,7 +41,7 @@
     },
     "self-improving-post-training-loops": {
       "path": "skills/self-improving-post-training-loops/SKILL.md",
-      "sha256": "472560d7db7e11e2"
+      "sha256": "ed48e6e264633e54"
     },
     "skill-library-engineering": {
       "path": "skills/skill-library-engineering/SKILL.md",
@@ -1962,7 +1962,7 @@
     {
       "skill": "self-improving-post-training-loops",
       "source": "skills/self-improving-post-training-loops/triggers.json",
-      "skill_sha256": "472560d7db7e11e2",
+      "skill_sha256": "ed48e6e264633e54",
       "suite_version": 1,
       "cases": [
         {
