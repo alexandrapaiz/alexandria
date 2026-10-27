@@ -41,10 +41,37 @@ files in `tests/` are pinned as run by no workflow, counted off `UNCOVERED`
 rather than estimated, and two of the sixty-four are the gate against exactly
 this and the file it just caught.
 
+**And the repair found the larger half.** Moving the block restores a path, so
+the next question is whether the path runs, and for this file it did not.
+`tests/conftest.py` installs the Modal stub for the whole suite and only pytest
+loads a conftest, while `modal` is declared in `requirements.txt`, which
+`checks.yml` never installs: it installs `tiktoken` and `requirements-dev.txt`
+and nothing else. So any test file whose module-level code imports a `pipeline/`
+module reaches `import modal` with nothing standing in for it. The repository's
+answer is the in-file guarded stub that `conftest.py`'s own docstring says is
+left in place on purpose, because a file documenting a direct run "still has to
+work with no conftest involved". Nothing checked that it did. Thirteen files
+carry a runner block and two could not execute it: `test_arxiv_window.py` had no
+stub at all, so the seven tests freed above were freed into a traceback, and
+`test_triage_planner.py` had one spelled as nested namespaces exactly as deep as
+`pipeline/triage.py` chained on the day it was written, so a later
+`add_local_file` in that pipeline broke a test file that never changed. Both
+failed at import, which means a direct run printed a traceback rather than a
+wrong pass, and the suite stayed green throughout because pytest never takes
+that path.
+
 **The fix, or why there is not one yet.** The runner block in
 `tests/test_arxiv_window.py` moved to the end of the file, which is the same
 repair the 2026-10-14 entry applied to the two files it found, and
-`test_ci_coverage.py` is green again. The half that is not fixed is the reach of
+`test_ci_coverage.py` is green again. Both stubs are now spelled as the
+self-returning image idiom `conftest.py` and `test_email_template.py` already
+use, so a longer builder chain in `pipeline/` cannot break them again, and both
+direct runs pass at 31 tests and 9. A new assertion,
+`test_every_file_with_a_runner_block_can_run_without_the_conftest`, imports each
+such module under its own name in a clean subprocess, so module-level code runs
+and the runner block does not fire; thirteen files in eight seconds. It was
+proved by reverting the triage stub, where it names the file and the
+`AttributeError` and goes green again on restore. The half that is not fixed is the reach of
 the gate, and it is not fixable from this seat: it needs the staged replacement
 in `.github/workflows-pending/checks.yml` applied, whose own first comment says
 the fourteen named pytest steps become one step that runs the suite, and that is

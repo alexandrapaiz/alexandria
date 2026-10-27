@@ -23179,3 +23179,138 @@ has nothing to go red against.
   being written, on the merge that brought the skill seat's quoting fix in.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-27 - A continuation run cannot tell inherited red from its own red, and it costs a worktree and two full suites to find out (engineer seat, hook run)
+
+- Trigger: this run continued a predecessor that was cut off at turn 143, ran
+  the full suite, and got three failures. Two of them reproduce on a clean
+  `origin/main` worktree and were already filed as deliberate. The third was
+  introduced by the predecessor's own last commit. Learning which was which took
+  a `git worktree add` against `origin/main` and a second run of three test
+  files, and the whole question is mechanical.
+- What: `tools/inherited_red.py`, which takes a base and runs only the tests
+  that are red on the branch, again, in a clean worktree of that base, and
+  prints two lists. Inherited, meaning red in both and therefore somebody
+  else's entry to answer. Introduced, meaning green on the base and red here,
+  which is the only half the run is responsible for. It writes no files and
+  needs no credentials, and it removes the judgement call that a seat under a
+  turn cap will skip. The reason this matters more than the convenience is that
+  the skip has a direction: a run that cannot cheaply separate the two will read
+  its own regression as inherited, because the note it inherited says three
+  failures were expected, and today that reading would have been wrong.
+- Why it is worth a day: every run of this seat starts from `main` with no
+  memory, the supersede chain means most runs inherit a branch rather than a
+  clean tree, and the chain is at depth seven today. The deeper the chain, the
+  more inherited red there is to read past, and the cheaper it has to be.
+- First step: the three commands this run ran by hand, wrapped, with the base
+  defaulting to `origin/main` and the test list read from a prior `pytest -q`
+  tail rather than supplied.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-27 - The structural gates belong in the pytest session, not in a test file no workflow runs (engineer seat, hook run)
+
+- Trigger: today's repeat of the stranded-test class
+  (`INC-2026-10-27-a-cut-off-run-left-seven-tests-below-the-runner-block-and-the-gate-that-catches-it-runs-in-no-workflow`).
+  The gate that catches it lives in `tests/test_ci_coverage.py`, which is the
+  first line of its own `UNCOVERED` set, and the file it caught,
+  `tests/test_arxiv_window.py`, is in that set too. Sixty-four files in `tests/`
+  are pinned as run by no workflow. So the defect reached a branch, got no red
+  tick on the pull request, and was found only because a cut-off run happened to
+  be continued by a run that reruns everything.
+- What: move the handful of assertions that are about the harness rather than
+  about the product into `tests/conftest.py`, as a session-scoped check that
+  fails the session. There are three of them today: no test file stranded below
+  its runner block, no file with a runner block that cannot execute it, and the
+  coverage set itself. In a conftest they fire on every pytest invocation,
+  including `pytest tests/test_one_file.py`, which is what a seat under a turn
+  cap actually runs. The present arrangement makes the harness gates the least
+  reachable thing in the suite, which is backwards, because they are the ones
+  that decide whether anything else ran.
+- Why this shape and not the workflow fix: the workflow fix is item 17 of
+  `tests/test_ci_coverage.py` and it has been staged in
+  `.github/workflows-pending/checks.yml` since 2026-10-13, needing a `git mv`
+  and a `workflows` permission no seat holds. This one needs neither. It is
+  worth having both, because they fail differently: the workflow reaches every
+  file once per pull request and the conftest reaches these three gates every
+  time anybody runs anything.
+- First step: the stranded-test assertion alone, moved, with the test left in
+  place as a thin call so nothing that greps for its name breaks. One gate
+  proves the shape before three of them depend on it.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-27 - The conftest claims its Modal stub is the union of what the pipeline reaches, and nothing checks the claim (engineer seat, hook run)
+
+- Trigger: `tests/test_triage_planner.py` carried a Modal stub spelled as nested
+  namespaces exactly as deep as `pipeline/triage.py` chained on the day it was
+  written. A later `add_local_file` in that pipeline broke a test file that never
+  changed, and because the break was at import time under a direct run, the
+  suite stayed green for as long as it lasted. `tests/conftest.py`'s own
+  docstring says "The stub is the union of what `pipeline/` and `mcp/` actually
+  reach for at import time", which is a measurement written as prose, and it is
+  the same claim the triage stub was making silently.
+- What: an assertion that walks `pipeline/` and `mcp/` for every attribute
+  reached on the `modal` module at module scope, and compares that set against
+  what the stub in `tests/conftest.py` provides. A pipeline that starts reaching
+  for something new fails the suite in the file that has to stand in for it,
+  rather than in whichever test file imports that pipeline first. The conftest's
+  docstring already records what the unchecked version cost once: four in-file
+  copies disagreed, the thinnest won collection, and the suite reported one
+  error and ran no tests at all.
+- Why it is worth a day: this is L-A9's shape, recording is not enforcing, with
+  the recording in a docstring. The union claim is true today because this run
+  measured it, and it has no way of staying true. Related to the 2026-10-01
+  entry proposing a pure `pipeline/rules.py`, which shrinks the stub's job
+  instead of checking it. Both are worth having and the check is the cheaper
+  one, because it needs no change to anything that runs on Modal.
+- First step: the walk, over `pipeline/` only, asserting the set is a subset of
+  the stub's attributes. `mcp/` second, once the first one is green.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-27 - Craft scan: Go runs the lint that finds an unrunnable test inside the test command, so the check cannot be less reachable than the tests it guards (engineer seat, hook run)
+
+- Trigger: the daily craft scan, pointed at this run's own build. The work was a
+  test that the file's own runner could not reach, and the gate that found it is
+  reachable from no workflow, so the scan went looking for an ecosystem that
+  solves the reachability of the check rather than the defect.
+- What: Go wires the check for an unrunnable test into `go test` itself, so it
+  is exactly as reachable as the tests, and this repository wires the equivalent
+  check into a file no workflow runs. The two readings below, and the change the
+  steal argues for.
+- **What is worth stealing**, and it is one sentence of Go's own command
+  documentation. "As part of building a test binary, go test runs go vet on the
+  package and its test source files to identify significant problems." The
+  default set is named in the same page, "atomic, bools, buildtag, directive,
+  errorsas, ifaceassert, nilfunc, printf, stdversion, stringintconv, and tests",
+  described there as "a high-confidence subset of the default go vet checks".
+  The last of those eleven is the one that matters here: the `tests` analyzer
+  "walks Test, Benchmark, Fuzzing and Example functions checking malformed
+  names, wrong signatures and examples documenting non-existent identifiers".
+  So the check for a test the runner cannot run is wired into the runner, not
+  into CI. It fires for anyone who types the ordinary command, it cannot be
+  omitted from a step list, and turning it off is an explicit `-vet=off`. Both
+  quotes read off the vendor's current documentation this run rather than from
+  memory.
+- **What alexandria does better**, and it is the question being asked rather
+  than the plumbing. Go's `tests` analyzer checks whether a test function is
+  well formed. It has no opinion about whether anything runs the file, because
+  Go's own design removes that question: the generated test main finds every
+  `Test*` in the package, so position in the file cannot strand anything.
+  Python's does not, and pytest collects by importing, so a test below a
+  `__main__` block passes under pytest and is invisible to a direct run. The
+  assertions in `tests/test_ci_coverage.py` ask the question neither tool asks,
+  which is whether the harness reaches this test at all: a file no workflow
+  names, a test below its own runner, and as of this run a runner block that
+  cannot execute. That is a property of the project rather than of the language,
+  and no linter ships it.
+- **What the steal changes about the plan.** It is the argument for the entry
+  above about moving the structural gates into `tests/conftest.py`. Go's lesson
+  is not the analyzer, it is where the analyzer runs. A gate on reachability
+  that is itself the least reachable file in the suite is the defect it was
+  written to catch, one level up, and today it only fired by luck.
+- First step: covered by the conftest entry above, which this scan is the
+  argument for rather than a separate build.
+- Cost: $0
+- Status: proposed
