@@ -662,3 +662,118 @@ def test_the_json_surface_carries_the_cut_state_too(tmp_path, capsys):
     payload = json.loads(capsys.readouterr().out)
     assert [f["state"] for f in payload["findings"]] == ["cut"]
     assert payload["cut"][0]["why"] == "session-limit"
+
+
+# --- the seat argument, which answered instead of resolving ----------------
+#
+# `INC-2026-10-27-two-readers-answer-a-wrong-seat-name-with-a-confident-zero`.
+# `--seat research` and `--seat totallyfake` printed the same sentence, byte for
+# byte: no slot fired, and none in the trailing 14 days. The research slot had
+# fired on time the afternoon before. The reason that is urgent is the duty card
+# in `docs/agents/unowned-duties.md`, which instructs its next reader to read
+# each slot here and never from the absence of a pull request, and which exists
+# because an earlier run nearly retired three working seats on a bad absence. On
+# the one argument a reader supplies by hand, the remedy reproduced the failure
+# it was built to prevent.
+
+def test_the_host_directory_name_resolves_to_itself(tmp_path):
+    write_log(tmp_path, "alexandria-research", "2026-10-26T16-30-23-001Z",
+              "cron", completed(), exit_code=0, turns=30)
+    assert cf.resolve_seat("alexandria-research", tmp_path) == "alexandria-research"
+
+
+def test_the_bare_seat_name_the_charters_use_resolves_to_the_directory(tmp_path):
+    write_log(tmp_path, "alexandria-research", "2026-10-26T16-30-23-001Z",
+              "cron", completed(), exit_code=0, turns=30)
+    assert cf.resolve_seat("research", tmp_path) == "alexandria-research"
+
+
+def test_a_seat_name_in_no_directory_is_not_found_rather_than_quiet(tmp_path):
+    write_log(tmp_path, "alexandria-research", "2026-10-26T16-30-23-001Z",
+              "cron", completed(), exit_code=0, turns=30)
+    with pytest.raises(cf.SeatNotFound) as exc:
+        cf.resolve_seat("totallyfake", tmp_path)
+    # The roster is named, because "not found" without it leaves the reader
+    # guessing at the spelling that was wanted.
+    assert "alexandria-research" in str(exc.value)
+
+
+def test_a_bare_name_in_several_companies_is_asked_about_rather_than_picked(tmp_path):
+    for seat in ("alexandria-exo", "ursa-exo", "epitome-exo"):
+        write_log(tmp_path, seat, "2026-10-26T16-30-23-001Z", "cron",
+                  completed(), exit_code=0, turns=30)
+    with pytest.raises(cf.SeatNotFound) as exc:
+        cf.resolve_seat("exo", tmp_path, company="atelier")
+    assert "3 companies" in str(exc.value)
+
+
+def test_a_collision_is_settled_by_the_company_whose_checkout_this_is(tmp_path):
+    for seat in ("alexandria-research", "ursa-research"):
+        write_log(tmp_path, seat, "2026-10-26T16-30-23-001Z", "cron",
+                  completed(), exit_code=0, turns=30)
+    assert cf.resolve_seat("research", tmp_path, company="alexandria") == "alexandria-research"
+    assert cf.resolve_seat("research", tmp_path, company="ursa") == "ursa-research"
+
+
+def test_an_exact_directory_name_beats_the_suffix_search(tmp_path):
+    # This host carries a directory literally named `engineer` beside
+    # `alexandria-engineer`, `atelier-engineer` and `epitome-engineer`. The
+    # name the reader typed is the one that wins.
+    for seat in ("engineer", "alexandria-engineer", "atelier-engineer"):
+        write_log(tmp_path, seat, "2026-10-26T16-30-23-001Z", "cron",
+                  completed(), exit_code=0, turns=30)
+    assert cf.resolve_seat("engineer", tmp_path, company="alexandria") == "engineer"
+
+
+def test_no_seat_argument_still_means_every_seat(tmp_path):
+    assert cf.resolve_seat(None, tmp_path) is None
+
+
+def test_an_unmounted_log_root_is_still_observation_skipped_and_not_a_bad_seat(tmp_path):
+    # A pull request checkout has no `/srv/asc`, and that path must stay the
+    # "observation skipped" answer rather than becoming "no such seat".
+    missing = tmp_path / "nothing-here"
+    assert cf.resolve_seat("research", missing) == "research"
+    assert cf.main(["--seat", "research", "--root", str(missing)]) == 0
+
+
+def test_a_seat_that_does_not_resolve_exits_two_instead_of_reporting_quiet_days(tmp_path, capsys):
+    write_log(tmp_path, "alexandria-research", "2026-10-26T16-30-23-001Z",
+              "cron", completed(), exit_code=0, turns=30)
+    code = cf.main(["--seat", "totallyfake", "--root", str(tmp_path),
+                    "--now", "2026-10-27T01:00:00Z"])
+    captured = capsys.readouterr()
+    assert code == 2
+    assert "not a seat" in captured.err
+    # The sentence that used to be printed here, and must not be any more.
+    assert "none has in the trailing" not in captured.out
+
+
+def test_a_real_seat_and_an_invented_one_no_longer_read_the_same(tmp_path, capsys):
+    # The defect itself, as one assertion.
+    write_log(tmp_path, "alexandria-research", "2026-10-26T16-30-23-001Z",
+              "cron", completed(), exit_code=0, turns=30)
+    cf.main(["--day", "2026-10-26", "--seat", "research", "--root", str(tmp_path),
+             "--now", "2026-10-26T23:00:00Z"])
+    real = capsys.readouterr().out
+    cf.main(["--day", "2026-10-26", "--seat", "totallyfake", "--root", str(tmp_path),
+             "--now", "2026-10-26T23:00:00Z"])
+    invented = capsys.readouterr().out
+    assert real != invented
+    assert "alexandria-research" in real
+
+
+def test_the_resolution_is_said_out_loud_when_it_rewrites_the_argument(tmp_path, capsys):
+    write_log(tmp_path, "alexandria-research", "2026-10-26T16-30-23-001Z",
+              "cron", completed(), exit_code=0, turns=30)
+    cf.main(["--day", "2026-10-26", "--seat", "research", "--root", str(tmp_path),
+             "--now", "2026-10-26T23:00:00Z"])
+    assert "reading alexandria-research for --seat 'research'" in capsys.readouterr().err
+
+
+def test_the_company_is_taken_from_the_checkouts_own_remote(monkeypatch):
+    monkeypatch.delenv("ASC_COMPANY", raising=False)
+    monkeypatch.setenv("GITHUB_REPOSITORY", "alexandrapaiz/alexandria")
+    assert cf.company_here() == "alexandria"
+    monkeypatch.setenv("ASC_COMPANY", "ursa")
+    assert cf.company_here() == "ursa"

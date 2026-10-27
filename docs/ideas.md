@@ -4388,6 +4388,16 @@ needs an owner decision or an owner push, not an engineer build.
      artifact, after the heading rule and the ASCII rule.
   3. `INTENSIFIERS` matches the substring `"very "`, so it fires on "every
      screen" and "every team". Both W39 warnings are false. Word boundaries.
+- **Item 3 shipped 2026-10-26 (engineer seat, message run).** The four word
+  lists are anchored on their left edge, which is the whole of what this item
+  asked for, and the trailing space `INTENSIFIERS` carried is gone because it
+  was a boundary in the wrong place. 2026-W39 goes from 7 warnings to 5 and
+  both false ones are the two named above. `tests/test_digest_quality.py`
+  asserts the class rather than the two lines: every literal in every list,
+  buried behind one letter, raises nothing. Items 1 and 2 of this entry are
+  untouched and still open, which is why the status is left where it is: an
+  empty `parse_items` is still not a blocking finding, and `TYPESETTER` is
+  still four characters rather than the ASCII class question.
 - Why it is filed rather than patched: `tools/` and `pipeline/` are outside
   the writer seat's writable surface, and the editorial half of the fix is
   already in this pull request. The generator now counts items against links
@@ -19972,6 +19982,15 @@ has nothing to go red against.
   gate runs before it reads an issue.
   Three gates, three patterns matching inside a word instead of at its edge,
   two of them still live. The class is worth one pass rather than three fixes.
+- **Closed 2026-10-26 (engineer seat, message run), thirty-two days after the
+  filing.** The pass was taken on the gate rather than on the two lines, and
+  the measurement is the same command this entry used: 7 warnings to 5 on
+  2026-W39, with the owner's mandated close now raising nothing. The fourth
+  list, `SLOP_USUALLY`, needed no change and that is the part worth carrying:
+  it was the one list already anchored, on both edges, and it is the only one
+  of the four that has never produced a false finding. The rule is written
+  into `docs/product/digest-quality.md` beside the gate's own table, so the
+  next rule added to that file inherits it instead of rediscovering it.
 - `TYPESETTER` is the other half of the 2026-09-24 filing and is unchanged:
   four characters where ban list 13 is the class of every non-ASCII character,
   and `pipeline/weekly.py` builds the payload's `dates` with an en dash the
@@ -22229,6 +22248,700 @@ has nothing to go red against.
 - Cost: $0
 - Status: proposed
 
+### 2026-10-26 - `is_priority` matches inside words, and it mirrors a SQL `%term%` so the fix has to move two languages at once (engineer seat, message run)
+- Trigger: after anchoring the pre-send gate's word lists on their left edge,
+  this run grepped `tools/` and `pipeline/` for the rest of the class. The gate
+  is clean now and one live instance is left:
+  `pipeline/priority.py:99`, `any(term in low for term in PRIORITY_TERMS)`,
+  which decides whether a paper is one of the standing threads and therefore
+  whether it is read at all.
+- What: three of the thread terms are short enough to land inside an unrelated
+  word, and `mcp` and `a2a` are the two that matter, because a title carrying
+  either inside a longer token is triaged as the protocols thread on a
+  coincidence. A fourth, `isolation`, is a whole word and still wrong in a
+  different way: it is the containment thread's term and it is also the word a
+  psychology paper uses. The first two are the word-edge class and the third is
+  not, so they want different answers.
+  The part that makes this more than a one-line fix is the comment directly
+  above the predicate. `PRIORITY_PATTERNS` derives `%term%` from the same tuple
+  for Postgres `ilike any`, deliberately, so the two languages cannot drift. A
+  `\b` in Python alone breaks that guarantee in the direction nobody would
+  notice: the SQL would keep selecting papers the Python then declines to call
+  priority. Postgres has `~*` with `\y`, so both halves can move together, and
+  moving them together is the whole of the work.
+- First step: the measurement, not the patch, because this one can be wrong in
+  the expensive direction. Run both predicates over the `papers` titles already
+  in the database and count the rows they disagree on, per term. If the answer
+  is zero the entry closes as a comment. If it is not, the number says which
+  terms need the edge and which need a better term. It needs a read-only
+  database handle, so it waits on `NEON_RO_URL` having a usable value or on the
+  Modal workspace being back, whichever comes first.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - `bare-number`'s promotion condition cannot be evaluated, because nothing counts the issues or records which warnings were real (engineer seat, message run)
+- Trigger: writing the word-edge rule into `docs/product/digest-quality.md`
+  meant reading the paragraph it sits next to, which says `bare-number`
+  "becomes blocking when it has run for four issues without a false positive",
+  and `citation-per-item` becomes blocking on a named `gather()` change. The
+  second has a trigger a command can check. The first does not: no file counts
+  how many issues the gate has read, and no file records a verdict on any
+  warning it raised.
+- What: the gate has read exactly two issues in its life, 2026-W37 and
+  2026-W39, and this run's own measurement is the evidence that nobody has
+  adjudicated either. 2026-W39's five remaining warnings are all `bare-number`
+  and no register says whether any of the five is real. So the promotion
+  condition is a sentence that will never be met, not because the gate is bad
+  but because the counter it names does not exist, and the next seat to read
+  that paragraph will either guess or leave it for a sixth time. A rule whose
+  trigger nobody can evaluate is the register-gate defect of incident 20 in its
+  cheapest form: it was written down and nothing opens it.
+- First step: one append-only file, `docs/product/digest-quality-log.md`, one
+  row per issue the gate reads, holding the issue label, the counts by rule and
+  a verdict column that starts empty. The press writes the row itself, since
+  `hold_for_quality` already has the findings in hand at the moment it decides,
+  so no run has to remember. The verdict column is a person's, which is the
+  point: the promotion is then a reading of a file rather than a reading of
+  somebody's memory of a Tuesday.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Vale wraps a rule's tokens in word boundaries by default and makes the substring the opt-in, where this gate had it the other way round (engineer seat, message run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  build. The run's work was a substring match in a text gate that had been
+  filed for thirty-two days, so the scan went to the prose linter that is the
+  nearest product in the world to `tools/check_digest_quality.py`: Vale
+  (docs.vale.sh), the open-source style checker that runs a repository's house
+  style over its prose in CI.
+- **What is worth stealing.** Vale's rules are declared as data rather than
+  written as code. A rule is a YAML file naming its `extends` (`existence` for
+  a pattern that must not appear, `substitution` for one that carries its
+  replacement), its `tokens`, its `level` of suggestion, warning or error, and
+  its `scope` of heading or text. The detail that lands on this run: Vale wraps
+  every token in word boundaries **by default**, and a rule that genuinely
+  wants to match inside a word has to say `nonword: true` and name itself as
+  the exception. That is the exact inversion of the defect this run fixed. The
+  gate's four word lists were four hand-written loops, three of them matching
+  substrings, and the one that was right was right by somebody having
+  remembered. In Vale the boundary is the default and the exception is
+  declared, so the defect this repository carried for a month is not expressible
+  without writing a word that draws a reviewer's eye.
+  Also worth having and smaller: `scope`. This gate has one scoped rule,
+  `skeleton-heading`, and it scopes itself with an ad-hoc `line.startswith("#")`
+  in its own loop. Vale makes the scope a field, which is how it has heading
+  rules and prose rules without two dialects of rule.
+- **What alexandria does better.** Vale reports and a person decides, and its
+  severity is advice to whoever is looking at the editor. This gate sits inside
+  the send path, and a blocking finding stops the email and triggers one
+  rewrite against the findings before it holds the issue. And every rule here
+  cites the ban-list entry that authorized it, so a finding carries its
+  provenance back to the owner's own correction and a reader can ask whether the
+  rule is still what she asked for. Vale styles cite a style guide by
+  convention and nothing checks the citation.
+- What: collapse the four word lists and their four identical
+  loops into one table of rule declarations, each row naming its terms, level,
+  rule name, ban-list entry and whether it is scoped to headings, with the word
+  edge as the default and a `nonword` flag as the only way to opt out. The four
+  loops are already the same loop, so this removes code rather than adding it,
+  and the class test this run wrote becomes a loop over the table instead of a
+  loop over four names it has to be told about.
+- First step: the table and the three word-list rules moved onto it, leaving
+  `skeleton-heading` and the regex rules where they are. The existing tests are
+  the proof: the rule names, levels and ban-list entries they assert are the
+  table's columns, so a refactor that keeps them green has preserved every
+  finding the gate makes today.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: Semantic Scholar hands you the diff between two releases, where arXiv hands you a window and expects you to have kept up (engineer seat, message run)
+- Trigger: the daily craft scan, pointed at this run's own build. The work was
+  the arXiv window, so the scan went to the nearest product in the world that
+  has the same problem and publishes its answer: Semantic Scholar's Datasets
+  API, which is in `docs/market/landscape.md` already and which every reader of
+  this repository would call a corpus rather than a competitor.
+- **What is worth stealing.** Their incremental path is not a window at all. A
+  consumer names the release it last holds and the API returns the chain of
+  diffs from there to now, one object per sequential release, each carrying an
+  update-files list to insert or replace by primary key and a delete-files list
+  to remove. The consumer's own position is the request parameter. A missed
+  month is a bigger download and not a hole, and the source is what makes that
+  true rather than the client's diligence
+  (api.semanticscholar.org/api-docs/datasets, read 2026-10-26, and the
+  endpoint shape in allenai/s2-folks).
+  What lands on this repository is the question that distinguishes the two
+  designs, which is the one today's incident generalized to: is a missed run
+  recoverable from the source itself. arXiv's answer is yes but only if you ask
+  by date, which is why the fix shipped today had to invent the cursor the API
+  does not keep for us. Semantic Scholar's answer is yes and the source keeps
+  the cursor's meaning. The steal is to write that property down per source
+  rather than to rediscover it per outage.
+- **What alexandria does better.** Two things, both about the reach rather than
+  the transport. Their dataset is one flat corpus and the consumer does the
+  ranking; ours carries a tier on every row at the moment of ingest, so a
+  human's curated pick upgrades a paper the firehose already saw and the
+  triage prior is part of the record rather than a later join. And this
+  pipeline refuses to report a successful run when it fetched nothing, with a
+  per-source status row behind the refusal, which is a liveness claim about
+  fifty-three sources that a bulk release cannot make about itself.
+- What: carry the recoverability property in `sources.yaml` next to each source,
+  as the census's volume numbers and one flag saying whether a missed run can
+  be recovered from that source, and have the health instruments price an
+  outage in records rather than in hours.
+- First step: the field on the eight arXiv categories with the volumes section
+  2 of the 2026-10-26 census already measured, and one line in
+  `tools/feed_health.py` that multiplies hours of silence by the volume of the
+  sources whose flag is false. `sources.yaml` is the research seat's whitelist
+  under ADR-12, so the field is a schema proposal to that seat rather than a
+  diff this one lands alone.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Every source's outage should be priced in records, and the instruments that watch them measure hours (engineer seat, message run)
+- Trigger: today's handoff, and the sentence the research seat put in
+  `INC-2026-10-26-the-arxiv-window-is-smaller-than-two-of-the-categories-behind-it`:
+  an availability incident was priced as downtime by every instrument that
+  watched it, because the instruments measure whether a stage ran. The
+  repository held the number that turns 3.33 days of a stopped cron into 290 to
+  570 lost papers from the day the constant was written, and nothing computed
+  it, so #406 has been argued for four days without its strongest fact.
+- What: one function that takes a source and a silence, and returns the records
+  at risk, plus the three readers that should print it. `tools/delivery_health.py`
+  and the board alarm say how long a stage has been quiet; neither says what
+  the quiet costs. For a source the pipeline can page back through, the answer
+  is zero and the alarm should say "recoverable" so that a reader stops
+  worrying about it. For a sliding window it is volume times hours, and the
+  alarm should carry the number into the item it opens, because that is the
+  sentence that makes a disabled workspace urgent to a person rather than to a
+  dashboard.
+- First step: the function and its tests against the census's measured volumes,
+  reading the `last write` timestamp `/api/delivery` already serves, with the
+  arXiv categories as its only non-recoverable sources today. One reader
+  first, which is the existing delivery-health print, so the number is
+  observable before it is wired into anything that opens items.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The ingest cursor is inferred from the rows that landed, and it should be the window the run actually finished (engineer seat, message run)
+- Trigger: writing `read_arxiv_cursor` in this run's own change. It resumes
+  from `max(published_at)` over the arXiv rows in `papers`, which is a
+  measurement of what arrived rather than a record of what was asked for. Two
+  ways that is wrong in the lossy direction: one row with a bad or
+  optimistically parsed date moves the cursor forward past papers nobody
+  fetched, and a run that fetches a day successfully and then fails in the
+  upsert leaves the next run believing the day was covered if any part of it
+  landed. Today's window absorbs both with a two-day overlap and a clamp, which
+  is a mitigation and not a record.
+- What: a small `ingest_state` table, one row per source, holding the window
+  the last successful run completed and the time it completed it, written
+  inside the same transaction as the rows it describes. `fetch_arxiv` then
+  resumes from a fact rather than from an inference, a half-finished run
+  resumes where it stopped instead of where it happened to land, and the
+  recoverability idea above gets its "last known good window" from a column
+  instead of from a maximum over a corpus.
+- First step: the table in `db/schema.sql`, the write at the end of
+  `upsert_papers` under the existing connection, and `arxiv_cursor` preferring
+  the state row and falling back to `max(published_at)` when the table is
+  empty, which is what makes the change deployable without a backfill. The
+  tests for the window already exist and take the cursor as an argument, so
+  this is one new test file for the state row and no change to them.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - A relayed claim names the work it came from and that work has no row (engineer seat, message run)
+- Trigger: writing `claims.attributed_to` in this run's own change. The column
+  holds "Yuan et al., 2026" because that is what the paper says, and there is
+  nowhere for that string to point. The corpus has a row for every paper it
+  ingested and no row for a paper it has only heard about, so the one fact that
+  settles a relayed claim, which is what the cited work actually reports, has
+  no place to be written down when somebody finally reads it. Today's incident
+  took four weeks to surface for exactly that reason: the mischaracterisation
+  was transcribed faithfully into a reading-queue line on 2026-09-29 and the
+  two papers it was about were not in `papers`, so `prompts/interpret.md` had
+  no node to draw an edge against.
+- What: resolve the attribution to an id and write the stub. A relayed claim
+  whose `attributed_to` can be matched to an arXiv id gets that id in a second
+  column; where no row exists for it, ingest writes a `papers` row carrying
+  the id, the title and nothing else, flagged as a work the corpus knows of
+  rather than one it holds. The interpret step can then draw an edge to it and
+  the reading queue can be generated rather than hand-written: every relayed
+  claim with no fetched source is a queue line, in priority order by how many
+  claims lean on it.
+- First step: the resolver alone, with no writes, as `tools/relay_targets.py`.
+  It reads relayed claims, tries each `attributed_to` string against the arXiv
+  API by title and author-year, and prints what it matched, what it could not,
+  and which of the matches are already in `papers`. That is the number that
+  decides whether the stub row is worth building, and it runs with no
+  credential against a workspace that is still off.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Reading done while the pipeline is off has nowhere to land, so it is done twice (engineer seat, message run)
+- Trigger: the research seat's note on the board, 19:50Z, which is this run's
+  event. Fifteen papers were read in full this run and none could be filed,
+  because `propose_skill`, `sql_query` and every other write path goes through
+  a Modal workspace that has been off since 2026-10-23. The backlog of unfiled
+  reading is two batches deep behind one re-enable. The reading itself was
+  never blocked: `tools/read_paper.py` needs no credential, and the seat used
+  it fifteen times.
+- What: a staging path for claims read by hand, so the reading survives the
+  outage that stopped the filing. One file per batch under
+  `docs/research/staged/`, written by a seat in the same shape the distill
+  insert takes, and one drain that reads the directory, writes the rows, and
+  moves the file to a filed subdirectory on success. The point is not to
+  replace distill. It is that a seat with no database should be able to finish
+  its work in the repository, which is the one surface that is always writable,
+  and the cost of an outage then stops being a function of how long it lasts.
+- First step: the shape, agreed with the research seat before anything is
+  built, because the seat that writes the file is not this one. The format
+  question is the whole first step: the rows distill writes carry `paper_id`,
+  `claim`, `evidence`, `measured`, `relayed`, `attributed_to`, `procedure` and
+  `topics`, and a human-written batch will want the same fields and a reason
+  for each paper it read. One validator against that shape, run by
+  `tools/check_registers.py`, is the deliverable before any drain exists.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The relayed grade reaches the next claim and none of the two thousand already written (engineer seat, message run)
+- Trigger: shipping the grade in this run. `claims.evidence_grade` is written
+  at distill, so `relayed` applies to claims the pipeline has not distilled
+  yet. Every second-hand row already in the corpus still carries `controlled`
+  or `asserted`, which is the exact state
+  `INC-2026-10-26-a-papers-own-citation-was-wrong-and-the-corpus-carried-it-faithfully`
+  describes, and the skill whose delta it cost cites rows written in September.
+  A grade that only applies going forward leaves the shipped surfaces reading
+  the old corpus.
+- What: regrade the already-graded rows the text guard catches. The guard is
+  one-directional and it is the weaker half of a two-signal test, so this is
+  not a mechanical rewrite: `evidence_grade` is what the digest ranks on, so a
+  few thousand rows moving to the weakest grade changes what a reader is shown.
+  The decision wants the number and a page of the rows first, which is what
+  `relay_audit` prints, and then either a bounded regrade or a labelled
+  sample that says the guard is too loose to trust on old text.
+- First step: `modal run pipeline/backfill_grades.py::relay_audit`, which
+  ships in this PR and reads only. It prints how many graded rows the markers
+  fire on, which grade each carries today, which phrase fired, and a sample of
+  twelve so the guard is judged by reading its output. It needs the workspace
+  back, and it is the first thing worth running when the workspace returns.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Craft scan: scite sells the sentence rather than the summary, and classifies a citation without ever asking whether it is accurate (engineer seat, message run)
+- Trigger: the daily craft scan, pointed at this run's own build. The work was
+  the row kind for a cited result, so the scan went to the one product whose
+  entire thesis is that a citation is a claim about another paper. scite is in
+  no section of `docs/market/landscape.md`, so it is a new find as well as
+  today's scan. Read live, 2026-10-26: [scite.ai](https://scite.ai/), the
+  [citation model](https://docs.scite.ai/concepts/citation-model) in its API
+  docs, and the classification write-up behind its own
+  [report page](https://scite.ai/reports/scite-a-smart-citation-index-keppkgL5).
+- **What is worth stealing.** Their unit is the citation statement, which is
+  the sentence in the citing paper, stored and shown. Each one carries a type
+  from four values, and the fourth is the one worth taking: the tally fields
+  are `total`, `supporting`, `contradicting`, `mentioning` and `unclassified`,
+  so a reader is always told how much of the evidence the classifier declined
+  to classify. Their own numbers: over 25 million full-text articles analysed,
+  1.6 billion citations indexed, and more than 880 million classified citation
+  statements. The steal is the honest fourth bucket. This repository's grade
+  has had an unclassified state since the column existed, NULL, and it is
+  silent: 44.8% of the corpus read as `asserted` in the research seat's census
+  while every reader of a grade saw four names and no share of the rows that
+  had none. The grade shipped today adds a fifth name and the same gap is one
+  level over, because `relayed` is only false for rows written after today.
+- **What alexandria does better.** scite classifies what a citation does and
+  never asks whether what it says is true. Supporting, contradicting and
+  mentioning are all answers to "how did the citing author use this work", and
+  that datum is precisely the one that was wrong this week: Random Attention
+  cites two papers as reporting large gaps against its own result, which at
+  880 million statements classifies cleanly as contrasting, and one of the two
+  runs no such experiment while the other agrees with it. A bigger index
+  records the same mistake in the same shape and gains confidence from its own
+  volume. This corpus is small enough to read, which is a disadvantage in
+  every other comparison in this ledger and the whole advantage here: ADR-35's
+  reading queue put both cited papers in front of a reader, one afternoon
+  settled it, and the two things that come out of it, a grade and an address,
+  are things a 1.6-billion-edge graph has no way to act on.
+- What: print the ungraded share wherever a grade is printed. One function
+  beside `evidence.grade` that returns the shape of a population rather than
+  one row, carrying the NULL count as a named value rather than an absence,
+  and three callers: the digest's ranking, `tools/panel_adversary.py`'s
+  evidence note, and the backfill's own report.
+- First step: the function and its tests, plus the one line in
+  `panel_adversary.grades` that already builds a counts dict and calls a NULL
+  grade "ungraded" in a string. That line is the whole behaviour in miniature
+  and it is already correct, which makes it the cheapest place to start and
+  the proof the pattern generalises.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The frontmatter gate needs no CI step, because the step exists and the test it runs is blind (engineer seat, message run, disposition of a board handoff)
+- Trigger: a handoff from `alexandria/pm` at 20:23Z, which arrived 33 minutes
+  after this run's own event and after its work was finished. The skill seat
+  fixed two shipped skills whose frontmatter would not parse under a real YAML
+  loader, an unquoted colon in a description breaking the whole document, and
+  named the CI gap rather than building it. The ask is a CI step that checks
+  frontmatter alongside the skill receipts check.
+- What: the ask cannot be satisfied as written and does not need to be. A step
+  that runs `tests/test_skill_receipts.py` already exists in
+  `.github/workflows/checks.yml` and already fires on `skills/**`, so there is
+  no missing step. What is missing is an assertion, and the reason it is
+  missing is worth more than the assertion: `skill_registrar.parse_frontmatter`
+  is a hand parser that partitions each line on its first colon, so an
+  unquoted colon in a description does not fail, it silently truncates the
+  value and keeps going. Every tool in this repository reads skills through
+  that function, so every one of them agrees the file is fine, and the first
+  reader that disagrees is a real YAML loader outside the repository.
+  The cheaper and better of the two fixes is therefore in the parser rather
+  than in CI: `parse_frontmatter` should refuse a value it cannot read
+  unambiguously, which needs no new dependency and makes every existing caller
+  honest at once. The alternative, loading each SKILL.md with PyYAML in the
+  test, needs that package declared in `requirements-dev.txt` first, because it
+  is installed in this sandbox and named in neither requirements file.
+- First step: the refusal in `parse_frontmatter` and the case in
+  `tests/test_skill_receipts.py`, which is the file the existing CI step runs.
+  The skill seat's report says a replayable failing case is on its branch
+  history, so the fixture does not need inventing.
+- Why this run did not build it: it arrived after this run's pull request was
+  written, it lands in a test file inside the skill seat's open chain, and the
+  PyYAML variant would add a dependency to a diff that is already three runs
+  deep for one review. It is the first thing the next run of this seat should
+  take, ahead of the sprint, because until it lands the next unquoted colon
+  reaches `main` green.
+- Cost: $0
+- Status: proposed
+- Withdrawn by the PM 2026-10-26 20:35Z, and the withdrawal agrees with this
+  entry rather than overriding it. Board note `a2df2959`, carrying
+  `data.withdraws_handoff: 75117e30`, which is the handoff above: "You are
+  right and I am withdrawing my ask. The receipts test already fires on every
+  change under skills, so asking for a new step would have missed that it
+  exists. The real defect is the parser truncating an unquoted colon instead
+  of refusing it." It asks that the work not land inside a chain already three
+  runs deep and carries the item forward from this ledger as the next run's
+  first item. So the status line stays `proposed` and the first step stays as
+  written. What follows is the evidence the next run should not have to
+  re-derive.
+- Verified live 2026-10-26 (engineer, message run, PR #607), because the entry
+  above was reasoning and this is measurement. Three claims, all three hold.
+  (1) The step exists and fires on skill content: `.github/workflows/checks.yml`
+  runs `python3 -m pytest tests/test_skill_receipts.py -q` at line 243, and
+  `skills/**` is in both the `pull_request` and the `push` paths. (2) PyYAML is
+  undeclared: `requirements.txt` holds only `modal>=1.5` and
+  `requirements-dev.txt` names seven packages, none of them PyYAML, while
+  `import yaml` succeeds in this sandbox at 6.0.1. (3) The two skills are still
+  broken on `main`: loading all nine `SKILL.md` frontmatter blocks with PyYAML
+  on this branch fails on `evaluation-integrity` and `skill-library-engineering`
+  with `mapping values are not allowed here`, because the quoting fix lives only
+  on PR #602's branch, which is still a draft.
+- And a fourth thing, which is new and changes what the next run should build.
+  The replacement gate has a skip path that reads as a pass. `check_frontmatter`
+  on #602's branch opens with `try: import yaml / except ImportError: print(...)
+  / return 0`, its caller is `return 1 if (stale or unloadable) else 0`, and the
+  printed message says in its own words "That is a skipped gate, not a pass"
+  while the return value makes it exactly a pass. Run against the same broken
+  tree twice, once normally and once with the `yaml` import blocked, it returns
+  2 then 0, so `--receipts` exits 1 then 0 on one unchanged tree. Since PyYAML
+  is declared in neither requirements file, the skipping branch is the default
+  anywhere the package is not already present. This is the strongest argument
+  yet for the PM's choice of the parser over the loader: a refusal inside
+  `parse_frontmatter` needs no dependency, so it has no skip path to get wrong.
+  The hole itself is in `skills/_validation/`, which this seat does not write
+  to, so it is proposed below and was sent to the skill seat on the board.
+
+### 2026-10-26 - Craft scan: the ecosystem has this exact bug, ships no official validator for it, and the consumer degrades silently rather than failing (engineer seat, message run)
+
+- Trigger: today's event was a frontmatter validity gap, so the scan went at
+  the same surface in other people's products rather than at a rotation slot.
+  Target: the Claude Skills ecosystem's own validation story, read against
+  `docs/market/landscape.md`'s "Anthropic's Claude Skills ecosystem / skill
+  marketplaces" and "Claude Code mods" sections.
+- What: three findings, and the first is the one that matters. The official
+  documentation at code.claude.com/docs/en/skills says that when frontmatter
+  fails to parse "the skill still loads with no fields set." It does not error
+  and it does not refuse. So the consumer behaviour behind
+  `INC-2026-10-26-two-of-nine-shipped-skills-cannot-be-loaded-by-a-yaml-parser`
+  is not a load failure, it is a skill that loads with an empty description and
+  therefore can never be matched to a query. That names the mechanism the
+  incident left as "unknown and plausibly large": those two skills were not
+  failing loudly for anyone, they were present and unroutable, which is exactly
+  why no consumer report was ever filed against either. The incident's estimate
+  was right and its reasoning was one step short.
+- Second, the same defect is public and current in other libraries, which makes
+  it a class rather than our mistake. `Leonxlnx/taste-skill` issue 151 is an
+  unquoted colon breaking `SKILL.md` frontmatter so the skill does not load in
+  Claude Code. `chrislacey89/skills` issue 575 is unparseable frontmatter that
+  "shipped six days past every check." `bestdan/workflow-skills` issue 986 is
+  the sharpest: "CI validate gate checks only the marketplace manifest, so
+  broken command frontmatter ships," which is our defect precisely, a gate
+  pointed at the convenient artifact instead of the one that ships.
+- Worth stealing: nothing in the product, and that is the finding. The docs
+  name no official validator for a skill's frontmatter, only `claude --debug`
+  and a search of the debug log after the fact. Third parties are filling it
+  with one-off linters such as the `skill-md-validator` on lobehub. So the
+  stealable thing is the shape rather than the code, which is that a library
+  which validates frontmatter against the loader the consumer uses is ahead of
+  the official tooling rather than behind it.
+- What alexandria does better: it found this in its own library, in one run,
+  with a replayable case and a register entry, and the fix is already on a
+  branch. Two of nine is a worse rate than any of the public issues above
+  admits to, and a seat measured it rather than a user reporting it. The three
+  issues cited are all user-reported.
+- What this proposes, so the scan leaves something buildable rather than only
+  something read: validate every `SKILL.md` against the loader the consumer
+  uses, and say so on the library page as a claim, because the official
+  tooling ships no such validator and three public libraries are carrying the
+  bug today. The gate half of that is already moving, as the parser refusal in
+  the entry above. The claim half is new and is the frontend seat's surface.
+- First step: once the parser refusal lands, one line on the skill library page
+  stating that every published skill's frontmatter loads under a YAML parser,
+  which is a receipt the ecosystem's own documentation cannot make today.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Every gate whose dependency can go missing needs a skip path that fails closed
+- Trigger: this run proved `check_frontmatter` returns 0 when PyYAML is absent,
+  so `--receipts` exits clean on a tree it had just called broken, and the
+  package is in neither requirements file. The function's own print says "That
+  is a skipped gate, not a pass." Nothing enforces the distinction.
+- What: a test in `tests/` that reads the gate scripts this repository runs and
+  fails on the skip-and-pass shape, which is an `except ImportError` whose
+  handler returns the same value the success path returns for a clean tree. The
+  honest alternatives are to declare the dependency, or to return a third value
+  the caller treats as failure, and either satisfies the gate. Start from the
+  known instance and widen to `tools/` and `skills/_validation/` from there,
+  since the pattern is cheap to write by accident and invisible once written:
+  the gate is green, the log line explaining that it did not run scrolls past,
+  and nobody reads a passing step's output. This is the same family as incident
+  20, a register that checks the thing it finds convenient, and the same family
+  as the entry above, so it belongs in `tests/` where this seat writes rather
+  than in each gate's own file.
+- First step: the assertion against `check_frontmatter` once #602 merges, plus
+  a census of the shape across `tools/` so the ratchet starts from a real count.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - `check_frontmatter`'s skip path, routed to the seat whose surface it is
+- Trigger: the measurement in the entry above. Same broken tree, two verdicts,
+  depending only on whether PyYAML happens to be installed on the host.
+- What: in `skills/_validation/trigger_test.py`, the `except ImportError`
+  branch of `check_frontmatter` should not return 0, because its caller reads 0
+  as "no skills a consumer cannot load." Returning a sentinel the caller treats
+  as failure, or raising, makes the skip visible at the exit code instead of
+  only in a line of output. Declaring `pyyaml` in `requirements-dev.txt` would
+  also close it and is this seat's surface, but it closes it only where that
+  file is installed, and the gate's own documentation says the seat runs it in a
+  working tree. Both together is the complete answer.
+- First step: the skill seat changes the return, and this seat adds `pyyaml` to
+  `requirements-dev.txt` in the same week so CI and the working tree agree.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - A spent excuse should fail the build, and the way to make that safe is to key it to the thing it excuses (engineer seat, hook run, craft scan)
+- Trigger: today's build needed an excuse. The parser now refuses a frontmatter
+  value no loader can read, and two skills on `main` already carry one, so the
+  gate holds those two open by name in `skill_registrar.FRONTMATTER_QUARANTINE`
+  with a date and an owning seat. Writing it made the gap obvious: the
+  repository's older excuse, `waiting_problems`, has no way to notice when it
+  is excusing nothing. A draft skill that starts citing claims leaves its
+  excuse in place forever, and the next reader cannot tell a live excuse from a
+  dead one. That is the rot this register keeps filing incidents about, one
+  level up.
+- Craft scan, two products, both shipping the answer in the language rather
+  than in a lint config. TypeScript 3.9 added `// @ts-expect-error` next to the
+  older `// @ts-ignore`, and the difference is the whole idea: `@ts-ignore`
+  does nothing when the next line is clean, while `@ts-expect-error` reports
+  `Unused '@ts-expect-error' directive.` So a suppression that outlives its
+  defect is itself a defect, and the compiler says so. ESLint has the same
+  thing one layer out, `linterOptions.reportUnusedDisableDirectives`, which
+  defaults to `"warn"` in current ESLint and flags an `eslint-disable` comment
+  that is no longer needed "because the code has changed in such a way that
+  the rule is no longer triggered". Its sibling `reportUnusedInlineConfigs`
+  does the same for an inline config that no longer differs from the project's.
+- What alexandria already does better, and it is worth saying because the
+  scan's lesson is only half: an `// eslint-disable-next-line` hides the
+  problem. This gate prints every excused problem with the label `quarantined`
+  or `waiting` next to it, so the state stays readable, and the excuse carries
+  a reason, an owning seat and an expiry rather than a bare rule name.
+  `waiting_problems` goes further still and reads its judgment out of the
+  module that owns it rather than restating it, which is the arrangement that
+  cannot drift.
+- What: make a spent excuse fail rather than print. The reason it only prints
+  today is a real one: when the skill seat's quoting fix lands, a failing gate
+  would turn `main` red for the good outcome, and the seat that earned the
+  green would be the one that broke it. TypeScript's answer is what makes it
+  safe. `@ts-expect-error` is attached to the line it excuses, so the edit that
+  removes the error and the edit that removes the suppression are the same
+  edit, by the same hand. The port of that here is to key each excuse to the
+  sha256 of the file it excuses, which the registrar already computes for every
+  skill. An excuse whose file has changed stops applying, and the diff that
+  fixes the file is the diff that has to drop the excuse.
+- First step: one field, not a mechanism. Change
+  `FRONTMATTER_QUARANTINE`'s values from a sentence to `(sha256, reason)`, have
+  `quarantined_problems` compare against `Row.sha`, and make a mismatch block.
+  Then do the same for `waiting_problems`, which is the entry's real target
+  because it is the excuse that has been live longest.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The page's parser guesses where the registrar now refuses, and the test that holds the two together only compares claim ids (engineer seat, hook run)
+- Trigger: today's refusal landed in `tools/skill_registrar.py`, and this
+  library has two parsers for one block by design. `site/lib/skill-provenance.js`
+  is the other one, it feeds the page, and it still answers an unquoted colon
+  with the same guess the Python side made this morning:
+  `/^([A-Za-z0-9_-]+):\s*(.*)$/` takes everything after the first colon and
+  keeps going. `tests/test_skill_receipts.py` holds the two readers to one
+  answer, which is why that file exists, but the assertion it makes is
+  `the claim ids the page shows are the claim ids the reviewer judges`. Two
+  parsers can agree on every claim id in the library and disagree about
+  whether the file is readable at all, and after today they do.
+- What: port `frontmatter_problems` to `site/lib/skill-provenance.js` and
+  assert the two detectors return the same verdict per skill, the same way the
+  claim ids are already asserted. The JS side also drops a line it cannot read
+  with a bare `continue`, where the Python detector now reports it, so the two
+  have a second divergence that the same test would catch. This is small and it
+  is the kind of small that matters: the defect this whole test file was
+  written for, in September, was one of the two readers answering a field as
+  empty while the other read it fine.
+- First step: the detector in JS, exercised by `tests/skill-provenance.test.mjs`
+  against the written cases the Python one already uses, then one assertion in
+  `test_the_page_and_the_reviewer_read_the_same_provenance`.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The only thing that went red when a skill's frontmatter broke was telling the reader to run the wrong command (engineer seat, hook run)
+- Trigger: measured, while building today's gate and looking for the
+  counterfactual. Injecting the real defect into a clean skill, an unquoted
+  colon in `description:`, turned exactly one test red before today's change:
+  `test_every_skill_the_page_receives_shows_a_dated_validation_result`. It is
+  not a catch. It is the frozen-receipt freshness check, which compares the
+  sha256 of `SKILL.md` against the sha the last trigger test ran on, so it
+  fires on *any* edit to a skill that carries a validation result, and its
+  message says "the receipt was measured against a different revision of
+  SKILL.md, so the page will say so. Re-run
+  skills/_validation/trigger_test.py." A seat that met that red would re-run
+  the trigger test, the receipt would be refrozen against the broken file, and
+  the suite would go green with the defect still in it.
+- What: the test is correct and the message is the problem. A gate whose
+  message names the wrong repair is worse than one that says nothing, because
+  it spends the reader's attention and then returns them to green. Make the
+  freshness check read the frontmatter detector first, so a stale receipt on an
+  unreadable file says "this skill's frontmatter cannot be read, which is why
+  the receipt is stale, and refreezing it will not fix that" and names the
+  real repair.
+- First step: one call to `frontmatter_problems` in that test's failure
+  message, before the sha comparison, and the same sentence in the trigger
+  test's own runner so the command the message used to recommend refuses the
+  file too.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The bare according-to narrowing, with the pattern and the cases written out, because its code is on an unmerged branch (engineer seat, hook run, record of a queued handoff)
+- Trigger: a board handoff from `alexandria/pm` at 20:57Z and a note from
+  `alexandria/research` at 20:39Z, both pointing at one regex, and both queued
+  to this seat rather than built. The measurement is in the merged research
+  note `docs/research/notes/2026-10-26-relayed-grade-review.md`: over the 200
+  most recent cs.CL abstracts split into 1,703 sentences, the relay guard fires
+  5 times and 4 of the 5 are the paper's own result wrongly demoted below
+  anecdote. On a second sample selected for the phrase, 99 occurrences, 95 are
+  allocation and weighting prose, so the marker runs near 2% precision on the
+  text it will actually see.
+- Why this run did not build it, which is the part worth recording:
+  `RELAY_MARKERS` and `relay_markers` do not exist on `main`. They exist only
+  on this seat's own open pull request from the run before last, which reads
+  mergeable and clean and carries the owner's full-suite number against its
+  tip. Narrowing the pattern needs that tree. Pushing a commit onto a branch
+  that is sitting in the PM's merge queue risks the merge landing between the
+  push and the read, which puts the commit on a merged branch where it never
+  reaches `main`, so this run asked for the merge on the board instead and
+  wrote the fix down here.
+- What: three patterns, not one, and the third is a reading rather than a
+  measurement. (1) `according-to` is the bare phrase `\baccording\s+to\b` with
+  no attribution and no verb required, while the other markers all implement
+  the pairing the module's own docstring describes. It needs an object that
+  names a work or a source, so `according to their utility` stops firing and
+  `according to Zhang et al.` still does. (2) `others-say` fires on "the other
+  recognizers find TTS errors far more often on these words", which is this
+  paper measuring somebody else's system, and `prompts/distill.md` in the same
+  diff declares that case first-hand in as many words. (3) `cites` includes
+  `cited\s+by`, which runs the other direction: it says who read this work, not
+  whose result this is. Research flags the third as a reading of the regex that
+  appeared in neither sample.
+- First step: the three cases research already wrote, as tests, then the
+  patterns. All three should grade `controlled` and today all three grade
+  `relayed`:
+  `"KV entries are evicted according to accumulated attention mass."`,
+  `"Other methods show degradation at budget 128 in our sweep."`,
+  `"Our method is cited by three follow-up works."`
+- Why it is not urgent and is still first: the guard is one-way, so a correct
+  answer from the model cannot save a demoted row, and `relay_audit`'s headline
+  builds its number from these same markers. Both prompts are image-baked and
+  inert until a deploy, which is the window where a regex is cheapest to
+  change. Research's own words: nothing here holds the merge.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The incident register's header still teaches the append its own inbox exists to replace, and so do two charters (engineer seat, hook run)
+- Trigger: this run filed its incident by appending to the end of
+  `docs/agents/incidents.md`, which is exactly the positional collision
+  `docs/agents/incidents/inbox/` was built two days ago to prevent, and it was
+  caught only because the run went looking for a cited id and found the inbox
+  directory by accident. Three documents taught the wrong thing and nothing
+  taught the right one at the moment it mattered. `docs/agents/incidents.md`'s
+  own header block, which is the first thing any seat reads when it opens the
+  file, still says "append-only" and "any seat or the chair may add entries"
+  with no mention of the inbox. `prompts/engineer-agent.md` says "append it to
+  docs/agents/incidents.md in this PR" in its step 2 and again in step 0 of the
+  register check. The inbox's README is correct and complete, and a seat only
+  reads it after it has already decided to look in the directory.
+- What: one line in the register's header, at the top where the standing rule
+  is, saying that new entries go in the inbox and naming
+  `python3 tools/incidents.py new`. That is the one surface every seat passes
+  through on its way to filing, and it is the only one of the three that no
+  charter owns. The charter lines are a separate motion, because
+  `prompts/engineer-agent.md` is the owner's to merge and every other seat's
+  charter carries the same sentence, so that half is one diff across twelve
+  files rather than a local fix.
+- Why it is worth doing even though `tools/incidents.py check` is green either
+  way: the gate reads the register and the inbox together and does not care
+  which one an entry is in, which is correct, because folding is pure movement
+  and a gate that reddens `main` over bookkeeping is worse than the collision.
+  So nothing will ever catch this. The cost is paid at merge time by whoever
+  resolves the conflict, which is the person who did not write either entry.
+- First step: the header line. Then count the charters that carry the sentence
+  and propose the sweep, which is a ledger entry rather than a diff from this
+  seat.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - The skill gate runs on the skills and not on the parser that reads them, so a change to the reader cannot start the job (engineer seat, hook run)
+- Trigger: measured on this run's own pull request. `checks.yml` starts its job
+  on a `paths` list of twenty-four entries, and the step that matters here runs
+  `tests/test_skill_receipts.py`, which imports `tools/skill_registrar.py` and
+  asserts on what it returns. `skills/**` and `tests/test_skill_receipts.py`
+  are both in the list. `tools/skill_registrar.py` is not, and neither is
+  `tools/panel_provenance.py`, which the same test file executes as a
+  subprocess. The three `tools/` files the list does name are `board.py`,
+  `run_report.py` and `graph_audit.py`. So a diff that changes only the parser,
+  which is the diff most likely to weaken this gate, does not start the job
+  that guards it. This run's own change started it only because it happened to
+  touch the test file too.
+- What: the paths list should name the source every named step reads, not only
+  the test file and the data. The general form is the one thing worth taking
+  from it: a path filter is a second dependency graph, written by hand, and it
+  is wrong in the direction that produces green. `tests/test_ci_coverage.py` on
+  the open engineer branch already pins the other half of this, which is test
+  files no step runs, and its own docstring says the two places a filename can
+  appear in that workflow mean opposite things. This is the third place, and it
+  is the one nothing counts.
+- First step: extend that test rather than the workflow, because the workflow
+  is a hand this seat does not have. For each step the workflow runs, import
+  the test file and assert that every first-party module it imports is either
+  in the job's `paths` or covered by a glob in it. The assertion is over
+  `.github/workflows/checks.yml` as text and the import graph as Python, needs
+  no network, and names the missing entries. The workflow edit it then asks for
+  is one the owner or a chair applies, the same way
+  `.github/workflows-pending/checks.yml` already waits.
+- Cost: $0
+- Status: proposed
+
 ### 2026-10-27 - The research seat's source-naming convention, accepted and in force in practice from today (skill seat, mine)
 - Trigger: the research seat's entry of 2026-10-26 in this file, "A
   reading-queue line should say which paper it read the fact out of", which
@@ -22328,3 +23041,276 @@ has nothing to go red against.
 - Whose call: done, this seat, on the rule. The engineer for the two routes.
 - Cost: $0.
 - Status: built
+
+### 2026-10-27 - Six third-party packages are imported by this repository's Python and declared in neither requirements file (engineer seat, message run)
+- Trigger: today's build added `pyyaml` to `requirements-dev.txt` because a gate
+  that imported it had been answering about a tree it never parsed. Before
+  writing the line this run asked how big the class was, by walking every
+  `import` in `tools/`, `tests/`, `pipeline/`, `mcp/` and
+  `skills/_validation/` with `ast` and subtracting the standard library, this
+  repository's own module names, and everything the two requirements files
+  declare. Twelve third-party packages are imported. Six are declared:
+  `fastapi`, `httpx`, `jwt` (as `pyjwt`), `markdown`, `pytest`, and `modal` in
+  `requirements.txt`. Six are not: `fastmcp`, `feedparser`, `psycopg`,
+  `sentence_transformers`, `tiktoken`, and `yaml`, which this run closed.
+- What: the five that remain are not a bug, and that is exactly why they are
+  worth a gate. Most of them are deliberate, because `requirements-dev.txt`
+  says in its own first line that it is "not shipped to Modal" and the runtime
+  image pins its own versions in `mcp/server.py`, so `psycopg` and
+  `sentence_transformers` belong to the image and not to a local checkout. The
+  problem is that the split lives in a comment, so the file cannot tell a
+  package that is deliberately absent from one that was forgotten. `pyyaml` was
+  forgotten and looked exactly like the other five for weeks. The ask is a test
+  that writes the split down: every third-party import is in exactly one of two
+  named sets, image-only or local-check, and an import in neither fails with
+  the module and the file that imports it. Then the next forgotten package
+  fails on the pull request that imports it rather than on the day somebody
+  runs a gate on a clean host.
+- First step: `tests/test_dependency_declaration.py`, with the two sets as
+  literals and the `ast` walk this run already wrote as the body. It needs no
+  network and no database, which is most of why it is worth having now: it is
+  one of the few checks that still runs with the Modal workspace off.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-27 - The quarantine has one expiry date for every entry it will ever hold, and Trivy shows the per-entry version (engineer seat, message run, craft scan)
+- Trigger: today's craft scan, below, read against the constant this run
+  emptied. `FRONTMATTER_QUARANTINE` is a dict of entries and
+  `FRONTMATTER_QUARANTINE_EXPIRES` is a single string beside it, so the date is
+  a property of the mechanism rather than of the excuse. The two entries it
+  held were added the same day and expired together, which hid the defect
+  completely.
+- What: the second entry somebody adds inherits the first one's deadline. Add an
+  entry on 2026-11-01 to a quarantine whose date is 2026-11-03 and it gets two
+  days, silently, and nothing in the gate's output says so. Worse in the other
+  direction: extend the shared date to give a new entry its week and every older
+  entry is quietly resurrected for the same week. The fix is to move the date
+  into the entry, so the value becomes a reason and a date rather than a bare
+  string, and the gate's message names the entry that expired rather than the
+  constant.
+- First step: change the dict's value to a two-field record, keep
+  `FRONTMATTER_QUARANTINE_EXPIRES` as the default for an entry that omits one,
+  and extend `test_the_quarantine_mechanism_excuses_expires_and_reports_itself_spent`
+  with a second fake entry on a different date. The test already takes its
+  quarantine as an argument, which this run did for a different reason, so the
+  two-date case costs one more literal.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-27 - A conflict in the ledger or the incident register must never be located by searching for its marker, and that belongs in the charters (engineer seat, message run)
+- Trigger: this run's own near-miss, filed as
+  `INC-2026-10-27-a-conflict-resolver-matched-a-marker-the-register-quotes-in-its-own-prose`.
+  Resolving an append-anchor conflict in `docs/ideas.md` with a script that
+  found the conflict by `s.index('<<<<<<< HEAD')` deleted ten thousand lines of
+  good prose, because the first occurrence of that string in the file is line
+  11651, inside a ledger entry that quotes the marker while describing the
+  2026-10-18 incident about committed markers. It was caught one command later
+  by the charter's own step-zero grep and nothing shipped wrong.
+- What: every seat's charter already carries the step-zero grep, which catches a
+  marker that got committed. None of them says anything about how to find a
+  conflict in the first place, and these two files are the ones every seat
+  appends to, so they are where the conflict always is. They are also the two
+  files that accumulate quotations of markers over time, by design, because
+  recording marker incidents is what the register is for. So the hazard grows
+  with every entry. The proposal is one clause in the "Check the register before
+  you ship" section of each charter: in `docs/ideas.md` and
+  `docs/agents/incidents.md`, locate a conflict with `git diff
+  --diff-filter=U` and the line numbers git already printed, never with a
+  search for the marker text.
+- First step: the clause above, pasted into the "Check the register before you
+  ship" section of each of the seat charters under `prompts/`, as a numbered
+  item beside the existing step-zero grep. It is a one-paragraph edit per
+  charter and no code.
+- Why it is a proposal and not a diff: charters are edited only by the owner's
+  merge and this seat's charter forbids including a charter edit in its daily
+  pull request, so the clause is written out here for whoever carries it. It is
+  also not code, deliberately: the resolver is something a seat writes fresh
+  every time it merges rather than a committed tool, which is why the rule has
+  to live somewhere a seat reads before merging.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-27 - Craft scan: Trivy gives a suppression an expiry date and says out loud that it never parses the reason, where ESLint and mypy report a spent one and ship both checks off by default (engineer seat, message run)
+- Trigger: the daily craft scan, pointed at this run's own build. The work was
+  an excuse with a date on it that reports itself spent, so the scan went to the
+  products that already have that mechanism as a first-class feature. Three read
+  live on 2026-10-27:
+  [Trivy's filtering docs](https://trivy.dev/latest/docs/configuration/filtering/),
+  [ESLint's CLI reference](https://eslint.org/docs/latest/use/command-line-interface),
+  and [mypy's config file reference](https://mypy.readthedocs.io/en/stable/config_file.html).
+  None is in `docs/market/landscape.md` and none is a competitor. They are the
+  nearest products in the world with the same problem.
+- What: the scan's finding in one line, because this entry is a scan and a
+  proposal at once. Two mature tools have the spent-excuse check and ship it
+  off by default, one has a per-entry expiry date and an explicit promise never
+  to parse the reason, and no one of the three has both halves. The borrowable
+  piece is the field layout rather than the mechanism.
+- First step: adopt Trivy's three-field shape for the quarantine entry, which
+  is the separate proposal above, and copy the parenthesis with it: the gate's
+  own comment should say that the reason is never read by anything, so no later
+  version starts matching on its wording.
+- **What is worth stealing**, and it is one sentence in Trivy's docs. A
+  `.trivyignore.yaml` entry has three fields, and they are `id`, `expired_at`
+  as a `yyyy-mm-dd` date, and `statement`, whose documented description ends
+  "(This field is not used for filtering.)" That parenthesis is the steal. It
+  tells a reader that the machine reads the id and the date and nothing else,
+  so the prose is for humans and no later version will start depending on its
+  wording. The expiry is also per entry rather than per file, with "If
+  `expired_at` is not set, the ignore finding is always valid" as the documented
+  default, which is the defect filed as a separate entry above: this
+  repository's quarantine has one date for the whole dict.
+- **What alexandria does better**, measured against the other two rather than
+  asserted. ESLint's `--report-unused-disable-directives` reports a
+  `// eslint-disable-line` "when no errors would have been reported on that line
+  anyway", and mypy's `warn_unused_ignores` "Warns about unneeded
+  `# type: ignore` comments." Both are the spent-excuse check, both are older
+  and better engineered than anything here, and both are **off unless you turn
+  them on**: the ESLint flag is opt-in on the command line and mypy's option
+  defaults to `False`. So in the configuration most projects actually run, a
+  suppression that has stopped suppressing anything is invisible, which is the
+  rot rather than the remedy. Trivy, for its part, expires an entry and never
+  tells you the entry had become pointless before it expired. This repository's
+  gate has both halves, has them on with no way to turn them off, and makes the
+  spent half a red gate that names the entry and asks for its deletion rather
+  than a warning that accumulates. That is not a better idea than theirs. It is
+  the same idea with the default the other way round, and the default is the
+  whole difference between a mechanism and a habit.
+- The evidence it works: the spent half fired for real today, within a day of
+  being written, on the merge that brought the skill seat's quoting fix in.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-27 - A continuation run cannot tell inherited red from its own red, and it costs a worktree and two full suites to find out (engineer seat, hook run)
+
+- Trigger: this run continued a predecessor that was cut off at turn 143, ran
+  the full suite, and got three failures. Two of them reproduce on a clean
+  `origin/main` worktree and were already filed as deliberate. The third was
+  introduced by the predecessor's own last commit. Learning which was which took
+  a `git worktree add` against `origin/main` and a second run of three test
+  files, and the whole question is mechanical.
+- What: `tools/inherited_red.py`, which takes a base and runs only the tests
+  that are red on the branch, again, in a clean worktree of that base, and
+  prints two lists. Inherited, meaning red in both and therefore somebody
+  else's entry to answer. Introduced, meaning green on the base and red here,
+  which is the only half the run is responsible for. It writes no files and
+  needs no credentials, and it removes the judgement call that a seat under a
+  turn cap will skip. The reason this matters more than the convenience is that
+  the skip has a direction: a run that cannot cheaply separate the two will read
+  its own regression as inherited, because the note it inherited says three
+  failures were expected, and today that reading would have been wrong.
+- Why it is worth a day: every run of this seat starts from `main` with no
+  memory, the supersede chain means most runs inherit a branch rather than a
+  clean tree, and the chain is at depth seven today. The deeper the chain, the
+  more inherited red there is to read past, and the cheaper it has to be.
+- First step: the three commands this run ran by hand, wrapped, with the base
+  defaulting to `origin/main` and the test list read from a prior `pytest -q`
+  tail rather than supplied.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-27 - The structural gates belong in the pytest session, not in a test file no workflow runs (engineer seat, hook run)
+
+- Trigger: today's repeat of the stranded-test class
+  (`INC-2026-10-27-a-cut-off-run-left-seven-tests-below-the-runner-block-and-the-gate-that-catches-it-runs-in-no-workflow`).
+  The gate that catches it lives in `tests/test_ci_coverage.py`, which is the
+  first line of its own `UNCOVERED` set, and the file it caught,
+  `tests/test_arxiv_window.py`, is in that set too. Sixty-four files in `tests/`
+  are pinned as run by no workflow. So the defect reached a branch, got no red
+  tick on the pull request, and was found only because a cut-off run happened to
+  be continued by a run that reruns everything.
+- What: move the handful of assertions that are about the harness rather than
+  about the product into `tests/conftest.py`, as a session-scoped check that
+  fails the session. There are three of them today: no test file stranded below
+  its runner block, no file with a runner block that cannot execute it, and the
+  coverage set itself. In a conftest they fire on every pytest invocation,
+  including `pytest tests/test_one_file.py`, which is what a seat under a turn
+  cap actually runs. The present arrangement makes the harness gates the least
+  reachable thing in the suite, which is backwards, because they are the ones
+  that decide whether anything else ran.
+- Why this shape and not the workflow fix: the workflow fix is item 17 of
+  `tests/test_ci_coverage.py` and it has been staged in
+  `.github/workflows-pending/checks.yml` since 2026-10-13, needing a `git mv`
+  and a `workflows` permission no seat holds. This one needs neither. It is
+  worth having both, because they fail differently: the workflow reaches every
+  file once per pull request and the conftest reaches these three gates every
+  time anybody runs anything.
+- First step: the stranded-test assertion alone, moved, with the test left in
+  place as a thin call so nothing that greps for its name breaks. One gate
+  proves the shape before three of them depend on it.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-27 - The conftest claims its Modal stub is the union of what the pipeline reaches, and nothing checks the claim (engineer seat, hook run)
+
+- Trigger: `tests/test_triage_planner.py` carried a Modal stub spelled as nested
+  namespaces exactly as deep as `pipeline/triage.py` chained on the day it was
+  written. A later `add_local_file` in that pipeline broke a test file that never
+  changed, and because the break was at import time under a direct run, the
+  suite stayed green for as long as it lasted. `tests/conftest.py`'s own
+  docstring says "The stub is the union of what `pipeline/` and `mcp/` actually
+  reach for at import time", which is a measurement written as prose, and it is
+  the same claim the triage stub was making silently.
+- What: an assertion that walks `pipeline/` and `mcp/` for every attribute
+  reached on the `modal` module at module scope, and compares that set against
+  what the stub in `tests/conftest.py` provides. A pipeline that starts reaching
+  for something new fails the suite in the file that has to stand in for it,
+  rather than in whichever test file imports that pipeline first. The conftest's
+  docstring already records what the unchecked version cost once: four in-file
+  copies disagreed, the thinnest won collection, and the suite reported one
+  error and ran no tests at all.
+- Why it is worth a day: this is L-A9's shape, recording is not enforcing, with
+  the recording in a docstring. The union claim is true today because this run
+  measured it, and it has no way of staying true. Related to the 2026-10-01
+  entry proposing a pure `pipeline/rules.py`, which shrinks the stub's job
+  instead of checking it. Both are worth having and the check is the cheaper
+  one, because it needs no change to anything that runs on Modal.
+- First step: the walk, over `pipeline/` only, asserting the set is a subset of
+  the stub's attributes. `mcp/` second, once the first one is green.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-27 - Craft scan: Go runs the lint that finds an unrunnable test inside the test command, so the check cannot be less reachable than the tests it guards (engineer seat, hook run)
+
+- Trigger: the daily craft scan, pointed at this run's own build. The work was a
+  test that the file's own runner could not reach, and the gate that found it is
+  reachable from no workflow, so the scan went looking for an ecosystem that
+  solves the reachability of the check rather than the defect.
+- What: Go wires the check for an unrunnable test into `go test` itself, so it
+  is exactly as reachable as the tests, and this repository wires the equivalent
+  check into a file no workflow runs. The two readings below, and the change the
+  steal argues for.
+- **What is worth stealing**, and it is one sentence of Go's own command
+  documentation. "As part of building a test binary, go test runs go vet on the
+  package and its test source files to identify significant problems." The
+  default set is named in the same page, "atomic, bools, buildtag, directive,
+  errorsas, ifaceassert, nilfunc, printf, stdversion, stringintconv, and tests",
+  described there as "a high-confidence subset of the default go vet checks".
+  The last of those eleven is the one that matters here: the `tests` analyzer
+  "walks Test, Benchmark, Fuzzing and Example functions checking malformed
+  names, wrong signatures and examples documenting non-existent identifiers".
+  So the check for a test the runner cannot run is wired into the runner, not
+  into CI. It fires for anyone who types the ordinary command, it cannot be
+  omitted from a step list, and turning it off is an explicit `-vet=off`. Both
+  quotes read off the vendor's current documentation this run rather than from
+  memory.
+- **What alexandria does better**, and it is the question being asked rather
+  than the plumbing. Go's `tests` analyzer checks whether a test function is
+  well formed. It has no opinion about whether anything runs the file, because
+  Go's own design removes that question: the generated test main finds every
+  `Test*` in the package, so position in the file cannot strand anything.
+  Python's does not, and pytest collects by importing, so a test below a
+  `__main__` block passes under pytest and is invisible to a direct run. The
+  assertions in `tests/test_ci_coverage.py` ask the question neither tool asks,
+  which is whether the harness reaches this test at all: a file no workflow
+  names, a test below its own runner, and as of this run a runner block that
+  cannot execute. That is a property of the project rather than of the language,
+  and no linter ships it.
+- **What the steal changes about the plan.** It is the argument for the entry
+  above about moving the structural gates into `tests/conftest.py`. Go's lesson
+  is not the analyzer, it is where the analyzer runs. A gate on reachability
+  that is itself the least reachable file in the suite is the defect it was
+  written to catch, one level up, and today it only fired by luck.
+- First step: covered by the conftest entry above, which this scan is the
+  argument for rather than a separate build.
+- Cost: $0
+- Status: proposed

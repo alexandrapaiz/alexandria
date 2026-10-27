@@ -323,6 +323,47 @@ UNCOVERED = {
     # unknown stops a close are the ones that would be silent on a pull
     # request.
     "tests/test_loop_close.py",
+    # Added 2026-10-26 with the arXiv window's repair, and pinned for the same
+    # structural reason as every line above: the step that would run it goes
+    # in `.github/workflows/checks.yml`, which no seat's token may write, and
+    # `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words not
+    # to attempt that file again. The staged replacement runs it, because that
+    # file runs the suite rather than naming files.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern.
+    #
+    # What it guards is the top of the pipeline, and in the direction this
+    # repository has just learned is the expensive one. `pipeline/ingest.py`
+    # read a sliding window for its whole life, so a run it missed did not
+    # lose time, it lost records: 290 to 570 papers of cs.AI and cs.LG are
+    # already beyond the reach of any future run
+    # (`INC-2026-10-26-the-arxiv-window-is-smaller-than-two-of-the-categories-behind-it`).
+    # The assertions whose silence would cost most are the two bounds rather
+    # than the window itself, because a regression that re-caps the window at
+    # one page reads as a green run with a smaller corpus, which is exactly
+    # how the defect went unmeasured for the job's whole life.
+    "tests/test_arxiv_window.py",
+    # Added 2026-10-26 with the fifth evidence grade, and pinned for the same
+    # structural reason as every line above: the step that would run it goes
+    # in `.github/workflows/checks.yml`, which no seat's token may write, and
+    # `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words not
+    # to attempt that file again. The staged replacement runs it, because that
+    # file runs the suite rather than naming files.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern.
+    #
+    # What it guards is a guard that has to be wrong in one direction only.
+    # `evidence.relay_markers` decides that a claim is another work's result
+    # rather than the source's own, and it decides it off the evidence text
+    # when the model said otherwise. The assertions whose silence would cost
+    # most are not the ones about the sentence that cost a shipped skill; they
+    # are the five first-hand sentences that read relational and must not
+    # fire. A loosened marker regresses those silently, and the only visible
+    # symptom is a corpus that grades its own measurements second-hand, which
+    # is the failure this grade exists to stop, running backwards.
+    "tests/test_relayed_claims.py",
     "tests/delivery.test.mjs",
     "tests/issues.test.mjs",
     "tests/markdown.test.mjs",
@@ -687,6 +728,63 @@ def test_no_test_file_strands_a_test_below_its_runner():
         "these tests are defined below their file's `__main__` block, so a "
         f"direct run of the file never reaches them: {stranded}. Move the "
         "runner block to the end of the file."
+    )
+
+
+def test_every_file_with_a_runner_block_can_run_without_the_conftest():
+    """The gate above protects a path. This one asks whether the path executes.
+
+    `tests/conftest.py` installs the Modal stub for the whole suite, and only
+    pytest loads a conftest. So a file whose module-level code imports anything
+    under `pipeline/` or `mcp/` reaches `import modal` with nothing standing in
+    for it, and `modal` is declared in `requirements.txt`, which neither
+    `checks.yml` nor a developer host installs. The repository's answer is the
+    in-file guarded stub that `conftest.py`'s own docstring says is "left in
+    place on purpose", because a file documenting a direct run "still has to
+    work with no conftest involved".
+
+    Nothing checked that it did. On 2026-10-27 two of the thirteen files
+    carrying a runner block could not execute it:
+    `test_arxiv_window.py` had no stub at all, and `test_triage_planner.py` had
+    one spelled as nested namespaces exactly as deep as `pipeline/triage.py`
+    chained on the day it was written, so a later `add_local_file` in that
+    pipeline broke a test file that never changed
+    (`INC-2026-10-27-a-cut-off-run-left-seven-tests-below-the-runner-block-and-the-gate-that-catches-it-runs-in-no-workflow`).
+    Both failed at import, so a direct run printed a traceback instead of any
+    assertion, and the suite stayed green the whole time.
+
+    The module is imported under its own name rather than run as a script, so
+    module-level code executes and the runner block does not fire. That keeps
+    this a check on the import path and not a second copy of the suite.
+    """
+    import ast
+    import subprocess
+
+    broken = {}
+    for path in sorted((ROOT / "tests").glob("test_*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        if not any(isinstance(n, ast.If) and "__main__" in ast.dump(n.test)
+                   for n in tree.body):
+            continue
+        # `sys.path[0]` under `-c` is the working directory. A direct run of the
+        # script puts the script's own directory there instead, so it is
+        # replaced rather than appended to.
+        code = (
+            "import sys, runpy;"
+            f"sys.path[0] = {str(path.parent)!r};"
+            f"runpy.run_path({str(path)!r}, run_name='imported_not_main')"
+        )
+        done = subprocess.run([sys.executable, "-c", code], cwd=ROOT,
+                              capture_output=True, text=True, timeout=180)
+        if done.returncode != 0:
+            tail = done.stderr.strip().splitlines()
+            broken[path.relative_to(ROOT).as_posix()] = tail[-1] if tail else "?"
+    assert not broken, (
+        "these files carry an `if __name__ == \"__main__\"` runner block and "
+        f"cannot be imported without pytest's conftest: {broken}. Add the "
+        "guarded Modal stub the other files in this directory use, spelled as a "
+        "self-returning image so a longer builder chain in `pipeline/` cannot "
+        "break it."
     )
 
 

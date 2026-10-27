@@ -85,6 +85,31 @@ NOT_A_SKILL = {"_validation"}
 KIND = "skill"
 STATUS = "approved"
 
+# Two skills shipped an unquoted colon in `description:` before the refusal in
+# `parse_frontmatter` existed, so the defect is on main and the fix for it is
+# not: quoting those two values is a write into `skills/`, which the skill seat
+# owns and already has in flight. Until that lands, these two are reported by
+# every mode of this gate and block none of them. Anything else with the same
+# defect blocks, which is the whole point of the entry.
+#
+# The quarantine cannot rot quietly in either direction. Once the date passes,
+# a skill that is still unreadable blocks like any other, so forgetting this
+# constant costs a red gate with the slug in it. And a quarantined skill that
+# has been fixed raises nothing at all, so the fix landing never turns anything
+# red; the constant is then simply spent, and deleting it is a one-line change
+# the gate's own `--json` output asks for.
+# SPENT AND EMPTIED 2026-10-27. It held `evaluation-integrity` and
+# `skill-library-engineering`, both waiting on the skill seat's quoting fix. That
+# fix merged, both descriptions are quoted on main, and all nine skills now load
+# under PyYAML, so the two entries excused nothing. They were deleted the same
+# day rather than left to rot, which is the outcome the paragraph above was
+# written to produce and the first time it has been exercised:
+# `test_a_spent_quarantine_entry_asks_to_be_deleted` turned red on the merge that
+# brought the fix in, and this is what it asked for. An empty dict is the healthy
+# resting state, not a missing value.
+FRONTMATTER_QUARANTINE: dict[str, str] = {}
+FRONTMATTER_QUARANTINE_EXPIRES = "2026-11-03"
+
 
 # ----------------------------------------------------------- frontmatter
 
@@ -116,12 +141,123 @@ def _unquote(value: str) -> str:
     return v
 
 
+class FrontmatterError(ValueError):
+    """A frontmatter value no parser can read, so this one refuses to guess."""
+
+
+# YAML's rule for an unquoted scalar: a colon followed by whitespace, or ending
+# the line, opens a mapping. So `description: a method: the subject` is not a
+# string that happens to contain a colon, it is an error, and PyYAML says
+# `mapping values are not allowed here` and refuses the whole document.
+#
+# This parser used to answer that line with `a method: the subject`, which is a
+# guess and not a read. Nothing in the file says whether the author meant one
+# string or a nested key, and the guess is why two shipped skills were
+# unloadable for weeks with every tool in this repository agreeing they were
+# fine: the first reader to disagree was a real YAML loader outside it, and the
+# consumer's own documented behaviour on a frontmatter it cannot parse is to
+# load the skill with no fields set rather than to fail. Present and
+# unroutable, with nothing red anywhere.
+AMBIGUOUS_COLON = re.compile(r":(?:\s|$)")
+
+
+def _quoted(value: str) -> bool:
+    return len(value) > 1 and value[0] in "\"'" and value.endswith(value[0])
+
+
+def _unterminated(value: str) -> bool:
+    return bool(value) and value[0] in "\"'" and not _quoted(value)
+
+
+def frontmatter_problems(fm: str) -> list[str]:
+    """One line per value this parser cannot read unambiguously.
+
+    The detector is separate from the parse because the two questions have
+    different answers. `parse_frontmatter` is asked by tools that want a field;
+    this is asked by the gate that wants to know whether the file is honest.
+
+    Not quite the same question as "would PyYAML refuse this", and the
+    difference is one-directional on purpose. Everything a loader refuses is
+    reported here, which is the defect this exists for, and the two are
+    measured to agree on all nine shipped skills. One construct is reported
+    that a loader accepts, the block scalar, because this parser does not
+    implement it and would read its continuation lines as keys. A parser that
+    says "I cannot read this" about valid YAML is honest; one that returns `|`
+    as the description is not.
+    """
+    problems: list[str] = []
+    for raw in fm.split("\n"):
+        text = raw.strip()
+        if not text or text.startswith("#"):
+            continue
+
+        if text.startswith("- "):
+            item = text[2:].strip()
+            if _unterminated(item):
+                problems.append(
+                    f"the list item `{_clip(item)}` opens with a quote and never "
+                    "closes it, so where the value ends is a guess")
+            elif not _quoted(item) and AMBIGUOUS_COLON.search(item):
+                problems.append(
+                    f"the list item `{_clip(item)}` holds an unquoted colon, so "
+                    "YAML reads it as a map and this parser reads it as a "
+                    "string. Quote it.")
+            continue
+
+        key, sep, rest = text.partition(":")
+        if not sep:
+            problems.append(
+                f"the line `{_clip(text)}` is neither a `key: value` nor a list "
+                "item, so nothing can be read from it")
+            continue
+        value = rest.strip()
+        if not value or (value.startswith("[") and value.endswith("]")):
+            continue
+        if value[0] in "|>":
+            # A block scalar. YAML reads the indented lines under it as the
+            # value; this parser reads them as keys. Nothing in the library
+            # uses one, and the honest answer to a construct a parser does not
+            # implement is to say so rather than to return the indicator.
+            problems.append(
+                f"`{key.strip()}:` opens a YAML block scalar, which this parser "
+                "does not implement. Write the value on one line, quoted.")
+        elif value.startswith("[") and not value.endswith("]"):
+            problems.append(
+                f"`{key.strip()}:` opens an inline array and never closes it, "
+                "so where the list ends is a guess")
+        elif _unterminated(value):
+            problems.append(
+                f"`{key.strip()}:` opens with a quote and never closes it, so "
+                "where the value ends is a guess")
+        elif not _quoted(value) and AMBIGUOUS_COLON.search(value):
+            problems.append(
+                f"`{key.strip()}:` holds an unquoted colon, which YAML reads as "
+                "a nested key and not as part of the value. A real loader "
+                "refuses the whole document for it. Quote the value.")
+    return problems
+
+
+def _clip(text: str, width: int = 48) -> str:
+    return text if len(text) <= width else text[:width - 1] + "\u2026"
+
+
 def _inline_array(value: str) -> list[str]:
     return [x for x in (_unquote(p) for p in value[1:-1].split(",")) if x]
 
 
-def parse_frontmatter(fm: str) -> dict:
-    """The frontmatter as nested dicts and lists. Lookahead, never guesswork."""
+def parse_frontmatter(fm: str, *, strict: bool = True) -> dict:
+    """The frontmatter as nested dicts and lists. Lookahead, never guesswork.
+
+    `strict` is the refusal, and it is the default because a reader that cannot
+    tell a guess from a read should be told. The seven call sites that pass
+    `strict=False` are the ones that have to keep working while the two skills
+    in `FRONTMATTER_QUARANTINE` are still unquoted on main; each one says so,
+    and `grep -rn 'strict=False' tools/` is the list.
+    """
+    if strict:
+        problems = frontmatter_problems(fm)
+        if problems:
+            raise FrontmatterError("; ".join(problems))
     lines = []
     for raw in fm.split("\n"):
         if not raw.strip() or raw.lstrip().startswith("#"):
@@ -233,7 +369,15 @@ def read_skills(skills_dir: pathlib.Path | None = None) -> tuple[list[Row], list
                 "carries no provenance and cannot be registered.")
             continue
 
-        parsed = parse_frontmatter(fm)
+        for unreadable in frontmatter_problems(fm):
+            problems.append(f"skills/{slug}/SKILL.md: {unreadable}")
+
+        # Lenient on purpose, and this is the one call site where that is not a
+        # concession. The strict parser raises on the first unreadable value and
+        # this function's contract is every skill's row plus everything wrong
+        # with the library, so it has to read what it can and keep going. The
+        # refusal is already reported above.
+        parsed = parse_frontmatter(fm, strict=False)
         provenance = parsed.get("provenance")
         if not isinstance(provenance, dict):
             problems.append(
@@ -461,6 +605,43 @@ def waiting_problems(rows, problems) -> set[str]:
     return waiting
 
 
+def quarantined_problems(problems, today: str = "", quarantine=None,
+                         expires: str = "") -> set[str]:
+    """The frontmatter refusals `FRONTMATTER_QUARANTINE` holds open, if it still can.
+
+    Same shape as `waiting_problems` above and for the same reason: a problem an
+    excuse covers is printed and not blocked on. The difference is that this
+    excuse has a date on it, so it expires rather than being argued with.
+
+    `quarantine` and `expires` default to the module constants and exist so the
+    mechanism stays testable once the live quarantine is empty, which it became
+    on 2026-10-27. A gate whose only test subject is the live data stops being
+    tested the day the live data is clean, and then the next seat to need the
+    excuse inherits an untested one.
+    """
+    import datetime
+
+    quarantine = FRONTMATTER_QUARANTINE if quarantine is None else quarantine
+    expires = expires or FRONTMATTER_QUARANTINE_EXPIRES
+    today = today or datetime.date.today().isoformat()
+    if today >= expires:
+        return set()
+    excused = set()
+    for slug in quarantine:
+        marker = f"skills/{slug}/SKILL.md: "
+        excused |= {p for p in problems
+                    if p.startswith(marker) and "unquoted colon" in p}
+    return excused
+
+
+def spent_quarantine(problems, quarantine=None) -> list[str]:
+    """The quarantine entries nothing needs any more, named so they get deleted."""
+    quarantine = FRONTMATTER_QUARANTINE if quarantine is None else quarantine
+    still_broken = {slug for slug in quarantine
+                    if any(p.startswith(f"skills/{slug}/SKILL.md: ") for p in problems)}
+    return sorted(set(quarantine) - still_broken)
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--files-only", action="store_true",
@@ -480,11 +661,14 @@ def main(argv=None) -> int:
 
     rows, problems = read_skills()
     waiting = waiting_problems(rows, problems)
-    blocking = [p for p in problems if p not in waiting]
+    quarantined = quarantined_problems(problems)
+    blocking = [p for p in problems if p not in waiting and p not in quarantined]
     report: dict = {
         "skills": [r.as_dict() for r in rows],
         "problems": problems,
         "waiting": sorted(waiting),
+        "quarantined": sorted(quarantined),
+        "quarantine_spent": spent_quarantine(problems),
         "state": "failing" if blocking else "ok",
     }
 
@@ -530,9 +714,19 @@ def main(argv=None) -> int:
             print(f"  {row.path}: {len(row.claim_ids)} claims, "
                   f"version {row.version or '?'}, status {row.skill_status or '?'}")
         for line in problems:
-            # A problem the panel excuses is still printed, because the state is
+            # A problem an excuse covers is still printed, because the state is
             # worth seeing. It just does not decide the exit code.
-            print(f"{'waiting' if line in waiting else 'failing'}: {line}")
+            if line in waiting:
+                label = "waiting"
+            elif line in quarantined:
+                label = "quarantined"
+            else:
+                label = "failing"
+            print(f"{label}: {line}")
+        for slug in report["quarantine_spent"]:
+            print(f"spent: skills/{slug}/ is readable now, so its entry in "
+                  "skill_registrar.FRONTMATTER_QUARANTINE is excusing nothing "
+                  "and should be deleted")
         if "unregistered" in report:
             for path in report["unregistered"]:
                 print(f"failing: {path} is on main with no promotions row, so "

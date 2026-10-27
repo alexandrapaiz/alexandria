@@ -176,6 +176,12 @@ SPEC_DESCRIPTION_MAX = 1024
 QUEUE_PATH = "docs/research/reading-queue.md"
 
 ARXIV = re.compile(r"arxiv\.org/abs/([0-9]{4}\.[0-9]{4,5}(?:v[0-9]+)?)", re.I)
+
+# `papers.id` in the arXiv namespace, which `pipeline/ingest.py` writes as
+# `arxiv:2609.08371` for the firehose and for hf-daily alike. Anchored, because
+# this asks whether an id *is* an arXiv key rather than whether it contains one:
+# `blog:somefeed:2609084411aa33bc` must not read as a paper from September 2026.
+ARXIV_ID = re.compile(r"^(?:arxiv:)?([0-9]{4}\.[0-9]{4,5}(?:v[0-9]+)?)$", re.I)
 SECTION = re.compile(r"^## +(.+?)\s*$", re.M)
 VALIDATION_TAG = re.compile(r"^\*Validation:", re.M)
 
@@ -240,6 +246,47 @@ def paper_sources(papers: list[str]) -> tuple[list[str], list[str]]:
     return ids, unreadable
 
 
+def attribution_key(paper_id: str | None, url: str | None) -> tuple[str, str]:
+    """What to match a claim's paper against, and which namespace decided it.
+
+    Returns `(key, "arxiv" | "url" | "")`.
+
+    The id is read before the url, because the id is the thing the corpus is
+    keyed on and the url is a field. `pipeline/ingest.py` writes exactly two
+    namespaces into `papers.id`, and `db/schema.sql:9` has said so since the
+    schema was written: `arxiv:<id>` for the firehose and for hf-daily, which
+    share a key space on purpose so a curated pick upgrades a row the firehose
+    already saw, and `blog:<feed>:<sha16>` for every feed entry, written every
+    day. So "not arXiv" is an ordinary, live state of this table rather than a
+    hypothetical.
+
+    **Why this is not the url regex it replaces.** The branch above used to ask
+    an arXiv abstract-url regex about the url and the id, and file `unknown` on
+    no match. `unknown` blocks, because ADR-13 merges on unanimous pass, so a
+    proceedings paper would have filed cleanly, distilled cleanly, and then
+    blocked the first skill that cited it. The research seat measured the rest:
+    all ten shipped skills carry an arXiv abstract url on every provenance line,
+    so the library is wholly arXiv-sourced today and that branch has never fired
+    in anger. The first non-arXiv source would have been the one to find out
+    (`INC-2026-10-27-a-queue-lines-stated-reason-was-carried-through-an-amendment-and-had-been-false-since-the-day-it-was-written`
+    and the ask under it).
+
+    A non-arXiv paper is now decided rather than refused, and it is decided on
+    the url, which is what a provenance line carries for a source with no id.
+    That keeps the same defect reportable in both namespaces: a skill citing
+    evidence it does not attribute fails either way. `unknown` is left for the
+    one case where there is genuinely nothing to match, a row with no url and an
+    id in neither namespace, which is a corpus defect rather than a skill's.
+    """
+    for candidate in (paper_id, url):
+        match = ARXIV_ID.match((candidate or "").strip()) or ARXIV.search(candidate or "")
+        if match:
+            return match.group(1).split("v")[0], "arxiv"
+    if (url or "").strip():
+        return url.strip(), "url"
+    return (paper_id or ""), ""
+
+
 def waiting_on_the_queue(row, raw: str) -> str:
     """Why this skill cites no claims, when the reason is on the record.
 
@@ -267,7 +314,9 @@ def waiting_on_the_queue(row, raw: str) -> str:
     if row.claim_ids:
         return ""
     fm, _ = registrar.split_frontmatter(raw)
-    provenance = registrar.parse_frontmatter(fm).get("provenance") or {}
+    # strict=False: refusing an unreadable value is the registrar gate's
+    # job, and FRONTMATTER_QUARANTINE still holds two of them open.
+    provenance = registrar.parse_frontmatter(fm, strict=False).get("provenance") or {}
     papers, _unreadable = paper_sources(provenance.get("papers") or [])
     if not papers:
         return ""
@@ -300,6 +349,20 @@ def review_file(row, raw: str, problems: list[str]) -> list[Finding]:
 
     for problem in problems:
         if f"skills/{slug}/" not in problem:
+            continue
+        if registrar.quarantined_problems([problem]):
+            # A frontmatter value no parser can read, on a skill that shipped
+            # before the refusal existed. The registrar's quarantine holds it
+            # open with a date and an owner, and the fix is a write into
+            # `skills/` that the skill seat already has in flight, so this
+            # reviewer says `unknown` for exactly as long as that is true. The
+            # ADR-36 gate still blocks, the same way it does for a draft
+            # waiting on the queue.
+            findings.append(Finding(
+                "registrable", "unknown",
+                f"{problem} Quarantined until "
+                f"{registrar.FRONTMATTER_QUARANTINE_EXPIRES}: "
+                f"{registrar.FRONTMATTER_QUARANTINE[slug]}."))
             continue
         waiting = waiting_on_the_queue(row, raw) if "cites no claim ids" in problem else ""
         if waiting:
@@ -337,7 +400,9 @@ def review_file(row, raw: str, problems: list[str]) -> list[Finding]:
             "starts at 1."))
 
     fm, body = registrar.split_frontmatter(raw)
-    parsed = registrar.parse_frontmatter(fm)
+    # strict=False: refusing an unreadable value is the registrar gate's
+    # job, and FRONTMATTER_QUARANTINE still holds two of them open.
+    parsed = registrar.parse_frontmatter(fm, strict=False)
     provenance = parsed.get("provenance") or {}
 
     papers = provenance.get("papers") or []
@@ -489,35 +554,51 @@ def review_claims(row, raw: str, live: dict[int, tuple[str, str]]) -> list[Findi
             "row in claims"))
 
     fm, _ = registrar.split_frontmatter(raw)
-    papers = (registrar.parse_frontmatter(fm).get("provenance") or {}).get("papers") or []
+    # strict=False: refusing an unreadable value is the registrar gate's
+    # job, and FRONTMATTER_QUARANTINE still holds two of them open.
+    parsed = registrar.parse_frontmatter(fm, strict=False)
+    papers = (parsed.get("provenance") or {}).get("papers") or []
     if isinstance(papers, str):
         papers = [papers] if papers else []
     attributed = set(paper_sources(papers)[0])
 
+    urls = {(entry or "").strip() for entry in papers if (entry or "").strip()}
+
     unattributed: dict[str, list[int]] = {}
     for claim_id in present:
         paper_id, url = live[claim_id]
-        source = (ARXIV.search(url or "") or ARXIV.search(paper_id or ""))
-        key = source.group(1).split("v")[0] if source else (paper_id or "")
-        if source and key not in attributed:
-            unattributed.setdefault(key, []).append(claim_id)
-        elif not source:
-            unattributed.setdefault(f"non-arxiv:{key}", []).append(claim_id)
+        key, kind = attribution_key(paper_id, url)
+        if kind == "arxiv":
+            if key not in attributed:
+                unattributed.setdefault(f"arxiv:{key}", []).append(claim_id)
+        elif kind == "url":
+            if not any(key in entry for entry in urls):
+                unattributed.setdefault(f"url:{key}", []).append(claim_id)
+        else:
+            unattributed.setdefault(f"undecidable:{paper_id}", []).append(claim_id)
 
     for key, ids in sorted(unattributed.items()):
-        if key.startswith("non-arxiv:"):
-            findings.append(Finding(
-                "claim-paper-attributed", "unknown",
-                f"claims {sorted(ids)} come from {key.split(':', 1)[1]}, which "
-                "carries no arXiv id, so whether the skill attributes that "
-                "source cannot be decided by id."))
-        else:
+        kind, _, value = key.partition(":")
+        if kind == "arxiv":
             findings.append(Finding(
                 "claim-paper-attributed", "fail",
-                f"claims {sorted(ids)} come from arxiv.org/abs/{key}, which is "
+                f"claims {sorted(ids)} come from arxiv.org/abs/{value}, which is "
                 "not in provenance.papers. The skill cites evidence it does "
                 "not attribute, so a reader cannot get from the page to the "
                 "source."))
+        elif kind == "url":
+            findings.append(Finding(
+                "claim-paper-attributed", "fail",
+                f"claims {sorted(ids)} come from {value}, which no line in "
+                "provenance.papers names. The defect is the same one the arXiv "
+                "branch reports and the key is the url, because a paper outside "
+                "the arXiv namespace has no id to match on."))
+        else:
+            findings.append(Finding(
+                "claim-paper-attributed", "unknown",
+                f"claims {sorted(ids)} come from paper {value!r}, which carries "
+                "neither an arXiv id nor a url, so there is nothing to match a "
+                "provenance line against."))
     return findings
 
 
@@ -529,7 +610,9 @@ def review_validated(row, raw: str, panel: dict | None) -> list[Finding]:
     it is the library making its own strongest claim about itself.
     """
     fm, _ = registrar.split_frontmatter(raw)
-    provenance = registrar.parse_frontmatter(fm).get("provenance") or {}
+    # strict=False: refusing an unreadable value is the registrar gate's
+    # job, and FRONTMATTER_QUARANTINE still holds two of them open.
+    provenance = registrar.parse_frontmatter(fm, strict=False).get("provenance") or {}
     validated = str(provenance.get("validated") or "").strip()
     if not validated:
         return [Finding("validated-field", "note",

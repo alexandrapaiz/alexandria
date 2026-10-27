@@ -365,3 +365,296 @@ def test_the_page_and_the_reviewer_read_the_same_provenance():
     for skill in _list_skills():
         ids = [int(c) for c in skill["claims"]]
         assert ids == rows[skill["name"]], skill["name"]
+
+
+# ------------------------------------------- the frontmatter a loader refuses
+
+def _registrar():
+    sys.path.insert(0, str(REPO / "tools"))
+    import skill_registrar as registrar   # noqa: E402
+
+    return registrar
+
+
+def test_the_parser_refuses_a_value_it_cannot_read():
+    """An unquoted colon is a guess, and the parser says so instead of guessing.
+
+    YAML's rule for an unquoted scalar is that a colon followed by whitespace
+    opens a mapping, so `description: a method: the subject` is not a long
+    string, it is an error. This parser used to answer it with
+    `a method: the subject` and keep going, which is why two shipped skills were
+    unloadable by any real YAML loader for weeks while every tool here agreed
+    they were fine. The loader is outside this repository and the consumer's own
+    behaviour on a frontmatter it cannot parse is to load the skill with no
+    fields set, so nothing ever went red: the skills were present and
+    unroutable.
+
+    The refusal is the fix rather than a loader in CI, because it needs no
+    dependency. A gate that imports PyYAML has a skip path, and PyYAML is
+    declared in neither requirements file.
+    """
+    registrar = _registrar()
+    bad = "name: x\ndescription: a method: the subject\nversion: 1\n"
+
+    with pytest.raises(registrar.FrontmatterError) as refusal:
+        registrar.parse_frontmatter(bad)
+    assert "description" in str(refusal.value)
+
+    assert registrar.frontmatter_problems(bad), "the detector missed it"
+    guessed = registrar.parse_frontmatter(bad, strict=False)
+    assert guessed["description"] == "a method: the subject", (
+        "the lenient read is the old behaviour and the tools still depend on it"
+    )
+
+
+# The refusal rule, as cases, in the three categories it actually has. The
+# categories are the correction: until 2026-10-27 this file held two lists,
+# `clean` and `refused`, and said in its own docstring that "every line here
+# states what a real loader does with it." One line in `refused` did not. A
+# sequence item carrying an unquoted colon is accepted by PyYAML; what makes the
+# parser refuse it is that the two readers would then disagree about the VALUE,
+# which is a different fact about the same text and belongs in a different list.
+# Nothing caught that, because nothing here had ever asked PyYAML.
+#
+# LOADER_REFUSES   PyYAML raises. The document is not loadable by anyone.
+# READERS_DISAGREE PyYAML loads it and reads a different value than this parser
+#                  would, so the parser refuses rather than pick a side.
+# BOTH_ACCEPT      PyYAML loads it and both readers agree.
+#
+# `test_the_case_list_is_measured_against_pyyaml` checks each category against
+# PyYAML itself, so a case filed in the wrong one now fails instead of reading
+# as documentation.
+
+BOTH_ACCEPT = [
+    "name: evaluation-integrity",
+    'description: "a method: the subject"',
+    "description: 'a method: the subject'",
+    "ref: https://arxiv.org/abs/2609.16816",
+    "at: 12:30",
+    "claims: [476, 477]",
+    "provenance:",
+    '  reviews:\n    - "none filed yet: the lane is open"',
+]
+
+LOADER_REFUSES = [
+    "description: a method: the subject",
+    "description: the subject:",
+    'description: "a method: the subject',
+    "claims: [476, 477",
+]
+
+READERS_DISAGREE = {
+    "papers:\n  - Title: Subtitle, arxiv.org/abs/1":
+        "PyYAML reads the item as the map {Title: 'Subtitle, arxiv.org/abs/1'} "
+        "and this parser would read the whole item as one string, so the value "
+        "a router scores depends on which reader ran.",
+    "description: |\n  a line":
+        "a block scalar is valid YAML and this parser does not implement it; it "
+        "would read the continuation line as a key.",
+}
+
+
+def _yaml():
+    """PyYAML, or a failure that says the gate did not run.
+
+    Not `pytest.importorskip`, and that is the whole point of this helper. The
+    defect these tests exist to close was a skip reading as a pass: the receipts
+    gate guarded its own `import yaml` with an `except ImportError` that returned
+    zero failures, so it answered "no skills a consumer cannot load" about a tree
+    it had never parsed. `pyyaml>=6` is declared in requirements-dev.txt, which
+    is the file the documented command and CI both install, so its absence is a
+    broken environment and not a reason to go quiet.
+    """
+    try:
+        import yaml
+    except ImportError:          # pragma: no cover - declared in requirements-dev
+        pytest.fail(
+            "PyYAML is not installed, so the frontmatter oracle did not run. "
+            "That is a skipped gate, not a pass. requirements-dev.txt declares "
+            "pyyaml>=6: pip install -r requirements-dev.txt")
+    return yaml
+
+
+def _loads(yaml, text: str) -> bool:
+    """Whether a real loader accepts the text at all."""
+    try:
+        yaml.safe_load(text)
+        return True
+    except yaml.YAMLError:
+        return False
+
+
+def test_the_refusal_fires_on_what_yaml_refuses_and_nothing_else():
+    """The cases, written out, so the rule is readable without a YAML loader.
+
+    This is still the dependency-free half, and it stays that way on purpose:
+    the parser has to have a specification a reader can check by eye, because
+    the parser is what runs where PyYAML is not installed. What changed on
+    2026-10-27 is that the specification is no longer only claimed. The test
+    below measures it.
+    """
+    registrar = _registrar()
+    for line in BOTH_ACCEPT:
+        assert registrar.frontmatter_problems(line) == [], line
+    for line in LOADER_REFUSES:
+        assert registrar.frontmatter_problems(line), line
+    for line, why in READERS_DISAGREE.items():
+        assert registrar.frontmatter_problems(line), (line, why)
+
+
+def test_the_case_list_is_measured_against_pyyaml():
+    """Every case above, checked against the loader it makes a claim about.
+
+    Three assertions, one per category, and the third is the one that would have
+    caught yesterday's mistake: a case in LOADER_REFUSES has to be a document
+    PyYAML actually refuses. The sequence-item case sat there for a day looking
+    like evidence.
+    """
+    yaml = _yaml()
+    registrar = _registrar()
+
+    for line in BOTH_ACCEPT:
+        assert _loads(yaml, line), f"filed as loadable, PyYAML refuses it: {line!r}"
+        assert registrar.frontmatter_problems(line) == [], line
+
+    for line in LOADER_REFUSES:
+        assert not _loads(yaml, line), (
+            f"filed as unloadable, PyYAML accepts it: {line!r}. If the parser "
+            "still has to refuse it, it belongs in READERS_DISAGREE with the "
+            "reason the two readers differ.")
+        assert registrar.frontmatter_problems(line), line
+
+    for line, why in READERS_DISAGREE.items():
+        assert _loads(yaml, line), (
+            f"filed as a disagreement, but PyYAML refuses it outright: "
+            f"{line!r}. That makes it a LOADER_REFUSES case. ({why})")
+        assert registrar.frontmatter_problems(line), (
+            f"the parser no longer refuses {line!r}, so this entry excuses "
+            f"nothing and should be deleted rather than left here. ({why})")
+
+
+def test_the_parser_and_pyyaml_agree_on_every_shipped_skill():
+    """The oracle over the real library, which is the claim that matters.
+
+    The parser is a hand-written subset of YAML standing in for a loader this
+    repository does not control, and every argument for it rests on the two
+    agreeing about actual skills. So that is measured rather than argued, on
+    every shipped SKILL.md, in both directions: no skill the loader refuses is
+    passed by the parser, and no skill the loader accepts is refused by it.
+
+    Measured twice on 2026-10-27, which is the part worth writing down. Before
+    merging `main`, 9 of 9 agreed and two of the nine were refusals:
+    `evaluation-integrity` and `skill-library-engineering` both carried an
+    unquoted colon in `description:` and PyYAML raised "mapping values are not
+    allowed here" on both. After merging, the skill seat's quoting fix is in and
+    9 of 9 agree with no refusals left. The agreement on the failures is the
+    reading that mattered, because agreeing about clean files is easy: it is
+    what makes the parser's verdict on a tree without PyYAML worth the same as
+    the loader's.
+    """
+    yaml = _yaml()
+    registrar = _registrar()
+    paths = sorted((REPO / "skills").glob("*/SKILL.md"))
+    assert paths, "no skills found, so this test proved nothing"
+
+    disagreements = []
+    for path in paths:
+        slug = path.parent.name
+        fm, _body = registrar.split_frontmatter(path.read_text(encoding="utf-8"))
+        assert fm, f"{slug}: no frontmatter delimited by ---"
+        parser_ok = registrar.frontmatter_problems(fm) == []
+        loader_ok = _loads(yaml, fm)
+        if parser_ok != loader_ok:
+            disagreements.append(
+                f"{slug}: parser {'accepts' if parser_ok else 'refuses'} it, "
+                f"PyYAML {'accepts' if loader_ok else 'refuses'} it")
+    assert disagreements == [], (
+        "the parser and a real loader disagree about a shipped skill, so one of "
+        "them is lying to a consumer: " + "; ".join(disagreements))
+
+
+def test_no_shipped_skill_hides_a_value_a_loader_would_refuse():
+    """The gate this file is the CI step for, over the real library.
+
+    `checks.yml` runs this file on every change under `skills/**`, so this is
+    the assertion that was missing rather than the step. A skill whose
+    frontmatter no parser can read turns its own pull request red here, which is
+    what did not happen for `evaluation-integrity` and
+    `skill-library-engineering`.
+    """
+    registrar = _registrar()
+    _rows, problems = registrar.read_skills()
+    unreadable = [p for p in problems if "unquoted colon" in p
+                  or "never closes it" in p]
+    excused = registrar.quarantined_problems(problems)
+    assert [p for p in unreadable if p not in excused] == [], unreadable
+
+
+def test_the_live_quarantine_holds_nothing_spent_and_nothing_fictional():
+    """The two things that can be wrong with the live constant, whatever is in it.
+
+    This is the assertion over real data, and it is deliberately the smaller of
+    the two tests here. On 2026-10-27 it emptied the constant: it held
+    `evaluation-integrity` and `skill-library-engineering` waiting on the skill
+    seat's quoting fix, that fix merged, and both entries then excused nothing.
+    The gate asked for their deletion by going red, which is the whole design,
+    and an empty dict passes this test for the right reason rather than
+    vacuously, because the companion test below exercises the mechanism.
+    """
+    registrar = _registrar()
+    for slug in registrar.FRONTMATTER_QUARANTINE:
+        assert (SKILLS / slug / "SKILL.md").exists(), (
+            f"{slug} is quarantined and is not a skill in this library"
+        )
+
+    _rows, problems = registrar.read_skills()
+    assert registrar.spent_quarantine(problems) == [], (
+        "a quarantine entry is excusing nothing and is still in the constant. "
+        "Delete it: the defect it was holding open is fixed."
+    )
+
+
+def test_the_quarantine_mechanism_excuses_expires_and_reports_itself_spent():
+    """The mechanism, on a quarantine this test owns, so it survives an empty one.
+
+    The reason this is not run against the live constant is the defect it would
+    otherwise reintroduce. Until today the only subject these assertions had was
+    the live quarantine, so the day the quoting fix landed and the constant
+    emptied, the test asserting that an excuse actually excuses something had
+    nothing left to assert and failed. A gate tested only against live data
+    stops being tested the moment the live data is clean, and the next seat to
+    need the excuse inherits an untested one.
+
+    Three properties, which are the whole contract:
+    an excuse covers the refusal it names, it stops covering it on the expiry
+    date, and it reports itself spent once the refusal is gone.
+    """
+    registrar = _registrar()
+    fake = {"a-skill-that-needs-quoting": "a fix that has not landed, PR #0"}
+    expires = "2026-11-03"
+    refusal = ("skills/a-skill-that-needs-quoting/SKILL.md: `description:` holds "
+               "an unquoted colon, which YAML reads as a nested key")
+    unrelated = "skills/some-other-skill/SKILL.md: cites no claim ids"
+
+    excused = registrar.quarantined_problems(
+        [refusal, unrelated], today="2026-10-27", quarantine=fake, expires=expires)
+    assert excused == {refusal}, (
+        "the excuse has to cover the refusal it names and nothing else"
+    )
+
+    assert registrar.quarantined_problems(
+        [refusal], today=expires, quarantine=fake, expires=expires) == set(), (
+        "the quarantine does not expire, so it is an excuse with no end"
+    )
+    assert registrar.quarantined_problems(
+        [refusal], today="2026-12-25", quarantine=fake, expires=expires) == set(), (
+        "the quarantine came back to life after its expiry date"
+    )
+
+    assert registrar.spent_quarantine([refusal], quarantine=fake) == [], (
+        "an entry whose skill is still refused is not spent"
+    )
+    assert registrar.spent_quarantine([], quarantine=fake) == [
+        "a-skill-that-needs-quoting"], (
+        "a library with no refusals left should report every entry as spent"
+    )

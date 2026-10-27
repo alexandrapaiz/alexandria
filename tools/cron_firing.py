@@ -113,8 +113,10 @@ disagreement is reported.
 
 import argparse
 import json
+import os
 import pathlib
 import re
+import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 
@@ -253,6 +255,106 @@ def days_back(day, count):
     start = datetime.strptime(day, "%Y-%m-%d").replace(tzinfo=UTC)
     return {(start - timedelta(days=n)).strftime("%Y-%m-%d")
             for n in range(count + 1)}
+
+
+class SeatNotFound(Exception):
+    """A `--seat` value that names no directory in the host's roster.
+
+    This exists because the alternative was answering it. Until this run
+    `--seat research` and `--seat totallyfake` printed the same sentence, byte
+    for byte: that no cron slot had fired and none had in the trailing 14 days.
+    The research slot had fired on time the previous afternoon
+    (`INC-2026-10-27-two-readers-answer-a-wrong-seat-name-with-a-confident-zero`).
+
+    The reason that is urgent rather than untidy is what this tool is for. The
+    ExO seat's duty card instructs its next reader to read each slot here and
+    never from the absence of a pull request, and that card exists because an
+    earlier run nearly retired three working seats on a bad absence. On the one
+    argument a reader supplies by hand, the remedy reproduced the failure it
+    was built to prevent.
+
+    So an unresolvable seat raises. An empty list is the right answer to "this
+    seat did not fire" and the wrong answer to "there is no such seat," and
+    those two were indistinguishable in the output.
+    """
+
+
+def seat_roster(root=LOG_ROOT):
+    """The seat directory names the host has written logs for, sorted."""
+    root = pathlib.Path(root)
+    if not root.is_dir():
+        return []
+    return sorted(d.name for d in root.iterdir() if d.is_dir())
+
+
+def company_here(env=None, root="."):
+    """Which company's checkout this is, for disambiguating a bare seat name.
+
+    Not a guess about which seat is meant. It is only a tie-break, and only
+    between directories that all genuinely exist, so the worst it can do is
+    prefer the company whose repository the reader is standing in.
+    """
+    env = os.environ if env is None else env
+    named = env.get("ASC_COMPANY")
+    if named:
+        return named
+    repo = env.get("GITHUB_REPOSITORY") or ""
+    if not repo:
+        proc = subprocess.run(["git", "-C", root, "remote", "get-url", "origin"],
+                              capture_output=True, text=True)
+        repo = proc.stdout.strip() if proc.returncode == 0 else ""
+    name = repo.rstrip("/").rsplit("/", 1)[-1]
+    return name[:-4] if name.endswith(".git") else name
+
+
+def resolve_seat(seat, root=LOG_ROOT, company=None):
+    """A `--seat` argument as a directory name, or `SeatNotFound`.
+
+    The host names each directory `<company>-<seat>`, and the board, the duty
+    register and all twelve charters name the seat alone. Both forms are in use
+    by people reading this tool, so both resolve: an exact directory name
+    first, then the bare seat name against the suffix after the first hyphen.
+
+    Exact match wins over the suffix search, and it has to. This host carries a
+    directory literally named `engineer` alongside `alexandria-engineer`,
+    `atelier-engineer` and `epitome-engineer`, so a bare `engineer` is both an
+    exact name and a four-way suffix collision. Resolving it to the thing the
+    reader typed is the only reading that cannot surprise them.
+
+    A suffix that matches more than one company is settled by the company whose
+    checkout this is, and only by that: `--seat research` under
+    `alexandrapaiz/alexandria` is `alexandria-research`, because the host also
+    carries `ursa-research`. When the tie-break does not apply, the collision
+    raises rather than being picked. A reader who typed `exo` from outside all
+    four companies wants to be asked which, and a tool that guesses there is
+    back to answering about a seat nobody named.
+    """
+    if seat is None:
+        return None
+    roster = seat_roster(root)
+    if not roster:
+        # No roster to resolve against, which is the unmounted-sandbox case
+        # `read_runs` already answers with "observation skipped". Passing the
+        # value through keeps that path intact instead of turning a missing
+        # mount into a missing seat.
+        return seat
+    if seat in roster:
+        return seat
+    suffixed = [name for name in roster if name.partition("-")[2] == seat]
+    if len(suffixed) == 1:
+        return suffixed[0]
+    if len(suffixed) > 1:
+        mine = f"{company if company is not None else company_here()}-{seat}"
+        if mine in suffixed:
+            return mine
+        raise SeatNotFound(
+            f"{seat!r} is a seat in {len(suffixed)} companies here "
+            f"({', '.join(suffixed)}): name one of those instead"
+        )
+    raise SeatNotFound(
+        f"{seat!r} is not a seat the host has written logs for. The roster "
+        f"under {root} is: {', '.join(roster)}"
+    )
 
 
 def read_runs(root=LOG_ROOT, seat=None, days=None):
@@ -580,7 +682,9 @@ def main(argv=None):
     parser.add_argument("--day", default=None,
                         help="YYYY-MM-DD, default today in UTC")
     parser.add_argument("--seat", default=None,
-                        help="one seat's directory name, default every seat")
+                        help="one seat, as the host's directory name "
+                             "(`alexandria-research`) or as the bare seat name "
+                             "the charters use (`research`); default every seat")
     parser.add_argument("--root", default=str(LOG_ROOT),
                         help="the host's log directory")
     parser.add_argument("--history-days", type=int, default=14,
@@ -601,7 +705,16 @@ def main(argv=None):
 
     day = args.day or datetime.now(UTC).strftime("%Y-%m-%d")
     root = pathlib.Path(args.root)
-    runs = read_runs(root, seat=args.seat,
+    # Before any reading, because every verdict below is about a seat and a
+    # verdict about a seat that does not exist is worse than no verdict.
+    try:
+        seat = resolve_seat(args.seat, root)
+    except SeatNotFound as exc:
+        print(f"cron_firing: {exc}", file=sys.stderr)
+        return 2
+    if seat != args.seat:
+        print(f"note: reading {seat} for --seat {args.seat!r}", file=sys.stderr)
+    runs = read_runs(root, seat=seat,
                      days=days_back(day, args.history_days))
     if not runs and not root.is_dir():
         message = (f"observation skipped: {root} is not a directory here, so "

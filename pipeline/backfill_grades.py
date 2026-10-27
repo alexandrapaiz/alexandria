@@ -20,8 +20,19 @@ account, and this piece of it is free.
 It is also not as good as grading at distill time. The live grader needs the
 model's own `measured` boolean to agree with the text; this one has only the
 text, because the boolean was never stored. `evidence.backfill_grade` is the
-weaker test and its docstring says which direction it errs in. A backfilled
-grade can be one step stronger than a fresh one, never weaker.
+weaker test and its docstring says which direction it errs in. On the
+measurement question a backfilled grade can be one step stronger than a fresh
+one, never weaker.
+
+## The second entry point, and why it only reads (2026-10-26)
+
+`relay_audit` answers the one question the backfill cannot: how many rows that
+already carry a grade are another work's result rather than the source's own.
+The fifth grade is written at distill, so it reaches the next claim and none of
+the ones already in the table. That function prints the count and a sample and
+offers no way to write, because the grade is what the digest ranks on and the
+size of a regrade is not knowable before someone has read a page of what it
+would catch.
 
 ## Idempotent and resumable, by construction rather than by bookkeeping
 
@@ -95,6 +106,39 @@ def ungraded(conn, limit: int | None = None) -> list[tuple]:
     if limit is None:
         return conn.execute(UNGRADED_SQL).fetchall()
     return conn.execute(UNGRADED_SQL + " limit %s", (limit,)).fetchall()
+
+
+# Already-graded rows, which the backfill above never touches, and the one
+# question it cannot answer: how many of them are somebody else's result.
+# Newest first for the same reason, and `attributed_to` is not read because no
+# graded row has one yet; the field arrived with the grade on 2026-10-26.
+GRADED_SQL = """
+    select c.id, c.paper_id, c.evidence, c.evidence_grade
+    from claims c
+    where c.evidence_grade is not null
+      and c.evidence_grade <> 'relayed'
+      and coalesce(c.evidence, '') <> ''
+    order by c.id desc
+"""
+
+
+def relay_candidates(conn, grader, limit: int | None = None) -> list[dict]:
+    """Graded rows whose evidence text reads as another work's result.
+
+    Candidates, never a verdict. The live grader has the model's own answer
+    and this has only the text, so every row here is a row to look at rather
+    than a row to rewrite. See `relay_audit` for why nothing rewrites them.
+    """
+    sql = GRADED_SQL + (" limit %s" if limit else "")
+    rows = conn.execute(sql, (limit,) if limit else ()).fetchall()
+    out = []
+    for claim_id, paper_id, evidence_text, graded_as in rows:
+        fired = grader.relay_markers(evidence_text)
+        if fired:
+            out.append({"id": int(claim_id), "paper_id": paper_id,
+                        "graded_as": graded_as, "markers": fired,
+                        "evidence": evidence_text})
+    return out
 
 
 def tally(rows: list[tuple], grader) -> dict[str, int]:
@@ -172,6 +216,67 @@ def count() -> str:
     return (f"dry run: {len(rows)} rows would be graded, "
             + ", ".join(f"{g} {n}" for g, n in sorted(would.items()))
             + ". Nothing was written.")
+
+
+@app.function(
+    secrets=[modal.Secret.from_name("neon")],
+    timeout=900,
+)
+def relay_audit(sample: int = 12) -> str:
+    """How much of the already-graded corpus is somebody else's result.
+
+        modal run pipeline/backfill_grades.py::relay_audit
+
+    Reads. Writes nothing, and deliberately does not offer a `--write`.
+
+    The fifth grade landed on 2026-10-26
+    (`INC-2026-10-26-a-papers-own-citation-was-wrong-and-the-corpus-carried-it-faithfully`)
+    and it is written at distill, so it reaches the next claim the pipeline
+    writes and no claim it has already written. Every relayed row distilled
+    before that date is still sitting in the corpus graded `controlled` or
+    `asserted`, which is the exact state the incident is about, and nobody
+    knows how many there are.
+
+    So this prints the number and a sample of the rows behind it. Rewriting
+    them is a different decision and it needs this number first: the grade is
+    what the digest ranks on, so a regrade over a few thousand rows off a text
+    guard alone would move what a reader sees, and the right size of that move
+    is not knowable before anyone has seen one page of the candidates.
+    """
+    import os
+
+    import psycopg
+
+    grader = evidence()
+    with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        graded = conn.execute(
+            "select count(*) from claims where evidence_grade is not null"
+        ).fetchone()[0]
+        candidates = relay_candidates(conn, grader)
+
+    by_grade: dict[str, int] = {}
+    by_marker: dict[str, int] = {}
+    for row in candidates:
+        by_grade[row["graded_as"]] = by_grade.get(row["graded_as"], 0) + 1
+        for marker in row["markers"]:
+            by_marker[marker] = by_marker.get(marker, 0) + 1
+
+    share = (100 * len(candidates) / graded) if graded else 0
+    print(f"{len(candidates)} of {graded} graded claims ({share:.1f}%) read as "
+          "another work's result, by the text guard alone")
+    print("  the grade they carry today: "
+          + ", ".join(f"{g} {n}" for g, n in sorted(by_grade.items())))
+    print("  the phrase that fired: "
+          + ", ".join(f"{m} {n}" for m, n in
+                      sorted(by_marker.items(), key=lambda kv: -kv[1])))
+    print(f"a sample of {min(sample, len(candidates))}, newest first, so the "
+          "guard can be judged by reading its output:")
+    for row in candidates[:sample]:
+        print(f"  C{row['id']} [{row['graded_as']}] {row['markers']} "
+              f"{row['paper_id']}")
+        print(f"    {(row['evidence'] or '')[:220]}")
+    return (f"{len(candidates)} of {graded} graded claims read as relayed. "
+            "Nothing was written.")
 
 
 @app.function(

@@ -89,6 +89,36 @@ supporting paper's title and url into the traction and deprecation streams,
 which is already specified in docs/ideas.md. `bare-number` becomes blocking
 when it has run for four issues without a false positive.
 
+### One rule about how a rule is written
+
+A listed word matches a word, never the inside of one. Every word list in the
+gate is anchored on its left edge, so "delve" catches "delves" and "delved"
+while "very" no longer catches "recovery" or "every". The right edge stays
+open on purpose, because an inflection of a banned word is the same defect as
+the word.
+
+This is written down because the gate shipped without it and the cost was
+measurable. `INTENSIFIERS` held the string `"very "` and the test was a
+substring match, so the only issue the gate has ever read raised two findings
+that were not real, and one of the two fired on the close the owner mandated
+on 2026-09-30, which canon law 10 requires in every issue. That finding could
+never be cleared by fixing the issue. It was filed on 2026-09-24 and it was
+still live when it was escalated at thirty days.
+
+Two questions belong with it, both asked while a rule is written rather than
+after it fails.
+
+- **Where are this pattern's edges?** Three separate gates in this repository
+  carried the same defect, a pattern matching inside a word, which makes it a
+  class rather than a bug. `tests/test_digest_quality.py` now asserts the
+  class: every literal in every list, buried behind one letter, raises
+  nothing.
+- **Name the unit this check inspects, then name the unit the defect lives
+  in, and say whether they are the same size.** A check phrased in the
+  singular because it was written from one specimen will answer for one
+  member of a group and report a pass on the group
+  (`INC-2026-09-29-gate-unit-three-more`, docs/ideas.md 2026-09-29).
+
 ## What a person checks
 
 These need a reader. The gate cannot decide any of them, and pretending
