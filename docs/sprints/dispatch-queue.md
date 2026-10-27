@@ -1,137 +1,138 @@
-# Dispatch queue, 2026-10-27, ~00:16 UTC (hook pass, capacity-return)
+# Dispatch queue, 2026-10-27, ~05:10 UTC (hook pass, capacity-return, second standup today)
 
-**Trigger.** My own last run (PM, `window:message`, 2026-10-26T23:06:12Z)
-died at turn 1 on the provider's session-limit refusal. This run exists
-because the hook said capacity had returned. Today is Tuesday, so per
-charter section 0 this is the standup alone, not the ceremony.
+**Supersedes #627.** My own earlier hook standup today (#627, opened
+00:15:48Z) last wrote this exact file and is still open. This pass builds
+on it directly (same branch tip, `dab9699c`) rather than branching from
+main, since the two touch nothing else in common and #627 is small enough
+to fast-forward through. #627 is closed as superseded once this is pushed.
 
-**Collides with #483 and #531 on this file.** Both are still open and both
-last wrote `docs/sprints/dispatch-queue.md`. #483 is this seat's own hook
-chain, opened 2026-10-24T21:24Z, now 51h old, depth 13, and it carries a
-stale `sprint-2026-10-19.md`. #531 is this seat's own Monday ceremony,
-opened 2026-10-26T00:34Z, now 23.7h old, and it carries the current
-`sprint-2026-10-26.md` and the pending-table archive. Neither is built on
-here. Both are large, multi-file, already-blocked PRs (Tier B, so a PM seat
-cannot self-merge its own Tier B pull request), and today's job is this one
-file alone, so this pass branches from main instead. Expected order: #531
-should land first, since #483's sprint content is now superseded by #531's.
-Either way, whichever of the three lands last on this file takes a one-file
-conflict here and keeps its own numbers, since a standup's numbers are a
-snapshot and the newest snapshot is the one worth keeping.
+**Trigger.** A fleet-wide provider session-limit outage ran from
+2026-10-27T01:41:29Z to about 05:05Z (reset posted as "resets 5am (UTC)").
+My own run in that window (`window:message`, started 01:41:29Z) was cut at
+turn 15 with no branch pushed yet (board `pr_url` is empty, and no branch
+named with today's date exists beyond the five already accounted for in
+PRs #627, #629, #631, #640, #642), so nothing was lost: ship-first had not
+yet reached its first commit. Two more one-turn deaths followed at
+01:44:58Z and 01:45:16Z, both immediate refusals. This run exists because
+sibling seats (exo #645, research #646, writer #647, skill #648, engineer
+#649) are resuming the same way in the same few minutes, confirming the
+outage is fleet-wide rather than this seat alone.
 
 ## Delivery health, the red finding first
 
-**Unchanged from the last several reports. The Modal workspace is still
-disabled, and the press has now missed a second weekly issue.**
-`tools/delivery_health.py`, run fresh at 00:13 UTC: newest issue is still
-`2026-W42` (2026-10-19), and `2026-W43` has ended with nothing published.
-Root cause, same as yesterday and the day before: Modal workspace
-`ac-5DsaR3hWSUxqyNoGYiowja` disabled since 2026-10-23, which takes `compute`,
-`pipeline`, and `mcp` down together, and `deploy` is now 2.5 to 10.9 days
-behind across the five apps. `checkout` fails separately (`POLAR_CHECKOUT_*`
-unset on the site). `payments` is unknown (`payment_exceptions` table
-missing). `site` and `archive` both read against the same stale 2026-W42
-record, with one interior gap (2026-W41) neither published nor hidden. Every
-one of these fixes is owner-only: re-enable the Modal workspace, set three
-Polar env vars, run the schema migration. Every one has already been asked
-for in prior passes and in #531's still-open PR. Not re-asking again here.
-Naming the new consequence, a second missed weekly issue, is what changed
-since the last report.
+**Unchanged since this morning's #627. The Modal workspace is still
+disabled, day 5, and the press is still missing `2026-W43`.**
+`tools/delivery_health.py`, run fresh at 05:09 UTC: newest issue is still
+`2026-W42` (2026-10-19). Root cause unchanged: Modal workspace
+`ac-5DsaR3hWSUxqyNoGYiowja` disabled since 2026-10-23, taking `compute`,
+`pipeline`, and `mcp` down together; deploy lag has grown to 2.7–11.2 days
+across the five apps. `checkout` still fails separately (`POLAR_CHECKOUT_*`
+unset); `payments` still unknown (missing table). `site` and `archive` both
+read against the same stale record, with `2026-W41` still neither published
+nor hidden. Every fix is owner-only and already asked for repeatedly,
+including in #531's still-open PR. Not re-asking again; nothing changed
+since the last report except the hours elapsed.
 
 ## Queue gauge, four numbers
 
-1. **`main`'s age and check state.** Tip is `b4211c5` (merge of #612),
-   2026-10-26T21:04:18Z, about 3h12m old. No 48-hour stall. But the newest
-   `checks.yml` run against `branch=main` on record is for an *older* commit
-   (`9c8c597`, success, 2026-10-26T20:44:24Z). There is no checks run at all
-   yet for the current tip, three hours after the merge, which landed inside
-   the same session-limit window named below. Flagging the gap rather than
-   calling it green on a commit it never checked.
-2. **Open pull requests.** 27 open, 8 of them opened since the last merge to
-   `main`. Five of those eight are this same capacity-return hook firing
-   across engineer, writer, exo, skill and research in the same few minutes
-   as this pass. This PR is the sixth.
-3. **Conversion, 7 days** (measured on 500 fetched PRs, oldest 2026-09-28, so
-   the window is not truncated this time). 115 merged / 230 opened (0.50).
+1. **`main`'s age and check state.** Tip is `9eb4874` (merge of #635),
+   2026-10-27T01:25:27Z, about 3h46m old. No 48-hour stall. But **no
+   `checks.yml` run exists yet for this tip**, nor for the tip before it
+   (`#630`'s merge, 01:25:02Z): the newest recorded `checks` run on `main`
+   is still for `e2fd95f` (merge of #625, 00:46:44Z), unchanged across two
+   checks of this report four minutes apart. Two main-advancing merges in a
+   row have gone unchecked for over three hours. Flagging the gap rather
+   than calling `main` green on commits it never ran against; the last
+   commit it did check was green.
+2. **Open pull requests.** 29 open, 8 opened since the last merge to `main`
+   (01:25:28Z). Six of those eight are the capacity-return hooks firing
+   across this seat and exo, research, writer, skill, engineer in the same
+   few minutes as this pass.
+3. **Conversion, 7 days** (500 PRs fetched, oldest 2026-09-30, so the
+   window is not truncated). 121 merged / 254 opened (0.48).
 4. **Deepest open chain.** Unchanged: this seat's own #483, depth 13,
-   unchanged since 2026-10-24T21:24Z. **This seat is blocked on merges**, now
-   51 hours on this one branch, and #531 (this seat's own Monday ceremony) is
-   a second, separate blocked chain at 23.7 hours.
+   unchanged since 2026-10-24T21:24Z, now **about 56 hours**. **This seat
+   is blocked on merges.** #531 (this seat's own Monday ceremony) is a
+   second, separate blocked chain, now about 28.6 hours old.
 
 ## Cap ratio
 
-Board reaches back only to 2026-10-26T19:58:19Z (about 4h17m before this
-pass), well short of the 24-hour floor. Reporting only what is visible in
-that window, and saying so rather than implying a full day was checked.
+Board reaches back only to 2026-10-27T00:03:53Z (about 1h41m before the
+outage silenced it, and nothing has landed on the board since the outage
+began), well short of the 24-hour floor. Reporting only what is visible in
+that window.
 
-- **engineer 201/200, 100.5%, over cap**, PR #601 (now closed, superseded
-  by #607). First instance of this exact fingerprint for engineer found in
-  the register. Filed as
-  `INC-2026-10-26-engineer-hit-error-max-turns-at-201-of-200-for-the-first-time`
-  in this pull request.
-- **skill 181/180, 100.6%, over cap**, PR #602 (now closed, superseded by
-  #610). First instance for skill. Filed as
-  `INC-2026-10-26-skill-hit-error-max-turns-at-181-of-180-for-the-first-time`
-  in this pull request.
-- **skill 167/180 (92.8%)**, PR #610.
-- **engineer 156/200 (78%)**, PR #607.
-- **exo 152/200 (76%)**, PR #611.
-- **research 91/180 (50.6%)**, PR #614. **writer 108/225 (48%)**, PR #612.
-  Both under the 70% line, named only because they are in the same window.
-- No reading this window on pm (this seat), frontend, market, security, or
-  okr. No runs recorded in the visible board window.
+- **skill 181/180, 101%, over cap, a second time** (PR #625, started
+  00:03:53Z, merged into `main` at 00:46:44Z). Same exact fingerprint as
+  the one #627 filed for PR #602 four hours earlier. Filed as
+  `INC-2026-10-27-skill-hit-error-max-turns-at-181-of-180-a-second-time-within-four-hours`
+  in this pull request, because #627's own report missed this second
+  instance even though its stated window already covered it.
+- **skill 166/180 (92%)**, PR #634.
+- **engineer 178/200 (89%)**, PR #633.
+- **writer 109/150 (73%)**, PR #622.
+- **engineer 143/200 (72%)**, PR #639 (this one a session-limit death, not
+  a cap-out, named anyway per the standing rule).
+- **exo 93/200 (46%), 91/200 (46%), 107/200 (54%)** — PRs #635, #641,
+  #630 — all under the line.
+- **skill 110/180 (61%)**, PR #638 — under the line.
+- **pm (this seat) 87/300 (29%)** at most this window — under the line.
+- No cap known for `research` in this register; its turns this window
+  (32–106) are named for completeness, not scored.
 
 ## Run health
 
-**Six one-turn, no-PR deaths in the visible window, all the provider's own
-session-limit refusal** (`"You've hit your session limit · resets 12am
-(UTC)"`), the same known class as prior reports: pm (this seat, 23:06:12Z),
-engineer cron (23:06:03Z), engineer message (21:22:34Z), exo message
-(21:22:21Z). Four more runs in the same window hit the identical refusal
-*mid-pass* but had already shipped a draft PR before the cutoff: skill 38
-turns (PR #621), research 44 turns (PR #620), writer 61 turns (PR #619),
-exo 60 turns (PR #618), and engineer 60 turns (PR #617). Ship-first held in
-every case.
-Separately, two runs hit their own `error_max_turns` cap rather than the
-provider refusal (engineer 201/200, skill 181/180), both covered under Cap
-ratio above and both filed as new incidents in this PR. Nothing in this
-window is an unregistered failure class. Every non-success is either this
-known session-limit refusal or a newly-filed cap-out.
+**A fleet-wide provider session-limit outage, 2026-10-27T01:41:29Z to about
+05:05Z (reset "5am (UTC)").** Every active seat hit it: pm (this seat, three
+deaths — 15 turns then two one-turn deaths, nothing lost in any of the
+three), engineer (one-turn death, 01:45:05Z), skill (one-turn death,
+01:45:03Z, plus an earlier mid-pass cut on PR #638 at 110 turns), exo
+(one-turn death 01:44:58Z, plus a mid-pass cut on PR #641 at 91 turns),
+research (mid-pass cut on PR #644 at 32 turns), writer (mid-pass cut on PR
+#643 at 42 turns). Every mid-pass cut had already shipped a draft PR before
+the cutoff; ship-first held throughout. Five sibling seats (exo, research,
+writer, skill, engineer) opened fresh `*-capacity-return` branches within
+minutes of the reset, confirming this is the same recovery wake as this
+pass, not a cap-out or an environment defect.
 
-`gh run list --limit 30`: all green (`checks`, `deploy-main`) for the pushes
-it covers. `gh run list --workflow=checks.yml --branch=main` is the one
-exception, noted under the queue gauge above: no run yet for the current tip.
+Separately, one run (skill, PR #625) hit its own `error_max_turns` cap
+before the outage began; covered under Cap ratio above and filed as a new
+incident. The `checks.yml` gap on `main`, also noted under the queue gauge,
+is the one open question this pass cannot close: it may be the same outage
+reaching into Actions, or something else, and there is no new push to test
+it against yet.
 
 ## Pending items a day past their date
 
-Not re-checked this pass. `docs/sprints/pending.md` on `main` is still the
-pre-reform 2026-10-24 table (last entry dated "~18:10 UTC"). #531 (open,
-23.7h) already carries this pass's archive of it
-(`docs/sprints/pending/archive-to-2026-10-26.md`) and a fresh empty state
-table, per the one-ceremony-writer rule. This standup does not touch that
-file. The next ceremony to actually merge folds it in.
+Not re-checked this pass; this is a one-file standup, not the ceremony that
+owns `docs/sprints/pending.md`. The file on `main` is still the pre-reform
+2026-10-24 table. #531 (open, now ~28.6h) carries this pass's intended
+archive (`docs/sprints/pending/archive-to-2026-10-26.md`) and a fresh empty
+state table, per the one-ceremony-writer rule, and remains blocked on the
+same Tier B self-merge bar as #483.
 
 ## Worth your attention, not a dispatch proposal
 
-**Market's weekly brief is now 11 days old.** Last brief
-`docs/market/briefs/2026-10-16.md`, cadence Fridays 11:00 UTC. The
-2026-10-23 slot has produced no brief and no PR under `alexandria-market/*`.
-Not proposed as a dispatch. The evidence is a gap rather than a ruling,
-market has no open PR so the hard stop does not apply, but this pass still
-cannot tell from here whether the slot fired and found nothing or did not
-fire at all, and an instruction built on that uncertainty would be guessing
-rather than relaying.
+**Market's weekly brief is now about 12 days old.** Unchanged from #627:
+last brief `docs/market/briefs/2026-10-16.md`, cadence Fridays 11:00 UTC,
+the 2026-10-23 slot produced no brief and no PR. Not proposed as a
+dispatch; the evidence is a gap rather than a ruling and an instruction
+built on it would be guessing rather than relaying.
+
+**This seat holds 6 of 29 open pull requests right now**, two of them
+(#483, #531) blocked chains at depth 13 and the Monday ceremony
+respectively, neither mergeable by this seat under the Tier B self-merge
+bar. Named again because it has not moved since #629 raised it to HQ's PM
+five hours ago.
 
 ## Proposed dispatches
 
 None. `PM_DISPATCH_ENABLED` reads empty in this run's environment, so
 nothing here could fire even if proposed. Beyond that, every seat this
-charter allows dispatching that is currently active (engineer, research,
-writer, skill) already has an open pull request from its own last run,
-opened by this same capacity-return hook in the minutes before this pass
-started. Of the remainder, exo is never dispatchable, and market's gap
-above does not clear the bar for a drafted instruction. Nothing here clears
-the bar for a proposal.
+charter allows dispatching (engineer, research, writer, skill) already has
+an open pull request from its own last run, each opened by this same
+capacity-return wake in the minutes before or during this pass. Nothing
+clears the bar for a proposal.
 
 ## Dispatched by the PM
 
