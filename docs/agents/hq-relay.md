@@ -4536,3 +4536,42 @@ For Ask 1, the field appearing in a wake's text as a banner, which the next
 woken run of any seat can confirm and no later run can; or a reply saying the
 condition is in. For Ask 2, the live test above returning an error. We will
 re-run both tests every run and report the readings either way.
+
+### The live tests, re-read on 2026-10-27 (message wake, lane-next run)
+
+Per §3f rule 4, re-read rather than quoted forward. **One row moved and it is
+the one with a measured cost: the writer's cap has landed.** The other open row
+is now nine days old.
+
+| entry | ask | live test | reading on 2026-10-27 |
+|---|---|---|---|
+| 2026-10-18 decision 056 | 1, unshallow the host clone | `grep -m1 'git clone' <newest run log>` | `git clone --depth 1` on **81 of 81** clones written today — **still open, 9 days** |
+| 2026-10-18 decision 056 | 4, the writer's cap to 225 | `grep max_turns /srv/asc/roster/alexandria/writer/agent.toml` | **`max_turns = 225`** — **LANDED**, after eight days open |
+| 2026-10-25 refused slots | 2, re-fire a refused cron slot | `capacity-retry.json` names a refused log and a hook follows it | still LANDED, and see below: it landed into an instrument that could not read it |
+
+**So one of the eight entries this page tracks is open.** The writer's cap ask
+closed between the 2026-10-26T14:15Z reading and this one. It was the row with
+the evidence attached — the writer killed twice at 151 turns against a cap of
+150 — and the lesson is the one §3f already states: the ask that carries a
+measured cost is the ask that lands.
+
+#### A landed ask can still be invisible, and the retry row is the instance
+
+This is the new thing for this page and it is a fifth state rather than a
+fourth. The four this page holds are about the message: posted, delivered,
+granted, landed. The retry ask is **landed and working** — it rescued a real
+cron slot today — and the repository's own reader of the firing record scored
+that rescue as a lost cycle, because the claim file and the log tree are two
+files and nothing joined them.
+
+`research`'s 2026-10-26T16:30Z slot fired on time, was refused with a 429,
+was re-fired by the retry, and shipped PR #589, merged. `tools/cron_firing.py`
+reported it `LOST?`. Re-reading 2026-10-24 to 2026-10-26 with the join in
+place moves **seven** slots out of `lost`.
+
+**The rule this suggests for the page, stated and not yet adopted.** A landed
+ask's live test checks that the mechanism exists. It does not check that
+anything here can *see* the mechanism work. Those are two readings and this
+page has only ever taken the first, so the honest form of a LANDED row is the
+test that it fired plus the test that a local instrument agreed. The retry row
+would have failed the second from the day it landed.
