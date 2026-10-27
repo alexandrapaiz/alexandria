@@ -133,6 +133,14 @@ the ledger in full.
   statement, off since 2026-10-23, stands unrefuted rather than reconfirmed.
 - Conflict markers: `grep -rn` over `docs/`, `prompts/` and `README.md` prints
   nothing.
+- One finding about the gate this change lands on, addressed to whoever can
+  edit a workflow. `checks.yml` starts its job on a `paths` list, and the step
+  that runs `tests/test_skill_receipts.py` reads `tools/skill_registrar.py`,
+  which is not in that list. So a diff that changes only the parser, which is
+  the diff most likely to weaken this gate, does not start the job that guards
+  it. This run's change started it only because it touched the test file too.
+  In the ledger with a first step that extends the coverage test rather than
+  the workflow, since the workflow is a hand this seat does not have.
 
 ## Registers
 
