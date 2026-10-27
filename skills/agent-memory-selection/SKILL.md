@@ -1,7 +1,7 @@
 ---
 name: agent-memory-selection
 description: Three measured findings about what a long-horizon agent writes down about a conversation and what it reads back for one question. The subject is the write-versus-read split in what an assistant remembers between sessions, which is a store and a retrieval path rather than anything inside one model call. Use when choosing between extracting facts at ingestion and storing raw turns; when an LLM extraction or knowledge-graph build sits on the write path of every message; when deciding whether a reranker is worth its call on a retrieval path; when a memory system's accuracy is being compared against another at a different context size; when a memory graph is traversed with several model calls per query; or when an assistant with memory starts answering questions it should have said were never discussed.
-version: 1
+version: 2
 status: provisional
 provenance:
   extracted: 2026-10-13
@@ -9,6 +9,8 @@ provenance:
   differential_screen: "not run. This seat has no route to either eval arm (no GROQ_API_KEY in .github/workflows/agent-skill.yml, no benchmark provider in pipeline/budget.py), both queued in docs/agents/pending-workflow-changes.md. Every section below is unscreened, and each Validation tag names what this run expects a bare subject to already supply."
   reviews:
     - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
+  revisions:
+    - "2026-10-26 (ADR-37 maintenance, the relayed-citation repair, ADR-35 the paper wins): the engineer seat landed a fifth evidence grade, `relayed`, for a claim whose subject is another work's result, and the research seat's rule with it, that a source's account of a third paper is a reading-queue line and not a fact. This seat swept its own nine shipped skills by hand for the shape rather than waiting for the grade, because the grade is written at distill and reaches no claim this library already cites. The sweep (skills/_validation/results/2026-10-26-relay-sweep.md) found one open instance and it is here. Delta 2's heading asserted that whether ranking matters is a property of the budget and not of your pipeline, which is the cross-paper generalisation its own source declines to make: When Does Selection Replace Extraction says in as many words that the reconciliation is an interpretation across pipelines that differ in retrievers, rerankers, answer models and judges, and not a tested claim across papers. The heading now carries the within-study decision rule, the reconciliation sentence names both works and both arXiv ids as second-hand, and both works are queued for reading. No number in this file changed and no claim id is filed, because the defect was in what this file generalised and not in what it measured."
   claims: [982, 983, 984, 985, 986, 721, 722, 723, 724]
   papers:
     - "When Does Selection Replace Extraction? A Pre-Registered Test of Agent Memory with a Typed Decision Model — arxiv.org/abs/2609.34227"
@@ -56,17 +58,19 @@ orders of magnitude of write cost is a bad trade unless those are the product.
 4. **Never compare two memory systems at their own default k.** Every number
    here holds at matched tokens, and these systems reorder without it.
 
-## Delta 2: whether ranking matters is a property of the budget, not of your pipeline
+## Delta 2: the keep ratio decides whether ranking is worth its call
 
-*Validation: none yet, claim provenance only. Unscreened. This seat expects a bare subject to argue either direction with no threshold, because the literature it learned from disagrees with itself here, which is what this section resolves. Eval tasks ams-t2, ams-t3.*
+*Validation: none yet, claim provenance only. Unscreened. This seat expects a bare subject to argue either direction with no threshold, because the literature it learned from disagrees with itself here. What this section settles is the decision at a stated keep ratio, from one study's own k=3 to k=20 comparison, and not the disagreement between the two papers named in it, which is this file's one second-hand sentence and is marked in place. Eval tasks ams-t2, ams-t3.*
 
 One reranker in one pipeline was worth **+17.4 points when 3 of 30 candidates
 were kept and +1.5 points when 20 of 30 were kept**, and on a second benchmark
 +9.1 against +1.1 (When Does Selection Replace Extraction). At the generous end
 the field reorders: extraction reached 82.4 percent on 1,238 tokens, above the
-raw-turn path's 77.6 percent ceiling. The authors read the published disagreement
-over whether ranking is the bottleneck as two groups measuring at two keep
-ratios, which they offer as interpretation and not as a tested claim.
+raw-turn path's 77.6 percent ceiling. **One sentence here is second-hand**: the
+paper reads the disagreement between SmartSearch (arxiv.org/abs/2603.15599) and
+Fidelity Before Structure (arxiv.org/abs/2601.00821) as two groups measuring at
+two keep ratios, which it calls interpretation and not a tested claim. Neither
+is read here, so nothing below rests on it and both are queued.
 
 1. Measure candidates returned and candidates read. **The ratio is the input.**
 2. **Keeping under roughly a quarter: buy selection**, because ordering decides
@@ -111,9 +115,5 @@ of the right evidence for confidence in the wrong kind.
   post-hoc. Raw turns also reach the selector as user-written text, so selection
   is reachable by injected content, which the study did not test and says so.
 - Cut to hold the three-module cap (ADR-40 item 4): **the typed control plane**,
-  the write path behind Jev-Mem's 158-second build (6.6x) and 0.93-second query
-  latency, including the split of candidate discovery from relation judgment
-  that stops controller cost tracking memory size. Queued as its own skill in
-  `docs/research/reading-queue.md`. Read it knowing Jev-Mem's 11.0 percent gain
-  is against its own comparator set: the pre-registered test put it at 70.6
-  against 77.0 percent at matched context. Filed in docs/ideas.md.
+  Jev-Mem's write path, queued as its own skill. Its 11.0 percent gain is
+  against its own comparator set, 70.6 against 77.0 at matched context.

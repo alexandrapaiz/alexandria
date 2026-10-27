@@ -618,6 +618,39 @@ UNCOVERED = {
     # before the owner did. The staged replacement runs the whole suite, so it
     # runs this too.
     "tests/test_press_backfill.py",
+    # Added 2026-10-26 by the ExO seat, and pinned for the same structural
+    # reason as every line above: the step that would run them goes in
+    # `.github/workflows/checks.yml`, which no seat's token may write by
+    # design, and `.github/workflows-pending/README.md` says why in one
+    # sentence — an agent that can write its own CI can also write itself out
+    # of it. The staged replacement runs the whole suite and therefore runs
+    # both of these.
+    #
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already the finding about the pattern and it is still correct, so these
+    # two count themselves there rather than opening another incident on it.
+    # What they add is a number: the staged replacement has been waiting for a
+    # hand since 2026-10-07, and this set is now the only measure of that
+    # wait. Every test file any seat writes lengthens it, which makes the pin
+    # list a ledger of a blocked `git mv` rather than a list of exceptions.
+    #
+    # `test_wake_routes.py` arrived on the branch this one supersedes and was
+    # not pinned there, because that run ran its own test file and never the
+    # suite, so it would have merged a red ratchet. That is the second half of
+    # why these two lines are worth their comment: a gate whose only trigger
+    # is somebody running the whole suite by hand is a gate that catches the
+    # careful run and misses the hurried one.
+    #
+    # What each guards. `test_wake_routes.py` holds the only check in any
+    # repository that a seat's event subscriptions can actually reach it; four
+    # of twelve seats here have never been woken by the bus. `test_ship_first.py`
+    # holds the only measurement of the ship-first rule, which 0.5% of 1,765
+    # runs obey, and its seven states exist to keep a run that lost its work
+    # apart from one that was refused before it could have any. Both are
+    # instruments about silence, so both going silent on a pull request is
+    # the defect they exist for, one level down.
+    "tests/test_wake_routes.py",
+    "tests/test_ship_first.py",
 }
 
 

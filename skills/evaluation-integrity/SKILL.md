@@ -1,15 +1,16 @@
 ---
 name: evaluation-integrity
-description: Evidence-backed method for judging whether an evaluation can be trusted when the instrument is itself generated: a model-written rubric, a pipeline-assembled benchmark, an LLM judge, or a pass-or-fail verdict standing in for correctness. The subject is the instrument, not the system it scores. Use when stress-testing a model-written rubric or grading checklist, when an agent reaches the graded outcome through the repository history, workspace files, task metadata or open network instead of doing the task, when a checker's verdict cannot separate a faithful candidate from one that merely preserves it, when a judge learns from other judgments and its scores start clustering, when benchmark items are ambiguous, narrow or wrong, when deciding how many independent judgments an accept should require, when a scored gain might be noise or leakage, when a single-turn evaluation promises reliability that multi-turn pressure does not, or when auditing a discovery an agent claims.
-version: 4
-status: active
+description: "Evidence-backed method for judging whether an evaluation can be trusted when the instrument is itself generated: a model-written rubric, a pipeline-assembled benchmark, an LLM judge, or a pass-or-fail verdict standing in for correctness. The subject is the instrument, not the system it scores. Use when stress-testing a model-written rubric or grading checklist, when an agent reaches the graded outcome through the repository history, workspace files, task metadata or open network instead of doing the task, when a checker's verdict cannot separate a faithful candidate from one that merely preserves it, when a judge learns from other judgments and its scores start clustering, when benchmark items are ambiguous, narrow or wrong, when deciding how many independent judgments an accept should require, when a scored gain might be noise or leakage, when a single-turn evaluation promises reliability that multi-turn pressure does not, or when auditing a discovery an agent claims."
+version: 5
+status: provisional
 provenance:
   extracted: 2026-09-24
-  revised: 2026-09-30
+  revised: 2026-10-27
   validated: ""
   reviews:
     - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
   revisions:
+    - "2026-10-27 (ADR-37 maintenance, ADR-35 the paper wins): the research seat drained the 2026-09-30 reading-queue batch and reported this file clean with one upgrade owed (docs/research/briefs/2026-10-26.md section 9), and the upgrade was verified here against the full text of arxiv.org/abs/2509.16941 before being applied. Two changes, neither of them a correction to a number. The 102 refined instances now carry their denominator, 14.0 percent of the 731 public instances, because a reader deciding whether to audit a benchmark needs the rate and not the count. And the history channel is named as structural rather than incidental: every SWE-Bench Pro instance is built from a pair of consecutive commits, where the newer commit is the fix, so the answer is in the history by construction and closing that channel is not optional hardening (section 4.1, section 3.3). `status` moved from `active` to `provisional`: ADR-38 rule 7 earns `active` on a positive differential delta on the benchmark subject, this skill's `validated` field is empty and none of its eval tasks has been run, so `active` was asserting a measurement that does not exist. This file is 477 lines against ADR-38 rule 4's cap of 120. It is in the retrofit queue, this run corrected text rather than retrofitting it, and the cap is reported rather than quietly carried."
     - "2026-09-30 (runner length guard): description cut from 151 words to 148, under the 150-word budget that prompts/skill-extract.md has stated since 2026-09-24 and that nothing measured until this run. Wording only, no coverage change: \"turn out to be ambiguous\" became \"are ambiguous\". Caught by the new length check in trigger_test.py, on that check's first run, which is the evidence incident 31 asked for."
     - "2026-09-30 (ADR-38 retrofit, owner directive): per-section Validation tags, an Apply checklist, and caveats that name their floor. The tagging pass found one section, partial monitoring, whose claims were attached to a task that tested none of it, so eval task ei-t11 was written and the suite moved to version 2."
     - "2026-09-30 (ADR-36/ADR-37 trigger 1, claim deprecated): claim 288 entered deprecated_claims, contradicted at 0.75 by claim 289 from the same paper. Re-read arxiv.org/abs/2609.09219 in full. Claim 288 is accurate and is kept; claim 289 is a misreading of the paper's Gate 3 table and is filed for correction. The section 'Auditing a result you did not produce' now separates the protocol's two senses of recovery, which is the overload that produced the false edge, and adds that both of the paper's real-data feedback decisions were Inconclusive."
@@ -18,6 +19,7 @@ provenance:
     - "ImpossibleRubrics: Stress-Testing Generated Rubrics as Reward Signals — arxiv.org/abs/2609.16816"
     - "Beyond Solver Verdicts: Generative Reward Models for Autoformalization — arxiv.org/abs/2609.11085"
     - "SWE-Bench Pro Verified: A Reliable Benchmark for Software Engineering Agents — arxiv.org/abs/2609.08149"
+    - "SWE-Bench Pro: the benchmark the re-audit above repaired (read 2026-10-27 for its 731-instance public set and its consecutive-commit sourcing) — arxiv.org/abs/2509.16941"
     - "When AI Reviews Train AI Reviewers: Scientific-Judgment Collapse and Mitigation — arxiv.org/abs/2609.20942"
     - "An Open Recipe for IMO Gold: Training Nemotron for Olympiad Mathematics — arxiv.org/abs/2609.10712"
     - "PACT: Can Enterprise AI Assistants Be Trusted Under Pressure? — arxiv.org/abs/2609.18605"
@@ -134,9 +136,10 @@ no verifier (Beyond Solver Verdicts).
 *Validation: no trial and no consumer report. Claim and paper provenance only. Eval task ei-t4 covers it and has not been run.*
 
 A benchmark is code, and nobody believes untested code. A re-audit of one
-731-instance repository-level coding benchmark refined 102 instances, drawn
-from 119 candidate defect reports of which 17 turned out to need no change
-(SWE-Bench Pro Verified). The defect profile is the part worth memorizing,
+731-instance repository-level coding benchmark refined 102 instances, which is
+**14.0 percent of the set**, drawn from 119 candidate defect reports of which 17
+turned out to need no change (SWE-Bench Pro Verified, SWE-Bench Pro). Budget for
+one instance in seven being wrong, not for a handful. The defect profile is the part worth memorizing,
 because it says what to look for first: overly narrow tests dominated at 75
 instances, then misleading task descriptions at 22, then overly broad tests at
 3, and 2 cases of otherwise corrupted data (SWE-Bench Pro Verified).
@@ -164,6 +167,12 @@ evaluation: the local file system, the repository history, the task metadata,
 and the open network (SWE-Bench Pro Verified). Closing all four eliminated
 every observed reward-hacking attempt, at zero successful hacks, while normal
 agent function continued (SWE-Bench Pro Verified).
+
+**The history channel is structural in this benchmark family, not incidental.**
+Every SWE-Bench Pro instance is sourced from a pair of consecutive commits, the
+older one the base and the newer one the fix, so the answer is in the repository
+by construction (SWE-Bench Pro, section 4.1). Closing it is not hardening that
+can be deferred.
 
 The four closures, each matched to its channel (SWE-Bench Pro Verified):
 

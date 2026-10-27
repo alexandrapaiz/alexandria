@@ -19,7 +19,7 @@
    "expect": "agent-memory-selection",
    "prompt": "Retrieval gives us 30 candidate turns and the context budget only lets us pass 3 into the prompt. Should we add a reranking call between them? Two papers I have read disagree about whether reranking helps at all.",
    "anchor": "when deciding whether a reranker is worth its call on a retrieval path",
-   "rationale": "Delta 2, and the prompt contains the literature disagreement the section exists to resolve. The keep ratio is stated in the prompt itself (3 of 30), which is the quantity the skill says decides the answer, so a reader who has the skill answers with a number and one who does not answers with a shrug."
+   "rationale": "Delta 2, and the prompt states the keep ratio itself (3 of 30), which is the quantity the skill says decides the answer, so a reader who has the skill answers with a number and one who does not answers with a shrug. The prompt also carries the literature disagreement, and the skill is deliberately not the answer to that half: it marks the cross-paper reconciliation as second-hand and names both works rather than settling it."
   },
   {
    "id": "ams-pos-3",
