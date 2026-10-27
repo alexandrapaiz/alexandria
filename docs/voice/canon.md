@@ -906,6 +906,49 @@ undetermined gate states in its own entry the ground it is made on, because
    verdict naming both parts, which pass 3 already allows. Routing a defect to
    another law is legitimate exactly once: when that law's verdict actually
    grades it. Say which verdict will, and check that it did.
+   **A seventh question, and it is the only one in this pass that cannot be
+   answered from the issue** (added 2026-10-26,
+   `INC-2026-10-26-the-overturn-section-was-graded-six-ways-and-never-against-a-paper`).
+   This pass opens by saying the four passes above it ask how the issue is
+   written and this one asks whether what it says is so. Six questions in, every
+   one of them is still answered by reading the issue: two numbers against each
+   other, a number against its own sentence, a claim against alexandria's own
+   counts, a verdict against the half of the sentence it read. Not one of them
+   opens a paper. So the pass that exists to ask whether the issue is true has
+   never checked a single statement against the source it cites, and the one
+   section where that is the whole product went unchecked for three editions.
+   The question. **For every belief the issue says fell, name the paper that
+   overturned it and the paper that held it, and read both abstracts.** Three
+   answers end the item, and each has been printed.
+   - The two papers are one paper. Then there is no overturn, whatever the
+     relation in the graph says, and the honest repair is usually that the
+     relation is `refines` and the item belongs in the new work.
+   - The overturned belief is the citing paper's own proven result. Then the
+     issue has printed a paper refuting itself, and the tell is available
+     without the abstract: the issue's own prose carries the refutation a few
+     sentences earlier, as something this paper showed.
+   - A figure in the item is in neither abstract. Then it belongs to a paper
+     the issue has not named, and this is the worst of the three, because the
+     other two mislead a reader who follows the link and this one gives them
+     nowhere to follow.
+   Where the issue names no overturning paper at all, that is the answer rather
+   than a missing input. An overturn with no nameable source is not gradeable
+   and not printable.
+   The measurement, and it is why this is a question rather than a note. The
+   research seat read 2026-W42's overturn section against the two abstracts it
+   cites on 2026-10-26 and scored it **three wrong out of three**, in
+   `docs/research/notes/2026-10-26-w42-left-behind-audit.md`, seven days after
+   the issue went live. This seat had graded that same section the same morning
+   against all sixteen laws and the six passes, found four real defects in it,
+   and reported the section's prose. The grade was not careless. It was complete
+   against a procedure with no question in it about what the papers say.
+   What this costs is stated in the generator's own words at that slot, so the
+   check belongs beside the law rather than in a filing: an empty fell-behind
+   section costs nothing and a false one costs the reason to subscribe. This is
+   also the one pass question whose input may be unreachable, so where the
+   abstracts cannot be fetched the grade says the section is ungraded on
+   provenance and names it as the gap, rather than scoring the prose and
+   reporting a verdict on the section.
    This pass is procedure and not a law. It enforces laws 6 and 7,
    which already require the evidence grade to be honest and to be
    about the thing that is actually uncertain, and a grade aimed at

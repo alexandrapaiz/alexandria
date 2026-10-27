@@ -22132,3 +22132,57 @@ has nothing to go red against.
   declaration.
 - Cost: $0.
 - Status: shipped (sentinel), proposed (the dev-requirements line)
+
+### 2026-10-26 - Every same-paper contradiction written before 2026-10-25 is outside the only repair the pipeline has (writer seat, message run)
+- Trigger: the research seat's audit of the live `2026-W42`
+  (`docs/research/notes/2026-10-26-w42-left-behind-audit.md`) scored its
+  overturn section **three wrong out of three** against the two abstracts it
+  cites, seven days after it went live. The writer seat's own grade of that
+  section the same morning ran all sixteen canon laws and the six grading
+  passes over it, found four real prose defects, and could not see this,
+  because no pass in the procedure compared a statement to its source. That
+  half is repaired on the writer's side in this pull request. This entry is the
+  half no prompt and no gate can reach.
+- The prevention is filed twice and one of the two is shipped. "The interpret
+  neighbour query has no paper boundary" (2026-09-19, this file) proposed
+  `and paper_id <> ...` on the shortlist, and the engineer shipped exactly that
+  on 2026-10-25 as `5af27966` at `pipeline/interpret.py:303`. It is not in the
+  deployed base. So new edges stop being written the day the workspace comes
+  back, and that is not what this entry is about.
+- What: the research seat's finding stated as an ask. The fix for new edges
+  makes the existing ones permanently unrepairable, and the four steps are each
+  checkable. A claim becomes due for a second opinion only when the
+  current prompt has never read it, because `REJUDGE_QUEUE_SQL` keys on
+  `prompt_sha` and nothing else. The same-paper exclusion is shortlist SQL, so
+  it does not move `prompt_sha` and no existing judgment becomes due. Both the
+  fresh path and the rejudge path pass the judged claim's own `paper_id`, so
+  when a rejudge does run the judge is never shown the same-paper candidate.
+  And `latest_links` repairs an edge only through a later row for the same
+  `(from_claim, to_claim)` pair, which a candidate the judge never sees cannot
+  produce. The repair route the 2026-10-24 schema change opened is therefore
+  closed to precisely the rows that need it.
+- What it costs while it stands: those rows keep feeding `deprecated_claims`,
+  which feeds the fell-behind section of every issue the press prints. The
+  2026-10-12 measurement is `contradicts` precision **0.172**, 24 of 33 edges
+  wrong, and **19 of the 22 claims in `deprecated_claims` rest on no edge that
+  holds**. This is the product's stated differentiator and the issue's own
+  subtitle promises it.
+- First step: a query rather than a migration. List the same-paper
+  `contradicts` edges, `select l.from_claim, l.to_claim from claim_links l join
+  claims a on a.id = l.from_claim join claims b on b.id = l.to_claim where
+  l.relation = 'contradicts' and a.paper_id = b.paper_id`. The count decides
+  the shape of the fix. A small number is a one-off withdrawal pass writing the
+  corrected relation directly, which `latest_links` then honours with no new
+  column. A large number argues for `retracted_at` on `claim_links` and a
+  `deprecated_claims` that reads past it, because a withdrawal the view cannot
+  see has to be re-done every time the view changes.
+- What this seat is NOT asking for, said because the obvious reading is wrong:
+  not a rejudge, and not another prompt. Both were tried. The 2026-10-12
+  meta-review proposal merged, deployed on 2026-10-17, and `2026-W42` was
+  written on 2026-10-19 and printed three bad overturns anyway, because a
+  prompt governs new edges only. Under the writer charter's structure-watch
+  step this is the third instance of one class through two prompt-side fixes,
+  so it is filed here instead of being worded a third time.
+- Whose call: the engineer's, and it needs the Modal workspace back first.
+- Cost: $0
+- Status: proposed

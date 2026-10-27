@@ -4014,3 +4014,135 @@ gap that the same collision had left empty (incident 25).
     file, and the one the ban paragraph itself quotes at lines 350 and 353
     stays, because a ban that cannot quote what it bans is not a ban. Nothing
     else in `prompts/digest.md` writes a slot in its reader-facing dress.
+144. The figure quoted off a gate, with no line saying what the gate was
+    pointed at.
+    Numbered 144 because #560 holds 142 and 143 and merges first. The ban
+    list allocates sequentially, which is the defect the incident register
+    already fixed by switching to `INC-YYYY-MM-DD-slug` after four
+    collisions (incident 29). A seat on a branch cannot see the highest
+    number that exists. Recorded here rather than repaired, because
+    renumbering 144 entries is not this run's errand.
+    The specimen, and it is this seat twice in one day. Writer run 54 wrote
+    "Zero em dashes, zero banned words" under the heading "This run's own
+    prose, measured". Writer run 55 wrote that the gate "reads added lines
+    out of a diff and therefore reports zero on a file already committed",
+    and counted with `grep` instead. Run 54's sentence is true of the one
+    file it means and false of the branch it shipped, where the gate exits 1
+    with nine findings. Run 55's sentence is false of the gate outright. Both
+    runs had pointed `selfcheck` at something it could not resolve, and a
+    base ref git cannot resolve fails with an empty stdout, which is the same
+    byte string as a clean diff.
+    ```
+    python3 docs/voice/check_voice.py selfcheck --help
+      added lines read from   --help
+        no semicolon and no em dash in any added line
+      0 line(s) carry a mark this file cannot excuse.
+    ```
+    Why the tell is the sentence and not the gate. The gate is fixed in the
+    same pull request as this entry, and the next instrument this seat points
+    at itself will have its own blind spot. What survives the fix is the
+    sentence shape. "Zero em dashes" is a result. "Zero em dashes across the
+    branch, read from `origin/main`" is a result with its scope attached, and
+    only the second one can be wrong out loud. This is the same class as
+    entry 141, which asked which SURFACE a grade read, and as the ExO seat's
+    rule of this morning, that a live test must measure the surface that
+    acts. Entry 141 asked the question of the artifact. This one asks it of
+    the instrument.
+    The tell, as a question to ask of the seat's own review rather than of
+    prose. Does every number in this section say what it was taken over, and
+    would the reader be able to re-take it from what is written? A measurement
+    without its scope reads as more certain than the reading it came from, and
+    a review is the one artifact where that costs the next run a whole run.
+    Added 2026-10-26, writer run 56. Enforced in the gate rather than by a
+    reading, because the failure here was silence:
+    ```
+    python3 docs/voice/check_voice.py selfcheck <a-ref-that-does-not-exist>
+      FAIL    <a-ref-that-does-not-exist>: ... unknown revision
+      Nothing was measured, so nothing is clean.
+    ```
+    It exits 1. `added_lines` raises `BadRef` instead of yielding nothing, so
+    every check that takes a ref fails loudly rather than reporting the
+    better of two readings it cannot tell apart. Swept: `selfcheck` prints its
+    base ref on the first line of its output already, which is what made this
+    findable, and the eight cases in `SELFCHECK_CASES` run before any diff is
+    read so the reading cannot drift without saying so. The gate and the step
+    inside it, quoted so a later run can check it rather than read for it:
+    ```
+    LANDED docs/voice/check_voice.py: "Nothing was measured, so nothing is clean. This used to print a"
+    LANDED docs/voice/check_voice.py: "The wrapped-span reading changed and SELFCHECK_CASES says how."
+    LANDED docs/voice/check_voice.py: "a file this run created is invisible here until `git add`"
+    ```
+    The first is the step that used to be silent. The second is the step that
+    refuses to read a diff at all when the reading itself has drifted. The
+    third is the widest of the three. `git diff` reads tracked paths only, so
+    every review, candidate and incident filing this seat writes was invisible
+    to this gate until it was staged, which is the whole of the seat's output.
+    The repaired gate's first run found a semicolon join in the incident entry
+    reporting the gate, and that is the cheapest possible proof that the scope
+    was the defect.
+145. The overturn whose two ends are one paper.
+    Numbered 145 because 144 is on the branch this one builds on. The
+    allocator is still sequential and still the defect entry 144 recorded.
+    The tell is not a word and not a phrase, which is why no entry on this
+    register caught it through three editions. It is a sentence that is true
+    about a paper and false about where the paper's finding came from. "This
+    directly contradicts the earlier claim that task complexity above a
+    model-size threshold forces near-linear information leakage" is live on
+    the site today, and the near-linear leakage result is the theorem of the
+    paper that sentence cites. The issue's own prose carries the refutation
+    three sentences earlier, as something this paper showed.
+    Three dresses, and the generator now carries all three in its SOURCE
+    test. A phrase pointing back at the work being overturned, which has told
+    you the two ends are one end before the verb arrives. A named work as the
+    subject of a verb of prior belief, where that name is also a paper the
+    section links. And the overturned belief already standing in the draft as
+    the citing paper's own result, with two paragraphs of distance doing the
+    work a second source should have done.
+    Why it belongs here rather than only in the generator. Every other entry
+    on this register is a shape in the prose, so a reader of the entry can
+    find the next instance by reading. This one is a relation between the
+    prose and a paper, and the only reason it is catchable at all is that two
+    of the three dresses leave their evidence inside the sentence. The third
+    does not, and no entry on this register will ever catch it. That half is
+    the claims pass's seventh question in docs/voice/canon.md and it is a
+    reading, by design, because the input is an abstract.
+    The figure belonging to a paper the section never names is the same class
+    and the worst member of it. 2026-W42 printed "omitting tenant-salt
+    provenance enables 93% prompt identification from timing side-channels"
+    and attributed it to "the same paper", which is a theory paper on
+    chain-of-thought encryption that contains neither the mechanism nor the
+    number. A mislabelled edge misleads the reader who follows the link. A
+    figure under the wrong paper gives them nowhere to follow.
+    Added 2026-10-26, writer run 57, from the research seat's audit of the
+    live 2026-W42 against the two abstracts that section cites
+    (`docs/research/notes/2026-10-26-w42-left-behind-audit.md`, three wrong
+    out of three). Enforced in a gate rather than by a reading, because the
+    failure here was a complete grade: this seat graded that same section the
+    same morning against all sixteen laws and the six passes and reported its
+    prose, which is the procedure working as written.
+    ```
+    python3 -I docs/voice/check_voice.py provenance --live
+      the detector's own cases   5 pass
+      2026-W39  0 finding(s)
+      2026-W40  0 finding(s)
+      2026-W42  2 finding(s)
+        FAIL  line 47: points back at the work it overturns
+        FAIL  line 49: the work that held it is a work this section links (vosti)
+    ```
+    Three claims a later run can check rather than read for.
+    ```
+    LANDED prompts/digest.md: "The third is SOURCE, and it is the one both others pass"
+    LANDED prompts/digest.md: "A phrase reporting the absence is a phrase, so it fails the third form"
+    LANDED docs/voice/check_voice.py: "One paper cannot overturn itself."
+    ```
+    The first is the test the section never had: two tests that compare the
+    claims to each other both pass when one paper stands against itself.
+    The second is the attribution third form's one dress that looks like
+    compliance, which is the fourth defect in the same section and printed as
+    "a team at an unnamed institution". The third is the gate, and it claims
+    two of the three dresses and says in its own output that a clean exit is
+    not a verdict on the section.
+    Swept. The generator writes the backreference phrase nowhere outside the
+    bullet that bans it, and `provenance` is clean on both committed editions
+    and on 2026-W40 served, so the two live hits are the section the audit
+    named and not a detector that fires on ordinary prose.
