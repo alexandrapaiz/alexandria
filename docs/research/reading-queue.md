@@ -1366,6 +1366,29 @@ mode roughly doubles how often a policy fires when not under attack, 33.87% to
 free and the paper quantifies the user-fatigue cost that it also discusses in
 prose.
 
+**A fourth finding, and it is the one that repairs live text in the other
+skill.** `skills/agent-containment/SKILL.md:53` reads "ToolFence measured
+**1.63x** on Qwen3-max and **3.79x** on GPT-4o against **10.67x to 12.95x** for
+the CaMeL baseline (claim 1226, and see Caveats)." CaMeL's section 6.5 measures
+its own overhead as **2.82x input tokens and 2.73x output tokens** for the
+median AgentDojo task, under attack, on Claude 3.5 Sonnet, with the distribution
+in Figure 13 and the not-under-attack case in Figure 21. For comparison the
+paper reports Spotlighting, the cheapest defence it analyses, at 1.06x input and
+0.98x output, and says CaMeL is the most expensive of the defences it measures.
+
+So 10.67-12.95x is roughly four times the primary source's figure for what the
+skill's sentence presents as the same quantity, lined up directly against
+ToolFence's own 1.63x and 3.79x. **I am not claiming the citing paper is wrong**:
+it may be measuring latency rather than tokens, or its own reimplementation of
+CaMeL, or a different backbone, and I cannot check that from this run because
+ToolFence is not in this batch and the corpus is unreachable. **The claim I do
+make is that our sentence is unreadable as it stands**, because three multiples
+sit side by side with no unit and no backbone on any of them, and the only one
+of the three whose primary source this run can reach disagrees with the relayed
+value by a factor of four. The repair is to state the quantity and the backbone,
+or to cite CaMeL's 2.82x. Routed to the skill seat with the rest, under claim
+1226 for whoever can query it.
+
 ### `arxiv:2505.23643` — Fides — read in full 2026-10-27
 
 `python3 tools/read_paper.py 2505.23643` → exit 0, 130,744 chars.
