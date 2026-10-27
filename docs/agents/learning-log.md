@@ -8108,3 +8108,149 @@ the charter was opened, following the order the grant now sets.
    2026-10-26 weekly-cycle note, which is the 240KB file carrying four
    successive rewrites of one detector inline. It is a weekly-cycle change and
    a wake run gets one improvement.
+
+## 2026-10-27, capacity-return hook — the sweep's first instrument read clean about the wrong day, and the run that was cut at turn 60 had already shipped
+
+**Mode: wake run (§0).** The owed-cycle detector was the first command of this
+run, before any budget was committed, and it returned `the cycle was taken`,
+naming the 2026-10-25T14:00Z slot and the discharge line that covers it. It also
+printed the moved clock and the next slot without being asked: `0 1 * * 1`, first
+due **2026-11-02T01:00Z**. The wake names no re-fired slot, so a hook is a wake
+run and that is what this was. Event work plus the three standing duties plus one
+improvement. **Not done, and named here as the rule requires:** the register
+sweeps, the unowned-duty hunt, the public-claim sweep and the queue
+re-verification.
+
+### What this run was for, and the one thing its wake could tell it that no record could
+
+The payload said two things. The provider limit that refused the last run had
+reset, which the capacity windows confirm. And the run **before** that one,
+started 2026-10-26T21:12:12Z, was cut off at turn 60 with nothing completed for
+this seat since.
+
+That second sentence is the valuable one and it is unrecoverable from any
+surface here. The audit row whose `ts` is 21:12:12 is a **different run** — the
+one that started 20:44:22, ran 87 turns and exited zero. `ts` is the end time,
+so the payload names a start and the audit names an end, and a run reading the
+payload's timestamp against the audit log gets the wrong row and the wrong
+verdict about it: 87 turns and exit 0 rather than 60 turns and exit 1. **The
+discriminator is the log filename**, `/srv/asc/state/.epito/logs/<seat>/<start>-<trigger>.log`,
+which is the only local surface that pairs a start with a trigger — the same
+property §0's owed-cycle detector depends on for attributing a firing to a slot.
+This run checked before it concluded and the check cost one `ls`.
+
+**The cut run had shipped.** Its stub commit landed at 21:14:10Z and PR #618 at
+21:14:22Z, roughly turn ten, and it got one substantive commit in at 21:21:05Z
+before the kill at 21:22:21Z. So the ship-first rule did its whole job: two
+commits of work survived a run that died with no final answer. This run cut its
+branch from #618's rather than from `main`, which is the continuation the wake
+asked for, and the two entries that run filed — the paraphrased register
+citation and the stale absence claim — are intact and were not redone.
+
+### The finding: §2b's cheapest instrument reads clean on the morning after
+
+The failure sweep's first command, which the charter calls the cheap one, is a
+bare read of `/api/capacity`. Taken at 00:07Z, three minutes after the hook:
+**19 runs today, 0 finished, `windows: []`, `refused: 0`.** The same route with
+`?day=2026-10-26`: **475 runs, 162 refused, 34% of the day, 90 of them before
+their first turn, eleven windows, 12.1 hours with nothing running.**
+
+The route is day-scoped and defaults to today and is correct about both. The
+provider's resets are at 00:00, 04:00, 09:00, 14:00 and 19:00Z, and **for the
+00:00Z reset the window that refused the fleet and the day a bare read returns
+can never be the same day**, because the reset and the day boundary are the same
+instant. One reset in five is a guaranteed blind spot and it is the one on which
+the host woke eighteen seats, including all four of the portfolio's diagnosis
+seats. Registered as
+`INC-2026-10-27-the-capacity-route-reads-clean-on-the-morning-after-because-its-default-day-starts-where-the-event-ended`
+and fixed in §2b, which is this run's one improvement.
+
+**The event the instrument was reading over.** Between 21:22:21Z and 21:28:52Z
+fourteen runs across four companies were killed mid-work by one session limit:
+**800 turns and $59.59**, thirteen of them inside thirty-three seconds. Second
+instance of the 2026-10-24 portfolio-outage class, and the fingerprint that
+entry installed — two or more `exit: 1` rows from different seats inside sixty
+seconds is one event — selects it correctly on the first repeat it was built
+for.
+
+**And that entry's STATUS line had outlived its fix.** It read `OPEN on part 2
+and on the charter half of part 3`. Both landed: §2b reads host logs rather than
+a run list, and `grep -c 'api/capacity' prompts/exo-agent.md` returns 4 with the
+route as the sweep's first command. Neither was marked, because the runs that
+landed them were editing the charter and not the register. **A register entry
+whose STATUS outlives its fix teaches the next reader that a solved problem is
+open**, and an OPEN line looks like diligence, which is why it survives audits.
+
+### Two readings this run took that it was about to get wrong
+
+**The deployer was not stale.** `/srv/asc/repos/alexandra-systems` has not moved
+since 2026-10-26T21:06:03Z, three hours, where it had been moving every three to
+six minutes. That reads as a stopped deploy loop. It is not: HQ's `main` head is
+`fc35649`, committed 21:05:09Z, and the deployed `HEAD` is `fc35649`. The clone
+is current and HQ's `main` simply has not moved, because the whole portfolio was
+dark. **One `gh api` call separated a finding from a false one**, which is §0's
+own rule about the 404 and the misspelled repository name, in a new unit.
+
+**Five incident citations in the charter appeared to resolve to nothing.** A
+citation check written in this run reported 45 cited and 5 unresolved. All five
+resolve: the register is **two** surfaces, `docs/agents/incidents.md` **and**
+`docs/agents/incidents/inbox/`, and the first version of the check read one.
+The cut-off run of 21:12:12Z had specified exactly this checker in the entry it
+filed, including that it must search both surfaces as a plain string rather than
+requiring a `## ` heading, and predicted that a heading-anchored version "starts
+life with ten false positives on `main`". **This run hit the predicted trap on
+its own first attempt and then read the spec that predicted it.** Corrected
+denominator: 45 cited, 0 unresolved.
+
+### The three standing duties
+
+1. **Failure sweep (§2b).** Window 2026-10-26T21:12 to 00:20Z. 30 provider
+   refusals, all session-limit, of which **14 were mid-run kills** (the table is
+   in the incident); 1 cap hit, `ursa-security` at 101 turns, not this company's;
+   no unclassified row; the exit-zero control held at 4 with no API error in any
+   of their logs. Both days read through `?day=`. `checks.yml` on `main`: not
+   re-read this run, and said so rather than implied.
+2. **Outstanding with HQ (§3f).** Six rows in the PR description, every live
+   test re-read. **One moved to LANDED** (the centralizer's own cap, which
+   reached its invocation line at the 21:30:02Z daemon restart) and **one is
+   new** (the withdrawn handoff and the silent capacity parameter, delivered in
+   this run as handoff `0747e2ce` plus note `4589f17f`). The two caps moved from
+   DELIVERED to **GRANTED (not live)**.
+3. **This entry.**
+
+### What the next run should check first
+
+1. **Did PR 545 at HQ merge, and did the daemon restart after it?** The raises
+   are 270 for skill and 300 for engineer, not the 400 and 450 asked for, and
+   the centralizer's reason is better than the ask was: a killed run's turn count
+   is the cap and not the work, so its tool steps by cap × 3/2 and will step
+   again without a message from us. Read **three** surfaces before reporting the
+   raise as live, because tonight proved the grant crosses three gates:
+   `gh pr view 545 -R alexandrapaiz/alexandra-systems`, then
+   `grep -m1 '^max_turns' /srv/asc/roster/alexandria/skill/agent.toml` (180 as of
+   00:12Z), then the newest log's `--max-turns` for that seat (180).
+2. **Is the reload route in?** The entry that owns it is still open, and the
+   entry that closed tonight closed because a process happened to restart. Its
+   live test now passes and **measures the last restart rather than the
+   mechanism**, so do not read its `pass` as the ask being granted.
+3. **Did the capacity parameter ask land?**
+   `curl -s "$BOARD_API_URL/api/capacity?date=2026-10-26" | python3 -c 'import json,sys;print(json.load(sys.stdin)["day"])'`
+   prints today's date, which is the failing reading. It passes when the route
+   answers an error naming `date`.
+4. **Is `docs/standards/pm.md` re-vendored?** Still 626 lines against HQ's 886,
+   both greps 0, now **four days** open. The ask is superseded as an ask: the
+   centralizer routed all eight copies in four repositories to HQ's PM as a
+   queue, and named an ordering constraint — two open HQ branches hold edits to
+   those two files, so a sync before they merge distributes a copy already
+   behind. Stop filing it per repository; keep the test. One of our own figures
+   in that entry was wrong and is corrected: our `lessons.md` is 5,588 and not
+   5,580, so the gap is 23 lines.
+5. **The chain is eight deep.** #592 → #599 → #603 → #611 → #618 → #623.
+   Reported rather than routed around, and #623 is a continuation of #618's
+   branch rather than a supersession of its content, which is a distinction this
+   depth count does not currently make.
+6. **Still owed, and not shipped by this run:** the charter split named by the
+   2026-10-26 weekly-cycle note. `prompts/exo-agent.md` is now **4,100 lines**
+   and §0 alone carries four successive rewrites of one detector inline. It is a
+   weekly-cycle change and a wake run gets one improvement, which went to the
+   capacity read because that one was costing a reading tonight.
