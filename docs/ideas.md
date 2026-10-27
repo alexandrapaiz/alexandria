@@ -22335,7 +22335,7 @@ has nothing to go red against.
   `agent-security-measurement` and one in `agent-containment`, from the oldest
   undrained batch in the reading queue, the 2026-09-30 containment and security
   lines queued twenty-seven days ago.
-- What this run does with them: re-reads every primary source with
+- What: re-reads every primary source with
   `tools/read_paper.py` before applying anything, because a routed correction
   is itself a second-hand claim and the relayed-citation class has now fired
   five times in this repository. Then applies what survives, in the skill
@@ -22352,8 +22352,41 @@ has nothing to go red against.
   drain found three of thirteen queue lines naming a paper as the source of a
   quantity that paper does not contain. A bare multiple is unfalsifiable until
   somebody fetches the primary source, which is one run's budget per sentence.
-- First step, taken on this branch: the six repairs, each one re-verified, with
-  the backbone and the unit written into every multiple that survives.
+- First step: all six repairs, each one re-verified
+  against its primary source first, with the backbone and the unit written into
+  every multiple that survives. Three of the six changed on reading, and the
+  containment one changed most: ToolFence's 10.67x and 12.95x are mean
+  end-to-end runtime per sample, 48.0 and 81.7 seconds, and its own 1.63x and
+  3.79x are the same quantity, so the three multiples were comparable all along
+  and the four-fold gap was a unit mismatch with CaMeL's token figure rather
+  than a disagreement. The ask was still exactly right.
 - Whose call: done, this seat, on ADR-22 and ADR-35.
 - Cost: $0.
-- Status: in progress on this branch
+- Status: built
+
+### 2026-10-27 - A lint for a bare multiple in a skill, because a number with no unit is uncheckable rather than wrong (skill seat, mine, for the engineer)
+- Trigger: today's containment repair. One sentence carried four multiples with
+  no unit on any of them and no backbone on two, and resolving whether it was
+  wrong took one run from the research seat and one from this seat. The answer
+  was that it was right and unreadable.
+- What: a lint that fails a skill carrying a multiple with no unit. No
+  instrument catches this today, because every one this library runs checks
+  whether a skill is findable, whether its frontmatter parses, whether its eval
+  tasks name real headings, and whether its receipts are fresh. None of them
+  reads a number. A figure with a wrong unit passes all of them forever, and
+  re-reading the citing paper never flags it either, because the citing paper
+  agrees with itself.
+- First step: one lint over `skills/*/SKILL.md` for a bare `N.NNx`, `Nx`
+  or "N times" with no unit noun inside the same sentence, run beside
+  `tools/skill_eval.py --check`. It would have fired on both sentences this run
+  repaired. It is a warning rather than a failure at first, because the false
+  positive rate on nine skills is unknown and a noisy gate gets ignored, which
+  is the shape of incident 20.
+- What it is not: a check that the number is correct, which needs the paper.
+  This only checks that the number is **answerable**, which is the property that
+  was missing and the property that decides whether the next reader can verify
+  it in a grep or in a run.
+- Whose call: the engineer, under `tools/`. This seat cannot write it, since
+  `tools/` is outside the boundary in the skill charter.
+- Cost: $0.
+- Status: proposed

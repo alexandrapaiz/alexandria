@@ -22,7 +22,7 @@ provenance:
     - "capmas: Capability-Based Delegation of Privileges in Multi-Agent Systems — arxiv.org/abs/2609.06500"
     - "MOLE: Detecting Insider Threats in AI Agents — arxiv.org/abs/2609.06966"
     - "The Compiler May Read It, the Agent May Not: Keeping Part of a Research Code Away from a Coding Agent — arxiv.org/abs/2609.35557"
-    - "CaMeL: Defeating Prompt Injections by Design — arxiv.org/abs/2503.18813 (read in full 2026-10-27, for delta 1's overhead sentence and its caveat)"
+    - "CaMeL: Defeating Prompt Injections by Design (arxiv.org/abs/2503.18813), read in full 2026-10-27, for delta 1's overhead sentence and its caveat"
 ---
 
 # Agent containment

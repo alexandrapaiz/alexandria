@@ -20,10 +20,10 @@ provenance:
     - "EvoSafeHarness: Evolving Model- and Domain-Specific Harnesses for Securing Agents — arxiv.org/abs/2609.05903"
     - "Shutdown Sabotage Propensities in Multi-Agent Systems — arxiv.org/abs/2609.28274"
     - "A2M: Trace-Optimized Agent Hijacking in the MCP Ecosystem — arxiv.org/abs/2609.26761"
-    - "CaMeL: Defeating Prompt Injections by Design — arxiv.org/abs/2503.18813 (read in full 2026-10-27; the backbone span behind delta 2)"
-    - "Fides: Information-Flow Control for Agent Planners — arxiv.org/abs/2505.23643 (read in full 2026-10-27; the two primitives and both costs in delta 4)"
-    - "Firewalls at the Agent-Tool Boundary, with a Three-Stage Adaptive Cascade — arxiv.org/abs/2510.05244 (read in full 2026-10-27; delta 4's regenerate-versus-score ordering and the benchmark-defect caveat)"
-    - "Agent-SafetyBench — arxiv.org/abs/2412.14470 (read in full 2026-10-27; the benchmark delta 2 rule 3 was misattributing a metric to)"
+    - "CaMeL: Defeating Prompt Injections by Design (arxiv.org/abs/2503.18813), read in full 2026-10-27, the backbone span behind delta 2"
+    - "Fides: Information-Flow Control for Agent Planners (arxiv.org/abs/2505.23643), read in full 2026-10-27, the two primitives and both costs in delta 4"
+    - "Firewalls at the Agent-Tool Boundary, with a Three-Stage Adaptive Cascade (arxiv.org/abs/2510.05244), read in full 2026-10-27, delta 4's regenerate-versus-score ordering and the benchmark-defect caveat"
+    - "Agent-SafetyBench (arxiv.org/abs/2412.14470), read in full 2026-10-27, the benchmark delta 2 rule 3 was misattributing a metric to"
 ---
 
 # Agent security measurement

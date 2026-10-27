@@ -13,7 +13,7 @@
   "library": {
     "agent-containment": {
       "path": "skills/agent-containment/SKILL.md",
-      "sha256": "af0cd09cd31f3fde"
+      "sha256": "4cba56c907a735ee"
     },
     "agent-memory-selection": {
       "path": "skills/agent-memory-selection/SKILL.md",
@@ -21,7 +21,7 @@
     },
     "agent-security-measurement": {
       "path": "skills/agent-security-measurement/SKILL.md",
-      "sha256": "aeef74b1f9734f76"
+      "sha256": "8a1ba713d52cab15"
     },
     "context-window-engineering": {
       "path": "skills/context-window-engineering/SKILL.md",
@@ -61,7 +61,7 @@
     {
       "skill": "agent-containment",
       "source": "skills/agent-containment/triggers.json",
-      "skill_sha256": "af0cd09cd31f3fde",
+      "skill_sha256": "4cba56c907a735ee",
       "suite_version": 2,
       "cases": [
         {
@@ -609,7 +609,7 @@
     {
       "skill": "agent-security-measurement",
       "source": "skills/agent-security-measurement/triggers.json",
-      "skill_sha256": "aeef74b1f9734f76",
+      "skill_sha256": "8a1ba713d52cab15",
       "suite_version": 1,
       "cases": [
         {
