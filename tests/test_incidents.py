@@ -330,3 +330,188 @@ def test_a_substitution_among_legacy_numbers_is_still_loud():
     substituted = repaired + "\n## Incident 21 — a second entry on one number\n\nBody.\n"
     problems = inc.check(substituted, [])
     assert any("Incident 21" in p and "allocated again" in p for p in problems), problems
+
+
+# --- the branch's own appends, which no predicate here could see --------------
+#
+# The predicate the ExO seat routed to this file, from
+# `INC-2026-10-27-the-register-anchor-conflicted-seven-times-in-two-days-and-its-inbox-has-no-gate`.
+# The register's append anchor needed a keep-both merge resolve seven times in
+# the thirty-nine hours after the inbox landed, and one of those was handed back
+# against a pull request that had already passed review clean.
+#
+# The reason nothing caught them is structural rather than careless: every other
+# predicate in `check` inspects an entry that is already in the inbox or already
+# in the register, so a seat that ignores the inbox entirely produces a clean
+# read. The question none of them asks is what the branch did.
+#
+# These tests build a real repository, because the predicate's whole subject is
+# a diff against a merge base and a fixture cannot have one.
+
+
+def _run(repo, *args):
+    import subprocess
+    done = subprocess.run(["git", "-C", str(repo), *args],
+                          capture_output=True, text=True)
+    assert done.returncode == 0, done.stderr
+    return done.stdout
+
+
+@pytest.fixture
+def repo(tmp_path):
+    """A repository with a register, an inbox and a `base` branch to diff against."""
+    (tmp_path / "docs" / "agents" / "incidents" / "inbox").mkdir(parents=True)
+    (tmp_path / "docs" / "agents" / "incidents.md").write_text(REGISTER)
+    _run(tmp_path, "init", "-q", "-b", "base")
+    _run(tmp_path, "config", "user.email", "t@example.com")
+    _run(tmp_path, "config", "user.name", "t")
+    _run(tmp_path, "add", "-A")
+    _run(tmp_path, "commit", "-qm", "the register as it stands")
+    _run(tmp_path, "checkout", "-q", "-b", "work")
+    return tmp_path
+
+
+def _register(repo):
+    return repo / "docs" / "agents" / "incidents.md"
+
+
+def _inbox(repo):
+    return repo / "docs" / "agents" / "incidents" / "inbox"
+
+
+def _commit(repo, message="the branch's work"):
+    _run(repo, "add", "-A")
+    _run(repo, "commit", "-qm", message)
+
+
+def test_a_branch_that_appends_to_the_register_with_no_inbox_file_is_caught(repo):
+    _register(repo).write_text(REGISTER + "\n" + entry("INC-2026-10-27-straight-in"))
+    _commit(repo)
+    problems, skipped = inc.branch_appends("base", [], root=repo)
+    assert skipped == ""
+    assert len(problems) == 1
+    assert "INC-2026-10-27-straight-in" in problems[0]
+    # The problem says what to do instead, because a gate that only refuses
+    # teaches the next seat nothing.
+    assert "tools/incidents.py new" in problems[0]
+
+
+def test_a_branch_that_files_into_the_inbox_passes(repo):
+    name = "INC-2026-10-27-filed-properly.md"
+    (_inbox(repo) / name).write_text(entry("INC-2026-10-27-filed-properly"))
+    _commit(repo)
+    problems, skipped = inc.branch_appends("base", [name], root=repo)
+    assert (problems, skipped) == ([], "")
+
+
+def test_a_branch_that_touches_the_register_at_all_is_not_the_question(repo):
+    # Editing an entry that is already there is ordinary work. The predicate is
+    # about a new level-two heading, not about the file being modified.
+    _register(repo).write_text(
+        REGISTER.replace("Body of the first.", "Body of the first, corrected."))
+    _commit(repo)
+    assert inc.branch_appends("base", [], root=repo) == ([], "")
+
+
+def test_the_fold_is_exempt_because_it_is_a_move_and_not_an_append(repo):
+    inc_id = "INC-2026-10-27-folded"
+    # Filed on `base`, which is the real shape: a seat files into the inbox, the
+    # entry reaches the mainline, and the fold on the mainline moves it.
+    _run(repo, "checkout", "-q", "base")
+    (_inbox(repo) / f"{inc_id}.md").write_text(entry(inc_id))
+    _commit(repo, "file it")
+    _run(repo, "checkout", "-q", "work")
+    _run(repo, "merge", "-q", "base")
+    folded = inc.fold_text(_register(repo).read_text(), [(f"{inc_id}.md", entry(inc_id))])
+    _register(repo).write_text(folded)
+    (_inbox(repo) / f"{inc_id}.md").unlink()
+    _commit(repo, "fold it")
+    # The heading is now an addition against `base` and the inbox is empty, so
+    # the naive reading of this predicate would make the one legitimate append
+    # the loudest failure in the file.
+    added, _ = inc.added_and_removed_ids(inc.register_diff("base", root=repo)[0])
+    assert inc_id in added
+    assert inc.branch_appends("base", [], root=repo) == ([], "")
+
+
+def test_the_exemption_is_keyed_on_the_moved_file_and_not_on_a_branch_name(repo):
+    # An append that deletes some *other* inbox file is not a fold of this id.
+    other = "INC-2026-10-27-unrelated.md"
+    (_inbox(repo) / other).write_text(entry("INC-2026-10-27-unrelated"))
+    _commit(repo, "a file to delete later")
+    (_inbox(repo) / other).unlink()
+    _register(repo).write_text(REGISTER + "\n" + entry("INC-2026-10-27-smuggled"))
+    _commit(repo, "delete one, append another")
+    problems, _ = inc.branch_appends("base", [], root=repo)
+    assert len(problems) == 1 and "INC-2026-10-27-smuggled" in problems[0]
+
+
+def test_folding_on_a_branch_is_not_exempt_and_should_not_be(repo):
+    # The boundary, found by the test above while this was being written. The
+    # exemption is for an inbox file that reached the mainline and is being
+    # moved there. A branch that files and folds in its own history shows git no
+    # deletion against the merge base, because the file never existed in it, and
+    # the net effect on the register is an append from a branch -- which is the
+    # thing the inbox exists to stop. So it is reported, correctly.
+    inc_id = "INC-2026-10-27-filed-and-folded-on-one-branch"
+    (_inbox(repo) / f"{inc_id}.md").write_text(entry(inc_id))
+    _commit(repo, "file it")
+    _register(repo).write_text(
+        inc.fold_text(_register(repo).read_text(), [(f"{inc_id}.md", entry(inc_id))]))
+    (_inbox(repo) / f"{inc_id}.md").unlink()
+    _commit(repo, "fold it on the branch")
+    problems, _ = inc.branch_appends("base", [], root=repo)
+    assert len(problems) == 1 and inc_id in problems[0]
+
+
+def test_a_removed_heading_is_not_reported_as_an_append(repo):
+    victim = [e for e in inc.split_entries(REGISTER) if e.inc_id][0]
+    _register(repo).write_text(
+        REGISTER.replace("## " + victim.heading + "\n", "")
+    )
+    _commit(repo)
+    added, removed = inc.added_and_removed_ids(inc.register_diff("base", root=repo)[0])
+    assert victim.inc_id in removed and victim.inc_id not in added
+    assert inc.branch_appends("base", [], root=repo) == ([], "")
+
+
+def test_a_base_that_does_not_resolve_says_so_rather_than_passing_quietly(repo):
+    # L-A21, and this file's own closing paragraph: a gate that saw nothing must
+    # not read as a quiet pass. The reason is returned to the caller, which
+    # prints it, rather than being swallowed into an empty problem list.
+    problems, skipped = inc.branch_appends("no-such-ref", [], root=repo)
+    assert problems == []
+    assert "no-such-ref" in skipped
+
+
+def test_an_inbox_name_that_is_not_an_id_claims_nothing(repo):
+    _register(repo).write_text(REGISTER + "\n" + entry("INC-2026-10-27-straight-in"))
+    _commit(repo)
+    problems, _ = inc.branch_appends("base", ["notes.md", "README.md"], root=repo)
+    assert len(problems) == 1
+
+
+def test_the_cli_reads_the_predicate_only_when_given_a_base(repo, monkeypatch, capsys):
+    monkeypatch.setattr(inc, "ROOT", repo)
+    monkeypatch.setattr(inc, "REGISTER", _register(repo))
+    monkeypatch.setattr(inc, "INBOX", _inbox(repo))
+    _register(repo).write_text(REGISTER + "\n" + entry("INC-2026-10-27-straight-in"))
+    _commit(repo)
+    assert inc.main(["check"]) == 0                      # shape only, as before
+    assert inc.main(["check", "--base", "base"]) == 1    # and now the branch too
+    assert "INC-2026-10-27-straight-in" in capsys.readouterr().out
+
+
+def test_the_live_branch_files_every_incident_it_adds_through_the_inbox():
+    # The gate pointed at this repository, which is the only reading that can
+    # catch the next instance. Skipped rather than failed where the base cannot
+    # be named: the host clones `--depth 1`, which implies `--single-branch`, so
+    # `origin/main` is not always a ref that resolves
+    # (`INC-2026-10-26-the-single-branch-refspec-survived-the-unshallow-again`).
+    code, _ = inc.git("rev-parse", "--verify", "--quiet", "origin/main")
+    if code != 0:
+        pytest.skip("origin/main does not resolve on this checkout")
+    names = [p.name for p in inc.inbox_files()]
+    problems, skipped = inc.branch_appends("origin/main", names)
+    assert skipped == ""
+    assert problems == [], problems
