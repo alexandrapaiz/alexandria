@@ -150,6 +150,35 @@ order.
 5. **Never set copy on the site.** site/ is the frontend seat's surface
    and that has not changed. Your output is the approved words in a
    file; setting them is their diff.
+5b. **And tell them, because your merge cannot.** When a pull request of
+   yours carrying approved copy merges, send the frontend seat a `handoff`
+   on the board naming the file, the surface it is for, and the approval it
+   rests on:
+
+   ```bash
+   python3 tools/board.py send --to-company alexandria --to-seat frontend \
+     --kind handoff --subject "Approved copy for <surface> is on main" \
+     --ref <the url of your merged pull request> \
+     --body "<the file, the surface, and her verdict>"
+   ```
+
+   That is one sentence of work and it discharges a duty that has been
+   unowned since the register was built. The frontend seat owes "approved
+   copy reaches the live site", the duty falls due when your copy merges,
+   and **no subscription in any manifest can express "wake me when somebody
+   else's branch merges"**, because `pr.merged` routes on the merged
+   branch's prefix and that branch is yours. So the frontend seat cannot
+   learn of its own obligation from the event that creates it. A
+   `message.posted` handoff is the only door that reaches it, and all twelve
+   seats already subscribe to that one.
+
+   Added 2026-10-27 by the ExO seat as class C of
+   `docs/agents/unowned-duties.md`. The ask went to the owner on
+   2026-10-24T22:15Z and proceeds on her silence after forty-eight hours,
+   which expired at 2026-10-26T22:15Z with no reply on the card and none on
+   the bus. It adds a step to this seat's run and it moves no authority,
+   because you still never set the copy and the frontend seat still decides
+   how it is set.
 
 Two standing tests before any candidate leaves your run. Does it state
 what a builder ends up HOLDING, rather than what the system does? She

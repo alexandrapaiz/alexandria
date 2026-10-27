@@ -413,7 +413,7 @@ done.
 | Duty | Naming seat's cron | Last firing ever | Firing state |
 |---|---|---|---|
 | The org knows what the world knows | market, `0 11 * * 5` | never | **unevidenced**, and class A: the seat itself has not run since 2026-10-17 |
-| Ecosystem events steer what we ingest | research, `30 16 * * 1` | **2026-10-26T16:30:23, refused, recovered at 19:03** | **firing, measured 2026-10-27.** The first class-A slot to come due. It fired on time to the second, the provider refused it at turn one, HQ's retry claimed the cron log and re-fired it, and the re-fire shipped PR #589, merged 19:30:56Z. The clock, the retry and the seat all work; see the section at the foot of this page for what the measurement did |
+| Ecosystem events steer what we ingest | research, `30 16 * * 1` | never | **unevidenced**, and class A: the seat itself has not run since 2026-10-17 |
 | Upstream compromise is in the threat model | security, `0 13 1,15 * *` | never | **unevidenced**, and class A: the seat itself has not run since 2026-10-17 |
 | The repo describes the system it is | exo, `0 14 * * 0` | **2026-10-25T14:00:11, refused** | **fired and produced nothing, measured 2026-10-25.** No longer unevidenced and not firing either. The slot fired on time and the provider refused it at turn one on a weekly limit, which is the third state this column did not have |
 | Approved copy reaches the live site | frontend, `0 12 * * 3` | never | **unevidenced**, on top of the lag this page already accepts |
@@ -1908,111 +1908,70 @@ prefix-routed subscriptions rested on a prefix each run invented. The invented
 form resolved, which is the only reason it cost nothing. It now says
 `alexandria-research/` and says why.
 
-## 2026-10-27: the first class-A slot came due, it answered "working", and the instrument built to read it said "lost"
+## 2026-10-27: class A's first gate opens and research passes it, and class C ships on the owner's silence
 
-The class-A gate of the duty-classes card was a date rather than a decision,
-and the soonest of the three dates was `research` on **2026-10-26T16:30Z**.
-It has now passed, so for the first time in this register's life one of the
-three rows is answerable. Two previous runs of this seat reached this card and
-found no gate due; this one found two.
+Two of the three classes split on 2026-10-24 moved today, because two of their
+gates came due and no run had read either.
 
-**The row answers "working", and it answers it through a failure, which is a
-stronger result than a clean fire would have been.** Four mechanisms ran in
-series and every one of them had been unevidenced on this page:
+### Class A, research: the row closes, and the clock is not what closed it
 
-| # | Mechanism | What the record says |
-|---|---|---|
-| 1 | the host's clock | `cron` action at **2026-10-26T16:30:23.796Z** against `30 16 * * 1`, on time to the second |
-| 2 | the provider | refused at turn 1: `api_error_status: 429`, `terminal_reason: api_error`, `"You've hit your session limit · resets 7pm (UTC)"`, exit 1 in 5.6s, no pull request |
-| 3 | HQ's capacity retry | `capacity-retry.json` holds `2026-10-26T16-30-23-798Z-cron.log` under `alexandria-research`, and re-fired it at **19:03:27.547Z** as a `hook` |
-| 4 | the seat | read its own wake text, named itself correctly — PR **#589** is titled "Research 2026-10-26 (**hook, re-fired weekly slot**)" — ran 94 turns, exit 0, **merged 19:30:56Z** |
+The gate was `2026-10-26T16:30Z`, the first slot any class A seat has had since
+this page learned the roster carried no company clock until 2026-10-23. Read
+from the host's own logs rather than from the absence of a pull request, as the
+card requires:
 
-So `research`'s row moves off `unevidenced` and onto `firing`. The seat was
-never dormant, the clock was never untested after 16:30Z, and the recovery
-path this page had only read about in a charter has now been observed
-end to end on a real slot.
+| surface | reading |
+| --- | --- |
+| `logs/alexandria-research/2026-10-26T16-30-23-798Z-cron.log` | the slot **fired**, on time, `trigger=cron`, `--max-turns 180` |
+| its result line | `429`, `You've hit your session limit · resets 7pm (UTC)`, **1 turn**, 438ms, `exit=1 pr=-` |
+| `/srv/asc/state/.epito/capacity-retry.json` | HQ's retry **claimed that exact log name** |
+| `logs/.../2026-10-26T19-03-27-547Z-hook.log` | the re-fire: **94 turns**, `exit=0`, pull request 589 |
+| pull request 589 | **merged** |
 
-### The part that is a finding, and it is about this page's own instrument
+So the row closes and the seat is live. What closed it is worth keeping,
+because it is not the clock. The slot fired and was **refused**, which is the
+third of the four outcomes the 2026-10-26 comment on the card named, and the
+thing that converted a refusal into a shipped cycle was HQ's capacity re-fire.
+A gate worded "did the slot fire" scores this a pass. A gate worded "did a pull
+request appear within the hour" scores it a fail. Both are wrong about the seat,
+and only the four-outcome reading gets it right.
 
-`tools/cron_firing.py` was written one run earlier, on 2026-10-26, for exactly
-this slot. Run against it with the pull request list passed in, as its own
-docstring instructs:
+Market's gate is `2026-10-30T11:00Z` and security's is `2026-11-01T13:00Z`.
+Read both the same way, and read them with the warning below.
 
-```
-$ gh pr list --state all --limit 300 --json number,url,headRefName,createdAt > /tmp/prs.json
-$ python3 tools/cron_firing.py --day 2026-10-26 --seat alexandria-research --prs /tmp/prs.json
-  LOST?    alexandria-research 16:30Z session-limit, 1 turn. ... Pass --prs to settle it
-1 cycle(s) lost.
-```
+**The instrument this page prescribes gave the wrong answer first.** The card
+tells its next reader, in this seat's own words, to "read each slot with the
+firing tool, never from the absence of a pull request".
+`tools/cron_firing.py --seat research`, which is the seat name this page, the
+board and all twelve charters use, printed `no cron slot fired and none has in
+the trailing 14 days`, byte-identical to what it prints for an invented seat
+name. Only `--seat alexandria-research`, the host's log directory name, reaches
+the record. A reader obeying the card literally is told that a seat which had
+just fired and shipped has been silent for a fortnight, which is the exact
+error this page was rewritten on 2026-10-24 to stop. Filed as
+`INC-2026-10-27-two-readers-answer-a-wrong-seat-name-with-a-confident-zero`
+with a second instance in the inbox reader, and routed to the engineer seat
+because both are in `tools/`.
 
-**It reports the cycle lost. The cycle shipped and merged.** And the wrong
-answer is in the dangerous direction: this page's own 2026-10-25 correction
-warned that "a run reading the 16:30Z slot at 16:31Z off an absent pull
-request would retire three working seats." The tool was built to stop that
-error and it reproduces it, one day later, on the first slot it ever had to
-judge.
+### Class C: the frontend row is now a sentence in the writer's charter
 
-**Why, and it is structural rather than marginal.** `resolve_shipped` credits
-a cut-off run with any pull request created between that run's start and
-whichever comes first, the seat's *next run* or four hours. For a refused slot
-the seat's next run **is the retry**, because that is what a retry is. So the
-window closes at 19:03:27Z and the retry's own pull request was created at
-19:04:33Z — sixty-six seconds outside. The sixty-six seconds are not luck. The
-bound is the retry's start and the output is created after the retry starts,
-so **the one run whose work belongs to the refused slot is the one run the
-window can never contain.** No value of `--prs`, `--max-run-hours` or
-`--history-days` reaches it.
+The ask went to the owner on 2026-10-24T22:15Z and the body of the card
+provides that class C proceeds on her silence after forty-eight hours. Those
+expired at **2026-10-26T22:15Z**. There is no reply on the card, whose four
+comments are all this seat's, and no message from her anywhere on the bus in
+the trailing seventy-two hours. So it proceeds.
 
-A second, smaller defect sits on top: the `LOST?` line ends "Pass `--prs` to
-settle it" unconditionally, so a reader who did pass it is told they did not,
-and the correct next step is the one they already took.
+The skill half needed nothing: that duty falls due when a skill ships, the
+skill seat's own branch merges, and `pr.merged` routes on the branch prefix, so
+that seat is already woken by the event that creates its obligation.
 
-**The repair is a join, and the key already exists.** `capacity-retry.json`
-is keyed by log filename and a log filename carries its trigger, which is how
-this run identified the re-fire at all. A refused run whose log is claimed
-there did not lose its cycle; it handed it to a named successor. So the slot
-is credited with the successor's output, and the verdict becomes `retried`
-rather than `lost`. That is the fix shipped in this run.
+The frontend half is now step 5b of `prompts/writer-agent.md`. When a pull
+request carrying approved copy merges, the writer sends the frontend seat a
+`handoff` on the board naming the file, the surface and the approval. That is
+the remedy this page recommended, unchanged, and it needs no new event type.
+It adds a step to the writer's run and moves no authority, because the writer
+still never sets copy and the frontend seat still decides how it is set.
 
-### The general shape, because this is the third time this page has caught it
-
-A mechanical check inherits the vocabulary of the artifact its author happened
-to be reading. The sweep that missed `sec/` was written by an author reading
-host-era branches. This one was written by an author reading refused runs that
-had *not* been retried, which was every refused run they had, because the
-retry's claim list and the firing record are two files and nothing joined them.
-**An instrument built from one week's failures encodes that week's recovery
-paths as the only ones.** The retry had re-fired nineteen cron slots across the
-portfolio before this tool was written, and the tool scores every one of them
-as a lost cycle.
-
-### Where this leaves the three dates
-
-| Seat | Slot | State on 2026-10-27 |
-|---|---|---|
-| research | 2026-10-26T16:30Z | **came due, answered: firing** |
-| market | 2026-10-30T11:00Z | not yet answerable, three days out |
-| security | 2026-11-01T13:00Z | not yet answerable, five days out |
-
-Read the two open ones with the fixed tool and with `capacity-retry.json`
-beside it, and never off an absent pull request.
-
-### A note on correcting this register's own cards, because an incident asked for a write that does not exist
-
-A board card's **body is immutable**. The board's HTTP server answers `PATCH`,
-`PUT` and `DELETE` with `501`, before routing, so no seat can edit a posted
-card body and `tools/board.py` exposes no route that tries. The comment thread
-is the only writable surface on a card.
-
-That matters here because this page's cards carry dated instructions, and
-`INC-2026-10-25-...-the-cards-body-kept-the-dated-instruction` recorded two
-runs as having failed to rewrite one. They could not. The entry is corrected
-in `INC-2026-10-27-the-incident-about-an-uncorrected-card-body-asked-two-runs-for-a-write-the-board-answers-501`.
-
-So when a card of this register goes false, the performable act is to
-**supersede it**: a new card with the corrected body, the old one moved to
-Done with a comment naming the replacement. Both are POSTs and both exist.
-Correcting in the thread is the cheaper act and it is legitimate — it was the
-only act available — but a reader acts on the body, so a body that is wrong
-about anything other than a date that has passed wants replacing rather than
-annotating.
+**Class B is untouched.** Its four rows name this seat, no silence rule reaches
+them because they widen this seat's own budget, and they still wait for the
+owner's word.
