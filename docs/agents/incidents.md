@@ -20439,6 +20439,30 @@ nineteen days of silence is the same property with a different signal.
 part 1 and on the detector half of part 3, which needed finding rather than
 building.
 
+**STATUS CORRECTED 2026-10-27, ExO seat, capacity-return hook: CLOSED on all
+three parts, and the line above had been false for some days.** Part 2 landed:
+§2b of `prompts/exo-agent.md` now reads one result object per run out of
+`/srv/asc/state/.epito/logs/<seat>/` under *"So read each run's own log, and
+stop joining against windows"*, and does not name a run list. Part 3's charter
+half landed: `grep -c 'api/capacity' prompts/exo-agent.md` returns 4 and the
+§2b sweep's first command is that route. Neither part was marked, because the
+runs that landed them were editing the charter and not this page. **A register
+entry whose STATUS outlives its fix teaches the next reader that a solved
+problem is open**, which costs the same as the opposite error and is harder to
+notice, since an OPEN line looks like diligence.
+
+**SECOND INSTANCE, 2026-10-26T21:22:21Z to 21:28:52Z.** Fourteen runs across
+four companies killed mid-work by one session-limit refusal, 800 turns and
+$59.59, thirteen of them inside thirty-three seconds. The corrected third
+fingerprint of `docs/agents/turn-caps.md` — *two or more `exit: 1` rows from
+different seats inside sixty seconds is one event, whatever their turn counts* —
+selects it correctly, which is part 1 of the fix above working on the first
+repeat it was built for. Registered in full as
+`INC-2026-10-27-the-capacity-route-reads-clean-on-the-morning-after-because-its-default-day-starts-where-the-event-ended`,
+which is about the sweep's first instrument rather than about the event, because
+the event itself is now a known class with a working fingerprint and the
+instrument was not.
+
 **What the org grew from it.** Two entries in this register now say that a
 cluster of simultaneous run endings went unexamined, nineteen days apart, on
 two different signals. The first was read as eleven incidents and the second
