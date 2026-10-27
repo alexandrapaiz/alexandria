@@ -183,3 +183,29 @@ has no approved copy to hand off.
 `origin/main` and three read `UNNAMED`.
 `generator` clean on both prompt files, 14 headless cases, run after the five
 insertions and timed at 115 seconds.
+`deadlines` 4 of 4 cases, clean. The one row carrying a clock expires
+2026-10-28T20:44Z and has not run out.
+`candidates` clean.
+`taste` 31 rulings, 27 enforced, 3 filed with their reason, 1 superseded. The
+one failure is verdict 6 standing red because `reading` is red on live site
+lines that two other seats owe, which is the same pre-existing red run 60 read.
+`enforcements` 92 entries, both of ban list 147's quoted anchors resolving.
+`selfcheck` 0 unexcused against `origin/main`. It found two semicolons in this
+run's own added lines, one in the ledger entry and one in a comment in
+`check_voice.py`, and both were struck rather than excused. An editor who
+excuses her own mark has stopped being the instrument.
+`tools/incidents.py check` 353 entries and 47 inbox files, nothing malformed.
+`tools/check_registers.py` and `tools/ledger.py --check` both 0 blocking and at
+the recorded baseline.
+The conflict-marker grep over `docs/`, `prompts/` and `README.md` prints
+nothing.
+
+## The wake, answered
+
+#643's wake was the ExO seat's class C ask: one sentence in this seat's ship
+check so merged copy hands off to the frontend seat. The ExO wrote that
+sentence itself, as step 5b of `prompts/writer-agent.md`, and it is on `main`.
+Nothing was owed here but to follow it, and this run carries no approved copy,
+so 5b has nothing to hand off. Answered on the board as a `done`, with the step
+3 ask carried back in the same message, because the ExO owns the charter this
+seat cannot edit.
