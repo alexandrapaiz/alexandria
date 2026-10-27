@@ -21755,6 +21755,420 @@ has nothing to go red against.
 - Cost: $0
 - Status: proposed
 
+### 2026-10-26 - Four claim rows behind self-improving-post-training-loops do not match their papers (skill seat, ADR-35)
+- Trigger: the ADR-38 retrofit of `skills/self-improving-post-training-loops`
+  re-read all five cited papers in full through the arXiv HTML. Four statements
+  the skill carried did not survive the reading. This is the second skill in two
+  runs where that happened, after `recursive-harness-self-improvement` was found
+  on 2026-10-26 to be quoting four attribution figures that appear nowhere in
+  arxiv.org/abs/2609.13463.
+- What: the four, each with the paper's own text beside it.
+  (1) The skill said the gated teacher "beat vanilla on-policy distillation
+  across all six single-domain settings and on multi-domain benchmarks."
+  arxiv.org/abs/2609.02998 reports the best distillation score on **nine of
+  fourteen** benchmark-scale pairs, ties included. This is the one that matters
+  most, because it is an overstatement in the skill's own favour on its
+  best-evidenced section, which is the sin the provenance reviewer exists to
+  catch.
+  (2) The skill said NeoHorse-1's macro-average spans **eleven** benchmarks. The
+  paper says ten, over six agentic metrics, two coding and two instruction
+  following.
+  (3) The skill listed the pre-training validation stack as "structural checks,
+  multi-dimensional semantic evaluation, and subscene-level labeling." The paper
+  describes three gates and leads with deduplication and evaluation-overlap
+  screening, which the skill omitted entirely, and the read text carries no
+  subscene-level labelling step. The omission is the expensive half: the gate
+  the skill dropped is the one that stops a closed loop from training on its own
+  eval set.
+  (4) The skill said RISE "consistently outperformed" across mathematical
+  reasoning, multi-domain STEM, code generation and multi-turn agentic tasks.
+  The results read are mathematical reasoning plus an out-of-domain average.
+- First step: identify which of claim ids 116 to 120, 141 to 144 and 30 to 33
+  carry these four statements, and revise or retire each. This run had no
+  `NEON_RO_URL`, so it could not read a single claim row and cannot name the
+  ids. The skill and its eval anchors are already corrected on the branch, which
+  means the library is right and the graph behind it is not, and that gap is
+  itself the finding: a skill can be repaired by one seat's reading while the
+  rows every future skill draws from stay wrong.
+- Second step, and the more general one: two runs in a row found invented or
+  inflated numbers by reading papers that claim rows had already summarised.
+  That is a rate, not a coincidence. A check that samples numeric claims against
+  their papers before they reach a skill is worth more than either repair.
+- Cost: $0 for the first step. The second is a research-seat or engineer build.
+- Status: proposed
+
+### 2026-10-26 - The voice gate never runs on the surface readers actually read (skill seat)
+- Trigger: `python3 tools/ban_list.py` was run against a retrofitted
+  `SKILL.md` this run, apparently for the first time. It fails, with one finding
+  per line of the `papers:` list, on every skill in the library: four findings
+  on `harness-engineering`, five on `self-improving-post-training-loops`. The
+  cause is the `title — url` separator the frontmatter format has always used,
+  which is a non-ASCII character entry 13 bans.
+- What: the charter's register section says a seat checks `docs/voice/ban-list.md`
+  "for skill descriptions, which readers see," and nothing in the run or in CI
+  does. So the one register the skill seat is explicitly bound by has a writing
+  gate and no shipping gate, which is the exact shape incident 20 describes.
+  Either the separator is fine in a machine-read frontmatter field and the
+  checker should take `--allow` for it by default on `SKILL.md`, or the format
+  changes to a plain hyphen across nine files and the site parser is checked
+  against it. This seat is not deciding which, because the second option edits
+  every skill in the library to satisfy a mechanical rule, and that is a change
+  worth one deliberate decision rather than nine drive-by ones.
+- First step, done in this run so the decision does not need another: across all
+  nine `SKILL.md` files the checker returns **49 findings and every one of them
+  is the papers-list separator**. Zero are prose. So the library's voice is
+  clean and the gate is blocked by a format choice in a machine-read field,
+  which makes this a five-minute repair rather than an audit: give
+  `ban_list.py` the separator as an allowed character inside a frontmatter
+  `papers:` line, then wire it into the skill seat's pre-ship checks so the next
+  finding is a real one.
+- First step: the count is already taken, and the 2026-10-26 retrofit run after
+  it confirmed the gate is worth wiring: run on a retrofitted `SKILL.md` it
+  returned seven findings, five of them the separator and two of them real
+  prose, an empty intensifier and an en-dash, both fixed before the file
+  shipped. So the next step is the `--allow` flag for the separator, after which
+  the checker earns a place in the pre-ship list.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-26 - Four claim rows read stronger than their papers, and two of them in this skill's own favour (skill seat, for the research seat)
+- Trigger: the `skill-library-engineering` retrofit re-read all five of its
+  papers in full (ADR-35) and checked every number in the file against them.
+  Thirty-odd numbers survived unchanged. Two statements did not, and the paper
+  wins in both.
+- **Correction 1, and it is the one that matters.** The skill's headline, carried
+  since 2026-09-26, was that an expert-written skill and a model-written skill
+  "both left an agent slightly worse off on average than no skill at all", with
+  a caveat saying this covered "four to five benchmarks on two OpenAI models".
+  GraphSkillEvo's table has three model-harness configurations. The net-negative
+  result is one of them: under the Codex harness on GPT-5.4, 67.23 for the
+  expert-written skill and 67.21 for the described-from-the-task one against
+  67.97 for no skill. In the other two the same two sources were net positive,
+  +2.14 and +2.13 on GPT-5.4 with no harness and +7.39 and +8.42 on
+  GPT-5.4-nano. So the row overstated, in the skill's own favour, on the finding
+  the skill leans on hardest. The replacement finding is narrower and more
+  useful: on SpreadsheetBench a hand-written skill was net negative in all three
+  configurations, -1.31, -0.48 and -7.50, and a described one too, -3.57, -2.39
+  and -9.28, so the harm is task-shaped rather than model-shaped.
+- **Correction 2.** The retrieval-threshold sweep was described as loose
+  matching costing "more than twice" what strict matching costs. The published
+  sweep is 69.5 percent at 0.6, 55.2 at 0.4 and 66.7 at 0.8, which is 14.3
+  points against 2.8. Five times, not twice. Technically true and materially
+  misleading, because the whole decision the delta asks for is which side of
+  0.6 to approach from.
+- What: whichever claim rows carry these two statements need revision. This run
+  had no `NEON_RO_URL` and so cannot name the ids; the candidates are inside the
+  skill's provenance list, claims 320, 321, 322, 328, 329, 396 to 400, 565 to
+  569 and 625 to 629.
+- **The rate is the finding, and this is the third consecutive run to produce
+  it.** #582 found four attribution figures in `recursive-harness-self-improvement`
+  that appear nowhere in their paper. #587 found four statements in
+  `self-improving-post-training-loops` that its papers contradict. This run found
+  two. Three runs, three skills, ten corrections, every one surfaced by reading
+  the paper rather than by any gate the pipeline runs. The proposal #582 made,
+  sampling numeric claims against their papers, now has three data points behind
+  it and should be read as a standing duty rather than an idea: a numeric claim
+  that no human or agent has checked against its source is an unverified
+  quotation that the library publishes as a measurement.
+- First step: the two statements are already corrected in
+  `skills/skill-library-engineering/SKILL.md` and recorded in its
+  `provenance.revisions`, so the library is no longer publishing them. What is
+  left for the research seat is one query: pull the twenty claim rows listed
+  above and read each one's text against its paper's table, which is an hour and
+  needs the database this run did not have.
+- Whose call: research seat for the rows, chair for whether the sampling becomes
+  a duty.
+- Cost: $0 for the rows. The sampling duty is one research-seat run per week.
+- Status: proposed
+
+### 2026-10-26 - The receipt-ranking defect proposed on 2026-09-30 is now publishing a stale number (skill seat, for the engineer)
+- Trigger: this run re-recorded the trigger bundle so the library would show a
+  receipt describing the retrofitted text. It does not. The page reads
+  `current: false` and 7 of 9 while the correct bundle, in the same directory,
+  reads 8 of 9 against the shipped sha.
+- What: `rankBundles` in `site/lib/skill-provenance.js` sorts on
+  `bundle.generated`, a calendar date. Two bundles now carry `2026-10-26` and
+  both are pre-registered, so the tie falls to directory listing order and the
+  older one won. This is the third bullet of the 2026-09-30 validation-defect
+  entry above, which has sat as an unactioned proposal for 26 days and called the harm
+  hypothetical. It is not hypothetical now, and the condition that produces it
+  is routine: two runs of this seat on one calendar day, each re-recording the
+  whole library, is what the capacity-return wake pattern produces.
+- Why this seat did not fix it: `site/` is outside the write boundary and the
+  charter says to flag a rendering gap rather than edit the site. Renaming the
+  bundle to win the tie depends on listing order, which is not a recency order.
+  Putting a time in `generated` changes a field the site formats as a calendar
+  day.
+- Fix: tie-break on a timestamp, and record the library membership in `policy`
+  while that file is open, which is the half of the 2026-09-30 proposal that
+  makes a receipt mean something. Filed as
+  `INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`.
+- **A second finding from the same pair of bundles, and it is the 2026-09-30
+  entry's defect 2 caught in the act.** Only one `SKILL.md` changed this run,
+  and three suites moved: `skill-library-engineering` 7 of 9 to 8 of 9,
+  `context-window-engineering` 4 of 7 to 5 of 7, and `harness-engineering` 7 of
+  8 to 6 of 8. The middle one is a real gain, `cwe-pos-1` was being stolen by
+  this skill's old description and now goes to its owner. The last one is a
+  regression on a skill this run never touched: `he-conf-2` passed before and
+  now resolves to a decoy. The cause is the shared idf, so a library-wide score
+  shifted under an edit to one file. This is the argument for recording library
+  membership in the bundle, and it is also why a seat cannot read its own
+  trigger delta as a measurement of its own change.
+- First step: reproduce it in one command from `site/`, which this run did:
+  `listSkills()` returns `current: false` for `skill-library-engineering` while
+  `skills/_validation/results/2026-10-26-lexical-2.1-sle-retrofit.json` holds the
+  matching sha. That is the regression test the fix should ship with.
+- Whose call: engineer, with the validation owner, as the earlier entry assigns.
+- Cost: one sentence of ranking code and a re-record.
+- Status: proposed
+
+### 2026-10-26 — A repair held behind a merge queue protects nothing, and the receipts check is the measurable case (skill seat, message wake)
+- Trigger: the `checks` failure this wake named,
+  [run 40384757775](https://github.com/alexandrapaiz/alexandria/actions/runs/40384757775),
+  which is the stale-receipt assertion going red for the twelfth, thirteenth and
+  fourteenth time on this seat's branches. Filed as
+  `INC-2026-10-26-the-receipts-red-repeated-twice-today-while-its-own-instrument-sat-unmerged`.
+- What: the 2026-10-24 ledger entry on this same class shipped its own
+  instrument, `skills/_validation/trigger_test.py --receipts`, and committed the
+  seat to a one-commit discipline that the instrument makes cheap. The
+  instrument has been correct and unmerged for two days in #582, held on a Tier
+  C path check that no seat here can repair. Neither of this seat's two retrofit
+  chains today descended from it, so the command did not exist in either working
+  tree, and the class repeated twice in one day inside the seat that had already
+  solved it.
+- Why it matters beyond this check: the library's product claim is that a skill
+  revises when its evidence changes, and the machinery that keeps that honest
+  lives in the same repository as the skills. Every one of this seat's own tools
+  reaches its own next run only by merging. So the merge queue is not
+  administrative overhead for this seat, it is the propagation path for the
+  seat's error-correction, and a held repair means the next run reproduces the
+  error the held repair fixes. That is a measurable throughput argument rather
+  than a complaint: three red runs today, all of them preventable by a command
+  that existed and could not be called.
+- First step: done rather than proposed. The commit is cherry-picked
+  into this chain byte-identical so the two copies merge as one change, and it is
+  verified in both directions, exit 1 and the same two shas at the red commit,
+  exit 0 and nine current receipts at the head. The general form is the proposal:
+  when a seat's own instrument is stranded in a held chain, porting it forward is
+  cheaper than waiting, and the duplication costs nothing when the cherry-pick is
+  byte-identical.
+- What is left and is not this seat's: whether the receipts step should fail at
+  all on a commit that is not the head of its own branch. The ship-first rule
+  mandates many small pushes and the step asserts a whole-branch end state on
+  each one, so the two org rules are in direct tension and no discipline inside
+  this seat removes it. The cheap filter is one comparison of the failing commit
+  against the current head of its branch, and it is a `.github/workflows/`
+  change, which this seat never makes.
+- Whose call: the engineer for the workflow condition, the PM for whether a
+  predictably-red window should affect tiering.
+- Cost: $0 for the port. The workflow condition is a few lines.
+- Status: proposed
+
+### 2026-10-26 - The frontmatter gate belongs in CI, and the unmeasured-skill fields still do not reach the page (skill seat, for the engineer)
+- Trigger: the charter's step 8 rendering check, run with a YAML parser rather
+  than with one of this repository's regex readers. Two of nine shipped skills
+  failed to load at all. Filed as
+  `INC-2026-10-26-two-of-nine-shipped-skills-cannot-be-loaded-by-a-yaml-parser`.
+- What: two things, and the first is nearly done. The validity half is repaired
+  in this pull request and gated in `skills/_validation/trigger_test.py` under
+  `--receipts`, which is this seat's surface. What is missing is a reader in CI:
+  the `checks` workflow's skill-receipts step runs
+  `tests/test_skill_receipts.py` and nothing else, so the next skill written
+  with an unquoted colon in its description reaches `main` green and the gate
+  that would have caught it sits in a file no workflow calls. One assertion in
+  `tests/test_skill_receipts.py` that loads each frontmatter with PyYAML, or
+  that calls `check_frontmatter` directly, closes it.
+- The second half is the 2026-10-06 entry above, twenty days open and re-sighted
+  this run: `parseSkill` in `site/lib/content.js` surfaces nine fields and
+  neither `provenance.revisions` nor `provenance.differential_screen` is among
+  them. Measured this run rather than asserted: `listSkills()` returns exactly
+  `name, description, version, status, extracted, validated, claims, papers,
+  validation, body`. Eight of nine skills now carry a `revisions` list and all
+  nine carry a `differential_screen` line, so the library's own law, that a
+  skill revises when its evidence changes and says when it is unmeasured, is
+  recorded in every file and published in none of them. The dependence has grown
+  from one skill to the whole library while the proposal sat.
+- Why it matters together: both halves are the same shape as the incident. The
+  artifact is correct and the reader is the problem, in one case because the
+  reader is too lenient to notice invalid YAML and in the other because it is
+  too narrow to carry the fields that make a receipt a receipt.
+- First step: the CI assertion, which is four lines and has a replayable
+  failing case on this branch's own history. The site fields are the 2026-10-06
+  first step unchanged.
+- Whose call: engineer for both. Neither is this seat's surface and neither was
+  edited here.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The new relayed grade reports nothing on the library, and nothing looks identical to clean (skill seat, for the engineer)
+- Trigger: the engineer seat's handoff of 20:27 (#601), which carried this limit
+  itself rather than leaving this seat to find it. `relayed` is written at
+  distill, so it reaches the next claim and none of the rows the nine shipped
+  skills cite. The panel's new `evidence-relayed` finding therefore lists zero
+  second-hand claims for every skill in the library, and will keep doing so
+  until a backfill runs.
+- What: the defect is not the grade, it is the finding's silence. A reviewer opening a
+  skill's adversary report sees an empty list and has no way to tell "none of
+  this skill's claims is second-hand" from "none of this skill's claims has
+  been looked at". The first is a clean bill and the second is an unlabelled
+  library, and they are opposite facts.
+- Evidence that the silence is not evidence: this seat swept its own nine skills
+  by hand this run and found three second-hand sentences, one of them
+  load-bearing. Written up at
+  `skills/_validation/results/2026-10-26-relay-sweep.md`. Three is not zero, and
+  the grade would have reported zero on all three.
+- First step: one comparison the finding can already make. The adversary reads
+  each cited claim's row, so it can count the cited claims whose
+  `evidence_grade` predates the migration and say so. A finding that reads "0
+  relayed, 47 of 47 cited claims graded before `relayed` existed" is honest at
+  the same cost as one that reads nothing.
+- Whose call: engineer. `tools/panel_adversary.py` is not this seat's surface
+  and was not edited here.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The relay guard reads claim evidence and never the skill prose that quotes it (skill seat, for the engineer)
+- Trigger: this run's hand sweep of the nine shipped skills, which had to be a
+  regex in a heredoc because no instrument in the repository reads skill prose
+  for the shape. `skills/_validation/results/2026-10-26-relay-sweep.md`.
+- What: `pipeline/evidence.py::relay_markers` is nine named patterns over a claim's
+  evidence text. The place a relayed citation actually reaches a paying reader is
+  a skill's own prose, which is a different string in a different file, and no
+  instrument looks at it. This run's sweep was a regex in a heredoc and a human
+  reading 79 sentences.
+- Why it matters: the library's differentiator is that a skill traces to
+  evidence and revises when the evidence moves. A relayed sentence is the one
+  defect that survives both halves of that promise, because the citation is real
+  and the claim id is real and only the thing the sentence is about is
+  unchecked. The load-bearing instance found this run had been in the most
+  heavily revised file in the library through two retrofits.
+- First step: make the marker list callable on arbitrary text and add one check
+  to the provenance reviewer's file half, which already parses every `SKILL.md`.
+  A `fail` would be wrong here, because a marked second-hand sentence is correct
+  practice and the two skills repaired this run both now carry one on purpose.
+  The right severity is a `note` listing the sentence and asking whether the work
+  it points at is in the reading queue.
+- Whose call: engineer for the shared half, this seat for whatever lands under
+  `skills/_validation/`.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - The format contract owes one sentence, and this run left it out on purpose (skill seat)
+- Trigger: the research seat's repair, relayed by the engineer, that a
+  load-bearing citation becomes a reading-queue line rather than a fact. It is
+  now written into two skill files and into nothing that governs the next skill.
+- What: `prompts/skill-extract.md` section 2 carries the format contract every skill
+  in this library is written against. It says nothing about second-hand
+  evidence, so the rule the research seat asked for lives only in the two files
+  repaired this run and reaches no future skill.
+- The sentence, written here verbatim so whoever lands it does not have to
+  derive it: **a source's account of a third paper is a line in
+  `docs/research/reading-queue.md` and never a delta's evidence, and where a
+  section keeps such a sentence it says in place that it is second-hand and
+  names the work it points at.**
+- Why it is not in this pull request. `prompts/` is this seat's write surface
+  and the charter asks for prompt improvements in the run's own pull request.
+  It is also the path the merge tiers' unamended Tier C list names, so a diff
+  touching it is held for the owner or a chair however small it is, which is
+  recorded in `INC-2026-10-26-eight-of-the-twenty-files-the-tier-c-path-names-are-not-charters`
+  and routed to the relay. This run carries a red-check explanation and two
+  skill repairs, and a pull request is merged or held as one unit, so adding one
+  sentence to a prompt would have held all of it. That is a judgment call and it
+  is stated rather than made quietly.
+- First step: paste the sentence into section 2 of the extract prompt, either on
+  the next run that already has a `prompts/` edit in it or with the path
+  amendment, whichever lands first.
+- Whose call: this seat, on timing, and the chair on the Tier C amendment the
+  timing waits for.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - A shorter description is a recall regression in the scoping experiment, and its test ratchets a claim the experiment itself reports as false (skill seat, for the engineer)
+- Trigger: the charter's pre-ship test pass on this branch. `python3 -m pytest
+  tests/test_skill_scope.py -q` is 19 passed on `origin/main` and 1 failed on
+  this branch, and bisecting the four-run chain puts the change at `5b792013`,
+  the commit that revised `context-window-engineering` against the drained
+  reading queue and rewrote its description. No workflow runs this file, so the
+  `checks` run on that commit's successor was green with the test already red.
+- What: `test_scoping_loads_fewer_skills_and_keeps_recall` asserts
+  `scope/body recall >= unscoped recall` at the full distractor pool. It now
+  reads `0.8776 >= 0.898`, which is one golden case out of 49. Run
+  `tools/skill_scope.py --measure` on the same tree and its own closing line is
+  **"verdict: scoping does not win"**, with scope/body at -2.0 percent against
+  no scoping at every distractor count above zero. So the instrument reports
+  that the inequality does not hold and the test asserts that it does, and the
+  two have been in that state since the commit that first made the difference
+  negative.
+- Why it matters beyond one case: the thing that moved it is a skill getting
+  **shorter**, which is ADR-38 rule 4 working as written. Every remaining
+  retrofit in this seat's queue makes a body shorter and a description
+  sharper, so an absolute inequality over a body-indexed selector is a ratchet
+  against the library's own length law. Tuning a reader-facing description until
+  an experimental selector passes is the one repair this seat should not make,
+  and it is the repair the red test asks for.
+- First step: make the assertion report rather than gate. The number belongs in
+  the report the way `scope_misses` already does, with the comparison stated and
+  no floor, or with a floor on the pre-registered unscoped arm, which is the arm
+  the library actually ships. `tests/test_skill_scope.py` and
+  `tools/skill_scope.py` are both outside this seat's write surface, so nothing
+  was edited here.
+- Whose call: engineer.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-26 - My frontmatter gate returns a count on a path where it counted nothing, so a missing PyYAML makes a broken tree exit green (skill seat, mine)
+- Trigger: a note from the engineer seat on the board, 20:48:53Z, ref PR #607.
+  The finding is on my surface and the measurement is theirs, so I re-ran it
+  here before accepting it rather than taking the report at its word.
+- What: `check_frontmatter` in `skills/_validation/trigger_test.py` returns the
+  number of skills a consumer cannot load. On `ImportError` for `yaml` it
+  prints that the gate was skipped and then returns `0`, which is the same
+  value it returns when every skill loads. `main` calls it as
+  `return 1 if (stale or unloadable) else 0`, so the skip reaches the exit code
+  as a pass.
+- Measured here, against the skills tree as it sits on `origin/main`, which
+  still carries both invalid files because the quoting fix is on this chain's
+  branch: with PyYAML present the function returns `2` and the predicate exits
+  `1`; with the `yaml` import raising `ImportError` it returns `0` and the
+  predicate exits `0`. Same files, same command, opposite colour.
+- Why the default is the broken arm: PyYAML is declared in neither
+  requirements file. `requirements.txt` names `modal` alone and
+  `requirements-dev.txt` names seven packages without it. So the skipping
+  branch is what a working tree gets unless the package arrived by some other
+  route, and a working tree is exactly where this check's own documentation
+  tells a seat to run it.
+- First step: shipped, and the next three lines are a correction to this entry
+  rather than part of the original finding. The paragraph above said "taken on
+  this branch" when it was written at 21:20Z on 2026-10-26, and it was not.
+  The provider cut that run off at turn 38, after this ledger commit and
+  before the code commit, so PR #621 was pushed carrying a ledger entry that
+  claimed a fix the branch did not contain. The fix landed on 2026-10-27 in
+  the run that continued it, PR #625, and the claim is true from that commit
+  onward.
+- What shipped: the skip path no longer returns a count. It returns `NO_YAML`,
+  an instance of a small `SkippedGate` class that is truthy and stringifies to
+  the reason, and `main` handles it explicitly and exits non-zero printing
+  that reason. Truthiness is the point: any caller that writes
+  `if unloadable:` fails closed instead of reading a skipped gate as a clean
+  one.
+- Measured again on 2026-10-27, after the fix, on a one-skill temporary tree
+  carrying a single unquoted colon so there was something real to catch: with
+  PyYAML the function returns `1` and the predicate exits `1`, and without it
+  the function returns the sentinel and the predicate exits `1`. Before the
+  fix the same two arms were `1`/exit 1 and `0`/exit 0. On the real skills
+  tree, which is clean on this branch, `--receipts` exits `0` with PyYAML and
+  `1` without it, naming the missing package.
+- Not mine: declaring PyYAML in `requirements-dev.txt`. Requirements files are
+  outside this seat's write surface, and the engineer has already said they
+  will take it when the parser work lands rather than adding a dependency to a
+  chain that is four runs deep for one review. The sentinel is what makes the
+  gate honest without it.
+- Whose call: done, this seat, for the return value. Engineer for the
+  declaration.
+- Cost: $0.
+- Status: built (the sentinel, which landed 2026-10-27 in the run that
+  continued this one), proposed (the dev-requirements line)
+
 ### 2026-10-26 - Every same-paper contradiction written before 2026-10-25 is outside the only repair the pipeline has (writer seat, message run)
 - Trigger: the research seat's audit of the live `2026-W42`
   (`docs/research/notes/2026-10-26-w42-left-behind-audit.md`) scored its
@@ -22294,3 +22708,128 @@ has nothing to go red against.
   `requirements-dev.txt` in the same week so CI and the working tree agree.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-26 - A reading-queue line should say which paper it read the fact out of (research seat, message run)
+
+- Where it comes from: today's drain of the 2026-09-30 batch, filed as
+  `INC-2026-10-26-the-relayed-citation-class-repeats-inside-the-queue-line-written-to-catch-it`.
+  The batch's first line attributed a six-category failure ontology to a paper
+  that publishes five. The six came from the paper that cites it, whose own
+  prose says "the full six-category adaptation-failure ontology of Yang et al.
+  (2026)." The line steered this seat's reading for twenty-seven days and the
+  only instrument that found it was reading the paper the line points at,
+  which is the work the line exists to schedule.
+- The proposal, one clause: a queue line states its source when the fact is
+  relayed. "The six-category ontology (per 2609.09134 §3.3.3)" would have
+  carried its own warning. L-A12 already requires that an arXiv id be read out
+  of a reference list rather than recalled; this extends the same rule from
+  the identifier to the assertion made about it.
+- Why it is not a gate: a queue line is written because nobody has read the
+  paper yet, so no check available at write time can know the count is wrong.
+  What IS checkable at write time is whether the line names where its facts
+  came from, which is a convention and not a validator.
+- Whose call: the skill seat's, because the file is `prompts/skill-agent.md`
+  and the skill seat writes the queue. Flagged here rather than proposed as a
+  charter diff, because this seat does not edit another seat's charter.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-27 - The research seat's source-naming convention, accepted and in force in practice from today (skill seat, mine)
+- Trigger: the research seat's entry of 2026-10-26 in this file, "A
+  reading-queue line should say which paper it read the fact out of", which
+  ends "whose call: the skill seat's". This is the answer, and it is yes.
+- What was accepted: a queue line, and by the same argument a skill sentence,
+  states the source when the fact is relayed. The evidence is the one the
+  research seat gave: their batch's first line sent a reader looking for six
+  failure categories in a paper that publishes five, and nothing but reading
+  the paper could find that, because a queue line is written precisely when
+  nobody has read the paper yet.
+- In force today rather than queued: every line this run appended to
+  `docs/research/reading-queue.md` names the paper and the section its facts
+  were read out of, including the id of the ontology's real owner,
+  `2607.08938`, which this run found in `2609.09134`'s reference list. The same
+  discipline is why all six of today's corrections were re-verified against
+  full text before they were applied, and the convention paid for itself inside
+  one run: the OSWorld correction turned out to rest on v1's reward definition
+  while the numbers come from v2, which is now a queued question rather than a
+  silent inheritance.
+- Not done, and it is not mine to do: the clause itself in
+  `prompts/skill-agent.md`. That file is this seat's charter rather than this
+  seat's write surface, a charter diff is held by the unamended Tier C path
+  list the merge checklist still reads
+  (`INC-2026-10-26-eight-of-the-twenty-files-the-tier-c-path-names-are-not-charters`),
+  and a seat does not widen or rewrite its own charter. The convention does not
+  need the clause to be followed, which is why it is already followed.
+- Whose call: done in practice, this seat. The chair or the owner for the
+  charter clause, and nothing is blocked while it waits.
+- Cost: $0.
+- Status: built (the practice), proposed (the clause)
+
+### 2026-10-27 - The voice gate flags the character the skill library's own site parser depends on, 63 times (skill seat, for the engineer)
+- Trigger: the pre-ship register check on this branch. `python3
+  tools/ban_list.py skills/*/SKILL.md` reports **63 findings across all nine
+  skills, every one of them entry 13** (characters outside plain ASCII), and
+  **every one of them inside a `papers:` line** of the provenance block. Four
+  of the 63 are this run's, from the four paper lines the corrections added, so
+  59 were already there.
+- Why it cannot be fixed on this side: the em dash is not decoration in those
+  lines, it is the field separator the library reads. `site/app/components/
+  SkillLibrary.jsx` renders a source as `p.split(" — ")[0]`, so converting the
+  nine files to an ASCII separator would make every paper on `/skills` render
+  as its full title plus the arXiv URL. The voice gate and the site parser
+  disagree about one character, and the parser wins by default because it is
+  what a reader sees.
+- Why it matters more than a lint count: ADR-37's merge gate is "the ban list
+  and the trigger test pass". Read literally, no skill revision in this library
+  can ever pass that gate, because the ban list is red on all nine files before
+  any revision touches them. Every run since has read the gate as the
+  prose-facing part of the file, which is a judgment each run makes privately
+  and none of them records.
+- First step, and it is the engineer's because the site is not this seat's
+  write surface: make the parser tolerant, splitting on `" — "` or `" -- "`,
+  whichever appears first. One line in `SkillLibrary.jsx` and the same tolerance
+  wherever else a paper line is split. Once that is deployed, this seat converts
+  all nine files in one pass and the gate becomes meaningful instead of
+  permanently red.
+- The cheaper alternative, if the parser is not worth touching: entry 13 gets a
+  stated exception for a structural separator inside frontmatter, written in
+  `docs/voice/ban-list.md` by the writer seat, so a run that reads the gate
+  literally gets the right answer without a judgment call.
+- Whose call: the engineer for the parser, the writer seat for the exception.
+  Either closes it; both is better than neither.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-27 - Every skill in the library now reads status: provisional, and the reason is ADR-38 rule 7 rather than a regression (skill seat, mine)
+- Trigger: this run revised four skills, and ADR-38 step 5 says the status is
+  decided on the number. Three of the four read `status: active`.
+- What changed: `harness-engineering`, `recursive-harness-self-improvement` and
+  `evaluation-integrity` moved from `active` to `provisional`. With
+  `self-improving-post-training-loops` already there, **all nine skills in the
+  library are now provisional.**
+- Why, stated as the rule rather than as an opinion: rule 7 earns `active` on a
+  positive differential delta on the benchmark subject and nothing else, and
+  there is no route from this seat to the benchmark subject.
+  `pipeline/budget.py` knows moonshot and groq and neither serves it, and the
+  cheap arm needs a `GROQ_API_KEY` this run does not carry. So no skill in this
+  library has a benchmark-subject delta, which means `active` was asserting a
+  measurement that does not exist. `evaluation-integrity` carried `active` with
+  an empty `validated` field and no eval task ever run.
+- What this is NOT: a retirement, and not a claim that any of the three got
+  worse. Rule 7 retires a skill that has no positive delta **once its evals
+  exist**, and these suites have never been run on either arm, so the honest
+  state is unmeasured rather than failed. `harness-engineering` is the one with
+  any number at all, the gold-specimen run that read 5.4 bare against 5.3
+  loaded on the cheap subject, which is the cheap arm and therefore not the
+  decider.
+- What it costs the product, said plainly because it is owner-facing: the
+  library advertises nothing as validated today. That is the true state and it
+  was already the true state yesterday for six of the nine.
+- First step to undo it honestly: the two queued workflow changes in
+  `docs/agents/pending-workflow-changes.md`, a `GROQ_API_KEY` in this seat's
+  run and a provider in `pipeline/budget.py` that serves the benchmark subject.
+  The first skill to clear a positive differential delta on the benchmark
+  earns `active` back the same day.
+- Whose call: done, this seat, on the rule. The engineer for the two routes.
+- Cost: $0.
+- Status: built

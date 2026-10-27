@@ -536,6 +536,216 @@ def report(res: dict, verbose: bool) -> None:
               f"honest limit here, not a result to advertise.")
 
 
+# ---------------------------------------------------------------------------
+# Is every receipt about today's text? (--receipts)
+#
+# A result bundle pins a per-skill `skill_sha256`, because a pass rate carried
+# over from an earlier revision is a claim about a document the reader cannot
+# see. tests/test_skill_receipts.py asserts that every skill the page receives
+# has a receipt describing today's file, and site/lib/skill-provenance.js tells
+# the reader when it does not.
+#
+# That invariant spans two files, SKILL.md and the newest bundle under
+# results/, and a run edits the first several commits before it writes the
+# second. CI runs on every push, so the branch is red by construction for the
+# window in between, and the receipts step has gone red that way on this seat's
+# branches on 2026-10-13 and twice on 2026-10-24
+# (INC-2026-10-24-the-receipts-step-has-been-red-on-four-of-this-seats-branches).
+#
+# Incident 31's lesson is the reason this lives here rather than in a prompt: a
+# rule written into a prompt is checked when someone reads the prompt, and a
+# rule written into the runner is checked every time anything ships. This mode
+# is offline and takes no engine, so it costs nothing to run before a commit.
+# ---------------------------------------------------------------------------
+
+def rank_bundles(bundles: list[dict]) -> list[dict]:
+    """The ranking rule of rankBundles() in site/lib/skill-provenance.js, and
+    it has to stay the same rule or this check and the page disagree about
+    which bundle is the library's result. Newest first, and at one date the
+    pre-registered engine wins, because an experimental engine's run measures
+    the engine rather than judging the skill."""
+    usable = [b for b in bundles if isinstance(b.get("generated"), str)]
+    return sorted(
+        usable,
+        key=lambda b: (
+            _NEGATED(b["generated"]),
+            0 if (b.get("policy") or {}).get("pre_registered") else 1,
+        ),
+    )
+
+
+class _NEGATED:
+    """Descending order on a string key without reversing the whole sort, so
+    the pre-registered tie-break still reads ascending."""
+
+    __slots__ = ("s",)
+
+    def __init__(self, s: str) -> None:
+        self.s = s
+
+    def __lt__(self, other: "_NEGATED") -> bool:
+        return self.s > other.s
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, _NEGATED) and self.s == other.s
+
+
+def load_bundles(results_dir: str) -> list[dict]:
+    out = []
+    for path in sorted(glob.glob(os.path.join(results_dir, "*.json"))):
+        try:
+            data = json.load(open(path, encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if isinstance(data, dict):
+            data["_path"] = os.path.relpath(path)
+            out.append(data)
+    return out
+
+
+def latest_receipt(bundles: list[dict], skill: str) -> dict | None:
+    for bundle in rank_bundles(bundles):
+        for suite in bundle.get("suites") or []:
+            if not isinstance(suite, dict):
+                continue
+            if suite.get("skill") == skill and suite.get("total"):
+                return {
+                    "date": bundle.get("generated", ""),
+                    "engine": bundle.get("engine", ""),
+                    "path": bundle.get("_path", ""),
+                    "sha256": suite.get("skill_sha256", ""),
+                    "passed": suite.get("passed", 0),
+                    "total": suite.get("total", 0),
+                }
+    return None
+
+
+def check_receipts(skills_dir: str, results_dir: str) -> int:
+    """Print, per skill, whether the newest recorded receipt describes the
+    file as it stands now. Returns the number of skills that fail, which is
+    the number tests/test_skill_receipts.py will fail on."""
+    skills = load_skills(skills_dir)
+    bundles = load_bundles(results_dir)
+    stale = []
+    print(f"receipts: {len(skills)} skills against "
+          f"{len(bundles)} result bundles in {os.path.relpath(results_dir)}\n")
+    for name in sorted(skills):
+        sha = skills[name]["sha256"]
+        receipt = latest_receipt(bundles, name)
+        if receipt is None:
+            stale.append(name)
+            print(f"  MISSING  {name}: no bundle scores this skill, so the page "
+                  f"has no receipt to show")
+            continue
+        if receipt["sha256"] == sha:
+            print(f"  ok       {name}: {receipt['passed']}/{receipt['total']} on "
+                  f"{receipt['date']}, sha {sha}")
+            continue
+        stale.append(name)
+        print(f"  STALE    {name}: SKILL.md is sha {sha}, newest receipt "
+              f"({receipt['date']}, {receipt['path']}) measured "
+              f"{receipt['sha256']}")
+    if stale:
+        print(f"\n{len(stale)} of {len(skills)} receipts do not describe today's "
+              f"text: {', '.join(stale)}.")
+        print("The page will say so and tests/test_skill_receipts.py will fail. "
+              "Re-run the trigger test and commit its bundle in the same commit "
+              "as the SKILL.md edit, not a later one:")
+        print("  python3 skills/_validation/trigger_test.py "
+              "--json skills/_validation/results/<date>-<engine>-<slug>.json")
+    else:
+        print(f"\nall {len(skills)} receipts describe today's text.")
+    return len(stale)
+
+
+# Is every skill's frontmatter loadable by the consumer that loads skills?
+# (--frontmatter, folded into --receipts)
+#
+# This file's own parse_frontmatter and site/lib/skill-provenance.js both read
+# the block with regexes, so both accept frontmatter no YAML parser will load.
+# On 2026-10-26 two of nine shipped skills were in exactly that state:
+# `description:` carried an unquoted ": " in its prose, which makes the whole
+# document invalid YAML, and nothing in this repository noticed because nothing
+# in this repository parses it as YAML. An agent harness does. A skill that a
+# consumer cannot load fires zero percent of the time, which is the failure this
+# library's differentiator is defined against, so it is checked here rather than
+# left to the first consumer to discover.
+#
+# The check needs PyYAML, which neither requirements file declares, so the
+# import failing is the ordinary case rather than the strange one. Until
+# 2026-10-27 the import failure returned 0, which is the same value a clean
+# tree returns, so `--receipts` exited green on a tree carrying two skills no
+# consumer could load. Measured on one unchanged broken skill: 1 and exit 1
+# with PyYAML, 0 and exit 0 without it. A count is the wrong return type for a
+# check that did not run, so the skip path returns the sentinel below instead.
+# It is truthy on purpose: any caller that writes `if unloadable:` now fails
+# closed, and a caller that wants the reason gets a sentence rather than a
+# number it would have to guess the meaning of.
+class SkippedGate:
+    """Stand-in for a count the gate never computed. Truthy, so it fails
+    closed, and it prints the reason it did not run."""
+
+    def __init__(self, reason: str) -> None:
+        self.reason = reason
+
+    def __bool__(self) -> bool:
+        return True
+
+    def __str__(self) -> str:
+        return self.reason
+
+
+NO_YAML = SkippedGate(
+    "the frontmatter check did not run, because PyYAML is not installed. "
+    "A skipped gate is not a pass. Install it with `pip install pyyaml` and "
+    "run this command again.")
+
+
+def check_frontmatter(skills_dir: str) -> int | SkippedGate:
+    """Load every SKILL.md frontmatter with a real YAML parser. Returns the
+    number that fail, which is the number of skills a consumer cannot load,
+    or NO_YAML when the parser is missing and no number was computed."""
+    try:
+        import yaml
+    except ImportError:
+        print("frontmatter: PyYAML is not installed, so this check did not "
+              "run. That is a skipped gate, not a pass.")
+        return NO_YAML
+    paths = sorted(glob.glob(os.path.join(skills_dir, "*", "SKILL.md")))
+    bad = []
+    print(f"\nfrontmatter: {len(paths)} skills parsed with PyYAML")
+    for path in paths:
+        slug = os.path.basename(os.path.dirname(path))
+        raw = open(path, encoding="utf-8").read()
+        m = re.match(r"^---\n(.*?)\n---", raw, re.S)
+        if not m:
+            bad.append(slug)
+            print(f"  NO BLOCK {slug}: no frontmatter delimited by ---")
+            continue
+        try:
+            loaded = yaml.safe_load(m.group(1))
+        except yaml.YAMLError as exc:
+            bad.append(slug)
+            first = str(exc).split("\n")[0]
+            print(f"  INVALID  {slug}: {first}")
+            continue
+        if not isinstance(loaded, dict) or not loaded.get("description"):
+            bad.append(slug)
+            print(f"  EMPTY    {slug}: parses, but carries no description")
+            continue
+        print(f"  ok       {slug}")
+    if bad:
+        print(f"\n{len(bad)} of {len(paths)} skills have frontmatter a YAML "
+              f"consumer cannot load: {', '.join(bad)}.")
+        print("The usual cause is a colon followed by a space inside an "
+              "unquoted description. Wrap the value in double quotes; both "
+              "readers in this repository strip them, so the text a router "
+              "scores does not change.")
+    else:
+        print(f"\nall {len(paths)} skills load under a YAML parser.")
+    return len(bad)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description="Trigger test for the alexandria skill library.")
@@ -548,8 +758,24 @@ def main() -> int:
     ap.add_argument("--engine", default=ENGINE_VERSION, choices=sorted(ENGINES),
                     help="scoring engine; the default is the pre-registered "
                          "policy and anything else is an experiment")
+    ap.add_argument("--results", metavar="DIR",
+                    default=os.path.join(here, "results"),
+                    help="directory of recorded result bundles (for --receipts)")
+    ap.add_argument("--receipts", action="store_true",
+                    help="offline check: does every skill's newest recorded "
+                         "receipt describe its SKILL.md as it stands now? Run "
+                         "this before committing a SKILL.md edit. No engine, "
+                         "no cases, exits non-zero on a stale receipt.")
     ap.add_argument("-v", "--verbose", action="store_true")
     args = ap.parse_args()
+
+    if args.receipts:
+        stale = check_receipts(args.skills_dir, args.results)
+        unloadable = check_frontmatter(args.skills_dir)
+        if isinstance(unloadable, SkippedGate):
+            print(f"\nreceipts: FAIL, {unloadable}")
+            return 1
+        return 1 if (stale or unloadable) else 0
 
     res = run(args.skills_dir, args.decoys, args.engine)
     report(res, args.verbose)
