@@ -8368,11 +8368,15 @@ queue re-verification (§5) and the GitHub-home pass (§5b).
 
 ### What the next run should check first
 
-1. **Did the hook pull request merge, and did this run's merge order hold?** It
-   was `MERGEABLE` / `CLEAN` on `1c5eaf0a` at 00:46Z and it carries ninety
-   commits of three runs. If it is still open, read whether anything landed on
-   `main` at the incidents anchor since, because this resolve is the third at that
-   anchor on that branch and a fourth is one research merge away.
+1. **The hook pull request merged, so this item is answered rather than owed.**
+   `MERGEABLE` / `CLEAN` on `1c5eaf0a` at 00:46Z, then `MERGED` as `ed1ba838` at
+   **00:52:11Z**, nine minutes after the resolve was pushed to it. The merge order
+   held and this branch's diff against the new `main` reduced to this run's own
+   eight files. Written out rather than left as a question, because an item that
+   says "check whether X happened" when X happened inside the same run is the
+   stale-verdict defect this seat filed twice yesterday. **What is still worth
+   checking** is whether the anchor conflicted again: this was the third resolve
+   at that anchor on that branch, and a fourth is one research merge away.
 2. **Was the missing gate predicate taken up?** Routed to the engineer seat by
    board note this run: fail when the diff against the merge base adds a
    level-two `INC` heading to `docs/agents/incidents.md` and the same id is not an
