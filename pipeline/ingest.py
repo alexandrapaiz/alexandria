@@ -167,6 +167,89 @@ def arxiv_url(cat: str, since: dt.date, until: dt.date, start: int = 0) -> str:
     )
 
 
+def arxiv_id_url(ids: list[str]) -> str:
+    """The `id_list` query, which is the firehose's query without the window.
+
+    `max_results` is the count asked for rather than `ARXIV_PAGE`, because this
+    is a named list and not a walk: there is no page after the last id.
+    """
+    cleaned = ",".join(normalise_arxiv_id(i) for i in ids)
+    return (
+        "https://export.arxiv.org/api/query"
+        f"?id_list={cleaned}"
+        f"&start=0&max_results={max(len(ids), 1)}"
+    )
+
+
+def normalise_arxiv_id(value: str) -> str:
+    """`arxiv:2609.08371v2`, a url or a bare id, as the id arXiv's api takes."""
+    text = (value or "").strip()
+    text = text.rsplit("/", 1)[-1] if "/" in text else text
+    if text.lower().startswith("arxiv:"):
+        text = text[6:]
+    return text.strip()
+
+
+def fetch_arxiv_ids(ids: list[str], tier: str = "b", parse=None) -> tuple[list[dict], list[dict]]:
+    """Named papers, fetched by id rather than found by a window.
+
+    **The gap this closes, which is not the one anybody was fixing.** The daily
+    job queries each category sorted by submission date descending and stops at
+    a ceiling, so its reach is a window a few days deep: `cs.SE` ran 639 papers
+    in September 2026, about twenty-one a day, which is roughly five days. A
+    paper submitted before the window's edge on the day a category shipped was
+    never inside it, and the window only moves forward, so no run of the cron on
+    any day since would have fetched it and none ever will. That is a backfill
+    gap and not a missed run, and the research seat measured it on the whole
+    addendum rather than one paper: the comment justifying one category named
+    six papers by id, and the window could reach zero of six, the newest of them
+    twelve days older than the edge on the day the category shipped
+    (`INC-2026-10-27-a-queue-lines-stated-reason-was-carried-through-an-amendment-and-had-been-false-since-the-day-it-was-written`).
+
+    Tier `b` by default, which is the curated tier `fetch_hf_daily` writes and
+    which `upsert_papers` lets upgrade a row the firehose already saw. Naming a
+    paper by id is a human picking it, so it gets the same standing.
+
+    Writes `arxiv:<id>`, the same key space as the firehose and hf-daily, so a
+    backfilled paper and a fetched one are one row.
+    """
+    if parse is None:
+        import feedparser
+
+        parse = feedparser.parse
+    asked = [normalise_arxiv_id(i) for i in ids if normalise_arxiv_id(i)]
+    if not asked:
+        return [], [{"name": "arxiv:by-id", "kind": "arxiv", "entries": 0,
+                     "http": None, "asked": 0, "missing": []}]
+
+    feed = parse(arxiv_id_url(asked))
+    rows, found = [], set()
+    for e in feed.entries:
+        arxiv_id = e.id.rsplit("/", 1)[-1]
+        found.add(arxiv_id.split("v")[0])
+        rows.append(
+            {
+                "id": f"arxiv:{arxiv_id}",
+                "source": "arxiv",
+                "tier": tier,
+                "title": " ".join(e.title.split()),
+                "authors": [a.name for a in getattr(e, "authors", [])],
+                "abstract": " ".join(getattr(e, "summary", "").split()),
+                "url": e.link,
+                "published_at": pub_date(e),
+            }
+        )
+    # An id that came back with nothing is reported rather than counted as a
+    # quiet success. A backfill asked for six papers and silently landing four
+    # is the shape of defect this entrypoint exists to repair.
+    missing = sorted({i.split("v")[0] for i in asked} - found)
+    print(f"arxiv by-id: asked {len(asked)}, got {len(rows)}"
+          + (f", missing {missing}" if missing else ""))
+    return rows, [{"name": "arxiv:by-id", "kind": "arxiv", "entries": len(rows),
+                   "http": getattr(feed, "status", None),
+                   "asked": len(asked), "missing": missing}]
+
+
 def fetch_arxiv(
     cfg: dict,
     cursor: str | None = None,
@@ -500,6 +583,40 @@ def ingest():
     return inserted
 
 
+@app.function(
+    secrets=[modal.Secret.from_name("neon")],
+    timeout=300,
+)
+def ingest_ids(ids: list[str], tier: str = "b"):
+    """Backfill named papers. No schedule: this runs when a seat asks for it.
+
+    Deliberately not wired into the daily job. The firehose's reach is a
+    property of the window, and a list of ids is a judgment somebody made, so
+    the two have different failure modes and mixing them would hide a missing
+    backfill inside a normal day's count. `judge_sources` is not consulted here
+    for the same reason: a by-id fetch that returns nothing is a wrong id rather
+    than a dead source, and the missing ids are printed above.
+    """
+    rows, status = fetch_arxiv_ids(ids, tier=tier)
+    if not rows:
+        print(f"nothing to insert for {ids}")
+        return 0
+    inserted = upsert_papers(rows)
+    print(f"fetched {len(rows)} of {status[0]['asked']} asked, "
+          f"inserted {inserted} new papers")
+    return inserted
+
+
 @app.local_entrypoint()
-def main():
+def main(ids: str = ""):
+    """`modal run pipeline/ingest.py` for the day's window.
+
+    `--ids 2610.02858,2606.29537` for a backfill instead, which is the entry
+    point the reading queue needs when a line names a paper the window cannot
+    reach.
+    """
+    if ids:
+        named = [i for i in (part.strip() for part in ids.split(",")) if i]
+        print(f"inserted: {ingest_ids.remote(named)}")
+        return
     print(f"inserted: {ingest.remote()}")

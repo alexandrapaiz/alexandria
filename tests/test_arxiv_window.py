@@ -391,3 +391,125 @@ def test_the_availability_probe_is_pinned_to_the_page_size():
 
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-q"]))
+
+
+# ------------------------------------------------------ the by-id entrypoint
+#
+# The window is the whole reach of the daily job, and it only moves forward, so
+# a paper submitted before the edge on the day a category shipped was never
+# inside it and never will be. `cs.SE` ran 639 papers in September 2026, about
+# twenty-one a day, which is roughly five days deep. The research seat measured
+# the addendum rather than the one paper: the comment justifying that category
+# names six papers by id and the window could reach zero of six, the newest of
+# them twelve days older than the edge on the day the category shipped. That is
+# a backfill gap, and no run of the cron closes it
+# (`INC-2026-10-27-a-queue-lines-stated-reason-was-carried-through-an-amendment-and-had-been-false-since-the-day-it-was-written`).
+
+ID_LIST = re.compile(r"id_list=(?P<ids>[^&]*)")
+
+
+class FakeArxivById:
+    """An arXiv that answers `id_list`, and can be missing an id it was asked for."""
+
+    def __init__(self, holds: dict[str, dt.date], status: int = 200):
+        self.holds = holds
+        self.status = status
+        self.urls: list[str] = []
+
+    def parse(self, url: str):
+        self.urls.append(url)
+        asked = ID_LIST.search(url)
+        assert asked, f"no id_list in {url}"
+        assert "submittedDate" not in url, "a named list has no window"
+        rows = []
+        for raw in asked["ids"].split(","):
+            bare = raw.split("v")[0]
+            if bare in self.holds:
+                day = self.holds[bare]
+                number = int(bare.split(".")[1])
+                item = entry(number, day)
+                item.id = f"http://arxiv.org/abs/{bare}v1"
+                item.link = item.id
+                rows.append(item)
+        return types.SimpleNamespace(entries=rows, status=self.status)
+
+
+def test_an_id_outside_every_window_is_still_reachable_by_name():
+    # The paper the gap was found on: submitted 2026-09-08, sole category, and
+    # seventeen days outside the window on the earliest day that category could
+    # have been live.
+    fake = FakeArxivById({"2609.08371": dt.date(2026, 9, 8)})
+    rows, status = ingest.fetch_arxiv_ids(["2609.08371"], parse=fake.parse)
+    # Versioned, because `test_the_rows_carry_what_the_upsert_needs` shows the
+    # firehose keeping the suffix too. Same key space means the same key, and
+    # the id asked for is deliberately not the id written: arXiv answers a bare
+    # id with whichever version is current, and that answer is the row.
+    assert [r["id"] for r in rows] == ["arxiv:2609.08371v1"]
+    assert status[0]["missing"] == []
+    assert status[0]["asked"] == 1
+
+
+def test_the_rows_land_in_the_same_key_space_the_firehose_upserts():
+    # `arxiv:<id>`, so a backfilled paper and a fetched one are one row rather
+    # than two, which is the same reason hf-daily writes this prefix.
+    fake = FakeArxivById({"2610.02858": dt.date(2026, 10, 2)})
+    rows, _ = ingest.fetch_arxiv_ids(["2610.02858"], parse=fake.parse)
+    row = rows[0]
+    assert row["id"] == "arxiv:2610.02858v1"
+    assert row["source"] == "arxiv"
+    assert row["tier"] == "b"          # a named paper is a curated pick
+    assert row["title"] == "A paper numbered 2858"
+    assert row["published_at"] == "2026-10-02"
+    assert set(row) == {"id", "source", "tier", "title", "authors", "abstract",
+                        "url", "published_at"}
+
+
+def test_every_form_a_queue_line_writes_an_id_in_is_accepted():
+    assert ingest.normalise_arxiv_id("2609.08371") == "2609.08371"
+    assert ingest.normalise_arxiv_id("arxiv:2609.08371") == "2609.08371"
+    assert ingest.normalise_arxiv_id("ARXIV:2609.08371") == "2609.08371"
+    assert ingest.normalise_arxiv_id("2609.08371v2") == "2609.08371v2"
+    assert ingest.normalise_arxiv_id("https://arxiv.org/abs/2609.08371") == "2609.08371"
+    assert ingest.normalise_arxiv_id("  2609.08371  ") == "2609.08371"
+    assert ingest.normalise_arxiv_id("") == ""
+    fake = FakeArxivById({"2609.08371": dt.date(2026, 9, 8)})
+    rows, _ = ingest.fetch_arxiv_ids(
+        ["arxiv:2609.08371", "https://arxiv.org/abs/2609.08371"], parse=fake.parse)
+    # Asked twice in two spellings, and arXiv answers each, which the upsert
+    # collapses on the primary key.
+    assert {r["id"] for r in rows} == {"arxiv:2609.08371v1"}
+
+
+def test_an_id_that_comes_back_with_nothing_is_named_rather_than_counted():
+    # A backfill asking for six and silently landing four is the defect shape
+    # this entrypoint exists to repair, so the absence is reported.
+    fake = FakeArxivById({"2609.08371": dt.date(2026, 9, 8)})
+    rows, status = ingest.fetch_arxiv_ids(
+        ["2609.08371", "2607.25635", "2606.09182"], parse=fake.parse)
+    assert len(rows) == 1
+    assert status[0]["asked"] == 3
+    assert status[0]["missing"] == ["2606.09182", "2607.25635"]
+
+
+def test_the_query_asks_for_the_count_it_named_and_carries_no_window():
+    fake = FakeArxivById({})
+    ingest.fetch_arxiv_ids(["2606.09182", "2607.25635", "2607.27294",
+                            "2609.00072", "2609.08371", "2609.14721"],
+                           parse=fake.parse)
+    url = fake.urls[0]
+    assert "max_results=6" in url and "start=0" in url
+    assert "sortBy" not in url          # a named list has no order to ask for
+    assert "submittedDate" not in url
+
+
+def test_asking_for_nothing_makes_no_request():
+    fake = FakeArxivById({})
+    rows, status = ingest.fetch_arxiv_ids(["", "   "], parse=fake.parse)
+    assert (rows, fake.urls) == ([], [])
+    assert status[0]["asked"] == 0
+
+
+def test_the_tier_can_be_set_down_for_a_bulk_backfill():
+    fake = FakeArxivById({"2609.08371": dt.date(2026, 9, 8)})
+    rows, _ = ingest.fetch_arxiv_ids(["2609.08371"], tier="a", parse=fake.parse)
+    assert rows[0]["tier"] == "a"
