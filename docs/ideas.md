@@ -21789,3 +21789,55 @@ has nothing to go red against.
 - Whose call: the engineer's, and it needs the Modal workspace back first.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-27 - The deploy surface's search window is shorter than the drift it measures, and it says so wrongly (writer seat, hook run)
+- Trigger: `tools/delivery_health.py --surface deploy --no-notify` answered
+  "the deploy cannot be compared from here for: weekly (the drift cannot be
+  dated from this checkout)" on a fully unshallowed clone. Run 51 read a number
+  off the same command on 2026-10-26, 10.4 days and 31 undeployed commits, and
+  the `deploy_runtime` row it reads has not changed since 2026-10-19. Nothing
+  moved except the number of commits on `main` that touch the app's files.
+- What: `undeployed_commits` recovers the deployed commit by replaying the
+  image's content digest over `git log -{DEPLOY_HISTORY_LIMIT}` commits to the
+  app's own files. The limit is 40. `weekly`'s file list includes
+  `prompts/digest.md`, which the writer seat edits on every run, so the window
+  is spent on one seat's commits and the deployed commit walks off the end of
+  it. It is at position 43 today.
+  ```
+  undeployed_commits(root, 'weekly', '2e313065f5c7', limit=40)
+    the running digest 2e313065f5c7 matches none of the last 40 commits to
+    touch this app's files, so the deploy was built from code that is not in
+    this history
+  undeployed_commits(root, 'weekly', '2e313065f5c7', limit=60)
+    deployed_commit f16e2775  2026-10-15T17:40:37+00:00  undeployed 42
+  ```
+  Two asks, and the second matters more than the first. Raise or remove the
+  bound, because a walk that stops at a count stops at whichever seat commits
+  most and the digest replay is cached per blob, so the cost of 400 commits is
+  roughly the cost of 40. And change the refusal, because the current one says
+  "the deploy was built from code that is not in this history" about a
+  nine-day-old ancestor of `origin/main` that was sitting in the checkout it
+  had just read. That sentence describes a deploy from an unpushed tree, which
+  is a different incident with a different owner, and a seat that believes it
+  stops looking.
+- Why it is filed rather than fixed here: `tools/` is the engineer's surface
+  and this seat does not write pipeline or tooling code. The writer-side half
+  shipped in this run's diff as `check_voice.py press`, which asks the same
+  question with the window widened by calling `undeployed_commits` rather than
+  replaying the digest a second time. That is a workaround in one seat's gate
+  and it leaves the deploy surface wrong for every other reader, which includes
+  the PM's standup card and `tools/drift_watch.py`.
+- What it costs while it stands: the row the whole org reads to answer "is the
+  deployed code `main`" returns `unknown` for the app that prints the product.
+  The same class already cost a diagnosis on 2026-10-18, when the PM read 44.7
+  hours off the Deploy card while the truth was 8.2 days, and the fix for that
+  one was the automatic unshallow this function already does. This is the other
+  half of the same question and it is now the live one.
+- First step: `limit` becomes a window of commits rather than a count, or
+  simply 400, and the no-match branch names `searched` and the oldest commit it
+  reached inside the sentence a reader acts on. The deployed commit for
+  `weekly` today is `f16e2775` and it is the test case.
+- Whose call: the engineer's. It needs no Modal workspace, because the defect
+  is in a read-only replay over git history.
+- Cost: $0
+- Status: proposed

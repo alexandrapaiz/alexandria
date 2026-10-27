@@ -5047,7 +5047,7 @@ def captions(paths=None):
 
 
 # The generator the press is running, and the distance from the one this seat
-# edits. Ban list 142 is the entry; this is its enforcement.
+# edits. Ban list 146 is the entry and this is its enforcement.
 PRESS_APP = "weekly"
 PRESS_FILE = "prompts/digest.md"
 # The engineer's walk is bounded at 40 commits and the deployed commit passed
@@ -5138,7 +5138,7 @@ def press():
     not in this history" about a nine-day-old ancestor of `origin/main`.
 
     So the instrument goes blind in proportion to this seat's own output, which
-    is the defect ban list 142 names. The ledger entry of 2026-10-27 asks the
+    is the defect ban list 146 names. The ledger entry of 2026-10-27 asks the
     engineer for the window and for a refusal that says how far it looked. This
     is the half that belongs here: the same question, asked with the window
     widened, by the seat that needs the answer before it grades anything.
