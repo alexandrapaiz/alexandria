@@ -91,6 +91,45 @@ Three clauses make it work in practice.
    a check which cannot see reports health in the same words as a check that
    found nothing.
 
+   **And it is three places rather than two, which the writer's own raise
+   established on the day it landed** (added 2026-10-26,
+   `INC-2026-10-26-the-cap-raise-merged-and-deployed-and-the-host-went-on-enforcing-the-old-number`).
+   The two files above are the dead workflow and the parent's manifest. The
+   manifest half has a history of its own, because the daemon that passes
+   `--max-turns` reads the roster **once**, at startup, and has no reload
+   route: `const roster = loadRoster(dir)` at
+   `/usr/lib/node_modules/epito/src/run.js:81`, used at `lib/runner.js:146`.
+   So a cap has a declared value in the parent, a deployed value on the host's
+   disk, and a **loaded** value in the process that enforces it, and only the
+   third one binds a run.
+
+   On 2026-10-26 those three read 225, 225 and **150** at the same minute. The
+   raise merged at 14:40:18Z and reached the host's disk at 14:41:24Z; the
+   daemon last started at 06:25:03Z and so holds the copy standing at
+   06:10:05Z, which says 150. `GET /api/agents` reported 225 within the minute
+   because the **board** restarted and re-read the disk, which is the trap:
+   two processes, one disk, one of them enforcing.
+
+   `/srv/asc/state/.epito/state.json` publishes the loaded `model`, `repo` and
+   `cron` per agent and **no `max_turns`**, so there is no surface that reads
+   the loaded cap and it has to be reconstructed. The command and its five
+   validations are in `prompts/exo-agent.md` §0. The reconciliation above
+   therefore gains a third column, and the honest reading of any cap on this
+   page is the loaded one:
+
+   ```bash
+   # which cap will the next run of this seat actually get
+   WHEN=$(python3 -c "import json;print(json.load(open('/srv/asc/state/.epito/state.json'))['startedAt'])") \
+   MANIFEST=runtime/agents/alexandria/writer/agent.toml bash -c '...'   # see exo-agent.md §0
+   ```
+
+   **The consequence for every rule on this page.** Rules 1 through 5 compare a
+   turn count to "the cap in force". The cap in force is the loaded one, so a
+   percentage computed against the disk is wrong for as long as the two differ,
+   and it is wrong in the comfortable direction: 151 against the deployed 225
+   reads as 67% and under rule 5's trigger, while the same row against the
+   loaded 150 is a kill.
+
 7. **And the measurement input is gone for every run after 2026-10-17**
    (added 2026-10-18). Every command in "How to measure" below reads
    `num_turns` and the error subtype out of `claude-execution-output.json`,
@@ -1118,3 +1157,386 @@ measurement, so what this line adds is the number five.
 **Zero cap hits in this company in the window**, and zero non-success rows of
 any kind. The two failures the host recorded in the same minutes belong to
 `ursa-exo` and `epitome-engineer`.
+
+## The writer's raise landed on disk 2026-10-26T14:41Z and the host is still enforcing 150
+
+**This heading stopped being true at 2026-10-26T15:32:23Z and the correction is
+the subsection at the end of it.** It is left standing because the three-state
+table below is the record of the defect, and because the state it could not read
+turned out to be readable all along.
+
+Ask 4 of the 2026-10-18 decision-056 entry, five times measured on this page
+and open for eight days, was **granted**. `alexandra-systems` pull request 521
+raised `runtime/agents/alexandria/writer/agent.toml` from `max_turns = 150` to
+`225`, with the reason written into the file beside the number rather than only
+into the pull request. It was merged by the owner at **2026-10-26T14:40:18Z**
+and reached the host's roster clone at **14:41:24Z**.
+
+**It is not in force, and the heading says so on purpose.** Three states, read
+at the same minute:
+
+| State | Reads | Why |
+|---|---|---|
+| declared, parent `main` | 225 | merged 14:40:18Z |
+| deployed, host disk | 225 | clone reset 14:41:24Z |
+| **loaded, the daemon** | **150** | started 06:25:03Z, no reload route |
+
+### Corrected 19:20Z the same day: the raise is in force, and the third state was never unreadable
+
+Two things moved, and the second is worth more than the first.
+
+**The cap is live.** The daemon restarted at **2026-10-26T15:32:23Z**
+(`state.json`'s own `startedAt`, pid 168995), 52 minutes after the grant reached
+disk, and picked the new number up. So Ask 4 is **LANDED** after eight days.
+
+**And the loaded state was readable from the start.** The reason this page said
+"no reload route" is that `state.json` carries no `max_turns` field, which is
+true and is a fact about `state.json`. The host writes the cap it passed the
+provider into every run's own log:
+
+```bash
+grep -o -- '--max-turns [0-9]*' "$(ls -t /srv/asc/state/.epito/logs/<seat>/*.log | head -1)"
+```
+
+That is **better** evidence than the field that was looked for, because
+`state.json` would say what the daemon intends for the next run and the
+invocation line says what was enforced on a run that happened. The hour the
+grant took effect is bracketed by two of the writer's own logs:
+
+| Run log | `--max-turns` |
+|---|---|
+| `2026-10-26T14-56-40-255Z-message.log` | **150** |
+| `2026-10-26T16-00-23-647Z-cron.log` | **225** |
+
+**It also generalises to the whole portfolio in one loop**, which no reading of
+this page has ever had: disk and invocation agree on **all 32 seats of all five
+companies** at 19:20Z. That is a far stronger statement about the reload gap
+than one seat's divergence was, and it is the measurement that should be taken
+after every roster deploy from here.
+
+Three corrections follow for rule 6 and the rule-5 table. The writer's loaded
+cap is **225**, so its best measured peak of 134 is **59.6%** and not 89.3%,
+which is the reading the table below predicted a restart would produce and is
+**under** rule 5's 70% trigger for the first time in six sweeps. The two kills
+at `turns 151` stand as evidence about the period they happened in. And the
+`turns == cap + 1` fingerprint for this seat is now `226`.
+
+**What this does not close.** The relay entry saying the roster deploys to disk
+and is never re-read stays **open**, because what happened here was a restart
+and not a reload. The entry now carries a measured latency — 52 minutes, and
+only because something restarted the daemon for unrelated reasons — rather than
+an argument. A grant that takes effect when a process happens to die is not a
+grant that takes effect.
+
+**Still owed and now four wake runs deep:** the rule-5 re-derivations for
+`engineer` (81.0%) and `skill` (71.7%). Neither moved today and neither is
+blocked on anything but a run with the budget for it.
+
+Rule 6 above now carries the mechanism. The consequence here is the one that
+matters for this page: **the cap in force is the loaded one**, so until the
+daemon restarts every `alexandria-writer` run is still capped at 150 and the
+kill fingerprint stays `turns == 151`. The ask is recorded on
+`docs/agents/hq-relay.md` as GRANTED (not live) with a corrected live test,
+because the test that entry carried — `grep max_turns` on the host's
+roster file — passes already and would have marked it landed.
+
+### The two kills, and the enforcement question they settle
+
+Every `alexandria-writer` `run.end` row of 2026-10-26, from
+`/srv/asc/state/.epito/audit.jsonl`:
+
+| Ended (UTC) | Trigger | Exit | Turns | Note |
+|---|---|---|---|---|
+| 00:57:47 | message | 0 | 2 | |
+| 00:58:31 | message | 1 | 1 | provider refusal |
+| 04:45:39 | hook | 0 | 3 | PR 534 |
+| **05:36:58** | message | **1** | **151** | **kill** |
+| 06:14:13 | message | 0 | 134 | PR 550 |
+| 06:22:24 | message | 1 | 14 | |
+| **09:42:05** | hook | **1** | **151** | **kill** |
+
+Both kills are `cap + 1` with a non-zero exit, which is rule 1's censored case
+and this page's own stated fingerprint. They are the **first cap hits in this
+company** since the register began tracking: the 2026-10-25 sweep recorded zero
+over the whole preceding week, with all 35 non-zero exits being provider
+refusals.
+
+**They also answer, in one direction, the question this page has carried open
+since 2026-10-18.** The writer's 2026-10-18T07:50:15Z row is 153 turns at
+exit 0 against the same cap of 150, and the page could not say whether the 150
+bound that run at all. Today the same cap bound twice, at 151, with the
+documented signature. So the enforcement mechanism works as described, and the
+153/exit-0 row is an anomaly against a working mechanism rather than evidence
+of an absent one. It remains unexplained. It is no longer the only reading.
+
+### The rule-5 line for 2026-10-26, computed against the loaded cap
+
+Window: the whole of 2026-10-26 UTC. Numerator from `run.end` rows in the audit
+log; denominator from the **loaded** roster copy, which is
+`/srv/asc/repos/alexandra-systems` at `c914672`, the disk standing at the
+daemon's `startedAt` of 06:25:03Z. Peak excludes killed runs, which are
+censored and set a floor rather than a measurement.
+
+| Seat | Runs | Free peak | Loaded cap | Disk cap | Percent | Over 70% |
+|---|---|---|---|---|---|---|
+| writer | 7 | 134 | **150** | 225 | **89.3%** | yes, sixth consecutive, plus two kills |
+| engineer | 14 | 162 | 200 | 200 | **81.0%** | yes |
+| skill | 3 | 129 | 180 | 180 | **71.7%** | yes |
+| exo | 5 | 101 | 200 | 200 | 50.5% | no |
+| pm | 36 | 125 | 300 | 300 | 41.7% | no |
+| frontend | 5 | 150 | 600 | 600 | 25.0% | no |
+| finance, market, okr, research, sales, security | 0 | — | — | — | — | not measurable |
+
+**Three seats over the trigger, listed per row rather than summarised**, which
+is the correction the 2026-10-24 section made about its own first draft.
+
+**The writer is the only seat in this company whose loaded and disk caps
+differ**, checked across all twelve rather than assumed from the one that
+changed. That is worth stating because it is the number that will move: a
+restart makes the divergence zero and makes the writer's row 134/225 at 59.6%,
+under the trigger for the first time in six sweeps.
+
+**And 225 is below what the measured rule asks for.** Rule 1 says a killed run
+is a lower bound, so the writer's demand is known only to be above 150. The
+largest free-running observation on record is 153 turns (2026-10-18), and twice
+that rounded up to the next 50 is **350**. 225 is the number the owner had
+already approved and it is the number that stops today's kills; it is not the
+number the rule derives. The writer row therefore stays marked unmeasured, and
+the first free-running run above 112 turns under a loaded cap of 225 re-derives
+it.
+
+## The writer's raise is loaded now, and HQ's own seat is the same defect inverted (2026-10-26 20:20Z, message wake)
+
+Two readings close and one opens, and they are the same measurement taken on
+three surfaces rather than one.
+
+**The writer is landed, and the restart boundary is visible to the run.**
+`/srv/asc/roster/alexandria/writer/agent.toml` reads `max_turns = 225`, and the
+invocation lines straddle the daemon restart of **2026-10-26T15:32:23Z**
+exactly: `--max-turns 150` for the run started **14:56:40Z**, with the manifest
+already changed and the daemon not yet restarted, and `225` for every run
+started after it — 16:00:23Z, 19:03:27Z, 19:54:45Z. The run started 19:03:27Z
+took **124 turns to exit 0** rather than dying at 151. The divergence this page
+recorded at 14:41Z is closed by measurement, and the seat's last
+`error_max_turns` kill ran 09:02:46Z to 09:42:04Z, before the restart.
+
+**HQ's `exo-centralizer` is the same two surfaces disagreeing in the opposite
+direction, and it is the one that is still live.** That seat's most recent cap
+kill **started 19:23:27Z and ended 19:55:33Z** at **151 turns**, with
+`error_max_turns` written in its own log beside the `--max-turns 150` it was
+given. It started **4h29m after that seat's manifest changed** and **3h51m
+after the daemon restart**.
+
+| surface | reading | time |
+|---|---|---|
+| `/srv/asc/roster/exo-centralizer/agent.toml` | `max_turns = 225` | changed in `075141b`, **2026-10-26T14:54:31Z** |
+| invocation, run started 19:23:27Z | `--max-turns 150` | after the change *and* the restart |
+| that run's outcome | 151 turns, `error_max_turns` | `turns == cap + 1` |
+| invocation, run started 19:55:34Z | `--max-turns 150` | still 150 |
+
+**All twelve invocations of that seat readable today carry `--max-turns 150`**,
+including both that started after the restart. Its other `error_max_turns` kill
+of the day ran 09:44:51Z to 10:13:50Z, also at 151.
+
+**Two explanations are ruled out before the third is offered.** It is not
+unmerged: the value is on the host's disk, in the file the host reads, changed
+by a commit the deployed `HEAD` (`7606036`, 16:08Z) contains. It is not waiting
+on a reload either, and the writer is the positive control on that very same
+restart: cap 150 for the run started 14:56:40Z, cap 225 for every run started
+after 15:32:23Z. One restart, two seats, and only one of them picked up its new
+number.
+
+**The control, because one seat reading oddly is not a finding.** Disk against
+invocation, read the same minute on three company seats:
+
+| seat | disk | invocation | agrees |
+|---|---|---|---|
+| `alexandria-writer` | 225 | 225 | yes |
+| `alexandria-skill` | 180 | 180 | yes |
+| `alexandria-exo` | 200 | 200 | yes |
+| `exo-centralizer` | **225** | **150** | **no** |
+
+So the mechanism works and that seat is the exception. And the rest of its
+manifest is reaching the daemon: `state.json` holds `cron = "0 23 * * 0"` and
+`model = "claude-opus-5"` for it, both matching the file exactly. Every field
+checked is current except the one that kills it. The cause is in HQ's host and
+is not this seat's to diagnose; the measurement and the control are, and they
+went back on the board in the run that took them.
+
+### Rule 9: a cap lives on three surfaces, and a disagreement between them after a deploy and a restart is the finding rather than a verdict
+
+HQ's rule of 2026-10-26, which this seat asked for, is that **a grant is read
+off a run that already happened, never off the manifest that intends the next
+one.** That is right, and it is half of it. The three surfaces answer three
+different questions and none of them is "the cap":
+
+- the **manifest on disk** says what the host will pass to the next invocation;
+- the **invocation line in the run log** says what a run was actually given,
+  and it is the only one that can kill anything;
+- the **run record** says what that run then did with it.
+
+A run record is therefore a reading *as of an invocation*, so it dates. Read
+HQ's rule alone and the centralizer's seat says "150 on every run today,
+therefore not granted" — which is what its own seat concluded about itself, and
+it is false. The missing clause: **when the disk and the invocation disagree
+after the manifest changed and the daemon restarted, neither one is the answer
+and the disagreement is the thing to report.** The cheap discriminator is one
+command, needs no network, and every run log carries it:
+
+```bash
+grep -oE '\-\-max-turns[= ][0-9]+' "$(ls -t /srv/asc/state/.epito/logs/<seat>/ | head -1)"
+```
+
+
+### Rule 10: the two surfaces that date a run use opposite timestamps, and this page conflated them once
+
+Added 2026-10-26 20:35Z, by the run that made the error and caught it on a
+control.
+
+- a `run.end` row's `ts` in `/srv/asc/state/.epito/audit.jsonl` is the run's
+  **end**;
+- a log filename in `/srv/asc/state/.epito/logs/<seat>/` is the run's
+  **start**, and that file's mtime is its end;
+- the board's `started_at` is the start, so **the board and the audit log do not
+  agree on which end of a run a single timestamp names.**
+
+So a `151` beside an audit `ts` and a `150` beside a log of the same clock time
+are two different runs, and reading them as one is how this section first said
+`exo-centralizer` "died at 19:55:34Z" when 19:55:34Z is when its *next* run
+began. The kill ran 19:23:27Z to 19:55:33Z. The correction strengthened the
+finding rather than weakening it, which is luck and not a defence.
+
+The reading that settles a cap needs no join at all, because the cap, the
+outcome and the turn count are all in the same file:
+
+```bash
+d=/srv/asc/state/.epito/logs/<seat>; f=$(ls -t $d | head -1)
+grep -oE '\-\-max-turns[= ][0-9]+' "$d/$f"
+grep -c error_max_turns "$d/$f"
+grep -oE 'num_turns"?:[[:space:]]*[0-9]+' "$d/$f" | tail -1
+```
+
+**The general form, and it is why this is a rule rather than a footnote: when
+two surfaces both carry a timestamp for the same object, check which end of it
+they name before you join them.** A wrong join of this kind is silent. Both
+rows exist, both parse, and the pair tells a coherent story about a run that
+never happened.
+
+## Re-derived 2026-10-26 20:55Z, on five cap hits in one day, which is every cap hit this company has ever had on the host
+
+**Trigger: rule 1 and rule 5 together.** §6 of `prompts/exo-agent.md` says
+re-derive immediately in any run where a cap was hit. Three were hit in the
+ninety minutes before this run started, and the day holds five.
+
+### The five, and the window they are all in
+
+Read off each run's **own invocation line** rather than off the manifest, which
+is rule 9 of this page: the number that killed a run is the number that run
+loaded.
+
+| Started | Seat | Cap that run loaded | Turns | Terminal |
+|---|---|---|---|---|
+| 04:53:06Z | writer | 150 | 151 | `max_turns` |
+| 09:02:46Z | writer | 150 | 151 | `max_turns` |
+| 19:30:45Z | skill | 180 | 181 | `max_turns` |
+| 19:58:19Z | engineer | 200 | 201 | `max_turns` |
+| 20:06:55Z | skill | 180 | 181 | `max_turns` |
+
+**The denominator is the part worth reading.** The host keeps 341 alexandria run
+logs carrying a result line, the oldest started 2026-09-26T01:10:32Z, and
+**five of the 341 are cap hits. All five are on 2026-10-26.** Zero in the thirty
+days before it. So this is not a drift, it is a step, and it is the first day on
+which this company's caps have cost it work since the seats moved to the host.
+
+The two writer rows are closed. The raise to 225 loaded at 15:32:23Z and that
+seat's peak after it is 165, so neither of its kills can recur at the number it
+now carries. **The skill and engineer rows are open and they are the finding.**
+
+### The rows, re-derived under the rule
+
+The rule is at the top of this page: at least twice the highest observed turn
+count, rounded up to the next 50, floor 100. Rule 1 governs what "observed"
+means here, and it matters: a cap hit records the cap plus one rather than the
+work's demand, so 181 and 201 are **floors and not measurements**, and both
+seats are marked unmeasured until a run of each finishes freely above its old
+peak.
+
+| Seat | Censored lower bound | Free-running peak today | Cap in force | Required by the rule | Percent | Verdict |
+|---|---|---|---|---|---|---|
+| skill | **181**, twice, 36 minutes apart | 129 (14:17:47Z) | 180 | **400** | **100.6%** | **UNMEASURED and under-capped. Two kills.** |
+| engineer | **201** | 162 (04:41:51Z) | 200 | **450** | **100.5%** | **UNMEASURED and under-capped. One kill.** |
+| writer | 151, twice, both pre-raise | 165 (19:54:45Z) | 225 | 350 | 73.3% | raise landed, kills closed, **still over rule 5's 70%** |
+| exo | none | 166 (19:03:27Z) | 200 | 350 | **83.0%** | over rule 5's 70%, no kill yet |
+| pm | none | 125 | 300 | 300 | 41.7% | ok |
+| research | none | 94 | 180 | 200 | 52.2% | ok |
+| frontend | none | 150 | 600 | 300 | 25.0% | ample |
+
+Numerator from the `num_turns` in each run's own result line under
+`/srv/asc/state/.epito/logs/alexandria-<seat>/`. Denominator from the
+`--max-turns` on that same run's invocation line, cross-checked against
+`max_turns` in `/srv/asc/roster/alexandria/<seat>/agent.toml`, which agreed for
+every seat in this table. Both halves read, neither quoted.
+
+### What this page already knew, and for how long
+
+This is the part that makes it an argument rather than a table. **The
+2026-10-11 re-derivation on this page already carried both rows as short**, with
+the required figures computed: `skill 156 → 350, short, item 14, unchanged` and
+`engineer 184 → 400, short. Item 14's 350 was below the rule before it was
+read`. Fifteen days later the required figures have grown to 400 and 450,
+nothing was applied to either seat, and on the sixteenth day both seats were
+killed by the number the page had already called short.
+
+The writer's row is the control, and it is the useful half. Its verdict on
+2026-10-11 was the same word, `short`. The difference is that one seat's raise
+became an explicit ask with a cost attached and got granted inside eight days,
+and the other seats' identical verdicts stayed table cells. **A verdict in a
+column is not an ask**, which is this register's own "recording is not
+enforcing" with the register being this one.
+
+### Correction to "Who applies a cap change", which is stale and would misroute this ask
+
+That section says cap changes are written into
+[pending-workflow-changes.md](pending-workflow-changes.md) and applied by the
+chair or the owner, because no agent run can push `.github/workflows/`. The
+premise is still true and the conclusion no longer is. Rule 6 of this page says
+a cap lives in two files and only one of them runs the seat, and the one that
+runs it is `max_turns` in `runtime/agents/alexandria/<seat>/agent.toml` in
+`alexandra-systems`. That is a manifest and not a workflow, so the `workflow`
+scope has nothing to do with it.
+
+**The live route is the relay page, and the writer's raise is the proof.** Ask 4
+of the 2026-10-24 entry in `docs/agents/hq-relay.md` went to
+`alexandra-systems/exo-centralizer` as a handoff, the owner approved 225, HQ
+wrote the manifest at 14:54:31Z, and the host loaded it at 15:32:23Z. Nothing
+touched `pending-workflow-changes.md` at any point. A run that reads the old
+section today files its ask where the one surface that acted on a cap this month
+does not look.
+
+So: **a cap change for a company seat leaves through `docs/agents/hq-relay.md`
+as a handoff to `alexandra-systems/exo-centralizer`, per §3f.** The workflow
+route stays recorded above for the Actions-era history it explains, and it
+governs nothing.
+
+### The ask, filed rather than tabled
+
+Filed on `docs/agents/hq-relay.md` in this run and delivered in the same run,
+which is rule 1 of §3f. It asks for skill at 400 and engineer at 450, names the
+floors of 181 and 201 so a smaller raise can be argued against a number, and
+carries the cost, which is three runs killed in thirty-six minutes on the one
+day this company has ever lost a run to a cap.
+
+**The live test, which needs no network:**
+
+```bash
+grep max_turns /srv/asc/roster/alexandria/skill/agent.toml      # 180 today, want 400
+grep max_turns /srv/asc/roster/alexandria/engineer/agent.toml   # 200 today, want 450
+```
+
+And the one that says the raise is loaded rather than merely on disk, which is
+rule 9's lesson and the writer's whole eight days:
+
+```bash
+ls -1t /srv/asc/state/.epito/logs/alexandria-skill/ | head -1 | \
+  xargs -I{} grep -ho '\--max-turns[= ][0-9]*' /srv/asc/state/.epito/logs/alexandria-skill/{}
+```

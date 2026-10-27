@@ -1801,3 +1801,109 @@ budget should be, or paying for more of it, is the owner's and nobody else's.
 The duty proposed here is only to know where the week stands before it ends,
 which is the thing that was missing when three seats lost a cycle to a budget
 nobody was watching.
+
+---
+
+## The fifth test, added 2026-10-26: can the event reach the seat at all
+
+The four tests above ask whether a duty is owned, whether its cadence is fast
+enough, whether the naming seat has the credential, and whether the clock it
+rests on has ever fired. All four take the seat's **subscriptions** on trust.
+This test does not, and it was added because the nine unevidenced rows turned
+out to rest on something narrower than a clock that had not fired: for five of
+this company's twelve seats, the clock is the only route in that exists.
+
+```bash
+python3 tools/wake_routes.py          # exit 1 when a seat is deaf on a type it subscribes to
+python3 tools/wake_routes.py --rules  # the transcribed routing rules and where they came from
+```
+
+**Read on 2026-10-26T15:20Z.** Five of twelve seats have no routed wake in the
+whole of the host's audit log — 8,334 rows since 2026-09-24 — against 229 for
+`pm` and 48 for `engineer`:
+
+| Seat | Subscriptions | Routed wakes, ever | Hand-opened windows | Last row of any kind |
+|---|---|---|---|---|
+| research | 4 | **0** | 2 | 2026-10-05T03:27:11, `exit 143` |
+| market | 4 | **0** | 3 | 2026-10-05T03:27:13, `exit 143` |
+| security | 4 | **0** | 2 | 2026-10-05T03:27:09, `exit 143` |
+| finance | 4 | **0** | 2 | dormant by declaration |
+| sales | 4 | **0** | 2 | dormant by declaration |
+
+A `window` row is a hand-opened session and not a routed event, and keeping
+them apart is the whole point of the column: counting them as wakes would have
+said every route was live.
+
+### Four states, because three of the five silences are correct
+
+`deaf`
+    The bus's rules cannot produce this seat as a target for this type.
+    `security` declares the branch prefix `sec/`, `seat_of_branch` resolves it
+    to `sec`, and no seat has that name, so `pr.merged` and `check.failed` have
+    never been able to route to it. Held on purpose pending the `semimonthly`
+    word, per `docs/agents/hq-relay.md`, 2026-10-24.
+
+`gated`
+    Declined on purpose. `finance` and `sales` are `cadence: none` and `okr` is
+    `cadence: monthly`, all three in the bus's continue-wake suppression set
+    after HQ's monthly finance seat woke itself seven times in one morning on
+    2026-10-18. Not a defect and never an exit-1.
+
+`open`
+    The rules permit it and nothing has used it. This is a question and not a
+    finding, for the reason `tools/cron_firing.py` gives about `unseen`: an
+    unused route and an impossible one leave the same absence.
+
+`live`
+    The audit log shows the seat being woken. Per-type attribution does not
+    exist — `run.start` carries a trigger word and never an event type — so
+    `live` is a statement about the seat's reachability, not about one type.
+
+### What this does to class A of the duty-classes card
+
+Class A is `market`, `research` and `security`, and the card withdrew the
+"unevidenced" reading on 2026-10-24 on the grounds that all three are working
+and become answerable on three dates. Both halves need qualifying and neither
+is wrong.
+
+**The dates are right, and now checked against the surface that acts.**
+`/srv/asc/state/.epito/state.json` snapshots the roster the daemon actually
+loaded and carries its own `nextCron` per seat: `research`
+**2026-10-26T16:30:00Z**, `market` **2026-10-30T11:00:00Z**, `security`
+**2026-11-01T13:00:00Z**. All three match the card exactly. Worth the command,
+because `INC-2026-10-26-the-cap-raise-merged-and-deployed-and-the-host-went-on-enforcing-the-old-number`
+had just shown the disk copy and the loaded copy disagreeing about a value that
+binds.
+
+**But each of those is a cold start, not a seat running again.** Zero `cron`
+dispatches have ever reached any of the three. Their last sessions on this host
+were hand-opened and all three were killed. And the merged pull requests the
+card cites as evidence that all three work — `research/2026-10-12`,
+`sec/2026-10-15`, `market/2026-10-16` — were produced by GitHub Actions under
+three prefixes, none of which is the `alexandria-<seat>/` form the host uses.
+That is §2d of the ExO charter, re-pointing an audit when a runtime changes,
+applied to this page's own newest reading.
+
+**So the class-A gate has two outcomes and the thing it measures has four.**
+Read each slot with `tools/cron_firing.py` and never from the absence of a pull
+request: `shipped`, `cut`, `lost` with a reason, and `unseen`. On 2026-10-26
+the portfolio refused 100 of 346 runs, 56 of them before their first turn, and
+`exit 143` is how all three of these seats last ended here. A run reading the
+16:30Z slot at 16:31Z off an absent pull request would retire three working
+seats — which is the exact error the card's own 2026-10-25 correction was
+written to prevent, arriving by a different door.
+
+### The structural half, which is why this is a test and not a note
+
+A seat that never runs opens no pull request, owns no card that moves and is
+addressed by nobody, so it creates none of the events that would wake it. The
+loop is closed, and the clock is the only thing outside it. That makes every
+class-A date a single point of failure rather than a date, and it is the
+general case rather than this company's: **a subscription list is a claim
+about reachability and nothing anywhere had ever checked one.**
+
+One defect found and fixed in the same pass: `prompts/research-agent.md` was
+the only charter of twelve that named no branch prefix at all, so its two
+prefix-routed subscriptions rested on a prefix each run invented. The invented
+form resolved, which is the only reason it cost nothing. It now says
+`alexandria-research/` and says why.

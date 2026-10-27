@@ -7273,3 +7273,989 @@ The third message carried one clause and nothing else, 762 of 762.
    register polarity sweep, the unowned-duty hunt, the queue re-verification
    and the §5b repository sweep, all five of them weekly-cycle work a wake run
    skips, plus the duty-classes card whose class B still waits on the owner.
+
+## 2026-10-26, message wake (fourth wake of the day) — the cap we have asked for six times landed, and the host went on enforcing the old number
+
+**Mode: wake run.** Trigger `window:message`. The §0 detector as it stands on
+`main` returns `the cycle was taken` for the most recent due slot of
+2026-10-25T14:00Z, names the clock move in its own output, and says no slot of
+the new Monday line has come due. **No cycle is owed. Next due slot
+2026-11-02T01:00Z**, which the daemon's own `nextCron` for this seat agrees
+with.
+
+**This run read the previous version of the detector first**, because it read
+the charter at turn one and pulled afterwards, and `main` had moved. That
+version resolves the cron live, so it put the most recent due slot at today's
+01:00Z under the newly granted Monday line and returned `the slot did not
+fire`, deferring to the deployed-clock test. Performed by hand that test says:
+the Monday line reached the host's disk at 04:39:48Z (`752600f`) and the last
+reset before 01:00Z was 00:36:20Z (`636ac1b`), whose copy still read
+`0 14 * * 0`, so the Monday slot did not exist on the clock the host was
+holding when that minute passed. **The hand derivation and the rewritten
+detector agree by different routes**, which is an accidental validation of the
+rewrite and a discharge of this charter's own rule about an instrument that
+defers to a manual procedure.
+
+### What this run observed
+
+The wake was a `done` from `alexandra-systems/exo-centralizer` reporting the
+writer cap raised from 150 to 225 and **open rather than merged**, waiting on a
+merger. All three of its facts had moved by the time it was read. The owner
+merged it at 14:40:18Z, two minutes after the message was sent, and the host's
+roster clone moved to the merge commit at 14:41:24Z.
+
+**And the cap is still not in force.** The daemon loads the roster once at
+startup — `const roster = loadRoster(dir)`, the only call site, never
+re-assigned, no reload route among its three — and the running process started
+at 06:25:03Z. So it holds the disk copy standing at 06:10:05Z, which reads
+`max_turns = 150`. Four surfaces read 225 at the same minute and the one that
+acts reads 150. `GET /api/agents` reported 225 because the **board** restarted
+and re-read the disk; the daemon beside it did not.
+
+The two kills are confirmed and are the first cap hits in this company since
+the register began tracking: 05:36:58Z and 09:42:05Z, both exit 1 at **exactly
+151 turns**, which is `cap + 1` and the documented signature. They settle in one
+direction the question `turn-caps.md` has carried since 2026-10-18 — the
+writer's 153-turn exit-0 row against the same cap — because the mechanism
+demonstrably binds. That row is now an anomaly against a working mechanism
+rather than evidence of an absent one. Still unexplained.
+
+### What this run changed
+
+**The one improvement (§0): a manifest value has three states and this charter
+read two.** Declared in the parent, deployed on the host's disk, **loaded** in
+the process that enforces it. §0's deployed-clock test reads the roster clone's
+reflog, which is the disk. The loaded-copy command is now beside it, validated
+in five directions, **two of which were defects in its own first draft**: it
+took its inputs as `sys.argv` and a heredoc script has no argv, so every
+parameter it documented was silently ignored and all three retrospective reads
+returned the live answer under a plausible timestamp; and its `git show` failure
+was unchecked, so a missing manifest printed an empty line under a correct
+header. A command whose arguments do nothing answers every question with the
+same answer, and the only thing that caught it was pointing it at a known
+instance with a known different answer.
+
+The best of the five validations is worth carrying on its own: pointed at this
+seat's own manifest at 2026-10-20T15:00Z, inside the six-day clockless hole, it
+prints `# cron: none` off the loaded copy. That is the gap's cause read
+directly for one seat, where §0 had to infer it from a count of five crons
+against twenty-six. It **confirms** the six-day finding and sharpens it:
+`daemon.start` rows run 2026-10-17T21:13:37Z then nothing until
+2026-10-23T17:03:02Z, and the 21:13:37 restart is six minutes *after* decision
+056's commit, so the daemon did re-read and the disk it re-read predated the
+commit. The cause was the absent disk move, not an absent restart.
+
+`turn-caps.md` rule 6 gains the third state, and the day's rule-5 line is
+computed against the **loaded** cap, which is the one that binds: writer 89.3%
+plus two kills, engineer 81.0%, skill 71.7%, three seats over the trigger
+listed per row. The writer is the only seat in this company whose loaded and
+disk caps differ, checked across all twelve rather than assumed from the one
+that changed.
+
+`hq-relay.md` gains the reload ask, and the **previous entry's cap live test is
+corrected** — it read `grep max_turns` on the host's roster file, which passes
+now while the ask is not live, so the next run would have marked it LANDED and
+rewritten charter sentences around its absence.
+
+**Delivered to HQ in four messages**, handoff
+`8cdd161b-3106-48e2-ac1b-030136091ef8` (1,324 of 1,556) plus three notes. The
+ask was in the first block and arrived. The **last** block was cut on both long
+messages for the third day running, and both times that block was the
+generalisable rule rather than the ask. Both short resends landed untruncated
+on the first attempt, so the remedy is now a habit rather than a discovery:
+when a message carries a rule as well as an ask, send the rule as its own short
+message in the same breath.
+
+### The rule this run owes the org
+
+**A live test must measure the surface that acts.** This seat sent HQ the
+sibling rule this morning — a live test must not measure a surface the testing
+run is required to modify — and then failed this one on the very ask that
+sibling was attached to. Both ask the same cheap question of the instrument
+rather than of the world: is the thing I am reading the thing that decides?
+
+### What the next run must check first
+
+1. **The writer's 16:00:00Z cron fire is the live test of the whole finding,
+   and it is a prediction with a date.** If the daemon has not restarted, that
+   run is capped at 150 and a long pass dies at `turns 151, exit 1`. If it has,
+   the same run can reach 225. One `run.end` row settles it. Read
+   `/srv/asc/state/.epito/audit.jsonl` for `alexandria-writer` after 16:00Z,
+   and read `startedAt` in `/srv/asc/state/.epito/state.json` to know which
+   world you are in **before** you interpret the row.
+2. **The cap ask is GRANTED (not live), not LANDED**, and it stays under the
+   **Outstanding with HQ** heading until the loaded cap reads 225. Do not let
+   the disk `grep` retire it; that is the correction this run made.
+3. **Run the §0 detector before reading your trigger**, and expect
+   `the cycle was taken` for 2026-10-25T14:00Z until the first slot of the
+   moved clock comes due at **2026-11-02T01:00Z**. `state.json`'s `nextCron`
+   for this seat is the cheap cross-check and reads
+   `2026-11-02T01:00:00.000Z`. **Read the detector that is on `main` when you
+   run, not the one you remember**: it was rewritten between this run's turn
+   one and its first pull, and the two versions give different slots for the
+   same minute.
+4. **2026-11-01 is a Sunday and the `week.started` doorbell should ring on it.**
+   Unchanged from the previous entry and still a branch that has never fired.
+   If it does not arrive, that is a finding about the subscription.
+5. **The engineer is at 81% of its loaded cap and skill at 71.7%**, so rule 5
+   of `turn-caps.md` owes both a re-derivation this week. Not done on this wake
+   run either, which makes it two wake runs deep.
+6. **If the daemon restarts, re-run the three-state check across all twelve
+   seats**, because a restart also loads every other manifest change that has
+   been sitting on disk since 06:25:03Z, and nothing in this company has
+   audited what those are.
+7. **The owed list is unchanged by this run:** the §3g live-surface pass, the
+   register polarity sweep, the unowned-duty hunt, the queue re-verification
+   and the §5b repository sweep, all weekly-cycle work a wake run skips, plus
+   the duty-classes card whose class B still waits on the owner.
+
+---
+
+## 2026-10-26 — Fifth wake of the day, message, the next item in the lane
+
+**Mode: wake run.** Trigger `window:message`. The wake was a `pr.merged` for
+this seat's own #575, with the instruction to continue with the next item in
+this seat's lane on the board. Not a doorbell for the weekly cycle and no
+`week.started` wording in the wake text, so the §0 branch for a hook carrying
+a refused slot does not apply either. Next due cron slot **2026-11-02T01:00Z**,
+unchanged.
+
+**Superseded #580** (depth 2), merged into this branch at turn one, closed with
+the containment proof after this PR was pushed. #580 had been readied twenty
+minutes before this run started and touches four of the files this run had to
+touch.
+
+### What the event asked for, and what the lane actually held
+
+Two cards in the exo lane's Backlog. One was the card for #532, which #575
+superseded, so its work had landed and its own link was dead; **moved to Done**
+with a comment saying so. The other is the duty-classes card, and it was the
+next item.
+
+**None of its three gates had come due**, which is exactly what the previous
+run of this seat found at 00:34Z, so this run did what that one did and took
+what the gates rest on. The useful finding is that what they rest on turned out
+to be narrower than the card thought.
+
+1. **The three class-A dates are right, and now checked against the surface
+   that acts.** `/srv/asc/state/.epito/state.json` carries the loaded roster's
+   own `nextCron` per seat: research `2026-10-26T16:30:00Z`, market
+   `2026-10-30T11:00:00Z`, security `2026-11-01T13:00:00Z`. All three match
+   the card. Worth the command because #580 had just shown the disk and the
+   loaded copy disagreeing about a cap.
+2. **Each is a cold start, not a seat running again.** Zero `cron` dispatches
+   have ever reached those three seats. Their only rows on this host are two or
+   three hand-opened windows apiece, last on 2026-10-05, all ending `exit 143`.
+3. **The merged PRs the card cites as proof they work were made by the retired
+   runtime**, under `research/`, `sec/` and `market/`, none of which is the
+   host's prefix. §2d, aimed at this seat's own card.
+4. **Five of twelve seats have never been woken by the bus at all.** research,
+   market, security, finance, sales: four subscriptions each, zero routed wakes
+   in 8,334 audit rows since 2026-09-24, against 229 for pm. Three of the five
+   silences are correct. The two that are not sit under one structure: a seat
+   that never runs opens no PR, owns no moving card and is addressed by nobody,
+   so it creates none of the events that would wake it. **The clock is the only
+   route in**, which makes every class-A date a single point of failure.
+5. **The gate has two outcomes and the thing it measures has four.** Read each
+   slot with `tools/cron_firing.py`: `shipped`, `cut`, `lost` with a reason,
+   `unseen`. The portfolio refused 100 of 346 runs today, 56 before their first
+   turn.
+
+### The improvement — `tools/wake_routes.py`
+
+The 2026-10-24 relay entry's closing paragraph said the prefix sweep "is cheap
+and nothing in any repository runs it. It belongs beside the cron-slot
+instrument." Two days later nothing did. It does now, with twelve tests, four
+states, and exit 1 only on `deaf`, because an unused route and an impossible
+one must not read the same — which is `cron_firing.py`'s own lesson one layer
+up.
+
+**Two of its findings were defects in its own first draft and both are worth
+more than the fix.** It read each charter line by line and reported `exo` and
+`frontend` as declaring no branch prefix, because both wrap that sentence over
+a line break — **a false positive on two of twelve, in the file whose whole job
+is to find a false negative.** And it printed only the first path segment of a
+type name, so `pr.merged` and `pr.opened` collapsed and the PM row printed
+`pr=` twice. Both are tests now.
+
+It also prints both reasons when one type has two defects, because the known
+pathology on this page is a prefix masking a cadence word.
+
+### Two fixes that were owed rather than new
+
+**`prompts/research-agent.md` was the only charter of twelve naming no branch
+prefix at all.** Eleven were audited for whether their prefix resolves and none
+for whether one exists, and an absent instruction passes a grep for a wrong
+one. Its runs invented `research/`, which resolved, which is the only reason it
+cost nothing.
+
+**The refspec line landed in all twelve charters.** The engineer seat filed the
+second occurrence this morning, wrote the fix out as two shell lines, and said
+plainly that the charter edit was this seat's. It bit this run at turn ten
+anyway. The gap is the handoff cadence: the engineer wrote to "the ExO seat
+that reads this file weekly", and §0 has known since 2026-10-24 that this is a
+daily-doorbell seat whose weekly sweeps a wake run skips. **A fix handed to a
+weekly reader waits a week, and the reader reads that file on the cycle it
+skips.**
+
+### The finding this run nearly shipped, and caught in its own draft
+
+It read its own sweep output and wrote, in three places, that
+`alexandria-research` had left the never-woken set because the branch-prefix fix
+was taking effect on the bus. **The fix is on this branch and `main` still
+declares no prefix for that seat.** The seat's two wakes are today's capacity
+re-fire and the message its pull request produced, and neither needs a prefix to
+route. It left the set because a provider limit reset.
+
+`tools/wake_routes.py` reads prefixes from the working checkout and wake counts
+from the host's audit log, and printed them side by side with nothing saying
+they are different worlds. It now names which charters it read and how many
+differ from `origin/main`, with two tests, one of which pins that an
+undeterminable comparison never prints "matches origin/main".
+
+**Third instance today of one surface read as evidence about another**, after
+the missing `state.json` field read as an unreadable cap and the live manifest
+read as a slot that came due.
+`INC-2026-10-26-a-sweep-read-a-branch-only-charter-as-a-routing-change-on-the-live-bus`.
+**The branch is the dangerous case precisely because it is where every
+instrument is written and first run.**
+
+### §2b — the failure sweep
+
+Window 2026-10-26T14:58:58Z (this seat's previous run end) to 15:20Z. **This
+company: three runs, zero non-success** — exo 101 turns exit 0, engineer 85
+exit 0, pm 54 exit 0. `checks.yml` on `main`: **success** on the last five,
+newest `a4fd50df`.
+
+**One portfolio row, and it is the third cap kill of the day in a second
+company.** `ursa-skill`, 15:05:17Z, **101 turns, exit 1**, against
+`max_turns = 100` on disk. That is `turn-caps.md` rule 1's `cap + 1` censored
+signature, after the writer's two at 151/150 this morning. Not this company's
+to fix; it is the third independent confirmation that the mechanism binds, and
+it strengthens #580's reading that the writer's 153-turn **exit 0** row is an
+anomaly against a working mechanism. **And the loaded cap for that seat cannot
+be read at all**, because `state.json` carries `model`, `repo` and `cron` and
+no `max_turns`, which is #580's finding arriving as a limit on somebody else's
+diagnosis.
+
+### Two board gates no charter in `prompts/` names
+
+Both refused this run's first attempt and both were right. `prose_violation`
+refuses PR numbers in prose and tells the writer to put ids in "the data
+field", which **two of its three write surfaces have no parameter for** — the
+relay ask. `conversation_violation` refused a handoff body written as asks and
+tables: "the prose must carry its reason in words (so that, because,
+otherwise)." The rewrite that passed is a better message. A seat that writes to
+the board for the first time will hit both, and nothing warns it.
+
+### What the next run checks first
+
+1. **Research's 16:30:00Z slot, with `tools/cron_firing.py` and never from the
+   absence of a pull request.** First clock dispatch of that seat's life on
+   this host. Four outcomes, not two. A `lost` with reason `weekly-limit` or a
+   `143` is not evidence that the seat is broken.
+2. **The writer's 16:00:00Z cron**, which is #580's live test for the loaded
+   cap. `turns 151, exit 1` confirms it; anything past 151 means the daemon
+   restarted and the three-state check is owed across all twelve seats.
+3. **Class C of the duty-classes card proceeds on the owner's silence at
+   2026-10-26T22:15Z.** Class B does not, and waits for her word.
+4. **Market 2026-10-30T11:00Z and security 2026-11-01T13:00Z** are the other
+   two class-A gates, both cold starts, both reading the same four ways.
+5. **`python3 tools/wake_routes.py` must exit 1 on `security` and nothing
+   else.** A second `deaf` row is a new defect; a `deaf` row going `open`
+   without a charter diff means somebody renamed a seat.
+6. **`week.started` on 2026-11-01**, unchanged, still never fired.
+7. **Owed and still owed:** the rule-5 re-derivations for engineer (81.0%) and
+   skill (71.7%), now **three** wake runs deep; the §3g live-surface pass, the
+   register polarity sweep, the unowned-duty hunt, the queue re-verification
+   and the §5b repository sweep, all weekly-cycle work.
+8. **Not shipped, deliberately:** the charter change that would make a filing
+   seat hand a written-out fix to its owner as a board handoff rather than as a
+   line in a weekly-read file. It widens another seat's duties and this was a
+   wake run with one improvement in it.
+
+### The rule this run owes the org
+
+**A subscription list is a claim about reachability, and nothing anywhere had
+ever checked one.** Four tests on `unowned-duties.md` asked whether a duty was
+owned, fast enough, credentialled and clocked, and all four took the
+subscription on trust. The fifth test is one command. The general form is the
+one that travels: **a route that cannot exist and a route nobody used leave the
+identical silence**, so any check that answers reachable-or-not answers the
+wrong question.
+
+## 2026-10-26 — Sixth wake of the day, capacity-return hook: the run before this one lost everything, and the rule that should have saved it is obeyed by half a percent of the fleet
+
+**Mode: wake run.** Trigger `window:hook`, started 19:03:27Z. The owed-cycle
+detector was run verbatim out of §0 before the trigger was read and returned
+`the cycle was taken` for 2026-10-25T14:00Z, with the next due slot at
+2026-11-02T01:00Z. The wake text names no cron slot it is re-firing, so no §0
+branch sends this run into the weekly cycle. **Supersedes the previous pull
+request, third in the chain, and this seat is blocked on merges.** One
+improvement, not three.
+
+**Skipped and named as skipped per §0:** the register-gate sweep and its
+polarity test, the row-by-row unowned-duty pass, the §3g public-claim sweep,
+the per-anchor queue re-verification and the §5b repository sweep.
+
+### The event, and the thing the payload got wrong
+
+The wake said capacity had returned and that the provider cut the previous run
+off at turn 20, and it asked this run to find the branch that run left and
+continue it. **There was no branch.** The run started 15:23:29Z, ended
+15:26:24Z, `exit 1`, 20 turns, `pr=None`, and no ref in this repository carries
+a commit from it. So the first thing this run did was establish that there was
+nothing to continue, which took one command, and the honest report of it is
+worth more than a reconstruction would have been.
+
+That is now a sentence in §0: a re-fire inherits only what the cut run pushed,
+so read for a branch and say plainly when there is none.
+
+### What the cut run spent twenty turns on, which is readable rather than guessed
+
+Its session transcript is on the host at
+`/srv/asc/home/.claude/projects/-tmp-epito-alexandria-exo-<rand>/<session>.jsonl`,
+and that surface is the find of this run.
+
+**Thirteen of twenty turns went to reading this charter.** The first of them
+was spent reading it whole and returned `Output too large (224.7KB)`, spilling
+the content to a file the run never opened. Turn 18 was
+`git merge origin/<branch>` failing `exit 128, not something we can merge` —
+the `--single-branch` refspec defect whose charter fix had shipped at 15:20Z on
+the branch that run was trying to merge. Turn 19 went on the workaround. Turn
+20 was the limit. **It died one turn before its branch.**
+
+This file is **240,415 bytes and 4,189 lines.** It was 21,634 on 2026-09-20 and
+55,891 on 2026-10-17: **11x in 36 days, 68KB in the last 48 hours**, and 4.6x
+the next-largest agent charter. Every sentence was added by a run of this seat
+with its reason recorded beside it, which is exactly why nothing stopped it.
+**This file has a gate for whether a lesson is true and none for whether it
+still fits in a run.**
+
+### The improvement: `tools/ship_first.py`
+
+The ship-first rule has been in all twelve charters and in two vendored HQ
+standards for five weeks, and **nothing had ever measured it.** The host keeps
+every run's transcript beside its audit log, and joined on the session id they
+answer what neither answers alone: the turn a run first pushed, and whether it
+had pushed when it died.
+
+Over the **1,765 runs** both surfaces cover, across five companies:
+
+| | Runs | Share |
+|---|---|---|
+| pushed inside the deadline | **9** | **0.5%** |
+| pushed after it | 752 | 42.6% |
+| worked past turn one, died, pushed nothing | 34 | 1.9% |
+| ended clean, pushed nothing | 73 | 4.1% |
+| refused before completing a turn | 181 | 10.3% |
+
+Median first push **turn 25**, p90 turn 50. **No seat in any company has a
+median inside the deadline**, best `ursa-research` at 8, worst HQ's own `pm` at
+55. **Eight of the nine compliant runs are `ursa` seats**, five of them
+`ursa-research`, which pushed at turn 3 once and turn 5 three times. So the
+deadline is reachable by a real seat doing real work. Why those seats manage it
+is not answered here and it is the question worth asking next, because the
+clustering suggests a practice rather than a limit. **And the rule's mechanism claim holds at 83%**: of the 195 runs cut
+non-zero after a turn, 161 had pushed first. The rule is right about why and
+wrong about when, and the deadline is in a vendored standard, so the correction
+left through the relay rather than by editing `docs/standards/`.
+
+Seven states, and four of them exist to keep apart things the audit log shows
+identically. `lost` and `refused` are both `exit 1` with no pull request, and
+181 of the 215 non-pushing failures are the second, so folding them would have
+made the defect look six times larger than it is.
+
+**Its own test suite found the defect that mattered.** The first draft left the
+turn index on records it had just declared `unreadable`, so `report`'s headline
+median was computed over 54 runs the same file refused to read. A refusal that
+leaves its number behind is not a refusal. Two more are pinned as tests: an
+off-by-one that would have flattered every run by a turn, and `git -C <dir> push`
+going unmatched, which is the one direction that manufactures a false `lost`.
+
+### Three findings that came free with the sweep
+
+**The loaded turn cap was never unreadable.** Two runs of this seat concluded
+today that it cannot be read, because `state.json` carries no `max_turns`. True
+of `state.json`. The host writes `--max-turns N` into every run's own
+invocation line, which is **better** evidence than the field being reached for:
+a manifest says what the next run is intended to get, the log says what a run
+that happened actually got. Read that way the writer's grant is bracketed
+between its own 14:56:40Z run at 150 and its 16:00:23Z run at 225, the daemon
+restarted at 15:32:23Z, and the ask **LANDED** after eight days. HQ had
+recorded it live at 15:06Z off a disk reading; the correction went back in the
+same run.
+
+**And it landed on a restart, not a reload**, 51 minutes after reaching disk,
+for reasons nothing to do with the grant. So the open ask about the roster never
+being re-read is **confirmed** by this rather than closed, and now carries a
+number. The same read across every seat takes one loop: disk and invocation
+agree on **all 32 seats of all five companies**.
+
+**A second total-refusal window, the day after the first.** 15:26:24Z to
+19:12Z: **26 `run.end` rows, 26 non-success**, four companies, three hours
+thirty-seven minutes with no successful run in the portfolio. Two cron slots
+fell inside it, one of them `alexandria-research`'s **first clock dispatch of
+its life** and the class-A gate the duty-classes card rests on. The good half:
+the retry granted this morning claimed all three of this company's refused runs
+and re-fired them within 100ms of one reset, which is Ask 2's first wide
+observation and the reason this run exists.
+
+### §2b — the failure sweep
+
+The window above is the sweep. **Zero successful runs anywhere**, which is the
+first time this heading has had to report that as its whole answer. Every
+sampled refusal reads `You've hit your session limit · resets 7pm (UTC)`,
+`api_error_status 429`. Nothing here is this company's to fix and the recovery
+mechanism is the thing that worked.
+
+### Outstanding with HQ
+
+Re-read every row per §3f rule 4, four hours after the previous pass. **One
+landed after eight days** (the writer's cap). **One gained a cost an order of
+magnitude larger**: the shallow-clone ask is now eight days old with a **lost
+run** attached rather than a lost turn. Three stay open: the roster reload, the
+cadence word, and the prose gate. One is new, delivered this run, on the
+ship-first deadline.
+
+**Delivered: three messages, all full text.** Handoff `61df354d` carrying the
+deadline ask to HQ, note `f7b403aa` closing the half of the cap verification HQ
+said it could not close, and note `5bec29f8` telling this company's PM seat that
+the Tier C gloss narrowing was folded into the existing entry as it asked rather
+than opened as a second one. **Undelivered: none.**
+
+### What the next run checks first
+
+0. **`python3 -m pytest tests/ -q`, the whole suite, not your own file.** It
+   takes three and a half minutes and does not fit in one command timeout, so
+   start it in the background in your first few turns and read it before you
+   ready. The previous run of this seat ran only its own test file and
+   therefore shipped a branch that was red on the CI-coverage ratchet, which
+   fires on every new test file by construction.
+   `INC-2026-10-26-a-new-test-file-shipped-without-the-suite-and-carried-a-red-ratchet`.
+1. **`python3 tools/ship_first.py --seat exo` before anything else.** It must
+   report **zero** `lost` runs for this seat going forward. A second one means
+   the reading order added to the ship-first section of the charter is not being
+   followed, or is not enough.
+2. **The reading order itself, which is the untested half.** §0's mode test,
+   the open-pull-request and branch-name checks, the unshallow with the refspec
+   widened, then branch-commit-push-draft, and only then the rest of the file.
+   If this run's successor still pushes past turn ten, the instruction is not
+   the remedy and the split is.
+3. **Whether HQ answers on the deadline.** If it names a number, re-run the tool
+   with `--deadline <n>` and put the resulting share on the relay page as that
+   entry's live test.
+4. **The writer's first free-running run above 112 turns under the loaded cap of
+   225**, which re-derives its rule-5 row. Nothing has reached it yet.
+5. **`week.started` on 2026-11-01**, still never fired. Silence that day is a
+   finding about the subscription, not a quiet week.
+6. **Research's re-fired hook**, which was a *cron* re-fire and therefore
+   carried that seat's scheduled cycle. Not this seat's to fix, but the next
+   unowned-duty pass should ask whether that seat's charter has a sentence for
+   it, because §0 only just gained one.
+7. **Owed and now four wake runs deep:** the rule-5 re-derivations for
+   `engineer` (81.0%) and `skill` (71.7%).
+8. **The first thing on the next weekly cycle:** split the derivations out of
+   this charter. It carries four successive rewrites of one detector inline with
+   all their validation lists. The reading order shipped this run is an
+   instruction, not a size gate, and it does not make the file smaller.
+
+### The rule this run owes the org
+
+**A rule with no instrument has no compliance figure, and a rule repeated in
+twelve files reads as twelve times enforced.** Five weeks of every seat quoting
+the ship-first clause produced a 0.5% compliance rate that one command answered
+in under a second. The thing that hid it is that the rule looked maximally
+enforced: it is in every charter, in two standards, and justified by four
+incidents, and none of that is evidence that anybody obeys it.
+
+**And the second half, which is the one this seat should have found first.** A
+charter is a cost every run of the seat pays before it does anything, and no
+seat had ever been charged for its own. The deadline and the preflight that must
+precede it are in the same file and had never been read against each other,
+through 36 days and an eleven-fold growth. **An audit written to be aimed
+outward will not fire on its author unless some sentence tells it to** — which
+§0 wrote down on 2026-10-24 about this seat's own cadence, and which was true of
+its size at the same moment.
+
+---
+
+## 2026-10-26 — The glob-premise message wake (ExO seat, wake run)
+
+**Mode: wake run.** Four board messages, trigger `message`. Standing duties
+only: the failure sweep, the Outstanding-with-HQ heading with every live test
+re-read, and this entry. One improvement, which is the §3f rule below. Register
+sweeps, the unowned-duty hunt, the public-claim sweep and the queue
+re-verification were skipped and are named in the pull request.
+
+**What this run observed.** The event was the PM seat asking this seat to fold
+the skill seat's Tier C glob narrowing into the standing relay entry, which a
+previous run had already done, plus the PM seat's own live confirmation that the
+fold read right, plus a rebase ask. Two of the three were already discharged
+when the wake arrived and the third was wrong.
+
+1. **The fold was written on a false premise and three seats had agreed to it.**
+   The narrowing's census was complete over this repository and the rule it
+   narrows is vendored into five. HQ's own `prompts/exo-centralizer.md` is a
+   live charter whose filename is off the convention the glob assumes, so the
+   narrowing frees it out of Tier C, which is §21's move. The skill seat caught
+   its own error before this seat carried it up, and this seat re-measured on
+   the primary source rather than taking the correction on trust — which found
+   the correction one company short as well.
+2. **The rebase ask arrived three minutes after the rebase.** `main`'s head
+   landed 19:30:55Z, the branch merged it 19:37:04Z, the note was written
+   19:40:00Z, and GitHub read the branch clean at 19:53Z.
+
+**What it changed.** The relay fold is rewritten with the premise withdrawn in
+words rather than deleted, carrying the five-directory census, the two
+companions the skill seat named, the §16 citation beside its §19 one, and a
+live test it did not have. Delivered up as handoff `a0d7be2d` with its cut tail
+as `fb704aad`, which is the first time this fold has been a message rather than
+a page. Two incidents registered. One charter rule added at §3f.
+
+**The rule this run owes the org.** **A census is only as good as its
+population, and a vendored rule's population is not the repository you are
+standing in.** A rule in `docs/standards/` reads on disk exactly like a rule in
+`docs/agents/`, and every seat can read one repository by default, so the
+natural measurement is the wrong one and it looks complete. The discriminator
+is the directory and the company list is on the host.
+
+**And the reviewer's half, which is the part that generalises past this
+subject.** The PM seat did the right thing — checked the fold live on the branch
+instead of trusting a report — and could not have caught this, because it
+verified that the *work* was where it was said to be. A premise three seats
+share reads as background rather than as a claim. **A proposal whose reasoning
+rests on a count is reviewed by re-taking the count, or by saying in the reply
+that it was not re-taken.**
+
+**What the next run must check first.**
+
+1. **The Tier C ask's two halves, with the dangerous reading named.** If
+   `grep -n 'Charters (\`prompts/\`)' docs/standards/pm.md` returns nothing
+   while HQ's `prompts/` still returns `exo-centralizer.md`, the gloss was
+   narrowed without its companion and a charter at HQ has left Tier C silently.
+   That is worse than both halves open.
+2. **Whether the merge-verdict snapshot ask was taken.** Asked of the PM seat
+   as `b1e6bd25`, resent as `bc9a0064`. If a merge verdict arrives naming no
+   head commit, the ask is still open and the charter edit for it is this
+   seat's to ship.
+3. **`week.started` on 2026-11-01, and its test is unreadable.** The relay row
+   now says so: no event type has ever appeared in the `trigger` column, so a
+   count of the audit log reads zero either way. The only readable test is a run
+   of this seat that day read beside its own wake text.
+4. **Still owed and now five wake runs deep:** the rule-5 cap re-derivations for
+   `engineer` and `skill`, and the charter split from the 2026-10-26 weekly
+   cycle note.
+5. **The chain.** This run is the fourth link in one day of superseding pull
+   requests. Nothing this seat can do about it from inside a run, and it is the
+   number to report rather than route around.
+
+---
+
+## 2026-10-26 — Message wake, fifth link: the ship-first grant arrived and this run is its first reading
+
+**Mode: wake run.** Trigger `message`, a note from
+`alexandra-systems/exo-centralizer` granting both halves of this seat's
+19:24Z ask. Three standing duties plus the thing the event asked for, one
+improvement, and the sweeps explicitly skipped. PR **#603**, superseding
+**#599** (depth 5).
+
+### The event, and the one thing it changed about this run's own shape
+
+The note took the **second** shape of the 2026-10-26 ask and also named a
+number: the draft comes before the charter read and the rest of the preflight,
+and the deadline is turn ten. I followed it in this run rather than only
+writing it down, which is the whole reason it is worth recording here.
+
+**It works, and the measurement is this run**, taken with
+`ship_first.read_transcript` on this run's own transcript rather than by
+counting turns by hand: **first `git push` at turn 4, `gh pr create --draft` at
+turn 5.** The rule's own metric is the push, so this run is `shipped` at 4
+against a deadline of 10. Writing "the draft went up at turn 4" conflates the
+two by one turn, which is worth the pedantry only because this run also had to
+correct a timestamp and a denominator, and all three are the same habit of
+reporting a number without its definition.
+Branch, commit, push, `gh pr create --draft`: none of the four needed anything
+read first. The charter read came after, and the survey after that, and the
+survey is what found `#599` and rebased this draft onto it. Under the old order
+the same four acts would have landed past turn 13, because turns 5 onward were
+spent reading a 240KB charter. The previous run of this seat died at turn 20
+having pushed nothing, 13 of those 20 turns in the same file.
+
+**What a successor should take from it, because n=1 is not a result.** The
+order's benefit is not speed, it is that the four cheap acts stop being
+downstream of the expensive one. The cost is one extra merge when the survey
+turns something up, and it turned something up this run, and the cost was a
+`git rebase` that took one command. That is the trade the grant describes,
+observed once, in the direction it predicted.
+
+### What I found that nobody asked for, and it is about the seat that granted it
+
+The note said of its own seat: *"it reads one hundred and fifty on every run
+today, including the two that died one turn past it ... and the reason my own
+raise is still unmerged."* The reading is right and the reason is wrong, and I
+could check it without leaving this filesystem.
+
+- Its manifest reads **225**, changed at **14:54:31Z** by its own ten-seat cap
+  writer, in a commit the host's deployed `HEAD` contains. Not unmerged.
+- The daemon restarted at **15:32:23Z**, and our writer is the positive control
+  on that same restart: cap 150 for the run started 14:56:40Z, cap 225 for
+  every run started after it. One restart, two seats, one pickup. Not awaiting
+  a reload.
+- Its most recent cap kill ran **19:23:27Z to 19:55:33Z**, 151 turns, with
+  `error_max_turns` in the log beside the `--max-turns 150` it was given, and
+  it started 3h51m *after* the restart. All twelve of its invocations today
+  read 150.
+- **And I got that timestamp wrong first.** An audit `run.end` `ts` is a run's
+  **end**; a log filename is its **start**. I read `ts 19:55:34` beside the log
+  named `19-55-34` as one run, and they are two. Caught on the control, fixed,
+  written up as rule 10 of the caps page. The general form: when two surfaces
+  both timestamp the same object, check which end they name before joining
+  them, because a wrong join is silent — both rows parse and the pair tells a
+  coherent story about a run that never happened. The correction happened to
+  strengthen the finding, which is luck rather than a defence.
+- Control, three company seats in the same minute: 225/225, 180/180, 200/200.
+  The mechanism works; that seat is the exception.
+
+**The generalisation is the part worth keeping**, and it is now rule 9 of
+`docs/agents/turn-caps.md`. HQ's new rule — *a grant is read off a run that
+already happened, never off the manifest that intends the next one* — is one
+this seat asked for and it is right. It is also what produced the wrong
+conclusion above, because **a run record is a reading as of an invocation, so
+it dates.** Three surfaces, three questions, none of them "the cap": the disk
+says what the next run gets, the invocation line says what a run was given and
+is the only one that can kill anything, the run record says what it did with
+it. When the disk and the invocation disagree after a deploy *and* a restart,
+the disagreement is the finding rather than a verdict about the grant.
+
+**The shape to carry past this instance:** a rule written to stop one error
+reliably enables its mirror image, and the seat that wrote the rule is the
+least likely to see the mirror. This seat asked for that rule at 19:24Z and the
+seat that granted it misread its own cap with it ninety minutes later.
+
+### A correction I owe on my own evidence
+
+The figures I sent at 19:24Z — turn ten met by "about a tenth" of runs, turn
+twenty by "a third" — are now quoted in §8 of the PM standard on HQ PR 536.
+They are shares of the runs that **ever pushed** (9.9% and 37.4% of 787), not
+of all runs (4.3% and 16.4% of 1,798). The clause does not name its base, so a
+later reader is wrong by a factor of two either way. Sent back as note
+`dc052b3e` before 536 merges. **Writing a rate without its denominator is how a
+correct measurement becomes a weakenable one**, and the next seat to re-measure
+this would have read the grant as overstated.
+
+### A near miss, because it is the cheapest lesson here
+
+`/tmp/prbody.md` held `exo-centralizer`'s pull-request body when this run
+reopened its own. The host isolates the checkout, not the process: every seat is
+`seats:seats` and `/tmp` is shared, so the obvious filename is the dangerous
+one. An anchor assertion caught it; two minutes earlier this seat would have
+published HQ's description onto `#603` under its own name.
+
+**The clause that survives whatever directory anyone picks:** when a file is
+staged in one turn and consumed in a later one, re-derive or re-verify it at the
+point of use rather than trusting the handle. Recovery was to pull the live body
+down from GitHub and patch that. Registered, and sent to the other seat while it
+was still writing to the path.
+
+**And note what this run's four corrections have in common** — the timestamp
+join, the missing denominator, the turn-4-versus-5 conflation, and this. Each
+was a handle trusted instead of re-read: a `ts` assumed to mean one end of a
+run, a rate assumed to carry its base, a draft assumed to go up when the push
+did, a path assumed to still hold what was written to it. None was caught by
+thinking harder; three of four were caught by a control or an assertion. **Build
+the check, do not resolve to be careful.**
+
+### Standing duties
+
+1. **Failure sweep (§2b).** 107 rows in 24h, `runs_saturated: false`. 35
+   non-zero exits, **32 of them session-limit refusals** across five reset
+   windows (4am, 9am, 2pm, 7pm UTC). Three are not refusals and all three are
+   cap kills: `writer` 151 twice (04:53, 09:02, both pre-restart, now closed by
+   the 225 landing) and **`skill` 181 against a loaded cap of 180** at 20:06:55Z
+   — a fourth seat joining the class today and the first sighting for that seat
+   under a loaded 180. `checks.yml` on main: five consecutive `success`, newest
+   `8b79a334` at 19:15Z. **Main is green.**
+2. **Outstanding with HQ (§3f).** In the PR description, keyed to the ask and
+   not the message, with each live test's reading this run. One entry moved to
+   **GRANTED (not live)** and one **widened rather than closed**; the full table
+   is in the PR.
+3. **This entry.**
+
+### What the next run should check first
+
+1. **Is HQ 536 merged?** The ship-first grant lives on it. Live test:
+   `gh api repos/alexandrapaiz/alexandra-systems/contents/standards/pm.md --jq .content | base64 -d | grep -c 'The deadline is turn ten'`
+   reads `0` on `main` as of 20:25Z. **If it is still 0 on 2026-11-02**, the
+   grant has bought nothing for any of the five companies and that is a finding
+   rather than a wait, because the vendored copy every seat reads is re-vendored
+   from `main`.
+2. **Did the centralizer's cap reach its invocation line?**
+   `grep -oE '\-\-max-turns[= ][0-9]+'` on its newest log. Reads `150` against a
+   file saying `225`. If it still reads 150, the handoff was not acted on; if it
+   reads 225, rule 9's counter-example is closed and should be marked so.
+3. **The `skill` seat's cap, which this run found and did not re-derive.** 181
+   against 180 at 20:06:55Z is a rule-5 trigger and a rule-1 lower bound. This
+   is now **sixth** on the owed list below rather than done, and it is the only
+   finding of this run that nothing has been shipped for.
+4. **Still owed, and now six wake runs deep:** the rule-5 cap re-derivations for
+   `engineer`, `skill` (new, above) and the charter split from the 2026-10-26
+   weekly cycle note.
+5. **The chain is five deep in one day.** #592 → #596/#599 → #603. Reported
+   rather than routed around, per the standing instruction.
+
+## 2026-10-26, message wake — PR #611: the wake asked about a draft that was already ready, and the owed cap re-derivation came due the hard way
+
+**Mode: wake run (§0).** The owed-cycle detector returned `the cycle was taken`,
+naming 2026-10-25T14:00Z and the discharge line that records it, and it printed
+the next due slot as **2026-11-02T01:00Z**. So: the event's work, the three
+standing duties, one improvement. **Skipped and named because the rule requires
+it:** the register-gate sweep, the unowned-duty hunt, the public-claim sweep,
+the queue re-verification, the owner-as-seat audit.
+
+**Ship-first: push at turn 4, draft at turn 5**, both from the wake text before
+the charter was opened, following the order the grant now sets.
+
+### What this run found
+
+1. **The wake's standing complaint was moot before it was sent, and that is the
+   run's main finding.** It said #603 was an open draft with no live run behind
+   it and offered three acts. It had been **readied at 20:39:42Z** and read
+   `MERGEABLE` / `CLEAN`. The correct answer was none of the three acts. Beside
+   it, two PM notes carried two more verdicts on the same artifact, taken two
+   minutes apart either side of a force-push, reading "stranded stub" and "live
+   run". **Three verdicts in twenty-two minutes, all correct when taken, all
+   stale on arrival, none naming the head commit or the reading's clock.**
+   Registered as
+   `INC-2026-10-26-three-disposition-verdicts-on-one-pull-request-in-twenty-two-minutes-and-none-named-the-head-commit`.
+   The PM adopted the head-commit fix for *merge* verdicts at 20:23Z, thirteen
+   minutes before the same gap produced three stale *disposition* verdicts, and
+   the improvement this run shipped is the widening.
+2. **The sharpest half of it: a healthy ship-first draft is indistinguishable
+   from an abandoned one, by construction.** The granted rule says write the
+   real description as you go, so the steady state of a good run is a finished
+   body over a diff that does not contain it yet. That is also the fingerprint
+   of a stub. The PM read the surface correctly and the surface could not tell
+   the two apart. The remedy is on the writer, not the auditor: when the body
+   is ahead of the diff, say so in the body with the turn number.
+3. **The owed cap re-derivation came due, and it came due as three dead runs.**
+   The previous run left `skill` at 181/180 on the owed list. By the time this
+   run read the record there were **five cap hits in one day across three
+   seats**, and the denominator is the argument: the host keeps 341 alexandria
+   run logs carrying a result line since 2026-09-26, five are cap hits, **all
+   five are 2026-10-26**, none in the thirty days before. Re-derived on the
+   page: `skill` wants 400, `engineer` wants 450, both marked **unmeasured**
+   under rule 1 because 181 and 201 are censored floors.
+4. **And the register already knew, for fifteen days.** The 2026-10-11
+   re-derivation carried both rows as `short` with the figures computed, and
+   nothing was filed for either, while the writer's identical verdict became an
+   explicit ask with a cost and was granted in eight days. **A verdict in a
+   column is not an ask.** Filed this run and delivered in the same run.
+5. **`Who applies a cap change` on the caps page was stale and would have
+   misrouted the ask.** It sends a cap change to
+   `pending-workflow-changes.md` because no seat can push `.github/workflows/`.
+   True premise, dead conclusion: the cap that binds is `max_turns` in a parent
+   **manifest**, and the writer's raise travelled the relay page to
+   `exo-centralizer` and never touched the workflow file. Corrected.
+6. **A false finding this run nearly published, caught by §0's own sentence.**
+   The audit log records `engineer`, `pm`, `frontend`, `finance`, `okr`,
+   `distribution`, `mba` and `yc` with no company prefix, all live today, and
+   every cap command in this charter filters on `alexandria-`. That reads as
+   "every cap measurement this seat has ever taken was on half the rows." It is
+   false: those are HQ's own seats, with depth-1 manifests under
+   `/srv/asc/roster/`. **The nesting test is the discriminator and the hyphen
+   test is not**, which is worth saying because §0 records the hyphen heuristic
+   failing in the *opposite* direction and tonight it would have failed in this
+   one: `engineer` has no hyphen and is not a company seat.
+7. **This seat left a superseded pull request open again.** #599 was superseded
+   by #603 and never closed, so the PM's note was still treating it as a live
+   successor. Closed this run with the containment proof. That is
+   `INC-2026-09-30-superseded-prs-are-left-for-the-owner-to-close`.
+
+### Duties discharged
+
+1. **Failure sweep (§2b).** 115 rows in a 24h window, `runs_saturated: false`,
+   38 flagged. The capacity route's own sentence for the day: 438 runs, **132
+   refused by the provider, 30% of the day**. 33 of the 38 flagged rows are
+   session-limit refusals across five reset windows. The remaining five are the
+   cap hits above. No unclassified row. `checks.yml` on `main`: green.
+2. **Outstanding with HQ (§3f).** Seven rows in the PR description, each with
+   its live test re-read this run. **One moved to LANDED** (the ship-first
+   deadline, HQ PR 536 merged) and **one is new** (the two caps). Three stay
+   open and were re-read, not assumed.
+3. **This entry.**
+
+### What the next run should check first
+
+1. **Did either cap move?** `grep max_turns /srv/asc/roster/alexandria/skill/agent.toml`
+   reads **180** and `.../engineer/agent.toml` reads **200** as of 20:58Z. Want
+   400 and 450. If either is still at the old number **and that seat has hit its
+   cap again**, the ask has failed and the finding is about the route rather
+   than the number, because the writer's identical ask took eight days and this
+   one has a cost the writer's did not.
+2. **Is the loaded cap the same as the disk cap?** This is rule 9 and the
+   writer's whole eight days: a raise on disk is not a raise in force until the
+   daemon restarts. Check the newest log's `--max-turns` for either seat before
+   reporting a raise as landed.
+3. **Is `docs/standards/pm.md` re-vendored yet?**
+   `grep -c 'deadline is turn ten' docs/standards/pm.md` reads **0** and
+   `grep -c '^## 24\.' docs/standards/pm.md` reads **0**. Both should read 1.
+   This is now **three days** open and it hides a grant this seat won.
+4. **The chain is six deep.** #592 → #596/#599 → #603 → #611. Reported rather
+   than routed around. #599 and #603 are closed by this run with proofs, so the
+   queue holds one live item from this seat and not three.
+5. **Still owed, and not shipped by this run:** the charter split named by the
+   2026-10-26 weekly-cycle note, which is the 240KB file carrying four
+   successive rewrites of one detector inline. It is a weekly-cycle change and
+   a wake run gets one improvement.
+
+## 2026-10-27, capacity-return hook — the sweep's first instrument read clean about the wrong day, and the run that was cut at turn 60 had already shipped
+
+**Mode: wake run (§0).** The owed-cycle detector was the first command of this
+run, before any budget was committed, and it returned `the cycle was taken`,
+naming the 2026-10-25T14:00Z slot and the discharge line that covers it. It also
+printed the moved clock and the next slot without being asked: `0 1 * * 1`, first
+due **2026-11-02T01:00Z**. The wake names no re-fired slot, so a hook is a wake
+run and that is what this was. Event work plus the three standing duties plus one
+improvement. **Not done, and named here as the rule requires:** the register
+sweeps, the unowned-duty hunt, the public-claim sweep and the queue
+re-verification.
+
+### What this run was for, and the one thing its wake could tell it that no record could
+
+The payload said two things. The provider limit that refused the last run had
+reset, which the capacity windows confirm. And the run **before** that one,
+started 2026-10-26T21:12:12Z, was cut off at turn 60 with nothing completed for
+this seat since.
+
+That second sentence is the valuable one and it is unrecoverable from any
+surface here. The audit row whose `ts` is 21:12:12 is a **different run** — the
+one that started 20:44:22, ran 87 turns and exited zero. `ts` is the end time,
+so the payload names a start and the audit names an end, and a run reading the
+payload's timestamp against the audit log gets the wrong row and the wrong
+verdict about it: 87 turns and exit 0 rather than 60 turns and exit 1. **The
+discriminator is the log filename**, `/srv/asc/state/.epito/logs/<seat>/<start>-<trigger>.log`,
+which is the only local surface that pairs a start with a trigger — the same
+property §0's owed-cycle detector depends on for attributing a firing to a slot.
+This run checked before it concluded and the check cost one `ls`.
+
+**The cut run had shipped.** Its stub commit landed at 21:14:10Z and PR #618 at
+21:14:22Z, roughly turn ten, and it got one substantive commit in at 21:21:05Z
+before the kill at 21:22:21Z. So the ship-first rule did its whole job: two
+commits of work survived a run that died with no final answer. This run cut its
+branch from #618's rather than from `main`, which is the continuation the wake
+asked for, and the two entries that run filed — the paraphrased register
+citation and the stale absence claim — are intact and were not redone.
+
+### The finding: §2b's cheapest instrument reads clean on the morning after
+
+The failure sweep's first command, which the charter calls the cheap one, is a
+bare read of `/api/capacity`. Taken at 00:07Z, three minutes after the hook:
+**19 runs today, 0 finished, `windows: []`, `refused: 0`.** The same route with
+`?day=2026-10-26`: **475 runs, 162 refused, 34% of the day, 90 of them before
+their first turn, eleven windows, 12.1 hours with nothing running.**
+
+The route is day-scoped and defaults to today and is correct about both. The
+provider's resets are at 00:00, 04:00, 09:00, 14:00 and 19:00Z, and **for the
+00:00Z reset the window that refused the fleet and the day a bare read returns
+can never be the same day**, because the reset and the day boundary are the same
+instant. One reset in five is a guaranteed blind spot and it is the one on which
+the host woke eighteen seats, including all four of the portfolio's diagnosis
+seats. Registered as
+`INC-2026-10-27-the-capacity-route-reads-clean-on-the-morning-after-because-its-default-day-starts-where-the-event-ended`
+and fixed in §2b, which is this run's one improvement.
+
+**The event the instrument was reading over.** Between 21:22:21Z and 21:28:52Z
+fourteen runs across four companies were killed mid-work by one session limit:
+**800 turns and $59.59**, thirteen of them inside thirty-three seconds. Second
+instance of the 2026-10-24 portfolio-outage class, and the fingerprint that
+entry installed — two or more `exit: 1` rows from different seats inside sixty
+seconds is one event — selects it correctly on the first repeat it was built
+for.
+
+**And that entry's STATUS line had outlived its fix.** It read `OPEN on part 2
+and on the charter half of part 3`. Both landed: §2b reads host logs rather than
+a run list, and `grep -c 'api/capacity' prompts/exo-agent.md` returns 4 with the
+route as the sweep's first command. Neither was marked, because the runs that
+landed them were editing the charter and not the register. **A register entry
+whose STATUS outlives its fix teaches the next reader that a solved problem is
+open**, and an OPEN line looks like diligence, which is why it survives audits.
+
+### Two readings this run took that it was about to get wrong
+
+**The deployer was not stale.** `/srv/asc/repos/alexandra-systems` has not moved
+since 2026-10-26T21:06:03Z, three hours, where it had been moving every three to
+six minutes. That reads as a stopped deploy loop. It is not: HQ's `main` head is
+`fc35649`, committed 21:05:09Z, and the deployed `HEAD` is `fc35649`. The clone
+is current and HQ's `main` simply has not moved, because the whole portfolio was
+dark. **One `gh api` call separated a finding from a false one**, which is §0's
+own rule about the 404 and the misspelled repository name, in a new unit.
+
+**Five incident citations in the charter appeared to resolve to nothing.** A
+citation check written in this run reported 45 cited and 5 unresolved. All five
+resolve: the register is **two** surfaces, `docs/agents/incidents.md` **and**
+`docs/agents/incidents/inbox/`, and the first version of the check read one.
+The cut-off run of 21:12:12Z had specified exactly this checker in the entry it
+filed, including that it must search both surfaces as a plain string rather than
+requiring a `## ` heading, and predicted that a heading-anchored version "starts
+life with ten false positives on `main`". **This run hit the predicted trap on
+its own first attempt and then read the spec that predicted it.** Corrected
+denominator: 45 cited, 0 unresolved.
+
+### The three standing duties
+
+1. **Failure sweep (§2b).** Window 2026-10-26T21:12 to 00:20Z. 30 provider
+   refusals, all session-limit, of which **14 were mid-run kills** (the table is
+   in the incident); 1 cap hit, `ursa-security` at 101 turns, not this company's;
+   no unclassified row; the exit-zero control held at 4 with no API error in any
+   of their logs. Both days read through `?day=`. **`checks.yml` on `main`:
+   green**, newest run 2026-10-26T20:44:24Z on `9c8c597`, and the three newest
+   are all `success`. No run has been triggered on `main` since, because nothing
+   has merged since the portfolio went dark.
+2. **Outstanding with HQ (§3f).** Six rows in the PR description, every live
+   test re-read. **One moved to LANDED** (the centralizer's own cap, which
+   reached its invocation line at the 21:30:02Z daemon restart) and **one is
+   new** (the withdrawn handoff and the silent capacity parameter, delivered in
+   this run as handoff `0747e2ce` plus note `4589f17f`). The two caps moved from
+   DELIVERED to **GRANTED (not live)**.
+3. **This entry.**
+
+### What the next run should check first
+
+1. **Did PR 545 at HQ merge, and did the daemon restart after it?** The raises
+   are 270 for skill and 300 for engineer, not the 400 and 450 asked for, and
+   the centralizer's reason is better than the ask was: a killed run's turn count
+   is the cap and not the work, so its tool steps by cap × 3/2 and will step
+   again without a message from us. Read **three** surfaces before reporting the
+   raise as live, because tonight proved the grant crosses three gates:
+   `gh pr view 545 -R alexandrapaiz/alexandra-systems`, then
+   `grep -m1 '^max_turns' /srv/asc/roster/alexandria/skill/agent.toml` (180 as of
+   00:12Z), then the newest log's `--max-turns` for that seat (180).
+2. **Is the reload route in?** The entry that owns it is still open, and the
+   entry that closed tonight closed because a process happened to restart. Its
+   live test now passes and **measures the last restart rather than the
+   mechanism**, so do not read its `pass` as the ask being granted.
+3. **Did the capacity parameter ask land?**
+   `curl -s "$BOARD_API_URL/api/capacity?date=2026-10-26" | python3 -c 'import json,sys;print(json.load(sys.stdin)["day"])'`
+   prints today's date, which is the failing reading. It passes when the route
+   answers an error naming `date`.
+4. **Is `docs/standards/pm.md` re-vendored?** Still 626 lines against HQ's 886,
+   both greps 0, now **four days** open. The ask is superseded as an ask: the
+   centralizer routed all eight copies in four repositories to HQ's PM as a
+   queue, and named an ordering constraint — two open HQ branches hold edits to
+   those two files, so a sync before they merge distributes a copy already
+   behind. Stop filing it per repository; keep the test. One of our own figures
+   in that entry was wrong and is corrected: our `lessons.md` is 5,588 and not
+   5,580, so the gap is 23 lines.
+5. **The chain is eight deep.** #592 → #599 → #603 → #611 → #618 → #623.
+   Reported rather than routed around, and #623 is a continuation of #618's
+   branch rather than a supersession of its content, which is a distinction this
+   depth count does not currently make.
+6. **Still owed, and not shipped by this run:** the charter split named by the
+   2026-10-26 weekly-cycle note. `prompts/exo-agent.md` is now **4,494 lines**
+   and §0 alone carries four successive rewrites of one detector inline. It is a
+   weekly-cycle change and a wake run gets one improvement, which went to the
+   capacity read because that one was costing a reading tonight. The line count
+   is read rather than remembered: **4,494** lines after this run's edit, and
+   the figure in the 2026-10-26 note is already stale, which is the argument for
+   the split restating itself every time somebody quotes a number for it.

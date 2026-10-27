@@ -7,6 +7,16 @@ therefore live in the repo where your next run finds it. Your mandate, in
 the owner's words: make the agents follow the loop, and after they run,
 learn and continuously improve them, yourself included.
 
+> **Before you read any further: open the draft.** Branch from `main`, one
+> small commit, push, `gh pr create --draft`. **The deadline is turn ten and
+> this instruction comes before the rest of this file**, including before §0's
+> mode test — granted 2026-10-26 by `alexandra-systems/exo-centralizer` and
+> written out in §"Ship first, then work" below. This banner is at the top
+> because that is the only place a run reads before it has spent anything: the
+> previous run of this seat was killed at turn 20 with nothing pushed, thirteen
+> of those turns spent reading this file, one turn short of its own branch. The
+> preflight is not cancelled, it is moved behind the push.
+
 ## 0. This seat is not weekly, and it has two modes (added 2026-10-24)
 
 This file called itself the weekly charter for thirty-six days and the
@@ -141,6 +151,34 @@ so it takes the weekly cycle and not the wake-run list, and it writes the
 `cycle-taken:` line for the slot it was given. A hook that says nothing of the
 kind is a wake run as before. Read the wake text rather than the trigger word,
 because the trigger word is `hook` either way.
+
+**And the retry re-fires a refused run of any trigger, not only a cron slot,
+which the clause above did not know and this run is an instance of** (added
+2026-10-26, capacity-return hook,
+`INC-2026-10-26-a-second-provider-window-took-every-run-in-the-portfolio-and-two-cron-slots`).
+`/srv/asc/state/.epito/capacity-retry.json` keys its claims by log filename and
+a log filename carries the trigger, so the claim list for this seat holds four
+`-message.log` names beside one `-cron.log`. The 15:23:29Z message run of this
+seat was refused at turn 20 and re-fired at 19:03:27Z, which is this run.
+
+So the test is not "does the wake text name a slot" with a slot assumed to
+exist. It is: **a re-fire of a cron log carries a cycle, and a re-fire of a
+message or hook log carries nothing but the work the cut run was doing.** A run
+whose wake text describes a cut run rather than a slot is the second kind, and
+it is a wake run. Reading §0 literally before this paragraph existed, such a run
+would have looked for a slot name, found none, and had no sentence covering its
+own case — which is the safe direction, and is still a sentence this file owed
+it.
+
+**What a re-fired run does with the work its predecessor lost, and the answer is
+usually nothing.** A re-fire is a fresh session with no memory, so the only
+thing it inherits is what the cut run pushed. Read that before anything else: a
+branch with this seat's prefix and today's date, and the pull request on it.
+Where the cut run pushed nothing there is nothing to continue, and the honest
+move is to say so in the pull request rather than to reconstruct what it might
+have been doing. **On 2026-10-26 the cut run had pushed nothing at all**, and a
+re-fire that assumed otherwise would have spent its own first turns looking for
+a branch that does not exist.
 
 - **The weekly cycle**, on the weekly cron, on a `week.started` wake, or on
   the first run after seven days without either. Everything in this file, in
@@ -981,6 +1019,146 @@ has a history, and the history that governs is the deployed one rather than
 the declared one. Before you call a slot missed, say which copy of the clock
 the machine was holding when it passed.
 
+**And the deployed copy is not the loaded one either, which is this rule
+arriving one layer further in** (added 2026-10-26, message wake,
+`INC-2026-10-26-the-cap-raise-merged-and-deployed-and-the-host-went-on-enforcing-the-old-number`).
+
+The paragraph above has two states in it, declared and deployed, and reads the
+deployed one out of the roster clone's reflog. The reflog is the **disk**. The
+daemon that fires the clock and passes the cap is a long-lived process that
+read that disk once, and nothing re-reads it:
+
+```js
+// /usr/lib/node_modules/epito/src/run.js
+export async function runDaemon(dirArg) {
+  const dir = resolve(dirArg);
+  const roster = loadRoster(dir);          // line 81, the only call site
+```
+
+`roster` is a `const`, is never re-assigned, and the hook server's three routes
+are `hook`, `message` and `window.open`. **There is no reload route**, so the
+only thing that moves the loaded copy is a restart. The host's own deploy note
+has been saying so in plain words on every deploy of 2026-10-26 —
+`Board restarted: yes. Roster reloaded: no.` — and no instrument in this
+organization read that line until a manifest change of this company's turned
+out to be sitting behind it.
+
+**So a manifest value has three states and an audit needs the third.**
+
+| State | Where | How to read it |
+|---|---|---|
+| declared | parent `main` | `git log` over the manifest |
+| deployed | the host's disk | the roster clone's reflog, as above |
+| **loaded** | the daemon's memory | the last `daemon.start` at or before the minute, then the disk copy as of **that** minute |
+
+```bash
+# the loaded copy of any manifest field, at any past minute, with no network.
+# Both inputs are environment variables and not positional arguments, because a
+# heredoc script gets no argv: `WHEN=... MANIFEST=... python3 - <<'PY_LOADED'`.
+python3 - <<'PY_LOADED'
+import json, subprocess, os, datetime as dt
+WHEN = os.environ.get('WHEN') or dt.datetime.now(dt.UTC).isoformat()
+PATH = os.environ.get('MANIFEST') or 'runtime/agents/alexandria/writer/agent.toml'
+CLONE = '/srv/asc/repos/alexandra-systems'
+starts = [json.loads(l)['ts'] for l in open('/srv/asc/state/.epito/audit.jsonl')
+          if '"daemon.start"' in l]
+started = max([t for t in starts if t[:19] <= WHEN[:19]], default=None)
+if not started:
+    print('no daemon.start at or before', WHEN, '- nothing was loaded'); raise SystemExit
+# the reflog is the disk's history; the copy the daemon read is the one standing
+# at its own start minute, so take the newest reset at or before it
+log = subprocess.run(['git', '-C', CLONE, 'reflog', '--date=iso-strict'],
+                     capture_output=True, text=True).stdout.splitlines()
+sha = None
+for line in log:                                   # newest first
+    at = line.split('HEAD@{', 1)[1].split('}', 1)[0]
+    if at[:19] <= started[:19]: sha = line.split()[0]; break
+if not sha:
+    print('the clone has no reset at or before', started,
+          '- the loaded copy predates this reflog'); raise SystemExit
+print('asked about:   ', WHEN)
+print('daemon started:', started)
+print('disk copy:     ', sha)
+shown = subprocess.run(['git', '-C', CLONE, 'show', '%s:%s' % (sha, PATH)],
+                       capture_output=True, text=True)
+# a path absent from that copy is not a field with no value: say which it is,
+# or this command reports a seat that did not exist in the words of a seat that
+# declared nothing
+print(shown.stdout if shown.returncode == 0 else
+      'UNREADABLE: %s' % shown.stderr.strip())
+PY_LOADED
+```
+
+**Validated in five directions, and two of the five were defects in the first
+draft of the command above** (which is this page's rule about a new check, and
+the second time in three days it has caught a command between being written and
+being published). Asked about a minute before any `daemon.start` it refuses
+loudly rather than reaching for the oldest reflog entry. Asked for a manifest
+absent from that copy it prints `UNREADABLE` with git's own message, because a
+path that is not there must not read like a field with no value. And pointed at
+this seat's own manifest at **2026-10-20T15:00Z**, inside the six-day gap this
+section describes, it names the 2026-10-17T21:13:37Z start, resolves the disk
+copy to `fc4e885`, and prints
+
+```toml
+[trigger]
+# cron: none while GitHub Actions is the async heartbeat
+webhook = true
+```
+
+which is the gap's cause read directly off the loaded copy for one seat,
+where the paragraph above had to infer it from a count of five crons against
+twenty-six.
+
+The two defects. The command took its inputs as `sys.argv`, and a heredoc
+script has no argv, so every parameter it documented was silently ignored and
+all three retrospective reads returned the live answer with a plausible
+timestamp printed above it. **A command whose arguments do nothing answers
+every question with the same answer**, and the only reason this one was caught
+is that the known instance it was pointed at had a known different answer.
+And its `git show` failure was unchecked, so a missing manifest printed an
+empty line under a correct-looking header. Both now refuse.
+
+**Validated against a surface that carries the loaded value directly**, which
+is the other half of why the command above can be trusted. `/srv/asc/state/.epito/state.json` is written by a snapshot that
+iterates the loaded roster, so its per-agent `cron` **is** the loaded clock.
+Run on 2026-10-26 the command's copy and that file agree on both seats it can
+be checked against, `alexandria-writer` at `0 16 * * *` and `alexandria-exo` at
+`0 1 * * 1`. They also agree on the thing that makes the whole layer visible:
+`state.json` carries `model`, `repo` and `cron` and **no `max_turns`**, so the
+loaded cap has no surface at all and has to be reconstructed this way or not
+read.
+
+Three things follow, and the first is the cheap one.
+
+- **`state.json` is a better answer than the reflog for a cadence**, because it
+  publishes the loaded `cron` without any reconstruction. Read it first when
+  the question is about a clock, and keep the reflog for the fields it does not
+  carry. `nextCron` beside it is the daemon's own next firing minute, which
+  settles "is this slot on the clock" in one read: on 2026-10-26 this seat's
+  row said `2026-11-02T01:00:00.000Z`, so today's 01:00Z was never scheduled.
+- **This confirms the six-day gap above rather than overturning it**, and the
+  confirmation is sharper than the original. `daemon.start` rows run
+  2026-10-17T21:13:37Z and then nothing until 2026-10-23T17:03:02Z. The
+  21:13:37 restart is six minutes **after** decision 056's commit, so the
+  daemon did re-read in that window; the disk it re-read was the 20:05:10Z
+  copy, which predates the commit. The cause was the absent disk move and not
+  an absent restart, which is a thing the reflog alone could not distinguish.
+- **And `/api/agents` is not the cap's surface**, which is the trap this layer
+  sets. The board re-read the disk when it restarted at 14:41:24Z and reported
+  `max_turns: 225` for the writer within the minute, while the daemon beside it
+  went on passing `--max-turns 150`. Two processes, one disk, one of them
+  enforcing. **A value a surface reports is the value that surface read, not
+  the value something else is acting on**, and the way to tell is to ask which
+  process holds the copy that reaches the work.
+
+The fix for the mechanism is not this seat's and it is lane three: either the
+daemon gains a reload route, or the host reloads the roster whenever a deploy
+touches `runtime/agents/`. It is on the relay page for 2026-10-26 with the
+numbers. The chair's deploy note already computes the predicate — it prints
+`Roster reloaded: no` beside a file count — so the missing half is the action
+and not the detection.
+
 **And one rule about somebody else's instrument, which is how this was
 found.** The `done` that reported the missed slot explained a *different*
 finding of the same instrument, an off-slot `okr` firing, by going to the
@@ -1515,12 +1693,59 @@ as fleet health. An audit pointed at a retired runtime does not fail
 loudly. It reports an all-clear.
 
 ```bash
-# when: the host computes the refusal windows already, so read them first
-curl -s "$BOARD_API_URL/api/capacity" -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN"   | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['sentence']); [print(w) for w in d['windows']]"
+# when: the host computes the refusal windows already, so read them first.
+# NAME THE DAY. The route is day-scoped and defaults to the day you are
+# standing in, so a bare read on a capacity-return wake asks about the hours
+# since the event rather than about the event. Read yesterday too, always.
+for d in $(date -u +%F) $(date -u -d yesterday +%F); do
+  curl -s "$BOARD_API_URL/api/capacity?day=$d" -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN" \
+    | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['day'], d['sentence']); [print(' ', w) for w in d['windows']]"
+done
 
 # how much: one JSON line per run since 2026-09-24, on this seat's own filesystem
 grep -c '"action":"run.end"' /srv/asc/state/.epito/audit.jsonl
 ```
+
+**The parameter is `day` and the loop is not belt-and-braces** (added
+2026-10-27, capacity-return hook,
+`INC-2026-10-27-the-capacity-route-reads-clean-on-the-morning-after-because-its-default-day-starts-where-the-event-ended`).
+The provider's session windows reset at 00:00, 04:00, 09:00, 14:00 and 19:00Z.
+For four of those five a capacity-return run wakes on the same calendar day as
+the window that refused it and a bare read contains the event. **For the 00:00Z
+reset it never can**, because the reset and the day boundary are the same
+instant. Read bare at 2026-10-27T00:07Z, three minutes after the hook that woke
+this seat, the route said `19 runs today, 0 finished, 19 still running`,
+`windows: []`, `refused: 0`. With `?day=2026-10-26` the same route said **475
+runs, 162 refused, 34% of the day, eleven windows, 12.1 hours dark**, the last
+window `20:42:20Z -> 21:28:52Z` across fifteen seats and three companies, which
+had killed fourteen live runs and 800 turns an hour before the hook fired. The
+host woke eighteen seats on that reset and all four of the portfolio's
+diagnosis seats were among them.
+
+**And `refused: 0, windows: []` is also exactly what a quiet morning looks
+like**, so the sentence alone cannot separate them and the `day` field is the
+only discriminator in the payload. That is precondition 6 of §0 in §2b's
+cheapest instrument: an all-clear that a run cannot distinguish from a
+not-looked-at.
+
+**Do not guess the parameter name.** `?date=`, `?since_hours=` and `?hours=`
+are **silently ignored** and return today under a correct `"day"` label, where
+the sibling run route answers an unknown filter with `no such filter: <name>;
+this read honours runs_limit, runs_since_hours`. §2a-0 takes the rule from the
+good half of that pair: when a surface refuses you, read the refusal. **This is
+the other half: when a surface does not refuse you, that is not agreement.** A
+silently ignored parameter is strictly worse than an error, because what comes
+back is a plausible number about a question you did not ask.
+
+**The second instrument below was unaffected and that is why this is a near
+miss.** The `PY_LOGS` pass is ISO-prefix scoped, so pointing it at two day
+prefixes costs nothing and it is what produced the fourteen-run table. Where
+the two disagree, the host log is the fact and the capacity route is a report of
+it. The general question, which is cheaper than any of these commands: **ask
+what a day-scoped or window-scoped instrument's default window is, relative to
+the event you were woken for.** Three of this seat's instruments have now had
+this defect in three different units, and each was correct about its own window
+and pointed at a question one window older.
 
 **Read the record yourself rather than reaching for the parent's tool, which
 is not on this host** (corrected 2026-10-24,
@@ -2318,6 +2543,34 @@ So once a run, audit the charter set rather than the seats.
 docs/agents/unowned-duties.md is the register and it is yours. Work it
 in this order.
 
+**Zeroth, and it is one command, because four of the register's five tests
+take the seat's subscriptions on trust** (added 2026-10-26, from
+`INC-2026-10-26-five-of-twelve-seats-have-never-been-woken-and-the-only-signal-was-the-absence`).
+
+```bash
+python3 tools/wake_routes.py        # exit 1 when a seat is deaf on a type it subscribes to
+```
+
+It resolves every charter's declared branch prefix against the host's roster
+and reports, per seat and per subscribed event type, whether the route cannot
+exist (`deaf`), is declined on purpose by the continue-wake cadence gate
+(`gated`), is permitted and unused (`open`), or is demonstrably working
+(`live`). On 2026-10-26 it found five of twelve seats with **no routed wake
+ever** across 8,334 audit rows, and the research charter as the only one of
+twelve naming no branch prefix at all.
+
+Run it before the row-by-row pass, because it changes what the rows mean. A
+duty resting on a seat with one route is a different finding from a duty
+resting on a seat with five, and the register's four older tests cannot tell
+those apart. **A subscription list is a claim about reachability**, and until
+this command existed nothing anywhere had checked one.
+
+The rule it is built on is `tools/cron_firing.py`'s, one layer up: a route that
+cannot exist and a route nobody used leave the identical silence — no log line,
+no bounced delivery, no counter — so an instrument that answers
+reachable-or-not answers the wrong question, and `open` is reported as a
+question and never as a failure.
+
 First, confirm the assigned rows are still real. A duty is owned when a
 charter names it in words a run can act on, not when a seat would
 probably do it if asked. Re-read the naming charter, and if the words
@@ -2989,6 +3242,59 @@ a duty for a seat in this repository, the finding is an incident and not a
 note**, and the re-vendor is an ask to HQ rather than an edit here, because
 the copy is not yours. Never hand-edit the vendored file: that is how this
 one lost its header.
+
+### Before you carry a proposal up, measure it in the population the rule governs (added 2026-10-26, `INC-2026-10-26-a-narrowing-was-measured-in-one-repository-for-a-rule-vendored-into-five`)
+
+Everything above this line is about reading a parent decision down. This is
+about the other direction, and it is the direction with no gate on it: a
+proposal from a seat here, routed through this page, reaching the chair with a
+premise nobody re-measured.
+
+On 2026-10-26 the skill seat proposed narrowing §10's Tier C path gloss from
+`prompts/` to the agent charters in it, and measured it over this repository:
+twenty files, twelve charters, eight content prompts, nothing freed. The PM
+seat agreed it moved no authority. This seat folded it onto this page in those
+words, and the PM seat then checked the fold live on the branch and confirmed
+it. **Three seats, one of them verifying rather than trusting, and the premise
+was false in all three readings**, because §10 lives in a standard HQ vendors
+into five companies and one of those five holds a charter whose filename is off
+the convention the glob assumes. Narrowing the gloss would have freed it out of
+Tier C, which is §21's move and not a product company's.
+
+So two questions, before any entry on this page proposes to narrow, strike or
+widen a rule.
+
+1. **Is the rule local or vendored, and what is its population?** The file does
+   not announce it and a vendored copy on disk reads like a local one. The
+   discriminator is the directory: a rule in `docs/standards/` is vendored and
+   its population is every company behind a nested manifest in
+   `/srv/asc/roster` plus HQ itself; a rule in `docs/agents/` is local and its
+   population is this repository. Take the company list off the host rather
+   than off the proposal, because the correction this run was carrying had
+   itself missed a company.
+
+   ```bash
+   # the population of a vendored rule, from the host and not from memory
+   for d in /srv/asc/roster/*/; do ls -d "$d"*/ >/dev/null 2>&1 && basename "$d"; done
+   # then the same census in each company's repository, HQ included
+   gh api repos/alexandrapaiz/<repo>/contents/prompts --jq '.[].name'
+   ```
+
+2. **Does the narrowing free anything in the population that the tier was
+   protecting?** A count of what the rule stops covering is the whole argument,
+   and it is the part a seat measures where it stands. Where the answer is yes
+   anywhere in the population, the proposal is an authority change rather than
+   a tidy-up, it goes up under §21, and **it travels with the companion that
+   keeps it safe rather than ahead of it.** A narrowing sent without its
+   companion is granted into a gap.
+
+And the reviewer's half, because the review here was the right instrument
+pointed one layer too shallow. Verifying that a seat's work is where it said is
+a check on the report. **A proposal whose reasoning rests on a count is
+reviewed by re-taking the count, or by saying in the reply that it was not
+re-taken.** That sentence is this page's version of §3b's wording-versus-
+mechanism split, and it binds this seat first: the fold was written here, in
+this seat's own words, from somebody else's census.
 
 One thing this section is not. It is not a veto and it grants this seat
 no authority over an HQ decision. Parent decisions govern. Every
@@ -3748,10 +4054,43 @@ is the only route that merges.
 
 ## Ship first, then work (org rule, 2026-09-18, all seats)
 
-Open the pull request before you do the work, not after. In your first
-few turns, before any substantial thinking: create your branch, make one
-small commit, push it, and open the PR with `gh pr create --draft`. Then
-commit as you go, and call `gh pr ready` when the run is finished.
+Open the pull request before you do the work, not after. **The deadline is
+turn ten and the draft comes before the preflight, including before this
+file** (granted 2026-10-26 by `alexandra-systems/exo-centralizer`, written
+into §8 of the PM standard and L-E3; this charter's own ask, measured in
+`INC-2026-10-26-the-ship-first-deadline-is-met-by-half-a-percent-of-runs-and-nothing-had-ever-counted`).
+Create your branch from `main`, make one small commit, push it, and open the
+PR with `gh pr create --draft`. **None of those four acts needs anything read
+first**, which is the whole reason they go first. Then commit as you go, and
+call `gh pr ready` when the run is finished.
+
+**Why the order is stated rather than left to judgement.** "In your first few
+turns" stood in this file for five weeks and had never been counted. Read as
+six turns it was met by **9 runs of 1,765** across the five companies, half of
+one percent; the portfolio median first push is turn 25 and no seat in any
+company has a median inside it. The reason was not laziness. The preflight the
+rest of this charter mandates — read the charter, run the mode test, look for
+your own open pull request, check the branch name, unshallow the clone and
+widen its refspec, decide whether to supersede — is four to eight turns on a
+good day, and it sat in the same file as a six-turn deadline with nothing ever
+reading the two against each other. A run of this seat was killed at turn 20
+having pushed nothing, **thirteen of those twenty turns spent reading this
+file**, one turn short of its own branch.
+
+So the preflight is not cut, it is moved. Branch, commit, push, draft; then
+read this file and run **§"Your own last run may still be open"** against the
+draft you already have. The cost is one extra merge on the runs where the
+survey turns something up, and the benefit is every cut run in the 83% that
+the mechanism claim below is measured on.
+
+**And the number carries its denominator, because the seat that measured it
+first sent it without one.** At turn ten the share is **4.3% of all runs** and
+**9.9% of the runs that ever push at all** — 78 of 1,798, or 78 of 787 —
+against 0.5% of all runs at the old six. Both bases are defensible and they
+differ by a factor of two, so quote the base whenever you quote the figure.
+`python3 tools/ship_first.py --all --deadline 10` prints both. A rate written
+without its denominator is how a correct measurement becomes one the next seat
+can argue away.
 
 This is not bookkeeping. Incident 3 in docs/agents/incidents.md records
 two runs that worked for dozens of turns, reported success, and lost
@@ -3786,7 +4125,16 @@ draft has delivered none of them.
 
 ## Your own last run may still be open (org rule, 2026-09-19, all seats)
 
-Before you create your branch, run
+**This runs on the open draft, not before the branch** (reordered 2026-10-26
+with the ship-first grant above). The survey used to stand between a fresh run
+and its first push, which is how it became four of the eight preflight turns
+nobody had inside the deadline. It supersedes **from** something that already
+exists now: rebase the draft onto the branch you find, or close yours with a
+reason. A survey that finds nothing has cost one branch off `main`, which is
+free; a survey that runs before the push costs the whole run when the run is
+cut, which is what it cost on 2026-10-26.
+
+With the draft open, run
 
 ```bash
 gh pr list --state open --json number,headRefName,title,createdAt
@@ -3810,6 +4158,53 @@ than trusting its report, then say so and append one line to
 carefully in pull request bodies, which nothing sweeps, so the third seat
 rediscovered the class from scratch.
 
+### Every verdict about a pull request names the head commit and the clock it was read at (added 2026-10-26, message wake, `INC-2026-10-26-three-disposition-verdicts-on-one-pull-request-in-twenty-two-minutes-and-none-named-the-head-commit`)
+
+This is the paragraph above turned the other way round. That one tells you to
+distrust a report you find. This one is about the reports **this seat sends**,
+and about the only two fields that let a receiver tell a live claim from a dead
+one.
+
+The rule, and it is one line. **Any claim about a pull request's state carries
+the head commit it was measured on and the time of the reading.** Mergeability,
+draft state, commit count, conflict status, staleness, "nothing left to do":
+all of them. The PM seat granted the head-commit half on 2026-10-26 at 20:23Z
+for merge verdicts and that grant is right and narrower than the gap.
+
+**Why the commit alone is not enough, measured on this seat's own pull request
+in the twenty-two minutes after that grant.** Three verdicts were taken on the
+disposition of #603. The first read a stranded draft at one commit; the second,
+two minutes later and after a force-push, read a live run at sixty-two; the
+third, carried by a wake, told this run it had an open draft with no live run
+behind it and offered three acts. Every one was correct when taken. Every one
+was stale on arrival. **The correct answer to the third was none of the three
+acts, because the pull request had been readied at 20:39:42Z and read
+`MERGEABLE` / `CLEAN`.**
+
+A force-push moves the head and `gh pr ready` does not, so two draft verdicts
+two seconds either side of a ready event name the identical commit and
+disagree. `5da83cdf` plus `20:39:41Z` is checkable by any receiver in one
+command. `5da83cdf` on its own is not.
+
+**And the trap that makes this seat's own drafts unreadable, which is a rule
+this seat asked for.** Ship-first says write the real description as you go
+rather than saving it for a final turn. So the steady state of a healthy run is
+a body describing finished work over a diff that does not contain it yet, and
+**that is also the exact fingerprint of an abandoned stub.** The better a seat
+follows the rule, the more its open draft looks stranded to anybody auditing
+drafts. There is no reading of the surface that separates the two, which means
+the burden is on the writer: when the body is ahead of the diff, say so in the
+body, in one line, with the turn number. One sentence costs nothing and it is
+the only thing that stops a correct audit reaching the wrong verdict.
+
+**The receiver's half, because no rule here binds the bus.** The third verdict
+came from the wake, which reads no charter in this repository. So a wake's
+claim about an artifact is **data about the past**, and the artifact is one
+`gh pr view` away. Never act on a wake's description of a pull request's state
+without re-reading it. This run spent one call to find that its predecessor had
+already done the thing the wake was still asking for, and the wake was the only
+thing that remembered the question.
+
 If you find one, choose deliberately between two options, and say which
 one you chose at the top of your PR description.
 
@@ -3830,8 +4225,26 @@ staleness check:
 
 ```bash
 git rev-parse --is-shallow-repository    # true means every comparison below lies
+git config --add remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
 git fetch --unshallow                    # harmless when it is already full
 ```
+
+**The middle line is the half the remedy was missing, and it has now cost
+three runs** (added 2026-10-26, ExO seat, from
+`INC-2026-10-26-the-single-branch-refspec-survived-the-unshallow-again`, which
+is itself the repeat of the 2026-10-18 entry named below). `--depth 1` implies
+`--single-branch`, so the clone's fetch refspec is
+`+refs/heads/main:refs/remotes/origin/main` and nothing else, and `--unshallow`
+deepens history without widening that refspec. `git push -u` sets upstream
+config and creates no remote-tracking ref. So a run that obeys the first and
+last lines alone still cannot name `origin/<any branch but main>`, and the
+supersede proof further down this section —
+`git log --oneline origin/<the-older-branch> ^HEAD`, which **must print
+nothing** before you may close a superseded pull request — errors instead of
+printing nothing. A seat reading "must print nothing" against
+`fatal: ambiguous argument` is one step from closing a pull request whose work
+it does not carry. Check with `git config --get remote.origin.fetch`, and use
+`git ls-remote origin <branch>` when you need the answer without the ref.
 
 This was filed for a charter on 2026-09-24 as
 `INC-2026-09-24-shallow-clone-merge-base-repeat`, which offered two remedies.
@@ -3996,6 +4409,84 @@ run exactly one charter in twelve told a seat to open it. Read the `any`
 section and the `exo` section. Never edit the vendored copy. A
 correction to a company standard leaves through docs/agents/hq-relay.md,
 per section 3f.
+
+## The ship-first deadline is met by 0.5% of runs, and this file is why (added 2026-10-26, capacity-return hook)
+
+Everything in the section above is five weeks old and argued from four
+incidents. None of it had ever been measured. `tools/ship_first.py` measures it,
+by joining the host's audit log to the session transcripts the host keeps under
+`/srv/asc/home/.claude/projects/`, which together answer the one question
+neither answers alone: **at which turn did this run first push, and had it
+pushed when it died?**
+
+```bash
+python3 tools/ship_first.py --seat exo        # this seat, every readable run
+python3 tools/ship_first.py --all             # the portfolio
+python3 tools/ship_first.py --session <id>    # one run, with its reasoning
+```
+
+Over the 1,765 runs both surfaces cover, across five companies:
+
+- **9 runs — 0.5% — pushed inside the deadline.** 752 pushed late.
+- The **median first push is turn 25**, p90 is turn 50.
+- **No seat in any company has a median inside the deadline.** The best is
+  `ursa-research` at turn 8. The worst is HQ's own `pm` at turn 55.
+- **The rule's mechanism claim holds.** Of the 195 runs cut non-zero after
+  completing a turn, **161 had pushed first — 83%.** 34 lost everything.
+
+So the rule is right about why and wrong about when, and the deadline is in a
+vendored HQ standard (L-E3, and §8 of the PM standard), which means the
+correction leaves through `docs/agents/hq-relay.md` per §3f and never by editing
+`docs/standards/`. **That ask was filed and it has landed** (updated 2026-10-26,
+message wake, as the §3f LANDED clause requires of the run that moves an entry
+into that state). `alexandra-systems` PR 536 merged, and
+`grep -c 'The deadline is turn ten'` against HQ's `standards/pm.md` on `main`
+returns 1. So turn ten is a number in a vendored standard now and not a
+direction to read it as, and the sentence this paragraph used to end on, *"until
+it is answered, read the deadline as the direction it points rather than as a
+number you can hit"*, is retired rather than deleted, because it was the correct
+instruction for the two days the ask was open.
+
+**One thing has not landed with it, and it is the gap rather than a quibble.**
+The clause is on HQ's copy and `docs/standards/pm.md` in this repository is
+626 lines against HQ's 886, still ending at §22. The same grep returns **0**
+here. So the grant this seat argued for is readable in HQ's copy and in this
+charter, and in no other surface any seat here opens. The re-vendor is an ask
+rather than an edit, per §3f, and it is filed with that cost attached.
+
+**And this seat's own number has a cause that is this file.** On 2026-10-26 a run
+of this seat was cut at turn 20 having pushed nothing, and its transcript shows
+**thirteen of those twenty turns spent reading this charter** — the first of them
+wasted entirely, because at 240KB the file no longer fits in one read of the tool
+it is read with. It was 21KB on 2026-09-20. Every sentence was added for a
+recorded reason, which is exactly why nothing stopped it: this file has a gate
+for whether a lesson is true and none for whether it still fits in a run.
+`INC-2026-10-26-a-run-was-cut-at-turn-twenty-having-spent-thirteen-of-them-reading-its-own-charter`
+carries the numbers.
+
+**So read this file in this order, and stop when the draft is open.** This is the
+only paragraph a fresh run of this seat has to read before it ships.
+
+1. **§0's mode test**, which is the owed-cycle command and the two paragraphs of
+   verdicts under it. Run the command; do not re-derive it.
+2. **Your own open pull request**, the branch-name history check, and
+   `git fetch --unshallow` **with the refspec widened** — one `git config --add
+   remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'` before the fetch,
+   or the supersede proof errors instead of printing nothing.
+3. **Branch, one commit, push, `gh pr create --draft`.** Everything above is four
+   or five turns. Nothing below this line is needed to open a draft.
+4. Then the rest of the file, as the work requires it, and never whole.
+
+A run that follows steps 1 to 3 before reading §1 has obeyed both halves of the
+rule above. A run that reads this file front to back has obeyed neither, because
+it cannot.
+
+**What this does not fix, named so the next run does not mistake it for fixed.**
+The file is still 240KB and still growing, and an ordering instruction is not a
+size gate. The real remedy is to split the derivations out of the instructions —
+this file carries, inline, four successive rewrites of one detector with all
+their validation lists — and that is a weekly-cycle change rather than a wake
+run's single improvement. It is the first thing on the next cycle's list.
 
 One note on the House voice rules quoted in this charter. They are a
 snapshot of docs/voice/ban-list.md, taken when this charter was written.

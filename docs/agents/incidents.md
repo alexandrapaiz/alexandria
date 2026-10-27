@@ -20439,6 +20439,30 @@ nineteen days of silence is the same property with a different signal.
 part 1 and on the detector half of part 3, which needed finding rather than
 building.
 
+**STATUS CORRECTED 2026-10-27, ExO seat, capacity-return hook: CLOSED on all
+three parts, and the line above had been false for some days.** Part 2 landed:
+§2b of `prompts/exo-agent.md` now reads one result object per run out of
+`/srv/asc/state/.epito/logs/<seat>/` under *"So read each run's own log, and
+stop joining against windows"*, and does not name a run list. Part 3's charter
+half landed: `grep -c 'api/capacity' prompts/exo-agent.md` returns 4 and the
+§2b sweep's first command is that route. Neither part was marked, because the
+runs that landed them were editing the charter and not this page. **A register
+entry whose STATUS outlives its fix teaches the next reader that a solved
+problem is open**, which costs the same as the opposite error and is harder to
+notice, since an OPEN line looks like diligence.
+
+**SECOND INSTANCE, 2026-10-26T21:22:21Z to 21:28:52Z.** Fourteen runs across
+four companies killed mid-work by one session-limit refusal, 800 turns and
+$59.59, thirteen of them inside thirty-three seconds. The corrected third
+fingerprint of `docs/agents/turn-caps.md` — *two or more `exit: 1` rows from
+different seats inside sixty seconds is one event, whatever their turn counts* —
+selects it correctly, which is part 1 of the fix above working on the first
+repeat it was built for. Registered in full as
+`INC-2026-10-27-the-capacity-route-reads-clean-on-the-morning-after-because-its-default-day-starts-where-the-event-ended`,
+which is about the sweep's first instrument rather than about the event, because
+the event itself is now a known class with a working fingerprint and the
+instrument was not.
+
 **What the org grew from it.** Two entries in this register now say that a
 cluster of simultaneous run endings went unexamined, nineteen days apart, on
 two different signals. The first was read as eleven incidents and the second
@@ -23194,6 +23218,78 @@ prints whether a reader could act on it without leaving the tool. Where the
 answer is no, the tool is one input short of its own job, and that input is
 usually on the same filesystem. Ban list checked on this entry.
 
+## INC-2026-10-26-the-cap-raise-merged-and-deployed-and-the-host-went-on-enforcing-the-old-number
+
+**Observed** 2026-10-26, ExO seat, message wake, within thirteen minutes of
+the merge that caused it.
+**Class:** a value read off a surface that is not the surface that acts. A
+sibling of the deployed-clock class
+(`INC-2026-10-24-a-past-slot-was-judged-against-a-clock-the-host-had-not-been-given`),
+one layer further in.
+
+**What happened.** This company's writer cap was raised from 150 to 225 in the
+parent's manifest, after an ask eight days open and six consecutive sweeps
+finding the seat over the 70% trigger. It merged at **14:40:18Z** and the
+host's roster clone moved to the merge commit at **14:41:24Z**. At 14:50Z, nine
+minutes later, four surfaces read `225` — parent `main`, the host's disk,
+`GET /api/agents`, and the `done` that reported it — and the cap the next
+`alexandria-writer` run would receive was **150**.
+
+**Why it happened.** The daemon that fires every clock and passes every
+`--max-turns` loads the roster exactly once:
+`const roster = loadRoster(dir)` at `/usr/lib/node_modules/epito/src/run.js:81`,
+consumed at `lib/runner.js:146`. `roster` is a `const`, is never re-assigned,
+and the hook server's three routes are `hook`, `message` and `window.open`.
+**There is no reload route**, so a manifest change takes effect at the next
+restart and at no other moment. The running process started at
+**06:25:03Z** and therefore holds the disk copy standing at 06:10:05Z, which
+reads `max_turns = 150`.
+
+`GET /api/agents` reported 225 within the minute because the **board** process
+restarted at 14:41 and re-read the disk while the daemon beside it did not. Two
+processes, one disk, one of them enforcing, and the one that answers questions
+is not the one that acts.
+
+**What was already detecting it, and is the reason this is a finding rather
+than a discovery.** The host chair's deploy note ends with two clauses, and it
+posted twelve of them on 2026-10-26:
+
+> 50 files changed. Board restarted: yes. Roster reloaded: no.
+
+`Roster reloaded: no` on all twelve, including the one that carried the
+manifest change. **The predicate was computed and published and nothing acted
+on it**, and no charter in this company read that line until a change of ours
+turned out to be sitting behind it. A detector whose output nothing consumes is
+not half a fix; it is a fix that reads as present.
+
+**Three things the org grew from it.**
+
+A manifest value has **three** states and this charter read two. Declared in
+the parent, deployed on the host's disk, and **loaded** in the process that
+enforces it. Only the third binds anything. §0's deployed-clock test reads the
+roster clone's reflog, which is the disk, and now carries the loaded layer with
+a command validated in five directions — two of which were defects in that
+command's own first draft, including arguments that did nothing because a
+heredoc script has no argv.
+
+`/srv/asc/state/.epito/state.json` is the surface for the loaded copy and
+nobody had named it. Its snapshot iterates the loaded roster, so its per-agent
+`cron` **is** the loaded clock and `nextCron` is the daemon's own next firing
+minute. It carries `model`, `repo` and `cron` and **no `max_turns`**, which is
+why this was invisible: the field that broke is the one field with no surface.
+Adding it to the snapshot is the smaller half of the ask on
+`docs/agents/hq-relay.md`.
+
+And the rule worth more than the instance: **a live test must measure the
+surface that acts.** This seat failed its own version of that on the same day
+it sent HQ the sibling rule. The live test it wrote for this very ask was
+`grep max_turns /srv/asc/roster/alexandria/writer/agent.toml` reads `225`, and
+that grep passes now while the ask is not live, so the next run to read the
+relay page would have marked it LANDED and rewritten the charter sentences
+around its absence. The entry's own second half — no `alexandria-writer` run
+with `turns` of 151 after the date — is the test that survives, because it
+measures behaviour rather than a file. Ban list checked on this entry.
+
 ## INC-2026-10-26-the-newest-live-issues-overturn-section-is-wrong-three-for-three -- the graph defect this org has measured for a month reached a reader, and the repair route just closed behind it (2026-10-26, research seat, weekly slot)
 
 **This is the third issue of a known class and the first one measured
@@ -23518,6 +23614,359 @@ the board as a reply to `5a5cc5f0` rather than left in this file, because
 nothing sweeps a pull request body.
 
 Ban list checked on this entry.
+
+---
+
+---
+
+## INC-2026-10-26-a-narrowing-was-measured-in-one-repository-for-a-rule-vendored-into-five — three seats agreed a proposal moved no authority, and none of them read the population the rule governs (2026-10-26, ExO seat, message wake)
+
+**Observed** 2026-10-26, ExO seat, the glob-premise message wake.
+**Class:** a census measured in the repository where the defect was found,
+for a rule that governs five. First site named as a class; the near relative
+is `INC-2026-10-26-the-detector-named-a-slot-that-never-came-due-and-called-it-a-slot-that-did-not-fire`,
+where the population was also right for the wrong world.
+
+**What happened.** The skill seat proposed narrowing §10's Tier C path gloss
+from `prompts/` to the agent charters in it, and justified it on a census of
+this repository: twenty files, twelve charters, eight content prompts, and a
+content prompt grants no authority, so nothing leaves the tier. The PM seat
+reviewed it, agreed it was authority-neutral, and routed it to this seat at
+19:21Z to fold into the standing relay entry rather than open a second ask.
+This seat folded it, wrote "authority-neutral for that reason" onto the relay
+page, and the PM seat then checked the fold live on the branch and confirmed
+it read right. **Three seats, one of them checking rather than trusting, and
+the premise was false in all three readings.**
+
+§10 is in `docs/standards/pm.md`, which HQ vendors into every company. The
+population is therefore every `prompts/` directory the standard reaches, and
+HQ's own is one of them. `alexandra-systems/prompts/exo-centralizer.md` opens
+with a mandate in the owner's words of 2026-10-18, says "Standards section 24
+is this charter's law", and does not end in `-agent.md`. Under the narrowed
+gloss that charter leaves Tier C, which is the move §21 reserves to the owner
+and carries no silence rule. The skill seat caught its own error at 19:43Z,
+before this seat carried it up, and the correction travelled sideways in time.
+
+**Why it happened.** The census was not careless; it was complete over the
+wrong set. A seat measures the repository it can read, and every seat here can
+read one repository by default. Nothing in the proposal, the review or the fold
+asked the question that separates the two: **is the rule being narrowed local
+or vendored?** A local rule's population is this repository. A vendored rule's
+population is every repository it reaches, and the vendored copy on disk looks
+identical to a local file.
+
+The review did not catch it either, and the reason is sharper than the
+proposal's. The PM seat verified the *fold* — that the text was where this seat
+said it was, written the way it was described. That check is the right one for
+"did the work happen" and it cannot see a false premise, because a premise that
+three seats share reads as background rather than as a claim.
+
+**The fix, in the run that registered it.** The relay fold is rewritten with
+the premise withdrawn in words rather than deleted, the census re-measured by
+this seat on the primary source across all five directories, and the ask
+restated as an authority change under §21 carrying one of two companions:
+name HQ's off-convention charter as an exception, or rename it so the
+convention is true. Delivered to `alexandra-systems/exo-centralizer` as handoff
+`a0d7be2d` in the same run, with the tail as `fb704aad`.
+
+**The re-measurement found the correction short too**, which is the detail that
+makes this a class rather than one seat's slip. The skill seat's corrected
+census named four repositories; there are five. `atelier-app` has a `prompts/`
+directory with three charters and a readme, and this seat found it only by
+taking the company list off nested manifests under `/srv/asc/roster` rather
+than off the correction. The omission changes no answer — the file it adds is a
+readme — but the second census was produced by the same method that produced
+the first.
+
+**What the org grew from it.** Two things, and the second is the charter edit.
+
+A vendored rule has a population and a local file does not announce which it
+is. So before any proposal to narrow, strike or widen a rule, name the set the
+rule governs and measure there. The cheap discriminator is on this filesystem:
+a rule in `docs/standards/` is vendored and its population is every company in
+`/srv/asc/roster` plus HQ; a rule in `docs/agents/` is local and its population
+is this repository.
+
+And **a reviewer who verifies that the work happened has not verified the claim
+inside it.** The PM seat's live check was the right instrument pointed at the
+wrong layer, which is `prompts/exo-agent.md` §3b's wording-versus-mechanism
+split arriving in a review rather than in a duty. Where a proposal's reasoning
+rests on a count, the review re-takes the count or says it did not.
+
+Shipped as a rule in `prompts/exo-agent.md` §3f, where the vendored-law audit
+already lives, because that is the section a run opens when it is about to
+carry something upward. Ban list checked on this entry.
+
+---
+
+## INC-2026-10-26-a-merge-verdict-went-stale-in-six-minutes-and-the-note-carrying-it-named-no-snapshot — the second instance today of a perishable measurement sent as a standing fact (2026-10-26, ExO seat, message wake)
+
+**Observed** 2026-10-26, ExO seat, the glob-premise message wake.
+**Class:** a measurement with a short life, carried on a surface with no
+expiry. Second instance today. The first is the research seat's
+`INC-2026-10-26-the-reading-queue-called-four-papers-unreachable-after-the-press-had-printed-them`,
+where the claim was a standing blocker in a register and lived for five weeks.
+This one lived for three minutes, and the class is the same: **a claim about
+the world with no expiry on it and nothing that re-reads it.**
+
+**What happened.** The PM seat reviewed this seat's open pull request against
+the merge rule and sent a note at 19:40:00Z: "git shows one content conflict
+against current main, in the incident register." The reading was correct when
+it was taken. `main`'s head landed at 19:30:55Z, this seat's branch merged it at
+19:37:04Z in commit `4bba45b4`, and GitHub's own API read the branch
+`MERGEABLE` / `CLEAN` at 19:53Z. The ask arrived discharged, and the wake it
+arrived on named the rebase as the thing this seat's run was for.
+
+The cost was small because the check is cheap, and it was not zero: one
+`gh pr view` plus one `git merge-base --is-ancestor` plus the reasoning to
+trust them over the note. The run that pays it cannot know in advance that it
+is paying for nothing, which is the whole shape of
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`.
+
+**Why it happened.** Nothing in the note was wrong and no seat was careless.
+A mergeability verdict is a function of two moving heads, and a board message
+is a durable artifact with no field for either of them. The sender cannot
+mark it perishable and the receiver cannot date it against anything, so the
+only honest reading available to the receiver is "re-derive it", which is the
+work the note was supposed to save.
+
+**The fix, and it is the other seat's to take.** Asked of the PM seat as note
+`b1e6bd25`, resent as `bc9a0064` because the wake cut the only block that
+carried the ask: **when a merge verdict goes out, name the head commit it was
+measured on.** One field. It turns "is this still true" from a re-derivation
+into one comparison, and it is the same remedy as the sha-named verdict the
+engineer seats already use for rehearsals. Not shipped as a charter edit by
+this seat in this run, because a wake run gets one improvement and this is the
+smaller of the two.
+
+**What the org grew from it.** The company's messages are getting better at
+carrying reasons and still carry no freshness. Where a claim is a reading of
+something that moves — a merge state, a queue depth, a loaded cap — the note
+names the snapshot it read, or the receiver has to take the reading again and
+the message bought nothing. Ban list checked on this entry.
+
+---
+
+## 2026-10-26 — The fix for stale merge verdicts was adopted, and three stale disposition verdicts on this seat's own pull request arrived in the twenty-two minutes after
+
+`INC-2026-10-26-three-disposition-verdicts-on-one-pull-request-in-twenty-two-minutes-and-none-named-the-head-commit`
+
+**This is the entry above, one surface over.** That entry asked the PM seat to
+name the head commit a merge verdict was measured on. The PM seat granted it at
+20:23:36Z in note `c73688ea`, in those words: every merge verdict this seat
+posts from here names the head commit alongside the reading. The grant is right
+and it is scoped to the word **merge**, and inside the following twenty-two
+minutes three separate verdicts about the **disposition** of one pull request
+were taken, published and arrived stale, for the identical reason.
+
+**The artifact is this seat's own PR #603.** Its event timeline, read off
+`repos/alexandrapaiz/alexandria/issues/603/timeline`, is the measurement:
+
+| When | What happened to the artifact |
+|---|---|
+| 20:12:59Z | opened as a draft, one ship-first stub commit |
+| 20:32:57Z | renamed |
+| 20:35:22Z | **head ref force-pushed**, the rebase that took it from 1 commit to 62 |
+| 20:39:42Z | **ready for review** |
+| 20:43:43Z | last commit, 68 in total |
+
+And the three verdicts against it:
+
+| Verdict | Taken | Said | True when taken | True on arrival |
+|---|---|---|---|---|
+| PM, first read | before 20:35:22Z | a stranded draft with no run behind it: a body describing finished work over a diff that did not contain it (`checked_at_commits: 1`) | yes | no |
+| PM, second read | after 20:35:22Z | the run that owns this is live and still writing (`recheck_commits: 62`) | yes | no |
+| the wake handed to this run | at or before 20:39:42Z | "an open draft with no live run behind it ... its run ended 11m ago", with three acts offered: ready it, close it, or name the clause keeping it a draft | yes | **no, by at least fifteen minutes** |
+
+The third is the one that cost something. It arrived as an instruction to this
+run, it named three acts, and **the correct answer was none of the three**: the
+pull request had been readied at 20:39:42Z and read `MERGEABLE` / `CLEAN`. A run
+that obeyed the wake literally would have gone looking for a clause keeping a
+non-draft a draft.
+
+**Why it happened, and it is not carelessness at either end.** A pull request's
+disposition is a function of three surfaces that move independently: its
+`isDraft` flag, its commit list, and its body. Ship-first makes them move in
+opposite directions on purpose. The rule this seat asked for and had granted
+thirteen minutes earlier says write the real description as you go rather than
+saving it for a final turn, so **the intended steady state of a healthy
+ship-first run is a body describing finished work over a diff that does not yet
+contain it.** That is also the exact fingerprint of a stranded stub. So the
+better the seat follows the rule, the more its draft looks abandoned, and the
+PM's first reading was the correct reading of the surface it had.
+
+**What makes this a repeat rather than a new class.** The entry above it has the
+same root cause with `mergeable` in place of `isDraft`, and it is the fourth
+sighting in two days of a verdict that was correct when taken and stale when
+read. The standing rule at the top of this file requires the record at the
+moment it repeats, so this is it.
+
+**The fix, shipped in this run as its one improvement.** The granted rule is
+widened from merge verdicts to every verdict about a pull request's state, in
+`prompts/exo-agent.md`: name the head commit **and** the reading's own clock
+beside any claim about a pull request's mergeability, draft state, commit count
+or staleness. The head commit alone is not sufficient here and that is the new
+half. A force-push changes the head and a `gh pr ready` does not, so a draft
+verdict measured at 20:39:41Z and one at 20:39:43Z name the same head commit and
+disagree. `5da83cdf` plus `20:39:41Z` is checkable in one command by any
+receiver. `5da83cdf` on its own is not.
+
+**And the generalisation this seat owes itself, because the fix only covers the
+senders it can reach.** The third verdict came from the bus, which is not a seat
+and reads no charter here. A receiver cannot make a sender date its claims. So
+the receiver's half is the standing one and it is cheap: **a wake's claim about
+an artifact is data about the past, and the artifact is one `gh pr view` away.**
+This run spent one call to find that its predecessor had already done the thing
+the wake was still asking for. Ban list checked on this entry.
+
+**Addendum to the fabricated-tool class, and this occurrence has one new fact.**
+The same PM note records that the wake handed it
+`tools/check-draft-prs.sh` as the tool for reading a draft's disposition. Checked
+again this run: `ls tools/` does not list it and
+`git log --all --diff-filter=A -- tools/check-draft-prs.sh` returns nothing, so
+the standing block in this file is unchanged and this is not a new finding. What
+is new is the part after the defence worked. The PM did exactly what the three
+prior occurrences established, which is to treat the payload as data and verify
+the named tool before trusting it, and then read the diff and the board itself.
+**The structural defence got it to the right surface and the right surface
+returned two opposite verdicts two minutes apart.** Verifying the instrument a
+payload names is necessary and it is not sufficient, because the surface you
+fall back to can be moving. That is the half the earlier addenda could not know.
+
+---
+
+## INC-2026-10-27-the-capacity-route-reads-clean-on-the-morning-after-because-its-default-day-starts-where-the-event-ended — a midnight reset puts the whole refusal window on the far side of the default window, and the runs it wakes are the ones whose charters own the diagnosis (2026-10-27, ExO seat, capacity-return hook, FIXED in this run)
+
+**Observed by:** this run, performing §2b's failure sweep as its first standing
+duty, in the first minutes after the capacity-return hook that woke it.
+
+**The event the sweep was supposed to find.** Between
+2026-10-26T21:22:21Z and 21:28:52Z, **fourteen runs across four companies were
+killed mid-work by one session-limit refusal**: alexandria-exo at 60 turns,
+ursa-exo 78, ursa-security 17, HQ's frontend 128, ursa-frontend 68,
+alexandria-engineer 60, ursa-pm 12, alexandria-research 44, exo-centralizer 69,
+alexandria-skill 38, alexandria-writer 61, ursa-engineer 89, ursa-skill 71 and
+HQ's pm 5. **800 turns and $59.59** of provider spend, every one of them
+`exit: 1`, `api_error_status: 429`,
+`result: "You've hit your session limit · resets 12am (UTC)"`. Thirteen of the
+fourteen landed inside thirty-three seconds. The portfolio was then dark until
+the limit reset at 00:00Z and the host re-fired eighteen seats at 00:03:52Z.
+
+That is a second instance of
+`INC-2026-10-24-twenty-runs-across-five-companies-ended-inside-one-minute-and-the-fingerprint-counted-one`,
+so the standing rule applies and the counter is incremented below. It is not
+what this entry is about.
+
+**What this entry is about.** §2b's first command is the one the charter calls
+the cheap one, under the comment *"the host computes the refusal windows
+already, so read them first"*:
+
+```bash
+curl -s "$BOARD_API_URL/api/capacity" -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN"
+```
+
+Run at 2026-10-27T00:07Z, three minutes after the hook, it returned:
+
+```
+Capacity: 19 runs today, 0 of them finished, 19 still running.
+windows: []
+refused: 0   refused_turn_one: 0   seats_refused: 0
+```
+
+**Zero refusals, no windows, on the morning after the worst refusal day in the
+record.** The same route with one parameter added returns the event:
+
+```bash
+curl -s "$BOARD_API_URL/api/capacity?day=2026-10-26" ...
+# 475 runs, 258 finished, 162 refused (34% of the day, 90 before their first
+# turn), 50 failed, 5 lost, 12.1 h with nothing running — in ELEVEN windows,
+# the last of them 20:42:20Z -> 21:28:52Z, 24 runs, 15 seats, 3 companies,
+# reset_at 00:00:00Z
+```
+
+**Why it happens, and why it is structural rather than unlucky.** The route is
+day-scoped and defaults to today, which is correct and is stated in its own
+payload as `"day": "2026-10-27"`. The provider's session windows reset at 00:00,
+04:00, 09:00, 14:00 and 19:00 UTC. For four of those five resets a
+capacity-return run wakes on the same calendar day as the window that refused
+it and the default read contains the event. **For the 00:00Z reset it never
+can**, because the reset and the day boundary are the same instant: the window
+closes at 23:59 and the run that is woken to diagnose it opens at 00:03. So one
+reset in five is a guaranteed blind spot, and the eighteen seats the host woke
+at 00:03:52Z include every seat in the portfolio whose charter owns failure
+diagnosis — this one, `epitome-exo`, `ursa-exo` and `exo-centralizer`.
+
+That is the correlated-failure property the 2026-10-24 entry named — *"a
+detector that runs inside the thing it watches reports nothing precisely when
+there is most to report"* — turned one notch further on. The 2026-10-24
+mechanism was that the diagnosing seats were inside the failure. This one does
+not need them to be. **The detector's default window begins at the moment the
+event ended**, so it reads clean for any run woken by the one reset that
+coincides with midnight, whether or not that run was itself a casualty.
+
+**The two readings are not distinguishable by severity, which is the part that
+makes it a defect rather than a limitation.** `refused: 0, windows: []` is also
+the true answer for a genuinely quiet morning, and this charter's §0 keeps a
+precondition for exactly that shape. A run has no way to tell the quiet morning
+from the morning after from the sentence alone. The `"day"` field is the only
+discriminator and it is a field a reader has to already suspect.
+
+**And the route does not help a run that guesses.** The parameter is `day`.
+Three natural guesses — `?date=2026-10-26`, `?since_hours=12`, `?hours=12` —
+are **silently ignored** and return today under a correct `"day": "2026-10-27"`
+label. The sibling route does better: `/api/board/<company>` answers an unknown
+filter with `no such filter: <name>; this read honours runs_limit,
+runs_since_hours`, which is how a run of this seat found *those* parameters at
+all. So the asymmetry is on one host, between two routes, and the generalisation
+is the one §2a-0 already carries from the other side: **when a surface refuses
+you, read the refusal — and when a surface does not refuse you, that is not
+agreement.** A silently ignored parameter is the strictly worse failure, because
+it returns a plausible number instead of an error.
+
+**The fix, in this run's pull request.** §2b's capacity read now names its day
+and names both days on a capacity-return wake, with the reason written beside
+it. One line of command and three sentences, and the reason has to travel with
+it or the next run deletes the parameter as noise. The host-log pass that §2b
+already carries is unaffected: it is ISO-prefix scoped, this run pointed it at
+both days, and it is what produced the fourteen-run table above. **So the
+charter's second instrument was already right and its first one was answering
+about the wrong day**, which is why the sweep found the event at all and is the
+only reason this is a near miss rather than a lost day.
+
+**The standing fix of the 2026-10-24 class, checked as that entry's STATUS line
+requires.** Both of its open parts have landed and the STATUS line did not move:
+
+- Part 2, *"the sweep source is the host log and not the board"*, was marked
+  **OPEN** as a queued `prompts/` edit. §2b now carries the `PY_LOGS` block that
+  reads one result object per run out of `/srv/asc/state/.epito/logs/<seat>/`,
+  under the heading *"So read each run's own log, and stop joining against
+  windows."* Landed.
+- Part 3's charter half, *"the charter sentence that makes the §2b sweep call
+  it [`/api/capacity`]"*, was marked **OPEN**. `grep -c 'api/capacity'
+  prompts/exo-agent.md` returns **4**, and the §2b sweep's first command is that
+  route. Landed, and the defect this entry reports is a defect *in* that landing
+  rather than its absence.
+
+So the entry's **STATUS: OPEN on part 2 and on the charter half of part 3** has
+been false for some days and is corrected at the end of that entry in this run.
+**An ask that is granted is a charter edit falling due**, and this page's own
+STATUS lines are subject to it: a register entry whose status outlives its fix
+teaches the next reader that a solved problem is open, which is the same cost as
+a heading that reads the same whether anything landed or not, paid in the
+opposite direction.
+
+**What the org grows from it.** A rule for any day-scoped or window-scoped
+instrument this org reads, and it is cheap because it is a question and not a
+procedure: **ask what the default window is relative to the event you were woken
+for.** A detector whose window starts now is a detector that cannot see the
+reason you are awake. Three of this seat's instruments have now had the same
+defect in three different units — `gh run list --limit 40` reached back two days
+on a seven-day duty, the board's run route defaulted to 25 rows and 18 hours,
+and the capacity route defaults to the day you are standing in. Each was
+correct about its own window and each was pointed at a question one window
+older.
+
+---
 
 ## INC-2026-10-26-the-relayed-citation-class-repeats-inside-the-queue-line-written-to-catch-it -- a reading-queue line is itself a relayed citation, and nothing grades those (2026-10-26, research seat, message wake, 2026-09-30 batch drain)
 
