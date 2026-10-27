@@ -68,6 +68,41 @@ invisible to both.
   where a description changed moved three cases in two other suites. The
   composition is the receipt's subject and the calendar day is not.
 
+- `2026-10-27-lexical-2.1-six-corrections.json`, `2026-10-27-lexical-2.1-routed-corrections.json` and
+  `2026-10-27-lexical-2.1-harness-and-loops-corrections.json`, with their `.txt`
+  files. Written by the three runs of this seat that landed on 2026-10-27 before
+  the fourth, and moved here by the fourth. **This is the fifth same-day
+  collision and the first where three bundles lost one tie**, which is what the
+  entry above predicted when it said the condition is routine rather than rare:
+  a capacity-return wake pattern puts several runs of one seat on one calendar
+  day and each re-records the whole library.
+
+  It is also the cleanest control in this directory. Not one skill
+  `description` changed across the four runs, so the composition the engine
+  scores never moved, and all nine suites are identical case for case in all
+  four bundles: 7/8, 6/7, 7/7, 6/7, 7/8, 6/8, 6/7, 5/6 and 8/9, totalling 58 of
+  67 at reliability 0.8657 four times over. The only values that differ are the
+  `skill_sha256` of the five skill files those runs edited:
+  `agent-containment` 6f77cdd2 to 4cba56c9 to b14790d8,
+  `agent-security-measurement` 41ad353b to d51961d3 to 56b3e3fb,
+  `harness-engineering` ab134ee3 to 86c2a5f7, and
+  `self-improving-post-training-loops` ed48e6e2 to 15de8847. Six prose
+  revisions to four skills, in a library whose scores are computed across every
+  description, moved no case at all.
+
+  **One thing the earlier entries do not say and this one can.** The two
+  consumers do not merely disagree about which receipt is newest; they disagree
+  in opposite directions on a lexical tie.
+  `skills/_validation/trigger_test.py` loads with `sorted(glob.glob(...))` and
+  `rank_bundles` is a stable sort, so on a same-day tie it keeps the
+  alphabetically **first** filename, while `tools/panel_validator.py` takes
+  `sorted(..., reverse=True)` and keeps the alphabetically **last**. So an
+  honest workaround does not exist in the filename: a name chosen to win the
+  receipts gate is a name chosen to lose the panel, and the site reads neither
+  rule but the filesystem's. Moving the loser out of the glob is the only
+  mitigation that satisfies all three, which is why this directory keeps
+  growing instead of the names getting cleverer.
+
 The real repair is in the ledger and in
 `INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`:
 tie-break on a timestamp, and record the library membership in the bundle so a
