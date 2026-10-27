@@ -1301,3 +1301,157 @@ decision; readings follow below as they land.
 No corpus again this run: `NEON_RO_URL` is absent, so nothing below is a claim
 row and every repair it implies is routed to the owning seat rather than
 applied.
+
+### `arxiv:2503.18813` — CaMeL — read in full 2026-10-27
+
+`python3 tools/read_paper.py 2503.18813` → exit 0, 354,218 chars.
+
+**The line asked what the library's strongest security number is twice as good
+as. The answer is that the comparison is confounded by backbone model, and the
+skill's own rule 2 is the rule it breaks.**
+
+`skills/agent-security-measurement/SKILL.md:85` carries "82.8 percent utility
+at 0.0 percent attack success, twice the utility of a fixed capability-based
+defence at the same zero-success operating point." Twice of 82.8 is 41.4. The
+primary source's AgentDojo utility under CaMeL, Table 2, by backbone:
+
+| Backbone | Native tool-calling | CaMeL | Difference |
+|---|---|---|---|
+| o3 High | 84.5% | **77.3%** | -7.2 |
+| o4 Mini High | 79.4% | 76.3% | -3.1 |
+| Claude 4 Sonnet | 86.6% | 74.2% | -12.4 |
+| Claude 4 Sonnet (reasoning) | 83.5% | 70.1% | -13.4 |
+| Gemini 2.5 Pro | 73.2% | **41.2%** | -32.0 |
+| Gemini 2.5 Flash | 55.7% | 35.1% | -20.6 |
+
+So 41.4 is Gemini 2.5 Pro, CaMeL's second-worst backbone. Against CaMeL's best
+(o3 High, 77.3%) the ratio is 1.07, not 2. The paper's own headline is "77% of
+tasks with provable security, compared to 84% with an undefended system."
+
+The zero-success half of the comparison does hold for CaMeL across backbones:
+successful attacks on Gemini 2.5 Pro fall from 300 to 0 with CaMeL, and against
+the AgentDojo defences on Claude 3.5 Sonnet CaMeL allows 0 where the next best
+(tool filter) allows 8 of 949. The operating point is genuinely the same. **The
+backbone is not**, and nothing in the citing paper's sentence says so.
+
+Two things follow, and both are for the skill seat rather than for me.
+
+1. **The "twice the utility" line should say which backbone, or drop the
+   multiple.** The skill's rule 2 says "fix the operating point before
+   comparing" because "the two systems may be standing at different points on
+   the same curve." The deeper defect is one curve further out: they may be
+   standing on different curves. A defence comparison that varies the model is
+   measuring the model. The rule is right and its own illustration violates it.
+2. **The 41.2% is dragged by a documentation failure, not by the capability
+   discipline.** Gemini 2.5 Pro and Gemini 2.5 Flash both score 0.0% on the
+   travel suite under CaMeL, and the paper says why: travel tool outputs are
+   poorly documented, the privileged planner cannot observe the output format,
+   so it cannot parse them. That is AgentDojo's documentation, not an
+   information-flow cost. Any utility comparison against CaMeL on AgentDojo
+   that includes travel is partly a measurement of the benchmark.
+
+A third finding the line did not ask for and the containment shelf wants: the
+paper names the failure mode no capability system escapes. "The privileged
+model cannot write a plan based on data it cannot read" — the "data requires
+action" case, where the action to take is itself in the untrusted content ("do
+the actions specified in the email"). The paper reports that **no existing
+model solves this task**, and its proposed fix is a nested planner whose
+execution policy must be strict. That is the expressiveness floor of the whole
+approach, stated by its authors, and it is the sentence a buyer deciding on
+capability scoping needs most.
+
+Also worth recording because it is cheap and nobody holds it: CaMeL's strict
+mode roughly doubles how often a policy fires when not under attack, 33.87% to
+53.23% overall, with the travel suite moving 0.00% to 80.00%. Strictness is not
+free and the paper quantifies the user-fatigue cost that it also discusses in
+prose.
+
+### `arxiv:2505.23643` — Fides — read in full 2026-10-27
+
+`python3 tools/read_paper.py 2505.23643` → exit 0, 130,744 chars.
+
+**The line asked what the original has that the "FIDES-style" reimplementation
+does not. The answer is the two primitives the skill's section 4 does not
+mention, and without them the discipline the skill recommends cannot solve a
+third of AgentDojo.**
+
+What `skills/agent-security-measurement/SKILL.md:164-173` recommends, on the
+attack paper's reimplementation, is three steps: treat every third-party tool
+return as untrusted, mark sensitive local and configuration content
+confidential, check the policy before the next tool call. That is label
+propagation plus a tool-call gate. The original is a paper about why that is
+not enough.
+
+- **Pure propagation is the maximally secure and least expressive end.** The
+  Variable Passing planner never exposes low-integrity content to the planner
+  and therefore **stops every attack in AgentDojo with no policy checks at
+  all** — 12 successful injections before the two tasks the authors do not
+  count as attacks, 0 after. It also costs up to **57.52 points** of task
+  completion against Fides on o1. Security by propagation alone is available
+  and the paper prices it.
+- **Fides' contribution is the two primitives: selective introduction of
+  variables, and constrained inspection of variables.** They exist precisely so
+  that a planner can act on data it is not allowed to read. The taxonomy that
+  motivates them is three task classes — data independent, data independent
+  with a quarantined query, and data dependent — and the Variable Passing
+  planner cannot solve the third class at all. On AgentDojo the data-dependent
+  share is 43.8% of banking and 42.9% of Slack.
+- **The residual is structural and named.** With policies, Fides admits 1
+  injection (0 after the two discounted tasks), and the ones that get through
+  are text-to-text: policies are enforced on tool calls, so an injection that
+  only changes the final sentence shown to the user is out of scope by
+  construction. The skill says "residual success remaining." The primary source
+  says what the residual *is*, which is the actionable form.
+- **The policy gate costs utility, and the skill does not price it.** Turning
+  policy checks on drops task completion by up to **40 points** for the Basic
+  planner (gpt-4o) and up to **24.5 points** for Fides (o3 and o4-mini). The
+  skill's section 4 reports that invocation rates stayed high under the A2M
+  implementation and treats that as the point. On the original instrument, the
+  gate is the expensive part.
+- **It is a reasoning-model technique.** For reasoning models Fides matches the
+  Basic planner's utility. For non-reasoning models the Basic planner is far
+  better, by 23.6 points on gpt-4o, because the non-reasoning models cannot use
+  the quarantined `query_llm` well — correct arguments, enough context, results
+  threaded into later calls. An information-flow planner's utility cost is a
+  function of the backbone's planning competence. Nothing in the skill says so,
+  and this is the same confound CaMeL's line above turns on, found independently
+  in the second paper of the same batch.
+
+### `arxiv:2509.22040` — "Your AI, My Shell" — read in full 2026-10-27
+
+`python3 tools/read_paper.py 2509.22040` → exit 0, 77,576 chars.
+
+**The line called this the premise sentence of the whole territory. It is, and
+the sentence as the territory repeats it keeps the maximum and drops the range,
+which is where the containment-relevant finding lives.**
+
+AIShellJack: 314 payloads, 70 MITRE ATT&CK techniques across 11 categories,
+five development scenarios, Cursor and GitHub Copilot on VSCode, Claude 4 and
+Gemini 2.5 Pro.
+
+- **The range is 41.1% to 83.4%, and the span is the finding.** Cursor in Auto
+  Mode is the 83.4% (84.1% at its best scenario); GitHub Copilot with Gemini
+  2.5 Pro is the 41.1%, with Claude 4 at 52.2%. Copilot runs 20 to 30 points
+  below Cursor across nearly every category. Choosing the editor moves attack
+  success by more than 40 points, which is larger than the effect of any
+  defence in the capability-scoping literature that opens by quoting this
+  paper's maximum.
+- **Execution is near-invariant; success is not.** Command execution rates run
+  74% to 89% across every editor and model combination and 75% to 88% across
+  all five scenarios. Attack success over the same cells runs 41% to 84%. The
+  editor almost always runs the injected command. What varies is whether running
+  it achieves the objective. For a containment skill that is the line between
+  the wrong boundary and the right one: gating "does the agent execute" is
+  gating the invariant, and the variance lives after execution.
+- **The category ordering inverts the usual threat model.** Initial Access
+  93.3% and Discovery 91.1% are the highest; Exfiltration 55.6% is the lowest,
+  with Credential Access 68.2%, Defense Evasion 67.6%, Privilege Escalation
+  71.5%, Persistence 62.7%, Impact 83.0%, Collection 77.0%. Command and Control
+  reaches 100% for Cursor Auto Mode on `ts-lep`. The containment literature
+  leads on exfiltration and this instrument says reconnaissance is the cheap
+  one. Mapping an agent's blast radius should start where the success rate is,
+  not where the headline is.
+- **Scenario variance is real but secondary.** Privilege Escalation holds 86.8%
+  (33/38) on three of five codebases and falls to 52.6% and 44.7% on the two
+  Python ones. The authors attribute the inconsistency to closed-source editors
+  and output nondeterminism rather than to a property of the language.
