@@ -898,3 +898,157 @@ def test_the_json_surface_carries_the_retried_state(tmp_path, capsys):
     assert payload["lost"] == []
     assert payload["retried"][0]["retry_pr"].endswith("/pull/589")
     assert payload["findings"][0]["state"] == "retried"
+
+
+# --- the claim names the window's last refused log, not the costly one -----
+#
+# ursa-pm's real 2026-10-26, which is where this was found: the 11:05Z cron was
+# refused 55 turns in, the same window refused the seat five more times, the
+# claim file named the last of those (a turn-1 message log) and one hook at
+# 14:03Z brought the seat back. The seat recovered. The cycle did not, because
+# the re-fire was dispatched for the turn-1 log and its wake text named that.
+
+def _orphaning_window(root):
+    """A seat cut mid-cycle, refused again at turn 1, then re-fired once."""
+    write_log(root, "ursa-pm", "2026-10-26T11-05-07-892Z", "cron",
+              cut_off("You've hit your session limit · resets 2pm (UTC)"),
+              exit_code=1, turns=55)
+    write_log(root, "ursa-pm", "2026-10-26T12-20-01-389Z", "message",
+              refused("You've hit your session limit · resets 2pm (UTC)"),
+              exit_code=1, turns=1)
+    write_log(root, "ursa-pm", "2026-10-26T14-03-07-542Z", "hook",
+              completed(), exit_code=0, turns=37,
+              pr="https://github.com/alexandrapaiz/Ursa/pull/700")
+    return claim_file(root,
+                      **{"ursa-pm": ["2026-10-26T12-20-01-389Z-message.log"]})
+
+
+def test_a_cycle_refused_before_the_claimed_log_is_orphaned_not_rescued(tmp_path):
+    claims = cf.read_retry_claims(_orphaning_window(tmp_path))
+    result = cf.judge(cf.read_runs(tmp_path), "2026-10-26", claims=claims,
+                      now=datetime(2026, 10, 26, 23, 59, tzinfo=UTC))
+    assert result["retried"] == [], "the claim did not name this slot's log"
+    finding, = result["orphaned"]
+    assert finding["seat"] == "ursa-pm"
+    assert finding["slot"] == "11:05Z"
+    assert finding["turns"] == 55
+    assert finding["orphaned_behind"] == "2026-10-26T12-20-01-389Z-message"
+    assert finding["retry_claimed"] is False
+
+
+def test_an_orphaned_cycle_still_sets_the_exit_code(tmp_path, capsys):
+    """Naming these rows changes the sentence and not the contract.
+
+    Before `orphaned` existed they read as `lost` and set the exit code, so a
+    gate that ran on the old behaviour must not go quiet on the new one.
+    """
+    path = _orphaning_window(tmp_path)
+    code = cf.main(["--day", "2026-10-26", "--root", str(tmp_path),
+                    "--claims", str(path), "--now", "2026-10-26T23:59:00Z"])
+    out = capsys.readouterr().out
+    assert code == 1
+    assert "orphaned ursa-pm 11:05Z session-limit, 55 turns" in out
+    assert "2026-10-26T12-20-01-389Z-message" in out, \
+        "the reader needs the log the claim did name"
+    assert "1 cycle(s) orphaned" in out
+    assert "the remedy is the claim's key" in out
+
+
+def test_the_orphaned_row_is_not_double_counted_as_lost(tmp_path):
+    claims = cf.read_retry_claims(_orphaning_window(tmp_path))
+    result = cf.judge(cf.read_runs(tmp_path), "2026-10-26", claims=claims,
+                      now=datetime(2026, 10, 26, 23, 59, tzinfo=UTC))
+    assert result["lost"] == []
+    assert len(result["orphaned"]) == 1
+
+
+def test_a_run_the_seat_survived_breaks_the_cascade(tmp_path):
+    """The bound on the walk back, and the reason it is not a time window.
+
+    A claim says the seat was refused and re-fired. It says nothing about a
+    refusal from an earlier window that the seat already recovered from on its
+    own, and crediting that one to this claim would be the same error in the
+    generous direction. One completed run in between is the whole proof.
+    """
+    write_log(tmp_path, "ursa-pm", "2026-10-26T06-05-00-000Z", "cron",
+              cut_off("You've hit your session limit · resets 9am (UTC)"),
+              exit_code=1, turns=55)
+    write_log(tmp_path, "ursa-pm", "2026-10-26T09-13-02-944Z", "message",
+              completed(), exit_code=0, turns=39,
+              pr="https://github.com/alexandrapaiz/Ursa/pull/690")
+    write_log(tmp_path, "ursa-pm", "2026-10-26T12-20-01-389Z", "message",
+              refused("You've hit your session limit · resets 2pm (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "ursa-pm", "2026-10-26T14-03-07-542Z", "hook",
+              completed(), exit_code=0, turns=37,
+              pr="https://github.com/alexandrapaiz/Ursa/pull/700")
+    claims = cf.read_retry_claims(claim_file(
+        tmp_path, **{"ursa-pm": ["2026-10-26T12-20-01-389Z-message.log"]}))
+    result = cf.judge(cf.read_runs(tmp_path), "2026-10-26", claims=claims,
+                      now=datetime(2026, 10, 26, 23, 59, tzinfo=UTC))
+    assert result["orphaned"] == []
+    finding, = result["lost"]
+    assert finding["slot"] == "06:05Z"
+    assert finding["orphaned_behind"] is None
+
+
+def test_an_exactly_claimed_slot_is_still_retried_when_one_follows_it(tmp_path):
+    """The regression guard on the state this cascade sits beside.
+
+    The 2026-10-26 research slot was claimed by its own log filename, and the
+    cascade must not steal it: a claimed log is `retried`, and only the
+    unclaimed refusals behind it are `orphaned`.
+    """
+    write_log(tmp_path, "alexandria-research", "2026-10-26T15-26-00-000Z",
+              "message", refused("You've hit your session limit · resets 7pm (UTC)"),
+              exit_code=1, turns=6)
+    write_log(tmp_path, "alexandria-research", "2026-10-26T16-30-23-798Z",
+              "cron", refused("You've hit your session limit · resets 7pm (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "alexandria-research", "2026-10-26T19-03-27-547Z",
+              "hook", completed(), exit_code=0, turns=94,
+              pr="https://github.com/alexandrapaiz/alexandria/pull/589")
+    claims = cf.read_retry_claims(claim_file(
+        tmp_path,
+        **{"alexandria-research": ["2026-10-26T16-30-23-798Z-cron.log"]}))
+    result = cf.judge(cf.read_runs(tmp_path), "2026-10-26", claims=claims,
+                      now=datetime(2026, 10, 26, 23, 59, tzinfo=UTC))
+    assert result["orphaned"] == []
+    assert result["lost"] == []
+    finding, = result["retried"]
+    assert finding["slot"] == "16:30Z"
+    assert finding["late_minutes"] == 153
+
+
+def test_the_json_surface_carries_the_orphaned_state(tmp_path, capsys):
+    path = _orphaning_window(tmp_path)
+    cf.main(["--day", "2026-10-26", "--root", str(tmp_path), "--json",
+             "--claims", str(path), "--now", "2026-10-26T23:59:00Z"])
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["lost"] == []
+    assert payload["orphaned"][0]["slot"] == "11:05Z"
+    assert payload["findings"][0]["state"] == "orphaned"
+    assert payload["findings"][0]["orphaned_behind"] == \
+        "2026-10-26T12-20-01-389Z-message"
+
+
+def test_a_claim_with_no_hook_after_it_orphans_nothing_silently(tmp_path):
+    """No re-fire means no recovery, so the earlier refusal is plainly lost.
+
+    `orphaned` is a claim about a re-fire that happened and went elsewhere.
+    Where no hook follows the claim, the seat never came back and the honest
+    word is the one the file already had.
+    """
+    write_log(tmp_path, "ursa-pm", "2026-10-26T11-05-07-892Z", "cron",
+              cut_off("You've hit your session limit · resets 2pm (UTC)"),
+              exit_code=1, turns=55)
+    write_log(tmp_path, "ursa-pm", "2026-10-26T12-20-01-389Z", "message",
+              refused("You've hit your session limit · resets 2pm (UTC)"),
+              exit_code=1, turns=1)
+    claims = cf.read_retry_claims(claim_file(
+        tmp_path, **{"ursa-pm": ["2026-10-26T12-20-01-389Z-message.log"]}))
+    result = cf.judge(cf.read_runs(tmp_path), "2026-10-26", claims=claims,
+                      now=datetime(2026, 10, 26, 23, 59, tzinfo=UTC))
+    assert result["orphaned"] == []
+    finding, = result["lost"]
+    assert finding["slot"] == "11:05Z"
