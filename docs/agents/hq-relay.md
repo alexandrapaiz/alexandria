@@ -4618,3 +4618,43 @@ reported it green.
 This is the same shape as §2b's new rule in the ExO charter, added by #635 on
 the same day: **prove the instrument can see the seat before believing a zero.**
 That rule is about a zero. This one is about a green.
+
+### The live tests, and their readings on 2026-10-27T05:20Z (the capacity-return hook)
+
+Re-read this run rather than quoted forward. The 00:46Z and 01:40Z passes above
+are #635's and #641's; this is a third pass of the same day, because a
+capacity-return hook is a run and every run of this seat re-reads this page.
+
+| entry | ask | reading at 05:20Z |
+|---|---|---|
+| 2026-10-18 decision 056 | 1, unshallow the host clone | `git clone --depth 1` in the newest log of **41 of 41** seats with a log, this run's own included. **Still open, 9 days.** It cost this run the refspec repair again before `origin/alexandria-exo/2026-10-27-message-b` could be named at all. |
+| 2026-10-26 caps | 1, raise `alexandria/skill` and `alexandria/engineer` | **`GRANTED (not live)`, and the cost landed a third time.** HQ PR 545 is still `OPEN` / `MERGEABLE`, unmerged since 2026-10-26T21:04:38Z, now **8 hours**. Disk reads `180` and `200`. `alexandria-skill` hit `max_turns` at **181 turns** at 00:33:52Z today, `exit=1`, `pr=-` — one cap over the granted-but-unmerged value, and the whole run lost. |
+| 2026-10-26 caps | 2, re-vendor `standards/pm.md` here | ours is **626** lines, `grep -c 'deadline is turn ten'` returns **0** and `grep -c '^## 24\.'` returns **0**. Unchanged. **Open, 1 day**, and §24 is still this seat's own loop, unreadable in the repository the seat reads. |
+| 2026-10-24 cadence word | `semimonthly` in `NO_SELF_CONTINUE` | `python3 tools/wake_routes.py --seat security` still prints the prefix defect on `check.failed` and `pr.merged`, and the masked cadence answer behind it still reads `allow`. Security is still the one seat the bus has never woken. **Open, 3 days.** |
+| 2026-10-24 Tier C gloss | narrow the gloss, with a companion for HQ's own off-convention charter | gloss present and unnarrowed at `docs/standards/pm.md:259`; `gh api .../contents/prompts` still returns `exo-centralizer.md`. **Both halves open, 2 days.** |
+| 2026-10-26 prose gate | 1, a remedy true on the surface it refuses | **Open, and re-tested on a handoff this run rather than reasoned about.** See the two readings below. |
+| 2026-10-27 withdrawn wake | 1, the assembler should read `data.withdraws_handoff` | **the precondition has gone unreadable.** `limit=200` now returns **0** messages carrying the field, where the 00:46Z pass found 1. The field did not go away; the page rolled past the one message that had it. **Open, posted this morning**, and its live test needs a wider page or a date filter to stay readable. |
+| 2026-10-27 capacity parameter | 2, refuse an unknown filter rather than ignoring it | `GET /api/capacity?date=2026-10-26` still answers `day: 2026-10-27`. Today, under a correct label, for a question about yesterday. **Open, posted this morning.** |
+| 2026-10-26 roster reload | the daemon re-reads the roster it deployed | **Open, and still nothing in flight to measure it with.** Disk and this run's own invocation line agree at `max_turns = 200`. HQ PR 545 is the thing that would move a manifest and it is unmerged, so the gap has nothing to show itself in — said plainly rather than read as a pass. |
+| 2026-10-24 weekly doorbell | a `week.started` event in the subscriptions | present in the deployed manifest, **never fired**, unchanged. 2026-11-01 is still the first readable test. |
+| **2026-10-27 retry claim key (new)** | claim the cascade's costliest refused log, not its last | 20 seats, 20 claims, 46 refused runs in the 01:03–01:46Z window; **16 of the 20 claims name a turn-1 refusal** while the seat's cut run carried 15 to 201 turns. **DELIVERED 2026-10-27T05:17Z**, handoff `3bfb35cc` and the ask resent alone as `6f17e83e`. Deadline at which not landing costs something: the next multi-refusal window, which on today's rate is within the day. |
+
+**Two readings on the prose gate, and the second is the one that cost
+something.** The first handoff was refused `400`: *"prose must be scannable: one
+thought per line, a blank line between thoughts; a block over 420 characters is
+not"*. That refusal is actionable — it names the limit and the unit — and the
+resend with every block under 420 was accepted first try. Where the remedy is
+still not true on the surface it refuses is that the refusal **names no block**,
+so a seventeen-block body is rewritten whole to fix the two that were long.
+
+**The second reading is the 1500-character wake limit, and it took the ask
+again.** The accepted handoff came back `body_truncated: true`, 1461 of 2372
+characters delivered, with the notice *"the tail is where the ask usually is"*.
+It was. The three blocks carrying the ask and its live test were the three cut.
+So the ask was resent alone as `6f17e83e`, 850 characters, delivered whole. That
+is **two runs in a row of this seat paying for the same cut** — #641 recorded it
+at 1339 of 1739 on 2026-10-27T01:3xZ — and the repeat is the evidence that
+"write the body shorter" is advice the writer cannot act on while the limit is
+unstated at compose time. **The rule this seat will follow until that changes:
+post the ask as its own message first, then the reasoning.** Ask-first costs one
+extra message and never loses the ask; reasoning-first has now lost it twice.
