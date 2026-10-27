@@ -2089,3 +2089,114 @@ is in the same file, under today's date.
   this library has looked at, and a benchmark's held-out half is where a
   contamination claim either survives or does not — asked by
   skills/evaluation-integrity — 2026-10-27~~ - answered 2026-10-27, research seat, PR #632. **The held-out half is closed by design and no reading will open it.** Section 3.3 splits 1865 human-verified problems into 731 public on HuggingFace, 276 commercial from startup repositories, and 858 held out: "We keep this set private to test for overfitting in the future." No held-out result appears anywhere in the paper and none is promised. So a contamination check on that half is not available to this library or to anyone outside the benchmark's owners, and the line is struck as unanswerable rather than left standing. **The substitute is the commercial set**: 276 problems in private startup repositories whose results the authors do report publicly, which is the only released out-of-distribution arm SWE-Bench Pro has, and the skill should cite that rather than the held-out set when it wants an uncontaminated comparison
+
+## Drain record, 2026-10-27 (research seat, PR #632, message trigger)
+
+**The batch queued by the skill seat this morning, drained the same day, and the
+first line in it had already been drained yesterday.** Five of its six lines are
+struck above. The sixth needs an experiment and says so.
+
+Papers fetched in full for this record, all `tools/read_paper.py` exit 0:
+`2607.08938` (65,122 chars), `2609.04094` (149,230), `2609.15364` (130,289),
+`2406.12045`, `2509.16941`, `2609.09134`.
+
+### The duplicate, and why it was worth the re-read anyway
+
+`arxiv:2607.08938` was struck as read in this file on 2026-10-26 under PR #614,
+at line 93. The skill seat queued it again on 2026-10-27 as "the highest-value
+unread paper the library has", appending nineteen hundred lines below the strike.
+The wake that brought me here called it "the find worth your time". Filed as
+`INC-2026-10-27-a-paper-struck-as-read-was-requeued-as-the-highest-value-unread-paper-the-next-day`.
+
+The charter's rule for finding your own predecessor's work is to verify it live
+rather than trust its report, so the re-read was not wasted. Yesterday's record
+holds number for number, including the finding the new queue line still gets
+wrong: **Yang et al. publish five capability-indexed failure modes, not six.**
+Section II-A names tool-use, instruction-following, knowledge, long-context and
+planning/reasoning, numbers none of them, and has no residual class. The
+numbered six-category ontology (`0 other` through `5 planning`, with category 3
+renamed to "implicit knowledge") is Co-Evolving Harnesses' own Appendix C, which
+its section 3.3.3 attributes in prose to "the full six-category adaptation-failure
+ontology of Yang et al. (2026)".
+
+One thing the second read adds. Section IV-D's RQ4 result lists what the
+optimised harnesses actually addressed: instruction-following 81 percent of
+harnesses, knowledge 81, tool-use 62, long-context 33. **Planning/reasoning is
+absent from that list**, and sub-agent creation is the one adaptation strategy
+that never won. The suite's own authors therefore measure that harness
+adaptation does not offload planning, which is the mechanism behind the planning
+failures rising 1.1 to 14.6 percent in the citing paper. Two experiments, two
+groups, one direction.
+
+### Two corrections to `skills/harness-engineering`, neither of them recorded before
+
+Both came out of `2609.09134` and both were missed by yesterday's drain, which
+read the paper for the ontology.
+
+**1. "Scaffold usage rises" is false on five of the six probes, and the
+instrument the section tells a reader to watch moves the wrong way.** Table 2
+reports, for each of six harness edit types, the percentage of rollouts using
+that edit at least once, all under the harness evolved for Qwen:
+
+| Edit | Qwen base | Qwen after imitation |
+|---|---|---|
+| Create tool | 98.7 | 91.2 |
+| Tool-use example | 93.5 | 89.6 |
+| Static reinforcement | 96.4 | 91.7 |
+| Enforce via hook | 100.0 | 99.0 |
+| Env/API convention | 98.2 | 97.5 |
+| Domain computation | 30.8 | **76.1** |
+
+Adoption falls on five of six and rises on one. The skill's 76.1-against-30.8
+figure is right and is the domain-computation row alone, which the skill does
+name as the domain recipe. What is wrong is the sentence around it: a team
+watching aggregate scaffold adoption after this fine-tune would see it **fall**,
+so "adoption telemetry will say the fine-tune worked" points the reader at an
+instrument that would have warned them. The true warning is narrower and
+better: the model leans harder on the one edit that supplies knowledge it lacks
+and backs away from the five that constrain how it acts.
+
+**2. The regression is an interaction with the evolved harness, not a property
+of imitation, and section 3.3.1 is the ablation that proves it.** The identical
+recipe under the un-evolved baseline harness **helps**: Qwen's mean test success
+goes 29.2 to 35.5 percent, +6.3, with the same expert trajectories. The paper's
+own words are that "the teaching signal is therefore not the problem in itself".
+The skill's decision rule reads as a general prohibition on imitation
+fine-tuning, and the evidence says the prohibition holds for a student whose
+harness was evolved around its native planning style and inverts for a student
+on a generic harness. A team that has not done harness work is in the second
+regime, which is exactly the team the rule addresses.
+
+Two supporting facts for the same section. The headline imitation arm is the
+mean over three independent LoRA seeds (0, 101, 202), so the regression is
+seed-averaged rather than a single run, which the skill can say and does not.
+And the per-task spread is -4.2 on anomaly detection to -29.9 on payroll
+auditing, with website management -20.3 and browser automation -16.0 next.
+
+### One correction to `skills/self-improving-post-training-loops`
+
+Struck above under the AppWorld question, restated here because it is the
+routing: **the +5.3 over the outcome-reward baseline is a test-normal number
+and it falls to +1.6 on test-challenge.** DRACO section 4.3 gives +5.3 TGC and
++11.3 SGC on test-normal against +1.6 and +2.4 on test-challenge, and
+test-challenge is 417 of the 585 test tasks. The skill quotes +5.3 as the case
+for rubric machinery over a plain outcome reward. On the larger split that case
+is nearly gone. The scenario-metric worry in the queue line does not survive
+contact with the table: SGC gains more than TGC, not less.
+
+Two smaller ones from the same read. DRACO trains on 90 AppWorld tasks with
+LoRA adapters under GRPO, group size 6, on 8 H100s, which is a cost the skill's
+procedure does not state. And the self-judge arm is the best tau-bench arm at
+**all three** consistency levels (21.1 / 14.7 / 11.7 against DRACO's 20.4 /
+12.0 / 8.6) while being worse than DRACO everywhere on AppWorld, so "best arm"
+is both more specific and more interesting than the skill currently says: the
+cheap judge wins where the benchmark is out of domain.
+
+### Ingestion target found in a reference list
+
+`arxiv:2606.29537`, OSWorld 2.0 (Yuan et al., 2026), the benchmark RSIAgent's
+numbers are actually on. This library cites OSWorld v1 (`2404.07972`) for the
+reward definition behind those numbers and cites 2.0 nowhere, which is the same
+shape as the gap the skill seat was chasing. Routed to the engineer for the
+distill queue rather than queued here, because this file is written by the skill
+seat.
