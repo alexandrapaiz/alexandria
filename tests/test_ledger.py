@@ -223,10 +223,130 @@ def test_the_tool_and_the_grep_disagree_and_the_grep_is_wrong():
 
 
 def test_every_live_entry_carrying_a_readable_status_has_the_contract_fields():
-    """Not a gate, a measurement: how far the file is from its own contract."""
+    """Not a gate, a measurement: how far the file is from its own contract.
+
+    The bound fell from 206 to 196 on 2026-11-01, and the entries did not
+    change. `tools/ledger.py` says the baseline "may fall and it may not rise"
+    and that lowering it belongs in the pull request that fixed the entries.
+    What this one fixed is the parser: a label like `- What is worth stealing:`
+    is the `What` field wearing a qualifier, and the matcher pinned to the bare
+    label called 163 such lines absent. Fourteen entries left the set because
+    they were never outside the contract, which is why the number may be read
+    as a drop in defects rather than as a bound relaxed to fit.
+    """
     entries = ledger.parse(LIVE.read_text())
     incomplete = [e for e in entries if e.readable and e.missing_fields]
-    assert len(incomplete) <= 206, (
+    assert len(incomplete) <= 196, (
         f"{len(incomplete)} readable entries are missing contract fields, "
-        f"up from the 206 measured on 2026-10-17"
+        f"up from the 196 measured on 2026-11-01"
     )
+
+
+# ------------- the field label, qualified and bare -------------
+#
+# `INC-2026-11-01-the-contract-field-matcher-read-the-label-and-not-the-field`.
+# Every case below is synthetic on purpose. The measurement above is the only
+# thing here that reads the live file, because a second pinned count beside it
+# is a copy that goes stale, which is the defect `tests/test_ci_coverage.py`
+# refuses to commit in its own header.
+
+
+def test_the_bare_label_the_contract_prints_is_read_as_itself():
+    assert ledger.field_label("- What: a paragraph") == ("What", "What")
+    assert ledger.field_label("- Cost: $0") == ("Cost", "Cost")
+
+
+@pytest.mark.parametrize("line,field", [
+    ("- What alexandria does better: the corpus", "What"),
+    ("- What is worth stealing: their stop signal", "What"),
+    ("- Cost to HQ: one review", "Cost"),
+    ("- First step, if accepted: one function", "First step"),
+    ("- Trigger, twice over: two runs", "Trigger"),
+])
+def test_a_qualified_label_is_still_the_field_it_opens_with(line, field):
+    found = ledger.field_label(line)
+    assert found is not None and found[0] == field
+    assert found[1] != field, "the label is reported as written, not normalised"
+
+
+@pytest.mark.parametrize("line", [
+    "- Costs nothing: so it is not a Cost field",
+    "- First steps: plural is a different label",
+    "- Whatever happened: not a What field",
+    "- Triggered by nothing: not a Trigger field",
+])
+def test_a_word_that_merely_starts_with_the_field_name_is_not_the_field(line):
+    assert ledger.field_label(line) is None
+
+
+def test_a_label_too_wide_to_be_a_label_is_prose():
+    wide = "What " + "x" * ledger.FIELD_QUALIFIER_WIDTH
+    assert ledger.field_label(f"- {wide}: still prose") is None
+    # The case above scales with the constant, so it stays true if the bound is
+    # widened to swallow a paragraph. This is the half that does not: the
+    # widest real label measured on the live file is 75 characters, so a bound
+    # loose enough to admit a sentence is a bound that is not doing the work.
+    assert ledger.FIELD_QUALIFIER_WIDTH <= 120
+
+
+def test_a_line_that_is_not_a_list_item_is_not_a_field():
+    assert ledger.field_label("What: a heading, not a field") is None
+    assert ledger.field_label("  - What: indented past the body") is None
+
+
+def test_an_entry_written_entirely_in_qualified_labels_owes_nothing(tmp_path):
+    text = (
+        "### 2026-11-01 — Craft scan: somebody else's product\n"
+        "- Trigger: today's scan\n"
+        "- What is worth stealing: their stop signal\n"
+        "- What alexandria does better: the provenance\n"
+        "- First step, if accepted: one function\n"
+        "- Cost to HQ: $0\n"
+        "- Status: proposed\n"
+    )
+    found, = ledger.parse(text)
+    assert found.missing_fields == []
+    assert found.qualified_fields == {
+        "What": "What is worth stealing",
+        "First step": "First step, if accepted",
+        "Cost": "Cost to HQ",
+    }, "Trigger was bare, so it is not reported as qualified"
+
+
+def test_the_bare_label_wins_when_an_entry_writes_both():
+    text = (
+        "### 2026-11-01 — An idea\n"
+        "- Trigger: something\n"
+        "- What is still open: the half nobody owns\n"
+        "- What: the paragraph the contract asks for\n"
+        "- First step: one function\n"
+        "- Cost: $0\n"
+        "- Status: proposed\n"
+    )
+    found, = ledger.parse(text)
+    assert found.missing_fields == []
+    assert "What" not in found.qualified_fields
+
+
+def test_a_genuinely_absent_field_is_still_absent():
+    text = (
+        "### 2026-11-01 — An idea\n"
+        "- Trigger: something\n"
+        "- Status: proposed\n"
+    )
+    found, = ledger.parse(text)
+    assert found.missing_fields == ["What", "First step", "Cost"]
+    assert found.qualified_fields == {}
+
+
+def test_the_json_surface_carries_the_qualified_labels():
+    text = (
+        "### 2026-11-01 — An idea\n"
+        "- Trigger: something\n"
+        "- What it is: a paragraph\n"
+        "- First step: one function\n"
+        "- Cost: $0\n"
+        "- Status: proposed\n"
+    )
+    found, = ledger.parse(text)
+    assert found.as_dict()["qualified_fields"] == {"What": "What it is"}

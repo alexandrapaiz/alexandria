@@ -86,6 +86,26 @@ DECOY = re.compile(r"Status:\s*(" + "|".join(VALID_STATUSES) + r")\b", re.I)
 #: The four fields besides the status that the contract asks for.
 CONTRACT_FIELDS = ("Trigger", "What", "First step", "Cost")
 
+#: How wide a qualifier a field label may carry before the colon.
+#:
+#: The contract block prints `- What:` and seats write `- What alexandria does
+#: better:`, `- What is worth stealing:`, `- Cost to HQ:`, `- First step, if
+#: accepted:`. Measured on the live file the day this was written: 163 lines
+#: across 98 distinct labels, every one of them a contract field wearing a
+#: qualifier, and not one of them a different kind of line. A matcher pinned to
+#: the bare label called all 163 absent, so 80 field misses were the parser's
+#: and not the file's, fourteen entries were reported incomplete that are not,
+#: and the measurement in `tests/test_ledger.py` had been red on `main` for
+#: days reporting them.
+#:
+#: Two bounds keep this from swallowing prose. The field name must end on a
+#: word boundary, so `- Costs nothing:` is not a `Cost` field and
+#: `- First steps:` is not a `First step` one. And the whole label must fit in
+#: the width below with no colon inside it, so a paragraph that happens to open
+#: with the word is not read as a label. The widest real label on the file is
+#: 75 characters.
+FIELD_QUALIFIER_WIDTH = 90
+
 #: A craft or competitive scan note. The charter asks for one of these every
 #: run alongside the day's ideas, and a note is not a proposal, so whether it
 #: owes a status is a real question rather than a lapse. It is reported
@@ -121,6 +141,9 @@ class Entry:
     extra_status_lines: list[int] = field(default_factory=list)
     decoys: list[int] = field(default_factory=list)
     missing_fields: list[str] = field(default_factory=list)
+    #: Field -> the qualified label it was written under, for the fields
+    #: this entry never wrote in the contract's bare form.
+    qualified_fields: dict[str, str] = field(default_factory=dict)
 
     @property
     def readable(self) -> bool:
@@ -151,6 +174,7 @@ class Entry:
             "problem": self.problem,
             "decoys": self.decoys,
             "missing_fields": self.missing_fields,
+            "qualified_fields": self.qualified_fields,
         }
 
 
@@ -167,6 +191,25 @@ def _first_word(raw: str) -> str:
     if not words:
         return ""
     return words[0].strip("`*_.,;:()[]").lower()
+
+
+def field_label(line: str) -> tuple[str, str] | None:
+    """The contract field a list item carries, and the label it carried it under.
+
+    Returns `("What", "What alexandria does better")` for a qualified label and
+    `("What", "What")` for the bare one, so a caller can tell the two apart.
+    `None` for a line that is not a field at all. The first field that matches
+    wins and the order is `CONTRACT_FIELDS`, which matters for nothing today
+    because no two of the four share a prefix.
+    """
+    head = re.match(rf"^-\s+([^:\n]{{1,{FIELD_QUALIFIER_WIDTH}}}):", line)
+    if head is None:
+        return None
+    label = head.group(1).strip()
+    for name in CONTRACT_FIELDS:
+        if re.match(rf"^{re.escape(name)}\b", label, re.I):
+            return name, label
+    return None
 
 
 def parse(text: str) -> list[Entry]:
@@ -200,11 +243,22 @@ def parse(text: str) -> list[Entry]:
             if n + 1 not in {f[0] + 1 for f in found} and DECOY.search(lines[n])
         ]
         body = lines[start:end]
-        missing = [
-            name
-            for name in CONTRACT_FIELDS
-            if not any(re.match(rf"^-\s+{re.escape(name)}:", line) for line in body)
-        ]
+        labelled: dict[str, str] = {}
+        for line in body:
+            found_field = field_label(line)
+            if found_field is None:
+                continue
+            name, label = found_field
+            # The bare label wins over a qualified one, so `qualified` names
+            # only the entries that never wrote the plain form.
+            if name not in labelled or label.lower() == name.lower():
+                labelled[name] = label
+        missing = [name for name in CONTRACT_FIELDS if name not in labelled]
+        qualified = {
+            name: label
+            for name, label in labelled.items()
+            if label.lower() != name.lower()
+        }
         entries.append(
             Entry(
                 line=start + 1,
@@ -216,6 +270,7 @@ def parse(text: str) -> list[Entry]:
                 extra_status_lines=[f[0] + 1 for f in found[1:]],
                 decoys=decoys,
                 missing_fields=missing,
+                qualified_fields=qualified,
             )
         )
     return entries
