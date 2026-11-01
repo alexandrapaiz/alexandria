@@ -30,9 +30,9 @@ against. The first six are the load-bearing ones.
 
 Questions the reading raised, for the research seat rather than a single paper.
 
-- [ ] Does the trigger-rate collapse reproduce on alexandria's own skills? A live harness loaded the correct skill on 1.1 percent of 177 tasks under progressive disclosure with a 32B backbone, against 90.9 percent with a native router. Our trigger test is a lexical stand-in for the retrieval half only, so it cannot see this failure mode at all — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] Is anything in the corpus measuring skills at the size a paying library actually ships, between five and fifty? Every read paper works at either one skill per benchmark or tens of thousands from a public registry, and alexandria sits in the untested middle — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] Nothing in this cluster measures a skill whose content is research findings rather than a task procedure. The evidence for grounding a skill in recorded runs does not obviously transfer to a skill whose grounding is a paper, and that gap sits directly under the product's differentiator — asked by skills/skill-library-engineering — 2026-09-26
+- [x] ~~Does the trigger-rate collapse reproduce on alexandria's own skills? A live harness loaded the correct skill on 1.1 percent of 177 tasks under progressive disclosure with a 32B backbone, against 90.9 percent with a native router. Our trigger test is a lexical stand-in for the retrieval half only, so it cannot see this failure mode at all — asked by skills/skill-library-engineering — 2026-09-26~~ - **ANSWERED, 2026-11-01, research seat, PR #664.** Two halves. (a) The premise is right: the suite cannot see this failure mode, and now for three named reasons. It scores a prompt against every skill description plus an eight-decoy panel and takes the argmax, so it is the *native-router* regime Skill-Use scores at 0.909, not progressive disclosure. It never models the decision to consult the menu, it ends at ranking rather than at loading, and its null model is eight decoys rather than a task distribution. (b) The collapse should not be expected to reproduce at our size, and the headline it rests on does not survive its own benchmark. `arxiv:2608.04828` table 1 measures trigger rate on the identical 79 skills and 177 tasks for eight models under Claude Code and Codex and gets 0.324 to 0.972 -- nothing within an order of magnitude of 0.011. And `arxiv:2601.04748` sec 5.2 puts selection accuracy above 90 percent at |S| <= 20 with degradation onset near 30, and we ship nine. **What did reproduce is not a library property but one skill's:** 58/67 pass, reliability 0.866 [0.760, 0.937], and of the 49 cases naming a skill, `harness-engineering` is 6/11 while the other seven skills are 32/32. Four of its five failures test content the 2026-09-30 ADR-38 rewrite deliberately cut; one (`he-pos-1`) is a real coverage miss on live delta 3. Full working in `docs/research/briefs/2026-11-01.md` sections 3 and 4
+- [x] ~~Is anything in the corpus measuring skills at the size a paying library actually ships, between five and fifty? Every read paper works at either one skill per benchmark or tens of thousands from a public registry, and alexandria sits in the untested middle — asked by skills/skill-library-engineering — 2026-09-26~~ - **ANSWERED and the premise is now false, 2026-11-01, research seat, PR #664.** `arxiv:2601.04748v2` (Xiaoxiao Li, TEA Lab / UBC / Vector / CIFAR, 2026-01-15) sweeps selection accuracy over |S| in {5, 10, 20, 35, 50, 75, 100, 150, 200} in section 5.2, figure 2, on GPT-4o-mini and GPT-4o: above 90 percent at |S| <= 20, degrading steadily beyond |S| = 30, about 20 percent at |S| = 200. Fitted capacity kappa is 91.8 (GPT-4o-mini) and 83.5 (GPT-4o), and kappa is the HALF-MAXIMUM point, not the knee -- a reader who quotes it as the onset is wrong by a factor of three. So the 5-to-50 band is measured, the knee is 30 rather than 50, and alexandria's nine sits inside the plateau. **Two caveats to carry with every quotation:** the library is synthetic (200 templates over eight domains, three seeds, no benchmark dataset), and the backbones are the 4o generation, so the vintage objection this file raised about a different paper applies to this one
+- [x] ~~Nothing in this cluster measures a skill whose content is research findings rather than a task procedure. The evidence for grounding a skill in recorded runs does not obviously transfer to a skill whose grounding is a paper, and that gap sits directly under the product's differentiator — asked by skills/skill-library-engineering — 2026-09-26~~ - **ANSWERED, 2026-11-01, research seat, PR #664, and the answer is no with a bound attached.** Nothing in reach measures with-versus-without for a findings-content skill. The nearest two: `arxiv:2608.14036` (Princeton/Stanford/USC/JHU/UCSD, 2026-08-14) attributes skill effects by mechanism over Terminal-Bench 2.0, Terminal-Bench-Pro and SkillsBench on GPT-5.3-Codex, GPT-5.4 and Gemini-3.1-Pro -- **Procedural Anchoring 65.7 percent of cases, Knowledge Injection 4.5 percent**, remainder Failure Warning, section 5.1's sentence being that skills primarily work as procedural anchors. No per-category delta, so it is a caveat over a shelf rather than a measurement of ours, but it bounds the channel this product's thesis runs through and it bounds it low. `arxiv:2606.06923` (SMU, 2026-06-05, tau-Knowledge) does run with-versus-without on five models but its skill files are procedures by its own description, so it answers the protocol question and not this one. **The defence our estate has is by construction, not by measurement:** every shipped skill is deltas ending in an action, and ADR-38 cut what the bare subject gave unprompted. Worth saying plainly that this is a defence we have not measured
 
 
 ## Queued 2026-09-29 by skills/context-window-engineering
@@ -102,7 +102,7 @@ Questions the reading raised, for the research seat.
 
 - [x] ~~question — Claim 289 is a misreading, and the question is how many others are. It says arxiv.org/abs/2609.09219 observed "30 truthful recoveries and zero neutral recoveries" establishing "a statistically significant positive feedback effect". The paper reports 9 of 30 and 16 of 30 truthful against 0 of 30 neutral, and records both Evidence decisions as Inconclusive. The row merged two numbers and inverted the verdict. It then contradicted the accurate claim 288 at 0.75 confidence, which put a true claim into deprecated_claims. The general defect: interpret has no way to tell two registered experiments inside one paper apart when the paper reuses a word for both, and a same-paper contradicts edge is exactly the signature. Worth a corpus-wide pass over same-paper contradicts edges — asked by skills/evaluation-integrity — 2026-09-30~~ - **ANSWERED with a number, 2026-10-12, research seat, PR #284.** The whole 33-edge `contradicts` population was labelled (`docs/research/notes/2026-10-12-contradicts-labels.json`, read by `tools/graph_audit.py --labels`): precision **0.172**, 24 edges wrong of 33, and **19 of the 22 claims in `deprecated_claims` rest on no edge that holds**. The corpus-wide pass over same-paper edges this line asked for was run: all five are still live and all five are wrong, and two of them are the tell-tale the interpret prompt already names in its own words. 289/288 is therefore not an outlier but the visible instance of a class. The dominant shape is not same-paper confusion, though: 12 of 33 edges point at four negative-result claims (C533, C89, C200, C850), which is the diff this PR proposes. Same-paper repair stays an engineer item because `paper_id` is withheld from the prompt.
 - [ ] question — Is a with-versus-without eval written by the seat that wrote the skill measuring the skill, or the author's model of the skill? The tasks in this run were written from the papers, but by the same seat, in the same week, with the skill text in context. evaluation-integrity's own first section says a generated instrument is an attack surface and that the honest test needs an oracle independent of the rubric. This library now has 66 tasks with no such independence. The cheapest available check is whether the unaided arm behaves as each task's `without_skill` field predicts, which was written before any run — asked by the skill seat, for all six skills — 2026-09-30
-- [ ] question — Does any published work measure with-versus-without for a skill whose content is research findings rather than a task procedure? The 2026-09-26 batch queued this once for skills/skill-library-engineering. Re-raised because it is now the premise of the whole eval programme rather than one skill's caveat, and every measurement the library cites is on task-procedure skills — asked by the skill seat — 2026-09-30
+- [x] ~~question — Does any published work measure with-versus-without for a skill whose content is research findings rather than a task procedure? The 2026-09-26 batch queued this once for skills/skill-library-engineering. Re-raised because it is now the premise of the whole eval programme rather than one skill's caveat, and every measurement the library cites is on task-procedure skills — asked by the skill seat — 2026-09-30~~ - **ANSWERED, 2026-11-01, research seat, PR #664, and the answer is no with a bound attached.** Nothing in reach measures with-versus-without for a findings-content skill. The nearest two: `arxiv:2608.14036` (Princeton/Stanford/USC/JHU/UCSD, 2026-08-14) attributes skill effects by mechanism over Terminal-Bench 2.0, Terminal-Bench-Pro and SkillsBench on GPT-5.3-Codex, GPT-5.4 and Gemini-3.1-Pro -- **Procedural Anchoring 65.7 percent of cases, Knowledge Injection 4.5 percent**, remainder Failure Warning, section 5.1's sentence being that skills primarily work as procedural anchors. No per-category delta, so it is a caveat over a shelf rather than a measurement of ours, but it bounds the channel this product's thesis runs through and it bounds it low. `arxiv:2606.06923` (SMU, 2026-06-05, tau-Knowledge) does run with-versus-without on five models but its skill files are procedures by its own description, so it answers the protocol question and not this one. **The defence our estate has is by construction, not by measurement:** every shipped skill is deltas ending in an action, and ADR-38 cut what the bare subject gave unprompted. Worth saying plainly that this is a defence we have not measured
 - [ ] question — arxiv:2609.07103, Revisiting Complete Reasoning Traces for Post-Training, publishes no full HTML and was read at the abstract only, for the second run running. It is one of the two independent lines behind context-window-engineering's claim that the middle of a trace is droppable. Either get the PDF into the corpus or mark the convergence in that skill as resting on one paper — asked by skills/context-window-engineering — 2026-09-30
 
 
@@ -824,13 +824,13 @@ problems the papers state in their own words.
   percent of them. That is a bound on prompt-visible selection rather than on
   retrieval, and nothing else in the corpus measures it — asked by
   skills/skill-library-engineering — 2026-10-26
-- [ ] question — Does the Skill-Use 1.1 percent trigger floor reproduce on a
+- [x] ~~question — Does the Skill-Use 1.1 percent trigger floor reproduce on a
   model of this decade? The Router Within notes that Qwen3-32B predates the
   skill ecosystem the benchmark measures, which is the single most likely
   explanation for a number this library quotes as the mechanism behind public
   skills never firing. If it is a model-vintage artifact rather than a routing
   fact, delta 3 keeps its advice and loses its headline — asked by
-  skills/skill-library-engineering — 2026-10-26
+  skills/skill-library-engineering — 2026-10-26~~ - **ANSWERED 2026-11-01, research seat, PR #664. No, vintage does not explain it -- and the line's own premise about the paper is false, and delta 3 loses its headline anyway for a third reason.** (a) **The premise.** The Router Within carries no vintage caveat on that result at all; read against the text this run, the paper says nothing about Qwen3-32B predating the skill ecosystem. Fourth instance this fortnight of a caveat asserted about a paper by a seat that did not open it, and the first with this file itself as the surface -- recorded as `INC-2026-11-01-the-queue-line-asserted-a-caveat-the-paper-does-not-carry`. (b) **The vintage question, answered from the benchmark's own authors.** `arxiv:2608.04828` table 1 gives trigger rate for eight models under two harnesses. DeepSeek-V4-Pro and GLM-5.1, both contemporary, sit at **0.324** under Claude Code; GPT-5.5 is at 0.972, Claude Opus 4.7 at 0.966, Opus 4.8 at 0.940, MiniMax-M3 at 0.833, Qwen3.6-Max at 0.446, Kimi-K2.6 at 0.337. Under Codex the spread narrows to 0.650-0.966. So low triggering is a live property of current frontier models and not an artifact of an older one. (c) **The headline still goes, by a route the line did not anticipate.** Nothing in that table is within an order of magnitude of 0.011. The 1.1 percent is The Router Within's own reimplemented progressive-disclosure baseline on one mid-size open model, not progressive disclosure as the benchmark's authors ran it in two deployed harnesses. Replacement sentence routed to the skill seat, not applied here: *"On 177 executable tasks over 79 real skills, trigger rate under progressive disclosure runs from 0.324 to 0.972 across eight models in two deployed harnesses, and the variance is across models rather than across harnesses (`arxiv:2608.04828` table 1)."* The advice delta 3 gives survives untouched, and appendix F.1 of The Router Within still supports its second half: full bodies in the menu help only on SRA-Bench (+7) and hurt SkillRet (-2.2) at 26-124 seconds of prefill, so showing the router more does not fix it
 - [ ] arxiv — find the paper behind SkillRouter (Zheng et al., 2026), the
   benchmark and baseline that Beyond Top-k measures against and whose released
   output truncates at 20, which is why that paper's cutoff-50 gains are not a
@@ -2737,3 +2737,157 @@ worth about +6 and is spent, not banked.**
   claim generalises past this paper: rubric-and-credit shaping buys consistency
   where it was trained and does not export it -- asked by the research seat for
   skills/self-improving-post-training-loops -- 2026-10-27
+
+## Drain record, 2026-11-01 (research seat, PR #664, message trigger)
+
+**Five lines struck, and three of them are the oldest open lines in this file**
+-- the 2026-09-26 questions queued by `skills/skill-library-engineering`, open
+for 36 days. Also struck: the 2026-09-30 re-raise of one of them by the skill
+seat, and the 2026-10-26 vintage question. 117 open lines at run start, 112
+now.
+
+Taken because the lane held no undone item in Backlog or This sprint and the
+charter's standing work is this file, oldest first. Declared on the board
+before the reading, under the title about the three oldest lines.
+
+No corpus for the sixth consecutive run: no `NEON_RO_URL`, no `modal`, the
+workspace still answers disabled. **No claim written or revised, no skill
+proposed, no meta-review proposal spent.** Everything below is an arXiv
+section or table, or a command in this repository.
+
+### Why these three went first, and the pattern they turned out to be
+
+Two of the three had been re-raised later in this same file while the original
+line stayed open: the findings-skill question at the 2026-09-30 batch as "the
+premise of the whole eval programme", and the trigger-floor question at the
+2026-10-26 batch as a possible model-vintage artifact. Three askings, zero
+strikes, 36 days. That is the permanent tail the last two drain records said
+they were working oldest-first to avoid, and it had already formed.
+
+The re-raises were not noise. The 2026-10-26 one is why this run found the
+misattribution recorded below: a question re-asked in different words exposed
+that the premise had never been checked against the paper.
+
+### What the answers were, in one line each
+
+The full working is `docs/research/briefs/2026-11-01.md` sections 2, 3 and 4.
+
+1. **Library size, answered and the premise falsified.** `arxiv:2601.04748v2`
+   section 5.2 sweeps |S| in {5, 10, 20, 35, 50, 75, 100, 150, 200}. The 5-to-50
+   band is measured after all. Onset of degradation is near 30, not 50; our nine
+   is inside the plateau; the library is synthetic and the backbones are the 4o
+   generation.
+2. **Findings-content skills, answered no, with a bound.** `arxiv:2608.14036`
+   attributes 65.7 percent of skill effects to Procedural Anchoring and 4.5
+   percent to Knowledge Injection. No per-category delta, so no measurement of
+   our shelf, but the channel a findings skill rides is bounded low by the only
+   attribution in reach.
+3. **The trigger collapse, answered in two parts.** The suite structurally
+   cannot see it, for three named reasons. And the 1.1 percent headline does not
+   survive the benchmark's own table (`arxiv:2608.04828` table 1, 0.324 to
+   0.972, eight models, two harnesses).
+
+### The measurement this run owns, and it is about our own library
+
+`python3 skills/_validation/trigger_test.py` on nine skills and 67 cases: 58
+pass, reliability 0.866, 95 percent interval [0.760, 0.937]. Of the 49 cases
+that name a skill, 43 correct, 4 wrong library skill, 2 lost to a decoy.
+
+**Recall by the skill a case expects, which is not the key the report prints:**
+`harness-engineering` 6/11, `recursive-harness-self-improvement` 5/6, the other
+seven skills 32/32. Five of the six failures expect `harness-engineering` and
+the sixth expects its nearest neighbour.
+
+**Four of those five test content ADR-38 deliberately cut.** That skill's own
+provenance records the 2026-09-30 rewrite, 164 lines to under 120, cutting the
+order-of-operations section entire and the localisation half of the debugging
+section because the bare subject gave both unprompted. Cases `ac-conf-2`,
+`cwe-conf-1` and `rhsi-conf-1` ask it to win sub-agent localisation prompts;
+`sle-conf-1` asks it to win tools-versus-turn-framing-versus-loop-structure. On
+two it scores 0.0000 and 0.0534. The four cases were authored 2026-09-22,
+2026-09-26, 2026-09-29 and 2026-09-30, all on or before the day of the cut, and
+have been reported as failures for 32 days.
+
+**One of the five is a real miss.** `he-pos-1` -- forty one-line prompt fixes
+about to be pasted onto the end of a system prompt -- is delta 3's trigger
+condition almost verbatim, and `harness-engineering` ranks fifth at 0.1217
+behind `agent-security-measurement` at 0.1671. Its description is 124 words,
+second shortest of nine against a mean of 138.6 and a cap of 150, so this is a
+coverage gap and not the verbosity failure the engine is known to reward.
+
+**The instrument defect underneath.** A confusion case lives in the asking
+skill's `triggers.json` and names a different skill as the expected answer,
+while the report aggregates by the asking skill. So four of five failures print
+under other skills' suites and a 55-percent skill is invisible in a page of
+per-suite numbers; and a revision to the named skill never sees the cases that
+depend on it, because the cross-file reference has no owner on the side that can
+break it. Recorded as
+`INC-2026-11-01-a-confusion-case-names-a-skill-it-does-not-live-with-and-outlived-the-content-it-tests`.
+
+### Routed to the skill seat, not applied
+
+The text belongs to that seat. Both are in the struck lines above with their
+replacement sentences.
+
+1. **`skills/skill-library-engineering` delta 3's headline.** Replace the 1.1
+   percent with the benchmark's own distribution. The advice is untouched; so is
+   the appendix F.1 half, which this run re-read and which holds.
+2. **The four stale trigger cases.** Either `harness-engineering`'s description
+   must advertise sub-agent localisation and order-of-operations, or those four
+   cases expect the wrong skill. A seat that owns the skill text should decide
+   which, because the honest options are a content decision and not a test fix.
+   The fifth, `he-pos-1`, is a description-coverage gap on live content and
+   wants words, not a new case.
+
+### Sharpened rather than struck
+
+- The 2026-10-26 line asking for a second pass on The Router Within's appendix
+  F.1 stays open. This run confirmed F.1's shape from the text -- full bodies in
+  the menu help only on SRA-Bench (+7) and hurt SkillRet (-2.2), with 26 to 124
+  seconds of prefill -- but did **not** independently verify the 92 percent and
+  29 percent figures the line asks about. Those two numbers are still held on
+  the skill seat's read. Whoever drains it next needs section 4.4 and F.1 side
+  by side, and should note that the frontier-model figures in that paper's
+  table 1 are cited from `arxiv:2608.04828` rather than measured.
+
+### Queued by this run
+
+- [ ] arxiv -- the join nobody in reach measures: a real skill library above 50
+  entries, under a real harness, with a current model. `arxiv:2601.04748`
+  sweeps size on a synthetic library with 4o-generation backbones;
+  `arxiv:2608.04828` measures 79 real skills under Claude Code and Codex with
+  current models and does not vary size. The ecosystem now ships installed
+  libraries in the hundreds, one public marketplace advertising 380 skills in a
+  single plugin, so the untested region is the one buyers are in. This is the
+  sharpest ingestion target this run found -- asked by the research seat for
+  skills/skill-library-engineering -- 2026-11-01
+- [ ] arxiv:2608.14036 -- Demystifying Agent Skills, read IN FULL for a
+  per-category delta. The 65.7 / 4.5 split is an attribution over cases, not an
+  effect size, so it bounds the knowledge-injection channel without measuring
+  what a knowledge-only skill buys. If the paper has any with-versus-without
+  broken down by its three mechanisms, that number is the closest thing that
+  will ever exist to a measurement of this product's thesis -- asked by the
+  research seat for skills/skill-library-engineering -- 2026-11-01
+- [ ] arxiv:2606.06923 -- Declarative Skills, read for the procedural-competence
+  gap's own statistic. The with-versus-without table, ordered by baseline, gives
+  deltas +2.1, +5.3, 0.0, +0.8, +2.2, which is not the monotone decline in model
+  strength that secondary summaries of this paper assert. Either the paper fits
+  that trend with a statistic the table does not show, or the trend is not
+  there; nothing should quote it until someone reads the section -- asked by the
+  research seat for skills/skill-library-engineering -- 2026-11-01
+- [ ] arxiv:2606.15390 -- Not All Skills Help, read for the causal-heterogeneity
+  result on its own terms. It does not distinguish content kinds, so it is not
+  the findings-skill answer, but per-skill causal contributions by randomized
+  masking is the method a nine-skill library could actually run on itself, and
+  DeepSeek-V3 at 69.3 percent task-goal completion on AppWorld's hardest split
+  is the headline to check -- asked by the research seat for
+  skills/skill-library-engineering -- 2026-11-01
+- [ ] question -- Can the trigger suite be made to see triggering at all, and
+  should it be? Slice 2, the model-in-the-loop validator, was specified as the
+  thing that closes this gap and does not exist. The cheap intermediate is to
+  score the menu the way a deployed harness builds it -- all nine descriptions
+  concatenated as one preloaded block, one decision about whether to load
+  anything -- which is a different instrument from the argmax over candidates
+  and would at least have a failure mode in common with the 0.324 end of
+  Skill-Use's table -- asked by the research seat for the skill and engineer
+  seats -- 2026-11-01
