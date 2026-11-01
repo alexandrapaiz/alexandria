@@ -23657,8 +23657,16 @@ has nothing to go red against.
   side is `git show <ref>:docs/ideas.md` and no new parsing is needed. Match
   entries by `(date, name)`, which the parser already returns, and report the
   ones only `HEAD` has.
+- Built in this same pull request, two hours after being written, because the
+  file argued for it faster than the proposal could wait. Merging `main` took
+  the project number from 196 to 202 on six other seats' entries, and the
+  choice was between raising the bound a second time in one run or building the
+  half that can tell whose entry it is. `python3 tools/ledger.py --patch
+  origin/main` reports 32 entries added on this branch and none short of the
+  contract. Nothing about the status below is the owner's to move: she never
+  set it, and this says what happened rather than claiming a grooming decision.
 - Cost: $0
-- Status: proposed
+- Status: built
 
 ### 2026-11-01 - A test that pins the sign of a live measurement is a named defect class, and it has now cost two red tests in two files (engineer seat, scheduled run)
 - Trigger: both of today's fixes, which turned out to be the same defect.
@@ -23751,5 +23759,70 @@ has nothing to go red against.
   token, and this stays a local command at $0.
 - First step: the entry above, which this scan is the argument for rather than
   a separate build.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-01 - Merging main took three cases off the one scoping arm that reads skill bodies, and the arm that reads descriptions now beats it (engineer seat, scheduled run, for the skill seat)
+- Trigger: this run merged `origin/main` to pick up six merges that landed while
+  it worked, and re-measured `tools/skill_scope.py` because `skills/` text was
+  in the diff. The shipped arm had moved. Before the merge, at this branch's
+  base: unscoped 44 of 49 golden cases, `scope/body` 43, `scope/desc` 43. After
+  the merge, with no change of this run's to `skills/` or to
+  `tools/skill_scope.py`: unscoped 44, `scope/body` **40**, `scope/desc` 43.
+- What this is: confirmation, from a second seat and a second tree, of the
+  prediction in
+  `INC-2026-10-27-a-published-recall-claim-moved-three-cases-in-a-day-on-prose-edits-and-the-suite-is-49-cases-wide`.
+  That entry said `scope/body` ranks the catalogue by BM25 over each skill's
+  body, so editing bodies is editing its input, and that the arm would keep
+  moving under ordinary maintenance while `scope/desc` and the trigger router
+  held. It held on exactly those terms: the two description-reading arms did not
+  move a single case and the body-reading one lost three.
+- What is new and is not in that entry: the ordering inverted. `scope/desc`
+  indexes only the text the unscoped baseline already sees, so this file's own
+  tests describe it as a control that "can only narrow the pool", and it is now
+  three cases ahead of the mechanism the product ships. A control arm beating
+  the shipped arm is a statement about the shipped arm's input rather than about
+  scoping, and it is the first time the two have been ordered that way.
+- Whose call, and it is not this seat's: `skills/` text and the scoping policy
+  are the skill seat's surface. What this seat did is replace the red floor with
+  the two assertions that seat asked for in its 2026-10-27 entry, in cases
+  rather than points, and record the gap at four cases as a ratchet that may
+  narrow and may not widen. The question this hands back is whether `scope/body`
+  should index bodies at all, given that the arm indexing descriptions is both
+  more accurate and cheaper here, at 1.99 skills and 243 context words against
+  2.81 and 372.
+- First step: measure the two arms on three or four consecutive `main` commits
+  rather than two, so the ordering is a trend rather than a reading. The data
+  for that is free: the commits exist and `--measure` takes under a minute.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-01 - The inverse of the patch check is a merge-loss check, and it is the same function read backwards (engineer seat, scheduled run)
+- Trigger: today's merge of `origin/main` silently stripped a status line off
+  another seat's ledger entry, recorded as
+  `INC-2026-11-01-a-shared-status-line-was-factored-out-of-a-conflict-hunk-and-reordering-detached-it`.
+  Both sides of the conflict ended with a byte-identical status line, the one
+  carrying the word `proposed`, so git hoisted one copy out of the hunk as
+  shared trailing context, and
+  keeping both sides in a different order left that line attached to the wrong
+  entry. The marker scan the charter prescribes printed nothing, because there
+  were no markers. Only `tools/ledger.py --check` caught it.
+- What: `--patch` as built today asks which entries a branch adds. The question
+  a merge needs is the mirror of it, which is whether every entry both parents
+  had is still here, and `patch(base_text, head_text)` already computes the set
+  difference that answers it. One flag, `--merge-check <ref-a> <ref-b>`, parsing
+  three trees and reporting any `(date, name)` present in either parent and
+  absent from `HEAD`, plus any entry whose status or contract fields got worse
+  than the copy a parent held. This run did that comparison by hand, in a
+  throwaway script, and the numbers it produced are the only evidence in the
+  pull request that the merge lost nothing: 785 entries here, 753 on `main`, 773
+  on the predecessor branch, zero missing from either.
+- Why it is worth a flag rather than a habit: the charter already asks every
+  seat for a marker scan before shipping, and the marker scan is the check that
+  does not catch this. A seat that reorders two appends has no instrument at
+  all, and reordering is the normal thing to do, because entries are dated and a
+  reader expects the newest section last.
+- First step: the flag and three tests, one of them the exact shape of today's
+  failure, which is two appends that share a trailing line, reordered.
 - Cost: $0
 - Status: proposed
