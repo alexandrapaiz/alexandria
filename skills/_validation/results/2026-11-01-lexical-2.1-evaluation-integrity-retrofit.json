@@ -29,7 +29,7 @@
     },
     "evaluation-integrity": {
       "path": "skills/evaluation-integrity/SKILL.md",
-      "sha256": "bb1a976a12ea110d"
+      "sha256": "1badc5a43035e6c5"
     },
     "harness-engineering": {
       "path": "skills/harness-engineering/SKILL.md",
@@ -1123,7 +1123,7 @@
     {
       "skill": "evaluation-integrity",
       "source": "skills/evaluation-integrity/triggers.json",
-      "skill_sha256": "bb1a976a12ea110d",
+      "skill_sha256": "1badc5a43035e6c5",
       "suite_version": 1,
       "cases": [
         {

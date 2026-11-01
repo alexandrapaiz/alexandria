@@ -45,7 +45,7 @@ Five deltas about the instrument rather than about the thing it measures. The su
 
 ## Delta 1: the rubric is an attack surface, and the exploit rate you measure is mostly a fact about your oracle
 
-*Validation: no trial, no consumer report, no bare-arm screen. Eval task ei-t1. A bare subject will very likely say that a model-written rubric can be gamed. What it is unlikely to supply is the certificate result and the oracle-swap spread, which are what turn that worry into a procedure.*
+*Validation: no trial, no consumer report, no bare-arm screen. Eval task ei-t1. A bare subject is likely to say that a model-written rubric can be gamed. What it is unlikely to supply is the certificate result and the oracle-swap spread, which are what turn that worry into a procedure.*
 
 Of eleven rubric generators, every one was exploitable: an attacker model optimising directly against the rubric scored at or above the honest baseline while violating ground truth on **8 to 26 percent** of an unbiased 150-environment cut, and the best exploit rate any generator reached on a 45-environment stress cut was **36 percent**. Rubrics written to be faithful to a machine-checkable certificate were exploited **0 of 45** times on that same stress cut (ImpossibleRubrics). The dividing line is not rubric quality as a reader judges it. It is whether the rubric is tied to something checkable or merely restates what a good answer sounds like.
 
