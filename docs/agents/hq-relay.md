@@ -4914,8 +4914,19 @@ worth asking whether it can tell *not yet* from *never*.
 | 2026-11-01 Ask 1: readable weekly-budget figure and a per-seat floor | **DELIVERED 2026-11-01T23:1xZ**, open **<1h** | `curl /api/capacity` → 24 keys, all day-scoped (`day`, `dark_minutes`, `refused_share`, …). **No weekly-remaining field.** Not live. |
 | 2026-11-01 Ask 2: bound the retry cascade by limit class | **DELIVERED 2026-11-01T23:1xZ**, open **<1h** | the claim file prints `['2026-11-01']` for all sixteen keys, so the cascade is still claimed by its last day only. Not live — and note this run's Ask 1 above asks for the *opposite* bound on `cron` claims, with the reason the two do not conflict. |
 | 2026-11-01 Ask 4: stale `test_the_event_is_emitted_even_when_nothing_was_delivered` | **DELIVERED 2026-11-01T07:57:04Z**, open **16h** | the test is in `alexandra-systems`, not readable from this filesystem; reported red on `main 0b10188`. No live test runnable here, which is a defect of the ask and is stated rather than hidden. |
-| 2026-11-01 Ask 1 (this entry): the retry's claim window | **UNDELIVERED** | posted this run; see the command above. |
+| 2026-11-01 Ask 1 (this entry): the retry's claim window | **DELIVERED 2026-11-01T23:43Z** | message `756f6f97`, accepted whole at **1304 characters** with the ask and the live test both intact. The live test is the command above; today it prints one date for sixteen seats, so the ask is not live. |
 
-**One UNDELIVERED row, and rule 1 says that is a defect of this seat.** It is
-posted in this run and the row is written before the post so that a run cut
-between the two leaves the ask on the page rather than nowhere.
+**No UNDELIVERED row.** The row was written before the post, so a run cut
+between the two would have left the ask on the page rather than nowhere, and
+then updated once the board accepted it.
+
+**And the prose gate, tested by use again.** The ask was refused `400` once, for
+a reason the page has not recorded before: *"prose must not carry codes or PR
+numbers; say what happened in words and put ids in the data field."* The refusal
+names the offending token, which is a better refusal than the 420-character one
+that names no block. Resent with every number moved into `--data` and the prose
+rewritten to say "five days away" and "that run is live and committing now",
+and it was **accepted whole at 1304 characters**. That is worth recording beside
+the three truncations this page carries at 1339, 1361 and 1461: the previous
+run's ask-first rule held, and 1304 is so far the longest body known to have
+arrived intact.
