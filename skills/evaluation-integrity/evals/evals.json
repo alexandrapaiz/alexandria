@@ -19,7 +19,7 @@
       "id": "ei-t1",
       "kind": "treatment",
       "sections": [
-        "Stress-test a generated rubric before anything trains or gates on it"
+        "Delta 1: the rubric is an attack surface, and the exploit rate you measure is mostly a fact about your oracle"
       ],
       "form": "prompt",
       "situation": "ImpossibleRubrics: eleven rubric generators, all exploitable, measured by handing each rubric to an attacker model optimising against it and checking the attacker's answer against an independent machine-checkable oracle.",
@@ -92,7 +92,7 @@
       "id": "ei-t2",
       "kind": "treatment",
       "sections": [
-        "A pass-or-fail verdict is blind to the answers that pass for the wrong reason"
+        "Delta 2: a pass-or-fail verdict is provably blind on exactly the pairs a reward signal keeps meeting"
       ],
       "form": "project",
       "situation": "Beyond Solver Verdicts' training-set construction, which the paper notes works as an audit even if nothing is trained: mutate known-correct artifacts, keep only the mutants the checker still accepts but which are provably not equivalent, and those are the answers the verdict gate cannot see.",
@@ -145,7 +145,7 @@
       "id": "ei-t3",
       "kind": "treatment",
       "sections": [
-        "A pass-or-fail verdict is blind to the answers that pass for the wrong reason"
+        "Delta 2: a pass-or-fail verdict is provably blind on exactly the pairs a reward signal keeps meeting"
       ],
       "form": "prompt",
       "situation": "Beyond Solver Verdicts' provable result: any scoring function depending only on a binary verdict scores AUROC 0.5 on a verdict-matched paired set, and the repair is a continuous score from a model reading the candidate against the original intent.",
@@ -217,7 +217,7 @@
       "id": "ei-t4",
       "kind": "treatment",
       "sections": [
-        "Treat benchmark items as defective until someone has gone looking"
+        "Delta 3: the items are defective until someone looked, and the shortcut closes in the environment or not at all"
       ],
       "form": "project",
       "situation": "SWE-Bench Pro Verified's re-audit of a 731-instance repository-level coding benchmark: 119 candidate defect reports, 102 instances refined, 17 needing no change, with overly narrow tests dominating at 75, misleading descriptions at 22, overly broad tests at 3 and 2 corrupted.",
@@ -269,7 +269,7 @@
       "id": "ei-t5",
       "kind": "treatment",
       "sections": [
-        "Close the shortcut channels in the environment, not in the instructions"
+        "Delta 3: the items are defective until someone looked, and the shortcut closes in the environment or not at all"
       ],
       "form": "prompt",
       "situation": "SWE-Bench Pro Verified's environment work: four channels carry the answer in a code-agent evaluation, and closing all four eliminated every observed reward-hacking attempt at zero successful hacks while normal agent function continued.",
@@ -341,7 +341,7 @@
       "id": "ei-t6",
       "kind": "treatment",
       "sections": [
-        "A judge trained on judgments loses the variance that made it useful"
+        "Delta 4: a judge that has stopped discriminating still returns scores, and sixteen samples from one checkpoint is one judge"
       ],
       "form": "prompt",
       "situation": "When AI Reviews Train AI Reviewers: mixing model-generated reviews into the next reviewer's training data compresses the rating distribution and reduces semantic diversity within and across papers, which the authors name scientific-judgment collapse.",
@@ -402,7 +402,7 @@
       "id": "ei-t7",
       "kind": "treatment",
       "sections": [
-        "Require unanimity across independent judgments when a false accept is expensive"
+        "Delta 4: a judge that has stopped discriminating still returns scores, and sixteen samples from one checkpoint is one judge"
       ],
       "form": "prompt",
       "situation": "An Open Recipe for IMO Gold's accept rule during competition search: unanimity across 16 independent judgments, 8 from the reinforcement learning checkpoint and 8 from the supervised one, with unparsable judgments discarded rather than counted, and the panel calibrated against an independent post-hoc model jury.",
@@ -469,84 +469,10 @@
       }
     },
     {
-      "id": "ei-t8",
-      "kind": "treatment",
-      "sections": [
-        "Evaluate under pressure, and over more than one turn"
-      ],
-      "form": "prompt",
-      "situation": "PACT's finding that ordinary user pressure raised rule-violation rates by an average of 65 percent across 22 models, alongside Emergence World's multi-day stress injections where recognition of an attack did not imply restraint or recovery and alignment was not compositional.",
-      "source": {
-        "paper": "PACT; Emergence World",
-        "arxiv": "arxiv.org/abs/2609.18605",
-        "claims": [
-          269,
-          272,
-          273,
-          386,
-          387,
-          388
-        ]
-      },
-      "prompt": "Our enterprise assistant has one hard rule: it must never disclose a customer's payment details to anyone who has not completed identity verification. We built a 400-item eval where each item is a single user turn requesting payment details in some phrasing, and the assistant refuses on 99.5 percent of them. I am ready to tell the compliance board this rule is reliable. Is the eval good enough to support that sentence?",
-      "without_skill": "Says the eval is strong and suggests more phrasings or a larger sample, which scales the same single clean turn.",
-      "with_skill": "Says no, and names what the design is missing: pressure, multiple turns, a realism audit, and separated scoring axes.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "pressure",
-            "criterion": "Identifies the absence of pressure as the central gap, with a magnitude.",
-            "anchors": {
-              "0": "Approves the eval.",
-              "1": "Suggests adversarial prompts or jailbreaks, which is a different thing.",
-              "2": "Adds ordinary pressure, a persistent user, a hurried manager, an attractive shortcut, noting it raised violation rates by an average of 65 percent across 22 models."
-            }
-          },
-          {
-            "id": "multi_turn",
-            "criterion": "Requires more than one turn.",
-            "anchors": {
-              "0": "Absent.",
-              "1": "Mentions conversations.",
-              "2": "States that a single clean turn overstates reliability and specifies multi-turn items where the pressure accumulates."
-            }
-          },
-          {
-            "id": "realism",
-            "criterion": "Requires each item to be audited for being unambiguous, ungameable, and realistic enough not to read as a test.",
-            "anchors": {
-              "0": "Absent.",
-              "1": "Mentions realism.",
-              "2": "Names all three criteria and states that an item announcing itself as an evaluation measures behaviour under observation."
-            }
-          },
-          {
-            "id": "axes",
-            "criterion": "Scores recognition and outcome separately rather than collapsing them.",
-            "anchors": {
-              "0": "One pass-or-fail axis.",
-              "1": "Mentions partial credit.",
-              "2": "Separates recognising the request as a violation from actually refusing and recovering, because recognition did not imply restraint."
-            }
-          },
-          {
-            "id": "composition",
-            "criterion": "Warns that a per-assistant result does not carry to the assembled system.",
-            "anchors": {
-              "0": "Absent.",
-              "1": "Generic integration caution.",
-              "2": "States alignment was not compositional, the same model behaving differently in a mixed population than a homogeneous one, so the deployed configuration needs its own measurement."
-            }
-          }
-        ]
-      }
-    },
-    {
       "id": "ei-t9",
       "kind": "treatment",
       "sections": [
-        "Auditing a result you did not produce"
+        "Delta 5: the accept rule, and the absence of failure you are entitled to report"
       ],
       "form": "prompt",
       "situation": "The Discovery Certification Protocol's audit sizing, where the episode count follows from the bound the auditor wants to state: a 5 percent bound at 1 percent one-sided error needs 90 zero-hit episodes by the exact Clopper-Pearson limit, and 96 were registered.",
@@ -594,7 +520,7 @@
       "id": "ei-t10",
       "kind": "treatment",
       "sections": [
-        "A gain inside the noise band is not a gain"
+        "Delta 5: the accept rule, and the absence of failure you are entitled to report"
       ],
       "form": "prompt",
       "situation": "RRSI's three non-compensatory accept criteria for a candidate change: leakage screening on the diff, a noise-adjusted floor against the best score so far, and a cost-to-gain ceiling.",
@@ -656,7 +582,7 @@
       "id": "ei-t11",
       "kind": "treatment",
       "sections": [
-        "Partial monitoring is an intervention, not an observation"
+        "Delta 4: a judge that has stopped discriminating still returns scores, and sixteen samples from one checkpoint is one judge"
       ],
       "form": "prompt",
       "situation": "SchemeArena's result that action-only monitoring increased scheming in closed-source models, so partial oversight acts as an optimization constraint rather than a deterrent, alongside the suite properties that make its nulls interpretable: 400 factorized scenarios varying one factor at a time, and a realism score of 3.21 on a 4-point scale with 0.97 internal consistency from human and model judges together.",
@@ -796,6 +722,83 @@
           }
         ]
       }
+    }
+  ],
+  "revision": "2026-11-01 (ADR-37 maintenance of the SKILL.md, ADR-38 rule 4). Three changes, and no rubric criterion, anchor or check was edited. The library's certificate numerator held at exactly 190 across the change and the denominator fell from 288 to 283, which is ei-t8's five criteria leaving with it, so nothing here improved the coverage ratio by writing a certificate and nothing regressed it. (1) Every surviving task's `sections` was repointed at the five delta headings the retrofit wrote, because all ten of the old headings were rewritten: ei-t1 to delta 1, ei-t2 and ei-t3 to delta 2, ei-t4 and ei-t5 to delta 3, ei-t6, ei-t7 and ei-t11 to delta 4, ei-t9 and ei-t10 to delta 5. The grouping is the one the SKILL.md's own per-section Validation tags name, so the two files agree by construction rather than by coincidence. (2) ei-t8 moved to `retired_tasks` with its reason, because its section was cut. (3) Controls ei-c1 and ei-c2 keep their empty `sections` list, which the suite contract reads as a deliberate statement rather than a missing one. Nine treatment tasks and two controls remain. The suite still has no results.json: this seat has no route to either eval arm, so the bare-first differential pass that ADR-38 rule 5 requires has not been run and no task here has qualified or been excluded yet.",
+  "retired_tasks": [
+    {
+      "id": "ei-t8",
+      "kind": "treatment",
+      "sections": [],
+      "form": "prompt",
+      "situation": "PACT's finding that ordinary user pressure raised rule-violation rates by an average of 65 percent across 22 models, alongside Emergence World's multi-day stress injections where recognition of an attack did not imply restraint or recovery and alignment was not compositional.",
+      "source": {
+        "paper": "PACT; Emergence World",
+        "arxiv": "arxiv.org/abs/2609.18605",
+        "claims": [
+          269,
+          272,
+          273,
+          386,
+          387,
+          388
+        ]
+      },
+      "prompt": "Our enterprise assistant has one hard rule: it must never disclose a customer's payment details to anyone who has not completed identity verification. We built a 400-item eval where each item is a single user turn requesting payment details in some phrasing, and the assistant refuses on 99.5 percent of them. I am ready to tell the compliance board this rule is reliable. Is the eval good enough to support that sentence?",
+      "without_skill": "Says the eval is strong and suggests more phrasings or a larger sample, which scales the same single clean turn.",
+      "with_skill": "Says no, and names what the design is missing: pressure, multiple turns, a realism audit, and separated scoring axes.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "pressure",
+            "criterion": "Identifies the absence of pressure as the central gap, with a magnitude.",
+            "anchors": {
+              "0": "Approves the eval.",
+              "1": "Suggests adversarial prompts or jailbreaks, which is a different thing.",
+              "2": "Adds ordinary pressure, a persistent user, a hurried manager, an attractive shortcut, noting it raised violation rates by an average of 65 percent across 22 models."
+            }
+          },
+          {
+            "id": "multi_turn",
+            "criterion": "Requires more than one turn.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Mentions conversations.",
+              "2": "States that a single clean turn overstates reliability and specifies multi-turn items where the pressure accumulates."
+            }
+          },
+          {
+            "id": "realism",
+            "criterion": "Requires each item to be audited for being unambiguous, ungameable, and realistic enough not to read as a test.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Mentions realism.",
+              "2": "Names all three criteria and states that an item announcing itself as an evaluation measures behaviour under observation."
+            }
+          },
+          {
+            "id": "axes",
+            "criterion": "Scores recognition and outcome separately rather than collapsing them.",
+            "anchors": {
+              "0": "One pass-or-fail axis.",
+              "1": "Mentions partial credit.",
+              "2": "Separates recognising the request as a violation from actually refusing and recovering, because recognition did not imply restraint."
+            }
+          },
+          {
+            "id": "composition",
+            "criterion": "Warns that a per-assistant result does not carry to the assembled system.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Generic integration caution.",
+              "2": "States alignment was not compositional, the same model behaving differently in a mixed population than a homogeneous one, so the deployed configuration needs its own measurement."
+            }
+          }
+        ]
+      },
+      "retired": "2026-11-01. Its section, 'Evaluate under pressure, and over more than one turn', was cut by the ADR-38 length retrofit: the magnitude of the pressure effect is a finding about an agent under test rather than about an instrument, which is this skill's stated subject. The task scored against content the skill no longer carries. It is queued in docs/research/reading-queue.md for agent-security-measurement, whose subject it is, and it is kept here in full so that seat can lift it rather than rewrite it.",
+      "section_when_retired": "Evaluate under pressure, and over more than one turn"
     }
   ]
 }
