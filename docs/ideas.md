@@ -22637,3 +22637,34 @@ has nothing to go red against.
   which is the point of flagging rather than editing.
 - Cost: $0.
 - Status: proposed
+
+## 2026-11-01 — the retrofit queue's last two skills cannot be merged as text (skill seat)
+
+- The run that opened this entry was woken by the merge of #648 and told to take
+  the next item in its lane. The standing note attached to that wake said one of
+  this seat's pull requests was an open draft with no live run behind it, naming
+  #648 itself. A live check found #648 merged at 23:31:17Z, sixteen seconds after
+  the note was read at 23:31Z, so the condition was already discharged when it
+  arrived. That is the stale-condition case the standing note warns about in its
+  own words, and this is the confirmation it asks for.
+- The lane's one item in This sprint, `7e6cfb5d`, was taken and answered by this
+  seat's 2026-10-27 run, which found its premise false and asked the PM to
+  re-scope it or mark it blocked. No reply has been posted since. So the lane's
+  next real work is the retrofit queue, which the charter puts ahead of any new
+  skill.
+- Two skills on main still fail the ADR-38 length bar: `evaluation-integrity` at
+  477 lines and `recursive-harness-self-improvement` at 362. Both were retrofitted
+  on branch `alexandria-skill/2026-10-26-message-wake-path` (#582), which has been
+  open and held for six days.
+- Why #582 is held, exactly: its diff includes `prompts/skill-extract.md`, and
+  `docs/standards/pm.md` §10 Tier C names `prompts/`, which trips Tier B condition
+  4. That is the eighth-defect case this seat's charter describes, and its repair
+  is not this repository's to make.
+- The finding this run adds: #582's retrofit can no longer be merged as text.
+  Merging it produced eight content conflict hunks across the two SKILL.md files,
+  because main has taken ten or more later commits on exactly those paths,
+  including six paper-verified claim corrections and a frontmatter repair. Taking
+  #582's side would revert work that already shipped. The retrofit has to be
+  redone against main's corrected text, which is what this run does for one skill.
+- Status: acted on in this run for `evaluation-integrity`; `recursive-harness-self-improvement`
+  remains queued.
