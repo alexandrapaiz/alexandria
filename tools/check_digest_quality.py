@@ -96,7 +96,47 @@ SLOP_USUALLY = (
 # Ban list 4 and 5.
 HEDGES = ("could potentially", "may possibly", "it's important to note",
           "it is important to note", "it should be noted")
-INTENSIFIERS = ("very ", "truly ", "incredibly ", "remarkably ", "extremely ")
+INTENSIFIERS = ("very", "truly", "incredibly", "remarkably", "extremely")
+
+
+def _word_edge(term: str) -> re.Pattern[str]:
+    r"""A listed term matches a word, never the inside of one.
+
+    The anchor is the left edge alone, because a listed word's inflections are
+    the same defect as the word: "delves" and "revolutionized" have to block
+    the way "delve" and "revolutionize" do, and closing the right edge too
+    would let the generator through on a suffix.
+
+    The left edge is the half that was missing. `INTENSIFIERS` held `"very "`
+    and the test was `if word in low`, a substring match, so the gate read
+    "behavioral recovery rate" and "Accelerate every builder" as the word
+    "very" and warned on both. The second is the close the owner mandated on
+    2026-09-30, which canon law 10 requires in every issue, so that finding
+    could never be cleared by fixing the issue. It was filed 2026-09-24 and
+    escalated at thirty days on 2026-10-24.
+
+    The trailing space those terms carried was standing in for a boundary and
+    it was the wrong one, which cost recall as well as precision: a line
+    ending on "very" had no space after it and went unreported. `\b` is the
+    general form of what the space was reaching for, so the space is gone.
+    """
+    return re.compile(rf"\b{re.escape(term)}", re.I)
+
+
+# Compiled once at import, and paired with the term so the finding still names
+# the word it found rather than a pattern. The per-line loop below runs over
+# every line of every issue, so it builds nothing.
+SLOP_ALWAYS_RX = tuple((_word_edge(word), word) for word in SLOP_ALWAYS)
+HEDGES_RX = tuple((_word_edge(phrase), phrase) for phrase in HEDGES)
+INTENSIFIERS_RX = tuple((_word_edge(word), word) for word in INTENSIFIERS)
+
+# `SLOP_USUALLY` is the fourth list and it is the one that was already
+# anchored, on both edges, which is why it is the only one of the four that
+# has never produced a false finding. It keeps the pattern it has: loosening
+# it to the left edge alone would newly warn on "robustness" and "landscapes",
+# which is a widening nobody asked for and the opposite of this repair.
+SLOP_USUALLY_RX = tuple(
+    (re.compile(rf"\b{re.escape(word)}\b", re.I), word) for word in SLOP_USUALLY)
 
 # Ban list 14. Counts of edges in alexandria's claim graph, printed at a reader
 # who has no way to decode them, plus the ISO week code and the triage scores.
@@ -211,18 +251,18 @@ def check(body: str, kind: str = "weekly") -> list[Finding]:
                 add(BLOCK, "internal-vocabulary", number,
                     f"{found.group(0)!r} is {why}, which no subscriber can decode", "14")
         low = line.lower()
-        for word in SLOP_ALWAYS:
-            if word in low:
+        for pattern, word in SLOP_ALWAYS_RX:
+            if pattern.search(low):
                 add(BLOCK, "slop-lexicon", number, f"{word!r}", "1")
-        for word in SLOP_USUALLY:
-            if re.search(rf"\b{re.escape(word)}\b", low):
+        for pattern, word in SLOP_USUALLY_RX:
+            if pattern.search(low):
                 add(WARN, "slop-lexicon", number, f"{word!r} (the paper's own word, or ours?)", "1")
-        for phrase in HEDGES:
-            if phrase in low:
+        for pattern, phrase in HEDGES_RX:
+            if pattern.search(low):
                 add(WARN, "hedge-stack", number, f"{phrase!r}; state it or grade it", "4")
-        for word in INTENSIFIERS:
-            if word in low:
-                add(WARN, "empty-intensifier", number, f"{word.strip()!r}", "5")
+        for pattern, word in INTENSIFIERS_RX:
+            if pattern.search(low):
+                add(WARN, "empty-intensifier", number, f"{word!r}", "5")
 
     # --- the consequence line: what the item leaves the reader holding ---
     for item in items:

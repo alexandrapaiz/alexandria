@@ -130,12 +130,41 @@ def test_the_vocabulary_moved_without_changing_a_word_the_model_reads():
     the four Layer 4 definitions were wrapped at 78 columns and everything
     around them at 79, which is the visible residue of two copies maintained
     on two days, and one renderer wraps the whole vocabulary at one width.
+
+    **What this pins changed on 2026-10-26, and why.** It used to pin the
+    rendered length of each whole prompt, 6,056 and 6,115 characters, and that
+    number was the evidence. It cannot be: the prose around the vocabulary
+    belongs to the seats that own the prompts, so the first legitimate edit to
+    either file turns the historical claim red without saying anything about
+    the vocabulary. It did, on the run that gave `relayed` to both prompts, at
+    7,690 and 7,025. So the pin moved onto the three blocks the renderer
+    actually injects, which are the three things that moved out of the files
+    in the first place, and the claim survives any edit to the text around
+    them.
+
+    The sentence the old assertion carried in its comment is the other half of
+    why: "the request this prompt sits in is the same size it was and
+    `pipeline/budget.py`'s sizing is unmoved." That gate is real and it is
+    live. `budget.py` renders both prompts and counts their tokens against
+    every model in the walk on every run, so a prompt that grows past its
+    window is caught there with the payload and the reservation beside it,
+    which a character count in a test file cannot do. A second copy of a size
+    in a place nothing reads is the defect `tests/test_ci_coverage.py` opens
+    its own docstring with.
     """
-    for name, chars in (("distill.md", 6056), ("distill-practices.md", 6115)):
+    # The injected vocabulary, byte for byte as the 2026-10-09 move left it.
+    assert len(topics.topic_list()) == 218
+    assert len(topics.definitions()) == 2837
+    assert len(topics.FIELD_REPORT_ROUTING) == 886
+    for name in PROMPTS:
         text = rendered(name)
-        # The character count is unchanged, so the request this prompt sits in
-        # is the same size it was and `pipeline/budget.py`'s sizing is unmoved.
-        assert len(text) == chars, name
+        # And it reaches both prompts: the marker is gone and every topic on
+        # the list is in the text. The block itself is not compared, because
+        # `_substitute` re-wraps it to the indent of the line the marker sat
+        # on, so the two prompts carry the same vocabulary at two layouts.
+        assert topics.LIST_MARKER not in text, name
+        for topic in topics.TOPICS:
+            assert topic in text, (name, topic)
 
 
 LAYER_4 = ("protocols", "containment", "security", "self-improvement")

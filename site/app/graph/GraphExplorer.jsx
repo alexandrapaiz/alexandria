@@ -26,6 +26,13 @@ const GRADE_LABEL = {
   field_measured: "Field measured",
   asserted: "Asserted",
   anecdote: "Anecdote",
+  // The fifth, added 2026-10-26 with the grade itself: another work's result
+  // as the cited source reports it, which nothing in the corpus has checked.
+  // The panel reads it too. Without this line the fallback below renders the
+  // raw lowercase value beside four title-case ones on a public page, which
+  // is the same defect one level over from the one the grade exists to fix:
+  // a value added in one file and read in another.
+  relayed: "Relayed",
 };
 
 export default function GraphExplorer({ claims, edges, topics, counts }) {

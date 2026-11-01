@@ -887,10 +887,28 @@ def test_the_files_only_half_and_the_live_half_return_the_same_verdict():
 
 
 def test_the_cli_exit_codes_are_the_three_the_panel_shares():
-    """0 nothing wrong, 1 a finding, 2 something could not be measured."""
-    assert val.main(["--files-only"]) == 1, (
-        "the library fails today, so this is 1; a day it returns 0 is a day "
-        "every skill has an eval that gained")
+    """0 nothing wrong, 1 a finding, 2 something could not be measured.
+
+    This asserts the rule rather than today's library, which is the correction
+    made on 2026-10-27. It used to read `== 1` with the note "the library fails
+    today", and that pin went stale the moment the library stopped failing: by
+    2026-10-27 the panel reported 9 reviewed, 0 failing and 9 not fully
+    measurable, so the honest code was 2 and the test failed on main while
+    nothing was wrong. The precedence is what is worth pinning anyway, because
+    it is the part a reader depends on: a fail outranks an unknown, so a library
+    with both answers 1 and a seat reading 2 knows there is nothing failing.
+    """
+    verdicts = [v["verdict"] for v in val.review(conn=None)]
+    code = val.main(["--files-only"])
+
+    assert code in (0, 1, 2), f"undocumented exit code {code}"
+    if "fail" in verdicts:
+        assert code == 1, "a fail has to outrank an unknown"
+    elif "unknown" in verdicts:
+        assert code == 2, "an unmeasurable library is 2, not 0"
+    else:
+        assert code == 0, "nothing wrong and nothing unknown is 0"
+
     with pytest.raises(SystemExit):
         val.main(["--files-only", "--record"])
 

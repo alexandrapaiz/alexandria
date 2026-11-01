@@ -101,21 +101,26 @@ alter table claims add column if not exists interpreted_at timestamptz;
 alter table claims add column if not exists procedure text;
 
 -- evidence_grade: what kind of support this claim has, written at distill from
--- the paper's source class and whether the model found a measurement in the
--- evidence it wrote (pipeline/evidence.py holds the rules and the reasoning).
+-- the paper's source class, whether the model found a measurement in the
+-- evidence it wrote, and whose result the claim is about
+-- (pipeline/evidence.py holds the rules and the reasoning).
 -- NULL means ungraded, which is every claim distilled before this column
 -- existed; nothing backfills it, because the measurement judgment belongs to
 -- the run that read the source.
 alter table claims add column if not exists evidence_grade text;
 
-do $$
-begin
-    if not exists (select 1 from pg_constraint where conname = 'claims_evidence_grade_check') then
-        alter table claims add constraint claims_evidence_grade_check
-            check (evidence_grade is null or evidence_grade in
-                   ('controlled', 'field_measured', 'asserted', 'anecdote'));
-    end if;
-end $$;
+-- `relayed` is the fifth value, added 2026-10-26: another work's result, as
+-- this source reports it. The constraint is dropped and rebuilt rather than
+-- added only when absent, because the four-value version is already on every
+-- database this schema has ever been applied to, and an `if not exists` guard
+-- around a widening would see it there and leave the old list in place. That
+-- is the shape of failure the parity test in tests/test_evidence_grade.py
+-- exists for: a grade the grader returns and the column rejects loses a whole
+-- run of claims on the insert. Both statements are idempotent.
+alter table claims drop constraint if exists claims_evidence_grade_check;
+alter table claims add constraint claims_evidence_grade_check
+    check (evidence_grade is null or evidence_grade in
+           ('controlled', 'field_measured', 'asserted', 'anecdote', 'relayed'));
 
 -- prompt_sha: which distill prompt wrote this claim, the first 12 hex of its
 -- sha256. As of 2026-09-30 there are two of them, prompts/distill.md for papers
@@ -141,6 +146,16 @@ alter table claims add column if not exists prompt_sha text;
 -- can find it. NULL means the source reported no failure, which for a field
 -- report is a fact about the source worth reading rather than a missing value.
 alter table claims add column if not exists broke text;
+
+-- attributed_to: the work a relayed claim's result belongs to, as the source
+-- names it ("Yuan et al., 2026", "arxiv:2605.09490", "the Chroma report").
+-- Only meaningful where evidence_grade is 'relayed', and it is what makes such
+-- a row actionable rather than only doubtful: the repair
+-- INC-2026-10-26-a-papers-own-citation-was-wrong-and-the-corpus-carried-it-faithfully
+-- asks for is that a load-bearing citation becomes a reading-queue line, and a
+-- queue line needs an address. NULL on a relayed row is its own signal, which
+-- is a relational sentence whose subject the source never named.
+alter table claims add column if not exists attributed_to text;
 
 create index if not exists claims_evidence_grade_idx on claims (evidence_grade);
 create index if not exists claims_prompt_sha_idx on claims (prompt_sha);

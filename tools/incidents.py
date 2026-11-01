@@ -43,6 +43,24 @@ which is why `check` does not require an empty inbox unless asked with
 `--require-folded`. A gate that can turn `main` red for a bookkeeping step nobody
 promised to run is a worse defect than the one being fixed.
 
+**And one predicate reads the branch rather than the files.** Added 2026-10-27,
+routed here by the ExO seat, whose charter confines it to charters and the agent
+docs. `check --base origin/main` fails when the diff against the merge base adds
+a level-two incident heading to the register and no inbox file claims that id.
+Every other predicate below inspects an entry that is already in the inbox or
+already in the register, so a seat that bypassed the inbox entirely produced a
+clean read, which is what seven commits did in the thirty-nine hours after the
+inbox landed
+(`INC-2026-10-27-the-register-anchor-conflicted-seven-times-in-two-days-and-its-inbox-has-no-gate`).
+One of them was handed back against a pull request that had already passed
+review clean.
+
+The fold is exempt, and the exemption is keyed on the inbox file the diff
+deletes rather than on the branch it runs from, so a fold is a fold wherever it
+happens and an append that only resembles one is not. `--base` is opt-in for the
+reason the paragraph above gives: a predicate that needs a merge base cannot run
+on a checkout that has none, and it says so on stderr rather than passing quiet.
+
 **The baselines are the honest half.** Nine legacy numbers in this register
 answer to more than one entry and twelve entries are excess copies, all from the
 sequential allocator L-A18 retired. L-A18 says identifiers already issued are
@@ -57,12 +75,18 @@ from __future__ import annotations
 import argparse
 import collections
 import re
+import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTER = ROOT / "docs" / "agents" / "incidents.md"
 INBOX = ROOT / "docs" / "agents" / "incidents" / "inbox"
+
+# The same two paths as repository-relative strings, which is the form `git
+# diff` takes and the form a problem line quotes back to a reader.
+REGISTER_PATH = "docs/agents/incidents.md"
+INBOX_PATH = "docs/agents/incidents/inbox"
 
 # An entry heading is a level-two heading. Level three and deeper are sections
 # inside an entry, and the register has 302 of the former and many of the latter.
@@ -196,6 +220,133 @@ def legacy_census(entries: list[Entry]) -> dict:
         "excess": sum(n - 1 for n in duplicated.values()),
         "detail": duplicated,
     }
+
+
+def git(*args: str, root: Path | None = None) -> tuple[int, str]:
+    # `root` resolves at call time rather than binding `ROOT` as a default, so a
+    # caller can point the whole predicate at another checkout. A default
+    # evaluated at import is a default nothing can override.
+    proc = subprocess.run(["git", "-C", str(ROOT if root is None else root), *args],
+                          capture_output=True, text=True)
+    return proc.returncode, proc.stdout
+
+
+def register_diff(base: str, root: Path | None = None, path: str = REGISTER_PATH) -> tuple[str, str]:
+    """The register's diff against the merge base, or a reason it is unreadable.
+
+    `A...B` on purpose, which is the merge base rather than the tip, so a
+    branch that is behind `main` is not credited with everything `main` added
+    since it forked. The fallback to a two-dot diff is there for the one state
+    this repository keeps producing: the host clones `--depth 1`, which implies
+    `--single-branch`, so the default branch is grafted with no parents and a
+    merge base between two close branches cannot be computed at all
+    (`INC-2026-10-26-the-single-branch-refspec-survived-the-unshallow-again`).
+    """
+    code, out = git("diff", f"{base}...HEAD", "--", path, root=root)
+    if code == 0:
+        return out, ""
+    code, out = git("diff", base, "--", path, root=root)
+    if code == 0:
+        return out, ""
+    return "", (f"git could not diff {path} against {base}, so this run says "
+                "nothing about what the branch adds to the register")
+
+
+def added_and_removed_ids(diff: str) -> tuple[set[str], set[str]]:
+    """The INC ids whose level-two headings this diff adds, and which it removes.
+
+    Removals matter because a fold is a move. It deletes the inbox file and adds
+    the heading, and reading only the additions would make the one legitimate
+    append the loudest failure in the file.
+    """
+    added, removed = set(), set()
+    for line in diff.splitlines():
+        if line.startswith("+++") or line.startswith("---"):
+            continue
+        if line[:1] not in "+-":
+            continue
+        entry = ENTRY.match(line[1:])
+        if entry is None:
+            continue
+        match = INC_ID.match(entry.group(1))
+        if match is None:
+            continue
+        (added if line[0] == "+" else removed).add(match.group(1))
+    return added, removed
+
+
+def unclaimed_register_appends(added: set[str], inbox_names: list[str],
+                               exempt: set[str] | None = None) -> list[str]:
+    """Ids this branch appends to the register that no inbox file claims.
+
+    The predicate the ExO seat routed here, and the measurement behind it: the
+    register's append anchor needed a keep-both merge resolve seven times in the
+    thirty-nine hours after the inbox landed
+    (`INC-2026-10-27-the-register-anchor-conflicted-seven-times-in-two-days-and-its-inbox-has-no-gate`).
+    One of those was handed back against a pull request that had already passed
+    review clean.
+
+    Every other predicate in `check` inspects an entry that is already in the
+    inbox or already in the register, so a seat that ignores the inbox entirely
+    passed cleanly, which is exactly what those seven commits did. This is the
+    one that reads the thing the seat did rather than the thing it produced.
+
+    Exempt: an id whose inbox file this same diff deletes. That is the fold, and
+    it is the one legitimate append. Keying the exemption on the move rather
+    than on the branch name means a fold is still a fold wherever it is run, and
+    an append that only pretends to be one is not.
+    """
+    claimed = {match.group(1) for match in
+               (INBOX_FILENAME.match(name) for name in inbox_names) if match}
+    claimed |= (exempt or set())
+    return [
+        f"{REGISTER_PATH}: this branch appends {inc_id} straight to the register "
+        "and no inbox file claims it. File it with "
+        "`python3 tools/incidents.py new --slug ...` instead, so two seats filing "
+        "between merges cannot collide on the register's append anchor"
+        for inc_id in sorted(added - claimed)
+    ]
+
+
+def folded_ids(base: str, root: Path | None = None) -> set[str]:
+    """The ids whose inbox files this branch deletes, which is the fold's shape.
+
+    Read from the inbox directory's own diff rather than from the register's, so
+    a heading that was moved and a heading that was typed are told apart by the
+    file that stopped existing.
+    """
+    code, out = git("diff", "--diff-filter=D", "--name-only", f"{base}...HEAD",
+                    "--", INBOX_PATH, root=root)
+    if code != 0:
+        code, out = git("diff", "--diff-filter=D", "--name-only", base,
+                        "--", INBOX_PATH, root=root)
+    if code != 0:
+        return set()
+    ids = set()
+    for line in out.splitlines():
+        match = INBOX_FILENAME.match(line.strip().rsplit("/", 1)[-1])
+        if match:
+            ids.add(match.group(1))
+    return ids
+
+
+def branch_appends(base: str, inbox_names: list[str], root: Path | None = None) -> tuple[list[str], str]:
+    """The routed predicate, run against git. Returns (problems, skipped-reason).
+
+    The reason is returned rather than swallowed because a gate that saw
+    nothing must not read as a quiet pass (L-A21, and this file's own closing
+    paragraph). On a checkout where the base cannot be resolved this predicate
+    has no opinion, and saying so is the honest answer.
+    """
+    diff, error = register_diff(base, root=root)
+    if error:
+        return [], error
+    added, _ = added_and_removed_ids(diff)
+    if not added:
+        return [], ""
+    return unclaimed_register_appends(
+        added, inbox_names, exempt=folded_ids(base, root=root)
+    ), ""
 
 
 def check(register_text: str, inbox: list[tuple[str, str]], require_folded: bool = False):
@@ -385,6 +536,13 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="also fail when the inbox is not empty (for a mainline assertion)",
     )
+    checker.add_argument(
+        "--base",
+        default=None,
+        help="a ref to read this branch's own appends against, normally "
+             "origin/main. Without it the register and the inbox are checked "
+             "for shape and nothing is said about what the branch adds",
+    )
 
     maker = sub.add_parser("new", help="write a skeleton entry into the inbox")
     maker.add_argument("--slug", required=True, help="the subject half of the id")
@@ -408,7 +566,16 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "check":
         problems = check(register_text, inbox, require_folded=args.require_folded)
+        skipped = ""
+        if args.base:
+            appends, skipped = branch_appends(args.base, [name for name, _ in inbox])
+            problems.extend(appends)
         entries = split_entries(register_text)
+        if skipped:
+            # Printed on stderr whichever way the gate goes, because the one
+            # outcome this file refuses is a predicate that saw nothing and
+            # read as a pass.
+            print(f"note: {skipped}", file=sys.stderr)
         if problems:
             for problem in problems:
                 print(problem)
