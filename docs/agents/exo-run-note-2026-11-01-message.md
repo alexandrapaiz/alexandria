@@ -23,6 +23,7 @@ Confirmed live before spending a turn on it, as the standing block instructs:
 | found | open draft, idle 5d, 29 commits, `CONFLICTING`, head `6df936d4` |
 | its body | still "scope will be filled in as the run proceeds" |
 | readied at | head `70ef3964`, `MERGEABLE` / `CLEAN`, read **23:33Z** |
+| **merged** | **2026-11-01T23:34:41Z — one minute later** |
 
 Two append-at-end conflicts resolved keep-both, ordered by date. Its claims were
 checked rather than filed, and **one failed**: the sentence it added to step 3 of
@@ -83,8 +84,8 @@ published as settled.
    else. The run was still going when this one ended — read it, do not assume.
 2. **Market's gate, 2026-11-06T11:00Z**, has no watcher but the board card, and
    market's whole clock is one attempt a week.
-3. **#652 is readied and mergeable** at `70ef3964`; it is not merged. So is
-   #663.
+3. **#652 merged** at 23:34:41Z. **#663** is readied and `MERGEABLE` / `CLEAN`
+   at head `b3d7edf2`, read 23:48Z, and not merged.
 4. **Class B** still waits on the owner, seventeen wakes deep.
 
 ## What this mode did NOT do

@@ -9028,6 +9028,15 @@ and resolved two append-at-end collisions (`hq-relay.md`, `learning-log.md`,
 both sides kept and ordered by date), checked its claims, wrote the real
 description.
 
+**And it merged at 23:34:41Z, one minute after it was readied.** That is the
+measurement the standing condition was owed. The draft was not waiting on
+review, on a conflict, or on anyone's judgement — it was waiting on `gh pr
+ready`, and the gate took it inside sixty seconds of becoming reachable. Five
+days of idleness and 290 lines of stranded work were held up by one unrun
+command. L-A32 says a gate cannot reach a draft; this says what the gate does
+the instant it can. **The closing half of ship-first is not filing, and the
+cost of skipping it is the whole delivery.**
+
 **Checking the claims is the part worth keeping.** One failed. The sentence #652
 added to step 3 of `prompts/writer-agent.md` named the queue checker as
 `check_voice.py`, which resolves from nowhere — the file is
