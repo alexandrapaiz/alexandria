@@ -5523,6 +5523,42 @@ def _law_sort(label):
     return (int(m.group(1)), m.group(2)) if m else (999, label)
 
 
+def drop_reverted(rows):
+    """The queue with every revert and the commit it reverts removed.
+
+    A commit and its own revert both name the law in their subject, because
+    `git revert` keeps the subject and prefixes it. So the pair counts twice
+    and `queued` reads two commits working the law, which is the QUEUED
+    verdict, which tells a grade the fix is merged and waiting on a deploy and
+    to write nothing. For a pair that cancels there is no fix anywhere.
+
+    This was live on law 8 on 2026-11-01 and it cost that grade a verdict.
+    `c5a32e4c` wrote law 8's url form and `0251df0b` reverted it inside the
+    same run; `git diff c5a32e4c~1 0251df0b -- prompts/digest.md` is empty. The
+    command reported "law 8 is named by 2 queued commit(s), so a fresh wording
+    is the tinker the structure-watch step refuses" while nine of the ten links
+    on the live issue stopped at the abstract page, which is the one state the
+    canon names as the worst this instrument can reach: an instrument
+    flattering about the one law with no patch.
+    """
+    subjects = {}
+    for row in rows:
+        parts = row.split("\t")
+        if len(parts) > 1:
+            subjects.setdefault(parts[1], []).append(row)
+    drop = set()
+    for row in rows:
+        parts = row.split("\t")
+        subject = parts[1] if len(parts) > 1 else ""
+        if not subject.startswith('Revert "') or not subject.endswith('"'):
+            continue
+        original = subject[len('Revert "'):-1]
+        if original in subjects:
+            drop.add(row)
+            drop.update(subjects[original])
+    return [r for r in rows if r not in drop], len(drop)
+
+
 def queued(labels=()):
     """Which law each undeployed generator patch reaches.
 
@@ -5562,6 +5598,7 @@ def queued(labels=()):
     deployed = found.get("deployed_commit")
     rows = _git_lines("log", "--format=%h%x09%s",
                       f"{deployed}..origin/main", "--", PRESS_FILE)
+    rows, cancelled = drop_reverted(rows)
     named_by = {}
     nearby_by = {}
     orphans = 0
@@ -5592,6 +5629,7 @@ def queued(labels=()):
     print(f"deployed commit                            "
           f"{deployed or 'unknown'}")
     print(f"queued commits to the generator            {len(rows)}")
+    print(f"of those, dropped as a cancelling revert    {cancelled}")
     print(f"of those, naming the law they serve        {len(rows) - unnamed}")
     print(f"changed lines under no citation            {orphans}")
     print()
