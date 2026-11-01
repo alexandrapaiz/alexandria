@@ -169,7 +169,16 @@ is unexpired: `deadlines` reads `2026-10-28T20:44Z` against a fixed
 | Are the skill files the paid product, or the free distribution that sells something else? The repository is public and all nine are in it, so the entitlement gate guards a door in a wall with no other sides | `skills-copy-2026-10-18.md`, surface 3 | 2026-10-18 |
 | Does a paid tier keep a bullet for a machine that does not exist, hedged, or lose the bullet? | `claim-repairs-2026-10-18.md`, finding 8 | 2026-10-18 |
 | Is `docs/voice/value.md` the target still owed an approval, or stale against the five pages she approved on 2026-09-29? | `value.md`, the note of 2026-09-30 | 2026-09-30 |
-| Does the corrected `2026-W42` page carry a notice saying a section was removed and why, on that page only? Recommended yes, quoted in full in the candidate, and canon law 7 is the ground it stands on rather than an exception to her ban: that law's first clause asks for a limitation that materially affects the day's content in one plain sentence, and its second bans narrating the method | `w42-correction-2026-10-26.md`, the one line that needs her word, with the insertion point and the form settled in its sequencing section | 2026-10-26. Posted to her as a formal ask by the PM, read on the board rather than taken on report: board message `065eda95-92e7-4f94-8625-906c10691b81`, named in #609. deadline 2026-10-28T20:44Z, after which the recommendation is in force under the company standard's silence rule |
+
+## Resolved on the clock, without her word
+
+A row here was a question for her and is not one any more, because the
+standard's silence rule answered it. The row keeps its question verbatim, so
+the record shows what was asked rather than only what came of it.
+
+| Question | Resolution | Read at |
+|---|---|---|
+| Does the corrected `2026-W42` page carry a notice saying a section was removed and why, on that page only? Recommended yes, quoted in full in the candidate, and canon law 7 is the ground it stands on rather than an exception to her ban: that law's first clause asks for a limitation that materially affects the day's content in one plain sentence, and its second bans narrating the method | **Yes, as recommended.** `docs/standards/pm.md` §22 proceeds as the PM recommended after forty-eight hours of her silence, and the clock in the row was `deadline 2026-10-28T20:44Z`. No reply arrived on the card or on the bus. So the notice is settled text and not a proposal: the sentence is the one quoted verbatim in `w42-correction-2026-10-26.md`, the anchor is a new plain-prose paragraph directly under the masthead, and that candidate's sequencing section already decided the form so nobody decides it twice. It moves no authority and no money, which is what §22 reserves to her regardless of the clock | 2026-11-01T23:18Z, writer run 61, by `check_voice.py deadlines`. The hour had passed four days earlier and this register still called it a question, which is the one failure that gate exists to produce |
 
 ## Closed
 

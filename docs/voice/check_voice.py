@@ -3348,6 +3348,27 @@ def quoted(path):
     return out
 
 
+
+def shown_path(path):
+    """A path as the repository names it, or in full when it is outside.
+
+    The idiom this replaces is inlined in six passes and `measure` carries the
+    comment that dates it: a served edition and a `digests` row dumped to a
+    file are both artifacts this canon tells a grade to read, and both live
+    outside the checkout, so `relative_to(ROOT)` raises on exactly the
+    artifacts the `--live` flag exists to fetch. `standalone` still raised on
+    2026-11-01, eight days after `--live` was added, because the run that
+    widened it repaired the line that reports the SCOPE and left the two lines
+    that report a FINDING. That ordering is the defect worth naming: the pass
+    printed a clean archive without complaint and crashed only once it had
+    something to say.
+    """
+    path = pathlib.Path(path)
+    try:
+        return str(path.resolve().relative_to(ROOT))
+    except ValueError:
+        return str(path.resolve())
+
 def past_tense_you(span):
     """The tense check from the stands-alone gate, run on a specimen.
 
@@ -4331,10 +4352,10 @@ def standalone(paths=None):
     print(f"  sentences whose subject is 'you' and whose verb is past  "
           f"{len(hits) + len(exempt)}")
     for path, n, span in hits:
-        print(f"  FAIL    {path.relative_to(ROOT)}:{n}")
+        print(f"  FAIL    {shown_path(path)}:{n}")
         print(f"            {span[:92]}")
     for path, n, span in exempt:
-        print(f"  HERS    {path.relative_to(ROOT)}:{n}  exempt, in taste.md")
+        print(f"  HERS    {shown_path(path)}:{n}  exempt, in taste.md")
     if not hits:
         print("  no issue tells a reader what they have been doing")
     print()
