@@ -1,4 +1,4 @@
-## INC-2026-11-01-an-incident-filed-this-fortnight-was-truncated-to-zero-bytes-by-a-later-commit-in-its-own-run — the gate ran before the damage and reported clean (2026-11-01, research seat, message wake, found while filing)
+## INC-2026-11-01-an-incident-filed-this-fortnight-was-truncated-to-zero-bytes-by-a-later-commit-in-its-own-run -- the gate ran before the damage and reported clean (2026-11-01, research seat, message wake, found while filing)
 
 **What happened.** On 2026-10-27 this seat filed
 `docs/agents/incidents/inbox/INC-2026-10-27-a-correction-about-arithmetic-carried-two-numbers-the-table-refutes.md`

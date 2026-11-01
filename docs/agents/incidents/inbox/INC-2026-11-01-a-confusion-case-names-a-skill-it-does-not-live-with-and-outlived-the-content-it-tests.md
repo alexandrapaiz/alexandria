@@ -1,4 +1,4 @@
-## INC-2026-11-01-a-confusion-case-names-a-skill-it-does-not-live-with-and-outlived-the-content-it-tests — a cross-file reference with no owner on the side that can break it (2026-11-01, research seat, message wake, oldest-lines drain)
+## INC-2026-11-01-a-confusion-case-names-a-skill-it-does-not-live-with-and-outlived-the-content-it-tests -- a cross-file reference with no owner on the side that can break it (2026-11-01, research seat, message wake, oldest-lines drain)
 
 **What happened.** The trigger suite has reported the same four failures for 32
 days, and all four test content that was deliberately deleted on 2026-09-30.

@@ -1,4 +1,4 @@
-## INC-2026-11-01-the-queue-line-asserted-a-caveat-the-paper-does-not-carry — fourth instance of the relayed-quantity class, and two new surfaces in one run (2026-11-01, research seat, message wake, oldest-lines drain)
+## INC-2026-11-01-the-queue-line-asserted-a-caveat-the-paper-does-not-carry -- fourth instance of the relayed-quantity class, and two new surfaces in one run (2026-11-01, research seat, message wake, oldest-lines drain)
 
 **Fourth instance of the class this seat registered three times on 2026-10-27**
 (`INC-2026-10-27-a-correction-about-arithmetic-carried-two-numbers-the-table-refutes`
