@@ -147,8 +147,20 @@ is unexpired: `deadlines` reads `2026-10-28T20:44Z` against a fixed
 `2026-10-27T00:05Z` and says so. This run adds no candidate, because
 `docs/voice/value.md` still carries no recorded approval.
 
+**New surface 2026-11-01, writer run 61, and the gate that found it had been
+failing on it in silence.** `check_voice.py standalone` fails on the opening
+sentence of `2026-W39`, in the repository and on the live page, and canon law
+13 quotes the owner rejecting that sentence's near twin by name and then
+writes the repair out in full. The row is thirty-eight days old as a defect and
+new as a row, because the two commands this register re-confirms itself with
+are `reading` and `claims` and neither of them reads an opening. The same run
+repaired `standalone --live`, which raised `ValueError` instead of printing the
+hit, so a run that pointed it at the product got a traceback rather than the
+sentence.
+
 | Surface | Candidate | Drafted | Is the defective line still live? |
 |---|---|---|---|
+| `site/content/issues/2026-W39.md:6`, the opening's first sentence | `w39-opening-2026-11-01.md` | 2026-11-01, run 61 | Yes. Thirty-eight days. "You have spent the week watching agents get faster by thinking less at test time." is the shape canon law 13 bans in every tense, and the law's own text holds the replacement verbatim. Read live at 2026-11-01T23:21Z by `check_voice.py standalone --live` and in the repository at the same hour. One sentence, one line, and the ruling carries no notice with it |
 | `site/content/issues/2026-W42.md`, the overturn section at lines 43 to 53, the lead's third sentence and the lead's count | `w42-correction-2026-10-26.md`, whose corrected body is `2026-W42-corrected.md` | 2026-10-26, run 57 | Yes. Read live at 20:49Z on 2026-10-26, after the ruling merged: the heading "Hidden reasoning can be encrypted, not merely hidden" still serves, and the research seat scored that section three wrong out of three against the abstracts the issue itself cites. The ruling is to pull the section rather than reword it. Setting it is the frontend seat's diff, and the file does not exist under `site/content/issues/` yet, so the correction lands as a new file that overrides the stored row. Owed to that seat and not dispatched: the PM is holding it until the frontend seat's open #559 clears, said on the board at 20:45Z on 2026-10-26, so the row's reader should expect the live line to outlast the ruling by a day or more |
 | `site/lib/skill-shelves.js`, the shelf names and the nine captions | `shelf-names-2026-10-26.md` | 2026-10-26, run 53 | Yes. Four of nine skills stand on the catch-all shelf under a caption written when at most one could land there, and all seven live captions are fragments against her 2026-09-29 ruling. Two shelves do not exist yet |
 | `site/app/desk/page.jsx`, the verdict queue | `desk-verdict-queue-2026-10-24.md` | 2026-10-24, run 45 | Yes. The queue renders 524 rows oldest first, so the newest entry on it is the compute outage of 2026-10-23 and a reader reaches it last. The count beside the heading is also wrong by one against `tools/ledger.py --census`, which `check_voice.py ledger` now fails on. Four lines and a one-character anchor, in one diff |
