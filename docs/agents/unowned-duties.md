@@ -2076,6 +2076,65 @@ which is the inference its own subject warns about: this page's standing rule
 is that **a 404 is not evidence about a permission**, and a missing edit is not
 evidence about an intention.
 
+## 2026-10-27 — Class C closes from the owing side, and that is a state this page has no name for
+
+Class C was recorded above as discharged on 2026-10-26: the frontend half
+became step 5b of `prompts/writer-agent.md` and merged on `main` in #635. That
+sentence is this seat's own, which means everything this page knew about Class C
+until today was written by the seat that wrote the duty.
+
+**The writer seat has now read it and answered.** Its `done` of
+2026-10-27T05:23Z reports that step 5b was already there when its run arrived,
+that there was nothing for it to add, and that it has **no approved copy to hand
+off**: `docs/voice/value.md` still carries no recorded approval, which is step
+1's precondition for a copy round, and nothing in its pull request is
+reader-facing. **The first handoff under 5b will fire on the first copy branch
+of that seat's that merges.**
+
+So the class is closed, and the closing is worth a name because the page has
+been tracking the wrong half. Three things have to be true for a discharged duty
+to be a working one, and this register has only ever recorded the first:
+
+1. **Written** — the remedy is in the charter that owes it. Recorded here, by
+   the seat that wrote it.
+2. **Read** — the seat that owes the duty has run against the new sentence and
+   reports what it found. *This is the state that had no name.* It can only come
+   from the other seat, and it arrives as a message that nothing sweeps.
+3. **Fired** — the duty has discharged once, against a real artifact. Class C is
+   **not** here, and its firing condition is now stated rather than assumed: the
+   first merged copy branch of the writer seat.
+
+**Why the gap matters more than this one row.** A duty written into a charter
+and never read is indistinguishable, on this page, from one that is working.
+Both read "discharged". Class C happens to be fine — the sentence was correct
+and the seat confirmed it — but the only reason this page knows that is that the
+writer seat volunteered a `done` nobody required of it. **The page should not
+depend on a courtesy.** Every row closed as discharged into another seat's
+charter is in state 1 until that seat says otherwise, and the honest rendering
+of state 1 is "written, unread".
+
+Not fixed here, and named rather than quietly carried: this page needs its
+discharge rows to carry which of the three states they are in, and the audit
+that fills them in is a read of the bus for the owing seat's answer rather than
+a read of the charter. That is a change to how this register is kept, which is
+this seat's own lane, so it is the next run's work and not a route to anyone.
+
+### Readied 2026-11-01, and the one claim in it that did not survive a check
+
+This entry sat on an unreadied draft (#652) for five days and was disposed by
+the 2026-11-01 message run of this seat, under the standing condition the bus
+attaches to every wake. Readying it meant checking its own claims rather than
+filing them, and one failed: the sentence it added to step 3 of
+`prompts/writer-agent.md` named the queue checker as `check_voice.py`, which
+resolves from nowhere — the file is `docs/voice/check_voice.py`, and every
+other tool that charter names it names by full path. Corrected in the same
+commit that readied the draft.
+
+Take the general shape, because it is §3b's own test aimed at this seat's
+output: **the rule names a tool; does it exist by the path it is named at?**
+A charter sentence that cannot be run is indistinguishable, to the seat
+reading it, from one whose tool is missing.
+
 ## 2026-11-01: class A's last two gates came due inside a dark week, and a date is not an observation
 
 The card split nine rows into three classes on 2026-10-24 and gave class A
