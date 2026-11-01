@@ -163,6 +163,59 @@ def misleading_tree(tmp_path):
     return root
 
 
+@pytest.fixture
+def honest_tree(tmp_path):
+    """Two skills whose bodies say what their descriptions say.
+
+    Scoping on this tree neither helps nor hurts: both arms find both golden
+    skills, so the two recalls are equal. Added 2026-11-01 because `verdict`
+    documents that "a tie is not a win" and nothing exercised the tie. The live
+    repository cannot: its scoped arm sits below its baseline, so the branch
+    that decides a tie was unreachable from every test in this file, and the
+    docstring was the only place the rule existed.
+    """
+    root = tmp_path / "checkout"
+    (root / "skills" / "_validation").mkdir(parents=True)
+    shutil.copy(REPO / "skills" / "_validation" / "trigger_test.py",
+                root / "skills" / "_validation" / "trigger_test.py")
+    (root / "skills" / "_validation" / "decoys.json").write_text(json.dumps({
+        "note": "fixture", "version": 1, "written": "2026-11-01",
+        "decoys": [
+            {"name": "decoy-knitting",
+             "description": "Knitting gauge and yarn weight. Use when a "
+                            "sweater comes out the wrong size."},
+            {"name": "decoy-tax",
+             "description": "Payroll tax filing deadlines. Use when a "
+                            "quarterly return is late."},
+        ]}))
+    write_skill(root, "pelican",
+                "Pelican roosting sites. Use when pelicans choose a roost.",
+                "pelican roosting sites and colony nesting ledges " * 40)
+    write_skill(root, "diesel",
+                "Diesel engine timing. Use when a diesel engine mistimes.",
+                "diesel engine timing belts and injector pumps " * 40)
+    write_cases(root, "pelican", [
+        {"id": "p-1", "kind": "positive", "expect": "pelican",
+         "prompt": "where do pelicans choose a roost at dusk"}])
+    write_cases(root, "diesel", [
+        {"id": "d-1", "kind": "positive", "expect": "diesel",
+         "prompt": "my diesel engine mistimes under load"}])
+    return root
+
+
+def test_a_tie_is_not_a_win(honest_tree):
+    report = ss.measure(honest_tree)
+    full = report["conditions"][-1]["arms"]
+    assert full["scope/body"]["recall"] == full["unscoped"]["recall"]
+    assert full["scope/body"]["mean_skills_loaded"] < \
+        full["unscoped"]["mean_skills_loaded"]
+    assert ss.verdict(report) == 1, (
+        "scoping matched the baseline and loaded less, and that is still not "
+        "a win: the claim the verdict answers for is that loading less costs "
+        "nothing, which a tie cannot establish"
+    )
+
+
 def test_the_verdict_can_say_scoping_loses(misleading_tree):
     report = ss.measure(misleading_tree)
     full = report["conditions"][-1]["arms"]
@@ -202,13 +255,69 @@ def test_the_distractors_are_real_skills_from_this_checkout(live):
                for n in live["distractor_pool"]["names"])
 
 
-def test_scoping_loads_fewer_skills_and_keeps_recall(live):
+def test_scoping_loads_fewer_skills_and_less_context(live):
+    """What scoping buys structurally, which has not changed and cannot.
+
+    Split out of `test_scoping_loads_fewer_skills_and_keeps_recall` on
+    2026-11-01. That test asserted the context win and the recall relation
+    together, so when the recall relation inverted the context win stopped
+    being measured too, and both halves had been unreported for days.
+    """
     full = live["conditions"][-1]["arms"]
     assert full["unscoped"]["mean_skills_loaded"] == 29
     assert full["scope/body"]["mean_skills_loaded"] <= ss.K_MAX
-    assert full["scope/body"]["recall"] >= full["unscoped"]["recall"]
     assert full["scope/body"]["mean_context_words"] < \
         full["unscoped"]["mean_context_words"]
+
+
+def test_the_verdict_answers_for_the_recall_relation_rather_than_a_pinned_sign(live):
+    """The claim "loading less costs nothing" does not hold on this checkout,
+    and that is reported by the verdict rather than by a red test.
+
+    This is the 2026-10-27 correction to `test_panel_validator.py` applied to
+    the same defect one file over. The assertion used to read
+    `scope/body recall >= unscoped recall`, which is a pin on live state: it
+    was true when the unscoped baseline stood at 0.837, and the skill seat's
+    text corrections raised the baseline to 0.898 against a scoped arm
+    unchanged at 0.8776, so the pin went red while nothing was broken. It then
+    stayed red on `main` for days, which is what the pin actually cost, because
+    `tools/skill_scope.py` already carries a gate for exactly this question and
+    the gate was answering correctly the whole time.
+
+    What is worth pinning is that gate's contract: `verdict` returns 0 only
+    when the shipped arm strictly beats the baseline, a tie is not a win, and
+    the exit code a run reads therefore cannot disagree with the numbers in the
+    report it came from. The measured relation itself belongs to the skill seat,
+    whose surface is the skill text, and it is recorded in the floor below
+    rather than asserted as a direction here.
+    """
+    full = live["conditions"][-1]["arms"]
+    scoped = full["scope/body"]["recall"]
+    baseline = full["unscoped"]["recall"]
+    code = ss.verdict(live)
+
+    assert code in (0, 1), f"undocumented verdict {code}"
+    if scoped > baseline:
+        assert code == 0, "a strict win is the only 0"
+    else:
+        assert code == 1, "a tie or a loss is 1, and a tie is not a win"
+
+
+def test_the_scoped_arm_may_not_lose_recall_it_already_had(live):
+    """A ratchet, not a direction, because the direction is the skill seat's.
+
+    0.8776 is what the shipped arm measured on 2026-11-01 and on 2026-10-26
+    before it, unmoved across the skill text corrections that lifted the
+    unscoped baseline from 0.837 to 0.898. So the one thing a change to the
+    scoping mechanism must not do is take recall off the shipped arm, and that
+    is a floor a test can hold without claiming anything about the gap. The
+    gap is the finding and it lives in the verdict above.
+    """
+    scoped = live["conditions"][-1]["arms"]["scope/body"]["recall"]
+    assert scoped >= 0.8776, (
+        f"the shipped arm recalls {scoped}, below the 0.8776 measured on "
+        f"2026-11-01; scoping lost recall it used to have"
+    )
 
 
 def test_the_control_arm_is_measured_and_reported(live):
