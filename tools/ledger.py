@@ -4,6 +4,7 @@
     python3 tools/ledger.py --census
     python3 tools/ledger.py --status accepted
     python3 tools/ledger.py --check
+    python3 tools/ledger.py --patch origin/main
 
 The ledger's entry contract is printed at the bottom of every charter in this
 repository, and three different consumers depend on it. The PM grooms
@@ -51,6 +52,7 @@ stops the backlog growing, which is the thing a command can actually do.
 import argparse
 import json
 import re
+import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -458,6 +460,64 @@ def render_census(data: dict) -> str:
     return "\n".join(out)
 
 
+#: The contract-field count measured on `main` on 2026-11-01, with the parser
+#: this file carries today. Same rule as `BASELINE`: it may fall and it may not
+#: rise, and it is pinned in `tests/test_ledger.py` rather than here because it
+#: is a measurement rather than a gate.
+#:
+#: Why it is not the gate. On 2026-11-01 this number was 196 when the engineer
+#: branch was cut and 202 ninety minutes later, because six pull requests
+#: merged in between and six of their entries were short of the contract. None
+#: of the six was the branch's. A ratchet on a whole-file number cannot tell
+#: those apart, which is what `patch` below is for: the project number absorbs
+#: everybody's history and the patch number has no budget at all.
+PROJECT_INCOMPLETE = 202
+
+
+def ledger_at(ref: str, path: str = "docs/ideas.md") -> str | None:
+    """The ledger as of `ref`, or None when the ref is not in this checkout.
+
+    None rather than an exception, because the host clones this repository
+    shallow with a single-branch refspec, so `origin/main` resolves on some
+    checkouts and not on others, and a caller has to be able to say "skipped"
+    instead of failing. `INC-2026-10-26-the-single-branch-refspec-survived-the-unshallow-again`
+    is the entry for how long that has cost.
+    """
+    try:
+        done = subprocess.run(
+            ["git", "show", f"{ref}:{path}"],
+            cwd=ROOT, capture_output=True, text=True, timeout=60,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return done.stdout if done.returncode == 0 else None
+
+
+def patch(base_text: str, head_text: str) -> dict:
+    """The entries `head_text` adds, and what the contract says about them.
+
+    Codecov's split, applied to this file: a project status "measures overall
+    code coverage across your entire codebase" and a patch status "only
+    measures lines adjusted in the pull request". The project number here is a
+    backlog of 202 entries nobody in the room wrote, so a ratchet is the only
+    shape it can take. The patch number is the author's own appends, so it has
+    no budget: an entry this branch adds carries the four contract fields or it
+    does not, and no amount of unrelated cleanup elsewhere pays for it.
+
+    Entries are matched on `(date, name)`, which is the pair a heading carries
+    and the pair a reader cites. An entry that was edited rather than added is
+    therefore not in `added`, which is deliberate: this answers for what the
+    branch wrote, and rewriting another seat's entry is a thing no seat may do.
+    """
+    base = {(e.date, e.name) for e in parse(base_text)}
+    added = [e for e in parse(head_text) if (e.date, e.name) not in base]
+    return {
+        "added": len(added),
+        "incomplete": [e.as_dict() for e in added if e.missing_fields],
+        "no_status": [e.as_dict() for e in added if not e.readable],
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--ledger", default=str(LEDGER))
@@ -467,6 +527,9 @@ def main(argv: list[str] | None = None) -> int:
                         help="the entries carrying one status, read properly")
     parser.add_argument("--check", action="store_true",
                         help="the ratchet: exit 1 when the unreadable count climbs")
+    parser.add_argument("--patch", metavar="REF", default="",
+                        help="the entries this branch adds on top of REF, and "
+                             "whether they meet the contract; strict, no budget")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
@@ -489,6 +552,32 @@ def main(argv: list[str] | None = None) -> int:
                     f"belong here: python3 tools/ledger.py --census",
                     file=sys.stderr,
                 )
+        return 0
+
+    if args.patch:
+        base_text = ledger_at(args.patch)
+        if base_text is None:
+            print(f"skipped: {args.patch}:docs/ideas.md is not in this checkout, "
+                  f"so there is nothing to diff against", file=sys.stderr)
+            return 0
+        report = patch(base_text, text)
+        if args.json:
+            print(json.dumps(report, indent=2))
+            return 1 if report["incomplete"] or report["no_status"] else 0
+        print(f"{report['added']} entries added on top of {args.patch}.")
+        for bad in report["incomplete"]:
+            print(f"  docs/ideas.md:{bad['line']}  missing "
+                  f"{', '.join(bad['missing_fields'])}  {bad['name']}")
+        for bad in report["no_status"]:
+            print(f"  docs/ideas.md:{bad['line']}  {bad['problem']}  {bad['name']}")
+        if report["incomplete"] or report["no_status"]:
+            print(f"\nBLOCKING: {len(report['incomplete'])} of this branch's own "
+                  f"entries are short of the contract and "
+                  f"{len(report['no_status'])} carry no readable status. There is "
+                  f"no baseline to lower here: these are yours.", file=sys.stderr)
+            return 1
+        print("\nEvery entry this branch adds carries the contract's four fields "
+              "and a readable status.", file=sys.stderr)
         return 0
 
     if args.check:
