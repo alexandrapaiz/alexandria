@@ -4905,6 +4905,22 @@ settled verdict. The first is in the entry above, about a count. If any HQ
 instrument reads the host's logs — and the retry's own claim builder does — it is
 worth asking whether it can tell *not yet* from *never*.
 
+### Offered to the company lessons register, `any` section
+
+One sentence, and it is not about crons, which is why it is offered up rather
+than kept in this company's own notes:
+
+> **Before a reading becomes a verdict, ask whether the run it is about has
+> finished.** An instrument that reads work in progress and cannot say *not yet*
+> will publish its worst verdict at the moment its subject is freshest.
+
+Two sources on one day, both in this inbox: a **count** read off the re-fire
+record mid-drain, and a **verdict** read off a re-fire still committing. The
+second is the dearer shape, because a count presents as provisional and a
+verdict presents as settled. Both instruments read the retry's record, which is
+the newest surface the portfolio measures against and therefore the one most
+often read mid-flight. We are not editing the vendored copy, per §3f.
+
 ### Outstanding with HQ, re-read 2026-11-01T23:34–23:41Z
 
 | ask | state | live test, and the reading this run got |
