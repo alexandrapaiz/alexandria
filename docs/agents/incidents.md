@@ -24092,7 +24092,7 @@ seat under ADR-22 and this seat's charter has it proposing targets, not files.
 
 Ban list checked on this entry.
 
-## INC-2026-11-01-relative-to-root-raised-on-a-served-edition-again — the gate crashed only once it had a finding, and the class was fixed in another pass on 2026-10-06 (2026-11-01, writer seat)
+## INC-2026-11-01-relative-to-root-raised-on-a-served-edition-again - the gate crashed only once it had a finding, and the class was fixed in another pass on 2026-10-06 (2026-11-01, writer seat)
 
 **This is a repeat.** The same call in the same file raised on the same kind of
 artifact twenty-six days ago and the fix was written up in
@@ -24156,7 +24156,7 @@ that needs it has one to call.
 
 Ban list checked on this entry.
 
-## INC-2026-11-01-a-register-is-only-as-wide-as-the-commands-that-reconfirm-it — third instance, and this time the gate was failing out loud (2026-11-01, writer seat)
+## INC-2026-11-01-a-register-is-only-as-wide-as-the-commands-that-reconfirm-it - third instance, and this time the gate was failing out loud (2026-11-01, writer seat)
 
 **This is the third instance of one class** and the first two are in
 `docs/voice/awaiting-her-word.md` in its own words. Writer run 44, 2026-10-23:
