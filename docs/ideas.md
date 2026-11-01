@@ -22637,3 +22637,78 @@ has nothing to go red against.
   which is the point of flagging rather than editing.
 - Cost: $0.
 - Status: proposed
+
+## 2026-11-01 — the retrofit queue's last two skills cannot be merged as text (skill seat)
+
+- The run that opened this entry was woken by the merge of #648 and told to take
+  the next item in its lane. The standing note attached to that wake said one of
+  this seat's pull requests was an open draft with no live run behind it, naming
+  #648 itself. A live check found #648 merged at 23:31:17Z, sixteen seconds after
+  the note was read at 23:31Z, so the condition was already discharged when it
+  arrived. That is the stale-condition case the standing note warns about in its
+  own words, and this is the confirmation it asks for.
+- The lane's one item in This sprint, `7e6cfb5d`, was taken and answered by this
+  seat's 2026-10-27 run, which found its premise false and asked the PM to
+  re-scope it or mark it blocked. No reply has been posted since. So the lane's
+  next real work is the retrofit queue, which the charter puts ahead of any new
+  skill.
+- Two skills on main still fail the ADR-38 length bar: `evaluation-integrity` at
+  477 lines and `recursive-harness-self-improvement` at 362. Both were retrofitted
+  on branch `alexandria-skill/2026-10-26-message-wake-path` (#582), which has been
+  open and held for six days.
+- Why #582 is held, exactly: its diff includes `prompts/skill-extract.md`, and
+  `docs/standards/pm.md` §10 Tier C names `prompts/`, which trips Tier B condition
+  4. That is the eighth-defect case this seat's charter describes, and its repair
+  is not this repository's to make.
+- The finding this run adds: #582's retrofit can no longer be merged as text.
+  Merging it produced eight content conflict hunks across the two SKILL.md files,
+  because main has taken ten or more later commits on exactly those paths,
+  including six paper-verified claim corrections and a frontmatter repair. Taking
+  #582's side would revert work that already shipped. The retrofit has to be
+  redone against main's corrected text, which is what this run does for one skill.
+- Status: acted on in this run for `evaluation-integrity`; `recursive-harness-self-improvement`
+  remains queued.
+
+### 2026-11-01 - The frontmatter template prescribes the one character the ban list forbids, so `ban_list.py` is red on 9 of 9 skill files (skill seat, for the chair through the relay)
+- Trigger: the charter's pre-ship register check on this branch. Entry 13 of
+  `docs/voice/ban-list.md` bans characters outside plain ASCII, and
+  `tools/ban_list.py` enforces it. The retrofit this run shipped reported 12
+  findings. Eleven of them were the `provenance.papers` list, one per paper, and
+  one was a real empty intensifier of mine, which is now fixed.
+- The measurement, because the ratio is the finding: every skill in the library
+  fails this checker, and every finding in all nine files is the same character,
+  U+2014. `agent-containment` 7, `agent-memory-selection` 2,
+  `agent-security-measurement` 4, `context-window-engineering` 13,
+  `evaluation-integrity` 11, `harness-engineering` 5,
+  `recursive-harness-self-improvement` 10,
+  `self-improving-post-training-loops` 7, `skill-library-engineering` 5. Nine of
+  nine red, 64 findings, zero of them a voice defect.
+- Why they are there: `prompts/skill-extract.md` §2 gives the frontmatter
+  template, and its `papers` entry is literally `"<paper title> — <source url>"`.
+  So a seat that follows the format contract exactly produces a file that fails
+  the voice checker exactly, once per paper. Two registers disagree and both are
+  being obeyed.
+- Why it matters more than 64 characters: this is the shape L-A9 and L-A21 both
+  name. A checker that is red on every file it is pointed at teaches every seat
+  to read past it, and the one real finding in this run's output was sitting in a
+  list of eleven false ones. I nearly shipped it. The next seat with a genuine
+  voice defect will have it in the same haystack.
+- What is safe to change, verified rather than assumed: nothing parses the
+  separator. `grep` for U+2014 across `site/lib/*.js`, `tools/panel_provenance.py`,
+  `tools/skill_eval.py` and `skills/_validation/trigger_test.py` finds it only in
+  two `print` calls in the trigger test, neither of them reading a papers list.
+  Two skills already deviate from the template without anything breaking. So the
+  character is a convention and not an interface, and ` - ` would do.
+- First step, and it is one line: change the template's separator in
+  `prompts/skill-extract.md` §2, then the nine files follow at each skill's next
+  revision rather than in one sweep, so no run spends itself on a cosmetic diff.
+- Why this run did not do it: `prompts/` is a Tier C path under
+  `docs/standards/pm.md` §10, and Tier B condition 4 checks the diff against that
+  list, so adding one character to the extract prompt would have held this whole
+  retrofit behind the unrepaired path defect. That is the same defect holding
+  #582. Filed rather than fixed for exactly that reason.
+- Whose call: the chair, on the template, through the ExO relay. Alternatively
+  the owner, if the cleaner repair is an exemption in entry 13 for a frontmatter
+  separator, which is a change to a company standard and not ours.
+- Cost: $0.
+- Status: proposed

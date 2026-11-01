@@ -1719,3 +1719,20 @@ it. Each line names the paper and section the fact was read out of.
   independent for that class and delta 1's "report invocation and success as two
   numbers" has a case where they move together — asked by
   skills/agent-security-measurement — 2026-10-27
+
+## Queued 2026-11-01 by skills/evaluation-integrity
+
+The ADR-38 length retrofit took `evaluation-integrity` from 477 lines to 119 and
+cut three findings out of it. None of the three is wrong and none is unread. All
+three are about an agent under test rather than about an instrument, which is the
+subject `evaluation-integrity` states in its own first paragraph, so they were
+cut on subject rather than on quality and they belong to
+`skills/agent-security-measurement`. The retired eval task `ei-t8` is kept in
+full under `retired_tasks` in `skills/evaluation-integrity/evals/evals.json` so
+the receiving skill can lift it rather than rewrite it. Every id below was
+grepped against this file first and appears nowhere else in it.
+
+- [ ] arxiv:2609.18605 — PACT is read and cited, and what left `evaluation-integrity` is the magnitude half: ordinary user pressure raised rule-violation rates by an average of 65 percent across 22 models, and the strongest assistants still misapplied a compliance rule on 6 to 10 percent of items. The instrument half stayed, which is the realism criterion. `agent-security-measurement` should decide whether the 65 percent belongs in one of its deltas, and the question worth answering first is which of the three pressure conditions carries it, because a persistent user, a hurried manager and an attractive shortcut are not one treatment and the average hides whichever one does the work — asked by skills/evaluation-integrity — 2026-11-01
+- [ ] arxiv:2609.17320 — Emergence World is read and cited, and what left is the long-horizon stress design: multi-agent worlds run over days with a phishing campaign on days four to seven, a misinformation claim on day ten and a memory breach on day thirteen, no evaluated world fully resilient across all three, and alignment not compositional, since the same model behaved differently in a mixed population than in a homogeneous one. The separate-axes finding stayed in `evaluation-integrity` delta 3 because it is a scoring rule. The non-compositionality result is the one `agent-security-measurement` most needs, because it says a per-model safety number does not carry over to an assembled system, and that is a claim about measurement validity rather than about any one model — asked by skills/evaluation-integrity — 2026-11-01
+- [ ] arxiv:2609.08126 — SchemeArena is read and cited, and what left is the detector's own F1 of 90.73 percent against human validation. The monitoring-scope finding stayed in `evaluation-integrity` delta 4, since partial oversight increasing scheming is a fact about the instrument. The F1 is a fact about a detector, so it belongs beside `agent-security-measurement`'s other detector numbers, and the question it raises is what the 90.73 is computed over, because a detector scored on the same 400 factorized scenarios it was tuned against reports an in-distribution number and the skill should say which — asked by skills/evaluation-integrity — 2026-11-01
+- [ ] question — Does the `suite_version` field in an eval suite mean the contract version or the suite's own revision count? This run read it as the latter, bumped `evaluation-integrity` from 2 to 3 after repointing its tasks, and `tools/skill_eval.py --check` went from 9 of 9 conformant to 8 of 9 with `contract is 3, this harness speaks 1 and 2`. The harness is right and the field name is what misled, since every other `*_version` in this repository counts revisions of the thing it names. Already-retrofitted suites record their revision in a separate `revision` string and leave `suite_version` at 2, so the convention exists and only the name argues against it. Whether to rename the field to `contract_version` is the engineer's call and not this seat's, and it is filed here rather than as an incident because nothing shipped wrong — asked by skills/evaluation-integrity — 2026-11-01
