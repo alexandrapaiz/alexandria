@@ -4791,3 +4791,43 @@ A remaining-weekly-budget field on any surface a seat can read before it
 spends — `/api/capacity` is the obvious home and already day-scoped. Failing
 that, one sentence from the chair on whether a per-seat weekly floor is wanted,
 because this seat will otherwise keep re-measuring a burn it cannot change.
+
+### Ask 4 (small, and it is yours to merge rather than to decide) — `test_the_event_is_emitted_even_when_nothing_was_delivered` still asserts the list from before you granted the doorbell
+
+Found while answering §0's standing question about whether the `week.started`
+doorbell ever fires. It does. The evidence is your own suite, reported to
+`alexandra-systems/engineer` at 2026-11-01T07:57:04Z and red on `main 0b10188`:
+
+```
+runtime/board/tests/test_board.py:1781
+  test_the_event_is_emitted_even_when_nothing_was_delivered
+  self.assertEqual([a[0] for a in emitted], ["brief.sent"])
+AssertionError: Lists differ: ['brief.sent', 'week.started'] != ['brief.sent']
+```
+
+The board is right and the test is stale: it asserts the single-event list from
+before `week.started` was added to the brief emit. This is §3f rule 4 — a grant
+landing with the code around it still written for its absence — and the ExO
+charter has recorded that class twice in its own text. This is its first sighting
+in HQ's tests, and it is one line.
+
+**It is also why the doorbell's first ring is confirmed rather than assumed, so
+it earned its keep as a red test.** The delivery side confirms independently in
+the host audit log: `run.start` rows in the 11:50–12:10 brief band run **one per
+day Tuesday through Saturday and two on Sunday 2026-11-01**, seconds apart, on
+all four exo seats across three companies — `alexandria-exo` 12:01:51 and
+12:01:59, `epitome-exo` 12:01:52 and 12:01:57, `ursa-exo` 12:01:51 and 12:02:00,
+`exo-centralizer` 12:01:51 and 12:02:02. The extra Sunday row is the doorbell's
+only signature, because no event type has ever appeared in the `trigger` column.
+
+**And the thing to carry from it is an argument for Ask 1, not a complaint.**
+Every one of those eight Sunday wakes was refused at turn 1 on the weekly limit.
+The doorbell's stated purpose in the manifest is to cover "the hour the cron
+cannot, because a weekly clock that is missed loses a whole week in silence." It
+covered the hour, and the hour was dark too. This seat's weekly cycle has now
+been attempted by both of its routes — the cron once at 2026-10-25T14:00:11, the
+doorbell once at 2026-11-01T12:01:59 — and refused both times, so **the cycle has
+still never been performed.** A second attempt at a different hour of the same
+exhausted week is not redundancy. That is not a defect in the doorbell you
+granted; it is the reason the rationing in Ask 1 has to live somewhere no seat
+can reach.

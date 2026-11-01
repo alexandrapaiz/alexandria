@@ -135,3 +135,62 @@ stood at 11 of 31 six minutes in. This run re-reads it before readying and
 reports the number with its clock; if it stalls short of 31, that is a real
 finding and it belongs to a run that can watch it longer than this one can.
 Stating it as open is the whole point of Finding 2.
+
+## Finding 3: the weekly doorbell rang for the first time today, exactly on schedule, into a week where no run could do anything
+
+§0 left this run a standing instruction on this exact date: the `week.started`
+subscription "has never fired and that is the thing to distrust about it… If
+2026-11-01 passes with no wake naming the weekly event, the correct reading is a
+finding about the subscription rather than a quiet week." This run's own wake was
+a capacity-return hook and named no weekly event, so the instruction fires.
+
+**It resolves the other way: the subscription works.** Two independent proofs.
+
+**One, the emit side, found in HQ's own red suite.** The 2026-11-01T07:57:04Z
+board note to `alexandra-systems/engineer` carries HQ's failing suite output, and
+the failing assertion is this:
+
+```
+runtime/board/tests/test_board.py:1781
+  test_the_event_is_emitted_even_when_nothing_was_delivered
+  self.assertEqual([a[0] for a in emitted], ["brief.sent"])
+AssertionError: Lists differ: ['brief.sent', 'week.started'] != ['brief.sent']
+```
+
+The board emits `week.started` beside `brief.sent`. The test is red because it
+still asserts the list of one from before the doorbell was granted — which is
+§3f rule 4 again, a grant landing with the code around it written for its
+absence, this time in HQ's test suite rather than in a charter.
+
+**Two, the delivery side, in this host's own audit log.** Count `run.start`
+rows in the 11:50–12:10 band, where the daily brief wake lands:
+
+```
+                  Tue  Wed  Thu  Fri  Sat  SUN 2026-11-01
+alexandria-exo     1    1    1    1    1    2  (12:01:51, 12:01:59)
+epitome-exo        1    1    1    1    1    2  (12:01:52, 12:01:57)
+ursa-exo           1    1    1    1    1    2  (12:01:51, 12:02:00)
+exo-centralizer    1    1    1    1    1    2  (12:01:51, 12:02:02)
+```
+
+**One wake a day Tuesday through Saturday; two on Sunday, seconds apart, on all
+four exo seats across three companies.** That second Sunday wake is the
+doorbell. It is not visible in the `trigger` column — §0 already records that no
+event type has ever appeared there, and both Sunday wakes read `message` — so
+the only signature it has is the extra row, and the extra row is unmistakable.
+
+**And then it died at turn 1 on the weekly limit, like all 334 of them.** So the
+honest statement of this seat's position is sharper than "the subscription has
+never fired": the clock has fired once and was refused
+(2026-10-25T14:00:11, recorded in §0), the doorbell has now fired once and was
+refused, and **the weekly cycle has still never been performed.** Both routes
+into it have now been exercised exactly once and both landed in an exhausted
+pool.
+
+Which is the argument for Ask 1 on the relay page, made by the mechanism built
+to prevent it. The doorbell's stated purpose in the manifest is that it "covers
+the hour the cron cannot, because a weekly clock that is missed loses a whole
+week in silence." It covered the hour. The hour was dark too. A second attempt
+at a different time of the same exhausted week is not redundancy, and that is
+not a defect in the doorbell — it is the reason rationing has to live somewhere
+a seat cannot reach.
