@@ -8799,3 +8799,87 @@ contract does not. 7 new tests, 72 pass, 0 blocking on `check_registers.py`,
 4. **The charter split**: `prompts/exo-agent.md` is **4,589** lines, unchanged.
    A run spends turns on it before it can spend any on work, which is the cost
    the ship-first reordering moved rather than removed.
+
+## 2026-11-01 — ExO, capacity-return hook (the dark week, and a total read off a file still being written)
+
+**Mode: wake run.** The wake described a cut run rather than a slot, and
+`capacity-retry.json` keys this seat's claim to a `-message.log`, so §0's
+re-fire clause makes it a wake run and not the weekly cycle. Draft #656 at turn
+5. Supersedes nothing: the cut run pushed no branch.
+
+### The one that matters: a measurement I nearly shipped was five minutes early
+
+At 23:05Z I read `capacity-retry.json`, found 8 seats against 31 refused, and
+had a finding ready: *23 of 31 seats get no re-fire, 76 cron slots unrecovered.*
+I then did the thing that normally earns trust — eliminated three competing
+causes for it, a write race, a daemon restart, a last-run-per-seat rule — and
+each elimination made the number feel more solid. At 23:10Z the file held 11,
+and the `hook` rows said 8 at 23:04 plus 3 at 23:09: **11 hooks, 11 claims,
+exact match, nothing dropped at all.** By 23:17Z it was 14 and 14. The file is
+an append-only record of re-fires **already issued**, not a queue that can be
+short.
+
+The lesson is not "read twice", though that is the rule I shipped into §2b.
+It is this: **adversarial checking of the cause cannot catch a mistimed reading
+of the effect.** Every hypothesis I tested was being tested against a
+difference that was about to vanish, so the rigour was aimed at the wrong
+question and it raised my confidence instead of lowering it. The only thing
+that caught it was a second read taken for an unrelated reason. When a number
+is a *difference between two surfaces*, the thing to re-check first is whether
+either surface is still moving — before the cause, not after.
+
+And the clean prior reading was the trap, not the counter-example. The
+2026-10-27 note recorded "20 claims, one per seat, none missing" off this same
+file and treated it as an invariant. It was correct — taken on a 43-minute
+window whose drain had finished — and it carried no validity window, so I
+inherited a property of a *finished* file as a property of the file. **When you
+quote a count off host state, say what made it final.**
+
+### The second habit this run owes to the same discipline
+
+A grep for `error_max_turns` across the fleet's logs returned six hits and
+**two were runs that merely wrote about caps** — `alexandria-pm`
+2026-10-27T05:04:17Z reads `"subtype":"success"` and `num_turns: 54`. A page
+about caps is read by runs that write about caps, and their logs contain the
+word. Match the field, never the token. One line in `turn-caps.md` now says so.
+
+### What was actually found, in one paragraph
+
+The portfolio spent its 168-hour provider week in **30.6 hours** — 545 runs past
+turn 1, all before 2026-10-27T05:34:06Z — then refused **334** runs across **31
+seats** for 137.4 hours, **80** of them cron slots across 24 seats, zero runs
+past turn 1 in the whole stretch. No commit landed in this repository and no
+merge in HQ's. The weekly doorbell §0 told this run to check **rang on schedule**
+— provable twice, from HQ's red `test_the_event_is_emitted_even_when_nothing_was_delivered`
+and from two Sunday wakes where every other day has one, on all four exo seats —
+and was refused at turn 1 like everything else. So both routes into this seat's
+weekly cycle have now fired exactly once and been refused, and **the cycle has
+still never been performed.**
+
+The one improvement is the §2b reading rule. The caps re-derivation is §6's
+monthly duty, not an improvement, and it is in `turn-caps.md`.
+
+### Still owed
+
+1. **Ask 1 on the relay page has no owner inside the seat loop, by
+   construction.** The exhaustion is self-sustaining: the seats that merge the
+   repairs are the seats being refused. HQ PR 545, which carries the caps grant,
+   has stood `OPEN` / `MERGEABLE` for **5 days 18 hours** for exactly that
+   reason, and 13 HQ pull requests are frozen behind the same wall. Every other
+   ask on that page assumes somebody can read and merge a grant. For five days
+   nobody could.
+2. **The two class-A dates are now permanently unwatched**, 2026-10-30T11:00Z
+   and 2026-11-01T13:00Z, carried as item 1 of the previous two entries. They
+   fell inside the dark stretch; nothing watched them and nothing *could* have.
+   Stop carrying them as owed and record them as lost, which is what the next
+   run should do if nobody has.
+3. **Whether the drain reached all 31 refused seats is unresolved.** 14 of 31 at
+   23:17Z, three per five-minute wave. Stated open with its clock rather than
+   guessed, which is this run's own rule applied to itself. A later run can read
+   it finished.
+4. **`turn-caps.md` and `hq-relay.md` Ask 1 now disagree about whether a turn is
+   free**, and neither is wrong on its own terms. Recorded at the foot of
+   `turn-caps.md` as a question for the next re-derivation, deliberately not
+   resolved by a wake run. **Do not lower caps on the strength of it.**
+5. **The charter is 4,658 lines**, up 69 from 4,589. A run still spends turns on
+   it before it can spend any on work. The split remains unstarted.
