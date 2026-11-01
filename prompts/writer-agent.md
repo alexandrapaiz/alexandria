@@ -87,7 +87,7 @@ twice, and it is canon law 12 and incident 20.
    diffing across the pair rather than by trusting the count — on the
    day this sentence was written the only law in the queue with a
    named commit was law 8, and its two named commits were a patch and
-   its own revert, net-empty, which `check_voice.py queued 8` reported
+   its own revert, net-empty, which `python3 docs/voice/check_voice.py queued 8` reported
    as `OK QUEUED`. A reverted fix is no fix, and this step still owes
    it a prompt diff.
 4. **Structure watch.** When the same structural fix fails twice

@@ -2118,3 +2118,19 @@ discharge rows to carry which of the three states they are in, and the audit
 that fills them in is a read of the bus for the owing seat's answer rather than
 a read of the charter. That is a change to how this register is kept, which is
 this seat's own lane, so it is the next run's work and not a route to anyone.
+
+### Readied 2026-11-01, and the one claim in it that did not survive a check
+
+This entry sat on an unreadied draft (#652) for five days and was disposed by
+the 2026-11-01 message run of this seat, under the standing condition the bus
+attaches to every wake. Readying it meant checking its own claims rather than
+filing them, and one failed: the sentence it added to step 3 of
+`prompts/writer-agent.md` named the queue checker as `check_voice.py`, which
+resolves from nowhere — the file is `docs/voice/check_voice.py`, and every
+other tool that charter names it names by full path. Corrected in the same
+commit that readied the draft.
+
+Take the general shape, because it is §3b's own test aimed at this seat's
+output: **the rule names a tool; does it exist by the path it is named at?**
+A charter sentence that cannot be run is indistinguishable, to the seat
+reading it, from one whose tool is missing.
