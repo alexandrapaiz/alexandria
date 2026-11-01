@@ -23314,3 +23314,133 @@ has nothing to go red against.
   argument for rather than a separate build.
 - Cost: $0
 - Status: proposed
+
+## Engineer agent findings (2026-11-01, scheduled run)
+
+### 2026-11-01 - The ledger measurement has a project status and no patch status, so a seat polices its own appends by hand (engineer seat, scheduled run)
+- Trigger: today's break-fix. `tests/test_ledger.py`'s contract measurement
+  had been red on `main` for days at 210 incomplete entries against a bound of
+  206, and the predecessor run's note says what it did about its own four
+  appends: "its four appends were measured, two were short of the contract, and
+  both were completed before the branch was pushed, so the number on this
+  branch equals the number on `main`". That is the right behaviour and it is
+  discipline rather than a check. The bound is one number over 778 entries, so
+  a seat can append an incomplete entry and stay green as long as somebody
+  else's entry left the set in the same window, which is exactly what happened
+  today: fourteen entries left the set because the parser was fixed, and the
+  budget those fourteen freed is now available to anybody who appends badly.
+- What: a second surface on `tools/ledger.py` that measures only the entries
+  the current branch adds, the way Codecov separates a patch status from a
+  project status. `python3 tools/ledger.py --patch origin/main` parses the
+  ledger at the merge base and at `HEAD`, takes the entries present only in
+  `HEAD`, and reports their missing contract fields. The project bound keeps
+  ratcheting and keeps absorbing other seats' history. The patch number has no
+  budget at all: an entry this branch adds either carries the four fields or it
+  does not, and no amount of unrelated cleanup elsewhere can pay for it.
+- Why the split is the whole idea rather than a refinement: a ratchet on a
+  whole-file number is satisfiable by improvement anywhere, which is what makes
+  it safe to adopt on a 206-entry backlog nobody made. It is also what makes it
+  blind to the one entry whose author is in the room. The patch view is the
+  only one that can be strict, because it is the only one scoped to work the
+  pull request's author is responsible for.
+- First step: `--patch <ref>` and one test, built on the parser this run
+  already reshaped. `ledger.parse` is pure and takes text, so the merge-base
+  side is `git show <ref>:docs/ideas.md` and no new parsing is needed. Match
+  entries by `(date, name)`, which the parser already returns, and report the
+  ones only `HEAD` has.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-01 - A test that pins the sign of a live measurement is a named defect class, and it has now cost two red tests in two files (engineer seat, scheduled run)
+- Trigger: both of today's fixes, which turned out to be the same defect.
+  `tests/test_skill_scope.py` asserted `scope/body recall >= unscoped recall`
+  against numbers it measured in the same run, and went red when the skill
+  seat's text corrections lifted the baseline from 0.837 to 0.898 while the
+  scoped arm stayed at 0.8776. `tests/test_panel_validator.py` asserted
+  `== 1` on an exit code with the note "the library fails today", and went red
+  when the library stopped failing. The second was corrected on 2026-10-27 and
+  the first was filed twice, on 2026-10-26 and 2026-10-27, and fixed neither
+  time. Nothing connected them, so the correction did not travel one file over.
+- What: the signature is mechanical and a report can find it. A test takes a
+  fixture that measures the live repository, then asserts an inequality or an
+  equality between two values both read out of that measurement, with no
+  synthetic fixture anywhere in the test. That is a test of the world rather
+  than of the code, and the world is allowed to change, so the test is a
+  tripwire on somebody else's work. The repair in both cases was the same
+  shape: assert the contract the tool documents, and record the measured number
+  as a one-sided floor so a regression is still caught.
+- What this is not: a ban on measuring the live repository. The measurement is
+  the product in both files. The defect is asserting a *direction between two
+  live numbers*, because that direction is a finding and a finding belongs in a
+  report or a verdict, where it can be read, rather than in a red tick that
+  every other seat's pull request inherits.
+- First step: `tools/live_pins.py`, a report over `tests/` using `ast`. Flag a
+  test function whose body contains a `Compare` whose both sides subscript the
+  same name, where that name is a fixture argument of the test. Print the file,
+  the line and the comparison. Report only, no gate, until somebody has read
+  the list: the point is to find out how many there are, and that number is
+  currently unknown.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-01 - Nothing records when a test outside the CI list last passed, so "red for days" is a guess every time (engineer seat, scheduled run)
+- Trigger: the predecessor run's own incident, verbatim: "Nobody knows how long
+  these three have been red, because nothing records when a test outside the
+  list last passed." This run inherited that and could not improve on it. Both
+  tests it fixed were red on `main`, `.github/workflows/checks.yml` names
+  twelve of the sixty-nine test files in `tests/`, and neither of the two is on
+  the list. So this run's own report has to say "red on main for days" rather
+  than a date, which is the second run in a row that could not name the number.
+- What: the engineer seat runs the full suite every day, which makes it the
+  only thing in the system that holds the answer, and it currently throws the
+  answer away at the end of the run. A committed file, one line per test file,
+  holding the last run that passed it and the commit it passed on, turns every
+  future report of this class from a guess into a date. It also prices the
+  blind spot: a file whose last pass is three weeks old is unwatched whatever
+  the workflow list says, and that is a stronger argument for applying the
+  staged `checks.yml` than the file count is.
+- Why a committed file rather than the board: the consumer is tomorrow's run of
+  this seat, which starts from a fresh clone with no memory, and a fresh clone
+  has the repository and not the board's history. The board is for the owner to
+  read and this is for the next run to read.
+- First step: `tools/suite_history.py --record`, taking pytest's own
+  machine-readable report, writing `docs/agents/suite-history.json` keyed by
+  test file with `last_passed` and `sha`, and printing the files whose last
+  pass is older than seven days. Append the write to the end of the engineer
+  run's own checks, so it costs the run nothing it is not already paying.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-01 - Craft scan: Codecov splits the number you inherit from the number you wrote, and this ledger only has the first (engineer seat, scheduled run)
+- Trigger: today's break-fix needed the contract bound lowered from 206 to 196,
+  and the honest reason was that the parser changed rather than the file, which
+  took a paragraph to establish. A measurement whose single number mixes
+  inherited debt with today's work always takes a paragraph.
+- What is worth stealing, read off the vendor's documentation this run: Codecov
+  ships two commit statuses over one coverage report, and both quotes below come
+  from that page rather than from memory. Project status "measures overall code coverage across your entire
+  codebase, comparing it against the base commit or pull request parent". Patch
+  status "only measures lines adjusted in the pull request or single commit, if
+  the commit is not in a pull request". Both carry a `target` and a
+  `threshold`, where `target: auto` "will use the coverage from the base commit
+  (pull request base or parent commit) coverage to compare against" and
+  `threshold` means "allow the coverage to drop by `<number>%`, and posting a
+  `success` status". So the loose, inherited, ratcheting number and the strict,
+  authored, no-budget number are two statuses rather than one argument, and the
+  threshold that makes the first tolerable is not in scope for the second.
+  `tools/ledger.py` has the project half and no patch half, which is the entry
+  above.
+- What alexandria does better, and it is what makes the steal cheap rather than
+  unnecessary: Codecov's number is a
+  percentage, so a red status tells a reader that coverage fell and nothing
+  about where. `tools/ledger.py --census` already prints the line number, the
+  heading and, since this run, the actual label a seat wrote, so a finding here
+  names the artifact a human can go and fix. That is why the patch half is a
+  day of work rather than a service: the expensive half of what Codecov sells
+  is attribution of a number to a diff, and this parser already attributes
+  every finding to a line. Codecov is also a paid service with a repository
+  token, and this stays a local command at $0.
+- First step: the entry above, which this scan is the argument for rather than
+  a separate build.
+- Cost: $0
+- Status: proposed
