@@ -86,9 +86,11 @@ Exit:   1 if any check reports a finding, 0 if clean.
 """
 import collections
 import contextlib
+import datetime
 import html
 import html.parser
 import io
+import json
 import os
 import pathlib
 import re
@@ -2263,6 +2265,167 @@ def candidates(ref=None):
     print("And a candidate for a surface with no row at all opens one, because")
     print("an unregistered draft is a line nobody will ever come back to.")
     return 1 if (clashes or unregistered) else 0
+
+
+# ---- deadlines --------------------------------------------------------
+
+#: The heading of the register's second table, the questions no wording can
+#: answer. A deadline only ever lands in that table: the surface rows above it
+#: wait on a seat's diff and nothing about them expires, while a question waits
+#: on her and the company standard puts a clock on that wait.
+QUESTIONS = "## Questions awaiting her word"
+
+#: A clock a command can read. One fixed form, minute precision, UTC, because
+#: the alternative is the prose run 58 wrote, "at about 20:44 UTC on
+#: 2026-10-28", which a reader understands and no check does.
+DEADLINE = re.compile(r"deadline (\d{4}-\d{2}-\d{2}T\d{2}:\d{2})Z")
+
+#: A row that says its own wait expires. The company standard's silence rule is
+#: the only mechanism that does this here, and a row arguing it without naming
+#: the hour is the defect this check was written for.
+SILENCE = re.compile(r"silence rule|proceeds as (?:recommended|asked)", re.I)
+
+#: What `deadline_findings` must say, pinned against a fixed clock so a case
+#: here means the same thing on every day this file is run. The rows are the
+#: register's own, trimmed to the cells that carry the reading. The false cases
+#: are load-bearing in the usual direction: a question with no clock at all is
+#: the ordinary shape of this table and must stay silent, because nine of its
+#: ten rows wait on her with no standard attached and failing them would make
+#: the check unusable by the register it reads.
+#: Fields: (the codes expected, the row)
+DEADLINE_CASES = (
+    ((), "| Does a paid tier keep a bullet for a machine that does not "
+     "exist, hedged, or lose the bullet? | `claim-repairs-2026-10-18.md`, "
+     "finding 8 | 2026-10-18 |"),
+    (("expired",), "| Does the corrected page carry a notice? | "
+     "`w42-correction-2026-10-26.md` | 2026-10-26. deadline "
+     "2026-10-28T20:44Z, after which the recommendation is in force under "
+     "the company standard's silence rule |"),
+    ((), "| Does the corrected page carry a notice? | "
+     "`w42-correction-2026-10-26.md` | 2026-10-26. deadline "
+     "2026-11-30T20:44Z, after which the recommendation is in force under "
+     "the company standard's silence rule |"),
+    (("unreadable",), "| Does the corrected page carry a notice? | "
+     "`w42-correction-2026-10-26.md` | 2026-10-26. Posted as a formal ask, "
+     "and under the silence rule it proceeds as recommended at about 20:44 "
+     "UTC on 2026-10-28 |"),
+)
+
+#: The clock `DEADLINE_CASES` is read against. 2026-10-29, the day after the
+#: one live deadline, so the expired case is expired and the far one is not.
+CASE_NOW = datetime.datetime(2026, 10, 29, tzinfo=datetime.timezone.utc)
+
+
+def question_rows():
+    """Every row of the register's questions table, as whole lines."""
+    if not AWAITING.exists():
+        return []
+    text = AWAITING.read_text()
+    start = text.find(QUESTIONS)
+    if start < 0:
+        return []
+    end = text.find("\n## ", start + 1)
+    rows = []
+    for line in text[start:end if end > 0 else len(text)].split("\n"):
+        cells = [c.strip() for c in line.split("|")]
+        if len(cells) < 4 or set(cells[1]) <= set("- ") or cells[1] == "Question":
+            continue
+        rows.append(line)
+    return rows
+
+
+def deadline_findings(row, now):
+    """One row's clock problems, as codes, read against a given moment."""
+    found = DEADLINE.findall(row)
+    out = []
+    if SILENCE.search(row) and not found:
+        out.append("unreadable")
+    for stamp in found:
+        when = datetime.datetime.fromisoformat(stamp).replace(
+            tzinfo=datetime.timezone.utc)
+        if when <= now:
+            out.append("expired")
+    return tuple(out)
+
+
+def deadline_cases():
+    """Every case above, run before the register is opened."""
+    bad = [(want, row) for want, row in DEADLINE_CASES
+           if deadline_findings(row, CASE_NOW) != want]
+    print(f"DEADLINE_CASES                             "
+          f"{len(DEADLINE_CASES) - len(bad)} of {len(DEADLINE_CASES)}")
+    for want, row in bad:
+        print(f"  FAIL    wanted {want or 'nothing'}, got "
+              f"{deadline_findings(row, CASE_NOW) or 'nothing'}")
+        print(f"            {row[:96]}")
+    return 1 if bad else 0
+
+
+def deadlines():
+    """A reservation for the owner with a clock on it that nothing reads.
+
+    `awaiting-her-word.md` holds two tables. The upper one waits on a seat's
+    diff and nothing in it expires, which is why the oldest row there has been
+    open for thirty-one days and the register says so in plain words. The lower
+    one waits on her, and until 2026-10-26 that wait had no end either.
+
+    Then §22 of `docs/standards/pm.md` gave it one. A reservation a charter
+    makes for the owner is posted by the PM as an ask carrying the PM's own
+    recommendation, and it proceeds as recommended after forty-eight hours of
+    her silence. So the correction-notice question asked on 2026-10-26 is the
+    first row in this register whose answer arrives by itself, at a stated
+    hour, whether or not anybody is looking.
+
+    Run 58 wrote that hour into the row as "at about 20:44 UTC on 2026-10-28",
+    and wrote beside it that a clock nobody can read is the thing to avoid.
+    Both halves of that sentence were true of the sentence itself. This check
+    is the other half, and it asks the two questions the prose cannot:
+
+      a row that argues the silence rule and names no deadline,
+      a deadline that has passed with the row still in the table.
+
+    The second one is a time bomb on purpose, and the cost is worth naming
+    because the inbox README argues the opposite case well: a gate that can
+    turn `main` red over a bookkeeping step is worse than the collision it set
+    out to fix. This one cannot. No workflow runs this file; it runs in a
+    writer seat's own run, which is the only place where the thing to do about
+    an expired reservation is decidable. What goes red is a run, in front of
+    the seat that can record the resolution, move the row to the closed table,
+    and say what the words are now.
+
+    What it deliberately does not do is decide the answer. Resolving a
+    reservation by silence is the standard's mechanism and the PM's to apply.
+    This reports that the hour has passed and leaves the ruling where it lives.
+    """
+    rc = deadline_cases()
+    print()
+    rows = question_rows()
+    now = datetime.datetime.now(datetime.timezone.utc)
+    print(f"questions awaiting her word                {len(rows)}")
+    print(f"carrying a readable deadline               "
+          f"{sum(1 for r in rows if DEADLINE.search(r))}")
+    print(f"read at                                    "
+          f"{now.strftime('%Y-%m-%dT%H:%MZ')}")
+    for row in rows:
+        for code in deadline_findings(row, now):
+            rc = 1
+            question = [c.strip() for c in row.split("|")][1]
+            print(f"  FAIL    {question[:88]}")
+            if code == "unreadable":
+                print("            argues a silence rule and names no "
+                      "`deadline YYYY-MM-DDTHH:MMZ`")
+            else:
+                print("            the deadline passed and the row is still "
+                      "open, so the recommendation in the candidate is in "
+                      "force and this register says it is still a question")
+    if rc == 0:
+        print("  every clock here is readable and none of them has run out")
+    print()
+    print("A reservation for the owner that proceeds on her silence is the one")
+    print("row in this register whose answer arrives without anybody acting,")
+    print("so it is the one row that has to be read by a command rather than")
+    print("by whoever happens to open the file.")
+    return rc
 
 
 # ---- ledger -----------------------------------------------------------
@@ -4883,6 +5046,560 @@ def captions(paths=None):
     return rc
 
 
+# The generator the press is running, and the distance from the one this seat
+# edits. Ban list 146 is the entry and this is its enforcement.
+PRESS_APP = "weekly"
+PRESS_FILE = "prompts/digest.md"
+# The engineer's walk is bounded at 40 commits and the deployed commit passed
+# that mark on 2026-10-26. 400 is not a tuned number, it is a window wide
+# enough that the bound is the deploy's age rather than this seat's output
+# rate, which is the whole defect being worked around here.
+PRESS_WINDOW = 400
+
+
+def press_verdict(found, generator_commit, queued, now, generator_at):
+    """One verdict about the press, from facts a caller has already gathered.
+
+    Separated from the reading so it can be pinned by cases that need no
+    network and no git. `found` is `undeployed_commits`'s dict, verbatim.
+
+    The three outcomes are not three grades of the same thing. A refusal means
+    the question was not answered and the run must not conclude anything from
+    it, which is the reading that cost run 60 forty minutes. A press on the
+    trunk's generator means a grade below is a grade on this seat's current
+    work. Anything else means the grade is about an older file, and the run has
+    to say which one before it scores a single law.
+    """
+    if "why" in found:
+        return "REFUSED", found["why"]
+    if not queued and generator_commit:
+        return "CURRENT", (f"the press is running {PRESS_FILE} as of "
+                           f"{generator_commit}, which is the trunk's")
+    # The age is the GENERATOR commit's, not the deploy's. They differ by
+    # however long this file sat unedited before the deploy, and the number a
+    # grade needs is the age of the prose the press is writing from.
+    age = ""
+    if generator_at is not None and now is not None:
+        age = (f", {round((now - generator_at).total_seconds() / 86400, 1)} "
+               f"days old")
+    return "BEHIND", (f"the press is running {PRESS_FILE} as of "
+                      f"{generator_commit or 'an unnamed commit'}{age}, with "
+                      f"{len(queued)} merged commit(s) to it queued behind the "
+                      f"deploy")
+
+
+PRESS_CASES = [
+    ({"why": "the running digest matches none of the last 40 commits to touch "
+             "this app's files"}, None, [], "REFUSED"),
+    ({"deployed_commit": "abc1234", "deployed_at": "2026-10-26T00:00:00+00:00"},
+     "abc1234", [], "CURRENT"),
+    ({"deployed_commit": "f16e277", "deployed_at": "2026-10-15T17:40:37+00:00"},
+     "9b6410e", [{"sha": "x"}, {"sha": "y"}], "BEHIND"),
+    # The deploy is newer than the generator commit it carries, which is the
+    # ordinary case and the reason the age is read off the second one.
+    # A deploy this seat's file predates: the image is current for the app and
+    # still behind for the generator, because the app's other seven files moved
+    # and this one did not. The verdict is BEHIND and the reason names the
+    # generator rather than the app, which is the distinction a writer run
+    # needs and the deploy surface does not make.
+    ({"deployed_commit": "f16e277", "deployed_at": "2026-10-15T17:40:37+00:00"},
+     None, [{"sha": "x"}], "BEHIND"),
+]
+
+
+def press_cases():
+    """The verdict function against its four pinned cases."""
+    rc = 0
+    now = datetime.datetime(2026, 10, 27, tzinfo=datetime.timezone.utc)
+    for found, gen, queued, want in PRESS_CASES:
+        at = found.get("deployed_at")
+        at = datetime.datetime.fromisoformat(at) if at else None
+        got, _ = press_verdict(found, gen, queued, now, at)
+        if got != want:
+            rc = 1
+            print(f"  FAIL    case wanted {want} and got {got}")
+    print(f"PRESS_CASES                                "
+          f"{len(PRESS_CASES) - rc} of {len(PRESS_CASES)}")
+    return rc
+
+
+def press():
+    """Which generator the press is running, and how far it is from the trunk.
+
+    Every grade this seat writes is a verdict on `prompts/digest.md`, and the
+    copy of that file the press runs is not the copy a run edits. The forwards
+    half of the canon's procedure asked each run to check that distance, in
+    prose, and on 2026-10-27 the one command that answers it stopped answering:
+    `tools/delivery_health.py` recovers the deployed commit by replaying the
+    image's content digest over the last `DEPLOY_HISTORY_LIMIT` commits to
+    touch the app's files, that limit is 40, and `weekly`'s file list contains
+    the one file this seat edits on every run. The deployed commit reached walk
+    position 43 and the surface printed "the deploy was built from code that is
+    not in this history" about a nine-day-old ancestor of `origin/main`.
+
+    So the instrument goes blind in proportion to this seat's own output, which
+    is the defect ban list 146 names. The ledger entry of 2026-10-27 asks the
+    engineer for the window and for a refusal that says how far it looked. This
+    is the half that belongs here: the same question, asked with the window
+    widened, by the seat that needs the answer before it grades anything.
+
+    It calls `undeployed_commits` rather than replaying the digest again. A
+    second copy of that logic in this file would be a parallel structure, and
+    the one thing this charter forbids beyond all others is a seat inventing a
+    structure beside one that already works.
+
+    Unreachable is a failure and never a pass. A run that cannot read the row
+    and concludes the press is current has made the mistake this whole file was
+    built to stop.
+    """
+    rc = press_cases()
+    print()
+    found = press_deploy()
+    if found is None:
+        print("    nothing was read, so nothing is concluded about the press")
+        return 1
+    row = found["row"]
+    deployed = found.get("deployed_commit")
+    at = found.get("deployed_at")
+    at = datetime.datetime.fromisoformat(at) if at else None
+    gen = None
+    gen_at = None
+    queued = []
+    if deployed:
+        gen = _git_line("log", "-1", "--format=%h %cI %s", deployed,
+                        "--", PRESS_FILE)
+        if gen:
+            with contextlib.suppress(ValueError, IndexError):
+                gen_at = datetime.datetime.fromisoformat(gen.split()[1])
+        queued = _git_lines("log", "--format=%h %cI %s",
+                            f"{deployed}..origin/main", "--", PRESS_FILE)
+    verdict, why = press_verdict(found, gen.split()[0] if gen else None,
+                                 queued, datetime.datetime.now(
+                                     datetime.timezone.utc), gen_at)
+    print(f"recorded digest                            "
+          f"{row.get('runtime_sha')}")
+    print(f"recorded at                                "
+          f"{row.get('recorded_at')}")
+    print(f"deployed commit                            {deployed or 'unknown'}")
+    print(f"commits searched                           "
+          f"{found.get('searched', 0)} of a {PRESS_WINDOW} window")
+    print(f"the generator it carries                   {gen or 'unknown'}")
+    print(f"deployed at                                {at or 'unknown'}")
+    print(f"queued commits to the generator            {len(queued)}")
+    for line in queued[:5]:
+        print(f"    {line}")
+    if len(queued) > 5:
+        print(f"    and {len(queued) - 5} more")
+    print()
+    print(f"  {'FAIL' if verdict != 'CURRENT' else 'OK  '}    {verdict}: {why}")
+    print()
+    print("A verdict on an issue is a verdict on the generator that wrote it,")
+    print("so the run that cannot name that generator is grading an unnamed")
+    print("artifact. REFUSED is the answer to act on rather than to read")
+    print("past: it means the window ran out and the number is recoverable,")
+    print("not that the press was built from code nobody pushed.")
+    return rc | (verdict != "CURRENT")
+
+
+def press_deploy():
+    """`undeployed_commits` for the press, or None with the reason printed.
+
+    Factored out of `press` when a second command needed the deployed commit.
+    A second copy of the receipt read in this file would be a parallel
+    structure, and this charter forbids those before it forbids anything else.
+
+    The row the receipt carried is returned under `row`, because the caller
+    that prints a verdict has to be able to say what it read it off.
+    """
+    try:
+        sys.path.insert(0, str(ROOT))
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "_dh", ROOT / "tools" / "delivery_health.py")
+        dh = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(dh)
+    except Exception as e:
+        print(f"  UNREACHED tools/delivery_health.py: {type(e).__name__}: {e}")
+        return None
+    body = _fetch(dh.RECEIPT_URL)
+    if body is None:
+        return None
+    try:
+        rows = {r["app"]: r for r in json.loads(body).get("deploy", [])}
+    except (ValueError, KeyError, TypeError) as e:
+        print(f"  UNREACHED {dh.RECEIPT_URL}: {type(e).__name__}: {e}")
+        return None
+    row = rows.get(PRESS_APP)
+    if row is None:
+        print(f"  FAIL    the receipt carries no row for {PRESS_APP}, so the "
+              f"press has never reported what it runs")
+        return None
+    found = dh.undeployed_commits(ROOT, PRESS_APP, row.get("runtime_sha"),
+                                  limit=PRESS_WINDOW, ref="origin/main")
+    found["row"] = row
+    return found
+
+
+# Which law each undeployed generator patch reaches. `press` says the press is
+# twelve days and twenty-eight commits behind. This says what is in those
+# twenty-eight, which is the fact the charter's structure-watch step turns on.
+LAW_CITED = re.compile(r"\blaw (\d+[a-z]?)\b", re.I)
+
+
+def law_anchors(text):
+    """Every `law N` citation in a generator, as (line number, label)."""
+    out = []
+    for n, line in enumerate(text.splitlines(), 1):
+        for m in LAW_CITED.finditer(line):
+            out.append((n, m.group(1)))
+    return out
+
+
+HUNK = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
+
+
+def changed_lines(diff):
+    """The new-side line numbers a `-U0` unified diff writes.
+
+    A pure deletion writes none, and git prints it as `+c,0`. Attributing
+    that to nothing loses every revert in the queue, and there is one:
+    `0251df0b` reverts law 8's url patch. So a deletion attributes to the
+    position the text left rather than to no law at all.
+    """
+    out = []
+    for line in diff.splitlines():
+        m = HUNK.match(line)
+        if not m:
+            continue
+        start = int(m.group(1))
+        count = 1 if m.group(2) is None else int(m.group(2))
+        if count == 0:
+            out.append(max(1, start))
+        else:
+            out.extend(range(start, start + count))
+    return out
+
+
+def law_spans(anchors, lines):
+    """How many lines each law's citations own, by the rule below.
+
+    Printed next to a positional count so a reader can discount it. Law 12a's
+    citations own 325 lines of a 2,191-line generator and law 1's own 305, so
+    between them they own 29% of the file, and a commit that lands anywhere in
+    that 29% attributes to one of them whether or not it meant to. A count
+    without its span reads like evidence. With its span it reads like what it
+    is.
+    """
+    marks = sorted(anchors)
+    out = {}
+    for i, (n, label) in enumerate(marks):
+        end = marks[i + 1][0] if i + 1 < len(marks) else lines
+        out[label] = out.get(label, 0) + max(0, end - n)
+    return out
+
+
+def laws_touched(anchors, changed, message=""):
+    """The laws a commit reaches, in two strengths of evidence and never one.
+
+    `named` is what the commit's own message cites. This charter already
+    requires a prompt diff to cite the law it serves, so a message that does
+    is the author's own claim about their change and it is the reading a run
+    can act on.
+
+    `nearby` is position alone: the nearest citation at or above a changed
+    line, because the generator is organised that way, the line naming a law
+    followed by the prose serving it. It is a lead and not an answer, and the
+    first version of this function returned the union of the two under one
+    name. On the live queue that version answered that law 12a was worked by
+    21 of 28 commits, which contradicted the grade written two hours earlier
+    and was wrong: 12a's citations own a 325-line span, so the number measured
+    citation sparsity rather than anybody's intent. A flattering instrument is
+    worse than none, and an instrument that is confidently flattering about
+    the one law with no patch is the worst available case.
+
+    `orphan` counts changed lines above the first citation. They belong to no
+    law and are reported rather than folded into law 1, which is what the
+    obvious boundary bug here would do.
+    """
+    marks = sorted(anchors)
+    named = {m.group(1) for m in LAW_CITED.finditer(message)}
+    nearby = set()
+    orphan = 0
+    for line in changed:
+        best = None
+        for n, label in marks:
+            if n > line:
+                break
+            best = label
+        if best is None:
+            orphan += 1
+        else:
+            nearby.add(best)
+    return named, nearby, orphan
+
+
+def queued_verdict(label, named, nearby, span):
+    """One law's structure-watch answer, from the queue alone.
+
+    Four answers, because the queue supports four and not two.
+
+    QUEUED: a merged commit the press has not received says in its own message
+    that it works this law. A fresh wording is the third tinker the charter's
+    structure-watch step refuses, and the grade says the patch is waiting on a
+    deploy.
+
+    UNNAMED: commits landed inside this law's span and none said so. The grade
+    cannot conclude either way from here and reads those commits. On
+    2026-10-27 this covered 26 of the 28 queued commits, so it is the ordinary
+    case rather than the edge one.
+
+    UNCITED: the generator never names this law, so it owns no span and the
+    queue cannot be asked about it at all. This is not a reading about the
+    queue and it must never be printed as one, because the verdict that looks
+    like it from the outside is UNPATCHED and acting on that would mean
+    writing a rule the generator already carries. Five laws were in this state
+    when the command was written, 3, 7, 8, 10 and 16, two of them failures in
+    the live grade.
+
+    UNPATCHED: the law is cited, it owns a span, and nothing in the queue
+    touches it by either reading. A prompt patch is this run's work.
+
+    None of the four says the patch is correct. They say whether one exists
+    and has not reached the press, which is all a grade can establish before
+    the deploy.
+    """
+    if named:
+        return "QUEUED", (f"law {label} is named by {len(named)} queued "
+                          f"commit(s), so a fresh wording is the tinker the "
+                          f"structure-watch step refuses")
+    if nearby:
+        return "UNNAMED", (f"{len(nearby)} queued commit(s) landed in law "
+                           f"{label}'s span and none names it, so read them "
+                           f"before writing or refusing a patch")
+    if not span:
+        return "UNCITED", (f"the generator never names law {label}, so it "
+                           f"owns no span and the queue cannot be asked about "
+                           f"it: this is a gap in the generator's citations "
+                           f"and not a reading about the patch")
+    return "UNPATCHED", (f"no queued commit reaches law {label} by either "
+                         f"reading, so a prompt patch is this run's work and "
+                         f"not the deploy's")
+
+
+CHANGED_CASES = [
+    ("@@ -1,2 +1,3 @@", [1, 2, 3]),
+    # A pure deletion. The revert in the live queue has this shape.
+    ("@@ -40,6 +39,0 @@", [39]),
+    # One line for one line, which git prints without the counts.
+    ("@@ -5 +5 @@", [5]),
+    # Two hunks in one commit, which is the ordinary generator patch.
+    ("@@ -5 +5 @@\n@@ -20,0 +21,2 @@", [5, 21, 22]),
+]
+
+LAWS_CASES = [
+    # A change inside law 14's span, by position and not by name.
+    ([(10, "14"), (40, "1")], [20], "", set(), {"14"}, 0),
+    # A change below the last citation belongs to that one and not the first.
+    ([(10, "14"), (40, "1")], [99], "", set(), {"1"}, 0),
+    # Above every citation is nobody's law, counted rather than folded in.
+    ([(10, "14")], [3], "", set(), set(), 1),
+    # The message's own citation is the strong reading and needs no changed
+    # line, which is what the charter asks a prompt diff to carry.
+    ([(10, "14")], [], "Generator: law 8's url at the three write points",
+     {"8"}, set(), 0),
+    # Named and nearby disagree, which is the case that must not be merged:
+    # the message says 8 and the lines sit under 14. Both are reported.
+    ([(10, "14")], [20], "Generator: law 8's url at three write points",
+     {"8"}, {"14"}, 0),
+    # A sub-lettered law is its own label. Folding 12a into 12 would answer a
+    # density failure with the heading patch.
+    ([(10, "12"), (50, "12a")], [60], "", set(), {"12a"}, 0),
+]
+
+SPAN_CASES = [
+    # A law cited twice owns both of its stretches, which is why the live
+    # reading has to sum them rather than take the widest.
+    ([(10, "1"), (20, "14"), (30, "1")], 50, {"1": 30, "14": 10}),
+    # The last citation owns everything to the end of the file.
+    ([(10, "6")], 100, {"6": 90}),
+]
+
+VERDICT_CASES = [
+    (["c5a32e4c"], [], 40, "QUEUED"),
+    ([], ["2c6ce635", "31d3fb23"], 103, "UNNAMED"),
+    # Cited, with a span, and nothing in the queue: this run's work.
+    ([], [], 103, "UNPATCHED"),
+    # No span means no citation, and the answer is about the generator rather
+    # than about the queue. Returning UNPATCHED here is the failure that would
+    # send a run to reword a rule the generator already carries.
+    ([], [], 0, "UNCITED"),
+]
+
+
+def queued_cases():
+    """The three pure halves against their cases, with no git and no network."""
+    rc = 0
+    bad = 0
+    for diff, want in CHANGED_CASES:
+        got = changed_lines(diff)
+        if got != want:
+            bad += 1
+            print(f"  FAIL    changed_lines wanted {want} and got {got}")
+    print(f"CHANGED_CASES                              "
+          f"{len(CHANGED_CASES) - bad} of {len(CHANGED_CASES)}")
+    rc |= bool(bad)
+    bad = 0
+    for anchors, changed, msg, wname, wnear, worph in LAWS_CASES:
+        named, nearby, orphan = laws_touched(anchors, changed, msg)
+        if named != wname or nearby != wnear or orphan != worph:
+            bad += 1
+            print(f"  FAIL    laws_touched wanted "
+                  f"{sorted(wname)}/{sorted(wnear)}/{worph} and got "
+                  f"{sorted(named)}/{sorted(nearby)}/{orphan}")
+    print(f"LAWS_CASES                                 "
+          f"{len(LAWS_CASES) - bad} of {len(LAWS_CASES)}")
+    rc |= bool(bad)
+    bad = 0
+    for anchors, lines, want in SPAN_CASES:
+        got = law_spans(anchors, lines)
+        if got != want:
+            bad += 1
+            print(f"  FAIL    law_spans wanted {want} and got {got}")
+    print(f"SPAN_CASES                                 "
+          f"{len(SPAN_CASES) - bad} of {len(SPAN_CASES)}")
+    rc |= bool(bad)
+    bad = 0
+    for named, nearby, span, want in VERDICT_CASES:
+        got, _ = queued_verdict("14", named, nearby, span)
+        if got != want:
+            bad += 1
+            print(f"  FAIL    queued_verdict wanted {want} and got {got}")
+    print(f"VERDICT_CASES                              "
+          f"{len(VERDICT_CASES) - bad} of {len(VERDICT_CASES)}")
+    return rc | bool(bad)
+
+
+def _law_sort(label):
+    """Law order as a reader of the canon expects it: 12 before 12a."""
+    m = re.match(r"(\d+)([a-z]*)", label)
+    return (int(m.group(1)), m.group(2)) if m else (999, label)
+
+
+def queued(labels=()):
+    """Which law each undeployed generator patch reaches.
+
+    The charter's structure-watch step says a structural fix that has failed
+    twice through prompt changes goes to the ledger rather than into a third
+    wording. Running that step needs one fact for each failed law: whether a
+    patch for it is already merged and waiting on a deploy. Four consecutive
+    runs established that fact by hand, out of commit subjects and memory, and
+    wrote it into the review as prose. The 2026-10-27 grade's section on why it
+    shipped no prompt diff is three paragraphs of this derivation and nothing
+    else, and the run before it refused a fourth wording of law 1 the same way.
+
+    It is mechanical, because the generator names the law each rule serves
+    inline, twenty-six times. Take the queued commits, take the lines each one
+    wrote, and read the citation standing above them.
+
+    The answer is per law and never one verdict, because the queue is almost
+    never empty and almost never complete. A run reads its failed laws off the
+    grade and looks them up here. Pass them as arguments to get the verdicts
+    alone: `check_voice.py queued 1 8 12a 14`.
+
+    An unreached receipt is a failure. A run that cannot read the queue and
+    concludes a law is unpatched would write the fifth wording of a rule that
+    is already fixed, which is the exact waste this command exists to prevent.
+    """
+    rc = queued_cases()
+    print()
+    found = press_deploy()
+    if found is None:
+        print("    nothing was read, so no law is called unpatched")
+        return 1
+    if "why" in found:
+        print(f"  FAIL    REFUSED: {found['why']}")
+        print("    the queue could not be bounded, so no law is called")
+        print("    unpatched and the structure-watch step has no input")
+        return 1
+    deployed = found.get("deployed_commit")
+    rows = _git_lines("log", "--format=%h%x09%s",
+                      f"{deployed}..origin/main", "--", PRESS_FILE)
+    named_by = {}
+    nearby_by = {}
+    orphans = 0
+    unnamed = 0
+    for row in rows:
+        parts = row.split("\t")
+        sha = parts[0]
+        subject = parts[1] if len(parts) > 1 else ""
+        text = "\n".join(_git_lines("show", f"{sha}:{PRESS_FILE}"))
+        diff = "\n".join(_git_lines("show", sha, "-U0", "--format=",
+                                    "--", PRESS_FILE))
+        named, nearby, orphan = laws_touched(
+            law_anchors(text), changed_lines(diff), subject)
+        orphans += orphan
+        if not named:
+            unnamed += 1
+        line = f"{sha} {subject}"
+        for label in named:
+            named_by.setdefault(label, []).append(line)
+        for label in nearby:
+            nearby_by.setdefault(label, []).append(line)
+    # The spans come off origin/main and not off the branch, because the queue
+    # is measured `deployed..origin/main` and a span read anywhere else would
+    # discount a count taken against a file that never produced it.
+    spans = law_spans(law_anchors(
+        "\n".join(_git_lines("show", f"origin/main:{PRESS_FILE}"))),
+        len(_git_lines("show", f"origin/main:{PRESS_FILE}")))
+    print(f"deployed commit                            "
+          f"{deployed or 'unknown'}")
+    print(f"queued commits to the generator            {len(rows)}")
+    print(f"of those, naming the law they serve        {len(rows) - unnamed}")
+    print(f"changed lines under no citation            {orphans}")
+    print()
+    for label in sorted(set(named_by) | set(nearby_by), key=_law_sort):
+        nm = named_by.get(label, [])
+        nb = nearby_by.get(label, [])
+        print(f"  law {label:<4}  {len(nm):>2} named  {len(nb):>2} in a span "
+              f"of {spans.get(label, 0)} lines")
+        for c in nm[:2]:
+            print(f"              named   {c[:66]}")
+        for c in nb[:2] if not nm else []:
+            print(f"              nearby  {c[:66]}")
+    if labels:
+        print()
+        for label in labels:
+            verdict, why = queued_verdict(label, named_by.get(label, []),
+                                          nearby_by.get(label, []),
+                                          spans.get(label, 0))
+            mark = "OK  " if verdict == "QUEUED" else "FAIL"
+            print(f"  {mark}    {verdict}: {why}")
+            rc |= verdict != "QUEUED"
+    print()
+    print("A law a queued commit names is fixed and undelivered, so the grade")
+    print("that fails it says so and writes nothing. A law nothing reaches is")
+    print("this run's work. In between is UNNAMED, which was 26 of 28 commits")
+    print("the day this was written, and that number is the finding: the")
+    print("charter asks a prompt diff to cite the law it serves and the")
+    print("citation has been going into the review rather than the commit,")
+    print("which is why four runs rebuilt this fact from memory.")
+    return rc
+
+
+def _git_line(*args):
+    out = _git_lines(*args)
+    return out[0] if out else None
+
+
+def _git_lines(*args):
+    try:
+        r = subprocess.run(["git", "-C", str(ROOT), *args],
+                           capture_output=True, text=True, timeout=120)
+    except (OSError, subprocess.SubprocessError):
+        return []
+    return [x for x in r.stdout.splitlines() if x.strip()]
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -4893,6 +5610,7 @@ def main():
     paths = sys.argv[2:]
     rc = 0
     takes_paths = {"measure", "links", "delivery", "compare", "firstuse",
+                   "queued",
                    "generator", "specimens", "standalone", "devices",
                    "captions", "marks", "provenance"}
     # `--live` is the answer to `editions`, inside one run. It replaces the
@@ -4925,6 +5643,9 @@ def main():
                      ("delivery", delivery), ("claims", claims),
                      ("reading", reading),
                      ("candidates", candidates),
+                     ("deadlines", deadlines),
+                     ("press", press),
+                     ("queued", queued),
                      ("ledger", ledger),
                      ("firstuse", firstuse),
                      ("generator", generator),
@@ -4941,7 +5662,8 @@ def main():
                      ("blockrules", blockrules),
                      ("compare", compare), ("selfcheck", selfcheck)):
         if which == name or (which == "all"
-                             and name not in ("selfcheck", "compare")):
+                             and name not in ("selfcheck", "compare",
+                                              "press", "queued")):
             print(f"==== {name} ====")
             if name in ("enforcements", "selfcheck", "candidates", "ledger",
                         "routed"):
