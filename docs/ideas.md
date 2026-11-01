@@ -22424,3 +22424,77 @@ has nothing to go red against.
   law each change serves".
 - Cost: $0
 - Status: proposed
+
+### 2026-11-01 - The pre-send heading ban and the voice canon's heading ban share no phrase, and four live headings walked through both (writer seat, for the engineer)
+- Trigger: the grade of `2026-W42` in
+  `docs/voice/reviews/2026-11-01-hook.md`. Its reading list prints `## What to
+  read`, a heading that would have been true of every issue ever sent, and
+  `tools/check_digest_quality.py` reported `0 blocking, 4 warnings` on that
+  file.
+- What: there are two heading bans in this repository and they are tracking
+  different vocabularies. `SKELETON_HEADINGS` in the pre-send gate names eight
+  phrasings and all eight are the generator's internal slot names or their
+  near-synonyms: `gaining traction`, `trailblazing`, `left behind`, `read these
+  yourself`, `key takeaways`, `what this means`, `new and unproven`,
+  `compounding`. The voice canon's ban, which `check_voice.py slotwords`
+  derives from the generator's own quoted list, names six: `what changed`,
+  `what fell behind`, `what is new`, `what is working`, `what to read`, `what
+  to watch`. **The intersection of those two lists is empty.** Not small. Empty.
+- The cost, measured on the live product rather than argued: every one of
+  these passes the pre-send gate, and three of them are serving right now.
+  ```
+  2026-W40  ## What is gaining ground: recursive self-improvement with ...   PASSES
+  2026-W40  ## What is genuinely new: where memory lives and who can ...     PASSES
+  2026-W40  ## What fell behind: the assumptions that let agents run ...     PASSES
+  2026-W42  ## What to read                                                  PASSES
+  ```
+  The first three are canon law 12 in its plainest form, the owner's ruling
+  given twice and recorded as incident 20: the framework's internal names,
+  printed, in plain-English dress, with a colon and the day's material after
+  it. The generator already says a colon does not launder it. The gate that
+  blocks a send cannot see any of the four.
+- Why the gate missed them, and it is not an oversight about any one word.
+  `SKELETON_HEADINGS` was written from the generator's internal labels, which
+  is the list of what a model would print if it copied its instructions. What
+  the press actually prints is the paraphrase, and law 12's own text says the
+  paraphrase is the violation: "A paraphrase of a banned heading is the banned
+  heading." So the gate holds the one shape the generator is least likely to
+  emit and none of the shapes it does.
+- What: make the pre-send gate read the ban from the same place
+  `check_voice.py slotwords` reads it, which is the quoted list inside
+  `prompts/digest.md`'s slot-ban paragraph, rather than from a tuple that has
+  to be kept in step by hand. Two lists maintained by two seats against one
+  rule is the drift this entry is reporting, and a derived list cannot drift.
+  Keep the eight current entries as the floor and add the derived six, because
+  the internal names are still worth blocking even though nothing prints them.
+- Why this is the engineer's and not this seat's: `tools/` is pipeline code and
+  the writer charter's boundary says never pipeline code. This seat owns the
+  ban's wording and has already widened it this run, adding `what to read` as
+  the sixth phrasing after the print of 2026-10-19 set it bare. That change
+  reaches `slotwords` and does not reach the send.
+- Status: `proposed`
+
+### 2026-11-01 - Law 14's one-shape failure cannot block a send, so the one thing she rejected twice ships green (writer seat, for the engineer)
+- Trigger: `check_voice.py devices` fails on all three served editions with
+  "no list and no written turn", and `check_digest_quality.py` passes all of
+  them.
+- What: the pre-send gate has eight blocking rules, `skeleton-heading`,
+  `date-in-title`, `no-title`, `typesetter-punctuation`,
+  `internal-vocabulary`, `slop-lexicon`, `ends-on-citation` and
+  `daily-too-short`. None of them measures the shape of the page. So an issue
+  set as one column of grey paragraphs, which canon law 14 calls "a design
+  failure the writer owns, not a neutral default" and which the owner has read
+  and rejected twice, is green at the only gate that can stop a send.
+  `2026-W42` measures `shapes 1`, 35 paragraphs, no bullet, no third-level
+  turn, 1,552 words.
+- The shape rule is already written and already running, in
+  `docs/voice/check_voice.py devices`, with its cases. The ask is not a new
+  detector. It is to call that one from the pre-send path, or to lift its two
+  tests into the gate, so the verdict arrives before the send rather than in a
+  grade written afterwards.
+- Why it matters more than the usual gate gap: law 14 is the law the market
+  seat's ranking of 2026-09-24 put alexandria last on while first on rigor,
+  and its finding was "this is a formatting and craft gap, not a substance
+  gap". A craft gap that no gate can see is a craft gap that ships on every
+  issue, and three for three is what the archive shows.
+- Status: `proposed`

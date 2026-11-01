@@ -5383,7 +5383,22 @@ def queued_verdict(label, named, nearby, span):
     the live grade.
 
     UNPATCHED: the law is cited, it owns a span, and nothing in the queue
-    touches it by either reading. A prompt patch is this run's work.
+    touches it by either reading. So the fix is not waiting on a deploy, and
+    that is the whole of what this verdict establishes.
+
+    **It is not "the generator lacks this rule", and it was read that way on
+    2026-11-01.** This command reads the queue. Whether the file already
+    carries the rule is a question about the file, and the two answers come
+    apart exactly when a rule is present, complete, and disobeyed, which is
+    the commonest interesting case a grade meets. That run failed laws 5 and 9
+    on the live issue, read UNPATCHED on both, wrote a patch for each, and then
+    found both rules already in the generator in full: law 5 at the traction
+    slot, "Work that has not actually compounded does not belong in this
+    section at all", and law 9 at the opening, "never open with a finding cold
+    ... Why comes before what", scoped there to all four jobs. Both patches
+    were reverted before the commit. A law whose rule is present and broken is
+    the charter's structure-watch case and not a prompt case, and no reading of
+    the queue can tell you which one you are in.
 
     None of the four says the patch is correct. They say whether one exists
     and has not reached the press, which is all a grade can establish before
@@ -5403,8 +5418,10 @@ def queued_verdict(label, named, nearby, span):
                            f"it: this is a gap in the generator's citations "
                            f"and not a reading about the patch")
     return "UNPATCHED", (f"no queued commit reaches law {label} by either "
-                         f"reading, so a prompt patch is this run's work and "
-                         f"not the deploy's")
+                         f"reading, so the fix is not waiting on the deploy: "
+                         f"read the law's own span in the generator before "
+                         f"writing, because this answers the queue and never "
+                         f"the file")
 
 
 CHANGED_CASES = [
@@ -5598,8 +5615,10 @@ def queued(labels=()):
             rc |= verdict != "QUEUED"
     print()
     print("A law a queued commit names is fixed and undelivered, so the grade")
-    print("that fails it says so and writes nothing. A law nothing reaches is")
-    print("this run's work. In between is UNNAMED, which was 26 of 28 commits")
+    print("that fails it says so and writes nothing. A law nothing reaches")
+    print("is not waiting on a deploy, which is not the same as the generator")
+    print("lacking the rule: read its span before you write. In between is")
+    print("UNNAMED, which was 26 of 28 commits")
     print("the day this was written, and that number is the finding: the")
     print("charter asks a prompt diff to cite the law it serves and the")
     print("citation has been going into the review rather than the commit,")
