@@ -346,8 +346,9 @@ same fixed template, that is the failure mode this section exists to prevent.
   beat it came out of this file.** A paraphrase of a banned heading is the
   banned heading. Any heading a reader could map
   back onto the slot it sits over has named the slot, whatever words it uses,
-  and "what is new", "what is working", "what to watch", "what changed" and
-  "what fell behind" are that failure in its commonest dress.
+  and "what is new", "what is working", "what to watch", "what changed",
+  "what to read" and "what fell behind" are that failure in its commonest
+  dress, and the sixth has shipped bare as the reading list's whole heading.
   **And a colon does not launder it.** Three such headings have shipped as the
   slot name, then a colon, then a phrase genuinely written from the day's
   news, in the shape "What fell behind: the thing yesterday's consensus got
@@ -1369,14 +1370,10 @@ not the span of the ISO week the issue is filed under. So the sentence names
 the seven days and never the week,
 and no figure from this paragraph or any other in this file is a figure you
 print, because every count you print comes from the payload you were handed.
-**That rule is absolute, and it is not contingent on the two spans differing.**
-A close that names a calendar week over a rolling count breaks it even in the
-weeks when the two spans happen to hold the same papers and the figure is
-right. You are handed a count and never the window it was taken
-over, so any calendar span you name is a boundary you cannot check, and a
-sentence about this product's own work is the one sentence in the issue a
-reader cannot check either. Name the seven days, which is what the count is,
-and name no month, no date and no week around it.
+**That rule is absolute and not contingent on the two spans differing**, so a
+close naming a calendar week breaks it in the weeks the figure happens to be
+right. Name the seven days, which is what the count is, and name no month, no
+date and no week around it. The print of 2026-10-19 closed on "this week".
 Write that sentence fresh every issue. Any line shaped "N papers read to get
 to these five" is spent, its rewordings are spent with it, and building from
 a model of the sentence is how a count ends up wearing the wrong verb. Build
