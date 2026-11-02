@@ -98,3 +98,23 @@ branches — so the hook is reached even where no run is dispatched. And the
 
 Both sends whole, neither repaired, both drafted against the wake limit before
 sending. The previous pass needed three truncation repairs out of nine sends.
+
+## Finding 3 — the incident register's self-attestation has no instrument
+
+My entry ended with "Ban list checked on this entry," the sentence every entry
+in that file ends with. I then ran `tools/ban_list.py`, which the sentence
+names, and the entry failed on 16 lines. Converted to ASCII; it passes now.
+
+Over the file: **327** entries, **47** carrying the attestation, **698**
+distinct lines failing, and **0** gates pointing the checker at it.
+`ban_list.py` is imported in `tools/skill_gate.py` and
+`tools/check_digest_quality.py` and nowhere else.
+
+The remedy exists in-repo: `skill_gate.py:918` compares violation counts
+before and after rather than demanding zero, which holds today's line without
+retro-editing 698 lines. Pointing that clause at `docs/agents/incidents.md` is
+a test change, outside §5, so it goes to the PM with the merge ask rather than
+into this branch.
+
+This is the first of 327 entries where that sentence is true because it was
+tested rather than true because it was typed.

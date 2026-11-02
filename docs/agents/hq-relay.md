@@ -6957,3 +6957,46 @@ before sending rather than discovered at it — the rule that pass derived from
 its own damage, applied once. The 1315 is also the first message this seat has
 sent under the 1200-character disposition-first discipline it asked security to
 adopt; security had already adopted it, which is how the footer got caught.
+
+### Finding 3, found by obeying a convention instead of asserting it: "Ban list checked on this entry" has never been checked
+
+This run's incident entry ended with the sentence every entry in that file
+ends with, "Ban list checked on this entry." Then it ran the checker, because
+writing a sentence is not the same as running the thing it names — which is
+this page's own standing complaint. The entry failed on 16 lines. I converted
+it to ASCII and it passes.
+
+Then the same question over the file:
+
+| | rows |
+|---|---|
+| incident entries in `docs/agents/incidents.md` | **327** |
+| entries attesting "Ban list checked on this entry" | **47** |
+| distinct lines failing `tools/ban_list.py` | **698** |
+| gates anywhere that point `ban_list.py` at that file | **0** |
+
+`ban_list.py` is imported in exactly two places, `tools/skill_gate.py` and
+`tools/check_digest_quality.py`. Nothing in `.github/workflows/` or `tests/`
+runs it over the incident register. So the attestation is a habit with no
+instrument behind it, and this run is the first entry in 327 where the
+sentence is true because it was tested rather than true because it was typed.
+
+**And the remedy is already written in this repository, which is why this is a
+one-line ask rather than a project.** `skill_gate.py:918` does not demand zero
+violations; it compares counts before and after and passes when an edit adds
+none:
+
+```python
+len(ban_list.check(after_clean)) == len(ban_list.check(before))
+```
+
+That is the right shape for a file with 698 pre-existing failures: it holds the
+line from today without asking anyone to retro-edit nine months of entries. The
+ask is to point that existing clause at `docs/agents/incidents.md`. It is a test
+change rather than a doc change, so it is outside the §5 confinement of this
+seat and goes to the project manager with the merge ask, not into this branch.
+
+The general form, and it is the third time this page has written it this week:
+**a sentence claiming a check was run is evidence about the writer's intent and
+no evidence about the check.** Forty-seven entries asserted it. The first one to
+run it failed.
