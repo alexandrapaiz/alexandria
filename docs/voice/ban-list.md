@@ -4282,3 +4282,53 @@ gap that the same collision had left empty (incident 25).
     it is in `docs/ideas.md` with the candidate-fence convention it depends
     on, because the ten candidate files this would read are the same ten
     that quote their own rejections.
+
+149. The apparatus wearing a colon, which is a label the one gate written to
+    catch labels cannot see.
+    Not a phrase and not a heading. A sentence-internal fragment whose
+    subject is one of this canon's own instrument words, broken to a colon,
+    with the thing it owed the reader on the far side of the mark. `2026-W42`
+    printed four in one edition: "The grade: one platform, one model family,
+    five benchmarks, no replication outside the group yet.", and "The
+    procedure is extractable:", "The procedure is clean:" and "The procedure
+    runs:", each of the last three opening a comma-run of steps.
+    The reason it earns a number is that the generator bans this shape twice
+    and reaches neither instance, for two different reasons, and the two
+    together are why a rule stated twice shipped four violations.
+    The grade's rule says the grade is a clause inside a sentence and names
+    the shape that keeps shipping instead, which is "a sentence of its own,
+    in one frame". A verbless colon fragment is neither of those by the
+    letter, so the rule describes two dresses and the artifact wore a third.
+    The heading gate is the half that should have caught all four and is the
+    more interesting failure, because it is not missing anything. It collects
+    "the text in front of any colon, bolded or plain", it puts the deciding
+    question to what it collects, and it names "The procedure is
+    extractable:" as a struck specimen of 2026-W39 BY NAME. Every word of
+    that was in the generator the press ran when it wrote this edition,
+    verified at `f16e2775`. So the fragment was collected, the question was
+    available, the specimen was quoted, and the string printed again.
+    What the position buys is the finding. All four sit mid-paragraph after a
+    full stop. Every unit that gate defines is anchored to a LINE, which is
+    what "every line beginning with `#`" and "sitting alone on its own line"
+    and "BEGINS a line" each say, so the one unit that is not line-anchored
+    is the colon, and the colon is the unit a model reads last in a
+    paragraph it has already written. A gate that runs over lines cannot be
+    the gate for a defect that lives inside them.
+    ```
+    Enforced docs/voice/check_voice.py: "apparatus"
+    LANDED docs/voice/check_voice.py: "APPARATUS_CASES says what this pass has to do"
+    LANDED docs/voice/reviews/2026-11-02-message-ask-clocks.md: "four violations of a rule that names its own specimen"
+    ```
+    `apparatus` is the command and it reads sentence-internal position, which
+    is the thing `slotheads` and `marks` are both structurally unable to see:
+    one reads headings and a heading is a line, the other counts two
+    punctuation marks. It fires four times on `2026-W42` and not once on
+    `2026-W37`, `2026-W39` or `2026-W40`, live and in the repository, and its
+    nine asserted cases include the four honest colons of the same edition,
+    because a detector that reddens "This week the field drew a hard line:"
+    is one the next run deletes.
+    **No prompt diff is attached and that is the entry's own argument.**
+    Every word the repair would add is already in the file, so a fifth
+    sentence about labels is the tinker the structure-watch step refuses and
+    the one run 51 reverted inside its own run. The lever is the deploy and
+    the pre-send gate, and both are in `docs/ideas.md` under this run's date.

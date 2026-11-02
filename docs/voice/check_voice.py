@@ -4060,6 +4060,155 @@ def slotheads(paths=None):
     return rc
 
 
+#: The words this canon and this generator use for their OWN instruments. Kept
+#: to three, and each one earns its place from a specimen rather than from a
+#: worry: `2026-W42` printed all three as colon labels in one edition. A longer
+#: list would start catching the reader's own nouns, and "the practical
+#: consequence" is the reader's.
+APPARATUS = ("grade", "procedure", "evidence")
+
+#: What `apparatus_label` has to get right. The true cases are the four
+#: `2026-W42` printed. The false cases are the colons of the same edition that
+#: are doing honest work, because a detector that reddens those is a detector
+#: the next run deletes.
+#: Fields: (fires, the segment as it is printed)
+APPARATUS_CASES = (
+    (True, "The grade: one platform, one model family, five benchmarks, no "
+           "replication outside the group yet."),
+    (True, "The procedure is extractable: agents submit training configs, "
+           "query checkpoints through an OpenAI-compatible gateway."),
+    (True, "The procedure is clean: retrieve top-50 candidates, expose only "
+           "metadata, allow LOAD_SKILL actions during reasoning."),
+    (True, "The procedure runs: sample an initial skill bundle, execute in "
+           "environment, initialize test suite from instruction."),
+    (False, "This week the field drew a hard line: one camp treats skills as "
+            "retrieved documents, the other as living code."),
+    (False, "Their fix is Progressive Disclosure: show the agent only skill "
+            "names and descriptions, let it request the full content."),
+    (False, "A separate team at Fudan, NUS, and Cardinal AI Lab built "
+            "SkillDAG, which goes further: skills live in a typed graph."),
+    (False, "The practical consequence: if your safety argument assumes exact "
+            "reproducibility, you are running on a narrower guarantee."),
+    # The grade written the way the generator asks for it. A clause inside a
+    # sentence that is also carrying a fact, with no colon anywhere.
+    (False, "Nobody outside the group has run it again, and the gains held "
+            "across all five benchmarks."),
+)
+
+#: The segment before a colon, and the apparatus noun has to be its SUBJECT.
+#: Anchored at the segment's own start so "a hard line" and "goes further" do
+#: not reach it, and capped at four words so a sentence that happens to use the
+#: word somewhere before a legitimate colon is not swept in.
+APPARATUS_LABEL = re.compile(
+    r"(?:^|(?<=[.!?]\s))\s*(?:\*\*|\*|_)?the\s+(" + "|".join(APPARATUS) +
+    r")\b(?:\s+\w+){0,2}?\s*:", re.I)
+
+
+def apparatus_label(segment):
+    """Why one printed segment is the apparatus wearing a colon, or "".
+
+    Ban list 149. The generator already bans this shape twice and reaches
+    neither instance of it, for two different reasons, and the reasons are
+    worth keeping together because they are why a rule stated twice shipped
+    four violations in one edition.
+
+    The grade's rule says the grade is a clause inside a sentence and names
+    the shape that keeps shipping instead, which is "a sentence of its own, in
+    one frame". A verbless colon fragment is neither of those things by the
+    letter, so the rule describes two dresses and the artifact wore a third.
+
+    The procedure's rule says the list is the shape and not a suggestion, and
+    the version that names these three specimens by name is queued behind the
+    deploy rather than live.
+
+    And the heading gate, which is the one thing in the file that collects
+    labels, collects lines beginning with `#` and runs of bold or italic
+    sitting ALONE on a line. All four specimens sit mid-paragraph after a full
+    stop, so the gate written to catch a label cannot see a label in the one
+    position the prose actually puts it.
+    """
+    hit = APPARATUS_LABEL.search(segment)
+    if not hit:
+        return ""
+    # The span and not the line. All four specimens sit mid-paragraph, so a
+    # finding quoted from the line's first characters quotes a sentence that
+    # is not the defect, which is ban list 91's rule applied to an excerpt.
+    found = segment[hit.start():hit.end() + 48].strip()
+    return (f"the apparatus wearing a colon, {hit.group(1).lower()!r}, and the "
+            f"reader reads a label where a sentence was owed\n"
+            f"            found   {found!r}")
+
+
+def apparatus(paths=None):
+    """Does an ISSUE print this canon's own instruments as colon labels?
+
+    Canon law 7 is the law underneath it. The issue never narrates its own
+    method, and the three nouns here are the method's: `grade` is what the
+    evidence law does, `procedure` and `evidence` are payload fields the
+    vocabulary rule forbids saying out loud. A reader who meets "The grade:"
+    in a paragraph has been handed the name of an apparatus they did not know
+    existed, in the place where a sentence was owed.
+
+    Why it is a pass of its own rather than a line in `marks` or `slotheads`.
+    `slotheads` reads headings, and a heading is a line. `marks` reads two
+    punctuation marks and counts them. This reads sentence-internal position,
+    which is the thing both of those are structurally unable to see, and
+    position is the whole finding: the same four fragments at the start of a
+    line would have been caught by the generator's own heading gate before the
+    issue ever rendered.
+
+        python3 docs/voice/check_voice.py apparatus --live
+    """
+    wrong = [(fires, case) for fires, case in APPARATUS_CASES
+             if bool(apparatus_label(case)) is not fires]
+    for fires, case in wrong:
+        print(f"  BROKEN  the detector is {'missing' if fires else 'firing on'}"
+              f" a case it is asserted against")
+        print(f"            {case[:84]}")
+    if wrong:
+        print()
+        print("APPARATUS_CASES says what this pass has to do. Nothing below was")
+        print("read, because a detector failing its own cases reports a clean")
+        print("issue for the wrong reason.")
+        return 1
+    print(f"  the detector's own cases       {len(APPARATUS_CASES)} pass")
+    print(f"  the instrument nouns           "
+          f"{', '.join(repr(a) for a in APPARATUS)}")
+    retired = hidden_weeks()
+    paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    rc = 0
+    for raw in paths:
+        path = pathlib.Path(raw)
+        if not path.exists():
+            print(f"  {shown_path(path)}: missing")
+            rc = 1
+            continue
+        if path.stem in retired:
+            print(f"  SKIP    {shown_path(path)}  retired, not served")
+            continue
+        hits = []
+        for number, line in enumerate(
+                path.read_text(encoding="utf-8").split("\n"), 1):
+            if line.startswith("#"):
+                continue
+            why = apparatus_label(line)
+            if why:
+                hits.append((number, line, why))
+        if not hits:
+            print(f"  OK      {shown_path(path)}  no instrument wearing a colon")
+            continue
+        rc = 1
+        for number, line, why in hits:
+            print(f"  FAIL    {shown_path(path)}:{number}  "
+                  f"{line.strip()[:68]}")
+            print(f"            {why}")
+    print()
+    print("Canon law 7, and the generator bans this shape twice without")
+    print("reaching it. Write the sentence whole: the grade is a clause inside")
+    print("a sentence doing other work, and a procedure is a list.")
+    return rc
+
+
 #: The seventeen cases `past_tense_you` has to satisfy, as data rather than as
 #: a test file. `tests/` is the engineer's surface and this seat's is
 #: `docs/voice/`, and a first draft of this gate put them in
@@ -5914,7 +6063,8 @@ def main():
     takes_paths = {"measure", "links", "delivery", "compare", "firstuse",
                    "queued", "claims",
                    "generator", "specimens", "standalone", "devices",
-                   "captions", "marks", "provenance", "slotheads"}
+                   "captions", "marks", "provenance", "slotheads",
+                   "apparatus"}
     # `--live` is the answer to `editions`, inside one run. It replaces the
     # archive glob with the editions the product actually serves, fetched from
     # the public pages and un-rendered, so a pass grades what a reader opens
@@ -5961,6 +6111,7 @@ def main():
                      ("ungated", ungated),
                      ("slotwords", slotwords),
                      ("slotheads", slotheads),
+                     ("apparatus", apparatus),
                      ("captions", captions),
                      ("blockrules", blockrules),
                      ("compare", compare), ("selfcheck", selfcheck)):
