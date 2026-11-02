@@ -23,6 +23,12 @@ const card = await import(
   "data:text/javascript;base64," + Buffer.from(source).toString("base64")
 );
 
+const await_origin = await import(
+  "data:text/javascript;base64,"
+    + Buffer.from((await readFile(fileURLToPath(new URL("../site/lib/public-routes.js", import.meta.url)), "utf8")))
+        .toString("base64"),
+);
+
 const layout = await readFile(
   fileURLToPath(new URL("../site/app/layout.jsx", import.meta.url)),
   "utf8",
@@ -71,6 +77,19 @@ test("declaring an image moves the card type with it, rather than leaving it beh
     assert.equal(m.twitter.card, "summary_large_image");
     assert.deepEqual(m.openGraph.images, ["https://libraryofalexandria.dev/og.png"]);
   });
+});
+
+// ------------------------------------------------- the one way this breaks hard
+
+test("the declared origin is a URL the constructor accepts", () => {
+  // `app/layout.jsx` evaluates `new URL(SITE_ORIGIN)` at module load, so a
+  // malformed origin is not a bad tag, it is every page of the site failing to
+  // render. The constructor is the only validator that counts, so it is the one
+  // this asserts with.
+  const routes = await_origin;
+  assert.doesNotThrow(() => new URL(routes.SITE_ORIGIN));
+  assert.equal(new URL(routes.SITE_ORIGIN).protocol, "https:");
+  assert.equal(routes.SITE_ORIGIN.endsWith("/"), false, "a trailing slash doubles in every resolved URL");
 });
 
 // ----------------------------------------------------------- the words
