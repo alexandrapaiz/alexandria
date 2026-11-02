@@ -125,12 +125,26 @@ STATUS = "approved"
 # `test_a_spent_quarantine_entry_asks_to_be_deleted` turned red on the merge that
 # brought the fix in, and this is what it asked for. An empty dict is the healthy
 # resting state, not a missing value.
-FRONTMATTER_QUARANTINE: dict[str, str] = {
+#: slug -> reason, or slug -> (reason, its own expiry date). A bare string
+#: takes `FRONTMATTER_QUARANTINE_EXPIRES` below, which is the default and not
+#: the deadline: the date belongs to the excuse, because the entries in here
+#: are added on different days by different runs. That was a ledger proposal of
+#: 2026-10-27 ("the quarantine has one expiry date for every entry it will ever
+#: hold") and it stopped being a proposal on 2026-11-02, when this run moved
+#: the shared date out by six days to give one new entry a week. The dict was
+#: empty, so nothing older was resurrected by it, which is luck rather than
+#: design: the proposal names exactly that as the failure, in both directions.
+FRONTMATTER_QUARANTINE: dict[str, str | tuple[str, str]] = {
     "harness-engineering": (
         "two `provenance.revisions` entries are on one line on main, so PyYAML "
-        "refuses the file. The fix is a newline, and it is a write into skills/"
+        "refuses the file. The fix is a newline, and it is a write into skills/",
+        "2026-11-09",
     ),
 }
+
+#: The date an entry gets when it names none of its own. An entry added today
+#: against a default two days out is an entry with two days, silently, which is
+#: the other half of the same defect.
 FRONTMATTER_QUARANTINE_EXPIRES = "2026-11-09"
 
 #: The defect classes the quarantine is allowed to excuse, matched against the
@@ -693,6 +707,19 @@ def waiting_problems(rows, problems) -> set[str]:
     return waiting
 
 
+def quarantine_entry(slug: str, quarantine=None, expires: str = "") -> tuple[str, str]:
+    """`(reason, expiry)` for one quarantined slug, the default date filled in.
+
+    The dict takes a bare reason or a `(reason, date)` pair, so every reader
+    goes through here rather than deciding for itself what a value is.
+    """
+    quarantine = FRONTMATTER_QUARANTINE if quarantine is None else quarantine
+    value = quarantine[slug]
+    if isinstance(value, tuple):
+        return value[0], value[1] or expires or FRONTMATTER_QUARANTINE_EXPIRES
+    return value, expires or FRONTMATTER_QUARANTINE_EXPIRES
+
+
 def quarantined_problems(problems, today: str = "", quarantine=None,
                          expires: str = "") -> set[str]:
     """The frontmatter refusals `FRONTMATTER_QUARANTINE` holds open, if it still can.
@@ -700,6 +727,11 @@ def quarantined_problems(problems, today: str = "", quarantine=None,
     Same shape as `waiting_problems` above and for the same reason: a problem an
     excuse covers is printed and not blocked on. The difference is that this
     excuse has a date on it, so it expires rather than being argued with.
+
+    **Each entry expires on its own date.** One expired entry stops excusing
+    its own skill and leaves every other entry alone, which is what makes it
+    safe to add an entry without reading the deadline of every entry already
+    in the dict.
 
     `quarantine` and `expires` default to the module constants and exist so the
     mechanism stays testable once the live quarantine is empty, which it became
@@ -710,12 +742,12 @@ def quarantined_problems(problems, today: str = "", quarantine=None,
     import datetime
 
     quarantine = FRONTMATTER_QUARANTINE if quarantine is None else quarantine
-    expires = expires or FRONTMATTER_QUARANTINE_EXPIRES
     today = today or datetime.date.today().isoformat()
-    if today >= expires:
-        return set()
     excused = set()
     for slug in quarantine:
+        _reason, expiry = quarantine_entry(slug, quarantine, expires)
+        if today >= expiry:
+            continue  # this excuse has run out; the others have not
         marker = f"skills/{slug}/SKILL.md: "
         excused |= {p for p in problems
                     if p.startswith(marker)
