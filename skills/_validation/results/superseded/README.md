@@ -13,6 +13,22 @@ deleted, and nothing in this directory is read by a consumer:
 `tools/panel_validator.py` globs `*.json` in the parent, so a subdirectory is
 invisible to both.
 
+- `2026-11-02-lexical-2.2-delta3-third-paper.json`. Written by the run that
+  added `agent-containment`'s third paper to delta 3 (#706, carried through
+  #717). Moved here by the 2026-11-02 run that added delta 5 and the mechanism
+  column (#723), which changed `agent-containment`'s description and so moved
+  the composition. **It is a third regime on the record, and the useful one.**
+  The sipt pair above is a description change that moved two untouched skills;
+  the asm and sle pair is no description change and nothing moved. This pair is
+  a description change where nothing else moved: `agent-containment` goes 7 of 8
+  to 8 of 9 on a new positive case, its `skill_sha256` is the only one of the
+  nine that differs, and the other eight score identically across the two
+  bundles (6/7, 7/7, 6/7, 7/8, 7/8, 7/7, 5/6 and 9/9 in both). So a description
+  edit perturbs the idf and does not always perturb a score, and the library
+  total moves only by the case that was added, 61 of 67 to 62 of 68. Keeping it
+  is what lets the next reader tell those two outcomes apart without re-running
+  a superseded composition.
+
 - `2026-10-26-lexical-2.1-sipt-retrofit.json` and its `.txt`. Written by the run
   that retrofitted `self-improving-post-training-loops` (#587, superseded by
   #590). Its receipt for that skill, 5 of 6, is reproduced identically in

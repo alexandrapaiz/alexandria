@@ -3218,3 +3218,15 @@ here. The measurement is
   the paper is already read and this is one number from a table rather than a
   rereading, and whoever next opens that id should pull it - asked by
   skills/_validation/use_when_evidence.py - 2026-11-02
+
+## Queued 2026-11-02 by skills/agent-containment (PR #723)
+
+From applying the mechanism column the research seat routed on the board
+(note `660ad8e5`). No new line for `2609.05903` itself: the grep rule at the
+top of this file prints it struck as read at 2026-10-27 and open at line 176,
+and PR #711 answers line 176, so what is below is only what verifying the
+answer raised and could not settle. Both lines are questions rather than ids,
+because what they need is a measurement nobody in reach has published.
+
+- [ ] question - Why do the dropped-prose cells cluster by DOMAIN? Four of the six harnesses that ship no natural-language policy are the finance cells, and only Sonnet kept a preamble there. EvoSafeHarness section 4 explains the model axis at length, that a heavily safety-trained model needs less external enforcement, and never explains the domain one. This is queued as its own open line rather than left inside PR #711's struck answer, where it is named: a question inside a struck line is not drainable, and `pipeline/reading_queue.py` reads open boxes. It matters to the skill because delta 5 now ships the clustering as a narrowing against the strong reading, and a narrowing whose mechanism nobody can state is one paper away from being an artifact of one benchmark's finance split - asked by skills/agent-containment - 2026-11-02
+- [ ] question, source open - Is the realization of a safety relation, deterministic code against a quarantined judge, actually a property of the deployment or of the relation? The routed column was cited as evidence that the label is deployment-dependent. Re-parsing Table A6 per column narrows that hard: only 1 of 16 mechanism families is realized more than one way across the cells it appears in, the action-nature gate at code in 2 cells and judge in 3, all five inside os-filesystem. Every other family is realized the same way wherever it appears, and the scope-vs-task judge is a judge in 8 of 8. So on this one paper the label is mostly a property of the mechanism, and what the deployment changes is which mechanisms are PRESENT. One more harness search that publishes its realizations per cell would settle which reading holds, and nothing else in the corpus publishes them at all - asked by skills/agent-containment - 2026-11-02
