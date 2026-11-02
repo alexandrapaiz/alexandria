@@ -5948,6 +5948,59 @@ def week_label(end):
 # The write site therefore cuts a run into zones and the field reads the same
 # across them.
 
+def press_write_site(path=None):
+    """The line numbers that make the zones, read out of the job's own source.
+
+    Derived, never declared, for exactly the reason `schedules()` in
+    `pipeline/runtime_sha.py` gives about file manifests and this file's own
+    `press_schedule` gives about the cron: a hand-kept copy of a line number is
+    a copy that disagrees with the job on the day it matters, and a line number
+    in a gate's output is the most quietly rotting kind of all. The first
+    version of this block hard-coded 1846, 1862, 1874 and 1885 in its prints,
+    which would have survived exactly as long as nobody edited the press.
+
+    Returns `(sites, "")` or `(None, why)`. `sites` is `try_opens`, `writes_at`,
+    `before_try` and `alarms_at`, every one of them a real line in the file.
+    """
+    import ast
+    path = pathlib.Path(path) if path else WEEKLY_JOB
+    if not path.exists():
+        return None, f"{path} is not in this checkout"
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+    except SyntaxError as exc:
+        return None, f"{path} did not parse ({exc})"
+    fn = next((n for n in ast.walk(tree)
+               if isinstance(n, ast.FunctionDef) and n.name == PRESS_APP), None)
+    if fn is None:
+        return None, f"{path} defines no `{PRESS_APP}` function"
+    handler = next((s for s in fn.body if isinstance(s, ast.Try)), None)
+    if handler is None:
+        return None, (f"`{PRESS_APP}` carries no try/except, so there is no "
+                      f"handler boundary and no zone 3")
+    writes = [n.lineno for n in ast.walk(handler)
+              if isinstance(n, ast.Call)
+              and getattr(n.func, "attr", None) == "record_runtime"]
+    if len(writes) != 1:
+        return None, (f"`{PRESS_APP}` calls record_runtime {len(writes)} times "
+                      f"inside its handler, so the write site is not one line")
+    alarms = sorted({n.lineno for h in handler.handlers for n in ast.walk(h)
+                     if isinstance(n, ast.Call)
+                     and getattr(n.func, "id", None) == "notify_owner"})
+    # Only the statements that can actually RAISE, which means the ones
+    # carrying a call. An import or a dict lookup ahead of the handler is a
+    # line and not a risk, and counting it would inflate zone 3 to flatter the
+    # finding. This lands on more lines than the returned note named, not
+    # fewer: it finds `bool(week.strip())` and the two `hashlib` digests as
+    # well as the four calls that note listed.
+    ahead = sorted({s.lineno for s in fn.body if s.lineno < handler.lineno
+                    for n in ast.walk(s) if isinstance(n, ast.Call)})
+    return {"try_opens": handler.lineno,
+            "writes_at": writes[0],
+            "before_try": ahead,
+            "alarms_at": alarms}, ""
+
+
 ZONE_RECORDED = "recorded"
 ZONE_ALARMED = "alarmed-and-unrecorded"
 ZONE_SILENT = "silent"
@@ -5956,17 +6009,35 @@ ZONE_SILENT = "silent"
 # the half of this that matters: a zone whose evidence lives somewhere nothing
 # here can read is still a zone, and treating an unreadable surface as a
 # surface that does not exist is how one field came to be read as three facts.
-ZONE_WORDS = {
-    ZONE_RECORDED: (
-        "reached line 1885 and the row landed",
-        "this receipt"),
-    ZONE_ALARMED: (
-        "entered the handler at 1874 and died before the row landed",
-        "the owner's inbox, subject ALARM_SUBJECT_CANNOT_PRINT"),
-    ZONE_SILENT: (
-        "died ahead of the handler, at 1846-1873, or was never invoked at all",
-        "modal app logs alexandria-weekly, which no instrument here reads"),
-}
+# The Modal app name the alarm mail itself tells the owner to check, which is
+# the surface zone 3 lives on. Taken from `notify_owner`'s own body rather than
+# composed, because a gate that names a slightly wrong app sends its reader to
+# an empty page and they conclude the page is the answer.
+PRESS_MODAL_APP = "alexandria-weekly"
+
+
+def zone_words(sites):
+    """Each zone as (what the run did, the surface that answers), with the real
+    line numbers substituted in from `press_write_site`."""
+    ahead = sites["before_try"]
+    span = (f"{ahead[0]}-{sites['try_opens'] - 1}" if ahead
+            else "nowhere, nothing runs ahead of the handler")
+    return {
+        ZONE_RECORDED: (
+            f"reached line {sites['writes_at']} and the row landed",
+            "this receipt"),
+        ZONE_ALARMED: (
+            f"entered the handler at {sites['try_opens']} and died before "
+            f"line {sites['writes_at']}",
+            f"the owner's inbox, subject ALARM_SUBJECT_CANNOT_PRINT, mailed "
+            f"from line {sites['alarms_at'][-1] if sites['alarms_at'] else '?'}"),
+        ZONE_SILENT: (
+            f"died in one of the {len(ahead)} calls ahead of the handler "
+            f"({span}), or was never invoked at all",
+            f"modal app logs {PRESS_MODAL_APP}, which no instrument here "
+            f"reads"),
+    }
+
 
 
 def zones_open(slot_fired, record_fresh):
@@ -6063,9 +6134,60 @@ INVOCATION_CASES = (
 )
 
 
+# The write-site parser, asserted on sources written for it. Every one of the
+# three refusals matters more than the happy path: a gate that guesses a line
+# number when the shape changed is the hand-kept copy this function replaced.
+WRITE_SITE_CASES = (
+    ("def weekly(week=''):\n"
+     "    w = week_just_ended()\n"
+     "    try:\n"
+     "        a = check_availability()\n"
+     "        print(g().record_runtime(c, 'weekly', __file__)[1])\n"
+     "    except Exception as e:\n"
+     "        print(notify_owner(S, str(e)))\n"
+     "        raise\n",
+     {"try_opens": 3, "writes_at": 5, "before_try": [2], "alarms_at": [7]}),
+    # No `weekly` at all: the module was renamed or this is the wrong file.
+    ("def monthly():\n    pass\n", None),
+    # A press with no handler has no boundary, so it has no third zone, and
+    # saying so is more useful than reporting two.
+    ("def weekly(week=''):\n"
+     "    print(g().record_runtime(c, 'weekly', __file__)[1])\n", None),
+    # Two write sites inside one handler: the absence of a row no longer
+    # corresponds to one line, which is the whole proposition this gate makes.
+    ("def weekly(week=''):\n"
+     "    try:\n"
+     "        print(g().record_runtime(c, 'a', __file__)[1])\n"
+     "        print(g().record_runtime(c, 'b', __file__)[1])\n"
+     "    except Exception:\n"
+     "        raise\n", None),
+)
+
+
 def zones_cases():
     """The zone reading and the invocation window, before any receipt is read."""
     bad = 0
+    sites_bad = 0
+    with tempfile.TemporaryDirectory() as tmp:
+        for i, (source, want) in enumerate(WRITE_SITE_CASES):
+            f = pathlib.Path(tmp) / f"case{i}.py"
+            f.write_text(source)
+            got, why = press_write_site(f)
+            if want is None:
+                if got is not None:
+                    sites_bad = 1
+                    print(f"  CASE    write-site case {i} should have refused "
+                          f"and returned {got}")
+                elif not why:
+                    sites_bad = 1
+                    print(f"  CASE    write-site case {i} refused with no why")
+            elif got != want:
+                sites_bad = 1
+                print(f"  CASE    write-site case {i} wanted {want} and got "
+                      f"{got} ({why})")
+    print(f"WRITE_SITE_CASES                           "
+          f"{len(WRITE_SITE_CASES) - sites_bad} of {len(WRITE_SITE_CASES)}")
+    bad |= sites_bad
     for slot_fired, fresh, want in ZONES_CASES:
         got = zones_open(slot_fired, fresh)
         if got != want:
@@ -6241,19 +6363,27 @@ def cadence():
                 print("  one upserted row per app, and this one has already")
                 print("  overwritten whatever the last firing left.")
         open_zones = zones_open(bool(slots), fresh)
-        if open_zones:
+        sites, site_why = press_write_site()
+        if open_zones and sites is None:
+            print()
+            print(f"  UNREACHED the write site: {site_why}, so this reading")
+            print("          cannot name the zones its own absence leaves open")
+            rc = 1
+        elif open_zones:
+            words = zone_words(sites)
             print()
             print(f"  zones this reading leaves open             "
                   f"{len(open_zones)}")
             for z in open_zones:
-                what, where = ZONE_WORDS[z]
+                what, where = words[z]
                 print(f"    {z}")
                 print(f"      the run {what}")
                 print(f"      answered on: {where}")
         if slots and not fresh:
-            print("  so the press has not RECORDED a run since that edition,")
-            print("  and that is one proposition about one line: nothing")
-            print("  reached pipeline/weekly.py:1885. It does not choose")
+            print(f"  so the press has not RECORDED a run since that edition,")
+            print(f"  and that is one proposition about one line: nothing")
+            print(f"  reached {WEEKLY_JOB.relative_to(ROOT)}:"
+                  f"{sites['writes_at'] if sites else '?'}. It does not choose")
             print("  between the two zones above, it does not say whether the")
             print("  schedule is installed, and the repair differs by zone, so")
             print("  this gate names neither.")
