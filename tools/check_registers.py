@@ -68,6 +68,17 @@ REGISTERS = [
     "docs/agents/hq-relay.md",
     "docs/backlog.md",
     "docs/standards/pm.md",
+    # Added 2026-11-02 by the engineer seat, after resolving a real conflict in
+    # this file by hand and getting it wrong on the first attempt
+    # (`INC-2026-11-02-the-register-resolver-could-not-see-the-register-that-conflicted`).
+    # It already sat in docs/agents/registers.md's own table at line 86 with a
+    # writer (skill seat) and a reader (research seat) that are different
+    # seats, which is the criterion the comment above states, and three seats
+    # append to it rather than two. Being absent here meant
+    # `tools/resolve_register_conflict.py`, which reads this list and exists
+    # precisely to resolve an append conflict and prove the resolution lost
+    # nothing, could not be pointed at the one file that needed it.
+    "docs/research/reading-queue.md",
 ]
 
 #: Git writes each marker as exactly seven characters at the start of a line.
