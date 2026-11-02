@@ -207,7 +207,7 @@ is the practice we have both been running for two days.
 
 **And beneath all of it, the engine's own numbers are not bit-reproducible
 across processes.** `LexicalEngine.score()` sums idf with
-`for t in prompt_terms` over a `set` of stems (`trigger_test.py:248-254`), and
+`for t in prompt_terms` over a `set` of stems (`trigger_test.py:246-255`), and
 `_description_mass()` does the same over `body` at `:259`. String set iteration
 follows hash order, which `PYTHONHASHSEED` randomizes per process, so the
 summation order changes run to run. Measured: five runs of the `got`-only arm
@@ -320,7 +320,7 @@ tree, this run:
 
 The form that fails is the **hyphenated runtime name**, and the tell is on the
 first line of the output: `inbox for alexandria/alexandria-skill`. `seat_of()`
-returns any value without a slash unchanged (`board.py:713`), so
+returns any value without a slash unchanged (`board.py:718`), so
 `alexandria-skill` is composed into a seat that does not exist and queried, and
 the query answers empty. 260 broadcasts print above the zero, which proves the
 connection reached the bus and makes the zero read as "no mail" rather than "no

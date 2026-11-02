@@ -33,7 +33,7 @@ attributed the other way — to a code difference that is not there.
    than construction and is why only one of the two rows looked wrong.
 3. **The engine's sums are not order-stable across processes.**
    `LexicalEngine.score()` sums idf with `for t in prompt_terms` over a `set` of
-   stems (`trigger_test.py:248-254`) and `_description_mass()` does the same
+   stems (`trigger_test.py:246-255`) and `_description_mass()` does the same
    over `body` at `:259`. String set iteration follows hash order, which
    `PYTHONHASHSEED` randomizes per process. Measured: five runs of the
    `got`-only arm returned two distinct floats, `0.1501711688690487` and

@@ -16,7 +16,7 @@ board.py inbox --seat alexandria-skill --since-hours 168   ->  0, exit 0
 
 So the filter agrees with both the bare and the slash-qualified name, and the
 one form that fails is the **hyphenated runtime name**. `seat_of()` returns any
-value with no slash in it unchanged (`board.py:713`, `if "/" not in seat:
+value with no slash in it unchanged (`board.py:718`, `if "/" not in seat:
 return seat`), so `alexandria-skill` is composed into `alexandria/alexandria-skill`,
 a seat that does not exist, and the query for it answers empty. The tell is the
 first line of the output, which prints that composed seat. Underneath the zero,
