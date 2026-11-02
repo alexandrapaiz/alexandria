@@ -94,7 +94,18 @@ ENTRY = re.compile(r"^##(?!#)\s+(.*\S)\s*$")
 
 # The id scheme of 2026-09-24 (incident 29). The date is the day the incident was
 # observed, which is why the id is not always today's date.
-INC_ID = re.compile(r"^(INC-(\d{4})-(\d{2})-(\d{2})-[a-z0-9][a-z0-9-]*?)(?=$|[\s—–])")
+#
+# The lookahead is the set of characters that may end a slug, and `:` joined it
+# on 2026-11-02 because the register already contained one. The security seat's
+# `INC-2026-11-02-the-dispatch-prompt-now-instructs-the-branch-prefix-its-own-charter-holds-back`
+# separates its id from its summary with `: ` where every other entry uses ` - `,
+# and the cost of that was not cosmetic: the match failed, so `heading_key` fell
+# through to keying the entry on its whole heading. A charter citing the id would
+# not have found it, and a second filing of the same id would not have collided
+# with it, which is the one thing this id scheme exists to guarantee. A slug is
+# `[a-z0-9-]` by construction, so a delimiter added here can only let more real
+# headings parse; it cannot swallow part of a slug.
+INC_ID = re.compile(r"^(INC-(\d{4})-(\d{2})-(\d{2})-[a-z0-9][a-z0-9-]*?)(?=$|[\s—–:])")
 
 # A legacy heading keyed by its sequential number, which is what collided.
 LEGACY_NUMBER = re.compile(r"^Incident\s+(\d+)\b")
