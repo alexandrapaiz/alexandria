@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { publishedIssues } from "../../lib/issues-live.js";
 import ShelvesLive from "../components/ShelvesLive";
+import { canonicalAlternates } from "../../lib/public-routes";
 
-export const metadata = { title: "Library — library of alexandr.ia" };
+export const metadata = {
+  title: "Library — library of alexandr.ia",
+  alternates: canonicalAlternates("/library"),
+};
 
 // Per request, for the reason the issue route gives at more length: the list
 // of published weeks is the `digests` table now, and that table gains a row

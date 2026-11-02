@@ -1,5 +1,7 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 import { record } from "./lib/path";
+import { canonicalRedirect } from "./lib/public-routes";
 
 // Clerk's middleware, plus the one line that measures the buyer's path.
 // Board card c688ef2e.
@@ -39,7 +41,7 @@ import { record } from "./lib/path";
 // handed to `waitUntil` that rejects for a reason this file did not predict
 // would surface as an unhandled rejection in the platform's log rather than
 // as a lost count, and a lost count is the intended failure.
-export default clerkMiddleware((auth, request, event) => {
+const withClerk = clerkMiddleware((auth, request, event) => {
   event?.waitUntil?.(
     record({
       method: request.method,
@@ -48,6 +50,40 @@ export default clerkMiddleware((auth, request, event) => {
     }).catch(() => null)
   );
 });
+
+// ## One deployment answered on two names, so one of them stops answering
+//
+// Handed over by the distribution seat on 2026-11-02: the custom domain and
+// the Vercel alias returned byte-identical HTML for every page on the same
+// read, and neither emitted a canonical link. The list of retired names and
+// the reasoning about why it is a list rather than a rule are in
+// `lib/public-routes.js`, next to the origin they are retired in favour of.
+//
+// **Why the host check runs before Clerk rather than inside it.** The
+// distribution seat left this file alone precisely because it is the
+// authentication path, and that caution is right: the less this change
+// interacts with the handshake, the less there is to go wrong in it. A request
+// that arrived on a retired name is answered and finished before
+// `clerkMiddleware` is ever asked for a response, so the redirect cannot be
+// affected by an auth decision and cannot affect one. On the canonical host
+// nothing above runs at all and the behaviour is byte for byte what it was.
+//
+// **308 rather than 301 or 302.** Permanent, which is the claim being made,
+// and method-preserving, which 301 is not: a POST to `/api/...` on the retired
+// name is replayed as a POST rather than silently downgraded to a GET.
+//
+// **The arrival is deliberately not recorded.** `record` counts a reader
+// arriving on a page, and a 308 is not an arrival; the same visit is about to
+// be counted on the canonical host one request later. Recording here would
+// double every arrival that comes in on the alias.
+export default function middleware(request, event) {
+  const target = canonicalRedirect(
+    request.headers.get("host"),
+    request.nextUrl.pathname + request.nextUrl.search
+  );
+  if (target) return NextResponse.redirect(target, 308);
+  return withClerk(request, event);
+}
 
 export const config = {
   matcher: [

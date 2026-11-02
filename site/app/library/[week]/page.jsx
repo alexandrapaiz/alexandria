@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { renderMarkdown } from "../../../lib/markdown.js";
 import { publishedIssue } from "../../../lib/issues-live.js";
+import { canonicalAlternates } from "../../../lib/public-routes";
 
 // The digest is free in full (docs/vision.md §0, amended 2026-09-17). There is
 // no teaser split and no entitlement check on this route: a signed-out visitor
@@ -32,6 +33,11 @@ export async function generateMetadata({ params }) {
       ? `${issue.title} — library of alexandr.ia`
       : "Issue — library of alexandr.ia",
     description: issue?.excerpt.slice(0, 200),
+    // The weeks are the one indexable path `lib/public-routes.js` does not
+    // enumerate, because they are a record rather than a route list and
+    // `app/sitemap.js` reads them out of `digests`. The canonical is built the
+    // same way the sitemap builds its <loc>, from the one origin constant.
+    alternates: canonicalAlternates(`/library/${week}`),
   };
 }
 

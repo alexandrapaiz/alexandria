@@ -1,4 +1,9 @@
-export const metadata = { title: "Terms — library of alexandr.ia" };
+import { canonicalAlternates } from "../../lib/public-routes";
+
+export const metadata = {
+  title: "Terms — library of alexandr.ia",
+  alternates: canonicalAlternates("/terms"),
+};
 
 export default function Terms() {
   return (

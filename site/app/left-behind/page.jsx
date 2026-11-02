@@ -1,5 +1,6 @@
 import { loadLeftBehind } from "../../lib/left-behind-live.js";
 import { claimRef } from "../../lib/left-behind-core.js";
+import { canonicalAlternates } from "../../lib/public-routes";
 
 // The Left-Behind Index. Sprint-2026-10-12 item 4, carried from
 // sprint-2026-09-28 and sprint-2026-10-05.
@@ -36,6 +37,7 @@ export const metadata = {
   title: "Left behind — library of alexandr.ia",
   description:
     "Findings the library has stopped standing behind, with the newer work that contradicted each one.",
+  alternates: canonicalAlternates("/left-behind"),
 };
 
 // The two states a reader can reach that are not a list, kept in one place

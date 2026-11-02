@@ -1,7 +1,11 @@
 import Waitlist from "../components/Waitlist";
 import { checkoutOffers } from "../../lib/polar-core";
+import { canonicalAlternates } from "../../lib/public-routes";
 
-export const metadata = { title: "Pricing — library of alexandr.ia" };
+export const metadata = {
+  title: "Pricing — library of alexandr.ia",
+  alternates: canonicalAlternates("/pricing"),
+};
 
 // The three offers ADR-31 decided, read out of the environment rather than
 // hard-coded, so the owner can create the products in Polar and the page

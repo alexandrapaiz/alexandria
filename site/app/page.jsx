@@ -2,8 +2,19 @@ import Link from "next/link";
 import MarkLive from "./components/MarkLive";
 import Waitlist from "./components/Waitlist";
 import { weeklyIngestCount } from "../lib/metrics";
+import { canonicalAlternates } from "../lib/public-routes";
 
 export const revalidate = 3600;
+
+// The home page had no `metadata` of its own and inherited the layout's whole
+// object. It needs one now, for the canonical link, and the thing to know
+// before editing it is in `canonicalAlternates`: setting `alternates` here
+// replaces the layout's rather than extending it, so the plain-text alternate
+// has to travel with the canonical or it leaves this page's head. Title and
+// description are deliberately absent and still inherited.
+export const metadata = {
+  alternates: canonicalAlternates("/"),
+};
 
 export default async function Home() {
   const papersThisWeek = await weeklyIngestCount();

@@ -1,4 +1,9 @@
-export const metadata = { title: "Mission — library of alexandr.ia" };
+import { canonicalAlternates } from "../../lib/public-routes";
+
+export const metadata = {
+  title: "Mission — library of alexandr.ia",
+  alternates: canonicalAlternates("/mission"),
+};
 
 export default function Mission() {
   return (

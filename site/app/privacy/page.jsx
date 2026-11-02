@@ -1,4 +1,9 @@
-export const metadata = { title: "Privacy — library of alexandr.ia" };
+import { canonicalAlternates } from "../../lib/public-routes";
+
+export const metadata = {
+  title: "Privacy — library of alexandr.ia",
+  alternates: canonicalAlternates("/privacy"),
+};
 
 export default function Privacy() {
   return (

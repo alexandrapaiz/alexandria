@@ -33,6 +33,85 @@
 // three at this constant is a frontend change and is not made here.
 export const SITE_ORIGIN = "https://libraryofalexandria.dev";
 
+// The canonical host, derived rather than retyped, because the whole point of
+// the block below is that one name is canonical and the others are not.
+export const SITE_HOST = new URL(SITE_ORIGIN).host;
+
+// The hosts that serve this same deployment under a name that is not the
+// canonical one.
+//
+// On 2026-11-02 the custom domain and the Vercel alias answered 200 for every
+// page and returned byte-identical HTML on the same read, so this is one
+// deployment reachable under two names. The alias became crawlable that
+// morning, when the robots file landed and invited everything; before it there
+// was no invitation at all, so the duplicate is downstream of a correct change
+// rather than a defect in it. Two complete copies of a site compete for the
+// same queries, and the stronger of the two available answers is to stop
+// serving one of them, which `middleware.js` now does with a 308.
+//
+// **This is an explicit list of retired names and not the rule "everything
+// that is not SITE_HOST".** The inverted rule is shorter and it breaks two
+// things this one cannot. Every Vercel preview deployment answers on its own
+// generated `*.vercel.app` hostname, so a blanket redirect sends every review
+// of every pull request to production and there is no way to look at a branch
+// again. And the dev server answers on `localhost`, which the visual harness
+// drives. A name is added here when it is deliberately aliased to this
+// deployment and is not the one we want indexed, which is an act somebody
+// performs in the Vercel dashboard rather than a shape a regex can recognise.
+//
+// What covers the gap that leaves: an alias nobody declared here is still
+// crawlable, and the thing that notices is the crawler-policy probe the
+// distribution seat runs against each origin.
+export const DUPLICATE_HOSTS = ["alexandria-lilac.vercel.app"];
+
+// A `Host` header carries the port when there is one and its case is not
+// guaranteed, so neither is compared raw.
+function sameHost(a, b) {
+  if (!a || !b) return false;
+  return a.toLowerCase().split(":")[0] === b.toLowerCase().split(":")[0];
+}
+
+export function isDuplicateHost(host) {
+  return DUPLICATE_HOSTS.some((h) => sameHost(host, h));
+}
+
+// Where a request that arrived on a retired name should have gone, or null when
+// the name is one this deployment keeps. `pathWithQuery` is passed in rather
+// than read from a request, so this stays testable without a Next request
+// object and this module stays free of framework imports.
+export function canonicalRedirect(host, pathWithQuery) {
+  if (!isDuplicateHost(host)) return null;
+  return SITE_ORIGIN + pathWithQuery;
+}
+
+// The absolute URL of one of this site's paths. A canonical link, like a
+// sitemap <loc>, cannot be relative.
+export function canonicalUrl(path) {
+  return new URL(path, SITE_ORIGIN).toString();
+}
+
+// The non-HTML representation the whole site offers, which `app/layout.jsx`
+// declares on every page.
+//
+// It is repeated here for one reason worth knowing before touching it. Next
+// merges `metadata` one top-level key at a time, so a page that exports
+// `alternates` REPLACES the layout's `alternates` rather than adding to it,
+// and the layout's is exactly this map. A page that set only `canonical` would
+// silently drop the plain-text alternate from its own head, which is a
+// regression no screenshot can show and no page renders differently for. So
+// `canonicalAlternates` below hands back both halves together and the pages
+// never assemble the object themselves.
+//
+// `app/layout.jsx` still types this map out rather than importing it, so the
+// value lives in two places for now. That file is claimed by the distribution
+// seat's open pull request #786, and pointing it here is one line that belongs
+// in whichever diff touches it second. Filed in docs/ideas.md.
+export const ALTERNATE_TYPES = { "text/plain": "/llms.txt" };
+
+export function canonicalAlternates(path) {
+  return { canonical: canonicalUrl(path), types: ALTERNATE_TYPES };
+}
+
 export const ROUTES = [
   { path: "/", index: true, why: "the front page" },
   {
