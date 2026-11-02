@@ -1394,6 +1394,24 @@ def test_a_timeout_is_not_a_clean_finish(tmp_path):
     assert cf.reason_of(run, now=datetime(2026, 11, 2, 0, 30, tzinfo=UTC)) == "timeout"
 
 
+def test_a_wall_kill_leaves_its_pull_request_unknown_rather_than_absent(tmp_path):
+    """The claim the docstring makes, pinned so prose cannot drift off it again.
+
+    A killed run's `pr=-` must never read as "this run chose to stop and
+    shipped nothing". The seat's own 2026-11-01T23:04:44Z re-fire is the
+    worked example: killed on the wall, `pr=-` in its trailer, and #657 open
+    on the branch it had already pushed. The function gets this right through
+    `exit_code` being None rather than through any mention of the wall clock,
+    which is why it is worth a test of its own: the behaviour is correct by
+    side effect, and a later edit to the final clause could take it away
+    without touching anything that currently fails.
+    """
+    run = cf.parse_run(timeout_log(tmp_path, "alexandria-security",
+                                   "2026-11-01T23-04-44-320Z", "hook"))
+    assert run["pr"] is None
+    assert cf.pr_absence_is_evidence(run) is False
+
+
 def test_a_numeric_trailer_is_unchanged_by_the_widening(tmp_path):
     path = write_log(tmp_path, "alexandria-engineer", "2026-10-25T11-06-03-756Z",
                      "cron", completed(), exit_code=0,

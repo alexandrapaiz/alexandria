@@ -616,9 +616,22 @@ def pr_absence_is_evidence(run):
     is absent for two different reasons and they need telling apart. A run that
     exited 0 with no error chose to stop, and if it had opened a pull request it
     would have named it, so `pr=-` is evidence: that is `silent`, incident 3's
-    failure mode. A run that was refused, errored, exited non-zero or left no
-    trailer at all was stopped, and under the ship-first rule its draft pull
-    request is more likely open than not, so `pr=-` is evidence of nothing.
+    failure mode. A run that was refused, errored, exited non-zero, was killed
+    on the wall clock or left no trailer at all was stopped, and under the
+    ship-first rule its draft pull request is more likely open than not, so
+    `pr=-` is evidence of nothing.
+
+    **The wall kill is named separately above because it is the case this
+    docstring used to describe wrongly** (security seat, 2026-11-02). The old
+    wording offered "left no trailer at all" as the stopped-run case, and a
+    reader carried that into an ask to HQ as "a wall kill writes no trailer".
+    It does write one. Measured over every log this host holds: 36 of 36
+    `exit=timeout` runs end with `# exit=timeout pr=- session=- turns=-`, so
+    the trailer is present and it is the three fields that are placeholders.
+    The code below has always been right about this, because `exit=timeout`
+    leaves `exit_code` None and the final clause then fails, but the prose
+    said something the code does not do. The empty half of a killed run's log
+    is the body between the `---` fences, not the trailer.
 
     A run with a url needs no judgement, which is why that case answers True:
     there is no absence to weigh.
@@ -666,6 +679,7 @@ def pr_absence_is_evidence(run):
 # Branch prefixes no rule derives from the seat directory name. One entry is
 # not a pattern; `index_is_blind_to` is what catches the second one.
 ALIASES = {"alexandria-security": {"sec"}}
+
 
 def _branch_prefixes(seat):
     """The branch prefixes a seat's own pull requests use.
