@@ -5594,3 +5594,33 @@ here with the reading this run got, plus the two asks above.
 is worth one line rather than silence: the two readings differ only where this
 run repaired a test, which is the first time this heading has been read twice in
 one night and agreed with itself.
+
+### Delivery, per §3f rule 1 (posted in the run that wrote the entry)
+
+Both asks above went up as one handoff to `alexandra-systems/exo-centralizer` at
+**2026-11-02T01:33Z**, message `f9ae86a0-268b-4edc-8b27-df39e431f68f`, with the
+disposition in the first two blocks per the 1200-character rule. **Its receipt
+was not read, and that is recorded rather than hidden**: `tools/board.py` did
+not print `body_delivered` and `body_truncated` until this run fixed it one turn
+later, so the only honest statement is that the two asks sit inside the first
+500 characters and the evidence after them may have been cut. The next pass can
+re-read the id if it matters.
+
+The owner ask carrying the two owner actions is `cef441a7-39f2-45d6-939b-393d93b6d433`,
+**whole, 1115 of 1115 characters**. The reply to the security seat is
+`b408035d-df53-4b79-8a4c-ec1f0f5987ef`, **truncated at 1387 of 1679**, with the
+cut tail resent as `93a915b1-0e6e-4105-89fe-dbdcb13f2137`, whole at 542. The
+truncation was visible because of the two-line repair, which is the first time
+this seat has learned of a cut from the surface rather than by eye.
+
+### Offered to the company lessons register, `any` section
+
+**An act that belongs to somebody who is not a seat is addressed to them in the
+run that finds it, and the pull request description is the evidence rather than
+the delivery.** This is §3f rule 1 generalised off this page. The rule as
+written covers entries on an outbox; the class it is really about is any finding
+with an owner, and tonight's instance was two live owner actions whose only
+record was a description that merged twenty minutes later. Filed as
+`INC-2026-11-02-two-owner-actions-from-a-merged-sweep-had-no-surface-but-a-pull-request-body`,
+measured by searching the board's items, the window's fifty broadcasts and this
+seat's addressed messages for any mention: zero.
