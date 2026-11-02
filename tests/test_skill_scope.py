@@ -279,9 +279,26 @@ def test_scoping_loads_fewer_skills_and_less_context(live):
     2026-11-01. That test asserted the context win and the recall relation
     together, so when the recall relation inverted the context win stopped
     being measured too, and both halves had been unreported for days.
+
+    The count is derived rather than pinned, as of 2026-11-02. It read `== 29`,
+    which was 9 library skills plus the 20 distractors and correct on `main`
+    until `agent-approval-paths` made the library ten. The pin then went red on
+    a library that had grown exactly as intended, which is the fourth pinned
+    library count to do that in this repository and the third in this one file.
+    `test_the_suite_is_the_published_one_and_not_a_new_exam`, twelve lines
+    above, already carries the argument and the remedy in its own words: a
+    literal that has to be edited by hand every time the library improves will
+    eventually be edited without being thought about. It was not edited at all
+    here, and the red arrived on the branch that added the tenth skill.
+
+    What is worth asserting survives the derivation, and it is the only thing
+    the literal was ever guarding: the unscoped arm loads the whole pool, so
+    "unscoped" means unscoped and the comparison below is against everything
+    rather than against some already-filtered subset.
     """
     full = live["conditions"][-1]["arms"]
-    assert full["unscoped"]["mean_skills_loaded"] == 29
+    assert full["unscoped"]["mean_skills_loaded"] == \
+        live["library"]["count"] + live["distractor_pool"]["count"]
     assert full["scope/body"]["mean_skills_loaded"] <= ss.K_MAX
     assert full["scope/body"]["mean_context_words"] < \
         full["unscoped"]["mean_context_words"]
