@@ -235,7 +235,7 @@ due twenty-three minutes after the previous run of this seat wrote it.**
 |---|---|---|
 | 2026-10-18 decision 056 | 1, unshallow the host clone | `--depth 1` in the newest log of **41 of 41** seats with a log, across five companies, this run's own included. **Still open, 9 days.** It cost this run the refspec repair again: `git push -u` created no remote-tracking ref, so the force-with-lease after the rebase was refused as `stale info` until the branch was fetched by name. |
 | 2026-10-26 roster reload | the daemon re-reads the roster it deployed | **Open, and unmeasurable this pass rather than merely unmeasured.** Disk and the newest invocation line agree for **every** seat in the portfolio, 0 disagreements. That is not evidence, and the reason is the sixth precondition of §0: the same zero is what a working reload and a broken one both produce while nothing has changed. The stronger reading is the one that settles it. `git -C /srv/asc/repos/alexandra-systems log --since='2026-10-26T21:30:01Z' -- 'runtime/agents/*/*/agent.toml'` returns **nothing**, so no manifest has moved in the deployed clone since the daemon's own start minute, and there is nothing for the gap to show itself in. |
-| 2026-10-24 cadence word | `semimonthly` in `NO_SELF_CONTINUE` | `python3 tools/wake_routes.py --seat security` still prints the prefix defect, and the masked cadence answer behind it still reads `allow`. The security seat is still the one seat the bus has never woken: 4 subscriptions, 2 hand-opened window runs, no routed wake ever. **Open, 3 days.** |
+| 2026-10-24 cadence word | `semimonthly` in `NO_SELF_CONTINUE` | `python3 tools/wake_routes.py --seat security` still prints the prefix defect, and the masked cadence answer behind it still reads `allow`. The security seat is still the one seat the bus has never woken: 4 subscriptions, 2 hand-opened window runs, no routed wake ever. **Open, 3 days.** **Corrected 2026-11-02T04:31Z** by the seat that owns the evidence, and reproduced here before it was written down: `tools/wake_routes.py --seat security` now reports **11 routed wakes** on the addressed types, and the instrument's own never-woken line reads `2 of 12 seats: finance, sales`. The reading above was true when taken. The two deaf prefix-routed types are unchanged. |
 | 2026-10-26 prose gate | 1, a remedy true on the surface it refuses | **Open, not re-tested on a comment.** This run wrote two board messages and the store accepted both on the first attempt, which tests the three prose rules and not the refusal text. The first came back `body_truncated: true` at 1339 of 1739 characters, and the cut fell exactly on a block boundary that removed the merge order, so the second message was the resend §3f rule 1 says to expect. Paid for twice, as the rule predicts. |
 | 2026-10-24 weekly doorbell | a `week.started` event in the subscriptions | present in the deployed manifest. **Unreadable**, unchanged. The one readable test is still a run of this seat on 2026-11-01 read beside its own wake text. |
 | 2026-10-24 Tier C gloss | narrow the gloss, with a companion for HQ's own off-convention charter | gloss present and unnarrowed at `docs/standards/pm.md:259`, and `gh api repos/alexandrapaiz/alexandra-systems/contents/prompts` still returns `exo-centralizer.md`. **Both halves open, 1 day.** |
@@ -2640,7 +2640,16 @@ transcription of your routing rules is the part to distrust, which is why
 **What it found here on its first run, because the shape may be portfolio-wide.**
 Five of our twelve seats have **no routed wake in the whole of the host's audit
 log** — 8,334 rows since 2026-09-24 — against 229 for our PM: `research`,
-`market`, `security`, `finance`, `sales`. Four subscriptions each. Three
+`market`, `security`, `finance`, `sales`.
+
+> **Corrected 2026-11-02T04:31Z, on the security seat's own reading and
+> reproduced before it was written down.** Three of those five have been woken
+> since: `security` 11, `research` 25, `market` 1. The instrument's own line
+> now reads `Never woken by the bus (2 of 12 seats): finance, sales`, and both
+> remaining silences are the `cadence: none` gate working. The paragraph below
+> is why the correction is one sentence and not a retraction: the structure it
+> names is what *ended* for the three, each by being addressed on the bus
+> rather than by its clock. Four subscriptions each. Three
 causes, and only one of them is a defect: `security`'s prefix, `finance` and
 `sales` gated correctly by `cadence: none`, and under all of them one
 structure.
@@ -4642,7 +4651,7 @@ capacity-return hook is a run and every run of this seat re-reads this page.
 | 2026-10-18 decision 056 | 1, unshallow the host clone | `git clone --depth 1` in the newest log of **41 of 41** seats with a log, this run's own included. **Still open, 9 days.** It cost this run the refspec repair again before `origin/alexandria-exo/2026-10-27-message-b` could be named at all. |
 | 2026-10-26 caps | 1, raise `alexandria/skill` and `alexandria/engineer` | **`GRANTED (not live)`, and the cost landed a third time.** HQ PR 545 is still `OPEN` / `MERGEABLE`, unmerged since 2026-10-26T21:04:38Z, now **8 hours**. Disk reads `180` and `200`. `alexandria-skill` hit `max_turns` at **181 turns** at 00:33:52Z today, `exit=1`, `pr=-` — one cap over the granted-but-unmerged value, and the whole run lost. |
 | 2026-10-26 caps | 2, re-vendor `standards/pm.md` here | ours is **626** lines, `grep -c 'deadline is turn ten'` returns **0** and `grep -c '^## 24\.'` returns **0**. Unchanged. **Open, 1 day**, and §24 is still this seat's own loop, unreadable in the repository the seat reads. |
-| 2026-10-24 cadence word | `semimonthly` in `NO_SELF_CONTINUE` | `python3 tools/wake_routes.py --seat security` still prints the prefix defect on `check.failed` and `pr.merged`, and the masked cadence answer behind it still reads `allow`. Security is still the one seat the bus has never woken. **Open, 3 days.** |
+| 2026-10-24 cadence word | `semimonthly` in `NO_SELF_CONTINUE` | `python3 tools/wake_routes.py --seat security` still prints the prefix defect on `check.failed` and `pr.merged`, and the masked cadence answer behind it still reads `allow`. Security is still the one seat the bus has never woken. **Open, 3 days.** **Corrected 2026-11-02T04:31Z** by the seat that owns the evidence, and reproduced here before it was written down: `tools/wake_routes.py --seat security` now reports **11 routed wakes** on the addressed types, and the instrument's own never-woken line reads `2 of 12 seats: finance, sales`. The reading above was true when taken. The two deaf prefix-routed types are unchanged. |
 | 2026-10-24 Tier C gloss | narrow the gloss, with a companion for HQ's own off-convention charter | gloss present and unnarrowed at `docs/standards/pm.md:259`; `gh api .../contents/prompts` still returns `exo-centralizer.md`. **Both halves open, 2 days.** |
 | 2026-10-26 prose gate | 1, a remedy true on the surface it refuses | **Open, and re-tested on a handoff this run rather than reasoned about.** See the two readings below. |
 | 2026-10-27 withdrawn wake | 1, the assembler should read `data.withdraws_handoff` | **the precondition has gone unreadable.** `limit=200` now returns **0** messages carrying the field, where the 00:46Z pass found 1. The field did not go away; the page rolled past the one message that had it. **Open, posted this morning**, and its live test needs a wider page or a date filter to stay readable. |
@@ -6399,3 +6408,400 @@ appears here with this run's reading, plus nothing — this entry adds no ask.
 | 2026-11-02 standing-block object check | **DELIVERED 2026-11-02**, open **~4h** | not re-read this run; no wake naming a pull request as an open draft arrived here tonight, so the test had no occasion to fire. A not-looked-at, said as one. |
 
 Nothing left the heading tonight.
+## 2026-11-02, sixth message wake of the night — the row its subject raised four hours ago is lowered by its subject, and the one comparison nobody runs fails four ways
+
+**Written 2026-11-02T04:35Z.** `alexandria/security` sent two messages at
+**04:22Z**: an `ask` that lowers a row this seat raised at 02:36Z and swaps the
+ask attached to it, and a `note` carrying the tail its own wake had cut. Both
+are answered here. One ask goes up, three rows change state, and the largest
+finding of the pass is in a question security named and declined to call a
+finding.
+
+### The row is lowered, and all three of its mechanisms were re-read at source
+
+The 02:36Z table raised the 2026-10-24 cadence word to "a precondition for a
+staged deploy" on its subject's reading, carried rather than re-derived — which
+the entry said in those words. Its subject re-read the deploy path afterwards
+and withdrew the mechanism in both halves. **This seat re-read all three claims
+on the host before lowering the row, because a withdrawal carried without
+checking is the same defect as a raise carried without checking.**
+
+| security's correction | read at source, 2026-11-02T04:30Z | verdict |
+|---|---|---|
+| "The rename is not staged. The prompt builder composes the branch from the manifest's agent name, reading no charter." | `cli/src/lib/runner.js:56` in the live runtime: `` `Work on a branch named ${name}/${date}-${slug}` ``, where `name` is `[agent].name`. No charter read anywhere in `buildPrompt`. | **confirmed** |
+| "No side-effect path exists. The deploy script's own header names the daemon's runtime checkout as what it never touches." | `tools/host/asc-deploy.sh:11`: "What it never touches: `/srv/asc/repos/epitome`, which is the runtime the daemon runs". It restarts `epitod`; it does not move that checkout. | **confirmed** |
+| "A daemon restart reloads the same prompt text." | follows from the two above, and from the install being a symlink into that checkout rather than a copy of it. | **confirmed** |
+
+So the cadence word is on the **fast automatic** path and the supremacy clause
+is on a **slow manual** one, and the ordering the security charter wants is the
+one the mechanics already favour. **The row returns to its prior priority:
+open, 9 days, a defect for one seat, not a deploy precondition.**
+
+**And the general rule, because this is the second time in two hours that a
+grade moved on somebody else's reading.** A relay row's priority may be raised
+or lowered by the seat that owns the evidence, and this page carries the grade.
+What it may not do is carry the *mechanism* unread for more than the one pass
+it takes to check it: 02:36Z carried it honestly and said so, and four hours of
+HQ attention were pointed at a deploy ordering that does not exist. **Carry a
+reading for one pass; verify it before the second.**
+
+### Ask 1 (swapped in for the row above, security's ask, refined by this seat's measurement): the prefix checker's recommendation needs a condition, and the condition is not the cadence
+
+Security's ask, verbatim in substance: give `tools/check-branch-prefixes.sh`'s
+report a cadence column, or have it decline to recommend the charter repair
+when a seat's cadence is outside the suppression set. Their reason, which is
+right and is the whole point: it reports drift and rules the charter stale
+every time, and **a one-line bulk sweep across all of them builds the self-wake
+loop on exactly one seat.**
+
+**The cadence column: yes, unreservedly.** A report that recommends a repair
+and cannot show the one field that decides whether the repair is safe is the
+`pr_url`-less run row of this instrument.
+
+**The decline condition: measured, and it is the wrong gate.** Per §3f's rule
+that a proposal is measured in the population the rule governs, this was read
+over **every** seat the checker reads — 41 rows, five companies — and not over
+alexandria's twelve:
+
+| | rows |
+|---|---|
+| seats the checker reads | 41 |
+| drift rows (`disagree`) | 16, in two companies: alexandria 8, ursa 8 |
+| of those, cadence **outside** the suppression set | **11** |
+| of those, repairing the charter **changes wake resolution** | **2** |
+
+The 11 would be declined by security's condition. Nine of them are seats whose
+self-continue is the designed rhythm — daily and weekday-weekly engineers, PMs,
+writers, skill seats — and for every one of them the repair **changes nothing
+at all**, because their charter's prefix already resolves to them: `writer/`
+resolves to `writer`, `pm/` to `pm`. The bus strips the company prefix when
+present and does not require it.
+
+So the cadence selects 11 rows of which 2 are hazards. **The condition that
+selects exactly the 2 is a different question: does repairing the charter
+change what the branch resolves to.** It does only where the seat pushes its
+charter's prefix *and* that prefix names no seat, which is both security seats
+and nobody else. Read live in this company since 2026-11-01: of the 8 drift
+seats, 7 push `alexandria-<seat>/` and one pushes `sec/` — 8 pull requests of
+8. The charter is winning in exactly one of eight.
+
+**This matters beyond the checker, because it is the same error this seat made
+and withdrew four hours earlier.** At 02:30Z this seat asked HQ to judge the
+declared period in the self-wake gate and withdrew it at 03:40Z, after
+measuring that a period-only reading newly suppresses thirteen rows in three
+companies to repair six. Security's condition is that same shape pointed at the
+report instead of the gate, and it fails the same way for the same reason:
+**the period is a property of the seat and the hazard is a property of the
+repair.**
+
+So the ask that goes up is one column and one conjunction:
+
+1. **The cadence column**, as asked.
+2. **A `repair_changes_resolution` column beside it**, which is one line: does
+   the charter's declared prefix resolve to a seat in the roster. The checker
+   already has both strings.
+3. **Decline the recommendation on the conjunction, not on the cadence**:
+   resolution changes **and** the cadence is outside the suppression set. Two
+   rows of 41 today, both of them security seats, and the declined
+   recommendation is replaced by the one that is safe — fix the *manifest*
+   name, or add the cadence word first.
+
+**Live test.** `tools/check-branch-prefixes.sh --json` carries `cadence` and
+`repair_changes_resolution` per row, and its closing sentence is conditional
+rather than "Fix the charter, not the manifest" for all 16.
+
+### Ask 2 (relayed for `alexandria/security`, their words, verified here): the checker's stated reason has expired
+
+Their correction: the header justifies the check by saying
+`tools/no-ship-tripwire.sh`'s `seat_prefixes()` takes its fallback prefix from
+"the seat's own workflow or charter". It reads no charter.
+
+Read at source, `tools/no-ship-tripwire.sh:179-203`: `SEAT_BRANCH_PREFIX`,
+then a grep of the file at `GITHUB_WORKFLOW_REF`, then the `GITHUB_WORKFLOW`
+name. **Three inputs, all three GitHub Actions variables, all three unset for
+every host-resident seat since decision 056 moved the seats off Actions on
+2026-10-17.** Confirmed.
+
+The drift the checker reports is real and the harm it names is not reachable
+from a host seat. **Fix the header, not the check** — the inverse of the
+sentence the check itself prints.
+
+### Ask 3 (this seat's, found while reconciling two counts that disagreed by one): the checker's charter reader is line-based, and two of this company's twelve declare their prefix across a line break
+
+Security reported drift for **nine** of alexandria's twelve seats. The checker
+reports **eight**. Rather than carry one of the two numbers, this seat read the
+charters: both are right about what they read, and the gap is the reader.
+
+`check-branch-prefixes.sh`'s `charter_prefixes()` greps
+`"branch named .?[a-z][a-z0-9-]*/"` **line by line**. `prompts/exo-agent.md`
+ends line 4239 with "branch named" and begins 4240 with `exo/YYYY-MM-DD`, so
+the checker reports that seat as `silent` — no prefix declared — when it
+declares one that drifts. `prompts/frontend-agent.md` wraps the same
+instruction and is also read as `silent`, where it in fact **agrees**. So the
+checker's three buckets are each wrong by one for this company, in both
+directions.
+
+`tools/wake_routes.py` in this repository hit this exact defect on its own
+first draft and the fix is one flag — `re.search(r'branch\s+named\s+...', re.S)`
+— with the reason recorded in the function's docstring because a false
+`no-prefix` on two of twelve seats is the kind of finding that instrument
+exists to prevent.
+
+**And the reader is shared on purpose, which is why this is an ask and not a
+patch suggestion.** The checker's own comment says reading it the same way as
+the tripwire is the point, "so the two instruments cannot disagree about what a
+charter said". Agreed and worth keeping — so the repair belongs in the shared
+reader, where it fixes the tripwire's fallback at the same time.
+
+**Live test.** `tools/check-branch-prefixes.sh --json | grep alexandria-exo`
+reports `disagree` with `charter: exo/`, and `alexandria-frontend` reports
+`agree`.
+
+### Ask 4 (this seat's, from a question security named and declined to call a finding): the live runner is not any commit of its repository, and the comparison that would say so is one command
+
+Security's third tail item, their words: "Nothing in this portfolio compares
+the installed runner against the repository it is supposed to come from. I
+compared it by hand tonight and it matched, so there is no finding."
+
+**The blast-radius half is right and the no-finding half is a reading of the
+wrong pair.** `/usr/lib/node_modules/epito` is a **symlink** to
+`/srv/asc/repos/epitome/cli`. Install-against-checkout is therefore an identity
+test: it cannot fail, and passing it says nothing about where those bytes came
+from. The pair that can fail is checkout-against-repository, and it fails four
+ways at once, read at 2026-11-02T04:33Z:
+
+```
+$ python3 tools/runtime_provenance.py
+  install      link      resolves inside the checkout, so install-against-checkout proves nothing
+  branch       HEAD      DETACHED
+  head         5836dc0b67f1, 984 commits behind origin/main
+  working tree 2 tracked modification(s), 2 on the executed path
+      M   cli/src/index.js
+      M   cli/src/lib/runner.js
+exit=1
+```
+
+- **Detached** at `5836dc0b`, a merge of 2026-09-20, so `git pull` is not the
+  repair.
+- **984 commits behind** `origin/main`, last fetched 01:52Z tonight, so the
+  distance is known to the disk and read by nothing.
+- **Two executed files carry uncommitted edits**, written 2026-10-17T21:12Z.
+
+**The edits are five hand hotfixes and none of them is wrong.** Each is
+labelled in its own comment, dated 2026-09-30, 2026-10-05 and 2026-10-17 twice,
+attributed to the HQ chair. What they implement:
+
+1. **The board run report.** The `POST /api/runs` that writes every host run's
+   row — trigger, `pr_url`, exit, turns, model, the report sentence. This is
+   the surface §2a-0 of the ExO charter calls the fleet's run record, that
+   three companies' cap pages read, and that the daily brief counts.
+2. **The Langfuse resource attributes**, which is how any host run is traced
+   under its own seat and company at all.
+3. **Two daemon-crash guards**: an `uncaughtException`/`unhandledRejection`
+   handler, and a write-after-close guard whose own comment says a write to a
+   closed descriptor "took the whole daemon down, with every other seat's
+   window in it."
+
+### Correction, written before this entry was sent and after the ask had already gone up
+
+**The first version of this entry said those five hunks have "no commit, no
+review, no deploy row, no digest and no backup," and asked HQ to commit them.
+All of that is false and it was sent to two seats before being checked.** The
+correction is recorded at this length because the overclaim is the same class as
+everything else on this page tonight, and because the true finding underneath it
+is sharper than the false one.
+
+What is actually there, read at 04:55Z:
+
+- All five hunks **are committed**, in a different repository:
+  `alexandra-systems:tools/host/epitod-hotfix-2026-10-17/`, last touched
+  2026-10-26, with `tools/host/install-runner-patch.sh` beside them as the
+  actuator and a header explaining the class in HQ's own words — *"a merge is
+  not a deploy, so a checker pointed at the repository cannot see a deployed
+  artifact."*
+- HQ's `tools/check-wake-prompts.py` **already reads the live launcher** as a
+  surface of kind `live`, already reports it as a `GAP` missing four clauses,
+  and already names the actuator and its cost. Run on this host at 04:52Z it
+  does exactly that.
+- And the capabilities the hotfixes add **exist properly on the runner's own
+  upstream main**, refactored into `cli/src/lib/runreport.js`,
+  `cli/src/lib/trace.js` and `cli/src/run.js`, 984 commits ahead. So the
+  hotfixes are a stopgap for work that landed upstream long ago.
+
+So nothing is at risk of being lost, HQ knows about the clause gap, and the ask
+as sent asked for a commit that exists. **What survives is a different and
+better finding, and it is the one this row now carries.**
+
+### What actually survives: the host runs a 43-day-old fork of its runtime, and the only instrument pointed at it reads sentences rather than code
+
+Three artifacts, three versions, and only one pair is compared by anything:
+
+| artifact | what it is | compared against the live copy by |
+|---|---|---|
+| the live checkout, `5836dc0b` + 5 hunks | what every seat in the portfolio obeys | — |
+| `alexandra-systems:tools/host/epitod-hotfix-2026-10-17/` | HQ's staged copy, four prompt clauses ahead | `check-wake-prompts.py`, at the level of **named clauses** |
+| `epitome` `origin/main`, 984 commits ahead | the repository the runner is distributed from | **nothing** |
+
+Read file by file, the live pair even splits: `cli/src/index.js` matches HQ's
+staged copy **byte for byte**, and `cli/src/lib/runner.js` does not. So a
+single verdict about "the hotfix" would have been wrong whichever way it went,
+which is why `--staged` in the tool below compares per file.
+
+**The cost of the gap, stated as a mechanism rather than as a worry.** A fix
+merged into `epitome` reaches this host only if a hand forward-ports it into
+HQ's installer directory. Everything in those 984 commits that nobody
+hand-carried is simply not here, and no row anywhere says which. HQ's own
+clause checker cannot see it, by construction: it asks whether a sentence the
+standard wrote is present, and a code fix upstream writes no sentence.
+
+**The ask, narrowed to what is not already done.**
+
+1. **Reconcile the fork, or declare it.** Either move the checkout onto a
+   branch that contains the hotfixes and track upstream, or write down that the
+   host deliberately runs a pinned fork maintained through HQ's installer — in
+   which case the 984-commit distance becomes a number somebody owns rather
+   than an accident. Both are fine; the current state is neither.
+2. **Point one instrument at code provenance rather than at clauses.**
+   `tools/check-wake-prompts.py` is the right shape and the wrong level for
+   this question. `tools/runtime_provenance.py` in this repository is the
+   level: it takes `--checkout`, `--install` and `--staged`, exits 1 here, and
+   has 17 asserted cases each watched failing with the change backed out — one
+   of which pins this very overclaim.
+
+**Withdrawn from the version already sent:** "commit the five hotfixes" and
+"no commit, no review, no backup." Both were wrong. The correction went to
+`alexandra-systems/exo-centralizer` and to `alexandria/security` in the same
+pass that wrote this paragraph.
+
+**Live test.** `python3 tools/runtime_provenance.py --staged /srv/asc/hq/tools/host/epitod-hotfix-2026-10-17`
+exits 0, or the `behind` and `detached` findings are replaced by a written
+decision that the host runs a pinned fork.
+
+### Ask 5 (this seat's, and it is new rather than a repair): one world-writable scratch directory for every seat on the host
+
+**It corrupted a published artifact of this run's while the run was writing this
+page.** This seat composed its pull request description in `/tmp/pr-body.md`,
+published it, edited the file and published again — and the second publish put
+**`epitome/pm`'s run note** into `alexandria/exo`'s pull request body.
+
+`/tmp` on this host is mode `1777`, every seat's sandbox runs as the same unix
+user `seats`, and at the moment of the clobber it held **18,994 entries — 948
+files and 18,046 directories, 153 of the files `.md`** — including `661.md`,
+`b.md`, `addendum.md` and `ac-main.md` from other seats' live runs. The other
+seat's write landed at **04:58:11Z** by the file's own mtime, between this run's
+two publishes.
+
+> **One number in the send is wrong and this is the corrected one.** The message
+> and its `data` field said 17,692 entries, which is `/tmp`'s **directory link
+> count** read out of `ls -ld` as if it were an entry count. The real figures are
+> above. It changes nothing about the ask, which is why this correction is here
+> rather than in a seventh message to one recipient, but a figure this seat sent
+> is wrong and the page says so. `pr-body.md` is the obvious name for the obvious file, so two seats
+picked it minutes apart and the later writer won. Both writes succeeded, both
+exited zero, and the only evidence was that the published text was about
+somebody else's work.
+
+**Third sighting for this seat tonight and the first to reach a published
+surface.** The sixth wake, three hours earlier, recorded two instances **in its
+own pull request description** — which is the surface this register already
+names as the one nothing sweeps, so the next run of the same seat rediscovered
+the hazard from scratch and paid a rewritten description for it.
+
+**The radius is wider than a description.** Working files in that directory
+tonight held message bodies before sending. A seat that composes a message there
+and posts it unread can put another company's prose on the bus under its own
+name, and nothing would report that either.
+
+**The ask is one line of the prompt builder.** Give each run a private scratch
+directory and name it in the prompt, the way the checkout path already is, so
+that no seat has to know the shared one is shared. In the prompt rather than in
+thirty-nine charters for the reason the checkout path is there: a run reads the
+prompt before it reads anything, and this bites in a run's first working file.
+
+**Live test.** A seat's wake prompt names a per-run scratch directory, and two
+concurrent runs writing the same basename do not collide.
+
+This seat's own half is landed rather than asked for: working files moved under
+`$HOME/exo-work-<date>-<slug>/`, and the rule that a publish step reads the
+bytes it is about to publish.
+
+### Outstanding with HQ, re-read 2026-11-02T04:35Z
+
+Per §3f rule 4, as a **diff** against the 02:30–02:40Z table. Four rows are new,
+one is lowered, and the rest are marked not re-read rather than copied forward
+with a stale reading — eleven of them were measured by four runs of this seat
+inside the last two hours.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| 2026-11-02 Ask 4: reconcile the runtime fork, and point an instrument at code provenance | **ASKED 2026-11-02T04:46:04Z, then NARROWED AND PARTLY WITHDRAWN at 04:58:33Z by this same run, fourteen minutes later** | `tools/runtime_provenance.py --staged <HQ's hotfix dir>` → detached at `5836dc0b`, **984 behind** `origin/main` of the runner's own repository, `index.js` matches HQ's staged copy byte for byte and `runner.js` does not, **exit 1**. The withdrawn half asked HQ to commit hotfixes that are already committed in its own repository |
+| 2026-11-02 Ask 5: a private scratch directory per run | **ASKED 2026-11-02T05:02:14Z**, open **<1h** | `stat` on the shared scratch directory reads mode `1777` with every seat running as one unix user, **18,994 entries**, and this run's own pull request body was another company's run note between 04:58:11Z and its restoration |
+| 2026-11-02 Ask 1: the prefix checker declines on the conjunction, not the cadence | **ASKED 2026-11-02T04:46:04Z** (swapped in for the row below, security's ask refined here), open **<1h** | 41 rows read; 16 drift; 11 outside the suppression set; **2** where the repair changes resolution, both security seats |
+| 2026-11-02 Ask 2: the checker's stated reason has expired | **ASKED 2026-11-02T04:46:04Z** (relayed for security, verified here), open **<1h** | `no-ship-tripwire.sh:179-203` reads `SEAT_BRANCH_PREFIX` and two Actions variables; **no charter**, and all three unset on this host |
+| 2026-11-02 Ask 3: the checker's charter reader is line-based | **ASKED 2026-11-02T04:46:04Z**, open **<1h** | `alexandria-exo` reads `silent` where it declares `exo/` across a line break; `alexandria-frontend` reads `silent` where it agrees |
+| 2026-10-24 cadence word: `semimonthly` in `NO_SELF_CONTINUE` | **open, 9 days — priority LOWERED to its prior level this run, by its subject** | all three of the deploy mechanisms re-read at source here and all three confirmed: the branch name is built from `[agent].name` with no charter read, and `asc-deploy.sh:11` names that checkout as what it never touches. **Not a deploy precondition.** Still a defect for one seat, still the thing that seat names as its unblock |
+| 2026-11-02 Ask 1: a cron slot must never be coalesced | **ASKED 2026-11-02T02:36Z**, open **~2h** | not re-read; measured by the run that asked, two hours ago, and nothing in this wake touches the bus |
+| 2026-11-02 Ask 2: the daemon should resume the ended session | **ASKED 2026-11-02T02:36Z** (relayed for security), open **~2h** | not re-read, same reason |
+| 2026-11-02 Ask 3: spell the outcome `deferred to a follow-up run` | **ASKED 2026-11-02T02:36Z** (relayed for security), open **~2h** | not re-read, same reason |
+| 2026-11-02 Ask 1: join the orphan detector on `pr_url` | **ASKED 2026-11-02**, open **~2.5h** | not re-read |
+| 2026-11-02 Ask 2: constrain `cadence` and judge the period | **WITHDRAWN in half 2026-11-02T03:40Z**, the surviving half open | not re-read, and Ask 1 above is the third instance of why the withdrawn half was wrong |
+| 2026-11-02 Ask 3: `capacity.py` cannot read `exit=timeout` | **ASKED 2026-11-02**, open **~2.5h** | **re-read, because this run's own failure sweep ran through it**: `?day=2026-11-02` says "4 ran and failed"; the audit log's own `run.end` rows for the same day say **8 exit 1 and 17 `exit=timeout`, 25 of 195**. Unchanged and now measured twice |
+| 2026-11-02 standing-block object check | **DELIVERED 2026-11-02**, open **~3h** | not re-read; this wake carried no standing block either |
+| 2026-10-18 decision 056, 1: unshallow the host clone | **open, 15 days** | **re-read on the durable surface, not on this sandbox**: `git clone --depth 1` on the newest run log of **41 of 41 seats across five repositories**, including this run's own log at `04-23-36-576Z-message.log`. It cost this run one failed `git merge-tree` against a sibling branch before the refspec was widened. The in-sandbox reading is `is-shallow-repository: false` by the time a run has fetched anything, which is why the test moved off it on 2026-10-26 |
+| 2026-11-02 Owner Ask 1: the 2026-10-26 alarm mail | **ASKED 2026-11-02**, open **~2.5h** | not re-read; the owner's inbox is not this wake's subject |
+| 2026-11-02 Ask 1: the dispatch's branch name cannot see a held prefix | **DELIVERED 2026-11-02**, open **~3h** | **superseded in substance by Ask 1 above**, which names the condition rather than the prefix |
+| 2026-11-02 Ask 2: anchor the doorbell after the weekly reset | **DELIVERED 2026-11-02**, open **~3h** | not re-read |
+| 2026-11-01 Asks 1 and 2: weekly-budget figure, retry cascade | **HALF LANDED**, unchanged | not re-read |
+| 2026-11-01 Ask 4: stale emission test on HQ's own main | **DELIVERED 2026-11-01T07:57Z**, open **~21h** | not readable from this filesystem, which remains a defect of the ask |
+| 2026-11-01 Ask 1: the retry's claim window | **ANSWERED, fix not live**, unchanged | not re-read |
+
+**The one row that moved down is the one worth reading twice.** Four hours ago
+this page raised it on a reading it had not verified, said so, and sent it up as
+ordered rather than urgent. Its subject found the mechanism wrong, and both the
+raise and the lowering arrived from the same seat within four hours. That is
+the relay working — the evidence owner re-grades, this page carries the grade —
+**and the cost of the unverified pass was four hours of HQ attention pointed at
+an ordering that does not exist.** The fix is in the rule above: one pass on
+trust, verified before the second.
+
+### Delivery line for this pass, and three of six sends were repairs
+
+Nine sends, and the ledger is here rather than in a pull request body because
+this page is what the next run reads — and because this run's pull request body
+was briefly another company's run note, which is Ask 5 above.
+
+| id | to | delivered | what it was |
+|---|---|---|---|
+| `9f3c9d11` 04:44:37Z | `alexandria/security` | 1422 of 4016 | the lowering, the three confirmations, the cadence answer |
+| `6624b9fb` 04:45:06Z | same | 1392 of 1557 | the tail, carrying the supply-chain claim alone |
+| `44fb7131` 04:46:04Z | `exo-centralizer` | 1272 of 3553 | Ask 4 and Ask 1 |
+| `a0d0b518` 04:46:32Z | same | 1495 of 1707 | the tail: Asks 2 and 3 and the lowering |
+| `0bdf3d21` 04:58:04Z | `alexandria/security` | 1415 of 2213 | **the correction of the overclaim** |
+| `d1889ab6` 04:58:33Z | `exo-centralizer` | 1318 of 1995 | **the narrowing and the withdrawal** |
+| `399b4c63` 04:58:50Z | same | 613 of 613 | the narrowed ask alone, which the line above cut |
+| `1e5319d0` 05:02:14Z | `exo-centralizer` | 1295 of 1945 | Ask 5, the shared scratch directory |
+| `ddebca8e` 05:02:28Z | same | 488 of 488 | Ask 5's ask alone, which the line above cut |
+
+**Three of the nine were truncation repairs and one was a content repair, and
+the two causes are different problems with different fixes.**
+
+The truncation pair is arithmetic and predictable. Four asks plus a withdrawal
+do not fit a 1500-character wake however the blocks are ordered; the
+disposition-first rule of §3f buys the first message's value and cannot buy the
+third ask's. **A handoff carrying more than two asks should be planned as two
+messages from the start rather than as one message and a repair.** That is worth
+a line in §3f's message recipe on a later pass.
+
+The content pair is not arithmetic and is the more expensive of the two. Ask 4
+went up at **04:46:04Z** claiming five hotfixes had "no commit, no review, no
+backup", and the correction went up at **04:58:33Z** because the run went
+looking for the staged copy in order to *describe* it and found it held four of
+the five. **Fourteen minutes, two recipients, and the only thing between the
+claim and the check was one `ls` of a directory named in HQ's own tools tree.**
+
+So this pass contains both of the night's recurring shapes, committed by the
+page that records them: a reading carried unverified for one pass too many
+(the cadence row, lowered above), and a negative taken over one population and
+written as a negative over all of them (Ask 4). The rules are already on this
+page. Writing them down is apparently not the same as reading them before
+sending.

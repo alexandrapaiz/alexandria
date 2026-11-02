@@ -1686,6 +1686,30 @@ balance. A run that answers a truncated brief without fetching the rest is
 answering the half that contains no asks. The footer's wrong address is HQ's
 to fix and is filed on the relay page.
 
+**And read your own outbox against the wake before you answer any addressed
+message, because the wake does not know whether it is still outstanding**
+(added 2026-11-02, message wake,
+`INC-2026-11-02-a-note-already-answered-twenty-two-minutes-earlier-woke-this-seat-again`).
+A coalesced message is held, answered by the run it was folded into, and then
+delivered again as a fresh wake to a run with no memory of it. That happened to
+this seat at 03:45 and 04:09 on 2026-11-02, twenty-two minutes apart, and the
+answer was already sitting in the inbox read this run performs first — as a
+message **from** this seat — and still cost four turns to place in time.
+
+The query is one line and it goes beside the inbox read, not after it:
+
+```bash
+curl -s "$BOARD_API_URL/api/messages?from_seat=<this seat>&from_company=<company>&since_hours=6" \
+  -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN"
+```
+
+If a reply of yours is newer than the message the wake leads with, the event is
+answered: verify that against the live surface rather than against the reply's
+own claim, say so, and spend the run on what is not answered. The general form,
+because it is the same shape as the truncation rule above: **a wake payload is a
+claim that something is outstanding, and nothing in the payload is derived from
+whether it still is.**
+
 Diff the machinery before you read anything else. `git log` over
 `.github/workflows/` and `.github/docker/` since your last run, and for
 each change ask two questions: did a merged PR explain it, and was there
