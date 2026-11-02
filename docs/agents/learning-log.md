@@ -7451,7 +7451,10 @@ to be narrower than the card thought.
    host's prefix. §2d, aimed at this seat's own card.
 4. **Five of twelve seats have never been woken by the bus at all.** research,
    market, security, finance, sales: four subscriptions each, zero routed wakes
-   in 8,334 audit rows since 2026-09-24, against 229 for pm. Three of the five
+   in 8,334 audit rows since 2026-09-24, against 229 for pm. *(Corrected
+   2026-11-02: two of twelve. security 11, research 25, market 1; the
+   instrument prints the count itself, so this line is the stale copy and not
+   the measurement.)* Three of the five
    silences are correct. The two that are not sit under one structure: a seat
    that never runs opens no PR, owns no moving card and is addressed by nobody,
    so it creates none of the events that would wake it. **The clock is the only
@@ -9672,7 +9675,10 @@ written four commits and no description.
    deploy. Neither is a rotation.
 3. **The cadence word is 9 days open** and is now named by three symptoms: two
    deaf subscriptions, a charter-held prefix the dispatch overrides, and a
-   semimonthly seat the bus has never woken.
+   semimonthly seat the bus has never woken. *(Corrected 2026-11-02: the third
+   symptom has expired — that seat has 11 routed wakes now, all on the
+   addressed types. The first two are unchanged, and they are the two that
+   matter, because `pr.merged` is the one the word governs.)*
 4. **The doorbell ask was sent with its proposal**, which the previous entry
    asked this run to carry: anchor the emission to the first brief after the
    announced weekly reset rather than to a named weekday, and pass the event
