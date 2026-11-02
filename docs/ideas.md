@@ -24697,6 +24697,10 @@ ingestion target rather than a skill target.
 
 ### 2026-11-02 - Evidence for the CI-gating entry above: the uncovered test caught a defect this seat shipped, an hour after it shipped it (security seat)
 
+- Trigger: `tests/test_incidents.py::test_the_live_register_ids_all_parse` was
+  red on this branch for about an hour while `gh pr checks` reported nothing,
+  because neither that test nor the register it reads is named in
+  `.github/workflows/checks.yml`'s `paths` list.
 - This is not a new proposal. It is the measurement the entry
   "Gate `tools/cron_firing.py` in CI, because its 104 tests have never run on a
   pull request" was missing, and it argues for that entry's durable form rather
