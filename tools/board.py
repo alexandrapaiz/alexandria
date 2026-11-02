@@ -862,6 +862,17 @@ def cmd_send(args):
     target = payload.get("to_company", "")
     target = f"{target}/{payload['to_seat']}" if payload.get("to_seat") else "everyone"
     print(f"board: sent {posted.get('id')} to {target}")
+    # The wake carries only the first `wake_limit` characters and the notice
+    # goes to the sender alone, so a reader never learns what it did not get.
+    # Every charter here tells a run to check the response rather than assume
+    # it arrived; until 2026-11-02 this function read the three fields that say
+    # so and printed none of them, which is a check mandated in four files and
+    # possible in none of them.
+    if posted.get("body_chars") is not None:
+        state = "TRUNCATED" if posted.get("body_truncated") else "whole"
+        print(f"board: body {state}, {posted.get('body_delivered')} of "
+              f"{posted.get('body_chars')} characters delivered "
+              f"(wake limit {posted.get('wake_limit')})")
     return 0
 
 

@@ -167,7 +167,19 @@ class Handler(BaseHTTPRequestHandler):
             # too or the test would be proving the server's rule, not ours.
             row = dict(payload, id="m-%d" % (len(self.state["messages"]) + 1))
             self.state["messages"].append(row)
-            return self._send(201, {"id": row["id"]})
+            # The live board answers a send with its own delivery receipt, and
+            # the wake carries only the first `wake_limit` characters. The fake
+            # computes the same three fields because a sender that cannot read
+            # them cannot know what its reader did not get.
+            body = payload.get("body") or ""
+            wake_limit = 1500
+            delivered = min(len(body), wake_limit)
+            return self._send(201, {
+                "id": row["id"], "body_chars": len(body),
+                "body_delivered": delivered,
+                "body_truncated": len(body) > wake_limit,
+                "wake_limit": wake_limit,
+            })
         if path.endswith("/comments"):
             if not payload.get("body"):
                 return self._send(400, {"error": "a comment needs a body"})
@@ -864,6 +876,35 @@ def test_send_posts_the_message_and_names_where_it_went(live_board, capsys):
     assert "alexandria/pm" in capsys.readouterr().out
     posted = live_board["messages"][-1]
     assert posted["to_seat"] == "pm" and posted["to_company"] == "alexandria"
+
+
+def test_send_prints_the_delivery_receipt_the_wake_limit_makes_necessary(
+    live_board, capsys
+):
+    """The notice goes to the sender alone, so a print is the only way to read it."""
+    code = board.main([
+        "send", "--company", "alexandria", "--seat", "engineer",
+        "--kind", "done", "--subject", "Done", "--body", "It is built.",
+        "--to-company", "alexandria", "--to-seat", "pm",
+    ])
+    assert code == 0
+    out = capsys.readouterr().out
+    assert "body whole" in out
+    assert "characters delivered" in out
+    assert "TRUNCATED" not in out
+
+
+def test_a_body_over_the_wake_limit_says_so_rather_than_reading_as_delivered(
+    live_board, capsys
+):
+    """A send that was cut and reads as clean is how one thought is sent twice."""
+    code = board.main([
+        "send", "--company", "alexandria", "--seat", "engineer",
+        "--kind", "note", "--subject", "Long", "--body", " ".join(["word"] * 500),
+        "--to-company", "alexandria", "--to-seat", "pm",
+    ])
+    assert code == 0
+    assert "body TRUNCATED" in capsys.readouterr().out
 
 
 def test_a_dry_run_send_posts_nothing(live_board, capsys):
