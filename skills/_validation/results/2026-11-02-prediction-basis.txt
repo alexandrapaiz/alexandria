@@ -1,0 +1,80 @@
+   1 of 104 predictions: observed-bare-run
+       harness-engineering/he-t1: the 2026-09-12 A/B trial of the unaided arm, recorded in this skill's provenance
+   4 of 104 predictions: this-repository-history
+       context-window-engineering/cwe-t2: the reason given is a change made to this suite on 2026-10-26, not anything about a subject model
+       context-window-engineering/cwe-t8: the reason given is that this skill itself asserted the wrong thing until 2026-10-26
+       context-window-engineering/cwe-t11: the reason given is that this suite's own skill asserted the wrong thing until 2026-10-26
+       harness-engineering/he-t9: relabelled 2026-11-02 at the research seat's request (PR #691). The reason this prediction gives is that the framing matches "a claim from this very paper that our graph has since deprecated", which is a fact about this repository's claim graph and not about any subject model. Nothing in this task's prompt has a graph in it: the prompt is a warehouse arm and 41 tool calls. It carried `authored-judgement` until today because the criterion being applied in practice was "the reason contains a date" and this reason contains none, which is the one error the gate cannot see.
+  98 of 104 predictions: authored-judgement
+   0 of 104 predictions: refuted-and-survived
+   1 of 104 predictions: measured-floor
+       agent-containment/ac-t12: Partly measured, and the part that is measured is a floor rather than a prediction. The harness shipped in this task's own files was run against the suite unchanged and scores 2 of 5, keeping the utility probe; a reference implementation scores 5 of 5. That pair proves the five probes discriminate and bounds the task from below, because a subject that changes nothing cannot score above 2. It is NOT a measurement of the bare subject, which has never been run: a bare model given these files might repair more than nothing and still miss the label and judge probes, which is what the `without_skill` text above describes and what the bare-first pass of ADR-38 rule 5 would settle. Both runs are recorded in PR #723.
+
+1 of 104 predictions have ever been checked against a run of the unaided arm. Every delta this library reports rests on the other 103.
+0 of the 98 authored judgements have survived a written refutation pass. That pass needs no credential and is the cheapest thing on this instrument's list.
+
+       5 predictions have been through a written refutation pass and 0 survived one.
+       task                              verdict    axes
+       agent-containment/ac-t10          reject     skill-specificity, triggerability, non-redundancy
+       agent-containment/ac-t9           reject     skill-specificity, triggerability, non-redundancy
+       agent-memory-selection/ams-c1     revise     triggerability
+       agent-memory-selection/ams-t4     revise     verifiability, gradability, triggerability
+       skill-library-engineering/sle-t8  revise     verifiability, triggerability
+
+       A refuted row is not promoted for having been refuted. The repair
+       is another authored judgement, so the kind stays `authored-judgement`
+       and the verdict sits beside it. What this block buys is that the rows
+       which have been attacked are no longer indistinguishable from the ones
+       nobody has read, which is the whole of the finding it answers.
+
+       Partitioned by what the row is for, because a control's prediction gates
+       nothing: a control is passed when the two arms agree, whatever it said.
+       label                        treatment   control
+       observed-bare-run                    1         0
+       this-repository-history              3         1
+       authored-judgement                  76        22
+       refuted-and-survived                 0         0
+       measured-floor                       1         0
+       all                                 81        23
+
+       So the number that bounds this library's exposure is 76 and not 98:
+       an unobserved prediction on a treatment row gates a delta, and one on a
+       control row gates nothing at all.
+
+10 predictions the repository-shape net catches, with both criteria beside each:
+       task                                label                    reason dated
+       agent-containment/ac-t10            authored-judgement       yes
+       agent-containment/ac-t13            authored-judgement       no
+       agent-containment/ac-t9             authored-judgement       yes
+       agent-memory-selection/ams-c1       authored-judgement       yes
+       agent-memory-selection/ams-t4       authored-judgement       yes
+       harness-engineering/he-t1           observed-bare-run        yes
+       context-window-engineering/cwe-t11  this-repository-history  yes
+       context-window-engineering/cwe-t2   this-repository-history  yes
+       context-window-engineering/cwe-t8   this-repository-history  yes
+       harness-engineering/he-t9           this-repository-history  yes
+
+       4 of these 10 rows break the correlation between the two columns, and do not
+       read it as progress either. On 2026-11-02 the correlation was perfect
+       across the whole library and that was the finding against this
+       instrument: the criterion being applied in practice was "has a date"
+       rather than "is a fact about this repository". It broke later the
+       same day, and not because anything was relabelled. The refutation pass
+       wrote a dated amendment onto four rows that are still
+       `authored-judgement`, so they now read dated and carry the honest
+       label, which is exactly the combination the old sentence called
+       impossible. The column moves when a row is edited for any reason at
+       all, so it tracks how recently a row was touched rather than what it
+       rests on. It is printed to be read, not watched.
+
+       The 1 rows with `authored-judgement` and no date are the set worth a hand
+       reading. The gate does not fail on `authored-judgement`, so a repository
+       fact wearing that label is invisible to every check here, and a reading
+       is the only thing that can settle one: the referent of "the graph" or
+       "this library" is fixed by each task's own prompt and nowhere else.
+       The net over-matches on purpose. The research seat's hand adjudication
+       dropped `ams-c1`, whose only marker is "an A/B test online" inside the
+       competent answer being predicted rather than a trial of ours. A gate
+       cannot see that, so it says too much instead of guessing.
+
+Every prediction says what it rests on. Exit 0 does not mean the predictions are right, only that none of them is pretending.
