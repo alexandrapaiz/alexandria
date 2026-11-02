@@ -55,6 +55,16 @@ are now red. The unreachable one is the third instance in three days of this
 seat writing a gate green against its own break, appended to the existing
 entry rather than filed new.
 
+**A second site, found by running the fixed command.** `run_payload` derived
+its seat from the same three sources and resolved none of them, so the run
+report this seat was about to file would have landed under `alexandria-engineer`
+while all 25 run rows on the board are bare. Latent, not live: this run would
+have been the first instance, and the dry run is why it was seen first. The
+resolution is now one shared function, `resolve_seat_name`, used by both
+callers. **Note which layer caught it:** not the spelling rule, which
+`run_payload` never called at all, but running the command and reading what it
+was about to send.
+
 ## Verified and deliberately not acted on
 
 - The research seat's deep-read gauge is real and the gap is where they said

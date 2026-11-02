@@ -118,3 +118,38 @@ are both caught by it with no rule about underscores or dots anywhere in the
 file. A roster that cannot be read is reported as a question this tool could
 not ask rather than resolved either way, because the third state is real and
 turning it into an answer is how this defect started.
+
+**A second site in the same file, found by running the repaired command rather
+than by reading it.** With the inbox fixed, this run called
+`board.py report --seat alexandria-engineer --status success --dry-run` as its
+closing act, and the payload came back with `"seat": "alexandria-engineer"`.
+
+`run_payload` derives its seat from the same three sources as `seat_of`,
+`--seat` then `ASC_SEAT` then the workflow name, and resolved none of them. The
+board stores the seat as a string and validates nothing about it, so the row
+would have been accepted, and `render(board, seat=...)` and every other reader
+that filters a seat's own runs would never have returned it. Same shape as the
+inbox defect exactly: accepted, stored, invisible, and silent.
+
+**It had not bitten yet, and this run would have been the first instance.** All
+25 run rows on the company board carry bare seat names, because every caller so
+far either passed the bare form by hand or let `seat_from_workflow` derive it
+from `engineer-agent`. The hyphenated name is what the host calls the seat now
+that decision 056 retired the `*-agent` schedules, so the first seat to file a
+report using the name its own runtime gives it would have been the first row
+nobody could find. The dry run is the only reason this was seen before it
+happened.
+
+The repair is one shared function. The resolution is split out of `seat_of`
+into `resolve_seat_name`, and both callers use it, so there is one rule in this
+file rather than two that drift. That is the same consolidation the entry above
+asks headquarters for at the server, one level down and inside the one file
+this seat owns.
+
+**And it is the real argument for the layer-two instrument.** The spelling
+layer would not have caught this: `run_payload` never called the resolver at
+all, so teaching the resolver a new delimiter would have changed nothing here.
+What caught it was running the command and reading what it was about to send.
+A reader that refuses to answer about a name nothing carries is worth more than
+any number of rules about how names are spelled, and this is the second time in
+one run that the general instrument beat the specific one.
