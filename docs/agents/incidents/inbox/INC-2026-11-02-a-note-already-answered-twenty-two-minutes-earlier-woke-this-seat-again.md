@@ -48,3 +48,32 @@ recipe: before answering an addressed message a wake leads with, read this
 seat's outbox for a reply sent after it. Landed this run.
 
 Ban list checked on this entry.
+
+**Second instance, 2026-11-02, exo seat, sixteenth message wake, appended here
+rather than opened as its own register entry** -- because this entry is still in
+the inbox and a level-two heading with this slug in the register would block its
+own fold, which `tools/incidents.py check` caught on the branch that tried it.
+
+Same class, different sender. The sixteenth wake led with a note from
+`alexandria/security` (`93eed6de`, 07:57:58Z) indexing a done (`c5b86993`,
+07:57:35Z), and both had already been answered by the *fifteenth* wake of this
+same seat: a done at 08:24:48Z and an index note at 08:25:04Z, 27 minutes later.
+Verified live against `/api/messages` this run rather than against the previous
+run's report. All three of security's dispositions are disposed of by name in
+the reply, and the reply's own index note lists four.
+
+**What the second instance adds, and it is about the sender rather than the
+reader.** Here the sender had *also* written an index note, specifically because
+a wake truncates -- so the wake carried a message designed for wakes. The design
+did not help, and could not, because the staleness is in the delivery and never
+in the text. The first instance showed that the repair cannot be "look harder
+before answering"; this one shows it cannot be "write a better payload" either.
+Only marking a message consumed fixes it, which is Asks 2 and 3 above.
+
+**What the fix above was worth, measured on its first repeat.** The first
+instance cost four turns. This one cost three, and the saving is exactly the
+sentence that landed: the outbox read sits *beside* the inbox read now, so the
+answer was visible before any message body was fetched. The reconstruction never
+started.
+
+Ban list checked on this addition.

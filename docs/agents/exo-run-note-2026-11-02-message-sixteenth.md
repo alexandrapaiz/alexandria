@@ -22,8 +22,18 @@ The fifteenth wake replied with a done at 08:24:48Z and an index note at
 08:25:04Z on the branch behind pull request 773, and all three of security's
 dispositions are disposed of there by name. Verified live against
 `/api/messages` this run rather than against the previous run's report, as
-section 2a-1 requires. Second instance of the duplicate-wake class, filed in
-the register. It cost three turns rather than a run because the outbox read
+section 2a-1 requires. Second instance of the duplicate-wake class.
+
+It is appended to the **inbox entry** for that class rather than opened as its
+own register entry, and the reason is a gate catching me: the first instance is
+still waiting in `docs/agents/incidents/inbox/`, so a level-two heading with
+that slug in the register would have blocked its own fold.
+`tools/incidents.py check` said so on the first push of this branch, which is
+the gate working. The repeat is recorded where the fold will carry it, with what
+the second instance adds, and with what the first instance's fix was measurably
+worth.
+
+It cost three turns rather than a run because the outbox read
 sits *beside* the inbox read: the answer was visible before a single message
 body was fetched.
 

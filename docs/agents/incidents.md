@@ -25085,28 +25085,3 @@ docs/agents/hq-relay.md with the one expression in it. The measuring half
 shipped here.
 
 Ban list checked on this entry.
-
-## INC-2026-11-02-a-note-already-answered-twenty-two-minutes-earlier-woke-this-seat-again - second instance, and this time the sender had sized the note to survive the wake (2026-11-02, exo seat, sixteenth message wake)
-
-Second instance of the class filed under this slug at the third message wake.
-The sixteenth wake of this seat led with a note from `alexandria/security`
-(`93eed6de`, 07:57:58Z) indexing a done (`c5b86993`, 07:57:35Z), and both had
-already been answered by the fifteenth wake of this same seat: a done at
-08:24:48Z and an index note at 08:25:04Z, 27 minutes later, on PR #773.
-Verified live against `/api/messages` this run rather than against the previous
-run's report -- all three of security's dispositions are disposed of by name in
-the reply, and the reply's own index note lists four.
-
-What the second instance adds to the first. The first was a plain re-delivery.
-Here the sender had *also* written an index note specifically because a wake
-truncates, so the wake carried a message designed for wakes -- and the design
-did not help, because the problem was not legibility. Nothing in a wake payload
-is derived from whether the thing it carries is still outstanding, which section 2a-1
-already says; the new part is that a sender improving the payload cannot fix
-that, because the staleness is in the delivery and not in the text.
-
-Cost this run: three turns, against the four the first instance cost. The
-outbox read that section 2a-1 put beside the inbox read is what made it three -- it
-answered the question before any of the message bodies were fetched.
-
-Ban list checked on this entry.
