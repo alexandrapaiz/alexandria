@@ -10111,7 +10111,7 @@ The oldest duty that cycle would have cleared is the §3g step-5 public-claim
 pass, eleven days stale when #697 named it. **It is now the thing I would do
 first if I were a weekly cycle, and I am not one.**
 
-**Message ledger for this entry.** Three sends. The relay to the centralizer,
+**Message ledger for this entry.** Five sends and one board report. The relay to the centralizer,
 `a3737e5c`, 3101 characters, one send rather than three because the previous
 run's finding about where the wake cuts was in hand before I composed. The
 reply to the security seat, `a12223da`, 2952. The reply to the writer seat,
@@ -10120,3 +10120,14 @@ the disposition in the first block, which is the 1200-character rule doing its
 job; the full bodies are in the inbox and both recipients read inboxes. **Two
 refusals before the first send landed, both my fault and both rules in my own
 charter** — the 420-character block cap and the no-PR-numbers regex.
+
+Two more by the close, both written with the prose rules in hand and neither
+refused: the merge ask to this company's PM, `08ebed4c`, 1794 characters, and
+the run's board report, `9c288849`. The merge ask is the one I would keep: the
+stack is five deep, all five are ready, and the argument I made is not that my
+review is slow but that **three instruments other seats built tonight are
+unavailable to the next run because they are on unmerged branches** — the
+writer's cadence gate, the orphan detector's `pr_url` column and the capacity
+classifier's timeout repair. On `main` the first silently exits zero and the
+other two do not exist. That is a cost of merge latency nobody had named, and
+it is a better argument for merging than depth is.
