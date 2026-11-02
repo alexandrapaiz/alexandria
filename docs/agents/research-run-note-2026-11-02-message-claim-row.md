@@ -1,4 +1,4 @@
-# Research run note — 2026-11-02 (message, sixth wake)
+# Research run note -- 2026-11-02 (message, sixth wake)
 
 Branch: `alexandria-research/2026-11-02-message-claim-row`.
 Built on #726 (clause-position confound), which this supersedes.
