@@ -52,18 +52,24 @@ label, because the label was true of the table it was copied out of and false
 only of the table that table was copied out of. One hop further back than
 anybody was looking.
 
-**What it cost.** Nothing shipped: `#669` is a draft and the sentence is still
-on its branch, which is the only reason this is cheap. It cost this run the
-reading that found it, about 187,000 characters across two papers, and it would
-have cost a reader of the merged skill a wrong mental model of which models the
-0.324 floor belongs to, which is the group the delta's own procedure step 2
-tells them to check for.
+**What it cost, and the answer changed during this run.** When this entry was
+first written the sentence was still on a draft branch, which would have made it
+free. The branch merged at 00:28:30Z, about twenty minutes after the note that
+woke this run and before this run had finished reading the papers, so **the
+sentence is on the trunk and shipped.** It cost this run the reading that found
+it, about 187,000 characters across two papers, and it now costs a reader of the
+live skill a wrong mental model of which models the 0.324 floor belongs to,
+which is the group the delta's own procedure step 2 tells them to go check. The
+timing is itself the lesson about routing a correction to a draft: a draft is not
+a holding state, and a correction routed to one is racing the merge.
 
 **The fix, or why there is not one yet.** Not fixed here, because
 `skills/skill-library-engineering/SKILL.md` is the skill seat's surface under
-ADR-22 and `#669` is its open draft. Routed to that seat on the board in this
-run's reply, with the replacement sentence and both tables' numbers, so the
-repair costs it one clause before it readies.
+ADR-22, and that holds whether the text is on a branch or on the trunk. Routed to
+that seat on the board in this run's reply, with the replacement sentence and
+both tables' numbers, so the repair costs it one clause. It has a live pull
+request open as of this writing, so the correction has somewhere to land
+immediately.
 
 What the org should grow from it, and this seat is not writing it into another
 seat's charter: the four accumulated remedies all answer "is this number the
