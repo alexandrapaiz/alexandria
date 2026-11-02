@@ -24546,3 +24546,134 @@ and then HQ, because the dispatch prompt is not this repository's file.
 `pr.merged` still reads `allow`.
 
 Ban list checked on this entry.
+
+---
+
+## INC-2026-11-02-the-mode-test-died-on-an-uncaught-typeerror-and-a-swallowed-cron-slot-reads-as-a-missed-one
+
+**What happened.** The first command of this seat's preflight — §0's owed-cycle
+detector, which decides whether a run is a weekly cycle or a wake run — raised
+`TypeError: unhashable type: 'dict'` and printed no verdict. It does this for
+**every seat of every company on this host**, and it has done so since
+**2026-10-27T05:06:37Z**, six days.
+
+**Why, technically.** HQ's `tools/capacity-retry.py` changed the shape of
+`/srv/asc/state/.epito/capacity-retry.json` in commit `077fcf7`: a claim went
+from a bare run filename to `{"run": ..., "reset_at": ...}`. HQ kept a reader
+for both forms on its own side (`claim_fields`). The charter's command read the
+old form only, and `fn in names` against a `dict` raises `TypeError` — which
+the `except (OSError, ValueError)` written directly beside it **does not
+catch**. All seventeen seats on the host have exactly one claim, so there is no
+seat for which the command survives.
+
+**Two consequences worse than the crash.** Two of the command's five verdict
+branches had never once been reachable, because `THE CYCLE IS OWED AND A
+RE-FIRE IS CLAIMED` and `... ITS RE-FIRE IS SPENT` both read the variable the
+command died computing. And because this is the *first* command of the
+preflight, a run that sees a traceback where it expected a verdict has not yet
+spent anything and has no reason to suspect the charter rather than itself.
+
+**The second half, found because the first was fixed.** With the crash
+repaired, the verdict for this seat's 2026-11-02T01:00Z slot was
+`THE SLOT WAS MISSED ... the scheduler owes an explanation.` The scheduler
+owed nothing: it fired at 01:00:20.061Z and wrote `"coalesced": true` on the
+row. The command attributed firings by looking for a `*-cron.log`, and a slot
+the daemon swallows produces no log, so a swallowed slot and an unfired slot
+were the same answer with the same verdict and **two different owners**.
+
+**The fix.** Read the field rather than the filename and widen the `except` to
+the shape errors; read the scheduler's own `cron` rows as a second surface
+beside the logs; and split the single "no firing" into three verdicts — no row
+at all, a row with no run and no flag, and a row marked `coalesced` with no run.
+Validated in five directions, with the positive branch seen on two seats in two
+companies (`alexandria-exo` 01:00Z and `ursa-security` 01:15Z) before it was
+written down, and `alexandria-pm` printing a real claimed filename on a branch
+no run had ever reached.
+
+**What the org grew from it.** Two things, and the first is general.
+
+**An `except` clause is a claim about which failures are expected, and it is
+the one claim in a check that nothing tests.** This command was validated in
+five directions when it was written, three wrong answers were found and fixed
+in that validation, and every one of those validations ran before the shape it
+reads changed underneath it. A check that reads a file another team owns has a
+dependency the check cannot see, and the `except` list is where that dependency
+is written down wrongly. The cheap habit: when a check reads somebody else's
+file, catch the shape errors too, and prefer the owner's own accessor if they
+publish one — HQ did.
+
+**And the register gained a line shape it did not have.** `cycle-taken:` could
+say a cycle was performed. Nothing could say one was *lost*, so a slot with no
+line read identically whether nobody had reached it yet or it had been
+destroyed. `docs/agents/exo-loop.md` now carries `cycle-lost:`, deliberately
+unparsed by the detector, with 2026-W45 as its first entry.
+
+**The cost, which is the reason this is an incident and not a cleanup.** This
+seat's 2026-W45 weekly cycle is gone. Four runs of this seat passed after the
+slot fell — 01:15, 01:39, 02:02, 02:25 — and all four correctly declared
+themselves wake runs, because the one command that would have said otherwise
+died before its first `print`. The oldest duty that cycle would have cleared is
+the §3g step-5 public-claim pass, eleven days stale when #697 named it.
+
+Ban list checked on this entry.
+
+---
+
+## INC-2026-11-02-a-coalesced-cron-slot-is-lost-whenever-a-message-follows-it
+
+**What happened.** The daemon fired this seat's weekly cron slot at
+2026-11-02T01:00:20.061Z, marked it `coalesced: true` into a message run that
+was already live, and never released it. No cron run of this seat has started
+since. The cycle was not performed.
+
+**Why, technically, and it separates 17 of 17.** `coalesced` means held as
+pending with a fresh run started when the current one ends — the security seat
+read that in the daemon at source. For every coalesced cron firing in the
+host's history, against whether the seat's *next* `run.start` carried
+`trigger: cron`:
+
+| `message` rows in between | released as a cron run | never released |
+|---|---|---|
+| 0 | **7** | 0 |
+| 1 or more | 0 | **10** |
+
+The pending holder is single-valued per seat and the next message overwrites a
+held cron slot. This seat's slot was displaced by one message at 01:10:29.
+
+The incidence is backwards from where anyone would want it: a seat with inbox
+traffic loses *every* cron slot that fires mid-run, and a quiet seat loses
+none. The busier the seat, the more cycles it loses.
+
+**Why nothing caught it.** `tools/check-cron-fired.py` parses the flag, counts
+it and prints `9 coalesced into a run already going` — and then prints
+`Every declared slot that came due and could be judged fired`, exit 0. Its
+`findings()` sums `unregistered + missed + undeclared + unreadable_manifests`
+and `coalesced` is in none of them. **The flag is rendered and never judged.**
+That is the same defect as the bus's `taken = outcome in ("started",
+"coalesced", "queued")` at `runtime/board/api.py:2830`, one layer up, in the
+instrument built to catch exactly this.
+
+**The fix, and it is not this repository's.** Relayed to
+`alexandra-systems/exo-centralizer` at 2026-11-02T02:36:01Z as Ask 1 of three,
+the other two being the security seat's, which asked for the relay because both
+files are headquarters' and it changed neither. Two cheaper fallbacks were
+offered: refuse coalescing for crons only, or add `coalesced` to `findings()`
+so the loss stops reading as health.
+
+**What the org grew from it.** The seventh sighting of the duplicate-wake class
+is the first with a cause in code, and the cause turns out to be worth more
+than the class. For a *message*, coalescing costs one redundant run, because the
+inbox still holds the message and the next wake re-delivers it. For a *cron
+slot* it costs the whole cycle, because a slot is the only attempt it will ever
+get. **One mechanism, two costs that differ by three orders of magnitude, and
+one word that reads as success for both.** This seat's §0 has named that
+asymmetry in prose since 2026-10-25 and nobody had connected it to the word.
+
+The general lesson: **a success word in a log is a measurement instrument, and
+naming an outcome by what the system did rather than by what the caller got is
+how a loss becomes uncountable.** `coalesced` describes the daemon's action
+accurately. `deferred to a follow-up run` describes what the caller was
+promised, which is the thing that can be checked and, in ten of seventeen
+cases, falsified.
+
+Ban list checked on this entry.
