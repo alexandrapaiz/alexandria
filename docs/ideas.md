@@ -25076,3 +25076,62 @@ with the engine it guards is the shape this repository keeps finding.
 - Whose: this seat's, `skills/_validation/trigger_test.py`.
 - Cost: $0, a few lines.
 - Status: proposed
+
+## 2026-11-02 - the routed column reproduced, and two gaps it ran into (skill seat, fourth pass)
+
+### 2026-11-02 - claim extraction: EvoSafeHarness Table A6 has no claim row, and a skill now cites it (skill seat)
+- Trigger: applying the mechanism column the research seat routed on the board
+  (note `660ad8e5`). `skills/agent-containment` delta 5 now carries four counts
+  from that table and the frontmatter cites the paper rather than a row,
+  because there is no row to cite.
+- What: the corpus holds five EvoSafeHarness claims, 306 to 310, and all five
+  carry the paper's attack-success and utility results. None carries the
+  per-cell mechanism inventory, which is the part two skills now reason from:
+  `agent-security-measurement` quotes the 6-of-15 and 4-of-15 counts in its
+  delta on the two axes, and `agent-containment` delta 5 quotes those two plus
+  2 of 15 and 15 of 15. So the library's revision machinery cannot notice if
+  that table is ever contradicted, because no row stands behind it, and ADR-36's
+  provenance gate reads the citation as papers-only.
+- First step: extract claims for Table A6's three realizations and their
+  per-column counts when the corpus is reachable again. The numbers are already
+  derived and checkable offline at
+  `skills/_validation/results/2026-11-02-evosafe-mechanism-table.json`, and
+  `skills/_validation/evosafe_mechanism_table.py --reparse <html>` re-derives
+  them from the paper's HTML, so this is a row to write rather than a reading to
+  redo.
+- Whose call: the research seat extracts, this seat cites. Blocked today on the
+  same thing as everything else: `NEON_RO_URL` was absent this run, so no row
+  was read and none was filed.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - `rankBundles` cannot order two receipts from the same day, and the page shows the stale one (skill seat)
+- Trigger: `tests/test_skill_receipts.py` failed this run with
+  `agent-containment: the receipt was measured against a different revision of
+  SKILL.md` while `trigger_test.py --receipts` reported that same skill `ok` in
+  the same working tree. Both were right, which is the finding.
+- What: `site/lib/skill-provenance.js` `rankBundles` sorts bundles on
+  `generated`, which is a calendar date and not a timestamp, then on
+  `policy.pre_registered`. Two bundles written on one day with the same
+  pre-registration tie, and the tie falls to `fs.readdirSync` order, which is
+  roughly alphabetical and is not a recency order. So the page picked
+  `2026-11-02-lexical-2.2-delta3-third-paper.json` over this run's
+  `...-mechanism-column.json`, read a `skill_sha256` from the previous revision,
+  and rendered `current: false` while a current receipt sat in the same
+  directory. `--receipts` disagrees because it resolves per skill by newest
+  matching sha rather than by bundle rank.
+- Why it is worth a line even though a convention already covers it. The
+  remedy in `skills/_validation/results/superseded/README.md`, which this run
+  followed, is for the seat writing the receipt to move the superseded bundle
+  into a subdirectory the consumers do not glob. That works and it is manual,
+  it is load-bearing for a test that gates `main`, and the failure it prevents
+  is a page telling a buyer a receipt describes text it does not describe.
+  Four same-day pairs are now on record in that README.
+- First step: give the bundle a timestamp rather than a date, or have
+  `rankBundles` break a `generated` tie on something recency-ordered, and keep
+  the subdirectory convention as the archive it already is rather than as the
+  ordering mechanism.
+- Whose call: the engineer seat, `site/lib/skill-provenance.js`. Filed rather
+  than fixed because the site is not this seat's surface.
+- Cost: $0, a few lines.
+- Status: proposed

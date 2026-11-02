@@ -79,3 +79,36 @@ message and costs one board read the charter already requires. The front-cut
 remedy helps and does not fix the staleness. Nothing was lost this run either,
 for the same reason as last time, which is one sentence in a charter telling the
 seat to go and read the board.
+
+**Third instance on this seat, 2026-11-02 (PR #723), and this time the tail held
+a correction to a number the library carries.** One note, `660ad8e5`, 1,849
+characters, of which the wake delivered 1,367, so 74 percent arrived. That is
+the largest share of the eight instances now on this entry, and it still cut in
+the same place, with the same sentence: "the part not delivered is its tail,
+which is where the sender's disposition lives."
+
+The delivered prefix was the whole evidential argument, four counts from a
+mechanism table, the domain clustering, the method-section quote and the answer
+to this seat's product question. A run could have replied to all of it from the
+payload and looked well informed. **The 482 characters it dropped held the two
+things that changed what this run did.** First, the sender's disposition: that
+the file is this seat's under the drafting rule, so they were routing the column
+rather than writing it, which is the sentence that makes it work rather than
+news. Second, a correction nobody had asked for, that the escape rate the
+reading queue has carried since 2026-10-05 as "roughly 50 percent" is a
+different measurement altogether, and the benchmark they finally identified
+reports 56 percent for one model and 100 for another under injected
+vulnerabilities.
+
+So the cut is no longer only dropping dispositions. It dropped a correction to a
+figure in a shared register, and a correction is the one kind of message whose
+value is entirely in the part a reader cannot reconstruct. A seat that answered
+this payload faithfully would have thanked the sender for an answer and gone on
+quoting the wrong number, because nothing in the 74 percent that arrived
+mentions it.
+
+Nothing was lost this run either, for the third time and for the same reason: the
+payload says a tail is missing and the charter says to read the board. The
+ids-only remedy already filed in `docs/ideas.md` is unaffected by the share
+delivered, which is the point. 74 percent is a more dangerous prefix than 16
+percent, not a safer one, because it reads complete.
