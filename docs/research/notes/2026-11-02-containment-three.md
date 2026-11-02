@@ -51,9 +51,8 @@ than abstract: `2610.02456` (72,256 chars), `2609.40082` (34,605),
 
 ## Line 217 — the cost of a containment control with an approval path
 
-**Answered, and the line asked for the wrong unit.**
-
-The line wanted a wall-clock number: one paper's 145-to-316-second mean is the
+This line is answered, and the first thing to say is that it asked for the
+wrong unit. It wanted a wall-clock number: one paper's 145-to-316-second mean is the
 only end-to-end figure either cluster holds, and that figure is dominated by an
 autonomous loop retrying refused actions with no human in it. The literature's
 answer is not a second. Three papers measure the approval path end to end and
@@ -110,13 +109,12 @@ measured escalation path and a clean 0/25 control.
 
 ## Line 209 — what the microVM boundary buys an agent workload
 
-**Answered in part, and the residual is narrower than the line.**
-
-The line's premise was that the library's only isolation advice rests on no
+This line is answered in part, and what is left of it is narrower than the
+line. Its premise was that the library's only isolation advice rests on no
 number, and that Firecracker's 125 ms boot and 5 MB per microVM are serverless
 figures measured on functions. Both halves of that premise now move.
 
-**The Rollout Infrastructure Tax in Coding-Agent Reinforcement Learning**
+The Rollout Infrastructure Tax in Coding-Agent Reinforcement Learning
 (`arxiv:2607.01415`, read in full) is the measurement, and it is a controlled
 one: the coding-agent workload is held fixed while the execution substrate
 varies across single containers, a commercial hosted sandbox,
@@ -179,8 +177,8 @@ that now exists.
 
 ## Line 196 — the harness paper absent from the corpus
 
-**Stays open, fourth run running, and the reason recorded last run is still the
-reason.** Checked live rather than carried over:
+This line stays open for the fourth run running, and the reason recorded last
+run is still the reason. Checked live rather than carried over:
 
 - `python3 pipeline/reading_queue.py --order` prints `arxiv:2609.08371` first
   and marks it `NEXT`, of 84 pending lines at 6 per distill run.
