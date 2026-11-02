@@ -912,14 +912,157 @@ def test_send_prints_the_delivery_receipt_the_wake_limit_makes_necessary(
 def test_a_body_over_the_wake_limit_says_so_rather_than_reading_as_delivered(
     live_board, capsys
 ):
-    """A send that was cut and reads as clean is how one thought is sent twice."""
+    """A send that was cut and reads as clean is how one thought is sent twice.
+
+    The receipt is still the thing under test here, so this passes the flag that
+    waives the gate below it. Without the flag the send never reaches the board,
+    which is the point of the gate and is asserted separately.
+    """
     code = board.main([
         "send", "--company", "alexandria", "--seat", "engineer",
         "--kind", "note", "--subject", "Long", "--body", " ".join(["word"] * 500),
-        "--to-company", "alexandria", "--to-seat", "pm",
+        "--to-company", "alexandria", "--to-seat", "pm", "--allow-truncation",
     ])
     assert code == 0
     assert "body TRUNCATED" in capsys.readouterr().out
+
+
+# --------------------------------------------------------------------------
+# The gate in front of the receipt
+# --------------------------------------------------------------------------
+#
+# The receipt above shipped on 2026-11-02 and it reports after the POST, which
+# is after the reader has been woken with a note whose disposition is missing.
+# On the same day six sends across three seats were cut and every one of them
+# cost a second send to deliver its own tail, including two by this seat written
+# in the very notes agreeing that the ceiling is 1500. Recording is not
+# enforcing. The receipt is the gate that writes something down; this is the
+# gate that checks it before it ships.
+
+
+LONG = ("A sentence that carries a measurement of 8.5 days and a reason. " * 24)
+
+
+def test_a_body_over_the_limit_is_refused_before_the_board_is_asked(live_board, capsys):
+    before = len(live_board["messages"])
+    over = board.would_truncate(board.scannable(LONG))
+    assert over > 0, "the fixture has to be over the limit for this to test anything"
+    code = board.main([
+        "send", "--company", "alexandria", "--seat", "engineer",
+        "--kind", "note", "--subject", "Long", "--body", LONG,
+        "--to-company", "alexandria", "--to-seat", "pm",
+    ])
+    assert code == board.EXIT_WOULD_TRUNCATE
+    # A refusal is an exit code, and nothing was posted, so no reader was woken.
+    assert len(live_board["messages"]) == before
+    out = capsys.readouterr().out
+    assert "REFUSED" in out
+    assert f"{over} characters over" in out
+    assert "--allow-truncation" in out
+
+
+def test_the_gate_measures_the_body_as_posted_and_not_as_typed():
+    """`scannable` reflows the body, and it can make it longer.
+
+    Measured: 1,500 unbroken characters leave `scannable` as 1,506, because the
+    block pass splits anything over 420. So a sender's own `wc -c` on a draft is
+    not this gate, and a gate that measured the typed string would pass bodies
+    the board then cuts. This is also the likeliest reason the research seat
+    could fit no formula to its five samples: the number the server counts is
+    not the number the sender typed.
+    """
+    typed = "x" * board.WAKE_LIMIT
+    assert len(board.scannable(typed)) > len(typed)
+    assert board.would_truncate(typed) == 0
+    assert board.would_truncate(board.scannable(typed)) > 0
+
+
+def test_the_refusal_exit_code_is_none_of_the_ones_already_taken():
+    assert board.EXIT_WOULD_TRUNCATE not in (0, 1, 2, board.EXIT_AMBIGUOUS,
+                                             board.EXIT_UNKNOWN_SEAT)
+
+
+def test_a_body_at_exactly_the_limit_is_sent_rather_than_refused(live_board, capsys):
+    """The limit is a ceiling, not a target: at or under it goes whole."""
+    # Built through `scannable`, because that is the string the gate measures
+    # and the board stores. A raw 1,500 characters is 1,506 after the reflow.
+    body = "Short block.\n\n" * 50
+    while board.would_truncate(board.scannable(body)) == 0:
+        body += "One more short block.\n\n"
+    while board.would_truncate(board.scannable(body)) > 0:
+        body = body[: -len("One more short block.\n\n")]
+    assert len(board.scannable(body)) <= board.WAKE_LIMIT
+    code = board.main([
+        "send", "--company", "alexandria", "--seat", "engineer",
+        "--kind", "note", "--subject", "Exact", "--body", body,
+        "--to-company", "alexandria", "--to-seat", "pm",
+    ])
+    assert code == 0
+    assert "body whole" in capsys.readouterr().out
+
+
+def test_would_truncate_measures_the_overflow_and_nothing_else():
+    assert board.would_truncate("x" * (board.WAKE_LIMIT - 1)) == 0
+    assert board.would_truncate("x" * board.WAKE_LIMIT) == 0
+    assert board.would_truncate("x" * (board.WAKE_LIMIT + 7)) == 7
+
+
+def test_the_refusal_names_the_further_loss_beyond_the_overflow():
+    """69 characters over cost 180, so the arithmetic understates the damage."""
+    text = " ".join(board.render_would_truncate(69))
+    assert "69 characters over" in text
+    assert "80 to 190" in text
+    assert "tail" in text
+
+
+def test_the_flag_waives_the_gate_rather_than_silencing_the_receipt(live_board, capsys):
+    code = board.main([
+        "send", "--company", "alexandria", "--seat", "engineer",
+        "--kind", "note", "--subject", "Long", "--body", LONG,
+        "--to-company", "alexandria", "--to-seat", "pm", "--allow-truncation",
+    ])
+    assert code == 0
+    out = capsys.readouterr().out
+    assert "REFUSED" not in out
+    assert "body TRUNCATED" in out
+
+
+def test_a_dry_run_is_not_blocked_by_the_gate_because_it_wakes_nobody(live_board, capsys):
+    """A sender measuring its own draft must be able to, over the limit or not."""
+    code = board.main([
+        "send", "--company", "alexandria", "--seat", "engineer",
+        "--kind", "note", "--subject", "Long", "--body", LONG, "--dry-run",
+    ])
+    assert code == 0
+    assert "would POST" in capsys.readouterr().out
+
+
+# The client's limit is a cache of a number only the server knows, and no route
+# answers it before a POST (`/api/limits`, `/api/meta` and `/api/config` all 404,
+# probed 2026-11-02). A cache with no refresh route goes stale silently, and a
+# gate on a stale cache either refuses sends that would have arrived or passes
+# sends that will be cut. The receipt is the one place that learns the truth.
+
+
+def test_a_server_limit_that_disagrees_with_the_gate_is_said_out_loud():
+    said = " ".join(board.render_limit_drift(900))
+    assert "900" in said and str(board.WAKE_LIMIT) in said
+    assert "stale" in said
+
+
+def test_an_agreeing_server_limit_prints_nothing():
+    assert board.render_limit_drift(board.WAKE_LIMIT) == []
+    assert board.render_limit_drift(None) == []
+
+
+def test_the_cached_limit_is_the_one_the_live_board_reports(live_board, capsys):
+    """If the fake and the gate ever drift apart, this is where it shows."""
+    board.main([
+        "send", "--company", "alexandria", "--seat", "engineer",
+        "--kind", "note", "--subject", "s", "--body", "b",
+        "--to-company", "alexandria", "--to-seat", "pm",
+    ])
+    assert f"wake limit {board.WAKE_LIMIT}" in capsys.readouterr().out
 
 
 def test_a_dry_run_send_posts_nothing(live_board, capsys):
