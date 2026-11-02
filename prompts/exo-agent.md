@@ -3295,6 +3295,31 @@ sitting beside it.
      sentences that were written around the ask's absence, in the same run.
      That last clause is `INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`
      made into a state transition instead of a hope.
+
+   **And a re-read is a diff against the previous re-read, never a fresh
+   composition** (added 2026-11-02, message wake,
+   `INC-2026-11-02-the-outstanding-heading-dropped-eight-of-ten-rows-and-lost-two-grants-with-them`).
+   The four states above are a state machine, and a state machine governs
+   transitions between states a row is **in**. It says nothing about a row that
+   stops being written down, which is how this heading went from ten rows on
+   2026-10-27 to five on 2026-11-02 with two transitions recorded and eight
+   rows simply absent. Two of the eight had LANDED — an unknown-filter refusal
+   that HQ built, and a roster-reload row that became measurable for the first
+   time — and two were live asks, one of them fifteen days old with a one-word
+   test. **A dropped row loses good news and bad news at the same rate**, which
+   is worse than the bias this rule replaced because no reading of the shorter
+   table ever looks wrong.
+
+   So: every row in the prior table appears in the new one, carrying either a
+   reading or an explicit **"not re-tested this run"**, and a row leaves the
+   heading only on a recorded `LANDED`. Read the previous re-read before you
+   write the next one; it is the only input that can tell you what is missing.
+
+   The question to carry to any register this seat keeps, because this is the
+   third member of one family: **if a row stopped being written, what would
+   notice?** For a table composed fresh each pass the answer is nothing, and a
+   rule about what may leave a register is decoration unless the thing that
+   composes the register enforces it.
 4. **Every ask carries a live test, and an ask with no live test is not
    finished being written.** One command, preferring one that needs no
    network, whose reading differs according to whether the thing exists.
@@ -3433,10 +3458,12 @@ claim a public surface makes about the quality of what we ship, with the
 mechanism that would have to run for the claim to hold, its state, and the
 number with the date it was measured.
 
-Every run, five things. **This line said "three things" on 2026-10-18, the
+Every run, six things. **This line said "three things" on 2026-10-18, the
 day a run added step 4 below it and did not count it**, which is the same
 defect the register's own summary paragraph keeps producing and is recorded
-there. A list with a number in its stem has two places to edit.
+there. A list with a number in its stem has two places to edit. It said "five"
+until 2026-11-02, when step 6 was added and the stem was edited in the same
+commit, which is the only reason this sentence is not a third instance.
 
 1. **Read the surfaces for claims added since your last run.** `site/app/`
    including `site/app/llms.txt/route.js`, `site/emails/`, and any launch
@@ -3537,6 +3564,55 @@ there. A list with a number in its stem has two places to edit.
    2026-10-18, wrote that a reading taken from the repo cannot tell us which,
    and stopped there, correctly, because taking the other reading is this
    seat's duty and no charter had said so.
+
+6. **Score a cadence claim twice, clock and record, and never once**
+   (added 2026-11-02, message wake from the writer seat, written out in
+   `docs/agents/quality-claims.md` under "The 2026-11-02 sweep"). A claim
+   about a cadence — "every day", "each week", "at the pace of" — is two
+   claims in one sentence, and they take different instruments. **The clock**
+   is "is it true of the current period", and one reading answers it. **The
+   record** is "has it been true of every period it covers", and only a series
+   of readings answers it, one per period. A sweep that takes one reading has
+   answered the first and has said nothing about the second.
+
+   The cost of scoring them together, measured on one row in both directions.
+   The growth row went to `contradicted` on 2026-10-11 on a clock reading and
+   carried it as a verdict about the record for three weeks. On 2026-11-02 a
+   forwarded clock reading would have moved it to `held` by the identical
+   reasoning, the other way. Same row, same method, opposite answers, and
+   neither reading was ever evidence about the half it was being quoted for.
+
+   Two consequences, and the second is the one a run will want to skip.
+
+   - **A cell whose state names no half is unfinished.** Write "held on the
+     clock, contradicted on the record" and say which reading answered which.
+   - **Keep the series in the cell.** A cadence row's freshness number is
+     almost always a *maximum* — `claims_newest`, `press.newest_week` — and a
+     maximum cannot report a hole it has already been filled past. The growth
+     row proves it: the gap was provable while it was still open and became
+     unprovable the hour it closed, because the only instrument was a number
+     that had moved. This is the 2026-10-25 backlog rule ("the delta is the
+     evidence and a single depth is not") applied to the freshness number
+     beside the backlog.
+
+   **And a week that has ended is not a slot that has fired.** For any
+   cadence-shaped row the measurable event is the schedule's firing, not the
+   calendar's turning. The forwarded reading this rule came from counted two
+   missed editions when one slot had passed and the next was eight hours out;
+   the verdict was right and the count was one too many, and the difference
+   was the whole of what the next run should watch. Read the schedule — for
+   the press it is `modal.Cron("0 9 * * 1")` in `pipeline/weekly.py` — and
+   count firings.
+
+   **Where a receipt publishes a run record beside the output, read both.**
+   The delivery receipt's `deploy` block is one row per scheduled job written
+   by the job itself, and `pipeline/runtime_sha.py` sets `recorded_at = now()`
+   on every run, so it says when a stage last *ran*. A frozen output tells you
+   the claim is false; only the run record separates absent from broken from
+   unscheduled-since-the-last-repair, and those three take different fixes
+   from different seats. On 2026-11-02 that one field showed the press had not
+   executed since 2026-10-19 while its four siblings all ran on 2026-11-01,
+   which no reading of `newest_week` could have shown.
 
 The two failures behind this, because the pattern is worth stating once.
 On 2026-09-18 the site said a skill is revised when the research moves.
@@ -4320,6 +4396,31 @@ the head commit it was measured on and the time of the reading.** Mergeability,
 draft state, commit count, conflict status, staleness, "nothing left to do":
 all of them. The PM seat granted the head-commit half on 2026-10-26 at 20:23Z
 for merge verdicts and that grant is right and narrower than the gap.
+
+**And a second line, which is about when to take the reading rather than what
+to put in it** (added 2026-11-02, message wake,
+`INC-2026-11-02-the-merge-ask-named-a-head-that-moved-twice-in-one-hour-and-both-were-this-seat`).
+**The merge ask is the last act of the run. Nothing is committed after it.**
+
+The rule above governs the *content* of a claim and says nothing about its
+position in a run, and two consecutive runs of this seat obeyed it to the
+letter and were stale inside five minutes each: ask, one more commit, voluntary
+correction, twice within sixty-five minutes on 2026-11-02. Both asks carried a
+head and a clock and both were accurate when taken. The defect is ordering —
+readying and asking feel like the closing acts, and the last commit is usually
+bookkeeping that arrives after them.
+
+So: finish the work, write the description, `gh pr ready`, read the head, send
+the ask, stop. If something must be committed after the ask, **re-send the ask
+rather than correcting it**, because a correction costs the receiver a second
+read of one thought and the ask is cheap.
+
+Take the general form, because it is not about merge asks. **A rule that
+requires a field to be measured does not say when to measure it, and a run will
+take the reading at the moment the thought occurs rather than at the last
+moment it is true.** For any field a seat publishes about mutable state — a
+head commit, a queue depth, a turn count, a branch state — the rule needs a
+clock *and* a position in the run.
 
 **Why the commit alone is not enough, measured on this seat's own pull request
 in the twenty-two minutes after that grant.** Three verdicts were taken on the
