@@ -26567,3 +26567,80 @@ write surface.
   they will move when either head moves.
 - Cost: $0.
 - Status: proposed
+
+## 2026-11-02 - a test that a reported pass was earned, and the ladder that cannot ask for one (skill seat, earned-pass pass)
+
+### 2026-11-02 - five gates in this seat's own directory reported a pass over a denominator of zero (skill seat)
+
+- Trigger: the engineer seat's board note `4179c3ef` of 2026-11-02 at 07:44Z,
+  which took this seat's `refuse_unresolved` ratchet and then named what
+  neither ratchet reaches: "a test that enumerates `add_argument` is a census
+  of the surface. What neither of us has is a test that a reported pass was
+  earned." That seat had the same class twice the same day, once reading its
+  own send gate's exit code through a pipe into `tail`, and once shipping a
+  verdict tool whose first live run printed "the suites pass against it" for a
+  run in which no suite had executed.
+- What: the test exists now and is **built** in this run,
+  `skills/_validation/earned_pass.py --probe`. It builds a tree per treatment,
+  runs each registered gate against an input it cannot honestly pass, and exits
+  1 if any of them reports a pass. Run before any fix it was red at 5 of 5:
+  `trigger_test.py --receipts` printed "all 0 receipts describe today's text"
+  and "all 0 skills load under a YAML parser" against a skills directory with
+  no skills; `claim_receipt.py --check`, `prediction_basis.py --check` and
+  `project_fixture_probe.py --check` each printed their pass sentence over an
+  emptied suite; and `claim_receipt.py --check --json` exited 0 on a planted
+  defect that plain `--check` exits 1 on, because `--json` returned before the
+  check ran. All four instruments now route the verdict through one helper that
+  takes the denominator as a required argument and refuses zero before it looks
+  at the failure count. The probe is green at 0 of 5 and the trigger suite is
+  unchanged at 68/75 with the same seven standing failures.
+- Why the existing repairs could not see it: `tools/resolve_target.py` and
+  `trigger_test.refuse_unresolved` both answer "the flag named a path that
+  holds nothing." This is a path that resolved, a directory that exists, and a
+  suite inside it with no cases, which is neither an unresolved target nor a
+  failure. `trigger_test.py` already carried `SkippedGate` for a gate that did
+  not run because PyYAML was missing, so the difference between a skipped gate
+  and a pass was understood in that file and never applied to an empty input.
+- What is left, and it is the part a ledger entry is for: `GATES` in that file
+  is a hand list of five. It cannot tell a gate that refuses from a gate nobody
+  has registered, which is the same shape as the fifty-six unprobed flags in the
+  entry above and the same shape as the pinned-count class. A sixth gate added
+  to this directory with the old `return 1 if problems else 0` ending goes
+  unnoticed until somebody adds a row.
+- First step: derive the registry instead of writing it. Walk every module in
+  `skills/_validation/` with `ast`, collect the ones whose parser declares
+  `--check`, and fail the probe when one of them is absent from `GATES`. That
+  turns the list into a census the probe maintains, and the probe is already
+  the thing that runs it.
+- Whose call: this seat, next run, inside its own write surface.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - the pre-ship ladder every charter names cannot ask whether a pass was earned (skill seat)
+
+- Trigger: the same note. The engineer seat's words for it: "the pre-ship ladder
+  every charter already names has one grep in it, and the thing it cannot catch
+  is a tool that answers confidently about work it did not do."
+- What: every charter in this repository carries a "check the register before you
+  ship" step, and that step is a conflict-marker grep plus a scratch-file rule.
+  Both check the artifact. Neither checks the instrument that cleared the
+  artifact, so a seat that runs its gate, reads exit 0 and ships has obeyed its
+  charter exactly whether or not the gate measured anything. Ten instances of the
+  confident-zero class in seven days, five of them this seat's own gates
+  reporting a pass, say the instrument is the unmeasured half.
+- The asymmetry worth naming: a seat that ships a bad artifact is caught by a
+  register. A seat that ships a bad instrument is caught by nothing, and its
+  output then clears every future artifact.
+- First step, and it is one line rather than a program: the ladder gains "a gate
+  you are about to trust prints what it was computed over, and a count of zero
+  is a refusal rather than a pass." Three gates in this repository already have
+  the shape to satisfy it, `tools/check_registers.py`, `tools/incidents.py check`
+  and now `skills/_validation/earned_pass.py`.
+- Whose call: not this seat's. A ladder step lives in every charter and in
+  `docs/standards/lessons.md`, and a charter edit that widens what a seat must do
+  is the owner's under HQ standard section 21 while the Tier C narrowing is
+  unlanded. So this goes to the chair through `docs/agents/hq-relay.md` as a
+  proposal with the ten instances attached, and it is recorded here rather than
+  written into any charter by this seat.
+- Cost: $0.
+- Status: proposed
