@@ -1,15 +1,16 @@
 ---
 name: recursive-harness-self-improvement
-description: Evidence-backed method for loops where an agent reads its own failed runs, rewrites its own scaffold unattended, then keeps or reverts each edit on measured evidence. The editor is the agent, not a person, and no weights are trained. Use when an automated loop edits its own prompts, tool code or memory and keeps what measures better, when unattended self-edits raise the score on the tasks the loop evolves against while real work does not, when choosing the gate that accepts or reverts a proposed edit, when bounding how much one edit may touch, when attributing a failure to one function inside a long execution log, when the loop's own diagnosis costs more than its edits gain, when several automated workers rewrite one shared repository and converge on a single idea, or when an unattended run reports a win you have to judge.
-version: 4
+description: Evidence-backed method for loops where an agent reads its own failed runs, rewrites its own scaffold unattended, then keeps or reverts each edit on measured evidence. The editor is the agent, not a person, and no weights are trained. Use when an automated loop edits its own prompts, tool code or memory and keeps what measures better, when unattended self-edits raise the score on the tasks the loop evolves against while real work does not, when choosing the gate that accepts or reverts a proposed edit, when bounding how much one edit may touch, when attributing a failure to one function inside a long execution log, when the loop's own diagnosis costs more than its edits gain, or when an unattended run reports a win you have to judge.
+version: 5
 status: provisional
 provenance:
   extracted: 2026-09-22
-  revised: 2026-10-27
+  revised: 2026-11-02
   validated: ""
   reviews:
     - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
   revisions:
+    - "2026-11-02 (ADR-38 rule 4, the length retrofit; asked by the PM on the board after PR #665 reported that the branch carrying the old attempt could not merge as text): 362 lines to 109, nine numbered sections to five deltas, the builder's checklist moved to the front. Rebuilt against main rather than merged from alexandria-skill/2026-10-26-message-wake-path, which is what the PM asked for and what #665 found necessary: main has taken the 2026-10-27 OSWorld correction on those paths and resolving a text merge toward the older branch would revert it. That correction is carried forward intact, so delta 1 still quotes the binary 37.80 and 42.68 and still says why the 71.97 and 78.98 are the same rollouts. No number, claim or prescription changed meaning. Section 8, the Agora multi-agent population finding, is CUT rather than compressed, and it is the one judgment in this retrofit worth arguing with: it is the only section whose own Validation tag called it the weakest evidence in the file, one 12-day run with 13 workers where the monoculture break is a single observed event with a human inside it, and its own caveat says it does not apply below a population. Its eval task rhsi-t9 is kept in full under `retired_tasks` in the suite so the seat that picks the finding up can lift it rather than rewrite it, which is the handling `evaluation-integrity` used for ei-t8 on 2026-11-01. The description loses its shared-repository clause with the section, because advertising content a file no longer carries is the false coverage claim this seat spent the first half of this run removing from four trigger cases. The Agora paper stays in `papers` because the claim ids it backs are still in `claims`: this run has no database, `NEON_RO_URL` is absent, and which of the 28 ids belong to section 8 is not derivable from the file, so the un-mapping is filed in docs/ideas.md rather than guessed at. ADR-38 rule 1 asks for a bare-subject screen before a section ships and rule 5 for a bare-first differential pass; neither has been run, because this seat still has no route to either eval arm. So every cut and merge here is reasoned from the sections' own recorded evidence and is not screened, `status` stays `provisional`, and the skill remains UNMEASURED."
     - "2026-10-27 (ADR-37 maintenance, ADR-35 the paper wins): the research seat drained the 2026-09-30 reading-queue batch and routed one correction to this file (docs/research/briefs/2026-10-26.md section 9), re-verified here against the full text of arxiv.org/abs/2404.07972 before it was applied. Section 2 read RSIAgent's OSWorld pair as two metrics, 71.97 percent partial and 37.80 percent binary. They are one metric scored twice: OSWorld's reward function returns 1 or a positive decimal under 1 for a partially achieved goal (OSWorld section 2.1, section 2.2.3), so the partial column is the graded mean of the same rollouts and only the binary column compares to a published OSWorld success rate. The section now quotes the binary figures and says why. No number was wrong and the inference drawn from them was, which is why this is a correction rather than a deprecation. `status` moved from `active` to `provisional`, because ADR-38 rule 7 earns `active` on a positive differential delta on the benchmark subject and this skill has no measured delta on any subject: its eval tasks are written and none has been run. This file is 362 lines and ADR-38 rule 4 caps a skill at 120; it is in the retrofit queue and this run corrected text rather than retrofitting it, so the cap is still failed and is reported rather than quietly carried."
     - "2026-09-30 (ADR-38 retrofit, owner directive): per-section Validation tags, an Apply checklist, and caveats that name their floor. The tagging pass found section 9 uncovered by the ADR-36 suite, so eval task rhsi-t10 was written and the suite moved to version 2."
     - "2026-09-30 (ADR-35, the paper wins): re-read arxiv.org/abs/2609.09219 in full while revising evaluation-integrity, and narrowed section 9. The third gate is optional in the protocol and returned Inconclusive on both of its real-data audits, which the section had presented as a gate to adopt alongside the other two. No claim this skill cites is deprecated."
@@ -22,341 +23,87 @@ provenance:
     - "Dream-RSI: Recursive Self-Improvement through Evolving Worlds — arxiv.org/abs/2609.14858"
     - "Procedural Graphs: Self-Evolving Execution Structures for LLM Agents — arxiv.org/abs/2609.09153"
     - "Root-Cause Attribution Is a Search Problem: Continual Search for Long-Horizon Agent Failures — arxiv.org/abs/2609.13463"
-    - "Agora: Git as Shared Memory for Collective AutoResearch — arxiv.org/abs/2609.18094"
+    - "Agora: Git as Shared Memory for Collective AutoResearch (cited by section 8 until the 2026-11-02 retrofit cut it; kept here because the claim ids it backs are still in this provenance block) — arxiv.org/abs/2609.18094"
     - "OSWorld: Benchmarking Multimodal Agents for Open-Ended Tasks in Real Computer Environments (read 2026-10-27 for the reward definition behind RSIAgent's OSWorld columns) — arxiv.org/abs/2404.07972"
     - "Scores Alone Do Not Prove Discovery: The Discovery Certification Protocol for Auditing AI Research Agents — arxiv.org/abs/2609.09219"
 ---
 
 # Recursive harness self-improvement
 
-This skill covers the loop where the agent is the one doing the editing. It
-reads its own failed runs, decides which part of its own scaffold caused the
-failure, writes a change to that part, measures the change, and keeps or
-discards it. The model weights never move.
-
-That is a different job from designing a harness well, which a competent
-engineer already does by hand and which harness-engineering covers. It is
-also a different job from post-training, where the thing that updates is the
-weights. What is specific here is that the artifact being changed and the
-thing proposing the change are the same system, so every safeguard a human
-reviewer would have supplied has to be built into the loop instead.
-
-This skill adds to standard engineering practice, it does not replace it.
-Keep version control on the scaffold, keep a held-out evaluation set, and
-keep full trajectory logs, because none of the procedures below work without
-them. The sections are the deltas: what a self-editing loop needs that an
-ordinary refactor does not.
-
-## 1. Write the freeze list before the first cycle
-
-*Validation: no trial and no consumer report. The three freeze designs are the papers', the file-in-the-repository prescription is ours, not the papers'. Eval task rhsi-t1 covers it and has not been run.*
-
-A self-improving loop that changes several things at once produces no signal
-about any of them. Every working design in this cluster splits the system
-into a part that moves and a part held still, and alternates.
-
-ScienceBuddy runs two nested loops with opposite freezes. In the inner loop
-the task model's parameters are fixed and a separate, fixed auxiliary model
-diagnoses trajectories and proposes bounded harness edits. In the outer loop
-the harness and the scoring rubrics are fixed while the model is trained with
-rubric rewards (ScienceBuddy). The auxiliary diagnostician being fixed
-matters as much as the task model being fixed: if the thing judging the edits
-also changes, an apparent improvement can be a drifting judge.
-
-RSIAgent freezes on a schedule instead. Its memory accumulates during an
-exploration phase, is marked frozen when the curriculum agent signals that no
-informative tasks remain, and is then served read-only to every downstream
-task (RSIAgent). SoL-Pi freezes further out still, pinning mechanism source
-code, configuration, capability tolerances and acceptance rules before the
-evaluation run begins (SoL-Pi).
-
-In practice (ours, not the papers'): write the freeze list as a file in the
-repository, name the diagnostician's version in it, and treat a change to the
-list as a new experiment rather than a continuation of the old one.
-
-## 2. The whole gain can come from the scaffold
-
-*Validation: no trial and no consumer report. Claim and paper provenance only, and the do-not-perfect-the-seed advice is ours, not the papers'. Eval task rhsi-t2 covers it and has not been run.*
-
-The reason to run this loop at all is that the scaffold carries more headroom
-than it looks like it does.
-
-RSIAgent lifted two open-source models past frontier closed-source models on
-OSWorld-v2 and Agents' Last Exam without updating a single parameter
-(RSIAgent). Its recursive phase is what bought the difference: the same
-system without recursion scored 37.80 percent on OSWorld and 42.68 with it
-(RSIAgent). **Quote the binary figure and not the partial one.** OSWorld's
-reward function returns 1 or a positive decimal under 1 when a goal is
-partially achieved, so the 71.97 and 78.98 the paper also reports are the
-same rollouts scored with partial credit rather than a second metric, and
-only the binary figure compares to a published OSWorld success rate (OSWorld,
-arxiv.org/abs/2404.07972 section 2.1). The downstream gain then comes from
-frozen memory handed to the same base model as context, with no training step
-anywhere (RSIAgent).
-
-Two findings say the starting scaffold matters less than the loop. Beginning
-from a minimal skeleton, self-evolving Procedural Graphs matched or surpassed
-hand-designed graphs, and the same refinement process repaired a deliberately
-flawed expert prior rather than inheriting it (Procedural Graphs).
-
-The practical reading (ours, not the papers'): do not spend a week
-hand-perfecting the seed scaffold before turning the loop on. Spend it on the
-gates in section 5 instead, because a thin seed with good gates converges and
-a good seed with no gates decays.
-
-## 3. Localize the failure before proposing an edit
-
-*Validation: no trial and no consumer report. The best-evidenced section here, with two independent mechanisms and a measured stop rule. Eval tasks rhsi-t3 and rhsi-t4 cover it and have not been run.*
-
-The signal an outcome gives you is one bit for a whole trajectory, and one
-bit cannot say which function to change. Two papers attack that gap from
-different ends.
-
-ModularRSI converts task-level outcomes into function-level evidence by
-contrast. It rolls the agent out K times per task, labels each trajectory by
-binary reward, sorts tasks into all-success, mixed and all-failure groups,
-and for the mixed group pairs a successful and a failed trajectory of the
-same task and compares them. For an all-failure task it pairs a past success
-from memory when one exists, and falls back to single-sided diagnosis when
-none does. The output is a structured finding naming the module, the
-evidence, the rationale and the proposed change (ModularRSI).
-
-When the failure has to be found inside one long log rather than across a
-pair, treat attribution as search rather than as a single judgment. Four
-turns of continual search over an execution log raised attribution F1 from
-0.349 to 0.498 for one model and from 0.478 to 0.620 for another, against
-0.401 and 0.559 for passively continuing to read (Root-Cause Attribution).
-The same work found that search substitutes for scale: with continual search,
-lower-tier judges matched or surpassed higher-tier ones (Root-Cause
-Attribution). Spend the budget on more search turns before spending it on a
-more expensive diagnostician.
-
-There is a stop rule attached. On short trajectories the extra turns did not
-help and sometimes hurt, because the first pass had already covered the
-evidence and further turns pressured the judge into flipping correct labels
-(Root-Cause Attribution). Gate the turn count on log length, not on a
-constant.
-
-## 4. Bound what one edit is allowed to touch
-
-*Validation: no trial and no consumer report. Claim and paper provenance only. Eval task rhsi-t5 covers it and has not been run.*
-
-An unbounded edit cannot be attributed, cannot be reviewed, and cannot be
-reverted cleanly.
-
-ModularRSI decomposes the harness into five functional modules, Agent Loop,
-Tool Use, Observation Management, Context Management and Task Completion
-Detection, and evolves each independently and in parallel with modifications
-restricted to that module's scope, integrating and resolving conflicts only
-after all modules have evolved (ModularRSI). ScienceBuddy bounds by size
-instead of by module: one proposed edit adds, removes or revises exactly one
-scoped skill, instruction or context setting, and a schema check enforces the
-edit budget before the candidate is ever evaluated (ScienceBuddy).
-
-Either bound works, and the two compose. What does not work is a diff that
-spans the loop and the tools at once, because section 5's gates can then only
-accept or reject the pair.
-
-## 5. Gate every edit, and roll back by default
-
-*Validation: no trial and no consumer report. Two of the prescriptions, the adversarial diff-reviewer instruction and retaining rejected edits, are ours, not the papers'. Eval task rhsi-t6 covers it and has not been run.*
-
-This is the section that separates a loop that improves from one that drifts.
-
-ModularRSI puts three gates in series after every function update. A static
-program check comes first, covering AST validity, imports and protocol
-compliance. A diff review by a separate code-modifying agent comes second,
-and its specific job is to reject changes that encode task-specific
-heuristics rather than general improvements. Execution validation on two
-randomly sampled tasks comes third. Failing any gate rolls the function back,
-and only a modification that clears all three is retained (ModularRSI).
-
-The acceptance criterion itself should be held-out performance, not the
-diagnosis that motivated the edit. Procedural Graphs accepts a graph edit
-only if it preserves or improves held-out validation performance, and it
-keeps the rejected edits on file as negative signal so the loop stops
-re-proposing them (Procedural Graphs). ScienceBuddy accepts a candidate
-harness only when its mean normalized rubric score on the development tasks
-beats the parent harness, and otherwise retains the parent (ScienceBuddy).
-
-Two things worth copying that are easy to skip (ours, not the papers'). The
-diff reviewer needs its own adversarial instruction, because "does this look
-like a good change" and "is this change secretly a hard-coded answer to the
-evolution task" are different questions and only the second catches the
-failure mode the gate exists for. And retaining rejected edits costs almost
-nothing and is the cheapest defense against a loop that spends its budget
-rediscovering the same bad idea.
-
-## 6. Evolve on tasks the benchmark never sees
-
-*Validation: no trial and no consumer report. Claim and paper provenance only, from one system. Eval task rhsi-t7 covers it and has not been run.*
-
-A self-improving loop optimizes whatever it is scored on, so the tasks it
-evolves against are a training set and have to be treated as one.
-
-ModularRSI curates 2,000 executable evolution tasks from external sources
-that are disjoint from the downstream benchmarks, applying instance-level
-similarity filtering and a domain analysis to hold the overlap down
-(ModularRSI). That discipline is what licenses its headline result: the
-evolved harness improved unseen in-domain and out-of-domain tasks and
-transferred across foundation models, which is a claim about generalization
-that a contaminated evolution set could not support (ModularRSI).
-
-The test to apply to your own loop (ours, not the paper's): if you cannot
-name the filtering step that keeps your evolution tasks away from your
-evaluation tasks, your improvement curve is measuring memorization and you
-have no way to tell.
-
-## 7. Make feedback cheap, and score tokens as well as accuracy
-
-*Validation: no trial and no consumer report. Claim and paper provenance only. Eval task rhsi-t8 covers the compaction arithmetic specifically, as a number, and has not been run.*
-
-Both costs in this loop, the cost of evaluating a candidate and the cost of
-running the resulting agent, are load-bearing, because a loop whose feedback
-is expensive runs too few cycles to converge.
-
-Dream-RSI attacks the first by recording the discovery history as a tree,
-building a replay simulator that can replay any node of it, and evaluating
-candidate exploration policies inside that simulator before any of them touch
-an online evaluation. Only the surviving policy is deployed online, and what
-it discovers is folded back into the tree (Dream-RSI).
-
-SoL-Pi attacks the second by making token traffic part of what the loop
-optimizes, cutting recorded token traffic by 44.7 to 49.0 percent and API
-cost by about a third on a 51-task benchmark while holding performance
-comparable to the native harness (SoL-Pi). Three of its mechanisms are worth
-lifting directly:
-
-1. Fuse an action with its follow-up. Letting the file-mutation tool accept
-   an optional follow-up command removes an entire model round trip and takes
-   the call count from three to two, with separate handling preserved for
-   commands that must read the mutation's output first (SoL-Pi).
-2. Gate compaction on arithmetic, not on a threshold. At each subtask
-   boundary, estimate the tokens compaction would save and the rewrite cost
-   from the current context size and the cache write-to-read price ratio, and
-   compact only when the saving wins, requiring a larger margin as the
-   context approaches the window limit (SoL-Pi).
-3. Send a large observation in full twice, then by handle. Outputs above 10
-   KiB go out whole for the first two provider requests, and from the third
-   are replaced by a stable handle, the original byte size and a 1 KB excerpt,
-   with the full output kept locally for exact retrieval (SoL-Pi).
-
-## 8. When several agents evolve one shared artifact
-
-*Validation: no trial and no consumer report. The weakest evidence in this file, one run with a human intervention inside it. Eval task rhsi-t9 covers it and has not been run.*
-
-A population of self-editing agents on one codebase behaves differently from
-one agent on its own, and the difference is worth planning for.
-
-Agora ran 13 coding-agent workers against a shared Git repository for about
-12 days. They published 1,703 contributions and drove the evaluation metric
-from 3.39 to 1.899 bits per byte, closing 62 percent of the gap to a trained
-GPT-2 124M model, with no central planner (Agora). Two design details carried
-that. Contributions are ranked by an evidence score computed as the weighted
-count of downstream builds by other accounts, so credit accrues to work
-others actually built on rather than to work that merely scored well (Agora).
-And every harness and environment version is retained after each cycle, which
-is what makes cross-cycle reuse and re-evaluation of an old configuration
-possible at all (ScienceBuddy).
-
-The failure to expect is monoculture. The Agora run spent five days with the
-community collapsed onto a single branch, and a single human-published map of
-where the work was concentrated broke it within one day by steering the
-agents' next frontier reads toward under-explored branches (Agora). Budget
-for a diversity signal, and note that in the one recorded case the
-intervention was human.
-
-## 9. Certify the gain before you believe it
-
-*Validation: no trial and no consumer report. Narrowed on 2026-09-30 after re-reading the protocol in full, which is evidence about the section's accuracy and not about whether it helps a reader. The 2026-09-30 tagging pass found the ADR-36 suite did not cover this section at all, so eval task rhsi-t10 was written and has not been run.*
-
-An automated loop reporting its own improvement is the weakest evidence in
-this whole cluster, and there is now a protocol for hardening it. The
-Discovery Certification Protocol audits an agent's claimed outcome through
-three gates: a statistically significant improvement over baseline by a
-lower-confidence bound, zero recoveries of the same result by a matched
-challenger agent within a finite-sample bound, and a measured positive effect
-of truthful feedback over a calibrated neutral policy (Discovery
-Certification Protocol).
-
-The middle gate is the one most builders have no analogue for, and it is the
-one worth adding first (ours, not the paper's). It asks whether a comparable
-agent handed the same task reaches the same result without your loop. If it
-does, the loop is not what produced the gain.
-
-Take the three gates in that order and not as a set, because the third is the
-expensive one and the protocol itself marks it optional (Discovery
-Certification Protocol). On both of its real-data audits the feedback gate
-returned Inconclusive: truthful continuations reached the target level in 9 of
-30 and 16 of 30 paired trials against 0 of 30 for the neutral arms, and the
-99 percent effect intervals still straddled or undershot the required lower
-bound of 0.30 (Discovery Certification Protocol). The first two gates passed in
-the same audits. So a loop that can state a baseline improvement and a zero
-recovery bound has most of the available evidence, and a loop waiting to prove
-its feedback effect at 30 pairs will probably be waiting a while (ours, not the
-paper's).
-
-Pre-register the analysis before the run, not after, which is the discipline
-the whole protocol rests on (Discovery Certification Protocol).
+Five findings about the loop where the agent is the editor: it reads its own failed runs, decides which part of its own scaffold caused the failure, writes the change, measures it, and keeps or reverts it. No weights move. That is a different job from designing a harness by hand, which `harness-engineering` covers and a competent engineer already does, and a different job from post-training. What is specific here is that the artifact being changed and the thing proposing the change are one system, so every safeguard a human reviewer would have supplied has to be built into the loop. Version control, a held-out set and full trajectory logs are assumed rather than taught; none of the procedures below works without them.
 
 ## Apply: the builder's checklist
 
-Before turning an unattended self-editing loop on, and before believing what it
-reports:
+1. **The seed scaffold is thin and the gates are good**, never the reverse, because the headroom is in the loop (delta 1).
+2. **A file in the repository names what is held still this cycle, the diagnostician's version included**, and one edit touches one module or one scoped item, rejected by a schema check before it is ever evaluated (delta 2).
+3. **Three gates in series, rollback the default, acceptance decided on held-out performance** rather than on the diagnosis that motivated the edit, and rejected edits kept on file (delta 2).
+4. **Every edit is motivated by a contrast or by continual search over the log**, with the turn count gated on log length and not fixed (delta 3).
+5. **You can name the filtering step** that keeps the evolution tasks disjoint from the evaluation tasks (delta 4).
+6. **A matched challenger has failed to reach the same result**, and the analysis was pre-registered before the run (delta 4).
+7. **Token traffic is one of the things the loop optimises** and candidate evaluation is cheap enough to run many cycles (delta 5).
 
-1. Freeze list: is there a file in the repository naming what is held still
-   this cycle, the diagnostician's version included, and is any change to that
-   file treated as a new experiment rather than a continuation?
-2. Bound: does one proposed edit touch one module or one scoped item, with a
-   schema check rejecting oversized candidates before any of them is evaluated?
-3. Evidence: is every edit motivated by a contrast, paired success and failure
-   trajectories of the same task, or by continual search over the log with the
-   turn count gated on log length rather than fixed?
-4. Gates: do a static check, a diff reviewer under an adversarial instruction
-   to find task-specific heuristics, and execution validation all run in series,
-   with rollback as the default, acceptance decided on held-out performance
-   rather than on the motivating diagnosis, and rejected edits kept on file?
-5. Contamination: can you name the filtering step that keeps the evolution
-   tasks disjoint from the evaluation tasks? If not, the improvement curve is
-   measuring memorisation.
-6. Cost: is candidate evaluation cheap enough to run many cycles, by replay
-   where replay is faithful, and is token traffic part of what the loop
-   optimises rather than an afterthought?
-7. Belief: before the gain is published, has a matched challenger with the same
-   starting knowledge failed to reach the same result, and was the analysis
-   pre-registered before the run?
+## Delta 1: the scaffold carries the gain, so do not spend the week perfecting the seed
+
+*Validation: no trial, no consumer report, no bare-arm screen. Eval task rhsi-t2. A bare subject will say "iterate on the scaffold, measure, keep what works". It is unlikely to supply that a recursive phase alone moved an open model past frontier closed models with no parameter update, and unlikely to supply that a minimal seed matched hand-designed structure and repaired a deliberately flawed prior.*
+
+The reason to run this loop is that the scaffold holds more headroom than it looks like it does. RSIAgent lifted two open-source models past frontier closed-source models on OSWorld-v2 and Agents' Last Exam without updating a parameter, and the recursive phase is what bought it: **37.80 percent** on OSWorld without recursion against **42.68** with it (RSIAgent). **Quote the binary figure and not the partial one.** OSWorld's reward returns 1, or a positive decimal under 1 for a partially achieved goal, so the 71.97 and 78.98 the same paper reports are those same rollouts scored with partial credit rather than a second metric, and only the binary figure compares to a published OSWorld success rate (OSWorld section 2.1). The gain then arrives as frozen memory handed to the same base model as context, with no training step anywhere (RSIAgent). The seed matters less than that: from a minimal skeleton, self-evolving Procedural Graphs matched or surpassed hand-designed graphs and the same refinement repaired a deliberately flawed expert prior rather than inheriting it (Procedural Graphs).
+
+1. Build the thinnest seed that runs end to end, then turn the loop on. A thin seed with delta 2's gates converges; a good seed without them decays.
+2. Budget the week you were going to spend on the seed on the gates instead. That is the trade this delta is making and it is ours, not the papers'.
+3. Report the binary metric your benchmark publishes, beside the graded one if you want it, never instead of it. The two differ by 34 points on the one case here where both were printed.
+4. Expect the artifact, not the weights, to be what you ship. Frozen memory served read-only as context is the whole delivery mechanism in the one system that beat frontier models this way.
+
+## Delta 2: pin what judges, bound what moves, and gate in series with rollback as the default
+
+*Validation: no trial, no consumer report, no bare-arm screen. Eval tasks rhsi-t1, rhsi-t5 and rhsi-t6. The adversarial instruction on the diff reviewer and retaining rejected edits are ours, not the papers'. A bare subject will say "freeze a baseline, review the diff, roll back on regression". It is unlikely to supply that the diagnostician has to be pinned too, or that the diff reviewer needs a different question from "is this a good change".*
+
+Three designs in this cluster split the system into a part that moves and a part held still, and the part that is easy to forget is the judge. ScienceBuddy runs two nested loops with opposite freezes: inner, the task model's parameters fixed and a separate **fixed** auxiliary model diagnosing trajectories and proposing bounded edits; outer, the harness and the rubrics fixed while the model trains on rubric rewards (ScienceBuddy). If the thing judging the edits also drifts, an apparent improvement can be the judge. RSIAgent freezes on a schedule, marking memory frozen when the curriculum agent signals no informative tasks remain and serving it read-only thereafter (RSIAgent); SoL-Pi pins mechanism source, configuration, capability tolerances and acceptance rules before the evaluation run begins (SoL-Pi). Size is bounded two ways that compose: ModularRSI decomposes the harness into **five** modules, Agent Loop, Tool Use, Observation Management, Context Management and Task Completion Detection, evolves each independently and resolves conflicts only after all have evolved, while ScienceBuddy bounds by edit budget instead, exactly one scoped skill, instruction or context setting added, removed or revised, with a schema check rejecting oversized candidates before any evaluation (ModularRSI, ScienceBuddy). Then **three** gates in series: a static program check over AST validity, imports and protocol compliance; a diff review by a separate code-modifying agent whose job is to reject changes encoding task-specific heuristics rather than general improvements; and execution validation on **two** randomly sampled tasks. Failing any gate rolls the function back, and only a modification clearing all three is retained (ModularRSI). Acceptance is held-out performance and not the motivating diagnosis: Procedural Graphs accepts an edit only if held-out validation performance is preserved or improved and keeps rejected edits on file as negative signal, and ScienceBuddy keeps the parent harness unless the candidate beats its mean normalized rubric score on the development tasks (Procedural Graphs, ScienceBuddy).
+
+1. Write the freeze list as a file in the repository, name the diagnostician's version in it, and treat any change to the list as a new experiment rather than a continuation of the old one.
+2. Bound one edit to one module or one scoped item, and enforce it with a schema check **before** the candidate is evaluated rather than with a reviewer afterwards.
+3. Run all three gates in series with rollback as the default. Never ship a diff that spans the loop and the tools at once, because the gates can then only accept or reject the pair.
+4. Give the diff reviewer its own adversarial instruction. "Is this change secretly a hard-coded answer to the evolution task" catches the failure the gate exists for and "does this look like a good change" does not.
+5. Keep every rejected edit on file. It costs almost nothing and it is the cheapest defence against a loop spending its budget rediscovering one bad idea.
+
+## Delta 3: attribution is a search problem, and the stop rule is log length
+
+*Validation: no trial, no consumer report, no bare-arm screen. The best-evidenced delta here, two independent mechanisms and a measured stop rule. Eval tasks rhsi-t3 and rhsi-t4. A bare subject will say "read the logs and find the root cause", and may well say "compare a passing run with a failing one". It is unlikely to supply the F1 gain from search turns, that search substitutes for judge scale, or that extra turns hurt on short logs.*
+
+An outcome is one bit for a whole trajectory and one bit cannot name a function. ModularRSI converts task-level outcomes into function-level evidence by contrast: **K** rollouts per task, each labelled by binary reward, tasks sorted into all-success, mixed and all-failure, and for the mixed group a successful and a failed trajectory of the same task paired and compared, falling back to a past success from memory for an all-failure task and to single-sided diagnosis when there is none; the output names the module, the evidence, the rationale and the proposed change (ModularRSI). Inside one long log, treat attribution as search rather than judgment: **four** turns of continual search raised attribution F1 from **0.349 to 0.498** on one model and **0.478 to 0.620** on another, against **0.401** and **0.559** for passively continuing to read (Root-Cause Attribution). Search also substitutes for scale, since with continual search lower-tier judges matched or surpassed higher-tier ones (Root-Cause Attribution). And it has a floor: on short trajectories the extra turns did not help and sometimes hurt, because the first pass had already covered the evidence and further turns pressured the judge into flipping correct labels (Root-Cause Attribution).
+
+1. Pair before you search. A matched success and failure of the same task is cheaper evidence than any amount of reading one log, so spend K rollouts per task to manufacture the pair.
+2. Use **four** search turns on a long log and gate the count on log length rather than on a constant. The measured harm case is short trajectories with the turn count held fixed.
+3. Buy search turns before you buy a bigger diagnostician. The cheap judge with four turns matched the expensive judge with one pass, so the expensive-model-plus-one-pass configuration is the worse buy at equal spend.
+4. Require the diagnosis to name a module, not a behaviour, before delta 2's bound can be applied to it at all.
+
+## Delta 4: the evolution set is a training set, and the loop's own report is the weakest evidence in it
+
+*Validation: no trial, no consumer report, no bare-arm screen. Narrowed 2026-09-30 after re-reading the certification protocol in full, which is evidence about this delta's accuracy and not about whether it helps a reader. Eval tasks rhsi-t7 and rhsi-t10. A bare subject will say "hold out a test set" and "be careful about overfitting". It is unlikely to supply the challenger-recovery gate, and unlikely to supply that the protocol's own third gate returned Inconclusive on both of its real-data audits.*
+
+A self-improving loop optimizes whatever it is scored on, so its evolution tasks are a training set. ModularRSI curates **2,000** executable evolution tasks disjoint from the downstream benchmarks, with instance-level similarity filtering and a domain analysis holding the overlap down, and that discipline is what licenses its headline: the evolved harness improved unseen in-domain and out-of-domain tasks and transferred across foundation models, a generalization claim a contaminated evolution set could not support (ModularRSI). The loop's own report is weaker still, and there is a protocol for hardening it. The Discovery Certification Protocol audits a claimed outcome through three gates: a significant improvement over baseline by a lower-confidence bound, **zero** recoveries of the same result by a matched challenger agent within a finite-sample bound, and a measured positive effect of truthful feedback over a calibrated neutral policy (Discovery Certification Protocol). Take them in that order rather than as a set, because the third is expensive and the protocol marks it optional: on both real-data audits the feedback gate returned **Inconclusive**, with truthful continuations reaching the target in **9 of 30** and **16 of 30** paired trials against **0 of 30** for the neutral arms, while the 99 percent effect intervals still straddled or undershot the required lower bound of **0.30**. The first two gates passed in the same audits (Discovery Certification Protocol).
+
+1. Name the filtering step that keeps the evolution tasks away from the evaluation tasks. If you cannot name it, your improvement curve is measuring memorisation and nothing in it distinguishes the two.
+2. Add the challenger gate first, because it is the one most builders have no analogue for: hand a comparable agent the same task and the same starting knowledge, and if it reaches the same result the loop is not what produced the gain (ours, not the paper's).
+3. Stop after gates one and two. A loop that can state a baseline improvement and a zero-recovery bound holds most of the available evidence, and one waiting to prove a feedback effect at 30 pairs will be waiting a while (ours, not the paper's).
+4. Pre-register the analysis before the run, not after. That is the discipline the whole protocol rests on and the only item here that costs nothing.
+
+## Delta 5: feedback cost is part of what the loop optimises, not an afterthought
+
+*Validation: no trial, no consumer report, no bare-arm screen. Eval task rhsi-t8, which is arithmetic rather than recall: the compaction decision computed with the prices supplied, so the answer is checkable as a number. A bare subject will say "cache, batch, and keep the eval cheap". It is unlikely to supply the replay-simulator design, or that the compaction decision has a closed form in the context size and the cache write-to-read price ratio.*
+
+Both costs here are load-bearing, the cost of evaluating a candidate and the cost of running the resulting agent, because a loop with expensive feedback runs too few cycles to converge. Dream-RSI attacks the first by recording the discovery history as a tree, building a replay simulator that can replay any node of it, and scoring candidate exploration policies inside the simulator before any touches an online evaluation; only the survivor is deployed, and what it discovers folds back into the tree (Dream-RSI). SoL-Pi attacks the second by making token traffic part of the objective, cutting recorded traffic by **44.7 to 49.0 percent** and API cost by about a third on a 51-task benchmark while holding performance comparable to the native harness (SoL-Pi).
+
+1. Fuse an action with its follow-up. Letting the file-mutation tool take an optional follow-up command removes a round trip and takes the call count from **three to two**, with separate handling kept for commands that must read the mutation's output first (SoL-Pi).
+2. Gate compaction on arithmetic rather than on a threshold. At each subtask boundary, estimate the tokens compaction saves and the rewrite cost from the current context size and the cache write-to-read price ratio, compact only when the saving wins, and require a larger margin as the context approaches the window limit (SoL-Pi).
+3. Send a large observation in full twice, then by handle. Outputs above **10 KiB** go whole for the first two provider requests and from the third are replaced by a stable handle, the original byte size and a **1 KB** excerpt, with the full output kept locally for exact retrieval (SoL-Pi).
+4. Recompute the compaction arithmetic against your own provider's prices before trusting it. The input floor is two numbers, the context size and the cache write-to-read ratio, which is the point of writing it as arithmetic.
 
 ## Caveats
 
-- The cost and mechanism results are single-system measurements on single
-  benchmarks. SoL-Pi's savings are from one 51-task benchmark with a specific
-  cache pricing ratio, and the compaction gate has to be recomputed against
-  your provider's prices before its arithmetic means anything. Its input floor
-  is small, which is the point: the current context size and your provider's
-  cache write-to-read price ratio are the two numbers the decision needs.
-- ModularRSI's transfer claim is reported without numeric scores in the
-  evidence alexandria holds, so treat "improves and transfers" as directional
-  and check the paper before quoting a figure. Two of its gates have cheap
-  floors worth naming: execution validation ran on two randomly sampled tasks,
-  and the evolution set that licensed the transfer claim was 2,000 curated
-  tasks, where the load-bearing part is the named filtering step and not the
-  count.
-- The Agora population findings are one 12-day run with 13 workers and one
-  target model, and the monoculture break is a single observed event with a
-  human in the loop. It is a design warning, not a measured effect size, and
-  the floor beneath which it says nothing is a population: at one or two
-  workers there is no monoculture to break and section 8 does not apply.
-- Dream-RSI's replay result covers algorithm engineering, mathematical
-  optimization and GPU kernel engineering, all domains where a discovery can
-  be re-executed cheaply (Dream-RSI). A domain where replay is not faithful
-  loses the mechanism entirely.
-- The root-cause attribution numbers come from LLM judges reading execution
-  logs with a median size of hundreds of thousands of tokens, and the stop
-  rule for short trajectories was observed on two benchmarks. The diagnostician
-  floor is the useful part: with four turns of continual search a lower-tier
-  judge matched or surpassed a higher-tier one, so the cheap model plus the
-  search turns is sufficient and the expensive model plus one pass is the worse
-  buy.
-- These findings are from 2026 papers and carry alexandria claim provenance.
-  If a source claim is later contradicted, this skill will be revised or
-  deprecated.
+- **This skill is unmeasured.** No delta carries a differential number, no bare-arm screen has run, and no `results.json` has ever been written for its suite, because this seat has no route to either eval arm. `status: provisional` says exactly that.
+- **Section 8 was cut on 2026-11-02, not refuted.** The Agora multi-agent population finding, 13 workers on a shared Git repository over 12 days driving the metric from 3.39 to 1.899 bits per byte with no central planner, is real and read. It left because it is one run, its monoculture break is a single observed event with a human inside it, and it does not apply below a population. Its eval task is kept under `retired_tasks` in the suite and the finding is queued in docs/research/reading-queue.md for a seat that can give it a page.
+- **The cost and mechanism results are single-system measurements on single benchmarks.** SoL-Pi's savings come from one 51-task benchmark at one cache pricing ratio, and delta 5's arithmetic means nothing until it is recomputed against your provider's prices.
+- **ModularRSI's transfer claim is reported without numeric scores in the evidence alexandria holds**, so read "improves and transfers" as directional and check the paper before quoting a figure. Two of its gates have cheap floors worth naming: execution validation ran on two randomly sampled tasks, and the 2,000-task evolution set's load-bearing part is the named filtering step rather than the count.
+- **Dream-RSI's replay result covers algorithm engineering, mathematical optimization and GPU kernel engineering**, all domains where a discovery re-executes cheaply. A domain where replay is not faithful loses the mechanism entirely.
+- **The attribution numbers come from LLM judges reading logs with a median size of hundreds of thousands of tokens**, and the short-trajectory stop rule was observed on two benchmarks.
+- Every delta is revised or withdrawn if the claim behind it is contradicted. The claim ids in the provenance block are the addresses a contradiction lands on.

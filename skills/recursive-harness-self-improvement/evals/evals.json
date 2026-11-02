@@ -13,13 +13,13 @@
     "min_delta": 0.2,
     "pre_registered": "2026-10-23, by the alexandria chair before either arm ran on this suite: no results.json has ever been written for it. The numbers copy the three suites that already registered them, so every suite in the library is measured under one policy. The first run is on qwen/qwen3.8-27b with the subject overridden on the command line and recorded in the result, because the host that can run it holds a Groq key and no Moonshot key, and the Modal workspace is at its spend limit."
   },
-  "note": "Nine treatment tasks and two controls from the nine cited papers (ADR-35). rhsi-t8 is arithmetic rather than recall: the compaction decision the source paper computes, with the prices supplied, so the answer is checkable as a number. Revised 2026-09-30 (ADR-38 retrofit): the per-section tagging pass found section 9, certifying the gain, uncovered by any task, so rhsi-t10 was added and the suite is version 2. Ten treatment tasks and two controls. Every task also gained a `sections` list in the same pass.",
+  "note": "Nine treatment tasks and two controls from the nine cited papers (ADR-35). rhsi-t8 is arithmetic rather than recall: the compaction decision the source paper computes, with the prices supplied, so the answer is checkable as a number. Revised 2026-09-30 (ADR-38 retrofit): the per-section tagging pass found section 9, certifying the gain, uncovered by any task, so rhsi-t10 was added and the suite is version 2. Ten treatment tasks and two controls. Every task also gained a `sections` list in the same pass. Revised 2026-11-02 (ADR-38 rule 4 length retrofit): nine sections became five deltas, so every treatment task's `sections` was re-pointed to the delta that now carries its content, and rhsi-t9 moved to `retired_tasks` with the section it tested. Eight treatment tasks and two controls remain. No task's prompt, rubric or criteria changed, because the retrofit changed no number and no prescription; only the headings a task claims coverage of moved. ADR-38 rule 5's bare-first differential pass has still never been run on this suite, so zero of the eight have qualified and the suite cannot report a delta.",
   "tasks": [
     {
       "id": "rhsi-t1",
       "kind": "treatment",
       "sections": [
-        "1. Write the freeze list before the first cycle"
+        "Delta 2: pin what judges, bound what moves, and gate in series with rollback as the default"
       ],
       "form": "prompt",
       "situation": "Every working design in the cluster splits the system into a part that moves and a part held still and alternates: ScienceBuddy's two nested loops with opposite freezes and a fixed auxiliary diagnostician, RSIAgent's memory frozen on a curriculum signal, SoL-Pi pinning source, configuration, tolerances and acceptance rules before the run.",
@@ -84,7 +84,7 @@
       "id": "rhsi-t2",
       "kind": "treatment",
       "sections": [
-        "2. The whole gain can come from the scaffold"
+        "Delta 1: the scaffold carries the gain, so do not spend the week perfecting the seed"
       ],
       "form": "prompt",
       "situation": "Procedural Graphs began from a minimal skeleton, matched or surpassed hand-designed graphs, and repaired a deliberately flawed expert prior rather than inheriting it; RSIAgent lifted two open models past frontier closed models without updating a parameter.",
@@ -148,7 +148,7 @@
       "id": "rhsi-t3",
       "kind": "treatment",
       "sections": [
-        "3. Localize the failure before proposing an edit"
+        "Delta 3: attribution is a search problem, and the stop rule is log length"
       ],
       "form": "project",
       "situation": "ModularRSI's conversion of task-level outcomes into function-level evidence: roll out K times per task, label each trajectory by binary reward, sort tasks into all-success, mixed and all-failure, pair a success against a failure of the same task for the mixed group, pair a past success from memory for all-failure tasks, and fall back to single-sided diagnosis when none exists.",
@@ -199,7 +199,7 @@
       "id": "rhsi-t4",
       "kind": "treatment",
       "sections": [
-        "3. Localize the failure before proposing an edit"
+        "Delta 3: attribution is a search problem, and the stop rule is log length"
       ],
       "form": "prompt",
       "situation": "Root-Cause Attribution: four turns of continual search over an execution log raised attribution F1 from 0.349 to 0.498 and 0.478 to 0.620, search let lower-tier judges match higher-tier ones, and on short trajectories the extra turns did not help and sometimes hurt.",
@@ -261,7 +261,7 @@
       "id": "rhsi-t5",
       "kind": "treatment",
       "sections": [
-        "4. Bound what one edit is allowed to touch"
+        "Delta 2: pin what judges, bound what moves, and gate in series with rollback as the default"
       ],
       "form": "prompt",
       "situation": "The two bounds the cluster uses: ModularRSI restricts each modification to one of five functional modules and integrates only after all have evolved, while ScienceBuddy bounds by size, one scoped skill, instruction or context setting per edit, enforced by a schema check before evaluation.",
@@ -324,7 +324,7 @@
       "id": "rhsi-t6",
       "kind": "treatment",
       "sections": [
-        "5. Gate every edit, and roll back by default"
+        "Delta 2: pin what judges, bound what moves, and gate in series with rollback as the default"
       ],
       "form": "project",
       "situation": "ModularRSI's three gates in series after every function update, static program check then a separate diff-reviewing agent whose job is to reject task-specific heuristics then execution validation on two randomly sampled tasks, with any failure rolling the function back; plus Procedural Graphs accepting only on held-out performance and retaining rejected edits as negative signal.",
@@ -378,7 +378,7 @@
       "id": "rhsi-t7",
       "kind": "treatment",
       "sections": [
-        "6. Evolve on tasks the benchmark never sees"
+        "Delta 4: the evolution set is a training set, and the loop's own report is the weakest evidence in it"
       ],
       "form": "prompt",
       "situation": "ModularRSI curated 2,000 executable evolution tasks disjoint from the downstream benchmarks, with instance-level similarity filtering and a domain analysis, which is what licenses its claim that the evolved harness transferred to unseen in-domain and out-of-domain tasks.",
@@ -442,7 +442,7 @@
       "id": "rhsi-t8",
       "kind": "treatment",
       "sections": [
-        "7. Make feedback cheap, and score tokens as well as accuracy"
+        "Delta 5: feedback cost is part of what the loop optimises, not an afterthought"
       ],
       "form": "prompt",
       "situation": "SoL-Pi's compaction gate, which computes at each subtask boundary the tokens compaction would save against the rewrite cost, from the current context size and the cache write-to-read price ratio, and compacts only when the saving wins.",
@@ -488,73 +488,10 @@
       }
     },
     {
-      "id": "rhsi-t9",
-      "kind": "treatment",
-      "sections": [
-        "8. When several agents evolve one shared artifact"
-      ],
-      "form": "prompt",
-      "situation": "Agora's 13 coding-agent workers on one shared Git repository for about 12 days, 1,703 contributions, the metric driven from 3.39 to 1.899 bits per byte with no central planner, credit assigned by an evidence score weighting downstream builds by other accounts, and a recorded convergence on one idea broken by a human intervention.",
-      "source": {
-        "paper": "Agora; ScienceBuddy",
-        "arxiv": "arxiv.org/abs/2609.18094",
-        "claims": [
-          147,
-          148,
-          150,
-          337
-        ]
-      },
-      "prompt": "We are scaling from one self-editing agent to twelve, all committing to one repository, each scored on our shared benchmark and rewarded for improving it. No central planner, that is the point. What do we build into it on day one that we would not need with a single agent?",
-      "without_skill": "Answers with ordinary concurrency engineering: locks, branch conventions, merge queues, conflict resolution. All necessary and none of it specific to a population of agents optimising one metric.",
-      "with_skill": "Adds the credit rule, version retention and a diversity signal, and is honest that the one recorded fix for convergence was a human.",
-      "check": {
-        "type": "rubric",
-        "criteria": [
-          {
-            "id": "credit",
-            "criterion": "Assigns credit by what other workers actually built on, not by what scored well.",
-            "anchors": {
-              "0": "Rewards benchmark improvement per contribution.",
-              "1": "Mentions attribution.",
-              "2": "Uses an evidence score computed as the weighted count of downstream builds by other accounts, and says why that differs from scoring well."
-            }
-          },
-          {
-            "id": "retention",
-            "criterion": "Retains every harness and environment version after each cycle.",
-            "anchors": {
-              "0": "Absent.",
-              "1": "Says to keep history.",
-              "2": "Retains each version explicitly, because cross-cycle reuse and re-evaluation of an old configuration is otherwise impossible."
-            }
-          },
-          {
-            "id": "diversity",
-            "criterion": "Budgets for a diversity signal against convergence on one idea.",
-            "anchors": {
-              "0": "Absent.",
-              "1": "Notes agents may duplicate work.",
-              "2": "Plans a diversity signal that steers workers toward under-explored branches, having identified convergence as the population-specific failure."
-            }
-          },
-          {
-            "id": "human_honesty",
-            "criterion": "Does not present the convergence fix as automated.",
-            "anchors": {
-              "0": "Claims an automated diversity mechanism is proven.",
-              "1": "Silent on provenance.",
-              "2": "States that in the one recorded case the intervention was human, so the automated version is a design to test."
-            }
-          }
-        ]
-      }
-    },
-    {
       "id": "rhsi-t10",
       "kind": "treatment",
       "sections": [
-        "9. Certify the gain before you believe it"
+        "Delta 4: the evolution set is a training set, and the loop's own report is the weakest evidence in it"
       ],
       "form": "prompt",
       "situation": "The Discovery Certification Protocol's three gates, and the narrowing this skill made on 2026-09-30 after reading the protocol in full: the third gate is optional and returned Inconclusive on both real-data audits, at 9 of 30 and 16 of 30 truthful continuations against 0 of 30 neutral, with 99 percent intervals straddling or undershooting the required lower bound of 0.30, while the first two gates passed. The task tests whether a reader gets the order and the expectation right, which is where a skill most easily oversells a protocol it admires.",
@@ -692,6 +629,72 @@
           }
         ]
       }
+    }
+  ],
+  "retired_tasks": [
+    {
+      "id": "rhsi-t9",
+      "kind": "treatment",
+      "sections": [
+        "8. When several agents evolve one shared artifact"
+      ],
+      "form": "prompt",
+      "situation": "Agora's 13 coding-agent workers on one shared Git repository for about 12 days, 1,703 contributions, the metric driven from 3.39 to 1.899 bits per byte with no central planner, credit assigned by an evidence score weighting downstream builds by other accounts, and a recorded convergence on one idea broken by a human intervention.",
+      "source": {
+        "paper": "Agora; ScienceBuddy",
+        "arxiv": "arxiv.org/abs/2609.18094",
+        "claims": [
+          147,
+          148,
+          150,
+          337
+        ]
+      },
+      "prompt": "We are scaling from one self-editing agent to twelve, all committing to one repository, each scored on our shared benchmark and rewarded for improving it. No central planner, that is the point. What do we build into it on day one that we would not need with a single agent?",
+      "without_skill": "Answers with ordinary concurrency engineering: locks, branch conventions, merge queues, conflict resolution. All necessary and none of it specific to a population of agents optimising one metric.",
+      "with_skill": "Adds the credit rule, version retention and a diversity signal, and is honest that the one recorded fix for convergence was a human.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "credit",
+            "criterion": "Assigns credit by what other workers actually built on, not by what scored well.",
+            "anchors": {
+              "0": "Rewards benchmark improvement per contribution.",
+              "1": "Mentions attribution.",
+              "2": "Uses an evidence score computed as the weighted count of downstream builds by other accounts, and says why that differs from scoring well."
+            }
+          },
+          {
+            "id": "retention",
+            "criterion": "Retains every harness and environment version after each cycle.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Says to keep history.",
+              "2": "Retains each version explicitly, because cross-cycle reuse and re-evaluation of an old configuration is otherwise impossible."
+            }
+          },
+          {
+            "id": "diversity",
+            "criterion": "Budgets for a diversity signal against convergence on one idea.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Notes agents may duplicate work.",
+              "2": "Plans a diversity signal that steers workers toward under-explored branches, having identified convergence as the population-specific failure."
+            }
+          },
+          {
+            "id": "human_honesty",
+            "criterion": "Does not present the convergence fix as automated.",
+            "anchors": {
+              "0": "Claims an automated diversity mechanism is proven.",
+              "1": "Silent on provenance.",
+              "2": "States that in the one recorded case the intervention was human, so the automated version is a design to test."
+            }
+          }
+        ]
+      },
+      "retired": "2026-11-02, with section 8 (the Agora multi-agent population finding) in the ADR-38 length retrofit. Kept in full rather than deleted so the seat that picks the finding up can lift the task rather than rewrite it, which is the handling evaluation-integrity used for ei-t8 on 2026-11-01. It exercises no section of the current SKILL.md and does not count toward coverage or toward any delta."
     }
   ]
 }

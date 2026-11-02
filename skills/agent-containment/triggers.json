@@ -61,9 +61,9 @@
     {
       "id": "ac-conf-2",
       "kind": "confusion",
-      "expect": "harness-engineering",
+      "expect": "recursive-harness-self-improvement",
       "prompt": "Our five-agent support pipeline fails about a third of its tickets and we cannot tell which sub-agent is responsible. Where should we start?",
-      "rationale": "Routes to harness-engineering. This skill's description says sub-agents and permission policy, and the word sub-agent alone must not pull a debugging question into a containment skill: nothing is being contained here, the pipeline is simply underperforming."
+      "rationale": "Routes to recursive-harness-self-improvement, whose description names attributing a failure to one function inside a long execution log and whose section 3 owns failure localisation. This skill's description says sub-agents and permission policy, and the word sub-agent alone must not pull a debugging question into a containment skill: nothing is being contained here, the pipeline is simply underperforming. Re-pointed 2026-11-02: it expected harness-engineering. The 2026-09-30 ADR-38 rewrite of harness-engineering cut the localisation half of its debugging section, on a bare-arm screen that found the subject supplied it unprompted, and that file's own provenance names the cut. So expecting harness-engineering to win a sub-agent-attribution prompt has been a false claim about a skill behaving correctly since that day, and it was reported as this suite's failure for 32 days. The library's standing answer for this prompt shape is he-conf-2's, set 2026-10-13."
     }
   ],
   "retired_cases": [
