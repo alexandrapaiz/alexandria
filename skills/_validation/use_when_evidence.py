@@ -90,6 +90,7 @@ repository's own descriptions, decoy panel and trigger cases.
 from __future__ import annotations
 
 import argparse
+import glob
 import json
 import os
 import statistics
@@ -535,6 +536,9 @@ def main():
     ap.add_argument("--decoys", default=os.path.join(HERE, "decoys.json"))
     ap.add_argument("--json", metavar="PATH")
     args = ap.parse_args()
+    tt.refuse_unresolved("--skills-dir", args.skills_dir, "skill directory",
+                         glob.glob(os.path.join(args.skills_dir, "*", "SKILL.md")))
+
     r = measure(args.skills_dir, args.decoys)
     print(render(r))
     if args.json:

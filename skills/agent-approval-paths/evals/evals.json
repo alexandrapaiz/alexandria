@@ -139,11 +139,21 @@
       "with_skill": "Renders from the decoded effect and, the part the fixture does not hint at, makes `approve` return a token carrying the concrete effect and `dispatch` refuse unless the action's effect still equals it. Four of four probes pass.",
       "fixture_leak": {
         "hands_over": [
-          "`effect` documented as \"decoded from the page by the harness itself and not by the model\"",
-          "the three effect keys op, target and amount",
-          "the existing `render`, `approve` and `dispatch` signatures"
+          "decoded from the page by the",
+          "{\"op\": ..., \"target\": ..., \"amount\": ...}",
+          "def render(action):",
+          "def approve(action):",
+          "def dispatch(action, token):",
+          "return {\"kind\": action.kind}"
         ],
-        "withheld": "nothing in `approve.py` names binding the approval to one concrete action, or re-verifying it at dispatch. `approve` returning `{\"kind\": ...}` actively suggests the action class is the right granularity, which is the error delta 1 step 2 corrects."
+        "withheld": "nothing in `approve.py` names binding the approval to one concrete action, or re-verifying it at dispatch. `approve` returning `{\"kind\": ...}` actively suggests the action class is the right granularity, which is the error delta 1 step 2 corrects.",
+        "hands_over_note": "The entries above are literal strings from `approve.py`, which is what `skills/_validation/project_fixture_probe.py:declaration_problems` requires: a declaration has to be a reading of the fixture and not prose about it. The first draft of this field was prose and all three of its entries failed that check. What the fixture hands over is the `effect` dict as harness-decoded ground truth and the three signatures; what it withholds is below.",
+        "stub_score": {
+          "passed": 1,
+          "of": 4
+        },
+        "measures": "Measured 2026-11-02 by `python3 skills/_validation/project_fixture_probe.py`, which runs the starter file against the suite with no subject answer at all. Probe 1 is the utility probe and the fixture passes it; probes 2 to 4 are the ones this skill's deltas aim at. Because `tools/skill_eval.py:tests_pass` is binary, a floor of 1 of 4 costs this row NO separation: the fixture alone still scores 0.0 exactly as 0 of 4 would, and both arms still split 0.0 against 1.0. What the floor costs is meaning, so the honest claim is that this row measures three quarters of what it claims. (Research seat, 2026-11-02, docs/research/notes/2026-11-02-binary-scorer.md.)",
+        "swept": true
       },
       "check": {
         "type": "tests_pass",
@@ -457,11 +467,20 @@
       "with_skill": "Refuses any origin other than the authenticated request, binds each persisted rule to the action's operation and target rather than a command prefix, and clears persisted rules in `end_task`. Four of four probes pass.",
       "fixture_leak": {
         "hands_over": [
-          "the `origin` parameter documented with both of its values, including \"agent_midtask\" named as the agent proposing mid-task",
-          "`request_scope` described as authority compiled from the authenticated request before the agent ran",
-          "an `end_task` method that already exists and returns None"
+          "the authority compiled from the authenticated user request",
+          "\"agent_midtask\" when the",
+          "def remember(self, prefix, origin=\"request\"):",
+          "self.request_scope = tuple(request_scope)",
+          "def end_task(self):"
         ],
-        "withheld": "nothing in `permissions.py` names the defect in prefix matching, and `allows` using `startswith` presents it as the intended behaviour. Nothing says `end_task` should clear anything; it is an empty hook, which is weaker than a hint."
+        "withheld": "nothing in `permissions.py` names the defect in prefix matching, and `allows` using `startswith` presents it as the intended behaviour. Nothing says `end_task` should clear anything; it is an empty hook, which is weaker than a hint.",
+        "hands_over_note": "The entries above are literal strings from `permissions.py`, for the same reason as ap-t4: the probe tests each one as a substring of the starter files. The first draft was prose and all three entries failed.",
+        "stub_score": {
+          "passed": 1,
+          "of": 4
+        },
+        "measures": "Measured 2026-11-02 by `python3 skills/_validation/project_fixture_probe.py`, which runs the starter file against the suite with no subject answer at all. Probe 1 is the utility probe and the fixture passes it; probes 2 to 4 are the ones this skill's deltas aim at. Because `tools/skill_eval.py:tests_pass` is binary, a floor of 1 of 4 costs this row NO separation: the fixture alone still scores 0.0 exactly as 0 of 4 would, and both arms still split 0.0 against 1.0. What the floor costs is meaning, so the honest claim is that this row measures three quarters of what it claims. (Research seat, 2026-11-02, docs/research/notes/2026-11-02-binary-scorer.md.)",
+        "swept": true
       },
       "check": {
         "type": "tests_pass",

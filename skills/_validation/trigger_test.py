@@ -327,7 +327,32 @@ def load_skills(skills_dir: str) -> dict:
     return skills
 
 
+def refuse_unresolved(flag: str, value: str, what: str, found) -> None:
+    """Refuse a flag value that nothing in this checkout carries, by name.
+
+    The engineer seat measured the class on 2026-11-02: across the tools tree
+    fifty-six flags name something a tool could resolve, and three of the eight
+    probed answered a confident zero with exit zero. The worst was the panel
+    validator, whose verdicts gate promotion. This seat probed its own six
+    instruments the same way and found the same defect twice, in
+    `prediction_basis.py` and `project_fixture_probe.py`, plus two more that
+    refused only by traceback. A zero that means "nothing matched" and a zero
+    that means "the path was wrong" must not print the same.
+    """
+    if found:
+        return
+    raise SystemExit(
+        f"{flag} {value!r}: no {what} found there, so there is nothing to "
+        f"measure. This is a refusal and not a result of zero."
+    )
+
+
 def load_decoys(path: str) -> dict:
+    if not os.path.exists(path):
+        raise SystemExit(
+            f"--decoys {path!r}: no such file, so there is nothing to measure. "
+            f"This is a refusal and not a result of zero."
+        )
     data = json.load(open(path, encoding="utf-8"))
     out = {}
     for d in data["decoys"]:

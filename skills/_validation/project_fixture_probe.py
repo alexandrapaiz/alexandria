@@ -44,6 +44,7 @@ round from how the suites describe them.
 import argparse
 import glob
 import json
+import os
 import pathlib
 import re
 import shutil
@@ -56,6 +57,12 @@ import tempfile
 # spelled this itself would drift from the thing it is meant to agree with.
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "tools"))
 from skill_eval import command_env                       # noqa: E402
+
+# The named refusal lives in trigger_test so all four instruments in this
+# directory print the same sentence for the same mistake (engineer seat's
+# unresolved-flag class, 2026-11-02).
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import trigger_test as tt                                # noqa: E402
 
 # Counted from pytest's own summary line, each outcome read independently.
 # A first draft required " passed" to be present and so could not count a
@@ -195,6 +202,9 @@ def main():
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--check", action="store_true")
     args = ap.parse_args()
+
+    tt.refuse_unresolved("--skills-dir", args.skills_dir, "skill directory",
+                         glob.glob(os.path.join(args.skills_dir, "*", "SKILL.md")))
 
     tasks = list(project_tasks(args.skills_dir))
     rows = [measure(*t) for t in tasks]

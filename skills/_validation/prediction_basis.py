@@ -92,9 +92,16 @@ hand relabelling possible at all.
 import argparse
 import glob
 import json
+import os
 import pathlib
 import re
 import sys
+
+# The named refusal lives in trigger_test so all four instruments in this
+# directory print the same sentence for the same mistake (engineer seat's
+# unresolved-flag class, 2026-11-02).
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import trigger_test as tt                                # noqa: E402
 
 KINDS = ("observed-bare-run", "this-repository-history", "authored-judgement",
          "refuted-and-survived", "measured-floor")
@@ -236,6 +243,9 @@ def main():
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--check", action="store_true")
     args = ap.parse_args()
+
+    tt.refuse_unresolved("--skills-dir", args.skills_dir, "skill directory",
+                         glob.glob(os.path.join(args.skills_dir, "*", "SKILL.md")))
 
     rows, problems = audit(args.skills_dir)
     counts = {k: sum(1 for r in rows if r["kind"] == k) for k in KINDS}
