@@ -1039,9 +1039,28 @@ def test_every_watched_app_records_its_own_runtime():
 # pin: its record is now the first thing inside its own `try`, in a connection
 # of its own.
 #
-# The other four are the same class and are not repaired here, because a
+# `ingest` was the second repair, 2026-11-02, and it was the one this list
+# called the worst of the five: `record_runtime` was written inside
+# `upsert_papers`, which the daily job reaches after `load_sources`, three
+# network fetches and `judge_sources`, and `judge_sources` raises
+# `NothingToIngest` by design. So the one day ingest had a real failure to
+# report was the one day it left no evidence that it ran. Its record is now a
+# `record_invocation()` call that is the first statement of the entry point,
+# which is why its pin is 0 rather than a small number: nothing at all runs
+# above it.
+#
+# **The two numbers are not measured the same way, and that matters when you
+# read them.** This counts statements of the scheduled entry point, so
+# `weekly`'s 7 includes its own inline `psycopg.connect`, and `ingest`'s 0
+# excludes the identical connect because it sits inside the helper. Both jobs
+# have the same thing above the row, which is the connect and nothing else. A
+# zero here therefore means "the floor", not "better than weekly".
+# `test_ingest_records_before_it_fetches_or_judges_a_source` is what keeps the
+# zero honest, because a pin alone cannot see work moved *into* the helper.
+#
+# The remaining three are the same class and are not repaired here, because a
 # reorder inside a model-calling job is a runtime change that wants its own
-# rehearsal (docs/agents/runtime-changes.md) and four of them is not one day's
+# rehearsal (docs/agents/runtime-changes.md) and three of them is not one day's
 # work. What each prelude holds, read out of the modules on 2026-11-02:
 #
 #   weekly    7  a docstring, two imports, the week-label parse, the `try`
@@ -1055,11 +1074,11 @@ def test_every_watched_app_records_its_own_runtime():
 #   interpret 10 the same three, plus `maintenance_step()`.
 #   distill  13  the same three, plus a `SentenceTransformer` import, plus the
 #                reading-model and window arithmetic.
-#   ingest    9  **the worst of the five and the one worth reading twice.**
-#                Every feed is fetched and judged before the record, and
-#                `judge_sources` raises `NothingToIngest` on a bad feed day by
-#                design. So the one day ingest has a real failure to report is
-#                the one day it leaves no evidence that it ran.
+#   ingest    0  repaired 2026-11-02. It was 9, and every one of the nine
+#                fetched or judged a source, which made it the worst of the
+#                five. `record_invocation()` is now the first statement in the
+#                function and the connect inside it is all that is above the
+#                row.
 #
 # A number that goes up means a statement was added above a job's only proof
 # that it started. Move it below the record, or change the number here and say
@@ -1069,7 +1088,7 @@ UNGUARDED_PRELUDE = {
     "triage": 9,
     "interpret": 10,
     "distill": 13,
-    "ingest": 9,
+    "ingest": 0,
 }
 
 
@@ -1232,6 +1251,99 @@ def test_the_press_records_before_it_reads_a_prompt_or_asks_a_provider():
           opens < record,
           "a record written above the try is a record whose failure path "
           "mails nobody")
+
+
+def test_ingest_records_before_it_fetches_or_judges_a_source():
+    """Ingest's own repair, and the gate that keeps its pin of 0 honest.
+
+    The pin counts statements of the scheduled entry point, and this job's
+    record is a call to `record_invocation`, so the pin reads 0 no matter what
+    that helper grows into. A helper that learned to fetch would therefore
+    pass the pin while reintroducing the exact defect, which is the
+    cannot-see-its-own-edit failure the pin's own docstring warns about one
+    function up. Two claims, then, and neither is a count.
+
+    First, source order inside `ingest`: the record is written before
+    `load_sources`, before all three fetches, and before `judge_sources`,
+    which is the call that raises `NothingToIngest` on a bad feed day by
+    design and so used to make a reported failure and a lost record the same
+    event.
+
+    Second, the helper stays a helper. Nothing in `record_invocation` reaches
+    the network or the sources, so "first statement" and "first thing that
+    happens" are still the same sentence.
+    """
+    import ast
+
+    module = (ROOT / rs.APPS["ingest"]).read_text(encoding="utf-8")
+    start = module.index("def ingest():")
+    end = module.index("@app.function(", start)
+    source = module[start:end]
+    record = source.index("record_invocation()")
+    for marker, why in (
+        ("load_sources()", "the sources file is read off disk"),
+        ("fetch_arxiv(", "the firehose is a network call and it used to run first"),
+        ("fetch_feeds(", "fifty-three feeds are fetched here"),
+        ("fetch_hf_daily(", "one more network call"),
+        ("judge_sources(",
+         "this raises NothingToIngest by design, so the day ingest has a real "
+         "failure to report used to be the day it left no record of running"),
+    ):
+        assert marker in source, f"{marker} is gone from ingest; re-read this test"
+        check(f"ingest records before {marker.rstrip('(')}",
+              record < source.index(marker), why)
+
+    helper = next(
+        node for node in ast.parse(module).body
+        if isinstance(node, ast.FunctionDef) and node.name == "record_invocation")
+    reached = {node.func.id for node in ast.walk(helper)
+               if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)}
+    check("and the record helper fetches nothing itself",
+          not (reached & {"load_sources", "fetch_arxiv", "fetch_feeds",
+                          "fetch_hf_daily", "fetch_arxiv_ids", "judge_sources",
+                          "read_arxiv_cursor", "upsert_papers"}),
+          f"record_invocation calls {sorted(reached)}, so the pin of 0 is "
+          "measuring the wrong thing and work has moved above the row again")
+
+
+def test_every_entry_point_in_ingest_records_its_own_invocation():
+    """Both of ingest's Modal functions, not only the scheduled one.
+
+    `upsert_papers` held the record until 2026-11-02 and both entry points
+    reached it, so moving the call to the daily job alone would have taken the
+    row away from the backfill silently. `ingest_ids` is how a seat answers a
+    reading-queue line that names a paper the window cannot reach, and it runs
+    the same module from the same image, so its row is as true as the cron's.
+    """
+    import ast
+
+    module = (ROOT / rs.APPS["ingest"]).read_text(encoding="utf-8")
+    tree = ast.parse(module)
+    def is_modal_function(dec) -> bool:
+        # `@app.function(...)` is a Call on an Attribute, so the dotted name
+        # never appears in `ast.dump` and a substring search for it finds
+        # nothing at all. That was this test's first draft and it passed over
+        # an empty list, which is the shape of a gate that asserts about
+        # nothing, so the membership check below is here rather than assumed.
+        target = dec.func if isinstance(dec, ast.Call) else dec
+        return (isinstance(target, ast.Attribute) and target.attr == "function"
+                and isinstance(target.value, ast.Name)
+                and target.value.id == "app")
+
+    entries = [node for node in tree.body
+               if isinstance(node, ast.FunctionDef)
+               and any(is_modal_function(dec) for dec in node.decorator_list)]
+    check("ingest.py still has the two Modal functions this test knows about",
+          {node.name for node in entries} == {"ingest", "ingest_ids"},
+          f"found {sorted(node.name for node in entries)}")
+    for node in entries:
+        first = node.body[1] if isinstance(
+            node.body[0], ast.Expr) and isinstance(
+                node.body[0].value, ast.Constant) else node.body[0]
+        check(f"{node.name} records its invocation first",
+              "record_invocation" in ast.dump(first),
+              f"{node.name}'s first statement is "
+              f"{(ast.get_source_segment(module, first) or '?').splitlines()[0]}")
 
 
 def test_an_app_that_has_never_recorded_since_its_code_asked_to_is_behind():
