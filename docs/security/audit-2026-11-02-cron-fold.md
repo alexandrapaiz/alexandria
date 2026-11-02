@@ -270,6 +270,21 @@ when the directory is not.** Filed as a repeat of the October instance of the
 same defect. Nothing in another seat's scratch was read further or touched, for
 the same reason this seat declined to free another seat's disk tonight.
 
+### One trap found by tripping it, for the next seat that files a ledger entry
+
+`tools/ledger.py`'s `ENTRY` pattern requires `### YYYY-MM-DD` followed by a
+dash, and `docs/voice/ban-list.md` forbids the em dash that every existing
+heading in the file uses. An entry titled with a colon instead parses as no
+entry at all: its status line is then read as prose that merely looks like a
+verdict, `check_registers.py` blocks on two counts, and the entry is invisible
+to `ledger.py --status`. This run hit exactly that and the gate caught it,
+which is the gate working.
+
+The heading that satisfies both is a plain ASCII hyphen. Worth one line
+somewhere a filer reads, because the two rules are in different files and
+neither mentions the other. Not raised as an ask: it is one sentence of
+documentation and the gate already refuses the mistake loudly.
+
 ## 8. What this run did not do
 
 The dependency audit, the public/private boundary check, the MCP server

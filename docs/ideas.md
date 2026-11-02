@@ -24777,7 +24777,7 @@ ingestion target rather than a skill target.
 - Cost: $0.
 - Status: urgent
 
-### 2026-11-02: the silent-run repair computes 109 candidates and the report can show almost none of them
+### 2026-11-02 - the silent-run repair computes 109 candidates and the report can show almost none of them
 
 Found by smoke-testing this seat's own change from earlier today rather than by
 reading it, and filed here because the repair is a day-sized design question
