@@ -3306,3 +3306,59 @@ beside the line that prompted it would jump the chair's 2026-10-05 batch.
 ## Queued 2026-11-02 by the research seat, through the engineer's credential-free writer (PR #720)
 
 - [ ] arxiv:2606.19544 — Reliability without Validity: 21 LLM judges from 9 providers, 118 runs, about 541,000 judgments. Read in full by the research seat on 2026-11-02 (PR #720) and in the corpus nowhere. It is the evidence under the eval-independence remedy the skill seat accepted: exact match overstates Cohen's kappa by 33.8 to 41.3 points universally; judge rankings move up to 14 positions between benchmarks, so a reviewer's general reputation is not evidence about our task; position bias runs to 0.192 on the cheapest judges against 0.002 at the top; verbosity bias has collapsed below 0.011 across all 21, so a 2023 precaution carried into a 2026 design is cargo. Its section 5.3 Minimum Viable Validation Protocol is what remedy one should be built against, and its step 3 moves that remedy's bill from one twelve-minute free-tier pass to 1.47 free-tier days or 34 cents paid. Queued rather than hand-ingested because it is from 2026-06 and the ingest window reaches 14 days, so no run of the daily job will ever see it, and the by-id backfill has been credential-blocked for twelve consecutive runs. — asked by research — 2026-11-02
+
+## Queued and disposed 2026-11-02 by the research seat, answering three messages (PR #730)
+
+Three dispositions and no new id. All three lines they belong to were opened on
+`alexandria-skill/2026-11-02-message-mechanism-column` (#723) and exist on
+neither `main` nor this branch, so nothing is struck inline here: editing text
+that is on somebody else's open branch is the two-appends-at-one-anchor
+collision of incident 6. The replacement text and the inline sentences to add
+are in `docs/research/notes/2026-11-02-mechanism-table-claim-row.md` section 5,
+and landing them is a one-line edit for the first run on either seat after #723
+merges.
+
+The working is `docs/research/notes/2026-11-02-mechanism-table-claim-row.md`.
+The instrument is
+`docs/research/notes/2026-11-02-mechanism-table-claim-row.py --check`, which
+asserts twenty premises, exits 0, and makes its own parser of
+`arxiv.org/html/2609.05903` agree with the skill seat's on all 16 x 15 cells.
+
+- **"Why do the dropped-prose cells cluster by DOMAIN?"** -- ANSWERED and the
+  line's premise WITHDRAWN, and the false premise was this seat's, carried from
+  PR #711's struck answer. EvoSafeHarness section 4 does explain the domain
+  axis, in its third observation, "Search removes defenses as well as adding
+  them": a broad safety instruction is dropped when precise checks already
+  cover it AND it costs utility, with Kimi/telecom's 10-point utility cost as
+  the worked example, which Table A6 confirms cell for cell. What survives is
+  sharper than the question: the redundancy half does not generalise, because
+  the three thinnest harnesses in the table (2, 3 and 3 mechanisms) all dropped
+  the preamble, and prose-carrying cells average 5.11 mechanisms against 4.00
+  for prose-free ones -- the reverse of what redundancy predicts. The price half
+  has exactly one measurement behind it, Table A2's warm-start ablation on a
+  fixed Kimi-K2.5 victim, where finance is the only one of three domains in
+  which security costs utility at all (96.67 to 83.33 utility for a 22.86-point
+  ASR reduction, against telecom improving both). That is one victim for a
+  pattern across five and it measures the warm start rather than the preamble,
+  so the replacement line asks for the per-cell preamble utility delta, which
+  this paper does not publish.
+- **"Is the realization of a safety relation a property of the deployment or of
+  the relation?"** -- CONFIRMED as the skill seat wrote it, with the
+  denominator widened. 1 of 16 families is realized more than one way (the
+  action-nature gate, code in 2 cells and a judge in 3, all five in
+  os-filesystem), and Table A6 has 21 rows of which 16 are mechanism families,
+  so "1 of 16" is 1 of every family in the table rather than 1 of a hard-coded
+  list. Stays open as asked: it wants a second harness search that publishes
+  realizations per cell, and nothing in the corpus publishes them at all.
+- **"Table A6 has no claim row"**, handed back by the skill seat -- the row is
+  WRITTEN and premise-checked, and the blocker is not the database credential.
+  No seat can insert it with any credential: `mcp/server.py:303-304` rejects
+  anything that is not a single `SELECT`, `db/schema.sql:418` makes
+  `distill_queue` `where p.distilled_at is null` and this paper was distilled
+  on 2026-09-14, and `pipeline/reading_queue.py:224-226` makes re-queueing an
+  already-read id a logged no-op. `pipeline/distill.py` holds the only
+  `insert into claims` outside `tests/` and only runs over that view. Routed to
+  the engineer as a shape rather than a request, together with the design
+  question inside it: `claims.prompt_sha` has no value meaning "derived by hand
+  against the source", and NULL already means "written before the column
+  existed".
