@@ -111,7 +111,7 @@ from datetime import date
 # ---------------------------------------------------------------------------
 FLOOR = 0.05            # sanity floor: below this, nothing in the prompt matched
 NARROW_MARGIN = 0.02    # lead under which a win is reported as narrow, not failed
-USE_WHEN_BOOST = 1.25   # activation-condition terms outweigh framing prose
+USE_WHEN_BOOST = 1.25   # NOT supported by evidence; see the block below
 ENGINE_VERSION = "lexical/2.2"
 ALPHA = 0.05            # 95% intervals
 
@@ -145,14 +145,63 @@ PANEL_TERMSET_TOLERANCE = 1.20  # library:decoy mean distinct-stem ratio
 # by reading. USE_WHEN_BOOST multiplies a candidate's activation-clause terms
 # by 1.25, and activation_clause() is a POSITIONAL slice, so what fraction of
 # a description gets boosted is decided by where its "Use when" sits. A
-# uniform boost is a no-op on rankings, since it scales every candidate's
-# numerator alike, so the boost's entire effect is this differential. Measured
+# Measured
 # today: the decoys carry 94.4 percent of their term set inside the boosted
 # slice and the library 79.6, a 0.84x gap, because every decoy opens with its
 # activation clause and library descriptions carry more framing prose first.
 # Turning the boost off moves three of 67 cases, which is the same count the
 # engine choice moves and which the pass rate has power 0.079 to see.
+#
+# A uniform boost is a no-op on the RANKING and not on the verdict, and the
+# distinction is this file's own defect reported back to it by the research
+# seat on 2026-11-02. route() reads three things and two of them read an
+# absolute number: `library_score >= FLOOR` and `abs(null_margin) <
+# NARROW_MARGIN`. A uniform boost scales both. Measured: off and uniform agree
+# on all 67 fired decisions and disagree on one narrow flag, he-conf-2 at
+# +0.0179 against +0.0224, across the 0.02 threshold. So the no-op is a
+# property of THIS PANEL rather than of the scheme, and a comparison that
+# prints only the fired decision cannot see it.
+#
+# The coefficient itself had no evidence behind it and now has evidence
+# against it (2026-11-02, skills/_validation/use_when_evidence.py, after the
+# research seat answered this seat's queued question by reading both ids in
+# full):
+#   arXiv:2602.05366 ablates a when-to-use field add-one and one-out on a
+#     dense and a sparse retriever over thirty-five unified datasets and keeps
+#     it; the field its authors drop is example-usage. HAVING the clause is
+#     supported. Its section 4.1 is the finding, and its 2.2 carries a
+#     sentence naming the wrong field that reverses it.
+#   arXiv:2510.22670 is the only source that measures a WEIGHT on the field
+#     rather than its presence. The usage-scenario field's learned weight runs
+#     0.269x to 1.363x of the description field's across six dataset and
+#     retriever cells, median 0.695x, and sits BELOW the description in five
+#     of the six. Ours is a fixed 1.25x ABOVE it.
+# So the literature supports the clause, rules out a constant in either
+# direction, and runs the opposite way on central tendency.
+#
+# The coefficient is NOT retuned here, and the reason is a measurement rather
+# than caution. Swept over the published range, this suite's pass rate runs 48
+# to 61 of 67 through the positional slice, and under a uniform boost every
+# arm at 0.5x and above scores exactly 60. All of the suite's apparent
+# preference for a high coefficient is the 0.84x asymmetry, so tuning 1.25 on
+# the pass rate would be tuning on a confound, and the prerequisite repair is
+# the panel rewrite already queued as decoy panel v3. arXiv:2510.22670 lands
+# the same warning independently: the variant that applies field weights to
+# raw unstandardized documentation is the one that fluctuates, and its
+# conclusion is that a unified schema is the prerequisite. A positional slice
+# of free prose is that variant, and the 0.84x is what it costs.
+#
+# One consequence for the failure list. The boost's three moved cases are +2
+# and -1 rather than a net of one: it wins cwe-neg-1 and rhsi-conf-1 and
+# LOSES he-conf-2, which is one of the six the suite reports as failing today.
+# he-conf-2 passes at boost off and under a uniform boost, and fails live at
+# -0.0034. So today's 61 of 67 is five library failures and one instrument
+# artifact.
 PANEL_BOOST_TOLERANCE = 1.15  # library:decoy boosted-share ratio
+# Measured on the STEM COUNT, which is not the quantity the boost multiplies:
+# score() weights by idf mass. Both readings trip this tolerance, 0.8435x on
+# stems and 0.8538x on idf mass, so the finding stands either way and the gap
+# is recorded rather than repaired (2026-11-02).
 
 STOPWORDS = {
     "a", "about", "actually", "after", "all", "already", "also", "an", "and",
@@ -174,9 +223,25 @@ STOPWORDS = {
     # 123-word decoy was the single word "last", out of "after the last
     # release" (reproduced at +0.1311 against today's nine-skill library,
     # which recomputes idf; the decomposition is the same either way).
-    # Measured before changing it: the suite scores 61/67 with and
-    # without them, the same six cases failing either way, so this costs the
-    # instrument nothing and removes a term that can only mislead it.
+    #
+    # The three are NOT interchangeable, and this is the half the first
+    # version of this comment left out (2026-11-02, decomposed by the research
+    # seat and reproduced in use_when_evidence.py). Only "last" is
+    # load-bearing: making it alone a stopword takes the delta to zero.
+    # Stripping either of the other two ALONE grows the delta to +0.1501,
+    # because both sit in the prompt and in neither description, so removing
+    # one shrinks the denominator and leaves the numerator untouched. So the
+    # case for "got" and "think" is that they are framing, which is an
+    # editorial argument, and not that they carried the length bias, which
+    # they did not.
+    #
+    # Measured before changing it, and on more than the pass rate, which is
+    # the other half the first version understated: the suite scores 61/67
+    # with and without them, the same six cases failing either way, and the
+    # three also move no narrow flag and move nothing across the floor. So the
+    # change is clean on every field the bundle carries rather than on the
+    # headline number alone, and it removes a term that can only mislead the
+    # instrument.
     "got", "last", "think",
 }
 
