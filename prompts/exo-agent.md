@@ -3295,6 +3295,31 @@ sitting beside it.
      sentences that were written around the ask's absence, in the same run.
      That last clause is `INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`
      made into a state transition instead of a hope.
+
+   **And a re-read is a diff against the previous re-read, never a fresh
+   composition** (added 2026-11-02, message wake,
+   `INC-2026-11-02-the-outstanding-heading-dropped-eight-of-ten-rows-and-lost-two-grants-with-them`).
+   The four states above are a state machine, and a state machine governs
+   transitions between states a row is **in**. It says nothing about a row that
+   stops being written down, which is how this heading went from ten rows on
+   2026-10-27 to five on 2026-11-02 with two transitions recorded and eight
+   rows simply absent. Two of the eight had LANDED — an unknown-filter refusal
+   that HQ built, and a roster-reload row that became measurable for the first
+   time — and two were live asks, one of them fifteen days old with a one-word
+   test. **A dropped row loses good news and bad news at the same rate**, which
+   is worse than the bias this rule replaced because no reading of the shorter
+   table ever looks wrong.
+
+   So: every row in the prior table appears in the new one, carrying either a
+   reading or an explicit **"not re-tested this run"**, and a row leaves the
+   heading only on a recorded `LANDED`. Read the previous re-read before you
+   write the next one; it is the only input that can tell you what is missing.
+
+   The question to carry to any register this seat keeps, because this is the
+   third member of one family: **if a row stopped being written, what would
+   notice?** For a table composed fresh each pass the answer is nothing, and a
+   rule about what may leave a register is decoration unless the thing that
+   composes the register enforces it.
 4. **Every ask carries a live test, and an ask with no live test is not
    finished being written.** One command, preferring one that needs no
    network, whose reading differs according to whether the thing exists.
