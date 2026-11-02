@@ -56,6 +56,15 @@ MODELS = ("Sonnet 4.6", "GLM-5", "Kimi-K2.5", "Qwen3.7-plus", "DeepSeek-V4-Flash
 MODEL_KEYS = ("S", "G", "K", "Q", "D")
 COLUMNS = tuple(f"{d}/{m}" for d in DOMAINS for m in MODEL_KEYS)
 
+# Table A6's own furniture: the rows that are not mechanism families. The table
+# has 21 rows, of which 2 are headers, 3 are section banners and 16 are
+# families. Naming them is what lets the parser below fail on a row it has never
+# seen without failing on the four it sees every time.
+NON_FAMILY_ROWS = ("", "Mechanism family", "Domain signature",
+                   "Shared backbone", "Model-specific patch")
+TABLE_ROWS = 21
+FAMILY_ROWS = 16
+
 STRATA = {
     "NL policy preamble": "shared backbone",
     "argument hygiene": "shared backbone",
@@ -110,6 +119,7 @@ def reparse(path: str) -> dict[str, list[str]]:
     table = source[start : end + len("</table>")]
 
     grid: dict[str, list[str]] = {}
+    unknown: list[str] = []
     for row in re.findall(r"<tr.*?</tr>", table, re.S):
         cells: list[str] = []
         for cell in re.finditer(r"<t[hd]\b(.*?)</t[hd]>", row, re.S):
@@ -120,11 +130,36 @@ def reparse(path: str) -> dict[str, list[str]]:
         if not cells:
             continue
         family, entries = cells[0], cells[1:]
-        if family in STRATA and len(entries) == len(COLUMNS):
-            grid[family] = [e if e in ("d", "s", "n") else "" for e in entries]
+        if len(entries) != len(COLUMNS):
+            continue                       # a header or a banner, not a family row
+        if family in NON_FAMILY_ROWS:
+            continue                       # a header or a banner, named on purpose
+        if family not in STRATA:
+            # Loud, not silent. This branch used to fall through, so every count
+            # this module published was over the families STRATA happened to list
+            # rather than over the families the table has: "1 of 16" meant "1 of
+            # the sixteen I wrote down". The research seat found it on 2026-11-02
+            # by parsing the same bytes with its own parser and getting a
+            # different denominator. A row the table has and this dict does not
+            # is the one error a silent skip cannot be recovered from, because
+            # the number still looks right.
+            unknown.append(family)
+            continue
+        grid[family] = [e if e in ("d", "s", "n") else "" for e in entries]
+    if unknown:
+        raise SystemExit(
+            f"{path}: {len(unknown)} family rows the table carries and STRATA does "
+            f"not: {sorted(unknown)}. Every per-family count in this module is a "
+            f"fraction of len(STRATA), so an unlisted row silently shrinks the "
+            f"denominator rather than being reported.")
     missing = set(STRATA) - set(grid)
     if missing:
         raise SystemExit(f"{path}: {len(missing)} families not parsed: {sorted(missing)}")
+    if len(grid) != FAMILY_ROWS:
+        raise SystemExit(
+            f"{path}: parsed {len(grid)} mechanism families and Table A6 has "
+            f"{FAMILY_ROWS}. Every per-family count here is a fraction of this "
+            f"number, so it is asserted rather than assumed.")
     return grid
 
 
