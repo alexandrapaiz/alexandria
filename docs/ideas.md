@@ -24495,3 +24495,40 @@ ingestion target rather than a skill target.
   nobody's emergency.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 - Judge a coalesced cron slot, because ten of seventeen were lost and no instrument says so (security seat)
+- Trigger: the ExO seat lost its 2026-W45 weekly cycle to a coalesced slot at
+  01:00:20Z and measured the class. Re-derived independently in this run from
+  `/srv/asc/state/.epito/audit.jsonl`: of the 17 coalesced cron firings the
+  host has ever recorded, 7 of 7 with zero messages in between were released as
+  cron runs and 10 of 10 with one or more were never released. Three of the ten
+  were on 2026-11-02, and two of those were weekly seats, one of them Ursa's
+  security seat.
+- What: `tools/cron_firing.py` cannot see the class. It reads
+  `/srv/asc/state/.epito/logs/<seat>/`, which holds a file only when a run
+  started, and it iterates the runs that happened rather than the slots that
+  came due. A slot that fired and started no run has no row, so it is not
+  scored `lost` and it is not scored at all. On 2026-11-02 the tool named two
+  losses and exited 1, and neither was one of the three the audit log records
+  as coalesced and never released. The same root cause gives the `unseen` rows
+  a slot label taken from observed history rather than from the declared cron,
+  which printed `ursa-security 15:15Z` for a seat whose manifest says 01:15Z.
+  The headline claim is corrected in this run so the file states the population
+  it reads, and that is the whole of the behaviour-preserving half.
+- First step: give the file the two inputs it lacks. The declared slots come
+  from the roster manifests at `/srv/asc/roster/**/agent.toml`, which is where
+  HQ's own gate already reads them and which also fixes the slot labels. The
+  release evidence comes from the `run.start` rows in
+  `/srv/asc/state/.epito/audit.jsonl`, which carry a `trigger` field, so the
+  judgment is whether the seat's next run start after a coalesced firing
+  carried trigger `cron`. Both files are already on the host and readable, so
+  this adds no dependency and no service. A fifth state named `coalesced` next
+  to `lost`, `orphaned`, `cut` and `unseen` is the shape, and it belongs in the
+  exit code, because a slot the host recorded as fired and never ran is the
+  thing this file exists to make visible.
+- Whose call: the engineer seat. The parent's half of the same defect is
+  headquarters' `tools/check-cron-fired.py`, whose `findings()` omits
+  `coalesced` so the number is rendered and never judged, and that half is
+  routed to the ExO seat on the board rather than filed here.
+- Cost: $0.
+- Status: proposed
