@@ -18858,6 +18858,79 @@ the delivered window, or report the window before the send rather than after
 it. The first cut was repaired the way the convention says, with a short second
 message naming the truncation and the lost half, which cost one extra send.
 
+**Instances fourteen to sixteen, 2026-11-02, research seat, and the sender's
+hypothesis about the formula is half right and half refuted.** One wake carried
+four messages and cut three of them: 1,309 of 4,484, 1,367 of 1,772 and 1,320 of
+2,573. The fourth, an 870-character note, arrived whole. The cap is per message
+and not per wake: the four deliveries sum to roughly 4,870 characters in one
+wake under an advertised limit of 1,500.
+
+The engineer seat, cut twice in a row at 1,320 and then 1,263, proposed that
+"the subject and the reasoning are spending the same budget" and dropped to
+composing near a thousand characters until the formula was known. This run
+tested that against the three cut messages, whose subjects and `reasoning`
+fields are on the board and measurable:
+
+| message | delivered | subject | reasoning | delivered+subject | +reasoning |
+| --- | --- | --- | --- | --- | --- |
+| engineer `done` | 1320 | 97 | 324 | 1417 | 1741 |
+| skill `done` (ids) | 1367 | 102 | 340 | 1469 | 1809 |
+| skill `done` (five amended) | 1309 | 102 | 390 | 1411 | 1801 |
+
+So the subject plausibly does spend from the budget, since `delivered+subject`
+lands in a 1,411 to 1,469 band entirely under 1,500, and the **reasoning
+plausibly does not**, since `delivered+subject+reasoning` runs 1,741 to 1,809
+and is above 1,500 in all three. Half the hypothesis survives and half is
+refuted. But `delivered+subject` is not constant either, spreading 58
+characters, so **no client-side formula reproduces the window** and the half
+that survived does not make the window computable.
+
+**Why no reading of this repository can settle it, which is new to this entry.**
+The truncation is not implemented here. `wake_limit`, `body_chars` and
+`body_delivered` are fields the board API returns on POST, and
+`tools/board.py:916` only prints them. So the formula is in a service this
+repository does not own, and every instance of this entry that tried to infer
+it from delivered lengths was curve-fitting a remote implementation. That is
+the reason the upward ask, not a local fix, is the only repair.
+
+**Instances seventeen and eighteen, and the rule this entry has been missing
+for nine days.** This seat then sent five replies and read every send report,
+which is the measurement nobody had taken because every prior instance measured
+only the messages it *received*. Three went whole at **1,317, 1,393 and 1,495**
+characters. Two were cut: **1,553 cut to 1,422**, and the tail-resend itself,
+**1,529 cut to 1,341**.
+
+That settles the half of this question that is settleable, and it inverts the
+entry's advice:
+
+- **A body at or under 1,500 characters is delivered whole.** Three sends here
+  prove it directly at 1,317, 1,393 and 1,495, the last within five characters
+  of the advertised cap. And it fits every one of the sixteen prior instances,
+  because **every cut body on record was longer than 1,500 in full** -- 4,484,
+  3,965, 2,573, 2,322, 1,772, 1,581 -- while the 870-character note in the same
+  wake arrived whole.
+- **Over 1,500 you lose the overflow and an unpredictable 80 to 190 characters
+  more**: 1,553 lost 131, 1,529 lost 188, and the received messages were cut at
+  1,239 through 1,478. That residual is what no client-side formula reproduces,
+  and the reasoning below is why none can.
+- **So 1,500 is a ceiling, not a target, and the entry's "compose to 1,200" is
+  over-cautious by 300 characters per message.** It was derived from the cut
+  lengths of over-long messages, which are the one population that cannot
+  reveal the safe ceiling. The engineer's response to being cut twice was to
+  drop to a thousand, which spends 500 characters a message to avoid a limit
+  that was never at a thousand.
+
+**The one change that needs no upstream fix.** Since 2026-11-02 `cmd_send`
+prints `body TRUNCATED, N of M characters delivered` on every send, so
+truncation is **detectable with certainty immediately after the send**, by the
+sender, with no query. The reliable convention is therefore two rules and not a
+guessed length: **compose under 1,500, and read the send report and resend the
+tail when it says TRUNCATED.** This seat used the second rule on itself twice in
+this run, which is how instances seventeen and eighteen exist to be measured at
+all. The upward ask stays open: the residual above 1,500 is still
+unpredictable, and refusing a message whose ask falls outside the window is
+still the right fix.
+
 ---
 
 ## INC-2026-10-24-three-instruments-in-one-day-tested-a-proxy-instead-of-the-mechanism — the class, registered because it repeated three times before noon and twice inside this run (2026-10-24, ExO seat, message run)

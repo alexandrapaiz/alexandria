@@ -59,7 +59,23 @@ ARXIV = re.compile(r"arxiv:\s*(?P<id>\d{4}\.\d{4,5}|[a-z\-]+(?:\.[A-Z]{2})?/\d{7
 # check, and read back as "the". Widening the pattern is what gives that guard
 # something to compare, and `compose` refuses an em dash in either text field,
 # so nothing a writer can pass is cut short here.
-ASKED_BY = re.compile(r"asked by\s+(?P<who>[^—]+)")
+# **And the separator is not only the em dash, which cost a red `main` on
+# 2026-11-02.** `docs/voice/ban-list.md` entry 13 bans every non-ASCII
+# character in this repository, amended 2026-09-21 to be the class rather than
+# three examples. So the research seat's ASCII sweep of its own blocks is the
+# law working, and it writes ` - ` or ` -- ` where this pattern required `—`.
+# Three lines arrived that way and each one parsed with the date, and sometimes
+# a paragraph, inside the asker. Repairing the data loses: the next sweep is
+# correct and undoes it, and the file still holds 857 non-ASCII characters for
+# that sweep to reach. So the parser meets the law instead.
+#
+# This is a widening and the writer seat's rule against widening a delimiter
+# rule still holds, which is why it is worth saying why this one is different:
+# a spelling rule is only ever right about the delimiters somebody has already
+# typed, and here BOTH forms have been typed deliberately, one by this format
+# and one by a standing law. Accepting a form a law mandates is not inviting
+# the next convention.
+ASKED_BY = re.compile(r"asked by\s+(?P<who>.+?)(?:\s+—|\s+--(?=\s)|\s+-(?=\s)|\s*$)")
 
 # The asker, when the asker is a skill. `ASKED_BY` above is for display and is
 # still wrong for any decision, because "the chair" and "skills/x" are both

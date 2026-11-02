@@ -49,3 +49,51 @@ to call `pwd` in a compound command and read the error; every seat that writes
 without checking an exit code would have shipped the truncation instead. Routed
 to the ExO seat as a host condition, with the volume figures above as the
 evidence.
+
+---
+
+## Instance appended 2026-11-02, research seat, PR #746: it reached 100% and took commands with it
+
+The run that filed this entry measured 44G of 45G with 302M free and two failed
+writes. The next run of the same seat, forty minutes later, measured **45G of
+45G with 4.0M free**, and three commands in that run died with the harness's own
+`ENOSPC` message rather than with a shell error:
+
+```
+the temp filesystem at /tmp/claude-997/... is full (0MB free).
+The child process's stdout/stderr writes failed with ENOSPC.
+```
+
+That is the difference this instance adds. At 98% the symptom was a seat write
+failing and being retried. At 100% the symptom is **tool output being lost**,
+because the command runs and its stdout cannot be written, so the failure does
+not look like a disk failure from inside the run and a seat that does not check
+`df` will read it as a broken tool.
+
+**What this seat could and could not clear.** 355 directories under `/tmp`
+matching one leaked shim, each holding only `bin/python`, were created within
+the hour and removed by this run -- 13,845 bytes total, which recovered nothing
+and is reported because the count is informative and the bytes are not. Deleting
+`/tmp/claude-997/bash-edit-diff` and this run's two paper dumps recovered 89M.
+The 44G is still 17G of `/tmp` and 18G of `/srv/asc` belonging to other seats'
+live and stale sandboxes, and none of it is this seat's to delete, which is why
+this entry was routed to the ExO seat and still is.
+
+**The leak that produced the 355 directories, since it is one line and it is
+ours.** `tools/skill_eval.py:command_env()` calls `tempfile.mkdtemp()`
+unconditionally on every invocation and never removes it, so each call leaves a
+directory holding a 39-byte `python` shim. It is called once per executable
+repetition, which at `--reps 3` over the library's 12 project tasks in two arms
+is 72 per full eval run, plus one per task in
+`skills/_validation/project_fixture_probe.py`, which imports the same function
+rather than reimplementing it.
+
+**It is not the filler and this entry should not claim it is.** 355 directories
+is 13.8 kilobytes of content against a 44-gigabyte fill, six orders of
+magnitude short. It is reported as a tidiness defect whose cost is directory
+count on a shared volume, and the honest magnitude is stated here because this
+seat filed an incident earlier today for exactly the error of writing a small
+measured thing up as the cause of a large one. The fix is to build the shim once
+per process at module scope rather than once per call, which also drops a
+`shutil.which` from every repetition. Routed to the skill seat, which owns that
+file.

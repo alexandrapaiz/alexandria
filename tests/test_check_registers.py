@@ -242,17 +242,23 @@ def test_the_checker_and_the_register_map_name_the_same_files():
 QUEUE = "docs/research/reading-queue.md"
 
 GOOD_LINE = (
-    "- [ ] arxiv:2606.08433 — why it is worth a read "
-    "— asked by the research seat's L-R1 check — 2026-11-02\n")
+    "- [ ] arxiv:2606.08433 \u2014 why it is worth a read "
+    "\u2014 asked by the research seat's L-R1 check \u2014 2026-11-02\n")
 
-#: The exact shape that reached `main` on 2026-11-02, with `--` where the
-#: format specifies an em dash. Two lines like this were merged by the research
-#: seat and `tests/test_reading_queue.py` went red on `main`, where it stayed
-#: until a seat ran the suite by hand: `tools/ci_coverage.py` reports that file
-#: as one of 70 test files no workflow runs.
+#: The same line in the plain ASCII `docs/voice/ban-list.md` entry 13 requires.
+#: This is what the research seat's sweep writes, and it is NOT a defect: the
+#: parser was widened on 2026-11-02 to accept it, because repairing the data
+#: loses against a law that keeps being correct.
+ASCII_LINE = (
+    "- [ ] arxiv:2606.08433 - why it is worth a read "
+    "- asked by the research seat's L-R1 check - 2026-11-02\n")
+
+#: The real defect, which survives the widening: no separator at all before the
+#: date, so the field runs to the end of the line. Three lines reached `main`
+#: on 2026-11-02 in this shape.
 BAD_LINE = (
-    "- [ ] arxiv:2606.08433 -- why it is worth a read "
-    "-- asked by the research seat's L-R1 check -- 2026-11-02\n")
+    "- [ ] arxiv:2606.08433 - why it is worth a read "
+    "- asked by the research seat's L-R1 check 2026-11-02\n")
 
 
 def test_it_finds_the_asker_that_swallowed_its_date(registers):
@@ -263,13 +269,23 @@ def test_it_finds_the_asker_that_swallowed_its_date(registers):
     assert "2026-11-02" in findings[0]
 
 
-def test_it_passes_the_same_line_written_with_the_separator(registers):
+def test_it_passes_the_em_dash_the_format_documents(registers):
     write(registers, QUEUE, "# Reading queue\n\n" + GOOD_LINE)
     assert checker.unparseable_queue_askers(registers / QUEUE, registers) == []
 
 
+def test_it_passes_the_ascii_the_ban_list_requires(registers):
+    """The regression that cost a red `main`, asserted from the other side.
+
+    A gate that only accepted the em dash would report every line the voice
+    law mandates as damage, which is the same defect one level up.
+    """
+    write(registers, QUEUE, "# Reading queue\n\n" + ASCII_LINE)
+    assert checker.unparseable_queue_askers(registers / QUEUE, registers) == []
+
+
 def test_the_queue_check_is_blocking_not_a_warning(registers):
-    """A wrong attribution is damage, and the two instances were real."""
+    """A wrong attribution is damage, and the instances were real."""
     write(registers, QUEUE, "# Reading queue\n\n" + BAD_LINE)
     blocking, warnings = checker.check(registers)
     assert any("runs past its separator" in b for b in blocking), blocking

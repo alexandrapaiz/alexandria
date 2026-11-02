@@ -119,16 +119,18 @@ def _reading_queue_module():
 def unparseable_queue_askers(path: Path, root: Path = ROOT) -> list[str]:
     """Queue lines whose `asked by` field swallowed the date after it.
 
-    `ASKED_BY` terminates the field on an em dash, which is what the format at
-    the top of `pipeline/reading_queue.py` specifies and what `compose()`
-    emits. A line written by hand with `--` instead parses with the date, and
-    sometimes a paragraph, inside the asker, so the attribution distill prints
-    is wrong and the line is attributed to nobody a roster knows.
+    The field has to end somewhere, and `ASKED_BY` now accepts the em dash the
+    format documents as well as the ` - ` and ` -- ` that
+    `docs/voice/ban-list.md` entry 13 requires, so an ordinary ASCII line is
+    not a defect. What is still a defect is a line with no separator at all
+    before the date, which parses with the date, and sometimes a paragraph,
+    inside the asker. Distill then attributes the line to nobody a roster
+    knows.
 
     This is here rather than only in `tests/test_reading_queue.py` because that
     test asserts against the live file and `tools/ci_coverage.py` reports it as
-    one of 70 test files no workflow runs. Two such lines reached `main` on
-    2026-11-02 in the research seat's merge and the suite was red on `main`
+    one of 70 test files no workflow runs. Three such lines reached `main` on
+    2026-11-02 in the research seat's merges and the suite was red on `main`
     until the engineer seat ran it by hand. Every seat runs this checker before
     shipping, so this is the reachable place to ask the question.
     """
@@ -145,7 +147,8 @@ def unparseable_queue_askers(path: Path, root: Path = ROOT) -> list[str]:
             out.append(
                 f"{path.relative_to(root)}:{line}: the `asked by` field runs past its "
                 f"separator, so this line is attributed to {asker.strip()[:60]!r}. "
-                "Write the separator as an em dash, or use "
+                "Separate the asker from the date with ' - ', ' -- ' or an em "
+                "dash, or use "
                 "`python3 pipeline/reading_queue.py --add`, which composes it")
     return out
 
