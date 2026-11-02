@@ -482,12 +482,69 @@ def test_an_attributed_claim_raises_nothing(tmp_path):
     assert only(verdicts, check="claims-exist", severity="note")
 
 
-def test_a_claim_from_a_non_arxiv_paper_is_unknown(tmp_path):
+# This test used to assert `unknown` here, and that assertion was the defect
+# rather than the contract (changed 2026-10-27, routed by the research seat).
+# `unknown` blocks, because ADR-13 merges on unanimous pass, so a proceedings
+# paper would have filed cleanly, distilled cleanly, and then blocked the first
+# skill that cited it. All ten shipped skills carry an arXiv abstract url on
+# every provenance line, so the branch had never fired in anger and the first
+# non-arXiv source would have been the one to find out.
+#
+# What replaces it: a paper outside the `arxiv:` namespace is decided on its
+# url, which is what a provenance line carries for a source with no id. Same
+# defect, reportable in both namespaces.
+
+
+def test_a_claim_from_a_non_arxiv_paper_the_skill_does_not_list_fails(tmp_path):
     root = write_skill(tmp_path, claims="1")
-    conn = FakeConn(claims={1: ("blog-9f2a", "https://example.com/post")})
+    conn = FakeConn(claims={1: ("blog:somefeed:9f2a1c", "https://example.com/post")})
+    findings = only(panel.review(skills_dir=root, conn=conn),
+                    check="claim-paper-attributed")
+    assert [f["severity"] for f in findings] == ["fail"]
+    assert "https://example.com/post" in findings[0]["detail"]
+
+
+def test_a_claim_from_a_non_arxiv_paper_the_skill_does_list_passes(tmp_path):
+    # The case research is holding a build on: a proceedings row files, distills
+    # and is cited, and the panel does not block the skill that cites it.
+    root = write_skill(tmp_path, claims="1",
+                       papers=("Firecracker (Agache et al., NSDI 2020) - "
+                               "https://www.usenix.org/conference/nsdi20/presentation/agache",))
+    conn = FakeConn(claims={1: (
+        "blog:usenix:9f2a1c",
+        "https://www.usenix.org/conference/nsdi20/presentation/agache")})
+    verdicts = panel.review(skills_dir=root, conn=conn)
+    assert not only(verdicts, check="claim-paper-attributed")
+
+
+def test_a_paper_with_no_url_and_no_arxiv_id_is_the_one_unknown_left(tmp_path):
+    # Nothing to match a provenance line against, which is a corpus defect
+    # rather than a skill's. `unknown` is honest here and nowhere else.
+    root = write_skill(tmp_path, claims="1")
+    conn = FakeConn(claims={1: ("proceedings:nsdi20-firecracker", "")})
     findings = only(panel.review(skills_dir=root, conn=conn),
                     check="claim-paper-attributed")
     assert [f["severity"] for f in findings] == ["unknown"]
+
+
+def test_the_namespace_in_the_id_decides_before_the_url_does(tmp_path):
+    # The id is what the corpus is keyed on; the url is a field. `arxiv:<id>` is
+    # the whole key, so attribution resolves even when the row's url is absent.
+    assert panel.attribution_key("arxiv:2609.09134", None) == ("2609.09134", "arxiv")
+    assert panel.attribution_key("arxiv:2609.09134v3", None) == ("2609.09134", "arxiv")
+    assert panel.attribution_key("2609.09134", None) == ("2609.09134", "arxiv")
+    root = write_skill(tmp_path, claims="1")
+    conn = FakeConn(claims={1: ("arxiv:2609.09134", "")})
+    assert not only(panel.review(skills_dir=root, conn=conn),
+                    check="claim-paper-attributed")
+
+
+def test_a_feed_digest_that_looks_like_an_arxiv_id_is_not_read_as_one():
+    # `blog:<feed>:<sha16>` and the sha is hex, so a digest can open with four
+    # digits, a letter-free run and look like a 2026 arXiv id to an unanchored
+    # match. The id pattern is anchored for exactly this.
+    key, kind = panel.attribution_key("blog:somefeed:2609084411aa33bc", None)
+    assert kind == "" and key == "blog:somefeed:2609084411aa33bc"
 
 
 def test_without_a_database_duty_one_is_unknown_rather_than_assumed(tmp_path):

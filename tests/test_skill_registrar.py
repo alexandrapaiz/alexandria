@@ -143,10 +143,19 @@ def test_every_real_skill_yields_a_row():
     carries the unchecked lines that fix that. The provenance panel calls that
     waiting rather than opting out; `reg.waiting_problems` is the same judgment
     read from the same function, so this test and the gate cannot disagree.
+
+    The second excuse arrived on 2026-10-26 with a date on it and was spent by
+    2026-10-27: two skills shipped a `description:` a YAML loader refuses, the
+    fix was a write into `skills/` this seat does not make, the skill seat made
+    it, and `reg.FRONTMATTER_QUARANTINE` is empty again. It stays in this union
+    because the next excuse will go in the same constant, and an empty one
+    contributes an empty set rather than a special case.
     """
     rows, problems = reg.read_skills()
+    excused = (reg.waiting_problems(rows, problems)
+               | reg.quarantined_problems(problems))
+    assert [p for p in problems if p not in excused] == [], problems
     waiting = reg.waiting_problems(rows, problems)
-    assert [p for p in problems if p not in waiting] == [], problems
     assert len(rows) >= 6
     for row in rows:
         assert row.path == f"skills/{row.slug}"

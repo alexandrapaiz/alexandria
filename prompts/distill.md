@@ -28,6 +28,20 @@ For each claim provide:
   assertion" above. This is not a judgement of how good the work is, only of
   whether a number is there, and it decides whether the claim reaches the reader
   as a measured result or as a report.
+- `relayed` — `true` when the claim's subject is another work's result rather
+  than something this paper did. A paper's related-work section, its
+  motivation, and sentences like "others report", "prior work finds" or
+  "X et al. show" are all describing experiments this paper did not run.
+  `false` for the paper's own experiments, ablations and analysis, including
+  the paper's own measurements of somebody else's method: if this paper ran
+  the baseline, that is first-hand. When `relayed` is `true`, `evidence` MUST
+  name the work the result belongs to as the paper names it, and so must
+  `attributed_to` below.
+- `attributed_to` — on a relayed claim, the work the result belongs to, as the
+  paper names it: "Yuan et al., 2026", "arxiv:2605.09490", "the Chroma
+  context-rot report". Null on every claim that is not relayed. A relayed
+  claim with no attribution is a sentence nobody can go check, so give the
+  address even when it is only a surname and a year.
 - `procedure` — when the paper describes HOW (a method, recipe, or mechanism):
   the operational steps, numbered, 2-6 steps, each one short sentence. Write
   them so an engineer could act on them without the paper ("1) Route each query
@@ -42,6 +56,16 @@ For each claim provide:
 Extract 1–5 claims per paper. If a distill-routed paper yields zero claims, say so —
 that is a triage error worth logging, not a failure to invent claims.
 
+Prefer the paper's own results. Extract a relayed claim only when the paper's
+own argument rests on it, which is usually a related-work sentence that
+explains away a result the paper is arguing against. Those are worth keeping,
+marked, because the paper's case depends on them and the corpus then knows
+where to go and check. One such sentence, kept unmarked, is how a wrong
+attribution reached a shipped skill on 2026-10-26: a paper wrote that two
+earlier evaluations reported large gaps against its own method, and when those
+two papers were finally read, one had run no such experiment and the other
+agreed with it.
+
 Also extract `institutions`: the labs, companies, or universities behind the
 paper (up to 3, from the author affiliations in the header — e.g. "Tsinghua
 University", "Google DeepMind"). Empty list if the text doesn't show them.
@@ -49,5 +73,5 @@ University", "Google DeepMind"). Empty list if the text doesn't show them.
 Respond with JSON only:
 
 ```json
-{"institutions": ["..."], "claims": [{"claim": "...", "evidence": "...", "measured": true, "procedure": "1) ... 2) ..." , "topics": ["retrieval"]}]}
+{"institutions": ["..."], "claims": [{"claim": "...", "evidence": "...", "measured": true, "relayed": false, "attributed_to": null, "procedure": "1) ... 2) ..." , "topics": ["retrieval"]}]}
 ```

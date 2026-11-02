@@ -223,10 +223,271 @@ def test_the_tool_and_the_grep_disagree_and_the_grep_is_wrong():
 
 
 def test_every_live_entry_carrying_a_readable_status_has_the_contract_fields():
-    """Not a gate, a measurement: how far the file is from its own contract."""
+    """Not a gate, a measurement: how far the file is from its own contract.
+
+    This bound moved twice on 2026-11-01 and neither move was a relaxation to
+    fit, so both are worth carrying.
+
+    It fell from 206 to 196 when the parser was fixed. A label like
+    `- What is worth stealing:` is the `What` field wearing a qualifier, and
+    the matcher pinned to the bare label called 163 such lines absent, so
+    fourteen entries were being reported incomplete that are not.
+    `tools/ledger.py` says a baseline "may fall and it may not rise" and that
+    lowering it belongs in the pull request that fixed the entries; what this
+    one fixed is the parser, which is a stronger claim than fixing fourteen
+    entries would have been.
+
+    Then it rose from 196 to 202, ninety minutes later, because six pull
+    requests merged into `main` while this branch was open and six of their
+    entries are short of the contract. None of the six is this branch's, and
+    that is the whole case for the test below: a bound on one number over 785
+    entries cannot say whose the defect is, so it is kept as a ratchet on a
+    backlog nobody in the room made, and responsibility is assigned by the
+    patch check instead.
+    """
     entries = ledger.parse(LIVE.read_text())
     incomplete = [e for e in entries if e.readable and e.missing_fields]
-    assert len(incomplete) <= 206, (
+    assert len(incomplete) <= ledger.PROJECT_INCOMPLETE, (
         f"{len(incomplete)} readable entries are missing contract fields, "
-        f"up from the 206 measured on 2026-10-17"
+        f"up from the {ledger.PROJECT_INCOMPLETE} measured on 2026-11-02. "
+        f"Re-measure it on origin/main before raising it, and say in the pull "
+        f"request whose entries moved it; see tools/ledger.py"
     )
+
+
+# --------- the patch status, which is the half with no budget ---------
+#
+# The project measurement above absorbs everybody's history. These answer for
+# the entries the branch under test actually wrote, which is Codecov's split
+# between a project status and a patch status, and the reason it is here is in
+# `docs/ideas.md` of 2026-11-01 under "The ledger measurement has a project
+# status and no patch status".
+
+
+BASE = (
+    "### 2026-10-31 — An entry that was already here\n"
+    "- Trigger: yesterday\n- What: a paragraph\n"
+    "- First step: one function\n- Cost: $0\n- Status: proposed\n"
+)
+
+
+def test_an_entry_the_branch_did_not_touch_is_not_its_patch():
+    report = ledger.patch(BASE, BASE)
+    assert report["added"] == 0
+    assert report["incomplete"] == []
+    assert report["no_status"] == []
+
+
+def test_a_complete_entry_the_branch_adds_owes_nothing():
+    head = BASE + (
+        "\n### 2026-11-01 — An entry this branch wrote\n"
+        "- Trigger: today\n- What is worth saying: a paragraph\n"
+        "- First step: one function\n- Cost: $0\n- Status: proposed\n"
+    )
+    report = ledger.patch(BASE, head)
+    assert report["added"] == 1
+    assert report["incomplete"] == []
+    assert report["no_status"] == []
+
+
+def test_an_incomplete_entry_the_branch_adds_is_named_with_its_line():
+    head = BASE + (
+        "\n### 2026-11-01 — An entry this branch wrote badly\n"
+        "- Trigger: today\n- Status: proposed\n"
+    )
+    report = ledger.patch(BASE, head)
+    assert report["added"] == 1
+    bad, = report["incomplete"]
+    assert bad["missing_fields"] == ["What", "First step", "Cost"]
+    assert bad["line"] == 8
+    assert bad["name"] == "An entry this branch wrote badly"
+
+
+def test_an_entry_the_branch_adds_with_no_status_is_reported_separately():
+    head = BASE + (
+        "\n### 2026-11-01 — An entry with no status at all\n"
+        "- Trigger: today\n- What: a paragraph\n"
+        "- First step: one function\n- Cost: $0\n"
+    )
+    report = ledger.patch(BASE, head)
+    assert report["incomplete"] == [], "all four fields are there"
+    bad, = report["no_status"]
+    assert bad["problem"] == "no-status"
+
+
+def test_the_base_s_own_backlog_is_not_charged_to_the_branch():
+    """The point of the split, as an assertion.
+
+    A base full of incomplete entries and a branch that adds one good one. The
+    project number would be four; the patch number is zero.
+    """
+    base = "".join(
+        f"### 2026-10-{day} — Entry {day}\n- Trigger: a while ago\n"
+        f"- Status: proposed\n\n"
+        for day in (20, 21, 22, 23)
+    )
+    head = base + (
+        "### 2026-11-01 — The one entry this branch wrote\n"
+        "- Trigger: today\n- What: a paragraph\n"
+        "- First step: one function\n- Cost: $0\n- Status: proposed\n"
+    )
+    assert len([e for e in ledger.parse(head)
+                if e.readable and e.missing_fields]) == 4
+    assert ledger.patch(base, head)["incomplete"] == []
+
+
+def test_the_cli_exits_nonzero_on_the_branch_s_own_bad_entry(
+        tmp_path, capsys, monkeypatch):
+    head = tmp_path / "ideas.md"
+    head.write_text(BASE + (
+        "\n### 2026-11-01 — An entry this branch wrote badly\n"
+        "- Trigger: today\n- Status: proposed\n"
+    ))
+    monkeypatch.setattr(ledger, "ledger_at",
+                        lambda ref, path="docs/ideas.md": BASE)
+    code = ledger.main(["--ledger", str(head), "--patch", "whatever"])
+    out = capsys.readouterr()
+    assert code == 1
+    assert "no baseline to lower here" in out.err
+    assert "missing What, First step, Cost" in out.out
+
+
+def test_a_ref_this_checkout_does_not_carry_is_a_skip_and_not_a_failure(capsys):
+    """The host clones shallow with a single-branch refspec, so `origin/main`
+    resolves on some checkouts and not others. A patch check that errors there
+    is a patch check nobody can put in a workflow."""
+    assert ledger.ledger_at("no-such-ref-exists-here") is None
+    code = ledger.main(["--patch", "no-such-ref-exists-here"])
+    assert code == 0
+    assert "skipped" in capsys.readouterr().err
+
+
+def test_this_branch_adds_no_entry_short_of_the_contract():
+    """The live one, and the only live assertion in this section.
+
+    Skips rather than fails when `origin/main` is not in the checkout, because
+    that is a property of how the clone was made and not of the ledger.
+    """
+    base_text = ledger.ledger_at("origin/main")
+    if base_text is None:
+        pytest.skip("origin/main:docs/ideas.md is not in this checkout")
+    report = ledger.patch(base_text, LIVE.read_text())
+    assert report["incomplete"] == [], (
+        f"{len(report['incomplete'])} of this branch's own entries are short "
+        f"of the contract: "
+        f"{[(b['line'], b['missing_fields']) for b in report['incomplete']]}"
+    )
+    assert report["no_status"] == [], (
+        f"{len(report['no_status'])} of this branch's own entries carry no "
+        f"readable status: {[b['line'] for b in report['no_status']]}"
+    )
+
+
+# ------------- the field label, qualified and bare -------------
+#
+# `INC-2026-11-01-the-contract-field-matcher-read-the-label-and-not-the-field`.
+# Every case below is synthetic on purpose. The measurement above is the only
+# thing here that reads the live file, because a second pinned count beside it
+# is a copy that goes stale, which is the defect `tests/test_ci_coverage.py`
+# refuses to commit in its own header.
+
+
+def test_the_bare_label_the_contract_prints_is_read_as_itself():
+    assert ledger.field_label("- What: a paragraph") == ("What", "What")
+    assert ledger.field_label("- Cost: $0") == ("Cost", "Cost")
+
+
+@pytest.mark.parametrize("line,field", [
+    ("- What alexandria does better: the corpus", "What"),
+    ("- What is worth stealing: their stop signal", "What"),
+    ("- Cost to HQ: one review", "Cost"),
+    ("- First step, if accepted: one function", "First step"),
+    ("- Trigger, twice over: two runs", "Trigger"),
+])
+def test_a_qualified_label_is_still_the_field_it_opens_with(line, field):
+    found = ledger.field_label(line)
+    assert found is not None and found[0] == field
+    assert found[1] != field, "the label is reported as written, not normalised"
+
+
+@pytest.mark.parametrize("line", [
+    "- Costs nothing: so it is not a Cost field",
+    "- First steps: plural is a different label",
+    "- Whatever happened: not a What field",
+    "- Triggered by nothing: not a Trigger field",
+])
+def test_a_word_that_merely_starts_with_the_field_name_is_not_the_field(line):
+    assert ledger.field_label(line) is None
+
+
+def test_a_label_too_wide_to_be_a_label_is_prose():
+    wide = "What " + "x" * ledger.FIELD_QUALIFIER_WIDTH
+    assert ledger.field_label(f"- {wide}: still prose") is None
+    # The case above scales with the constant, so it stays true if the bound is
+    # widened to swallow a paragraph. This is the half that does not: the
+    # widest real label measured on the live file is 75 characters, so a bound
+    # loose enough to admit a sentence is a bound that is not doing the work.
+    assert ledger.FIELD_QUALIFIER_WIDTH <= 120
+
+
+def test_a_line_that_is_not_a_list_item_is_not_a_field():
+    assert ledger.field_label("What: a heading, not a field") is None
+    assert ledger.field_label("  - What: indented past the body") is None
+
+
+def test_an_entry_written_entirely_in_qualified_labels_owes_nothing(tmp_path):
+    text = (
+        "### 2026-11-01 — Craft scan: somebody else's product\n"
+        "- Trigger: today's scan\n"
+        "- What is worth stealing: their stop signal\n"
+        "- What alexandria does better: the provenance\n"
+        "- First step, if accepted: one function\n"
+        "- Cost to HQ: $0\n"
+        "- Status: proposed\n"
+    )
+    found, = ledger.parse(text)
+    assert found.missing_fields == []
+    assert found.qualified_fields == {
+        "What": "What is worth stealing",
+        "First step": "First step, if accepted",
+        "Cost": "Cost to HQ",
+    }, "Trigger was bare, so it is not reported as qualified"
+
+
+def test_the_bare_label_wins_when_an_entry_writes_both():
+    text = (
+        "### 2026-11-01 — An idea\n"
+        "- Trigger: something\n"
+        "- What is still open: the half nobody owns\n"
+        "- What: the paragraph the contract asks for\n"
+        "- First step: one function\n"
+        "- Cost: $0\n"
+        "- Status: proposed\n"
+    )
+    found, = ledger.parse(text)
+    assert found.missing_fields == []
+    assert "What" not in found.qualified_fields
+
+
+def test_a_genuinely_absent_field_is_still_absent():
+    text = (
+        "### 2026-11-01 — An idea\n"
+        "- Trigger: something\n"
+        "- Status: proposed\n"
+    )
+    found, = ledger.parse(text)
+    assert found.missing_fields == ["What", "First step", "Cost"]
+    assert found.qualified_fields == {}
+
+
+def test_the_json_surface_carries_the_qualified_labels():
+    text = (
+        "### 2026-11-01 — An idea\n"
+        "- Trigger: something\n"
+        "- What it is: a paragraph\n"
+        "- First step: one function\n"
+        "- Cost: $0\n"
+        "- Status: proposed\n"
+    )
+    found, = ledger.parse(text)
+    assert found.as_dict()["qualified_fields"] == {"What": "What it is"}
