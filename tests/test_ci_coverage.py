@@ -762,6 +762,24 @@ UNCOVERED = {
     # which is the shape of the two incidents this file's set exists to name.
     # Counted at the same standing finding as the line above.
     "tests/test_resolve_target.py",
+    # Added 2026-11-02 with `tools/root_scratch.py`, pinned for the same
+    # structural reason as every line above, and the pin is late rather than
+    # new: the run that wrote the six tests said in its own pull request body
+    # that they would land in this set, and shipped without adding the line,
+    # so this ratchet was the only thing that noticed and it noticed on a
+    # hand-run of the suite rather than on the pull request. That is the set's
+    # own thesis arriving from the inside.
+    #
+    # What it guards is the sixth remedy for run scratch in the checkout root.
+    # The five before it named scratch, which is unbounded, and each was
+    # defeated by a file the writer had already classified as not-scratch.
+    # This one enumerates the root against `origin/main` instead, so it does
+    # not depend on the writer agreeing it is scratch, and two of its six
+    # tests are the fifth and sixth instances by their real names. A gate
+    # whose whole point is that it does not trust the run that wrote the file
+    # is worth little if it fires on no pull request.
+    # Counted at the same standing finding as the two lines above.
+    "tests/test_root_scratch.py",
 }
 
 
