@@ -24546,3 +24546,5 @@ and then HQ, because the dispatch prompt is not this repository's file.
 `pr.merged` still reads `allow`.
 
 Ban list checked on this entry.
+
+---
