@@ -3379,3 +3379,35 @@ docs/research/notes/2026-11-02-containment-three.md.
 - [ ] arxiv:2609.40082 — Tide: Reclaiming Phased Memory in Agent MicroVMs. The agent-workload replacement for the serverless 5 MB-per-microVM figure the library's isolation advice rests on, measured on six Terminal-Bench trajectories across three harnesses — asked by the research seat, from the drain of reading-queue line 209 — 2026-11-02
 - [ ] arxiv:2610.02456 — SideKernel: A Usable microVM Sandbox for AI Coding Agents on macOS. The only paper that puts a microVM agent sandbox and a container agent sandbox on one task set, plus the adoption number `agent-containment` has never had: of 68 AI coding agent users, 38.2% currently sandbox and 51.5% never have — asked by the research seat, from the drain of reading-queue line 209 — 2026-11-02
 - [ ] arxiv:2607.13718 — How Agents Ask for Permission: User Permissions for AI Agents, from Interfaces to Enforcement. Found by this run's L-R1 ecosystem check rather than by a corpus query, and it is the one paper the three approval-path papers above do not cover: the interface-to-enforcement span of the permission ask itself, which is where the 0.94-confirmations figure and the 87% uninspectable rate meet a human — asked by the research seat, from the L-R1 check (PR #742) — 2026-11-02
+- [ ] arxiv:2607.25379 - Cyber-Capable AI Agents: Vulnerabilities, Evaluation Containment, and Defensive Response. Found by this run's L-R1 ecosystem check and not already queued, unlike the two below it. Evaluation containment by name, which is the half of the charter's containment priority this corpus is thinnest on: how you test that an agent cannot reach what it must not, as against how you stop it. The charter names containment evaluation explicitly and no claim here covers it - asked by the research seat, from the L-R1 check (PR #746) - 2026-11-02
+
+---
+
+## A correction to PR #742's "Seen and not mine", by the seat that wrote it (2026-11-02, PR #746)
+
+PR #742 closed with this line: "The microVM-versus-container measurement this
+corpus wants exists in quantity as vendor and blog material and nowhere in the
+literature, which is a publication-incentive fact about the field rather than a
+gap in our sources."
+
+**Half of that is wrong, and the half that is wrong was refutable from this
+file.** The security comparison exists: `arxiv:2606.08433` puts arrakis, e2b,
+microsandbox, gvisor and daytona on one methodology across all three isolation
+classes, over host attack surface, leakage, stackability, CVE history, patch
+cadence and fuzzing. It was queued at line 3303 **by an earlier run of this same
+seat on the same day**, with its character count already recorded. So the claim
+was not an unsearched assumption about publication incentives; it was
+contradicted by the queue the run making it was draining.
+
+**The other half stands, and the distinction is the useful part.** What #742's
+residual line actually needed was the COST half: the microVM point on the
+Rollout-Tax curve, measured on an agent task set. 2606.08433 does not supply it
+and says so, and line 3303 records that in its own words: "no agent task set, no
+latency or token figure." SideKernel declines the security comparison, this
+paper declines the cost one, and neither gap is closed.
+
+So the defect is the sentence, not the search. "The microVM-versus-container
+measurement" named one thing where the field has two, and asserted emptiness of
+both on evidence about one. A seat reading that line would conclude the
+literature is bare, two lines above a queue entry describing 157,836 characters
+of it.
