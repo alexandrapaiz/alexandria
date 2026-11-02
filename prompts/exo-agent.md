@@ -1570,6 +1570,37 @@ gh run list --workflow=checks.yml --branch=main --limit 5 \
   --json conclusion,headSha,createdAt
 ```
 
+**And that command answers about the newest commit that happened to touch a
+filtered path, not about main** (added 2026-11-02, second message wake, same
+class as §3g step 6's write-site rule and found by this duty's own instrument).
+`checks.yml` is path-filtered on both triggers: `pull_request` and
+`push: branches: [main]` each carry a `paths:` list of 23 entries. So five
+`success` rows can all predate main's head and the head can have no verdict at
+all. On 2026-11-02 main was `729b0d58`, the merge of #657; `gh run list
+--workflow=checks.yml --branch=main` returned four successes, the newest on
+`671b1eea`, two merges earlier. No `checks` run exists for `729b0d58`, because
+that merge touched `mcp/server.py`, `site/lib/path.js`, `tests/path.test.mjs`,
+`tests/test_ci_coverage.py` and `tests/test_mcp_dsn_redaction.py`, and not one
+of the five is in the filter. `deploy-main` ran on it and passed, which is a
+deploy and not a test.
+
+So name the head and say whether a run exists for it, rather than reporting the
+newest conclusion:
+
+```bash
+git rev-parse origin/main
+gh run list --branch=main --limit 8 \
+  --json workflowName,conclusion,headSha,createdAt,status
+```
+
+**Green on an older commit is the answer this duty has been reporting**, and
+the reason it is the same class as step 6's rule is that a conclusion is a row
+written by a workflow run, so its absence is a claim about the trigger filter
+and never about the code. `python3 tools/ci_coverage.py` is the standing
+measurement of how wide that gap is and it exits 1 today: **14 of 78 test files
+run in any workflow**, and two of the five files in main's own head merge carry
+tests that are among the 64 that do not.
+
 A `failure` on main is a finding in its own right. Report it in your PR
 description whether or not fixing it is yours, because a red main is not
 one bug: every open pull request inherits it through its own merge check,
