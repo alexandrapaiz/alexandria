@@ -86,6 +86,11 @@ REGISTERS = [
 #: pinned rather than matched loosely: `===` under a heading is not damage.
 CONFLICT = re.compile(r"^(<{7}|={7}|>{7})(\s|$)")
 
+#: A date anywhere in a field that should have ended before it. The queue's
+#: `asked by` runs to an em dash, so a date inside it means the separator was
+#: written as `--` and the field swallowed the rest of the line.
+DATE_IN_FIELD = re.compile(r"\d{4}-\d{2}-\d{2}")
+
 #: `INC-YYYY-MM-DD-slug`, the scheme incident 29 replaced the counter with.
 INCIDENT_SLUG = re.compile(r"^#{2,3}\s+(INC-\d{4}-\d{2}-\d{2}-[a-z0-9-]+)", re.M)
 
@@ -94,6 +99,55 @@ INCIDENT_SLUG = re.compile(r"^#{2,3}\s+(INC-\d{4}-\d{2}-\d{2}-[a-z0-9-]+)", re.M
 #: drift apart. Re-exported because `tests/test_check_registers.py` reads it
 #: from here and one source of truth with one name in two modules is the point.
 VALID_STATUSES = set(_ledger_module().VALID_STATUSES)
+
+
+def _reading_queue_module():
+    """`pipeline/reading_queue.py`, which owns the queue's line format.
+
+    Imported the way `_ledger_module` is, so the asker contract lives in the
+    parser that distill actually reads the file with and not in a second
+    pattern here.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "reading_queue", ROOT / "pipeline" / "reading_queue.py")
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+def unparseable_queue_askers(path: Path, root: Path = ROOT) -> list[str]:
+    """Queue lines whose `asked by` field swallowed the date after it.
+
+    `ASKED_BY` terminates the field on an em dash, which is what the format at
+    the top of `pipeline/reading_queue.py` specifies and what `compose()`
+    emits. A line written by hand with `--` instead parses with the date, and
+    sometimes a paragraph, inside the asker, so the attribution distill prints
+    is wrong and the line is attributed to nobody a roster knows.
+
+    This is here rather than only in `tests/test_reading_queue.py` because that
+    test asserts against the live file and `tools/ci_coverage.py` reports it as
+    one of 70 test files no workflow runs. Two such lines reached `main` on
+    2026-11-02 in the research seat's merge and the suite was red on `main`
+    until the engineer seat ran it by hand. Every seat runs this checker before
+    shipping, so this is the reachable place to ask the question.
+    """
+    queue = _reading_queue_module()
+    text = path.read_text()
+    out = []
+    for item in queue.parse(queue.read_file(path)):
+        asker = item.asked_by
+        if not asker:
+            continue
+        broken = (DATE_IN_FIELD.search(asker) or "\u2014" in asker or "~~" in asker)
+        if broken:
+            line = text[: text.index(item.raw)].count("\n") + 1 if item.raw in text else 0
+            out.append(
+                f"{path.relative_to(root)}:{line}: the `asked by` field runs past its "
+                f"separator, so this line is attributed to {asker.strip()[:60]!r}. "
+                "Write the separator as an em dash, or use "
+                "`python3 pipeline/reading_queue.py --add`, which composes it")
+    return out
 
 
 def conflict_markers(path: Path, root: Path = ROOT) -> list[str]:
@@ -182,6 +236,9 @@ def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
     incidents = root / "docs/agents/incidents.md"
     if incidents.exists():
         blocking += duplicate_incident_ids(incidents, root)
+    queue = root / "docs/research/reading-queue.md"
+    if queue.exists():
+        blocking += unparseable_queue_askers(queue, root)
     ledger = root / "docs/ideas.md"
     if ledger.exists():
         warnings += unknown_ledger_statuses(ledger, root)

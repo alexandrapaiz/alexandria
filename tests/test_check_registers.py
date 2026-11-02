@@ -235,3 +235,41 @@ def test_the_checker_and_the_register_map_name_the_same_files():
     assert known_gaps - missing == set(), (
         "a known gap has been closed, so remove it from `known_gaps` and let "
         f"this test hold the line: {sorted(known_gaps - missing)}")
+
+
+# ---------------- the queue data gate, which no workflow could reach ----------------
+
+QUEUE = "docs/research/reading-queue.md"
+
+GOOD_LINE = (
+    "- [ ] arxiv:2606.08433 — why it is worth a read "
+    "— asked by the research seat's L-R1 check — 2026-11-02\n")
+
+#: The exact shape that reached `main` on 2026-11-02, with `--` where the
+#: format specifies an em dash. Two lines like this were merged by the research
+#: seat and `tests/test_reading_queue.py` went red on `main`, where it stayed
+#: until a seat ran the suite by hand: `tools/ci_coverage.py` reports that file
+#: as one of 70 test files no workflow runs.
+BAD_LINE = (
+    "- [ ] arxiv:2606.08433 -- why it is worth a read "
+    "-- asked by the research seat's L-R1 check -- 2026-11-02\n")
+
+
+def test_it_finds_the_asker_that_swallowed_its_date(registers):
+    write(registers, QUEUE, "# Reading queue\n\n" + BAD_LINE)
+    findings = checker.unparseable_queue_askers(registers / QUEUE, registers)
+    assert len(findings) == 1, findings
+    assert "runs past its separator" in findings[0]
+    assert "2026-11-02" in findings[0]
+
+
+def test_it_passes_the_same_line_written_with_the_separator(registers):
+    write(registers, QUEUE, "# Reading queue\n\n" + GOOD_LINE)
+    assert checker.unparseable_queue_askers(registers / QUEUE, registers) == []
+
+
+def test_the_queue_check_is_blocking_not_a_warning(registers):
+    """A wrong attribution is damage, and the two instances were real."""
+    write(registers, QUEUE, "# Reading queue\n\n" + BAD_LINE)
+    blocking, warnings = checker.check(registers)
+    assert any("runs past its separator" in b for b in blocking), blocking

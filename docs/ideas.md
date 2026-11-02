@@ -25404,3 +25404,94 @@ ingestion target rather than a skill target.
   recognise.
 - Cost: $0 to measure. A larger volume is money and therefore the owner's.
 - Status: urgent
+
+### 2026-11-02 - A gate's file list should be derived from the register map, because a hand list puts a new register out of scope by default and says nothing (engineer seat, message run, 739-conflict wake)
+- Trigger: today's conflict was in `docs/research/reading-queue.md`, and
+  `tools/resolve_register_conflict.py` could not be pointed at it, because it
+  reads `REGISTERS` from `tools/check_registers.py` and that list did not name
+  the file. The file had sat in `docs/agents/registers.md`'s own table since
+  2026-09-26 with a writer (skill seat) and a reader (research seat) that are
+  different seats, which is the criterion the `REGISTERS` comment states in its
+  own words. So the criterion already selected it and the hand list had not
+  caught up. Filed as
+  `INC-2026-11-02-the-register-resolver-could-not-see-the-register-that-conflicted`.
+  Measured while writing the test: of the 44 rows in the map naming a `docs/`
+  path, 14 are guarded and 30 are not, and the drift runs the other way too,
+  because `docs/backlog.md` is guarded with no row in the map at all though
+  `company.yaml` declares it this product's `pending` surface.
+- What: invert the default. `REGISTERS` is a list of what is in scope, so a new
+  append-only file is out of scope until somebody remembers, and nothing ever
+  reports the omission. The map is already the place where a register's writer
+  and reader are written down, so it can be the source: parse its table, treat
+  every row whose writer and reader are different seats as guarded, and keep a
+  named `NOT_A_REGISTER` list for the specs and data files that appear in the
+  table without being registers. The exclusion then costs a line and a reason,
+  and the omission costs nothing, which is the opposite of today.
+- Why the map rather than a glob: a glob over `docs/**.md` would guard the
+  sprint files and the charters, which are not append-only and not multi-seat.
+  The property that matters is two different seats, and only the map records it.
+- First step: a reconciliation report rather than a gate, because 30 rows is a
+  triage and not a bug. One function printing each table row with its guarded
+  state and its writer and reader, so the next run has the 30 sorted into
+  "register" and "not a register" rather than counted. The ratcheted test in
+  #751 holds the line in the meantime.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - The pre-ship marker grep is silent on exactly the merge failure that keeps happening, and the arithmetic that catches it is already written (engineer seat, message run, 739-conflict wake)
+- Trigger: every charter's step zero is `grep -rn '^<<<<<<< ...'`, described as
+  step zero "because it is the only one whose failure is silent after the first
+  time." It printed nothing on my first resolution of today's conflict, which
+  had dropped 3,137 unconflicted lines. The marker scan cannot fail to pass a
+  hand resolution, because a hand resolution's defining property is that the
+  markers are gone. Three instances now:
+  `INC-2026-10-24-a-hand-resolved-register-append-deleted-another-seats-line-with-no-marker`,
+  `INC-2026-11-01-a-shared-status-line-was-factored-out-of-a-conflict-hunk-and-reordering-detached-it`,
+  and this run's. In all three the loss was caught by a number somebody kept
+  for another purpose, never by the prescribed check.
+- What: add one line to the pre-ship ladder, beside the marker grep rather than
+  instead of it, since the two catch disjoint failures. The marker grep catches
+  a resolution nobody finished; `resolve_register_conflict.py --check` catches a
+  resolution somebody finished wrong, by comparing every line's count against
+  `ours + theirs - base`. Run against this run's three trees it returns 2,723
+  findings for my first attempt and 0 for what shipped, so the instrument is
+  exact and it is already in the repository. What it lacks is a clause making
+  it fire.
+- Why this is a ledger proposal and not a commit: the charters are the owner's
+  to edit by merge, and this touches every seat's copy of the same section. It
+  is also a company standard shape rather than a local one, so it may belong in
+  `docs/standards/lessons.md` through the ExO relay rather than in ten charters.
+- First step: the owner's or the ExO's call on which surface carries it. The
+  code needs nothing: `--check` exists, exits non-zero on a finding, and now
+  covers the reading queue.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: pre-commit makes a check's domain a pattern with an explicit exclude, so a new file is guarded by default, where alexandria's gates carry hand lists that fail silently open (engineer seat, message run, 739-conflict wake)
+- Trigger: today's incident, where the tool that would have caught my mistake
+  was correct, present, and inapplicable to the one file that needed it. I went
+  looking for how other gate frameworks decide what they cover.
+- What is worth stealing: in `pre-commit`, a hook declares its domain as
+  `files:` and `types:` patterns with an optional `exclude:`, and the default
+  `files` matches everything the commit touches. The consequence is the one
+  alexandria wants: adding a Markdown file to the repository puts it inside
+  every Markdown hook immediately, and keeping it out is an explicit line in
+  the config that a reviewer reads in the diff. Omission is loud and exclusion
+  is deliberate. alexandria's `REGISTERS`, `ci_coverage`'s pin list and the
+  voice gates all invert that, carrying hand-maintained lists of what is in
+  scope, so the failure mode is a file nobody added and no output at all. The
+  steal is not the YAML, it is the default: a gate should state what it
+  excludes, not what it includes.
+- What alexandria does better: pre-commit has no analogue of
+  `resolve_register_conflict.py`'s conservation arithmetic, and neither do the
+  linters it wraps. Every one of them judges a file's final content against a
+  rule, which is a question about one tree. "Did this merge keep every line both
+  parents had" is a question about three trees, and a hook that only ever sees
+  the worktree cannot ask it. alexandria asks it, exactly, per line, and the
+  number is checkable afterwards by anyone with the three refs. That is the
+  better instrument and it is ours; what it was missing today was pre-commit's
+  idea of a domain.
+- First step: the reconciliation report in the entry above, which is the same
+  first step read from the other side.
+- Cost: $0
+- Status: proposed
