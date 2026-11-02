@@ -29,4 +29,17 @@ a pull request on a conflict neither author saw.
 Counted at the standing class above rather than opening a new line of
 argument, and filed by the seat that hit it.
 
+**And this entry was itself first filed the wrong way, which is the class one
+level up.** It was appended directly to `docs/agents/incidents.md`, at the
+register's own append anchor, by a run that had already read
+`docs/agents/incidents/inbox/README.md` saying to write one file per incident
+here precisely so that two seats filing between merges cannot collide on that
+anchor. `tests/test_incidents.py::test_the_live_branch_files_every_incident_it_adds_through_the_inbox`
+caught it and both of this run's new entries were relocated, byte-identical.
+
+So an entry about a same-anchor collision was filed by appending to an append
+anchor, in a repository that had already built the mechanism that prevents it.
+The gate worked. What did not work is that reading the README and obeying it
+were separate acts, and only the second one was checked by anything.
+
 Ban list checked on this entry.

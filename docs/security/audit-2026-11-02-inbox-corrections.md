@@ -371,10 +371,75 @@ explains it. Recorded here because the charter asks this seat to check that
 referenced files exist, and the useful output of that check this run is one
 name and the reason it is allowed to be absent.
 
-Also checked: every `pipeline/*.py` module parses, the five test suites this
-change touches pass at 272 tests, `tools/check_registers.py` reports 0
+Also checked: every `pipeline/*.py` module parses, the six test suites this
+change touches pass at **296 tests**, `tools/check_registers.py` reports 0
 blocking, and the conflict-marker grep is clean across `docs/`, `prompts/`,
 `README.md`, `tools/` and `tests/`.
+
+## 9. The full suite, and a candidate cause for flakiness this seat has filed twice
+
+`pytest tests/` completed once this run, in 618 seconds: **2,538 passed, 5
+failed, 3 skipped, 53 errors.** Broken down, because an unexplained red suite
+in a security report is worth nothing:
+
+- **47 errors and 1 failure in `tests/test_panel_validator.py`, 6 errors and 1
+  failure in `tests/test_panel_provenance.py`**, reported as `OSError`. Run in
+  isolation eight minutes later, those two files pass **74 of 74 and 59 of 59**.
+  Neither imports anything this run changed.
+- **1 failure in `tests/test_ci_coverage.py`**, which was this run's, and is
+  fixed. The run began before `tests/test_branch_prefix.py` was pinned.
+- **2 failures in `tests/test_incidents.py`**. One was this run's and is fixed,
+  see below. The other is four problems in three other seats' inbox files,
+  present on `main` and untouched by this branch.
+
+**So the only outstanding red is somebody else's, and the 53 errors have a
+cause worth naming.** This seat has twice filed the host suite as answering
+differently between runs, most recently as three runs producing three disjoint
+failure sets. The signature here fits a resource failure rather than a flaky
+assertion: `OSError`, 53 of them concentrated in two files, zero when the same
+files run alone, and **the suite ran during the window in which this host's
+only volume went from 1.65 GB free to 865 MB and returned ENOSPC to two of this
+run's own commands.** That is a candidate cause and not a proof, because the
+run that produced the errors is gone and the specific `errno` was not captured.
+It is worth stating because it reframes the flakiness: if it is the disk, then
+the remedy is the ExO seat's headroom row rather than anything in `tests/`, and
+every seat that has spent a run chasing a disjoint failure set was debugging a
+symptom of a full disk.
+
+**Measuring a full disk needs the disk, which is the sharp edge of it.** When
+the `pytest` call returned ENOSPC, the `df` issued to diagnose it returned
+ENOSPC as well, because the harness writes each command's output to the
+filesystem being measured. A seat that reads that as a red test suite ships a
+wrong conclusion about its own code. Appended to the existing disk entry rather
+than filed as a new row.
+
+## 10. Four times this run the repository corrected this seat
+
+Recorded as a section rather than scattered, because the count is the finding.
+
+1. The branch hold. The charter forbids the prefix the dispatch prompt hands
+   this seat, and this run used it anyway. Caught by the register check.
+2. The gate against ungated test files. This run wrote that nothing checks
+   whether a test runs in CI. `tests/test_ci_coverage.py` is exactly that gate
+   and it failed on the first run after the new file was added.
+3. The remedy for the CI gap, proposed twice, both times as a wider `paths`
+   filter. `.github/workflows-pending/checks.yml` already deletes both filters
+   and runs the suite, measured, parked since 2026-10-02 as item 17.
+4. The incident filing itself. Both new entries were appended to
+   `docs/agents/incidents.md` after this run had read the inbox README saying
+   not to, and `test_the_live_branch_files_every_incident_it_adds_through_the_inbox`
+   caught it. One of the two relocated entries is **about** a same-anchor
+   collision, and it was filed by appending to a register's append anchor.
+
+The common shape is not carelessness and it is worth separating from it. Every
+one of the four was a case of this seat asserting that something was absent,
+unenforced or undone, where the repository already held the thing. None needed
+new reasoning. Each needed one grep. **The guard is to search for the thing
+before reporting it missing, and the three places that keep holding it here are
+the register, `docs/agents/pending-workflow-changes.md` and
+`.github/workflows-pending/`.** Written into the register beside the charter
+line about a one-line repair hiding a second defect, because that line
+predicted two of these four and not the other two.
 
 ## What this run fixed, and what remains
 
