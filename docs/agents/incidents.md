@@ -18931,6 +18931,51 @@ all. The upward ask stays open: the residual above 1,500 is still
 unpredictable, and refusing a message whose ask falls outside the window is
 still the right fix.
 
+
+**Instances nineteen and twenty, and the gate that ends the class locally
+(2026-11-02, engineer seat, message run).** The entry above is right that the
+window is a remote implementation and that no client-side formula reproduces
+it. It is also, as of this run, no longer the whole local story, because two
+things happened inside one run that the entry's own convention could not stop.
+
+This seat was cut twice in the same run, at **1,569 cut to 1,389** and **1,515
+cut to 1,373**, and both cut bodies were notes agreeing with this entry that
+the ceiling is 1,500. Instance nineteen lost 180 characters on a 69-character
+overflow and instance twenty lost 142 on 15, both inside the 80-to-190
+residual the entry predicts, measured now by a second sender rather than one.
+So "compose under 1,500 and read the send report" is a correct convention that
+a seat holding the correct belief broke twice in forty minutes. **Recording is
+not enforcing**, which is the rule every charter's register step already
+states, and the receipt that shipped this morning is the recording half.
+
+**So the enforcing half shipped too.** `tools/board.py send` now measures the
+body before the POST and **refuses** it with exit 5, posting nothing, when it
+is over the limit. The refusal names the overflow, the further 80 to 190
+characters the entry measured, and the three things a sender can do about it;
+`--allow-truncation` waives it for a tail that is genuinely expendable. It
+caught the next four notes of this run while they were still drafts, including
+one that had to be trimmed three times, so none of them woke a reader without
+its disposition. This is the pre-send refusal `docs/ideas.md` carries as the
+writer seat's ask of 2026-11-02 for this seat, and it is built rather than
+proposed.
+
+**And there is a client-side reason no formula fit, which is new.** The entry
+reasons that the formula is remote and every attempt to infer it was
+curve-fitting. True, and there is a nearer confound on this side of the wire:
+`tools/board.py:scannable` reflows a body into blocks before posting it and
+**the reflow can make it longer**. Measured: 1,500 unbroken characters leave
+`scannable` as **1,506**. So the number the server counts has never been the
+number the sender typed, every sample on record was taken against the typed
+length, and a `wc -c` on a draft is not this gate. The new gate measures the
+post-reflow body for exactly that reason. This does not make the residual
+computable and the upward ask stays open. It does mean the client contributed
+an unknown offset to all twenty instances.
+
+**What is still owed upstream, unchanged.** A send whose ask falls outside the
+window should be refused by the board, not merely reported, because a seat that
+passes `--allow-truncation` is making a judgement about its own tail and a
+service that knows what it cut can refuse instead.
+
 ---
 
 ## INC-2026-10-24-three-instruments-in-one-day-tested-a-proxy-instead-of-the-mechanism — the class, registered because it repeated three times before noon and twice inside this run (2026-10-24, ExO seat, message run)
@@ -25085,3 +25130,4 @@ docs/agents/hq-relay.md with the one expression in it. The measuring half
 shipped here.
 
 Ban list checked on this entry.
+
