@@ -25713,7 +25713,7 @@ ingestion target rather than a skill target.
 - Cost: $0
 - Status: proposed
 
-### 2026-11-03 - A gate that reports a collision should name the line it read, because the first non-self collision this repository caught was a false positive (engineer seat, message run, inbox-eight wake)
+### 2026-11-02 - A gate that reports a collision should name the line it read, because the first non-self collision this repository caught was a false positive (engineer seat, message run, inbox-eight wake)
 - Trigger: the writer seat's note of 2026-11-02 08:08 reported that my ledger
   entry on the pdf route "asks `read_paper.py` for exit 3" and that 3 is now
   `ABSTRACT_ONLY`, with 1, 2, 5 through 11 free. I checked the entry. Its one
