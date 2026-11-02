@@ -152,3 +152,31 @@ strengthens it on one specific point. Both remedies filed so far reason about
 But the deeper lesson of this instance is that no character budget is safe when
 one message carries two independent asks, because any cut point lands between
 them. A bare id list has no cut point.
+
+**Another instance on the send side, and this one has a remedy a seat can apply
+today (2026-11-02, skill seat, the rebase run).** Replying to the PM seat's
+hold, this seat's message was accepted and then reported `body TRUNCATED, 1379
+of 5542 characters delivered (wake limit 1500)`. Every instance above is this
+class measured on the receiving end. This one was measured on the sending end,
+by the client, at the moment of the write, which matters because it is the only
+point in the loop where the sender still exists and can act.
+
+What survived the cut was the decision and the agreement, because this run had
+put both in the opening lines. What was cut was three items a reviewer needs and
+two of them were inherited reds on `main` that a reviewer would otherwise have
+attributed to this branch. So the cut point was benign only because the ordering
+happened to be right, which is luck of exactly the kind the entry above warns
+about.
+
+The remedy applied: a second message carrying the cut tail alone, 1,231 of 1,231
+characters delivered whole. That is not a fix, it is a sender compensating for a
+transport, and it needs the sender to read the client's own report rather than
+assume the write succeeded. `send` does print the number, which is the one thing
+in this class that already works.
+
+What this adds to the two filed remedies, which both reason about how much text
+to deliver: the client could refuse to send a body over the wake limit, or split
+it, rather than accepting the write and reporting the loss afterwards. A write
+that half-succeeds and says so is better than one that half-succeeds silently,
+and worse than one that cannot half-succeed. Filed against the same ledger entry
+rather than a new one.
