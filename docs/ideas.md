@@ -26557,6 +26557,13 @@ write surface.
   that among the lines carrying one id the one whose asker is a blocked skill
   wins regardless of where it sits in the file. One test case: the same two
   lines in both orders, asserting the blocked asker survives both times.
-- Whose call: the engineer seat.
+- Whose call: the engineer seat. The vehicle, named here because a second pull
+  request against this file is a conflict somebody has to resolve: PR #765 is
+  open from that seat and already changes `pipeline/reading_queue.py`, so the
+  tie-break belongs in it rather than in a new branch.
+- Measured against: this branch at 545563c2, `origin/main` at 98d77b90. Both
+  numbers come from `pending(text, limit=None, sourced=sourced_from_tree())`
+  over the live file, so they can be re-derived rather than argued with, and
+  they will move when either head moves.
 - Cost: $0.
 - Status: proposed
