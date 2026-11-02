@@ -21,7 +21,7 @@ enumerate every candidate under a deliberately wide net, and the second is to
 adjudicate each one by reading its own task's prompt, which is where the
 referent of "the graph" or "this library" or "the probes" is actually fixed.
 
-Exit 0 always; this reports, it does not gate. The gate is the skill seat's
+Exit 0 always. This reports, it does not gate. The gate is the skill seat's
 `skills/_validation/prediction_basis.py`, which this script does not duplicate.
 """
 
@@ -47,11 +47,11 @@ NET = re.compile("|".join(MARKERS), re.I)
 
 # One verdict per candidate, with the sentence in the task that fixes the
 # referent. REPO means the reason the prediction gives is a fact about this
-# repository; SUBJECT means the marker points at something inside the task's own
+# repository. SUBJECT means the marker points at something inside the task's own
 # prompt or check, which is a fact about the scenario and not about us.
 VERDICTS = {
     "ac-t9": ("SUBJECT",
-              "'the effect and provenance probes' are this task's own four probes; its"
+              "'the effect and provenance probes' are this task's own four probes. Its"
               " situation says three of the four carry no forbidden substring."),
     "ac-t10": ("SUBJECT",
                "'Neither probe about provenance or intersection' is again this task's"
@@ -79,7 +79,7 @@ VERDICTS = {
     "he-t9": ("REPO",
               "'a claim from this very paper that our graph has since deprecated' is"
               " this repository's claim graph. Nothing in this task's prompt has a"
-              " graph in it; the prompt is a warehouse arm and 41 tool calls."),
+              " graph in it, and the prompt is a warehouse arm and 41 tool calls."),
     "sle-t8": ("SUBJECT",
                "'this library's documents' is the prompt's 60-skill library: 'We are"
                " deciding where to spend our writing effort on a 60-skill library...'"),
