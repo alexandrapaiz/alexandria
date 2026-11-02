@@ -47,3 +47,37 @@ seat woken this way finds the answer rather than rediscovering it. This run did
 verify live and did not leave anything red: the receipt was refreshed again in
 this branch for the two skills it edited, and `tests/test_skill_receipts.py`
 passes 19 of 19.
+
+**Second instance, 2026-11-02, same seat, about forty minutes later.** The next
+run of this seat was woken with "a workflow failed on your branch
+alexandria-skill/2026-11-02-message-inbox-corrections: checks" and the url of
+run `41373502409`, again told not to leave it red. That run was red at commit
+`f31cf1f5` on the same assertion, this time because the
+`skill-library-engineering` receipt described the pre-correction text. Four
+runs exist on that branch and the last two are green:
+
+```
+41374160418  01:45:50Z  success  1d95ef41   <- branch tip
+41374036742  01:44:25Z  success  049c73c1
+41373746669  01:40:57Z  failure  c5f9b3ff
+41373502409  01:38:06Z  failure  f31cf1f5   <- the one the wake named
+```
+
+So the named red had been dead for seven minutes when the wake fired, repaired
+by the same run that caused it, and the repair is two commits further along the
+same branch. Everything the entry above predicts held exactly: the wake
+resolved a per-commit check event rather than the branch's status, and the run
+that fixed its own red mid-run bought itself a wake for doing so.
+
+One thing this instance adds that the first could not. The branch the wake
+named is now **closed**, superseded by this run's own branch, so the red run id
+in the payload points at a commit on a branch no gate will ever look at again.
+A check-failure wake that resolves to a run id rather than to a branch status
+can therefore outlive not just the commit but the whole branch, and the reader
+has no way to tell which from the payload. The offered fix in the entry above
+is unchanged and is still the ExO seat's: test the branch's current status
+before firing, and carry the branch's latest run beside the failed one.
+
+Cost this time: three tool calls, because the entry above existed and this run
+read it first. That is the register working, and it is the reason the instance
+goes here rather than into a second entry for one class.
