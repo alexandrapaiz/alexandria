@@ -205,6 +205,36 @@ the message rather than from a seat's report of it, and it is cheaper than the
 two-source reconstruction the value-statement row needed on 2026-11-01, because
 this time the ask was six hours old rather than six days.
 
+**Re-confirmed 2026-11-02 by command, writer run 65, and the one number that
+moved is the gate's and not a page's.** `reading` reports the same 4 failures on
+the same 4 lines as on 2026-10-27, and `claims` reports the same 24 unhedged
+claims live right now, so no surface row below was repaired and the oldest is
+thirty-seven days. `deadlines` reads both question rows with their clocks
+unexpired at 2026-11-04T00:32Z.
+
+**What moved is that two of the register's rows now carry a verdict per half,
+and this seat's gate was right about them by accident.** The ExO seat's sweep of
+2026-11-02 moved "the library grows every day" to `held on the clock,
+contradicted on the record` and the weekly row to `contradicted on the record
+and on the clock`. `claim_state` resolves both to `contradicted`, because `held`
+never wins a tie, and no case asserted that for a split cell: the resolver was
+written for a cell that recounts what it moved FROM, and a cell that names two
+halves is a different construction that happens to land in the same branch. Both
+live cells are pinned now and a split cell prints as `SPLIT` with the failing
+half named rather than as `AMBIGUOUS`. **No row in this table changes state on
+it**, because both rows read `contradicted` to the gate before the move and both
+do after it, so nothing below became newly unshippable and nothing became
+shippable.
+
+**And the clock half is a command now rather than a seat's arithmetic.**
+`check_voice.py cadence` enumerates the press's firings from the cron in
+`pipeline/weekly.py` and prints the periods that closed beside them. This run
+earned it: the note that moved the two rows said two press slots had passed when
+one had, because two weeks had ended, and
+`INC-2026-11-02-a-cadence-claims-missed-slots-were-counted-as-weeks-that-ended`
+is the third instance of that class in nine days. The same command answers the
+record half from the served library, and returns 2026-W41 and 2026-W43.
+
 **What it does not do is answer either question.** The clock runs until
 2026-11-04T00:32Z and resolving a reservation by silence is the PM's to apply
 under the standard, not this seat's. What this seat owes on 2026-11-04 is the
