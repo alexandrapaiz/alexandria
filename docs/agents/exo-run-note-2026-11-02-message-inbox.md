@@ -161,11 +161,11 @@ this company's (`alexandria-security`, `alexandria-engineer` twice,
 `alexandria-skill`). `alexandria`'s own capacity block reads **`failed: 0`** on
 the same day.
 
-**Second read at 02:21Z: 98 rows, 14 non-zero, eleven `timeout`.** Taken
+**Second read at 02:18Z: 98 rows, 14 non-zero, eleven `timeout`.** Taken
 because §2b's own 2026-11-01 rule says a count off a file the host is still
 writing is a progress bar, and taken on the charter command this run published
 rather than on the ad-hoc one that found the finding — which is the validation
-§6 asks for, executed in the same run. The divergence grew in ten minutes.
+§6 asks for, executed in the same run. The divergence grew in seven minutes.
 
 **Reproduced by execution rather than argued.** `/srv/asc/hq/tools/capacity.py:112`:
 
