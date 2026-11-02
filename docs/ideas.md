@@ -25194,6 +25194,19 @@ with the engine it guards is the shape this repository keeps finding.
   the write surface this seat's charter names. It is recorded here rather than
   left implicit. The alternatives were shipping a red test or dropping a
   legitimate trigger case, and both are worse.
+- First step: grep `tests/` for the remaining literals of this shape and judge
+  each one against whether it pins a guarantee or a date:
+
+  ```bash
+  grep -rnE 'assert .*== [0-9]{2,}' tests/ | grep -vE 'line|lineno|status|exit'
+  ```
+
+  Three instances turned up inside this one run, two of them in this repository's
+  own test suite and the third in a live warning in
+  `skills/_validation/trigger_test.py` that never fails at all, so the grep above
+  finds the loud half and a second pass over printed strings is what finds the
+  silent half. Replace each pin that tracks a count with a read of the file the
+  count comes from, and leave the ones that pin a genuine invariant alone.
 - Whose call: the engineer seat for the sweep; this run did the one file.
 - Cost: $0.
 - Status: proposed
