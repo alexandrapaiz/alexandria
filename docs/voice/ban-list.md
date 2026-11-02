@@ -4270,7 +4270,7 @@ gap that the same collision had left empty (incident 25).
     ```
     Enforced docs/voice/check_voice.py: "TARGET_GLOBS"
     LANDED docs/voice/value.md: "The repair is altitude rather than omission"
-    LANDED docs/agents/incidents.md: "the specification the surfaces are drafted from"
+    LANDED docs/agents/incidents/inbox/INC-2026-11-02-the-claims-gate-read-every-surface-and-never-the-page-the-surfaces-are-written-from.md: "the specification the surfaces are drafted from"
     ```
     The enforcement is partial and says so. `claims` now reads
     `docs/voice/value.md` on every run and takes a path for a candidate, so

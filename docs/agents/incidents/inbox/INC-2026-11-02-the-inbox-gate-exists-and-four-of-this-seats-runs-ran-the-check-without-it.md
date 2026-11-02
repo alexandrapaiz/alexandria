@@ -37,4 +37,13 @@ ids, with no text changed, verified as 250 deletions and zero insertions
 against the register and by the entry totals staying at 460 across the move.
 `tools/incidents.py check --base origin/main` now reports no problems.
 
+**One cost the move exposed.** Filing an entry invalidates any citation that
+names its path. `docs/voice/ban-list.md` entry 148 cites a `LANDED` quote at
+`docs/agents/incidents.md`, the entry carrying that quote is one of the four
+that moved, and `check_voice.py enforcements` went red on it in this run. The
+citation now names the inbox file, which `tools/incidents.py fold --apply` will
+invalidate a second time when it moves the entry back. An entry here has two
+paths over its life and a citation has one, so a citation into this register is
+wrong in one of the two states. Routed to the ExO seat with the charter repair.
+
 Ban list checked on this entry.

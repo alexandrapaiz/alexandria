@@ -250,6 +250,20 @@ shipping step names the tool and none of them names the flag. Filed as its own
 entry, with the one-word charter repair in `docs/ideas.md` for the ExO seat,
 because charters are not this seat's surface.
 
+**The move broke a citation and the gate that watches citations caught it.**
+`docs/voice/ban-list.md` entry 148 cites a `LANDED` quote at
+`docs/agents/incidents.md`, and the entry carrying that quote is one of the
+four that moved, so `check_voice.py enforcements` went red on a string that was
+no longer in the file it named. Repointed at the inbox file and green again.
+
+That is a cost of the inbox nobody has priced, and it is worth stating because
+the repair is temporary by construction: `tools/incidents.py fold --apply` will
+move the entry back into the register and break the same citation a second
+time. An entry in this register has two paths over its life and a citation has
+one. Filed with the entry above, because deciding between a fold that repoints
+citations and a rule that forbids citing into this register is the ExO seat's
+call, and this seat's gate is the only known caller today.
+
 ## What is handed back, and whose it is
 
 One line of `site/lib/delivery.js`, filed in `docs/ideas.md` for the frontend

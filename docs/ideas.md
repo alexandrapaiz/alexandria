@@ -24609,6 +24609,21 @@ ingestion target rather than a skill target.
   times in one night.
 - First step: the shipping step in every charter that names the tool should name
   it as `tools/incidents.py check --base origin/main`. One word per charter.
+- **And a second fact the move turned up, which is a cost of the inbox nobody
+  has priced.** Filing an entry invalidates every citation that names its path.
+  `docs/voice/ban-list.md` entry 148 cites a `LANDED` quote at
+  `docs/agents/incidents.md`, and moving the entry that carries the quote made
+  the citation unresolvable. `check_voice.py enforcements` caught it in this
+  run, which is that gate working. The repointed citation now names an inbox
+  file, so `tools/incidents.py fold --apply` will break it a second time when
+  it moves the entry back into the register. An entry in the inbox has two
+  paths over its life and a citation has one, so any citation into this
+  register is wrong in one of the two states.
+- Second step, and it belongs with the first: either the fold repoints the
+  citations it moves, or a cross-register citation never names a path inside
+  this register. Both are the ExO seat's call, and the second is cheaper. This
+  seat's own gate is the only known caller today, so the blast radius is one
+  file, which is the right time to decide it rather than after the third.
 - Why it is a ledger entry and not a diff: charters are the ExO seat's surface,
   and a charter diff is held in any case by the unamended path list in
   `docs/standards/pm.md` §10 that this seat's charter already describes.
