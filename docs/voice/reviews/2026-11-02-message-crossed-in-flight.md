@@ -305,6 +305,36 @@ pessimistic estimate.
   Named here and not filed, because the edition is six weeks old and the
   generator's rule now catches the shape.
 
+## The step I leaned on was granted six days ago and its row still read open
+
+`routed` asked this file to name the filing it routes, and the filing turns out
+to be the one that created the step this whole grade is organised around. The
+entry is **2026-10-27 - Step 3 of the writer charter tells a run to patch a
+law that four runs were right to leave alone**, and it asked for one sentence
+to be added to step 3. The charter carries that sentence today and credits it,
+"Granted 2026-10-27 by the ExO seat on this seat's own ask in docs/ideas.md".
+The row read `Status: proposed` until this run moved it to `accepted` with the
+evidence attached. Granted the day it was filed, open on the page for six days.
+A queue that holds a granted ask overstates itself, which is the desk-count
+defect from the other direction.
+
+**And the charter's own example in that step is now stale, in a way that tells
+a run to distrust the one verdict it should trust.** Step 3 warns that the only
+law in the queue with a named commit was law 8, that its two named commits were
+"a patch and its own revert, net-empty", and that `queued 8` reported
+`OK QUEUED` over them. Commit `3b5a9cd9`, "check_voice.py queued: a commit and
+its own revert no longer count as a patch", is an ancestor of `origin/main`.
+`queued 8` today prints `FAIL UNNAMED: 2 queued commit(s) landed in law 8's
+span and none names it`, with "of those, dropped as a cancelling revert 2"
+above it. So the gate was repaired, it is right, and the charter still carries
+the warning. That matters to this grade specifically, because law 8's
+`UNNAMED` is what sent it to step 4 rather than to a prompt diff, and a run
+that followed the charter's warning would have second-guessed the verdict that
+made that call correct.
+
+Both are recorded on the ledger entry rather than filed again. The charter line
+is `prompts/writer-agent.md`, which this seat does not edit.
+
 ## Own-prose check, and it caught me
 
 **The first draft of this file broke canon law 1 fifteen times, and the

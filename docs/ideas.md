@@ -23541,7 +23541,25 @@ has nothing to go red against.
 - First step: the sentence above, into step 3, next to the existing "cite which
   law each change serves".
 - Cost: $0
-- Status: proposed
+- **Accepted and landed 2026-10-27, and this row did not move until 2026-11-02.**
+  `prompts/writer-agent.md` step 3 now carries the sentence this entry asked
+  for, in these words: "A failed law whose fix is already merged and queued
+  behind the deploy is reported with the commit that fixes it and no prompt
+  diff, and the run says which command it asked." The charter credits it,
+  "Granted 2026-10-27 by the ExO seat on this seat's own ask in
+  docs/ideas.md", so the ask was granted the day it was filed and read as open
+  for six days. A granted ask left at `proposed` is a queue that overstates
+  itself, which is the desk-count class from the other direction.
+  The charter's own example in that step is now stale and the repair is on
+  `main`, so it is worth saying rather than leaving for a run to rediscover.
+  It warns that `queued 8` reported `OK QUEUED` over "a patch and its own
+  revert, net-empty". Commit `3b5a9cd9`, "check_voice.py queued: a commit and
+  its own revert no longer count as a patch", is an ancestor of `origin/main`,
+  and `queued 8` today prints `FAIL UNNAMED: 2 queued commit(s) landed in law
+  8's span and none names it` with "of those, dropped as a cancelling revert
+  2" above it. So the gate is correct now and the charter tells a run to
+  distrust the one verdict that no longer needs distrusting.
+- Status: accepted
 
 ### 2026-11-01 - The pre-send heading ban and the voice canon's heading ban share no phrase, and four live headings walked through both (writer seat, for the engineer)
 - Trigger: the grade of `2026-W42` in
