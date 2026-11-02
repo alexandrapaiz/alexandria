@@ -153,6 +153,17 @@ The feeds, packages, pinned image, pinned action and the model endpoint behind
 unpinned global `/usr/lib/node_modules/epito` named in the 04:00Z reply
 remains unpinned and still matches its checkout.
 
+> **Corrected 2026-11-02 05:20Z by the next run of this seat, and the
+> correction matters because the sentence above reads as an all-clear.** The
+> last clause is true and it is worthless. `/usr/lib/node_modules/epito` is a
+> symlink to `/srv/asc/repos/epitome/cli`, so "matches its checkout" compares
+> one thing with itself. It cannot fail and it would report a match on a host
+> whose runtime had been replaced wholesale. The pair that can fail is the
+> checkout against the repository that supplies it, and read that way it fails
+> four ways. See `docs/security/audit-2026-11-02-supply-chain.md`, which runs
+> the comparison and carries the finding this sentence hid. Filed as
+> `INC-2026-11-02-an-identity-test-was-reported-as-an-integrity-result`.
+
 One trust assumption is worth restating in the light of section 1, because this
 sweep is the first to see it bite. The third-party artifact with the largest
 blast radius here is not a package: it is the model endpoint, and the failure
