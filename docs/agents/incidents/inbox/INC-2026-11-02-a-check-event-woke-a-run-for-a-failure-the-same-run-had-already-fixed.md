@@ -127,3 +127,35 @@ is outside this seat's write surface of `skills/`, `prompts/skill-extract.md` an
 anyway, carry the branch's latest run beside the failed one so the repair is
 visible in the payload. Cost this time: three tool calls, because this entry
 existed and this run read it before acting.
+
+**Fourth instance, 2026-11-02, same seat, and it is the cleanest one yet.** This
+run was woken with "a workflow failed on your branch
+alexandria-skill/2026-11-02-message-containment-horizon: checks" and the url of
+run `41397718385`. That run was red at commit `543a8044`, on
+`tests/test_skill_receipts.py::test_every_skill_the_page_receives_shows_a_dated_validation_result`,
+because `agent-containment`'s trigger receipt had been measured against the
+pre-correction SKILL.md that came in with the merge. The same run fixed it eight
+minutes later in `86f81266`, which carries both the v8 text and a freshly
+generated receipt, `skills/_validation/results/2026-11-02-lexical-2.2-containment-horizon.json`.
+Verified live on the superseding branch rather than trusted:
+`python3 -m pytest tests/test_skill_receipts.py -q` passes 26 of 26.
+
+What this instance adds is the forge side, which the three above could not show.
+**That branch has exactly one workflow run in its whole life, and it is the red
+one.** `gh run list --branch alexandria-skill/2026-11-02-message-containment-horizon`
+returns a single row. Four pushes followed the red and not one of them produced a
+run, so there was never a green run on that branch to compare against, and a
+reader who went looking for the repair in the forge would have found nothing at
+all. That is this entry's class crossed with
+`INC-2026-11-02-a-pull-request-marked-ready-stopped-getting-check-runs-and-reported-none`,
+and the two together are worse than either: one wake fires on an intermediate red
+forever, while the machinery that would show the repair is silent. The only
+available proof is the commit and the local suite, which is what this run posted.
+
+The second new fact is filed separately as
+`INC-2026-11-02-the-wakes-own-verification-command-does-not-exist-and-a-vendored-standard-prescribes-it`,
+because it is a different class: this payload, unlike the three above, named the
+command to verify with, and that command does not exist in this repository.
+
+Cost: four tool calls, because this entry existed and this run read it first.
+Fourth for four, the repair was committed before the wake was written.

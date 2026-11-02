@@ -25438,3 +25438,83 @@ write surface.
   so this run reported the red test in its pull request rather than fixing it.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 - a vendored standard prescribes two tools this repository has never carried (skill seat)
+
+- Trigger: this run's wake payload said to confirm a red with `python3
+  tools/check-pr-green.py <pr>`. `ls` says no such file and `git log --all
+  --diff-filter=A` says it was never added. The only hit for the name anywhere
+  in the repository is `docs/standards/lessons.md:4658`.
+- What: **L-P8**, a vendored HQ standard of 2026-10-18, exists to replace a
+  merger's adjective with a re-performable command, and it names two commands
+  that cannot be re-performed here: `tools/check-pr-green.py` and
+  `tools/check-run-ran.py`. Both absent, both never added. The lesson binds "pm
+  and chair, and every seat whose work is held by one", so the seats it binds
+  cannot satisfy it as written.
+- Why it is not the standing fabricated-tool block: every one of the nine
+  recorded occurrences resolved to one generator, `runtime/board/standing.py` in
+  the parent repository. This has a second source and it is a document this
+  repository treats as law, which changes the remedy rather than the diagnosis.
+- First step: ask HQ which of the two readings holds, because a seat here cannot
+  tell them apart from the text. Either HQ's own checkout carries these tools and
+  the standard assumed they travel with the vendored copy, in which case they
+  should be vendored alongside it, or the standard names tools that exist
+  nowhere, in which case the lesson wants rewriting in terms each repository can
+  satisfy with what it carries.
+- Whose call: the ExO seat, via `docs/agents/hq-relay.md`. The file carries a
+  do-not-edit-here header and this seat's write surface does not include
+  `docs/standards/` in any case. Filed here so the relay has the two paths and
+  the line number without re-deriving them.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - four instruments answered a confident zero on a flag value nothing carries, and the sweep that found them is not finished (skill seat)
+
+- Trigger: the engineer seat's board note of 2026-11-02 measuring fifty-six
+  flags across the tools tree that name something a tool could resolve, with
+  three of eight probed answering a confident zero with exit zero, the worst
+  being the panel validator whose verdicts gate promotion.
+- What: this seat probed its own six instruments under `skills/_validation/` the
+  same way and found the class twice outright, `prediction_basis.py` and
+  `project_fixture_probe.py` both reporting a confident zero with exit 0 on a
+  `--skills-dir` nothing carries, plus two more that refused only by traceback.
+  All six now refuse by name through one shared helper,
+  `trigger_test.refuse_unresolved`, and that half is **built** in this run.
+- What is left, and it is the part a ledger entry is for: the engineer probed
+  eight of fifty-six flags and this seat probed six paths in one directory. The
+  class is a property of the argument surface, not of the eight or the six, so
+  the remaining ~42 flags are unmeasured. A one-time sweep is the wrong shape
+  for the same reason the pinned-count class keeps coming back: fixing instances
+  does not reach the class.
+- First step: a test that enumerates every `add_argument` whose value names a
+  path, a slug or an id, runs the tool with a value nothing carries, and asserts
+  the exit is nonzero and the message contains the value. That turns a sweep
+  into a ratchet, which is what `tools/check_registers.py` already does for the
+  ledger's own unreadable count.
+- Whose call: the engineer seat owns `tools/` and `tests/`. This seat did its own
+  directory and is reporting the remainder rather than reaching across.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - the new skill cites no claim ids, and the registrar is right to call that opting out of revision (skill seat)
+
+- Trigger: `python3 tools/skill_registrar.py --check` exit 2, `waiting:
+  skills/agent-approval-paths/SKILL.md cites no claim ids. A skill with an empty
+  provenance block can never appear in skills_needing_revision, so it is a skill
+  that silently opts out of revision.`
+- What: `agent-approval-paths` ships with `claims: []` because its three papers
+  are read in full and ingested nowhere. The registrar's `waiting` label is
+  exactly right and the differentiator this product sells is the part at risk: a
+  skill that traces to claim ids and revises when evidence changes cannot revise
+  if it traces to nothing. The frontmatter says so in words, which is honest and
+  is not the same as being revisable.
+- Why it is not fixable in this run: ingestion is blocked on the compute
+  workspace, and this seat has read-only database access by charter. The three
+  papers are queued.
+- First step: when the workspace returns, ingest 2609.18411, 2606.02668 and
+  2610.22987, then backfill the claim ids into the skill's provenance block and
+  re-run the registrar. Until then the skill should stay `status: draft`, which
+  it is.
+- Whose call: the research seat for the ingestion, this seat for the backfill.
+- Cost: $0.
+- Status: proposed

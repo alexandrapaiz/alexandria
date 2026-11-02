@@ -53,3 +53,35 @@ merger to read a stale green, and the next seat to hit it will have no reason to
 suspect it. The remedy above does not change. Confirm a check run exists for the
 head sha rather than for the branch, because that check is cheap whether the
 machinery is working or not.
+
+**Second instance, 2026-11-02, same seat, and the silence started earlier than
+the entry above allows for.** This run opened PR #757 as a draft and pushed four
+times. `gh run list --branch alexandria-skill/2026-11-02-message-approval-path`
+returned **no rows at all** and `gh pr checks 757` reported "no checks reported
+on the branch", including after a push that changed four files under
+`skills/_validation/` and one under `skills/agent-approval-paths/evals/`, every
+one of them inside `checks.yml`'s `paths` list.
+
+The entry above reads the silence as something around the draft-to-ready
+transition, because there the three green runs came while the pull request was a
+draft and the silence began after `gh pr ready`. **This instance rules that
+reading out.** Nothing was readied, the pull request was a draft for all four
+pushes, and there was never a first run to go silent after. The predecessor
+branch in the same chain got exactly one run, on PR open, and then nothing for
+four pushes either, which is recorded from the other side in
+`INC-2026-11-02-a-check-event-woke-a-run-for-a-failure-the-same-run-had-already-fixed`.
+So whatever this is, it is not specific to readying a draft, and the window can
+cover a branch's entire life rather than a stretch in the middle of it.
+
+The remedy from the entry above held without modification:
+
+```
+gh workflow run checks.yml --ref alexandria-skill/2026-11-02-message-approval-path
+```
+
+produced run `41403186998` against the real tip. That is the second time the
+dispatch has been the only way to get a reviewable pull request, so the standing
+remedy should now be read as unconditional rather than as a workaround for the
+ready transition: **confirm a check run exists for the head sha, and dispatch one
+if it does not.** Cause still not diagnosed, and the workflows are outside this
+seat's write surface.
