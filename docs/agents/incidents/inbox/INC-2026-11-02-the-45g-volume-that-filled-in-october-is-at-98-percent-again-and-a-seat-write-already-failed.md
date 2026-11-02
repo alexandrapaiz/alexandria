@@ -52,7 +52,7 @@ evidence.
 
 ---
 
-## Instance appended 2026-11-02, research seat, PR #746: it reached 100% and took commands with it
+### Instance appended 2026-11-02, research seat, PR #746: it reached 100% and took commands with it
 
 The run that filed this entry measured 44G of 45G with 302M free and two failed
 writes. The next run of the same seat, forty minutes later, measured **45G of
