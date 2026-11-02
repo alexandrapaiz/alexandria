@@ -7923,6 +7923,62 @@ UNCOVERED_CASES = (
     ((), (), ()),
 )
 
+def coverage_figure(covered, declared):
+    """The share of its own declared domain a sweep actually reached.
+
+    A string with one decimal, because this figure's only use is that 1.6 and
+    1.7 are different answers to the same question. The ExO seat read 1.7 off
+    this tree at 05:34Z and it is 1.6 ninety minutes later, on the same four
+    positional arguments, because `main` merged five more declarations in
+    between. A figure that moves that fast cannot be kept by quoting it, which
+    is why it is computed here and printed on every full run.
+
+    `None` and never `"100.0"` for an empty or incoherent domain. A sweep over
+    nothing covered nothing, and printing full coverage there is the exact
+    false-confidence shape this whole block exists to prevent: it is ban list
+    36 again, one altitude up.
+    """
+    if covered is None or declared is None:
+        return None
+    if declared <= 0 or covered < 0 or covered > declared:
+        return None
+    return f"{100.0 * covered / declared:.1f}"
+
+
+COVERAGE_CASES = (
+    # Tonight's live figure: four positional arguments out of 246 declared.
+    ((4, 246), "1.6"),
+    # The ExO seat's figure at 05:34Z, the same numerator over a domain five
+    # declarations smaller. Same sweep, same night, a different number.
+    ((4, 241), "1.7"),
+    # The command-name sweep of 2026-11-01, which reached no declared argument
+    # at all and reported the fleet clean.
+    ((0, 43), "0.0"),
+    # Full coverage prints as full coverage.
+    ((246, 246), "100.0"),
+    # An empty domain is not full coverage. This is the case the figure exists
+    # to refuse, and the one a bare division would have printed as a crash.
+    ((0, 0), None),
+    # More covered than declared is incoherent, so it is refused rather than
+    # printed as 100 percent or as some number above it.
+    ((4, 0), None),
+    ((247, 246), None),
+    # A negative numerator is refused rather than printed as a negative
+    # percentage. Found by a surviving mutation rather than written for.
+    ((-1, 246), None),
+    # The two numbers the call site could transpose, kept here so a reader who
+    # sees either of them printed knows the wiring is wrong and not the tree:
+    # 98.4 is the gap reported as the coverage, and 9.3 is the coverage divided
+    # by the file count instead of the declared count. Neither is reachable by
+    # this table, which is the point of keeping them in it.
+    ((242, 246), "98.4"),
+    ((4, 43), "9.3"),
+    # An unreadable surface propagates, the way `uncovered_args` propagates it.
+    ((None, 246), None),
+    ((4, None), None),
+)
+
+
 # What this seat's two sweeps actually passed a value for, as a record rather
 # than as a memory. The first sweep passed a nonsense first argument to all
 # 46 files under `tools/`, which reaches the subcommand name and no declared
@@ -7993,6 +8049,26 @@ def flags():
                   f"and got {got!r}")
     print(f"UNCOVERED_CASES                            "
           f"{len(UNCOVERED_CASES) - worse} of {len(UNCOVERED_CASES)}")
+    rough = 0
+    for (covered, total), want in COVERAGE_CASES:
+        # The raise is caught and reported rather than allowed out, because
+        # four of this table's nine cases are guards against a domain that
+        # divides by zero or types wrongly. A mutation that drops one of those
+        # guards takes the whole gate down on the first case and prints
+        # nothing about the other eight, so the loudest failure is also the
+        # least informative one. Two mutations of this block did exactly that
+        # before this `except` was here, and the harness scoring them read the
+        # traceback as a survival.
+        try:
+            got = coverage_figure(covered, total)
+        except Exception as exc:
+            got = f"{type(exc).__name__}: {exc}"
+        if got != want:
+            rough = 1
+            print(f"  CASE    coverage_figure({covered!r}, {total!r}) wanted "
+                  f"{want!r} and got {got!r}")
+    print(f"COVERAGE_CASES                             "
+          f"{len(COVERAGE_CASES) - rough} of {len(COVERAGE_CASES)}")
     print()
 
     unreadable, positional, flagged, gap = [], 0, 0, 0
@@ -8016,6 +8092,63 @@ def flags():
     print(f"  positional, which both sweeps reached    {positional}")
     print(f"  carried by a flag, which neither did     {flagged}")
     print(f"never passed a value by either sweep       {gap}")
+    domain = positional + flagged
+    covered = domain - gap
+    # `covered` is 4 today and so is `positional`, and a mutation replacing
+    # one with the other survives every check below. They are equal only
+    # because `SWEPT` happens to name three positionals and no flag, so the
+    # equality is a fact about this sweep and not about the quantities. Do not
+    # simplify it: the first flag anybody sweeps makes them different, and the
+    # reading this gate exists for is exactly the distance between them.
+    # The numerator, derived a second time by counting membership instead of
+    # subtracting non-membership, because the cases table above cannot reach
+    # this call and two mutations of it survived: one passed `gap` as the
+    # numerator and printed 98.4 percent coverage of a domain it had covered
+    # 1.6 percent of. A figure that confident is the whole defect class this
+    # gate was built for, so it gets a check and not a comment.
+    swept = 0
+    for path in files:
+        declared = declared_args(path.read_text(encoding="utf-8"))
+        if declared is not None:
+            swept += sum(1 for _, n in declared if n in SWEPT)
+    if swept != covered:
+        worse = 1
+        print(f"  FAIL    the coverage numerator is wired wrong: counting the "
+              f"names in SWEPT gives {swept} and the gap subtraction gives "
+              f"{covered}, so the percentage below is not the measurement "
+              f"this gate names")
+    pct = coverage_figure(covered, domain)
+    # The figure must reconstruct the pair printed beside it. The numerator
+    # check above guards `covered`; it does not guard what this call passes,
+    # and two mutations walked straight through it by leaving `covered` right
+    # and handing `coverage_figure` something else. One printed 98.4 percent
+    # and one printed 9.3, both beside the text `4 of 246`. So the round trip
+    # is the check: a percentage that does not come back to its own numerator
+    # is reporting a different measurement than the one it is labelled with.
+    # The tolerance is half of the last digit the figure prints, scaled by the
+    # domain, and not a round number. The first draft of this check used 0.05
+    # and failed the live tree: 1.6 percent of 246 is 3.94 against a true 4,
+    # which is 0.064 out, because one decimal of a percentage only locates the
+    # numerator to within `domain / 2000`. A threshold picked for looking
+    # reasonable rather than derived from the precision of the thing it
+    # measures is this gate's own defect class, caught inside the gate built
+    # for it, which is the fifth instance tonight.
+    slack = domain / 2000.0 + 1e-9
+    if pct is not None and abs(float(pct) * domain / 100.0 - covered) > slack:
+        worse = 1
+        print(f"  FAIL    the coverage figure does not reconstruct its own "
+              f"pair: {pct}% of {domain} is "
+              f"{float(pct) * domain / 100.0:.1f}, the pair printed is "
+              f"{covered}, and the rounding only allows {slack:.2f} of that, "
+              f"so one of the two numbers is not from this sweep")
+    if pct is None:
+        print("the sweep's coverage of its own domain     NONE, and that is")
+        print("          not full coverage: tools/ declares no readable")
+        print("          argument, so the sweep's clean result is about")
+        print("          nothing")
+    else:
+        print(f"the sweep's coverage of its own domain     {pct}%  "
+              f"{covered} of {domain}")
     print()
 
     unfiled = [n for n in unreadable if n not in ARG_FILED]
@@ -8045,7 +8178,14 @@ def flags():
     print("confident zero to this seat tonight was carried by `--seat`.")
     print("Which of the flags name a target is the engineer seat's judgment,")
     print("file by file, and it is in docs/ideas.md under that seat's name.")
-    return bad | worse
+    print()
+    print("The percentage is printed rather than quoted because it moves. The")
+    print("ExO seat read 1.7 off this tree at 05:34Z and asked this seat to")
+    print("keep that number; it was 1.6 ninety minutes later, on the same four")
+    print("positional arguments, because `main` had merged five more")
+    print("declarations. Keeping the figure and quoting the figure turned out")
+    print("to be opposite instructions.")
+    return bad | worse | rough
 
 
 # ---- the sixth altitude: the number an ask names was already spent ----
