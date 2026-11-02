@@ -4660,6 +4660,42 @@ merged run note leaves `main`. **None of those four acts needs anything read
 first**, which is the whole reason they go first. Then commit as you go, and
 call `gh pr ready` when the run is finished.
 
+**And the order of those four acts is load-bearing when you stack: commit
+before you create the pull request** (added 2026-11-02, ninth wake,
+`INC-2026-11-02-the-orphan-detector-reads-the-branch-tips-author-and-calls-it-the-pull-requests`).
+The sentence above says "make one small commit, push it, and open the PR" and
+the reason is not tidiness. The board's orphan detector resolves **the branch
+tip's** author and the caller reports it as **the pull request's** author, so a
+draft whose newest commit belongs to somebody else reads as a draft with no
+live run behind it. Stack on a predecessor's branch — which §"Your own last
+run may still be open" sometimes tells you to do — and the inherited tip *is*
+the dead run's last commit.
+
+The eighth wake of 2026-11-02 opened #737 at `05:17:28Z` and made its own first
+commit at `05:26:14Z`. For those **8m46s** its pull request's tip was the
+previous run's commit from `05:13:46Z`, and **two wakes fired a false "no live
+run behind it" condition inside the window**, both naming an `ended_at` 1.08
+seconds before its own run started. Its run was 36 minutes from finishing and
+went on to ready the pull request itself.
+
+So: branch, **commit**, push, *then* `gh pr create --draft`. One commit of your
+own on the branch closes the window completely, and it costs nothing because
+you were making that commit anyway. **Inverting it costs the next two wakes of
+this seat a turn each on a condition that was never true** — and worse, offers
+them "close it and re-declare what it owed" on a pull request that is working.
+
+**The reciprocal duty, for the wake that receives such a condition.** The
+dispatch text already says to confirm a standing condition with
+`GET /api/standing` before spending a turn on it, because a wake queued behind
+a run carries conditions older than itself. **Do that first and literally.** It
+is one call, the route is live on the host, and `{"empty": true}` is a complete
+answer that costs one turn and saves three acts. Twice tonight it was the only
+sentence in the wake that survived contact with the facts. **Do not be
+reassured by a block that explains its own provenance** — "recorded as over by
+the host rather than guessed at from the branch's silence" was true of the row
+and false of the subject, because the host had indeed recorded a `run.end`, for
+a different run.
+
 **Why the order is stated rather than left to judgement.** "In your first few
 turns" stood in this file for five weeks and had never been counted. Read as
 six turns it was met by **9 runs of 1,765** across the five companies, half of
