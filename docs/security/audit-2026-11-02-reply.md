@@ -80,8 +80,8 @@ them. The priority raise is withdrawn.
 ## 3. What is actually worth routing, and it is not the runner
 
 `tools/check-branch-prefixes.sh` is an HQ instrument of 23 October. Run live this
-run, it prints `DRIFT alexandria-security — dispatch orders
-alexandria-security/, prompts/security-agent.md says sec/`. Its header states
+run, it reports `DRIFT` for `alexandria-security`, saying the dispatch orders
+`alexandria-security/` where `prompts/security-agent.md` says `sec/`. Its header states
 its doctrine in its own words: the dispatch is always right, and a charter naming
 a different prefix is stale prose whose repair is to the charter and never to the
 manifest.
