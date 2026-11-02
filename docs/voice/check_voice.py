@@ -9066,6 +9066,75 @@ def proposed_exits(entry):
     return tuple(out)
 
 
+def proposing_quote(entry, code):
+    """The proposing bullet's own words naming one code, wrapped lines joined.
+
+    This gate cannot decide what a sentence means and must not try. What it can
+    do is show the words it matched, and that is the whole of this repair.
+
+    On 2026-11-02 this gate told the engineer seat that a pdf-route entry asked
+    `tools/read_paper.py` for exit 3, which the file already spends as
+    `ABSTRACT_ONLY`. The entry's sentence was "a sandbox with no `pypdf` must
+    still exit 3 rather than crash", which asserts that the EXISTING code keeps
+    coming out when the soft route is unavailable. It asks for no allocation at
+    all. The finding printed the number and the allocation and never the words,
+    so the one fact that settles it was the one fact it withheld, and the seat
+    on the receiving end had to go and read the file to refute its own name on
+    a defect it did not have.
+
+    A reader who sees "must still exit 3 rather than crash" needs no rule to
+    know that is not an ask. So the repair is a quote rather than a pattern:
+    the engineer's note makes the point that refusing to mechanise what a
+    string means is the altitude here, and a narrower regex would be this gate
+    guessing at intent with a longer expression. The cost of the false positive
+    was a seat's reading time; the cost of a pattern that drops real asks is a
+    collision nobody sees.
+
+    This was that gate's first cross-seat catch, and a reader whose first
+    cross-seat finding is false learns to skim the rest.
+    """
+    want = re.compile(rf"\bexit (?:code )?{int(code)}\b", re.I)
+    for label, text in ledger_bullets(entry):
+        if label not in PROPOSING_BULLETS or not want.search(text):
+            continue
+        for sentence in re.split(r"(?<=[.;]) +", text):
+            if want.search(sentence):
+                return sentence.strip()
+        return text.strip()
+    return None
+
+
+#: What `proposing_quote` must return. The live instance first, because it is
+#: the one the repair was written for and the only one whose words a reader has
+#: already been misled by.
+#: Fields: (the entry, the code, the words expected)
+QUOTE_CASES = (
+    # The live false positive, wrapped the way `docs/ideas.md` wraps it, with
+    # the number on a continuation line. The quote has to reach back over the
+    # wrap or it prints "exit 3 rather than crash." and still hides the
+    # "must still" that makes it an assertion.
+    # The colon is deliberately not a sentence break. "The test case is the
+    # one that matters:" is the half that tells a reader the entry is naming a
+    # test rather than asking for a number, so splitting it off would throw
+    # away the context the quote exists to supply.
+    ("### x\n- First step: a reader wired into `tools/read_paper.py` between\n"
+     "  the HTML routes and the abstract fallback. The test case is the one\n"
+     "  that matters: a sandbox with no `pypdf` must still\n"
+     "  exit 3 rather than crash.\n", 3,
+     "The test case is the one that matters: a sandbox with no `pypdf` must "
+     "still exit 3 rather than crash."),
+    # A real ask quotes as a real ask, so the quote does not only exonerate.
+    ("### x\n- What: `tools/board.py` should refuse an unknown seat\n"
+     "  with exit 2 rather than reporting zero.\n", 2,
+     "`tools/board.py` should refuse an unknown seat with exit 2 rather "
+     "than reporting zero."),
+    # A code named only in a bullet this gate does not read quotes as nothing,
+    # which keeps the quote's domain identical to the finding's.
+    ("### x\n- Trigger: it answered undecided, exit 3\n", 3, None),
+    # A code the entry does not name at all.
+    ("### x\n- What: `tools/board.py` should use exit 4\n", 9, None),
+)
+
 LEDGER_CASES = (
     # The live instance, wrapped the way the entry actually wraps, with the
     # number past the first line of its bullet.
@@ -9160,6 +9229,15 @@ def exits():
                   f"{want!r} and got {got!r}")
     print(f"{'COLLISION_CASES':<42} "
           f"{len(COLLISION_CASES) - wrong} of {len(COLLISION_CASES)}")
+    wrong = 0
+    for entry, code, want in QUOTE_CASES:
+        if (got := proposing_quote(entry, code)) != want:
+            wrong = 1
+            bad = 1
+            print(f"  CASE    proposing_quote(.., {code}) wanted {want!r} "
+                  f"and got {got!r}")
+    print(f"{'QUOTE_CASES':<42} "
+          f"{len(QUOTE_CASES) - wrong} of {len(QUOTE_CASES)}")
     print()
 
     spent, certainty = {}, {}
@@ -9216,6 +9294,17 @@ def exits():
                 print(f"  FAIL    an entry asks tools/{tool}.py for exit "
                       f"{code}, which it already spends as {means}")
                 print(f"          {head}")
+                # The words, before the remedy. A reader cannot judge this
+                # finding without them and the first cross-seat instance of
+                # it was false, so the quote comes ahead of the free list
+                # rather than under it.
+                if (quote := proposing_quote(entry, code)) is not None:
+                    print(f"          it says: {quote}")
+                    print("          read that before spending a number: an "
+                          "entry asserting that a code STILL comes out is "
+                          "not")
+                    print("          asking for one, and this gate cannot "
+                          "tell the two apart")
                 print(f"          free in that file: {free}")
             elif certainty.get(f"{tool}.py") == "partial":
                 clean += 1
